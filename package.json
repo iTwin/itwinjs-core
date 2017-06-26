@@ -12,6 +12,9 @@
     "@bentley/imodeljs-tools": "file:..\\imodeljs-tools",
     "gulp": "latest"
   },
+  "dependencies": {
+    "@bentley/geometry-core": "file:..\\geometry-core"
+  },
   "scripts": {
     "build": "gulp build",
     "clean": "gulp clean"
