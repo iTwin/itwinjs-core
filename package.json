@@ -7,16 +7,26 @@
     "type": "git",
     "url": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/imodeljs-common.git"
   },
-  "version": "0.0.0",
-  "devDependencies": {
-    "@bentley/imodeljs-tools": "file:..\\imodeljs-tools",
-    "gulp": "latest"
-  },
-  "dependencies": {
-    "@bentley/geometry-core": "file:..\\geometry-core"
-  },
+  "version": "1.0.0",
   "scripts": {
     "build": "gulp build",
-    "clean": "gulp clean"
+    "build-release": "gulp build --release",
+    "clean": "gulp clean",
+    "test": "gulp test"
+  },
+  "keywords": [
+    "Bentley",
+    "iModel"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "dependencies": {
+    "@bentley/geometry-core": "latest"
+  },
+  "devDependencies": {
+    "@bentley/bentleyjs-tools": "latest",
+    "gulp": "latest"
   }
 }
