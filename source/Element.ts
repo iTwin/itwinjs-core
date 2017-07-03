@@ -54,7 +54,7 @@ export interface CreateParams {
   className: string;
   modelId: string;
   code: Code;
-  id?: string;
+  id: string;
   parent?: RelatedElement;
   federationGuid?: string;
   userLabel?: string;
@@ -64,7 +64,7 @@ export interface CreateParams {
 /** An element within an iModel */
 export class Element {
   public iModel: IModel;
-  public id?: string;
+  public id: string;
   public modelId: string;
   public className: string;
   public code: Code;

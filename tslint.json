@@ -1,3 +1,4 @@
 {
-  "extends": "@bentley/bentleyjs-tools/tslint.json"
+  //"extends": "@bentley/bentleyjs-tools/tslint.json"
+  "extends": "../bentleyjs-tools/tslint.json"
 }
