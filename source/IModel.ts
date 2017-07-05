@@ -29,11 +29,10 @@ export class GeometryStream {
 
   // return false if this GeometryStream is empty.
   public hasGeometry(): boolean { return this.geomStream.byteLength !== 0; }
-
 }
 
 export class Placement3d {
-  public constructor(public origin: Point3d, public angles: YawPitchRollAngles, public boundingBox: ElementAlignedBox3d) { }
+  public constructor(public origin?: Point3d, public angles?: YawPitchRollAngles, public boundingBox?: ElementAlignedBox3d) { }
 }
 
 const scratchBytes: Uint8Array = new Uint8Array(4);

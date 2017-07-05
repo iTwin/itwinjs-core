@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { DefinitionElement, CreateParams } from "./Element";
+import { DefinitionElement, CreateParams, Id } from "./Element";
 import { ColorDef } from "./IModel";
 
 /** A SubCategory appearance */
@@ -26,7 +26,7 @@ export class Appearance {
 }
 
 /** the SubCategory appearance overrides for a view */
-export class Override {
+export class SubCategoryOverride {
   private _value: Appearance;
   private _invisible?: boolean;
   private _color?: boolean;
@@ -56,31 +56,61 @@ export class Override {
 }
 
 export interface SubCategoryCreateParams extends CreateParams {
-  appear: Appearance;
-  categoryId: string;
+  appear?: Appearance;
+  categoryId?: Id;
 }
 
+/** a Subcategory defines the appearance for graphics in Geometric elements */
 export class SubCategory extends DefinitionElement {
   public appearance: Appearance;
-  public categoryId: string;
+  public categoryId: Id;
   public constructor(opts: SubCategoryCreateParams) {
     super(opts);
-    this.appearance = opts.appear;
-    this.categoryId = opts.categoryId;
+    this.appearance = opts.appear ? opts.appear : new Appearance();
+    this.categoryId = opts.categoryId ? opts.categoryId : new Id();
   }
 
   public getSubCategoryName(): string {
     return (this.code && this.code.value) ? this.code.value : "";
   }
 
-  public getSubCategoryId(): string { return this.id; }
-  public getCategoryId(): string { return this.parent ? this.parent.id : ""; }
+  public getSubCategoryId(): Id { return this.id; }
+  public getCategoryId(): Id { return this.parent ? this.parent.id : new Id(); }
   public isDefaultSubCategory(): boolean {
-    //  return Category::GetDefaultSubCategoryId(this.getCategoryId()) === this.getSubCategoryId();
-    return false;
+    return Category.getDefaultSubCategoryId(this.getCategoryId()) === this.getSubCategoryId();
   }
+  public getEcClass(): string { return "SubCategory"; }
 }
 
-export class Category extends DefinitionElement {
+/** the rank for a Category */
+export enum Rank {
+  System = 0,       // This category is predefined by the system
+  Domain = 1,       // This category is defined by a domain. Elements in this category may be unknown to system functionality.
+  Application = 2,  // This category is defined by an application. Elements in this category may be unknown to system and domain functionality.
+  User = 3,         // This category is defined by a user. Elements in this category may be unknown to system, domain, and application functionality.
+}
 
+/** a Category for a Geometric element */
+export class Category extends DefinitionElement {
+  public rank: Rank = Rank.User;
+
+  public constructor(opts: CreateParams) { super(opts); }
+  public static getDefaultSubCategoryId(id: Id): Id {
+    return id.isValid() ? new Id(id.b, id.l + 1) : new Id();
+  }
+  public myDefaultSubCategoryId(): Id { return Category.getDefaultSubCategoryId(this.id); }
+
+  public getEcClass(): string { return "Category"; }
+}
+
+/** Categorizes 2d graphical elements. */
+export class DrawingCategory extends Category {
+  public getEcClass(): string { return "DrawingCategory"; }
+  public constructor(opts: CreateParams) { super(opts); }
+}
+
+/** Categorizes a SpatialElement. */
+export class SpatialCategory extends Category {
+  public getEcClass(): string { return "SpatialCategory"; }
+  public constructor(opts: CreateParams) { super(opts); }
 }
