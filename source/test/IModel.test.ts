@@ -3,9 +3,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
+<<<<<<< HEAD
 import { IModel, ColorDef } from "../IModel";
 import { Id } from "../Element";
+=======
+import { ColorDef, IModel } from "../IModel";
+import { Id, Code } from "../Element";
+>>>>>>> e757b0905d3bdb39ef289361697478710d5a3075
 import { ViewFlags, RenderMode } from "../Render";
+import { ModelSelector } from "../ViewDefinition";
 
 describe("iModel", () => {
   it("should open", () => {
@@ -20,9 +26,9 @@ describe("ElementId", () => {
   it("ElementId should construct properly", () => {
     const id1 = new Id("0x123");
     assert(id1.isValid(), "good");
-    const id2 = new Id("badnes");
+    const id2 = new Id("badness");
     assert(!id2.isValid());
-    const id3 = new Id("0xtbadnes");
+    const id3 = new Id("0xtbadness");
     assert(!id3.isValid());
     const id4 = new Id("0x1234567890abc");
     assert(id4.isValid());
@@ -44,6 +50,20 @@ describe("ElementId", () => {
     assert(flags.grid === false);
     assert(flags.fill === true);
     assert(flags.renderMode === RenderMode.Wireframe);
+  });
+
+  it("Model Selectors should hold models", () => {
+    const imodel1 = new IModel("abc");
+    const params = {
+      iModel: imodel1,
+      className: "bis.Element",
+      modelId: new Id(1, 1),
+      code: new Code("abc"),
+      id: new Id(),
+    };
+
+    const selector1 = new ModelSelector(params);
+    assert(!selector1.id.isValid())
   });
 
   it("ColorDef should compare properly", () => {
