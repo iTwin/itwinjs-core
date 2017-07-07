@@ -3,10 +3,38 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Point3d, Range3d, YawPitchRollAngles } from "../../geometry-core/lib/PointVector";
+import { Elements } from "./Elements"
+
+// *** NEEDS WORK: Somehow, get a different implementation of dgnNative, dependening on whether we are in node or not and whether we are in the UI thread or not.
+/// <reference path="../node_modules/imodeljsnode/iModelJsNodeAddon.d.ts"/>
+import * as dgnNative from "../node_modules/imodeljsnode/iModelJsNodeAddon.js";
 
 /** An iModel file */
 export class IModel {
-  constructor(public name: string) { }
+  _db: dgnNative.DgnDb;
+  _elements: Elements;
+
+  public constructor() {
+    this._db = new dgnNative.DgnDb();
+  }
+
+  /** open the iModel
+   * @param fileName  The name of the iModel
+   * @param mode      Open mode
+   * @return non-zero error status if the iModel could not be opened
+   */
+  public openDgnDb(fileName: string, mode?: dgnNative.DgnDb_OpenMode): dgnNative.BeSQLite_DbResult {
+    if (!mode)
+      mode = dgnNative.DgnDb_OpenMode.Readonly;
+    return this._db.openDgnDb(fileName, mode)
+  }
+
+  /** Get access to the Elements in the iModel */
+  public get Elements(): Elements {
+    if (!this._elements)
+      this._elements = new Elements(this);
+    return this._elements;
+  }
 }
 
 /** A bounding box aligned to the orientation of an Element */

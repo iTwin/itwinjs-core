@@ -3,9 +3,17 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { ColorDef } from "../IModel";
+import { IModel, ColorDef } from "../IModel";
 import { Id } from "../Element";
 import { ViewFlags, RenderMode } from "../Render";
+
+describe("iModel", () => {
+  it("should open", () => {
+    var imodel: IModel = new IModel();
+    var res = imodel.openDgnDb("mf3.ibim");
+    assert(!res);
+  })
+});
 
 describe("ElementId", () => {
 
