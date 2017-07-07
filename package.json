@@ -23,14 +23,14 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/geometry-core": "latest",
-    "@types/chai": "^4.0.1",
-    "@types/mocha": "^2.2.41",
-    "commander": "^2.11.0",
-    "once": "^1.4.0"
+    "@bentley/geometry-core": "latest"
   },
   "devDependencies": {
     "@bentley/bentleyjs-tools": "^1.0.6",
+    "@types/chai": "^4.0.1",
+    "@types/mocha": "^2.2.41",
+    "commander": "^2.11.0",
+    "once": "^1.4.0",
     "gulp": "latest"
   }
 }

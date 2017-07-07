@@ -6,6 +6,8 @@ import { IModel, GeometryStream, Placement3d } from "./IModel";
 
 export class Code {
   constructor(public specId: number, public scopeElementId: string, public value?: string) { }
+
+  public getValue(): string {return this.value ? this.value : ""; }
 }
 
 /**

@@ -39,19 +39,20 @@ describe("ElementId", () => {
   });
 
   it("ColorDef should compare properly", () => {
-    const color1 = new ColorDef(1, 2, 3, 0);
-    const color2 = new ColorDef(1, 2, 3, 0);
-    const color3 = new ColorDef(0xa, 2, 3, 0);
+    const color1 = ColorDef.from(1, 2, 3, 0);
+    const color2 = ColorDef.from(1, 2, 3, 0);
+    const color3 = ColorDef.from(0xa, 2, 3, 0);
     const blue = ColorDef.blue();
 
     assert(color1.equals(color2), "A");
     assert(!color1.equals(blue), "B");
 
-    const blueVal = blue.getRgba();
+    const blueVal = blue.rgba;
     assert(blueVal === 0xff0000);
-    assert(blue.equals(ColorDef.fromRgba(blueVal)));
+    assert(blue.equals(new ColorDef(blueVal)));
 
-    color3.a = 0x30;
-    assert(color3.equals(ColorDef.fromBytes(0xa, 2, 3, 0x30)));
+    const colors = color3.getColors();
+    ColorDef.from(colors.r, colors.g, colors.b, 0x30, color3);
+    assert(color3.equals(ColorDef.from(0xa, 2, 3, 0x30)));
   });
 });
