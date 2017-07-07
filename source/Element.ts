@@ -93,7 +93,7 @@ export interface CreateParams {
   parent?: RelatedElement;
   federationGuid?: string;
   userLabel?: string;
-  props?: any;
+  props?: object;
 }
 
 /** An element within an iModel */
@@ -103,10 +103,10 @@ export class Element {
   public modelId: Id;
   public className: string;
   public code: Code;
+  public props: any;
   public parent?: RelatedElement;
   public federationGuid?: string;
   public userLabel?: string;
-  public props?: any;
 
   /** constructor for Element */
   constructor(opts: CreateParams) {
@@ -118,7 +118,7 @@ export class Element {
     this.parent = opts.parent;
     this.federationGuid = opts.federationGuid;
     this.userLabel = opts.userLabel;
-    this.props = opts.props;
+    this.props = opts.props ? opts.props : {};
   }
 
   public getEcClass(): string { return "Element"; }

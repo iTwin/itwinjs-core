@@ -42,7 +42,7 @@ const scratchUInt32: Uint32Array = new Uint32Array(scratchBytes.buffer);
 export class ColorDef {
   private _rgba: number;
 
-  public constructor(rgba: number) { this.rgba = rgba; }
+  public constructor(rgba?: number) { this.rgba = rgba ? rgba : 0; }
 
   public static from(r: number, g: number, b: number, a?: number, result?: ColorDef) {
     scratchBytes[0] = r;
