@@ -8,25 +8,27 @@ import { Code, CreateParams } from "../Element";
 import { ModelSelector } from "../ViewDefinition";
 import { Elements } from "../Elements";
 
+declare const __dirname: string;
+
 class IModelTestUtils {
-  public static async openIModel(filename: string, expectFailure: boolean): Promise<IModel> {
+  public static async openIModel(filename: string, expectSuccess: boolean): Promise<IModel> {
     const imodel = new IModel();
-    const res: BeSQLite.DbResult = await imodel.openDgnDb(filename);
-    assert(expectFailure === (0 === res));  // *** NEEDS WORK: use dgnNative.BE_SQLITE_OK
+    const res: BeSQLite.DbResult = await imodel.openDgnDb(__dirname + "/../../source/test/assets/" + filename); // throws an exception if open fails
+    assert(expectSuccess === (BeSQLite.DbResult.BE_SQLITE_OK === res));
     return imodel;
   }
 }
 
 describe("iModel", () => {
   it("should open", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("d:/tmp/mf3.ibim", false);
+    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     assert(imodel);
   });
 });
 
 describe("Elements", () => {
   it("should load an element", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("d:/tmp/mf3.ibim", false);
+    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     assert(imodel);
     const elements: Elements = imodel.Elements;
     assert(elements);
