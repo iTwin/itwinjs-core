@@ -59,7 +59,7 @@ export class Element {
     this.parent = opts.parent;
     this.federationGuid = opts.federationGuid;
     this.userLabel = opts.userLabel;
-    this.props = opts.props ? opts.props : {};
+    this.props = opts.props ? opts.props : new Object();
   }
 
   public getEcClass(): string { return "Element"; }

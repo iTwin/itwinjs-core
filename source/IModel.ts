@@ -75,6 +75,15 @@ export class Id {
   public equals(other: Id): boolean {
     return this.hi === other.hi && this.lo === other.lo;
   }
+
+  public toJSON(): object {
+    return { b: this.hi, l: this.lo };
+  }
+
+  public static fromJSON(input: object): Id {
+    const i = input as any;
+    return new Id(JsonUtils.asInt(i.b), JsonUtils.asInt(i.l));
+  }
 }
 
 /** A bounding box aligned to the orientation of an Element */
