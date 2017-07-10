@@ -3,13 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-<<<<<<< HEAD
-import { IModel, ColorDef } from "../IModel";
-import { Id } from "../Element";
-=======
 import { ColorDef, IModel } from "../IModel";
 import { Id, Code } from "../Element";
->>>>>>> e757b0905d3bdb39ef289361697478710d5a3075
 import { ViewFlags, RenderMode } from "../Render";
 import { ModelSelector } from "../ViewDefinition";
 

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Point3d, Range3d, YawPitchRollAngles } from "../../geometry-core/lib/PointVector";
-import { Elements } from "./Elements"
+import { Elements } from "./Elements";
 
 // *** NEEDS WORK: Somehow, get a different implementation of dgnNative, dependening on whether we are in node or not and whether we are in the UI thread or not.
 /// <reference path="../node_modules/imodeljsnode/iModelJsNodeAddon.d.ts"/>
@@ -11,11 +11,11 @@ import * as dgnNative from "../node_modules/imodeljsnode/iModelJsNodeAddon.js";
 
 /** An iModel file */
 export class IModel {
-  _db: dgnNative.DgnDb;
-  _elements: Elements;
+  private db: dgnNative.DgnDb;
+  private elements: Elements;
 
   public constructor() {
-    this._db = new dgnNative.DgnDb();
+    this.db = new dgnNative.DgnDb();
   }
 
   /** open the iModel
@@ -26,14 +26,18 @@ export class IModel {
   public openDgnDb(fileName: string, mode?: dgnNative.DgnDb_OpenMode): dgnNative.BeSQLite_DbResult {
     if (!mode)
       mode = dgnNative.DgnDb_OpenMode.Readonly;
-    return this._db.openDgnDb(fileName, mode)
+    return this.db.openDgnDb(fileName, mode);
   }
 
   /** Get access to the Elements in the iModel */
   public get Elements(): Elements {
-    if (!this._elements)
-      this._elements = new Elements(this);
-    return this._elements;
+    if (!this.elements)
+      this.elements = new Elements(this);
+    return this.elements;
+  }
+
+  public getDgnNativeDb(): dgnNative.DgnDb {
+    return this.db;
   }
 }
 
@@ -70,7 +74,7 @@ const scratchUInt32: Uint32Array = new Uint32Array(scratchBytes.buffer);
 export class ColorDef {
   private _rgba: number;
 
-  public constructor(rgba?: number) { this.rgba = rgba ? rgba : 0; }
+  public constructor(rgba: number) { this.rgba = rgba; }
 
   public static from(r: number, g: number, b: number, a?: number, result?: ColorDef) {
     scratchBytes[0] = r;
