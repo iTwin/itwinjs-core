@@ -4,15 +4,34 @@
 
 import { assert } from "chai";
 import { ColorDef, IModel } from "../IModel";
-import { Id, Code } from "../Element";
+import { Id, Code, Element } from "../Element";
 import { ViewFlags, RenderMode } from "../Render";
 import { ModelSelector } from "../ViewDefinition";
+import { Elements } from "../Elements";
+
+class IModelTestUtils {
+  public static openIModel(filename: string, expectFailure: boolean): IModel {
+    const imodel: IModel = new IModel();
+    const res = imodel.openDgnDb(filename);
+    assert(expectFailure === (0 === res));  // *** NEEDS WORK: use dgnNative.BE_SQLITE_OK
+    return imodel;
+  }
+}
 
 describe("iModel", () => {
   it("should open", () => {
-    const imodel: IModel = new IModel();
-    const res = imodel.openDgnDb("mf3.ibim");
-    assert(!res);
+    const imodel: IModel = IModelTestUtils.openIModel("mf3.ibim", false);
+    assert(imodel);
+  });
+});
+
+describe("Elements", () => {
+  it("should load an element", () => {
+    const imodel: IModel = IModelTestUtils.openIModel("mf3.ibim", false);
+    assert(imodel);
+    const elements: Elements = imodel.Elements;
+    assert(elements);
+    // const el: Element = elements.getElementById(51);
   });
 });
 
