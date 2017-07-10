@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { ColorDef } from "./IModel";
+import { ColorDef, JsonUtils } from "./IModel";
 
 export enum RenderMode {
   Wireframe = 0,
@@ -36,8 +36,72 @@ export class ViewFlags {
   public noGeometryMap: boolean = false;                 // ignore geometry maps
   public hLineMaterialColors: boolean = false;           // use material colors for hidden lines
   public edgeMask: number = 0;                           // 0=none, 1=generate mask, 2=use mask
-  // DGNPLATFORM_EXPORT Json::Value ToJson() const;
-  // DGNPLATFORM_EXPORT void FromJson(JsonValueCR);
+
+  public toJSON(): object {
+    const out: any = new Object();
+
+    if (!this.constructions) out.noConstruct = true;
+    if (!this.dimensions) out.noDim = true;
+    if (!this.patterns) out.noPattern = true;
+    if (!this.weights) out.noWeight = true;
+    if (!this.styles) out.noStyle = true;
+    if (!this.transparency) out.noTransp = true;
+    if (!this.fill) out.noFill = true;
+    if (this.grid) out.grid = true;
+    if (this.acsTriad) out.acs = true;
+    if (!this.textures) out.noTexture = true;
+    if (!this.materials) out.noMaterial = true;
+    if (!this.cameraLights) out.noCameraLights = true;
+    if (!this.sourceLights) out.noSourceLights = true;
+    if (!this.solarLight) out.noSolarLight = true;
+    if (this.visibleEdges) out.visEdges = true;
+    if (this.hiddenEdges) out.hidEdges = true;
+    if (this.shadows) out.shadows = true;
+    if (!this.noClipVolume) out.clipVol = true;
+    if (this.hLineMaterialColors) out.hlMatColors = true;
+    if (this.monochrome) out.monochrome = true;
+    if (this.edgeMask !== 0) out.edgeMask = this.edgeMask;
+
+    out.renderMode = this.renderMode;
+    return out;
+  }
+
+  public static fromJSON(input: object): ViewFlags {
+    const val = new ViewFlags();
+    const json = input as any;
+
+    val.constructions = !JsonUtils.asBool(json.noConstruct);
+    val.dimensions = !JsonUtils.asBool(json.noDim);
+    val.patterns = !JsonUtils.asBool(json.noPattern);
+    val.weights = !JsonUtils.asBool(json.noWeight);
+    val.styles = !JsonUtils.asBool(json.noStyle);
+    val.transparency = !JsonUtils.asBool(json.noTransp);
+    val.fill = !JsonUtils.asBool(json.noFill);
+    val.grid = JsonUtils.asBool(json.grid);
+    val.acsTriad = JsonUtils.asBool(json.acs);
+    val.textures = !JsonUtils.asBool(json.noTexture);
+    val.materials = !JsonUtils.asBool(json.noMaterial);
+    val.cameraLights = !JsonUtils.asBool(json.noCameraLights);
+    val.sourceLights = !JsonUtils.asBool(json.noSourceLights);
+    val.solarLight = !JsonUtils.asBool(json.noSolarLight);
+    val.visibleEdges = JsonUtils.asBool(json.visEdges);
+    val.hiddenEdges = JsonUtils.asBool(json.hidEdges);
+    val.shadows = JsonUtils.asBool(json.shadows);
+    val.noClipVolume = !JsonUtils.asBool(json.clipVol);
+    val.monochrome = JsonUtils.asBool(json.monochrome);
+    val.edgeMask = JsonUtils.asInt(json.edgeMask);
+    val.hLineMaterialColors = JsonUtils.asBool(json.hlMatColors);
+
+    const renderModeValue = JsonUtils.asInt(json.renderMode);
+    if (renderModeValue < RenderMode.HiddenLine)
+      val.renderMode = RenderMode.Wireframe;
+    else if (renderModeValue > RenderMode.SolidFill)
+      val.renderMode = RenderMode.SmoothShade;
+    else
+      val.renderMode = renderModeValue;
+
+    return val;
+  }
 }
 
 export enum LinePixels {

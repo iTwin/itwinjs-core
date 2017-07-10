@@ -5,7 +5,6 @@
 import { assert } from "chai";
 import { ColorDef, IModel, Id } from "../IModel";
 import { Code, CreateParams } from "../Element";
-import { ViewFlags, RenderMode } from "../Render";
 import { ModelSelector } from "../ViewDefinition";
 
 describe("ElementId", () => {
@@ -19,24 +18,16 @@ describe("ElementId", () => {
     assert(!id3.isValid());
     const id4 = new Id("0x1234567890abc");
     assert(id4.isValid());
-    assert(id4.b === 0x123);
+    assert(id4.lo === 0x123);
     const i5 = "0X20000000001";
     const id5 = new Id(i5);
-    assert(id5.b === 0x2 && id5.l === 0x1);
+    assert(id5.lo === 0x2 && id5.hi === 0x1);
     const o5 = id5.toString();
     assert(o5 === i5);
     const id6 = new Id(100, 200);
     const v6 = id6.toString();
     const id7 = new Id(v6);
     assert(id6.equals(id7));
-  });
-
-  it("ViewFlags", () => {
-    const flags = new ViewFlags();
-    assert(flags.acsTriad === false);
-    assert(flags.grid === false);
-    assert(flags.fill === true);
-    assert(flags.renderMode === RenderMode.Wireframe);
   });
 
   it("Model Selectors should hold models", () => {
@@ -51,6 +42,9 @@ describe("ElementId", () => {
 
     const selector1 = new ModelSelector(params);
     assert(!selector1.id.isValid());
+    selector1.addModel(new Id(2, 1));
+    selector1.addModel(new Id(2, 1));
+    selector1.addModel(new Id(2, 3));
   });
 
   it("ColorDef should compare properly", () => {

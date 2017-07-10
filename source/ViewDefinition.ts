@@ -245,22 +245,22 @@ export class DisplayStyle3d extends DisplayStyle {
 export class ModelSelector extends DefinitionElement {
   public getEcClass(): string { return "ModelSelector"; }
 
-  public models: Set<Id>;
-  constructor(opts: CreateParams) { super(opts); }
+  public models: Set<string>;
+  constructor(opts: CreateParams) { super(opts);  this.models = new Set<string>(); }
 
   /** Get the name of this ModelSelector */
   public getName(): string { return this.code.getValue(); }
 
   /** Query if the specified DgnModelId is selected by this ModelSelector */
-  public containsModel(modelId: Id): boolean { return this.models.has(modelId); }
+  public containsModel(modelId: Id): boolean { return this.models.has(modelId.toString()); }
 
   /**  Add a model to this ModelSelector */
-  public addModel(id: Id): void { this.models.add(id); }
+  public addModel(id: Id): void { this.models.add(id.toString()); }
 
   /** Drop a model from this ModelSelector. Model will no longer be displayed by views that use this ModelSelector.
    *  @return true if the model was dropped, false if it was not previously in this ModelSelector
    */
-  public dropModel(id: Id): boolean { return this.models.delete(id); }
+  public dropModel(id: Id): boolean { return this.models.delete(id.toString()); }
 }
 
 /** A list of Categories to be displayed in a view.
@@ -270,6 +270,7 @@ export class ModelSelector extends DefinitionElement {
 export class CategorySelector extends DefinitionElement {
   public getEcClass(): string { return "CategorySelector"; }
   protected categories: Set<string>;
+  constructor(opts: CreateParams) { super(opts);  this.categories = new Set<string>(); }
 
   /** Get the name of this CategorySelector */
   public getName(): string { return this.code.getValue(); }
@@ -382,7 +383,6 @@ export abstract class ViewDefinition extends DefinitionElement {
 
     // delta is in view coordinates
     const viewDelta = viewRot.multiplyVector(viewDiagRoot);
-
     const validSize = this.validateViewDelta(viewDelta, false);
     if (validSize !== ViewportStatus.Success)
       return validSize;

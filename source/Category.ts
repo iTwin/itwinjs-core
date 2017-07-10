@@ -96,7 +96,7 @@ export class Category extends DefinitionElement {
 
   public constructor(opts: CreateParams) { super(opts); }
   public static getDefaultSubCategoryId(id: Id): Id {
-    return id.isValid() ? new Id(id.b, id.l + 1) : new Id();
+    return id.isValid() ? new Id(id.lo, id.hi + 1) : new Id();
   }
   public myDefaultSubCategoryId(): Id { return Category.getDefaultSubCategoryId(this.id); }
 
