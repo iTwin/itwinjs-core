@@ -1,18 +1,18 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { CreateParams, DefinitionElement, Id } from "./Element";
+import { CreateParams, DefinitionElement } from "./Element";
 import { Appearance, SubCategoryOverride } from "./Category";
 import { ViewFlags, HiddenLine } from "./Render";
 import { Light, LightType } from "./Lighting";
-import { ColorDef } from "./IModel";
+import { ColorDef, Id } from "./IModel";
 import { Vector3d, Point3d, Range3d, RotMatrix, Transform } from "../../geometry-core/lib/PointVector";
 import { AxisOrder } from "../../geometry-core/lib/Geometry";
 import { Map4d } from "../../geometry-core/lib/Geometry4d";
 import { Constant } from "../../geometry-core/lib/Constant";
 import { Model } from "./Model";
 
-class ViewController { }
+export class ViewController { }
 
 /** The 8 corners of the NPC cube. */
 export enum Npc {

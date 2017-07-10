@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { ColorDef, IModel } from "../IModel";
-import { Id, Code } from "../Element";
+import { ColorDef, IModel, Id } from "../IModel";
+import { Code, CreateParams } from "../Element";
 import { ViewFlags, RenderMode } from "../Render";
 import { ModelSelector } from "../ViewDefinition";
 
@@ -41,16 +41,16 @@ describe("ElementId", () => {
 
   it("Model Selectors should hold models", () => {
     const imodel1 = new IModel("abc");
-    const params = {
+    const params: CreateParams = {
       iModel: imodel1,
       className: "bis.Element",
       modelId: new Id(1, 1),
-      code: new Code("abc"),
+      code: Code.createDefault(),
       id: new Id(),
     };
 
     const selector1 = new ModelSelector(params);
-    assert(!selector1.id.isValid())
+    assert(!selector1.id.isValid());
   });
 
   it("ColorDef should compare properly", () => {

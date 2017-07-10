@@ -40,7 +40,7 @@ export class ViewFlags {
   // DGNPLATFORM_EXPORT void FromJson(JsonValueCR);
 }
 
-enum LinePixels {
+export enum LinePixels {
   Solid = 0,
   Code0 = Solid,            // 0
   Code1 = 0x80808080,       // 1

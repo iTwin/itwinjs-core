@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { DefinitionElement, CreateParams, Id } from "./Element";
-import { ColorDef } from "./IModel";
+import { DefinitionElement, CreateParams } from "./Element";
+import { ColorDef, Id } from "./IModel";
 
 /** A SubCategory appearance */
 export class Appearance {
@@ -71,7 +71,7 @@ export class SubCategory extends DefinitionElement {
   }
 
   public getSubCategoryName(): string {
-    return (this.code && this.code.value) ? this.code.value : "";
+    return this.code.getValue();
   }
 
   public getSubCategoryId(): Id { return this.id; }
