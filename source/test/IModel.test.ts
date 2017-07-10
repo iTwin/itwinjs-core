@@ -13,7 +13,7 @@ declare const __dirname: string;
 class IModelTestUtils {
   public static async openIModel(filename: string, expectSuccess: boolean): Promise<IModel> {
     const imodel = new IModel();
-    const res: BeSQLite.DbResult = await imodel.openDgnDb(__dirname + "/../../source/test/assets/" + filename); // throws an exception if open fails
+    const res: BeSQLite.DbResult = await imodel.openDgnDb(__dirname + "/assets/" + filename); // throws an exception if open fails
     assert(expectSuccess === (BeSQLite.DbResult.BE_SQLITE_OK === res));
     return imodel;
   }
