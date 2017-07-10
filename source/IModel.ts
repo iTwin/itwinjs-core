@@ -5,27 +5,36 @@
 import { Point3d, Range3d, YawPitchRollAngles } from "../../geometry-core/lib/PointVector";
 import { Elements } from "./Elements";
 
-// *** NEEDS WORK: Somehow, get a different implementation of dgnNative, dependening on whether we are in node or not and whether we are in the UI thread or not.
-/// <reference path="../node_modules/imodeljsnode/iModelJsNodeAddon.d.ts"/>
-import * as dgnNative from "../node_modules/imodeljsnode/iModelJsNodeAddon.js";
+import * as dgnNative from "../node_modules/imodeljsnode/iModelJsNodeAddon";
+
+export namespace BeSQLite {
+   export enum OpenMode {
+    Readonly = 0,
+    ReadWrite = 1,
+  }
+
+   export enum DbResult {
+    BE_SQLITE_OK = 0,
+    BE_SQLITE_ERROR = 1,
+  }
+
+}
 
 /** An iModel file */
 export class IModel {
   private db: dgnNative.DgnDb;
   private elements: Elements;
 
-  public constructor() {
-    this.db = new dgnNative.DgnDb();
-  }
-
   /** open the iModel
    * @param fileName  The name of the iModel
    * @param mode      Open mode
    * @return non-zero error status if the iModel could not be opened
    */
-  public openDgnDb(fileName: string, mode?: dgnNative.DgnDb_OpenMode): dgnNative.BeSQLite_DbResult {
+  public async openDgnDb(fileName: string, mode?: BeSQLite.OpenMode): Promise<BeSQLite.DbResult> {
     if (!mode)
-      mode = dgnNative.DgnDb_OpenMode.Readonly;
+      mode = BeSQLite.OpenMode.Readonly;
+    if (!this.db)
+      this.db = await new dgnNative.DgnDb();
     return this.db.openDgnDb(fileName, mode);
   }
 
@@ -36,8 +45,76 @@ export class IModel {
     return this.elements;
   }
 
-  public getDgnNativeDb(): dgnNative.DgnDb {
+  public getDgnDbNative(): dgnNative.DgnDb {
     return this.db;
+  }
+}
+
+/**
+ * A two-part id, containing a IModel id and a local id.
+ */
+export class Id {
+  public readonly b: number;
+  public readonly l: number;
+
+  private static parseHex(str: string): number {
+    const v = parseInt(str, 16);
+    return Number.isNaN(v) ? 0 : v;
+  }
+
+  /**
+   * constructor for Id
+   * @param bId an integer identifying the IModel id
+   * @param lId an integer with the local id
+   */
+  constructor(bId?: number | number[] | string, lId?: number) {
+    if (Array.isArray(bId)) {
+      this.b = bId[0] | 0;
+      this.l = Math.trunc(bId[1]);
+      return;
+    }
+
+    if (typeof bId === "string") {
+      if (bId[0] !== "0" || !(bId[1] === "x" || bId[1] === "X")) {
+        this.b = this.l = 0;
+        return;
+      }
+
+      let start = 2;
+      const len = bId.length;
+      if (len > 12) {
+        start = (len - 10);
+        const bcVal = bId.slice(2, start);
+        this.b = Id.parseHex(bcVal);
+      } else {
+        this.b = 0;
+      }
+
+      this.l = Id.parseHex(bId.slice(start));
+      return;
+    }
+
+    this.b = bId ? bId | 0 : 0;
+    this.l = lId ? Math.trunc(lId) : 0;
+  }
+
+  /** convert this Id to a string */
+  public toString(): string {
+    if (!this.isValid())
+      return "";
+    return "0X" + this.b.toString(16) + ("0000000000" + this.l.toString(16)).substr(-10);
+  }
+
+  /** Determine whether this Id is valid */
+  public isValid(): boolean {
+    return this.l !== 0;
+  }
+
+  /** Test whether two Ids are the same
+   * @param other the other id to test
+   */
+  public equals(other: Id): boolean {
+    return this.b === other.b && this.l === other.l;
   }
 }
 
@@ -74,7 +151,7 @@ const scratchUInt32: Uint32Array = new Uint32Array(scratchBytes.buffer);
 export class ColorDef {
   private _rgba: number;
 
-  public constructor(rgba: number) { this.rgba = rgba; }
+  public constructor(rgba?: number) { this.rgba = rgba ? rgba : 0; }
 
   public static from(r: number, g: number, b: number, a?: number, result?: ColorDef) {
     scratchBytes[0] = r;

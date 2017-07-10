@@ -3,31 +3,31 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { ColorDef, IModel } from "../IModel";
-import { Id, Code, Element } from "../Element";
+import { ColorDef, IModel, BeSQLite, Id } from "../IModel";
+import { Code, CreateParams } from "../Element";
 import { ViewFlags, RenderMode } from "../Render";
 import { ModelSelector } from "../ViewDefinition";
 import { Elements } from "../Elements";
 
 class IModelTestUtils {
-  public static openIModel(filename: string, expectFailure: boolean): IModel {
-    const imodel: IModel = new IModel();
-    const res = imodel.openDgnDb(filename);
+  public static async openIModel(filename: string, expectFailure: boolean): Promise<IModel> {
+    const imodel = new IModel();
+    const res: BeSQLite.DbResult = await imodel.openDgnDb(filename);
     assert(expectFailure === (0 === res));  // *** NEEDS WORK: use dgnNative.BE_SQLITE_OK
     return imodel;
   }
 }
 
 describe("iModel", () => {
-  it("should open", () => {
-    const imodel: IModel = IModelTestUtils.openIModel("mf3.ibim", false);
+  it("should open", async () => {
+    const imodel: IModel = await IModelTestUtils.openIModel("d:/tmp/mf3.ibim", false);
     assert(imodel);
   });
 });
 
 describe("Elements", () => {
-  it("should load an element", () => {
-    const imodel: IModel = IModelTestUtils.openIModel("mf3.ibim", false);
+  it("should load an element", async () => {
+    const imodel: IModel = await IModelTestUtils.openIModel("d:/tmp/mf3.ibim", false);
     assert(imodel);
     const elements: Elements = imodel.Elements;
     assert(elements);
@@ -68,12 +68,12 @@ describe("ElementId", () => {
 
   it("Model Selectors should hold models", () => {
     const imodel1 = new IModel();
-    const params = {
-      className: "bis.Element",
-      code: new Code("abc"),
-      id: new Id(),
+    const params: CreateParams = {
       iModel: imodel1,
+      className: "bis.Element",
       modelId: new Id(1, 1),
+      code: Code.createDefault(),
+      id: new Id(),
     };
 
     const selector1 = new ModelSelector(params);

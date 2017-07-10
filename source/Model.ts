@@ -1,16 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
-import { IModel } from "./IModel";
+import { IModel, Id } from "./IModel";
 
 /** A Model within an iModel */
 export class Model {
-  public iModel: IModel;
-  public id?: string;
-  public modelId: string;
-  public className: string;
-  public parent?: string;
+  constructor(public iModel: IModel, public id: Id, public modeledElementId: Id, public className: string) {}
+
 }
 
 /** A geometric model */
