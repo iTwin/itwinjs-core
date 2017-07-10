@@ -10,10 +10,10 @@ import { ModelSelector } from "../ViewDefinition";
 
 describe("iModel", () => {
   it("should open", () => {
-    var imodel: IModel = new IModel();
-    var res = imodel.openDgnDb("mf3.ibim");
+    const imodel: IModel = new IModel();
+    const res = imodel.openDgnDb("mf3.ibim");
     assert(!res);
-  })
+  });
 });
 
 describe("ElementId", () => {
@@ -48,17 +48,17 @@ describe("ElementId", () => {
   });
 
   it("Model Selectors should hold models", () => {
-    const imodel1 = new IModel("abc");
+    const imodel1 = new IModel();
     const params = {
-      iModel: imodel1,
       className: "bis.Element",
-      modelId: new Id(1, 1),
       code: new Code("abc"),
       id: new Id(),
+      iModel: imodel1,
+      modelId: new Id(1, 1),
     };
 
     const selector1 = new ModelSelector(params);
-    assert(!selector1.id.isValid())
+    assert(!selector1.id.isValid());
   });
 
   it("ColorDef should compare properly", () => {
