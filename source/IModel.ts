@@ -54,8 +54,8 @@ export class IModel {
  * A two-part id, containing a IModel id and a local id.
  */
 export class Id {
-  public readonly b: number;
-  public readonly l: number;
+  public readonly hi: number;
+  public readonly lo: number;
 
   private static parseHex(str: string): number {
     const v = parseInt(str, 16);
@@ -69,14 +69,14 @@ export class Id {
    */
   constructor(bId?: number | number[] | string, lId?: number) {
     if (Array.isArray(bId)) {
-      this.b = bId[0] | 0;
-      this.l = Math.trunc(bId[1]);
+      this.hi = bId[0] | 0;
+      this.lo = Math.trunc(bId[1]);
       return;
     }
 
     if (typeof bId === "string") {
       if (bId[0] !== "0" || !(bId[1] === "x" || bId[1] === "X")) {
-        this.b = this.l = 0;
+        this.hi = this.lo = 0;
         return;
       }
 
@@ -85,36 +85,36 @@ export class Id {
       if (len > 12) {
         start = (len - 10);
         const bcVal = bId.slice(2, start);
-        this.b = Id.parseHex(bcVal);
+        this.hi = Id.parseHex(bcVal);
       } else {
-        this.b = 0;
+        this.hi = 0;
       }
 
-      this.l = Id.parseHex(bId.slice(start));
+      this.lo = Id.parseHex(bId.slice(start));
       return;
     }
 
-    this.b = bId ? bId | 0 : 0;
-    this.l = lId ? Math.trunc(lId) : 0;
+    this.hi = bId ? bId | 0 : 0;
+    this.lo = lId ? Math.trunc(lId) : 0;
   }
 
   /** convert this Id to a string */
   public toString(): string {
     if (!this.isValid())
       return "";
-    return "0X" + this.b.toString(16) + ("0000000000" + this.l.toString(16)).substr(-10);
+    return "0X" + this.hi.toString(16) + ("0000000000" + this.lo.toString(16)).substr(-10);
   }
 
   /** Determine whether this Id is valid */
   public isValid(): boolean {
-    return this.l !== 0;
+    return this.lo !== 0;
   }
 
   /** Test whether two Ids are the same
    * @param other the other id to test
    */
   public equals(other: Id): boolean {
-    return this.b === other.b && this.l === other.l;
+    return this.hi === other.hi && this.lo === other.lo;
   }
 }
 
@@ -192,4 +192,10 @@ export class ColorDef {
   public static darkCyan(): ColorDef { return ColorDef.from(0, 0x80, 0x80); }
   public static darkMagenta(): ColorDef { return ColorDef.from(0x80, 0, 0x80); }
   public static darkBrown(): ColorDef { return ColorDef.from(0x8b, 0x45, 0x13); }
+}
+
+export class JsonUtils {
+  public static asBool(json: any, defaultVal: boolean = false): boolean { return json ? !!json : defaultVal; }
+  public static asInt(json: any, defaultVal: number = 0): number { return (json && typeof json === "number") ? Math.trunc(json) : defaultVal; }
+  public static asDouble(json: any, defaultVal: number = 0): number { return (json && typeof json === "number") ? json : defaultVal; }
 }
