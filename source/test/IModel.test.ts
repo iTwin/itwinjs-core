@@ -3,7 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { ColorDef, IModel, BeSQLite, Id } from "../IModel";
+import { ColorDef, IModel, Id } from "../IModel";
+import { BeSQLite } from "../Constants";
 import { Code, CreateParams } from "../Element";
 import { ModelSelector } from "../ViewDefinition";
 import { Elements } from "../Elements";
@@ -20,14 +21,17 @@ class IModelTestUtils {
 }
 
 describe("iModel", () => {
-  it("should open", async () => {
+
+  it("should open and existing BIM file", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     assert(imodel);
   });
+
 });
 
 describe("Elements", async () => {
-  it("should load an element", async () => {
+
+  it("should load a known element by ID from an existing BIM file", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     assert(imodel);
     const elements: Elements = imodel.Elements;
@@ -35,6 +39,7 @@ describe("Elements", async () => {
     const el = await elements.getElementById(new Id([0, 51]));
     assert(el != null);
   });
+
 });
 
 describe("ElementId", () => {

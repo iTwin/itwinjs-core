@@ -4,27 +4,12 @@
 
 import { Point3d, Range3d, YawPitchRollAngles } from "../../geometry-core/lib/PointVector";
 import { Elements } from "./Elements";
-
-import * as dgnNative from "../node_modules/imodeljsnode/iModelJsNodeAddon";
-
-// Keep this consistent with BeSQLite.h Db::OpenMode
-export namespace BeSQLite {
-   export enum OpenMode {
-    Readonly = 0x00000001,
-    ReadWrite = 0x00000002,
-  }
-
-// Keep this consistent with BeSQLite.h DbResult
-   export enum DbResult {
-    BE_SQLITE_OK = 0,
-    BE_SQLITE_ERROR = 1,
-  }
-
-}
+import { DgnDb } from "./IModelServiceTier";
+import { BeSQLite } from "./Constants";
 
 /** An iModel file */
 export class IModel {
-  private db: dgnNative.DgnDb;
+  private db: DgnDb;
   private elements: Elements;
 
   /** open the iModel
@@ -32,13 +17,14 @@ export class IModel {
    * @param mode      Open mode
    * @return non-zero error status if the iModel could not be opened
    */
+  // *** NEEDS WORK: define app- and service-specific versions of this function
   public async openDgnDb(fileName: string, mode?: BeSQLite.OpenMode): Promise<BeSQLite.DbResult> {
-    if (!mode)
-      mode = BeSQLite.OpenMode.Readonly;
-    if (!this.db)
-      this.db = await new dgnNative.DgnDb();
-    return this.db.openDgnDb(fileName, mode);
-  }
+      if (!mode)
+        mode = BeSQLite.OpenMode.Readonly;
+      if (!this.db)
+        this.db = await new DgnDb();
+      return this.db.openDgnDb(fileName, mode);
+    }
 
   /** Get access to the Elements in the iModel */
   public get Elements(): Elements {
@@ -47,7 +33,7 @@ export class IModel {
     return this.elements;
   }
 
-  public getDgnDbNative(): dgnNative.DgnDb {
+  public getDgnDb(): DgnDb {
     return this.db;
   }
 }
