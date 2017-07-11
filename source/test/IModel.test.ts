@@ -26,13 +26,14 @@ describe("iModel", () => {
   });
 });
 
-describe("Elements", () => {
+describe("Elements", async () => {
   it("should load an element", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     assert(imodel);
     const elements: Elements = imodel.Elements;
     assert(elements);
-    // const el: Element = elements.getElementById(51);
+    const el = await elements.getElementById(new Id([0, 51]));
+    assert(el != null);
   });
 });
 

@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-// import { Element, Id } from "./Element";
-import { IModel  } from "./IModel";
+import { Element, Code } from "./Element";
+import { IModel, Id  } from "./IModel";
 
 /** The collection of Elements in an iModel  */
 export class Elements {
@@ -13,11 +13,23 @@ export class Elements {
     this.imodel = iModel;
   }
 
-/*
-  public getElementById(id: Id): Element {
-    const json = this.imodel.getDgnNativeDb().getElementById(id.toString());
-
-    //let el = new Element({className: }
+  private reviveElemFromJson(json: string): Element {
+    // *** TBD
+    if (!json)
+      json = "";
+    const i = new Id(0);
+    const mid = new Id(0);
+    const c = Code.createDefault();
+    const cl = "TBD";
+    return new Element({className: cl, iModel: this.imodel, modelId: mid, code: c, id: i});
   }
-  */
+  /**
+   * Look up an element by Id.
+   * @param id  The element Id to look up
+   * @return the element or null if the Id is not found
+   */
+  public async getElementById(id: Id): Promise<Element> {
+      const json = await this.imodel.getDgnDbNative().getElementById(id.toString());
+      return this.reviveElemFromJson(json);
+  }
 }
