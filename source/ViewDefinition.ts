@@ -138,7 +138,7 @@ export class DisplayStyle extends DefinitionElement {
 
   constructor(opts: CreateParams) { super(opts); }
 
-  public getEcClass(): string { return "DisplayStyle"; }
+  protected getEcClass(): string { return "DisplayStyle"; }
   public getStyles(): any { const p = this.props as any; if (!p.styles) p.styles = new Object(); return p.styles; }
   public getStyle(name: string): any {
     const style: object = this.getStyles()[name];
@@ -168,7 +168,7 @@ export class DisplayStyle extends DefinitionElement {
 
 /** A DisplayStyle for 2d views */
 export class DisplayStyle2d extends DisplayStyle {
-  public getEcClass(): string { return "DisplayStyle2d"; }
+  protected getEcClass(): string { return "DisplayStyle2d"; }
 
   constructor(opts: CreateParams) { super(opts); }
 }
@@ -198,7 +198,7 @@ export class DisplayStyle3d extends DisplayStyle {
   public groundPlane: GroundPlane;
   public skyBox: SkyBox;
 
-  public getEcClass(): string { return "DisplayStyle3d"; }
+  protected getEcClass(): string { return "DisplayStyle3d"; }
   constructor(opts: CreateParams) { super(opts); }
 
   public getHiddenLineParams(): HiddenLine.Params { return this.getStyle("hline") as HiddenLine.Params; }
@@ -244,7 +244,7 @@ export class DisplayStyle3d extends DisplayStyle {
  *  Changes are not saved unless someone calls Update on the modified copy.
  */
 export class ModelSelector extends DefinitionElement {
-  public getEcClass(): string { return "ModelSelector"; }
+  protected getEcClass(): string { return "ModelSelector"; }
 
   public models: Set<string>;
   constructor(opts: CreateParams) { super(opts); this.models = new Set<string>(); }
@@ -269,7 +269,7 @@ export class ModelSelector extends DefinitionElement {
  *  Changes are not saved unless someone calls Update on the modified copy.
  */
 export class CategorySelector extends DefinitionElement {
-  public getEcClass(): string { return "CategorySelector"; }
+  protected getEcClass(): string { return "CategorySelector"; }
   protected categories: Set<string>;
   constructor(opts: CreateParams) { super(opts); this.categories = new Set<string>(); }
 
@@ -318,8 +318,7 @@ export enum ViewportStatus {
  *  A ViewController holds an editable copy of a ViewDefinition, and a ViewDefinition holds an editable copy of its DisplayStyle and CategorySelector.
  */
 export abstract class ViewDefinition extends DefinitionElement {
-  public getEcClass(): string { return "ViewDefinition"; }
-
+  protected getEcClass(): string { return "ViewDefinition"; }
   protected _categorySelectorId: Id;
   protected _displayStyleId: Id;
   protected _categorySelector?: CategorySelector;
@@ -457,10 +456,10 @@ export abstract class ViewDefinition extends DefinitionElement {
   public getName(): string { return this.code.getValue(); }
 
   /** Get the current value of a view detail */
-  public getDetail(name: string): object { const v = this.getDetails()[name]; return v ? v : {}; }
+  public getDetail(name: string): any { const v = this.getDetails()[name]; return v ? v : {}; }
 
   /** Change the value of a view detail */
-  public setDetail(name: string, value: object) { this.getDetails()[name] = value; }
+  public setDetail(name: string, value: any) { this.getDetails()[name] = value; }
 
   /** Remove a view detail */
   public removeDetail(name: string) { delete this.getDetails()[name]; }
@@ -492,12 +491,12 @@ export abstract class ViewDefinition extends DefinitionElement {
   public setCategorySelector(categories: CategorySelector) { this._categorySelector = categories; this._categorySelectorId = categories.id; }
 
   /** Get the AuxiliaryCoordinateSystem for this ViewDefinition */
-  public getAuxiliaryCoordinateSystemId(): Id { return Id.fromJSON(this.getDetail("acs")); }
+  public getAuxiliaryCoordinateSystemId(): Id { return new Id(this.getDetail("acs")); }
 
   /** Set the AuxiliaryCoordinateSystem for this view. */
   public setAuxiliaryCoordinateSystem(acsId: Id) {
     if (acsId.isValid())
-        this.setDetail("acs", acsId.toJSON());
+        this.setDetail("acs", acsId.toString());
     else
         this.removeDetail("acs");
   }

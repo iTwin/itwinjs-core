@@ -20,6 +20,7 @@ export class Id {
     const v = parseInt(str, 16);
     return Number.isNaN(v) ? 0 : v;
   }
+  protected toJSON(): string { return this.toString(); }
 
   /**
    * constructor for Id
@@ -74,15 +75,6 @@ export class Id {
    */
   public equals(other: Id): boolean {
     return this.hi === other.hi && this.lo === other.lo;
-  }
-
-  public toJSON(): object {
-    return { b: this.hi, l: this.lo };
-  }
-
-  public static fromJSON(input: object): Id {
-    const i = input as any;
-    return new Id(JsonUtils.asInt(i.b), JsonUtils.asInt(i.l));
   }
 }
 
@@ -139,7 +131,7 @@ export class ColorDef {
 
   public equals(other: ColorDef): boolean { return this._rgba === other._rgba; }
 
-  public static black(): ColorDef { return ColorDef.from(0, 0, 0); }
+  public static black(): ColorDef { return new ColorDef(); }
   public static white(): ColorDef { return ColorDef.from(0xff, 0xff, 0xff); }
   public static red(): ColorDef { return ColorDef.from(0xff, 0, 0); }
   public static green(): ColorDef { return ColorDef.from(0, 0xff, 0); }
@@ -163,7 +155,8 @@ export class ColorDef {
 }
 
 export class JsonUtils {
-  public static asBool(json: any, defaultVal: boolean = false): boolean { return json ? !!json : defaultVal; }
-  public static asInt(json: any, defaultVal: number = 0): number { return (json && typeof json === "number") ? Math.trunc(json) : defaultVal; }
-  public static asDouble(json: any, defaultVal: number = 0): number { return (json && typeof json === "number") ? json : defaultVal; }
+  public static asBool(json: any, defaultVal: boolean = false): boolean { return (json == null) ? defaultVal : !!json; }
+  public static asInt(json: any, defaultVal: number = 0): number { return (typeof json === "number") ? Math.trunc(json) : defaultVal; }
+  public static asDouble(json: any, defaultVal: number = 0): number { return (typeof json === "number") ? json : defaultVal; }
+  public static asString(json: any, defaultVal: string = ""): string { return (json == null) ? defaultVal : json.toString(); }
 }

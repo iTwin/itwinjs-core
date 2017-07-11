@@ -59,10 +59,16 @@ export class Element {
     this.parent = opts.parent;
     this.federationGuid = opts.federationGuid;
     this.userLabel = opts.userLabel;
-    this.props = opts.props ? opts.props : new Object();
+    this.props = opts.props ? opts.props : {};
   }
 
-  public getEcClass(): string { return "Element"; }
+  protected getEcClass(): string { return "Element"; }
+  protected getEcDomain(): string { return "BisCore"; }
+
+  public getClassName(): string { return this.getEcDomain() + "." + this.getEcClass(); }
+  public getUserProperties(): any { if (!this.props.UserProps) this.props.UserProps = {}; return this.props.UserProps; }
+  public setUserProperties(nameSpace: string, value: any) { this.getUserProperties()[nameSpace] = value; }
+  public removeUserProperties(nameSpace: string) { delete this.getUserProperties()[nameSpace]; }
 }
 
 export interface GeometricElementCreateParams extends CreateParams {
@@ -79,7 +85,7 @@ export class GeometricElement extends Element {
     this.category = opts.category ? opts.category : new Id();
     this.geom = opts.geom;
   }
-  public getEcClass(): string { return "GeometricElement"; }
+  protected getEcClass(): string { return "GeometricElement"; }
 }
 
 export class TypeDefinition {
@@ -100,22 +106,22 @@ export class GeometricElement3d extends GeometricElement {
     this.placement = opts.placement ? opts.placement : new Placement3d();
     this.typeDefinition = opts.typeDefinition;
   }
-  public getEcClass(): string { return "GeometricElement3d"; }
+  protected getEcClass(): string { return "GeometricElement3d"; }
 }
 
 export class SpatialElement extends GeometricElement3d {
   public constructor(opts: GeometricElement3dCreateParams) { super(opts); }
-  public getEcClass(): string { return "SpatialElement"; }
+  protected getEcClass(): string { return "SpatialElement"; }
 }
 
 export class PhysicalElement extends SpatialElement {
   public constructor(opts: GeometricElement3dCreateParams) { super(opts); }
-  public getEcClass(): string { return "PhysicalElement"; }
+  protected getEcClass(): string { return "PhysicalElement"; }
 }
 
 export class PhysicalPortion extends PhysicalElement {
   public constructor(opts: GeometricElement3dCreateParams) { super(opts); }
-  public getEcClass(): string { return "PhysicalPortion"; }
+  protected getEcClass(): string { return "PhysicalPortion"; }
 }
 
 /** A SpatialElement that identifies a "tracked" real word 3-dimensional location but has no mass and cannot be "touched".
@@ -123,7 +129,7 @@ export class PhysicalPortion extends PhysicalElement {
  */
 export class SpatialLocationElement extends SpatialElement {
   public constructor(opts: GeometricElement3dCreateParams) { super(opts); }
-  public getEcClass(): string { return "PhysicalPortion"; }
+  protected getEcClass(): string { return "PhysicalPortion"; }
 }
 
 /** A SpatialLocationPortion represents an arbitrary portion of a larger SpatialLocationElement that will be broken down in
@@ -131,7 +137,7 @@ export class SpatialLocationElement extends SpatialElement {
  */
 export class SpatialLocationPortion extends SpatialLocationElement {
   public constructor(opts: GeometricElement3dCreateParams) { super(opts); }
-  public getEcClass(): string { return "SpatialLocationPortion"; }
+  protected getEcClass(): string { return "SpatialLocationPortion"; }
 }
 
 /** An InformationContentElement identifies and names information content.
@@ -139,7 +145,7 @@ export class SpatialLocationPortion extends SpatialLocationElement {
  */
 export class InformationContentElement extends Element {
   constructor(opts: CreateParams) { super(opts); }
-  public getEcClass(): string { return "InformationContentElement"; }
+  protected getEcClass(): string { return "InformationContentElement"; }
 }
 
 /** A Document is an InformationContentElement that identifies the content of a document.
@@ -150,17 +156,17 @@ export class InformationContentElement extends Element {
  */
 export class Document extends InformationContentElement {
   constructor(opts: CreateParams) { super(opts); }
-  public getEcClass(): string { return "Document"; }
+  protected getEcClass(): string { return "Document"; }
 }
 
 export class Drawing extends Document {
   constructor(opts: CreateParams) { super(opts); }
-  public getEcClass(): string { return "Drawing"; }
+  protected getEcClass(): string { return "Drawing"; }
 }
 
 export class SectionDrawing extends Drawing {
   constructor(opts: CreateParams) { super(opts); }
-  public getEcClass(): string { return "SectionDrawing"; }
+  protected getEcClass(): string { return "SectionDrawing"; }
 }
 
 /** An InformationCarrierElement is a proxy for an information carrier in the physical world.
@@ -170,28 +176,28 @@ export class SectionDrawing extends Drawing {
  */
 export class InformationCarrierElement extends Element {
   constructor(opts: CreateParams) { super(opts); }
-  public getEcClass(): string { return "InformationCarrierElement"; }
+  protected getEcClass(): string { return "InformationCarrierElement"; }
 }
 
 /** An information element whose main purpose is to hold an information record. */
 export class InformationRecordElement extends InformationContentElement {
   constructor(opts: CreateParams) { super(opts); }
-  public getEcClass(): string { return "InformationRecordElement"; }
+  protected getEcClass(): string { return "InformationRecordElement"; }
 }
 
 /** A DefinitionElement resides in (and only in) a DefinitionModel. */
 export class DefinitionElement extends InformationContentElement {
   constructor(opts: CreateParams) { super(opts); }
-  public getEcClass(): string { return "DefinitionElement"; }
+  protected getEcClass(): string { return "DefinitionElement"; }
 }
 
 export class TypeDefinitionElement extends DefinitionElement {
   public recipe?: RelatedElement;
   constructor(opts: CreateParams) { super(opts); }
-  public getEcClass(): string { return "TypeDefinitionElement"; }
+  protected getEcClass(): string { return "TypeDefinitionElement"; }
 }
 
 export class RecipeDefinitionElement extends DefinitionElement {
   constructor(opts: CreateParams) { super(opts); }
-  public getEcClass(): string { return "RecipeDefinitionElement"; }
+  protected getEcClass(): string { return "RecipeDefinitionElement"; }
 }

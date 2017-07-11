@@ -29,8 +29,10 @@ describe("ElementId", () => {
     const id7 = new Id(v6);
     assert(id6.equals(id7));
 
-    const j7 = JSON.stringify(id7);
-    const i8 = Id.fromJSON(JSON.parse(j7));
+    const t1 = {a: id7};
+    const j7 = JSON.stringify(t1);
+    const p1 = JSON.parse(j7);
+    const i8 =  new Id(p1.a);
     assert(i8.equals(id7));
   });
 
