@@ -5,6 +5,7 @@
 import { assert } from "chai";
 import { ColorDef, IModel, Id } from "../IModel";
 import { Code, CreateParams } from "../Element";
+import { Registry } from "../Registry";
 import { ModelSelector } from "../ViewDefinition";
 
 describe("ElementId", () => {
@@ -29,10 +30,10 @@ describe("ElementId", () => {
     const id7 = new Id(v6);
     assert(id6.equals(id7));
 
-    const t1 = {a: id7};
+    const t1 = { a: id7 };
     const j7 = JSON.stringify(t1);
     const p1 = JSON.parse(j7);
-    const i8 =  new Id(p1.a);
+    const i8 = new Id(p1.a);
     assert(i8.equals(id7));
   });
 
@@ -40,13 +41,14 @@ describe("ElementId", () => {
     const imodel1 = new IModel("abc");
     const params: CreateParams = {
       iModel: imodel1,
-      className: "bis.Element",
+      className: "BisCore.ModelSelector",
       modelId: new Id(1, 1),
       code: Code.createDefault(),
       id: new Id(),
     };
 
-    const selector1 = new ModelSelector(params);
+    const selector1 = Registry.createElement(params) as ModelSelector;
+    const a = new ModelSelector(params);
     assert(!selector1.id.isValid());
     selector1.addModel(new Id(2, 1));
     selector1.addModel(new Id(2, 1));

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
+import { registerElement } from "./Registry";
 import { DefinitionElement, CreateParams } from "./Element";
 import { ColorDef, Id, JsonUtils } from "./IModel";
 
@@ -95,6 +95,7 @@ export interface SubCategoryCreateParams extends CreateParams {
 }
 
 /** a Subcategory defines the appearance for graphics in Geometric elements */
+@registerElement("BisCore.SubCategory")
 export class SubCategory extends DefinitionElement {
   public appearance: Appearance;
   public categoryId: Id;
@@ -113,7 +114,6 @@ export class SubCategory extends DefinitionElement {
   public isDefaultSubCategory(): boolean {
     return Category.getDefaultSubCategoryId(this.getCategoryId()) === this.getSubCategoryId();
   }
-  protected getEcClass(): string { return "SubCategory"; }
 }
 
 /** the rank for a Category */
@@ -125,6 +125,7 @@ export enum Rank {
 }
 
 /** a Category for a Geometric element */
+@registerElement("BisCore.Category")
 export class Category extends DefinitionElement {
   public rank: Rank = Rank.User;
 
@@ -133,18 +134,16 @@ export class Category extends DefinitionElement {
     return id.isValid() ? new Id(id.lo, id.hi + 1) : new Id();
   }
   public myDefaultSubCategoryId(): Id { return Category.getDefaultSubCategoryId(this.id); }
-
-  protected getEcClass(): string { return "Category"; }
 }
 
 /** Categorizes 2d graphical elements. */
+@registerElement("BisCore.DrawingCategory")
 export class DrawingCategory extends Category {
-  protected getEcClass(): string { return "DrawingCategory"; }
   public constructor(opts: CreateParams) { super(opts); }
 }
 
 /** Categorizes a SpatialElement. */
+@registerElement("BisCore.SpatialCategory")
 export class SpatialCategory extends Category {
-  protected getEcClass(): string { return "SpatialCategory"; }
   public constructor(opts: CreateParams) { super(opts); }
 }

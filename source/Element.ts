@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id, IModel, GeometryStream, Placement3d } from "./IModel";
+import { registerElement } from "./Registry";
 
 export class Code {
   private _specId: Id;
@@ -38,6 +39,7 @@ export interface CreateParams {
 }
 
 /** An element within an iModel */
+@registerElement("BisCore.Element")
 export class Element {
   public iModel: IModel;
   public id: Id;
@@ -62,10 +64,6 @@ export class Element {
     this.props = opts.props ? opts.props : {};
   }
 
-  protected getEcClass(): string { return "Element"; }
-  protected getEcDomain(): string { return "BisCore"; }
-
-  public getClassName(): string { return this.getEcDomain() + "." + this.getEcClass(); }
   public getUserProperties(): any { if (!this.props.UserProps) this.props.UserProps = {}; return this.props.UserProps; }
   public setUserProperties(nameSpace: string, value: any) { this.getUserProperties()[nameSpace] = value; }
   public removeUserProperties(nameSpace: string) { delete this.getUserProperties()[nameSpace]; }
@@ -77,6 +75,7 @@ export interface GeometricElementCreateParams extends CreateParams {
 }
 
 /** A Geometric element */
+@registerElement("BisCore.GeometricElement")
 export class GeometricElement extends Element {
   public category: Id;
   public geom?: GeometryStream;
@@ -85,7 +84,6 @@ export class GeometricElement extends Element {
     this.category = opts.category ? opts.category : new Id();
     this.geom = opts.geom;
   }
-  protected getEcClass(): string { return "GeometricElement"; }
 }
 
 export class TypeDefinition {
@@ -98,6 +96,7 @@ export interface GeometricElement3dCreateParams extends GeometricElementCreatePa
   typeDefinition?: TypeDefinition;
 }
 
+@registerElement("BisCore.GeometricElement3d")
 export class GeometricElement3d extends GeometricElement {
   public placement: Placement3d;
   public typeDefinition?: TypeDefinition;
@@ -106,46 +105,45 @@ export class GeometricElement3d extends GeometricElement {
     this.placement = opts.placement ? opts.placement : new Placement3d();
     this.typeDefinition = opts.typeDefinition;
   }
-  protected getEcClass(): string { return "GeometricElement3d"; }
 }
 
+@registerElement("BisCore.SpatialElement")
 export class SpatialElement extends GeometricElement3d {
   public constructor(opts: GeometricElement3dCreateParams) { super(opts); }
-  protected getEcClass(): string { return "SpatialElement"; }
 }
 
+@registerElement("BisCore.PhysicalElement")
 export class PhysicalElement extends SpatialElement {
   public constructor(opts: GeometricElement3dCreateParams) { super(opts); }
-  protected getEcClass(): string { return "PhysicalElement"; }
 }
 
+@registerElement("BisCore.PhysicalPortion")
 export class PhysicalPortion extends PhysicalElement {
   public constructor(opts: GeometricElement3dCreateParams) { super(opts); }
-  protected getEcClass(): string { return "PhysicalPortion"; }
 }
 
 /** A SpatialElement that identifies a "tracked" real word 3-dimensional location but has no mass and cannot be "touched".
  *  Examples include grid lines, parcel boundaries, and work areas.
  */
+@registerElement("BisCore.SpatialLocationElement")
 export class SpatialLocationElement extends SpatialElement {
   public constructor(opts: GeometricElement3dCreateParams) { super(opts); }
-  protected getEcClass(): string { return "PhysicalPortion"; }
 }
 
 /** A SpatialLocationPortion represents an arbitrary portion of a larger SpatialLocationElement that will be broken down in
  *  more detail in a separate (sub) SpatialLocationModel.
  */
+@registerElement("BisCore.SpatialLocationPortion")
 export class SpatialLocationPortion extends SpatialLocationElement {
   public constructor(opts: GeometricElement3dCreateParams) { super(opts); }
-  protected getEcClass(): string { return "SpatialLocationPortion"; }
 }
 
 /** An InformationContentElement identifies and names information content.
  * @see InformationCarrierElement
  */
+@registerElement("BisCore.InformationContentElement")
 export class InformationContentElement extends Element {
   constructor(opts: CreateParams) { super(opts); }
-  protected getEcClass(): string { return "InformationContentElement"; }
 }
 
 /** A Document is an InformationContentElement that identifies the content of a document.
@@ -154,19 +152,19 @@ export class InformationContentElement extends Element {
  * The will printed onto paper is a PrintedDocumentCopy.
  * In this example, the Document only identifies, names, and tracks the content of the will.
  */
+@registerElement("BisCore.Document")
 export class Document extends InformationContentElement {
   constructor(opts: CreateParams) { super(opts); }
-  protected getEcClass(): string { return "Document"; }
 }
 
+@registerElement("BisCore.Drawing")
 export class Drawing extends Document {
   constructor(opts: CreateParams) { super(opts); }
-  protected getEcClass(): string { return "Drawing"; }
 }
 
+@registerElement("BisCore.SectionDrawing")
 export class SectionDrawing extends Drawing {
   constructor(opts: CreateParams) { super(opts); }
-  protected getEcClass(): string { return "SectionDrawing"; }
 }
 
 /** An InformationCarrierElement is a proxy for an information carrier in the physical world.
@@ -174,30 +172,30 @@ export class SectionDrawing extends Drawing {
  *  The content is tracked separately from the carrier.
  *  @see InformationContentElement
  */
+@registerElement("BisCore.InformationCarrierElement")
 export class InformationCarrierElement extends Element {
   constructor(opts: CreateParams) { super(opts); }
-  protected getEcClass(): string { return "InformationCarrierElement"; }
 }
 
 /** An information element whose main purpose is to hold an information record. */
+@registerElement("BisCore.InformationRecordElement")
 export class InformationRecordElement extends InformationContentElement {
   constructor(opts: CreateParams) { super(opts); }
-  protected getEcClass(): string { return "InformationRecordElement"; }
 }
 
 /** A DefinitionElement resides in (and only in) a DefinitionModel. */
+@registerElement("BisCore.DefinitionElement")
 export class DefinitionElement extends InformationContentElement {
   constructor(opts: CreateParams) { super(opts); }
-  protected getEcClass(): string { return "DefinitionElement"; }
 }
 
+@registerElement("BisCore.TypeDefinitionElement")
 export class TypeDefinitionElement extends DefinitionElement {
   public recipe?: RelatedElement;
   constructor(opts: CreateParams) { super(opts); }
-  protected getEcClass(): string { return "TypeDefinitionElement"; }
 }
 
+@registerElement("BisCore.RecipeDefinitionElement")
 export class RecipeDefinitionElement extends DefinitionElement {
   constructor(opts: CreateParams) { super(opts); }
-  protected getEcClass(): string { return "RecipeDefinitionElement"; }
 }

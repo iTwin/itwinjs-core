@@ -11,6 +11,7 @@ import { AxisOrder } from "../../geometry-core/lib/Geometry";
 import { Map4d } from "../../geometry-core/lib/Geometry4d";
 import { Constant } from "../../geometry-core/lib/Constant";
 import { Model } from "./Model";
+import { registerElement } from "./Registry";
 
 export class ViewController { }
 
@@ -131,6 +132,7 @@ export class Frustum {
 }
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
+@registerElement("BisCore.DisplayStyle")
 export class DisplayStyle extends DefinitionElement {
   protected _subcategories: Map<string, Appearance>;
   protected _subCategoryOvr: Map<string, SubCategoryOverride>;
@@ -138,7 +140,6 @@ export class DisplayStyle extends DefinitionElement {
 
   constructor(opts: CreateParams) { super(opts); }
 
-  protected getEcClass(): string { return "DisplayStyle"; }
   public getStyles(): any { const p = this.props as any; if (!p.styles) p.styles = new Object(); return p.styles; }
   public getStyle(name: string): any {
     const style: object = this.getStyles()[name];
@@ -167,9 +168,8 @@ export class DisplayStyle extends DefinitionElement {
 }
 
 /** A DisplayStyle for 2d views */
+@registerElement("BisCore.DisplayStyle2d")
 export class DisplayStyle2d extends DisplayStyle {
-  protected getEcClass(): string { return "DisplayStyle2d"; }
-
   constructor(opts: CreateParams) { super(opts); }
 }
 
@@ -194,13 +194,11 @@ export class SkyBox {
 }
 
 /** A DisplayStyle for 3d views */
+@registerElement("BisCore.DisplayStyle3d")
 export class DisplayStyle3d extends DisplayStyle {
   public groundPlane: GroundPlane;
   public skyBox: SkyBox;
-
-  protected getEcClass(): string { return "DisplayStyle3d"; }
-  constructor(opts: CreateParams) { super(opts); }
-
+  public constructor(opts: CreateParams) { super(opts); }
   public getHiddenLineParams(): HiddenLine.Params { return this.getStyle("hline") as HiddenLine.Params; }
   public setHiddenLineParams(params: HiddenLine.Params) { this.setStyle("hline", params); }
 
@@ -243,9 +241,8 @@ export class DisplayStyle3d extends DisplayStyle {
  *  When a SpatialViewDefinition is loaded into a ViewController, it makes a copy of its ModelSelector, so any in-memory changes do not affect the original.
  *  Changes are not saved unless someone calls Update on the modified copy.
  */
+@registerElement("BisCore.ModelSelector")
 export class ModelSelector extends DefinitionElement {
-  protected getEcClass(): string { return "ModelSelector"; }
-
   public models: Set<string>;
   constructor(opts: CreateParams) { super(opts); this.models = new Set<string>(); }
 
@@ -268,8 +265,8 @@ export class ModelSelector extends DefinitionElement {
  *  When a ViewDefinition is loaded into memory, it makes a copy of its CategorySelector, so any in-memory changes do not affect the original.
  *  Changes are not saved unless someone calls Update on the modified copy.
  */
+@registerElement("BisCore.CategorySelector")
 export class CategorySelector extends DefinitionElement {
-  protected getEcClass(): string { return "CategorySelector"; }
   protected categories: Set<string>;
   constructor(opts: CreateParams) { super(opts); this.categories = new Set<string>(); }
 
@@ -317,8 +314,8 @@ export enum ViewportStatus {
  *  Subclasses of ViewDefinition determine which model(s) are viewed.
  *  A ViewController holds an editable copy of a ViewDefinition, and a ViewDefinition holds an editable copy of its DisplayStyle and CategorySelector.
  */
+@registerElement("BisCore.ViewDefinition")
 export abstract class ViewDefinition extends DefinitionElement {
-  protected getEcClass(): string { return "ViewDefinition"; }
   protected _categorySelectorId: Id;
   protected _displayStyleId: Id;
   protected _categorySelector?: CategorySelector;
