@@ -3,10 +3,39 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Point3d, Range3d, YawPitchRollAngles } from "../../geometry-core/lib/PointVector";
+import { Elements } from "./Elements";
+import { DgnDb } from "./IModelServiceTier";
+import { BeSQLite } from "./Constants";
 
 /** An iModel file */
 export class IModel {
-  constructor(public name: string) { }
+  private db: DgnDb;
+  private elements: Elements;
+
+  /** open the iModel
+   * @param fileName  The name of the iModel
+   * @param mode      Open mode
+   * @return non-zero error status if the iModel could not be opened
+   */
+  // *** NEEDS WORK: define app- and service-specific versions of this function
+  public async openDgnDb(fileName: string, mode?: BeSQLite.OpenMode): Promise<BeSQLite.DbResult> {
+      if (!mode)
+        mode = BeSQLite.OpenMode.Readonly;
+      if (!this.db)
+        this.db = await new DgnDb();
+      return this.db.openDgnDb(fileName, mode);
+    }
+
+  /** Get access to the Elements in the iModel */
+  public get Elements(): Elements {
+    if (!this.elements)
+      this.elements = new Elements(this);
+    return this.elements;
+  }
+
+  public getDgnDb(): DgnDb {
+    return this.db;
+  }
 }
 
 /**

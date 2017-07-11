@@ -4,9 +4,44 @@
 
 import { assert } from "chai";
 import { ColorDef, IModel, Id } from "../IModel";
+import { BeSQLite } from "../Constants";
 import { Code, CreateParams } from "../Element";
 import { Registry } from "../Registry";
 import { ModelSelector } from "../ViewDefinition";
+import { Elements } from "../Elements";
+
+declare const __dirname: string;
+
+class IModelTestUtils {
+  public static async openIModel(filename: string, expectSuccess: boolean): Promise<IModel> {
+    const imodel = new IModel();
+    const res: BeSQLite.DbResult = await imodel.openDgnDb(__dirname + "/assets/" + filename); // throws an exception if open fails
+    assert(expectSuccess === (BeSQLite.DbResult.BE_SQLITE_OK === res));
+    return imodel;
+  }
+}
+
+describe("iModel", () => {
+
+  it("should open and existing BIM file", async () => {
+    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
+    assert(imodel);
+  });
+
+});
+
+describe("Elements", async () => {
+
+  it("should load a known element by ID from an existing BIM file", async () => {
+    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
+    assert(imodel);
+    const elements: Elements = imodel.Elements;
+    assert(elements);
+    const el = await elements.getElementById(new Id([0, 51]));
+    assert(el != null);
+  });
+
+});
 
 describe("ElementId", () => {
 
@@ -38,7 +73,7 @@ describe("ElementId", () => {
   });
 
   it("Model Selectors should hold models", () => {
-    const imodel1 = new IModel("abc");
+    const imodel1 = new IModel();
     const params: CreateParams = {
       iModel: imodel1,
       className: "BisCore.ModelSelector",
