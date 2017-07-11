@@ -138,16 +138,17 @@ export class DisplayStyle extends DefinitionElement {
 
   constructor(opts: CreateParams) { super(opts); }
 
-  public getEcClass(): string { return "DisplayStyle"; }
+  protected getEcClass(): string { return "DisplayStyle"; }
+  public getStyles(): any { const p = this.props as any; if (!p.styles) p.styles = new Object(); return p.styles; }
   public getStyle(name: string): any {
-    const style = this.props.styles[name];
-    return style ? style : {};
+    const style: object = this.getStyles()[name];
+    return style ? style : new Object();
   }
   /** change the value of a style on this DisplayStyle */
-  public setStyle(name: string, value: any): void { this.props.styles[name] = value; }
+  public setStyle(name: string, value: any): void { this.getStyles()[name] = value; }
 
   /** Remove a Style from this DisplayStyle. */
-  public removeStyle(name: string) { delete this.props.styles[name]; }
+  public removeStyle(name: string) { delete this.getStyles()[name]; }
 
   /** Get the background color for this DisplayStyle */
   public getBackgroundColor(): ColorDef {
@@ -167,7 +168,7 @@ export class DisplayStyle extends DefinitionElement {
 
 /** A DisplayStyle for 2d views */
 export class DisplayStyle2d extends DisplayStyle {
-  public getEcClass(): string { return "DisplayStyle2d"; }
+  protected getEcClass(): string { return "DisplayStyle2d"; }
 
   constructor(opts: CreateParams) { super(opts); }
 }
@@ -197,7 +198,7 @@ export class DisplayStyle3d extends DisplayStyle {
   public groundPlane: GroundPlane;
   public skyBox: SkyBox;
 
-  public getEcClass(): string { return "DisplayStyle3d"; }
+  protected getEcClass(): string { return "DisplayStyle3d"; }
   constructor(opts: CreateParams) { super(opts); }
 
   public getHiddenLineParams(): HiddenLine.Params { return this.getStyle("hline") as HiddenLine.Params; }
@@ -243,10 +244,10 @@ export class DisplayStyle3d extends DisplayStyle {
  *  Changes are not saved unless someone calls Update on the modified copy.
  */
 export class ModelSelector extends DefinitionElement {
-  public getEcClass(): string { return "ModelSelector"; }
+  protected getEcClass(): string { return "ModelSelector"; }
 
   public models: Set<string>;
-  constructor(opts: CreateParams) { super(opts);  this.models = new Set<string>(); }
+  constructor(opts: CreateParams) { super(opts); this.models = new Set<string>(); }
 
   /** Get the name of this ModelSelector */
   public getName(): string { return this.code.getValue(); }
@@ -268,9 +269,9 @@ export class ModelSelector extends DefinitionElement {
  *  Changes are not saved unless someone calls Update on the modified copy.
  */
 export class CategorySelector extends DefinitionElement {
-  public getEcClass(): string { return "CategorySelector"; }
+  protected getEcClass(): string { return "CategorySelector"; }
   protected categories: Set<string>;
-  constructor(opts: CreateParams) { super(opts);  this.categories = new Set<string>(); }
+  constructor(opts: CreateParams) { super(opts); this.categories = new Set<string>(); }
 
   /** Get the name of this CategorySelector */
   public getName(): string { return this.code.getValue(); }
@@ -317,8 +318,7 @@ export enum ViewportStatus {
  *  A ViewController holds an editable copy of a ViewDefinition, and a ViewDefinition holds an editable copy of its DisplayStyle and CategorySelector.
  */
 export abstract class ViewDefinition extends DefinitionElement {
-  public getEcClass(): string { return "ViewDefinition"; }
-
+  protected getEcClass(): string { return "ViewDefinition"; }
   protected _categorySelectorId: Id;
   protected _displayStyleId: Id;
   protected _categorySelector?: CategorySelector;
@@ -459,106 +459,109 @@ export abstract class ViewDefinition extends DefinitionElement {
   public getDetail(name: string): any { const v = this.getDetails()[name]; return v ? v : {}; }
 
   /** Change the value of a view detail */
-  public setDetail(name: string, value: object) { this.getDetails()[name] = value; }
+  public setDetail(name: string, value: any) { this.getDetails()[name] = value; }
 
   /** Remove a view detail */
   public removeDetail(name: string) { delete this.getDetails()[name]; }
 
-// /*bool IsView3d() const { return nullptr != _ToView3d();}
-// bool IsOrthographicView() const { return nullptr != _ToOrthographicView();}
-// bool IsSpatialView() const { return nullptr != _ToSpatialView();}
-// bool IsDrawingView() const { return nullptr != _ToDrawingView();}
-// bool IsSheetView() const { return nullptr != _ToSheetView();}
-// ViewDefinition2dCP ToView2d() const { return _ToView2d();}
-// bool IsTemplateView2d() const { return nullptr != _ToTemplateView2d();}
-// bool IsTemplateView3d() const { return nullptr != _ToTemplateView3d();}
-// ViewDefinition3dCP ToView3d() const { return _ToView3d();}
-// OrthographicViewDefinitionCP ToOrthographicView() const { return _ToOrthographicView();}
-// SpatialViewDefinitionCP ToSpatialView() const { return _ToSpatialView();}
-// DrawingViewDefinitionCP ToDrawingView() const { return _ToDrawingView();}
-// SheetViewDefinitionCP ToSheetView() const { return _ToSheetView();}
-// TemplateViewDefinition2dCP ToTemplateView2d() const { return _ToTemplateView2d();}
-// TemplateViewDefinition3dCP ToTemplateView3d() const { return _ToTemplateView3d();}
-// ViewDefinition3dP ToView3dP() {return const_cast<ViewDefinition3dP>(ToView3d()); }
-// ViewDefinition2dP ToView2dP() {return const_cast<ViewDefinition2dP>(ToView2d()); }
-// SpatialViewDefinitionP ToSpatialViewP() {return const_cast<SpatialViewDefinitionP>(ToSpatialView()); }
-// DrawingViewDefinitionP ToDrawingViewP() {return const_cast<DrawingViewDefinitionP>(ToDrawingView()); }
-// SheetViewDefinitionP ToSheetViewP() {return const_cast<SheetViewDefinitionP>(ToSheetView()); }
-// TemplateViewDefinition2dP ToTemplateView2dP() {return const_cast<TemplateViewDefinition2dP>(ToTemplateView2d()); }
-// TemplateViewDefinition3dP ToTemplateView3dP() {return const_cast<TemplateViewDefinition3dP>(ToTemplateView3d()); }
+  // /*bool IsView3d() const { return nullptr != _ToView3d();}
+  // bool IsOrthographicView() const { return nullptr != _ToOrthographicView();}
+  // bool IsSpatialView() const { return nullptr != _ToSpatialView();}
+  // bool IsDrawingView() const { return nullptr != _ToDrawingView();}
+  // bool IsSheetView() const { return nullptr != _ToSheetView();}
+  // ViewDefinition2dCP ToView2d() const { return _ToView2d();}
+  // bool IsTemplateView2d() const { return nullptr != _ToTemplateView2d();}
+  // bool IsTemplateView3d() const { return nullptr != _ToTemplateView3d();}
+  // ViewDefinition3dCP ToView3d() const { return _ToView3d();}
+  // OrthographicViewDefinitionCP ToOrthographicView() const { return _ToOrthographicView();}
+  // SpatialViewDefinitionCP ToSpatialView() const { return _ToSpatialView();}
+  // DrawingViewDefinitionCP ToDrawingView() const { return _ToDrawingView();}
+  // SheetViewDefinitionCP ToSheetView() const { return _ToSheetView();}
+  // TemplateViewDefinition2dCP ToTemplateView2d() const { return _ToTemplateView2d();}
+  // TemplateViewDefinition3dCP ToTemplateView3d() const { return _ToTemplateView3d();}
+  // ViewDefinition3dP ToView3dP() {return const_cast<ViewDefinition3dP>(ToView3d()); }
+  // ViewDefinition2dP ToView2dP() {return const_cast<ViewDefinition2dP>(ToView2d()); }
+  // SpatialViewDefinitionP ToSpatialViewP() {return const_cast<SpatialViewDefinitionP>(ToSpatialView()); }
+  // DrawingViewDefinitionP ToDrawingViewP() {return const_cast<DrawingViewDefinitionP>(ToDrawingView()); }
+  // SheetViewDefinitionP ToSheetViewP() {return const_cast<SheetViewDefinitionP>(ToSheetView()); }
+  // TemplateViewDefinition2dP ToTemplateView2dP() {return const_cast<TemplateViewDefinition2dP>(ToTemplateView2d()); }
+  // TemplateViewDefinition3dP ToTemplateView3dP() {return const_cast<TemplateViewDefinition3dP>(ToTemplateView3d()); }
 
-/** Set the CategorySelector for this view. */
- public setCategorySelector(categories: CategorySelector) {this._categorySelector = categories; this._categorySelectorId = categories.id; }
+  /** Set the CategorySelector for this view. */
+  public setCategorySelector(categories: CategorySelector) { this._categorySelector = categories; this._categorySelectorId = categories.id; }
 
-// //! Get the AuxiliaryCoordinateSystem for this ViewDefinition
-// DGNPLATFORM_EXPORT DgnElementId GetAuxiliaryCoordinateSystemId() const;
+  /** Get the AuxiliaryCoordinateSystem for this ViewDefinition */
+  public getAuxiliaryCoordinateSystemId(): Id { return new Id(this.getDetail("acs")); }
 
-// //! Set the AuxiliaryCoordinateSystem for this view.
-// DGNPLATFORM_EXPORT void SetAuxiliaryCoordinateSystem(DgnElementId acsId);
+  /** Set the AuxiliaryCoordinateSystem for this view. */
+  public setAuxiliaryCoordinateSystem(acsId: Id) {
+    if (acsId.isValid())
+        this.setDetail("acs", acsId.toString());
+    else
+        this.removeDetail("acs");
+  }
 
-// //! Query if the specified model is displayed in this view
-// bool ViewsModel(DgnModelId modelId) {return _ViewsModel(modelId); }
+  // //! Query if the specified Category is displayed in this view
+  // bool ViewsCategory(DgnCategoryId id) {return GetCategorySelector().IsCategoryViewed(id); }
 
-// //! Query if the specified Category is displayed in this view
-// bool ViewsCategory(DgnCategoryId id) {return GetCategorySelector().IsCategoryViewed(id); }
+  // //! Get the origin of this view
+  // DPoint3d GetOrigin() const { return _GetOrigin();}
 
-// //! Get the origin of this view
-// DPoint3d GetOrigin() const { return _GetOrigin();}
+  // //! Set the origin of this view
+  // void SetOrigin(DPoint3dCR origin) {_SetOrigin(origin); }
 
-// //! Set the origin of this view
-// void SetOrigin(DPoint3dCR origin) {_SetOrigin(origin); }
+  // //! Get the extents of this view
+  // DVec3d GetExtents() const { return _GetExtents();}
 
-// //! Get the extents of this view
-// DVec3d GetExtents() const { return _GetExtents();}
+  // //! Get the aspect ratio (width/height) of this view
+  // double GetAspectRatio() const { auto extents= GetExtents(); return extents.x / extents.y;}
 
-// //! Get the aspect ratio (width/height) of this view
-// double GetAspectRatio() const { auto extents= GetExtents(); return extents.x / extents.y;}
+  // //! Set the extents of this view
+  // void SetExtents(DVec3dCR delta) {_SetExtents(delta); }
 
-// //! Set the extents of this view
-// void SetExtents(DVec3dCR delta) {_SetExtents(delta); }
+  // RotMatrix GetRotation() const { return _GetRotation();}
 
-// RotMatrix GetRotation() const { return _GetRotation();}
+  // //! Change the rotation of the view.
+  // //! @note rot must be orthonormal. For 2d views, only the rotation angle about the z axis is used.
+  // void SetRotation(RotMatrixCR rot) {_SetRotation(rot); }
 
-// //! Change the rotation of the view.
-// //! @note rot must be orthonormal. For 2d views, only the rotation angle about the z axis is used.
-// void SetRotation(RotMatrixCR rot) {_SetRotation(rot); }
+  // //! Get the target point of the view. If there is no camera, Center() is returned.
+  // DPoint3d GetTargetPoint() const { return _GetTargetPoint();}
 
-// //! Get the target point of the view. If there is no camera, Center() is returned.
-// DPoint3d GetTargetPoint() const { return _GetTargetPoint();}
+  // //! Get the point at the geometric center of the view.
+  // DGNPLATFORM_EXPORT DPoint3d GetCenter() const;
 
-// //! Get the point at the geometric center of the view.
-// DGNPLATFORM_EXPORT DPoint3d GetCenter() const;
+  // //! Get the unit vector that points in the view X (left-to-right) direction.
+  // DVec3d GetXVector() const { DVec3d v; GetRotation().GetRow(v, 0); return v;}
 
-// //! Get the unit vector that points in the view X (left-to-right) direction.
-// DVec3d GetXVector() const { DVec3d v; GetRotation().GetRow(v, 0); return v;}
+  // //! Get the unit vector that points in the view Y (bottom-to-top) direction.
+  // DVec3d GetYVector() const { DVec3d v; GetRotation().GetRow(v, 1); return v;}
 
-// //! Get the unit vector that points in the view Y (bottom-to-top) direction.
-// DVec3d GetYVector() const { DVec3d v; GetRotation().GetRow(v, 1); return v;}
+  // //! Get the unit vector that points in the view Z (front-to-back) direction.
+  // DVec3d GetZVector() const { DVec3d v; GetRotation().GetRow(v, 2); return v;}
 
-// //! Get the unit vector that points in the view Z (front-to-back) direction.
-// DVec3d GetZVector() const { DVec3d v; GetRotation().GetRow(v, 2); return v;}
+  // //! Change the view orientation to one of the standard views.
+  // //! @param[in] standardView the rotation to which the view should be set.
+  // //! @return SUCCESS if the view was changed.
+  // DGNPLATFORM_EXPORT BentleyStatus SetStandardViewRotation(StandardView standardView);
 
-// //! Change the view orientation to one of the standard views.
-// //! @param[in] standardView the rotation to which the view should be set.
-// //! @return SUCCESS if the view was changed.
-// DGNPLATFORM_EXPORT BentleyStatus SetStandardViewRotation(StandardView standardView);
+  // //! Set the clipping volume for elements in this view
+  // DGNPLATFORM_EXPORT void SetViewClip(ClipVectorPtr clip);
 
-// //! Set the clipping volume for elements in this view
-// DGNPLATFORM_EXPORT void SetViewClip(ClipVectorPtr clip);
+  // //! Get the clipping volume for elements in this view
+  // DGNPLATFORM_EXPORT ClipVectorPtr GetViewClip() const;
 
-// //! Get the clipping volume for elements in this view
-// DGNPLATFORM_EXPORT ClipVectorPtr GetViewClip() const;
+  // //! Set the grid settings for this view
+  // DGNPLATFORM_EXPORT void SetGridSettings(GridOrientationType, DPoint2dCR, uint32_t);
 
-// //! Set the grid settings for this view
-// DGNPLATFORM_EXPORT void SetGridSettings(GridOrientationType, DPoint2dCR, uint32_t);
-
-// //! Get the grid settings for this view
-// DGNPLATFORM_EXPORT void GetGridSettings(GridOrientationType &, DPoint2dR, uint32_t &) const;
+  // //! Get the grid settings for this view
+  // DGNPLATFORM_EXPORT void GetGridSettings(GridOrientationType &, DPoint2dR, uint32_t &) const;
 }
 
-// /** Margins for "white space" to be left around view volumes for #LookAtVolume.
-//  *  Values mean "percent of view" and must be between 0 and .25.
-//  */
+/** Margins for "white space" to be left around view volumes for #LookAtVolume.
+ *  Values mean "percent of view" and must be between 0 and .25.
+ */
+
 // +===============+===============+===============+===============+===============+======*/
 // struct MarginPercent
 // {

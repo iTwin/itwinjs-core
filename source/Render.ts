@@ -38,7 +38,7 @@ export class ViewFlags {
   public edgeMask: number = 0;                           // 0=none, 1=generate mask, 2=use mask
 
   public toJSON(): object {
-    const out: any = new Object();
+    const out: any = {};
 
     if (!this.constructions) out.noConstruct = true;
     if (!this.dimensions) out.noDim = true;
@@ -66,9 +66,8 @@ export class ViewFlags {
     return out;
   }
 
-  public static fromJSON(input: object): ViewFlags {
+  public static fromJSON(json: any): ViewFlags {
     const val = new ViewFlags();
-    const json = input as any;
 
     val.constructions = !JsonUtils.asBool(json.noConstruct);
     val.dimensions = !JsonUtils.asBool(json.noDim);
