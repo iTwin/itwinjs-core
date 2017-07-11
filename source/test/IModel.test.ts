@@ -22,7 +22,7 @@ class IModelTestUtils {
 
 describe("iModel", () => {
 
-  it("should open and existing BIM file", async () => {
+  it("should open an existing BIM file", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     assert(imodel);
   });
