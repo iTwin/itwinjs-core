@@ -3,12 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { ColorDef, IModel, Id } from "../IModel";
+import { IModel, Id } from "../IModel";
+import { ColorDef } from "../Render";
 import { BeSQLite } from "../Constants";
-import { Code, CreateParams } from "../Element";
-import { Registry } from "../Registry";
+import { Code, IElement } from "../Element";
+import { EcRegistry } from "../EcRegistry";
 import { ModelSelector } from "../ViewDefinition";
 import { Elements } from "../Elements";
+export { Category } from "../Category";
 
 declare const __dirname: string;
 
@@ -74,20 +76,23 @@ describe("ElementId", () => {
 
   it("Model Selectors should hold models", () => {
     const imodel1 = new IModel();
-    const params: CreateParams = {
-      iModel: imodel1,
-      className: "BisCore.ModelSelector",
-      modelId: new Id(1, 1),
+    const params: IElement = {
+      _iModel: imodel1,
+      schemaName: "BisCore",
+      className: "ModelSelector",
+      model: new Id(1, 1),
       code: Code.createDefault(),
       id: new Id(),
     };
 
-    const selector1 = Registry.createElement(params) as ModelSelector;
+    const selector1 = EcRegistry.create(params) as ModelSelector;
+    assert(selector1 !== undefined);
     const a = new ModelSelector(params);
-    assert(!selector1.id.isValid());
-    selector1.addModel(new Id(2, 1));
-    selector1.addModel(new Id(2, 1));
-    selector1.addModel(new Id(2, 3));
+    if (selector1)  {
+      selector1.addModel(new Id(2, 1));
+      selector1.addModel(new Id(2, 1));
+      selector1.addModel(new Id(2, 3));
+      }
   });
 
   it("ColorDef should compare properly", () => {
