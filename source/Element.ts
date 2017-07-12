@@ -5,7 +5,7 @@ import { Id, IModel, GeometryStream, Placement3d } from "./IModel";
 import { registerEcClass } from "./EcRegistry";
 
 export interface ICode {
-  spec: Id;
+  spec: Id | string;
   scope: string;
   value?: string;
 }
@@ -16,13 +16,13 @@ export class Code implements ICode {
   public value?: string;
 
   constructor(val: ICode) {
-    this.spec = val.spec;
+    this.spec = new Id(val.spec);
     this.scope = val.scope;
     this.value = val.value;
   }
 
-  public static createDefault(): Code { return new Code({spec: new Id(1), scope: "1"}); }
-  public getValue(): string {return this.value ? this.value : ""; }
+  public static createDefault(): Code { return new Code({ spec: new Id(1), scope: "1" }); }
+  public getValue(): string { return this.value ? this.value : ""; }
 }
 
 /** The id and relationship class of an Element that is related to another Element */
@@ -35,9 +35,9 @@ export interface IElement {
   _iModel: IModel;
   schemaName: string;
   className: string;
-  model: Id;
+  model: Id | string;
   code: ICode;
-  id: Id;
+  id: Id | string;
   parent?: RelatedElement;
   federationGuid?: string;
   userLabel?: string;
@@ -46,7 +46,7 @@ export interface IElement {
 
 /** An element within an iModel */
 @registerEcClass("BisCore.Element")
-export class Element implements IElement {
+export class Element {
   public _iModel: IModel;
   public id: Id;
   public model: Id;
@@ -62,10 +62,10 @@ export class Element implements IElement {
   constructor(val: IElement) {
     this.schemaName = val.schemaName;
     this.className = val.className;
-    this.id = val.id;
+    this.id = new Id(val.id);
     this.code = new Code(val.code);
     this._iModel = val._iModel;
-    this.model = val.model;
+    this.model = new Id(val.model);
     this.parent = val.parent;
     this.federationGuid = val.federationGuid;
     this.userLabel = val.userLabel;
@@ -84,7 +84,7 @@ export interface IGeometricElement extends IElement {
 
 /** A Geometric element */
 @registerEcClass("BisCore.GeometricElement")
-export class GeometricElement extends Element implements IGeometricElement {
+export class GeometricElement extends Element {
   public category: Id;
   public geom?: GeometryStream;
   public constructor(opts: IGeometricElement) {
@@ -105,7 +105,7 @@ export interface IGeometricElement3d extends IGeometricElement {
 }
 
 @registerEcClass("BisCore.GeometricElement3d")
-export class GeometricElement3d extends GeometricElement implements IGeometricElement3d {
+export class GeometricElement3d extends GeometricElement {
   public placement: Placement3d;
   public typeDefinition?: TypeDefinition;
   public constructor(opts: IGeometricElement3d) {
@@ -185,6 +185,8 @@ export class InformationCarrierElement extends Element {
   constructor(opts: IElement) { super(opts); }
 }
 
+
+
 /** An information element whose main purpose is to hold an information record. */
 @registerEcClass("BisCore.InformationRecordElement")
 export class InformationRecordElement extends InformationContentElement {
@@ -205,5 +207,15 @@ export class TypeDefinitionElement extends DefinitionElement {
 
 @registerEcClass("BisCore.RecipeDefinitionElement")
 export class RecipeDefinitionElement extends DefinitionElement {
+  constructor(opts: IElement) { super(opts); }
+}
+
+@registerEcClass("BisCore.InformationPartitionElement")
+export class InformationPartitionElement extends InformationContentElement {
+  constructor(opts: IElement) { super(opts); }
+}
+
+@registerEcClass("BisCore.LinkPartition")
+export class LinkPartition extends InformationPartitionElement {
   constructor(opts: IElement) { super(opts); }
 }

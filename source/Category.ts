@@ -19,9 +19,9 @@ export class Appearance {
       this.dontLocate === other.dontLocate &&
       this.color.equals(other.color) &&
       this.weight === other.weight &&
-      this.styleId === other.styleId &&
       this.priority === other.priority &&
-      this.materialId === other.materialId &&
+      Id.areEqual(this.styleId, other.styleId) &&
+      Id.areEqual(this.materialId, other.materialId) &&
       this.transparency === other.transparency;
   }
 
@@ -97,7 +97,7 @@ export interface ISubCategory extends IElement {
 
 /** a Subcategory defines the appearance for graphics in Geometric elements */
 @registerEcClass("BisCore.SubCategory")
-export class SubCategory extends DefinitionElement implements ISubCategory {
+export class SubCategory extends DefinitionElement {
   public appearance: Appearance;
   public categoryId: Id;
   public constructor(opts: ISubCategory) {

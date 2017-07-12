@@ -111,6 +111,10 @@ export class Id {
   public equals(other: Id): boolean {
     return this.hi === other.hi && this.lo === other.lo;
   }
+
+  public static areEqual(a: Id | undefined, b: Id | undefined): boolean {
+    return (a === b) || (a != null && b != null && a.equals(b));
+  }
 }
 
 /** A bounding box aligned to the orientation of an Element */

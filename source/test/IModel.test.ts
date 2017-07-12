@@ -25,7 +25,7 @@ class IModelTestUtils {
 
 describe("iModel", () => {
 
-  it("should open and existing BIM file", async () => {
+  it("should open and existing iModel", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     assert(imodel);
   });
@@ -34,12 +34,12 @@ describe("iModel", () => {
 
 describe("Elements", async () => {
 
-  it("should load a known element by ID from an existing BIM file", async () => {
+  it("should load a known element by Id from an existing iModel", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     assert(imodel);
     const elements: Elements = imodel.Elements;
     assert(elements);
-    const el = await elements.getElementById(new Id([0, 51]));
+    const el = await elements.getElementById(new Id([0, 30]));
     assert(el != null);
   });
 

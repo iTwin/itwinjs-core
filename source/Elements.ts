@@ -19,6 +19,6 @@ export class Elements {
     const json = await this._iModel.getDgnDb().getElementById(id.toString());
     const stream = JSON.parse(json);
     stream._iModel = this._iModel;
-    return EcRegistry.create(stream) as Element | undefined;
+    return EcRegistry.create(stream, "BisCore.Element") as Element | undefined;
   }
 }
