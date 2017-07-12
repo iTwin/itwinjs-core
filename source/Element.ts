@@ -154,6 +154,16 @@ export class InformationContentElement extends Element {
   constructor(opts: IElement) { super(opts); }
 }
 
+@registerEcClass("BisCore.InformationReferenceElement")
+export class InformationReferenceElement extends InformationContentElement {
+  public constructor(opts: IElement) { super(opts); }
+}
+
+@registerEcClass("BisCore.Subject")
+export class Subject extends InformationReferenceElement {
+  public constructor(opts: IElement) { super(opts); }
+}
+
 /** A Document is an InformationContentElement that identifies the content of a document.
  * The realized form of a document is called a DocumentCarrier (different class than Document).
  * For example, a will is a legal document. The will published into a PDF file is an ElectronicDocumentCopy.
@@ -185,8 +195,6 @@ export class InformationCarrierElement extends Element {
   constructor(opts: IElement) { super(opts); }
 }
 
-
-
 /** An information element whose main purpose is to hold an information record. */
 @registerEcClass("BisCore.InformationRecordElement")
 export class InformationRecordElement extends InformationContentElement {
@@ -210,11 +218,108 @@ export class RecipeDefinitionElement extends DefinitionElement {
   constructor(opts: IElement) { super(opts); }
 }
 
+/** A PhysicalType typically corresponds to a @em type of physical object that can be ordered from a catalog.
+ *  The PhysicalType system is also a database normalization strategy because properties that are the same
+ *  across all instances are stored with the PhysicalType versus being repeated per PhysicalElement instance.
+ */
+@registerEcClass("BisCore.PhysicalType")
+export class PhysicalType extends TypeDefinitionElement {
+  constructor(opts: IElement) { super(opts); }
+}
+
+/** The SpatialLocationType system is a database normalization strategy because properties that are the same
+ *  across all instances are stored with the SpatialLocationType versus being repeated per SpatialLocationElement instance.
+ */
+@registerEcClass("BisCore.SpatialLocationType")
+export class SpatialLocationType extends TypeDefinitionElement {
+  constructor(opts: IElement) { super(opts); }
+}
+
+@registerEcClass("BisCore.TemplateRecipe3d")
+export class TemplateRecipe3d extends RecipeDefinitionElement {
+  constructor(opts: IElement) { super(opts); }
+}
+
+@registerEcClass("BisCore.GraphicalType2d")
+export class GraphicalType2d extends TypeDefinitionElement {
+  constructor(opts: IElement) { super(opts); }
+}
+
+@registerEcClass("BisCore.TemplateRecipe2d")
+export class TemplateRecipe2d extends RecipeDefinitionElement {
+  constructor(opts: IElement) { super(opts); }
+}
+
 @registerEcClass("BisCore.InformationPartitionElement")
 export class InformationPartitionElement extends InformationContentElement {
   constructor(opts: IElement) { super(opts); }
 }
 
+/** A DefinitionPartition provides a starting point for a DefinitionModel hierarchy
+ *  @note DefinitionPartition elements only reside in the RepositoryModel
+ */
+@registerEcClass("BisCore.DefinitionPartition")
+export class DefinitionPartition extends InformationPartitionElement {
+  constructor(opts: IElement) { super(opts); }
+}
+
+/** A DocumentPartition provides a starting point for a DocumentListModel hierarchy
+ *  @note DocumentPartition elements only reside in the RepositoryModel
+ */
+@registerEcClass("BisCore.DocumentPartition")
+export class DocumentPartition extends InformationPartitionElement {
+  constructor(opts: IElement) { super(opts); }
+}
+
+/** A GroupInformationPartition provides a starting point for a GroupInformationModel hierarchy
+ *  @note GroupInformationPartition elements only reside in the RepositoryModel
+ */
+@registerEcClass("BisCore.GroupInformationPartition")
+export class GroupInformationPartition extends InformationPartitionElement {
+  constructor(opts: IElement) { super(opts); }
+}
+
+/** An InformationRecordPartition provides a starting point for a InformationRecordModel hierarchy
+ *  @note InformationRecordPartition elements only reside in the RepositoryModel
+ */
+@registerEcClass("BisCore.InformationRecordPartition")
+export class InformationRecordPartition extends InformationPartitionElement {
+  constructor(opts: IElement) { super(opts); }
+}
+
+/** A PhysicalPartition provides a starting point for a PhysicalModel hierarchy
+ *  @note PhysicalPartition elements only reside in the RepositoryModel
+ */
+@registerEcClass("BisCore.PhysicalPartition")
+export class PhysicalPartition extends InformationPartitionElement {
+  constructor(opts: IElement) { super(opts); }
+}
+
+/** A SpatialLocationPartition provides a starting point for a SpatialLocationModel hierarchy
+ *  @note SpatialLocationPartition elements only reside in the RepositoryModel
+ */
+@registerEcClass("BisCore.SpatialLocationPartition")
+export class SpatialLocationPartition extends InformationPartitionElement {
+  constructor(opts: IElement) { super(opts); }
+}
+
+/** A GroupInformationElement resides in (and only in) a GroupInformationModel. */
+@registerEcClass("BisCore.GroupInformationElement")
+export class GroupInformationElement extends InformationReferenceElement {
+  constructor(opts: IElement) { super(opts); }
+}
+
+/** Abstract base class for roles played by other (typically physical) elements.
+ *  For example:
+ *  - <i>Lawyer</i> and <i>employee</i> are potential roles of a person
+ *  - <i>Asset</i> and <i>safety hazard</i> are potential roles of a PhysicalElement
+ */
+@registerEcClass("BisCore.RoleElement")
+export class RoleElement extends Element {
+  constructor(opts: IElement) { super(opts); }
+}
+
+/** A LinkPartition provides a starting point for a LinkModel hierarchy */
 @registerEcClass("BisCore.LinkPartition")
 export class LinkPartition extends InformationPartitionElement {
   constructor(opts: IElement) { super(opts); }
