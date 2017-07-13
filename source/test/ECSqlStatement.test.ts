@@ -42,7 +42,7 @@ describe("ECSqlStatement", () => {
     const rowdata = await stmt.step_once();
     assert.isNotNull(rowdata);
     const obj: any = JSON.parse(rowdata);
-    assert.typeOf(obj, "object");
+    assert.isObject(obj);
     assert.notEqual(obj.ecinstanceid, "");
   });
 
@@ -52,8 +52,7 @@ describe("ECSqlStatement", () => {
     const allrowsdata = await stmt.step_all();
     assert.isNotNull(allrowsdata);
     const rows: any = JSON.parse(allrowsdata);
-    // assert.typeOf(rows, "[object Array]");
-    assert.isTrue(rows instanceof Array);
+    assert.isArray(rows);
     assert.notEqual(rows.length, 0);
     assert.notEqual(rows[0].ecinstanceid, "");
   });
