@@ -1,9 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
-import { DefinitionElement, CreateParams } from "./Element";
-import { ColorDef, Id, JsonUtils } from "./IModel";
+import { registerEcClass } from "./EcRegistry";
+import { DefinitionElement, IElement } from "./Element";
+import { ColorDef } from "./Render";
+import { Id, JsonUtils } from "./IModel";
 
 /** A SubCategory appearance */
 export class Appearance {
@@ -18,9 +19,9 @@ export class Appearance {
       this.dontLocate === other.dontLocate &&
       this.color.equals(other.color) &&
       this.weight === other.weight &&
-      this.styleId === other.styleId &&
       this.priority === other.priority &&
-      this.materialId === other.materialId &&
+      Id.areEqual(this.styleId, other.styleId) &&
+      Id.areEqual(this.materialId, other.materialId) &&
       this.transparency === other.transparency;
   }
 
@@ -89,31 +90,28 @@ export class SubCategoryOverride {
   }
 }
 
-export interface SubCategoryCreateParams extends CreateParams {
-  appear?: Appearance;
+export interface ISubCategory extends IElement {
+  appearance?: Appearance;
   categoryId?: Id;
 }
 
 /** a Subcategory defines the appearance for graphics in Geometric elements */
+@registerEcClass("BisCore.SubCategory")
 export class SubCategory extends DefinitionElement {
   public appearance: Appearance;
   public categoryId: Id;
-  public constructor(opts: SubCategoryCreateParams) {
+  public constructor(opts: ISubCategory) {
     super(opts);
-    this.appearance = opts.appear ? opts.appear : new Appearance();
+    this.appearance = opts.appearance ? opts.appearance : new Appearance();
     this.categoryId = opts.categoryId ? opts.categoryId : new Id();
   }
 
-  public getSubCategoryName(): string {
-    return this.code.getValue();
-  }
-
+  public getSubCategoryName(): string { return this.code.getValue(); }
   public getSubCategoryId(): Id { return this.id; }
   public getCategoryId(): Id { return this.parent ? this.parent.id : new Id(); }
   public isDefaultSubCategory(): boolean {
     return Category.getDefaultSubCategoryId(this.getCategoryId()) === this.getSubCategoryId();
   }
-  protected getEcClass(): string { return "SubCategory"; }
 }
 
 /** the rank for a Category */
@@ -125,26 +123,25 @@ export enum Rank {
 }
 
 /** a Category for a Geometric element */
+@registerEcClass("BisCore.Category")
 export class Category extends DefinitionElement {
   public rank: Rank = Rank.User;
 
-  public constructor(opts: CreateParams) { super(opts); }
+  public constructor(opts: IElement) { super(opts); }
   public static getDefaultSubCategoryId(id: Id): Id {
     return id.isValid() ? new Id(id.lo, id.hi + 1) : new Id();
   }
   public myDefaultSubCategoryId(): Id { return Category.getDefaultSubCategoryId(this.id); }
-
-  protected getEcClass(): string { return "Category"; }
 }
 
 /** Categorizes 2d graphical elements. */
+@registerEcClass("BisCore.DrawingCategory")
 export class DrawingCategory extends Category {
-  protected getEcClass(): string { return "DrawingCategory"; }
-  public constructor(opts: CreateParams) { super(opts); }
+  public constructor(opts: IElement) { super(opts); }
 }
 
 /** Categorizes a SpatialElement. */
+@registerEcClass("BisCore.SpatialCategory")
 export class SpatialCategory extends Category {
-  protected getEcClass(): string { return "SpatialCategory"; }
-  public constructor(opts: CreateParams) { super(opts); }
+  public constructor(opts: IElement) { super(opts); }
 }

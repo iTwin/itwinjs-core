@@ -1,16 +1,18 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { CreateParams, DefinitionElement } from "./Element";
+
+import { IElement, DefinitionElement } from "./Element";
 import { Appearance, SubCategoryOverride } from "./Category";
-import { ViewFlags, HiddenLine } from "./Render";
+import { ViewFlags, HiddenLine, ColorDef } from "./Render";
 import { Light, LightType } from "./Lighting";
-import { ColorDef, Id } from "./IModel";
+import { Id, JsonUtils } from "./IModel";
 import { Vector3d, Point3d, Range3d, RotMatrix, Transform } from "../../geometry-core/lib/PointVector";
 import { AxisOrder } from "../../geometry-core/lib/Geometry";
 import { Map4d } from "../../geometry-core/lib/Geometry4d";
 import { Constant } from "../../geometry-core/lib/Constant";
 import { Model } from "./Model";
+import { registerEcClass } from "./EcRegistry";
 
 export class ViewController { }
 
@@ -131,15 +133,15 @@ export class Frustum {
 }
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
+@registerEcClass("BisCore.DisplayStyle")
 export class DisplayStyle extends DefinitionElement {
   protected _subcategories: Map<string, Appearance>;
   protected _subCategoryOvr: Map<string, SubCategoryOverride>;
   public viewFlags: ViewFlags;
 
-  constructor(opts: CreateParams) { super(opts); }
+  constructor(opts: IElement) { super(opts); }
 
-  protected getEcClass(): string { return "DisplayStyle"; }
-  public getStyles(): any { const p = this.props as any; if (!p.styles) p.styles = new Object(); return p.styles; }
+  public getStyles(): any { const p = this.jsonProperties as any; if (!p.styles) p.styles = new Object(); return p.styles; }
   public getStyle(name: string): any {
     const style: object = this.getStyles()[name];
     return style ? style : new Object();
@@ -167,10 +169,9 @@ export class DisplayStyle extends DefinitionElement {
 }
 
 /** A DisplayStyle for 2d views */
+@registerEcClass("BisCore.DisplayStyle2d")
 export class DisplayStyle2d extends DisplayStyle {
-  protected getEcClass(): string { return "DisplayStyle2d"; }
-
-  constructor(opts: CreateParams) { super(opts); }
+  constructor(opts: IElement) { super(opts); }
 }
 
 /** A circle drawn at a Z elevation, whose diameter is the the XY diagonal of the project extents */
@@ -194,13 +195,11 @@ export class SkyBox {
 }
 
 /** A DisplayStyle for 3d views */
+@registerEcClass("BisCore.DisplayStyle3d")
 export class DisplayStyle3d extends DisplayStyle {
   public groundPlane: GroundPlane;
   public skyBox: SkyBox;
-
-  protected getEcClass(): string { return "DisplayStyle3d"; }
-  constructor(opts: CreateParams) { super(opts); }
-
+  public constructor(opts: IElement) { super(opts); }
   public getHiddenLineParams(): HiddenLine.Params { return this.getStyle("hline") as HiddenLine.Params; }
   public setHiddenLineParams(params: HiddenLine.Params) { this.setStyle("hline", params); }
 
@@ -243,11 +242,10 @@ export class DisplayStyle3d extends DisplayStyle {
  *  When a SpatialViewDefinition is loaded into a ViewController, it makes a copy of its ModelSelector, so any in-memory changes do not affect the original.
  *  Changes are not saved unless someone calls Update on the modified copy.
  */
+@registerEcClass("BisCore.ModelSelector")
 export class ModelSelector extends DefinitionElement {
-  protected getEcClass(): string { return "ModelSelector"; }
-
   public models: Set<string>;
-  constructor(opts: CreateParams) { super(opts); this.models = new Set<string>(); }
+  constructor(opts: IElement) { super(opts); this.models = new Set<string>(); }
 
   /** Get the name of this ModelSelector */
   public getName(): string { return this.code.getValue(); }
@@ -268,10 +266,10 @@ export class ModelSelector extends DefinitionElement {
  *  When a ViewDefinition is loaded into memory, it makes a copy of its CategorySelector, so any in-memory changes do not affect the original.
  *  Changes are not saved unless someone calls Update on the modified copy.
  */
+@registerEcClass("BisCore.CategorySelector")
 export class CategorySelector extends DefinitionElement {
-  protected getEcClass(): string { return "CategorySelector"; }
   protected categories: Set<string>;
-  constructor(opts: CreateParams) { super(opts); this.categories = new Set<string>(); }
+  constructor(opts: IElement) { super(opts); this.categories = new Set<string>(); }
 
   /** Get the name of this CategorySelector */
   public getName(): string { return this.code.getValue(); }
@@ -290,7 +288,7 @@ export class CategorySelector extends DefinitionElement {
 }
 
 /** Parameters used to construct a ViewDefinition */
-export interface ViewDefinitionCreateParams extends CreateParams {
+export interface IViewDefinition extends IElement {
   categorySelector?: CategorySelector;
 }
 
@@ -317,27 +315,41 @@ export enum ViewportStatus {
  *  Subclasses of ViewDefinition determine which model(s) are viewed.
  *  A ViewController holds an editable copy of a ViewDefinition, and a ViewDefinition holds an editable copy of its DisplayStyle and CategorySelector.
  */
+@registerEcClass("BisCore.ViewDefinition")
 export abstract class ViewDefinition extends DefinitionElement {
-  protected getEcClass(): string { return "ViewDefinition"; }
   protected _categorySelectorId: Id;
   protected _displayStyleId: Id;
   protected _categorySelector?: CategorySelector;
   protected _displayStyle?: DisplayStyle;
   protected clearState(): void { this._categorySelector = undefined; this._displayStyle = undefined; }
-  protected constructor(opts: ViewDefinitionCreateParams) { super(opts); if (opts.categorySelector) this.setCategorySelector(opts.categorySelector); }
+  protected constructor(opts: IViewDefinition) { super(opts); if (opts.categorySelector) this.setCategorySelector(opts.categorySelector); }
 
   public abstract supplyController(): ViewController;
   public abstract isValidBaseModel(model: Model): boolean;
   public abstract viewsModel(mid: Id): boolean;
+
+  /**  Get the origin of this view */
   public abstract getOrigin(): Point3d;
+
+  /** Get the extents of this view */
   public abstract getExtents(): Vector3d;
 
   /** Get the 3x3 ortho-normal RotMatrix for this view. */
   public abstract getRotation(): RotMatrix;
   public abstract setOrigin(viewOrg: Point3d): void;
+
+  /**  Set the extents of this view */
   public abstract setExtents(viewDelta: Vector3d): void;
+
+  /** Change the rotation of the view.
+   *  @note rot must be ortho-normal. For 2d views, only the rotation angle about the z axis is used.
+   */
   public abstract setRotation(viewRot: RotMatrix): void;
+
+  /**  Get the target point of the view. If there is no camera, Center() is returned. */
   public getTargetPoint(): Point3d { return this.getCenter(); }
+
+  /**  Get the point at the geometric center of the view. */
   public getCenter(): Point3d {
     const delta = this.getRotation().transpose().multiplyVector(this.getExtents());
     return this.getOrigin().plusScaled(delta, 0.0);
@@ -395,7 +407,7 @@ export abstract class ViewDefinition extends DefinitionElement {
 
   protected getExtentLimits() { return { minExtent: Constant.oneMillimeter, maxExtent: 2.0 * Constant.diameterOfEarth }; }
   public setupDisplayStyle(style: DisplayStyle) { this._displayStyle = style; this._displayStyleId = style.id; }
-  public getDetails(): any { if (!this.props.viewDetails) this.props.viewDetails = new Object(); return this.props.viewDetails; }
+  public getDetails(): any { if (!this.jsonProperties.viewDetails) this.jsonProperties.viewDetails = new Object(); return this.jsonProperties.viewDetails; }
 
   protected adjustAspectRatio(windowAspect: number): void {
     const extents = this.getExtents();
@@ -496,49 +508,37 @@ export abstract class ViewDefinition extends DefinitionElement {
   /** Set the AuxiliaryCoordinateSystem for this view. */
   public setAuxiliaryCoordinateSystem(acsId: Id) {
     if (acsId.isValid())
-        this.setDetail("acs", acsId.toString());
+      this.setDetail("acs", acsId.toString());
     else
-        this.removeDetail("acs");
+      this.removeDetail("acs");
   }
 
-  // //! Query if the specified Category is displayed in this view
-  // bool ViewsCategory(DgnCategoryId id) {return GetCategorySelector().IsCategoryViewed(id); }
+  /** Query if the specified Category is displayed in this view */
+  public viewsCategory(id: Id): boolean { return this._categorySelector!.isCategoryViewed(id); }
 
-  // //! Get the origin of this view
-  // DPoint3d GetOrigin() const { return _GetOrigin();}
+  /**  Get the aspect ratio (width/height) of this view */
+  public getAspectRatio(): number { const extents = this.getExtents(); return extents.x / extents.y; }
 
-  // //! Set the origin of this view
-  // void SetOrigin(DPoint3dCR origin) {_SetOrigin(origin); }
+  /** Get the aspect ratio skew (x/y, usually 1.0) that can be used to exaggerate one axis of the view. */
+  public getAspectRatioSkew(): number { return JsonUtils.asDouble(this.getDetail("aspectSkew"), 1.0); }
 
-  // //! Get the extents of this view
-  // DVec3d GetExtents() const { return _GetExtents();}
+  /** Set the aspect ratio skew for this view */
+  public setAspectRatioSkew(val: number) {
+    if (val === 1.0) {
+      this.removeDetail("aspectSkew");
+    } else {
+      this.setDetail("aspectSkew", val);
+    }
+  }
 
-  // //! Get the aspect ratio (width/height) of this view
-  // double GetAspectRatio() const { auto extents= GetExtents(); return extents.x / extents.y;}
+  /** Get the unit vector that points in the view X (left-to-right) direction. */
+  public getXVector(): Vector3d { return this.getRotation().getRow(0); }
 
-  // //! Set the extents of this view
-  // void SetExtents(DVec3dCR delta) {_SetExtents(delta); }
-
-  // RotMatrix GetRotation() const { return _GetRotation();}
-
-  // //! Change the rotation of the view.
-  // //! @note rot must be orthonormal. For 2d views, only the rotation angle about the z axis is used.
-  // void SetRotation(RotMatrixCR rot) {_SetRotation(rot); }
-
-  // //! Get the target point of the view. If there is no camera, Center() is returned.
-  // DPoint3d GetTargetPoint() const { return _GetTargetPoint();}
-
-  // //! Get the point at the geometric center of the view.
-  // DGNPLATFORM_EXPORT DPoint3d GetCenter() const;
-
-  // //! Get the unit vector that points in the view X (left-to-right) direction.
-  // DVec3d GetXVector() const { DVec3d v; GetRotation().GetRow(v, 0); return v;}
-
-  // //! Get the unit vector that points in the view Y (bottom-to-top) direction.
-  // DVec3d GetYVector() const { DVec3d v; GetRotation().GetRow(v, 1); return v;}
+  /**  Get the unit vector that points in the view Y (bottom-to-top) direction. */
+  public getYVector(): Vector3d { return this.getRotation().getRow(1); }
 
   // //! Get the unit vector that points in the view Z (front-to-back) direction.
-  // DVec3d GetZVector() const { DVec3d v; GetRotation().GetRow(v, 2); return v;}
+  public getZVector(): Vector3d { return this.getRotation().getRow(2); }
 
   // //! Change the view orientation to one of the standard views.
   // //! @param[in] standardView the rotation to which the view should be set.

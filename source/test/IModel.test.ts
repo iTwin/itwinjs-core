@@ -3,11 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { ColorDef, IModel, Id } from "../IModel";
+import { IModel, Id } from "../IModel";
+import { ColorDef } from "../Render";
 import { BeSQLite } from "../Constants";
-import { Code, CreateParams } from "../Element";
+import { Code, IElement } from "../Element";
+import { EcRegistry } from "../EcRegistry";
 import { ModelSelector } from "../ViewDefinition";
 import { Elements } from "../Elements";
+export { Category } from "../Category";
 
 declare const __dirname: string;
 
@@ -22,7 +25,7 @@ class IModelTestUtils {
 
 describe("iModel", () => {
 
-  it("should open an existing BIM file", async () => {
+  it("should open and existing iModel", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     assert(imodel);
   });
@@ -31,13 +34,13 @@ describe("iModel", () => {
 
 describe("Elements", async () => {
 
-  it("should load a known element by ID from an existing BIM file", async () => {
+  it("should load a known element by Id from an existing iModel", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     assert(imodel);
     const elements: Elements = imodel.Elements;
     assert(elements);
-    const el = await elements.getElementById(new Id([0, 51]));
-    assert(el !== null);
+    const el = await elements.getElementById(new Id([0, 30]));
+    assert(el != null);
   });
 
 });
@@ -64,28 +67,32 @@ describe("ElementId", () => {
     const id7 = new Id(v6);
     assert(id6.equals(id7));
 
-    const t1 = {a: id7};
+    const t1 = { a: id7 };
     const j7 = JSON.stringify(t1);
     const p1 = JSON.parse(j7);
-    const i8 =  new Id(p1.a);
+    const i8 = new Id(p1.a);
     assert(i8.equals(id7));
   });
 
   it("Model Selectors should hold models", () => {
     const imodel1 = new IModel();
-    const params: CreateParams = {
-      iModel: imodel1,
-      className: "bis.Element",
-      modelId: new Id(1, 1),
+    const params: IElement = {
+      _iModel: imodel1,
+      schemaName: "BisCore",
+      className: "ModelSelector",
+      model: new Id(1, 1),
       code: Code.createDefault(),
       id: new Id(),
     };
 
-    const selector1 = new ModelSelector(params);
-    assert(!selector1.id.isValid());
-    selector1.addModel(new Id(2, 1));
-    selector1.addModel(new Id(2, 1));
-    selector1.addModel(new Id(2, 3));
+    const selector1 = EcRegistry.create(params) as ModelSelector;
+    assert(selector1 !== undefined);
+    const a = new ModelSelector(params);
+    if (selector1)  {
+      selector1.addModel(new Id(2, 1));
+      selector1.addModel(new Id(2, 1));
+      selector1.addModel(new Id(2, 3));
+      }
   });
 
   it("ColorDef should compare properly", () => {

@@ -19,12 +19,12 @@ export class IModel {
    */
   // *** NEEDS WORK: define app- and service-specific versions of this function
   public async openDgnDb(fileName: string, mode?: BeSQLite.OpenMode): Promise<BeSQLite.DbResult> {
-      if (!mode)
-        mode = BeSQLite.OpenMode.Readonly;
-      if (!this.db)
-        this.db = await new DgnDb();
-      return this.db.openDgnDb(fileName, mode);
-    }
+    if (!mode)
+      mode = BeSQLite.OpenMode.Readonly;
+    if (!this.db)
+      this.db = await new DgnDb();
+    return this.db.openDgnDb(fileName, mode);
+  }
 
   /** Get access to the Elements in the iModel */
   public get Elements(): Elements {
@@ -56,7 +56,13 @@ export class Id {
    * @param bId an integer identifying the IModel id
    * @param lId an integer with the local id
    */
-  constructor(bId?: number | number[] | string, lId?: number) {
+  constructor(bId?: Id | number | number[] | string, lId?: number) {
+    if (bId instanceof Id) {
+      this.hi = bId.hi;
+      this.lo = bId.lo;
+      return;
+    }
+
     if (Array.isArray(bId)) {
       this.hi = bId[0] | 0;
       this.lo = Math.trunc(bId[1]);
@@ -105,6 +111,10 @@ export class Id {
   public equals(other: Id): boolean {
     return this.hi === other.hi && this.lo === other.lo;
   }
+
+  public static areEqual(a: Id | undefined, b: Id | undefined): boolean {
+    return (a === b) || (a != null && b != null && a.equals(b));
+  }
 }
 
 /** A bounding box aligned to the orientation of an Element */
@@ -131,56 +141,6 @@ export class GeometryStream {
 
 export class Placement3d {
   public constructor(public origin?: Point3d, public angles?: YawPitchRollAngles, public boundingBox?: ElementAlignedBox3d) { }
-}
-
-const scratchBytes: Uint8Array = new Uint8Array(4);
-const scratchUInt32: Uint32Array = new Uint32Array(scratchBytes.buffer);
-
-/** an RGBA value for a color */
-export class ColorDef {
-  private _rgba: number;
-
-  public constructor(rgba?: number) { this.rgba = rgba ? rgba : 0; }
-
-  public static from(r: number, g: number, b: number, a?: number, result?: ColorDef) {
-    scratchBytes[0] = r;
-    scratchBytes[1] = g;
-    scratchBytes[2] = b;
-    scratchBytes[3] = a ? a : 0;
-    if (result)
-      result.rgba = scratchUInt32[0];
-    else
-      result = new ColorDef(scratchUInt32[0]);
-    return result;
-  }
-
-  public getColors() { scratchUInt32[0] = this._rgba; return { r: scratchBytes[0], g: scratchBytes[1], b: scratchBytes[2], a: scratchBytes[3] }; }
-  public get rgba(): number { return this._rgba; }
-  public set rgba(rgba: number) { this._rgba = rgba | 0; }
-
-  public equals(other: ColorDef): boolean { return this._rgba === other._rgba; }
-
-  public static black(): ColorDef { return new ColorDef(); }
-  public static white(): ColorDef { return ColorDef.from(0xff, 0xff, 0xff); }
-  public static red(): ColorDef { return ColorDef.from(0xff, 0, 0); }
-  public static green(): ColorDef { return ColorDef.from(0, 0xff, 0); }
-  public static blue(): ColorDef { return ColorDef.from(0, 0, 0xff); }
-  public static Yellow(): ColorDef { return ColorDef.from(0xff, 0xff, 0); }
-  public static cyan(): ColorDef { return ColorDef.from(0, 0xff, 0xff); }
-  public static orange(): ColorDef { return ColorDef.from(0xff, 0xa5, 0); }
-  public static magenta(): ColorDef { return ColorDef.from(0xff, 0, 0xff); }
-  public static brown(): ColorDef { return ColorDef.from(0xa5, 0x2a, 0x2a); }
-  public static lightGrey(): ColorDef { return ColorDef.from(0xbb, 0xbb, 0xbb); }
-  public static mediumGrey(): ColorDef { return ColorDef.from(0x88, 0x88, 0x88); }
-  public static darkGrey(): ColorDef { return ColorDef.from(0x55, 0x55, 0x55); }
-  public static darkRed(): ColorDef { return ColorDef.from(0x80, 0, 0); }
-  public static darkGreen(): ColorDef { return ColorDef.from(0, 0x80, 0); }
-  public static darkBlue(): ColorDef { return ColorDef.from(0, 0, 0x80); }
-  public static darkYellow(): ColorDef { return ColorDef.from(0x80, 0x80, 0); }
-  public static darkOrange(): ColorDef { return ColorDef.from(0xff, 0x8c, 0); }
-  public static darkCyan(): ColorDef { return ColorDef.from(0, 0x80, 0x80); }
-  public static darkMagenta(): ColorDef { return ColorDef.from(0x80, 0, 0x80); }
-  public static darkBrown(): ColorDef { return ColorDef.from(0x8b, 0x45, 0x13); }
 }
 
 export class JsonUtils {

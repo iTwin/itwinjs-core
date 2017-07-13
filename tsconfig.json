@@ -39,7 +39,7 @@
     // "typeRoots": [],                       /* List of folders to include type definitions from. */
     "types": [
       "mocha"
-    ]                           /* Type declaration files to be included in compilation. */
+    ],                           /* Type declaration files to be included in compilation. */
     // "allowSyntheticDefaultImports": true,  /* Allow default imports from modules with no default export. This does not affect code emit, just typechecking. */
                                               
     /* Source Map Options */                  
@@ -49,7 +49,7 @@
     // "inlineSources": true,                 /* Emit the source alongside the sourcemaps within a single file; requires '--inlineSourceMap' or '--sourceMap' to be set. */
                                               
     /* Experimental Options */                
-    // "experimentalDecorators": true,        /* Enables experimental support for ES7 decorators. */
-    // "emitDecoratorMetadata": true,         /* Enables experimental support for emitting type metadata for decorators. */
+    "experimentalDecorators": true        /* Enables experimental support for ES7 decorators. */
+    // "emitDecoratorMetadata": true         /* Enables experimental support for emitting type metadata for decorators. */
   }
 }
