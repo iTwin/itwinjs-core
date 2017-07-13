@@ -37,7 +37,7 @@ describe("Elements", async () => {
     const elements: Elements = imodel.Elements;
     assert(elements);
     const el = await elements.getElementById(new Id([0, 51]));
-    assert(el != null);
+    assert(el !== null);
   });
 
 });
