@@ -104,7 +104,6 @@ describe("ECClassMetaData", () => {
   });
 
   it("should get metadata for class, and we'll see a struct-typed property", async () => {
-    debugger;
     const imodel: IModel = await ECSqlStatementTestUtils.openIModel("test.bim", true);
     const metadatastr: string = await imodel.getDgnDb().getECClassMetaData("biscore", "AnnotationTableCell");
     assert.isNotNull(metadatastr);
