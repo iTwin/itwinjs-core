@@ -115,3 +115,24 @@ describe("ECClassMetaData", () => {
     assert.equal(obj.cellIndex.structECProperty.type, "AnnotationTableCellIndex");
   });
 });
+
+class Base {
+  public static staticProperty: string = "base";
+}
+
+class Derived extends Base {
+}
+
+describe("Static Properties", () => {
+
+  it("should be inherited, and the subclass should get its own copy", async () => {
+    assert.equal(Base.staticProperty, "base");
+    assert.equal(Derived.staticProperty, "base"); // Derived inherits Base's staticProperty (via its prototype)
+    Derived.staticProperty = "derived";           // Derived gets its own copy of staticProperty
+    assert.equal(Base.staticProperty, "base");      // Base's staticProperty remains as it was
+    assert.equal(Derived.staticProperty, "derived"); // Derived's staticProperty is now different
+    const d = new Derived();
+    assert.equal(Object.getPrototypeOf(d).constructor.staticProperty, "derived"); // Instances of Derived see Derived.staticProperty
+  });
+
+});
