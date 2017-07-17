@@ -84,10 +84,10 @@ describe("ECClassMetaData", () => {
     }
     assert.isTrue(foundClassHasHandler);
     assert.isTrue(foundClassHasCurrentTimeStampProperty);
-    assert.isDefined(obj.federationGuid);
-    assert.isDefined(obj.federationGuid.primitiveECProperty);
-    assert.equal(obj.federationGuid.primitiveECProperty.type, "binary");
-    assert.equal(obj.federationGuid.primitiveECProperty.extendedType, "BeGuid");
+    assert.isDefined(obj.properties.federationGuid);
+    assert.isDefined(obj.properties.federationGuid.primitiveECProperty);
+    assert.equal(obj.properties.federationGuid.primitiveECProperty.type, "binary");
+    assert.equal(obj.properties.federationGuid.primitiveECProperty.extendedType, "BeGuid");
   });
 
   it("should get metadata for CA class just as well (and we'll see an array-typed property)", async () => {
@@ -97,10 +97,10 @@ describe("ECClassMetaData", () => {
     assert.isString(metadatastr);
     assert.notEqual(metadatastr.length, 0);
     const obj: any = JSON.parse(metadatastr);
-    assert.isDefined(obj.restrictions);
-    assert.isDefined(obj.restrictions.primitveArrayECProperty);
-    assert.equal(obj.restrictions.primitveArrayECProperty.type, "string");
-    assert.equal(obj.restrictions.primitveArrayECProperty.minOccurs, 0);
+    assert.isDefined(obj.properties.restrictions);
+    assert.isDefined(obj.properties.restrictions.primitveArrayECProperty);
+    assert.equal(obj.properties.restrictions.primitveArrayECProperty.type, "string");
+    assert.equal(obj.properties.restrictions.primitveArrayECProperty.minOccurs, 0);
   });
 
   it("should get metadata for class, and we'll see a struct-typed property", async () => {
@@ -110,9 +110,9 @@ describe("ECClassMetaData", () => {
     assert.isString(metadatastr);
     assert.notEqual(metadatastr.length, 0);
     const obj: any = JSON.parse(metadatastr);
-    assert.isDefined(obj.cellIndex);
-    assert.isDefined(obj.cellIndex.structECProperty);
-    assert.equal(obj.cellIndex.structECProperty.type, "AnnotationTableCellIndex");
+    assert.isDefined(obj.properties.cellIndex);
+    assert.isDefined(obj.properties.cellIndex.structECProperty);
+    assert.equal(obj.properties.cellIndex.structECProperty.type, "AnnotationTableCellIndex");
   });
 });
 
@@ -128,11 +128,13 @@ describe("Static Properties", () => {
   it("should be inherited, and the subclass should get its own copy", async () => {
     assert.equal(Base.staticProperty, "base");
     assert.equal(Derived.staticProperty, "base"); // Derived inherits Base's staticProperty (via its prototype)
-    Derived.staticProperty = "derived";           // Derived gets its own copy of staticProperty
+    Derived.staticProperty = "derived";           // Derived now gets its own copy of staticProperty
     assert.equal(Base.staticProperty, "base");      // Base's staticProperty remains as it was
     assert.equal(Derived.staticProperty, "derived"); // Derived's staticProperty is now different
     const d = new Derived();
     assert.equal(Object.getPrototypeOf(d).constructor.staticProperty, "derived"); // Instances of Derived see Derived.staticProperty
+    const b = new Base();
+    assert.equal(Object.getPrototypeOf(b).constructor.staticProperty, "base"); // Instances of Base see Base.staticProperty
   });
 
 });

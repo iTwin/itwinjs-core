@@ -6,10 +6,11 @@ import { assert } from "chai";
 import { IModel, Id } from "../IModel";
 import { ColorDef } from "../Render";
 import { BeSQLite } from "../Constants";
-import { Code, IElement } from "../Element";
+import { Code, IElement, Element } from "../Element";
 import { EcRegistry } from "../EcRegistry";
 import { ModelSelector } from "../ViewDefinition";
 import { Elements } from "../Elements";
+import { Category } from "../Category";
 export { Category } from "../Category";
 
 declare const __dirname: string;
@@ -30,6 +31,13 @@ describe("iModel", () => {
     assert(imodel);
   });
 
+  it("should get ECClass metadata for various classes", async () => {
+    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
+    const elementECClass = await Element.getECClass(imodel, "BisCore", "Element");
+    const categoryECClass = await Category.getECClass(imodel, "BisCore", "Category");
+    assert.equal(elementECClass.name, "Element");
+    assert.equal(categoryECClass.name, "Category");
+  });
 });
 
 describe("Elements", async () => {
