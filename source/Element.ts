@@ -86,11 +86,11 @@ export interface IGeometricElement extends IElement {
 @registerEcClass("BisCore.GeometricElement")
 export class GeometricElement extends Element {
   public category: Id;
-  public geom?: GeometryStream;
+  public geom: GeometryStream | null;
   public constructor(opts: IGeometricElement) {
     super(opts);
     this.category = opts.category ? opts.category : new Id();
-    this.geom = opts.geom;
+    this.geom = opts.geom ? opts.geom : null;
   }
 }
 

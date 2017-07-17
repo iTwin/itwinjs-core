@@ -7,11 +7,11 @@ import { Appearance, SubCategoryOverride } from "./Category";
 import { ViewFlags, HiddenLine, ColorDef } from "./Render";
 import { Light, LightType } from "./Lighting";
 import { Id, JsonUtils } from "./IModel";
-import { Vector3d, Point3d, Range3d, RotMatrix, Transform } from "../../geometry-core/lib/PointVector";
-import { AxisOrder } from "../../geometry-core/lib/Geometry";
+import { Vector3d, Point3d, Range3d, RotMatrix, Transform, YawPitchRollAngles } from "../../geometry-core/lib/PointVector";
+import { AxisOrder, Angle, Geometry } from "../../geometry-core/lib/Geometry";
 import { Map4d } from "../../geometry-core/lib/Geometry4d";
 import { Constant } from "../../geometry-core/lib/Constant";
-import { Model } from "./Model";
+//import { Model } from "./Model";
 import { registerEcClass } from "./EcRegistry";
 
 export class ViewController { }
@@ -290,6 +290,7 @@ export class CategorySelector extends DefinitionElement {
 /** Parameters used to construct a ViewDefinition */
 export interface IViewDefinition extends IElement {
   categorySelector?: CategorySelector;
+  displayStyle?: DisplayStyle;
 }
 
 export enum ViewportStatus {
@@ -324,9 +325,8 @@ export abstract class ViewDefinition extends DefinitionElement {
   protected clearState(): void { this._categorySelector = undefined; this._displayStyle = undefined; }
   protected constructor(opts: IViewDefinition) { super(opts); if (opts.categorySelector) this.setCategorySelector(opts.categorySelector); }
 
-  public abstract supplyController(): ViewController;
-  public abstract isValidBaseModel(model: Model): boolean;
-  public abstract viewsModel(mid: Id): boolean;
+ // public abstract supplyController(): ViewController;
+  // public abstract viewsModel(mid: Id): boolean;
 
   /**  Get the origin of this view */
   public abstract getOrigin(): Point3d;
@@ -437,8 +437,7 @@ export abstract class ViewDefinition extends DefinitionElement {
     this.setExtents(extents);
   }
 
-  private validateViewDelta(delta: Vector3d, messageNeeded?: boolean): ViewportStatus {
-
+  protected validateViewDelta(delta: Vector3d, messageNeeded?: boolean): ViewportStatus {
     const limit = this.getExtentLimits();
     let error = ViewportStatus.Success;
 
@@ -499,6 +498,18 @@ export abstract class ViewDefinition extends DefinitionElement {
   // TemplateViewDefinition2dP ToTemplateView2dP() {return const_cast<TemplateViewDefinition2dP>(ToTemplateView2d()); }
   // TemplateViewDefinition3dP ToTemplateView3dP() {return const_cast<TemplateViewDefinition3dP>(ToTemplateView3d()); }
 
+  /** Get the CategorySelector for this ViewDefinition.
+   *  @note this method may only be called on a writeable copy of a ViewDefinition.
+   */
+  public getCategorySelector() {/*NEEDS_WORK*/ return this._categorySelector; }
+  public getCategorySelectorId() { return this._categorySelectorId; }
+
+  /** Get the DisplayStyle for this ViewDefinition
+   *  @note this is a non-const method and may only be called on a writeable copy of a ViewDefinition.
+   */
+  public getDisplayStyle() {/*NEEDS_WORK*/ return this._displayStyle; }
+  public getDisplayStyleId() { return this._displayStyleId; }
+
   /** Set the CategorySelector for this view. */
   public setCategorySelector(categories: CategorySelector) { this._categorySelector = categories; this._categorySelectorId = categories.id; }
 
@@ -507,11 +518,11 @@ export abstract class ViewDefinition extends DefinitionElement {
 
   /** Set the AuxiliaryCoordinateSystem for this view. */
   public setAuxiliaryCoordinateSystem(acsId: Id) {
-    if (acsId.isValid())
-      this.setDetail("acs", acsId.toString());
-    else
-      this.removeDetail("acs");
-  }
+  if (acsId.isValid())
+    this.setDetail("acs", acsId.toString());
+  else
+    this.removeDetail("acs");
+}
 
   /** Query if the specified Category is displayed in this view */
   public viewsCategory(id: Id): boolean { return this._categorySelector!.isCategoryViewed(id); }
@@ -524,12 +535,12 @@ export abstract class ViewDefinition extends DefinitionElement {
 
   /** Set the aspect ratio skew for this view */
   public setAspectRatioSkew(val: number) {
-    if (val === 1.0) {
-      this.removeDetail("aspectSkew");
-    } else {
-      this.setDetail("aspectSkew", val);
-    }
+  if (val === 1.0) {
+    this.removeDetail("aspectSkew");
+  } else {
+    this.setDetail("aspectSkew", val);
   }
+}
 
   /** Get the unit vector that points in the view X (left-to-right) direction. */
   public getXVector(): Vector3d { return this.getRotation().getRow(0); }
@@ -663,3 +674,372 @@ export abstract class ViewDefinition extends DefinitionElement {
 //          - View volumes where one dimension is very small or large relative to the other dimensions (e.g. "long skinny telescope" views,
 //            or "wide and shallow slices", etc.) are problematic and disallowed based on ratio limits.
 // */
+
+/** The current position, lens angle, and focus distance of a camera. */
+export class Camera {
+  public lens: Angle;
+  public focusDistance: number = 0.0;
+  public eye: Point3d = new Point3d(0.0, 0.0, 0.0);
+
+  public static isValidLensAngle(val: Angle) { return val.radians() > (Math.PI / 8.0) && val < Angle.createRadians(Math.PI); }
+  public invalidateFocus() { this.focusDistance = 0.0; }
+  public isFocusValid() { return this.focusDistance > 0.0 && this.focusDistance < 1.0e14; }
+  public getFocusDistance() { return this.focusDistance; }
+  public setFocusDistance(dist: number) { this.focusDistance = dist; }
+  public isLensValid() { return Camera.isValidLensAngle(this.lens); }
+  public validateLens() { if (!this.isLensValid()) this.lens = Angle.createRadians(Math.PI / 2.0); }
+  public getLensAngle() { return this.lens; }
+  public setLensAngle(angle: Angle) { this.lens = angle; }
+  public getEyePoint() { return this.eye; }
+  public setEyePoint(pt: Point3d) { this.eye = pt; }
+  public isValid() { return this.isLensValid() && this.isFocusValid(); }
+  public isEqual(other: Camera) { return this.lens === other.lens && this.focusDistance === other.focusDistance && this.eye.isExactEqual(other.eye); }
+}
+
+/** Parameters used to construct a ViewDefinition3d */
+export interface IViewDefinition3d extends IViewDefinition {
+  cameraOn?: boolean;    // if true, m_camera is valid.
+  origin?: Point3d;       // The lower left back corner of the view frustum.
+  extents?: Vector3d; // The extent of the view frustum.
+  angles?: YawPitchRollAngles; // Rotation of the view frustum.
+  camera?: Camera;  // The camera used for this view.
+  displayStyle?: DisplayStyle3d;
+}
+
+/** Defines a view of 3d models. */
+@registerEcClass("BisCore.ViewDefinition3d")
+export abstract class ViewDefinition3d extends ViewDefinition {
+  protected _cameraOn: boolean;    // if true, m_camera is valid.
+  public origin: Point3d;    // The lower left back corner of the view frustum.
+  public extents: Vector3d; // The extent of the view frustum.
+  public rotation: RotMatrix; // Rotation of the view frustum.
+  public camera: Camera;  // The camera used for this view.
+
+  // protected setupFromFrustum(Frustum const& inFrustum: Frustum): ViewportStatus;
+  // protected getTargetPoint(): Point3d;
+
+  protected static calculateMaxDepth(delta: Vector3d, zVec: Vector3d): number {
+    // We are going to limit maximum depth to a value that will avoid subtractive cancellation
+    // errors on the inverse frustum matrix. - These values will occur when the Z'th row values
+    // are very small in comparison to the X-Y values.  If the X-Y values are exactly zero then
+    // no error is possible and we'll arbitrarily limit to 1.0E8.
+    const depthRatioLimit = 1.0E8;          // Limit for depth Ratio.
+    const maxTransformRowRatio = 1.0E5;
+    const minXYComponent = Math.min(Math.abs(zVec.x), Math.abs(zVec.y));
+    const maxDepthRatio = (0.0 === minXYComponent) ? depthRatioLimit : Math.min((maxTransformRowRatio / minXYComponent), depthRatioLimit);
+    return Math.max(delta.x, delta.y) * maxDepthRatio;
+  }
+
+  public getOrigin(): Point3d { return this.origin; }
+  public getExtents(): Vector3d { return this.extents; }
+  public getRotation(): RotMatrix { return this.rotation; }
+  public setOrigin(origin: Point3d) { this.origin = origin; }
+  public setExtents(extents: Vector3d) { this.extents = extents; }
+  public setRotation(rot: RotMatrix) { this.rotation = rot; }
+  protected enableCamera() { this._cameraOn = true; }
+  public supportsCamera() { return true; }
+  public get cameraOn() { return this._cameraOn; }
+
+  private static minimumFrontDistance() { return 300 * Constant.oneMillimeter; }
+  // void VerifyFocusPlane();//!< private
+  // bool IsEyePointAbove(double elevation) const { return !IsCameraOn() ? (GetZVector().z > 0) : (GetEyePoint().z > elevation);}//!< private
+  // DGNPLATFORM_EXPORT DPoint3d ComputeEyePoint(Frustum const& frust) const ;//!< private
+
+  public constructor(opt: IViewDefinition3d) {
+    super(opt);
+    this._cameraOn = opt.cameraOn ? opt.cameraOn : false;
+    this.origin = opt.origin ? opt.origin : new Point3d();
+    this.extents = opt.extents ? opt.extents : new Vector3d();
+    this.rotation = opt.angles ? opt.angles.toRotMatrix() : RotMatrix.createIdentity();
+    this.camera = opt.camera ? opt.camera : new Camera();
+    if (opt.displayStyle)
+      this.setupDisplayStyle3d(opt.displayStyle)
+  }
+
+  // explicit ViewDefinition3d(CreateParams const& params) : T_Super(params), m_cameraOn(params.m_cameraOn), m_origin(params.m_origin), m_extents(params.m_extents),
+  //   m_rotation(params.m_rotation), m_cameraDef(params.m_cameraDef) {if (params.m_displayStyle.IsValid()) SetDisplayStyle3d(*params.m_displayStyle); }
+
+  public getDisplayStyle3d() { return this.getDisplayStyle() as DisplayStyle3d; }
+  public setupDisplayStyle3d(style: DisplayStyle3d) { super.setupDisplayStyle(style); }
+
+  /**  Turn the camera off for this view. After this call, the camera parameters in this view definition are ignored and views that use it will
+   *  display with an orthographic (infinite focal length) projection of the view volume from the view direction. 
+   *  @note To turn the camera back on, call LookAt
+   */
+  public turnCameraOff() { this._cameraOn = false; }
+
+  /** Determine whether the camera is valid for this view */
+  public isCameraValid() { return this.camera.isValid(); }
+
+  /**  Calculate the lens angle formed by the current delta and focus distance */
+  public calcLensAngle(): Angle {
+    const maxDelta = Math.max(this.extents.x, this.extents.y);
+    return Angle.createRadians(2.0 * Math.atan2(maxDelta * 0.5, this.camera.getFocusDistance()));
+  }
+
+  /**  Position the camera for this view and point it at a new target point.
+   * @param[in] eyePoint The new location of the camera.
+   * @param[in] targetPoint The new location to which the camera should point. This becomes the center of the view on the focus plane.
+   * @param[in] upVector A vector that orients the camera's "up" (view y). This vector must not be parallel to the vector from eye to target.
+   * @param[in] viewDelta The new size (width and height) of the view rectangle. The view rectangle is on the focus plane centered on the targetPoint.
+   * If viewDelta is nullptr, the existing size is unchanged.
+   * @param[in] frontDistance The distance from the eyePoint to the front plane. If nullptr, the existing front distance is used.
+   * @param[in] backDistance The distance from the eyePoint to the back plane. If nullptr, the existing back distance is used.
+   * @return a status indicating whether the camera was successfully positioned. See values at #ViewportStatus for possible errors.
+   * @note If the aspect ratio of viewDelta does not match the aspect ratio of a DgnViewport into which this view is displayed, it will be
+   * adjusted when the DgnViewport is synchronized from this view.
+   * @note This method modifies this ViewController. If this ViewController is attached to DgnViewport, you must call DgnViewport::SynchWithViewController
+   * to see the new changes in the DgnViewport.
+   */
+  public lookAt(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, newExtents?: Vector3d, frontDistance?: number, backDistance?: number): ViewportStatus {
+    const yVec = upVector.normalize();
+    if (!yVec) // up vector zero length?
+      return ViewportStatus.InvalidUpVector;
+
+    const zVec = this.getEyePoint().vectorTo(targetPoint); // z defined by direction from eye to target
+    const focusDist = zVec.normalized(zVec).mag; // set focus at target point
+
+    if (focusDist <= ViewDefinition3d.minimumFrontDistance())      // eye and target are too close together
+      return ViewportStatus.InvalidTargetPoint;
+
+    const xVec = new Vector3d();
+    if (yVec.crossProduct(zVec).normalized(xVec).mag < Geometry.smallMetricDistance)
+      return ViewportStatus.InvalidUpVector;    // up is parallel to z
+
+    if (zVec.crossProduct(xVec).normalized(yVec).mag < Geometry.smallMetricDistance)
+      return ViewportStatus.InvalidUpVector;
+
+    // we now have rows of the rotation matrix
+    const rotation = RotMatrix.createRows(xVec, yVec, zVec);
+
+    backDistance = backDistance ? backDistance : this.getBackDistance();
+    frontDistance = frontDistance ? frontDistance : this.getFrontDistance();
+
+    const delta = newExtents ? new Vector3d(Math.abs(newExtents.x), Math.abs(newExtents.y), this.extents.z) : this.extents;
+
+    frontDistance = Math.max(frontDistance, (.5 * Constant.oneMeter));
+    backDistance = Math.max(backDistance, focusDist + (.5 * Constant.oneMeter));
+
+    if (backDistance < focusDist) // make sure focus distance is in front of back distance.
+      backDistance = focusDist + Constant.oneMillimeter;
+
+    if (frontDistance > focusDist)
+      frontDistance = focusDist - ViewDefinition3d.minimumFrontDistance();
+
+    if (frontDistance < ViewDefinition3d.minimumFrontDistance())
+      frontDistance = ViewDefinition3d.minimumFrontDistance();
+
+    // BeAssert(backDistance > frontDistance);
+    delta.z = (backDistance - frontDistance);
+
+    const frontDelta = delta.scale(frontDistance / focusDist);
+    const stat = this.validateViewDelta(frontDelta, false); // validate window size on front (smallest) plane
+    if (ViewportStatus.Success !== stat)
+      return stat;
+
+    if (delta.z > ViewDefinition3d.calculateMaxDepth(delta, zVec)) // make sure we're not zoomed out too far
+      return ViewportStatus.MaxDisplayDepth;
+
+    // The origin is defined as the lower left of the view rectangle on the focus plane, projected to the back plane.
+    // Start at eye point, and move to center of back plane, then move left half of width. and down half of height
+    const origin = eyePoint.plus3Scaled(zVec, -backDistance, xVec, -0.5 * delta.x, yVec, -0.5 * delta.y);
+
+    this.setEyePoint(eyePoint);
+    this.setRotation(rotation);
+    this.setFocusDistance(focusDist);
+    this.setOrigin(origin);
+    this.setExtents(delta);
+    this.setLensAngle(this.calcLensAngle());
+    this.enableCamera();
+    return ViewportStatus.Success;
+  }
+
+  // //! Position the camera for this view and point it at a new target point, using a specified lens angle.
+  // //! @param[in] eyePoint The new location of the camera.
+  // //! @param[in] targetPoint The new location to which the camera should point. This becomes the center of the view on the focus plane.
+  // //! @param[in] upVector A vector that orients the camera's "up" (view y). This vector must not be parallel to the vector from eye to target.
+  // //! @param[in] fov The angle, in radians, that defines the field-of-view for the camera. Must be between .0001 and pi.
+  // //! @param[in] frontDistance The distance from the eyePoint to the front plane. If nullptr, the existing front distance is used.
+  // //! @param[in] backDistance The distance from the eyePoint to the back plane. If nullptr, the existing back distance is used.
+  // //! @return Status indicating whether the camera was successfully positioned. See values at #ViewportStatus for possible errors.
+  // //! @note The aspect ratio of the view remains unchanged.
+  // //! @note This method modifies this ViewController. If this ViewController is attached to DgnViewport, you must call DgnViewport::SynchWithViewController
+  // //! to see the new changes in the DgnViewport.
+  // DGNPLATFORM_EXPORT ViewportStatus LookAtUsingLensAngle(DPoint3dCR eyePoint, DPoint3dCR targetPoint, DVec3dCR upVector,
+  //   Angle fov, double const* frontDistance=nullptr, double const* backDistance=nullptr);
+
+  // //! Move the camera relative to its current location by a distance in camera coordinates.
+  // //! @param[in] distance to move camera. Length is in world units, direction relative to current camera orientation.
+  // //! @return Status indicating whether the camera was successfully positioned. See values at #ViewportStatus for possible errors.
+  // //! @note This method modifies this ViewController. If this ViewController is attached to DgnViewport, you must call DgnViewport::SynchWithViewController
+  // //! to see the new changes in the DgnViewport.
+  // DGNPLATFORM_EXPORT ViewportStatus MoveCameraLocal(DVec3dCR distance);
+
+  // //! Move the camera relative to its current location by a distance in world coordinates.
+  // //! @param[in] distance in world units.
+  // //! @return Status indicating whether the camera was successfully positioned. See values at #ViewportStatus for possible errors.
+  // //! @note This method modifies this ViewController. If this ViewController is attached to DgnViewport, you must call DgnViewport::SynchWithViewController
+  // //! to see the new changes in the DgnViewport.
+  // DGNPLATFORM_EXPORT ViewportStatus MoveCameraWorld(DVec3dCR distance);
+
+  // //! Rotate the camera from its current location about an axis relative to its current orientation.
+  // //! @param[in] angle The angle to rotate the camera, in radians.
+  // //! @param[in] axis The axis about which to rotate the camera. The axis is a direction relative to the current camera orientation.
+  // //! @param[in] aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is nullptr, the camera rotates in place
+  // //! (i.e. about the current eyePoint).
+  // //! @note Even though the axis is relative to the current camera orientation, the aboutPt is in world coordinates, \b not relative to the camera.
+  // //! @return Status indicating whether the camera was successfully positioned. See values at #ViewportStatus for possible errors.
+  // //! @note This method modifies this ViewController. If this ViewController is attached to DgnViewport, you must call DgnViewport::SynchWithViewController
+  // //! to see the new changes in the DgnViewport.
+  // DGNPLATFORM_EXPORT ViewportStatus RotateCameraLocal(double angle, DVec3dCR axis, DPoint3dCP aboutPt= nullptr);
+
+  // //! Rotate the camera from its current location about an axis in world coordinates.
+  // //! @param[in] angle The angle to rotate the camera, in radians.
+  // //! @param[in] axis The world-based axis (direction) about which to rotate the camera.
+  // //! @param[in] aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is nullptr, the camera rotates in place
+  // //! (i.e. about the current eyePoint).
+  // //! @return Status indicating whether the camera was successfully positioned. See values at #ViewportStatus for possible errors.
+  // //! @note This method modifies this ViewController. If this ViewController is attached to DgnViewport, you must call DgnViewport::SynchWithViewController
+  // //! to see the new changes in the DgnViewport.
+  // DGNPLATFORM_EXPORT ViewportStatus RotateCameraWorld(double angle, DVec3dCR axis, DPoint3dCP aboutPt= nullptr);
+
+  /** Get the distance from the eyePoint to the front plane for this view. */
+  public getFrontDistance() { return this.getBackDistance() - this.extents.z; }
+
+  /** Get the distance from the eyePoint to the back plane for this view. */
+  public getBackDistance() {
+    // backDist is the z component of the vector from the origin to the eyePoint .
+    const eyeOrg = this.origin.vectorTo(this.getEyePoint());
+    this.getRotation().multiplyVector(eyeOrg, eyeOrg);
+    return eyeOrg.z;
+  }
+
+  // //! Place the eyepoint of the camera so it is centered in the view. This removes any 1-point perspective skewing that may be
+  // //! present in the current view.
+  // //! @param[in] backDistance optional, If not nullptr, the new the distance from the eyepoint to the back plane. Otherwise the distance from the
+  // //! current eyepoint is used.
+  // DGNPLATFORM_EXPORT void CenterEyePoint(double const* backDistance=nullptr);
+
+  // //! Center the focus distance of the camera halfway between the front plane and the back plane, keeping the eyepoint,
+  // //! lens angle, rotation, back distance, and front distance unchanged.
+  // //! @note The focus distance, origin, and delta values are modified, but the view encloses the same volume and appears visually unchanged.
+  // DGNPLATFORM_EXPORT void CenterFocusDistance();
+
+  /**  Get the current location of the eyePoint for camera in this view. */
+  public getEyePoint() { return this.camera.eye; }
+
+  /**  Get the lens angle for this view. */
+  public getLensAngle() { return this.camera.lens; }
+
+  /**  Set the lens angle for this view.
+   *  @param[in] angle The new lens angle in radians. Must be greater than 0 and less than pi.
+   *  @note This does not change the view's current field-of-view. Instead, it changes the lens that will be used if the view
+   *  is subsequently modified and the lens angle is used to position the eyepoint.
+   *  @note To change the field-of-view (i.e. "zoom") of a view, pass a new viewDelta to #LookAt
+   */
+  public setLensAngle(angle: Angle) { this.camera.lens = angle; }
+
+  /**  Change the location of the eyePoint for the camera in this view.
+   *  @param[in] pt The new eyepoint.
+   *  @note This method is generally for internal use only. Moving the eyePoint arbitrarily can result in skewed or illegal perspectives.
+   *  The most common method for user-level camera positioning is #LookAt.
+   */
+  public setEyePoint(pt: Point3d) { this.camera.eye = pt; }
+
+  /**  Set the focus distance for this view.
+   *  @note Changing the focus distance changes the plane on which the delta.x and delta.y values lie. So, changing focus distance
+   *  without making corresponding changes to delta.x and delta.y essentially changes the lens angle, causing a "zoom" effect 
+   */
+  public setFocusDistance(dist: number) { this.camera.setFocusDistance(dist); }
+
+  /**  Get the distance from the eyePoint to the focus plane for this view. */
+  public getFocusDistance() { return this.camera.focusDistance; }
+}
+
+/** Parameters used to construct a SpatialDefinition */
+export interface ISpatialViewDefinition extends IViewDefinition3d {
+  modelSelector?: ModelSelector;
+}
+
+/** Defines a view of one or more SpatialModels.
+ *  The list of viewed models is stored by the ModelSelector.
+ */
+export class SpatialViewDefinition extends ViewDefinition3d {
+
+  //   public:
+  //   //! Parameters used to construct a SpatialViewDefinition
+  //   struct CreateParams : T_Super::CreateParams
+  //   {
+  //     DEFINE_T_SUPER(SpatialViewDefinition::T_Super::CreateParams);
+  //     ModelSelectorPtr m_modelSelector;
+
+  //     public:
+  //     CreateParams(DgnDbR db, DgnModelId modelId, DgnClassId classId, DgnCodeCR code, CategorySelectorR categorySelector, DisplayStyle3dR displayStyle, ModelSelectorR modelSelector, Camera const* camera=nullptr)
+  //             : T_Super(db, modelId, classId, code, categorySelector, displayStyle, camera), m_modelSelector(&modelSelector) {}
+
+  //     explicit CreateParams(DgnElement::CreateParams const& params) : T_Super(params) {}
+  //   };
+
+  protected modelSectorId: Id;
+  protected _modelSelector: ModelSelector
+
+  //   DGNPLATFORM_EXPORT DgnDbStatus _ReadSelectParams(BeSQLite::EC::ECSqlStatement &, ECSqlClassParamsCR) override;
+  //   DGNPLATFORM_EXPORT void _ToJson(JsonValueR out, JsonValueCR opts) const override;
+  //   DGNPLATFORM_EXPORT void _BindWriteParams(BeSQLite::EC::ECSqlStatement &, ForInsert) override;
+  //   DGNPLATFORM_EXPORT bool _EqualState(ViewDefinitionR) override;
+  //   DGNPLATFORM_EXPORT DgnDbStatus _OnInsert() override;
+  //   void _OnInserted(DgnElementP copiedFrom) const override {m_modelSelector=nullptr; T_Super::_OnInserted(copiedFrom); }
+  //   void _OnUpdateFinished() const override {m_modelSelector=nullptr; T_Super::_OnUpdateFinished(); }
+  //   DGNPLATFORM_EXPORT void _CopyFrom(DgnElementCR el) override;
+  //   bool _ViewsModel(DgnModelId modelId) override {return GetModelSelector().ContainsModel(modelId); }
+  //   SpatialViewDefinitionCP _ToSpatialView() const override {return this;}
+  //   DGNPLATFORM_EXPORT ViewControllerPtr _SupplyController() const override;
+
+  //   public:
+  //   BE_JSON_NAME(modelSelectorId)
+
+  //     static DgnClassId QueryClassId(DgnDbR db) {return DgnClassId(db.Schemas().GetClassId(BIS_ECSCHEMA_NAME, BIS_CLASS_SpatialViewDefinition)); } //!< private
+
+  //   //! Create a SpatialViewDefinition from CreateParams
+  //   explicit SpatialViewDefinition(CreateParams const& params) : T_Super(params) {if (params.m_modelSelector.IsValid()) SetModelSelector(*params.m_modelSelector); }
+
+  //   //! Construct a SpatialViewDefinition in the specified DefinitionModel
+  //   SpatialViewDefinition(DefinitionModelR model, Utf8StringCR name, CategorySelectorR categories, DisplayStyle3dR displayStyle, ModelSelectorR modelSelector, Camera const* camera = nullptr) :
+  //   T_Super(T_Super::CreateParams(model.GetDgnDb(), model.GetModelId(), QueryClassId(model.GetDgnDb()), CreateCode(model, name), categories, displayStyle, camera)) {SetModelSelector(modelSelector); }
+
+  //   //! Get a writable reference to the ModelSelector for this SpatialViewDefinition
+  //   DGNPLATFORM_EXPORT ModelSelectorR GetModelSelector();
+  //   DgnElementId GetModelSelectorId() const { return m_modelSelectorId;}
+
+  // //! Set the ModelSelector for this SpatialViewDefinition
+  // //! @param[in] models The new ModelSelector.
+  // void SetModelSelector(ModelSelectorR models) {BeAssert(!IsPersistent()); m_modelSelector = &models; m_modelSelectorId = models.GetElementId(); }
+  // };
+
+  // //=======================================================================================
+  // //! Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection.
+  // // @bsiclass                                                      Sam.Wilson    08/16
+  // //=======================================================================================
+  // struct EXPORT_VTABLE_ATTRIBUTE OrthographicViewDefinition : SpatialViewDefinition
+  // {
+  //   DGNELEMENT_DECLARE_MEMBERS(BIS_CLASS_OrthographicViewDefinition, SpatialViewDefinition);
+  //   friend struct ViewElementHandler::OrthographicView;
+
+  //   protected:
+  //   //! Construct a new OrthographicViewDefinition prior to loading it
+  //   explicit OrthographicViewDefinition(CreateParams const& params) : T_Super(params) {}
+
+  //   OrthographicViewDefinitionCP _ToOrthographicView() const override {return this;}
+  //   DGNPLATFORM_EXPORT ViewControllerPtr _SupplyController() const override;
+  //   void _EnableCamera() override final {/* nope */ }
+  //   bool _SupportsCamera() const override final {return false;}
+
+  // public:
+  // //! Construct a new OrthographicViewDefinition in the specified DefinitionModel prior to inserting it
+  // OrthographicViewDefinition(DefinitionModelR model, Utf8StringCR name, CategorySelectorR categories, DisplayStyle3dR displayStyle, ModelSelectorR modelSelector) :
+  // T_Super(CreateParams(model.GetDgnDb(), model.GetModelId(), QueryClassId(model.GetDgnDb()), CreateCode(model, name), categories, displayStyle, modelSelector)) {}
+
+  //     //! Look up the ECClass Id used for OrthographicViewDefinitions within the specified DgnDb
+  //     static DgnClassId QueryClassId(DgnDbR db) {return DgnClassId(db.Schemas().GetClassId(BIS_ECSCHEMA_NAME, BIS_CLASS_OrthographicViewDefinition)); }
+  // };
+}
