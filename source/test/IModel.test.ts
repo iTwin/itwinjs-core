@@ -47,8 +47,12 @@ describe("Elements", async () => {
     assert(imodel);
     const elements: Elements = imodel.Elements;
     assert(elements);
-    const el = await elements.getElementById(new Id([0, 30]));
+    const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
+    const el = await elements.getElement({ code: code1 });
     assert(el != null);
+    const el2 = await elements.getElement({ id: "0x34" });
+    assert(el2 != null);
+
   });
 
 });
@@ -96,11 +100,11 @@ describe("ElementId", () => {
     const selector1 = EcRegistry.create(params) as ModelSelector;
     assert(selector1 !== undefined);
     const a = new ModelSelector(params);
-    if (selector1)  {
+    if (selector1) {
       selector1.addModel(new Id(2, 1));
       selector1.addModel(new Id(2, 1));
       selector1.addModel(new Id(2, 3));
-      }
+    }
   });
 
   it("ColorDef should compare properly", () => {
