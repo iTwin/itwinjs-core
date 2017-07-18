@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id, IModel, GeometryStream, Placement3d } from "./IModel";
 import { registerEcClass } from "./EcRegistry";
+import { JsonUtils } from "../../Bentleyjs-common/lib/JsonUtils";
 
 export interface ICode {
   spec: Id | string;
@@ -108,7 +109,7 @@ export class Element {
     if ((null == this.ecClass) || !this.hasOwnProperty("ecClass")) {
       const p = new Promise<ECClass>((resolve, reject) => {
         imodel.getDgnDb().getECClassMetaData(schemaName, className).then((mstr: string) => {
-          resolve (this.ecClass = JSON.parse(mstr));
+          resolve(this.ecClass = JSON.parse(mstr));
         }).catch((reason: any) => {
           reject(reason);
         });
@@ -128,17 +129,20 @@ export interface IGeometricElement extends IElement {
 @registerEcClass("BisCore.GeometricElement")
 export class GeometricElement extends Element {
   public category: Id;
-  public geom: GeometryStream | null;
+  public geom?: GeometryStream;
   public constructor(opts: IGeometricElement) {
     super(opts);
-    this.category = opts.category ? opts.category : new Id();
-    this.geom = opts.geom ? opts.geom : null;
+    this.category = new Id(opts.category);
+    this.geom = opts.geom;
   }
 }
 
 export class TypeDefinition {
-  public definitionId: Id;
-  public relationshipClass?: string;
+  constructor(public definitionId: Id, public relationshipClass?: string) { }
+  public static fromJSON(json?: any): TypeDefinition {
+    json = json ? json : {};
+    return new TypeDefinition(new Id(json.definitionId), JsonUtils.asString(json.relationshipClass));
+  }
 }
 
 export interface IGeometricElement3d extends IGeometricElement {
@@ -150,10 +154,12 @@ export interface IGeometricElement3d extends IGeometricElement {
 export class GeometricElement3d extends GeometricElement {
   public placement: Placement3d;
   public typeDefinition?: TypeDefinition;
+
   public constructor(opts: IGeometricElement3d) {
     super(opts);
-    this.placement = opts.placement ? opts.placement : new Placement3d();
-    this.typeDefinition = opts.typeDefinition;
+    this.placement = Placement3d.fromJSON(opts.placement);
+    if (opts.typeDefinition)
+      this.typeDefinition = TypeDefinition.fromJSON(opts.typeDefinition)
   }
 }
 

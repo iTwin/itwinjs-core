@@ -112,6 +112,14 @@ export class ColorDef {
 
   public constructor(rgba?: number) { this.rgba = rgba ? rgba : 0; }
 
+  public toJSON(): any { return this._rgba.toString(); }
+  public static fromJSON(json?: any) {
+    if (typeof json === "number")
+      return new ColorDef(json);
+    if (json instanceof ColorDef)
+      return new ColorDef(json.rgba);
+    return new ColorDef();
+  }
   public static from(r: number, g: number, b: number, a?: number, result?: ColorDef) {
     scratchBytes[0] = r;
     scratchBytes[1] = g;
