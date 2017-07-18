@@ -44,9 +44,34 @@ export interface IElement {
   jsonProperties?: any;
 }
 
+export interface ECClassFullname {
+  name: string;
+  schema: string;
+}
+
+export interface CustomAttribute {
+  ecclass: ECClassFullname;
+}
+
+export interface ECProperty {
+  customAttributes: CustomAttribute[];
+}
+
+/**
+ * An outline of ECClass metadata.
+ */
+export interface ECClass {
+  name: string;
+  schema: string;
+  baseClasses: ECClassFullname[];
+  customAttributes: CustomAttribute[];
+  properties: ECProperty[];
+}
+
 /** An element within an iModel */
 @registerEcClass("BisCore.Element")
 export class Element {
+  public static ecClass: any = null;
   public _iModel: IModel;
   public id: Id;
   public model: Id;
@@ -75,6 +100,23 @@ export class Element {
   public getUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = {}; return this.jsonProperties.UserProps; }
   public setUserProperties(nameSpace: string, value: any) { this.getUserProperties()[nameSpace] = value; }
   public removeUserProperties(nameSpace: string) { delete this.getUserProperties()[nameSpace]; }
+
+  /**
+   * Get the specified ECClass metadata
+   */
+  public static getECClass(imodel: IModel, schemaName: string, className: string): Promise<ECClass> {
+    if ((null == this.ecClass) || !this.hasOwnProperty("ecClass")) {
+      const p = new Promise<ECClass>((resolve, reject) => {
+        imodel.getDgnDb().getECClassMetaData(schemaName, className).then((mstr: string) => {
+          resolve (this.ecClass = JSON.parse(mstr));
+        }).catch((reason: any) => {
+          reject(reason);
+        });
+      });
+      return p;
+    }
+    return this.ecClass;
+  }
 }
 
 export interface IGeometricElement extends IElement {
