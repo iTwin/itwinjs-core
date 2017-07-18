@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Element, Code } from "./Element";
+import { Element, Code, IElement } from "./Element";
 import { IModel, Id } from "./IModel";
 import { EcRegistry } from "./EcRegistry";
 
@@ -23,9 +23,18 @@ export class Elements {
    * @return the Element or undefined if the Id is not found
    */
   public async getElement(opts: IElementLoad): Promise<Element | undefined> {
-    const json = await this._iModel.getDgnDb().getElement(JSON.stringify(opts));
-    const stream = JSON.parse(json);
-    stream._iModel = this._iModel;
-    return EcRegistry.create(stream, "BisCore.Element") as Element | undefined;
+    try {
+      const json = await this._iModel.getDgnDb().getElement(JSON.stringify(opts));
+      const stream: IElement = JSON.parse(json) as IElement;
+      stream._iModel = this._iModel;
+      let el = EcRegistry.create(stream) as Element | undefined;
+      if (el === undefined) {
+        await EcRegistry.generateClassFor(stream, this._iModel);
+        el = EcRegistry.create(stream) as Element | undefined;
+      }
+      return el;
+    } catch (e) {
+      return undefined;
+    }
   }
 }
