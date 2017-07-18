@@ -112,7 +112,7 @@ export class ColorDef {
 
   public constructor(rgba?: number) { this.rgba = rgba ? rgba : 0; }
 
-  public toJSON(): any { return this._rgba.toString(); }
+  public toJSON(): any { return this._rgba; }
   public static fromJSON(json?: any) {
     if (typeof json === "number")
       return new ColorDef(json);

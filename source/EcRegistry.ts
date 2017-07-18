@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ECClass, IHasFullClassName, ECClassFullname } from "./Element";
+import { ECClass, FullClassName, ECClassFullname } from "./Element";
 import { IModel } from "./IModel";
 
 /** The mapping between EC class name and the factory to create instances */
 export class EcRegistry {
   public static ecClasses: Map<string, any> = new Map<string, any>();
 
-  public static getFullNameForECClass(fn: ECClassFullname): IHasFullClassName {
+  public static getFullNameForECClass(fn: ECClassFullname): FullClassName {
     return {schemaName: fn.schema, className: fn.name};
   }
 
@@ -16,7 +16,7 @@ export class EcRegistry {
     return (ecclass.schema + "." + ecclass.name).toLowerCase();
   }
 
-  public static create(args: IHasFullClassName, defaultClass?: string): any | undefined {
+  public static create(args: FullClassName, defaultClass?: string): any | undefined {
     if (!args.className || !args.schemaName)
       return undefined;
 
@@ -72,7 +72,7 @@ export class EcRegistry {
 
   /* This function generates a JS class for the specified ECClass and registers it. It also ensures that
       all of the base classes of the ECClass exist and are registered. */
-  public static async generateClassFromFullName(fullClassName: IHasFullClassName, imodel: IModel): Promise<any> {
+  public static async generateClassFromFullName(fullClassName: FullClassName, imodel: IModel): Promise<any> {
     const ecclassJson = await imodel.getDgnDb().getECClassMetaData(fullClassName.schemaName, fullClassName.className);
     if (null == ecclassJson) {
       return undefined;
