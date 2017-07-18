@@ -22,8 +22,8 @@ describe("iModel", () => {
 
   it("should get ECClass metadata for various classes", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const elementECClass = await Element.getECClassFor(imodel, "BisCore", "Element");
-    const categoryECClass = await Category.getECClassFor(imodel, "BisCore", "Category");
+    const elementECClass = await EcRegistry.getRegisteredClass({schema: "BisCore", name: "Element"}, imodel);
+    const categoryECClass = await EcRegistry.getRegisteredClass({schema: "BisCore", name: "Category"}, imodel);
     assert.equal(elementECClass.name, "Element");
     assert.equal(categoryECClass.name, "Category");
   });

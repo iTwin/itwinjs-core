@@ -223,7 +223,7 @@ export class GeometricElement3d extends GeometricElement {
     super(opts);
     this.placement = Placement3d.fromJSON(opts.placement);
     if (opts.typeDefinition)
-      this.typeDefinition = TypeDefinition.fromJSON(opts.typeDefinition)
+      this.typeDefinition = TypeDefinition.fromJSON(opts.typeDefinition);
   }
 }
 

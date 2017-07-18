@@ -8,7 +8,11 @@ import { IModel } from "./IModel";
 export class EcRegistry {
   public static ecClasses: Map<string, any> = new Map<string, any>();
 
-  public static getECClassFullName(ecclass: ECClassFullname) {
+  public static getFullNameForECClass(fn: ECClassFullname): IHasFullClassName {
+    return {schemaName: fn.schema, className: fn.name};
+  }
+
+  public static getECClassFullNameAsKey(ecclass: ECClassFullname) {
     return (ecclass.schema + "." + ecclass.name).toLowerCase();
   }
 
@@ -16,7 +20,7 @@ export class EcRegistry {
     if (!args.className || !args.schemaName)
       return undefined;
 
-    let factory = EcRegistry.ecClasses.get(EcRegistry.getECClassFullName({schema: args.schemaName, name: args.className}));
+    let factory = EcRegistry.ecClasses.get(EcRegistry.getECClassFullNameAsKey({schema: args.schemaName, name: args.className}));
     if (!factory && defaultClass)
       factory = EcRegistry.ecClasses.get(defaultClass.toLowerCase());
     return factory ? new factory(args) : undefined;
@@ -36,7 +40,7 @@ export class EcRegistry {
         def = def + " extends";
         let sep = " ";
         for (const base of ecclass.baseClasses) {
-          def = def + sep + "EcRegistry.ecClasses.get('" + EcRegistry.getECClassFullName(base) + "')";
+          def = def + sep + "EcRegistry.ecClasses.get('" + EcRegistry.getECClassFullNameAsKey(base) + "')";
           sep = ",";
           break; // *** WIP_IMODELJS -- JS has only single inheritance. In order to handle mixins, we have to write functions that actually merge them into the single prototype for the class.
                  // ***   https://addyosmani.com/resources/essentialjsdesignpatterns/book/#mixinpatternjavascript
@@ -68,32 +72,45 @@ export class EcRegistry {
 
   /* This function generates a JS class for the specified ECClass and registers it. It also ensures that
       all of the base classes of the ECClass exist and are registered. */
-  public static async generateClassFor(fullClassName: IHasFullClassName, imodel: IModel): Promise<boolean> {
+  public static async generateClassFromFullName(fullClassName: IHasFullClassName, imodel: IModel): Promise<any> {
     const ecclassJson = await imodel.getDgnDb().getECClassMetaData(fullClassName.schemaName, fullClassName.className);
     if (null == ecclassJson) {
-      return false;
+      return undefined;
     }
     const ecclass: ECClass = JSON.parse(ecclassJson);
 
-    // Make sure that we have all base classes registered
+    // Make sure that we have all base classes registered.
+    // This recurses. I have to know that the super class is defined and registered before defining a derived class.
+    // Therefore, I must await getRegisteredClass.
     if (ecclass.baseClasses.length !== 0) {
-        for (const base of ecclass.baseClasses) {
-          if (!EcRegistry.ecClasses.has(EcRegistry.getECClassFullName(ecclass))) {
-            if (!await this.generateClassFor({schemaName: base.schema, className: base.name}, imodel))
-              return false;
-          }
-        }
+      for (const base of ecclass.baseClasses) {
+        if (!await EcRegistry.getRegisteredClass(base, imodel))
+          return undefined;
+      }
     }
 
     // Generate and register this class
     let jsDef: string = EcRegistry.generateClassDefFromECClass(ecclass);
-    const fullname = EcRegistry.getECClassFullName(ecclass);
+    const fullname = EcRegistry.getECClassFullNameAsKey(ecclass);
     jsDef = jsDef + ' EcRegistry.registerEcClass("' + fullname + '",' + ecclass.name + ");";
     jsDef = jsDef + " " + ecclass.name + ".ecClass=ecclass;";
     eval(jsDef); // eval is OK here, because I generated the expression myself, and I know it's safe.
 
-    return true;
+    return EcRegistry.ecClasses.get(fullname);
   }
+
+  public static async generateClassFromECClassName(ecclass: ECClassFullname, imodel: IModel): Promise<any> {
+    return EcRegistry.generateClassFromFullName(EcRegistry.getFullNameForECClass(ecclass), imodel);
+  }
+
+  public static async getRegisteredClass(ecclass: ECClassFullname, imodel: IModel): Promise<any> {
+    const key = EcRegistry.getECClassFullNameAsKey(ecclass);
+    if (!EcRegistry.ecClasses.has(key)) {
+      return EcRegistry.generateClassFromECClassName(ecclass, imodel);
+    }
+    return EcRegistry.ecClasses.get(key);
+  }
+
 }
 
 /** Decorator function for classes that handle an EC class */

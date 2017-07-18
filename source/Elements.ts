@@ -33,19 +33,55 @@ export class Elements {
         return loaded;
     }
 
-    const json = await this._iModel.getDgnDb().getElement(JSON.stringify(opts));
+    // Must go get the element from the iModel
+    const p = new Promise<Element | undefined>((resolve, reject) => {
 
-    const stream: IElement = JSON.parse(json) as IElement;
-    stream._iModel = this._iModel;
-    let el = EcRegistry.create(stream) as Element | undefined;
-    if (el === undefined) {
-      await EcRegistry.generateClassFor(stream, this._iModel);
-      el = EcRegistry.create(stream) as Element | undefined;
-    }
+      // Start by requesting the element's data.
+      this._iModel.getDgnDb().getElement(JSON.stringify(opts)).then((json: string) => {
 
-    if (el) { // found it, register it in the local cache.
-      this._loaded.set(el.id.toString(), el);
-    }
-    return el;
+        // When that comes back, try to create an element from the data.
+        const stream: IElement = JSON.parse(json) as IElement;
+        stream._iModel = this._iModel;
+
+        let el = EcRegistry.create(stream) as Element | undefined;
+
+        if (el !== undefined) {
+          // This is the normal case. We have the class, and it created an instance. Cache the instance and return it.
+          this._loaded.set(el.id.toString(), el);
+          resolve(el);
+          return;
+        }
+
+        // If the create failed, that's probably because we don't yet have a class.
+        // Request the ECClass metadata from the iModel and generate a class.
+        EcRegistry.generateClassFromFullName(stream, this._iModel).then((cls: any) => {
+
+          // When that comes back, try again to create the element. This time it should work.
+          el = EcRegistry.create(stream) as Element | undefined;
+          if (el) {
+            // Now we are back in the normal case. We have the classs, and we can create an instance. Cache the instance and return it.
+            this._loaded.set(el.id.toString(), el);
+            resolve(el);
+            return;
+          }
+
+          // We got the class, but we still can't create an instance! I don't know what could be wrong!
+          // TBD: assert(false);
+          reject(undefined);
+
+        }).catch((reason: any) => {
+          // We couldn't get the class. That shouldn't happen.
+          // TBD: assert(false);
+          reject(reason);
+        });
+
+      }).catch((reason: any) => {
+        // We couldn't get the element. That's normal.
+        reject(reason);
+      });
+
+    });
+    return p;
   }
+
 }
