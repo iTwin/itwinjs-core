@@ -5,24 +5,13 @@
 import { assert } from "chai";
 import { IModel, Id } from "../IModel";
 import { ColorDef } from "../Render";
-import { BeSQLite } from "@bentley/bentleyjs-common/lib/BeSQLite";
 import { Code, IElement, Element } from "../Element";
 import { EcRegistry } from "../EcRegistry";
 import { ModelSelector } from "../ViewDefinition";
 import { Elements } from "../Elements";
 import { Category } from "../Category";
-export { Category };
-
-declare const __dirname: string;
-
-class IModelTestUtils {
-  public static async openIModel(filename: string, expectSuccess: boolean): Promise<IModel> {
-    const imodel = new IModel();
-    const res: BeSQLite.DbResult = await imodel.openDgnDb(__dirname + "/assets/" + filename); // throws an exception if open fails
-    assert(expectSuccess === (BeSQLite.DbResult.BE_SQLITE_OK === res));
-    return imodel;
-  }
-}
+export { Category } from "../Category";
+import { IModelTestUtils } from "./IModelTestUtils";
 
 describe("iModel", () => {
 

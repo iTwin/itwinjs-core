@@ -4,18 +4,10 @@
 
 import { assert } from "chai";
 import { ECSqlStatement } from "../IModelServiceTier";
-import { BeSQLite } from "@bentley/bentleyjs-common/lib/BeSQLite";
 import { IModel } from "../IModel";
-
-declare const __dirname: string;
+import { IModelTestUtils } from "./IModelTestUtils";
 
 class ECSqlStatementTestUtils {
-  public static async openIModel(filename: string, expectSuccess: boolean): Promise<IModel> {
-    const imodel = new IModel();
-    const res: BeSQLite.DbResult = await imodel.openDgnDb(__dirname + "/assets/" + filename); // throws an exception if open fails
-    assert.equal(expectSuccess, (BeSQLite.DbResult.BE_SQLITE_OK === res));
-    return imodel;
-  }
 
   public static async getStatement(imodel: IModel, ecsql: string, expectSuccess: boolean): Promise<ECSqlStatement> {
     const stmt: ECSqlStatement = await imodel.getDgnDb().getPreparedECSqlSelectStatement(ecsql);
@@ -27,17 +19,17 @@ class ECSqlStatementTestUtils {
 describe("ECSqlStatement", () => {
 
   it("should prepare a SELECT ALL statement", async () => {
-    const imodel: IModel = await ECSqlStatementTestUtils.openIModel("test.bim", true);
+    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     ECSqlStatementTestUtils.getStatement (imodel, "select * from BIS.Element", true);
   });
 
   it("should not prepare an UPDATE statement", async () => {
-    const imodel: IModel = await ECSqlStatementTestUtils.openIModel("test.bim", true);
+    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     ECSqlStatementTestUtils.getStatement (imodel, "update BIS.Element set CodeValue='a'", false);
   });
 
   it("should produce a single row from SELECT ALL using step_once", async () => {
-    const imodel: IModel = await ECSqlStatementTestUtils.openIModel("test.bim", true);
+    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const stmt = await ECSqlStatementTestUtils.getStatement (imodel, "select * from BIS.Element", true);
     const rowdata = await stmt.step_once();
     assert.isNotNull(rowdata);
@@ -47,7 +39,7 @@ describe("ECSqlStatement", () => {
   });
 
   it("should produce an array of rows from SELECT ALL using step_all", async () => {
-    const imodel: IModel = await ECSqlStatementTestUtils.openIModel("test.bim", true);
+    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const stmt = await ECSqlStatementTestUtils.getStatement (imodel, "select * from BIS.Element", true);
     const allrowsdata = await stmt.step_all();
     assert.isNotNull(allrowsdata);
@@ -61,7 +53,7 @@ describe("ECSqlStatement", () => {
 describe("ECClassMetaData", () => {
 
   it("should get metadata for class", async () => {
-    const imodel: IModel = await ECSqlStatementTestUtils.openIModel("test.bim", true);
+    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const metadatastr: string = await imodel.getDgnDb().getECClassMetaData("biscore", "Element");
     assert.isNotNull(metadatastr);
     assert.isString(metadatastr);
@@ -91,7 +83,7 @@ describe("ECClassMetaData", () => {
   });
 
   it("should get metadata for CA class just as well (and we'll see an array-typed property)", async () => {
-    const imodel: IModel = await ECSqlStatementTestUtils.openIModel("test.bim", true);
+    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const metadatastr: string = await imodel.getDgnDb().getECClassMetaData("biscore", "ClassHasHandler");
     assert.isNotNull(metadatastr);
     assert.isString(metadatastr);
@@ -104,7 +96,7 @@ describe("ECClassMetaData", () => {
   });
 
   it("should get metadata for class, and we'll see a struct-typed property", async () => {
-    const imodel: IModel = await ECSqlStatementTestUtils.openIModel("test.bim", true);
+    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const metadatastr: string = await imodel.getDgnDb().getECClassMetaData("biscore", "AnnotationTableCell");
     assert.isNotNull(metadatastr);
     assert.isString(metadatastr);

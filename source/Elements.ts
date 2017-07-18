@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Element, Code } from "./Element";
+import { Element, Code, IElement } from "./Element";
 import { IModel, Id } from "./IModel";
 import { EcRegistry } from "./EcRegistry";
 import { LRUMap } from "@bentley/bentleyjs-common/lib/LRUMap";
@@ -35,10 +35,14 @@ export class Elements {
 
     const json = await this._iModel.getDgnDb().getElement(JSON.stringify(opts));
 
-    const stream = JSON.parse(json);
+    const stream: IElement = JSON.parse(json) as IElement;
     stream._iModel = this._iModel;
+    let el = EcRegistry.create(stream) as Element | undefined;
+    if (el === undefined) {
+      await EcRegistry.generateClassFor(stream, this._iModel);
+      el = EcRegistry.create(stream) as Element | undefined;
+    }
 
-    const el = EcRegistry.create(stream, "BisCore.Element") as Element | undefined;
     if (el) { // found it, register it in the local cache.
       this._loaded.set(el.id.toString(), el);
     }
