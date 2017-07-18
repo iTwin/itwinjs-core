@@ -5,13 +5,51 @@ import { registerEcClass } from "./EcRegistry";
 import { DefinitionElement, IElement } from "./Element";
 import { ColorDef } from "./Render";
 import { Id } from "./IModel";
-import { JsonUtils } from "../../Bentleyjs-common/lib/JsonUtils";
+import { JsonUtils } from "@bentley/bentleyjs-common/lib/JsonUtils";
+
+export interface IAppearance {
+  color: ColorDef;
+  invisible?: boolean;
+  dontPlot?: boolean;
+  dontSnap?: boolean;
+  dontLocate?: boolean;
+  weight?: number;
+  style?: Id;
+  priority?: number;
+  material?: Id;
+  transp?: number;
+}
 
 /** A SubCategory appearance */
 export class Appearance {
-  public color: ColorDef;
-  constructor(public invisible?: boolean, public dontPlot?: boolean, public dontSnap?: boolean, public dontLocate?: boolean, color?: ColorDef,
-    public weight?: number, public styleId?: Id, public priority?: number, public materialId?: Id, public transparency?: number) { this.color = color ? color : ColorDef.black(); }
+  public color: ColorDef = ColorDef.black();
+  public weight: number = 0;
+  public priority: number = 0;
+  public transparency: number = 0;
+  public invisible: boolean = false;
+  public dontPlot: boolean = false;
+  public dontSnap: boolean = false;
+  public dontLocate: boolean = false;
+  public styleId: Id = new Id();
+  public materialId: Id = new Id();
+
+  constructor(opts?: IAppearance) {
+    if (!opts)
+      return;
+
+    this.invisible = JsonUtils.asBool(opts.invisible);
+    this.dontSnap = JsonUtils.asBool(opts.dontSnap);
+    this.dontLocate = JsonUtils.asBool(opts.dontLocate);
+    this.dontPlot = JsonUtils.asBool(opts.dontPlot);
+    this.color = ColorDef.fromJSON(opts.color);
+    this.weight = JsonUtils.asInt(opts.weight);
+    if (opts.style)
+      this.styleId = new Id(opts.style);
+    this.priority = JsonUtils.asInt(opts.priority);
+    if (opts.material)
+      this.materialId = new Id(opts.material);
+    this.transparency = JsonUtils.asInt(opts.transp);
+  }
 
   public equals(other: Appearance): boolean {
     return this.invisible === other.invisible &&
@@ -21,28 +59,13 @@ export class Appearance {
       this.color.equals(other.color) &&
       this.weight === other.weight &&
       this.priority === other.priority &&
-      Id.areEqual(this.styleId, other.styleId) &&
-      Id.areEqual(this.materialId, other.materialId) &&
+      this.styleId.equals(other.styleId) &&
+      this.materialId.equals(other.materialId) &&
       this.transparency === other.transparency;
   }
 
   public static fromJSON(json: any): Appearance {
-    const val = new Appearance();
-    if (!json)
-      return val;
-
-    val.invisible = JsonUtils.asBool(json.invisible);
-    val.dontSnap = JsonUtils.asBool(json.dontSnap);
-    val.dontLocate = JsonUtils.asBool(json.dontLocate);
-    val.color = ColorDef.fromJSON(val.color);
-    val.weight = JsonUtils.asInt(json.weight);
-    if (json.style)
-      val.styleId = new Id(json.style);
-    val.priority = JsonUtils.asInt(json.priority);
-    if (json.material)
-      val.materialId = new Id(json.material);
-    val.transparency = JsonUtils.asInt(json.transp);
-    return val;
+    return new Appearance(json);
   }
 
   public toJSON(): any {
@@ -53,9 +76,9 @@ export class Appearance {
     if (this.dontLocate) val.dontLocate = true;
     if (!ColorDef.black().equals(this.color)) val.color = this.color;
     if (0 !== this.weight) val.weight = this.weight;
-    if (this.styleId) val.style = this.styleId;
+    if (this.styleId.isValid()) val.style = this.styleId;
     if (0 !== this.priority) val.priority = this.priority;
-    if (this.materialId) val.material = this.materialId;
+    if (this.materialId.isValid()) val.material = this.materialId;
     if (0.0 !== this.transparency) val.transp = this.transparency;
     return val;
   }
@@ -107,7 +130,7 @@ export class SubCategoryOverride {
     if (!json)
       return val;
 
-    if (json.invisible) val.setInvisible(JsonUtils.asBool(json.invisible()));
+    if (json.invisible) val.setInvisible(JsonUtils.asBool(json.invisible));
     if (json.color) val.setColor(ColorDef.fromJSON(json.color));
     if (json.weight) val.setWeight(JsonUtils.asInt(json.weight));
     if (json.style) val.setStyle(new Id(json.style));

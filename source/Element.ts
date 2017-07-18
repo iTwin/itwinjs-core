@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+
 import { Id, IModel, GeometryStream, Placement3d } from "./IModel";
 import { registerEcClass } from "./EcRegistry";
 import { JsonUtils } from "../../Bentleyjs-common/lib/JsonUtils";
@@ -11,6 +12,12 @@ export interface ICode {
   value?: string;
 }
 
+/**
+ * A 3 part Code that identifies an Element
+ * @export
+ * @class Code
+ * @implements {ICode}
+ */
 export class Code implements ICode {
   public spec: Id;
   public scope: string;
@@ -18,28 +25,40 @@ export class Code implements ICode {
 
   constructor(val: ICode) {
     this.spec = new Id(val.spec);
-    this.scope = val.scope;
-    this.value = val.value;
+    this.scope = JsonUtils.asString(val.scope, "");
+    this.value = JsonUtils.asString(val.value);
   }
 
+  /**
+   *  Create an instance of the default code (1,1,null)
+   * @static
+   * @returns {Code}
+   * @memberof Code
+   */
   public static createDefault(): Code { return new Code({ spec: new Id(1), scope: "1" }); }
   public getValue(): string { return this.value ? this.value : ""; }
 }
 
-/** The id and relationship class of an Element that is related to another Element */
+/** The Id and relationship class of an Element that is related to another Element */
 export class RelatedElement {
-  public id: Id;
-  public relationshipClass?: string;
+  constructor(public id: Id, public relationshipClass?: string) { }
+  public static fromJSON(json?: any): RelatedElement | undefined {
+    return json ? new this(new Id(json.id), JsonUtils.asString(json.relationshipClass)) : undefined;
+  }
 }
 
-export interface IHasFullClassName {
+/**
+ * the schema name and class name for an ECClass
+ * @export
+ */
+export interface FullClassName {
   schemaName: string;
   className: string;
 }
 
-export interface IElement extends IHasFullClassName {
+export interface IElement extends FullClassName {
   _iModel: IModel;
-   model: Id | string;
+  model: Id | string;
   code: ICode;
   id: Id | string;
   parent?: RelatedElement;
@@ -65,7 +84,7 @@ export interface ECClassFullname {
  */
 export interface CustomAttribute {
   ecclass: ECClassFullname;
-  properties: {[propName: string]: PrimitiveECProperty| NavigationECProperty|StructECProperty|PrimitiveArrayECProperty|StructArrayECProperty};
+  properties: { [propName: string]: PrimitiveECProperty | NavigationECProperty | StructECProperty | PrimitiveArrayECProperty | StructArrayECProperty };
 }
 
 /**
@@ -74,7 +93,7 @@ export interface CustomAttribute {
  * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
  */
 export interface PrimitiveECProperty {
-  primitiveECProperty: {type: string, extendedType?: string};
+  primitiveECProperty: { type: string, extendedType?: string };
   customAttributes: CustomAttribute[];
 }
 
@@ -84,7 +103,7 @@ export interface PrimitiveECProperty {
  * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
  */
 export interface NavigationECProperty {
-  navigationECProperty: { type: string, direction: string, relationshipClass: ECClassFullname};
+  navigationECProperty: { type: string, direction: string, relationshipClass: ECClassFullname };
   customAttributes: CustomAttribute[];
 }
 
@@ -94,7 +113,7 @@ export interface NavigationECProperty {
  * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
  */
 export interface StructECProperty {
-  structECProperty: { type: string};
+  structECProperty: { type: string };
 }
 
 /**
@@ -103,7 +122,7 @@ export interface StructECProperty {
  * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
  */
 export interface PrimitiveArrayECProperty {
-primitveArrayECProperty: { type: string, minOccurs: number, maxOccurs?: number};
+  primitveArrayECProperty: { type: string, minOccurs: number, maxOccurs?: number };
 }
 
 /**
@@ -112,7 +131,7 @@ primitveArrayECProperty: { type: string, minOccurs: number, maxOccurs?: number};
  * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
  */
 export interface StructArrayECProperty {
-  structArrayECProperty: { type: string, minOccurs: number, maxOccurs?: number};
+  structArrayECProperty: { type: string, minOccurs: number, maxOccurs?: number };
 }
 
 /**
@@ -128,13 +147,13 @@ export interface ECClass {
   schema: string;
   baseClasses: ECClassFullname[];
   customAttributes: CustomAttribute[];
-  properties: {[propName: string]: PrimitiveECProperty| NavigationECProperty|StructECProperty|PrimitiveArrayECProperty|StructArrayECProperty};
+  properties: { [propName: string]: PrimitiveECProperty | NavigationECProperty | StructECProperty | PrimitiveArrayECProperty | StructArrayECProperty };
 }
 
 /** An element within an iModel */
 @registerEcClass("BisCore.Element")
 export class Element {
-  public static ecClass: any = null;
+  public static ecClass: any;
   public _iModel: IModel;
   public id: Id;
   public model: Id;
@@ -154,7 +173,7 @@ export class Element {
     this.code = new Code(val.code);
     this._iModel = val._iModel;
     this.model = new Id(val.model);
-    this.parent = val.parent;
+    this.parent = RelatedElement.fromJSON(val.parent);
     this.federationGuid = val.federationGuid;
     this.userLabel = val.userLabel;
     this.jsonProperties = val.jsonProperties ? val.jsonProperties : {};
@@ -182,12 +201,22 @@ export class Element {
   }
 }
 
+/**
+ * Parameters for creating a GeometricElement
+ * @export
+ * @interface IGeometricElement
+ * @extends {IElement}
+ */
 export interface IGeometricElement extends IElement {
   category?: Id;
   geom?: GeometryStream;
 }
 
-/** A Geometric element */
+/** A Geometric element
+ * @export
+ * @class GeometricElement
+ * @extends {Element}
+ */
 @registerEcClass("BisCore.GeometricElement")
 export class GeometricElement extends Element {
   public category: Id;
@@ -199,12 +228,9 @@ export class GeometricElement extends Element {
   }
 }
 
-export class TypeDefinition {
-  constructor(public definitionId: Id, public relationshipClass?: string) { }
-  public static fromJSON(json?: any): TypeDefinition {
-    json = json ? json : {};
-    return new TypeDefinition(new Id(json.definitionId), JsonUtils.asString(json.relationshipClass));
-  }
+/** A RelatedElement that describes the type definition of an element. */
+export class TypeDefinition extends RelatedElement {
+  constructor(definitionId: Id, relationshipClass?: string) { super(definitionId, relationshipClass); }
 }
 
 export interface IGeometricElement3d extends IGeometricElement {
