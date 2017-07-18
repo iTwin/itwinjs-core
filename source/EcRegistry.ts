@@ -89,7 +89,8 @@ export class EcRegistry {
     let jsDef: string = EcRegistry.generateClassDefFromECClass(ecclass);
     const fullname = EcRegistry.getECClassFullName(ecclass);
     jsDef = jsDef + ' EcRegistry.registerEcClass("' + fullname + '",' + ecclass.name + ");";
-    eval(jsDef);
+    jsDef = jsDef + " " + ecclass.name + ".ecClass=ecclass;";
+    eval(jsDef); // eval is OK here, because I generated the expression myself, and I know it's safe.
 
     return true;
   }

@@ -159,6 +159,8 @@ export class Element {
     this.jsonProperties = val.jsonProperties ? val.jsonProperties : {};
   }
 
+  /** Get the metadata for the ECClass of this element. */
+  public async getECClass(): Promise<ECClass>  { return Object.getPrototypeOf(this).constructor.getECClassFor(this._iModel, this.schemaName, this.className); }
   public getUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = {}; return this.jsonProperties.UserProps; }
   public setUserProperties(nameSpace: string, value: any) { this.getUserProperties()[nameSpace] = value; }
   public removeUserProperties(nameSpace: string) { delete this.getUserProperties()[nameSpace]; }
@@ -166,7 +168,7 @@ export class Element {
   /**
    * Get the specified ECClass metadata
    */
-  public static getECClass(imodel: IModel, schemaName: string, className: string): Promise<ECClass> {
+  public static getECClassFor(imodel: IModel, schemaName: string, className: string): Promise<ECClass> {
     if ((null == this.ecClass) || !this.hasOwnProperty("ecClass")) {
       const p = new Promise<ECClass>((resolve, reject) => {
         imodel.getDgnDb().getECClassMetaData(schemaName, className).then((mstr: string) => {
