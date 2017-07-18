@@ -11,7 +11,7 @@ import { Vector3d, Point3d, Range3d, RotMatrix, Transform, YawPitchRollAngles } 
 import { AxisOrder, Angle, Geometry } from "../../geometry-core/lib/Geometry";
 import { Map4d } from "../../geometry-core/lib/Geometry4d";
 import { Constant } from "../../geometry-core/lib/Constant";
-//import { Model } from "./Model";
+// import { Model } from "./Model";
 import { registerEcClass } from "./EcRegistry";
 
 export class ViewController { }
@@ -289,6 +289,8 @@ export class CategorySelector extends DefinitionElement {
 
 /** Parameters used to construct a ViewDefinition */
 export interface IViewDefinition extends IElement {
+  categorySelectorId?: any;
+  displayStyleId?: any;
   categorySelector?: CategorySelector;
   displayStyle?: DisplayStyle;
 }
@@ -318,15 +320,21 @@ export enum ViewportStatus {
  */
 @registerEcClass("BisCore.ViewDefinition")
 export abstract class ViewDefinition extends DefinitionElement {
-  protected _categorySelectorId: Id;
-  protected _displayStyleId: Id;
+  protected categorySelectorId: Id;
+  protected displayStyleId: Id;
   protected _categorySelector?: CategorySelector;
   protected _displayStyle?: DisplayStyle;
   protected clearState(): void { this._categorySelector = undefined; this._displayStyle = undefined; }
-  protected constructor(opts: IViewDefinition) { super(opts); if (opts.categorySelector) this.setCategorySelector(opts.categorySelector); }
+  protected constructor(opts: IViewDefinition) {
+    super(opts);
+    this.categorySelectorId = new Id(opts.categorySelectorId);
+    this.displayStyleId = new Id(opts.displayStyleId);
+    if (opts.categorySelector)
+      this.setCategorySelector(opts.categorySelector);
+  }
 
- // public abstract supplyController(): ViewController;
-  // public abstract viewsModel(mid: Id): boolean;
+  // public abstract supplyController(): ViewController;
+  public abstract viewsModel(modelId: Id): boolean;
 
   /**  Get the origin of this view */
   public abstract getOrigin(): Point3d;
@@ -406,7 +414,7 @@ export abstract class ViewDefinition extends DefinitionElement {
   }
 
   protected getExtentLimits() { return { minExtent: Constant.oneMillimeter, maxExtent: 2.0 * Constant.diameterOfEarth }; }
-  public setupDisplayStyle(style: DisplayStyle) { this._displayStyle = style; this._displayStyleId = style.id; }
+  public setupDisplayStyle(style: DisplayStyle) { this._displayStyle = style; this.displayStyleId = style.id; }
   public getDetails(): any { if (!this.jsonProperties.viewDetails) this.jsonProperties.viewDetails = new Object(); return this.jsonProperties.viewDetails; }
 
   protected adjustAspectRatio(windowAspect: number): void {
@@ -502,27 +510,27 @@ export abstract class ViewDefinition extends DefinitionElement {
    *  @note this method may only be called on a writeable copy of a ViewDefinition.
    */
   public getCategorySelector() {/*NEEDS_WORK*/ return this._categorySelector; }
-  public getCategorySelectorId() { return this._categorySelectorId; }
+  public getCategorySelectorId() { return this.categorySelectorId; }
 
   /** Get the DisplayStyle for this ViewDefinition
    *  @note this is a non-const method and may only be called on a writeable copy of a ViewDefinition.
    */
   public getDisplayStyle() {/*NEEDS_WORK*/ return this._displayStyle; }
-  public getDisplayStyleId() { return this._displayStyleId; }
+  public getDisplayStyleId() { return this.displayStyleId; }
 
   /** Set the CategorySelector for this view. */
-  public setCategorySelector(categories: CategorySelector) { this._categorySelector = categories; this._categorySelectorId = categories.id; }
+  public setCategorySelector(categories: CategorySelector) { this._categorySelector = categories; this.categorySelectorId = categories.id; }
 
   /** Get the AuxiliaryCoordinateSystem for this ViewDefinition */
   public getAuxiliaryCoordinateSystemId(): Id { return new Id(this.getDetail("acs")); }
 
   /** Set the AuxiliaryCoordinateSystem for this view. */
   public setAuxiliaryCoordinateSystem(acsId: Id) {
-  if (acsId.isValid())
-    this.setDetail("acs", acsId.toString());
-  else
-    this.removeDetail("acs");
-}
+    if (acsId.isValid())
+      this.setDetail("acs", acsId.toString());
+    else
+      this.removeDetail("acs");
+  }
 
   /** Query if the specified Category is displayed in this view */
   public viewsCategory(id: Id): boolean { return this._categorySelector!.isCategoryViewed(id); }
@@ -535,12 +543,12 @@ export abstract class ViewDefinition extends DefinitionElement {
 
   /** Set the aspect ratio skew for this view */
   public setAspectRatioSkew(val: number) {
-  if (val === 1.0) {
-    this.removeDetail("aspectSkew");
-  } else {
-    this.setDetail("aspectSkew", val);
+    if (val === 1.0) {
+      this.removeDetail("aspectSkew");
+    } else {
+      this.setDetail("aspectSkew", val);
+    }
   }
-}
 
   /** Get the unit vector that points in the view X (left-to-right) direction. */
   public getXVector(): Vector3d { return this.getRotation().getRow(0); }
@@ -694,15 +702,28 @@ export class Camera {
   public setEyePoint(pt: Point3d) { this.eye = pt; }
   public isValid() { return this.isLensValid() && this.isFocusValid(); }
   public isEqual(other: Camera) { return this.lens === other.lens && this.focusDistance === other.focusDistance && this.eye.isExactEqual(other.eye); }
+
+  public static fromJSON(json?: any): Camera {
+    const camera = new Camera();
+    if (json) {
+      if (json.lens)
+        camera.lens = Angle.fromJSON(json.lens);
+      if (json.focusDistance)
+        camera.focusDistance = json.focusDistance;
+      if (json.eye)
+        camera.eye = Point3d.fromJSON(json.eye);
+    }
+    return camera;
+  }
 }
 
 /** Parameters used to construct a ViewDefinition3d */
 export interface IViewDefinition3d extends IViewDefinition {
-  cameraOn?: boolean;    // if true, m_camera is valid.
-  origin?: Point3d;       // The lower left back corner of the view frustum.
-  extents?: Vector3d; // The extent of the view frustum.
-  angles?: YawPitchRollAngles; // Rotation of the view frustum.
-  camera?: Camera;  // The camera used for this view.
+  cameraOn?: any;             // if true, m_camera is valid.
+  origin?: any;               // The lower left back corner of the view frustum.
+  extents?: any;             // The extent of the view frustum.
+  angles?: any;    // Rotation of the view frustum.
+  camera?: any;                // The camera used for this view.
   displayStyle?: DisplayStyle3d;
 }
 
@@ -736,24 +757,24 @@ export abstract class ViewDefinition3d extends ViewDefinition {
   public setOrigin(origin: Point3d) { this.origin = origin; }
   public setExtents(extents: Vector3d) { this.extents = extents; }
   public setRotation(rot: RotMatrix) { this.rotation = rot; }
-  protected enableCamera() { this._cameraOn = true; }
-  public supportsCamera() { return true; }
+  protected enableCamera(): void { this._cameraOn = true; }
+  public supportsCamera(): boolean { return true; }
   public get cameraOn() { return this._cameraOn; }
 
   private static minimumFrontDistance() { return 300 * Constant.oneMillimeter; }
   // void VerifyFocusPlane();//!< private
-  // bool IsEyePointAbove(double elevation) const { return !IsCameraOn() ? (GetZVector().z > 0) : (GetEyePoint().z > elevation);}//!< private
+  public isEyePointAbove(elevation: number): boolean { return !this.cameraOn ? (this.getZVector().z > 0) : (this.getEyePoint().z > elevation); }
   // DGNPLATFORM_EXPORT DPoint3d ComputeEyePoint(Frustum const& frust) const ;//!< private
 
   public constructor(opt: IViewDefinition3d) {
     super(opt);
-    this._cameraOn = opt.cameraOn ? opt.cameraOn : false;
-    this.origin = opt.origin ? opt.origin : new Point3d();
-    this.extents = opt.extents ? opt.extents : new Vector3d();
-    this.rotation = opt.angles ? opt.angles.toRotMatrix() : RotMatrix.createIdentity();
-    this.camera = opt.camera ? opt.camera : new Camera();
+    this._cameraOn = opt.cameraOn ? !!opt.cameraOn : false;
+    this.origin = Point3d.fromJSON(opt.origin);
+    this.extents = Vector3d.fromJSON(opt.extents);
+    this.rotation = YawPitchRollAngles.fromJSON(opt.angles).toRotMatrix();
+    this.camera = Camera.fromJSON(opt.camera);
     if (opt.displayStyle)
-      this.setupDisplayStyle3d(opt.displayStyle)
+      this.setupDisplayStyle3d(opt.displayStyle);
   }
 
   // explicit ViewDefinition3d(CreateParams const& params) : T_Super(params), m_cameraOn(params.m_cameraOn), m_origin(params.m_origin), m_extents(params.m_extents),
@@ -763,7 +784,7 @@ export abstract class ViewDefinition3d extends ViewDefinition {
   public setupDisplayStyle3d(style: DisplayStyle3d) { super.setupDisplayStyle(style); }
 
   /**  Turn the camera off for this view. After this call, the camera parameters in this view definition are ignored and views that use it will
-   *  display with an orthographic (infinite focal length) projection of the view volume from the view direction. 
+   *  display with an orthographic (infinite focal length) projection of the view volume from the view direction.
    *  @note To turn the camera back on, call LookAt
    */
   public turnCameraOff() { this._cameraOn = false; }
@@ -797,16 +818,16 @@ export abstract class ViewDefinition3d extends ViewDefinition {
       return ViewportStatus.InvalidUpVector;
 
     const zVec = this.getEyePoint().vectorTo(targetPoint); // z defined by direction from eye to target
-    const focusDist = zVec.normalized(zVec).mag; // set focus at target point
+    const focusDist = zVec.normalizeWithLength(zVec).mag; // set focus at target point
 
     if (focusDist <= ViewDefinition3d.minimumFrontDistance())      // eye and target are too close together
       return ViewportStatus.InvalidTargetPoint;
 
     const xVec = new Vector3d();
-    if (yVec.crossProduct(zVec).normalized(xVec).mag < Geometry.smallMetricDistance)
+    if (yVec.crossProduct(zVec).normalizeWithLength(xVec).mag < Geometry.smallMetricDistance)
       return ViewportStatus.InvalidUpVector;    // up is parallel to z
 
-    if (zVec.crossProduct(xVec).normalized(yVec).mag < Geometry.smallMetricDistance)
+    if (zVec.crossProduct(xVec).normalizeWithLength(yVec).mag < Geometry.smallMetricDistance)
       return ViewportStatus.InvalidUpVector;
 
     // we now have rows of the rotation matrix
@@ -948,7 +969,7 @@ export abstract class ViewDefinition3d extends ViewDefinition {
 
   /**  Set the focus distance for this view.
    *  @note Changing the focus distance changes the plane on which the delta.x and delta.y values lie. So, changing focus distance
-   *  without making corresponding changes to delta.x and delta.y essentially changes the lens angle, causing a "zoom" effect 
+   *  without making corresponding changes to delta.x and delta.y essentially changes the lens angle, causing a "zoom" effect
    */
   public setFocusDistance(dist: number) { this.camera.setFocusDistance(dist); }
 
@@ -964,82 +985,37 @@ export interface ISpatialViewDefinition extends IViewDefinition3d {
 /** Defines a view of one or more SpatialModels.
  *  The list of viewed models is stored by the ModelSelector.
  */
+@registerEcClass("BisCore.SpatialViewDefinition")
 export class SpatialViewDefinition extends ViewDefinition3d {
+  public modelSelectorId: Id;
+  protected _modelSelector: ModelSelector;
+  constructor(opts: ISpatialViewDefinition) { super(opts); if (opts.modelSelector) this.setModelSelector(opts.modelSelector); }
 
-  //   public:
-  //   //! Parameters used to construct a SpatialViewDefinition
-  //   struct CreateParams : T_Super::CreateParams
-  //   {
-  //     DEFINE_T_SUPER(SpatialViewDefinition::T_Super::CreateParams);
-  //     ModelSelectorPtr m_modelSelector;
-
-  //     public:
-  //     CreateParams(DgnDbR db, DgnModelId modelId, DgnClassId classId, DgnCodeCR code, CategorySelectorR categorySelector, DisplayStyle3dR displayStyle, ModelSelectorR modelSelector, Camera const* camera=nullptr)
-  //             : T_Super(db, modelId, classId, code, categorySelector, displayStyle, camera), m_modelSelector(&modelSelector) {}
-
-  //     explicit CreateParams(DgnElement::CreateParams const& params) : T_Super(params) {}
-  //   };
-
-  protected modelSectorId: Id;
-  protected _modelSelector: ModelSelector
-
-  //   DGNPLATFORM_EXPORT DgnDbStatus _ReadSelectParams(BeSQLite::EC::ECSqlStatement &, ECSqlClassParamsCR) override;
   //   DGNPLATFORM_EXPORT void _ToJson(JsonValueR out, JsonValueCR opts) const override;
-  //   DGNPLATFORM_EXPORT void _BindWriteParams(BeSQLite::EC::ECSqlStatement &, ForInsert) override;
-  //   DGNPLATFORM_EXPORT bool _EqualState(ViewDefinitionR) override;
-  //   DGNPLATFORM_EXPORT DgnDbStatus _OnInsert() override;
   //   void _OnInserted(DgnElementP copiedFrom) const override {m_modelSelector=nullptr; T_Super::_OnInserted(copiedFrom); }
   //   void _OnUpdateFinished() const override {m_modelSelector=nullptr; T_Super::_OnUpdateFinished(); }
   //   DGNPLATFORM_EXPORT void _CopyFrom(DgnElementCR el) override;
-  //   bool _ViewsModel(DgnModelId modelId) override {return GetModelSelector().ContainsModel(modelId); }
   //   SpatialViewDefinitionCP _ToSpatialView() const override {return this;}
   //   DGNPLATFORM_EXPORT ViewControllerPtr _SupplyController() const override;
 
-  //   public:
-  //   BE_JSON_NAME(modelSelectorId)
-
-  //     static DgnClassId QueryClassId(DgnDbR db) {return DgnClassId(db.Schemas().GetClassId(BIS_ECSCHEMA_NAME, BIS_CLASS_SpatialViewDefinition)); } //!< private
-
-  //   //! Create a SpatialViewDefinition from CreateParams
-  //   explicit SpatialViewDefinition(CreateParams const& params) : T_Super(params) {if (params.m_modelSelector.IsValid()) SetModelSelector(*params.m_modelSelector); }
-
-  //   //! Construct a SpatialViewDefinition in the specified DefinitionModel
-  //   SpatialViewDefinition(DefinitionModelR model, Utf8StringCR name, CategorySelectorR categories, DisplayStyle3dR displayStyle, ModelSelectorR modelSelector, Camera const* camera = nullptr) :
-  //   T_Super(T_Super::CreateParams(model.GetDgnDb(), model.GetModelId(), QueryClassId(model.GetDgnDb()), CreateCode(model, name), categories, displayStyle, camera)) {SetModelSelector(modelSelector); }
-
   //   //! Get a writable reference to the ModelSelector for this SpatialViewDefinition
   //   DGNPLATFORM_EXPORT ModelSelectorR GetModelSelector();
-  //   DgnElementId GetModelSelectorId() const { return m_modelSelectorId;}
 
-  // //! Set the ModelSelector for this SpatialViewDefinition
-  // //! @param[in] models The new ModelSelector.
-  // void SetModelSelector(ModelSelectorR models) {BeAssert(!IsPersistent()); m_modelSelector = &models; m_modelSelectorId = models.GetElementId(); }
-  // };
+  public viewsModel(modelId: Id) { return this._modelSelector.containsModel(modelId); }
 
-  // //=======================================================================================
-  // //! Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection.
-  // // @bsiclass                                                      Sam.Wilson    08/16
-  // //=======================================================================================
-  // struct EXPORT_VTABLE_ATTRIBUTE OrthographicViewDefinition : SpatialViewDefinition
-  // {
-  //   DGNELEMENT_DECLARE_MEMBERS(BIS_CLASS_OrthographicViewDefinition, SpatialViewDefinition);
-  //   friend struct ViewElementHandler::OrthographicView;
+  /** Set the ModelSelector for this SpatialViewDefinition
+   *  @param[in] models The new ModelSelector.
+   */
+  public setModelSelector(models: ModelSelector) { this._modelSelector = models; this.modelSelectorId = models.id; }
+}
 
-  //   protected:
-  //   //! Construct a new OrthographicViewDefinition prior to loading it
-  //   explicit OrthographicViewDefinition(CreateParams const& params) : T_Super(params) {}
+/** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection. */
+@registerEcClass("BisCore.OrthographicViewDefinition")
+export class OrthographicViewDefinition extends SpatialViewDefinition {
+  constructor(opts: ISpatialViewDefinition) { super(opts); }
 
-  //   OrthographicViewDefinitionCP _ToOrthographicView() const override {return this;}
   //   DGNPLATFORM_EXPORT ViewControllerPtr _SupplyController() const override;
-  //   void _EnableCamera() override final {/* nope */ }
-  //   bool _SupportsCamera() const override final {return false;}
-
-  // public:
-  // //! Construct a new OrthographicViewDefinition in the specified DefinitionModel prior to inserting it
-  // OrthographicViewDefinition(DefinitionModelR model, Utf8StringCR name, CategorySelectorR categories, DisplayStyle3dR displayStyle, ModelSelectorR modelSelector) :
-  // T_Super(CreateParams(model.GetDgnDb(), model.GetModelId(), QueryClassId(model.GetDgnDb()), CreateCode(model, name), categories, displayStyle, modelSelector)) {}
-
-  //     //! Look up the ECClass Id used for OrthographicViewDefinitions within the specified DgnDb
-  //     static DgnClassId QueryClassId(DgnDbR db) {return DgnClassId(db.Schemas().GetClassId(BIS_ECSCHEMA_NAME, BIS_CLASS_OrthographicViewDefinition)); }
-  // };
+  // tslint:disable-next-line:no-empty
+  public enableCamera(): void { }
+  public supportsCamera(): boolean { return false; }
 }

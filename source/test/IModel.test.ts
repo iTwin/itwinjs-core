@@ -91,7 +91,7 @@ describe("ElementId", () => {
 
     const selector1 = EcRegistry.create(params) as ModelSelector;
     assert(selector1 !== undefined);
-    const a = new ModelSelector(params);
+    const _a = new ModelSelector(params);
     if (selector1) {
       selector1.addModel(new Id(2, 1));
       selector1.addModel(new Id(2, 1));

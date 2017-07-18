@@ -23,6 +23,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
+    "@bentley/bentleyjs-common": "^1.0.1",
     "@bentley/geometry-core": "latest"
   },
   "devDependencies": {
