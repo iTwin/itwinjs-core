@@ -6,12 +6,12 @@ import { IElement, DefinitionElement } from "./Element";
 import { Appearance, SubCategoryOverride } from "./Category";
 import { ViewFlags, HiddenLine, ColorDef } from "./Render";
 import { Light, LightType } from "./Lighting";
-import { Id, JsonUtils } from "./IModel";
+import { Id } from "./IModel";
 import { Vector3d, Point3d, Range3d, RotMatrix, Transform, YawPitchRollAngles } from "../../geometry-core/lib/PointVector";
 import { AxisOrder, Angle, Geometry } from "../../geometry-core/lib/Geometry";
 import { Map4d } from "../../geometry-core/lib/Geometry4d";
 import { Constant } from "../../geometry-core/lib/Constant";
-// import { Model } from "./Model";
+import { JsonUtils } from "../../Bentleyjs-common/lib/JsonUtils";
 import { registerEcClass } from "./EcRegistry";
 
 export class ViewController { }
@@ -706,12 +706,9 @@ export class Camera {
   public static fromJSON(json?: any): Camera {
     const camera = new Camera();
     if (json) {
-      if (json.lens)
-        camera.lens = Angle.fromJSON(json.lens);
-      if (json.focusDistance)
-        camera.focusDistance = json.focusDistance;
-      if (json.eye)
-        camera.eye = Point3d.fromJSON(json.eye);
+      camera.lens = Angle.fromJSON(json.lens);
+      camera.focusDistance = JsonUtils.asDouble(json.focusDistance);
+      camera.eye = Point3d.fromJSON(json.eye);
     }
     return camera;
   }
@@ -768,7 +765,7 @@ export abstract class ViewDefinition3d extends ViewDefinition {
 
   public constructor(opt: IViewDefinition3d) {
     super(opt);
-    this._cameraOn = opt.cameraOn ? !!opt.cameraOn : false;
+    this._cameraOn = JsonUtils.asBool(opt.cameraOn);
     this.origin = Point3d.fromJSON(opt.origin);
     this.extents = Vector3d.fromJSON(opt.extents);
     this.rotation = YawPitchRollAngles.fromJSON(opt.angles).toRotMatrix();
@@ -776,9 +773,6 @@ export abstract class ViewDefinition3d extends ViewDefinition {
     if (opt.displayStyle)
       this.setupDisplayStyle3d(opt.displayStyle);
   }
-
-  // explicit ViewDefinition3d(CreateParams const& params) : T_Super(params), m_cameraOn(params.m_cameraOn), m_origin(params.m_origin), m_extents(params.m_extents),
-  //   m_rotation(params.m_rotation), m_cameraDef(params.m_cameraDef) {if (params.m_displayStyle.IsValid()) SetDisplayStyle3d(*params.m_displayStyle); }
 
   public getDisplayStyle3d() { return this.getDisplayStyle() as DisplayStyle3d; }
   public setupDisplayStyle3d(style: DisplayStyle3d) { super.setupDisplayStyle(style); }

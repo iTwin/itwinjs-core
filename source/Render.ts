@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { JsonUtils } from "./IModel";
+import { JsonUtils } from "../../Bentleyjs-common/lib/JsonUtils";
 
 export enum RenderMode {
   Wireframe = 0,
@@ -14,28 +14,28 @@ export enum RenderMode {
 /** Flags for view display style */
 export class ViewFlags {
   public renderMode: RenderMode = RenderMode.Wireframe;
-  public dimensions: boolean = true;                     // Shows or hides dimensions.
-  public patterns: boolean = true;                       // Shows or hides pattern geometry.
-  public weights: boolean = true;                        // Controls whether non-zero line weights are used or display using weight 0.
-  public styles: boolean = true;                         // Controls whether custom line styles are used (e.g. control whether elements with custom line styles draw normally, or as solid lines).
-  public transparency: boolean = true;                   // Controls whether element transparency is used (e.g. control whether elements with transparency draw normally, or as opaque).
-  public fill: boolean = true;                           // Controls whether the fills on filled elements are displayed.
-  public textures: boolean = true;                       // Controls whether to display texture maps for material assignments. When off only material color is used for display.
-  public materials: boolean = true;                      // Controls whether materials are used (e.g. control whether geometry with materials draw normally, or as if it has no material).
-  public acsTriad: boolean = false;                      // Shows or hides the ACS triad.
-  public grid: boolean = false;                          // Shows or hides the grid. The grid settings are a design file setting.
-  public visibleEdges: boolean = false;                  // Shows or hides visible edges in the shaded render mode.
-  public hiddenEdges: boolean = false;                   // Shows or hides hidden edges in the shaded render mode.
-  public sourceLights: boolean = false;                  // Controls whether the source lights in spatial models are used
-  public cameraLights: boolean = false;                  // Controls whether camera (ambient, portrait, flashbulb) lights are used.
-  public solarLight: boolean = false;                    // Controls whether sunlight used
-  public shadows: boolean = false;                       // Shows or hides shadows.
-  public noClipVolume: boolean = false;                  // Controls whether the clip volume is applied.
-  public constructions: boolean = false;                 // Shows or hides construction class geometry.
-  public monochrome: boolean = false;                    // draw all graphics in a single color
-  public noGeometryMap: boolean = false;                 // ignore geometry maps
-  public hLineMaterialColors: boolean = false;           // use material colors for hidden lines
-  public edgeMask: number = 0;                           // 0=none, 1=generate mask, 2=use mask
+  public dimensions: boolean = true;            // Shows or hides dimensions.
+  public patterns: boolean = true;              // Shows or hides pattern geometry.
+  public weights: boolean = true;               // Controls whether non-zero line weights are used or display using weight 0.
+  public styles: boolean = true;                // Controls whether custom line styles are used (e.g. control whether elements with custom line styles draw normally, or as solid lines).
+  public transparency: boolean = true;          // Controls whether element transparency is used (e.g. control whether elements with transparency draw normally, or as opaque).
+  public fill: boolean = true;                  // Controls whether the fills on filled elements are displayed.
+  public textures: boolean = true;              // Controls whether to display texture maps for material assignments. When off only material color is used for display.
+  public materials: boolean = true;             // Controls whether materials are used (e.g. control whether geometry with materials draw normally, or as if it has no material).
+  public acsTriad: boolean = false;             // Shows or hides the ACS triad.
+  public grid: boolean = false;                 // Shows or hides the grid. The grid settings are a design file setting.
+  public visibleEdges: boolean = false;         // Shows or hides visible edges in the shaded render mode.
+  public hiddenEdges: boolean = false;          // Shows or hides hidden edges in the shaded render mode.
+  public sourceLights: boolean = false;         // Controls whether the source lights in spatial models are used
+  public cameraLights: boolean = false;         // Controls whether camera (ambient, portrait, flashbulb) lights are used.
+  public solarLight: boolean = false;           // Controls whether sunlight used
+  public shadows: boolean = false;              // Shows or hides shadows.
+  public noClipVolume: boolean = false;         // Controls whether the clip volume is applied.
+  public constructions: boolean = false;        // Shows or hides construction class geometry.
+  public monochrome: boolean = false;           // draw all graphics in a single color
+  public noGeometryMap: boolean = false;        // ignore geometry maps
+  public hLineMaterialColors: boolean = false;  // use material colors for hidden lines
+  public edgeMask: number = 0;                  // 0=none, 1=generate mask, 2=use mask
 
   public toJSON(): object {
     const out: any = {};
@@ -68,7 +68,8 @@ export class ViewFlags {
 
   public static fromJSON(json: any): ViewFlags {
     const val = new ViewFlags();
-
+    if (!json)
+      return val;
     val.constructions = !JsonUtils.asBool(json.noConstruct);
     val.dimensions = !JsonUtils.asBool(json.noDim);
     val.patterns = !JsonUtils.asBool(json.noPattern);

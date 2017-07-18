@@ -5,12 +5,11 @@
 import { assert } from "chai";
 import { IModel, Id } from "../IModel";
 import { ColorDef } from "../Render";
-import { BeSQLite } from "../Constants";
+import { BeSQLite } from "@bentley/bentleyjs-common/lib/BeSQLite";
 import { Code, IElement, Element } from "../Element";
 import { EcRegistry } from "../EcRegistry";
 import { ModelSelector } from "../ViewDefinition";
 import { Elements } from "../Elements";
-import { Category } from "../Category";
 export { Category } from "../Category";
 
 declare const __dirname: string;

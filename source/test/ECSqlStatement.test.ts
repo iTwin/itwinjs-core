@@ -4,7 +4,7 @@
 
 import { assert } from "chai";
 import { ECSqlStatement } from "../IModelServiceTier";
-import { BeSQLite } from "../Constants";
+import { BeSQLite } from "@bentley/bentleyjs-common/lib/BeSQLite";
 import { IModel } from "../IModel";
 
 declare const __dirname: string;
