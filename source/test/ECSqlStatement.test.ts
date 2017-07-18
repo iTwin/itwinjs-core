@@ -24,8 +24,13 @@ describe("ECSqlStatement", () => {
   });
 
   it("should not prepare an UPDATE statement", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    ECSqlStatementTestUtils.getStatement (imodel, "update BIS.Element set CodeValue='a'", false);
+    try {
+    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true, true);
+    await ECSqlStatementTestUtils.getStatement (imodel, "update BIS.Element set CodeValue='a'", false);
+    assert.fail(true, false, "An UPDATE statement should not prepare.");
+    } catch (reason) {
+      // this is what I expected
+    }
   });
 
   it("should produce a single row from SELECT ALL using step_once", async () => {
@@ -48,85 +53,4 @@ describe("ECSqlStatement", () => {
     assert.notEqual(rows.length, 0);
     assert.notEqual(rows[0].ecinstanceid, "");
   });
-});
-
-describe("ECClassMetaData", () => {
-
-  it("should get metadata for class", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const metadatastr: string = await imodel.getDgnDb().getECClassMetaData("biscore", "Element");
-    assert.isNotNull(metadatastr);
-    assert.isString(metadatastr);
-    assert.notEqual(metadatastr.length, 0);
-    const obj: any = JSON.parse(metadatastr);
-    assert.isNotNull(obj);
-    assert.isString(obj.name);
-    assert.equal(obj.name, "Element");
-    assert.equal(obj.schema, "BisCore");
-    assert.isArray(obj.baseClasses);
-    assert.equal(obj.baseClasses.length, 0);
-    assert.isArray(obj.customAttributes);
-    let foundClassHasHandler = false;
-    let foundClassHasCurrentTimeStampProperty = false;
-    for (const ca of obj.customAttributes) {
-      if (ca.ecclass.name === "ClassHasHandler")
-        foundClassHasHandler = true;
-      else if (ca.ecclass.name === "ClassHasCurrentTimeStampProperty")
-        foundClassHasCurrentTimeStampProperty = true;
-    }
-    assert.isTrue(foundClassHasHandler);
-    assert.isTrue(foundClassHasCurrentTimeStampProperty);
-    assert.isDefined(obj.properties.federationGuid);
-    assert.isDefined(obj.properties.federationGuid.primitiveECProperty);
-    assert.equal(obj.properties.federationGuid.primitiveECProperty.type, "binary");
-    assert.equal(obj.properties.federationGuid.primitiveECProperty.extendedType, "BeGuid");
-  });
-
-  it("should get metadata for CA class just as well (and we'll see an array-typed property)", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const metadatastr: string = await imodel.getDgnDb().getECClassMetaData("biscore", "ClassHasHandler");
-    assert.isNotNull(metadatastr);
-    assert.isString(metadatastr);
-    assert.notEqual(metadatastr.length, 0);
-    const obj: any = JSON.parse(metadatastr);
-    assert.isDefined(obj.properties.restrictions);
-    assert.isDefined(obj.properties.restrictions.primitveArrayECProperty);
-    assert.equal(obj.properties.restrictions.primitveArrayECProperty.type, "string");
-    assert.equal(obj.properties.restrictions.primitveArrayECProperty.minOccurs, 0);
-  });
-
-  it("should get metadata for class, and we'll see a struct-typed property", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const metadatastr: string = await imodel.getDgnDb().getECClassMetaData("biscore", "AnnotationTableCell");
-    assert.isNotNull(metadatastr);
-    assert.isString(metadatastr);
-    assert.notEqual(metadatastr.length, 0);
-    const obj: any = JSON.parse(metadatastr);
-    assert.isDefined(obj.properties.cellIndex);
-    assert.isDefined(obj.properties.cellIndex.structECProperty);
-    assert.equal(obj.properties.cellIndex.structECProperty.type, "AnnotationTableCellIndex");
-  });
-});
-
-class Base {
-  public static staticProperty: string = "base";
-}
-
-class Derived extends Base {
-}
-
-describe("Static Properties", () => {
-
-  it("should be inherited, and the subclass should get its own copy", async () => {
-    assert.equal(Base.staticProperty, "base");
-    assert.equal(Derived.staticProperty, "base"); // Derived inherits Base's staticProperty (via its prototype)
-    Derived.staticProperty = "derived";           // Derived now gets its own copy of staticProperty
-    assert.equal(Base.staticProperty, "base");      // Base's staticProperty remains as it was
-    assert.equal(Derived.staticProperty, "derived"); // Derived's staticProperty is now different
-    const d = new Derived();
-    assert.equal(Object.getPrototypeOf(d).constructor.staticProperty, "derived"); // Instances of Derived see Derived.staticProperty
-    const b = new Base();
-    assert.equal(Object.getPrototypeOf(b).constructor.staticProperty, "base"); // Instances of Base see Base.staticProperty
-  });
-
 });

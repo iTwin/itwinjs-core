@@ -22,8 +22,8 @@ describe("iModel", () => {
 
   it("should get ECClass metadata for various classes", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const elementECClass = await Element.getECClass(imodel, "BisCore", "Element");
-    const categoryECClass = await Category.getECClass(imodel, "BisCore", "Category");
+    const elementECClass = await Element.getECClassFor(imodel, "BisCore", "Element");
+    const categoryECClass = await Category.getECClassFor(imodel, "BisCore", "Category");
     assert.equal(elementECClass.name, "Element");
     assert.equal(categoryECClass.name, "Category");
   });
@@ -38,6 +38,7 @@ describe("Elements", async () => {
     assert(elements);
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
     const el = await elements.getElement({ code: code1 });
+    assert(el !== undefined);
     assert(el != null);
     const el2 = await elements.getElement({ id: "0x34" });
     assert(el2 != null);
