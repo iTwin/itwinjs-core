@@ -128,6 +128,10 @@ export class ElementAlignedBox3d extends Range3d {
   public getWidth(): number { return this.xLength(); }
   public getDepth(): number { return this.yLength(); }
   public getHeight(): number { return this.zLength(); }
+  public static fromJSON(json?: any): ElementAlignedBox3d {
+    json = json ? json : {};
+    return new ElementAlignedBox3d(Point3d.fromJSON(json.low), Point3d.fromJSON(json.high));
+  }
 }
 
 export class GeometryStream {
@@ -139,4 +143,8 @@ export class GeometryStream {
 
 export class Placement3d {
   public constructor(public origin?: Point3d, public angles?: YawPitchRollAngles, public boundingBox?: ElementAlignedBox3d) { }
+  public static fromJSON(json?: any): Placement3d {
+    json = json ? json : {};
+    return new Placement3d(Point3d.fromJSON(json.origin), YawPitchRollAngles.fromJSON(json.angles), ElementAlignedBox3d.fromJSON(json.boundingBox));
+  }
 }

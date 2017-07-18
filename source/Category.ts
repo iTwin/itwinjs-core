@@ -34,12 +34,12 @@ export class Appearance {
     val.invisible = JsonUtils.asBool(json.invisible);
     val.dontSnap = JsonUtils.asBool(json.dontSnap);
     val.dontLocate = JsonUtils.asBool(json.dontLocate);
-    val.color = new ColorDef(JsonUtils.asInt(val.color));
+    val.color = ColorDef.fromJSON(val.color);
     val.weight = JsonUtils.asInt(json.weight);
-    if (json.style != null)
+    if (json.style)
       val.styleId = new Id(json.style);
     val.priority = JsonUtils.asInt(json.priority);
-    if (json.material != null)
+    if (json.material)
       val.materialId = new Id(json.material);
     val.transparency = JsonUtils.asInt(json.transp);
     return val;
@@ -51,11 +51,11 @@ export class Appearance {
     if (this.dontPlot) val.dontPlot = true;
     if (this.dontSnap) val.dontSnap = true;
     if (this.dontLocate) val.dontLocate = true;
-    if (!ColorDef.black().equals(this.color)) val.color = this.color.rgba;
+    if (!ColorDef.black().equals(this.color)) val.color = this.color;
     if (0 !== this.weight) val.weight = this.weight;
-    if (this.styleId) val.style = this.styleId.toString();
+    if (this.styleId) val.style = this.styleId;
     if (0 !== this.priority) val.priority = this.priority;
-    if (this.materialId) val.material = this.materialId.toString();
+    if (this.materialId) val.material = this.materialId;
     if (0.0 !== this.transparency) val.transp = this.transparency;
     return val;
   }
@@ -89,6 +89,33 @@ export class SubCategoryOverride {
     if (this._priority) appear.priority = this._value.priority;
     if (this._transp) appear.transparency = this._value.transparency;
   }
+
+  public toJSON(): any {
+    const val: any = {};
+    if (this._invisible) val.invisible = this._value.invisible;
+    if (this._color) val.color = this._value.color;
+    if (this._weight) val.weight = this._value.weight;
+    if (this._style) val.style = this._value.styleId;
+    if (this._material) val.material = this._value.materialId;
+    if (this._priority) val.priority = this._value.priority;
+    if (this._transp) val.transp = this._value.transparency;
+    return val;
+  }
+
+  public static fromJSON(json: any): SubCategoryOverride {
+    const val = new SubCategoryOverride();
+    if (!json)
+      return val;
+
+    if (json.invisible) val.setInvisible(JsonUtils.asBool(json.invisible()));
+    if (json.color) val.setColor(ColorDef.fromJSON(json.color));
+    if (json.weight) val.setWeight(JsonUtils.asInt(json.weight));
+    if (json.style) val.setStyle(new Id(json.style));
+    if (json.material) val.setMaterial(new Id(json.material));
+    if (json.priority) val.setDisplayPriority(JsonUtils.asInt(json.priority));
+    if (json.transp) val.setTransparency(JsonUtils.asDouble(json.transp));
+    return val;
+  }
 }
 
 export interface ISubCategory extends IElement {
@@ -103,8 +130,8 @@ export class SubCategory extends DefinitionElement {
   public categoryId: Id;
   public constructor(opts: ISubCategory) {
     super(opts);
-    this.appearance = opts.appearance ? opts.appearance : new Appearance();
-    this.categoryId = opts.categoryId ? opts.categoryId : new Id();
+    this.appearance = Appearance.fromJSON(opts.appearance);
+    this.categoryId = new Id(opts.categoryId);
   }
 
   public getSubCategoryName(): string { return this.code.getValue(); }
