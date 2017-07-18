@@ -5,7 +5,7 @@
 import { Point3d, Range3d, YawPitchRollAngles } from "../../geometry-core/lib/PointVector";
 import { Elements } from "./Elements";
 import { DgnDb } from "./IModelServiceTier";
-import { BeSQLite } from "./Constants";
+import { BeSQLite } from "@bentley/bentleyjs-common/lib/BeSQLite";
 
 /** An iModel file */
 export class IModel {
@@ -38,9 +38,7 @@ export class IModel {
   }
 }
 
-/**
- * A two-part id, containing a IModel id and a local id.
- */
+/** A two-part id, containing a IModel id and a local id. */
 export class Id {
   public readonly hi: number;
   public readonly lo: number;
@@ -135,17 +133,10 @@ export class ElementAlignedBox3d extends Range3d {
 export class GeometryStream {
   public geomStream: ArrayBuffer;
 
-  // return false if this GeometryStream is empty.
+  /** return false if this GeometryStream is empty. */
   public hasGeometry(): boolean { return this.geomStream.byteLength !== 0; }
 }
 
 export class Placement3d {
   public constructor(public origin?: Point3d, public angles?: YawPitchRollAngles, public boundingBox?: ElementAlignedBox3d) { }
-}
-
-export class JsonUtils {
-  public static asBool(json: any, defaultVal: boolean = false): boolean { return (json == null) ? defaultVal : !!json; }
-  public static asInt(json: any, defaultVal: number = 0): number { return (typeof json === "number") ? Math.trunc(json) : defaultVal; }
-  public static asDouble(json: any, defaultVal: number = 0): number { return (typeof json === "number") ? json : defaultVal; }
-  public static asString(json: any, defaultVal: string = ""): string { return (json == null) ? defaultVal : json.toString(); }
 }

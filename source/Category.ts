@@ -4,7 +4,8 @@
 import { registerEcClass } from "./EcRegistry";
 import { DefinitionElement, IElement } from "./Element";
 import { ColorDef } from "./Render";
-import { Id, JsonUtils } from "./IModel";
+import { Id } from "./IModel";
+import { JsonUtils } from "../../Bentleyjs-common/lib/JsonUtils";
 
 /** A SubCategory appearance */
 export class Appearance {

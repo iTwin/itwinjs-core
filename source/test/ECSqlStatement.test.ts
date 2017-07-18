@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { ECSqlStatement } from "../IModelServiceTier";
 import { IModel } from "../IModel";
-import { IModelTestUtils } from "./IModelTestUtils"
+import { IModelTestUtils } from "./IModelTestUtils";
 
 class ECSqlStatementTestUtils {
 
