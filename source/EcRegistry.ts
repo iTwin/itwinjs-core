@@ -63,7 +63,7 @@ export class EcRegistry {
 
   public static registerEcClass(fullname: string, ctor: any) {
     EcRegistry.ecClasses.set(fullname.toLowerCase(), ctor);
-    //console.log("registerEcClass " + fullname);
+    // console.log("registerEcClass " + fullname);
   }
 
   /* This function generates a JS class for the specified ECClass and registers it. It also ensures that
