@@ -24,8 +24,13 @@ describe("ECSqlStatement", () => {
   });
 
   it("should not prepare an UPDATE statement", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    ECSqlStatementTestUtils.getStatement (imodel, "update BIS.Element set CodeValue='a'", false);
+    try {
+    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true, true);
+    await ECSqlStatementTestUtils.getStatement (imodel, "update BIS.Element set CodeValue='a'", false);
+    assert.fail(true, false, "An UPDATE statement should not prepare.");
+    } catch (reason) {
+      // this is what I expected
+    }
   });
 
   it("should produce a single row from SELECT ALL using step_once", async () => {
