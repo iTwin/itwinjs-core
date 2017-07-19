@@ -6,10 +6,19 @@ import { IModel, Id } from "./IModel";
 import { EcRegistry } from "./EcRegistry";
 import { LRUMap } from "@bentley/bentleyjs-common/lib/LRUMap";
 
-//
+/**
+ * Parameters to specify what element to load.
+ * @export
+ * @interface IElementLoad
+ */
 export interface IElementLoad {
   id?: Id | string;
   code?: Code;
+  /**
+   * if true, do not load the geometry of the element
+   * @type {boolean}
+   * @memberof IElementLoad
+   */
   noGeometry?: boolean;
 }
 
@@ -22,8 +31,9 @@ export class Elements {
 
   /**
    * Get an element by Id or Code.
-   * @param opts  Either the id or the code of the element
-   * @return the Element or undefined if the Id is not found
+   * @param {IElementLoad} opts  Either the id or the code of the element
+   * @returns {(Promise<Element | undefined>)} The Element or undefined if the Id is not found
+   * @memberof Elements
    */
   public async getElement(opts: IElementLoad): Promise<Element | undefined> {
     // first see if the element is already in the local cache.
@@ -54,12 +64,12 @@ export class Elements {
 
         // If the create failed, that's probably because we don't yet have a class.
         // Request the ECClass metadata from the iModel and generate a class.
-        EcRegistry.generateClassFromFullName(stream, this._iModel).then((cls: any) => {
+        EcRegistry.generateClassFromFullName(stream, this._iModel).then((_cls: any) => {
 
           // When that comes back, try again to create the element. This time it should work.
           el = EcRegistry.create(stream) as Element | undefined;
           if (el) {
-            // Now we are back in the normal case. We have the classs, and we can create an instance. Cache the instance and return it.
+            // Now we are back in the normal case. We have the class, and we can create an instance. Cache the instance and return it.
             this._loaded.set(el.id.toString(), el);
             resolve(el);
             return;

@@ -689,7 +689,7 @@ export class Camera {
   public focusDistance: number = 0.0;
   public eye: Point3d = new Point3d(0.0, 0.0, 0.0);
 
-  public static isValidLensAngle(val: Angle) { return val.radians() > (Math.PI / 8.0) && val < Angle.createRadians(Math.PI); }
+  public static isValidLensAngle(val: Angle) { return val.radians > (Math.PI / 8.0) && val < Angle.createRadians(Math.PI); }
   public invalidateFocus() { this.focusDistance = 0.0; }
   public isFocusValid() { return this.focusDistance > 0.0 && this.focusDistance < 1.0e14; }
   public getFocusDistance() { return this.focusDistance; }
