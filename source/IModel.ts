@@ -117,7 +117,6 @@ export class Id {
 /** A bounding box aligned to the orientation of an Element */
 export class ElementAlignedBox3d extends Range3d {
   public constructor(low: Point3d, high: Point3d) { super(low.x, low.y, low.z, high.x, high.y, high.z); }
-
   public getLeft(): number { return this.low.x; }
   public getFront(): number { return this.low.y; }
   public getBottom(): number { return this.low.z; }

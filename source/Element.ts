@@ -4,7 +4,7 @@
 
 import { Id, IModel, GeometryStream, Placement3d } from "./IModel";
 import { registerEcClass } from "./EcRegistry";
-import { JsonUtils } from "../../Bentleyjs-common/lib/JsonUtils";
+import { JsonUtils } from "@bentley/bentleyjs-common/lib/JsonUtils";
 
 export interface ICode {
   spec: Id | string;
@@ -12,12 +12,7 @@ export interface ICode {
   value?: string;
 }
 
-/**
- * A 3 part Code that identifies an Element
- * @export
- * @class Code
- * @implements {ICode}
- */
+/** A 3 part Code that identifies an Element */
 export class Code implements ICode {
   public spec: Id;
   public scope: string;
@@ -29,12 +24,7 @@ export class Code implements ICode {
     this.value = JsonUtils.asString(val.value);
   }
 
-  /**
-   *  Create an instance of the default code (1,1,null)
-   * @static
-   * @returns {Code}
-   * @memberof Code
-   */
+  /**  Create an instance of the default code (1,1,null) */
   public static createDefault(): Code { return new Code({ spec: new Id(1), scope: "1" }); }
   public getValue(): string { return this.value ? this.value : ""; }
 }
@@ -47,10 +37,7 @@ export class RelatedElement {
   }
 }
 
-/**
- * the schema name and class name for an ECClass
- * @export
- */
+/** the schema name and class name for an ECClass */
 export interface FullClassName {
   schemaName: string;
   className: string;
@@ -118,11 +105,11 @@ export interface StructECProperty {
 
 /**
  * Metadata for an ECProperty that is a primitive array.
- * @property { Object } primitveArrayECProperty Describes the type
+ * @property { Object } primitiveArrayECProperty Describes the type
  * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
  */
 export interface PrimitiveArrayECProperty {
-  primitveArrayECProperty: { type: string, minOccurs: number, maxOccurs?: number };
+  primitiveArrayECProperty: { type: string, minOccurs: number, maxOccurs?: number };
 }
 
 /**
@@ -203,22 +190,13 @@ export class Element {
   }
 }
 
-/**
- * Parameters for creating a GeometricElement
- * @export
- * @interface IGeometricElement
- * @extends {IElement}
- */
+/** Parameters for creating a GeometricElement */
 export interface IGeometricElement extends IElement {
   category?: Id;
   geom?: GeometryStream;
 }
 
-/** A Geometric element
- * @export
- * @class GeometricElement
- * @extends {Element}
- */
+/** A Geometric element */
 @registerEcClass("BisCore.GeometricElement")
 export class GeometricElement extends Element {
   public category: Id;
