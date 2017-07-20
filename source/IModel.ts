@@ -4,7 +4,7 @@
 
 import { Point3d, Range3d, YawPitchRollAngles } from "../../geometry-core/lib/PointVector";
 import { Elements } from "./Elements";
-import { DgnDb } from "./IModelServiceTier";
+import { DgnDb } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { BeSQLite } from "@bentley/bentleyjs-common/lib/BeSQLite";
 
 /** An iModel file */
@@ -14,10 +14,9 @@ export class IModel {
 
   /** open the iModel
    * @param fileName  The name of the iModel
-   * @param mode      Open mode
+   * @param mode      Open modedgndbnodeaddon
    * @return non-zero error status if the iModel could not be opened
    */
-  // *** NEEDS WORK: define app- and service-specific versions of this function
   public async openDgnDb(fileName: string, mode?: BeSQLite.OpenMode): Promise<BeSQLite.DbResult> {
     if (!mode)
       mode = BeSQLite.OpenMode.Readonly;

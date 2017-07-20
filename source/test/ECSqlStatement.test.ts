@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { ECSqlStatement } from "../IModelServiceTier";
+import { ECSqlStatement } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { IModel } from "../IModel";
 import { IModelTestUtils } from "./IModelTestUtils";
 

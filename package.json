@@ -24,7 +24,8 @@
   },
   "dependencies": {
     "@bentley/bentleyjs-common": "^1.0.2",
-    "@bentley/geometry-core": "latest"
+    "@bentley/geometry-core": "latest",
+    "@bentley/imodeljs-dgnplatform": "latest"
   },
   "devDependencies": {
     "@bentley/bentleyjs-tools": "^1.0.11",

@@ -42,6 +42,9 @@ describe("Elements", async () => {
     assert(el != null);
     const el2 = await elements.getElement({ id: "0x34" });
     assert(el2 != null);
+    const codeBad = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
+    //const elcodeBad = await elements.getElement({ code: codeBad });
+    //assert(elcodeBad === undefined);
 
   });
 
