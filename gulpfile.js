@@ -3,7 +3,7 @@
 +--------------------------------------------------------------------------------------*/
 
 const gulp = require("gulp");
-const bentleyTools = require("../bentleyjs-tools");
+const bentleyTools = require("@bentley/bentleyjs-tools");
 
 // initialize and add the default Bentley gulp tasks
 bentleyTools.init(gulp);
