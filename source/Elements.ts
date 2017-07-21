@@ -50,6 +50,9 @@ export class Elements {
       this._iModel.getDgnDb().getElement(JSON.stringify(opts)).then((json: string) => {
 
         // When that comes back, try to create an element from the data.
+        if (json.length === 0) {
+          resolve(undefined); // we didn't find an element with the specified idenity. That's not an error, just an empty result.
+        }
         const stream: IElement = JSON.parse(json) as IElement;
         stream._iModel = this._iModel;
 
