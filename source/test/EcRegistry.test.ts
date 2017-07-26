@@ -7,6 +7,7 @@ import { ECClass, Code, NavigationECProperty, PrimitiveECProperty } from "../Ele
 import { EcRegistry } from "../EcRegistry";
 import { IModel } from "../IModel";
 import { IModelTestUtils } from "./IModelTestUtils";
+import { BisCore, BisClass } from "../Biscore";
 import { Elements } from "../Elements";
 
 // Fake ECClass metadata
@@ -66,8 +67,8 @@ describe("EcRegistry", () => {
       assert.equal(ecclass.name, el.className);
       assert.equal(ecclass.schema, el.schemaName);
       // I happen to know that this is a BisCore.RepositoryLink
-      assert.equal(ecclass.name, "RepositoryLink");
-      assert.equal(ecclass.schema, "BisCore");
+      assert.equal(ecclass.name, BisClass.RepositoryLink);
+      assert.equal(ecclass.schema, BisCore.Schema);
       //  Check the metadata on the class itself
       assert.isTrue(ecclass.baseClasses.length > 0);
       assert.equal(ecclass.baseClasses[0].name, "UrlLink");
@@ -91,30 +92,30 @@ describe("EcRegistry", () => {
       assert.equal(ecclass.name, el2.className);
       assert.equal(ecclass.schema, el2.schemaName);
       // I happen to know that this is a BisCore.SpatialViewDefinition
-      assert.equal(ecclass.name, "SpatialViewDefinition");
-      assert.equal(ecclass.schema, "BisCore");
+      assert.equal(ecclass.name, BisClass.SpatialViewDefinition);
+      assert.equal(ecclass.schema, BisCore.Schema);
       assert.isTrue(ecclass.baseClasses.length > 0);
-      assert.equal(ecclass.baseClasses[0].name, "ViewDefinition3d");
+      assert.equal(ecclass.baseClasses[0].name, BisClass.ViewDefinition3d);
       assert.isDefined(ecclass.properties);
       assert.isNotNull(ecclass.properties);
       assert.isDefined(ecclass.properties.modelSelector);
       const n: NavigationECProperty = ecclass.properties.modelSelector as NavigationECProperty;
       assert.isDefined(n.navigationECProperty);
-      assert.equal(n.navigationECProperty.relationshipClass.name, "SpatialViewDefinitionUsesModelSelector");
+      assert.equal(n.navigationECProperty.relationshipClass.name, BisClass.SpatialViewDefinitionUsesModelSelector);
     }
   });
 
   it("should get metadata for class", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const metadatastr: string = await imodel.getDgnDb().getECClassMetaData("biscore", "Element");
+    const metadatastr: string = await imodel.getDgnDb().getECClassMetaData(BisCore.Schema, BisClass.Element);
     assert.isNotNull(metadatastr);
     assert.isString(metadatastr);
     assert.notEqual(metadatastr.length, 0);
     const obj: any = JSON.parse(metadatastr);
     assert.isNotNull(obj);
     assert.isString(obj.name);
-    assert.equal(obj.name, "Element");
-    assert.equal(obj.schema, "BisCore");
+    assert.equal(obj.name, BisClass.Element);
+    assert.equal(obj.schema, BisCore.Schema);
     assert.isArray(obj.baseClasses);
     assert.equal(obj.baseClasses.length, 0);
     assert.isArray(obj.customAttributes);
@@ -136,7 +137,7 @@ describe("EcRegistry", () => {
 
   it("should get metadata for CA class just as well (and we'll see an array-typed property)", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const metadatastr: string = await imodel.getDgnDb().getECClassMetaData("biscore", "ClassHasHandler");
+    const metadatastr: string = await imodel.getDgnDb().getECClassMetaData(BisCore.Schema, "ClassHasHandler");
     assert.isNotNull(metadatastr);
     assert.isString(metadatastr);
     assert.notEqual(metadatastr.length, 0);
@@ -146,7 +147,6 @@ describe("EcRegistry", () => {
     assert.equal(obj.properties.restrictions.primitveArrayECProperty.type, "string");
     assert.equal(obj.properties.restrictions.primitveArrayECProperty.minOccurs, 0);
   });
-
 });
 
 class Base {
