@@ -18,10 +18,10 @@ export enum BisCore {
   RepositoryLink = "BisCore.RepositoryLink",
   SpatialCategory = "BisCore.SpatialCategory",
   SpatialViewDefinition = "BisCore.SpatialViewDefinition",
+  SpatialViewDefinitionUsesModelSelector = "BisCore.SpatialViewDefinitionUsesModelSelector",
   SubCategory = "BisCore.SubCategory",
   ViewDefinition = "BisCore.ViewDefinition",
   ViewDefinition3d = "BisCore.ViewDefinition3d",
-  ViewDefinition3dUsesModelSelector = "BisCore.ViewDefinition3dUsesModelSelector",
 }
 
 /** Just ClassName, no "BisCore." prefix */
@@ -39,8 +39,8 @@ export enum BisClass {
   RepositoryLink = "RepositoryLink",
   SpatialCategory = "SpatialCategory",
   SpatialViewDefinition = "SpatialViewDefinition",
+  SpatialViewDefinitionUsesModelSelector = "SpatialViewDefinitionUsesModelSelector",
   SubCategory = "SubCategory",
   ViewDefinition = "ViewDefinition",
   ViewDefinition3d = "ViewDefinition3d",
-  ViewDefinition3dUsesModelSelector = "ViewDefinition3dUsesModelSelector",
 }

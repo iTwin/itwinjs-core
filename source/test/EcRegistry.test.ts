@@ -101,7 +101,7 @@ describe("EcRegistry", () => {
       assert.isDefined(ecclass.properties.modelSelector);
       const n: NavigationECProperty = ecclass.properties.modelSelector as NavigationECProperty;
       assert.isDefined(n.navigationECProperty);
-      assert.equal(n.navigationECProperty.relationshipClass.name, "SpatialViewDefinitionUsesModelSelector");
+      assert.equal(n.navigationECProperty.relationshipClass.name, BisClass.SpatialViewDefinitionUsesModelSelector);
     }
   });
 
