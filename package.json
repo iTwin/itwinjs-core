@@ -25,9 +25,10 @@
   "dependencies": {
     "@bentley/bentleyjs-common": "^1.0.2",
     "@bentley/geometry-core": "^1.0.3",
-    "@bentley/imodeljs-dgnplatform": "^1.0.9",
+    "@bentley/imodeljs-dgnplatform": "^1.0.10",
     "chai": "^4.1.0",
     "debug-fabulous": "^0.1.1",
+    "diff": "^3.3.0",
     "gulp-typescript": "^3.2.1",
     "is-plain-object": "^2.0.4",
     "os-locale": "^2.1.0",

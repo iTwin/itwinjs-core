@@ -7,33 +7,37 @@ import { Elements } from "./Elements";
 import { DgnDb } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { BeSQLite } from "@bentley/bentleyjs-common/lib/BeSQLite";
 
-/** An iModel file */
+/** An iModel database */
 export class IModel {
-  private db: DgnDb;
-  private elements: Elements;
+  private _db: DgnDb;
+  private _elements: Elements;
 
-  /** open the iModel
+  /** Open the iModel
    * @param fileName  The name of the iModel
-   * @param mode      Open modedgndbnodeaddon
+   * @param mode      Open mode 
    * @return non-zero error status if the iModel could not be opened
    */
   public async openDgnDb(fileName: string, mode?: BeSQLite.OpenMode): Promise<BeSQLite.DbResult> {
     if (!mode)
       mode = BeSQLite.OpenMode.Readonly;
-    if (!this.db)
-      this.db = await new DgnDb();
-    return this.db.openDgnDb(fileName, mode);
+    if (!this._db)
+      this._db = await new DgnDb();
+    return this._db.openDgnDb(fileName, mode);
   }
 
   /** Get access to the Elements in the iModel */
   public get Elements(): Elements {
-    if (!this.elements)
-      this.elements = new Elements(this);
-    return this.elements;
+    if (!this._elements)
+      this._elements = new Elements(this);
+    return this._elements;
   }
 
   public getDgnDb(): DgnDb {
-    return this.db;
+    return this._db;
+  }
+
+  protected toJSON(): any {
+    return undefined;
   }
 }
 
