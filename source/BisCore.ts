@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
+/** BisCore.ClassName */
 export enum BisCore {
   Schema = "BisCore",
   Category = "BisCore.Category",
@@ -14,9 +15,32 @@ export enum BisCore {
   GeometricElement = "BisCore.GeometricElement",
   ModelSelector = "BisCore.ModelSelector",
   OrthographicViewDefinition = "BisCore.OrthographicViewDefinition",
+  RepositoryLink = "BisCore.RepositoryLink",
   SpatialCategory = "BisCore.SpatialCategory",
   SpatialViewDefinition = "BisCore.SpatialViewDefinition",
+  SpatialViewDefinitionUsesModelSelector = "BisCore.SpatialViewDefinitionUsesModelSelector",
   SubCategory = "BisCore.SubCategory",
   ViewDefinition = "BisCore.ViewDefinition",
   ViewDefinition3d = "BisCore.ViewDefinition3d",
+}
+
+/** Just ClassName, no "BisCore." prefix */
+export enum BisClass {
+  Category = "Category",
+  CategorySelector = "CategorySelector",
+  DisplayStyle = "DisplayStyle",
+  DisplayStyle2d = "DisplayStyle2d",
+  DisplayStyle3d = "DisplayStyle3d",
+  DrawingCategory = "DrawingCategory",
+  Element = "Element",
+  GeometricElement = "GeometricElement",
+  ModelSelector = "ModelSelector",
+  OrthographicViewDefinition = "OrthographicViewDefinition",
+  RepositoryLink = "RepositoryLink",
+  SpatialCategory = "SpatialCategory",
+  SpatialViewDefinition = "SpatialViewDefinition",
+  SpatialViewDefinitionUsesModelSelector = "SpatialViewDefinitionUsesModelSelector",
+  SubCategory = "SubCategory",
+  ViewDefinition = "ViewDefinition",
+  ViewDefinition3d = "ViewDefinition3d",
 }

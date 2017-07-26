@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
+import { BisCore, BisClass } from "../Biscore";
 import { IModel, Id } from "../IModel";
 import { ColorDef } from "../Render";
 import { Code, IElement } from "../Element";
@@ -21,8 +22,8 @@ describe("iModel", () => {
 
   it("should get ECClass metadata for various classes", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const elementECClass = await EcRegistry.getRegisteredClass({schema: "BisCore", name: "Element"}, imodel);
-    const categoryECClass = await EcRegistry.getRegisteredClass({schema: "BisCore", name: "Category"}, imodel);
+    const elementECClass = await EcRegistry.getRegisteredClass({schema: BisCore.Schema, name: BisClass.Element}, imodel);
+    const categoryECClass = await EcRegistry.getRegisteredClass({schema: BisCore.Schema, name: BisClass.Category}, imodel);
     assert.equal(elementECClass.name, "Element");
     assert.equal(categoryECClass.name, "Category");
   });
@@ -82,8 +83,8 @@ describe("ElementId", () => {
     const imodel1 = new IModel();
     const params: IElement = {
       _iModel: imodel1,
-      schemaName: "BisCore",
-      className: "ModelSelector",
+      schemaName: BisCore.Schema,
+      className: BisClass.ModelSelector,
       model: new Id(1, 1),
       code: Code.createDefault(),
       id: new Id(),
