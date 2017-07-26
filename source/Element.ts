@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
+import { BisCore } from "./BisCore";
 import { Id, IModel, GeometryStream, Placement3d } from "./IModel";
 import { registerEcClass } from "./EcRegistry";
 import { JsonUtils } from "@bentley/bentleyjs-common/lib/JsonUtils";
@@ -138,7 +139,7 @@ export interface ECClass {
 }
 
 /** An element within an iModel */
-@registerEcClass("BisCore.Element")
+@registerEcClass(BisCore.Element)
 export class Element {
   public static ecClass: any;
   public _iModel: IModel;
@@ -197,7 +198,7 @@ export interface IGeometricElement extends IElement {
 }
 
 /** A Geometric element */
-@registerEcClass("BisCore.GeometricElement")
+@registerEcClass(BisCore.GeometricElement)
 export class GeometricElement extends Element {
   public category: Id;
   public geom?: GeometryStream;
