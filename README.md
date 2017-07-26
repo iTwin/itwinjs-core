@@ -1,4 +1,4 @@
-﻿imodeljs-common
+﻿imodeljs-core
 ==========
 
-imodeljs-common contains the base apis for accessing iModels.
+imodeljs-core contains the base apis for accessing iModels.

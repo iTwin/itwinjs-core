@@ -1,6 +1,16 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
+import { DgnDomain, DgnDomains } from "./DgnDomain";
+
+import { Category, SubCategory, DrawingCategory, SpatialCategory } from "./Category";
+import {
+  CategorySelector, ModelSelector, ViewDefinition, ViewDefinition3d, SpatialViewDefinition, OrthographicViewDefinition,
+  DisplayStyle, DisplayStyle2d, DisplayStyle3d,
+} from "./ViewDefinition";
+import { Element, GeometricElement } from "./Element";
+
+import { EcRegistry } from "./EcRegistry";
 
 /** BisCore.ClassName */
 export enum BisCore {
@@ -43,4 +53,36 @@ export enum BisClass {
   SubCategory = "SubCategory",
   ViewDefinition = "ViewDefinition",
   ViewDefinition3d = "ViewDefinition3d",
+}
+
+/**
+ * Represents the BisCore domain and ECSchema. Registers all classes in the BisCore ECSchema.
+ */
+export class BisCoreDomain implements DgnDomain {
+
+  public static domainName: string = "BisCore";
+
+  /**
+   * Call this to register the BisCore domain prior to using it.
+   */
+  public static register() {
+    if (!DgnDomains.getRegisteredDomain(BisCoreDomain.domainName))
+      DgnDomains.registerDomain( new BisCoreDomain());
+  }
+
+  public get domainName(): string { return BisCoreDomain.domainName; }
+
+  /**
+   * Initialize the BisCore domain prior to using any of its classes.
+   */
+  private constructor() {
+    const customHandledClasses = [
+      Category, SubCategory, DrawingCategory, SpatialCategory, CategorySelector, ModelSelector, ViewDefinition, ViewDefinition3d, SpatialViewDefinition, OrthographicViewDefinition,
+      DisplayStyle, DisplayStyle2d, DisplayStyle3d, Element, GeometricElement,
+    ];
+    for (const cls of customHandledClasses) {
+      Object.getPrototypeOf(cls).constructor.domain = this;
+      EcRegistry.registerEcClass2(BisCoreDomain.domainName, cls);
+    }
+  }
 }

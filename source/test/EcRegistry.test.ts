@@ -7,8 +7,11 @@ import { ECClass, Code, NavigationECProperty, PrimitiveECProperty } from "../Ele
 import { EcRegistry } from "../EcRegistry";
 import { IModel } from "../IModel";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { BisCore, BisClass } from "../Biscore";
 import { Elements } from "../Elements";
+import { BisCoreDomain, BisClass } from "../BisCore";
+
+// First, register any domains that will be used in the tests.
+BisCoreDomain.register();
 
 // Fake ECClass metadata
 const testEcClass: ECClass = {
@@ -68,7 +71,7 @@ describe("EcRegistry", () => {
       assert.equal(ecclass.schema, el.schemaName);
       // I happen to know that this is a BisCore.RepositoryLink
       assert.equal(ecclass.name, BisClass.RepositoryLink);
-      assert.equal(ecclass.schema, BisCore.Schema);
+      assert.equal(ecclass.schema, BisCoreDomain.domainName);
       //  Check the metadata on the class itself
       assert.isTrue(ecclass.baseClasses.length > 0);
       assert.equal(ecclass.baseClasses[0].name, "UrlLink");
@@ -93,7 +96,7 @@ describe("EcRegistry", () => {
       assert.equal(ecclass.schema, el2.schemaName);
       // I happen to know that this is a BisCore.SpatialViewDefinition
       assert.equal(ecclass.name, BisClass.SpatialViewDefinition);
-      assert.equal(ecclass.schema, BisCore.Schema);
+      assert.equal(ecclass.schema, BisCoreDomain.domainName);
       assert.isTrue(ecclass.baseClasses.length > 0);
       assert.equal(ecclass.baseClasses[0].name, BisClass.ViewDefinition3d);
       assert.isDefined(ecclass.properties);
@@ -107,7 +110,7 @@ describe("EcRegistry", () => {
 
   it("should get metadata for class", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const metadatastr: string = await imodel.getDgnDb().getECClassMetaData(BisCore.Schema, BisClass.Element);
+    const metadatastr: string = await imodel.getDgnDb().getECClassMetaData(BisCoreDomain.domainName, BisClass.Element);
     assert.isNotNull(metadatastr);
     assert.isString(metadatastr);
     assert.notEqual(metadatastr.length, 0);
@@ -115,7 +118,7 @@ describe("EcRegistry", () => {
     assert.isNotNull(obj);
     assert.isString(obj.name);
     assert.equal(obj.name, BisClass.Element);
-    assert.equal(obj.schema, BisCore.Schema);
+    assert.equal(obj.schema, BisCoreDomain.domainName);
     assert.isArray(obj.baseClasses);
     assert.equal(obj.baseClasses.length, 0);
     assert.isArray(obj.customAttributes);
@@ -137,7 +140,7 @@ describe("EcRegistry", () => {
 
   it("should get metadata for CA class just as well (and we'll see an array-typed property)", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const metadatastr: string = await imodel.getDgnDb().getECClassMetaData(BisCore.Schema, "ClassHasHandler");
+    const metadatastr: string = await imodel.getDgnDb().getECClassMetaData(BisCoreDomain.domainName, "ClassHasHandler");
     assert.isNotNull(metadatastr);
     assert.isString(metadatastr);
     assert.notEqual(metadatastr.length, 0);

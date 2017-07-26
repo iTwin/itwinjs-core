@@ -70,6 +70,11 @@ export class EcRegistry {
     // console.log("registerEcClass " + fullname);
   }
 
+  public static registerEcClass2(schemaName: string, ctor: any) {
+    EcRegistry.ecClasses.set((schemaName + "." + ctor.name).toLowerCase(), ctor);
+    // console.log("registerEcClass " + fullname);
+  }
+
   /* This function generates a JS class for the specified ECClass and registers it. It also ensures that
       all of the base classes of the ECClass exist and are registered. */
   public static async generateClassFromFullName(fullClassName: FullClassName, imodel: IModel): Promise<any> {
@@ -112,8 +117,3 @@ export class EcRegistry {
   }
 
 }
-
-/** Decorator function for classes that handle an EC class */
-export const registerEcClass = (className: string) => (ctor: any) => {
-  EcRegistry.ecClasses.set(className.toLowerCase(), ctor);
-};

@@ -2,10 +2,10 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { Point3d, Range3d, YawPitchRollAngles } from "../../geometry-core/lib/PointVector";
+import { Point3d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { Elements } from "./Elements";
 import { DgnDb } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
-import { BeSQLite } from "@bentley/bentleyjs-common/lib/BeSQLite";
+import { BeSQLite } from "@bentley/bentleyjs-core/lib/BeSQLite";
 
 /** An iModel file */
 export class IModel {

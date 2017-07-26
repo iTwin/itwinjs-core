@@ -4,7 +4,7 @@
 import { Element, Code, IElement } from "./Element";
 import { IModel, Id } from "./IModel";
 import { EcRegistry } from "./EcRegistry";
-import { LRUMap } from "@bentley/bentleyjs-common/lib/LRUMap";
+import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 
 /**
  * Parameters to specify what element to load.

@@ -3,15 +3,18 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { BisCore, BisClass } from "../Biscore";
+import { BisClass } from "../Biscore";
 import { IModel, Id } from "../IModel";
 import { ColorDef } from "../Render";
 import { Code, IElement } from "../Element";
 import { EcRegistry } from "../EcRegistry";
 import { ModelSelector } from "../ViewDefinition";
 import { Elements } from "../Elements";
-export { Category } from "../Category";
 import { IModelTestUtils } from "./IModelTestUtils";
+import { BisCoreDomain, BisCore} from "../BisCore";
+
+// First, register any domains that will be used in the tests.
+BisCoreDomain.register();
 
 describe("iModel", () => {
 
@@ -43,8 +46,8 @@ describe("Elements", async () => {
     const el2 = await elements.getElement({ id: "0x34" });
     assert(el2 != null);
     const codeBad = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
-    //const elcodeBad = await elements.getElement({ code: codeBad });
-    //assert(elcodeBad === undefined);
+    // const elcodeBad = await elements.getElement({ code: codeBad });
+    // assert(elcodeBad === undefined);
 
   });
 
@@ -92,7 +95,6 @@ describe("ElementId", () => {
 
     const selector1 = EcRegistry.create(params) as ModelSelector;
     assert(selector1 !== undefined);
-    const _a = new ModelSelector(params);
     if (selector1) {
       selector1.addModel(new Id(2, 1));
       selector1.addModel(new Id(2, 1));

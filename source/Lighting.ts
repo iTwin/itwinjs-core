@@ -2,9 +2,9 @@
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { JsonUtils } from "@bentley/bentleyjs-common/lib/JsonUtils";
+import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { ColorDef } from "./Render";
-import { Angle } from "../../geometry-core/lib/Geometry";
+import { Angle } from "@bentley/geometry-core/lib/Geometry";
 
 /** The type of a Light */
 export enum LightType {

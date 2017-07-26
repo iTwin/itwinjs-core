@@ -4,9 +4,12 @@
 
 import { assert } from "chai";
 import { ECSqlStatement } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
-import { BisCore } from "../Biscore";
 import { IModel } from "../IModel";
 import { IModelTestUtils } from "./IModelTestUtils";
+import { BisCoreDomain, BisCore } from "../BisCore";
+
+// First, register any domains that will be used in the tests.
+BisCoreDomain.register();
 
 class ECSqlStatementTestUtils {
 
