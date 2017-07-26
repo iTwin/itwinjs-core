@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 /** BisCore.ClassName */
-export enum BisCore {
+export const enum BisCore {
   Schema = "BisCore",
   Category = "BisCore.Category",
   CategorySelector = "BisCore.CategorySelector",
@@ -58,7 +58,7 @@ export enum BisCore {
 }
 
 /** Just ClassName, no "BisCore." prefix */
-export enum BisClass {
+export const enum BisClass {
   Category = "Category",
   CategorySelector = "CategorySelector",
   DefinitionElement = "DefinitionElement",
