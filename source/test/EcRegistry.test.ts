@@ -80,7 +80,7 @@ describe("EcRegistry", () => {
       assert.isDefined(p.primitiveECProperty);
       assert.equal(p.primitiveECProperty.type, "binary");
       assert.equal(p.primitiveECProperty.extendedType, "BeGuid");
-      assert.equal(p.customAttributes[0].ecclass.name, "HideProperty");
+      assert.equal(p.customAttributes[1].ecclass.name, "HiddenProperty");
     }
     const el2 = await elements.getElement({ id: "0x34" });
     assert.isDefined(el2);
@@ -100,7 +100,7 @@ describe("EcRegistry", () => {
       assert.isDefined(ecclass.properties.modelSelector);
       const n: NavigationECProperty = ecclass.properties.modelSelector as NavigationECProperty;
       assert.isDefined(n.navigationECProperty);
-      assert.equal(n.navigationECProperty.relationshipClass.name, "ViewDefinition3dUsesModelSelector");
+      assert.equal(n.navigationECProperty.relationshipClass.name, "SpatialViewDefinitionUsesModelSelector");
     }
   });
 
@@ -147,17 +147,6 @@ describe("EcRegistry", () => {
     assert.equal(obj.properties.restrictions.primitveArrayECProperty.minOccurs, 0);
   });
 
-  it("should get metadata for class, and we'll see a struct-typed property", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const metadatastr: string = await imodel.getDgnDb().getECClassMetaData("biscore", "AnnotationTableCell");
-    assert.isNotNull(metadatastr);
-    assert.isString(metadatastr);
-    assert.notEqual(metadatastr.length, 0);
-    const obj: any = JSON.parse(metadatastr);
-    assert.isDefined(obj.properties.cellIndex);
-    assert.isDefined(obj.properties.cellIndex.structECProperty);
-    assert.equal(obj.properties.cellIndex.structECProperty.type, "AnnotationTableCellIndex");
-  });
 });
 
 class Base {
