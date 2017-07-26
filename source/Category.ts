@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { registerEcClass } from "./EcRegistry";
 import { DefinitionElement, IElement } from "./Element";
+import { BisCore } from "./BisCore";
 import { ColorDef } from "./Render";
 import { Id } from "./IModel";
 import { JsonUtils } from "@bentley/bentleyjs-common/lib/JsonUtils";
@@ -147,7 +148,7 @@ export interface ISubCategory extends IElement {
 }
 
 /** a Subcategory defines the appearance for graphics in Geometric elements */
-@registerEcClass("BisCore.SubCategory")
+@registerEcClass(BisCore.SubCategory)
 export class SubCategory extends DefinitionElement {
   public appearance: Appearance;
   public categoryId: Id;
@@ -174,7 +175,7 @@ export enum Rank {
 }
 
 /** a Category for a Geometric element */
-@registerEcClass("BisCore.Category")
+@registerEcClass(BisCore.Category)
 export class Category extends DefinitionElement {
   public rank: Rank = Rank.User;
 
@@ -186,13 +187,13 @@ export class Category extends DefinitionElement {
 }
 
 /** Categorizes 2d graphical elements. */
-@registerEcClass("BisCore.DrawingCategory")
+@registerEcClass(BisCore.DrawingCategory)
 export class DrawingCategory extends Category {
   public constructor(opts: IElement) { super(opts); }
 }
 
 /** Categorizes a SpatialElement. */
-@registerEcClass("BisCore.SpatialCategory")
+@registerEcClass(BisCore.SpatialCategory)
 export class SpatialCategory extends Category {
   public constructor(opts: IElement) { super(opts); }
 }

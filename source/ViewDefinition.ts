@@ -2,6 +2,7 @@
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
+import { BisCore } from "./BisCore";
 import { IElement, DefinitionElement } from "./Element";
 import { Appearance, SubCategoryOverride } from "./Category";
 import { ViewFlags, HiddenLine, ColorDef } from "./Render";
@@ -133,7 +134,7 @@ export class Frustum {
 }
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
-@registerEcClass("BisCore.DisplayStyle")
+@registerEcClass(BisCore.DisplayStyle)
 export class DisplayStyle extends DefinitionElement {
   protected _subcategories: Map<string, Appearance>;
   protected _subCategoryOvr: Map<string, SubCategoryOverride>;
@@ -169,7 +170,7 @@ export class DisplayStyle extends DefinitionElement {
 }
 
 /** A DisplayStyle for 2d views */
-@registerEcClass("BisCore.DisplayStyle2d")
+@registerEcClass(BisCore.DisplayStyle2d)
 export class DisplayStyle2d extends DisplayStyle {
   constructor(opts: IElement) { super(opts); }
 }
@@ -195,7 +196,7 @@ export class SkyBox {
 }
 
 /** A DisplayStyle for 3d views */
-@registerEcClass("BisCore.DisplayStyle3d")
+@registerEcClass(BisCore.DisplayStyle3d)
 export class DisplayStyle3d extends DisplayStyle {
   public groundPlane: GroundPlane;
   public skyBox: SkyBox;
@@ -242,7 +243,7 @@ export class DisplayStyle3d extends DisplayStyle {
  *  When a SpatialViewDefinition is loaded into a ViewController, it makes a copy of its ModelSelector, so any in-memory changes do not affect the original.
  *  Changes are not saved unless someone calls Update on the modified copy.
  */
-@registerEcClass("BisCore.ModelSelector")
+@registerEcClass(BisCore.ModelSelector)
 export class ModelSelector extends DefinitionElement {
   public models: Set<string>;
   constructor(opts: IElement) { super(opts); this.models = new Set<string>(); }
@@ -266,7 +267,7 @@ export class ModelSelector extends DefinitionElement {
  *  When a ViewDefinition is loaded into memory, it makes a copy of its CategorySelector, so any in-memory changes do not affect the original.
  *  Changes are not saved unless someone calls Update on the modified copy.
  */
-@registerEcClass("BisCore.CategorySelector")
+@registerEcClass(BisCore.CategorySelector)
 export class CategorySelector extends DefinitionElement {
   protected categories: Set<string>;
   constructor(opts: IElement) { super(opts); this.categories = new Set<string>(); }
@@ -318,7 +319,7 @@ export enum ViewportStatus {
  *  Subclasses of ViewDefinition determine which model(s) are viewed.
  *  A ViewController holds an editable copy of a ViewDefinition, and a ViewDefinition holds an editable copy of its DisplayStyle and CategorySelector.
  */
-@registerEcClass("BisCore.ViewDefinition")
+@registerEcClass(BisCore.ViewDefinition)
 export abstract class ViewDefinition extends DefinitionElement {
   protected categorySelectorId: Id;
   protected displayStyleId: Id;
@@ -725,7 +726,7 @@ export interface IViewDefinition3d extends IViewDefinition {
 }
 
 /** Defines a view of 3d models. */
-@registerEcClass("BisCore.ViewDefinition3d")
+@registerEcClass(BisCore.ViewDefinition3d)
 export abstract class ViewDefinition3d extends ViewDefinition {
   protected _cameraOn: boolean;    // if true, m_camera is valid.
   public origin: Point3d;    // The lower left back corner of the view frustum.
@@ -979,7 +980,7 @@ export interface ISpatialViewDefinition extends IViewDefinition3d {
 /** Defines a view of one or more SpatialModels.
  *  The list of viewed models is stored by the ModelSelector.
  */
-@registerEcClass("BisCore.SpatialViewDefinition")
+@registerEcClass(BisCore.SpatialViewDefinition)
 export class SpatialViewDefinition extends ViewDefinition3d {
   public modelSelectorId: Id;
   protected _modelSelector: ModelSelector;
@@ -1004,7 +1005,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
 }
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection. */
-@registerEcClass("BisCore.OrthographicViewDefinition")
+@registerEcClass(BisCore.OrthographicViewDefinition)
 export class OrthographicViewDefinition extends SpatialViewDefinition {
   constructor(opts: ISpatialViewDefinition) { super(opts); }
 
