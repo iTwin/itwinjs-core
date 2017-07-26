@@ -52,6 +52,7 @@ export class Elements {
         // When that comes back, try to create an element from the data.
         if (json.length === 0) {
           resolve(undefined); // we didn't find an element with the specified idenity. That's not an error, just an empty result.
+          return;
         }
         const stream: IElement = JSON.parse(json) as IElement;
         stream._iModel = this._iModel;

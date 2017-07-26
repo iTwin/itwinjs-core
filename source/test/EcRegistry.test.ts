@@ -81,7 +81,7 @@ describe("EcRegistry", () => {
       assert.isDefined(p.primitiveECProperty);
       assert.equal(p.primitiveECProperty.type, "binary");
       assert.equal(p.primitiveECProperty.extendedType, "BeGuid");
-      assert.equal(p.customAttributes[0].ecclass.name, "HideProperty");
+      assert.equal(p.customAttributes[1].ecclass.name, "HiddenProperty");
     }
     const el2 = await elements.getElement({ id: "0x34" });
     assert.isDefined(el2);
@@ -101,7 +101,7 @@ describe("EcRegistry", () => {
       assert.isDefined(ecclass.properties.modelSelector);
       const n: NavigationECProperty = ecclass.properties.modelSelector as NavigationECProperty;
       assert.isDefined(n.navigationECProperty);
-      assert.equal(n.navigationECProperty.relationshipClass.name, BisClass.ViewDefinition3dUsesModelSelector);
+      assert.equal(n.navigationECProperty.relationshipClass.name, "SpatialViewDefinitionUsesModelSelector");
     }
   });
 
