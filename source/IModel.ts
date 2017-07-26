@@ -139,6 +139,9 @@ export class GeometryStream {
   public hasGeometry(): boolean { return this.geomStream.byteLength !== 0; }
 }
 
+/** The "placement" of a GeometricElement. This includes the origin, orientation, and size (bounding box) of the element. 
+ * All geometry of a GeometricElement are relative to its placement.
+ */
 export class Placement3d {
   public constructor(public origin?: Point3d, public angles?: YawPitchRollAngles, public boundingBox?: ElementAlignedBox3d) { }
   public static fromJSON(json?: any): Placement3d {

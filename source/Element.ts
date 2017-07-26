@@ -66,8 +66,8 @@ export interface ECClassFullname {
 
 /**
  * A custom attribute instance
- * @property { ECClassFullname } ecclass The ECClass of the custom attribute
- * @property { PrimitiveECProperty| NavigationECProperty|StructECProperty|PrimitiveArrayECProperty|StructArrayECProperty } properties An object whose properties correspond by name to the properties of this class.
+ * @property ecclass The ECClass of the custom attribute
+ * @property properties An object whose properties correspond by name to the properties of this class.
  */
 export interface CustomAttribute {
   ecclass: ECClassFullname;
@@ -76,8 +76,8 @@ export interface CustomAttribute {
 
 /**
  * Metadata for an ECProperty that is a primitive type.
- * @property { Object } primitiveECProperty Describes the type
- * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
+ * @property primitiveECProperty Describes the type
+ * @property customAttributes The Custom Attributes for this class
  */
 export interface PrimitiveECProperty {
   primitiveECProperty: { type: string, extendedType?: string };
@@ -87,7 +87,7 @@ export interface PrimitiveECProperty {
 /**
  * Metadata for an ECProperty that is a Navigation property (aka a pointer to another element in the iModel).
  * @property { Object } navigationECProperty Describes the type
- * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
+ * @property customAttributes The Custom Attributes for this class
  */
 export interface NavigationECProperty {
   navigationECProperty: { type: string, direction: string, relationshipClass: ECClassFullname };
@@ -97,7 +97,6 @@ export interface NavigationECProperty {
 /**
  * Metadata for an ECProperty that is a struct.
  * @property { Object } structECProperty Describes the type
- * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
  */
 export interface StructECProperty {
   structECProperty: { type: string };
@@ -106,7 +105,6 @@ export interface StructECProperty {
 /**
  * Metadata for an ECProperty that is a primitive array.
  * @property { Object } primitiveArrayECProperty Describes the type
- * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
  */
 export interface PrimitiveArrayECProperty {
   primitiveArrayECProperty: { type: string, minOccurs: number, maxOccurs?: number };
@@ -115,7 +113,6 @@ export interface PrimitiveArrayECProperty {
 /**
  * Metadata for an ECProperty that is a struct array.
  * @property { Object } structArrayECProperty Describes the type
- * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
  */
 export interface StructArrayECProperty {
   structArrayECProperty: { type: string, minOccurs: number, maxOccurs?: number };
@@ -137,15 +134,7 @@ export interface ECClass {
   properties: { [propName: string]: PrimitiveECProperty | NavigationECProperty | StructECProperty | PrimitiveArrayECProperty | StructArrayECProperty };
 }
 
-// When JSON.stringify'ing an element, don't include internal properties that begin with _
-// One consequence of including such properties is that we get into the LRUCache, and that can lead to a cycle back to the element that we are processing.
-function stripInternalProperties(key: string, value: any): any {
-  if (key.startsWith("_"))
-    return undefined;
-  return value;
-}
-
-/** An element within an iModel */
+/** An element within an iModel.  */
 @registerEcClass("BisCore.Element")
 export class Element {
   public static ecClass: any;
@@ -174,18 +163,16 @@ export class Element {
     this.jsonProperties = val.jsonProperties ? val.jsonProperties : {};
   }
 
-  /** Safely convert an Element to JSON. This strips out internal properties, which excludes stuff that doesn't belong in JSON and also avoids cycles.  */
-  public stringify(): string { return JSON.stringify(this, stripInternalProperties); }
+  /** Convert an Element to JSON. This strips out internal properties with a leading underbar. */
+  public stringify(): string { return JSON.stringify(this, (key: string, value: any) => (key[0] === "_") ? undefined : value); }
 
   /** Get the metadata for the ECClass of this element. */
-  public async getECClass(): Promise<ECClass>  { return Object.getPrototypeOf(this).constructor.getECClassFor(this._iModel, this.schemaName, this.className); }
+  public async getECClass(): Promise<ECClass> { return Object.getPrototypeOf(this).constructor.getECClassFor(this._iModel, this.schemaName, this.className); }
   public getUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = {}; return this.jsonProperties.UserProps; }
   public setUserProperties(nameSpace: string, value: any) { this.getUserProperties()[nameSpace] = value; }
   public removeUserProperties(nameSpace: string) { delete this.getUserProperties()[nameSpace]; }
 
-  /**
-   * Get the specified ECClass metadata
-   */
+  /** Get the specified ECClass metadata */
   public static getECClassFor(imodel: IModel, schemaName: string, className: string): Promise<ECClass> {
     if ((null == this.ecClass) || !this.hasOwnProperty("ecClass")) {
       const p = new Promise<ECClass>((resolve, reject) => {

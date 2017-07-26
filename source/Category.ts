@@ -7,6 +7,7 @@ import { ColorDef } from "./Render";
 import { Id } from "./IModel";
 import { JsonUtils } from "@bentley/bentleyjs-common/lib/JsonUtils";
 
+/** Parameters to create a SubCategory Appearance */
 export interface IAppearance {
   color: ColorDef;
   invisible?: boolean;
@@ -20,7 +21,7 @@ export interface IAppearance {
   transp?: number;
 }
 
-/** A SubCategory appearance */
+/** Parameters that define the way geometry drawn on a SubCategory appears. */
 export class Appearance {
   public color: ColorDef = ColorDef.black();
   public weight: number = 0;
@@ -113,6 +114,7 @@ export class SubCategoryOverride {
     if (this._transp) appear.transparency = this._value.transparency;
   }
 
+  /** convert this SubCategoryOverride to a JSON object */
   public toJSON(): any {
     const val: any = {};
     if (this._invisible) val.invisible = this._value.invisible;
@@ -125,6 +127,7 @@ export class SubCategoryOverride {
     return val;
   }
 
+  /** Create a new SubCategoryOverride from a JSON object */
   public static fromJSON(json: any): SubCategoryOverride {
     const val = new SubCategoryOverride();
     if (!json)
@@ -141,6 +144,7 @@ export class SubCategoryOverride {
   }
 }
 
+/** Parameters to create a SubCategory element */
 export interface ISubCategory extends IElement {
   appearance?: Appearance;
   categoryId?: Id;
