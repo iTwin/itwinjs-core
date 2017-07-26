@@ -138,6 +138,14 @@ export interface ECClass {
   properties: { [propName: string]: PrimitiveECProperty | NavigationECProperty | StructECProperty | PrimitiveArrayECProperty | StructArrayECProperty };
 }
 
+// When JSON.stringify'ing an element, don't include internal properties that begin with _
+// One consequence of including such properties is that we get into the LRUCache, and that can lead to a cycle back to the element that we are processing.
+function stripInternalProperties(key: string, value: any): any {
+  if (key.startsWith("_"))
+    return undefined;
+  return value;
+}
+
 /** An element within an iModel */
 @registerEcClass(BisCore.Element)
 export class Element {
@@ -166,6 +174,9 @@ export class Element {
     this.userLabel = val.userLabel;
     this.jsonProperties = val.jsonProperties ? val.jsonProperties : {};
   }
+
+  /** Safely convert an Element to JSON. This strips out internal properties, which excludes stuff that doesn't belong in JSON and also avoids cycles.  */
+  public stringify(): string { return JSON.stringify(this, stripInternalProperties); }
 
   /** Get the metadata for the ECClass of this element. */
   public async getECClass(): Promise<ECClass>  { return Object.getPrototypeOf(this).constructor.getECClassFor(this._iModel, this.schemaName, this.className); }

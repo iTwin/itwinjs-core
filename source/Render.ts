@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { JsonUtils } from "../../Bentleyjs-common/lib/JsonUtils";
+import { JsonUtils } from "@bentley/Bentleyjs-common/lib/JsonUtils";
 
 export enum RenderMode {
   Wireframe = 0,

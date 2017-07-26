@@ -7,11 +7,11 @@ import { Appearance, SubCategoryOverride } from "./Category";
 import { ViewFlags, HiddenLine, ColorDef } from "./Render";
 import { Light, LightType } from "./Lighting";
 import { Id } from "./IModel";
-import { Vector3d, Point3d, Range3d, RotMatrix, Transform, YawPitchRollAngles } from "../../geometry-core/lib/PointVector";
-import { AxisOrder, Angle, Geometry } from "../../geometry-core/lib/Geometry";
-import { Map4d } from "../../geometry-core/lib/Geometry4d";
-import { Constant } from "../../geometry-core/lib/Constant";
-import { JsonUtils } from "../../Bentleyjs-common/lib/JsonUtils";
+import { Vector3d, Point3d, Range3d, RotMatrix, Transform, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
+import { AxisOrder, Angle, Geometry } from "@bentley/geometry-core/lib/Geometry";
+import { Map4d } from "@bentley/geometry-core/lib/Geometry4d";
+import { Constant } from "@bentley/geometry-core/lib/Constant";
+import { JsonUtils } from "@bentley/Bentleyjs-common/lib/JsonUtils";
 import { registerEcClass } from "./EcRegistry";
 
 export class ViewController { }
