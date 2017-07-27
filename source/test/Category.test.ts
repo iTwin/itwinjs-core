@@ -3,14 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Appearance, IAppearance, SubCategoryOverride } from "../Category";
+import { Appearance, AppearanceParams, SubCategoryOverride } from "../Category";
 import { Id } from "../IModel";
 import { ColorDef } from "../Render";
 
 describe("Category tests", () => {
 
   it("Appearance should construct properly", () => {
-    const opts: IAppearance = {
+    const opts: AppearanceParams = {
       color: ColorDef.blue(),
       weight: 3,
       priority: 4,
@@ -22,7 +22,7 @@ describe("Category tests", () => {
       dontSnap: true,
       invisible: true,
     };
-    let a1 = new Appearance({} as IAppearance);
+    let a1 = new Appearance({} as AppearanceParams);
     assert.isFalse(a1.dontLocate);
     assert.isFalse(a1.dontPlot);
     assert.isFalse(a1.dontSnap);

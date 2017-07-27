@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Element, Code, IElement } from "./Element";
+import { Element, Code, ElementParams } from "./Element";
 import { IModel, Id } from "./IModel";
 import { EcRegistry } from "./EcRegistry";
 import { LRUMap } from "@bentley/bentleyjs-common/lib/LRUMap";
@@ -51,10 +51,11 @@ export class Elements {
 
         // When that comes back, try to create an element from the data.
         if (json.length === 0) {
-          resolve(undefined); // we didn't find an element with the specified idenity. That's not an error, just an empty result.
+          resolve(undefined); // we didn't find an element with the specified identity. That's not an error, just an empty result.
           return;
         }
-        const stream: IElement = JSON.parse(json) as IElement;
+
+        const stream = JSON.parse(json) as ElementParams;
         stream._iModel = this._iModel;
 
         let el = EcRegistry.create(stream) as Element | undefined;

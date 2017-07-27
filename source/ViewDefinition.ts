@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { BisCore } from "./BisCore";
-import { IElement, DefinitionElement } from "./Element";
+import { ElementParams, DefinitionElement } from "./Element";
 import { Appearance, SubCategoryOverride } from "./Category";
 import { ViewFlags, HiddenLine, ColorDef } from "./Render";
 import { Light, LightType } from "./Lighting";
@@ -142,7 +142,7 @@ export class DisplayStyle extends DefinitionElement {
   protected _subCategoryOvr: Map<string, SubCategoryOverride>;
   public viewFlags: ViewFlags;
 
-  constructor(opts: IElement) { super(opts); }
+  constructor(opts: ElementParams) { super(opts); }
 
   public getStyles(): any { const p = this.jsonProperties as any; if (!p.styles) p.styles = new Object(); return p.styles; }
   public getStyle(name: string): any {
@@ -174,7 +174,7 @@ export class DisplayStyle extends DefinitionElement {
 /** A DisplayStyle for 2d views */
 @registerEcClass(BisCore.DisplayStyle2d)
 export class DisplayStyle2d extends DisplayStyle {
-  constructor(opts: IElement) { super(opts); }
+  constructor(opts: ElementParams) { super(opts); }
 }
 
 /** A circle drawn at a Z elevation, whose diameter is the the XY diagonal of the project extents */
@@ -202,7 +202,7 @@ export class SkyBox {
 export class DisplayStyle3d extends DisplayStyle {
   public groundPlane: GroundPlane;
   public skyBox: SkyBox;
-  public constructor(opts: IElement) { super(opts); }
+  public constructor(opts: ElementParams) { super(opts); }
   public getHiddenLineParams(): HiddenLine.Params { return this.getStyle("hline") as HiddenLine.Params; }
   public setHiddenLineParams(params: HiddenLine.Params) { this.setStyle("hline", params); }
 
@@ -248,7 +248,7 @@ export class DisplayStyle3d extends DisplayStyle {
 @registerEcClass(BisCore.ModelSelector)
 export class ModelSelector extends DefinitionElement {
   public models: Set<string>;
-  constructor(opts: IElement) { super(opts); this.models = new Set<string>(); }
+  constructor(opts: ElementParams) { super(opts); this.models = new Set<string>(); }
 
   /** Get the name of this ModelSelector */
   public getName(): string { return this.code.getValue(); }
@@ -272,7 +272,7 @@ export class ModelSelector extends DefinitionElement {
 @registerEcClass(BisCore.CategorySelector)
 export class CategorySelector extends DefinitionElement {
   protected categories: Set<string>;
-  constructor(opts: IElement) { super(opts); this.categories = new Set<string>(); }
+  constructor(opts: ElementParams) { super(opts); this.categories = new Set<string>(); }
 
   /** Get the name of this CategorySelector */
   public getName(): string { return this.code.getValue(); }
@@ -291,7 +291,7 @@ export class CategorySelector extends DefinitionElement {
 }
 
 /** Parameters used to construct a ViewDefinition */
-export interface IViewDefinition extends IElement {
+export interface IViewDefinition extends ElementParams {
   categorySelectorId?: any;
   displayStyleId?: any;
   categorySelector?: CategorySelector;
@@ -337,9 +337,11 @@ export abstract class ViewDefinition extends DefinitionElement {
   }
 
   // public abstract supplyController(): ViewController;
+
+  /** determine whether this ViewDefinition views a given model */
   public abstract viewsModel(modelId: Id): boolean;
 
-  /**  Get the origin of this view */
+  /** Get the origin of this view */
   public abstract getOrigin(): Point3d;
 
   /** Get the extents of this view */
@@ -347,9 +349,11 @@ export abstract class ViewDefinition extends DefinitionElement {
 
   /** Get the 3x3 ortho-normal RotMatrix for this view. */
   public abstract getRotation(): RotMatrix;
+
+  /** Set the origin of this view */
   public abstract setOrigin(viewOrg: Point3d): void;
 
-  /**  Set the extents of this view */
+  /** Set the extents of this view */
   public abstract setExtents(viewDelta: Vector3d): void;
 
   /** Change the rotation of the view.
@@ -423,9 +427,7 @@ export abstract class ViewDefinition extends DefinitionElement {
   protected adjustAspectRatio(windowAspect: number): void {
     const extents = this.getExtents();
     const viewAspect = extents.x / extents.y;
-
-    // if (this instanceof DrawingViewDefinition)
-    //   windowAspect *= this.getAspectRatioSkew();
+    windowAspect *= this.getAspectRatioSkew();
 
     if (Math.abs(1.0 - (viewAspect / windowAspect)) < 1.0e-9)
       return;
@@ -546,7 +548,7 @@ export abstract class ViewDefinition extends DefinitionElement {
 
   /** Set the aspect ratio skew for this view */
   public setAspectRatioSkew(val: number) {
-    if (val === 1.0) {
+    if (!val || val === 1.0) {
       this.removeDetail("aspectSkew");
     } else {
       this.setDetail("aspectSkew", val);

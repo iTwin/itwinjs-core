@@ -2,14 +2,14 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { registerEcClass } from "./EcRegistry";
-import { DefinitionElement, IElement } from "./Element";
+import { DefinitionElement, ElementParams } from "./Element";
 import { BisCore } from "./BisCore";
 import { ColorDef } from "./Render";
 import { Id } from "./IModel";
 import { JsonUtils } from "@bentley/bentleyjs-common/lib/JsonUtils";
 
 /** Parameters to create a SubCategory Appearance */
-export interface IAppearance {
+export interface AppearanceParams {
   color: ColorDef;
   invisible?: boolean;
   dontPlot?: boolean;
@@ -35,7 +35,7 @@ export class Appearance {
   public styleId: Id = new Id();
   public materialId: Id = new Id();
 
-  constructor(opts?: IAppearance) {
+  constructor(opts?: AppearanceParams) {
     if (!opts)
       return;
 
@@ -146,7 +146,7 @@ export class SubCategoryOverride {
 }
 
 /** Parameters to create a SubCategory element */
-export interface ISubCategory extends IElement {
+export interface ISubCategory extends ElementParams {
   appearance?: Appearance;
   categoryId?: Id;
 }
@@ -183,7 +183,7 @@ export enum Rank {
 export class Category extends DefinitionElement {
   public rank: Rank = Rank.User;
 
-  public constructor(opts: IElement) { super(opts); }
+  public constructor(opts: ElementParams) { super(opts); }
   public static getDefaultSubCategoryId(id: Id): Id {
     return id.isValid() ? new Id(id.lo, id.hi + 1) : new Id();
   }
@@ -193,11 +193,11 @@ export class Category extends DefinitionElement {
 /** Categorizes 2d graphical elements. */
 @registerEcClass(BisCore.DrawingCategory)
 export class DrawingCategory extends Category {
-  public constructor(opts: IElement) { super(opts); }
+  public constructor(opts: ElementParams) { super(opts); }
 }
 
 /** Categorizes a SpatialElement. */
 @registerEcClass(BisCore.SpatialCategory)
 export class SpatialCategory extends Category {
-  public constructor(opts: IElement) { super(opts); }
+  public constructor(opts: ElementParams) { super(opts); }
 }

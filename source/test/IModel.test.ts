@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { BisCore, BisClass } from "../Biscore";
 import { IModel, Id } from "../IModel";
 import { ColorDef } from "../Render";
-import { Code, IElement } from "../Element";
+import { Code, ElementParams } from "../Element";
 import { EcRegistry } from "../EcRegistry";
 import { ModelSelector } from "../ViewDefinition";
 import { Elements } from "../Elements";
@@ -42,9 +42,9 @@ describe("Elements", async () => {
     assert(el != null);
     const el2 = await elements.getElement({ id: "0x34" });
     assert(el2 != null);
-    const codeBad = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
-    //const elcodeBad = await elements.getElement({ code: codeBad });
-    //assert(elcodeBad === undefined);
+    // const codeBad = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
+    // const elcodeBad = await elements.getElement({ code: codeBad });
+    // assert(elcodeBad === undefined);
 
   });
 
@@ -81,7 +81,7 @@ describe("ElementId", () => {
 
   it("Model Selectors should hold models", () => {
     const imodel1 = new IModel();
-    const params: IElement = {
+    const params: ElementParams = {
       _iModel: imodel1,
       schemaName: BisCore.Schema,
       className: BisClass.ModelSelector,

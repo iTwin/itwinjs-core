@@ -7,19 +7,19 @@ import { Elements } from "./Elements";
 import { DgnDb } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { BeSQLite } from "@bentley/bentleyjs-common/lib/BeSQLite";
 
-/** An iModel database */
+/** An iModel database. */
 export class IModel {
   private _db: DgnDb;
   private _elements: Elements;
+  protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
 
   /** Open the iModel
    * @param fileName  The name of the iModel
-   * @param mode      Open mode 
+   * @param mode      Open mode for database
    * @return non-zero error status if the iModel could not be opened
    */
   public async openDgnDb(fileName: string, mode?: BeSQLite.OpenMode): Promise<BeSQLite.DbResult> {
-    if (!mode)
-      mode = BeSQLite.OpenMode.Readonly;
+    mode = (typeof mode === "number") ? mode : BeSQLite.OpenMode.Readonly;
     if (!this._db)
       this._db = await new DgnDb();
     return this._db.openDgnDb(fileName, mode);
@@ -34,10 +34,6 @@ export class IModel {
 
   public getDgnDb(): DgnDb {
     return this._db;
-  }
-
-  protected toJSON(): any {
-    return undefined;
   }
 }
 
@@ -54,7 +50,7 @@ export class Id {
 
   /**
    * constructor for Id
-   * @param bId an integer identifying the IModel id
+   * @param bId an integer identifying the briefcase id
    * @param lId an integer with the local id
    */
   constructor(bId?: Id | number | number[] | string, lId?: number) {
@@ -143,7 +139,7 @@ export class GeometryStream {
   public hasGeometry(): boolean { return this.geomStream.byteLength !== 0; }
 }
 
-/** The "placement" of a GeometricElement. This includes the origin, orientation, and size (bounding box) of the element. 
+/** The "placement" of a GeometricElement. This includes the origin, orientation, and size (bounding box) of the element.
  * All geometry of a GeometricElement are relative to its placement.
  */
 export class Placement3d {
