@@ -32,7 +32,7 @@ export class EcRegistry {
     return factory ? new factory(args) : undefined;
   }
 
-  public static GetSchemaBaseClass(): any {return Schema;}
+  public static GetSchemaBaseClass(): any { return Schema; }
 
   public static generateProxySchema(schemaName: string): string {
     let def: string = "";
@@ -44,11 +44,11 @@ export class EcRegistry {
     return def;
   }
 
-  private static registerSchema(schema: Schema) {
+  public static registerSchema(schema: Schema) {
     Schemas.registerSchema(schema);
   }
 
-  private static getRegisteredSchema(domainName: string) {
+  public static getRegisteredSchema(domainName: string) {
     return Schemas.getRegisteredSchema(domainName);
   }
 
@@ -146,6 +146,7 @@ export class EcRegistry {
     const fullname = EcRegistry.getEcRegistryKeyFromECClassFullname(ecclass);
     jsDef = jsDef + " EcRegistry.registerEcClass(" + ecclass.name + ");";
     jsDef = jsDef + " " + ecclass.name + ".ecClass=ecclass;";
+    // tslint:disable-next-line:no-eval
     eval(jsDef); // eval is OK here, because I generated the expression myself, and I know it's safe.
 
     return EcRegistry.ecClasses.get(fullname);
