@@ -7,33 +7,33 @@ import { Elements } from "./Elements";
 import { DgnDb } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { BeSQLite } from "@bentley/bentleyjs-core/lib/BeSQLite";
 
-/** An iModel file */
+/** An iModel database. */
 export class IModel {
-  private db: DgnDb;
-  private elements: Elements;
+  private _db: DgnDb;
+  private _elements: Elements;
+  protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
 
-  /** open the iModel
+  /** Open the iModel
    * @param fileName  The name of the iModel
-   * @param mode      Open modedgndbnodeaddon
+   * @param mode      Open mode for database
    * @return non-zero error status if the iModel could not be opened
    */
   public async openDgnDb(fileName: string, mode?: BeSQLite.OpenMode): Promise<BeSQLite.DbResult> {
-    if (!mode)
-      mode = BeSQLite.OpenMode.Readonly;
-    if (!this.db)
-      this.db = await new DgnDb();
-    return this.db.openDgnDb(fileName, mode);
+    mode = (typeof mode === "number") ? mode : BeSQLite.OpenMode.Readonly;
+    if (!this._db)
+      this._db = await new DgnDb();
+    return this._db.openDgnDb(fileName, mode);
   }
 
   /** Get access to the Elements in the iModel */
   public get Elements(): Elements {
-    if (!this.elements)
-      this.elements = new Elements(this);
-    return this.elements;
+    if (!this._elements)
+      this._elements = new Elements(this);
+    return this._elements;
   }
 
   public getDgnDb(): DgnDb {
-    return this.db;
+    return this._db;
   }
 }
 
@@ -50,7 +50,7 @@ export class Id {
 
   /**
    * constructor for Id
-   * @param bId an integer identifying the IModel id
+   * @param bId an integer identifying the briefcase id
    * @param lId an integer with the local id
    */
   constructor(bId?: Id | number | number[] | string, lId?: number) {
@@ -139,6 +139,9 @@ export class GeometryStream {
   public hasGeometry(): boolean { return this.geomStream.byteLength !== 0; }
 }
 
+/** The "placement" of a GeometricElement. This includes the origin, orientation, and size (bounding box) of the element.
+ * All geometry of a GeometricElement are relative to its placement.
+ */
 export class Placement3d {
   public constructor(public origin?: Point3d, public angles?: YawPitchRollAngles, public boundingBox?: ElementAlignedBox3d) { }
   public static fromJSON(json?: any): Placement3d {

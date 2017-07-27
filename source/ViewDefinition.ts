@@ -2,7 +2,7 @@
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { IElement, DefinitionElement } from "./Element";
+import { ElementParams, DefinitionElement } from "./Element";
 import { Appearance, SubCategoryOverride } from "./Category";
 import { ViewFlags, HiddenLine, ColorDef } from "./Render";
 import { Light, LightType } from "./Lighting";
@@ -114,6 +114,7 @@ export class Frustum {
     return true;
   }
 
+  /** Initialize this Frustum from a Range3d */
   public initFromRange(range: Range3d): void {
     const pts = this.points;
     pts[0].x = pts[3].x = pts[4].x = pts[7].x = range.low.x;
@@ -124,6 +125,7 @@ export class Frustum {
     pts[4].z = pts[5].z = pts[6].z = pts[7].z = range.high.z;
   }
 
+  /** Create a new Frustum from a Range3d */
   public static fromRange(range: Range3d): Frustum {
     const frustum = new Frustum();
     frustum.initFromRange(range);
@@ -137,7 +139,7 @@ export class DisplayStyle extends DefinitionElement {
   protected _subCategoryOvr: Map<string, SubCategoryOverride>;
   public viewFlags: ViewFlags;
 
-  constructor(opts: IElement) { super(opts); }
+  constructor(opts: ElementParams) { super(opts); }
 
   public getStyles(): any { const p = this.jsonProperties as any; if (!p.styles) p.styles = new Object(); return p.styles; }
   public getStyle(name: string): any {
@@ -168,7 +170,7 @@ export class DisplayStyle extends DefinitionElement {
 
 /** A DisplayStyle for 2d views */
 export class DisplayStyle2d extends DisplayStyle {
-  constructor(opts: IElement) { super(opts); }
+  constructor(opts: ElementParams) { super(opts); }
 }
 
 /** A circle drawn at a Z elevation, whose diameter is the the XY diagonal of the project extents */
@@ -195,7 +197,7 @@ export class SkyBox {
 export class DisplayStyle3d extends DisplayStyle {
   public groundPlane: GroundPlane;
   public skyBox: SkyBox;
-  public constructor(opts: IElement) { super(opts); }
+  public constructor(opts: ElementParams) { super(opts); }
   public getHiddenLineParams(): HiddenLine.Params { return this.getStyle("hline") as HiddenLine.Params; }
   public setHiddenLineParams(params: HiddenLine.Params) { this.setStyle("hline", params); }
 
@@ -240,7 +242,7 @@ export class DisplayStyle3d extends DisplayStyle {
  */
 export class ModelSelector extends DefinitionElement {
   public models: Set<string>;
-  constructor(opts: IElement) { super(opts); this.models = new Set<string>(); }
+  constructor(opts: ElementParams) { super(opts); this.models = new Set<string>(); }
 
   /** Get the name of this ModelSelector */
   public getName(): string { return this.code.getValue(); }
@@ -263,7 +265,7 @@ export class ModelSelector extends DefinitionElement {
  */
 export class CategorySelector extends DefinitionElement {
   protected categories: Set<string>;
-  constructor(opts: IElement) { super(opts); this.categories = new Set<string>(); }
+  constructor(opts: ElementParams) { super(opts); this.categories = new Set<string>(); }
 
   /** Get the name of this CategorySelector */
   public getName(): string { return this.code.getValue(); }
@@ -282,7 +284,7 @@ export class CategorySelector extends DefinitionElement {
 }
 
 /** Parameters used to construct a ViewDefinition */
-export interface IViewDefinition extends IElement {
+export interface IViewDefinition extends ElementParams {
   categorySelectorId?: any;
   displayStyleId?: any;
   categorySelector?: CategorySelector;
@@ -327,9 +329,11 @@ export abstract class ViewDefinition extends DefinitionElement {
   }
 
   // public abstract supplyController(): ViewController;
+
+  /** determine whether this ViewDefinition views a given model */
   public abstract viewsModel(modelId: Id): boolean;
 
-  /**  Get the origin of this view */
+  /** Get the origin of this view */
   public abstract getOrigin(): Point3d;
 
   /** Get the extents of this view */
@@ -337,9 +341,11 @@ export abstract class ViewDefinition extends DefinitionElement {
 
   /** Get the 3x3 ortho-normal RotMatrix for this view. */
   public abstract getRotation(): RotMatrix;
+
+  /** Set the origin of this view */
   public abstract setOrigin(viewOrg: Point3d): void;
 
-  /**  Set the extents of this view */
+  /** Set the extents of this view */
   public abstract setExtents(viewDelta: Vector3d): void;
 
   /** Change the rotation of the view.
@@ -413,9 +419,7 @@ export abstract class ViewDefinition extends DefinitionElement {
   protected adjustAspectRatio(windowAspect: number): void {
     const extents = this.getExtents();
     const viewAspect = extents.x / extents.y;
-
-    // if (this instanceof DrawingViewDefinition)
-    //   windowAspect *= this.getAspectRatioSkew();
+    windowAspect *= this.getAspectRatioSkew();
 
     if (Math.abs(1.0 - (viewAspect / windowAspect)) < 1.0e-9)
       return;
@@ -536,7 +540,7 @@ export abstract class ViewDefinition extends DefinitionElement {
 
   /** Set the aspect ratio skew for this view */
   public setAspectRatioSkew(val: number) {
-    if (val === 1.0) {
+    if (!val || val === 1.0) {
       this.removeDetail("aspectSkew");
     } else {
       this.setDetail("aspectSkew", val);
@@ -570,7 +574,7 @@ export abstract class ViewDefinition extends DefinitionElement {
   // DGNPLATFORM_EXPORT void GetGridSettings(GridOrientationType &, DPoint2dR, uint32_t &) const;
 }
 
-/** Margins for "white space" to be left around view volumes for #LookAtVolume.
+/** Margins for "white space" to be left around view volumes for #lookAtVolume.
  *  Values mean "percent of view" and must be between 0 and .25.
  */
 
@@ -613,9 +617,9 @@ export abstract class ViewDefinition extends DefinitionElement {
 // //! @note For 3d views, the camera is centered on the new volume and moved along the view z axis using the default lens angle
 // //! such that the entire volume is visible.
 // //! @note, for 2d views, only the X and Y values of volume are used.
-// DGNPLATFORM_EXPORT void LookAtVolume(DRange3dCR worldVolume, double const* aspectRatio=nullptr, MarginPercent const* margin=nullptr, bool expandClippingPlanes= true);
+// DGNPLATFORM_EXPORT void lookAtVolume(DRange3dCR worldVolume, double const* aspectRatio=nullptr, MarginPercent const* margin=nullptr, bool expandClippingPlanes= true);
 
-// DGNPLATFORM_EXPORT void LookAtViewAlignedVolume(DRange3dCR volume, double const* aspectRatio=nullptr, MarginPercent const* margin=nullptr, bool expandClippingPlanes= true);
+// DGNPLATFORM_EXPORT void lookAtViewAlignedVolume(DRange3dCR volume, double const* aspectRatio=nullptr, MarginPercent const* margin=nullptr, bool expandClippingPlanes= true);
 // };
 
 // /** @addtogroup GROUP_DgnView DgnView Module
@@ -707,7 +711,7 @@ export class Camera {
   }
 }
 
-/** Parameters used to construct a ViewDefinition3d */
+/** Parameters to construct a ViewDefinition3d */
 export interface IViewDefinition3d extends IViewDefinition {
   cameraOn?: any;             // if true, m_camera is valid.
   origin?: any;               // The lower left back corner of the view frustum.
@@ -771,7 +775,7 @@ export abstract class ViewDefinition3d extends ViewDefinition {
 
   /**  Turn the camera off for this view. After this call, the camera parameters in this view definition are ignored and views that use it will
    *  display with an orthographic (infinite focal length) projection of the view volume from the view direction.
-   *  @note To turn the camera back on, call LookAt
+   *  @note To turn the camera back on, call #lookAt
    */
   public turnCameraOff() { this._cameraOn = false; }
 
@@ -795,7 +799,7 @@ export abstract class ViewDefinition3d extends ViewDefinition {
    * @return a status indicating whether the camera was successfully positioned. See values at #ViewportStatus for possible errors.
    * @note If the aspect ratio of viewDelta does not match the aspect ratio of a DgnViewport into which this view is displayed, it will be
    * adjusted when the DgnViewport is synchronized from this view.
-   * @note This method modifies this ViewController. If this ViewController is attached to DgnViewport, you must call DgnViewport::SynchWithViewController
+   * @note This method modifies this ViewController. If this ViewController is attached to DgnViewport, you must call DgnViewport.synchWithViewController
    * to see the new changes in the DgnViewport.
    */
   public lookAt(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, newExtents?: Vector3d, frontDistance?: number, backDistance?: number): ViewportStatus {
@@ -872,7 +876,7 @@ export abstract class ViewDefinition3d extends ViewDefinition {
   // //! @note The aspect ratio of the view remains unchanged.
   // //! @note This method modifies this ViewController. If this ViewController is attached to DgnViewport, you must call DgnViewport::SynchWithViewController
   // //! to see the new changes in the DgnViewport.
-  // DGNPLATFORM_EXPORT ViewportStatus LookAtUsingLensAngle(DPoint3dCR eyePoint, DPoint3dCR targetPoint, DVec3dCR upVector,
+  // DGNPLATFORM_EXPORT ViewportStatus lookAtUsingLensAngle(DPoint3dCR eyePoint, DPoint3dCR targetPoint, DVec3dCR upVector,
   //   Angle fov, double const* frontDistance=nullptr, double const* backDistance=nullptr);
 
   // //! Move the camera relative to its current location by a distance in camera coordinates.
@@ -911,10 +915,10 @@ export abstract class ViewDefinition3d extends ViewDefinition {
   // DGNPLATFORM_EXPORT ViewportStatus RotateCameraWorld(double angle, DVec3dCR axis, DPoint3dCP aboutPt= nullptr);
 
   /** Get the distance from the eyePoint to the front plane for this view. */
-  public getFrontDistance() { return this.getBackDistance() - this.extents.z; }
+  public getFrontDistance(): number { return this.getBackDistance() - this.extents.z; }
 
   /** Get the distance from the eyePoint to the back plane for this view. */
-  public getBackDistance() {
+  public getBackDistance(): number {
     // backDist is the z component of the vector from the origin to the eyePoint .
     const eyeOrg = this.origin.vectorTo(this.getEyePoint());
     this.getRotation().multiplyVector(eyeOrg, eyeOrg);
@@ -933,37 +937,37 @@ export abstract class ViewDefinition3d extends ViewDefinition {
   // DGNPLATFORM_EXPORT void CenterFocusDistance();
 
   /**  Get the current location of the eyePoint for camera in this view. */
-  public getEyePoint() { return this.camera.eye; }
+  public getEyePoint(): Point3d { return this.camera.eye; }
 
   /**  Get the lens angle for this view. */
-  public getLensAngle() { return this.camera.lens; }
+  public getLensAngle(): Angle { return this.camera.lens; }
 
   /**  Set the lens angle for this view.
    *  @param[in] angle The new lens angle in radians. Must be greater than 0 and less than pi.
    *  @note This does not change the view's current field-of-view. Instead, it changes the lens that will be used if the view
    *  is subsequently modified and the lens angle is used to position the eyepoint.
-   *  @note To change the field-of-view (i.e. "zoom") of a view, pass a new viewDelta to #LookAt
+   *  @note To change the field-of-view (i.e. "zoom") of a view, pass a new viewDelta to #lookAt
    */
-  public setLensAngle(angle: Angle) { this.camera.lens = angle; }
+  public setLensAngle(angle: Angle): void { this.camera.lens = angle; }
 
   /**  Change the location of the eyePoint for the camera in this view.
    *  @param[in] pt The new eyepoint.
    *  @note This method is generally for internal use only. Moving the eyePoint arbitrarily can result in skewed or illegal perspectives.
-   *  The most @bentley/bentleyjs-core method for user-level camera positioning is #LookAt.
+   *  The most common method for user-level camera positioning is #lookAt.
    */
-  public setEyePoint(pt: Point3d) { this.camera.eye = pt; }
+  public setEyePoint(pt: Point3d): void { this.camera.eye = pt; }
 
   /**  Set the focus distance for this view.
    *  @note Changing the focus distance changes the plane on which the delta.x and delta.y values lie. So, changing focus distance
    *  without making corresponding changes to delta.x and delta.y essentially changes the lens angle, causing a "zoom" effect
    */
-  public setFocusDistance(dist: number) { this.camera.setFocusDistance(dist); }
+  public setFocusDistance(dist: number): void { this.camera.setFocusDistance(dist); }
 
   /**  Get the distance from the eyePoint to the focus plane for this view. */
-  public getFocusDistance() { return this.camera.focusDistance; }
+  public getFocusDistance(): number { return this.camera.focusDistance; }
 }
 
-/** Parameters used to construct a SpatialDefinition */
+/** Parameters to construct a SpatialDefinition */
 export interface ISpatialViewDefinition extends IViewDefinition3d {
   modelSelector?: ModelSelector;
 }

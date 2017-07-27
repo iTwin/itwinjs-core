@@ -1,12 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { DefinitionElement, IElement } from "./Element";
+import { DefinitionElement, ElementParams } from "./Element";
 import { ColorDef } from "./Render";
 import { Id } from "./IModel";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 
-export interface IAppearance {
+/** Parameters to create a SubCategory Appearance */
+export interface AppearanceParams {
   color: ColorDef;
   invisible?: boolean;
   dontPlot?: boolean;
@@ -19,7 +20,7 @@ export interface IAppearance {
   transp?: number;
 }
 
-/** A SubCategory appearance */
+/** Parameters that define the way geometry drawn on a SubCategory appears. */
 export class Appearance {
   public color: ColorDef = ColorDef.black();
   public weight: number = 0;
@@ -32,7 +33,7 @@ export class Appearance {
   public styleId: Id = new Id();
   public materialId: Id = new Id();
 
-  constructor(opts?: IAppearance) {
+  constructor(opts?: AppearanceParams) {
     if (!opts)
       return;
 
@@ -112,6 +113,7 @@ export class SubCategoryOverride {
     if (this._transp) appear.transparency = this._value.transparency;
   }
 
+  /** convert this SubCategoryOverride to a JSON object */
   public toJSON(): any {
     const val: any = {};
     if (this._invisible) val.invisible = this._value.invisible;
@@ -124,6 +126,7 @@ export class SubCategoryOverride {
     return val;
   }
 
+  /** Create a new SubCategoryOverride from a JSON object */
   public static fromJSON(json: any): SubCategoryOverride {
     const val = new SubCategoryOverride();
     if (!json)
@@ -140,7 +143,8 @@ export class SubCategoryOverride {
   }
 }
 
-export interface ISubCategory extends IElement {
+/** Parameters to create a SubCategory element */
+export interface ISubCategory extends ElementParams {
   appearance?: Appearance;
   categoryId?: Id;
 }
@@ -175,7 +179,7 @@ export enum Rank {
 export class Category extends DefinitionElement {
   public rank: Rank = Rank.User;
 
-  public constructor(opts: IElement) { super(opts); }
+  public constructor(opts: ElementParams) { super(opts); }
   public static getDefaultSubCategoryId(id: Id): Id {
     return id.isValid() ? new Id(id.lo, id.hi + 1) : new Id();
   }
@@ -184,10 +188,10 @@ export class Category extends DefinitionElement {
 
 /** Categorizes 2d graphical elements. */
 export class DrawingCategory extends Category {
-  public constructor(opts: IElement) { super(opts); }
+  public constructor(opts: ElementParams) { super(opts); }
 }
 
 /** Categorizes a SpatialElement. */
 export class SpatialCategory extends Category {
-  public constructor(opts: IElement) { super(opts); }
+  public constructor(opts: ElementParams) { super(opts); }
 }
