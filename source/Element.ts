@@ -2,9 +2,10 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { DgnDomain } from "./DgnDomain";
+import { Schema } from "./Schema";
 import { Id, IModel, GeometryStream, Placement3d } from "./IModel";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
+import { ECClass } from "./ECClass";
 
 export interface ICode {
   spec: Id | string;
@@ -37,13 +38,13 @@ export class RelatedElement {
   }
 }
 
-/** the schema name and class name for an ECClass */
-export interface FullClassName {
+/** An ECInstance has at least the name of the ECSchema/schema and ECClass that defines it. */
+export interface IECInstance {
   schemaName: string;
   className: string;
 }
 
-export interface IElement extends FullClassName {
+export interface IElement extends IECInstance {
   _iModel: IModel;
   model: Id | string;
   code: ICode;
@@ -52,89 +53,6 @@ export interface IElement extends FullClassName {
   federationGuid?: string;
   userLabel?: string;
   jsonProperties?: any;
-}
-
-/**
- * The full name of an ECClass
- * @property {string } name The name of the class
- * @property {string} schema  The name of the ECSchema that defines this class
- */
-export interface ECClassFullname {
-  name: string;
-  schema: string;
-}
-
-/**
- * A custom attribute instance
- * @property { ECClassFullname } ecclass The ECClass of the custom attribute
- * @property { PrimitiveECProperty| NavigationECProperty|StructECProperty|PrimitiveArrayECProperty|StructArrayECProperty } properties An object whose properties correspond by name to the properties of this class.
- */
-export interface CustomAttribute {
-  ecclass: ECClassFullname;
-  properties: { [propName: string]: PrimitiveECProperty | NavigationECProperty | StructECProperty | PrimitiveArrayECProperty | StructArrayECProperty };
-}
-
-/**
- * Metadata for an ECProperty that is a primitive type.
- * @property { Object } primitiveECProperty Describes the type
- * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
- */
-export interface PrimitiveECProperty {
-  primitiveECProperty: { type: string, extendedType?: string };
-  customAttributes: CustomAttribute[];
-}
-
-/**
- * Metadata for an ECProperty that is a Navigation property (aka a pointer to another element in the iModel).
- * @property { Object } navigationECProperty Describes the type
- * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
- */
-export interface NavigationECProperty {
-  navigationECProperty: { type: string, direction: string, relationshipClass: ECClassFullname };
-  customAttributes: CustomAttribute[];
-}
-
-/**
- * Metadata for an ECProperty that is a struct.
- * @property { Object } structECProperty Describes the type
- * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
- */
-export interface StructECProperty {
-  structECProperty: { type: string };
-}
-
-/**
- * Metadata for an ECProperty that is a primitive array.
- * @property { Object } primitiveArrayECProperty Describes the type
- * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
- */
-export interface PrimitiveArrayECProperty {
-  primitiveArrayECProperty: { type: string, minOccurs: number, maxOccurs?: number };
-}
-
-/**
- * Metadata for an ECProperty that is a struct array.
- * @property { Object } structArrayECProperty Describes the type
- * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
- */
-export interface StructArrayECProperty {
-  structArrayECProperty: { type: string, minOccurs: number, maxOccurs?: number };
-}
-
-/**
- * Metadata  for an ECClass.
- * @property {string} name  The ECClass name
- * @property {string} schema  The name of the ECSchema that defines this class
- * @property { ECClassFullname[] } baseClasses The list of base classes that this class is derived from. If more than one, the first is the actual base class and the others are mixins.
- * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
- * @property { PrimitiveECProperty| NavigationECProperty|StructECProperty|PrimitiveArrayECProperty|StructArrayECProperty } properties An object whose properties correspond by name to the properties of this class.
- */
-export interface ECClass {
-  name: string;
-  schema: string;
-  baseClasses: ECClassFullname[];
-  customAttributes: CustomAttribute[];
-  properties: { [propName: string]: PrimitiveECProperty | NavigationECProperty | StructECProperty | PrimitiveArrayECProperty | StructArrayECProperty };
 }
 
 // When JSON.stringify'ing an element, don't include internal properties that begin with _
@@ -147,13 +65,21 @@ function stripInternalProperties(key: string, value: any): any {
 
 /** An element within an iModel */
 export class Element {
+  /** ECClass metadata for this class. */
   public static ecClass: any;
-  public static dgnDomain: DgnDomain;
+  /** The Domain / schema that defines this class. */
+  public static schema: Schema;
   public _iModel: IModel;
   public id: Id;
   public model: Id;
-  public schemaName: string;
-  public className: string;
+  /** The name of the ECSchema and schema that defines this class */
+  public get schemaName(): string {
+    return Object.getPrototypeOf(this).constructor.schema.name;
+  }
+  /** The name of this class */
+  public get className(): string {
+    return Object.getPrototypeOf(this).constructor.name;
+  }
   public code: Code;
   public parent?: RelatedElement;
   public federationGuid?: string;
@@ -162,8 +88,6 @@ export class Element {
 
   /** constructor for Element */
   constructor(val: IElement) {
-    this.schemaName = val.schemaName;
-    this.className = val.className;
     this.id = new Id(val.id);
     this.code = new Code(val.code);
     this._iModel = val._iModel;
@@ -174,11 +98,15 @@ export class Element {
     this.jsonProperties = val.jsonProperties ? val.jsonProperties : {};
   }
 
+  /** The full name of this class, including the schema name */
+  public static get sqlName(): string { return this.schema.name + "." + this.name; }
+
   /** Safely convert an Element to JSON. This strips out internal properties, which excludes stuff that doesn't belong in JSON and also avoids cycles.  */
   public stringify(): string { return JSON.stringify(this, stripInternalProperties); }
 
   /** Get the metadata for the ECClass of this element. */
   public async getECClass(): Promise<ECClass>  { return Object.getPrototypeOf(this).constructor.getECClassFor(this._iModel, this.schemaName, this.className); }
+
   public getUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = {}; return this.jsonProperties.UserProps; }
   public setUserProperties(nameSpace: string, value: any) { this.getUserProperties()[nameSpace] = value; }
   public removeUserProperties(nameSpace: string) { delete this.getUserProperties()[nameSpace]; }

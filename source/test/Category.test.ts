@@ -6,10 +6,10 @@ import { assert } from "chai";
 import { Appearance, IAppearance, SubCategoryOverride } from "../Category";
 import { Id } from "../IModel";
 import { ColorDef } from "../Render";
-import { BisCoreDomain } from "../BisCore";
+import { BisCore } from "../BisCore";
 
 // First, register any domains that will be used in the tests.
-BisCoreDomain.register();
+BisCore.registerSchema();
 
 describe("Category tests", () => {
 

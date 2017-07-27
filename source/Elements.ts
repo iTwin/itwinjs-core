@@ -68,7 +68,7 @@ export class Elements {
 
         // If the create failed, that's probably because we don't yet have a class.
         // Request the ECClass metadata from the iModel and generate a class.
-        EcRegistry.generateClassFromFullName(stream, this._iModel).then((_cls: any) => {
+        EcRegistry.generateClass(stream.schemaName, stream.className, this._iModel).then((_cls: any) => {
 
           // When that comes back, try again to create the element. This time it should work.
           el = EcRegistry.create(stream) as Element | undefined;

@@ -5,10 +5,10 @@
 import { assert } from "chai";
 import { ViewFlags, RenderMode, ColorDef } from "../Render";
 import { Light, ILight, Spot, LightType } from "../Lighting";
-import { BisCoreDomain } from "../BisCore";
+import { BisCore } from "../BisCore";
 
 // First, register any domains that will be used in the tests.
-BisCoreDomain.register();
+BisCore.registerSchema();
 
 describe("Render", () => {
 

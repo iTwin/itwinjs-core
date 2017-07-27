@@ -3,18 +3,18 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { BisClass } from "../Biscore";
 import { IModel, Id } from "../IModel";
 import { ColorDef } from "../Render";
-import { Code, IElement } from "../Element";
+import { Code, IElement, Element } from "../Element";
+import { Category } from "../Category";
 import { EcRegistry } from "../EcRegistry";
 import { ModelSelector } from "../ViewDefinition";
 import { Elements } from "../Elements";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { BisCoreDomain, BisCore} from "../BisCore";
+import { BisCore } from "../BisCore";
 
 // First, register any domains that will be used in the tests.
-BisCoreDomain.register();
+BisCore.registerSchema();
 
 describe("iModel", () => {
 
@@ -25,8 +25,8 @@ describe("iModel", () => {
 
   it("should get ECClass metadata for various classes", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const elementECClass = await EcRegistry.getRegisteredClass({schema: BisCore.Schema, name: BisClass.Element}, imodel);
-    const categoryECClass = await EcRegistry.getRegisteredClass({schema: BisCore.Schema, name: BisClass.Category}, imodel);
+    const elementECClass = await BisCore.getClass(Element.name, imodel);
+    const categoryECClass = await BisCore.getClass(Category.name, imodel);
     assert.equal(elementECClass.name, "Element");
     assert.equal(categoryECClass.name, "Category");
   });
@@ -86,8 +86,8 @@ describe("ElementId", () => {
     const imodel1 = new IModel();
     const params: IElement = {
       _iModel: imodel1,
-      schemaName: BisCore.Schema,
-      className: BisClass.ModelSelector,
+      schemaName: BisCore.name,
+      className: ModelSelector.name,
       model: new Id(1, 1),
       code: Code.createDefault(),
       id: new Id(),
