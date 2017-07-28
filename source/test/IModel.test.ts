@@ -7,7 +7,7 @@ import { IModel, Id } from "../IModel";
 import { ColorDef } from "../Render";
 import { Code, ElementParams, Element } from "../Element";
 import { Category } from "../Category";
-import { EcRegistry } from "../EcRegistry";
+import { ClassRegistry } from "../ClassRegistry";
 import { ModelSelector } from "../ViewDefinition";
 import { Elements } from "../Elements";
 import { IModelTestUtils } from "./IModelTestUtils";
@@ -93,7 +93,7 @@ describe("ElementId", () => {
       id: new Id(),
     };
 
-    const selector1 = EcRegistry.create(params) as ModelSelector;
+    const selector1 = ClassRegistry.create(params) as ModelSelector;
     assert(selector1 !== undefined);
     if (selector1) {
       selector1.addModel(new Id(2, 1));

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Element, Code, ElementParams } from "./Element";
 import { IModel, Id } from "./IModel";
-import { EcRegistry } from "./EcRegistry";
+import { ClassRegistry } from "./ClassRegistry";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 
 /**
@@ -58,7 +58,7 @@ export class Elements {
         const stream = JSON.parse(json) as ElementParams;
         stream._iModel = this._iModel;
 
-        let el = EcRegistry.create(stream) as Element | undefined;
+        let el = ClassRegistry.create(stream) as Element | undefined;
 
         if (el !== undefined) {
           // This is the normal case. We have the class, and it created an instance. Cache the instance and return it.
@@ -69,10 +69,10 @@ export class Elements {
 
         // If the create failed, that's probably because we don't yet have a class.
         // Request the ECClass metadata from the iModel and generate a class.
-        EcRegistry.generateClass(stream.schemaName, stream.className, this._iModel).then((_cls: any) => {
+        ClassRegistry.generateClass(stream.schemaName, stream.className, this._iModel).then((_cls: any) => {
 
           // When that comes back, try again to create the element. This time it should work.
-          el = EcRegistry.create(stream) as Element | undefined;
+          el = ClassRegistry.create(stream) as Element | undefined;
           if (el) {
             // Now we are back in the normal case. We have the class, and we can create an instance. Cache the instance and return it.
             this._loaded.set(el.id.toString(), el);

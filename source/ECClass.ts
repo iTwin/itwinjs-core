@@ -2,6 +2,8 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
+import { Schema } from "./Schema";
+
 /**
  * The full name of an ECClass
  * @property {string } name The name of the class
@@ -77,10 +79,23 @@ export interface StructArrayECProperty {
  * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
  * @property { PrimitiveECProperty| NavigationECProperty|StructECProperty|PrimitiveArrayECProperty|StructArrayECProperty } properties An object whose properties correspond by name to the properties of this class.
  */
-export interface ECClass {
+export interface IECClass {
   name: string;
   schema: string;
   baseClasses: ECClassFullname[];
   customAttributes: CustomAttribute[];
   properties: { [propName: string]: PrimitiveECProperty | NavigationECProperty | StructECProperty | PrimitiveArrayECProperty | StructArrayECProperty };
+}
+
+/** An ECInstance has at least the name of the ECSchema/schema and ECClass that defines it. */
+export interface IECInstance {
+  schemaName: string;
+  className: string;
+}
+
+export class ECClass {
+  /** ECClass metadata for this class. */
+  public static ecClass: any;
+  /** The Domain / schema that defines this class. */
+  public static schema: Schema;
 }

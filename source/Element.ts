@@ -2,10 +2,9 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { Schema } from "./Schema";
 import { Id, IModel, GeometryStream, Placement3d } from "./IModel";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { ECClass } from "./ECClass";
+import { ECClass, IECClass, IECInstance } from "./ECClass";
 
 export interface ICode {
   spec: Id | string;
@@ -38,12 +37,6 @@ export class RelatedElement {
   }
 }
 
-/** An ECInstance has at least the name of the ECSchema/schema and ECClass that defines it. */
-export interface IECInstance {
-  schemaName: string;
-  className: string;
-}
-
 export interface ElementParams extends IECInstance {
   _iModel: IModel;
   model: Id | string;
@@ -56,14 +49,11 @@ export interface ElementParams extends IECInstance {
 }
 
 /** An element within an iModel */
-export class Element {
-  /** ECClass metadata for this class. */
-  public static ecClass: any;
-  /** The Domain / schema that defines this class. */
-  public static schema: Schema;
+export class Element extends ECClass {
   public _iModel: IModel;
   public id: Id;
   public model: Id;
+
   /** The name of the ECSchema and schema that defines this class */
   public get schemaName(): string {
     return Object.getPrototypeOf(this).constructor.schema.name;
@@ -80,6 +70,7 @@ export class Element {
 
   /** constructor for Element */
   constructor(val: ElementParams) {
+    super();
     this.id = new Id(val.id);
     this.code = new Code(val.code);
     this._iModel = val._iModel;
@@ -94,16 +85,16 @@ export class Element {
   public static get sqlName(): string { return this.schema.name + "." + this.name; }
 
   /** Get the metadata for the ECClass of this element. */
-  public async getECClass(): Promise<ECClass>  { return Object.getPrototypeOf(this).constructor.getECClassFor(this._iModel, this.schemaName, this.className); }
+  public async getECClass(): Promise<IECClass>  { return Object.getPrototypeOf(this).constructor.getECClassFor(this._iModel, this.schemaName, this.className); }
 
   public getUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = {}; return this.jsonProperties.UserProps; }
   public setUserProperties(nameSpace: string, value: any) { this.getUserProperties()[nameSpace] = value; }
   public removeUserProperties(nameSpace: string) { delete this.getUserProperties()[nameSpace]; }
 
   /** Get the specified ECClass metadata */
-  public static getECClassFor(imodel: IModel, schemaName: string, className: string): Promise<ECClass> {
+  public static getECClassFor(imodel: IModel, schemaName: string, className: string): Promise<IECClass> {
     if ((null == this.ecClass) || !this.hasOwnProperty("ecClass")) {
-      const p = new Promise<ECClass>((resolve, reject) => {
+      const p = new Promise<IECClass>((resolve, reject) => {
         imodel.getDgnDb().getECClassMetaData(schemaName, className).then((mstr: string) => {
           resolve(this.ecClass = JSON.parse(mstr));
         }).catch((reason: any) => {
