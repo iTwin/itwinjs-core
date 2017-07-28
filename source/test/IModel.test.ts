@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { IModel, Id } from "../IModel";
 import { ColorDef } from "../Render";
-import { Code, ElementParams, Element } from "../Element";
+import { Code, ElementProps, Element } from "../Element";
 import { Category } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
 import { ModelSelector } from "../ViewDefinition";
@@ -37,7 +37,7 @@ describe("Elements", async () => {
   it("should load a known element by Id from an existing iModel", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     assert(imodel);
-    const elements: Elements = imodel.Elements;
+    const elements: Elements = imodel.elements;
     assert(elements);
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
     const el = await elements.getElement({ code: code1 });
@@ -84,8 +84,8 @@ describe("ElementId", () => {
 
   it("Model Selectors should hold models", () => {
     const imodel1 = new IModel();
-    const params: ElementParams = {
-      _iModel: imodel1,
+    const props: ElementProps = {
+      iModel: imodel1,
       schemaName: BisCore.name,
       className: ModelSelector.name,
       model: new Id(1, 1),
@@ -93,7 +93,7 @@ describe("ElementId", () => {
       id: new Id(),
     };
 
-    const selector1 = ClassRegistry.create(params) as ModelSelector;
+    const selector1 = ClassRegistry.create(props) as ModelSelector;
     assert(selector1 !== undefined);
     if (selector1) {
       selector1.addModel(new Id(2, 1));

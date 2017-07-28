@@ -1,7 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ClassDef, ECClass, ECClassFullname, IECInstance } from "./ECClass";
+
+import { ClassDef, ECClass, ECClassFullname, ECClassProps } from "./ECClass";
 import { IModel } from "./IModel";
 import { Schema, Schemas } from "./Schema";
 
@@ -17,11 +18,11 @@ export class ClassRegistry {
     return ClassRegistry.getClassRegistryKey(fullname.schema, fullname.name);
   }
 
-  public static getClassRegistryKeyFromIECInstance(inst: IECInstance) {
+  public static getClassRegistryKeyFromIECInstance(inst: ECClassProps) {
     return ClassRegistry.getClassRegistryKey(inst.schemaName, inst.className);
   }
 
-  public static create(args: IECInstance, defaultClass?: string): any | undefined {
+  public static create(args: ECClassProps, defaultClass?: string): any | undefined {
     if (!args.className || !args.schemaName)
       return undefined;
 
@@ -65,9 +66,9 @@ export class ClassRegistry {
     }
 
     // static properties
-    const classDefStaticProps: string = " " + ecclass.name + ".schema = ClassRegistry.getRegisteredSchema('" + ecclass.schema + "');";
+    const classDefStaticProps = " " + ecclass.name + ".schema = ClassRegistry.getRegisteredSchema('" + ecclass.schema + "');";
 
-    //        extends
+    // extends
     let classDefExtends: string = "";
     if (ecclass.baseClasses.length !== 0) {
       classDefExtends = classDefExtends + " extends";
@@ -82,11 +83,11 @@ export class ClassRegistry {
     // constructor
     let classDefCtor: string = " constructor(opts) {";
 
-    //    super
+    // super
     if (ecclass.baseClasses.length !== 0)
       classDefCtor = classDefCtor + " super(opts);";
 
-    //    prop = opt
+    // prop = opt
     for (const propname of Object.getOwnPropertyNames(ecclass.properties)) {
       classDefCtor = classDefCtor + "  this." + propname + " = opts." + propname + ";";
     }
@@ -108,7 +109,7 @@ export class ClassRegistry {
     ClassRegistry.ecClasses.set(key, ctor);
   }
 
-  /** register all of the classes that derive from ECClass from a module */
+  /** register all of the classes from a module that derive from ECClass */
   public static registerModuleClasses(moduleObj: any, schema: Schema) {
     for (const thisMember in moduleObj) {
       if (!thisMember)
@@ -120,11 +121,11 @@ export class ClassRegistry {
         ClassRegistry.registerEcClass(thisClass);
       }
     }
-
   }
 
-  /* This function fetches the specified ECClass from the imodel, generates a JS class for it, and registers the generated
-      class. This function also ensures that all of the base classes of the ECClass exist and are registered. */
+  /** This function fetches the specified ECClass from the imodel, generates a JS class for it, and registers the generated
+   *  class. This function also ensures that all of the base classes of the ECClass exist and are registered.
+   */
   public static async generateClass(schemaName: string, className: string, imodel: IModel): Promise<any> {
     const ecclassJson = await imodel.getDgnDb().getECClassMetaData(schemaName, className);
     if (null == ecclassJson) {
@@ -149,8 +150,8 @@ export class ClassRegistry {
     return ClassRegistry.generateClassForECClass(ecclass);
   }
 
-  /* This function generates a JS class for the specified ECClass and registers it. It is up to the caller
-     to make sure that all superclasses are already registered.
+  /** This function generates a JS class for the specified ECClass and registers it. It is up to the caller
+   *  to make sure that all superclasses are already registered.
    */
   public static generateClassForECClass(ecclass: ClassDef): any {
 
@@ -168,7 +169,7 @@ export class ClassRegistry {
   /**
    * Get the class for the specified ECClass.
    * @param ecclassFullName The name of the ECClass
-   * @param imodel        The IModel that contains the class definitions
+   * @param imodel The IModel that contains the class definitions
    * @return The corresponding class
    */
   public static async getClass(ecclassFullName: ECClassFullname, imodel: IModel): Promise<any> {

@@ -36,9 +36,10 @@ const testEcClass: ClassDef = {
 describe("ClassRegistry", () => {
 
   it("should generate a Js class def from ECClass metadata", async () => {
+    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const factory = ClassRegistry.generateClassForECClass(testEcClass);
     assert.isFunction(factory);
-    const obj = ClassRegistry.create({schemaName: testEcClass.schema, className: testEcClass.name});
+    const obj = ClassRegistry.create({schemaName: testEcClass.schema, className: testEcClass.name, iModel: imodel});
     assert.isTrue(obj != null);
     assert.isObject(obj);
     const propsfound: Set<string> = new Set<string>();
@@ -52,7 +53,7 @@ describe("ClassRegistry", () => {
 
   it("should verify the ECClass metadata of known element subclasses", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const elements: Elements = imodel.Elements;
+    const elements: Elements = imodel.elements;
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
     const el = await elements.getElement({ code: code1 });
     assert(el !== undefined);

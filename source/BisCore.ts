@@ -19,6 +19,7 @@ export class BisCore extends Schema {
   private constructor() {
     super();
     ClassRegistry.registerModuleClasses(require("./Element"), this);
+    ClassRegistry.registerModuleClasses(require("./Model"), this);
     ClassRegistry.registerModuleClasses(require("./Category"), this);
     ClassRegistry.registerModuleClasses(require("./ViewDefinition"), this);
   }

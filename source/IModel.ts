@@ -26,7 +26,7 @@ export class IModel {
   }
 
   /** Get access to the Elements in the iModel */
-  public get Elements(): Elements {
+  public get elements(): Elements {
     if (!this._elements)
       this._elements = new Elements(this);
     return this._elements;

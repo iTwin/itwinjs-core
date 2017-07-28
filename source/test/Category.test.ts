@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Appearance, AppearanceParams, SubCategoryOverride } from "../Category";
+import { Appearance, AppearanceProps, SubCategoryOverride } from "../Category";
 import { Id } from "../IModel";
 import { ColorDef } from "../Render";
 import { BisCore } from "../BisCore";
@@ -14,7 +14,7 @@ BisCore.registerSchema();
 describe("Category tests", () => {
 
   it("Appearance should construct properly", () => {
-    const opts: AppearanceParams = {
+    const opts: AppearanceProps = {
       color: ColorDef.blue(),
       weight: 3,
       priority: 4,
@@ -26,7 +26,7 @@ describe("Category tests", () => {
       dontSnap: true,
       invisible: true,
     };
-    let a1 = new Appearance({} as AppearanceParams);
+    let a1 = new Appearance({} as AppearanceProps);
     assert.isFalse(a1.dontLocate);
     assert.isFalse(a1.dontPlot);
     assert.isFalse(a1.dontSnap);

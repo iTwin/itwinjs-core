@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Element, Code, ElementParams } from "./Element";
+import { Element, Code, ElementProps } from "./Element";
 import { IModel, Id } from "./IModel";
 import { ClassRegistry } from "./ClassRegistry";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
@@ -43,11 +43,13 @@ export class Elements {
         return loaded;
     }
 
+    const that = this;
+
     // Must go get the element from the iModel
     const p = new Promise<Element | undefined>((resolve, reject) => {
 
       // Start by requesting the element's data.
-      this._iModel.getDgnDb().getElement(JSON.stringify(opts)).then((json: string) => {
+      that._iModel.getDgnDb().getElement(JSON.stringify(opts)).then((json: string) => {
 
         // When that comes back, try to create an element from the data.
         if (json.length === 0) {
@@ -55,27 +57,27 @@ export class Elements {
           return;
         }
 
-        const stream = JSON.parse(json) as ElementParams;
-        stream._iModel = this._iModel;
+        const props = JSON.parse(json) as ElementProps;
+        props.iModel = that._iModel;
 
-        let el = ClassRegistry.create(stream) as Element | undefined;
+        let el = ClassRegistry.create(props) as Element | undefined;
 
         if (el !== undefined) {
           // This is the normal case. We have the class, and it created an instance. Cache the instance and return it.
-          this._loaded.set(el.id.toString(), el);
+          that._loaded.set(el.id.toString(), el);
           resolve(el);
           return;
         }
 
         // If the create failed, that's probably because we don't yet have a class.
         // Request the ECClass metadata from the iModel and generate a class.
-        ClassRegistry.generateClass(stream.schemaName, stream.className, this._iModel).then((_cls: any) => {
+        ClassRegistry.generateClass(props.schemaName, props.className, that._iModel).then((_cls: any) => {
 
           // When that comes back, try again to create the element. This time it should work.
-          el = ClassRegistry.create(stream) as Element | undefined;
+          el = ClassRegistry.create(props) as Element | undefined;
           if (el) {
             // Now we are back in the normal case. We have the class, and we can create an instance. Cache the instance and return it.
-            this._loaded.set(el.id.toString(), el);
+            that._loaded.set(el.id.toString(), el);
             resolve(el);
             return;
           }
