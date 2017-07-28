@@ -79,7 +79,7 @@ export interface StructArrayECProperty {
  * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
  * @property { PrimitiveECProperty| NavigationECProperty|StructECProperty|PrimitiveArrayECProperty|StructArrayECProperty } properties An object whose properties correspond by name to the properties of this class.
  */
-export interface IECClass {
+export interface ClassDef {
   name: string;
   schema: string;
   baseClasses: ECClassFullname[];
@@ -95,7 +95,7 @@ export interface IECInstance {
 
 export class ECClass {
   /** ECClass metadata for this class. */
-  public static ecClass: any;
+  public static ecClass: ClassDef;
   /** The Domain / schema that defines this class. */
   public static schema: Schema;
 }

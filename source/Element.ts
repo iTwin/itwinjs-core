@@ -4,7 +4,7 @@
 
 import { Id, IModel, GeometryStream, Placement3d } from "./IModel";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { ECClass, IECClass, IECInstance } from "./ECClass";
+import { ECClass, ClassDef, IECInstance } from "./ECClass";
 
 export interface ICode {
   spec: Id | string;
@@ -85,16 +85,16 @@ export class Element extends ECClass {
   public static get sqlName(): string { return this.schema.name + "." + this.name; }
 
   /** Get the metadata for the ECClass of this element. */
-  public async getECClass(): Promise<IECClass>  { return Object.getPrototypeOf(this).constructor.getECClassFor(this._iModel, this.schemaName, this.className); }
+  public async getECClass(): Promise<ClassDef> { return Object.getPrototypeOf(this).constructor.getECClassFor(this._iModel, this.schemaName, this.className); }
 
   public getUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = {}; return this.jsonProperties.UserProps; }
   public setUserProperties(nameSpace: string, value: any) { this.getUserProperties()[nameSpace] = value; }
   public removeUserProperties(nameSpace: string) { delete this.getUserProperties()[nameSpace]; }
 
   /** Get the specified ECClass metadata */
-  public static getECClassFor(imodel: IModel, schemaName: string, className: string): Promise<IECClass> {
+  public static getECClassFor(imodel: IModel, schemaName: string, className: string): Promise<ClassDef> {
     if ((null == this.ecClass) || !this.hasOwnProperty("ecClass")) {
-      const p = new Promise<IECClass>((resolve, reject) => {
+      const p = new Promise<ClassDef>((resolve, reject) => {
         imodel.getDgnDb().getECClassMetaData(schemaName, className).then((mstr: string) => {
           resolve(this.ecClass = JSON.parse(mstr));
         }).catch((reason: any) => {
@@ -103,7 +103,7 @@ export class Element extends ECClass {
       });
       return p;
     }
-    return this.ecClass;
+    return new Promise<ClassDef>((resolve, _reject) => resolve(this.ecClass));
   }
 }
 

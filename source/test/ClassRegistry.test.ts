@@ -4,7 +4,7 @@
 
 import { assert } from "chai";
 import { Element, Code } from "../Element";
-import { IECClass, NavigationECProperty, PrimitiveECProperty } from "../ECClass";
+import { ClassDef, NavigationECProperty, PrimitiveECProperty } from "../ECClass";
 import { ClassRegistry } from "../ClassRegistry";
 import { IModel } from "../IModel";
 import { IModelTestUtils } from "./IModelTestUtils";
@@ -16,7 +16,7 @@ import { BisCore } from "../BisCore";
 BisCore.registerSchema();
 
 // Fake ECClass metadata
-const testEcClass: IECClass = {
+const testEcClass: ClassDef = {
   name: "Class1",
   schema: "Schema1",
   baseClasses: [],
@@ -58,7 +58,7 @@ describe("ClassRegistry", () => {
     assert(el !== undefined);
     assert(el != null);
     if (el) {
-      const ecclass: IECClass = await el.getECClass();
+      const ecclass: ClassDef = await el.getECClass();
       assert.isNotNull(ecclass);
       assert.equal(ecclass.name, el.className);
       assert.equal(ecclass.schema, el.schemaName);
@@ -83,7 +83,7 @@ describe("ClassRegistry", () => {
     assert.isDefined(el2);
     assert.isNotNull(el2);
     if (el2) {
-      const ecclass: IECClass = await el2.getECClass();
+      const ecclass: ClassDef = await el2.getECClass();
       assert.isNotNull(ecclass);
       assert.equal(ecclass.name, el2.className);
       assert.equal(ecclass.schema, el2.schemaName);

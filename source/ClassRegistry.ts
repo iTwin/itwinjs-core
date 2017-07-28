@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IECClass, ECClass, ECClassFullname, IECInstance } from "./ECClass";
+import { ClassDef, ECClass, ECClassFullname, IECInstance } from "./ECClass";
 import { IModel } from "./IModel";
 import { Schema, Schemas } from "./Schema";
 
@@ -55,7 +55,7 @@ export class ClassRegistry {
    * Generate a JS class from an ECClass definition
    * @param ecclass The ECClass definition
    */
-  public static generateClassDefFromECClass(ecclass: IECClass): string {
+  public static generateClassDefFromECClass(ecclass: ClassDef): string {
     let domainDef: string = "";
 
     // schema
@@ -130,7 +130,7 @@ export class ClassRegistry {
     if (null == ecclassJson) {
       return undefined;
     }
-    const ecclass: IECClass = JSON.parse(ecclassJson);
+    const ecclass: ClassDef = JSON.parse(ecclassJson);
 
     // *** TBD: assert(ecclass.name == className, nocase);
     // *** TBD: assert(ecclass.schema == schemaName, nocase);
@@ -152,7 +152,7 @@ export class ClassRegistry {
   /* This function generates a JS class for the specified ECClass and registers it. It is up to the caller
      to make sure that all superclasses are already registered.
    */
-  public static generateClassForECClass(ecclass: IECClass): any {
+  public static generateClassForECClass(ecclass: ClassDef): any {
 
     // Generate and register this class
     let jsDef: string = ClassRegistry.generateClassDefFromECClass(ecclass);
