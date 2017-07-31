@@ -3,8 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { ECSqlStatement } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
-import { IModel } from "../IModel";
+import { IModel, ECSqlStatement } from "../IModel";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Element } from "../Element";
 import { Category } from "../Category";
@@ -16,7 +15,7 @@ BisCore.registerSchema();
 class ECSqlStatementTestUtils {
 
   public static async getStatement(imodel: IModel, ecsql: string, expectSuccess: boolean): Promise<ECSqlStatement> {
-    const stmt: ECSqlStatement = await imodel.getDgnDb().getPreparedECSqlSelectStatement(ecsql);
+    const stmt: ECSqlStatement = await imodel.getPreparedECSqlSelectStatement(ecsql);
     assert.equal(expectSuccess, (null != stmt));
     return stmt;
   }

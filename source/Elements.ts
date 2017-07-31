@@ -43,62 +43,34 @@ export class Elements {
         return loaded;
     }
 
-    const that = this;
-
     // Must go get the element from the iModel
-    const p = new Promise<Element | undefined>((resolve, reject) => {
 
-      // Start by requesting the element's data.
-      that._iModel.getDgnDb().getElement(JSON.stringify(opts)).then((json: string) => {
+    // Start by requesting the element's data.
+    const json: string = await this._iModel.getDgnDb().getElement(JSON.stringify(opts));
 
-        // When that comes back, try to create an element from the data.
-        if (json.length === 0) {
-          resolve(undefined); // we didn't find an element with the specified identity. That's not an error, just an empty result.
-          return;
-        }
+    if (json.length === 0) {
+      return undefined; // we didn't find an element with the specified identity. That's not an error, just an empty result.
+    }
 
-        const props = JSON.parse(json) as ElementProps;
-        props.iModel = that._iModel;
+    const props = JSON.parse(json) as ElementProps;
+    props.iModel = this._iModel;
 
-        let el = ClassRegistry.create(props) as Element | undefined;
+    let el = ClassRegistry.create(props) as Element | undefined;
 
-        if (el !== undefined) {
-          // This is the normal case. We have the class, and it created an instance. Cache the instance and return it.
-          that._loaded.set(el.id.toString(), el);
-          resolve(el);
-          return;
-        }
+    if (el === undefined) {
+      if (!ClassRegistry.isClassRegistered(props.schemaName, props.className)) {
+        // Create failed because we don't yet have a class.
+        // Request the ECClass metadata from the iModel, generate a class, and register it.
+        await ClassRegistry.generateClass(props.schemaName, props.className, this._iModel);
+        el = ClassRegistry.create(props) as Element | undefined;
+      }
 
-        // If the create failed, that's probably because we don't yet have a class.
-        // Request the ECClass metadata from the iModel and generate a class.
-        ClassRegistry.generateClass(props.schemaName, props.className, that._iModel).then((_cls: any) => {
+      if (el === undefined)
+        return undefined;
+    }
 
-          // When that comes back, try again to create the element. This time it should work.
-          el = ClassRegistry.create(props) as Element | undefined;
-          if (el) {
-            // Now we are back in the normal case. We have the class, and we can create an instance. Cache the instance and return it.
-            that._loaded.set(el.id.toString(), el);
-            resolve(el);
-            return;
-          }
-
-          // We got the class, but we still can't create an instance! I don't know what could be wrong!
-          // TBD: assert(false);
-          reject(undefined);
-
-        }).catch((reason: any) => {
-          // We couldn't get the class. That shouldn't happen.
-          // TBD: assert(false);
-          reject(reason);
-        });
-
-      }).catch((reason: any) => {
-        // We couldn't get the element. That's normal.
-        reject(reason);
-      });
-
-    });
-    return p;
-  }
-
+    // We have created the element. Cache it and return it.
+    this._loaded.set(el.id.toString(), el);
+    return el;
+    }
 }

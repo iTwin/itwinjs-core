@@ -5,6 +5,8 @@
 import { Point3d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { Elements } from "./Elements";
 import { DgnDb } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
+import { ECSqlStatement } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
+export { ECSqlStatement } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { BeSQLite } from "@bentley/bentleyjs-core/lib/BeSQLite";
 
 /** An iModel database. */
@@ -35,6 +37,17 @@ export class IModel {
   public getDgnDb(): DgnDb {
     return this._db;
   }
+
+  /**
+   * Get a prepared ECSqlStatement
+   * @param ecsql  The ECSql statement to prepare
+   * @return an ECSqlStatement.
+   * @throws Error if ecsql is invalid
+   */
+  public getPreparedECSqlSelectStatement(ecsql: string): Promise<ECSqlStatement> {
+      return this._db.getPreparedECSqlSelectStatement(ecsql);
+  }
+
 }
 
 /** A two-part id, containing a IModel id and a local id. */

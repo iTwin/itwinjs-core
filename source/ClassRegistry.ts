@@ -180,4 +180,13 @@ export class ClassRegistry {
     return ClassRegistry.ecClasses.get(key);
   }
 
+  /**
+   * Check if the class for the specified ECClass is in the registry.
+   * @param ecclassFullName The name of the ECClass
+   */
+  public static isClassRegistered(schemaName: string, className: string): boolean {
+    const key = ClassRegistry.getClassRegistryKey(schemaName, className);
+    return ClassRegistry.ecClasses.has(key);
+  }
+
 }
