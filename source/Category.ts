@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { DefinitionElement, ElementParams } from "./Element";
+import { DefinitionElement, ElementProps } from "./Element";
 import { ColorDef } from "./Render";
 import { Id } from "./IModel";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 
-/** Parameters to create a SubCategory Appearance */
-export interface AppearanceParams {
+/** Properties to create a SubCategory Appearance */
+export interface AppearanceProps {
   color: ColorDef;
   invisible?: boolean;
   dontPlot?: boolean;
@@ -33,22 +33,22 @@ export class Appearance {
   public styleId: Id = new Id();
   public materialId: Id = new Id();
 
-  constructor(opts?: AppearanceParams) {
-    if (!opts)
+  constructor(props?: AppearanceProps) {
+    if (!props)
       return;
 
-    this.invisible = JsonUtils.asBool(opts.invisible);
-    this.dontSnap = JsonUtils.asBool(opts.dontSnap);
-    this.dontLocate = JsonUtils.asBool(opts.dontLocate);
-    this.dontPlot = JsonUtils.asBool(opts.dontPlot);
-    this.color = ColorDef.fromJSON(opts.color);
-    this.weight = JsonUtils.asInt(opts.weight);
-    if (opts.style)
-      this.styleId = new Id(opts.style);
-    this.priority = JsonUtils.asInt(opts.priority);
-    if (opts.material)
-      this.materialId = new Id(opts.material);
-    this.transparency = JsonUtils.asInt(opts.transp);
+    this.invisible = JsonUtils.asBool(props.invisible);
+    this.dontSnap = JsonUtils.asBool(props.dontSnap);
+    this.dontLocate = JsonUtils.asBool(props.dontLocate);
+    this.dontPlot = JsonUtils.asBool(props.dontPlot);
+    this.color = ColorDef.fromJSON(props.color);
+    this.weight = JsonUtils.asInt(props.weight);
+    if (props.style)
+      this.styleId = new Id(props.style);
+    this.priority = JsonUtils.asInt(props.priority);
+    if (props.material)
+      this.materialId = new Id(props.material);
+    this.transparency = JsonUtils.asInt(props.transp);
   }
 
   public equals(other: Appearance): boolean {
@@ -144,7 +144,7 @@ export class SubCategoryOverride {
 }
 
 /** Parameters to create a SubCategory element */
-export interface ISubCategory extends ElementParams {
+export interface ISubCategory extends ElementProps {
   appearance?: Appearance;
   categoryId?: Id;
 }
@@ -179,7 +179,7 @@ export enum Rank {
 export class Category extends DefinitionElement {
   public rank: Rank = Rank.User;
 
-  public constructor(opts: ElementParams) { super(opts); }
+  public constructor(opts: ElementProps) { super(opts); }
   public static getDefaultSubCategoryId(id: Id): Id {
     return id.isValid() ? new Id(id.lo, id.hi + 1) : new Id();
   }
@@ -188,10 +188,10 @@ export class Category extends DefinitionElement {
 
 /** Categorizes 2d graphical elements. */
 export class DrawingCategory extends Category {
-  public constructor(opts: ElementParams) { super(opts); }
+  public constructor(opts: ElementProps) { super(opts); }
 }
 
 /** Categorizes a SpatialElement. */
 export class SpatialCategory extends Category {
-  public constructor(opts: ElementParams) { super(opts); }
+  public constructor(opts: ElementProps) { super(opts); }
 }

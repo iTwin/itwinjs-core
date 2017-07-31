@@ -2,6 +2,9 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
+import { Schema } from "./Schema";
+import { IModel } from "./IModel";
+
 /**
  * The full name of an ECClass
  * @property {string } name The name of the class
@@ -77,10 +80,46 @@ export interface StructArrayECProperty {
  * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
  * @property { PrimitiveECProperty| NavigationECProperty|StructECProperty|PrimitiveArrayECProperty|StructArrayECProperty } properties An object whose properties correspond by name to the properties of this class.
  */
-export interface ECClass {
+export interface ClassDef {
   name: string;
   schema: string;
   baseClasses: ECClassFullname[];
   customAttributes: CustomAttribute[];
   properties: { [propName: string]: PrimitiveECProperty | NavigationECProperty | StructECProperty | PrimitiveArrayECProperty | StructArrayECProperty };
+}
+
+/** An ECInstance has at least the name of the ECSchema/schema and ECClass that defines it. */
+export interface ECClassProps {
+  iModel: IModel;
+  schemaName: string;
+  className: string;
+}
+
+/** Base class for all ECClasses */
+export class ECClass {
+  public iModel: IModel;
+
+  /** ECClass metadata for this class. */
+  public static ecClass: ClassDef;
+
+  /** The Domain / schema that defines this class. */
+  public static schema: Schema;
+
+  /** The full name of this class, including the schema name */
+  public static get sqlName(): string { return this.schema.name + "." + this.name; }
+
+  /** The name of the ECSchema and schema that defines this class */
+  public get schemaName(): string {
+    return Object.getPrototypeOf(this).constructor.schema.name;
+  }
+  /** The name of this class */
+  public get className(): string {
+    return Object.getPrototypeOf(this).constructor.name;
+  }
+
+  constructor(opt: ECClassProps) {
+    this.iModel = opt.iModel;
+  }
+
+  protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
 }

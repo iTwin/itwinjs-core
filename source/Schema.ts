@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 import { IModel } from "./IModel";
-import { EcRegistry } from "./EcRegistry";
+import { ClassRegistry } from "./ClassRegistry";
 
 /**
  * The interface that must be implemented by schema / schema objects.
@@ -26,13 +26,13 @@ export class Schema {
    * @return The corresponding class
    */
   public static async getClass(className: string, imodel: IModel): Promise<any> {
-    return EcRegistry.getClass({schema: this.name, name: className}, imodel);
+    return ClassRegistry.getClass({schema: this.name, name: className}, imodel);
   }
 
 }
 
 /**
- * Manages registered domains
+ * Manages registered schemas
  */
 export class Schemas {
 

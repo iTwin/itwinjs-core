@@ -2,7 +2,7 @@
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { ElementParams, DefinitionElement } from "./Element";
+import { ElementProps, DefinitionElement } from "./Element";
 import { Appearance, SubCategoryOverride } from "./Category";
 import { ViewFlags, HiddenLine, ColorDef } from "./Render";
 import { Light, LightType } from "./Lighting";
@@ -139,7 +139,7 @@ export class DisplayStyle extends DefinitionElement {
   protected _subCategoryOvr: Map<string, SubCategoryOverride>;
   public viewFlags: ViewFlags;
 
-  constructor(opts: ElementParams) { super(opts); }
+  constructor(props: ElementProps) { super(props); }
 
   public getStyles(): any { const p = this.jsonProperties as any; if (!p.styles) p.styles = new Object(); return p.styles; }
   public getStyle(name: string): any {
@@ -170,7 +170,7 @@ export class DisplayStyle extends DefinitionElement {
 
 /** A DisplayStyle for 2d views */
 export class DisplayStyle2d extends DisplayStyle {
-  constructor(opts: ElementParams) { super(opts); }
+  constructor(props: ElementProps) { super(props); }
 }
 
 /** A circle drawn at a Z elevation, whose diameter is the the XY diagonal of the project extents */
@@ -197,7 +197,7 @@ export class SkyBox {
 export class DisplayStyle3d extends DisplayStyle {
   public groundPlane: GroundPlane;
   public skyBox: SkyBox;
-  public constructor(opts: ElementParams) { super(opts); }
+  public constructor(props: ElementProps) { super(props); }
   public getHiddenLineParams(): HiddenLine.Params { return this.getStyle("hline") as HiddenLine.Params; }
   public setHiddenLineParams(params: HiddenLine.Params) { this.setStyle("hline", params); }
 
@@ -242,7 +242,7 @@ export class DisplayStyle3d extends DisplayStyle {
  */
 export class ModelSelector extends DefinitionElement {
   public models: Set<string>;
-  constructor(opts: ElementParams) { super(opts); this.models = new Set<string>(); }
+  constructor(props: ElementProps) { super(props); this.models = new Set<string>(); }
 
   /** Get the name of this ModelSelector */
   public getName(): string { return this.code.getValue(); }
@@ -265,7 +265,7 @@ export class ModelSelector extends DefinitionElement {
  */
 export class CategorySelector extends DefinitionElement {
   protected categories: Set<string>;
-  constructor(opts: ElementParams) { super(opts); this.categories = new Set<string>(); }
+  constructor(props: ElementProps) { super(props); this.categories = new Set<string>(); }
 
   /** Get the name of this CategorySelector */
   public getName(): string { return this.code.getValue(); }
@@ -284,7 +284,7 @@ export class CategorySelector extends DefinitionElement {
 }
 
 /** Parameters used to construct a ViewDefinition */
-export interface IViewDefinition extends ElementParams {
+export interface ViewDefinitionProps extends ElementProps {
   categorySelectorId?: any;
   displayStyleId?: any;
   categorySelector?: CategorySelector;
@@ -320,12 +320,12 @@ export abstract class ViewDefinition extends DefinitionElement {
   protected _categorySelector?: CategorySelector;
   protected _displayStyle?: DisplayStyle;
   protected clearState(): void { this._categorySelector = undefined; this._displayStyle = undefined; }
-  protected constructor(opts: IViewDefinition) {
-    super(opts);
-    this.categorySelectorId = new Id(opts.categorySelectorId);
-    this.displayStyleId = new Id(opts.displayStyleId);
-    if (opts.categorySelector)
-      this.setCategorySelector(opts.categorySelector);
+  protected constructor(props: ViewDefinitionProps) {
+    super(props);
+    this.categorySelectorId = new Id(props.categorySelectorId);
+    this.displayStyleId = new Id(props.displayStyleId);
+    if (props.categorySelector)
+      this.setCategorySelector(props.categorySelector);
   }
 
   // public abstract supplyController(): ViewController;
@@ -712,7 +712,7 @@ export class Camera {
 }
 
 /** Parameters to construct a ViewDefinition3d */
-export interface IViewDefinition3d extends IViewDefinition {
+export interface ViewDefinition3dProps extends ViewDefinitionProps {
   cameraOn?: any;             // if true, m_camera is valid.
   origin?: any;               // The lower left back corner of the view frustum.
   extents?: any;             // The extent of the view frustum.
@@ -759,15 +759,15 @@ export abstract class ViewDefinition3d extends ViewDefinition {
   public isEyePointAbove(elevation: number): boolean { return !this.cameraOn ? (this.getZVector().z > 0) : (this.getEyePoint().z > elevation); }
   // DGNPLATFORM_EXPORT DPoint3d ComputeEyePoint(Frustum const& frust) const ;//!< private
 
-  public constructor(opt: IViewDefinition3d) {
-    super(opt);
-    this._cameraOn = JsonUtils.asBool(opt.cameraOn);
-    this.origin = Point3d.fromJSON(opt.origin);
-    this.extents = Vector3d.fromJSON(opt.extents);
-    this.rotation = YawPitchRollAngles.fromJSON(opt.angles).toRotMatrix();
-    this.camera = Camera.fromJSON(opt.camera);
-    if (opt.displayStyle)
-      this.setupDisplayStyle3d(opt.displayStyle);
+  public constructor(props: ViewDefinition3dProps) {
+    super(props);
+    this._cameraOn = JsonUtils.asBool(props.cameraOn);
+    this.origin = Point3d.fromJSON(props.origin);
+    this.extents = Vector3d.fromJSON(props.extents);
+    this.rotation = YawPitchRollAngles.fromJSON(props.angles).toRotMatrix();
+    this.camera = Camera.fromJSON(props.camera);
+    if (props.displayStyle)
+      this.setupDisplayStyle3d(props.displayStyle);
   }
 
   public getDisplayStyle3d() { return this.getDisplayStyle() as DisplayStyle3d; }
@@ -968,7 +968,7 @@ export abstract class ViewDefinition3d extends ViewDefinition {
 }
 
 /** Parameters to construct a SpatialDefinition */
-export interface ISpatialViewDefinition extends IViewDefinition3d {
+export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
   modelSelector?: ModelSelector;
 }
 
@@ -978,7 +978,7 @@ export interface ISpatialViewDefinition extends IViewDefinition3d {
 export class SpatialViewDefinition extends ViewDefinition3d {
   public modelSelectorId: Id;
   protected _modelSelector: ModelSelector;
-  constructor(opts: ISpatialViewDefinition) { super(opts); if (opts.modelSelector) this.setModelSelector(opts.modelSelector); }
+  constructor(props: SpatialViewDefinitionProps) { super(props); if (props.modelSelector) this.setModelSelector(props.modelSelector); }
 
   //   DGNPLATFORM_EXPORT void _ToJson(JsonValueR out, JsonValueCR opts) const override;
   //   void _OnInserted(DgnElementP copiedFrom) const override {m_modelSelector=nullptr; T_Super::_OnInserted(copiedFrom); }
@@ -1000,7 +1000,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection. */
 export class OrthographicViewDefinition extends SpatialViewDefinition {
-  constructor(opts: ISpatialViewDefinition) { super(opts); }
+  constructor(props: SpatialViewDefinitionProps) { super(props); }
 
   //   DGNPLATFORM_EXPORT ViewControllerPtr _SupplyController() const override;
   // tslint:disable-next-line:no-empty

@@ -4,8 +4,8 @@
 
 import { assert } from "chai";
 import { Element, Code } from "../Element";
-import { ECClass, NavigationECProperty, PrimitiveECProperty } from "../ECClass";
-import { EcRegistry } from "../EcRegistry";
+import { ClassDef, NavigationECProperty, PrimitiveECProperty } from "../ECClass";
+import { ClassRegistry } from "../ClassRegistry";
 import { IModel } from "../IModel";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Elements } from "../Elements";
@@ -16,7 +16,7 @@ import { BisCore } from "../BisCore";
 BisCore.registerSchema();
 
 // Fake ECClass metadata
-const testEcClass: ECClass = {
+const testEcClass: ClassDef = {
   name: "Class1",
   schema: "Schema1",
   baseClasses: [],
@@ -33,12 +33,13 @@ const testEcClass: ECClass = {
   },
 };
 
-describe("EcRegistry", () => {
+describe("ClassRegistry", () => {
 
   it("should generate a Js class def from ECClass metadata", async () => {
-    const factory = EcRegistry.generateClassForECClass(testEcClass);
+    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
+    const factory = ClassRegistry.generateClassForECClass(testEcClass);
     assert.isFunction(factory);
-    const obj = EcRegistry.create({schemaName: testEcClass.schema, className: testEcClass.name});
+    const obj = ClassRegistry.create({schemaName: testEcClass.schema, className: testEcClass.name, iModel: imodel});
     assert.isTrue(obj != null);
     assert.isObject(obj);
     const propsfound: Set<string> = new Set<string>();
@@ -52,13 +53,13 @@ describe("EcRegistry", () => {
 
   it("should verify the ECClass metadata of known element subclasses", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const elements: Elements = imodel.Elements;
+    const elements: Elements = imodel.elements;
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
     const el = await elements.getElement({ code: code1 });
     assert(el !== undefined);
     assert(el != null);
     if (el) {
-      const ecclass: ECClass = await el.getECClass();
+      const ecclass: ClassDef = await el.getECClass();
       assert.isNotNull(ecclass);
       assert.equal(ecclass.name, el.className);
       assert.equal(ecclass.schema, el.schemaName);
@@ -83,7 +84,7 @@ describe("EcRegistry", () => {
     assert.isDefined(el2);
     assert.isNotNull(el2);
     if (el2) {
-      const ecclass: ECClass = await el2.getECClass();
+      const ecclass: ClassDef = await el2.getECClass();
       assert.isNotNull(ecclass);
       assert.equal(ecclass.name, el2.className);
       assert.equal(ecclass.schema, el2.schemaName);
