@@ -34,7 +34,7 @@ export class IModel {
     return this._elements;
   }
 
-  public getDgnDb(): DgnDb {
+  public get dgnDb(): DgnDb {
     return this._db;
   }
 
@@ -130,15 +130,15 @@ export class Id {
 /** A bounding box aligned to the orientation of an Element */
 export class ElementAlignedBox3d extends Range3d {
   public constructor(low: Point3d, high: Point3d) { super(low.x, low.y, low.z, high.x, high.y, high.z); }
-  public getLeft(): number { return this.low.x; }
-  public getFront(): number { return this.low.y; }
-  public getBottom(): number { return this.low.z; }
-  public getRight(): number { return this.high.x; }
-  public getBack(): number { return this.high.y; }
-  public getTop(): number { return this.high.z; }
-  public getWidth(): number { return this.xLength(); }
-  public getDepth(): number { return this.yLength(); }
-  public getHeight(): number { return this.zLength(); }
+  public get left(): number { return this.low.x; }
+  public get front(): number { return this.low.y; }
+  public get bottom(): number { return this.low.z; }
+  public get right(): number { return this.high.x; }
+  public get back(): number { return this.high.y; }
+  public get top(): number { return this.high.z; }
+  public get width(): number { return this.xLength(); }
+  public get depth(): number { return this.yLength(); }
+  public get height(): number { return this.zLength(); }
   public static fromJSON(json?: any): ElementAlignedBox3d {
     json = json ? json : {};
     return new ElementAlignedBox3d(Point3d.fromJSON(json.low), Point3d.fromJSON(json.high));

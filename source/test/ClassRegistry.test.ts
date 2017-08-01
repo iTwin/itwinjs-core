@@ -33,7 +33,7 @@ const testEcClass: ClassDef = {
   },
 };
 
-describe("ClassRegistry", () => {
+describe("Class Registry", () => {
 
   it("should generate a Js class def from ECClass metadata", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
@@ -104,7 +104,7 @@ describe("ClassRegistry", () => {
 
   it("should get metadata for class", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const metadatastr: string = await imodel.getDgnDb().getECClassMetaData(BisCore.name, Element.name);
+    const metadatastr: string = await imodel.dgnDb.getECClassMetaData(BisCore.name, Element.name);
     assert.isNotNull(metadatastr);
     assert.isString(metadatastr);
     assert.notEqual(metadatastr.length, 0);
@@ -134,7 +134,7 @@ describe("ClassRegistry", () => {
 
   it("should get metadata for CA class just as well (and we'll see an array-typed property)", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const metadatastr: string = await imodel.getDgnDb().getECClassMetaData(BisCore.name, "ClassHasHandler");
+    const metadatastr: string = await imodel.dgnDb.getECClassMetaData(BisCore.name, "ClassHasHandler");
     assert.isNotNull(metadatastr);
     assert.isString(metadatastr);
     assert.notEqual(metadatastr.length, 0);

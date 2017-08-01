@@ -18,6 +18,7 @@ export class BisCore extends Schema {
   /** Registers all classes of the BisCore schema. */
   private constructor() {
     super();
+    // this list should include all .ts files with implementations of ECClasses. Order does not matter.
     ClassRegistry.registerModuleClasses(require("./Element"), this);
     ClassRegistry.registerModuleClasses(require("./Model"), this);
     ClassRegistry.registerModuleClasses(require("./Category"), this);

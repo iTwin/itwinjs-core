@@ -109,7 +109,10 @@ export class ClassRegistry {
     ClassRegistry.ecClasses.set(key, ctor);
   }
 
-  /** register all of the classes from a module that derive from ECClass */
+  /** register all of the classes that derive from ECClass, that are found in a given module
+   * @param moduleObj The module to search for subclasses of ECClass
+   * @param schema The schema for all found classes
+   */
   public static registerModuleClasses(moduleObj: any, schema: Schema) {
     for (const thisMember in moduleObj) {
       if (!thisMember)
@@ -127,7 +130,7 @@ export class ClassRegistry {
    *  class. This function also ensures that all of the base classes of the ECClass exist and are registered.
    */
   public static async generateClass(schemaName: string, className: string, imodel: IModel): Promise<any> {
-    const ecclassJson = await imodel.getDgnDb().getECClassMetaData(schemaName, className);
+    const ecclassJson = await imodel.dgnDb.getECClassMetaData(schemaName, className);
     if (null == ecclassJson) {
       return undefined;
     }

@@ -97,7 +97,7 @@ export class Frustum {
     orig.getCorner(Npc._000).interpolate(f, orig.getCorner(Npc._111), this.points[Npc._111]);
   }
 
-  public toDMap4d(): Map4d | null {
+  public toDMap4d(): Map4d | undefined {
     const org = this.getCorner(Npc.LeftBottomRear);
     const xVec = org.vectorTo(this.getCorner(Npc.RightBottomRear));
     const yVec = org.vectorTo(this.getCorner(Npc.LeftTopRear));

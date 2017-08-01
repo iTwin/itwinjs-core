@@ -6,19 +6,11 @@ import { IModel, Id } from "./IModel";
 import { ClassRegistry } from "./ClassRegistry";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 
-/**
- * Parameters to specify what element to load.
- * @export
- * @interface IElementLoad
- */
-export interface IElementLoad {
+/** Parameters to specify what element to load. */
+export interface ElementLoadParams {
   id?: Id | string;
   code?: Code;
-  /**
-   * if true, do not load the geometry of the element
-   * @type {boolean}
-   * @memberof IElementLoad
-   */
+  /** if true, do not load the geometry of the element */
   noGeometry?: boolean;
 }
 
@@ -31,11 +23,10 @@ export class Elements {
 
   /**
    * Get an element by Id or Code.
-   * @param {IElementLoad} opts  Either the id or the code of the element
-   * @returns {(Promise<Element | undefined>)} The Element or undefined if the Id is not found
-   * @memberof Elements
+   * @param opts  Either the id or the code of the element
+   * @returns The Element or undefined if the Id is not found
    */
-  public async getElement(opts: IElementLoad): Promise<Element | undefined> {
+  public async getElement(opts: ElementLoadParams): Promise<Element | undefined> {
     // first see if the element is already in the local cache.
     if (opts.id) {
       const loaded = this._loaded.get(opts.id.toString());
@@ -43,10 +34,8 @@ export class Elements {
         return loaded;
     }
 
-    // Must go get the element from the iModel
-
-    // Start by requesting the element's data.
-    const json: string = await this._iModel.getDgnDb().getElement(JSON.stringify(opts));
+    // Must go get the element from the iModel. Start by requesting the element's data.
+    const json: string = await this._iModel.dgnDb.getElement(JSON.stringify(opts));
 
     if (json.length === 0) {
       return undefined; // we didn't find an element with the specified identity. That's not an error, just an empty result.
@@ -58,12 +47,13 @@ export class Elements {
     let el = ClassRegistry.create(props) as Element | undefined;
 
     if (el === undefined) {
-      if (!ClassRegistry.isClassRegistered(props.schemaName, props.className)) {
-        // Create failed because we don't yet have a class.
-        // Request the ECClass metadata from the iModel, generate a class, and register it.
-        await ClassRegistry.generateClass(props.schemaName, props.className, this._iModel);
-        el = ClassRegistry.create(props) as Element | undefined;
-      }
+      if (ClassRegistry.isClassRegistered(props.schemaName, props.className))
+        return undefined;
+
+      // Create failed because we don't yet have a class.
+      // Request the ECClass metadata from the iModel, generate a class, and register it.
+      await ClassRegistry.generateClass(props.schemaName, props.className, this._iModel);
+      el = ClassRegistry.create(props) as Element | undefined;
 
       if (el === undefined)
         return undefined;
@@ -72,5 +62,5 @@ export class Elements {
     // We have created the element. Cache it and return it.
     this._loaded.set(el.id.toString(), el);
     return el;
-    }
+  }
 }

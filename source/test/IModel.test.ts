@@ -18,7 +18,7 @@ BisCore.registerSchema();
 
 describe("iModel", () => {
 
-  it("should open and existing iModel", async () => {
+  it("should open an existing iModel", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     assert(imodel);
   });
