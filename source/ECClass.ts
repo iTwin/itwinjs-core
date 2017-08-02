@@ -121,5 +121,4 @@ export class ECClass {
     this.iModel = opt.iModel;
   }
 
-  protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
 }
