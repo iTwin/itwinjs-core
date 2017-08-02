@@ -3,10 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Element, Code } from "../Element";
+import { Element } from "../Element";
 import { ClassDef, NavigationECProperty, PrimitiveECProperty } from "../ECClass";
 import { ClassRegistry } from "../ClassRegistry";
-import { IModel } from "../IModel";
+import { Code, IModel } from "../IModel";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Elements } from "../Elements";
 import { SpatialViewDefinition, ViewDefinition3d } from "../ViewDefinition";
@@ -104,11 +104,11 @@ describe("Class Registry", () => {
 
   it("should get metadata for class", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const metadatastr: string = await imodel.dgnDb.getECClassMetaData(BisCore.name, Element.name);
-    assert.isNotNull(metadatastr);
-    assert.isString(metadatastr);
-    assert.notEqual(metadatastr.length, 0);
-    const obj: any = JSON.parse(metadatastr);
+    const metadataStr: string = await imodel.dgnDb.getECClassMetaData(BisCore.name, Element.name);
+    assert.isNotNull(metadataStr);
+    assert.isString(metadataStr);
+    assert.notEqual(metadataStr.length, 0);
+    const obj: any = JSON.parse(metadataStr);
     assert.isNotNull(obj);
     assert.isString(obj.name);
     assert.equal(obj.name, Element.name);
@@ -134,15 +134,15 @@ describe("Class Registry", () => {
 
   it("should get metadata for CA class just as well (and we'll see an array-typed property)", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const metadatastr: string = await imodel.dgnDb.getECClassMetaData(BisCore.name, "ClassHasHandler");
-    assert.isNotNull(metadatastr);
-    assert.isString(metadatastr);
-    assert.notEqual(metadatastr.length, 0);
-    const obj: any = JSON.parse(metadatastr);
+    const metadataStr: string = await imodel.dgnDb.getECClassMetaData(BisCore.name, "ClassHasHandler");
+    assert.isNotNull(metadataStr);
+    assert.isString(metadataStr);
+    assert.notEqual(metadataStr.length, 0);
+    const obj: any = JSON.parse(metadataStr);
     assert.isDefined(obj.properties.restrictions);
-    assert.isDefined(obj.properties.restrictions.primitveArrayECProperty);
-    assert.equal(obj.properties.restrictions.primitveArrayECProperty.type, "string");
-    assert.equal(obj.properties.restrictions.primitveArrayECProperty.minOccurs, 0);
+    assert.isDefined(obj.properties.restrictions.primitiveArrayECProperty);
+    assert.equal(obj.properties.restrictions.primitiveArrayECProperty.type, "string");
+    assert.equal(obj.properties.restrictions.primitiveArrayECProperty.minOccurs, 0);
   });
 });
 

@@ -17,8 +17,8 @@ export interface ECClassFullname {
 
 /**
  * A custom attribute instance
- * @property { ECClassFullname } ecclass The ECClass of the custom attribute
- * @property { PrimitiveECProperty| NavigationECProperty|StructECProperty|PrimitiveArrayECProperty|StructArrayECProperty } properties An object whose properties correspond by name to the properties of this class.
+ * @property  ecclass The ECClass of the custom attribute
+ * @property  properties An object whose properties correspond by name to the properties of this class.
  */
 export interface CustomAttribute {
   ecclass: ECClassFullname;
@@ -27,8 +27,8 @@ export interface CustomAttribute {
 
 /**
  * Metadata for an ECProperty that is a primitive type.
- * @property { Object } primitiveECProperty Describes the type
- * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
+ * @property primitiveECProperty Describes the type
+ * @property customAttributes The Custom Attributes for this class
  */
 export interface PrimitiveECProperty {
   primitiveECProperty: { type: string, extendedType?: string };
@@ -37,8 +37,8 @@ export interface PrimitiveECProperty {
 
 /**
  * Metadata for an ECProperty that is a Navigation property (aka a pointer to another element in the iModel).
- * @property { Object } navigationECProperty Describes the type
- * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
+ * @property navigationECProperty Describes the type
+ * @property customAttributes The Custom Attributes for this class
  */
 export interface NavigationECProperty {
   navigationECProperty: { type: string, direction: string, relationshipClass: ECClassFullname };

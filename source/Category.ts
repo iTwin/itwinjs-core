@@ -64,10 +64,6 @@ export class Appearance {
       this.transparency === other.transparency;
   }
 
-  public static fromJSON(json: any): Appearance {
-    return new Appearance(json);
-  }
-
   public toJSON(): any {
     const val: any = {};
     if (this.invisible) val.invisible = true;
@@ -144,7 +140,7 @@ export class SubCategoryOverride {
 }
 
 /** Parameters to create a SubCategory element */
-export interface ISubCategory extends ElementProps {
+export interface SubCategoryProps extends ElementProps {
   appearance?: Appearance;
   categoryId?: Id;
 }
@@ -153,10 +149,10 @@ export interface ISubCategory extends ElementProps {
 export class SubCategory extends DefinitionElement {
   public appearance: Appearance;
   public categoryId: Id;
-  public constructor(opts: ISubCategory) {
-    super(opts);
-    this.appearance = Appearance.fromJSON(opts.appearance);
-    this.categoryId = new Id(opts.categoryId);
+  public constructor(props: SubCategoryProps) {
+    super(props);
+    this.appearance = new Appearance(props.appearance);
+    this.categoryId = new Id(props.categoryId);
   }
 
   public getSubCategoryName(): string { return this.code.getValue(); }
