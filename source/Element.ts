@@ -2,32 +2,9 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { Id, IModel, GeometryStream, Placement3d } from "./IModel";
+import { Code, CodeProps, Id, IModel, GeometryStream, Placement3d } from "./IModel";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { ECClass, ClassDef, ECClassProps } from "./ECClass";
-
-export interface ICode {
-  spec: Id | string;
-  scope: string;
-  value?: string;
-}
-
-/** A 3 part Code that identifies an Element */
-export class Code implements ICode {
-  public spec: Id;
-  public scope: string;
-  public value?: string;
-
-  constructor(val: ICode) {
-    this.spec = new Id(val.spec);
-    this.scope = JsonUtils.asString(val.scope, "");
-    this.value = JsonUtils.asString(val.value);
-  }
-
-  /**  Create an instance of the default code (1,1,null) */
-  public static createDefault(): Code { return new Code({ spec: new Id(1), scope: "1" }); }
-  public getValue(): string { return this.value ? this.value : ""; }
-}
 
 /** The Id and relationship class of an Element that is related to another Element */
 export class RelatedElement {
@@ -39,7 +16,7 @@ export class RelatedElement {
 
 export interface ElementProps extends ECClassProps {
   model: Id | string;
-  code: ICode;
+  code: CodeProps;
   id: Id | string;
   parent?: RelatedElement;
   federationGuid?: string;

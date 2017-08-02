@@ -57,7 +57,7 @@ describe("Category tests", () => {
     assert.isTrue(a1.color.equals(ColorDef.blue()));
 
     let json = JSON.stringify(a1);
-    const a2 = Appearance.fromJSON(JSON.parse(json));
+    const a2 = new Appearance(JSON.parse(json));
     assert.isTrue(a1.equals(a2));
 
     const o1 = new SubCategoryOverride();

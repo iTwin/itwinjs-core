@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Element, Code, ElementProps } from "./Element";
-import { IModel, Id } from "./IModel";
+import { Element, ElementProps } from "./Element";
+import { Code, IModel, Id } from "./IModel";
 import { ClassRegistry } from "./ClassRegistry";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 

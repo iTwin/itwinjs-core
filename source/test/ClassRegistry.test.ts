@@ -3,10 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Element, Code } from "../Element";
+import { Element } from "../Element";
 import { ClassDef, NavigationECProperty, PrimitiveECProperty } from "../ECClass";
 import { ClassRegistry } from "../ClassRegistry";
-import { IModel } from "../IModel";
+import { Code, IModel } from "../IModel";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Elements } from "../Elements";
 import { SpatialViewDefinition, ViewDefinition3d } from "../ViewDefinition";

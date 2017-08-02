@@ -23,21 +23,25 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "latest",
+    "@bentley/bentleyjs-core": "^1.0.7",
     "@bentley/geometry-core": "^1.0.4",
-    "@bentley/imodeljs-dgnplatform": "^1.0.12",
+    "@bentley/imodeljs-dgnplatform": "^1.0.16",
     "chai": "^4.1.0",
     "debug-fabulous": "^0.1.1",
+    "diff": "^3.3.0",
+    "duplexify": "^3.5.1",
+    "es5-ext": "^0.10.26",
     "gulp-typescript": "^3.2.1",
     "os-locale": "^2.1.0",
     "resolve": "^1.4.0",
+    "semver": "^5.4.1",
     "string-width": "^2.1.1",
     "tslint": "^5.5.0",
     "typescript": "^2.4.2",
     "uglify-es": "^3.0.27"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "^1.0.11",
+    "@bentley/bentleyjs-tools": "^1.0.12",
     "@types/chai": "^4.0.2",
     "@types/mocha": "^2.2.41",
     "commander": "^2.11.0",

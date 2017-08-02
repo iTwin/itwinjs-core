@@ -81,19 +81,19 @@ export class ClassRegistry {
       }
     }
     // constructor
-    let classDefCtor: string = " constructor(opts) {";
+    let classDefCtor: string = " constructor(props) {";
 
     // super
     if (ecclass.baseClasses.length !== 0)
-      classDefCtor = classDefCtor + " super(opts);";
+      classDefCtor = classDefCtor + " super(props);";
 
-    // prop = opt
+    // this.prop = props
     for (const propname of Object.getOwnPropertyNames(ecclass.properties)) {
-      classDefCtor = classDefCtor + "  this." + propname + " = opts." + propname + ";";
+      classDefCtor = classDefCtor + "  this." + propname + " = props." + propname + ";";
     }
     classDefCtor = classDefCtor + "  }";
 
-    // The class a whole
+    // The class as a whole
     let classDef: string = "class " + ecclass.name;
     classDef = classDef + classDefExtends;
     classDef = classDef + " {";

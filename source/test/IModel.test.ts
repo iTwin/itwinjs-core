@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { IModel, Id } from "../IModel";
+import { Code, IModel, Id } from "../IModel";
 import { ColorDef } from "../Render";
-import { Code, ElementProps, Element } from "../Element";
+import { ElementProps, Element } from "../Element";
 import { Category } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
 import { ModelSelector } from "../ViewDefinition";

@@ -4,15 +4,18 @@
 
 import { Point3d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { Elements } from "./Elements";
+import { Models } from "./Model";
 import { DgnDb } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { ECSqlStatement } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 export { ECSqlStatement } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { BeSQLite } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 
 /** An iModel database. */
 export class IModel {
   private _db: DgnDb;
   private _elements: Elements;
+  private _models: Models;
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
 
   /** Open the iModel
@@ -27,11 +30,18 @@ export class IModel {
     return this._db.openDgnDb(fileName, mode);
   }
 
-  /** Get access to the Elements in the iModel */
+  /** Get the Elements of this iModel */
   public get elements(): Elements {
     if (!this._elements)
       this._elements = new Elements(this);
     return this._elements;
+  }
+
+  /** Get the Models of this iModel */
+  public get models(): Models {
+    if (!this._models)
+      this._models = new Models(this);
+    return this._models;
   }
 
   public get dgnDb(): DgnDb {
@@ -47,7 +57,6 @@ export class IModel {
   public getPreparedECSqlSelectStatement(ecsql: string): Promise<ECSqlStatement> {
       return this._db.getPreparedECSqlSelectStatement(ecsql);
   }
-
 }
 
 /** A two-part id, containing a IModel id and a local id. */
@@ -125,6 +134,29 @@ export class Id {
   public static areEqual(a: Id | undefined, b: Id | undefined): boolean {
     return (a === b) || (a != null && b != null && a.equals(b));
   }
+}
+
+export interface CodeProps {
+  spec: Id | string;
+  scope: string;
+  value?: string;
+}
+
+/** A 3 part Code that identifies an Element */
+export class Code implements CodeProps {
+  public spec: Id;
+  public scope: string;
+  public value?: string;
+
+  constructor(val: CodeProps) {
+    this.spec = new Id(val.spec);
+    this.scope = JsonUtils.asString(val.scope, "");
+    this.value = JsonUtils.asString(val.value);
+  }
+
+  /** Create an instance of the default code (1,1,null) */
+  public static createDefault(): Code { return new Code({ spec: new Id(1), scope: "1" }); }
+  public getValue(): string { return this.value ? this.value : ""; }
 }
 
 /** A bounding box aligned to the orientation of an Element */
