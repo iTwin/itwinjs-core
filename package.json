@@ -23,9 +23,9 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "^1.0.6",
+    "@bentley/bentleyjs-core": "^1.0.7",
     "@bentley/geometry-core": "^1.0.4",
-    "@bentley/imodeljs-dgnplatform": "^1.0.13",
+    "@bentley/imodeljs-dgnplatform": "^1.0.15",
     "chai": "^4.1.0",
     "debug-fabulous": "^0.1.1",
     "gulp-typescript": "^3.2.1",
@@ -37,7 +37,7 @@
     "uglify-es": "^3.0.27"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "^1.0.11",
+    "@bentley/bentleyjs-tools": "^1.0.12",
     "@types/chai": "^4.0.2",
     "@types/mocha": "^2.2.41",
     "commander": "^2.11.0",
