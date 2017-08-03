@@ -6,8 +6,6 @@ import { Point3d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core/lib
 import { Elements } from "./Elements";
 import { Models } from "./Model";
 import { DgnDb } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
-import { ECSqlStatement } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
-export { ECSqlStatement } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { BeSQLite } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 
@@ -49,13 +47,13 @@ export class IModel {
   }
 
   /**
-   * Get a prepared ECSqlStatement
-   * @param ecsql  The ECSql statement to prepare
-   * @return an ECSqlStatement.
-   * @throws Error if ecsql is invalid
+   * Execute a query against this iModel
+   * @param ecsql  The ECSql statement to execute
+   * @return all rows in JSON syntax or the empty string if nothing was selected
+   * @throws Error if the statement is invalid
    */
-  public getPreparedECSqlSelectStatement(ecsql: string): Promise<ECSqlStatement> {
-      return this._db.getPreparedECSqlSelectStatement(ecsql);
+  public executeQuery(ecsql: string): Promise<string> {
+      return this._db.executeQuery(ecsql);
   }
 }
 
