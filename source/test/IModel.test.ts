@@ -6,6 +6,7 @@ import { assert } from "chai";
 import { Code, IModel, Id } from "../IModel";
 import { ColorDef } from "../Render";
 import { ElementProps, Element } from "../Element";
+import { Models } from "../Model";
 import { Category } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
 import { ModelSelector } from "../ViewDefinition";
@@ -45,14 +46,32 @@ describe("Elements", async () => {
     assert(el != null);
     const el2 = await elements.getElement({ id: "0x34" });
     assert(el2 != null);
-    // const codeBad = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
-    // const elcodeBad = await elements.getElement({ code: codeBad });
-    // assert(elcodeBad === undefined);
-
+    const codeBad = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
+    const bad = await elements.getElement({ code: codeBad });
+    assert(bad === undefined);
   });
 
 });
 
+describe("Models", async () => {
+
+  it("should load a known model by Id from an existing iModel", async () => {
+    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
+    assert(imodel);
+    const models: Models = imodel.models;
+    assert(models);
+    const el2 = await models.getModel({ id:  "0x1c" });
+    assert(el2 != null);
+    let el = await models.getModel({ id: "0x1" });
+    assert(el !== undefined);
+    assert(el != null);
+    const code1 = new Code({ spec: "0x1d", scope: "0x1d", value: "A" });
+    el = await models.getModel({ code: code1 });
+    assert(el !== undefined);
+    assert(el != null);
+  });
+
+});
 describe("ElementId", () => {
 
   it("ElementId should construct properly", () => {
@@ -70,7 +89,7 @@ describe("ElementId", () => {
     assert(id5.hi === 0x2 && id5.lo === 0x1);
     const o5 = id5.toString();
     assert(o5 === i5);
-    const id6 = new Id(100, 200);
+    const id6 = new Id([200, 100]);
     const v6 = id6.toString();
     const id7 = new Id(v6);
     assert(id6.equals(id7));
@@ -82,23 +101,23 @@ describe("ElementId", () => {
     assert(i8.equals(id7));
   });
 
-  it("Model Selectors should hold models", () => {
+  it("Model Selectors should hold models", async () =>  {
     const imodel1 = new IModel();
     const props: ElementProps = {
       iModel: imodel1,
       schemaName: BisCore.name,
       className: ModelSelector.name,
-      model: new Id(1, 1),
+      model: new Id([1, 1]),
       code: Code.createDefault(),
       id: new Id(),
     };
 
-    const selector1 = ClassRegistry.create(props) as ModelSelector;
+    const selector1 = await ClassRegistry.create(props) as ModelSelector;
     assert(selector1 !== undefined);
     if (selector1) {
-      selector1.addModel(new Id(2, 1));
-      selector1.addModel(new Id(2, 1));
-      selector1.addModel(new Id(2, 3));
+      selector1.addModel(new Id([2, 1]));
+      selector1.addModel(new Id([2, 1]));
+      selector1.addModel(new Id([2, 3]));
     }
   });
 

@@ -28,7 +28,6 @@ export interface ElementProps extends ECClassProps {
 export class Element extends ECClass {
   public id: Id;
   public model: Id;
-
   public code: Code;
   public parent?: RelatedElement;
   public federationGuid?: string;

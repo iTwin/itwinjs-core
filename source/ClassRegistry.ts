@@ -8,7 +8,7 @@ import { Schema, Schemas } from "./Schema";
 
 /** The mapping between EC class name and the factory to create instances */
 export class ClassRegistry {
-  public static ecClasses: Map<string, any> = new Map<string, any>();
+  public static ecClasses: Map<string, ECClass> = new Map<string, ECClass>();
 
   public static getClassRegistryKey(schemaName: string, className: string) {
     return (schemaName + "." + className).toLowerCase();
@@ -22,14 +22,16 @@ export class ClassRegistry {
     return ClassRegistry.getClassRegistryKey(inst.schemaName, inst.className);
   }
 
-  public static create(args: ECClassProps, defaultClass?: string): any | undefined {
-    if (!args.className || !args.schemaName)
+  /** create an instance of a class from it properties */
+  public static async create(props: ECClassProps): Promise<any> {
+    if (!props.className || !props.schemaName)
       return undefined;
 
-    let factory = ClassRegistry.ecClasses.get(ClassRegistry.getClassRegistryKeyFromIECInstance(args));
-    if (!factory && defaultClass)
-      factory = ClassRegistry.ecClasses.get(defaultClass.toLowerCase());
-    return factory ? new factory(args) : undefined;
+    let factory: any = ClassRegistry.ecClasses.get(ClassRegistry.getClassRegistryKeyFromIECInstance(props));
+    if (!factory) {
+      factory = await ClassRegistry.generateClass(props.schemaName, props.className, props.iModel);
+    }
+    return factory ? new factory(props) : undefined;
   }
 
   public static GetSchemaBaseClass(): any { return Schema; }
@@ -156,7 +158,7 @@ export class ClassRegistry {
   /** This function generates a JS class for the specified ECClass and registers it. It is up to the caller
    *  to make sure that all superclasses are already registered.
    */
-  public static generateClassForECClass(ecclass: ClassDef): any {
+  public static generateClassForECClass(ecclass: ClassDef): ECClass {
 
     // Generate and register this class
     let jsDef: string = ClassRegistry.generateClassDefFromECClass(ecclass);
@@ -166,7 +168,7 @@ export class ClassRegistry {
     // tslint:disable-next-line:no-eval
     eval(jsDef); // eval is OK here, because I generated the expression myself, and I know it's safe.
 
-    return ClassRegistry.ecClasses.get(fullname);
+    return ClassRegistry.ecClasses.get(fullname)!;
   }
 
   /**
@@ -175,7 +177,7 @@ export class ClassRegistry {
    * @param imodel The IModel that contains the class definitions
    * @return The corresponding class
    */
-  public static async getClass(ecclassFullName: ECClassFullname, imodel: IModel): Promise<any> {
+  public static async getClass(ecclassFullName: ECClassFullname, imodel: IModel): Promise<ECClass | undefined> {
     const key = ClassRegistry.getClassRegistryKeyFromECClassFullname(ecclassFullName);
     if (!ClassRegistry.ecClasses.has(key)) {
       return ClassRegistry.generateClass(ecclassFullName.schema, ecclassFullName.name, imodel);
@@ -188,8 +190,7 @@ export class ClassRegistry {
    * @param ecclassFullName The name of the ECClass
    */
   public static isClassRegistered(schemaName: string, className: string): boolean {
-    const key = ClassRegistry.getClassRegistryKey(schemaName, className);
-    return ClassRegistry.ecClasses.has(key);
+    return ClassRegistry.ecClasses.has(ClassRegistry.getClassRegistryKey(schemaName, className));
   }
 
 }

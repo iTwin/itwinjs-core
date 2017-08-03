@@ -55,7 +55,7 @@ export class IModel {
    * @throws Error if ecsql is invalid
    */
   public getPreparedECSqlSelectStatement(ecsql: string): Promise<ECSqlStatement> {
-      return this._db.getPreparedECSqlSelectStatement(ecsql);
+    return this._db.getPreparedECSqlSelectStatement(ecsql);
   }
 }
 
@@ -72,68 +72,56 @@ export class Id {
 
   /**
    * constructor for Id
-   * @param bId an integer identifying the briefcase id
-   * @param lId an integer with the local id
+   * @param prop either a string with a hex number, and Id, or an array of two numbers with [lo,hi]. Otherwise the Id will be invalid
    */
-  constructor(bId?: Id | number | number[] | string, lId?: number) {
-    if (bId instanceof Id) {
-      this.hi = bId.hi;
-      this.lo = bId.lo;
-      return;
-    }
-
-    if (Array.isArray(bId)) {
-      this.hi = bId[0] | 0;
-      this.lo = Math.trunc(bId[1]);
-      return;
-    }
-
-    if (typeof bId === "string") {
-      if (bId[0] !== "0" || !(bId[1] === "x" || bId[1] === "X")) {
+  constructor(prop?: Id | number[] | string) {
+    if (typeof prop === "string") {
+      if (prop[0] !== "0" || !(prop[1] === "x" || prop[1] === "X")) {
         this.hi = this.lo = 0;
         return;
       }
 
       let start = 2;
-      const len = bId.length;
+      const len = prop.length;
       if (len > 12) {
         start = (len - 10);
-        const bcVal = bId.slice(2, start);
+        const bcVal = prop.slice(2, start);
         this.hi = Id.parseHex(bcVal);
       } else {
         this.hi = 0;
       }
 
-      this.lo = Id.parseHex(bId.slice(start));
+      this.lo = Id.parseHex(prop.slice(start));
       return;
     }
 
-    this.hi = bId ? bId | 0 : 0;
-    this.lo = lId ? Math.trunc(lId) : 0;
+    if (prop instanceof Id) {
+      this.hi = prop.hi;
+      this.lo = prop.lo;
+      return;
+    }
+
+    if (Array.isArray(prop)) {
+      this.lo = prop[0] | 0;
+      this.hi = Math.trunc(prop[1]);
+      return;
+    }
+
+    this.hi = this.lo = 0;
   }
 
   /** convert this Id to a string */
-  public toString(): string {
-    if (!this.isValid())
-      return "";
-    return "0X" + this.hi.toString(16) + ("0000000000" + this.lo.toString(16)).substr(-10);
-  }
+  public toString(): string { return this.isValid() ? "0X" + this.hi.toString(16) + ("0000000000" + this.lo.toString(16)).substr(-10) : ""; }
 
   /** Determine whether this Id is valid */
-  public isValid(): boolean {
-    return this.lo !== 0;
-  }
+  public isValid(): boolean { return this.lo !== 0; }
 
   /** Test whether two Ids are the same
    * @param other the other id to test
    */
-  public equals(other: Id): boolean {
-    return this.hi === other.hi && this.lo === other.lo;
-  }
+  public equals(other: Id): boolean { return this.hi === other.hi && this.lo === other.lo; }
 
-  public static areEqual(a: Id | undefined, b: Id | undefined): boolean {
-    return (a === b) || (a != null && b != null && a.equals(b));
-  }
+  public static areEqual(a: Id | undefined, b: Id | undefined): boolean { return (a === b) || (a != null && b != null && a.equals(b)); }
 }
 
 export interface CodeProps {
@@ -155,7 +143,7 @@ export class Code implements CodeProps {
   }
 
   /** Create an instance of the default code (1,1,null) */
-  public static createDefault(): Code { return new Code({ spec: new Id(1), scope: "1" }); }
+  public static createDefault(): Code { return new Code({ spec: new Id([1, 0]), scope: "1" }); }
   public getValue(): string { return this.value ? this.value : ""; }
 }
 
