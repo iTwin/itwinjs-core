@@ -139,3 +139,16 @@ describe("ElementId", () => {
     assert(color3.equals(ColorDef.from(0xa, 2, 3, 0x30)));
   });
 });
+
+describe("Query", () => {
+
+  it("should produce an array of rows", async () => {
+    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
+    const allrowsdata = await imodel.executeQuery("SELECT * FROM " + Category.sqlName);
+    assert.isNotNull(allrowsdata);
+    const rows: any = JSON.parse(allrowsdata);
+    assert.isArray(rows);
+    assert.notEqual(rows.length, 0);
+    assert.notEqual(rows[0].ecinstanceid, "");
+  });
+});
