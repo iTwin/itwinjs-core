@@ -27,18 +27,18 @@ export class ClassRegistry {
     if (!props.className || !props.schemaName)
       return undefined;
 
-    let factory: any = ClassRegistry.ecClasses.get(ClassRegistry.getClassRegistryKeyFromIECInstance(props));
-    if (!factory) {
-      factory = await ClassRegistry.generateClass(props.schemaName, props.className, props.iModel);
+    let ctor: any = ClassRegistry.ecClasses.get(ClassRegistry.getClassRegistryKeyFromIECInstance(props));
+    if (!ctor) {
+      ctor = await ClassRegistry.generateClass(props.schemaName, props.className, props.iModel);
     }
-    return factory ? new factory(props) : undefined;
+    return ctor ? new ctor(props) : undefined;
   }
 
-  public static GetSchemaBaseClass(): any { return Schema; }
+  public static getSchemaBaseClass(): any { return Schema; }
 
   public static generateProxySchema(schemaName: string): string {
     let def: string = "";
-    def = def + "class " + schemaName + " extends ClassRegistry.GetSchemaBaseClass() {";
+    def = def + "class " + schemaName + " extends ClassRegistry.getSchemaBaseClass() {";
     def = def + "  constructor() { super(); }";
     def = def + "}";
     // register it here, while we are in the scope in which `schemaName` is actually defined as a class.
@@ -133,9 +133,9 @@ export class ClassRegistry {
    */
   public static async generateClass(schemaName: string, className: string, imodel: IModel): Promise<any> {
     const ecclassJson = await imodel.dgnDb.getECClassMetaData(schemaName, className);
-    if (null == ecclassJson) {
+    if (null == ecclassJson)
       return undefined;
-    }
+
     const ecclass: ClassDef = JSON.parse(ecclassJson);
 
     // *** TBD: assert(ecclass.name == className, nocase);

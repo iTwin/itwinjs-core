@@ -59,7 +59,7 @@ export class IModel {
   }
 }
 
-/** A two-part id, containing a IModel id and a local id. */
+/** A two-part id, containing a briefcase id and a local id. */
 export class Id {
   public readonly hi: number;
   public readonly lo: number;
@@ -124,6 +124,7 @@ export class Id {
   public static areEqual(a: Id | undefined, b: Id | undefined): boolean { return (a === b) || (a != null && b != null && a.equals(b)); }
 }
 
+/** properties that define a Code */
 export interface CodeProps {
   spec: Id | string;
   scope: string;

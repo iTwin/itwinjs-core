@@ -47,8 +47,8 @@ export interface NavigationECProperty {
 
 /**
  * Metadata for an ECProperty that is a struct.
- * @property { Object } structECProperty Describes the type
- * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
+ * @property structECProperty Describes the type
+ * @property customAttributes The Custom Attributes for this class
  */
 export interface StructECProperty {
   structECProperty: { type: string };
@@ -74,11 +74,11 @@ export interface StructArrayECProperty {
 
 /**
  * Metadata  for an ECClass.
- * @property {string} name  The ECClass name
- * @property {string} schema  The name of the ECSchema that defines this class
- * @property { ECClassFullname[] } baseClasses The list of base classes that this class is derived from. If more than one, the first is the actual base class and the others are mixins.
- * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
- * @property { PrimitiveECProperty| NavigationECProperty|StructECProperty|PrimitiveArrayECProperty|StructArrayECProperty } properties An object whose properties correspond by name to the properties of this class.
+ * @property name  The ECClass name
+ * @property schema  The name of the ECSchema that defines this class
+ * @property baseClasses The list of base classes that this class is derived from. If more than one, the first is the actual base class and the others are mixins.
+ * @property customAttributes The Custom Attributes for this class
+ * @property properties An object whose properties correspond by name to the properties of this class.
  */
 export interface ClassDef {
   name: string;
