@@ -10,7 +10,7 @@ import { ECClass, ClassDef, ECClassProps } from "./ECClass";
 export class RelatedElement {
   constructor(public id: Id, public relationshipClass?: string) { }
   public static fromJSON(json?: any): RelatedElement | undefined {
-    return json ? new this(new Id(json.id), JsonUtils.asString(json.relationshipClass)) : undefined;
+    return json ? new RelatedElement(new Id(json.id), JsonUtils.asString(json.relationshipClass)) : undefined;
   }
 }
 
@@ -69,8 +69,8 @@ export class Element extends ECClass {
   }
 }
 
-/** Parameters for creating a GeometricElement */
-export interface GeometricElementParams extends ElementProps {
+/** Properties of a GeometricElement */
+export interface GeometricElementProps extends ElementProps {
   category?: Id;
   geom?: GeometryStream;
 }
@@ -79,7 +79,7 @@ export interface GeometricElementParams extends ElementProps {
 export class GeometricElement extends Element {
   public category: Id;
   public geom?: GeometryStream;
-  public constructor(props: GeometricElementParams) {
+  public constructor(props: GeometricElementProps) {
     super(props);
     this.category = new Id(props.category);
     this.geom = props.geom;
@@ -91,7 +91,7 @@ export class TypeDefinition extends RelatedElement {
   constructor(definitionId: Id, relationshipClass?: string) { super(definitionId, relationshipClass); }
 }
 
-export interface GeometricElement3dParams extends GeometricElementParams {
+export interface GeometricElement3dProps extends GeometricElementProps {
   placement?: Placement3d;
   typeDefinition?: TypeDefinition;
 }
@@ -100,7 +100,7 @@ export class GeometricElement3d extends GeometricElement {
   public placement: Placement3d;
   public typeDefinition?: TypeDefinition;
 
-  public constructor(props: GeometricElement3dParams) {
+  public constructor(props: GeometricElement3dProps) {
     super(props);
     this.placement = Placement3d.fromJSON(props.placement);
     if (props.typeDefinition)
@@ -109,29 +109,29 @@ export class GeometricElement3d extends GeometricElement {
 }
 
 export class SpatialElement extends GeometricElement3d {
-  public constructor(props: GeometricElement3dParams) { super(props); }
+  public constructor(props: GeometricElement3dProps) { super(props); }
 }
 
 export class PhysicalElement extends SpatialElement {
-  public constructor(props: GeometricElement3dParams) { super(props); }
+  public constructor(props: GeometricElement3dProps) { super(props); }
 }
 
 export class PhysicalPortion extends PhysicalElement {
-  public constructor(props: GeometricElement3dParams) { super(props); }
+  public constructor(props: GeometricElement3dProps) { super(props); }
 }
 
-/** A SpatialElement that identifies a "tracked" real word 3-dimensional location but has no mass and cannot be "touched".
+/** A SpatialElement that identifies a tracked real word 3-dimensional location but has no mass and cannot be touched.
  *  Examples include grid lines, parcel boundaries, and work areas.
  */
 export class SpatialLocationElement extends SpatialElement {
-  public constructor(props: GeometricElement3dParams) { super(props); }
+  public constructor(props: GeometricElement3dProps) { super(props); }
 }
 
 /** A SpatialLocationPortion represents an arbitrary portion of a larger SpatialLocationElement that will be broken down in
  *  more detail in a separate (sub) SpatialLocationModel.
  */
 export class SpatialLocationPortion extends SpatialLocationElement {
-  public constructor(props: GeometricElement3dParams) { super(props); }
+  public constructor(props: GeometricElement3dProps) { super(props); }
 }
 
 /** An InformationContentElement identifies and names information content.

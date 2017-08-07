@@ -44,12 +44,12 @@ export class Elements {
     const props = JSON.parse(json) as ElementProps;
     props.iModel = this._iModel;
 
-    const el = await ClassRegistry.create(props);
-    if (el !== undefined) {
-      // We have created the element. Cache it before we return it.
-      this._loaded.set(el.id.toString(), el);
-    }
+    const el = await ClassRegistry.createInstance(props);
+    if (!(el instanceof Element))
+      return undefined;
 
+    // We have created the element. Cache it before we return it.
+    this._loaded.set(el.id.toString(), el);
     return el;
   }
 }

@@ -4,16 +4,8 @@
 import { IModel } from "./IModel";
 import { ClassRegistry } from "./ClassRegistry";
 
-/**
- * The interface that must be implemented by schema / schema objects.
- */
+/** Base class for all schema classes. */
 export class Schema {
-
-  /** The list of registered classes. */
-  public get registeredClasses(): string[] {
-    // *** TBD: scan the registry for classes registered under my name
-    return [];
-  }
 
   public get name(): string { return this.constructor.name; }
 
@@ -28,12 +20,9 @@ export class Schema {
   public static async getClass(className: string, imodel: IModel): Promise<any> {
     return ClassRegistry.getClass({schema: this.name, name: className}, imodel);
   }
-
 }
 
-/**
- * Manages registered schemas
- */
+/** Manages registered schemas */
 export class Schemas {
 
   private static registeredDomains: { [key: string]: Schema; } = {};

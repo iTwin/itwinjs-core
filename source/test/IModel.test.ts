@@ -14,7 +14,7 @@ import { Elements } from "../Elements";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { BisCore } from "../BisCore";
 
-// First, register any domains that will be used in the tests.
+// First, register any schemas that will be used in the tests.
 BisCore.registerSchema();
 
 describe("iModel", () => {
@@ -42,12 +42,11 @@ describe("Elements", async () => {
     assert(elements);
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
     const el = await elements.getElement({ code: code1 });
-    assert(el !== undefined);
     assert(el != null);
     const el2 = await elements.getElement({ id: "0x34" });
     assert(el2 != null);
-    const codeBad = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
-    const bad = await elements.getElement({ code: codeBad });
+    const badCode = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
+    const bad = await elements.getElement({ code: badCode });
     assert(bad === undefined);
   });
 
@@ -60,15 +59,15 @@ describe("Models", async () => {
     assert(imodel);
     const models: Models = imodel.models;
     assert(models);
-    const el2 = await models.getModel({ id:  "0x1c" });
-    assert(el2 != null);
-    let el = await models.getModel({ id: "0x1" });
-    assert(el !== undefined);
-    assert(el != null);
+    const model2 = await models.getModel({ id:  "0x1c" });
+    assert(model2 != null);
+    let model = await models.getModel({ id: "0x1" });
+    assert(model != null);
     const code1 = new Code({ spec: "0x1d", scope: "0x1d", value: "A" });
-    el = await models.getModel({ code: code1 });
-    assert(el !== undefined);
-    assert(el != null);
+    model = await models.getModel({ code: code1 });
+    const geomModel = await ClassRegistry.getClass( {name: "GeometricModel", schema: "BisCore"}, imodel);
+    assert(model instanceof geomModel!);
+    assert(model != null);
   });
 
 });
@@ -112,7 +111,7 @@ describe("ElementId", () => {
       id: new Id(),
     };
 
-    const selector1 = await ClassRegistry.create(props) as ModelSelector;
+    const selector1 = await ClassRegistry.createInstance(props) as ModelSelector;
     assert(selector1 !== undefined);
     if (selector1) {
       selector1.addModel(new Id([2, 1]));

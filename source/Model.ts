@@ -53,7 +53,7 @@ export class Models {
   private _iModel: IModel;
   private _loaded: LRUMap<string, Model>;
 
-  public constructor(iModel: IModel, max: number = 2000) { this._iModel = iModel; this._loaded = new LRUMap<string, Model>(max); }
+  public constructor(iModel: IModel, max: number = 500) { this._iModel = iModel; this._loaded = new LRUMap<string, Model>(max); }
 
   /**
    * Get an Model by Id or Code.
@@ -70,17 +70,17 @@ export class Models {
 
     // Must go get the model from the iModel. Start by requesting the model's data.
     const json: string = await this._iModel.dgnDb.getModel(JSON.stringify(opts));
-    if (json.length === 0) {
+    if (json.length === 0)
       return undefined; // we didn't find a Model with the specified identity. That's not an error, just an empty result.
-    }
 
     const props = JSON.parse(json) as ModelProps;
     props.iModel = this._iModel;
 
-    const model = await ClassRegistry.create(props);
-    if (model !== undefined)
-      this._loaded.set(model.id.toString(), model); // We have created the model. Cache it before we return it.
+    const model = await ClassRegistry.createInstance(props);
+    if (!(model instanceof Model))
+      return undefined;
 
+    this._loaded.set(model.id.toString(), model); // We have created the model. Cache it before we return it.
     return model;
   }
 }

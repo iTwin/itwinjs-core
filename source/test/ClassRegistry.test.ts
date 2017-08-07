@@ -39,7 +39,7 @@ describe("Class Registry", () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const factory = ClassRegistry.generateClassForECClass(testEcClass);
     assert.isFunction(factory);
-    const obj = await ClassRegistry.create({schemaName: testEcClass.schema, className: testEcClass.name, iModel: imodel});
+    const obj = await ClassRegistry.createInstance({schemaName: testEcClass.schema, className: testEcClass.name, iModel: imodel});
     assert.isTrue(obj != null);
     assert.isObject(obj);
     const propsfound: Set<string> = new Set<string>();
@@ -115,6 +115,7 @@ describe("Class Registry", () => {
     assert.equal(obj.schema, BisCore.name);
     assert.isArray(obj.baseClasses);
     assert.equal(obj.baseClasses.length, 0);
+
     assert.isArray(obj.customAttributes);
     let foundClassHasHandler = false;
     let foundClassHasCurrentTimeStampProperty = false;
