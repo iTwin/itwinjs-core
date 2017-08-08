@@ -41,6 +41,7 @@ export class Model extends ECClass {
 export class GeometricModel extends Model {
 }
 
+/** a request to load a model. */
 export interface ModelLoadParams {
   id?: Id | string;
   code?: Code;

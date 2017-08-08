@@ -8,9 +8,9 @@ import { ECClass, ClassDef, ECClassProps } from "./ECClass";
 
 /** The Id and relationship class of an Element that is related to another Element */
 export class RelatedElement {
-  constructor(public id: Id, public relationshipClass?: string) { }
+  constructor(public id: Id, public relClass?: string) { }
   public static fromJSON(json?: any): RelatedElement | undefined {
-    return json ? new RelatedElement(new Id(json.id), JsonUtils.asString(json.relationshipClass)) : undefined;
+    return json ? new RelatedElement(new Id(json.id), JsonUtils.asString(json.relClass)) : undefined;
   }
 }
 

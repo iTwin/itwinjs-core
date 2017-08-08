@@ -142,17 +142,17 @@ export class SubCategoryOverride {
 /** Parameters to create a SubCategory element */
 export interface SubCategoryProps extends ElementProps {
   appearance?: Appearance;
-  categoryId?: Id;
+  description?: string;
 }
 
 /** a Subcategory defines the appearance for graphics in Geometric elements */
 export class SubCategory extends DefinitionElement {
   public appearance: Appearance;
-  public categoryId: Id;
+  public description?: string;
   public constructor(props: SubCategoryProps) {
     super(props);
     this.appearance = new Appearance(props.appearance);
-    this.categoryId = new Id(props.categoryId);
+    this.description = JsonUtils.asString(props.description);
   }
 
   public getSubCategoryName(): string { return this.code.getValue(); }

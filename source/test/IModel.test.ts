@@ -5,9 +5,9 @@
 import { assert } from "chai";
 import { Code, IModel, Id } from "../IModel";
 import { ColorDef } from "../Render";
-import { ElementProps, Element } from "../Element";
+import { ElementProps, Element, GeometricElement3d } from "../Element";
 import { Models } from "../Model";
-import { Category } from "../Category";
+import { Category, SubCategory } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
 import { ModelSelector } from "../ViewDefinition";
 import { Elements } from "../Elements";
@@ -48,8 +48,13 @@ describe("Elements", async () => {
     const badCode = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
     const bad = await elements.getElement({ code: badCode });
     assert(bad === undefined);
+    const subcat = await elements.getElement({ id: "0x2e" });
+    assert(subcat instanceof SubCategory);
+    const cat = await elements.getElement({ id: (subcat as SubCategory).getCategoryId() });
+    assert(cat instanceof Category);
+    const phys = await elements.getElement({ id: "0x38"});
+    assert(phys instanceof GeometricElement3d);
   });
-
 });
 
 describe("Models", async () => {
@@ -59,13 +64,13 @@ describe("Models", async () => {
     assert(imodel);
     const models: Models = imodel.models;
     assert(models);
-    const model2 = await models.getModel({ id:  "0x1c" });
+    const model2 = await models.getModel({ id: "0x1c" });
     assert(model2 != null);
     let model = await models.getModel({ id: "0x1" });
     assert(model != null);
     const code1 = new Code({ spec: "0x1d", scope: "0x1d", value: "A" });
     model = await models.getModel({ code: code1 });
-    const geomModel = await ClassRegistry.getClass( {name: "GeometricModel", schema: "BisCore"}, imodel);
+    const geomModel = await ClassRegistry.getClass({ name: "PhysicalModel", schema: "BisCore" }, imodel);
     assert(model instanceof geomModel!);
     assert(model != null);
   });
@@ -100,7 +105,7 @@ describe("ElementId", () => {
     assert(i8.equals(id7));
   });
 
-  it("Model Selectors should hold models", async () =>  {
+  it("Model Selectors should hold models", async () => {
     const imodel1 = new IModel();
     const props: ElementProps = {
       iModel: imodel1,

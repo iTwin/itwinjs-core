@@ -6,24 +6,24 @@ import { ClassDef, ECClassCtor, ECClass, ECClassFullname, ECClassProps } from ".
 import { IModel } from "./IModel";
 import { Schema, Schemas } from "./Schema";
 
-/** The mapping between class name and the constructor function  */
+/** The mapping between a class name and its constructor function  */
 export class ClassRegistry {
   public static ecClasses: Map<string, ECClassCtor> = new Map<string, ECClassCtor>();
 
-  public static getClassRegistryKey(schemaName: string, className: string) {
+  private static getClassRegistryKey(schemaName: string, className: string) {
     return (schemaName + "." + className).toLowerCase();
   }
 
-  public static getClassRegistryKeyFromECClassFullname(fullname: ECClassFullname) {
+  private static getClassRegistryKeyFromECClassFullname(fullname: ECClassFullname) {
     return ClassRegistry.getClassRegistryKey(fullname.schema, fullname.name);
   }
 
-  public static getClassRegistryKeyFromIECInstance(inst: ECClassProps) {
+  private static getClassRegistryKeyFromIECInstance(inst: ECClassProps) {
     return ClassRegistry.getClassRegistryKey(inst.schemaName, inst.className);
   }
 
   /** create an instance of a class from it properties */
-  public static async createInstance(props: ECClassProps): Promise<ECClass|undefined> {
+  public static async createInstance(props: ECClassProps): Promise<ECClass | undefined> {
     if (!props.className || !props.schemaName)
       return undefined;
 
@@ -34,43 +34,37 @@ export class ClassRegistry {
     return ctor ? new ctor(props) : undefined;
   }
 
+  public static registerSchema(schema: Schema) { Schemas.registerSchema(schema); }
+  public static getRegisteredSchema(domainName: string) { return Schemas.getRegisteredSchema(domainName); }
   public static getSchemaBaseClass(): any { return Schema; }
 
-  public static generateProxySchema(schemaName: string): string {
+  private static generateProxySchema(schemaName: string): string {
     let def = "class " + schemaName + " extends ClassRegistry.getSchemaBaseClass(){constructor(){super();}}";
     // register it here, while we are in the scope in which `schemaName` is actually defined as a class.
     def = def + " ClassRegistry.registerSchema(" + schemaName + ");";
     return def;
   }
 
-  public static registerSchema(schema: Schema) {
-    Schemas.registerSchema(schema);
-  }
-
-  public static getRegisteredSchema(domainName: string) {
-    return Schemas.getRegisteredSchema(domainName);
-  }
-
   /**
    * Generate a JS class from an ECClass definition
-   * @param ecclass The ECClass definition
+   * @param ecClass The ECClass definition
    */
-  public static generateClassDefFromECClass(ecclass: ClassDef): string {
+  private static generateClassDefFromECClass(ecClass: ClassDef): string {
     let domainDef = "";
 
     // schema
-    const schema: Schema = Schemas.getRegisteredSchema(ecclass.schema);
+    const schema: Schema = Schemas.getRegisteredSchema(ecClass.schema);
     if (!schema) {
-      domainDef = domainDef + ClassRegistry.generateProxySchema(ecclass.schema);
+      domainDef = domainDef + ClassRegistry.generateProxySchema(ecClass.schema);
     }
 
     // static properties
-    const classDefStaticProps = " " + ecclass.name + ".schema = ClassRegistry.getRegisteredSchema('" + ecclass.schema + "');";
+    const classDefStaticProps = " " + ecClass.name + ".schema = ClassRegistry.getRegisteredSchema('" + ecClass.schema + "');";
 
     // extends
     let classDefExtends = "";
-    if (ecclass.baseClasses.length !== 0) {
-      classDefExtends = " extends ClassRegistry.ecClasses.get('" + ClassRegistry.getClassRegistryKeyFromECClassFullname(ecclass.baseClasses[0]) + "')";
+    if (ecClass.baseClasses.length !== 0) {
+      classDefExtends = " extends ClassRegistry.ecClasses.get('" + ClassRegistry.getClassRegistryKeyFromECClassFullname(ecClass.baseClasses[0]) + "')";
       // *** WIP_IMODELJS -- JS has only single inheritance. In order to handle mixins, we have to write functions that actually merge them into the single prototype for the class.
       // ***   https://addyosmani.com/resources/essentialjsdesignpatterns/book/#mixinpatternjavascript
     }
@@ -78,17 +72,17 @@ export class ClassRegistry {
     let classDefCtor = "{constructor(props){";
 
     // super
-    if (ecclass.baseClasses.length !== 0)
+    if (ecClass.baseClasses.length !== 0)
       classDefCtor = classDefCtor + "super(props);";
 
     // this.prop = props
-    for (const propName of Object.getOwnPropertyNames(ecclass.properties)) {
+    for (const propName of Object.getOwnPropertyNames(ecClass.properties)) {
       classDefCtor = classDefCtor + " this." + propName + "=props." + propName + ";";
     }
     classDefCtor = classDefCtor + "}}";
 
     // The class as a whole
-    return domainDef + "class " + ecclass.name + classDefExtends + classDefCtor + classDefStaticProps;
+    return domainDef + "class " + ecClass.name + classDefExtends + classDefCtor + classDefStaticProps;
   }
 
   public static registerEcClass(ctor: ECClassCtor) {
@@ -116,15 +110,12 @@ export class ClassRegistry {
   /** This function fetches the specified ECClass from the imodel, generates a JS class for it, and registers the generated
    *  class. This function also ensures that all of the base classes of the ECClass exist and are registered.
    */
-  public static async generateClass(schemaName: string, className: string, imodel: IModel): Promise<ECClassCtor | undefined> {
+  private static async generateClass(schemaName: string, className: string, imodel: IModel): Promise<ECClassCtor | undefined> {
     const ecclassJson = await imodel.dgnDb.getECClassMetaData(schemaName, className);
     if (null == ecclassJson)
       return undefined;
 
     const ecclass: ClassDef = JSON.parse(ecclassJson);
-
-    // *** TBD: assert(ecclass.name == className, nocase);
-    // *** TBD: assert(ecclass.schema == schemaName, nocase);
 
     // Make sure that we have all base classes registered.
     // This recurses. I have to know that the super class is defined and registered before defining a derived class.
@@ -136,7 +127,7 @@ export class ClassRegistry {
       }
     }
 
-    // Now we can generate the class from the classdef.
+    // Now we can generate the class from the classDef.
     return ClassRegistry.generateClassForECClass(ecclass);
   }
 
@@ -174,5 +165,4 @@ export class ClassRegistry {
   public static isClassRegistered(schemaName: string, className: string): boolean {
     return ClassRegistry.ecClasses.has(ClassRegistry.getClassRegistryKey(schemaName, className));
   }
-
 }

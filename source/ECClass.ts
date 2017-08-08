@@ -114,11 +114,8 @@ export class ECClass {
   public static get sqlName(): string { return this.schema.name + "." + this.name; }
 
   /** Get the name of the schema that defines this class */
-  public get schemaName(): string {
-    return Object.getPrototypeOf(this).constructor.schema.name;
-  }
+  public get schemaName(): string { return Object.getPrototypeOf(this).constructor.schema.name; }
+
   /** Get the name of this class */
-  public get className(): string {
-    return Object.getPrototypeOf(this).constructor.name;
-  }
+  public get className(): string { return Object.getPrototypeOf(this).constructor.name; }
 }
