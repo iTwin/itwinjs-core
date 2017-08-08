@@ -81,6 +81,8 @@ describe("ElementId", () => {
   it("ElementId should construct properly", () => {
     const id1 = new Id("0x123");
     assert(id1.isValid(), "good");
+    const badid = new Id("0x000");
+    assert(!badid.isValid(), "bad");
     const id2 = new Id("badness");
     assert(!id2.isValid());
     const id3 = new Id("0xtbadness");
@@ -88,12 +90,12 @@ describe("ElementId", () => {
     const id4 = new Id("0x1234567890abc");
     assert(id4.isValid());
     assert(id4.hi === 0x123);
-    const i5 = "0X20000000001";
+    const i5 = "0x20000000001";
     const id5 = new Id(i5);
     assert(id5.hi === 0x2 && id5.lo === 0x1);
     const o5 = id5.toString();
     assert(o5 === i5);
-    const id6 = new Id([200, 100]);
+    const id6 = new Id([2000000, 3000]);
     const v6 = id6.toString();
     const id7 = new Id(v6);
     assert(id6.equals(id7));

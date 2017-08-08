@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { Code, CodeProps, Id, IModel, GeometryStream, Placement3d } from "./IModel";
+import { Code, CodeProps, Id, IModel, GeometryStream, Placement3d, Placement2d } from "./IModel";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { ECClass, ClassMetaData, ClassProps } from "./ECClass";
 
@@ -71,11 +71,11 @@ export class Element extends ECClass {
 
 /** Properties of a GeometricElement */
 export interface GeometricElementProps extends ElementProps {
-  category?: Id;
+  category?: Id | string;
   geom?: GeometryStream;
 }
 
-/** A Geometric element */
+/** A Geometric element. All geometry held by a GeometricElement is positioned relative to its placement. */
 export class GeometricElement extends Element {
   public category: Id;
   public geom?: GeometryStream;
@@ -91,11 +91,13 @@ export class TypeDefinition extends RelatedElement {
   constructor(definitionId: Id, relationshipClass?: string) { super(definitionId, relationshipClass); }
 }
 
+/** Properties that define a GeometricElement3d */
 export interface GeometricElement3dProps extends GeometricElementProps {
   placement?: Placement3d;
   typeDefinition?: TypeDefinition;
 }
 
+/** A Geometric 3d element. */
 export class GeometricElement3d extends GeometricElement {
   public placement: Placement3d;
   public typeDefinition?: TypeDefinition;
@@ -103,6 +105,25 @@ export class GeometricElement3d extends GeometricElement {
   public constructor(props: GeometricElement3dProps) {
     super(props);
     this.placement = Placement3d.fromJSON(props.placement);
+    if (props.typeDefinition)
+      this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
+  }
+}
+
+/** Properties that define a GeometricElement2d */
+export interface GeometricElement2dProps extends GeometricElementProps {
+  placement?: Placement2d;
+  typeDefinition?: TypeDefinition;
+}
+
+/** A Geometric 2d element. */
+export class GeometricElement2d extends GeometricElement {
+  public placement: Placement2d;
+  public typeDefinition?: TypeDefinition;
+
+  public constructor(props: GeometricElement2dProps) {
+    super(props);
+    this.placement = Placement2d.fromJSON(props.placement);
     if (props.typeDefinition)
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
   }
