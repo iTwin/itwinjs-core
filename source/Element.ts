@@ -4,7 +4,7 @@
 
 import { Code, CodeProps, Id, IModel, GeometryStream, Placement3d } from "./IModel";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { ECClass, ClassDef, ECClassProps } from "./ECClass";
+import { ECClass, ClassMetaData, ClassProps } from "./ECClass";
 
 /** The Id and relationship class of an Element that is related to another Element */
 export class RelatedElement {
@@ -14,7 +14,7 @@ export class RelatedElement {
   }
 }
 
-export interface ElementProps extends ECClassProps {
+export interface ElementProps extends ClassProps {
   model: Id | string;
   code: CodeProps;
   id: Id | string;
@@ -47,16 +47,16 @@ export class Element extends ECClass {
   }
 
   /** Get the metadata for the ECClass of this element. */
-  public async getECClass(): Promise<ClassDef> { return Object.getPrototypeOf(this).constructor.getECClassFor(this.iModel, this.schemaName, this.className); }
+  public async getECClass(): Promise<ClassMetaData> { return Object.getPrototypeOf(this).constructor.getECClassFor(this.iModel, this.schemaName, this.className); }
 
   public getUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = {}; return this.jsonProperties.UserProps; }
   public setUserProperties(nameSpace: string, value: any) { this.getUserProperties()[nameSpace] = value; }
   public removeUserProperties(nameSpace: string) { delete this.getUserProperties()[nameSpace]; }
 
   /** Get the specified ECClass metadata */
-  public static getECClassFor(imodel: IModel, schemaName: string, className: string): Promise<ClassDef> {
+  public static getECClassFor(imodel: IModel, schemaName: string, className: string): Promise<ClassMetaData> {
     if ((null == this.ecClass) || !this.hasOwnProperty("ecClass")) {
-      const p = new Promise<ClassDef>((resolve, reject) => {
+      const p = new Promise<ClassMetaData>((resolve, reject) => {
         imodel.dgnDb.getECClassMetaData(schemaName, className).then((mstr: string) => {
           resolve(this.ecClass = JSON.parse(mstr));
         }).catch((reason: any) => {
@@ -65,7 +65,7 @@ export class Element extends ECClass {
       });
       return p;
     }
-    return new Promise<ClassDef>((resolve, _reject) => resolve(this.ecClass));
+    return new Promise<ClassMetaData>((resolve, _reject) => resolve(this.ecClass));
   }
 }
 

@@ -28,8 +28,8 @@ describe("iModel", () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const elementECClass = await BisCore.getClass(Element.name, imodel);
     const categoryECClass = await BisCore.getClass(Category.name, imodel);
-    assert.equal(elementECClass.name, "Element");
-    assert.equal(categoryECClass.name, "Category");
+    assert.equal(elementECClass!.name, "Element");
+    assert.equal(categoryECClass!.name, "Category");
   });
 });
 

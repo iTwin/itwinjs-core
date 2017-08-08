@@ -2,12 +2,12 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id, Code, IModel } from "./IModel";
-import { ECClass, ECClassProps } from "./ECClass";
+import { ECClass, ClassProps } from "./ECClass";
 import { ClassRegistry } from "./ClassRegistry";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 
-export interface ModelProps extends ECClassProps {
+export interface ModelProps extends ClassProps {
   id: Id | string;
   modeledElement: Id;
   parentModel?: Id;
