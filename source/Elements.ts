@@ -42,22 +42,11 @@ export class Elements {
     const props = JSON.parse(json) as ElementProps;
     props.iModel = this._iModel;
 
-    let el = ClassRegistry.create(props) as Element | undefined;
+    const el = await ClassRegistry.createInstance(props);
+    if (!(el instanceof Element))
+      return undefined;
 
-    if (el === undefined) {
-      if (ClassRegistry.isClassRegistered(props.schemaName, props.className))
-        return undefined;
-
-      // Create failed because we don't yet have a class.
-      // Request the ECClass metadata from the iModel, generate a class, and register it.
-      await ClassRegistry.generateClass(props.schemaName, props.className, this._iModel);
-      el = ClassRegistry.create(props) as Element | undefined;
-
-      if (el === undefined)
-        return undefined;
-    }
-
-    // We have created the element. Cache it and return it.
+    // We have created the element. Cache it before we return it.
     this._loaded.set(el.id.toString(), el);
     return el;
   }

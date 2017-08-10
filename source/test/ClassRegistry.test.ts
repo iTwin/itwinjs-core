@@ -4,7 +4,7 @@
 
 import { assert } from "chai";
 import { Element } from "../Element";
-import { ClassDef, NavigationECProperty, PrimitiveECProperty } from "../ECClass";
+import { ClassMetaData, NavigationECProperty, PrimitiveECProperty } from "../ECClass";
 import { ClassRegistry } from "../ClassRegistry";
 import { Code, IModel } from "../IModel";
 import { IModelTestUtils } from "./IModelTestUtils";
@@ -16,7 +16,7 @@ import { BisCore } from "../BisCore";
 BisCore.registerSchema();
 
 // Fake ECClass metadata
-const testEcClass: ClassDef = {
+const testEcClass: ClassMetaData = {
   name: "Class1",
   schema: "Schema1",
   baseClasses: [],
@@ -39,7 +39,7 @@ describe("Class Registry", () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const factory = ClassRegistry.generateClassForECClass(testEcClass);
     assert.isFunction(factory);
-    const obj = ClassRegistry.create({schemaName: testEcClass.schema, className: testEcClass.name, iModel: imodel});
+    const obj = await ClassRegistry.createInstance({schemaName: testEcClass.schema, className: testEcClass.name, iModel: imodel});
     assert.isTrue(obj != null);
     assert.isObject(obj);
     const propsfound: Set<string> = new Set<string>();
@@ -59,7 +59,7 @@ describe("Class Registry", () => {
     assert(el !== undefined);
     assert(el != null);
     if (el) {
-      const ecclass: ClassDef = await el.getECClass();
+      const ecclass: ClassMetaData = await el.getECClass();
       assert.isNotNull(ecclass);
       assert.equal(ecclass.name, el.className);
       assert.equal(ecclass.schema, el.schemaName);
@@ -84,7 +84,7 @@ describe("Class Registry", () => {
     assert.isDefined(el2);
     assert.isNotNull(el2);
     if (el2) {
-      const ecclass: ClassDef = await el2.getECClass();
+      const ecclass: ClassMetaData = await el2.getECClass();
       assert.isNotNull(ecclass);
       assert.equal(ecclass.name, el2.className);
       assert.equal(ecclass.schema, el2.schemaName);
@@ -114,6 +114,7 @@ describe("Class Registry", () => {
     assert.equal(obj.schema, BisCore.name);
     assert.isArray(obj.baseClasses);
     assert.equal(obj.baseClasses.length, 0);
+
     assert.isArray(obj.customAttributes);
     let foundClassHasHandler = false;
     let foundClassHasCurrentTimeStampProperty = false;

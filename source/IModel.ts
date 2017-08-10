@@ -2,12 +2,13 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { Point3d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { Elements } from "./Elements";
 import { Models } from "./Model";
 import { DgnDb } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { BeSQLite } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
+import { Point3d, Range3d, YawPitchRollAngles, Point2d, Range2d } from "@bentley/geometry-core/lib/PointVector";
+import { Angle } from "@bentley/geometry-core/lib/Geometry";
 
 /** An iModel database. */
 export class IModel {
@@ -54,88 +55,103 @@ export class IModel {
    * @throws Error if the statement is invalid
    */
   public executeQuery(ecsql: string): Promise<string> {
-      return this._db.executeQuery(ecsql)
+    return this._db.executeQuery(ecsql)
       .then(({error, result}) => error ? Promise.reject(error) : Promise.resolve(result || ""));
   }
 }
 
-/** A two-part id, containing a IModel id and a local id. */
+/** A two-part id, containing a briefcase id and a local id. */
 export class Id {
-  public readonly hi: number;
-  public readonly lo: number;
+  private readonly value?: string;
 
-  private static parseHex(str: string): number {
-    const v = parseInt(str, 16);
-    return Number.isNaN(v) ? 0 : v;
+  private static toHex(str: string): number { const v = parseInt(str, 16); return Number.isNaN(v) ? 0 : v; }
+  private static isHex(str: string): boolean { return !Number.isNaN(parseInt(str, 16)); }
+
+  protected toJSON(): string { return this.value ? this.value : ""; }
+
+  public get lo(): number {
+    if (!this.value)
+      return 0;
+
+    let start = 2;
+    const len = this.value.length;
+    if (len > 12)
+      start = (len - 10);
+
+    return Id.toHex(this.value.slice(start));
   }
-  protected toJSON(): string { return this.toString(); }
+
+  public get hi(): number {
+    if (!this.value)
+      return 0;
+
+    let start = 2;
+    const len = this.value.length;
+    if (len <= 12)
+      return 0;
+
+    start = (len - 10);
+    return Id.toHex(this.value.slice(2, start));
+  }
 
   /**
    * constructor for Id
-   * @param bId an integer identifying the briefcase id
-   * @param lId an integer with the local id
+   * @param prop either a string with a hex number, an Id, or an array of two numbers with [lo,hi]. Otherwise the Id will be invalid.
    */
-  constructor(bId?: Id | number | number[] | string, lId?: number) {
-    if (bId instanceof Id) {
-      this.hi = bId.hi;
-      this.lo = bId.lo;
+  constructor(prop?: Id | number[] | string) {
+    if (!prop)
       return;
-    }
 
-    if (Array.isArray(bId)) {
-      this.hi = bId[0] | 0;
-      this.lo = Math.trunc(bId[1]);
-      return;
-    }
-
-    if (typeof bId === "string") {
-      if (bId[0] !== "0" || !(bId[1] === "x" || bId[1] === "X")) {
-        this.hi = this.lo = 0;
+    if (typeof prop === "string") {
+      prop = prop.toLowerCase().trim();
+      if (prop[0] !== "0" || !(prop[1] === "x")) {
         return;
       }
 
       let start = 2;
-      const len = bId.length;
+      const len = prop.length;
       if (len > 12) {
         start = (len - 10);
-        const bcVal = bId.slice(2, start);
-        this.hi = Id.parseHex(bcVal);
-      } else {
-        this.hi = 0;
+        if (!Id.isHex(prop.slice(2, start)))
+          return;
       }
 
-      this.lo = Id.parseHex(bId.slice(start));
+      if (0 !== Id.toHex(prop.slice(start)))// 0 is an illegal value for the low part of an id
+        this.value = prop;
+
       return;
     }
 
-    this.hi = bId ? bId | 0 : 0;
-    this.lo = lId ? Math.trunc(lId) : 0;
+    if (prop instanceof Id) {
+      this.value = prop.value;
+      return;
+    }
+
+    if (!Array.isArray(prop) || prop.length < 2)
+      return;
+
+    const lo = prop[0] | 0;
+    if (lo === 0)
+      return;
+    const hi = Math.trunc(prop[1]);
+    this.value = "0x" + hi.toString(16) + ("0000000000" + lo.toString(16)).substr(-10);
   }
 
   /** convert this Id to a string */
-  public toString(): string {
-    if (!this.isValid())
-      return "";
-    return "0X" + this.hi.toString(16) + ("0000000000" + this.lo.toString(16)).substr(-10);
-  }
+  public toString(): string { return this.value ? this.value : ""; }
 
   /** Determine whether this Id is valid */
-  public isValid(): boolean {
-    return this.lo !== 0;
-  }
+  public isValid(): boolean { return this.value !== undefined; }
 
   /** Test whether two Ids are the same
    * @param other the other id to test
    */
-  public equals(other: Id): boolean {
-    return this.hi === other.hi && this.lo === other.lo;
-  }
+  public equals(other: Id): boolean { return this.value === other.value; }
 
-  public static areEqual(a: Id | undefined, b: Id | undefined): boolean {
-    return (a === b) || (a != null && b != null && a.equals(b));
-  }
+  public static areEqual(a: Id | undefined, b: Id | undefined): boolean { return (a === b) || (a != null && b != null && a.equals(b)); }
 }
 
+/** properties that define a Code */
 export interface CodeProps {
   spec: Id | string;
   scope: string;
@@ -155,25 +171,40 @@ export class Code implements CodeProps {
   }
 
   /** Create an instance of the default code (1,1,null) */
-  public static createDefault(): Code { return new Code({ spec: new Id(1), scope: "1" }); }
+  public static createDefault(): Code { return new Code({ spec: new Id([1, 0]), scope: "1" }); }
   public getValue(): string { return this.value ? this.value : ""; }
 }
 
-/** A bounding box aligned to the orientation of an Element */
+/** A bounding box aligned to the orientation of a 3d Element */
 export class ElementAlignedBox3d extends Range3d {
   public constructor(low: Point3d, high: Point3d) { super(low.x, low.y, low.z, high.x, high.y, high.z); }
   public get left(): number { return this.low.x; }
-  public get front(): number { return this.low.y; }
-  public get bottom(): number { return this.low.z; }
+  public get bottom(): number { return this.low.y; }
+  public get front(): number { return this.low.z; }
   public get right(): number { return this.high.x; }
-  public get back(): number { return this.high.y; }
-  public get top(): number { return this.high.z; }
+  public get top(): number { return this.high.y; }
+  public get back(): number { return this.high.z; }
   public get width(): number { return this.xLength(); }
   public get depth(): number { return this.yLength(); }
   public get height(): number { return this.zLength(); }
   public static fromJSON(json?: any): ElementAlignedBox3d {
     json = json ? json : {};
     return new ElementAlignedBox3d(Point3d.fromJSON(json.low), Point3d.fromJSON(json.high));
+  }
+}
+
+/** A bounding box aligned to the orientation of a 2d Element */
+export class ElementAlignedBox2d extends Range2d {
+  public constructor(low: Point2d, high: Point2d) { super(low.x, low.y, high.x, high.y); }
+  public get left(): number { return this.low.x; }
+  public get bottom(): number { return this.low.y; }
+  public get right(): number { return this.high.x; }
+  public get top(): number { return this.high.y; }
+  public get width(): number { return this.xLength(); }
+  public get depth(): number { return this.yLength(); }
+  public static fromJSON(json?: any): ElementAlignedBox2d {
+    json = json ? json : {};
+    return new ElementAlignedBox2d(Point2d.fromJSON(json.low), Point2d.fromJSON(json.high));
   }
 }
 
@@ -184,13 +215,21 @@ export class GeometryStream {
   public hasGeometry(): boolean { return this.geomStream.byteLength !== 0; }
 }
 
-/** The "placement" of a GeometricElement. This includes the origin, orientation, and size (bounding box) of the element.
+/** The "placement" of a GeometricElement3d. This includes the origin, orientation, and size (bounding box) of the element.
  * All geometry of a GeometricElement are relative to its placement.
  */
 export class Placement3d {
   public constructor(public origin?: Point3d, public angles?: YawPitchRollAngles, public boundingBox?: ElementAlignedBox3d) { }
   public static fromJSON(json?: any): Placement3d {
     json = json ? json : {};
-    return new Placement3d(Point3d.fromJSON(json.origin), YawPitchRollAngles.fromJSON(json.angles), ElementAlignedBox3d.fromJSON(json.boundingBox));
+    return new Placement3d(Point3d.fromJSON(json.origin), YawPitchRollAngles.fromJSON(json.angles), ElementAlignedBox3d.fromJSON(json.bbox));
+  }
+}
+/** The "placement" of a GeometricElement2d. This includes the origin, orientation, and size (bounding box) of the element. */
+export class Placement2d {
+  public constructor(public origin?: Point2d, public angle?: Angle, public boundingBox?: ElementAlignedBox2d) { }
+  public static fromJSON(json?: any): Placement2d {
+    json = json ? json : {};
+    return new Placement2d(Point2d.fromJSON(json.origin), Angle.fromJSON(json.angle), ElementAlignedBox2d.fromJSON(json.bbox));
   }
 }

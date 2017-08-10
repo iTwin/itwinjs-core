@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/imodeljs-core.git"
   },
-  "version": "1.0.12",
+  "version": "1.0.14",
   "scripts": {
     "build": "gulp build",
     "build-release": "gulp build --release",
@@ -24,9 +24,16 @@
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "^1.0.7",
-    "@bentley/geometry-core": "^1.0.4",
-    "@bentley/imodeljs-dgnplatform": "^1.0.17",
-    "chai": "^4.1.0",
+    "@bentley/geometry-core": "^1.0.4"
+  },
+  "devDependencies": {
+    "@bentley/bentleyjs-tools": "^1.0.13",
+    "@types/chai": "^4.0.2",
+    "@types/mocha": "^2.2.41",
+    "commander": "^2.11.0",
+    "gulp": "latest",
+    "once": "^1.4.0",
+    "chai": "^4.1.1",
     "debug-fabulous": "^0.1.1",
     "diff": "^3.3.0",
     "duplexify": "^3.5.1",
@@ -36,16 +43,6 @@
     "resolve": "^1.4.0",
     "semver": "^5.4.1",
     "string-width": "^2.1.1",
-    "tslint": "^5.5.0",
-    "typescript": "^2.4.2",
-    "uglify-es": "^3.0.27"
-  },
-  "devDependencies": {
-    "@bentley/bentleyjs-tools": "^1.0.12",
-    "@types/chai": "^4.0.2",
-    "@types/mocha": "^2.2.41",
-    "commander": "^2.11.0",
-    "gulp": "latest",
-    "once": "^1.4.0"
+    "typescript": "^2.4.2"
   }
 }

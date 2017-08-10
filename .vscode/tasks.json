@@ -7,6 +7,14 @@
       "type": "gulp",
       "task": "buildtests",
       "problemMatcher": []
+    },
+    {
+      "type": "typescript",
+      "tsconfig": "tsconfig.json",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     }
   ]
 }

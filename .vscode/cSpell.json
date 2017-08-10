@@ -11,6 +11,7 @@
         "imodel",
         "imodeljs",
         "subtractive",
+        "superclasses",
         "underbar"
     ],
     // flagWords - list of words to be always considered incorrect

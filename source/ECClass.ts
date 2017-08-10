@@ -7,10 +7,10 @@ import { IModel } from "./IModel";
 
 /**
  * The full name of an ECClass
- * @property {string } name The name of the class
- * @property {string} schema  The name of the ECSchema that defines this class
+ * @property name The name of the class
+ * @property schema  The name of the ECSchema that defines this class
  */
-export interface ECClassFullname {
+export interface ClassFullName {
   name: string;
   schema: string;
 }
@@ -21,7 +21,7 @@ export interface ECClassFullname {
  * @property  properties An object whose properties correspond by name to the properties of this class.
  */
 export interface CustomAttribute {
-  ecclass: ECClassFullname;
+  ecclass: ClassFullName;
   properties: { [propName: string]: PrimitiveECProperty | NavigationECProperty | StructECProperty | PrimitiveArrayECProperty | StructArrayECProperty };
 }
 
@@ -41,14 +41,13 @@ export interface PrimitiveECProperty {
  * @property customAttributes The Custom Attributes for this class
  */
 export interface NavigationECProperty {
-  navigationECProperty: { type: string, direction: string, relationshipClass: ECClassFullname };
+  navigationECProperty: { type: string, direction: string, relationshipClass: ClassFullName };
   customAttributes: CustomAttribute[];
 }
 
 /**
  * Metadata for an ECProperty that is a struct.
- * @property { Object } structECProperty Describes the type
- * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
+ * @property structECProperty Describes the type
  */
 export interface StructECProperty {
   structECProperty: { type: string };
@@ -56,8 +55,7 @@ export interface StructECProperty {
 
 /**
  * Metadata for an ECProperty that is a primitive array.
- * @property { Object } primitiveArrayECProperty Describes the type
- * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
+ * @property primitiveArrayECProperty Describes the type
  */
 export interface PrimitiveArrayECProperty {
   primitiveArrayECProperty: { type: string, minOccurs: number, maxOccurs?: number };
@@ -66,7 +64,6 @@ export interface PrimitiveArrayECProperty {
 /**
  * Metadata for an ECProperty that is a struct array.
  * @property { Object } structArrayECProperty Describes the type
- * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
  */
 export interface StructArrayECProperty {
   structArrayECProperty: { type: string, minOccurs: number, maxOccurs?: number };
@@ -74,51 +71,51 @@ export interface StructArrayECProperty {
 
 /**
  * Metadata  for an ECClass.
- * @property {string} name  The ECClass name
- * @property {string} schema  The name of the ECSchema that defines this class
- * @property { ECClassFullname[] } baseClasses The list of base classes that this class is derived from. If more than one, the first is the actual base class and the others are mixins.
- * @property { CustomAttribute[] } customAttributes The Custom Attributes for this class
- * @property { PrimitiveECProperty| NavigationECProperty|StructECProperty|PrimitiveArrayECProperty|StructArrayECProperty } properties An object whose properties correspond by name to the properties of this class.
+ * @property name  The ECClass name
+ * @property schema  The name of the ECSchema that defines this class
+ * @property baseClass The  base class that this class is derives from. If more than one, the first is the actual base class and the others are mixins.
+ * @property customAttributes The Custom Attributes for this class
+ * @property properties An object whose properties correspond by name to the properties of this class.
  */
-export interface ClassDef {
+export interface ClassMetaData {
   name: string;
   schema: string;
-  baseClasses: ECClassFullname[];
+  baseClasses: ClassFullName[];
   customAttributes: CustomAttribute[];
   properties: { [propName: string]: PrimitiveECProperty | NavigationECProperty | StructECProperty | PrimitiveArrayECProperty | StructArrayECProperty };
 }
 
-/** An ECInstance has at least the name of the ECSchema/schema and ECClass that defines it. */
-export interface ECClassProps {
+/** The properties of any ECCLass. Every instance has at least the iModel and the name of the schema and class that defines it. */
+export interface ClassProps {
   iModel: IModel;
   schemaName: string;
   className: string;
 }
 
-/** Base class for all ECClasses */
+export interface ClassCtor extends FunctionConstructor {
+  ecClass: ClassMetaData;
+  schema: Schema;
+  new(args: ClassProps): ECClass;
+}
+
+/** Base class for all ECClasses. */
 export class ECClass {
-  public iModel: IModel;
+  /** Metadata for this class. */
+  public static ecClass: ClassMetaData;
 
-  /** ECClass metadata for this class. */
-  public static ecClass: ClassDef;
-
-  /** The Domain / schema that defines this class. */
+  /** The schema that defines this class. */
   public static schema: Schema;
 
-  /** The full name of this class, including the schema name */
+  public iModel: IModel;
+
+  constructor(opt: ClassProps) { this.iModel = opt.iModel; }
+
+  /** Get the full name of this class, in the form "schema.class"  */
   public static get sqlName(): string { return this.schema.name + "." + this.name; }
 
-  /** The name of the ECSchema and schema that defines this class */
-  public get schemaName(): string {
-    return Object.getPrototypeOf(this).constructor.schema.name;
-  }
-  /** The name of this class */
-  public get className(): string {
-    return Object.getPrototypeOf(this).constructor.name;
-  }
+  /** Get the name of the schema that defines this class */
+  public get schemaName(): string { return Object.getPrototypeOf(this).constructor.schema.name; }
 
-  constructor(opt: ECClassProps) {
-    this.iModel = opt.iModel;
-  }
-
+  /** Get the name of this class */
+  public get className(): string { return Object.getPrototypeOf(this).constructor.name; }
 }
