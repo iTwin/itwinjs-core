@@ -52,7 +52,7 @@ describe("Elements", async () => {
     assert(subcat instanceof SubCategory);
     const cat = await elements.getElement({ id: (subcat as SubCategory).getCategoryId() });
     assert(cat instanceof Category);
-    const phys = await elements.getElement({ id: "0x38"});
+    const phys = await elements.getElement({ id: "0x38", noGeometry: false });
     assert(phys instanceof GeometricElement3d);
   });
 });

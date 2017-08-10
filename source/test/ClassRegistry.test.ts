@@ -59,7 +59,10 @@ describe("Class Registry", () => {
     assert(el !== undefined);
     assert(el != null);
     if (el) {
-      const ecclass: ClassMetaData = await el.getECClass();
+      const ecclass: ClassMetaData | undefined = await el.getECClass();
+      assert.notEqual(ecclass, undefined);
+      if (undefined === ecclass)
+        return;
       assert.isNotNull(ecclass);
       assert.equal(ecclass.name, el.className);
       assert.equal(ecclass.schema, el.schemaName);
@@ -84,7 +87,10 @@ describe("Class Registry", () => {
     assert.isDefined(el2);
     assert.isNotNull(el2);
     if (el2) {
-      const ecclass: ClassMetaData = await el2.getECClass();
+      const ecclass: ClassMetaData | undefined = await el2.getECClass();
+      assert.notEqual(ecclass, undefined);
+      if (undefined === ecclass)
+        return;
       assert.isNotNull(ecclass);
       assert.equal(ecclass.name, el2.className);
       assert.equal(ecclass.schema, el2.schemaName);
@@ -132,7 +138,7 @@ describe("Class Registry", () => {
     assert.equal(obj.properties.federationGuid.primitiveECProperty.extendedType, "BeGuid");
   });
 
-  it("should get metadata for CA class just as well (and we'll see an array-typed property)", async () => {
+  it("should get metadata for CA class just as well (and we'll see a array-typed property)", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const {error, result: metadataStr} = await imodel.dgnDb.getECClassMetaData(BisCore.name, "ClassHasHandler");
     assert(!error);

@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { Code, CodeProps, Id, IModel, GeometryStream, Placement3d, Placement2d } from "./IModel";
+import { Code, CodeProps, Id, GeometryStream, Placement3d, Placement2d } from "./IModel";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { ECClass, ClassMetaData, ClassProps } from "./ECClass";
 
@@ -47,28 +47,11 @@ export class Element extends ECClass {
   }
 
   /** Get the metadata for the ECClass of this element. */
-  public async getECClass(): Promise<ClassMetaData> { return Object.getPrototypeOf(this).constructor.getECClassFor(this.iModel, this.schemaName, this.className); }
+  public async getECClass(): Promise<ClassMetaData|undefined> { return this.iModel.classMetaDataRegistry.get(this.schemaName, this.className); }
 
   public getUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = {}; return this.jsonProperties.UserProps; }
   public setUserProperties(nameSpace: string, value: any) { this.getUserProperties()[nameSpace] = value; }
   public removeUserProperties(nameSpace: string) { delete this.getUserProperties()[nameSpace]; }
-
-  /** Get the specified ECClass metadata */
-  public static getECClassFor(imodel: IModel, schemaName: string, className: string): Promise<ClassMetaData> {
-    if ((null == this.ecClass) || !this.hasOwnProperty("ecClass")) {
-      const p = new Promise<ClassMetaData>((resolve, reject) => {
-        imodel.dgnDb.getECClassMetaData(schemaName, className)
-          .then(({ error, result: mstr }) => {
-            if (error || !mstr)
-              reject(error ? error.message : "");
-            else
-              resolve(this.ecClass = JSON.parse(mstr));
-          });
-      });
-      return p;
-    }
-    return new Promise<ClassMetaData>((resolve, _reject) => resolve(this.ecClass));
-  }
 }
 
 /** Properties of a GeometricElement */
@@ -84,7 +67,7 @@ export class GeometricElement extends Element {
   public constructor(props: GeometricElementProps) {
     super(props);
     this.category = new Id(props.category);
-    this.geom = props.geom;
+    this.geom = GeometryStream.fromJSON(props.geom);
   }
 }
 
