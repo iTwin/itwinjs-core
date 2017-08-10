@@ -100,8 +100,6 @@ export interface ClassCtor extends FunctionConstructor {
 
 /** Base class for all ECClasses. */
 export class ECClass {
-  /** Metadata for this class. */
-  public static ecClass: ClassMetaData;
 
   /** The schema that defines this class. */
   public static schema: Schema;

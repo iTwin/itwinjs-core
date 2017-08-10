@@ -55,8 +55,6 @@ export class ClassRegistry {
     let classDefExtends = "";
     if (ecClass.baseClasses.length !== 0) {
       classDefExtends = " extends ClassRegistry.ecClasses.get('" + ClassRegistry.getKeyFromName(ecClass.baseClasses[0]) + "')";
-      // *** WIP_IMODELJS -- JS has only single inheritance. In order to handle mixins, we have to write functions that actually merge them into the single prototype for the class.
-      // ***   https://addyosmani.com/resources/essentialjsdesignpatterns/book/#mixinpatternjavascript
     }
     // constructor
     let classDefCtor = "{constructor(props){";
@@ -129,7 +127,7 @@ export class ClassRegistry {
    */
   public static generateClassForECClass(ecclass: ClassMetaData): ClassCtor {
     // Generate and register this class
-    const jsDef = ClassRegistry.generateClassDefFromECClass(ecclass) + " ClassRegistry.registerEcClass(" + ecclass.name + "); " + ecclass.name + ".ecClass=ecclass;";
+    const jsDef = ClassRegistry.generateClassDefFromECClass(ecclass) + " ClassRegistry.registerEcClass(" + ecclass.name + "); ";
 
     // tslint:disable-next-line:no-eval NOTE: eval is OK here, because I generated the expression myself, and I know it's safe.
     eval(jsDef);

@@ -59,7 +59,10 @@ describe("Class Registry", () => {
     assert(el !== undefined);
     assert(el != null);
     if (el) {
-      const ecclass: ClassMetaData = await el.getECClass();
+      const ecclass: ClassMetaData | undefined = await el.getECClass();
+      assert.notEqual(ecclass, undefined);
+      if (undefined === ecclass)
+        return;
       assert.isNotNull(ecclass);
       assert.equal(ecclass.name, el.className);
       assert.equal(ecclass.schema, el.schemaName);
@@ -84,7 +87,10 @@ describe("Class Registry", () => {
     assert.isDefined(el2);
     assert.isNotNull(el2);
     if (el2) {
-      const ecclass: ClassMetaData = await el2.getECClass();
+      const ecclass: ClassMetaData | undefined = await el2.getECClass();
+      assert.notEqual(ecclass, undefined);
+      if (undefined === ecclass)
+        return;
       assert.isNotNull(ecclass);
       assert.equal(ecclass.name, el2.className);
       assert.equal(ecclass.schema, el2.schemaName);

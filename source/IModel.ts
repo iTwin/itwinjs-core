@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Elements } from "./Elements";
+import { ClassMetaData } from "./ECClass";
 import { Models } from "./Model";
 import { DgnDb } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { BeSQLite } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -11,12 +12,46 @@ import { Point3d, Range3d, YawPitchRollAngles, Point2d, Range2d } from "@bentley
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Base64 } from "js-base64";
 
+/** The mapping between a class name and its the metadata for that class  */
+export class ClassMetaDataRegistry {
+
+  private reg: Map<string, ClassMetaData> = new Map<string, ClassMetaData>();
+
+  constructor(private imodel: IModel) {
+  }
+
+  private static getKey(schemaName: string, className: string) {
+    return (schemaName + "." + className).toLowerCase();
+  }
+
+  /** Get the specified ECClass metadata */
+  public async get(schemaName: string, className: string): Promise<ClassMetaData | undefined> {
+    const key: string = ClassMetaDataRegistry.getKey(schemaName, className);
+    let mdata = this.reg.get(key);
+    if (null !== mdata && undefined !== mdata) {
+      return Promise.resolve(mdata);
+    }
+
+    const { error, result: mstr } = await this.imodel.dgnDb.getECClassMetaData(schemaName, className);
+    if (error || !mstr)
+      return Promise.resolve(undefined);
+
+    mdata = JSON.parse(mstr) as ClassMetaData | undefined;
+    if (undefined === mdata)
+      return Promise.resolve(undefined);
+    this.reg.set(key, mdata);
+    return Promise.resolve(mdata);
+  }
+}
+
 /** An iModel database. */
 export class IModel {
   private _db: DgnDb;
   private _elements: Elements;
   private _models: Models;
+  private _classMetaDataRegistry: ClassMetaDataRegistry;
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
+
 
   /** Open the iModel
    * @param fileName  The name of the iModel
@@ -29,6 +64,13 @@ export class IModel {
       this._db = await new DgnDb();
     return this._db.openDb(fileName, mode)
       .then(({error}) => error ? error.status : BeSQLite.DbResult.BE_SQLITE_OK);
+  }
+
+  /** Get the ClassMetaDataRegistry for this iModel */
+  public get classMetaDataRegistry(): ClassMetaDataRegistry {
+    if (!this._classMetaDataRegistry)
+      this._classMetaDataRegistry = new ClassMetaDataRegistry(this);
+    return this._classMetaDataRegistry;
   }
 
   /** Get the Elements of this iModel */
@@ -59,6 +101,7 @@ export class IModel {
     return this._db.executeQuery(ecsql)
       .then(({error, result}) => error ? Promise.reject(error) : Promise.resolve(result || ""));
   }
+
 }
 
 /** A two-part id, containing a briefcase id and a local id. */
