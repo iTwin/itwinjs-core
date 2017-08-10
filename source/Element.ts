@@ -82,7 +82,7 @@ export class GeometricElement extends Element {
   public constructor(props: GeometricElementProps) {
     super(props);
     this.category = new Id(props.category);
-    this.geom = props.geom;
+    this.geom = GeometryStream.fromJSON(props.geom);
   }
 }
 

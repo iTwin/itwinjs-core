@@ -9,6 +9,7 @@ import { BeSQLite } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Point3d, Range3d, YawPitchRollAngles, Point2d, Range2d } from "@bentley/geometry-core/lib/PointVector";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
+import { Base64 } from "js-base64";
 
 /** An iModel database. */
 export class IModel {
@@ -61,10 +62,8 @@ export class IModel {
 /** A two-part id, containing a briefcase id and a local id. */
 export class Id {
   private readonly value?: string;
-
   private static toHex(str: string): number { const v = parseInt(str, 16); return Number.isNaN(v) ? 0 : v; }
   private static isHex(str: string): boolean { return !Number.isNaN(parseInt(str, 16)); }
-
   protected toJSON(): string { return this.value ? this.value : ""; }
 
   public get lo(): number {
@@ -168,9 +167,10 @@ export class Code implements CodeProps {
     this.value = JsonUtils.asString(val.value);
   }
 
-  /** Create an instance of the default code (1,1,null) */
+  /** Create an instance of the default code (1,1,undefined) */
   public static createDefault(): Code { return new Code({ spec: new Id([1, 0]), scope: "1" }); }
   public getValue(): string { return this.value ? this.value : ""; }
+  public equals(other: Code): boolean { return this.spec.equals(other.spec) && this.scope === other.scope && this.value === other.value; }
 }
 
 /** A bounding box aligned to the orientation of a 3d Element */
@@ -209,23 +209,26 @@ export class ElementAlignedBox2d extends Range2d {
 export class GeometryStream {
   public geomStream: ArrayBuffer;
 
+  public constructor(stream: any) { this.geomStream = stream; }
+
   /** return false if this GeometryStream is empty. */
   public hasGeometry(): boolean { return this.geomStream.byteLength !== 0; }
+  public static fromJSON(json?: any): GeometryStream | undefined { return json ? new GeometryStream(Base64.decode(json)) : undefined; }
 }
 
-/** The "placement" of a GeometricElement3d. This includes the origin, orientation, and size (bounding box) of the element.
+/** The placement of a GeometricElement3d. This includes the origin, orientation, and size (bounding box) of the element.
  * All geometry of a GeometricElement are relative to its placement.
  */
 export class Placement3d {
-  public constructor(public origin?: Point3d, public angles?: YawPitchRollAngles, public boundingBox?: ElementAlignedBox3d) { }
+  public constructor(public origin: Point3d, public angles: YawPitchRollAngles, public boundingBox: ElementAlignedBox3d) { }
   public static fromJSON(json?: any): Placement3d {
     json = json ? json : {};
     return new Placement3d(Point3d.fromJSON(json.origin), YawPitchRollAngles.fromJSON(json.angles), ElementAlignedBox3d.fromJSON(json.bbox));
   }
 }
-/** The "placement" of a GeometricElement2d. This includes the origin, orientation, and size (bounding box) of the element. */
+/** The placement of a GeometricElement2d. This includes the origin, orientation, and size (bounding box) of the element. */
 export class Placement2d {
-  public constructor(public origin?: Point2d, public angle?: Angle, public boundingBox?: ElementAlignedBox2d) { }
+  public constructor(public origin: Point2d, public angle: Angle, public boundingBox: ElementAlignedBox2d) { }
   public static fromJSON(json?: any): Placement2d {
     json = json ? json : {};
     return new Placement2d(Point2d.fromJSON(json.origin), Angle.fromJSON(json.angle), ElementAlignedBox2d.fromJSON(json.bbox));

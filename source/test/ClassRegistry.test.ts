@@ -133,7 +133,7 @@ describe("Class Registry", () => {
     assert.equal(obj.properties.federationGuid.primitiveECProperty.extendedType, "BeGuid");
   });
 
-  it("should get metadata for CA class just as well (and we'll see an array-typed property)", async () => {
+  it("should get metadata for CA class just as well (and we'll see a array-typed property)", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const metadataStr: string = await imodel.dgnDb.getECClassMetaData(BisCore.name, "ClassHasHandler");
     assert.isNotNull(metadataStr);

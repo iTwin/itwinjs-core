@@ -19,6 +19,9 @@ export class Elements {
   private _iModel: IModel;
   private _loaded: LRUMap<string, Element>;
 
+  /** get the map of loaded elements */
+  public get loaded() { return this._loaded; }
+
   public constructor(iModel: IModel, maxElements: number = 2000) { this._iModel = iModel; this._loaded = new LRUMap<string, Element>(maxElements); }
 
   /**
