@@ -130,8 +130,8 @@ export class ClassRegistry {
    *  class. This function also ensures that all of the base classes of the ECClass exist and are registered.
    */
   public static async generateClass(schemaName: string, className: string, imodel: IModel): Promise<any> {
-    const ecclassJson = await imodel.dgnDb.getECClassMetaData(schemaName, className);
-    if (null == ecclassJson) {
+    const {error, result: ecclassJson} = await imodel.dgnDb.getECClassMetaData(schemaName, className);
+    if (error || !ecclassJson) {
       return undefined;
     }
     const ecclass: ClassDef = JSON.parse(ecclassJson);

@@ -104,11 +104,10 @@ describe("Class Registry", () => {
 
   it("should get metadata for class", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const metadataStr: string = await imodel.dgnDb.getECClassMetaData(BisCore.name, Element.name);
-    assert.isNotNull(metadataStr);
-    assert.isString(metadataStr);
-    assert.notEqual(metadataStr.length, 0);
-    const obj: any = JSON.parse(metadataStr);
+    const {error, result: metadataStr} = await imodel.dgnDb.getECClassMetaData(BisCore.name, Element.name);
+    assert(!error);
+    assert(metadataStr && metadataStr.length > 0);
+    const obj: any = JSON.parse(metadataStr || "");
     assert.isNotNull(obj);
     assert.isString(obj.name);
     assert.equal(obj.name, Element.name);
@@ -134,11 +133,10 @@ describe("Class Registry", () => {
 
   it("should get metadata for CA class just as well (and we'll see an array-typed property)", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const metadataStr: string = await imodel.dgnDb.getECClassMetaData(BisCore.name, "ClassHasHandler");
-    assert.isNotNull(metadataStr);
-    assert.isString(metadataStr);
-    assert.notEqual(metadataStr.length, 0);
-    const obj: any = JSON.parse(metadataStr);
+    const {error, result: metadataStr} = await imodel.dgnDb.getECClassMetaData(BisCore.name, "ClassHasHandler");
+    assert(!error);
+    assert(metadataStr && metadataStr.length > 0);
+    const obj: any = JSON.parse(metadataStr || "");
     assert.isDefined(obj.properties.restrictions);
     assert.isDefined(obj.properties.restrictions.primitiveArrayECProperty);
     assert.equal(obj.properties.restrictions.primitiveArrayECProperty.type, "string");
