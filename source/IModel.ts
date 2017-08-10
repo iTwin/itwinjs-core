@@ -133,7 +133,7 @@ export class Id {
     if (lo === 0)
       return;
     const hi = Math.trunc(prop[1]);
-    this.value = "0x" + hi.toString(16) + ("0000000000" + lo.toString(16)).substr(-10);
+    this.value = "0x" + hi.toString(16).toLowerCase() + ("0000000000" + lo.toString(16).toLowerCase()).substr(-10);
   }
 
   /** convert this Id to a string */
