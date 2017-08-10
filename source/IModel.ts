@@ -5,7 +5,7 @@
 import { Elements } from "./Elements";
 import { Models } from "./Model";
 import { DgnDb } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
-import { BeSQLite } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Point3d, Range3d, YawPitchRollAngles, Point2d, Range2d } from "@bentley/geometry-core/lib/PointVector";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
@@ -22,12 +22,12 @@ export class IModel {
    * @param mode      Open mode for database
    * @return non-zero error status if the iModel could not be opened
    */
-  public async openDgnDb(fileName: string, mode?: BeSQLite.OpenMode): Promise<BeSQLite.DbResult> {
-    mode = (typeof mode === "number") ? mode : BeSQLite.OpenMode.Readonly;
+  public async openDgnDb(fileName: string, mode?: OpenMode): Promise<DbResult> {
+    mode = (typeof mode === "number") ? mode : OpenMode.Readonly;
     if (!this._db)
       this._db = await new DgnDb();
     return this._db.openDb(fileName, mode)
-      .then(({error}) => error ? error.status : BeSQLite.DbResult.BE_SQLITE_OK);
+      .then(({error}) => error ? error.status : DbResult.BE_SQLITE_OK);
   }
 
   /** Get the Elements of this iModel */
