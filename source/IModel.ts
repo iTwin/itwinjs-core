@@ -27,7 +27,8 @@ export class IModel {
     mode = (typeof mode === "number") ? mode : BeSQLite.OpenMode.Readonly;
     if (!this._db)
       this._db = await new DgnDb();
-    return this._db.openDgnDb(fileName, mode);
+    return this._db.openDb(fileName, mode)
+      .then(({error}) => error ? error.status : BeSQLite.DbResult.BE_SQLITE_OK);
   }
 
   /** Get the Elements of this iModel */
@@ -55,7 +56,8 @@ export class IModel {
    * @throws Error if the statement is invalid
    */
   public executeQuery(ecsql: string): Promise<string> {
-    return this._db.executeQuery(ecsql);
+    return this._db.executeQuery(ecsql)
+      .then(({error, result}) => error ? Promise.reject(error) : Promise.resolve(result || ""));
   }
 }
 

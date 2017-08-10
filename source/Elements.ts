@@ -38,11 +38,9 @@ export class Elements {
     }
 
     // Must go get the element from the iModel. Start by requesting the element's data.
-    const json: string = await this._iModel.dgnDb.getElement(JSON.stringify(opts));
-
-    if (json.length === 0) {
+    const {error, result: json} = await this._iModel.dgnDb.getElement(JSON.stringify(opts));
+    if (error || !json)
       return undefined; // we didn't find an element with the specified identity. That's not an error, just an empty result.
-    }
 
     const props = JSON.parse(json) as ElementProps;
     props.iModel = this._iModel;

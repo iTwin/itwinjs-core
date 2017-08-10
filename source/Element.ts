@@ -57,11 +57,13 @@ export class Element extends ECClass {
   public static getECClassFor(imodel: IModel, schemaName: string, className: string): Promise<ClassMetaData> {
     if ((null == this.ecClass) || !this.hasOwnProperty("ecClass")) {
       const p = new Promise<ClassMetaData>((resolve, reject) => {
-        imodel.dgnDb.getECClassMetaData(schemaName, className).then((mstr: string) => {
-          resolve(this.ecClass = JSON.parse(mstr));
-        }).catch((reason: any) => {
-          reject(reason);
-        });
+        imodel.dgnDb.getECClassMetaData(schemaName, className)
+          .then(({ error, result: mstr }) => {
+            if (error || !mstr)
+              reject(error ? error.message : "");
+            else
+              resolve(this.ecClass = JSON.parse(mstr));
+          });
       });
       return p;
     }
