@@ -98,6 +98,10 @@ export class ClassRegistry {
    *  class. This function also ensures that all of the base classes of the ECClass exist and are registered.
    */
   private static async generateClass(classFullName: string, imodel: IModel): BentleyPromise<DbResult, ClassCtor> {
+
+    if (!imodel.dgnDb)
+      throw new Error("IModel must be open");
+
     const name = classFullName.split(".");
     assert(name.length === 2);
 
