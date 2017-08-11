@@ -13,10 +13,10 @@ export class Schema {
   public static getFullClassName(className: string) { return this.name + "." + className; }
 
   /**
-   * Get the ECClassCtor for the specified class name
+   * Get the ClassCtor for the specified class name
    * @param className The name of the ECClass
    * @param imodel The IModel that contains the class definitions
-   * @return The corresponding ECClassCtor
+   * @return The corresponding ClassCtor
    */
   public static async getClass(className: string, imodel: IModel): Promise<ClassCtor | undefined> {
     return ClassRegistry.getClass({ schema: this.name, name: className }, imodel);

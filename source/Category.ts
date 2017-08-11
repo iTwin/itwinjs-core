@@ -158,9 +158,7 @@ export class SubCategory extends DefinitionElement {
   public getSubCategoryName(): string { return this.code.getValue(); }
   public getSubCategoryId(): Id { return this.id; }
   public getCategoryId(): Id { return this.parent ? this.parent.id : new Id(); }
-  public isDefaultSubCategory(): boolean {
-    return Category.getDefaultSubCategoryId(this.getCategoryId()) === this.getSubCategoryId();
-  }
+  public isDefaultSubCategory(): boolean { return Category.getDefaultSubCategoryId(this.getCategoryId()) === this.getSubCategoryId(); }
 }
 
 /** the rank for a Category */
@@ -174,11 +172,8 @@ export enum Rank {
 /** a Category for a Geometric element */
 export class Category extends DefinitionElement {
   public rank: Rank = Rank.User;
-
   public constructor(opts: ElementProps) { super(opts); }
-  public static getDefaultSubCategoryId(id: Id): Id {
-    return id.isValid() ? new Id([id.lo, id.hi + 1]) : new Id();
-  }
+  public static getDefaultSubCategoryId(id: Id): Id { return id.isValid() ? new Id([id.lo, id.hi + 1]) : new Id(); }
   public myDefaultSubCategoryId(): Id { return Category.getDefaultSubCategoryId(this.id); }
 }
 

@@ -353,7 +353,7 @@ export abstract class ViewDefinition extends DefinitionElement {
    */
   public abstract setRotation(viewRot: RotMatrix): void;
 
-  /**  Get the target point of the view. If there is no camera, Center() is returned. */
+  /**  Get the target point of the view. If there is no camera, center is returned. */
   public getTargetPoint(): Point3d { return this.getCenter(); }
 
   /**  Get the point at the geometric center of the view. */
@@ -479,29 +479,6 @@ export abstract class ViewDefinition extends DefinitionElement {
 
   /** Remove a view detail */
   public removeDetail(name: string) { delete this.getDetails()[name]; }
-
-  // /*bool IsView3d() const { return nullptr != _ToView3d();}
-  // bool IsOrthographicView() const { return nullptr != _ToOrthographicView();}
-  // bool IsSpatialView() const { return nullptr != _ToSpatialView();}
-  // bool IsDrawingView() const { return nullptr != _ToDrawingView();}
-  // bool IsSheetView() const { return nullptr != _ToSheetView();}
-  // ViewDefinition2dCP ToView2d() const { return _ToView2d();}
-  // bool IsTemplateView2d() const { return nullptr != _ToTemplateView2d();}
-  // bool IsTemplateView3d() const { return nullptr != _ToTemplateView3d();}
-  // ViewDefinition3dCP ToView3d() const { return _ToView3d();}
-  // OrthographicViewDefinitionCP ToOrthographicView() const { return _ToOrthographicView();}
-  // SpatialViewDefinitionCP ToSpatialView() const { return _ToSpatialView();}
-  // DrawingViewDefinitionCP ToDrawingView() const { return _ToDrawingView();}
-  // SheetViewDefinitionCP ToSheetView() const { return _ToSheetView();}
-  // TemplateViewDefinition2dCP ToTemplateView2d() const { return _ToTemplateView2d();}
-  // TemplateViewDefinition3dCP ToTemplateView3d() const { return _ToTemplateView3d();}
-  // ViewDefinition3dP ToView3dP() {return const_cast<ViewDefinition3dP>(ToView3d()); }
-  // ViewDefinition2dP ToView2dP() {return const_cast<ViewDefinition2dP>(ToView2d()); }
-  // SpatialViewDefinitionP ToSpatialViewP() {return const_cast<SpatialViewDefinitionP>(ToSpatialView()); }
-  // DrawingViewDefinitionP ToDrawingViewP() {return const_cast<DrawingViewDefinitionP>(ToDrawingView()); }
-  // SheetViewDefinitionP ToSheetViewP() {return const_cast<SheetViewDefinitionP>(ToSheetView()); }
-  // TemplateViewDefinition2dP ToTemplateView2dP() {return const_cast<TemplateViewDefinition2dP>(ToTemplateView2d()); }
-  // TemplateViewDefinition3dP ToTemplateView3dP() {return const_cast<TemplateViewDefinition3dP>(ToTemplateView3d()); }
 
   /** Get the CategorySelector for this ViewDefinition.
    *  @note this method may only be called on a writeable copy of a ViewDefinition.
@@ -713,21 +690,21 @@ export class Camera {
 
 /** Parameters to construct a ViewDefinition3d */
 export interface ViewDefinition3dProps extends ViewDefinitionProps {
-  cameraOn?: any;             // if true, m_camera is valid.
-  origin?: any;               // The lower left back corner of the view frustum.
-  extents?: any;             // The extent of the view frustum.
+  cameraOn?: any;  // if true, m_camera is valid.
+  origin?: any;    // The lower left back corner of the view frustum.
+  extents?: any;   // The extent of the view frustum.
   angles?: any;    // Rotation of the view frustum.
-  camera?: any;                // The camera used for this view.
+  camera?: any;    // The camera used for this view.
   displayStyle?: DisplayStyle3d;
 }
 
 /** Defines a view of 3d models. */
 export abstract class ViewDefinition3d extends ViewDefinition {
-  protected _cameraOn: boolean;    // if true, m_camera is valid.
-  public origin: Point3d;    // The lower left back corner of the view frustum.
-  public extents: Vector3d; // The extent of the view frustum.
-  public rotation: RotMatrix; // Rotation of the view frustum.
-  public camera: Camera;  // The camera used for this view.
+  protected _cameraOn: boolean;  // if true, m_camera is valid.
+  public origin: Point3d;        // The lower left back corner of the view frustum.
+  public extents: Vector3d;      // The extent of the view frustum.
+  public rotation: RotMatrix;    // Rotation of the view frustum.
+  public camera: Camera;         // The camera used for this view.
 
   // protected setupFromFrustum(Frustum const& inFrustum: Frustum): ViewportStatus;
   // protected getTargetPoint(): Point3d;
@@ -741,6 +718,7 @@ export abstract class ViewDefinition3d extends ViewDefinition {
     const maxTransformRowRatio = 1.0E5;
     const minXYComponent = Math.min(Math.abs(zVec.x), Math.abs(zVec.y));
     const maxDepthRatio = (0.0 === minXYComponent) ? depthRatioLimit : Math.min((maxTransformRowRatio / minXYComponent), depthRatioLimit);
+
     return Math.max(delta.x, delta.y) * maxDepthRatio;
   }
 
@@ -755,8 +733,8 @@ export abstract class ViewDefinition3d extends ViewDefinition {
   public get cameraOn() { return this._cameraOn; }
 
   private static minimumFrontDistance() { return 300 * Constant.oneMillimeter; }
-  // void VerifyFocusPlane();//!< private
   public isEyePointAbove(elevation: number): boolean { return !this.cameraOn ? (this.getZVector().z > 0) : (this.getEyePoint().z > elevation); }
+  // void VerifyFocusPlane();//!< private
   // DGNPLATFORM_EXPORT DPoint3d ComputeEyePoint(Frustum const& frust) const ;//!< private
 
   public constructor(props: ViewDefinition3dProps) {
@@ -1002,7 +980,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
 export class OrthographicViewDefinition extends SpatialViewDefinition {
   constructor(props: SpatialViewDefinitionProps) { super(props); }
 
-  //   DGNPLATFORM_EXPORT ViewControllerPtr _SupplyController() const override;
+  // DGNPLATFORM_EXPORT ViewControllerPtr _SupplyController() const override;
   // tslint:disable-next-line:no-empty
   public enableCamera(): void { }
   public supportsCamera(): boolean { return false; }
