@@ -5,6 +5,9 @@ import { Element, ElementProps } from "./Element";
 import { Code, IModel, Id } from "./IModel";
 import { ClassRegistry } from "./ClassRegistry";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
+import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
+import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 /** Parameters to specify what element to load. */
 export interface ElementLoadParams {
@@ -29,28 +32,33 @@ export class Elements {
    * @param opts  Either the id or the code of the element
    * @returns The Element or undefined if the Id is not found
    */
-  public async getElement(opts: ElementLoadParams): Promise<Element | undefined> {
+  public async getElement(opts: ElementLoadParams): BentleyPromise<DbResult, Element|undefined> {
     // first see if the element is already in the local cache.
     if (opts.id) {
       const loaded = this._loaded.get(opts.id.toString());
       if (loaded)
-        return loaded;
+        return {result: loaded};
     }
 
     // Must go get the element from the iModel. Start by requesting the element's data.
-    const {error, result: json} = await this._iModel.dgnDb.getElement(JSON.stringify(opts));
-    if (error || !json)
-      return undefined; // we didn't find an element with the specified identity. That's not an error, just an empty result.
+    const getObj = await this._iModel.dgnDb.getElement(JSON.stringify(opts));
+    if (getObj.error || !getObj.result) { // todo: Shouldn't getObj.result always be non-empty if there is no error?
+      return { result: undefined }; // we didn't find an element with the specified identity. That's not an error, just an empty result.
+    }
+    const json = getObj.result;
 
     const props = JSON.parse(json) as ElementProps;
     props.iModel = this._iModel;
 
-    const el = await ClassRegistry.createInstance(props);
-    if (!(el instanceof Element))
-      return undefined;
+    const elObj = await ClassRegistry.createInstance(props);
+    if (elObj.error)
+      return {error: elObj.error};
+
+    const el = elObj.result as Element;
+    assert(el instanceof Element);
 
     // We have created the element. Cache it before we return it.
     this._loaded.set(el.id.toString(), el);
-    return el;
+    return {result: el};
   }
 }

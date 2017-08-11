@@ -5,6 +5,9 @@
 import { ClassMetaData, ClassCtor, ECClass, ClassFullName, ClassProps } from "./ECClass";
 import { IModel } from "./IModel";
 import { Schema, Schemas } from "./Schema";
+import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 /** The mapping between a class name (schema.class) and its constructor function  */
 export class ClassRegistry {
@@ -19,16 +22,20 @@ export class ClassRegistry {
   }
 
   /** create an instance of a class from it properties */
-  public static async createInstance(props: ClassProps): Promise<ECClass | undefined> {
-    if (!props.classFullName || !props.iModel)
-      return undefined;
+  public static async createInstance(props: ClassProps): BentleyPromise<DbResult, ECClass> {
+    if (!props.className || !props.schemaName || !props.iModel)
+      return { error: { status: DbResult.BE_SQLITE_ERROR, message: "Invalid input props" } };
 
-    props.classFullName = props.classFullName.toLowerCase();
-    let ctor = ClassRegistry.ecClasses.get(props.classFullName);
-    if (!ctor)
-      ctor = await ClassRegistry.generateClass(props.classFullName, props.iModel); // class doesn't exist, create it
+    let ctor = ClassRegistry.ecClasses.get(ClassRegistry.getKeyFromProps(props));
+    if (!ctor) {
+      const cls = await ClassRegistry.generateClass(props.schemaName, props.className, props.iModel);
+      if (cls.error)
+        return {error: cls.error};
+      ctor = cls.result!;
+      assert(!!ctor);
+    }
 
-    return ctor ? new ctor(props) : undefined;
+    return {result: new ctor(props)};
   }
 
   public static registerSchema(schema: Schema) { Schemas.registerSchema(schema); }
@@ -98,26 +105,29 @@ export class ClassRegistry {
   /** This function fetches the specified ECClass from the imodel, generates a JS class for it, and registers the generated
    *  class. This function also ensures that all of the base classes of the ECClass exist and are registered.
    */
-  private static async generateClass(classFullName: string, imodel: IModel): Promise<ClassCtor | undefined> {
-    const name = classFullName.split(".");
-    const { error, result: ecclassJson } = await imodel.dgnDb.getECClassMetaData(name[0], name[1]);
-    if (error || !ecclassJson)
-      return undefined;
+  private static async generateClass(schemaName: string, className: string, imodel: IModel): BentleyPromise<DbResult, ClassCtor> {
+    const ret = await imodel.dgnDb.getECClassMetaData(schemaName, className);
+    if (ret.error)
+      return { error: ret.error };
 
-    const ecclass: ClassMetaData = JSON.parse(ecclassJson);
+    const ecClassJson = ret.result!;
+    assert(!!ecClassJson);
+
+    const ecclass: ClassMetaData = JSON.parse(ecClassJson);
 
     // Make sure that we have all base classes registered.
     // This recurses. I have to know that the super class is defined and registered before defining a derived class.
     // Therefore, I must await getRegisteredClass.
     if (ecclass.baseClasses.length !== 0) {
       for (const base of ecclass.baseClasses) {
-        if (!await ClassRegistry.getClass(base, imodel))
-          return undefined;
+        const {error} = await ClassRegistry.getClass(base, imodel);
+        if (error)
+          return {error};
       }
     }
 
     // Now we can generate the class from the classDef.
-    return ClassRegistry.generateClassForECClass(ecclass);
+    return {result: ClassRegistry.generateClassForECClass(ecclass)};
   }
 
   /** This function generates a JS class for the specified ECClass and registers it. It is up to the caller
@@ -130,21 +140,27 @@ export class ClassRegistry {
     // tslint:disable-next-line:no-eval NOTE: eval is OK here, because I generated the expression myself, and I know it's safe.
     eval(jsDef);
 
-    return ClassRegistry.ecClasses.get(ClassRegistry.getKeyFromName(ecclass))!;
+    const ctor = ClassRegistry.ecClasses.get(ClassRegistry.getKeyFromName(ecclass))!;
+    assert(!!ctor);
+    return ctor;
   }
 
   /**
    * Get the class for the specified ECClass.
    * @param fullName The name of the ECClass
    * @param imodel The IModel that contains the class definitions
-   * @return The corresponding class
+   * @return A promise that resolves to an object containing a result property set to the ECClass.
+   * In case of errors, the error property is setup in the resolved object.
    */
-  public static async getClass(fullName: ClassFullName, imodel: IModel): Promise<ClassCtor | undefined> {
+  public static async getClass(fullName: ClassFullName, imodel: IModel): BentleyPromise<DbResult, ClassCtor> {
     const key = ClassRegistry.getKeyFromName(fullName);
     if (!ClassRegistry.ecClasses.has(key)) {
       return ClassRegistry.generateClass(key, imodel);
     }
-    return ClassRegistry.ecClasses.get(key);
+    const ctor = ClassRegistry.ecClasses.get(key);
+    assert(!!ctor);
+
+    return {result: ctor};
   }
 
   /**

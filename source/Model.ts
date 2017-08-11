@@ -6,6 +6,9 @@ import { ECClass, ClassProps } from "./ECClass";
 import { ClassRegistry } from "./ClassRegistry";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
+import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
+import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 export interface ModelProps extends ClassProps {
   id: Id | string;
@@ -60,27 +63,32 @@ export class Models {
    * @param opts  Either the id or the code of the model
    * @returns The Model or undefined if the Id is not found
    */
-  public async getModel(opts: ModelLoadParams): Promise<Model | undefined> {
+  public async getModel(opts: ModelLoadParams): BentleyPromise<DbResult, Model|undefined> {
     // first see if the model is already in the local cache.
     if (opts.id) {
       const loaded = this._loaded.get(opts.id.toString());
       if (loaded)
-        return loaded;
+        return {result: loaded};
     }
 
     // Must go get the model from the iModel. Start by requesting the model's data.
-    const {error, result: json} = await this._iModel.dgnDb.getModel(JSON.stringify(opts));
-    if (error || !json)
-      return undefined; // we didn't find a model with the specified identity. That's not an error, just an empty result.
+    const getObj = await this._iModel.dgnDb.getModel(JSON.stringify(opts));
+    if (getObj.error || !getObj.result) { // todo: Shouldn't getObj.result always be non-empty if there is no error?
+      return { result: undefined }; // we didn't find an element with the specified identity. That's not an error, just an empty result.
+    }
+    const json = getObj.result;
 
     const props = JSON.parse(json) as ModelProps;
     props.iModel = this._iModel;
 
-    const model = await ClassRegistry.createInstance(props);
-    if (!(model instanceof Model))
-      return undefined;
+    const modelObj = await ClassRegistry.createInstance(props);
+    if (modelObj.error)
+      return {error: modelObj.error};
+
+    const model = modelObj.result as Model;
+    assert(modelObj.result instanceof Model);
 
     this._loaded.set(model.id.toString(), model); // We have created the model. Cache it before we return it.
-    return model;
+    return {result: model};
   }
 }

@@ -6,12 +6,13 @@ import { Elements } from "./Elements";
 import { ClassMetaData } from "./ECClass";
 import { Models } from "./Model";
 import { DgnDb } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
-import { BeSQLite } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Point3d, Vector3d, Range3d, YawPitchRollAngles, Point2d, Range2d, Transform, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Base64 } from "js-base64";
+import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
 
 /** The mapping between a class name and its the metadata for that class  */
 export class ClassMetaDataRegistry {
@@ -20,7 +21,7 @@ export class ClassMetaDataRegistry {
   private static getKey(schemaName: string, className: string) { return (schemaName + "." + className).toLowerCase(); }
 
   /** Get the specified ECClass metadata */
-  public async get(schemaName: string, className: string): Promise<ClassMetaData | undefined> {
+  public async get(schemaName: string, className: string): Promise<ClassMetaData|undefined> {
     const key: string = ClassMetaDataRegistry.getKey(schemaName, className);
     let mdata = this.reg.get(key);
     if (null !== mdata && undefined !== mdata) {
@@ -52,11 +53,11 @@ export class IModel {
    * @param mode      Open mode for database
    * @return non-zero error status if the iModel could not be opened
    */
-  public async openDgnDb(fileName: string, mode?: BeSQLite.OpenMode): Promise<BeSQLite.DbResult> {
-    mode = (typeof mode === "number") ? mode : BeSQLite.OpenMode.Readonly;
+  public async openDgnDb(fileName: string, mode?: OpenMode): BentleyPromise<DbResult, void> {
+    mode = (typeof mode === "number") ? mode : OpenMode.Readonly;
     if (!this._db)
       this._db = await new DgnDb();
-    return this._db.openDb(fileName, mode).then(({ error }) => error ? error.status : BeSQLite.DbResult.BE_SQLITE_OK);
+    return this._db.openDb(fileName, mode);
   }
 
   /** Get the ClassMetaDataRegistry for this iModel */
@@ -90,9 +91,8 @@ export class IModel {
    * @return all rows in JSON syntax or the empty string if nothing was selected
    * @throws Error if the statement is invalid
    */
-  public executeQuery(ecsql: string): Promise<string> {
-    return this._db.executeQuery(ecsql)
-      .then(({ error, result }) => error ? Promise.reject(error) : Promise.resolve(result || ""));
+  public executeQuery(ecsql: string): BentleyPromise<DbResult, string> {
+    return this._db.executeQuery(ecsql);
   }
 }
 
