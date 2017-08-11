@@ -39,7 +39,7 @@ describe("Class Registry", () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const factory = ClassRegistry.generateClassForECClass(testEcClass);
     assert.isFunction(factory);
-    const obj = await ClassRegistry.createInstance({schemaName: testEcClass.schema, className: testEcClass.name, iModel: imodel});
+    const obj = await ClassRegistry.createInstance({classFullName: testEcClass.schema + "." + testEcClass.name, iModel: imodel});
     assert.isTrue(obj != null);
     assert.isObject(obj);
     const propsfound: Set<string> = new Set<string>();

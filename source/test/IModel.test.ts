@@ -111,8 +111,7 @@ describe("ElementId", () => {
     const imodel1 = new IModel();
     const props: ElementProps = {
       iModel: imodel1,
-      schemaName: BisCore.name,
-      className: ModelSelector.name,
+      classFullName: BisCore.name + "." + ModelSelector.name,
       model: new Id([1, 1]),
       code: Code.createDefault(),
       id: new Id(),

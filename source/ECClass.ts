@@ -88,8 +88,7 @@ export interface ClassMetaData {
 /** The properties of any ECCLass. Every instance has at least the iModel and the name of the schema and class that defines it. */
 export interface ClassProps {
   iModel: IModel;
-  schemaName: string;
-  className: string;
+  classFullName: string;
 }
 
 export interface ClassCtor extends FunctionConstructor {

@@ -18,18 +18,15 @@ export class ClassRegistry {
     return ClassRegistry.getKey(fullName.schema, fullName.name);
   }
 
-  private static getKeyFromProps(inst: ClassProps) {
-    return ClassRegistry.getKey(inst.schemaName, inst.className);
-  }
-
   /** create an instance of a class from it properties */
   public static async createInstance(props: ClassProps): Promise<ECClass | undefined> {
-    if (!props.className || !props.schemaName || !props.iModel)
+    if (!props.classFullName || !props.iModel)
       return undefined;
 
-    let ctor = ClassRegistry.ecClasses.get(ClassRegistry.getKeyFromProps(props));
+    props.classFullName = props.classFullName.toLowerCase();
+    let ctor = ClassRegistry.ecClasses.get(props.classFullName);
     if (!ctor)
-      ctor = await ClassRegistry.generateClass(props.schemaName, props.className, props.iModel); // class doesn't exist, create it
+      ctor = await ClassRegistry.generateClass(props.classFullName, props.iModel); // class doesn't exist, create it
 
     return ctor ? new ctor(props) : undefined;
   }
@@ -101,8 +98,9 @@ export class ClassRegistry {
   /** This function fetches the specified ECClass from the imodel, generates a JS class for it, and registers the generated
    *  class. This function also ensures that all of the base classes of the ECClass exist and are registered.
    */
-  private static async generateClass(schemaName: string, className: string, imodel: IModel): Promise<ClassCtor | undefined> {
-    const {error, result: ecclassJson} = await imodel.dgnDb.getECClassMetaData(schemaName, className);
+  private static async generateClass(classFullName: string, imodel: IModel): Promise<ClassCtor | undefined> {
+    const name = classFullName.split(".");
+    const { error, result: ecclassJson } = await imodel.dgnDb.getECClassMetaData(name[0], name[1]);
     if (error || !ecclassJson)
       return undefined;
 
@@ -144,7 +142,7 @@ export class ClassRegistry {
   public static async getClass(fullName: ClassFullName, imodel: IModel): Promise<ClassCtor | undefined> {
     const key = ClassRegistry.getKeyFromName(fullName);
     if (!ClassRegistry.ecClasses.has(key)) {
-      return ClassRegistry.generateClass(fullName.schema, fullName.name, imodel);
+      return ClassRegistry.generateClass(key, imodel);
     }
     return ClassRegistry.ecClasses.get(key);
   }
