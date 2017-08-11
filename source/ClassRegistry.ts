@@ -23,19 +23,20 @@ export class ClassRegistry {
 
   /** create an instance of a class from it properties */
   public static async createInstance(props: ClassProps): BentleyPromise<DbResult, ECClass> {
-    if (!props.className || !props.schemaName || !props.iModel)
+    if (!props.classFullName || !props.iModel)
       return { error: { status: DbResult.BE_SQLITE_ERROR, message: "Invalid input props" } };
 
-    let ctor = ClassRegistry.ecClasses.get(ClassRegistry.getKeyFromProps(props));
+    props.classFullName = props.classFullName.toLowerCase();
+    let ctor = ClassRegistry.ecClasses.get(props.classFullName);
     if (!ctor) {
-      const cls = await ClassRegistry.generateClass(props.schemaName, props.className, props.iModel);
+      const cls = await ClassRegistry.generateClass(props.classFullName, props.iModel);
       if (cls.error)
-        return {error: cls.error};
+        return { error: cls.error };
       ctor = cls.result!;
       assert(!!ctor);
     }
 
-    return {result: new ctor(props)};
+    return { result: new ctor(props) };
   }
 
   public static registerSchema(schema: Schema) { Schemas.registerSchema(schema); }
@@ -96,12 +97,13 @@ export class ClassRegistry {
   /** This function fetches the specified ECClass from the imodel, generates a JS class for it, and registers the generated
    *  class. This function also ensures that all of the base classes of the ECClass exist and are registered.
    */
-  private static async generateClass(schemaName: string, className: string, imodel: IModel): Promise<ClassCtor | undefined> {
-    if (!imodel.dgnDb)
-      throw new Error("IModel must be open");
-    const {error, result: ecclassJson} = await imodel.dgnDb.getECClassMetaData(schemaName, className);
-    if (error || !ecclassJson)
-      return undefined;
+  private static async generateClass(classFullName: string, imodel: IModel): BentleyPromise<DbResult, ClassCtor> {
+    const name = classFullName.split(".");
+    assert(name.length === 2);
+
+    const ret = await imodel.dgnDb.getECClassMetaData(name[0], name[1]);
+    if (ret.error)
+      return { error: ret.error };
 
     const ecClassJson = ret.result!;
     assert(!!ecClassJson);
@@ -111,16 +113,16 @@ export class ClassRegistry {
     // Make sure that we have all base classes registered.
     // This recurses. I have to know that the super class is defined and registered before defining a derived class.
     // Therefore, I must await getRegisteredClass.
-    if (ecclass.baseClasses.length !== 0) {
+    if (ecclass.baseClasses && ecclass.baseClasses.length !== 0) {
       for (const base of ecclass.baseClasses) {
-        const {error} = await ClassRegistry.getClass(base, imodel);
+        const { error } = await ClassRegistry.getClass(base, imodel);
         if (error)
-          return {error};
+          return { error };
       }
     }
 
     // Now we can generate the class from the classDef.
-    return {result: ClassRegistry.generateClassForECClass(ecclass)};
+    return { result: ClassRegistry.generateClassForECClass(ecclass) };
   }
 
   /** This function generates a JS class for the specified ECClass and registers it. It is up to the caller
@@ -153,7 +155,7 @@ export class ClassRegistry {
     const ctor = ClassRegistry.ecClasses.get(key);
     assert(!!ctor);
 
-    return {result: ctor};
+    return { result: ctor };
   }
 
   /**
