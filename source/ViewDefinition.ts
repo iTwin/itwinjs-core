@@ -576,11 +576,11 @@ export abstract class ViewDefinition extends DefinitionElement {
 //     m_bottom = LimitMargin(bottom);
 //   }
 
-//   double Left() const   { return m_left;}
+// double Left() const   { return m_left;}
 // double Top() const    { return m_top;}
 // double Right() const  { return m_right;}
 // double Bottom() const { return m_bottom;}
-//     };
+// };
 
 // //! Change the volume that this view displays, keeping its current rotation.
 // //! @param[in] worldVolume The new volume, in world-coordinates, for the view. The resulting view will show all of worldVolume, by fitting a
