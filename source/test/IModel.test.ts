@@ -26,8 +26,8 @@ describe("iModel", () => {
 
   it("should get ECClass metadata for various classes", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const elementECClass = await BisCore.getClass(Element.name, imodel);
-    const categoryECClass = await BisCore.getClass(Category.name, imodel);
+    const {result: elementECClass} = await BisCore.getClass(Element.name, imodel);
+    const {result: categoryECClass} = await BisCore.getClass(Category.name, imodel);
     assert.equal(elementECClass!.name, "Element");
     assert.equal(categoryECClass!.name, "Category");
   });
@@ -41,18 +41,18 @@ describe("Elements", async () => {
     const elements: Elements = imodel.elements;
     assert(elements);
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
-    const el = await elements.getElement({ code: code1 });
+    const {result: el} = await elements.getElement({ code: code1 });
     assert(el != null);
-    const el2 = await elements.getElement({ id: "0x34" });
+    const {result: el2} = await elements.getElement({ id: "0x34" });
     assert(el2 != null);
     const badCode = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
-    const bad = await elements.getElement({ code: badCode });
+    const {result: bad} = await elements.getElement({ code: badCode });
     assert(bad === undefined);
-    const subcat = await elements.getElement({ id: "0x2e" });
+    const {result: subcat} = await elements.getElement({ id: "0x2e" });
     assert(subcat instanceof SubCategory);
-    const cat = await elements.getElement({ id: (subcat as SubCategory).getCategoryId() });
+    const {result: cat} = await elements.getElement({ id: (subcat as SubCategory).getCategoryId() });
     assert(cat instanceof Category);
-    const phys = await elements.getElement({ id: "0x38", noGeometry: false });
+    const {result: phys} = await elements.getElement({ id: "0x38", noGeometry: false });
     assert(phys instanceof GeometricElement3d);
   });
 });
@@ -64,13 +64,13 @@ describe("Models", async () => {
     assert(imodel);
     const models: Models = imodel.models;
     assert(models);
-    const model2 = await models.getModel({ id: "0x1c" });
+    const {result: model2} = await models.getModel({ id: "0x1c" });
     assert(model2 != null);
-    let model = await models.getModel({ id: "0x1" });
+    let {result: model} = await models.getModel({ id: "0x1" });
     assert(model != null);
     const code1 = new Code({ spec: "0x1d", scope: "0x1d", value: "A" });
-    model = await models.getModel({ code: code1 });
-    const geomModel = await ClassRegistry.getClass({ name: "PhysicalModel", schema: "BisCore" }, imodel);
+    ({result: model} = await models.getModel({ code: code1 }));
+    const {result: geomModel} = await ClassRegistry.getClass({ name: "PhysicalModel", schema: "BisCore" }, imodel);
     assert(model instanceof geomModel!);
     assert(model != null);
   });
@@ -118,7 +118,8 @@ describe("ElementId", () => {
       id: new Id(),
     };
 
-    const selector1 = await ClassRegistry.createInstance(props) as ModelSelector;
+    const modelObj = await ClassRegistry.createInstance(props);
+    const selector1 = modelObj.result as ModelSelector;
     assert(selector1 !== undefined);
     if (selector1) {
       selector1.addModel(new Id([2, 1]));
@@ -150,9 +151,9 @@ describe("Query", () => {
 
   it("should produce an array of rows", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const allrowsdata = await imodel.executeQuery("SELECT * FROM " + Category.sqlName);
-    assert.isNotNull(allrowsdata);
-    const rows: any = JSON.parse(allrowsdata);
+    const {result: allrowsdata} = await imodel.executeQuery("SELECT * FROM " + Category.sqlName);
+    assert(allrowsdata);
+    const rows: any = JSON.parse(allrowsdata!);
     assert.isArray(rows);
     assert.notEqual(rows.length, 0);
     assert.notEqual(rows[0].ecinstanceid, "");
