@@ -92,8 +92,7 @@ export interface ClassProps {
   [propName: string]: any;
 
   iModel: IModel;
-  schemaName: string;
-  className: string;
+  classFullName: string;
 }
 
 export interface ClassCtor extends FunctionConstructor {

@@ -24,7 +24,7 @@ export interface ElementProps extends ClassProps {
   jsonProperties?: any;
 }
 
-/** An element within an iModel */
+/** An element within an iModel. */
 export class Element extends ECClass {
   public id: Id;
   public model: Id;
@@ -34,7 +34,7 @@ export class Element extends ECClass {
   public userLabel?: string;
   public jsonProperties: any;
 
-  /** constructor for Element */
+  /** constructor for Element. */
   constructor(props: ElementProps) {
     super(props);
     this.id = new Id(props.id);

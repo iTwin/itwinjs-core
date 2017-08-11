@@ -4,6 +4,8 @@
 import { IModel } from "./IModel";
 import { ClassCtor } from "./ECClass";
 import { ClassRegistry } from "./ClassRegistry";
+import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
+import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 
 /** Base class for all schema classes. */
 export class Schema {
@@ -13,12 +15,12 @@ export class Schema {
   public static getFullClassName(className: string) { return this.name + "." + className; }
 
   /**
-   * Get the ECClassCtor for the specified class name
+   * Get the ClassCtor for the specified class name
    * @param className The name of the ECClass
    * @param imodel The IModel that contains the class definitions
-   * @return The corresponding ECClassCtor
+   * @return The corresponding ClassCtor
    */
-  public static async getClass(className: string, imodel: IModel): Promise<ClassCtor | undefined> {
+  public static async getClass(className: string, imodel: IModel): BentleyPromise<DbResult, ClassCtor> {
     return ClassRegistry.getClass({ schema: this.name, name: className }, imodel);
   }
 }
