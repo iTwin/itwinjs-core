@@ -3,9 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Element } from "../Element";
 import { ClassMetaData, NavigationECProperty, PrimitiveECProperty } from "../ECClass";
-import { ClassRegistry } from "../ClassRegistry";
 import { Code, IModel } from "../IModel";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Elements } from "../Elements";
@@ -15,41 +13,7 @@ import { BisCore } from "../BisCore";
 // First, register any domains that will be used in the tests.
 BisCore.registerSchema();
 
-// Fake ECClass metadata
-const testEcClass: ClassMetaData = {
-  name: "Class1",
-  schema: "Schema1",
-  baseClasses: [],
-  customAttributes: [],
-  properties: {
-    prop1: {
-      customAttributes: [],
-      primitiveECProperty: {type: "string"},
-    },
-    prop2: {
-      customAttributes: [],
-      navigationECProperty: {type: "long", direction: "forward", relationshipClass: {name: "foo", schema: "bar"}},
-    },
-  },
-};
-
 describe("Class Registry", () => {
-
-  it("should generate a Js class def from ECClass metadata", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const factory = ClassRegistry.generateClassForECClass(testEcClass);
-    assert.isFunction(factory);
-    const obj = await ClassRegistry.createInstance({schemaName: testEcClass.schema, className: testEcClass.name, iModel: imodel});
-    assert.isTrue(obj != null);
-    assert.isObject(obj);
-    const propsfound: Set<string> = new Set<string>();
-    for (const propname of Object.getOwnPropertyNames(obj)) {
-      propsfound.add(propname);
-    }
-    assert.equal(propsfound.size, 2);
-    assert.isTrue(propsfound.has("prop1"));
-    assert.isTrue(propsfound.has("prop2"));
-  });
 
   it("should verify the ECClass metadata of known element subclasses", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
@@ -108,47 +72,6 @@ describe("Class Registry", () => {
     }
   });
 
-  it("should get metadata for class", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const {error, result: metadataStr} = await imodel.dgnDb.getECClassMetaData(BisCore.name, Element.name);
-    assert(!error);
-    assert(metadataStr && metadataStr.length > 0);
-    const obj: any = JSON.parse(metadataStr || "");
-    assert.isNotNull(obj);
-    assert.isString(obj.name);
-    assert.equal(obj.name, Element.name);
-    assert.equal(obj.schema, BisCore.name);
-    assert.isArray(obj.baseClasses);
-    assert.equal(obj.baseClasses.length, 0);
-
-    assert.isArray(obj.customAttributes);
-    let foundClassHasHandler = false;
-    let foundClassHasCurrentTimeStampProperty = false;
-    for (const ca of obj.customAttributes) {
-      if (ca.ecclass.name === "ClassHasHandler")
-        foundClassHasHandler = true;
-      else if (ca.ecclass.name === "ClassHasCurrentTimeStampProperty")
-        foundClassHasCurrentTimeStampProperty = true;
-    }
-    assert.isTrue(foundClassHasHandler);
-    assert.isTrue(foundClassHasCurrentTimeStampProperty);
-    assert.isDefined(obj.properties.federationGuid);
-    assert.isDefined(obj.properties.federationGuid.primitiveECProperty);
-    assert.equal(obj.properties.federationGuid.primitiveECProperty.type, "binary");
-    assert.equal(obj.properties.federationGuid.primitiveECProperty.extendedType, "BeGuid");
-  });
-
-  it("should get metadata for CA class just as well (and we'll see a array-typed property)", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const {error, result: metadataStr} = await imodel.dgnDb.getECClassMetaData(BisCore.name, "ClassHasHandler");
-    assert(!error);
-    assert(metadataStr && metadataStr.length > 0);
-    const obj: any = JSON.parse(metadataStr || "");
-    assert.isDefined(obj.properties.restrictions);
-    assert.isDefined(obj.properties.restrictions.primitiveArrayECProperty);
-    assert.equal(obj.properties.restrictions.primitiveArrayECProperty.type, "string");
-    assert.equal(obj.properties.restrictions.primitiveArrayECProperty.minOccurs, 0);
-  });
 });
 
 class Base {

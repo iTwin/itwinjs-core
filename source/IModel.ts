@@ -25,22 +25,25 @@ export class ClassMetaDataRegistry {
   }
 
   /** Get the specified ECClass metadata */
-  public async get(schemaName: string, className: string): Promise<ClassMetaData | undefined> {
+  public get(schemaName: string, className: string): ClassMetaData | undefined {
     const key: string = ClassMetaDataRegistry.getKey(schemaName, className);
     let mdata = this.reg.get(key);
     if (null !== mdata && undefined !== mdata) {
-      return Promise.resolve(mdata);
+      return mdata;
     }
 
-    const { error, result: mstr } = await this.imodel.dgnDb.getECClassMetaData(schemaName, className);
+    if (!this.imodel.dgnDb)
+      throw new Error("IModel must be open");
+
+    const { error, result: mstr } = this.imodel.dgnDb.getECClassMetaDataSync(schemaName, className);
     if (error || !mstr)
-      return Promise.resolve(undefined);
+      return undefined;
 
     mdata = JSON.parse(mstr) as ClassMetaData | undefined;
     if (undefined === mdata)
-      return Promise.resolve(undefined);
+      return undefined;
     this.reg.set(key, mdata);
-    return Promise.resolve(mdata);
+    return mdata;
   }
 }
 
@@ -52,7 +55,6 @@ export class IModel {
   private _classMetaDataRegistry: ClassMetaDataRegistry;
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
 
-
   /** Open the iModel
    * @param fileName  The name of the iModel
    * @param mode      Open mode for database
@@ -61,7 +63,7 @@ export class IModel {
   public async openDgnDb(fileName: string, mode?: BeSQLite.OpenMode): Promise<BeSQLite.DbResult> {
     mode = (typeof mode === "number") ? mode : BeSQLite.OpenMode.Readonly;
     if (!this._db)
-      this._db = await new DgnDb();
+      this._db = new DgnDb();
     return this._db.openDb(fileName, mode)
       .then(({error}) => error ? error.status : BeSQLite.DbResult.BE_SQLITE_OK);
   }

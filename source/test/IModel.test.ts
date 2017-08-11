@@ -108,7 +108,7 @@ describe("ElementId", () => {
   });
 
   it("Model Selectors should hold models", async () => {
-    const imodel1 = new IModel();
+    const imodel1: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const props: ElementProps = {
       iModel: imodel1,
       schemaName: BisCore.name,
