@@ -23,7 +23,6 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "^1.0.9",
     "@bentley/geometry-core": "^1.0.4",
     "@bentley/imodeljs-dgnplatform": "^1.0.22",
     "js-base64": "^2.1.9"

@@ -21,7 +21,6 @@ export interface ModelProps extends ClassProps {
 
 /** A Model within an iModel */
 export class Model extends ECClass {
-
   public id: Id;
   public modeledElement: Id;
   public parentModel: Id;
