@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { Code, IModel, Id } from "../IModel";
 import { ColorDef } from "../Render";
-import { ElementProps, Element, GeometricElement3d, Subject } from "../Element";
+import { ElementProps, Element, GeometricElement3d, InformationPartitionElement, Subject } from "../Element";
 import { Models } from "../Model";
 import { Category, SubCategory } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
@@ -63,15 +63,20 @@ describe("Elements", async () => {
     assert.exists(rootSubject);
     assert.isTrue(rootSubject instanceof Subject);
     assert.isAtLeast(rootSubject!.code.getValue().length, 1);
+    const { result: subModel } = await rootSubject!.getSubModel();
+    assert.isUndefined(subModel, "Root subject should not have a subModel");
 
     const childIds: Id[] = await rootSubject!.queryChildren();
     assert.isAtLeast(childIds.length, 1);
-    for (const childId of childIds)
-      {
+    for (const childId of childIds) {
       const { result: childElement } = await imodel.elements.getElement({ id: childId });
       assert.exists(childElement);
       assert.isTrue(childElement instanceof Element);
+      if (childElement instanceof InformationPartitionElement) {
+        const { result: childSubModel } = await childElement.getSubModel();
+        assert.exists(childSubModel, "InformationPartitionElements should have a subModel");
       }
+    }
   });
 });
 
