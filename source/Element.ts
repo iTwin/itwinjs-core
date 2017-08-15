@@ -3,7 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Code, CodeProps, Id, GeometryStream, Placement3d, Placement2d } from "./IModel";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
+import { RunsIn, Tier } from "@bentley/bentleyjs-core/lib/tiering";
 import { ECClass, ClassMetaData, ClassProps } from "./ECClass";
 
 /** The Id and relationship class of an Element that is related to another Element */
@@ -52,6 +54,20 @@ export class Element extends ECClass {
   public getUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = {}; return this.jsonProperties.UserProps; }
   public setUserProperties(nameSpace: string, value: any) { this.getUserProperties()[nameSpace] = value; }
   public removeUserProperties(nameSpace: string) { delete this.getUserProperties()[nameSpace]; }
+
+  /** Query for the child elements of this element. */
+  @RunsIn(Tier.Services)
+  public async queryChildren(): Promise<Id[]> {
+    const { error, result: rows } = await this.iModel.executeQuery("SELECT ECInstanceId FROM " + Element.sqlName + " WHERE Parent.Id=" + this.id.toString()); // WIP: need to bind!
+    if (error || !rows) {
+      assert(false);
+      return Promise.resolve([]);
+    }
+
+    const childIds: Id[] = [];
+    JSON.parse(rows).forEach((row: any) => childIds.push(new Id("0x" + row.eCInstanceId.toString(16)))); // WIP: executeQuery should return eCInstanceId as a string
+    return Promise.resolve(childIds);
+  }
 }
 
 /** Properties of a GeometricElement */

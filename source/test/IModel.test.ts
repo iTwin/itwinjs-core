@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { Code, IModel, Id } from "../IModel";
 import { ColorDef } from "../Render";
-import { ElementProps, Element, GeometricElement3d } from "../Element";
+import { ElementProps, Element, GeometricElement3d, Subject } from "../Element";
 import { Models } from "../Model";
 import { Category, SubCategory } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
@@ -54,6 +54,24 @@ describe("Elements", async () => {
     assert(cat instanceof Category);
     const {result: phys} = await elements.getElement({ id: "0x38", noGeometry: false });
     assert(phys instanceof GeometricElement3d);
+  });
+
+  it("should have a valid root subject element", async () => {
+    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
+    assert(imodel);
+    const { result: rootSubject } = await imodel.elements.getRootSubject();
+    assert(rootSubject);
+    assert(rootSubject instanceof Subject);
+    assert(rootSubject!.code.getValue().length > 0);
+
+    const childIds: Id[] = await rootSubject!.queryChildren();
+    assert(childIds.length > 0);
+    for (const childId of childIds)
+      {
+      const { result: childElement } = await imodel.elements.getElement({ id: childId });
+      assert(childElement);
+      assert(childElement instanceof Element);
+      }
   });
 });
 
