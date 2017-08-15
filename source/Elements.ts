@@ -62,11 +62,13 @@ export class Elements {
     return {result: el};
   }
 
-  /**
-   * Get the root subject.
-   * @returns The root subject element.
-   */
+  /** The Id of the root subject element. */
+  public get rootSubjectId(): Id {
+    return new Id("0x1");
+  }
+
+  /** Get the root subject element. */
   public async getRootSubject(): BentleyPromise<DbResult, Element | undefined> {
-    return this.getElement({ id: "0x1" });
+    return this.getElement({ id: this.rootSubjectId });
   }
 }
