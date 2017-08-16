@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id, Code, IModel } from "./IModel";
-import { ECClass, ClassProps } from "./ECClass";
+import { Entity, ClassProps } from "./Entity";
 import { ClassRegistry } from "./ClassRegistry";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
@@ -20,7 +20,7 @@ export interface ModelProps extends ClassProps {
 }
 
 /** A Model within an iModel */
-export class Model extends ECClass {
+export class Model extends Entity {
   public id: Id;
   public modeledElement: Id;
   public parentModel: Id;

@@ -7,7 +7,8 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { ECClass, ClassMetaData, ClassProps } from "./ECClass";
+import { Entity, ClassProps } from "./Entity";
+import { EntityMetaData } from "./EntityMetaData";
 import { Model } from "./Model";
 
 /** The Id and relationship class of an Element that is related to another Element */
@@ -29,8 +30,7 @@ export interface ElementProps extends ClassProps {
 }
 
 /** An element within an iModel. */
-export class Element extends ECClass {
-  public id: Id;
+export class Element extends Entity {
   public model: Id;
   public code: Code;
   public parent?: RelatedElement;
@@ -50,8 +50,8 @@ export class Element extends ECClass {
     this.jsonProperties = props.jsonProperties ? props.jsonProperties : {};
   }
 
-  /** Get the metadata for the ECClass of this element. */
-  public async getECClass(): Promise<ClassMetaData|undefined> { return this.iModel.classMetaDataRegistry.get(this.schemaName, this.className); }
+  /** Get the metadata for the Entity of this element. */
+  public async getClassMetaData(): Promise<EntityMetaData|undefined> { return this.iModel.classMetaDataRegistry.get(this.schemaName, this.className); }
 
   public getUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = {}; return this.jsonProperties.UserProps; }
   public setUserProperties(nameSpace: string, value: any) { this.getUserProperties()[nameSpace] = value; }

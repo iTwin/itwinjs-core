@@ -24,12 +24,12 @@ describe("iModel", () => {
     assert.exists(imodel);
   });
 
-  it("should get ECClass metadata for various classes", async () => {
+  it("should use schema to look up classes by name", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const {result: elementECClass} = await BisCore.getClass(Element.name, imodel);
-    const {result: categoryECClass} = await BisCore.getClass(Category.name, imodel);
-    assert.equal(elementECClass!.name, "Element");
-    assert.equal(categoryECClass!.name, "Category");
+    const {result: elementClass} = await BisCore.getClass(Element.name, imodel);
+    const {result: categoryClass} = await BisCore.getClass(Category.name, imodel);
+    assert.equal(elementClass!.name, "Element");
+    assert.equal(categoryClass!.name, "Category");
   });
 });
 
