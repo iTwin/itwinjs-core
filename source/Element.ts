@@ -59,14 +59,14 @@ export class Element extends ECClass {
 
   /** Query for the child elements of this element. */
   public async queryChildren(): Promise<Id[]> {
-    const { error, result: rows } = await this.iModel.executeQuery("SELECT ECInstanceId FROM " + Element.sqlName + " WHERE Parent.Id=" + this.id.toString()); // WIP: need to bind!
+    const { error, result: rows } = await this.iModel.executeQuery("SELECT ECInstanceId as id FROM " + Element.sqlName + " WHERE Parent.Id=" + this.id.toString()); // WIP: need to bind!
     if (error || !rows) {
       assert(false);
       return Promise.resolve([]);
     }
 
     const childIds: Id[] = [];
-    JSON.parse(rows).forEach((row: any) => childIds.push(new Id("0x" + row.eCInstanceId.toString(16)))); // WIP: executeQuery should return eCInstanceId as a string
+    JSON.parse(rows).forEach((row: any) => childIds.push(new Id(row.id))); // WIP: executeQuery should return eCInstanceId as a string
     return Promise.resolve(childIds);
   }
 
