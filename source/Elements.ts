@@ -6,7 +6,7 @@ import { Code, IModel, Id } from "./IModel";
 import { ClassRegistry } from "./ClassRegistry";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
-import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 /** Parameters to specify what element to load. */
@@ -32,12 +32,12 @@ export class Elements {
    * @param opts  Either the id or the code of the element
    * @returns The Element or undefined if the Id is not found
    */
-  public async getElement(opts: ElementLoadParams): BentleyPromise<DbResult, Element|undefined> {
+  public async getElement(opts: ElementLoadParams): BentleyPromise<DgnDbStatus, Element | undefined> {
     // first see if the element is already in the local cache.
     if (opts.id) {
       const loaded = this._loaded.get(opts.id.toString());
       if (loaded)
-        return {result: loaded};
+        return { result: loaded };
     }
 
     // Must go get the element from the iModel. Start by requesting the element's data.
@@ -52,13 +52,14 @@ export class Elements {
 
     const elObj = await ClassRegistry.createInstance(props);
     if (elObj.error)
-      return {error: elObj.error};
+      return { error: elObj.error };
 
     const el = elObj.result as Element;
     assert(el instanceof Element);
 
     // We have created the element. Cache it before we return it.
+    Object.freeze(el); // elements in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
     this._loaded.set(el.id.toString(), el);
-    return {result: el};
+    return { result: el };
   }
 }

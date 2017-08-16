@@ -45,22 +45,32 @@ export class ClassMetaDataRegistry {
 
 /** An iModel database. */
 export class IModel {
+  private _fileName: string;
   private _db: DgnDb;
   private _elements: Elements;
   private _models: Models;
   private _classMetaDataRegistry: ClassMetaDataRegistry;
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
+  public get fileName() { return this._fileName; }
 
   /** Open the iModel
    * @param fileName  The name of the iModel
    * @param mode      Open mode for database
    * @return non-zero error status if the iModel could not be opened
    */
-  public async openDgnDb(fileName: string, mode?: OpenMode): BentleyPromise<DbResult, void> {
-    mode = (typeof mode === "number") ? mode : OpenMode.Readonly;
+  public async openDgnDb(fileName: string, mode: OpenMode = OpenMode.ReadWrite): BentleyPromise<DbResult, void> {
+    this._fileName = fileName;
     if (!this._db)
       this._db = new DgnDb();
     return this._db.openDb(fileName, mode);
+  }
+
+  /** Close this iModel, if it is currently open */
+  public closeDgnDb() {
+    if (!this._db)
+      return;
+    this._db.closeDb();
+    this._fileName = "";
   }
 
   /** Get the ClassMetaDataRegistry for this iModel */
@@ -103,7 +113,6 @@ export class IModel {
 export class Id {
   private readonly value?: string;
   private static toHex(str: string): number { const v = parseInt(str, 16); return Number.isNaN(v) ? 0 : v; }
-  private static isHex(str: string): boolean { return !Number.isNaN(parseInt(str, 16)); }
   protected toJSON(): string { return this.value ? this.value : ""; }
 
   public get lo(): number {
@@ -139,6 +148,9 @@ export class Id {
     if (!prop)
       return;
 
+    let low = 0;
+    let high = 0;
+
     if (typeof prop === "string") {
       prop = prop.toLowerCase().trim();
       if (prop[0] !== "0" || !(prop[1] === "x")) {
@@ -149,29 +161,22 @@ export class Id {
       const len = prop.length;
       if (len > 12) {
         start = (len - 10);
-        if (!Id.isHex(prop.slice(2, start)))
-          return;
+        high = Id.toHex(prop.slice(2, start));
       }
 
-      if (0 !== Id.toHex(prop.slice(start)))// 0 is an illegal value for the low part of an id
-        this.value = prop;
-
-      return;
-    }
-
-    if (prop instanceof Id) {
+      low = Id.toHex(prop.slice(start));
+    } else if (prop instanceof Id) {
       this.value = prop.value;
       return;
+    } else if (Array.isArray(prop) && prop.length >= 2) {
+      low = prop[0] | 0;
+      high = Math.trunc(prop[1]);
     }
 
-    if (!Array.isArray(prop) || prop.length < 2)
+    if (low === 0) // it is illegal to have a low value of 0
       return;
 
-    const lo = prop[0] | 0;
-    if (lo === 0)
-      return;
-    const hi = Math.trunc(prop[1]);
-    this.value = "0x" + hi.toString(16).toLowerCase() + ("0000000000" + lo.toString(16).toLowerCase()).substr(-10);
+    this.value = "0x" + high.toString(16).toLowerCase() + ("0000000000" + low.toString(16).toLowerCase()).substr(-10);
   }
 
   /** convert this Id to a string */
@@ -275,6 +280,7 @@ export class Placement3d {
   /** Determine whether this Placement3d is valid. */
   public isValid(): boolean { return this.bbox.isValid() && this.origin.maxAbs() < Constant.circumferenceOfEarth; }
 }
+
 /** The placement of a GeometricElement2d. This includes the origin, orientation, and size (bounding box) of the element. */
 export class Placement2d {
   public constructor(public origin: Point2d, public angle: Angle, public bbox: ElementAlignedBox2d) { }

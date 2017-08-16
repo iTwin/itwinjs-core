@@ -241,7 +241,7 @@ export class DisplayStyle3d extends DisplayStyle {
  *  Changes are not saved unless someone calls Update on the modified copy.
  */
 export class ModelSelector extends DefinitionElement {
-  public models: Set<string>;
+  protected models: Set<string>;
   constructor(props: ElementProps) { super(props); this.models = new Set<string>(); }
 
   /** Get the name of this ModelSelector */

@@ -7,7 +7,7 @@ import { ClassRegistry } from "./ClassRegistry";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
-import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 export interface ModelProps extends ClassProps {
@@ -63,7 +63,7 @@ export class Models {
    * @param opts  Either the id or the code of the model
    * @returns The Model or undefined if the Id is not found
    */
-  public async getModel(opts: ModelLoadParams): BentleyPromise<DbResult, Model|undefined> {
+  public async getModel(opts: ModelLoadParams): BentleyPromise<DgnDbStatus, Model|undefined> {
     // first see if the model is already in the local cache.
     if (opts.id) {
       const loaded = this._loaded.get(opts.id.toString());
@@ -88,7 +88,9 @@ export class Models {
     const model = modelObj.result as Model;
     assert(modelObj.result instanceof Model);
 
-    this._loaded.set(model.id.toString(), model); // We have created the model. Cache it before we return it.
+     // We have created the model. Cache it before we return it.
+    Object.freeze(model); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
+    this._loaded.set(model.id.toString(), model);
     return {result: model};
   }
 }

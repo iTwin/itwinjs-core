@@ -81,6 +81,7 @@ export interface ClassMetaData {
   displayLabel?: string;
   /** The  base class that this class is derives from. If more than one, the first is the actual base class and the others are mixins. */
   baseClasses: ClassFullName[];
+
   /** The Custom Attributes for this class */
   customAttributes: CustomAttribute[];
   /** An object whose properties correspond by name to the properties of this class. */
@@ -132,16 +133,16 @@ export class ECClass {
       if (typeof propname === "string") { // this is a) just to be very safe and b) to satisfy TypeScript
         const ecprop: ECProperty = mdata.properties[propname] as ECProperty;
         cb(propname, ecprop);
-        }
       }
+    }
 
     if (!wantAllProperties)
       return;
 
     if (mdata.baseClasses) {
-        for (const base of mdata.baseClasses) {
-          ECClass.forEachECProperty(imodel, base.schema, base.name, true, cb);
-        }
+      for (const base of mdata.baseClasses) {
+        ECClass.forEachECProperty(imodel, base.schema, base.name, true, cb);
+      }
     }
   }
 

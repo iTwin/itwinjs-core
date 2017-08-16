@@ -105,6 +105,15 @@ describe("ElementId", () => {
     const p1 = JSON.parse(j7);
     const i8 = new Id(p1.a);
     assert(i8.equals(id7));
+
+    const id1A = new Id("0x1");
+    const id1B = new Id(id1A);
+    const id1C = new Id("0x01");
+    const id1D = new Id([1, 0]);
+    assert.isTrue(id1A.equals(id1B));
+    assert.isTrue(id1A.equals(id1C));
+    assert.isTrue(id1A.equals(id1D));
+
   });
 
   it("Model Selectors should hold models", async () => {

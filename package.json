@@ -28,25 +28,26 @@
     "js-base64": "^2.1.9"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "^1.0.13",
+    "@bentley/bentleyjs-tools": "^1.0.15",
     "@types/chai": "^4.0.2",
+    "@types/fs-extra": "^4.0.0",
     "@types/js-base64": "^2.1.5",
     "@types/mocha": "^2.2.41",
     "chai": "^4.1.1",
     "commander": "^2.11.0",
-    "tslint": "^5.6.0",
-    "gulp-tslint": "^8.1.2",
     "debug-fabulous": "^0.1.1",
     "diff": "^3.3.0",
     "duplexify": "^3.5.1",
-    "es5-ext": "^0.10.26",
+    "fs-extra": "latest",
     "gulp": "latest",
+    "gulp-tslint": "^8.1.2",
     "gulp-typescript": "^3.2.1",
     "once": "^1.4.0",
     "os-locale": "^2.1.0",
     "resolve": "^1.4.0",
     "semver": "^5.4.1",
     "string-width": "^2.1.1",
+    "tslint": "^5.6.0",
     "typescript": "^2.4.2"
   }
 }

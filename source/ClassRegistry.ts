@@ -5,8 +5,8 @@
 import { ClassMetaData, ClassCtor, ECClass, ClassFullName, ClassProps } from "./ECClass";
 import { IModel } from "./IModel";
 import { Schema, Schemas } from "./Schema";
-import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
+import { DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 /** The mapping between a class name (schema.class) and its constructor function  */
@@ -22,9 +22,9 @@ export class ClassRegistry {
   }
 
   /** create an instance of a class from it properties */
-  public static async createInstance(props: ClassProps): BentleyPromise<DbResult, ECClass> {
+  public static async createInstance(props: ClassProps): BentleyPromise<DgnDbStatus, ECClass> {
     if (!props.classFullName || !props.iModel)
-      return { error: { status: DbResult.BE_SQLITE_ERROR, message: "Invalid input props" } };
+      return { error: { status: DgnDbStatus.BadArg, message: "Invalid input props" } };
 
     props.classFullName = props.classFullName.toLowerCase();
     let ctor = ClassRegistry.ecClasses.get(props.classFullName);
@@ -97,7 +97,7 @@ export class ClassRegistry {
   /** This function fetches the specified ECClass from the imodel, generates a JS class for it, and registers the generated
    *  class. This function also ensures that all of the base classes of the ECClass exist and are registered.
    */
-  private static async generateClass(classFullName: string, imodel: IModel): BentleyPromise<DbResult, ClassCtor> {
+  private static async generateClass(classFullName: string, imodel: IModel): BentleyPromise<DgnDbStatus, ClassCtor> {
 
     if (!imodel.dgnDb)
       throw new Error("IModel must be open");
@@ -151,7 +151,7 @@ export class ClassRegistry {
    * @return A promise that resolves to an object containing a result property set to the ECClass.
    * In case of errors, the error property is setup in the resolved object.
    */
-  public static async getClass(fullName: ClassFullName, imodel: IModel): BentleyPromise<DbResult, ClassCtor> {
+  public static async getClass(fullName: ClassFullName, imodel: IModel): BentleyPromise<DgnDbStatus, ClassCtor> {
     const key = ClassRegistry.getKeyFromName(fullName);
     if (!ClassRegistry.ecClasses.has(key)) {
       return ClassRegistry.generateClass(key, imodel);
