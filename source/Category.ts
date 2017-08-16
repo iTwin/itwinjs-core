@@ -168,11 +168,20 @@ export enum Rank {
   Application = 2,  // This category is defined by an application. Elements in this category may be unknown to system and schema functionality.
   User = 3,         // This category is defined by a user. Elements in this category may be unknown to system, schema, and application functionality.
 }
+/** Parameters to create a Category element */
+export interface CategoryProps extends ElementProps {
+  rank?: Rank;
+  description?: string;
+}
 
 /** a Category for a Geometric element */
 export class Category extends DefinitionElement {
   public rank: Rank = Rank.User;
-  public constructor(opts: ElementProps) { super(opts); }
+  public constructor(props: CategoryProps) {
+    super(props);
+    this.rank = JsonUtils.asInt(props.rank);
+    this.description = JsonUtils.asString(props.description);
+  }
   public static getDefaultSubCategoryId(id: Id): Id { return id.isValid() ? new Id([id.lo, id.hi + 1]) : new Id(); }
   public myDefaultSubCategoryId(): Id { return Category.getDefaultSubCategoryId(this.id); }
 }

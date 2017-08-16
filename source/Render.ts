@@ -4,7 +4,7 @@
 
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 
-export enum RenderMode {
+export const enum RenderMode {
   Wireframe = 0,
   HiddenLine = 3,
   SolidFill = 4,
@@ -161,7 +161,7 @@ export class ColorDef {
   public static darkBrown(): ColorDef { return ColorDef.from(0x8b, 0x45, 0x13); }
 }
 
-export enum LinePixels {
+export const enum LinePixels {
   Solid = 0,
   Code0 = Solid,            // 0
   Code1 = 0x80808080,       // 1

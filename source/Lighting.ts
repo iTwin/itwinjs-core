@@ -7,7 +7,7 @@ import { ColorDef } from "./Render";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 
 /** The type of a Light */
-export enum LightType {
+export const enum LightType {
   Invalid = 0,
   Solar = 1,     // Sunlight
   Ambient = 2,   // ambient light

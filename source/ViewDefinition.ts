@@ -16,7 +16,7 @@ import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 export class ViewController { }
 
 /** The 8 corners of the NPC cube. */
-export enum Npc {
+export const enum Npc {
   _000 = 0,  // Left bottom rear
   _100 = 1,  // Right bottom rear
   _010 = 2,  // Left top rear
@@ -291,7 +291,7 @@ export interface ViewDefinitionProps extends ElementProps {
   displayStyle?: DisplayStyle;
 }
 
-export enum ViewportStatus {
+export const enum ViewportStatus {
   Success = 0,
   ViewNotInitialized,
   AlreadyAttached,
