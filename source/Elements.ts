@@ -65,12 +65,8 @@ export class Elements {
   }
 
   /** The Id of the root subject element. */
-  public get rootSubjectId(): Id64 {
-    return new Id64("0x1");
-  }
+  public get rootSubjectId(): Id64 { return new Id64("0x1"); }
 
   /** Get the root subject element. */
-  public async getRootSubject(): BentleyPromise<DgnDbStatus, Element | undefined> {
-    return this.getElement({ id: this.rootSubjectId });
-  }
+  public async getRootSubject(): BentleyPromise<DgnDbStatus, Element | undefined> { return this.getElement({ id: this.rootSubjectId }); }
 }

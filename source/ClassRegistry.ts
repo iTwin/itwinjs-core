@@ -45,7 +45,6 @@ export class ClassRegistry {
   public static getSchemaBaseClass() { return Schema; }
 
   private static generateProxySchema(schemaName: string): string {
-    // register it here, while `schemaName` is defined.
     return "class " + schemaName + " extends ClassRegistry.getSchemaBaseClass(){} ClassRegistry.registerSchema(" + schemaName + ");";
   }
 
@@ -53,7 +52,7 @@ export class ClassRegistry {
    * Generate a JS class from an Entity definition
    * @param ecClass The Entity definition
    */
-  private static generateClassDefFromECClass(ecClass: EntityMetaData): string {
+  private static generateClassDefFromEntity(ecClass: EntityMetaData): string {
     // static properties
     const classDefStaticProps = ecClass.name + ".schema = ClassRegistry.getRegisteredSchema('" + ecClass.schema + "');";
 
@@ -127,20 +126,20 @@ export class ClassRegistry {
     }
 
     // Now we can generate the class from the classDef.
-    return { result: ClassRegistry.generateClassForECClass(ecclass) };
+    return { result: ClassRegistry.generateClassForEntity(ecclass) };
   }
 
   /** This function generates a JS class for the specified Entity and registers it. It is up to the caller
    *  to make sure that all superclasses are already registered.
    */
-  public static generateClassForECClass(ecclass: EntityMetaData): EntityCtor {
+  public static generateClassForEntity(entityMetaData: EntityMetaData): EntityCtor {
     // Generate and register this class
-    const jsDef = ClassRegistry.generateClassDefFromECClass(ecclass) + " ClassRegistry.registerEcClass(" + ecclass.name + "); ";
+    const jsDef = ClassRegistry.generateClassDefFromEntity(entityMetaData) + " ClassRegistry.registerEcClass(" + entityMetaData.name + "); ";
 
-    // tslint:disable-next-line:no-eval NOTE: eval is OK here, because I generated the expression myself, and I know it's safe.
+    // tslint:disable-next-line:no-eval NOTE: eval is OK here, because we just generated the expression
     eval(jsDef);
 
-    const ctor = ClassRegistry.ecClasses.get(ClassRegistry.getKeyFromName(ecclass))!;
+    const ctor = ClassRegistry.ecClasses.get(ClassRegistry.getKeyFromName(entityMetaData))!;
     assert(!!ctor);
     return ctor;
   }
