@@ -69,7 +69,7 @@ export class IModel {
   public closeDgnDb() {
     if (!this._db)
       return;
-    this._db.closeDb();
+    // this._db.closeDb();
     this._fileName = "";
   }
 
