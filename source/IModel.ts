@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Elements } from "./Elements";
-import { ClassMetaData } from "./ECClass";
+import { EntityMetaData } from "./EntityMetaData";
 import { Models } from "./Model";
 import { DgnDb } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -16,12 +16,12 @@ import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
 
 /** The mapping between a class name and its the metadata for that class  */
 export class ClassMetaDataRegistry {
-  private reg: Map<string, ClassMetaData> = new Map<string, ClassMetaData>();
+  private reg: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();
   constructor(private imodel: IModel) { }
   private static getKey(schemaName: string, className: string) { return (schemaName + "." + className).toLowerCase(); }
 
-  /** Get the specified ECClass metadata */
-  public get(schemaName: string, className: string): ClassMetaData | undefined {
+  /** Get the specified Entity metadata */
+  public get(schemaName: string, className: string): EntityMetaData | undefined {
     const key: string = ClassMetaDataRegistry.getKey(schemaName, className);
     let mdata = this.reg.get(key);
     if (null !== mdata && undefined !== mdata) {
@@ -35,7 +35,7 @@ export class ClassMetaDataRegistry {
     if (error || !mstr)
       return undefined;
 
-    mdata = JSON.parse(mstr) as ClassMetaData | undefined;
+    mdata = JSON.parse(mstr) as EntityMetaData | undefined;
     if (undefined === mdata)
       return undefined;
     this.reg.set(key, mdata);

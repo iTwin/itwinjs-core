@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { ClassMetaData, NavigationECProperty, PrimitiveECProperty } from "../ECClass";
+import { EntityMetaData, NavigationPropertyMetaData, PrimitivePropertyMetaData } from "../EntityMetaData";
 import { Code, IModel } from "../IModel";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Elements } from "../Elements";
@@ -15,7 +15,7 @@ BisCore.registerSchema();
 
 describe("Class Registry", () => {
 
-  it("should verify the ECClass metadata of known element subclasses", async () => {
+  it("should verify the Entity metadata of known element subclasses", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const elements: Elements = imodel.elements;
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
@@ -23,25 +23,25 @@ describe("Class Registry", () => {
     assert(el !== undefined);
     assert(el != null);
     if (el) {
-      const ecclass: ClassMetaData | undefined = await el.getECClass();
-      assert.notEqual(ecclass, undefined);
-      if (undefined === ecclass)
+      const metaData: EntityMetaData | undefined = await el.getClassMetaData();
+      assert.notEqual(metaData, undefined);
+      if (undefined === metaData)
         return;
-      assert.isNotNull(ecclass);
-      assert.equal(ecclass.name, el.className);
-      assert.equal(ecclass.schema, el.schemaName);
+      assert.isNotNull(metaData);
+      assert.equal(metaData.name, el.className);
+      assert.equal(metaData.schema, el.schemaName);
       // I happen to know that this is a BisCore.RepositoryLink
-      assert.equal(ecclass.name, "RepositoryLink");
-      assert.equal(ecclass.schema, BisCore.name);
+      assert.equal(metaData.name, "RepositoryLink");
+      assert.equal(metaData.schema, BisCore.name);
       //  Check the metadata on the class itself
-      assert.isTrue(ecclass.baseClasses.length > 0);
-      assert.equal(ecclass.baseClasses[0].name, "UrlLink");
-      assert.equal(ecclass.customAttributes[0].ecclass.name, "ClassHasHandler");
+      assert.isTrue(metaData.baseClasses.length > 0);
+      assert.equal(metaData.baseClasses[0].name, "UrlLink");
+      assert.equal(metaData.customAttributes[0].ecclass.name, "ClassHasHandler");
       //  Check the metadata on the one property that RepositoryLink defines, RepositoryGuid
-      assert.isDefined(ecclass.properties);
-      assert.isNotNull(ecclass.properties);
-      assert.isDefined(ecclass.properties.repositoryGuid);
-      const p: PrimitiveECProperty = ecclass.properties.repositoryGuid as PrimitiveECProperty;
+      assert.isDefined(metaData.properties);
+      assert.isNotNull(metaData.properties);
+      assert.isDefined(metaData.properties.repositoryGuid);
+      const p: PrimitivePropertyMetaData = metaData.properties.repositoryGuid as PrimitivePropertyMetaData;
       assert.isDefined(p.primitiveECProperty);
       assert.equal(p.primitiveECProperty.type, "binary");
       assert.equal(p.primitiveECProperty.extendedType, "BeGuid");
@@ -51,22 +51,22 @@ describe("Class Registry", () => {
     assert.isDefined(el2);
     assert.isNotNull(el2);
     if (el2) {
-      const ecclass: ClassMetaData | undefined = await el2.getECClass();
-      assert.notEqual(ecclass, undefined);
-      if (undefined === ecclass)
+      const metaData: EntityMetaData | undefined = await el2.getClassMetaData();
+      assert.notEqual(metaData, undefined);
+      if (undefined === metaData)
         return;
-      assert.isNotNull(ecclass);
-      assert.equal(ecclass.name, el2.className);
-      assert.equal(ecclass.schema, el2.schemaName);
+      assert.isNotNull(metaData);
+      assert.equal(metaData.name, el2.className);
+      assert.equal(metaData.schema, el2.schemaName);
       // I happen to know that this is a BisCore.SpatialViewDefinition
-      assert.equal(ecclass.name, SpatialViewDefinition.name);
-      assert.equal(ecclass.schema, BisCore.name);
-      assert.isTrue(ecclass.baseClasses.length > 0);
-      assert.equal(ecclass.baseClasses[0].name, ViewDefinition3d.name);
-      assert.isDefined(ecclass.properties);
-      assert.isNotNull(ecclass.properties);
-      assert.isDefined(ecclass.properties.modelSelector);
-      const n: NavigationECProperty = ecclass.properties.modelSelector as NavigationECProperty;
+      assert.equal(metaData.name, SpatialViewDefinition.name);
+      assert.equal(metaData.schema, BisCore.name);
+      assert.isTrue(metaData.baseClasses.length > 0);
+      assert.equal(metaData.baseClasses[0].name, ViewDefinition3d.name);
+      assert.isDefined(metaData.properties);
+      assert.isNotNull(metaData.properties);
+      assert.isDefined(metaData.properties.modelSelector);
+      const n: NavigationPropertyMetaData = metaData.properties.modelSelector as NavigationPropertyMetaData;
       assert.isDefined(n.navigationECProperty);
       assert.equal(n.navigationECProperty.relationshipClass.name, "SpatialViewDefinitionUsesModelSelector");
     }

@@ -4,9 +4,12 @@
 
 import { Code, CodeProps, Id, GeometryStream, Placement3d, Placement2d } from "./IModel";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
+import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { RunsIn, Tier } from "@bentley/bentleyjs-core/lib/tiering";
-import { ECClass, ClassMetaData, ClassProps } from "./ECClass";
+import { Entity, ClassProps } from "./Entity";
+import { EntityMetaData } from "./EntityMetaData";
+import { Model } from "./Model";
 
 /** The Id and relationship class of an Element that is related to another Element */
 export class RelatedElement {
@@ -27,8 +30,7 @@ export interface ElementProps extends ClassProps {
 }
 
 /** An element within an iModel. */
-export class Element extends ECClass {
-  public id: Id;
+export class Element extends Entity {
   public model: Id;
   public code: Code;
   public parent?: RelatedElement;
@@ -48,25 +50,32 @@ export class Element extends ECClass {
     this.jsonProperties = props.jsonProperties ? props.jsonProperties : {};
   }
 
-  /** Get the metadata for the ECClass of this element. */
-  public async getECClass(): Promise<ClassMetaData|undefined> { return this.iModel.classMetaDataRegistry.get(this.schemaName, this.className); }
+  /** Get the metadata for the Entity of this element. */
+  public async getClassMetaData(): Promise<EntityMetaData|undefined> { return this.iModel.classMetaDataRegistry.get(this.schemaName, this.className); }
 
   public getUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = {}; return this.jsonProperties.UserProps; }
   public setUserProperties(nameSpace: string, value: any) { this.getUserProperties()[nameSpace] = value; }
   public removeUserProperties(nameSpace: string) { delete this.getUserProperties()[nameSpace]; }
 
   /** Query for the child elements of this element. */
-  @RunsIn(Tier.Services)
   public async queryChildren(): Promise<Id[]> {
-    const { error, result: rows } = await this.iModel.executeQuery("SELECT ECInstanceId FROM " + Element.sqlName + " WHERE Parent.Id=" + this.id.toString()); // WIP: need to bind!
+    const { error, result: rows } = await this.iModel.executeQuery("SELECT ECInstanceId as id FROM " + Element.sqlName + " WHERE Parent.Id=" + this.id.toString()); // WIP: need to bind!
     if (error || !rows) {
       assert(false);
       return Promise.resolve([]);
     }
 
     const childIds: Id[] = [];
-    JSON.parse(rows).forEach((row: any) => childIds.push(new Id("0x" + row.eCInstanceId.toString(16)))); // WIP: executeQuery should return eCInstanceId as a string
+    JSON.parse(rows).forEach((row: any) => childIds.push(new Id(row.id))); // WIP: executeQuery should return eCInstanceId as a string
     return Promise.resolve(childIds);
+  }
+
+  /** Get the Model that modeling this Element (if it exists). That is, the model that is beneath this element in the hierarchy. */
+  public async getSubModel(): BentleyPromise<DbResult, Model | undefined> {
+    if (this.id.equals(this.iModel.elements.rootSubjectId))
+      return { result: undefined };
+
+    return this.iModel.models.getModel({ id: this.id });
   }
 }
 

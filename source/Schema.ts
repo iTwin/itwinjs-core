@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 import { IModel } from "./IModel";
-import { ClassCtor } from "./ECClass";
+import { ClassCtor } from "./Entity";
 import { ClassRegistry } from "./ClassRegistry";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -16,7 +16,7 @@ export class Schema {
 
   /**
    * Get the ClassCtor for the specified class name
-   * @param className The name of the ECClass
+   * @param className The name of the Entity
    * @param imodel The IModel that contains the class definitions
    * @return The corresponding ClassCtor
    */

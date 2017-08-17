@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { Code, IModel, Id } from "../IModel";
 import { ColorDef } from "../Render";
-import { ElementProps, Element, GeometricElement3d, Subject } from "../Element";
+import { ElementProps, Element, GeometricElement3d, InformationPartitionElement, Subject } from "../Element";
 import { Models } from "../Model";
 import { Category, SubCategory } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
@@ -24,12 +24,12 @@ describe("iModel", () => {
     assert.exists(imodel);
   });
 
-  it("should get ECClass metadata for various classes", async () => {
+  it("should use schema to look up classes by name", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const { result: elementECClass } = await BisCore.getClass(Element.name, imodel);
-    const { result: categoryECClass } = await BisCore.getClass(Category.name, imodel);
-    assert.equal(elementECClass!.name, "Element");
-    assert.equal(categoryECClass!.name, "Category");
+    const { result: elementClass } = await BisCore.getClass(Element.name, imodel);
+    const { result: categoryClass } = await BisCore.getClass(Category.name, imodel);
+    assert.equal(elementClass!.name, "Element");
+    assert.equal(categoryClass!.name, "Category");
   });
 });
 
@@ -85,6 +85,8 @@ describe("Elements", async () => {
     assert.exists(rootSubject);
     assert.isTrue(rootSubject instanceof Subject);
     assert.isAtLeast(rootSubject!.code.getValue().length, 1);
+    const { result: subModel } = await rootSubject!.getSubModel();
+    assert.isUndefined(subModel, "Root subject should not have a subModel");
 
     const childIds: Id[] = await rootSubject!.queryChildren();
     assert.isAtLeast(childIds.length, 1);
@@ -92,6 +94,10 @@ describe("Elements", async () => {
       const { result: childElement } = await imodel.elements.getElement({ id: childId });
       assert.exists(childElement);
       assert.isTrue(childElement instanceof Element);
+      if (childElement instanceof InformationPartitionElement) {
+        const { result: childSubModel } = await childElement.getSubModel();
+        assert.exists(childSubModel, "InformationPartitionElements should have a subModel");
+      }
     }
   });
 });
