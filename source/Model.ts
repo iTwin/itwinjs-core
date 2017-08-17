@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id, Code, IModel } from "./IModel";
+import { Code, IModel } from "./IModel";
 import { Entity, EntityProps } from "./Entity";
 import { ClassRegistry } from "./ClassRegistry";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
@@ -9,11 +9,12 @@ import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
 
 export interface ModelProps extends EntityProps {
-  id: Id | string;
-  modeledElement: Id;
-  parentModel?: Id;
+  id: Id64 | string;
+  modeledElement: Id64;
+  parentModel?: Id64;
   isPrivate?: boolean;
   isTemplate?: boolean;
   jsonProperties?: any;
@@ -21,17 +22,17 @@ export interface ModelProps extends EntityProps {
 
 /** A Model within an iModel */
 export class Model extends Entity {
-  public modeledElement: Id;
-  public parentModel: Id;
+  public modeledElement: Id64;
+  public parentModel: Id64;
   public jsonProperties: any;
   public isPrivate: boolean;
   public isTemplate: boolean;
 
   constructor(props: ModelProps) {
     super(props);
-    this.id = new Id(props.id);
-    this.modeledElement = new Id(props.modeledElement);
-    this.parentModel = new Id(props.parentModel);
+    this.id = new Id64(props.id);
+    this.modeledElement = new Id64(props.modeledElement);
+    this.parentModel = new Id64(props.parentModel);
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
     this.jsonProperties = props.jsonProperties ? props.jsonProperties : {};
@@ -44,10 +45,8 @@ export class GeometricModel extends Model {
 
 /** a request to load a model. */
 export interface ModelLoadParams {
-  id?: Id | string;
+  id?: Id64 | string;
   code?: Code;
-  /** if true, do not load the geometry of the model */
-  noGeometry?: boolean;
 }
 
 /** The collection of Models in an iModel  */
@@ -60,7 +59,7 @@ export class Models {
   /**
    * Get an Model by Id or Code.
    * @param opts  Either the id or the code of the model
-   * @returns The Model or undefined if the Id is not found
+   * @returns The Model or undefined if the model is not found
    */
   public async getModel(opts: ModelLoadParams): BentleyPromise<DgnDbStatus, Model | undefined> {
     // first see if the model is already in the local cache.

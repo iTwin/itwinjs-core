@@ -3,8 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Schema } from "./Schema";
-import { IModel, Id } from "./IModel";
+import { IModel } from "./IModel";
 import { EntityMetaData, PropertyMetaData } from "./EntityMetaData";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
 
 /** The properties of any ECEntityCLass. Every instance has at least the iModel and the name of the schema and class that defines it. */
 export interface EntityProps {
@@ -31,7 +32,7 @@ export class Entity {
   public iModel: IModel;
 
   /** The unique ID of this Entity within its IModel, if persistent. */
-  public id: Id;
+  public id: Id64;
 
   constructor(opt: EntityProps) {
     this.iModel = opt.iModel;

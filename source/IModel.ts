@@ -12,21 +12,25 @@ import { Point3d, Vector3d, Range3d, YawPitchRollAngles, Point2d, Range2d, Trans
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Base64 } from "js-base64";
+<<<<<<< HEAD
 import { BentleyPromise, BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
+=======
+import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
+>>>>>>> 795d940b6616537fc48f910e51f4bce6d08c04e6
 
 /** The mapping between a class name and its the metadata for that class  */
-export class ClassMetaDataRegistry {
+export class MetaDataRegistry {
   private reg: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();
   constructor(private imodel: IModel) { }
   private static getKey(schemaName: string, className: string) { return (schemaName + "." + className).toLowerCase(); }
 
   /** Get the specified Entity metadata */
   public get(schemaName: string, className: string): EntityMetaData | undefined {
-    const key: string = ClassMetaDataRegistry.getKey(schemaName, className);
+    const key: string = MetaDataRegistry.getKey(schemaName, className);
     let mdata = this.reg.get(key);
-    if (null !== mdata && undefined !== mdata) {
+    if (mdata)
       return mdata;
-    }
 
     const { error, result: mstr } = this.imodel.getECClassMetaDataSync(schemaName, className);
     if (error || !mstr)
@@ -46,7 +50,7 @@ export class IModel {
   private _db: DgnDbToken;
   private _elements: Elements;
   private _models: Models;
-  private _classMetaDataRegistry: ClassMetaDataRegistry;
+  private _classMetaDataRegistry: MetaDataRegistry;
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
   public get fileName() { return this._fileName; }
 
@@ -128,9 +132,9 @@ export class IModel {
   }
 
   /** Get the ClassMetaDataRegistry for this iModel */
-  public get classMetaDataRegistry(): ClassMetaDataRegistry {
+  public get classMetaDataRegistry(): MetaDataRegistry {
     if (!this._classMetaDataRegistry)
-      this._classMetaDataRegistry = new ClassMetaDataRegistry(this);
+      this._classMetaDataRegistry = new MetaDataRegistry(this);
     return this._classMetaDataRegistry;
   }
 
@@ -163,108 +167,27 @@ export class IModel {
   }
 }
 
-/** A two-part id, containing a briefcase id and a local id. */
-export class Id {
-  private readonly value?: string;
-  private static toHex(str: string): number { const v = parseInt(str, 16); return Number.isNaN(v) ? 0 : v; }
-  protected toJSON(): string { return this.value ? this.value : ""; }
-
-  public get lo(): number {
-    if (!this.value)
-      return 0;
-
-    let start = 2;
-    const len = this.value.length;
-    if (len > 12)
-      start = (len - 10);
-
-    return Id.toHex(this.value.slice(start));
-  }
-
-  public get hi(): number {
-    if (!this.value)
-      return 0;
-
-    let start = 2;
-    const len = this.value.length;
-    if (len <= 12)
-      return 0;
-
-    start = (len - 10);
-    return Id.toHex(this.value.slice(2, start));
-  }
-
-  /**
-   * constructor for Id
-   * @param prop either a string with a hex number, an Id, or an array of two numbers with [lo,hi]. Otherwise the Id will be invalid.
-   */
-  constructor(prop?: Id | number[] | string) {
-    if (!prop)
-      return;
-
-    let low = 0;
-    let high = 0;
-
-    if (typeof prop === "string") {
-      prop = prop.toLowerCase().trim();
-      if (prop[0] !== "0" || !(prop[1] === "x")) {
-        return;
-      }
-
-      let start = 2;
-      const len = prop.length;
-      if (len > 12) {
-        start = (len - 10);
-        high = Id.toHex(prop.slice(2, start));
-      }
-
-      low = Id.toHex(prop.slice(start));
-    } else if (prop instanceof Id) {
-      this.value = prop.value;
-      return;
-    } else if (Array.isArray(prop) && prop.length >= 2) {
-      low = prop[0] | 0;
-      high = Math.trunc(prop[1]);
-    }
-
-    if (low === 0) // it is illegal to have a low value of 0
-      return;
-
-    this.value = "0x" + high.toString(16).toLowerCase() + ("0000000000" + low.toString(16).toLowerCase()).substr(-10);
-  }
-
-  /** convert this Id to a string */
-  public toString(): string { return this.value ? this.value : ""; }
-
-  /** Determine whether this Id is valid */
-  public isValid(): boolean { return this.value !== undefined; }
-
-  /** Test whether two Ids are the same */
-  public equals(other: Id): boolean { return this.value === other.value; }
-  public static areEqual(a?: Id, b?: Id): boolean { return (a === b) || (a != null && b != null && a.equals(b)); }
-}
-
 /** Properties that define a Code */
 export interface CodeProps {
-  spec: Id | string;
+  spec: Id64 | string;
   scope: string;
   value?: string;
 }
 
 /** A 3 part Code that identifies an Element */
 export class Code implements CodeProps {
-  public spec: Id;
+  public spec: Id64;
   public scope: string;
   public value?: string;
 
   constructor(val: CodeProps) {
-    this.spec = new Id(val.spec);
+    this.spec = new Id64(val.spec);
     this.scope = JsonUtils.asString(val.scope, "");
     this.value = JsonUtils.asString(val.value);
   }
 
   /** Create an instance of the default code (1,1,undefined) */
-  public static createDefault(): Code { return new Code({ spec: new Id([1, 0]), scope: "1" }); }
+  public static createDefault(): Code { return new Code({ spec: new Id64([1, 0]), scope: "1" }); }
   public getValue(): string { return this.value ? this.value : ""; }
   public equals(other: Code): boolean { return this.spec.equals(other.spec) && this.scope === other.scope && this.value === other.value; }
 }
