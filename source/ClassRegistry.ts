@@ -105,7 +105,7 @@ export class ClassRegistry {
     const name = classFullName.split(".");
     assert(name.length === 2);
 
-    const ret = await imodel.dgnDb.getECClassMetaData(name[0], name[1]);
+    const ret = await imodel.getECClassMetaData(name[0], name[1]);
     if (ret.error)
       return { error: ret.error };
 
