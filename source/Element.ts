@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { Code, CodeProps, Id, GeometryStream, Placement3d, Placement2d } from "./IModel";
+import { Code, CodeProps, GeometryStream, Placement3d, Placement2d } from "./IModel";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -10,19 +10,20 @@ import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Entity, ClassProps } from "./Entity";
 import { EntityMetaData } from "./EntityMetaData";
 import { Model } from "./Model";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
 
 /** The Id and relationship class of an Element that is related to another Element */
 export class RelatedElement {
-  constructor(public id: Id, public relClass?: string) { }
+  constructor(public id: Id64, public relClass?: string) { }
   public static fromJSON(json?: any): RelatedElement | undefined {
-    return json ? new RelatedElement(new Id(json.id), JsonUtils.asString(json.relClass)) : undefined;
+    return json ? new RelatedElement(new Id64(json.id), JsonUtils.asString(json.relClass)) : undefined;
   }
 }
 
 export interface ElementProps extends ClassProps {
-  model: Id | string;
+  model: Id64 | string;
   code: CodeProps;
-  id: Id | string;
+  id: Id64 | string;
   parent?: RelatedElement;
   federationGuid?: string;
   userLabel?: string;
@@ -31,7 +32,7 @@ export interface ElementProps extends ClassProps {
 
 /** An element within an iModel. */
 export class Element extends Entity {
-  public model: Id;
+  public model: Id64;
   public code: Code;
   public parent?: RelatedElement;
   public federationGuid?: string;
@@ -41,9 +42,9 @@ export class Element extends Entity {
   /** constructor for Element. */
   constructor(props: ElementProps) {
     super(props);
-    this.id = new Id(props.id);
+    this.id = new Id64(props.id);
     this.code = new Code(props.code);
-    this.model = new Id(props.model);
+    this.model = new Id64(props.model);
     this.parent = RelatedElement.fromJSON(props.parent);
     this.federationGuid = props.federationGuid;
     this.userLabel = props.userLabel;
@@ -58,15 +59,15 @@ export class Element extends Entity {
   public removeUserProperties(nameSpace: string) { delete this.getUserProperties()[nameSpace]; }
 
   /** Query for the child elements of this element. */
-  public async queryChildren(): Promise<Id[]> {
+  public async queryChildren(): Promise<Id64[]> {
     const { error, result: rows } = await this.iModel.executeQuery("SELECT ECInstanceId as id FROM " + Element.sqlName + " WHERE Parent.Id=" + this.id.toString()); // WIP: need to bind!
     if (error || !rows) {
       assert(false);
       return Promise.resolve([]);
     }
 
-    const childIds: Id[] = [];
-    JSON.parse(rows).forEach((row: any) => childIds.push(new Id(row.id))); // WIP: executeQuery should return eCInstanceId as a string
+    const childIds: Id64[] = [];
+    JSON.parse(rows).forEach((row: any) => childIds.push(new Id64(row.id))); // WIP: executeQuery should return eCInstanceId as a string
     return Promise.resolve(childIds);
   }
 
@@ -81,24 +82,24 @@ export class Element extends Entity {
 
 /** Properties of a GeometricElement */
 export interface GeometricElementProps extends ElementProps {
-  category?: Id | string;
+  category?: Id64 | string;
   geom?: GeometryStream;
 }
 
 /** A Geometric element. All geometry held by a GeometricElement is positioned relative to its placement. */
 export class GeometricElement extends Element {
-  public category: Id;
+  public category: Id64;
   public geom?: GeometryStream;
   public constructor(props: GeometricElementProps) {
     super(props);
-    this.category = new Id(props.category);
+    this.category = new Id64(props.category);
     this.geom = GeometryStream.fromJSON(props.geom);
   }
 }
 
 /** A RelatedElement that describes the type definition of an element. */
 export class TypeDefinition extends RelatedElement {
-  constructor(definitionId: Id, relationshipClass?: string) { super(definitionId, relationshipClass); }
+  constructor(definitionId: Id64, relationshipClass?: string) { super(definitionId, relationshipClass); }
 }
 
 /** Properties that define a GeometricElement3d */
