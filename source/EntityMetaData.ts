@@ -15,7 +15,7 @@ export interface ClassFullName {
 }
 
 /*  ***
-    *** WARNING: In the classes below, the property names are set by native code. If you change them here, you must also change the native code. 
+    *** WARNING: In the classes below, the property names are set by native code. If you change them here, you must also change the native code.
     ***
 */
 
@@ -106,16 +106,16 @@ export class EntityMetaData {
       if (typeof propname === "string") { // this is a) just to be very safe and b) to satisfy TypeScript
         const ecprop: PropertyMetaData = mdata.properties[propname] as PropertyMetaData;
         cb(propname, ecprop);
-        }
       }
+    }
 
     if (!wantAllProperties)
       return;
 
     if (mdata.baseClasses) {
-        for (const base of mdata.baseClasses) {
-          EntityMetaData.forEachProperty(imodel, base.schema, base.name, true, cb);
-        }
+      for (const base of mdata.baseClasses) {
+        EntityMetaData.forEachProperty(imodel, base.schema, base.name, true, cb);
+      }
     }
   }
 

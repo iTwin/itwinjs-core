@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { DefinitionElement, ElementProps } from "./Element";
 import { ColorDef } from "./Render";
-import { Id } from "./IModel";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 
 /** Properties to create a SubCategory Appearance */
@@ -14,9 +14,9 @@ export interface AppearanceProps {
   dontSnap?: boolean;
   dontLocate?: boolean;
   weight?: number;
-  style?: Id;
+  style?: Id64;
   priority?: number;
-  material?: Id;
+  material?: Id64;
   transp?: number;
 }
 
@@ -30,8 +30,8 @@ export class Appearance {
   public dontPlot: boolean = false;
   public dontSnap: boolean = false;
   public dontLocate: boolean = false;
-  public styleId: Id = new Id();
-  public materialId: Id = new Id();
+  public styleId: Id64 = new Id64();
+  public materialId: Id64 = new Id64();
 
   constructor(props?: AppearanceProps) {
     if (!props)
@@ -44,10 +44,10 @@ export class Appearance {
     this.color = ColorDef.fromJSON(props.color);
     this.weight = JsonUtils.asInt(props.weight);
     if (props.style)
-      this.styleId = new Id(props.style);
+      this.styleId = new Id64(props.style);
     this.priority = JsonUtils.asInt(props.priority);
     if (props.material)
-      this.materialId = new Id(props.material);
+      this.materialId = new Id64(props.material);
     this.transparency = JsonUtils.asInt(props.transp);
   }
 
@@ -95,9 +95,9 @@ export class SubCategoryOverride {
   public setInvisible(val: boolean): void { this._invisible = true; this._value.invisible = val; }
   public setColor(val: ColorDef): void { this._color = true; this._value.color = val; }
   public setWeight(val: number): void { this._weight = true; this._value.weight = val; }
-  public setStyle(val: Id) { this._style = true; this._value.styleId = val; }
+  public setStyle(val: Id64) { this._style = true; this._value.styleId = val; }
   public setDisplayPriority(val: number) { this._priority = true; this._value.priority = val; }
-  public setMaterial(val: Id) { this._material = true; this._value.materialId = val; }
+  public setMaterial(val: Id64) { this._material = true; this._value.materialId = val; }
   public setTransparency(val: number) { this._transp = true; this._value.transparency = val; }
   public applyTo(appear: Appearance): void {
     if (this._invisible) appear.invisible = this._value.invisible;
@@ -131,8 +131,8 @@ export class SubCategoryOverride {
     if (json.invisible) val.setInvisible(JsonUtils.asBool(json.invisible));
     if (json.color) val.setColor(ColorDef.fromJSON(json.color));
     if (json.weight) val.setWeight(JsonUtils.asInt(json.weight));
-    if (json.style) val.setStyle(new Id(json.style));
-    if (json.material) val.setMaterial(new Id(json.material));
+    if (json.style) val.setStyle(new Id64(json.style));
+    if (json.material) val.setMaterial(new Id64(json.material));
     if (json.priority) val.setDisplayPriority(JsonUtils.asInt(json.priority));
     if (json.transp) val.setTransparency(JsonUtils.asDouble(json.transp));
     return val;
@@ -156,8 +156,8 @@ export class SubCategory extends DefinitionElement {
   }
 
   public getSubCategoryName(): string { return this.code.getValue(); }
-  public getSubCategoryId(): Id { return this.id; }
-  public getCategoryId(): Id { return this.parent ? this.parent.id : new Id(); }
+  public getSubCategoryId(): Id64 { return this.id; }
+  public getCategoryId(): Id64 { return this.parent ? this.parent.id : new Id64(); }
   public isDefaultSubCategory(): boolean { return Category.getDefaultSubCategoryId(this.getCategoryId()) === this.getSubCategoryId(); }
 }
 
@@ -182,8 +182,9 @@ export class Category extends DefinitionElement {
     this.rank = JsonUtils.asInt(props.rank);
     this.description = JsonUtils.asString(props.description);
   }
-  public static getDefaultSubCategoryId(id: Id): Id { return id.isValid() ? new Id([id.lo, id.hi + 1]) : new Id(); }
-  public myDefaultSubCategoryId(): Id { return Category.getDefaultSubCategoryId(this.id); }
+
+  public static getDefaultSubCategoryId(id: Id64): Id64 { return id.isValid() ? new Id64([id.lo, id.hi + 1]) : new Id64(); }
+  public myDefaultSubCategoryId(): Id64 { return Category.getDefaultSubCategoryId(this.id); }
 }
 
 /** Categorizes 2d graphical elements. */

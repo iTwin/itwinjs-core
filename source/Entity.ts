@@ -3,20 +3,21 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Schema } from "./Schema";
-import { IModel, Id } from "./IModel";
+import { IModel } from "./IModel";
 import { EntityMetaData, PropertyMetaData } from "./EntityMetaData";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
 
 /** The properties of any ECEntityCLass. Every instance has at least the iModel and the name of the schema and class that defines it. */
-export interface ClassProps {
+export interface EntityProps {
   [propName: string]: any;
 
   iModel: IModel;
   classFullName: string;
 }
 
-export interface ClassCtor extends FunctionConstructor {
+export interface EntityCtor extends FunctionConstructor {
   schema: Schema;
-  new(args: ClassProps): Entity;
+  new(args: EntityProps): Entity;
 }
 
 /** Base class for all ECEntityClasses. */
@@ -31,9 +32,9 @@ export class Entity {
   public iModel: IModel;
 
   /** The unique ID of this Entity within its IModel, if persistent. */
-  public id: Id;
+  public id: Id64;
 
-  constructor(opt: ClassProps) {
+  constructor(opt: EntityProps) {
     this.iModel = opt.iModel;
 
     EntityMetaData.forEachProperty(this.iModel, this.schemaName, this.className, true, (propname: string, ecprop: PropertyMetaData) => {

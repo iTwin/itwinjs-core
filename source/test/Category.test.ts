@@ -4,7 +4,7 @@
 
 import { assert } from "chai";
 import { Appearance, AppearanceProps, SubCategoryOverride } from "../Category";
-import { Id } from "../IModel";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
 import { ColorDef } from "../Render";
 import { BisCore } from "../BisCore";
 
@@ -19,8 +19,8 @@ describe("Category tests", () => {
       weight: 3,
       priority: 4,
       transp: 6,
-      style: new Id("0x22"),
-      material: new Id("0x24"),
+      style: new Id64("0x22"),
+      material: new Id64("0x24"),
       dontPlot: true,
       dontLocate: true,
       dontSnap: true,
@@ -66,16 +66,16 @@ describe("Category tests", () => {
     o1.setWeight(13);
     o1.setTransparency(133);
     o1.setInvisible(true);
-    o1.setMaterial(new Id("0x222"));
-    o1.setStyle(new Id("0x2"));
+    o1.setMaterial(new Id64("0x222"));
+    o1.setStyle(new Id64("0x2"));
     o1.applyTo(a2);
     assert.isTrue(a2.color.equals(ColorDef.darkBlue()));
     assert.isTrue(a2.invisible);
     assert.equal(a2.weight, 13);
     assert.equal(a2.transparency, 133);
     assert.equal(a2.priority, 33);
-    assert.isTrue(a2.styleId.equals(new Id("0x2")));
-    assert.isTrue(a2.materialId.equals(new Id("0x222")));
+    assert.isTrue(a2.styleId.equals(new Id64("0x2")));
+    assert.isTrue(a2.materialId.equals(new Id64("0x222")));
     o1.setColor(ColorDef.darkRed());
     assert.isTrue(a2.color.equals(ColorDef.darkBlue()));
 

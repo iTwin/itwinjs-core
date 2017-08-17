@@ -1,19 +1,20 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id, Code, IModel } from "./IModel";
-import { Entity, ClassProps } from "./Entity";
+import { Code, IModel } from "./IModel";
+import { Entity, EntityProps } from "./Entity";
 import { ClassRegistry } from "./ClassRegistry";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
-import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
 
-export interface ModelProps extends ClassProps {
-  id: Id | string;
-  modeledElement: Id;
-  parentModel?: Id;
+export interface ModelProps extends EntityProps {
+  id: Id64 | string;
+  modeledElement: Id64;
+  parentModel?: Id64;
   isPrivate?: boolean;
   isTemplate?: boolean;
   jsonProperties?: any;
@@ -21,17 +22,17 @@ export interface ModelProps extends ClassProps {
 
 /** A Model within an iModel */
 export class Model extends Entity {
-  public modeledElement: Id;
-  public parentModel: Id;
+  public modeledElement: Id64;
+  public parentModel: Id64;
   public jsonProperties: any;
   public isPrivate: boolean;
   public isTemplate: boolean;
 
   constructor(props: ModelProps) {
     super(props);
-    this.id = new Id(props.id);
-    this.modeledElement = new Id(props.modeledElement);
-    this.parentModel = new Id(props.parentModel);
+    this.id = new Id64(props.id);
+    this.modeledElement = new Id64(props.modeledElement);
+    this.parentModel = new Id64(props.parentModel);
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
     this.jsonProperties = props.jsonProperties ? props.jsonProperties : {};
@@ -44,7 +45,7 @@ export class GeometricModel extends Model {
 
 /** a request to load a model. */
 export interface ModelLoadParams {
-  id?: Id | string;
+  id?: Id64 | string;
   code?: Code;
   /** if true, do not load the geometry of the model */
   noGeometry?: boolean;
@@ -62,12 +63,12 @@ export class Models {
    * @param opts  Either the id or the code of the model
    * @returns The Model or undefined if the Id is not found
    */
-  public async getModel(opts: ModelLoadParams): BentleyPromise<DbResult, Model|undefined> {
+  public async getModel(opts: ModelLoadParams): BentleyPromise<DgnDbStatus, Model | undefined> {
     // first see if the model is already in the local cache.
     if (opts.id) {
       const loaded = this._loaded.get(opts.id.toString());
       if (loaded)
-        return {result: loaded};
+        return { result: loaded };
     }
 
     // Must go get the model from the iModel. Start by requesting the model's data.
@@ -82,12 +83,14 @@ export class Models {
 
     const modelObj = await ClassRegistry.createInstance(props);
     if (modelObj.error)
-      return {error: modelObj.error};
+      return { error: modelObj.error };
 
     const model = modelObj.result as Model;
     assert(modelObj.result instanceof Model);
 
-    this._loaded.set(model.id.toString(), model); // We have created the model. Cache it before we return it.
-    return {result: model};
+    // We have created the model. Cache it before we return it.
+    Object.freeze(model); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
+    this._loaded.set(model.id.toString(), model);
+    return { result: model };
   }
 }
