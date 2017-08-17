@@ -12,12 +12,8 @@ import { Point3d, Vector3d, Range3d, YawPitchRollAngles, Point2d, Range2d, Trans
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Base64 } from "js-base64";
-<<<<<<< HEAD
 import { BentleyPromise, BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
-=======
-import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
->>>>>>> 795d940b6616537fc48f910e51f4bce6d08c04e6
 
 /** The mapping between a class name and its the metadata for that class  */
 export class MetaDataRegistry {
