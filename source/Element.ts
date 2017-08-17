@@ -5,9 +5,9 @@
 import { Code, CodeProps, Id, GeometryStream, Placement3d, Placement2d } from "./IModel";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
-import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { Entity, ClassProps } from "./Entity";
+import { Entity, EntityProps } from "./Entity";
 import { EntityMetaData } from "./EntityMetaData";
 import { Model } from "./Model";
 
@@ -19,7 +19,7 @@ export class RelatedElement {
   }
 }
 
-export interface ElementProps extends ClassProps {
+export interface ElementProps extends EntityProps {
   model: Id | string;
   code: CodeProps;
   id: Id | string;
@@ -51,7 +51,7 @@ export class Element extends Entity {
   }
 
   /** Get the metadata for the Entity of this element. */
-  public async getClassMetaData(): Promise<EntityMetaData|undefined> { return this.iModel.classMetaDataRegistry.get(this.schemaName, this.className); }
+  public async getClassMetaData(): Promise<EntityMetaData | undefined> { return this.iModel.classMetaDataRegistry.get(this.schemaName, this.className); }
 
   public getUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = {}; return this.jsonProperties.UserProps; }
   public setUserProperties(nameSpace: string, value: any) { this.getUserProperties()[nameSpace] = value; }
@@ -71,7 +71,7 @@ export class Element extends Entity {
   }
 
   /** Get the Model that modeling this Element (if it exists). That is, the model that is beneath this element in the hierarchy. */
-  public async getSubModel(): BentleyPromise<DbResult, Model | undefined> {
+  public async getSubModel(): BentleyPromise<DgnDbStatus, Model | undefined> {
     if (this.id.equals(this.iModel.elements.rootSubjectId))
       return { result: undefined };
 

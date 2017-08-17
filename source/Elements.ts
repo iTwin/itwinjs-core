@@ -69,7 +69,7 @@ export class Elements {
   }
 
   /** Get the root subject element. */
-  public async getRootSubject(): BentleyPromise<DbResult, Element | undefined> {
+  public async getRootSubject(): BentleyPromise<DgnDbStatus, Element | undefined> {
     return this.getElement({ id: this.rootSubjectId });
   }
 }

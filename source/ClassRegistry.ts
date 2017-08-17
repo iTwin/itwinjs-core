@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { ClassCtor, Entity, ClassProps } from "./Entity";
+import { EntityCtor, Entity, EntityProps } from "./Entity";
 import { EntityMetaData, ClassFullName } from "./EntityMetaData";
 import { IModel } from "./IModel";
 import { Schema, Schemas } from "./Schema";
@@ -12,7 +12,7 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 /** The mapping between a class name (schema.class) and its constructor function  */
 export class ClassRegistry {
-  public static ecClasses: Map<string, ClassCtor> = new Map<string, ClassCtor>();
+  public static ecClasses: Map<string, EntityCtor> = new Map<string, EntityCtor>();
 
   private static getKey(schemaName: string, className: string) {
     return (schemaName + "." + className).toLowerCase();
@@ -23,7 +23,7 @@ export class ClassRegistry {
   }
 
   /** create an instance of a class from it properties */
-  public static async createInstance(props: ClassProps): BentleyPromise<DgnDbStatus, Entity> {
+  public static async createInstance(props: EntityProps): BentleyPromise<DgnDbStatus, Entity> {
     if (!props.classFullName || !props.iModel)
       return { error: { status: DgnDbStatus.BadArg, message: "Invalid input props" } };
 
@@ -73,7 +73,7 @@ export class ClassRegistry {
     return domainDef + "class " + ecClass.name + " " + classDefExtends + " { } " + classDefStaticProps;
   }
 
-  public static registerEcClass(ctor: ClassCtor) {
+  public static registerEcClass(ctor: EntityCtor) {
     const key = ClassRegistry.getKey(ctor.schema.name, ctor.name);
     ClassRegistry.ecClasses.set(key, ctor);
   }
@@ -98,7 +98,7 @@ export class ClassRegistry {
   /** This function fetches the specified Entity from the imodel, generates a JS class for it, and registers the generated
    *  class. This function also ensures that all of the base classes of the Entity exist and are registered.
    */
-  private static async generateClass(classFullName: string, imodel: IModel): BentleyPromise<DgnDbStatus, ClassCtor> {
+  private static async generateClass(classFullName: string, imodel: IModel): BentleyPromise<DgnDbStatus, EntityCtor> {
 
     if (!imodel.dgnDb)
       throw new Error("IModel must be open");
@@ -133,7 +133,7 @@ export class ClassRegistry {
   /** This function generates a JS class for the specified Entity and registers it. It is up to the caller
    *  to make sure that all superclasses are already registered.
    */
-  public static generateClassForECClass(ecclass: EntityMetaData): ClassCtor {
+  public static generateClassForECClass(ecclass: EntityMetaData): EntityCtor {
     // Generate and register this class
     const jsDef = ClassRegistry.generateClassDefFromECClass(ecclass) + " ClassRegistry.registerEcClass(" + ecclass.name + "); ";
 
@@ -152,7 +152,7 @@ export class ClassRegistry {
    * @return A promise that resolves to an object containing a result property set to the Entity.
    * In case of errors, the error property is setup in the resolved object.
    */
-  public static async getClass(fullName: ClassFullName, imodel: IModel): BentleyPromise<DgnDbStatus, ClassCtor> {
+  public static async getClass(fullName: ClassFullName, imodel: IModel): BentleyPromise<DgnDbStatus, EntityCtor> {
     const key = ClassRegistry.getKeyFromName(fullName);
     if (!ClassRegistry.ecClasses.has(key)) {
       return ClassRegistry.generateClass(key, imodel);
