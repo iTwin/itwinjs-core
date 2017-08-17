@@ -2,16 +2,16 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Code, IModel } from "./IModel";
-import { Entity, ClassProps } from "./Entity";
+import { Entity, EntityProps } from "./Entity";
 import { ClassRegistry } from "./ClassRegistry";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
-import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
 
-export interface ModelProps extends ClassProps {
+export interface ModelProps extends EntityProps {
   id: Id64 | string;
   modeledElement: Id64;
   parentModel?: Id64;
@@ -63,12 +63,12 @@ export class Models {
    * @param opts  Either the id or the code of the model
    * @returns The Model or undefined if the Id is not found
    */
-  public async getModel(opts: ModelLoadParams): BentleyPromise<DbResult, Model|undefined> {
+  public async getModel(opts: ModelLoadParams): BentleyPromise<DgnDbStatus, Model | undefined> {
     // first see if the model is already in the local cache.
     if (opts.id) {
       const loaded = this._loaded.get(opts.id.toString());
       if (loaded)
-        return {result: loaded};
+        return { result: loaded };
     }
 
     // Must go get the model from the iModel. Start by requesting the model's data.
@@ -83,12 +83,14 @@ export class Models {
 
     const modelObj = await ClassRegistry.createInstance(props);
     if (modelObj.error)
-      return {error: modelObj.error};
+      return { error: modelObj.error };
 
     const model = modelObj.result as Model;
     assert(modelObj.result instanceof Model);
 
-    this._loaded.set(model.id.toString(), model); // We have created the model. Cache it before we return it.
-    return {result: model};
+    // We have created the model. Cache it before we return it.
+    Object.freeze(model); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
+    this._loaded.set(model.id.toString(), model);
+    return { result: model };
   }
 }

@@ -27,8 +27,8 @@ describe("iModel", () => {
 
   it("should use schema to look up classes by name", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const {result: elementClass} = await BisCore.getClass(Element.name, imodel);
-    const {result: categoryClass} = await BisCore.getClass(Category.name, imodel);
+    const { result: elementClass } = await BisCore.getClass(Element.name, imodel);
+    const { result: categoryClass } = await BisCore.getClass(Category.name, imodel);
     assert.equal(elementClass!.name, "Element");
     assert.equal(categoryClass!.name, "Category");
   });
@@ -42,18 +42,18 @@ describe("Elements", async () => {
     const elements: Elements = imodel.elements;
     assert.exists(elements);
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
-    const {result: el} = await elements.getElement({ code: code1 });
+    const { result: el } = await elements.getElement({ code: code1 });
     assert.exists(el);
-    const {result: el2} = await elements.getElement({ id: "0x34" });
+    const { result: el2 } = await elements.getElement({ id: "0x34" });
     assert.exists(el2);
     const badCode = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
-    const {result: bad} = await elements.getElement({ code: badCode });
+    const { result: bad } = await elements.getElement({ code: badCode });
     assert.isUndefined(bad);
-    const {result: subCat} = await elements.getElement({ id: "0x2e" });
+    const { result: subCat } = await elements.getElement({ id: "0x2e" });
     assert.isTrue(subCat instanceof SubCategory);
-    const {result: cat} = await elements.getElement({ id: (subCat as SubCategory).getCategoryId() });
+    const { result: cat } = await elements.getElement({ id: (subCat as SubCategory).getCategoryId() });
     assert.isTrue(cat instanceof Category);
-    const {result: phys} = await elements.getElement({ id: "0x38", noGeometry: false });
+    const { result: phys } = await elements.getElement({ id: "0x38", noGeometry: false });
     assert.isTrue(phys instanceof GeometricElement3d);
   });
 
@@ -88,13 +88,13 @@ describe("Models", async () => {
     assert.exists(imodel);
     const models: Models = imodel.models;
     assert.exists(models);
-    const {result: model2} = await models.getModel({ id: "0x1c" });
+    const { result: model2 } = await models.getModel({ id: "0x1c" });
     assert.exists(model2);
-    let {result: model} = await models.getModel({ id: "0x1" });
+    let { result: model } = await models.getModel({ id: "0x1" });
     assert.exists(model);
     const code1 = new Code({ spec: "0x1d", scope: "0x1d", value: "A" });
-    ({result: model} = await models.getModel({ code: code1 }));
-    const {result: geomModel} = await ClassRegistry.getClass({ name: "PhysicalModel", schema: "BisCore" }, imodel);
+    ({ result: model } = await models.getModel({ code: code1 }));
+    const { result: geomModel } = await ClassRegistry.getClass({ name: "PhysicalModel", schema: "BisCore" }, imodel);
     assert.exists(model);
     assert.isTrue(model instanceof geomModel!);
   });
@@ -129,7 +129,16 @@ describe("ElementId", () => {
     const j7 = JSON.stringify(t1);
     const p1 = JSON.parse(j7);
     const i8 = new Id64(p1.a);
+    assert(i8.equals(id7));
     assert.isTrue(i8.equals(id7));
+
+    const id1A = new Id64("0x1");
+    const id1B = new Id64(id1A);
+    const id1C = new Id64("0x01");
+    const id1D = new Id64([1, 0]);
+    assert.isTrue(id1A.equals(id1B));
+    assert.isTrue(id1A.equals(id1C));
+    assert.isTrue(id1A.equals(id1D));
   });
 
   it("Model Selectors should hold models", async () => {
@@ -175,7 +184,7 @@ describe("Query", () => {
 
   it("should produce an array of rows", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const {result: allrowsdata} = await imodel.executeQuery("SELECT * FROM " + Category.sqlName);
+    const { result: allrowsdata } = await imodel.executeQuery("SELECT * FROM " + Category.sqlName);
     assert.exists(allrowsdata);
     const rows: any = JSON.parse(allrowsdata!);
     assert.isArray(rows);

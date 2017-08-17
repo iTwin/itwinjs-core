@@ -2,10 +2,10 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 import { IModel } from "./IModel";
-import { ClassCtor } from "./Entity";
+import { EntityCtor } from "./Entity";
 import { ClassRegistry } from "./ClassRegistry";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
-import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 
 /** Base class for all schema classes. */
 export class Schema {
@@ -20,7 +20,7 @@ export class Schema {
    * @param imodel The IModel that contains the class definitions
    * @return The corresponding ClassCtor
    */
-  public static async getClass(className: string, imodel: IModel): BentleyPromise<DbResult, ClassCtor> {
+  public static async getClass(className: string, imodel: IModel): BentleyPromise<DgnDbStatus, EntityCtor> {
     return ClassRegistry.getClass({ schema: this.name, name: className }, imodel);
   }
 }
