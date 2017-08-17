@@ -2,16 +2,17 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Element, ElementProps } from "./Element";
-import { Code, IModel, Id } from "./IModel";
+import { Code, IModel } from "./IModel";
 import { ClassRegistry } from "./ClassRegistry";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
 
 /** Parameters to specify what element to load. */
 export interface ElementLoadParams {
-  id?: Id | string;
+  id?: Id64 | string;
   code?: Code;
   /** if true, do not load the geometry of the element */
   noGeometry?: boolean;
@@ -64,8 +65,8 @@ export class Elements {
   }
 
   /** The Id of the root subject element. */
-  public get rootSubjectId(): Id {
-    return new Id("0x1");
+  public get rootSubjectId(): Id64 {
+    return new Id64("0x1");
   }
 
   /** Get the root subject element. */

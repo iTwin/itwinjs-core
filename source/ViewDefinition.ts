@@ -6,7 +6,7 @@ import { ElementProps, DefinitionElement } from "./Element";
 import { Appearance, SubCategoryOverride } from "./Category";
 import { ViewFlags, HiddenLine, ColorDef } from "./Render";
 import { Light, LightType } from "./Lighting";
-import { Id } from "./IModel";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
 import { Vector3d, Point3d, Range3d, RotMatrix, Transform, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { AxisOrder, Angle, Geometry } from "@bentley/geometry-core/lib/Geometry";
 import { Map4d } from "@bentley/geometry-core/lib/Geometry4d";
@@ -16,7 +16,7 @@ import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 export class ViewController { }
 
 /** The 8 corners of the NPC cube. */
-export enum Npc {
+export const enum Npc {
   _000 = 0,  // Left bottom rear
   _100 = 1,  // Right bottom rear
   _010 = 2,  // Left top rear
@@ -248,15 +248,15 @@ export class ModelSelector extends DefinitionElement {
   public getName(): string { return this.code.getValue(); }
 
   /** Query if the specified DgnModelId is selected by this ModelSelector */
-  public containsModel(modelId: Id): boolean { return this.models.has(modelId.toString()); }
+  public containsModel(modelId: Id64): boolean { return this.models.has(modelId.toString()); }
 
   /**  Add a model to this ModelSelector */
-  public addModel(id: Id): void { this.models.add(id.toString()); }
+  public addModel(id: Id64): void { this.models.add(id.toString()); }
 
   /** Drop a model from this ModelSelector. Model will no longer be displayed by views that use this ModelSelector.
    *  @return true if the model was dropped, false if it was not previously in this ModelSelector
    */
-  public dropModel(id: Id): boolean { return this.models.delete(id.toString()); }
+  public dropModel(id: Id64): boolean { return this.models.delete(id.toString()); }
 }
 
 /** A list of Categories to be displayed in a view.
@@ -271,16 +271,16 @@ export class CategorySelector extends DefinitionElement {
   public getName(): string { return this.code.getValue(); }
 
   /** Determine whether this CategorySelector includes the specified category */
-  public isCategoryViewed(categoryId: Id): boolean { return this.categories.has(categoryId.toString()); }
+  public isCategoryViewed(categoryId: Id64): boolean { return this.categories.has(categoryId.toString()); }
 
   /**  Add a category to this CategorySelector */
-  public addCategory(id: Id): void { this.categories.add(id.toString()); }
+  public addCategory(id: Id64): void { this.categories.add(id.toString()); }
 
   /** Drop a category from this CategorySelector */
-  public dropCategory(id: Id): boolean { return this.categories.delete(id.toString()); }
+  public dropCategory(id: Id64): boolean { return this.categories.delete(id.toString()); }
 
   /** Add or Drop a category to this CategorySelector */
-  public changeCategoryDisplay(categoryId: Id, add: boolean): void { if (add) this.addCategory(categoryId); else this.dropCategory(categoryId); }
+  public changeCategoryDisplay(categoryId: Id64, add: boolean): void { if (add) this.addCategory(categoryId); else this.dropCategory(categoryId); }
 }
 
 /** Parameters used to construct a ViewDefinition */
@@ -291,7 +291,7 @@ export interface ViewDefinitionProps extends ElementProps {
   displayStyle?: DisplayStyle;
 }
 
-export enum ViewportStatus {
+export const enum ViewportStatus {
   Success = 0,
   ViewNotInitialized,
   AlreadyAttached,
@@ -315,15 +315,15 @@ export enum ViewportStatus {
  *  A ViewController holds an editable copy of a ViewDefinition, and a ViewDefinition holds an editable copy of its DisplayStyle and CategorySelector.
  */
 export abstract class ViewDefinition extends DefinitionElement {
-  protected categorySelectorId: Id;
-  protected displayStyleId: Id;
+  protected categorySelectorId: Id64;
+  protected displayStyleId: Id64;
   protected _categorySelector?: CategorySelector;
   protected _displayStyle?: DisplayStyle;
   protected clearState(): void { this._categorySelector = undefined; this._displayStyle = undefined; }
   protected constructor(props: ViewDefinitionProps) {
     super(props);
-    this.categorySelectorId = new Id(props.categorySelectorId);
-    this.displayStyleId = new Id(props.displayStyleId);
+    this.categorySelectorId = new Id64(props.categorySelectorId);
+    this.displayStyleId = new Id64(props.displayStyleId);
     if (props.categorySelector)
       this.setCategorySelector(props.categorySelector);
   }
@@ -331,7 +331,7 @@ export abstract class ViewDefinition extends DefinitionElement {
   // public abstract supplyController(): ViewController;
 
   /** determine whether this ViewDefinition views a given model */
-  public abstract viewsModel(modelId: Id): boolean;
+  public abstract viewsModel(modelId: Id64): boolean;
 
   /** Get the origin of this view */
   public abstract getOrigin(): Point3d;
@@ -496,10 +496,10 @@ export abstract class ViewDefinition extends DefinitionElement {
   public setCategorySelector(categories: CategorySelector) { this._categorySelector = categories; this.categorySelectorId = categories.id; }
 
   /** Get the AuxiliaryCoordinateSystem for this ViewDefinition */
-  public getAuxiliaryCoordinateSystemId(): Id { return new Id(this.getDetail("acs")); }
+  public getAuxiliaryCoordinateSystemId(): Id64 { return new Id64(this.getDetail("acs")); }
 
   /** Set the AuxiliaryCoordinateSystem for this view. */
-  public setAuxiliaryCoordinateSystem(acsId: Id) {
+  public setAuxiliaryCoordinateSystem(acsId: Id64) {
     if (acsId.isValid())
       this.setDetail("acs", acsId.toString());
     else
@@ -507,7 +507,7 @@ export abstract class ViewDefinition extends DefinitionElement {
   }
 
   /** Query if the specified Category is displayed in this view */
-  public viewsCategory(id: Id): boolean { return this._categorySelector!.isCategoryViewed(id); }
+  public viewsCategory(id: Id64): boolean { return this._categorySelector!.isCategoryViewed(id); }
 
   /**  Get the aspect ratio (width/height) of this view */
   public getAspectRatio(): number { const extents = this.getExtents(); return extents.x / extents.y; }
@@ -954,7 +954,7 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
  *  The list of viewed models is stored by the ModelSelector.
  */
 export class SpatialViewDefinition extends ViewDefinition3d {
-  public modelSelectorId: Id;
+  public modelSelectorId: Id64;
   protected _modelSelector: ModelSelector;
   constructor(props: SpatialViewDefinitionProps) { super(props); if (props.modelSelector) this.setModelSelector(props.modelSelector); }
 
@@ -968,7 +968,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   //   //! Get a writable reference to the ModelSelector for this SpatialViewDefinition
   //   DGNPLATFORM_EXPORT ModelSelectorR GetModelSelector();
 
-  public viewsModel(modelId: Id) { return this._modelSelector.containsModel(modelId); }
+  public viewsModel(modelId: Id64) { return this._modelSelector.containsModel(modelId); }
 
   /** Set the ModelSelector for this SpatialViewDefinition
    *  @param[in] models The new ModelSelector.

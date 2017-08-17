@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Code, IModel, Id } from "../IModel";
+import { Code, IModel } from "../IModel";
 import { ColorDef } from "../Render";
 import { ElementProps, Element, GeometricElement3d, InformationPartitionElement, Subject } from "../Element";
 import { Models } from "../Model";
@@ -13,6 +13,7 @@ import { ModelSelector } from "../ViewDefinition";
 import { Elements } from "../Elements";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { BisCore } from "../BisCore";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
 
 // First, register any schemas that will be used in the tests.
 BisCore.registerSchema();
@@ -52,8 +53,29 @@ describe("Elements", async () => {
     assert.isUndefined(bad);
     const { result: subCat } = await elements.getElement({ id: "0x2e" });
     assert.isTrue(subCat instanceof SubCategory);
+    if (subCat) {
+      assert.isTrue(subCat.appearance.color.rgba === 16777215);
+      assert.isTrue(subCat.appearance.weight === 2);
+      assert.isTrue(subCat.id.lo === 46);
+      assert.isTrue(subCat.id.hi === 0);
+      assert.isTrue(subCat.code.spec.lo === 30);
+      assert.isTrue(subCat.code.spec.hi === 0);
+      assert.isTrue(subCat.code.scope === "0X2D");
+      assert.isTrue(subCat.code.value === "A-Z013-G-Legn");
+    }
+
+    /// Get the parent Category of the subcategory.
     const { result: cat } = await elements.getElement({ id: (subCat as SubCategory).getCategoryId() });
     assert.isTrue(cat instanceof Category);
+    if (cat) {
+      assert.isTrue(cat.id.lo === 45);
+      assert.isTrue(cat.id.hi === 0);
+      // assert.isTrue(cat.description === "Legends, symbols keys");
+      assert.isTrue(cat.code.spec.lo === 22);
+      assert.isTrue(cat.code.spec.hi === 0);
+      assert.isTrue(cat.code.value === "A-Z013-G-Legn");
+    }
+
     const { result: phys } = await elements.getElement({ id: "0x38", noGeometry: false });
     assert.isTrue(phys instanceof GeometricElement3d);
     imodel.closeDgnDb();
@@ -69,7 +91,7 @@ describe("Elements", async () => {
     const { result: subModel } = await rootSubject!.getSubModel();
     assert.isUndefined(subModel, "Root subject should not have a subModel");
 
-    const childIds: Id[] = await rootSubject!.queryChildren();
+    const childIds: Id64[] = await rootSubject!.queryChildren();
     assert.isAtLeast(childIds.length, 1);
     for (const childId of childIds) {
       const { result: childElement } = await imodel.elements.getElement({ id: childId });
@@ -107,39 +129,39 @@ describe("Models", async () => {
 describe("ElementId", () => {
 
   it("ElementId should construct properly", () => {
-    const id1 = new Id("0x123");
+    const id1 = new Id64("0x123");
     assert.isTrue(id1.isValid(), "good");
-    const badid = new Id("0x000");
+    const badid = new Id64("0x000");
     assert.isNotTrue(badid.isValid(), "bad");
-    const id2 = new Id("badness");
+    const id2 = new Id64("badness");
     assert.isNotTrue(id2.isValid());
-    const id3 = new Id("0xtbadness");
+    const id3 = new Id64("0xtbadness");
     assert.isNotTrue(id3.isValid());
-    const id4 = new Id("0x1234567890abc");
+    const id4 = new Id64("0x1234567890abc");
     assert.isTrue(id4.isValid());
     assert.equal(id4.hi, 0x123);
     const i5 = "0x20000000001";
-    const id5 = new Id(i5);
+    const id5 = new Id64(i5);
     assert.equal(id5.hi, 0x2);
     assert.equal(id5.lo, 0x1);
     const o5 = id5.toString();
     assert.equal(o5, i5);
-    const id6 = new Id([2000000, 3000]);
+    const id6 = new Id64([2000000, 3000]);
     const v6 = id6.toString();
-    const id7 = new Id(v6);
+    const id7 = new Id64(v6);
     assert.isTrue(id6.equals(id7));
 
     const t1 = { a: id7 };
     const j7 = JSON.stringify(t1);
     const p1 = JSON.parse(j7);
-    const i8 = new Id(p1.a);
+    const i8 = new Id64(p1.a);
     assert(i8.equals(id7));
     assert.isTrue(i8.equals(id7));
 
-    const id1A = new Id("0x1");
-    const id1B = new Id(id1A);
-    const id1C = new Id("0x01");
-    const id1D = new Id([1, 0]);
+    const id1A = new Id64("0x1");
+    const id1B = new Id64(id1A);
+    const id1C = new Id64("0x01");
+    const id1D = new Id64([1, 0]);
     assert.isTrue(id1A.equals(id1B));
     assert.isTrue(id1A.equals(id1C));
     assert.isTrue(id1A.equals(id1D));
@@ -150,18 +172,18 @@ describe("ElementId", () => {
     const props: ElementProps = {
       iModel: imodel1,
       classFullName: BisCore.name + "." + ModelSelector.name,
-      model: new Id([1, 1]),
+      model: new Id64([1, 1]),
       code: Code.createDefault(),
-      id: new Id(),
+      id: new Id64(),
     };
 
     const modelObj = await ClassRegistry.createInstance(props);
     const selector1 = modelObj.result as ModelSelector;
     assert.exists(selector1);
     if (selector1) {
-      selector1.addModel(new Id([2, 1]));
-      selector1.addModel(new Id([2, 1]));
-      selector1.addModel(new Id([2, 3]));
+      selector1.addModel(new Id64([2, 1]));
+      selector1.addModel(new Id64([2, 1]));
+      selector1.addModel(new Id64([2, 3]));
     }
     imodel1.closeDgnDb();
   });
