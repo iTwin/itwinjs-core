@@ -17,7 +17,7 @@ export class IModelTestUtils {
 
     const srcName = __dirname + "/assets/" + filename;
     // const dbName = destPath + "/" + filename;
-    // fs.copySync(__dirname + "/assets/" + filename, dbName);
+    // fs.copySync(srcName, dbName);
     const imodel = new IModel();
     const { error } = await imodel.openDgnDb(srcName, mode);
     assert(!expectSuccess || !error);

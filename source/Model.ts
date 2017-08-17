@@ -47,8 +47,6 @@ export class GeometricModel extends Model {
 export interface ModelLoadParams {
   id?: Id64 | string;
   code?: Code;
-  /** if true, do not load the geometry of the model */
-  noGeometry?: boolean;
 }
 
 /** The collection of Models in an iModel  */
@@ -61,7 +59,7 @@ export class Models {
   /**
    * Get an Model by Id or Code.
    * @param opts  Either the id or the code of the model
-   * @returns The Model or undefined if the Id is not found
+   * @returns The Model or undefined if the model is not found
    */
   public async getModel(opts: ModelLoadParams): BentleyPromise<DgnDbStatus, Model | undefined> {
     // first see if the model is already in the local cache.
