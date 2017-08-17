@@ -18,9 +18,15 @@ export class IModelTestUtils {
     const srcName = __dirname + "/assets/" + filename;
     // const dbName = destPath + "/" + filename;
     // fs.copySync(__dirname + "/assets/" + filename, dbName);
-    const imodel = new IModel();
-    const { error } = await imodel.openDgnDb(srcName, mode);
-    assert(!expectSuccess || !error);
-    return imodel;
+    const { error, result: imodel } = await IModel.openDgnDb(srcName, mode);
+    if (expectSuccess) {
+      assert.isUndefined(error);
+      assert.isTrue(undefined !== imodel);
+      assert.isTrue(null !== imodel);
+      return imodel!;
+    }
+    assert.isTrue(undefined !== imodel);
+    assert.isUndefined(imodel);
+    return undefined!;
   }
 }

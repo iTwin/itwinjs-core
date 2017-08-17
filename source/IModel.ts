@@ -5,14 +5,14 @@
 import { Elements } from "./Elements";
 import { EntityMetaData } from "./EntityMetaData";
 import { Models } from "./Model";
-import { DgnDb } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
+import { DgnDb, DgnDbToken, DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Point3d, Vector3d, Range3d, YawPitchRollAngles, Point2d, Range2d, Transform, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Base64 } from "js-base64";
-import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
+import { BentleyPromise, BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
 
 /** The mapping between a class name and its the metadata for that class  */
 export class ClassMetaDataRegistry {
@@ -28,10 +28,7 @@ export class ClassMetaDataRegistry {
       return mdata;
     }
 
-    if (!this.imodel.dgnDb)
-      throw new Error("IModel must be open");
-
-    const { error, result: mstr } = this.imodel.dgnDb.getECClassMetaDataSync(schemaName, className);
+    const { error, result: mstr } = this.imodel.getECClassMetaDataSync(schemaName, className);
     if (error || !mstr)
       return undefined;
 
@@ -46,31 +43,88 @@ export class ClassMetaDataRegistry {
 /** An iModel database. */
 export class IModel {
   private _fileName: string;
-  private _db: DgnDb;
+  private _db: DgnDbToken;
   private _elements: Elements;
   private _models: Models;
   private _classMetaDataRegistry: ClassMetaDataRegistry;
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
   public get fileName() { return this._fileName; }
 
+  private constructor() {}
+
   /** Open the iModel
    * @param fileName  The name of the iModel
    * @param mode      Open mode for database
    * @return non-zero error status if the iModel could not be opened
    */
-  public async openDgnDb(fileName: string, mode: OpenMode = OpenMode.ReadWrite): BentleyPromise<DbResult, void> {
-    this._fileName = fileName;
-    if (!this._db)
-      this._db = new DgnDb();
-    return this._db.openDb(fileName, mode);
+  public static async openDgnDb(fileName: string, mode: OpenMode = OpenMode.ReadWrite): BentleyPromise<DbResult, IModel> {
+    return new Promise((resolve, _reject) => {
+      DgnDb.callOpenDb(fileName, mode).then((res: BentleyReturn<DbResult, DgnDbToken>) => {
+        if (res.error || !res.result)
+          resolve({ error: res.error });
+        else {
+          const imodel = new IModel();
+          imodel._fileName = fileName;
+          imodel._db = res.result;
+          resolve({ result: imodel });
+        }
+      });
+    });
   }
 
   /** Close this iModel, if it is currently open */
   public closeDgnDb() {
     if (!this._db)
       return;
-    this._db.closeDb();
+    DgnDb.callCloseDb(this._db);
+    (this._db as any) = undefined;  // I am deliberately violating the guarantee that _db can't be undefined. That is so that, if the caller
+                                    // continues to use imodel IModel after closing it HE WILL BLOW UP.
     this._fileName = "";
+  }
+
+  /**
+   * Get the meta data for the specified class defined in imodel iModel, blocking until the result is returned.
+   * @param ecschemaname  The name of the schema
+   * @param ecclassname   The name of the class
+   * @return On success, the BentleyReturn result property will be the class meta data in JSON format.
+   */
+  public getECClassMetaDataSync(ecschemaname: string, ecclassname: string): BentleyReturn<DgnDbStatus, string> {
+    return DgnDb.callGetECClassMetaDataSync(this._db, ecschemaname, ecclassname);
+  }
+
+  /** @deprecated */
+  public tempGetElementPropertiesForDisplay(eid: string): BentleyPromise<DbResult, string> {
+    return DgnDb.callTempGetElementPropertiesForDisplay(this._db, eid);
+    }
+
+  /**
+   * Get a JSON representation of an element.
+   * @param opt A JSON string with options for loading the element
+   * @return Promise that resolves to an object with a result property set to the JSON string of the element.
+   * The resolved object contains an error property if the operation failed.
+   */
+  public getElement(opt: string): BentleyPromise<DgnDbStatus, string> {
+      return DgnDb.callGetElement(this._db, opt);
+  }
+
+  /**
+   * Get a JSON representation of a Model.
+   * @param opt A JSON string with options for loading the model
+   * @return Promise that resolves to an object with a result property set to the JSON string of the model.
+   * The resolved object contains an error property if the operation failed.
+   */
+  public getModel(opt: string): BentleyPromise<DbResult, string> {
+      return DgnDb.callGetModel(this._db, opt);
+  }
+
+  /**
+   * Get the meta data for the specified class defined in imodel iModel (asynchronously).
+   * @param ecschemaname  The name of the schema
+   * @param ecclassname   The name of the class
+   * @return On success, the BentleyReturn result property will be the class meta data in JSON format.
+   */
+  public getECClassMetaData(ecschemaname: string, ecclassname: string): BentleyPromise<DgnDbStatus, string> {
+    return DgnDb.callGetECClassMetaData(this._db, ecschemaname, ecclassname);
   }
 
   /** Get the ClassMetaDataRegistry for this iModel */
@@ -105,7 +159,7 @@ export class IModel {
    * @throws Error if the statement is invalid
    */
   public executeQuery(ecsql: string): BentleyPromise<DbResult, string> {
-    return this._db.executeQuery(ecsql);
+    return DgnDb.callExecuteQuery(this._db, ecsql);
   }
 }
 

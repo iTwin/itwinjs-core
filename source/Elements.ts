@@ -41,7 +41,7 @@ export class Elements {
     }
 
     // Must go get the element from the iModel. Start by requesting the element's data.
-    const getObj = await this._iModel.dgnDb.getElement(JSON.stringify(opts));
+    const getObj = await this._iModel.getElement(JSON.stringify(opts));
     if (getObj.error || !getObj.result) { // todo: Shouldn't getObj.result always be non-empty if there is no error?
       return { result: undefined }; // we didn't find an element with the specified identity. That's not an error, just an empty result.
     }
