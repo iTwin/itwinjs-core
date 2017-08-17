@@ -16,10 +16,10 @@ export class IModelTestUtils {
       fs.mkdirSync(destPath);
 
     const srcName = __dirname + "/assets/" + filename;
-    // const dbName = destPath + "/" + filename;
-    // fs.copySync(__dirname + "/assets/" + filename, dbName);
+    const dbName = destPath + "/" + filename;
+    fs.copySync(srcName, dbName);
     const imodel = new IModel();
-    const { error } = await imodel.openDgnDb(srcName, mode);
+    const { error } = await imodel.openDgnDb(dbName, mode);
     assert(!expectSuccess || !error);
     return imodel;
   }

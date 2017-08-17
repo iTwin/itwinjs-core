@@ -19,7 +19,7 @@ describe("Class Registry", () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const elements: Elements = imodel.elements;
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
-    const {result: el} = await elements.getElement({ code: code1 });
+    const { result: el } = await elements.getElement({ code: code1 });
     assert(el !== undefined);
     assert(el != null);
     if (el) {
@@ -47,7 +47,7 @@ describe("Class Registry", () => {
       assert.equal(p.primitiveECProperty.extendedType, "BeGuid");
       assert.equal(p.customAttributes[1].ecclass.name, "HiddenProperty");
     }
-    const {result: el2} = await elements.getElement({ id: "0x34" });
+    const { result: el2 } = await elements.getElement({ id: "0x34" });
     assert.isDefined(el2);
     assert.isNotNull(el2);
     if (el2) {
@@ -70,6 +70,7 @@ describe("Class Registry", () => {
       assert.isDefined(n.navigationECProperty);
       assert.equal(n.navigationECProperty.relationshipClass.name, "SpatialViewDefinitionUsesModelSelector");
     }
+    imodel.closeDgnDb();
   });
 
 });

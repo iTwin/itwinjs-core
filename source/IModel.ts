@@ -15,18 +15,17 @@ import { Base64 } from "js-base64";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
 
 /** The mapping between a class name and its the metadata for that class  */
-export class ClassMetaDataRegistry {
+export class MetaDataRegistry {
   private reg: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();
   constructor(private imodel: IModel) { }
   private static getKey(schemaName: string, className: string) { return (schemaName + "." + className).toLowerCase(); }
 
   /** Get the specified Entity metadata */
   public get(schemaName: string, className: string): EntityMetaData | undefined {
-    const key: string = ClassMetaDataRegistry.getKey(schemaName, className);
+    const key: string = MetaDataRegistry.getKey(schemaName, className);
     let mdata = this.reg.get(key);
-    if (null !== mdata && undefined !== mdata) {
+    if (mdata)
       return mdata;
-    }
 
     if (!this.imodel.dgnDb)
       throw new Error("IModel must be open");
@@ -49,7 +48,7 @@ export class IModel {
   private _db: DgnDb;
   private _elements: Elements;
   private _models: Models;
-  private _classMetaDataRegistry: ClassMetaDataRegistry;
+  private _classMetaDataRegistry: MetaDataRegistry;
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
   public get fileName() { return this._fileName; }
 
@@ -74,9 +73,9 @@ export class IModel {
   }
 
   /** Get the ClassMetaDataRegistry for this iModel */
-  public get classMetaDataRegistry(): ClassMetaDataRegistry {
+  public get classMetaDataRegistry(): MetaDataRegistry {
     if (!this._classMetaDataRegistry)
-      this._classMetaDataRegistry = new ClassMetaDataRegistry(this);
+      this._classMetaDataRegistry = new MetaDataRegistry(this);
     return this._classMetaDataRegistry;
   }
 

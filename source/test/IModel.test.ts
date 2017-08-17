@@ -22,6 +22,7 @@ describe("iModel", () => {
   it("should open an existing iModel", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     assert.exists(imodel);
+    imodel.closeDgnDb();
   });
 
   it("should use schema to look up classes by name", async () => {
@@ -30,6 +31,7 @@ describe("iModel", () => {
     const { result: categoryClass } = await BisCore.getClass(Category.name, imodel);
     assert.equal(elementClass!.name, "Element");
     assert.equal(categoryClass!.name, "Category");
+    imodel.closeDgnDb();
   });
 });
 
@@ -54,6 +56,7 @@ describe("Elements", async () => {
     assert.isTrue(cat instanceof Category);
     const { result: phys } = await elements.getElement({ id: "0x38", noGeometry: false });
     assert.isTrue(phys instanceof GeometricElement3d);
+    imodel.closeDgnDb();
   });
 
   it("should have a valid root subject element", async () => {
@@ -77,6 +80,7 @@ describe("Elements", async () => {
         assert.exists(childSubModel, "InformationPartitionElements should have a subModel");
       }
     }
+    imodel.closeDgnDb();
   });
 });
 
@@ -96,6 +100,7 @@ describe("Models", async () => {
     const { result: geomModel } = await ClassRegistry.getClass({ name: "PhysicalModel", schema: "BisCore" }, imodel);
     assert.exists(model);
     assert.isTrue(model instanceof geomModel!);
+    imodel.closeDgnDb();
   });
 
 });
@@ -158,6 +163,7 @@ describe("ElementId", () => {
       selector1.addModel(new Id([2, 1]));
       selector1.addModel(new Id([2, 3]));
     }
+    imodel1.closeDgnDb();
   });
 
   it("ColorDef should compare properly", () => {
@@ -190,5 +196,6 @@ describe("Query", () => {
     assert.isAtLeast(rows.length, 1);
     assert.exists(rows[0].eCInstanceId);
     assert.notEqual(rows[0].eCInstanceId, "");
+    imodel.closeDgnDb();
   });
 });
