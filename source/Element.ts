@@ -6,6 +6,8 @@ import { Code, CodeProps, GeometryStream, Placement3d, Placement2d } from "./IMo
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
+import { ClassRegistry } from "./ClassRegistry";
+import { ElementAspectProps, ElementUniqueAspect } from "./ElementAspect";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Entity, EntityProps } from "./Entity";
 import { EntityMetaData } from "./EntityMetaData";
@@ -60,14 +62,14 @@ export class Element extends Entity {
 
   /** Query for the child elements of this element. */
   public async queryChildren(): Promise<Id64[]> {
-    const { error, result: rows } = await this.iModel.executeQuery("SELECT ECInstanceId as id FROM " + Element.sqlName + " WHERE Parent.Id=" + this.id.toString()); // WIP: need to bind!
-    if (error || !rows) {
+    const { error, result: rowsJson } = await this.iModel.executeQuery("SELECT ECInstanceId as id FROM " + Element.sqlName + " WHERE Parent.Id=" + this.id.toString()); // WIP: need to bind!
+    if (error || !rowsJson) {
       assert(false);
       return Promise.resolve([]);
     }
 
     const childIds: Id64[] = [];
-    JSON.parse(rows).forEach((row: any) => childIds.push(new Id64(row.id))); // WIP: executeQuery should return eCInstanceId as a string
+    JSON.parse(rowsJson).forEach((row: any) => childIds.push(new Id64(row.id))); // WIP: executeQuery should return eCInstanceId as a string
     return Promise.resolve(childIds);
   }
 
@@ -77,6 +79,34 @@ export class Element extends Entity {
       return { result: undefined };
 
     return this.iModel.models.getModel({ id: this.id });
+  }
+
+  /** Get an ElementUniqueAspect instance (by class name) that is related to this element. */
+  public async getUniqueAspect(aspectClassName: string): BentleyPromise<DgnDbStatus, ElementUniqueAspect | undefined> {
+    const { error, result: rowsJson } = await this.iModel.executeQuery("SELECT * FROM " + aspectClassName + " WHERE Element.Id=" + this.id.toString()); // WIP: need to bind!
+    if (error || !rowsJson)
+      return { result: undefined };
+
+    const rows: any[] = JSON.parse(rowsJson);
+    if (rows.length !== 1)
+      return { result: undefined };
+
+    const aspectProps: ElementAspectProps = rows[0]; // start with everything that SELECT * returned
+    aspectProps.classFullName = aspectClassName; // add in property required by EntityProps
+    aspectProps.iModel = this.iModel; // add in property required by EntityProps
+    aspectProps.element = this.id; // add in property required by ElementAspectProps
+    aspectProps.id = aspectProps.eCInstanceId; // add in property required by ElementAspectProps
+    aspectProps.eCInstanceId = undefined; // clear property from SELECT * that we don't want in the final instance
+    aspectProps.eCClassId = undefined; // clear property from SELECT * that we don't want in the final instance
+
+    const { result: instance } = await ClassRegistry.createInstance(aspectProps);
+    if (!instance)
+      return { result: undefined };
+
+    assert(instance instanceof ElementUniqueAspect);
+    const aspect: ElementUniqueAspect = instance as ElementUniqueAspect;
+    Object.freeze(aspect);
+    return { result: aspect };
   }
 }
 
