@@ -9,7 +9,7 @@ import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 export interface ModelProps extends EntityProps {
   id: Id64 | string;

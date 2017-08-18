@@ -4,7 +4,7 @@
 
 import { assert } from "chai";
 import { Appearance, AppearanceProps, SubCategoryOverride } from "../Category";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { ColorDef } from "../Render";
 import { BisCore } from "../BisCore";
 

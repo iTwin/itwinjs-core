@@ -4,7 +4,6 @@
 
 import { assert } from "chai";
 import { Code, IModel } from "../IModel";
-import { ColorDef } from "../Render";
 import { ElementProps, Element, GeometricElement3d, InformationPartitionElement, Subject } from "../Element";
 import { Models } from "../Model";
 import { Category, SubCategory } from "../Category";
@@ -13,7 +12,7 @@ import { ModelSelector } from "../ViewDefinition";
 import { Elements } from "../Elements";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { BisCore } from "../BisCore";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 // First, register any schemas that will be used in the tests.
 BisCore.registerSchema();
@@ -70,7 +69,7 @@ describe("Elements", async () => {
     if (cat) {
       assert.isTrue(cat.id.lo === 45);
       assert.isTrue(cat.id.hi === 0);
-      // assert.isTrue(cat.description === "Legends, symbols keys");
+      assert.isTrue(cat.description === "Legends, symbols keys");
       assert.isTrue(cat.code.spec.lo === 22);
       assert.isTrue(cat.code.spec.hi === 0);
       assert.isTrue(cat.code.value === "A-Z013-G-Legn");
@@ -79,6 +78,19 @@ describe("Elements", async () => {
     const { result: phys } = await elements.getElement({ id: "0x38", noGeometry: false });
     assert.isTrue(phys instanceof GeometricElement3d);
     imodel.closeDgnDb();
+  });
+
+  it("should load by federation Guid", async () => {
+    const imodel = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim", true);
+    assert.exists(imodel);
+    const elements = imodel.elements;
+    const { result: el2 } = await elements.getElement({ id: "0x1d" });
+    assert.exists(el2);
+    assert.isTrue(el2!.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    const { result: el3 } = await elements.getElement({ federationGuid: el2!.federationGuid!.value });
+    assert.exists(el3);
+    assert.notEqual(el2, el3);
+    assert.isTrue(el2!.id.equals(el3!.id));
   });
 
   it("should have a valid root subject element", async () => {
@@ -126,46 +138,7 @@ describe("Models", async () => {
   });
 
 });
-describe("ElementId", () => {
-
-  it("ElementId should construct properly", () => {
-    const id1 = new Id64("0x123");
-    assert.isTrue(id1.isValid(), "good");
-    const badid = new Id64("0x000");
-    assert.isNotTrue(badid.isValid(), "bad");
-    const id2 = new Id64("badness");
-    assert.isNotTrue(id2.isValid());
-    const id3 = new Id64("0xtbadness");
-    assert.isNotTrue(id3.isValid());
-    const id4 = new Id64("0x1234567890abc");
-    assert.isTrue(id4.isValid());
-    assert.equal(id4.hi, 0x123);
-    const i5 = "0x20000000001";
-    const id5 = new Id64(i5);
-    assert.equal(id5.hi, 0x2);
-    assert.equal(id5.lo, 0x1);
-    const o5 = id5.toString();
-    assert.equal(o5, i5);
-    const id6 = new Id64([2000000, 3000]);
-    const v6 = id6.toString();
-    const id7 = new Id64(v6);
-    assert.isTrue(id6.equals(id7));
-
-    const t1 = { a: id7 };
-    const j7 = JSON.stringify(t1);
-    const p1 = JSON.parse(j7);
-    const i8 = new Id64(p1.a);
-    assert(i8.equals(id7));
-    assert.isTrue(i8.equals(id7));
-
-    const id1A = new Id64("0x1");
-    const id1B = new Id64(id1A);
-    const id1C = new Id64("0x01");
-    const id1D = new Id64([1, 0]);
-    assert.isTrue(id1A.equals(id1B));
-    assert.isTrue(id1A.equals(id1C));
-    assert.isTrue(id1A.equals(id1D));
-  });
+describe("ModelSelector", () => {
 
   it("Model Selectors should hold models", async () => {
     const imodel1: IModel = await IModelTestUtils.openIModel("test.bim", true);
@@ -188,23 +161,6 @@ describe("ElementId", () => {
     imodel1.closeDgnDb();
   });
 
-  it("ColorDef should compare properly", () => {
-    const color1 = ColorDef.from(1, 2, 3, 0);
-    const color2 = ColorDef.from(1, 2, 3, 0);
-    const color3 = ColorDef.from(0xa, 2, 3, 0);
-    const blue = ColorDef.blue();
-
-    assert.isTrue(color1.equals(color2), "color1 should equal color2");
-    assert.isNotTrue(color1.equals(blue), "color1 should not equal blue");
-
-    const blueVal = blue.rgba;
-    assert.equal(blueVal, 0xff0000);
-    assert.isTrue(blue.equals(new ColorDef(blueVal)));
-
-    const colors = color3.getColors();
-    ColorDef.from(colors.r, colors.g, colors.b, 0x30, color3);
-    assert.isTrue(color3.equals(ColorDef.from(0xa, 2, 3, 0x30)));
-  });
 });
 
 describe("Query", () => {

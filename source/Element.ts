@@ -10,7 +10,7 @@ import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Entity, EntityProps } from "./Entity";
 import { EntityMetaData } from "./EntityMetaData";
 import { Model } from "./Model";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
+import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 
 /** The Id and relationship class of an Element that is related to another Element */
 export class RelatedElement {
@@ -25,7 +25,7 @@ export interface ElementProps extends EntityProps {
   code: CodeProps;
   id: Id64 | string;
   parent?: RelatedElement;
-  federationGuid?: string;
+  federationGuid?: Guid;
   userLabel?: string;
   jsonProperties?: any;
 }
@@ -35,7 +35,7 @@ export class Element extends Entity {
   public model: Id64;
   public code: Code;
   public parent?: RelatedElement;
-  public federationGuid?: string;
+  public federationGuid?: Guid;
   public userLabel?: string;
   public jsonProperties: any;
 
@@ -46,7 +46,7 @@ export class Element extends Entity {
     this.code = new Code(props.code);
     this.model = new Id64(props.model);
     this.parent = RelatedElement.fromJSON(props.parent);
-    this.federationGuid = props.federationGuid;
+    this.federationGuid = Guid.fromJson(props.federationGuid);
     this.userLabel = props.userLabel;
     this.jsonProperties = props.jsonProperties ? props.jsonProperties : {};
   }
