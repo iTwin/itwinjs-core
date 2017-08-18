@@ -6,6 +6,7 @@ import { Entity, EntityProps } from "./Entity";
 
 /** ElementAspectProps */
 export interface ElementAspectProps extends EntityProps {
+  id: Id64 | string;
   element: Id64 | string;
 }
 
