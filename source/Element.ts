@@ -7,7 +7,7 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { ClassRegistry } from "./ClassRegistry";
-import { ElementAspectProps, ElementUniqueAspect } from "./ElementAspect";
+import { ElementAspect, ElementAspectProps, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Entity, EntityProps } from "./Entity";
 import { EntityMetaData } from "./EntityMetaData";
@@ -81,32 +81,58 @@ export class Element extends Entity {
     return this.iModel.models.getModel({ id: this.id });
   }
 
+  /** Query for aspects rows (by aspect class name) associated with this element. */
+  private async queryAspects(aspectClassName: string): BentleyPromise<DgnDbStatus, ElementAspect[] | undefined> {
+    const response = await this.iModel.executeQuery("SELECT * FROM " + aspectClassName + " WHERE Element.Id=" + this.id.toString()); // WIP: need to bind!
+    if (response.error || !response.result)
+      return { result: undefined };
+
+    const rows: any[] = JSON.parse(response.result);
+    if (!rows || rows.length === 0)
+      return { result: undefined };
+
+    const aspects: ElementAspect[] = [];
+    for (const row of rows) {
+      const aspectProps: ElementAspectProps = row; // start with everything that SELECT * returned
+      aspectProps.classFullName = aspectClassName; // add in property required by EntityProps
+      aspectProps.iModel = this.iModel; // add in property required by EntityProps
+      aspectProps.element = this.id; // add in property required by ElementAspectProps
+      aspectProps.id = aspectProps.eCInstanceId; // add in property required by ElementAspectProps
+      aspectProps.eCInstanceId = undefined; // clear property from SELECT * that we don't want in the final instance
+      aspectProps.eCClassId = undefined; // clear property from SELECT * that we don't want in the final instance
+
+      const { result: aspect } = await ClassRegistry.createInstance(aspectProps);
+      if (!aspect)
+        return { result: undefined };
+
+      assert(aspect instanceof ElementAspect);
+      Object.freeze(aspect);
+      aspects.push(aspect as ElementAspect);
+    }
+
+    return { result: aspects };
+  }
+
   /** Get an ElementUniqueAspect instance (by class name) that is related to this element. */
   public async getUniqueAspect(aspectClassName: string): BentleyPromise<DgnDbStatus, ElementUniqueAspect | undefined> {
-    const { error, result: rowsJson } = await this.iModel.executeQuery("SELECT * FROM " + aspectClassName + " WHERE Element.Id=" + this.id.toString()); // WIP: need to bind!
-    if (error || !rowsJson)
+    const response = await this.queryAspects(aspectClassName);
+    const aspects: ElementAspect[] | undefined = response.result;
+    if (!aspects || aspects.length !== 1)
       return { result: undefined };
 
-    const rows: any[] = JSON.parse(rowsJson);
-    if (rows.length !== 1)
+    assert(aspects[0] instanceof ElementUniqueAspect);
+    return { result: aspects[0] };
+  }
+
+  /** Get the ElementMultiAspect instances (by class name) that are related to this element. */
+  public async getMultiAspects(aspectClassName: string): BentleyPromise<DgnDbStatus, ElementMultiAspect[] | undefined> {
+    const response = await this.queryAspects(aspectClassName);
+    const aspects: ElementAspect[] | undefined = response.result;
+    if (!aspects || aspects.length === 0)
       return { result: undefined };
 
-    const aspectProps: ElementAspectProps = rows[0]; // start with everything that SELECT * returned
-    aspectProps.classFullName = aspectClassName; // add in property required by EntityProps
-    aspectProps.iModel = this.iModel; // add in property required by EntityProps
-    aspectProps.element = this.id; // add in property required by ElementAspectProps
-    aspectProps.id = aspectProps.eCInstanceId; // add in property required by ElementAspectProps
-    aspectProps.eCInstanceId = undefined; // clear property from SELECT * that we don't want in the final instance
-    aspectProps.eCClassId = undefined; // clear property from SELECT * that we don't want in the final instance
-
-    const { result: instance } = await ClassRegistry.createInstance(aspectProps);
-    if (!instance)
-      return { result: undefined };
-
-    assert(instance instanceof ElementUniqueAspect);
-    const aspect: ElementUniqueAspect = instance as ElementUniqueAspect;
-    Object.freeze(aspect);
-    return { result: aspect };
+    // return { result: aspects.map((aspect) => aspect as ElementMultiAspect) };
+    return { result: aspects };
   }
 }
 
