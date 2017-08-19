@@ -76,7 +76,7 @@ export class IModel {
   public closeDgnDb() {
     if (!this._db)
       return;
-    // DgnDb.callCloseDb(this._db);
+    DgnDb.callCloseDb(this._db);
     (this._db as any) = undefined;  // I am deliberately violating the guarantee that _db can't be undefined. That is so that, if the caller
     // continues to use imodel IModel after closing it HE WILL BLOW UP.
     this._fileName = "";

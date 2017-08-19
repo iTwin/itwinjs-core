@@ -50,13 +50,13 @@ export class Element extends Entity {
     this.parent = RelatedElement.fromJSON(props.parent);
     this.federationGuid = Guid.fromJson(props.federationGuid);
     this.userLabel = props.userLabel;
-    this.jsonProperties = props.jsonProperties ? props.jsonProperties : {};
+    this.jsonProperties = props.jsonProperties ? props.jsonProperties : new Object();
   }
 
   /** Get the metadata for the Entity of this element. */
   public async getClassMetaData(): Promise<EntityMetaData | undefined> { return this.iModel.classMetaDataRegistry.get(this.schemaName, this.className); }
 
-  public getUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = {}; return this.jsonProperties.UserProps; }
+  public getUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
   public setUserProperties(nameSpace: string, value: any) { this.getUserProperties()[nameSpace] = value; }
   public removeUserProperties(nameSpace: string) { delete this.getUserProperties()[nameSpace]; }
 

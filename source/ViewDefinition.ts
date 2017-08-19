@@ -233,7 +233,7 @@ export class DisplayStyle3d extends DisplayStyle {
   }
 
   public setSceneBrightness(fstop: number): void { Math.max(-3.0, Math.min(fstop, 3.0)); this.getStyle("sceneLights").fstop = fstop; }
-  public getSceneBrightness(): number { return this.getStyle("sceneLights").fstop; }
+  public getSceneBrightness(): number { return JsonUtils.asDouble(this.getStyle("sceneLights").fstop, 0); }
 }
 
 /** A list of GeometricModels for a SpatialViewDefinition.

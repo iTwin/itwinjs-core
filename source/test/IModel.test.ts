@@ -13,33 +13,35 @@ import { Elements } from "../Elements";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { BisCore } from "../BisCore";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-
-// First, register any schemas that will be used in the tests.
-BisCore.registerSchema();
+import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
 
 describe("iModel", () => {
 
-  it("should open an existing iModel", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
+  let imodel: IModel;
+  let imodel2: IModel;
+
+  before(async () => {
+    // First, register any schemas that will be used in the tests.
+    BisCore.registerSchema();
+    imodel = await IModelTestUtils.openIModel("test.bim", true);
     assert.exists(imodel);
+    imodel2 = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim", true);
+    assert.exists(imodel);
+  });
+
+  after(() => {
     imodel.closeDgnDb();
+    imodel2.closeDgnDb();
   });
 
   it("should use schema to look up classes by name", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const { result: elementClass } = await BisCore.getClass(Element.name, imodel);
     const { result: categoryClass } = await BisCore.getClass(Category.name, imodel);
     assert.equal(elementClass!.name, "Element");
     assert.equal(categoryClass!.name, "Category");
-    imodel.closeDgnDb();
   });
-});
-
-describe("Elements", async () => {
 
   it("should load a known element by Id from an existing iModel", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    assert.exists(imodel);
     const elements: Elements = imodel.elements;
     assert.exists(elements);
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
@@ -77,25 +79,17 @@ describe("Elements", async () => {
 
     const { result: phys } = await elements.getElement({ id: "0x38", noGeometry: false });
     assert.isTrue(phys instanceof GeometricElement3d);
-    imodel.closeDgnDb();
-  });
 
-  it("should load by federation Guid", async () => {
-    const imodel = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim", true);
-    assert.exists(imodel);
-    const elements = imodel.elements;
-    const { result: el2 } = await elements.getElement({ id: "0x1d" });
-    assert.exists(el2);
-    assert.isTrue(el2!.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
-    const { result: el3 } = await elements.getElement({ federationGuid: el2!.federationGuid!.value });
+    const { result: a2 } = await imodel2.elements.getElement({ id: "0x1d" });
+    assert.exists(a2);
+    assert.isTrue(a2!.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    const { result: el3 } = await imodel2.elements.getElement({ federationGuid: a2!.federationGuid!.value });
     assert.exists(el3);
-    assert.notEqual(el2, el3);
-    assert.isTrue(el2!.id.equals(el3!.id));
+    assert.notEqual(a2, el3);
+    assert.isTrue(a2!.id.equals(el3!.id));
   });
 
   it("should have a valid root subject element", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    assert.exists(imodel);
     const { result: rootSubject } = await imodel.elements.getRootSubject();
     assert.exists(rootSubject);
     assert.isTrue(rootSubject instanceof Subject);
@@ -114,15 +108,9 @@ describe("Elements", async () => {
         assert.exists(childSubModel, "InformationPartitionElements should have a subModel");
       }
     }
-    imodel.closeDgnDb();
   });
-});
-
-describe("Models", async () => {
 
   it("should load a known model by Id from an existing iModel", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    assert.exists(imodel);
     const models: Models = imodel.models;
     assert.exists(models);
     const { result: model2 } = await models.getModel({ id: "0x1c" });
@@ -134,16 +122,11 @@ describe("Models", async () => {
     const { result: geomModel } = await ClassRegistry.getClass({ name: "PhysicalModel", schema: "BisCore" }, imodel);
     assert.exists(model);
     assert.isTrue(model instanceof geomModel!);
-    imodel.closeDgnDb();
   });
 
-});
-describe("ModelSelector", () => {
-
   it("Model Selectors should hold models", async () => {
-    const imodel1: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const props: ElementProps = {
-      iModel: imodel1,
+      iModel: imodel,
       classFullName: BisCore.name + "." + ModelSelector.name,
       model: new Id64([1, 1]),
       code: Code.createDefault(),
@@ -158,15 +141,9 @@ describe("ModelSelector", () => {
       selector1.addModel(new Id64([2, 1]));
       selector1.addModel(new Id64([2, 3]));
     }
-    imodel1.closeDgnDb();
   });
 
-});
-
-describe("Query", () => {
-
   it("should produce an array of rows", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const { result: allrowsdata } = await imodel.executeQuery("SELECT * FROM " + Category.sqlName);
     assert.exists(allrowsdata);
     const rows: any = JSON.parse(allrowsdata!);
@@ -174,6 +151,20 @@ describe("Query", () => {
     assert.isAtLeast(rows.length, 1);
     assert.exists(rows[0].eCInstanceId);
     assert.notEqual(rows[0].eCInstanceId, "");
-    imodel.closeDgnDb();
+  });
+
+  it("ElementPropertyFormatter should format", async () => {
+    const elements: Elements = imodel.elements;
+    const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
+    const { result: el } = await elements.getElement({ code: code1 });
+    if (undefined === el)
+      throw new Error();
+    const formatter: ElementPropertyFormatter = new ElementPropertyFormatter(imodel);
+    const { result: props } = await formatter.formatProperties(el);
+    assert.isArray(props);
+    assert.notEqual(props.length, 0);
+    const item = props[0];
+    assert.isString(item.category);
+    assert.isArray(item.properties);
   });
 });

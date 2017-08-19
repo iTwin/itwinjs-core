@@ -9,14 +9,23 @@ import { ElementUniqueAspect } from "../ElementAspect";
 import { IModel } from "../IModel";
 import { IModelTestUtils } from "./IModelTestUtils";
 
-BisCore.registerSchema();
-
 describe("ElementAspect", () => {
 
-  it("should be able to get aspects from test file", async () => {
+  let iModel: IModel;
+
+  before(async () => {
+    // First, register any schemas that will be used in the tests.
+    BisCore.registerSchema();
     // NOTE: see ElementAspectTests.PresentationRuleScenarios in DgnPlatform\Tests\DgnProject\NonPublished\ElementAspect_Test.cpp for how ElementAspectTest.bim was created
-    const iModel: IModel = await IModelTestUtils.openIModel("ElementAspectTest.bim", true);
+    iModel = await IModelTestUtils.openIModel("ElementAspectTest.bim", true);
     assert.exists(iModel);
+  });
+
+  after(() => {
+    iModel.closeDgnDb();
+  });
+
+  it("should be able to get aspects from test file", async () => {
     const { result: element } = await iModel.elements.getElement({ id: "0x17" });
     assert.exists(element);
     assert.isTrue(element instanceof PhysicalElement);

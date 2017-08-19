@@ -10,13 +10,21 @@ import { Elements } from "../Elements";
 import { SpatialViewDefinition, ViewDefinition3d } from "../ViewDefinition";
 import { BisCore } from "../BisCore";
 
-// First, register any domains that will be used in the tests.
-BisCore.registerSchema();
-
 describe("Class Registry", () => {
+  let imodel: IModel;
+
+  before(async () => {
+    // First, register any schemas that will be used in the tests.
+    BisCore.registerSchema();
+    imodel = await IModelTestUtils.openIModel("test.bim", true);
+    assert.exists(imodel);
+  });
+
+  after(() => {
+    imodel.closeDgnDb();
+  });
 
   it("should verify the Entity metadata of known element subclasses", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const elements: Elements = imodel.elements;
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
     const { result: el } = await elements.getElement({ code: code1 });
@@ -70,7 +78,6 @@ describe("Class Registry", () => {
       assert.isDefined(n.navigationECProperty);
       assert.equal(n.navigationECProperty.relationshipClass.name, "SpatialViewDefinitionUsesModelSelector");
     }
-    imodel.closeDgnDb();
   });
 
 });
