@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { DefinitionElement, ElementProps } from "./Element";
 import { ColorDef } from "./Render";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 
 /** Properties to create a SubCategory Appearance */

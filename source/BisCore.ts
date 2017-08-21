@@ -20,6 +20,7 @@ export class BisCore extends Schema {
     super();
     // this list should include all .ts files with implementations of Entity-based classes. Order does not matter.
     ClassRegistry.registerModuleClasses(require("./Element"), this);
+    ClassRegistry.registerModuleClasses(require("./ElementAspect"), this);
     ClassRegistry.registerModuleClasses(require("./Model"), this);
     ClassRegistry.registerModuleClasses(require("./Category"), this);
     ClassRegistry.registerModuleClasses(require("./ViewDefinition"), this);

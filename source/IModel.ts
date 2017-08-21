@@ -13,7 +13,7 @@ import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Base64 } from "js-base64";
 import { BentleyPromise, BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 /** The mapping between a class name and its the metadata for that class  */
 export class MetaDataRegistry {
@@ -50,7 +50,7 @@ export class IModel {
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
   public get fileName() { return this._fileName; }
 
-  private constructor() {}
+  private constructor() { }
 
   /** Open the iModel
    * @param fileName  The name of the iModel
@@ -76,9 +76,9 @@ export class IModel {
   public closeDgnDb() {
     if (!this._db)
       return;
-    DgnDb.callCloseDb(this._db);
+    // DgnDb.callCloseDb(this._db);
     (this._db as any) = undefined;  // I am deliberately violating the guarantee that _db can't be undefined. That is so that, if the caller
-                                    // continues to use imodel IModel after closing it HE WILL BLOW UP.
+    // continues to use imodel IModel after closing it HE WILL BLOW UP.
     this._fileName = "";
   }
 
@@ -95,7 +95,7 @@ export class IModel {
   /** @deprecated */
   public tempGetElementPropertiesForDisplay(eid: string): BentleyPromise<DbResult, string> {
     return DgnDb.callTempGetElementPropertiesForDisplay(this._db, eid);
-    }
+  }
 
   /**
    * Get a JSON representation of an element.
@@ -104,7 +104,7 @@ export class IModel {
    * The resolved object contains an error property if the operation failed.
    */
   public getElement(opt: string): BentleyPromise<DgnDbStatus, string> {
-      return DgnDb.callGetElement(this._db, opt);
+    return DgnDb.callGetElement(this._db, opt);
   }
 
   /**
@@ -114,7 +114,7 @@ export class IModel {
    * The resolved object contains an error property if the operation failed.
    */
   public getModel(opt: string): BentleyPromise<DbResult, string> {
-      return DgnDb.callGetModel(this._db, opt);
+    return DgnDb.callGetModel(this._db, opt);
   }
 
   /**

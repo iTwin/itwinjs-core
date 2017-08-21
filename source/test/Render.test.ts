@@ -11,6 +11,23 @@ import { BisCore } from "../BisCore";
 BisCore.registerSchema();
 
 describe("Render", () => {
+  it("ColorDef should compare properly", () => {
+    const color1 = ColorDef.from(1, 2, 3, 0);
+    const color2 = ColorDef.from(1, 2, 3, 0);
+    const color3 = ColorDef.from(0xa, 2, 3, 0);
+    const blue = ColorDef.blue();
+
+    assert.isTrue(color1.equals(color2), "color1 should equal color2");
+    assert.isNotTrue(color1.equals(blue), "color1 should not equal blue");
+
+    const blueVal = blue.rgba;
+    assert.equal(blueVal, 0xff0000);
+    assert.isTrue(blue.equals(new ColorDef(blueVal)));
+
+    const colors = color3.getColors();
+    ColorDef.from(colors.r, colors.g, colors.b, 0x30, color3);
+    assert.isTrue(color3.equals(ColorDef.from(0xa, 2, 3, 0x30)));
+  });
 
   it("ViewFlags", () => {
     const flags = new ViewFlags();

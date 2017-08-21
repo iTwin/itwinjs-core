@@ -6,11 +6,13 @@ import { Code, CodeProps, GeometryStream, Placement3d, Placement2d } from "./IMo
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
+import { ClassRegistry } from "./ClassRegistry";
+import { ElementAspect, ElementAspectProps, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Entity, EntityProps } from "./Entity";
 import { EntityMetaData } from "./EntityMetaData";
 import { Model } from "./Model";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
+import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 
 /** The Id and relationship class of an Element that is related to another Element */
 export class RelatedElement {
@@ -25,7 +27,7 @@ export interface ElementProps extends EntityProps {
   code: CodeProps;
   id: Id64 | string;
   parent?: RelatedElement;
-  federationGuid?: string;
+  federationGuid?: Guid;
   userLabel?: string;
   jsonProperties?: any;
 }
@@ -35,7 +37,7 @@ export class Element extends Entity {
   public model: Id64;
   public code: Code;
   public parent?: RelatedElement;
-  public federationGuid?: string;
+  public federationGuid?: Guid;
   public userLabel?: string;
   public jsonProperties: any;
 
@@ -46,7 +48,7 @@ export class Element extends Entity {
     this.code = new Code(props.code);
     this.model = new Id64(props.model);
     this.parent = RelatedElement.fromJSON(props.parent);
-    this.federationGuid = props.federationGuid;
+    this.federationGuid = Guid.fromJson(props.federationGuid);
     this.userLabel = props.userLabel;
     this.jsonProperties = props.jsonProperties ? props.jsonProperties : {};
   }
@@ -60,14 +62,14 @@ export class Element extends Entity {
 
   /** Query for the child elements of this element. */
   public async queryChildren(): Promise<Id64[]> {
-    const { error, result: rows } = await this.iModel.executeQuery("SELECT ECInstanceId as id FROM " + Element.sqlName + " WHERE Parent.Id=" + this.id.toString()); // WIP: need to bind!
-    if (error || !rows) {
+    const { error, result: rowsJson } = await this.iModel.executeQuery("SELECT ECInstanceId as id FROM " + Element.sqlName + " WHERE Parent.Id=" + this.id.toString()); // WIP: need to bind!
+    if (error || !rowsJson) {
       assert(false);
       return Promise.resolve([]);
     }
 
     const childIds: Id64[] = [];
-    JSON.parse(rows).forEach((row: any) => childIds.push(new Id64(row.id))); // WIP: executeQuery should return eCInstanceId as a string
+    JSON.parse(rowsJson).forEach((row: any) => childIds.push(new Id64(row.id))); // WIP: executeQuery should return eCInstanceId as a string
     return Promise.resolve(childIds);
   }
 
@@ -77,6 +79,60 @@ export class Element extends Entity {
       return { result: undefined };
 
     return this.iModel.models.getModel({ id: this.id });
+  }
+
+  /** Query for aspects rows (by aspect class name) associated with this element. */
+  private async queryAspects(aspectClassName: string): BentleyPromise<DgnDbStatus, ElementAspect[] | undefined> {
+    const response = await this.iModel.executeQuery("SELECT * FROM " + aspectClassName + " WHERE Element.Id=" + this.id.toString()); // WIP: need to bind!
+    if (response.error || !response.result)
+      return { result: undefined };
+
+    const rows: any[] = JSON.parse(response.result);
+    if (!rows || rows.length === 0)
+      return { result: undefined };
+
+    const aspects: ElementAspect[] = [];
+    for (const row of rows) {
+      const aspectProps: ElementAspectProps = row; // start with everything that SELECT * returned
+      aspectProps.classFullName = aspectClassName; // add in property required by EntityProps
+      aspectProps.iModel = this.iModel; // add in property required by EntityProps
+      aspectProps.element = this.id; // add in property required by ElementAspectProps
+      aspectProps.id = aspectProps.eCInstanceId; // add in property required by ElementAspectProps
+      aspectProps.eCInstanceId = undefined; // clear property from SELECT * that we don't want in the final instance
+      aspectProps.eCClassId = undefined; // clear property from SELECT * that we don't want in the final instance
+
+      const { result: aspect } = await ClassRegistry.createInstance(aspectProps);
+      if (!aspect)
+        return { result: undefined };
+
+      assert(aspect instanceof ElementAspect);
+      Object.freeze(aspect);
+      aspects.push(aspect as ElementAspect);
+    }
+
+    return { result: aspects };
+  }
+
+  /** Get an ElementUniqueAspect instance (by class name) that is related to this element. */
+  public async getUniqueAspect(aspectClassName: string): BentleyPromise<DgnDbStatus, ElementUniqueAspect | undefined> {
+    const response = await this.queryAspects(aspectClassName);
+    const aspects: ElementAspect[] | undefined = response.result;
+    if (!aspects || aspects.length !== 1)
+      return { result: undefined };
+
+    assert(aspects[0] instanceof ElementUniqueAspect);
+    return { result: aspects[0] };
+  }
+
+  /** Get the ElementMultiAspect instances (by class name) that are related to this element. */
+  public async getMultiAspects(aspectClassName: string): BentleyPromise<DgnDbStatus, ElementMultiAspect[] | undefined> {
+    const response = await this.queryAspects(aspectClassName);
+    const aspects: ElementAspect[] | undefined = response.result;
+    if (!aspects || aspects.length === 0)
+      return { result: undefined };
+
+    // return { result: aspects.map((aspect) => aspect as ElementMultiAspect) };
+    return { result: aspects };
   }
 }
 

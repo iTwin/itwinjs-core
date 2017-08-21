@@ -8,12 +8,13 @@ import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 /** Parameters to specify what element to load. */
 export interface ElementLoadParams {
   id?: Id64 | string;
   code?: Code;
+  federationGuid?: string;
   /** if true, do not load the geometry of the element */
   noGeometry?: boolean;
 }
@@ -65,12 +66,8 @@ export class Elements {
   }
 
   /** The Id of the root subject element. */
-  public get rootSubjectId(): Id64 {
-    return new Id64("0x1");
-  }
+  public get rootSubjectId(): Id64 { return new Id64("0x1"); }
 
   /** Get the root subject element. */
-  public async getRootSubject(): BentleyPromise<DgnDbStatus, Element | undefined> {
-    return this.getElement({ id: this.rootSubjectId });
-  }
+  public async getRootSubject(): BentleyPromise<DgnDbStatus, Element | undefined> { return this.getElement({ id: this.rootSubjectId }); }
 }

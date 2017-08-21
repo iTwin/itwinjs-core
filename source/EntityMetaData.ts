@@ -88,7 +88,7 @@ export class EntityMetaData {
   /** An object whose properties correspond by name to the properties of this class. */
   public properties: { [propName: string]: PropertyMetaData };
 
-  /** Invokd a callback on each property of the specified class, optionally including superclass properties.
+  /** Invoke a callback on each property of the specified class, optionally including superclass properties.
    * @param imodel  The IModel that contains the schema
    * @param schemaName The schema that defines the class
    * @param className The name of the class
