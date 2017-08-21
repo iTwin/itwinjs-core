@@ -5,7 +5,7 @@
   "main": "./lib/main",
   "repository": {
     "type": "git",
-    "url": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/imodeljs-core.git"
+    "url": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/imodeljs-core"
   },
   "version": "1.0.31",
   "scripts": {
