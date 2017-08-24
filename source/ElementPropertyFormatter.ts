@@ -5,7 +5,7 @@ import { IModel } from "./IModel";
 import { Element } from "./Element";
 import { BentleyPromise, BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { assert } from "@bentley/bentleyjs-core/lib/assert";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 /** Base class for all schema classes. */
 export class ElementPropertyFormatter {
