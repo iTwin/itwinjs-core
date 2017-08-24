@@ -31,7 +31,7 @@ export class ElementPropertyFormatter {
       // *** NEEDS WORK: We want to format the element's properties right here, using presentation rules.
       // ***             *For now* we must fall back on some hard-coded formatting logic in the native code library.
       // ***             This is a very bad work-around, as it formats the properties of the persistent element in the BIM, not the element passed in!
-      const res: BentleyReturn<DbResult, string> = await this._iModel.tempGetElementPropertiesForDisplay(elem.id.toString());
+      const res: BentleyReturn<DbResult, string> = await this._iModel.GetElementPropertiesForDisplay(elem.id.toString());
       if (res.error || undefined === res.result)
         return res;
       const propsObj = JSON.parse(res.result);

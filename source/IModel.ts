@@ -93,8 +93,8 @@ export class IModel {
   }
 
   /** @deprecated */
-  public tempGetElementPropertiesForDisplay(eid: string): BentleyPromise<DbResult, string> {
-    return DgnDb.callTempGetElementPropertiesForDisplay(this._db, eid);
+  public GetElementPropertiesForDisplay(eid: string): BentleyPromise<DbResult, string> {
+    return DgnDb.callGetElementPropertiesForDisplay(this._db, eid);
   }
 
   /**
