@@ -154,16 +154,14 @@ export class DisplayStyle extends DefinitionElement {
 
   /** Get the background color for this DisplayStyle */
   public getBackgroundColor(): ColorDef {
-    const color = this.getStyle("backgroundColor") as ColorDef | null;
-    return color ? color : ColorDef.black();
+    return ColorDef.fromJSON(this.getStyle("backgroundColor"));
   }
 
   /** Set the background color for this DisplayStyle */
   public setBackgroundColor(val: ColorDef): void { this.setStyle("backgroundColor", val); }
 
   public getMonochromeColor(): ColorDef {
-    const color = this.getStyle("monochromeColor") as ColorDef | null;
-    return color ? color : ColorDef.black();
+    return ColorDef.fromJSON(this.getStyle("monochromeColor"));
   }
   public setMonochromeColor(val: ColorDef): void { this.setStyle("monochromeColor", val); }
 }
@@ -233,7 +231,7 @@ export class DisplayStyle3d extends DisplayStyle {
   }
 
   public setSceneBrightness(fstop: number): void { Math.max(-3.0, Math.min(fstop, 3.0)); this.getStyle("sceneLights").fstop = fstop; }
-  public getSceneBrightness(): number { return this.getStyle("sceneLights").fstop; }
+  public getSceneBrightness(): number { return JsonUtils.asDouble(this.getStyle("sceneLights").fstop, 0.0); }
 }
 
 /** A list of GeometricModels for a SpatialViewDefinition.

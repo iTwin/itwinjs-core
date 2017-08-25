@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { Code, IModel } from "../IModel";
 import { ColorDef } from "../Render";
-import { ElementProps, Element, GeometricElement3d, InformationPartitionElement, Subject } from "../Element";
+import { ElementProps, Element, GeometricElement3d, InformationPartitionElement, DefinitionPartition, LinkPartition, Subject } from "../Element";
 import { Models } from "../Model";
 import { Category, SubCategory } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
@@ -14,6 +14,8 @@ import { Elements } from "../Elements";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { BisCore } from "../BisCore";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
+import { SpatialViewDefinition, DisplayStyle3d } from "../ViewDefinition";
+import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 
 // First, register any schemas that will be used in the tests.
 BisCore.registerSchema();
@@ -94,9 +96,31 @@ describe("Elements", async () => {
       const { result: childElement } = await imodel.elements.getElement({ id: childId });
       assert.exists(childElement);
       assert.isTrue(childElement instanceof Element);
+      if (!childElement)
+        continue;
+      assert.isTrue(!!childElement.parent);
+      assert.isTrue(childElement.parent!.id.lo === rootSubject!.id.lo);
       if (childElement instanceof InformationPartitionElement) {
         const { result: childSubModel } = await childElement.getSubModel();
         assert.exists(childSubModel, "InformationPartitionElements should have a subModel");
+
+        if ((childId.lo === 16) && (childId.hi === 0)) {
+          assert.isTrue(childElement instanceof DefinitionPartition, "ChildId 0x00000010 should be a DefinitionPartition");
+          assert.isTrue(childElement.code.value === "BisCore.DictionaryModel", "Definition Partition should have code value of BisCore.DictionaryModel");
+        } else if ((childId.lo === 14) && (childId.hi === 0)) {
+          assert.isTrue(childElement instanceof LinkPartition);
+          assert.isTrue(childElement.code.value === "BisCore.RealityDataSources");
+        } else if ((childId.lo === 17) && (childId.hi === 0)) {
+          assert.isTrue(childElement instanceof LinkPartition, "ChildId 0x000000011 should be a LinkPartition");
+          assert.isTrue(childElement.code.value === "Repository Links");
+        }
+      } else if (childElement instanceof Subject) {
+        if ((childId.lo === 19) && (childId.hi === 0)) {
+          assert.isTrue(childElement instanceof Subject);
+          assert.isTrue(childElement.code.value === "DgnV8:mf3, A", "Subject should have code value of DgnV8:mf3, A");
+          assert.isTrue(childElement.jsonProperties.Subject.Job.DgnV8.V8File === "mf3.dgn", "Subject should have jsonProperty Subject.Job.DgnV.V8File");
+          assert.isTrue(childElement.jsonProperties.Subject.Job.DgnV8.V8RootModel === "A", "Subject should have jsonProperty Subject.Job.DgnV.V8RootModel");
+        }
       }
     }
   });
@@ -212,5 +236,41 @@ describe("Query", () => {
     assert.isAtLeast(rows.length, 1);
     assert.exists(rows[0].eCInstanceId);
     assert.notEqual(rows[0].eCInstanceId, "");
+  });
+});
+
+describe("Views", () => {
+  it("there should be at least one view element", async () => {
+    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
+    const { result: jsonString } = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + SpatialViewDefinition.sqlName);
+    assert.exists(jsonString, "Should find some views");
+    const viewIdList: any[] = JSON.parse(jsonString!);
+    for (const thisViewId of viewIdList!) {
+      const { result: thisView } = await imodel.elements.getElement({ id: thisViewId.elementId });
+      assert.isTrue(thisView instanceof SpatialViewDefinition, "Should be instance of SpatialViewDefinition");
+      if (!thisView)
+        continue;
+      if (!(thisView instanceof SpatialViewDefinition))
+        continue;
+      assert.isTrue(thisView.code.value === "A Views - View 1", "Code value is A Views - View 1");
+      assert.isTrue(thisView.getDisplayStyleId().lo === 0x36, "Display Style Id is 0x36");
+      assert.isTrue(thisView.getCategorySelectorId().lo === 0x37, "Category Id is 0x37");
+      assert.isFalse(thisView.cameraOn, "The camera is not turned on");
+      assert.isTrue(thisView.extents.isAlmostEqual(new Vector3d(429.6229727570776, 232.24786876266097, 0.1017680889917761)), "View extents as expected");
+      assert.isTrue(thisView.origin.isAlmostEqual(new Point3d(-87.73958171815832, -108.96514044887601, -0.0853709702222105)), "View origin as expected");
+      assert.isTrue(thisView.rotation.isAlmostEqual(RotMatrix.identity), "View rotation is identity");
+      assert.isTrue(thisView.jsonProperties.viewDetails.gridOrient === 0, "Grid orientation as expected");
+      assert.isTrue(thisView.jsonProperties.viewDetails.gridSpaceX === 0.001, "GridSpaceX as expected");
+
+      // get the display style element
+      const { result: thisDisplayStyle } = await imodel.elements.getElement({ id: thisView.getDisplayStyleId() });
+      assert.isTrue(thisDisplayStyle instanceof DisplayStyle3d, "The Display Style should be a DisplayStyle3d");
+      if (!(thisDisplayStyle instanceof DisplayStyle3d))
+        continue;
+      const bgColorDef: ColorDef = thisDisplayStyle.getBackgroundColor();
+      assert.isTrue(bgColorDef.rgba === 0, "The background as expected");
+      const sceneBrightness: number = thisDisplayStyle.getSceneBrightness();
+      assert.isTrue(sceneBrightness === 0)
+    }
   });
 });
