@@ -10,7 +10,9 @@
         "bentleyjs",
         "imodel",
         "imodeljs",
+        "struct",
         "subtractive",
+        "superclass",
         "superclasses",
         "underbar"
     ],

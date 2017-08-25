@@ -9,7 +9,7 @@ import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 export interface ModelProps extends EntityProps {
   id: Id64 | string;
@@ -47,8 +47,6 @@ export class GeometricModel extends Model {
 export interface ModelLoadParams {
   id?: Id64 | string;
   code?: Code;
-  /** if true, do not load the geometry of the model */
-  noGeometry?: boolean;
 }
 
 /** The collection of Models in an iModel  */
@@ -61,7 +59,7 @@ export class Models {
   /**
    * Get an Model by Id or Code.
    * @param opts  Either the id or the code of the model
-   * @returns The Model or undefined if the Id is not found
+   * @returns The Model or undefined if the model is not found
    */
   public async getModel(opts: ModelLoadParams): BentleyPromise<DgnDbStatus, Model | undefined> {
     // first see if the model is already in the local cache.
@@ -72,7 +70,7 @@ export class Models {
     }
 
     // Must go get the model from the iModel. Start by requesting the model's data.
-    const getObj = await this._iModel.dgnDb.getModel(JSON.stringify(opts));
+    const getObj = await this._iModel.getModel(JSON.stringify(opts));
     if (getObj.error || !getObj.result) { // todo: Shouldn't getObj.result always be non-empty if there is no error?
       return { result: undefined }; // we didn't find an element with the specified identity. That's not an error, just an empty result.
     }

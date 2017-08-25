@@ -5,7 +5,7 @@
 import { Schema } from "./Schema";
 import { IModel } from "./IModel";
 import { EntityMetaData, PropertyMetaData } from "./EntityMetaData";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 /** The properties of any ECEntityCLass. Every instance has at least the iModel and the name of the schema and class that defines it. */
 export interface EntityProps {

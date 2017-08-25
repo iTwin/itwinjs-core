@@ -13,34 +13,37 @@ import { ModelSelector } from "../ViewDefinition";
 import { Elements } from "../Elements";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { BisCore } from "../BisCore";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id64";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { SpatialViewDefinition, DisplayStyle3d } from "../ViewDefinition";
-import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
-
-// First, register any schemas that will be used in the tests.
-BisCore.registerSchema();
+import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
 
 describe("iModel", () => {
 
-  it("should open an existing iModel", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
+  let imodel: IModel;
+  let imodel2: IModel;
+
+  before(async () => {
+    // First, register any schemas that will be used in the tests.
+    BisCore.registerSchema();
+    imodel = await IModelTestUtils.openIModel("test.bim", true);
+    assert.exists(imodel);
+    imodel2 = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim", true);
     assert.exists(imodel);
   });
 
+  after(() => {
+    imodel.closeDgnDb();
+    imodel2.closeDgnDb();
+  });
+
   it("should use schema to look up classes by name", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const { result: elementClass } = await BisCore.getClass(Element.name, imodel);
     const { result: categoryClass } = await BisCore.getClass(Category.name, imodel);
     assert.equal(elementClass!.name, "Element");
     assert.equal(categoryClass!.name, "Category");
   });
-});
-
-describe("Elements", async () => {
 
   it("should load a known element by Id from an existing iModel", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    assert.exists(imodel);
     const elements: Elements = imodel.elements;
     assert.exists(elements);
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
@@ -53,8 +56,8 @@ describe("Elements", async () => {
     assert.isUndefined(bad);
     const { result: subCat } = await elements.getElement({ id: "0x2e" });
     assert.isTrue(subCat instanceof SubCategory);
-    if (subCat) {
-      assert.isTrue(subCat.appearance.color.rgba === 16777215);
+    if (subCat instanceof SubCategory) {
+      assert.isTrue(subCat.appearance.color.tbgr === 16777215);
       assert.isTrue(subCat.appearance.weight === 2);
       assert.isTrue(subCat.id.lo === 46);
       assert.isTrue(subCat.id.hi === 0);
@@ -67,10 +70,10 @@ describe("Elements", async () => {
     /// Get the parent Category of the subcategory.
     const { result: cat } = await elements.getElement({ id: (subCat as SubCategory).getCategoryId() });
     assert.isTrue(cat instanceof Category);
-    if (cat) {
+    if (cat instanceof Category) {
       assert.isTrue(cat.id.lo === 45);
       assert.isTrue(cat.id.hi === 0);
-      // assert.isTrue(cat.description === "Legends, symbols keys");
+      assert.isTrue(cat.description === "Legends, symbols keys");
       assert.isTrue(cat.code.spec.lo === 22);
       assert.isTrue(cat.code.spec.hi === 0);
       assert.isTrue(cat.code.value === "A-Z013-G-Legn");
@@ -78,11 +81,17 @@ describe("Elements", async () => {
 
     const { result: phys } = await elements.getElement({ id: "0x38", noGeometry: false });
     assert.isTrue(phys instanceof GeometricElement3d);
+
+    const { result: a2 } = await imodel2.elements.getElement({ id: "0x1d" });
+    assert.exists(a2);
+    assert.isTrue(a2!.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    const { result: el3 } = await imodel2.elements.getElement({ federationGuid: a2!.federationGuid!.value });
+    assert.exists(el3);
+    assert.notEqual(a2, el3);
+    assert.isTrue(a2!.id.equals(el3!.id));
   });
 
   it("should have a valid root subject element", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    assert.exists(imodel);
     const { result: rootSubject } = await imodel.elements.getRootSubject();
     assert.exists(rootSubject);
     assert.isTrue(rootSubject instanceof Subject);
@@ -124,13 +133,8 @@ describe("Elements", async () => {
       }
     }
   });
-});
-
-describe("Models", async () => {
 
   it("should load a known model by Id from an existing iModel", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    assert.exists(imodel);
     const models: Models = imodel.models;
     assert.exists(models);
     const { result: model2 } = await models.getModel({ id: "0x1c" });
@@ -144,52 +148,9 @@ describe("Models", async () => {
     assert.isTrue(model instanceof geomModel!);
   });
 
-});
-describe("ElementId", () => {
-
-  it("ElementId should construct properly", () => {
-    const id1 = new Id64("0x123");
-    assert.isTrue(id1.isValid(), "good");
-    const badid = new Id64("0x000");
-    assert.isNotTrue(badid.isValid(), "bad");
-    const id2 = new Id64("badness");
-    assert.isNotTrue(id2.isValid());
-    const id3 = new Id64("0xtbadness");
-    assert.isNotTrue(id3.isValid());
-    const id4 = new Id64("0x1234567890abc");
-    assert.isTrue(id4.isValid());
-    assert.equal(id4.hi, 0x123);
-    const i5 = "0x20000000001";
-    const id5 = new Id64(i5);
-    assert.equal(id5.hi, 0x2);
-    assert.equal(id5.lo, 0x1);
-    const o5 = id5.toString();
-    assert.equal(o5, i5);
-    const id6 = new Id64([2000000, 3000]);
-    const v6 = id6.toString();
-    const id7 = new Id64(v6);
-    assert.isTrue(id6.equals(id7));
-
-    const t1 = { a: id7 };
-    const j7 = JSON.stringify(t1);
-    const p1 = JSON.parse(j7);
-    const i8 = new Id64(p1.a);
-    assert(i8.equals(id7));
-    assert.isTrue(i8.equals(id7));
-
-    const id1A = new Id64("0x1");
-    const id1B = new Id64(id1A);
-    const id1C = new Id64("0x01");
-    const id1D = new Id64([1, 0]);
-    assert.isTrue(id1A.equals(id1B));
-    assert.isTrue(id1A.equals(id1C));
-    assert.isTrue(id1A.equals(id1D));
-  });
-
   it("Model Selectors should hold models", async () => {
-    const imodel1: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const props: ElementProps = {
-      iModel: imodel1,
+      iModel: imodel,
       classFullName: BisCore.name + "." + ModelSelector.name,
       model: new Id64([1, 1]),
       code: Code.createDefault(),
@@ -206,29 +167,7 @@ describe("ElementId", () => {
     }
   });
 
-  it("ColorDef should compare properly", () => {
-    const color1 = ColorDef.from(1, 2, 3, 0);
-    const color2 = ColorDef.from(1, 2, 3, 0);
-    const color3 = ColorDef.from(0xa, 2, 3, 0);
-    const blue = ColorDef.blue();
-
-    assert.isTrue(color1.equals(color2), "color1 should equal color2");
-    assert.isNotTrue(color1.equals(blue), "color1 should not equal blue");
-
-    const blueVal = blue.rgba;
-    assert.equal(blueVal, 0xff0000);
-    assert.isTrue(blue.equals(new ColorDef(blueVal)));
-
-    const colors = color3.getColors();
-    ColorDef.from(colors.r, colors.g, colors.b, 0x30, color3);
-    assert.isTrue(color3.equals(ColorDef.from(0xa, 2, 3, 0x30)));
-  });
-});
-
-describe("Query", () => {
-
   it("should produce an array of rows", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const { result: allrowsdata } = await imodel.executeQuery("SELECT * FROM " + Category.sqlName);
     assert.exists(allrowsdata);
     const rows: any = JSON.parse(allrowsdata!);
@@ -236,6 +175,21 @@ describe("Query", () => {
     assert.isAtLeast(rows.length, 1);
     assert.exists(rows[0].eCInstanceId);
     assert.notEqual(rows[0].eCInstanceId, "");
+  });
+
+  it("ElementPropertyFormatter should format", async () => {
+    const elements: Elements = imodel.elements;
+    const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
+    const { result: el } = await elements.getElement({ code: code1 });
+    if (undefined === el)
+      throw new Error();
+    const formatter: ElementPropertyFormatter = new ElementPropertyFormatter(imodel);
+    const { result: props } = await formatter.formatProperties(el);
+    assert.isArray(props);
+    assert.notEqual(props.length, 0);
+    const item = props[0];
+    assert.isString(item.category);
+    assert.isArray(item.properties);
   });
 });
 
