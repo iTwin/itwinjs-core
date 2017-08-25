@@ -54,8 +54,8 @@ describe("iModel", () => {
     assert.isUndefined(bad);
     const { result: subCat } = await elements.getElement({ id: "0x2e" });
     assert.isTrue(subCat instanceof SubCategory);
-    if (subCat) {
-      assert.isTrue(subCat.appearance.color.rgba === 16777215);
+    if (subCat instanceof SubCategory) {
+      assert.isTrue(subCat.appearance.color.tbgr === 16777215);
       assert.isTrue(subCat.appearance.weight === 2);
       assert.isTrue(subCat.id.lo === 46);
       assert.isTrue(subCat.id.hi === 0);
@@ -68,7 +68,7 @@ describe("iModel", () => {
     /// Get the parent Category of the subcategory.
     const { result: cat } = await elements.getElement({ id: (subCat as SubCategory).getCategoryId() });
     assert.isTrue(cat instanceof Category);
-    if (cat) {
+    if (cat instanceof Category) {
       assert.isTrue(cat.id.lo === 45);
       assert.isTrue(cat.id.hi === 0);
       assert.isTrue(cat.description === "Legends, symbols keys");

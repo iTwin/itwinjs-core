@@ -22,7 +22,7 @@ export interface AppearanceProps {
 
 /** Parameters that define the way geometry drawn on a SubCategory appears. */
 export class Appearance {
-  public color: ColorDef = ColorDef.black();
+  public color: ColorDef = ColorDef.black;
   public weight: number = 0;
   public priority: number = 0;
   public transparency: number = 0;
@@ -70,7 +70,7 @@ export class Appearance {
     if (this.dontPlot) val.dontPlot = true;
     if (this.dontSnap) val.dontSnap = true;
     if (this.dontLocate) val.dontLocate = true;
-    if (!ColorDef.black().equals(this.color)) val.color = this.color;
+    if (!ColorDef.black.equals(this.color)) val.color = this.color;
     if (0 !== this.weight) val.weight = this.weight;
     if (this.styleId.isValid()) val.style = this.styleId;
     if (0 !== this.priority) val.priority = this.priority;

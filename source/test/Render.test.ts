@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { ViewFlags, RenderMode, ColorDef } from "../Render";
+import { ViewFlags, RenderMode, ColorDef, ColorRgb } from "../Render";
 import { Light, ILight, Spot, LightType } from "../Lighting";
 import { BisCore } from "../BisCore";
 
@@ -13,20 +13,45 @@ BisCore.registerSchema();
 describe("Render", () => {
   it("ColorDef should compare properly", () => {
     const color1 = ColorDef.from(1, 2, 3, 0);
-    const color2 = ColorDef.from(1, 2, 3, 0);
+    const color2 = ColorDef.from(1, 2, 3);
     const color3 = ColorDef.from(0xa, 2, 3, 0);
-    const blue = ColorDef.blue();
+    const blue = ColorDef.blue;
 
     assert.isTrue(color1.equals(color2), "color1 should equal color2");
     assert.isNotTrue(color1.equals(blue), "color1 should not equal blue");
 
-    const blueVal = blue.rgba;
+    const blueVal = blue.tbgr;
     assert.equal(blueVal, 0xff0000);
-    assert.isTrue(blue.equals(new ColorDef(blueVal)));
+    assert.equal(blue.getRgb(), ColorRgb.blue);
+    assert.isTrue(blue.equals(new ColorDef(blue)));
 
     const colors = color3.getColors();
     ColorDef.from(colors.r, colors.g, colors.b, 0x30, color3);
     assert.isTrue(color3.equals(ColorDef.from(0xa, 2, 3, 0x30)));
+
+    const yellow = new ColorDef("yellow");
+    const yellow2 = new ColorDef(ColorRgb.yellow);
+    assert.isTrue(yellow.equals(yellow2));
+    const yellow3 = new ColorDef("#FFFF00");
+    assert.isTrue(yellow.equals(yellow3));
+    let yellow4 = new ColorDef("rgbA(255,255,0,255)");
+    assert.isTrue(yellow.equals(yellow4));
+    yellow4 = new ColorDef("rgb(255,255,0)");
+    assert.isTrue(yellow.equals(yellow4));
+    yellow4 = new ColorDef("Yellow"); // wrong case, should still work
+    assert.isTrue(yellow.equals(yellow4));
+    const yellow5 = new ColorDef("rgba(255,255,0,200)");
+    assert.isTrue(yellow.getRgb() === yellow5.getRgb());
+    assert.equal(200, yellow5.getAlpha());
+    const str = yellow.toHexString();
+    const str2 = yellow.toRgbString();
+    yellow4 = new ColorDef(str);
+    assert.isTrue(yellow.equals(yellow4));
+    yellow4 = new ColorDef(str2);
+    assert.isTrue(yellow.equals(yellow4));
+    const hsl = yellow.getHSL({});
+    yellow4 = ColorDef.fromHSL(hsl.h, hsl.s, hsl.l);
+    assert.isTrue(yellow.equals(yellow4));
   });
 
   it("ViewFlags", () => {
@@ -49,7 +74,7 @@ describe("Render", () => {
     const opts: ILight = {
       lightType: LightType.Ambient,
       intensity: 10,
-      color: ColorDef.white(),
+      color: ColorDef.white,
       kelvin: 100,
       shadows: 1,
       bulbs: 3,
@@ -59,7 +84,7 @@ describe("Render", () => {
     const l1 = new Light(opts);
     assert.equal(l1.lightType, LightType.Ambient);
     assert.equal(l1.intensity, 10);
-    assert.isTrue(l1.color.equals(ColorDef.white()));
+    assert.isTrue(l1.color.equals(ColorDef.white));
     assert.equal(l1.kelvin, 100);
     assert.equal(l1.shadows, 1);
     assert.equal(l1.bulbs, 3);
@@ -68,7 +93,7 @@ describe("Render", () => {
     const spotOpts = {
       intensity: 10,
       intensity2: 40,
-      color: ColorDef.white(),
+      color: ColorDef.white,
       color2: 333,
       kelvin: 100,
       shadows: 1,
@@ -87,8 +112,8 @@ describe("Render", () => {
     assert.equal(s1.lumens, 2700);
     assert.approximately(s1.inner.radians, 1.5, .001);
     assert.approximately(s1.outer.degrees, 45.0, .001);
-    assert.isTrue(s1.color.equals(ColorDef.white()));
-    assert.equal(s1.color2!.rgba, 333);
+    assert.isTrue(s1.color.equals(ColorDef.white));
+    assert.equal(s1.color2!.tbgr, 333);
 
     let json = JSON.stringify(l1);
     const l2 = new Light(JSON.parse(json));

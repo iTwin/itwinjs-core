@@ -155,7 +155,7 @@ export class DisplayStyle extends DefinitionElement {
   /** Get the background color for this DisplayStyle */
   public getBackgroundColor(): ColorDef {
     const color = this.getStyle("backgroundColor") as ColorDef | null;
-    return color ? color : ColorDef.black();
+    return color ? color : ColorDef.black;
   }
 
   /** Set the background color for this DisplayStyle */
@@ -163,7 +163,7 @@ export class DisplayStyle extends DefinitionElement {
 
   public getMonochromeColor(): ColorDef {
     const color = this.getStyle("monochromeColor") as ColorDef | null;
-    return color ? color : ColorDef.black();
+    return color ? color : ColorDef.black;
   }
   public setMonochromeColor(val: ColorDef): void { this.setStyle("monochromeColor", val); }
 }
