@@ -235,7 +235,9 @@ export class GeometryStream {
 
   /** return false if this GeometryStream is empty. */
   public hasGeometry(): boolean { return this.geomStream.byteLength !== 0; }
-  public static fromJSON(json?: any): GeometryStream | undefined { return json ? new GeometryStream(Base64.decode(json)) : undefined; }
+  public static fromJSON(json?: any): GeometryStream | undefined {
+    return json ? new GeometryStream(json instanceof GeometryStream ? json.geomStream : Base64.decode(json)) : undefined;
+  }
 }
 
 /**

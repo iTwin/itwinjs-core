@@ -146,7 +146,7 @@ export interface SubCategoryProps extends ElementProps {
 }
 
 /** a Subcategory defines the appearance for graphics in Geometric elements */
-export class SubCategory extends DefinitionElement {
+export class SubCategory extends DefinitionElement implements SubCategoryProps {
   public appearance: Appearance;
   public description?: string;
   public constructor(props: SubCategoryProps) {
@@ -175,7 +175,7 @@ export interface CategoryProps extends ElementProps {
 }
 
 /** a Category for a Geometric element */
-export class Category extends DefinitionElement {
+export class Category extends DefinitionElement implements CategoryProps {
   public rank: Rank = Rank.User;
   public constructor(props: CategoryProps) {
     super(props);

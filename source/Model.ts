@@ -21,7 +21,7 @@ export interface ModelProps extends EntityProps {
 }
 
 /** A Model within an iModel */
-export class Model extends Entity {
+export class Model extends Entity implements ModelProps {
   public modeledElement: Id64;
   public parentModel: Id64;
   public jsonProperties: any;
@@ -35,7 +35,7 @@ export class Model extends Entity {
     this.parentModel = new Id64(props.parentModel);
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
-    this.jsonProperties = props.jsonProperties ? props.jsonProperties : {};
+    this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
   }
 }
 

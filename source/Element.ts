@@ -33,7 +33,7 @@ export interface ElementProps extends EntityProps {
 }
 
 /** An element within an iModel. */
-export class Element extends Entity {
+export class Element extends Entity implements EntityProps {
   public model: Id64;
   public code: Code;
   public parent?: RelatedElement;
@@ -50,7 +50,7 @@ export class Element extends Entity {
     this.parent = RelatedElement.fromJSON(props.parent);
     this.federationGuid = Guid.fromJson(props.federationGuid);
     this.userLabel = props.userLabel;
-    this.jsonProperties = props.jsonProperties ? props.jsonProperties : new Object();
+    this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
   }
 
   /** Get the metadata for the Entity of this element. */
@@ -143,7 +143,7 @@ export interface GeometricElementProps extends ElementProps {
 }
 
 /** A Geometric element. All geometry held by a GeometricElement is positioned relative to its placement. */
-export class GeometricElement extends Element {
+export class GeometricElement extends Element implements GeometricElementProps {
   public category: Id64;
   public geom?: GeometryStream;
   public constructor(props: GeometricElementProps) {
@@ -165,7 +165,7 @@ export interface GeometricElement3dProps extends GeometricElementProps {
 }
 
 /** A Geometric 3d element. */
-export class GeometricElement3d extends GeometricElement {
+export class GeometricElement3d extends GeometricElement implements GeometricElement3d {
   public placement: Placement3d;
   public typeDefinition?: TypeDefinition;
 
@@ -184,7 +184,7 @@ export interface GeometricElement2dProps extends GeometricElementProps {
 }
 
 /** A Geometric 2d element. */
-export class GeometricElement2d extends GeometricElement {
+export class GeometricElement2d extends GeometricElement implements GeometricElement2d {
   public placement: Placement2d;
   public typeDefinition?: TypeDefinition;
 

@@ -12,16 +12,16 @@ export interface EntityProps {
   [propName: string]: any;
 
   iModel: IModel;
-  classFullName: string;
+  classFullName?: string;
 }
 
 export interface EntityCtor extends FunctionConstructor {
   schema: Schema;
-  new(args: EntityProps): Entity;
+  new(args: EntityProps | Entity): Entity;
 }
 
 /** Base class for all ECEntityClasses. */
-export class Entity {
+export class Entity implements EntityProps {
 
   [propName: string]: any;
 
@@ -51,4 +51,6 @@ export class Entity {
 
   /** Get the name of this class */
   public get className(): string { return Object.getPrototypeOf(this).constructor.name; }
+
+  public copyForEdit() { return new (this.constructor as EntityCtor)(this); }
 }

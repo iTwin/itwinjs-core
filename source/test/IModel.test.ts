@@ -13,7 +13,7 @@ import { Elements } from "../Elements";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { BisCore } from "../BisCore";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
+// import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
 
 describe("iModel", () => {
 
@@ -63,6 +63,9 @@ describe("iModel", () => {
       assert.isTrue(subCat.code.spec.hi === 0);
       assert.isTrue(subCat.code.scope === "0X2D");
       assert.isTrue(subCat.code.value === "A-Z013-G-Legn");
+
+      const copyOf = subCat.copyForEdit() as SubCategory;
+      assert.deepEqual(subCat, copyOf, "copyForEdit worked");
     }
 
     /// Get the parent Category of the subcategory.
@@ -153,18 +156,18 @@ describe("iModel", () => {
     assert.notEqual(rows[0].eCInstanceId, "");
   });
 
-  it("ElementPropertyFormatter should format", async () => {
-    const elements: Elements = imodel.elements;
-    const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
-    const { result: el } = await elements.getElement({ code: code1 });
-    if (undefined === el)
-      throw new Error();
-    const formatter: ElementPropertyFormatter = new ElementPropertyFormatter(imodel);
-    const { result: props } = await formatter.formatProperties(el);
-    assert.isArray(props);
-    assert.notEqual(props.length, 0);
-    const item = props[0];
-    assert.isString(item.category);
-    assert.isArray(item.properties);
-  });
+  // it("ElementPropertyFormatter should format", async () => {
+  //   const elements: Elements = imodel.elements;
+  //   const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
+  //   const { result: el } = await elements.getElement({ code: code1 });
+  //   if (undefined === el)
+  //     throw new Error();
+  // const formatter: ElementPropertyFormatter = new ElementPropertyFormatter(imodel);
+  // const { result: props } = await formatter.formatProperties(el);
+  // assert.isArray(props);
+  // assert.notEqual(props.length, 0);
+  // const item = props[0];
+  // assert.isString(item.category);
+  // assert.isArray(item.properties);
+  // });
 });
