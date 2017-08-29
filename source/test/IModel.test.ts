@@ -65,6 +65,10 @@ describe("iModel", () => {
       assert.isTrue(subCat.code.value === "A-Z013-G-Legn");
 
       const copyOf = subCat.copyForEdit() as SubCategory;
+      assert.isTrue(copyOf instanceof SubCategory);
+      assert.isTrue(subCat.isPersistent());
+      assert.isFalse(copyOf.isPersistent());
+      copyOf.setPersistent(); // just to allow deepEqual to work
       assert.deepEqual(subCat, copyOf, "copyForEdit worked");
     }
 

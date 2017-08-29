@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Elements } from "./Elements";
-import { EntityMetaData } from "./EntityMetaData";
+import { EntityMetaData } from "./Entity";
 import { Models } from "./Model";
 import { DgnDb, DgnDbToken, DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";

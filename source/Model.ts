@@ -87,7 +87,7 @@ export class Models {
     assert(modelObj.result instanceof Model);
 
     // We have created the model. Cache it before we return it.
-    Object.freeze(model); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
+    model.setPersistent(); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
     this._loaded.set(model.id.toString(), model);
     return { result: model };
   }

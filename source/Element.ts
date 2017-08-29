@@ -9,8 +9,7 @@ import { DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { ClassRegistry } from "./ClassRegistry";
 import { ElementAspect, ElementAspectProps, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { Entity, EntityProps } from "./Entity";
-import { EntityMetaData } from "./EntityMetaData";
+import { Entity, EntityProps, EntityMetaData } from "./Entity";
 import { Model } from "./Model";
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 
@@ -106,7 +105,7 @@ export class Element extends Entity implements EntityProps {
         return { result: undefined };
 
       assert(aspect instanceof ElementAspect);
-      Object.freeze(aspect);
+      aspect.setPersistent();
       aspects.push(aspect as ElementAspect);
     }
 
