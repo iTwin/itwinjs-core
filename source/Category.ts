@@ -154,6 +154,13 @@ export class SubCategory extends DefinitionElement implements SubCategoryProps {
     this.appearance = new Appearance(props.appearance);
     this.description = JsonUtils.asString(props.description);
   }
+  public toJSON(): any {
+    const val = super.toJSON();
+    val.appearance = this.appearance;
+    if (this.description && this.description.length > 0)
+      val.description = this.description;
+    return val;
+  }
 
   public getSubCategoryName(): string { return this.code.getValue(); }
   public getSubCategoryId(): Id64 { return this.id; }
@@ -181,6 +188,13 @@ export class Category extends DefinitionElement implements CategoryProps {
     super(props);
     this.rank = JsonUtils.asInt(props.rank);
     this.description = JsonUtils.asString(props.description);
+  }
+  public toJSON(): any {
+    const val = super.toJSON();
+    val.rank = this.rank;
+    if (this.description && this.description.length > 0)
+      val.description = this.description;
+    return val;
   }
 
   public static getDefaultSubCategoryId(id: Id64): Id64 { return id.isValid() ? new Id64([id.lo, id.hi + 1]) : new Id64(); }

@@ -52,12 +52,38 @@ export class Element extends Entity implements EntityProps {
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
   }
 
+  /** Add all custom-handled properties to a json object. */
+  public toJSON(): any {
+    const val = super.toJSON();
+    if (this.id.isValid())
+      val.id = this.id;
+    if (this.code.spec.isValid())
+      val.code = this.code;
+    val.model = this.model;
+    if (this.parent)
+      val.parent = this.parent;
+    if (this.federationGuid)
+      val.federationGuid = this.federationGuid;
+    if (this.userLabel)
+      val.userLabel = this.userLabel;
+    if (Object.keys(this.jsonProperties).length > 0)
+      val.jsonProperties = this.jsonProperties;
+    return val;
+  }
+
   /** Get the metadata for the Entity of this element. */
   public async getClassMetaData(): Promise<EntityMetaData | undefined> { return this.iModel.classMetaDataRegistry.get(this.schemaName, this.className); }
 
-  public getUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
-  public setUserProperties(nameSpace: string, value: any) { this.getUserProperties()[nameSpace] = value; }
-  public removeUserProperties(nameSpace: string) { delete this.getUserProperties()[nameSpace]; }
+  private getAllUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
+
+  /** get a set of JSON user properties by namespace */
+  public getUserProperties(namespace: string) { return this.getAllUserProperties()[namespace]; }
+
+  /** change a set of user JSON properties of this Element by namespace. */
+  public setUserProperties(nameSpace: string, value: any) { this.getAllUserProperties()[nameSpace] = value; }
+
+  /** remove a set of JSON user properties, specified by namespace, from this Element */
+  public removeUserProperties(nameSpace: string) { delete this.getAllUserProperties()[nameSpace]; }
 
   /** Query for the child elements of this element. */
   public async queryChildren(): Promise<Id64[]> {
@@ -150,6 +176,14 @@ export class GeometricElement extends Element implements GeometricElementProps {
     this.category = new Id64(props.category);
     this.geom = GeometryStream.fromJSON(props.geom);
   }
+
+  public toJSON(): any {
+    const val = super.toJSON();
+    val.category = this.category;
+    if (this.geom)
+      val.geom = this.geom;
+    return val;
+  }
 }
 
 /** A RelatedElement that describes the type definition of an element. */
@@ -174,6 +208,14 @@ export class GeometricElement3d extends GeometricElement implements GeometricEle
     if (props.typeDefinition)
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
   }
+
+  public toJSON(): any {
+    const val = super.toJSON();
+    val.placement = this.placement;
+    if (this.typeDefinition)
+      val.typeDefinition = this.typeDefinition;
+    return val;
+  }
 }
 
 /** Properties that define a GeometricElement2d */
@@ -192,6 +234,14 @@ export class GeometricElement2d extends GeometricElement implements GeometricEle
     this.placement = Placement2d.fromJSON(props.placement);
     if (props.typeDefinition)
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
+  }
+
+  public toJSON(): any {
+    const val = super.toJSON();
+    val.placement = this.placement;
+    if (this.typeDefinition)
+      val.typeDefinition = this.typeDefinition;
+    return val;
   }
 }
 

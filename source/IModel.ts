@@ -232,6 +232,7 @@ export class ElementAlignedBox2d extends Range2d {
 export class GeometryStream {
   public geomStream: ArrayBuffer;
   public constructor(stream: any) { this.geomStream = stream; }
+  public toJSON(): any { return Base64.encode(this.geomStream as any); }
 
   /** return false if this GeometryStream is empty. */
   public hasGeometry(): boolean { return this.geomStream.byteLength !== 0; }

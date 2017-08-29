@@ -36,11 +36,19 @@ export class Entity implements EntityProps {
 
   constructor(opt: EntityProps) {
     this.iModel = opt.iModel;
-
     this.forEachProperty((propName: string, meta: PropertyMetaData) => {
       if (!meta.isCustomHandled)
         this[propName] = opt[propName];
     });
+  }
+
+  public toJSON(): any {
+    const val: any = {};
+    this.forEachProperty((propName: string, meta: PropertyMetaData) => {
+      if (!meta.isCustomHandled)
+        val[propName] = this[propName];
+    });
+    return val;
   }
 
   /** call a function for each property of this Entity. Function arguments are property name and property metadata. */

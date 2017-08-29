@@ -37,6 +37,23 @@ export class Model extends Entity implements ModelProps {
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
   }
+  /** Add all custom-handled properties to a json object. */
+  public toJSON(): any {
+    const val = super.toJSON();
+    if (this.id.isValid())
+      val.id = this.id;
+    if (this.modeledElement.isValid())
+      val.modeledElement = this.modeledElement;
+    if (this.parentModel.isValid())
+      val.parentModel = this.parentModel;
+    if (this.isPrivate)
+      val.isPrivate = this.isPrivate;
+    if (this.isTemplate)
+      val.isTemplate = this.isTemplate;
+    if (Object.keys(this.jsonProperties).length > 0)
+      val.jsonProperties = this.jsonProperties;
+    return val;
+  }
 }
 
 /** A geometric model */
