@@ -17,7 +17,7 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { SpatialViewDefinition, DisplayStyle3d } from "../ViewDefinition";
 import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { GeometricElement2d } from "../Element";
-// import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
+import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
 
 describe("iModel", () => {
 
