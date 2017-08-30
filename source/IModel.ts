@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Elements } from "./Elements";
-import { EntityMetaData } from "./EntityMetaData";
+import { EntityMetaData } from "./Entity";
 import { Models } from "./Model";
 import { DgnDb, DgnDbToken, DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -232,10 +232,13 @@ export class ElementAlignedBox2d extends Range2d {
 export class GeometryStream {
   public geomStream: ArrayBuffer;
   public constructor(stream: any) { this.geomStream = stream; }
+  public toJSON(): any { return Base64.encode(this.geomStream as any); }
 
   /** return false if this GeometryStream is empty. */
   public hasGeometry(): boolean { return this.geomStream.byteLength !== 0; }
-  public static fromJSON(json?: any): GeometryStream | undefined { return json ? new GeometryStream(Base64.decode(json)) : undefined; }
+  public static fromJSON(json?: any): GeometryStream | undefined {
+    return json ? new GeometryStream(json instanceof GeometryStream ? json.geomStream : Base64.decode(json)) : undefined;
+  }
 }
 
 /**

@@ -146,13 +146,20 @@ export interface SubCategoryProps extends ElementProps {
 }
 
 /** a Subcategory defines the appearance for graphics in Geometric elements */
-export class SubCategory extends DefinitionElement {
+export class SubCategory extends DefinitionElement implements SubCategoryProps {
   public appearance: Appearance;
   public description?: string;
   public constructor(props: SubCategoryProps) {
     super(props);
     this.appearance = new Appearance(props.appearance);
     this.description = JsonUtils.asString(props.description);
+  }
+  public toJSON(): any {
+    const val = super.toJSON();
+    val.appearance = this.appearance;
+    if (this.description && this.description.length > 0)
+      val.description = this.description;
+    return val;
   }
 
   public getSubCategoryName(): string { return this.code.getValue(); }
@@ -175,12 +182,19 @@ export interface CategoryProps extends ElementProps {
 }
 
 /** a Category for a Geometric element */
-export class Category extends DefinitionElement {
+export class Category extends DefinitionElement implements CategoryProps {
   public rank: Rank = Rank.User;
   public constructor(props: CategoryProps) {
     super(props);
     this.rank = JsonUtils.asInt(props.rank);
     this.description = JsonUtils.asString(props.description);
+  }
+  public toJSON(): any {
+    const val = super.toJSON();
+    val.rank = this.rank;
+    if (this.description && this.description.length > 0)
+      val.description = this.description;
+    return val;
   }
 
   public static getDefaultSubCategoryId(id: Id64): Id64 { return id.isValid() ? new Id64([id.lo + 1, id.hi]) : new Id64(); }

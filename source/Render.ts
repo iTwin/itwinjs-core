@@ -281,6 +281,7 @@ export class ColorDef {
 
   /** convert this ColorDef to a 32 bit number representing the tbgr value */
   public toJSON(): any { return this._tbgr; }
+
   /** set the value of this ColorDef from a 24 bit RGB value. */
   public fromRgb(rgb: number) {
     rgb = Math.floor(rgb);
@@ -314,7 +315,7 @@ export class ColorDef {
   public getColors() { scratchUInt32[0] = this._tbgr; return { r: scratchBytes[0], g: scratchBytes[1], b: scratchBytes[2], t: scratchBytes[3] }; }
   public get tbgr(): number { return this._tbgr; }
   public set tbgr(tbgr: number) { this._tbgr = tbgr | 0; }
-  /** get the RGB value of this ColorDef. Transparency is ignored. */
+  /** get the RGB value of this ColorDef. Transparency is ignored. Value will be 0-255 */
   public getRgb() { scratchUInt32[0] = this._tbgr; return (scratchBytes[0] << 16) + (scratchBytes[1] << 8) + scratchBytes[2]; }
   /** change the alpha value for this ColorDef.
    * @param alpha the new alpha value. Should be between 0-255.
@@ -322,8 +323,9 @@ export class ColorDef {
   public setAlpha(alpha: number) { scratchUInt32[0] = this._tbgr; scratchBytes[3] = 255 - (alpha | 0); this._tbgr = scratchUInt32[0]; }
   /** get the alpha value for this ColorDef. Will be between 0-255 */
   public getAlpha() { scratchUInt32[0] = this._tbgr; return 255 - scratchBytes[3]; }
-
-  public toHexString() { return "#" + ("000000" + this.getRgb().toString(16)).slice(- 6); }
+  /** convert this ColorDef to a string in the form "#rrggbb" where values are hex digits of the respective colors */
+  public toHexString() { return "#" + ("000000" + this.getRgb().toString(16)).slice(-6); }
+  /** convert this ColorDef to a string in the form "rgb(r,g,b)" where values are decimal digits of the respective colors */
   public toRgbString() { const c = this.getColors(); return "rgb(" + (c.r | 0) + "," + (c.g | 0) + "," + (c.b | 0) + ")"; }
 
   /** initialize this ColorDef from a string in one of the following forms:
@@ -504,6 +506,7 @@ export const enum LinePixels {
   Invalid = 0xffffffff,
 }
 
+/** parameters for displaying hidden lines */
 export namespace HiddenLine {
 
   export class Style {
@@ -517,7 +520,6 @@ export namespace HiddenLine {
     public visible: Style = new Style(false, new ColorDef(), LinePixels.Solid, 1);
     public hidden: Style = new Style(false, new ColorDef(), LinePixels.HiddenLine, 1);
     public transparencyThreshold: number = 1.0;
-
     public equals(rhs: Params): boolean { return this.visible === rhs.visible && this.hidden === rhs.hidden && this.transparencyThreshold === rhs.transparencyThreshold; }
   }
 }

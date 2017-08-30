@@ -60,7 +60,7 @@ export class Elements {
     assert(el instanceof Element);
 
     // We have created the element. Cache it before we return it.
-    Object.freeze(el); // elements in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
+    el.setPersistent(); // elements in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
     this._loaded.set(el.id.toString(), el);
     return { result: el };
   }

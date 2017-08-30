@@ -11,13 +11,14 @@ export interface ElementAspectProps extends EntityProps {
 }
 
 /** ElementAspect */
-export class ElementAspect extends Entity {
+export class ElementAspect extends Entity implements ElementAspectProps {
   public element: Id64;
 
   constructor(props: ElementAspectProps) {
     super(props);
     this.element = new Id64(props.element);
   }
+
 }
 
 /** ElementUniqueAspect */

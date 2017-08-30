@@ -283,7 +283,7 @@ export class CategorySelector extends DefinitionElement {
 
 /** Parameters used to construct a ViewDefinition */
 export interface ViewDefinitionProps extends ElementProps {
-  categorySelectorId?: any;
+  categorySelectorId?: Id64;
   displayStyleId?: any;
   categorySelector?: CategorySelector;
   displayStyle?: DisplayStyle;
@@ -312,9 +312,9 @@ export const enum ViewportStatus {
  *  Subclasses of ViewDefinition determine which model(s) are viewed.
  *  A ViewController holds an editable copy of a ViewDefinition, and a ViewDefinition holds an editable copy of its DisplayStyle and CategorySelector.
  */
-export abstract class ViewDefinition extends DefinitionElement {
-  protected categorySelectorId: Id64;
-  protected displayStyleId: Id64;
+export abstract class ViewDefinition extends DefinitionElement implements ViewDefinitionProps {
+  public categorySelectorId: Id64;
+  public displayStyleId: Id64;
   protected _categorySelector?: CategorySelector;
   protected _displayStyle?: DisplayStyle;
   protected clearState(): void { this._categorySelector = undefined; this._displayStyle = undefined; }
@@ -697,7 +697,7 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
 }
 
 /** Defines a view of 3d models. */
-export abstract class ViewDefinition3d extends ViewDefinition {
+export abstract class ViewDefinition3d extends ViewDefinition implements ViewDefinition3dProps {
   protected _cameraOn: boolean;  // if true, m_camera is valid.
   public origin: Point3d;        // The lower left back corner of the view frustum.
   public extents: Vector3d;      // The extent of the view frustum.
@@ -951,7 +951,7 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
 /** Defines a view of one or more SpatialModels.
  *  The list of viewed models is stored by the ModelSelector.
  */
-export class SpatialViewDefinition extends ViewDefinition3d {
+export class SpatialViewDefinition extends ViewDefinition3d implements SpatialViewDefinitionProps {
   public modelSelectorId: Id64;
   protected _modelSelector: ModelSelector;
   constructor(props: SpatialViewDefinitionProps) { super(props); if (props.modelSelector) this.setModelSelector(props.modelSelector); }

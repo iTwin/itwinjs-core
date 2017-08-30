@@ -21,7 +21,7 @@ export interface ModelProps extends EntityProps {
 }
 
 /** A Model within an iModel */
-export class Model extends Entity {
+export class Model extends Entity implements ModelProps {
   public modeledElement: Id64;
   public parentModel: Id64;
   public jsonProperties: any;
@@ -35,7 +35,24 @@ export class Model extends Entity {
     this.parentModel = new Id64(props.parentModel);
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
-    this.jsonProperties = props.jsonProperties ? props.jsonProperties : {};
+    this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
+  }
+  /** Add all custom-handled properties to a json object. */
+  public toJSON(): any {
+    const val = super.toJSON();
+    if (this.id.isValid())
+      val.id = this.id;
+    if (this.modeledElement.isValid())
+      val.modeledElement = this.modeledElement;
+    if (this.parentModel.isValid())
+      val.parentModel = this.parentModel;
+    if (this.isPrivate)
+      val.isPrivate = this.isPrivate;
+    if (this.isTemplate)
+      val.isTemplate = this.isTemplate;
+    if (Object.keys(this.jsonProperties).length > 0)
+      val.jsonProperties = this.jsonProperties;
+    return val;
   }
 }
 
@@ -87,7 +104,7 @@ export class Models {
     assert(modelObj.result instanceof Model);
 
     // We have created the model. Cache it before we return it.
-    Object.freeze(model); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
+    model.setPersistent(); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
     this._loaded.set(model.id.toString(), model);
     return { result: model };
   }

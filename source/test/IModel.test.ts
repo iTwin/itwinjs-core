@@ -6,6 +6,7 @@ import { assert } from "chai";
 import { Code, IModel } from "../IModel";
 import { ColorDef } from "../Render";
 import { ElementProps, Element, GeometricElement3d, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../Element";
+import { Entity, EntityCtor, EntityProps } from "../Entity";
 import { Model, Models } from "../Model";
 import { Category, SubCategory } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
@@ -20,6 +21,22 @@ import { GeometricElement2d } from "../Element";
 import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
 
 describe("iModel", () => {
+
+  /** test the copy constructor and to/from Json methods for the supplied entity */
+  const testCopyAndJson = (entity: Entity) => {
+    assert.isTrue(entity.isPersistent());
+    const copyOf = entity.copyForEdit() as Entity;
+    assert.isFalse(copyOf.isPersistent());
+    copyOf.setPersistent(); // just to allow deepEqual to work
+    assert.deepEqual(entity, copyOf, "copyForEdit worked"); // make sure the copy is identical to original
+
+    // now round trip the entity through a json string and back to a new entity.
+    const jsonObj = JSON.parse(JSON.stringify(entity)) as EntityProps;
+    jsonObj.iModel = entity.iModel; // this gets lost in the JSON string
+    const el2 = new (entity.constructor as EntityCtor)(jsonObj); // create a new entity from the json
+    el2.setPersistent(); // just to allow deepEqual to work
+    assert.deepEqual(entity, el2, "json stringify worked");
+  };
 
   let imodel: IModel;
   let imodel2: IModel;
@@ -67,6 +84,7 @@ describe("iModel", () => {
       assert.isTrue(subCat.code.spec.hi === 0);
       assert.isTrue(subCat.code.scope === "0X2D");
       assert.isTrue(subCat.code.value === "A-Z013-G-Legn");
+      testCopyAndJson(subCat);
     }
 
     /// Get the parent Category of the subcategory.
@@ -79,6 +97,7 @@ describe("iModel", () => {
       assert.isTrue(cat.code.spec.lo === 22);
       assert.isTrue(cat.code.spec.hi === 0);
       assert.isTrue(cat.code.value === "A-Z013-G-Legn");
+      testCopyAndJson(cat);
     }
 
     const { result: phys } = await elements.getElement({ id: "0x38", noGeometry: false });
@@ -91,6 +110,7 @@ describe("iModel", () => {
     assert.exists(el3);
     assert.notEqual(a2, el3);
     assert.isTrue(a2!.id.equals(el3!.id));
+    testCopyAndJson(el3!);
   });
 
   it("should have a valid root subject element", async () => {
@@ -109,7 +129,7 @@ describe("iModel", () => {
       assert.isTrue(childElement instanceof Element);
       if (!childElement)
         continue;
-      assert.isTrue(!!childElement.parent);
+      testCopyAndJson(childElement!);
       assert.isTrue(childElement.parent!.id.lo === rootSubject!.id.lo);
       if (childElement instanceof InformationPartitionElement) {
         const { result: childSubModel } = await childElement.getSubModel();
@@ -141,13 +161,16 @@ describe("iModel", () => {
     assert.exists(models);
     const { result: model2 } = await models.getModel({ id: "0x1c" });
     assert.exists(model2);
+    testCopyAndJson(model2!);
     let { result: model } = await models.getModel({ id: "0x1" });
     assert.exists(model);
+    testCopyAndJson(model!);
     const code1 = new Code({ spec: "0x1d", scope: "0x1d", value: "A" });
     ({ result: model } = await models.getModel({ code: code1 }));
     const { result: geomModel } = await ClassRegistry.getClass({ name: "PhysicalModel", schema: "BisCore" }, imodel);
     assert.exists(model);
     assert.isTrue(model instanceof geomModel!);
+    testCopyAndJson(model!);
   });
 
   it("Model Selectors should hold models", async () => {

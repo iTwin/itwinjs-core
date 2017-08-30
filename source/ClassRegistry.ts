@@ -2,8 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { EntityCtor, Entity, EntityProps } from "./Entity";
-import { EntityMetaData, ClassFullName } from "./EntityMetaData";
+import { EntityCtor, Entity, EntityProps, EntityMetaData, ClassFullName } from "./Entity";
 import { IModel } from "./IModel";
 import { Schema, Schemas } from "./Schema";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";

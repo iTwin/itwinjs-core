@@ -9,8 +9,7 @@ import { DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { ClassRegistry } from "./ClassRegistry";
 import { ElementAspect, ElementAspectProps, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { Entity, EntityProps } from "./Entity";
-import { EntityMetaData } from "./EntityMetaData";
+import { Entity, EntityProps, EntityMetaData } from "./Entity";
 import { Model } from "./Model";
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 
@@ -33,7 +32,7 @@ export interface ElementProps extends EntityProps {
 }
 
 /** An element within an iModel. */
-export class Element extends Entity {
+export class Element extends Entity implements EntityProps {
   public model: Id64;
   public code: Code;
   public parent?: RelatedElement;
@@ -50,15 +49,41 @@ export class Element extends Entity {
     this.parent = RelatedElement.fromJSON(props.parent);
     this.federationGuid = Guid.fromJson(props.federationGuid);
     this.userLabel = props.userLabel;
-    this.jsonProperties = props.jsonProperties ? props.jsonProperties : new Object();
+    this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
+  }
+
+  /** Add all custom-handled properties to a json object. */
+  public toJSON(): any {
+    const val = super.toJSON();
+    if (this.id.isValid())
+      val.id = this.id;
+    if (this.code.spec.isValid())
+      val.code = this.code;
+    val.model = this.model;
+    if (this.parent)
+      val.parent = this.parent;
+    if (this.federationGuid)
+      val.federationGuid = this.federationGuid;
+    if (this.userLabel)
+      val.userLabel = this.userLabel;
+    if (Object.keys(this.jsonProperties).length > 0)
+      val.jsonProperties = this.jsonProperties;
+    return val;
   }
 
   /** Get the metadata for the Entity of this element. */
   public async getClassMetaData(): Promise<EntityMetaData | undefined> { return this.iModel.classMetaDataRegistry.get(this.schemaName, this.className); }
 
-  public getUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
-  public setUserProperties(nameSpace: string, value: any) { this.getUserProperties()[nameSpace] = value; }
-  public removeUserProperties(nameSpace: string) { delete this.getUserProperties()[nameSpace]; }
+  private getAllUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
+
+  /** get a set of JSON user properties by namespace */
+  public getUserProperties(namespace: string) { return this.getAllUserProperties()[namespace]; }
+
+  /** change a set of user JSON properties of this Element by namespace. */
+  public setUserProperties(nameSpace: string, value: any) { this.getAllUserProperties()[nameSpace] = value; }
+
+  /** remove a set of JSON user properties, specified by namespace, from this Element */
+  public removeUserProperties(nameSpace: string) { delete this.getAllUserProperties()[nameSpace]; }
 
   /** Query for the child elements of this element. */
   public async queryChildren(): Promise<Id64[]> {
@@ -106,7 +131,7 @@ export class Element extends Entity {
         return { result: undefined };
 
       assert(aspect instanceof ElementAspect);
-      Object.freeze(aspect);
+      aspect.setPersistent();
       aspects.push(aspect as ElementAspect);
     }
 
@@ -143,13 +168,21 @@ export interface GeometricElementProps extends ElementProps {
 }
 
 /** A Geometric element. All geometry held by a GeometricElement is positioned relative to its placement. */
-export class GeometricElement extends Element {
+export class GeometricElement extends Element implements GeometricElementProps {
   public category: Id64;
   public geom?: GeometryStream;
   public constructor(props: GeometricElementProps) {
     super(props);
     this.category = new Id64(props.category);
     this.geom = GeometryStream.fromJSON(props.geom);
+  }
+
+  public toJSON(): any {
+    const val = super.toJSON();
+    val.category = this.category;
+    if (this.geom)
+      val.geom = this.geom;
+    return val;
   }
 }
 
@@ -165,7 +198,7 @@ export interface GeometricElement3dProps extends GeometricElementProps {
 }
 
 /** A Geometric 3d element. */
-export class GeometricElement3d extends GeometricElement {
+export class GeometricElement3d extends GeometricElement implements GeometricElement3d {
   public placement: Placement3d;
   public typeDefinition?: TypeDefinition;
 
@@ -174,6 +207,14 @@ export class GeometricElement3d extends GeometricElement {
     this.placement = Placement3d.fromJSON(props.placement);
     if (props.typeDefinition)
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
+  }
+
+  public toJSON(): any {
+    const val = super.toJSON();
+    val.placement = this.placement;
+    if (this.typeDefinition)
+      val.typeDefinition = this.typeDefinition;
+    return val;
   }
 }
 
@@ -184,7 +225,7 @@ export interface GeometricElement2dProps extends GeometricElementProps {
 }
 
 /** A Geometric 2d element. */
-export class GeometricElement2d extends GeometricElement {
+export class GeometricElement2d extends GeometricElement implements GeometricElement2d {
   public placement: Placement2d;
   public typeDefinition?: TypeDefinition;
 
@@ -193,6 +234,14 @@ export class GeometricElement2d extends GeometricElement {
     this.placement = Placement2d.fromJSON(props.placement);
     if (props.typeDefinition)
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
+  }
+
+  public toJSON(): any {
+    const val = super.toJSON();
+    val.placement = this.placement;
+    if (this.typeDefinition)
+      val.typeDefinition = this.typeDefinition;
+    return val;
   }
 }
 

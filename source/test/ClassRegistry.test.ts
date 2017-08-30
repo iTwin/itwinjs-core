@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { EntityMetaData, NavigationPropertyMetaData, PrimitivePropertyMetaData } from "../EntityMetaData";
+import { EntityMetaData, NavigationPropertyMetaData, PrimitivePropertyMetaData } from "../Entity";
 import { Code, IModel } from "../IModel";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Elements } from "../Elements";

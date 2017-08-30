@@ -4,8 +4,6 @@
 import { Schema, Schemas } from "./Schema";
 import { ClassRegistry } from "./ClassRegistry";
 
-declare function require(str: string): any;
-
 /** Represents the BisCore schema. */
 export class BisCore extends Schema {
 
