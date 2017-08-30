@@ -5,8 +5,8 @@
 import { assert } from "chai";
 import { Code, IModel } from "../IModel";
 import { ColorDef } from "../Render";
-import { ElementProps, Element, GeometricElement3d, InformationPartitionElement, DefinitionPartition, LinkPartition, Subject } from "../Element";
-import { Models } from "../Model";
+import { ElementProps, Element, GeometricElement3d, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../Element";
+import { Model, Models } from "../Model";
 import { Category, SubCategory } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
 import { ModelSelector } from "../ViewDefinition";
@@ -15,7 +15,9 @@ import { IModelTestUtils } from "./IModelTestUtils";
 import { BisCore } from "../BisCore";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { SpatialViewDefinition, DisplayStyle3d } from "../ViewDefinition";
-import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
+import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
+import { GeometricElement2d } from "../Element";
+// import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
 
 describe("iModel", () => {
 
@@ -194,7 +196,7 @@ describe("iModel", () => {
 });
 
 describe("Views", () => {
-  it("there should be at least one view element", async () => {
+  it("should be at least one view element", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const { result: jsonString } = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + SpatialViewDefinition.sqlName);
     assert.exists(jsonString, "Should find some views");
@@ -222,9 +224,161 @@ describe("Views", () => {
       if (!(thisDisplayStyle instanceof DisplayStyle3d))
         continue;
       const bgColorDef: ColorDef = thisDisplayStyle.getBackgroundColor();
-      assert.isTrue(bgColorDef.rgba === 0, "The background as expected");
+      assert.isTrue(bgColorDef.tbgr === 0, "The background as expected");
       const sceneBrightness: number = thisDisplayStyle.getSceneBrightness();
-      assert.isTrue(sceneBrightness === 0)
+      assert.isTrue(sceneBrightness === 0);
     }
+    imodel.closeDgnDb();
   });
 });
+
+describe("Categories", () => {
+  it("should be some categories", async () => {
+    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
+    const { result: jsonString } = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + Category.sqlName);
+    assert.exists(jsonString, "Should have some Category ids");
+    const categoryIdList: any[] = JSON.parse(jsonString!);
+    for (const thisCategoryIdString of categoryIdList!) {
+      const thisCategoryId: Id64 = new Id64(thisCategoryIdString.elementId);
+      const { result: thisCategory } = await imodel.elements.getElement({ id: thisCategoryId });
+      assert.isTrue(thisCategory instanceof Category, "Should be instance of Category");
+      if (!thisCategory)
+        continue;
+      if (!(thisCategory instanceof Category))
+        continue;
+
+      // verify the default subcategory.
+      const subCategoryId: Id64 = thisCategory.myDefaultSubCategoryId();
+      const { result: defaultSubCategory } = await imodel.elements.getElement({ id: subCategoryId });
+      assert.isTrue(defaultSubCategory instanceof SubCategory, "defaultSubCategory should be instance of SubCategory");
+      if (defaultSubCategory instanceof SubCategory) {
+        assert.isTrue(defaultSubCategory.parent!.id.equals(thisCategoryId), "defaultSubCategory id should be prescribed value");
+        assert.isTrue(defaultSubCategory.getSubCategoryName() === thisCategory.code.getValue(), "DefaultSubcategory name should match that of Category");
+        assert.isTrue(defaultSubCategory.isDefaultSubCategory(), "isDefaultSubCategory should return true");
+      }
+
+      // get the subcategories
+      const queryString: string = "SELECT EcInstanceId as elementId FROM " + SubCategory.sqlName + " WHERE Parent.Id=" + thisCategoryId;
+      const { result: jsonString1 } = await imodel.executeQuery(queryString);
+      assert.exists(jsonString1, "Should have at least one SubCategory");
+      const subCategoryIdList: any[] = JSON.parse(jsonString1!);
+      for (const thisSubCategoryId of subCategoryIdList) {
+        const { result: thisSubCategory } = await imodel.elements.getElement({ id: thisSubCategoryId.elementId });
+        assert.isTrue(thisSubCategory instanceof SubCategory);
+        if (thisSubCategory instanceof SubCategory) {
+          assert.isTrue(thisSubCategory.parent!.id.equals(thisCategoryId));
+        }
+      }
+    }
+    imodel.closeDgnDb();
+  });
+});
+
+describe("2D Elements", () => {
+  it("should be some 2D elements", async () => {
+    const imodel: IModel = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim", true);
+    const { result: jsonString } = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM BisCore.DrawingGraphic");
+    assert.exists(jsonString, "Should have some Drawing Graphics");
+    const drawingGraphicIdList: any[] = JSON.parse(jsonString!);
+    for (const thisDrawingGraphicIdString of drawingGraphicIdList!) {
+      const thisDrawingGraphicId: Id64 = new Id64(thisDrawingGraphicIdString.elementId);
+      const { result: thisDrawingGraphic } = await imodel.elements.getElement({ id: thisDrawingGraphicId });
+      assert.isDefined(thisDrawingGraphic, "Retrieved valid DrawingGraphic");  // not undefined.
+      assert.isTrue(thisDrawingGraphic!.constructor.name === "DrawingGraphic", "Should be instance of DrawingGraphic");
+      assert.isTrue(thisDrawingGraphic instanceof GeometricElement2d, "Is instance of GeometricElement2d");
+      if (!thisDrawingGraphic)
+        continue;
+      if (!(thisDrawingGraphic instanceof GeometricElement2d))
+        continue;
+      if (thisDrawingGraphic.id.lo === 0x25) {
+        assert.isTrue(thisDrawingGraphic.placement.origin.x === 0.0);
+        assert.isTrue(thisDrawingGraphic.placement.origin.y === 0.0);
+        assert.isTrue(thisDrawingGraphic.placement.angle.radians === 0.0);
+        assert.isTrue(thisDrawingGraphic.placement.bbox.low.x === 0.0);
+        assert.isTrue(thisDrawingGraphic.placement.bbox.low.y === 0.0);
+        assert.isTrue(thisDrawingGraphic.placement.bbox.high.x === 1.0);
+        assert.isTrue(thisDrawingGraphic.placement.bbox.high.y === 1.0);
+        assert.isDefined(thisDrawingGraphic.geom);
+      }
+      if (thisDrawingGraphic.id.lo === 0x26) {
+        assert.isTrue(thisDrawingGraphic.placement.origin.x === 1.0);
+        assert.isTrue(thisDrawingGraphic.placement.origin.y === 1.0);
+        assert.isTrue(thisDrawingGraphic.placement.angle.radians === 0.0);
+        assert.isTrue(thisDrawingGraphic.placement.bbox.low.x === 0.0);
+        assert.isTrue(thisDrawingGraphic.placement.bbox.low.y === 0.0);
+        assert.isTrue(thisDrawingGraphic.placement.bbox.high.x === 2.0);
+        assert.isTrue(thisDrawingGraphic.placement.bbox.high.y === 2.0);
+        assert.isDefined(thisDrawingGraphic.geom);
+      }
+    }
+    imodel.closeDgnDb();
+  });
+});
+
+describe("Model Structure", () => {
+  let imodel: IModel;
+  let rootSubject: Subject;
+
+  before(async () => {
+    // First, register any schemas that will be used in the tests.
+    BisCore.registerSchema();
+    imodel = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim", true);
+    assert.exists(imodel);
+  });
+
+  after(() => {
+    imodel.closeDgnDb();
+  });
+
+  it("should be a root subject with id from rootSubjectId", async () => {
+    const rootSubjectId: Id64 = imodel.elements.rootSubjectId;
+    const { result: rootSubjectOut } = await imodel.elements.getElement({ id: rootSubjectId });
+    assert.exists(rootSubjectOut);
+    assert.isTrue(rootSubjectOut instanceof Subject);
+    rootSubject = rootSubjectOut as Subject;
+  });
+
+  it("should be children of RootSubject", async () => {
+    const queryString: string = "SELECT EcInstanceId as modelId from biscore.model WHERE parentmodel.id=" + rootSubject.id;
+    const { result: jsonString } = await imodel.executeQuery(queryString);
+    assert.exists(jsonString, "Should have at least one model within rootSubject");
+    const modelIdList: any[] = JSON.parse(jsonString!);
+    for (const thisModelId of modelIdList) {
+      const { result: thisModel } = await imodel.models.getModel({ id: thisModelId.modelId });
+      assert.exists(thisModel, "Model should exist");
+      assert.isTrue(thisModel instanceof Model);
+
+      if (!thisModel)
+        continue;
+
+      // should be an element with the same Id.
+      const { result: modelElement } = await imodel.elements.getElement({ id: thisModelId.modelId });
+      assert.exists(modelElement, "Model Element should exist");
+
+      if (thisModel.constructor.name === "LinkModel") {
+        // expect LinkModel to be accompanied by LinkPartition
+        assert.isTrue(modelElement instanceof LinkPartition);
+        continue;
+      } else if (thisModel.constructor.name === "DictionaryModel") {
+        assert.isTrue(modelElement instanceof DefinitionPartition);
+        continue;
+      } else if (thisModel.constructor.name === "PhysicalModel") {
+        assert.isTrue(modelElement instanceof PhysicalPartition);
+        continue;
+      } else if (thisModel.constructor.name === "GroupModel") {
+        assert.isTrue(modelElement instanceof GroupInformationPartition);
+        continue;
+      } else if (thisModel.constructor.name === "DocumentListModel") {
+        assert.isTrue(modelElement instanceof DocumentPartition);
+        continue;
+      } else if (thisModel.constructor.name === "DefinitionModel") {
+        assert.isTrue(modelElement instanceof DefinitionPartition);
+        continue;
+      } else {
+        assert.isTrue(false, "Expected a known model type");
+      }
+    }
+  });
+
+}); // closes desdribe.
+
