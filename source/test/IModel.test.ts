@@ -18,22 +18,6 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 describe("iModel", () => {
 
-  /** test the copy constructor and to/from Json methods for the supplied entity */
-  const testCopyAndJson = (entity: Entity) => {
-    assert.isTrue(entity.isPersistent());
-    const copyOf = entity.copyForEdit() as Entity;
-    assert.isFalse(copyOf.isPersistent());
-    copyOf.setPersistent(); // just to allow deepEqual to work
-    assert.deepEqual(entity, copyOf, "copyForEdit worked"); // make sure the copy is identical to original
-
-    // now round trip the entity through a json string and back to a new entity.
-    const jsonObj = JSON.parse(JSON.stringify(entity)) as EntityProps;
-    jsonObj.iModel = entity.iModel; // this gets lost in the JSON string
-    const el2 = new (entity.constructor as EntityCtor)(jsonObj); // create a new entity from the json
-    el2.setPersistent(); // just to allow deepEqual to work
-    assert.deepEqual(entity, el2, "json stringify worked");
-  };
-
   let imodel: IModel;
   let imodel2: IModel;
 
@@ -50,6 +34,22 @@ describe("iModel", () => {
     imodel.closeDgnDb();
     imodel2.closeDgnDb();
   });
+
+  /** test the copy constructor and to/from Json methods for the supplied entity */
+  const testCopyAndJson = (entity: Entity) => {
+    assert.isTrue(entity.isPersistent());
+    const copyOf = entity.copyForEdit() as Entity;
+    assert.isFalse(copyOf.isPersistent());
+    copyOf.setPersistent(); // just to allow deepEqual to work
+    assert.deepEqual(entity, copyOf, "copyForEdit worked"); // make sure the copy is identical to original
+
+    // now round trip the entity through a json string and back to a new entity.
+    const jsonObj = JSON.parse(JSON.stringify(entity)) as EntityProps;
+    jsonObj.iModel = entity.iModel; // this gets lost in the JSON string
+    const el2 = new (entity.constructor as EntityCtor)(jsonObj); // create a new entity from the json
+    el2.setPersistent(); // just to allow deepEqual to work
+    assert.deepEqual(entity, el2, "json stringify worked");
+  };
 
   it("should use schema to look up classes by name", async () => {
     const { result: elementClass } = await BisCore.getClass(Element.name, imodel);
@@ -107,6 +107,10 @@ describe("iModel", () => {
     assert.notEqual(a2, el3);
     assert.isTrue(a2!.id.equals(el3!.id));
     testCopyAndJson(el3!);
+
+    const newEl = el3!.copyForEdit();
+    const { result: a4 } = await imodel2.elements.insertElement({ id: "0x1d" });
+
   });
 
   it("should have a valid root subject element", async () => {
