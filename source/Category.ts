@@ -165,7 +165,7 @@ export class SubCategory extends DefinitionElement implements SubCategoryProps {
   public getSubCategoryName(): string { return this.code.getValue(); }
   public getSubCategoryId(): Id64 { return this.id; }
   public getCategoryId(): Id64 { return this.parent ? this.parent.id : new Id64(); }
-  public isDefaultSubCategory(): boolean { return Category.getDefaultSubCategoryId(this.getCategoryId()) === this.getSubCategoryId(); }
+  public isDefaultSubCategory(): boolean { return Category.getDefaultSubCategoryId(this.getCategoryId()).equals(this.getSubCategoryId()); }
 }
 
 /** the rank for a Category */
@@ -197,7 +197,7 @@ export class Category extends DefinitionElement implements CategoryProps {
     return val;
   }
 
-  public static getDefaultSubCategoryId(id: Id64): Id64 { return id.isValid() ? new Id64([id.lo, id.hi + 1]) : new Id64(); }
+  public static getDefaultSubCategoryId(id: Id64): Id64 { return id.isValid() ? new Id64([id.lo + 1, id.hi]) : new Id64(); }
   public myDefaultSubCategoryId(): Id64 { return Category.getDefaultSubCategoryId(this.id); }
 }
 
