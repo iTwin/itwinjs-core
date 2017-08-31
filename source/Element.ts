@@ -107,14 +107,14 @@ export class Element extends Entity implements EntityProps {
   }
 
   /** Query for aspects rows (by aspect class name) associated with this element. */
-  private async queryAspects(aspectClassName: string): BentleyPromise<DgnDbStatus, ElementAspect[] | undefined> {
+  private async queryAspects(aspectClassName: string): Promise<ElementAspect[]> {
     const response = await this.iModel.executeQuery("SELECT * FROM " + aspectClassName + " WHERE Element.Id=" + this.id.toString()); // WIP: need to bind!
     if (response.error || !response.result)
-      return { result: undefined };
+      return Promise.reject(new Error("Invalid SQL"));
 
     const rows: any[] = JSON.parse(response.result);
     if (!rows || rows.length === 0)
-      return { result: undefined };
+      return Promise.reject(new Error("No " + aspectClassName + " aspects found for this element"));
 
     const aspects: ElementAspect[] = [];
     for (const row of rows) {
@@ -128,36 +128,27 @@ export class Element extends Entity implements EntityProps {
 
       const { result: aspect } = await ClassRegistry.createInstance(aspectProps);
       if (!aspect)
-        return { result: undefined };
+        return Promise.reject(new Error("Error creating instance"));
 
       assert(aspect instanceof ElementAspect);
       aspect.setPersistent();
       aspects.push(aspect as ElementAspect);
     }
 
-    return { result: aspects };
+    return aspects;
   }
 
   /** Get an ElementUniqueAspect instance (by class name) that is related to this element. */
-  public async getUniqueAspect(aspectClassName: string): BentleyPromise<DgnDbStatus, ElementUniqueAspect | undefined> {
-    const response = await this.queryAspects(aspectClassName);
-    const aspects: ElementAspect[] | undefined = response.result;
-    if (!aspects || aspects.length !== 1)
-      return { result: undefined };
-
+  public async getUniqueAspect(aspectClassName: string): Promise<ElementUniqueAspect> {
+    const aspects: ElementAspect[] = await this.queryAspects(aspectClassName);
     assert(aspects[0] instanceof ElementUniqueAspect);
-    return { result: aspects[0] };
+    return aspects[0];
   }
 
   /** Get the ElementMultiAspect instances (by class name) that are related to this element. */
-  public async getMultiAspects(aspectClassName: string): BentleyPromise<DgnDbStatus, ElementMultiAspect[] | undefined> {
-    const response = await this.queryAspects(aspectClassName);
-    const aspects: ElementAspect[] | undefined = response.result;
-    if (!aspects || aspects.length === 0)
-      return { result: undefined };
-
-    // return { result: aspects.map((aspect) => aspect as ElementMultiAspect) };
-    return { result: aspects };
+  public async getMultiAspects(aspectClassName: string): Promise<ElementMultiAspect[]> {
+    const aspects: ElementAspect[] = await this.queryAspects(aspectClassName);
+    return aspects;
   }
 }
 
