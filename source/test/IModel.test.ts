@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
+import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Code, IModel } from "../IModel";
 import { ColorDef } from "../Render";
 import { ElementProps, Element, GeometricElement3d, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../Element";
@@ -14,7 +15,6 @@ import { ModelSelector } from "../ViewDefinition";
 import { Elements } from "../Elements";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { BisCore } from "../BisCore";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { SpatialViewDefinition, DisplayStyle3d } from "../ViewDefinition";
 import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { GeometricElement2d } from "../Element";
@@ -66,14 +66,20 @@ describe("iModel", () => {
     const elements: Elements = imodel.elements;
     assert.exists(elements);
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
-    const { result: el } = await elements.getElement({ code: code1 });
+    const el = await elements.getElement(code1);
     assert.exists(el);
-    const { result: el2 } = await elements.getElement({ id: "0x34" });
+    const el2 = await elements.getElement(new Id64("0x34"));
     assert.exists(el2);
     const badCode = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
-    const { result: bad } = await elements.getElement({ code: badCode });
-    assert.isUndefined(bad);
-    const { result: subCat } = await elements.getElement({ id: "0x2e" });
+
+    try {
+      await elements.getElement(badCode);
+      assert.isTrue(false); // expecting above line to throw an Error
+    } catch (error) {
+      assert.isTrue(error instanceof Error);
+    }
+
+    const subCat = await elements.getElement(new Id64("0x2e"));
     assert.isTrue(subCat instanceof SubCategory);
     if (subCat instanceof SubCategory) {
       assert.isTrue(subCat.appearance.color.tbgr === 16777215);
@@ -88,7 +94,7 @@ describe("iModel", () => {
     }
 
     /// Get the parent Category of the subcategory.
-    const { result: cat } = await elements.getElement({ id: (subCat as SubCategory).getCategoryId() });
+    const cat = await elements.getElement((subCat as SubCategory).getCategoryId());
     assert.isTrue(cat instanceof Category);
     if (cat instanceof Category) {
       assert.isTrue(cat.id.lo === 45);
@@ -100,37 +106,36 @@ describe("iModel", () => {
       testCopyAndJson(cat);
     }
 
-    const { result: phys } = await elements.getElement({ id: "0x38", noGeometry: false });
+    const phys = await elements.getElement(new Id64("0x38"));
     assert.isTrue(phys instanceof GeometricElement3d);
 
-    const { result: a2 } = await imodel2.elements.getElement({ id: "0x1d" });
+    const a2 = await imodel2.elements.getElement(new Id64("0x1d"));
     assert.exists(a2);
-    assert.isTrue(a2!.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
-    const { result: el3 } = await imodel2.elements.getElement({ federationGuid: a2!.federationGuid!.value });
+    assert.isTrue(a2.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    const el3 = await imodel2.elements.getElement(new Guid(a2.federationGuid!.value));
     assert.exists(el3);
     assert.notEqual(a2, el3);
-    assert.isTrue(a2!.id.equals(el3!.id));
+    assert.isTrue(a2.id.equals(el3!.id));
     testCopyAndJson(el3!);
   });
 
   it("should have a valid root subject element", async () => {
-    const { result: rootSubject } = await imodel.elements.getRootSubject();
+    const rootSubject = await imodel.elements.getRootSubject();
     assert.exists(rootSubject);
     assert.isTrue(rootSubject instanceof Subject);
-    assert.isAtLeast(rootSubject!.code.getValue().length, 1);
+    assert.isAtLeast(rootSubject.code.getValue().length, 1);
     const { result: subModel } = await rootSubject!.getSubModel();
     assert.isUndefined(subModel, "Root subject should not have a subModel");
 
-    const childIds: Id64[] = await rootSubject!.queryChildren();
+    const childIds: Id64[] = await rootSubject.queryChildren();
     assert.isAtLeast(childIds.length, 1);
     for (const childId of childIds) {
-      const { result: childElement } = await imodel.elements.getElement({ id: childId });
+      const childElement = await imodel.elements.getElement(childId);
       assert.exists(childElement);
       assert.isTrue(childElement instanceof Element);
-      if (!childElement)
-        continue;
-      testCopyAndJson(childElement!);
-      assert.isTrue(childElement.parent!.id.lo === rootSubject!.id.lo);
+
+      testCopyAndJson(childElement);
+      assert.isTrue(childElement.parent!.id.lo === rootSubject.id.lo);
       if (childElement instanceof InformationPartitionElement) {
         const { result: childSubModel } = await childElement.getSubModel();
         assert.exists(childSubModel, "InformationPartitionElements should have a subModel");
@@ -221,34 +226,35 @@ describe("iModel", () => {
 describe("Views", () => {
   it("should be at least one view element", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const { result: jsonString } = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + SpatialViewDefinition.sqlName);
-    assert.exists(jsonString, "Should find some views");
-    const viewIdList: any[] = JSON.parse(jsonString!);
-    for (const thisViewId of viewIdList!) {
-      const { result: thisView } = await imodel.elements.getElement({ id: thisViewId.elementId });
-      assert.isTrue(thisView instanceof SpatialViewDefinition, "Should be instance of SpatialViewDefinition");
-      if (!thisView)
+    const { result: viewJson } = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + SpatialViewDefinition.sqlName);
+    assert.exists(viewJson, "Should find some views");
+    const viewRows: any[] = JSON.parse(viewJson!);
+    for (const viewRow of viewRows!) {
+      const viewId = new Id64(viewRow.elementId);
+      const view = await imodel.elements.getElement(viewId);
+      assert.isTrue(view instanceof SpatialViewDefinition, "Should be instance of SpatialViewDefinition");
+      if (!view)
         continue;
-      if (!(thisView instanceof SpatialViewDefinition))
+      if (!(view instanceof SpatialViewDefinition))
         continue;
-      assert.isTrue(thisView.code.value === "A Views - View 1", "Code value is A Views - View 1");
-      assert.isTrue(thisView.getDisplayStyleId().lo === 0x36, "Display Style Id is 0x36");
-      assert.isTrue(thisView.getCategorySelectorId().lo === 0x37, "Category Id is 0x37");
-      assert.isFalse(thisView.cameraOn, "The camera is not turned on");
-      assert.isTrue(thisView.extents.isAlmostEqual(new Vector3d(429.6229727570776, 232.24786876266097, 0.1017680889917761)), "View extents as expected");
-      assert.isTrue(thisView.origin.isAlmostEqual(new Point3d(-87.73958171815832, -108.96514044887601, -0.0853709702222105)), "View origin as expected");
-      assert.isTrue(thisView.rotation.isAlmostEqual(RotMatrix.identity), "View rotation is identity");
-      assert.isTrue(thisView.jsonProperties.viewDetails.gridOrient === 0, "Grid orientation as expected");
-      assert.isTrue(thisView.jsonProperties.viewDetails.gridSpaceX === 0.001, "GridSpaceX as expected");
+      assert.isTrue(view.code.value === "A Views - View 1", "Code value is A Views - View 1");
+      assert.isTrue(view.getDisplayStyleId().lo === 0x36, "Display Style Id is 0x36");
+      assert.isTrue(view.getCategorySelectorId().lo === 0x37, "Category Id is 0x37");
+      assert.isFalse(view.cameraOn, "The camera is not turned on");
+      assert.isTrue(view.extents.isAlmostEqual(new Vector3d(429.6229727570776, 232.24786876266097, 0.1017680889917761)), "View extents as expected");
+      assert.isTrue(view.origin.isAlmostEqual(new Point3d(-87.73958171815832, -108.96514044887601, -0.0853709702222105)), "View origin as expected");
+      assert.isTrue(view.rotation.isAlmostEqual(RotMatrix.identity), "View rotation is identity");
+      assert.isTrue(view.jsonProperties.viewDetails.gridOrient === 0, "Grid orientation as expected");
+      assert.isTrue(view.jsonProperties.viewDetails.gridSpaceX === 0.001, "GridSpaceX as expected");
 
       // get the display style element
-      const { result: thisDisplayStyle } = await imodel.elements.getElement({ id: thisView.getDisplayStyleId() });
-      assert.isTrue(thisDisplayStyle instanceof DisplayStyle3d, "The Display Style should be a DisplayStyle3d");
-      if (!(thisDisplayStyle instanceof DisplayStyle3d))
+      const displayStyle = await imodel.elements.getElement(view.getDisplayStyleId());
+      assert.isTrue(displayStyle instanceof DisplayStyle3d, "The Display Style should be a DisplayStyle3d");
+      if (!(displayStyle instanceof DisplayStyle3d))
         continue;
-      const bgColorDef: ColorDef = thisDisplayStyle.getBackgroundColor();
+      const bgColorDef: ColorDef = displayStyle.getBackgroundColor();
       assert.isTrue(bgColorDef.tbgr === 0, "The background as expected");
-      const sceneBrightness: number = thisDisplayStyle.getSceneBrightness();
+      const sceneBrightness: number = displayStyle.getSceneBrightness();
       assert.isTrue(sceneBrightness === 0);
     }
     imodel.closeDgnDb();
@@ -258,38 +264,39 @@ describe("Views", () => {
 describe("Categories", () => {
   it("should be some categories", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
-    const { result: jsonString } = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + Category.sqlName);
-    assert.exists(jsonString, "Should have some Category ids");
-    const categoryIdList: any[] = JSON.parse(jsonString!);
-    for (const thisCategoryIdString of categoryIdList!) {
-      const thisCategoryId: Id64 = new Id64(thisCategoryIdString.elementId);
-      const { result: thisCategory } = await imodel.elements.getElement({ id: thisCategoryId });
-      assert.isTrue(thisCategory instanceof Category, "Should be instance of Category");
-      if (!thisCategory)
+    const { result: categoryJson } = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + Category.sqlName);
+    assert.exists(categoryJson, "Should have some Category ids");
+    const categoryRows: any[] = JSON.parse(categoryJson!);
+    for (const categoryRow of categoryRows!) {
+      const categoryId: Id64 = new Id64(categoryRow.elementId);
+      const category = await imodel.elements.getElement(categoryId);
+      assert.isTrue(category instanceof Category, "Should be instance of Category");
+      if (!category)
         continue;
-      if (!(thisCategory instanceof Category))
+      if (!(category instanceof Category))
         continue;
 
       // verify the default subcategory.
-      const subCategoryId: Id64 = thisCategory.myDefaultSubCategoryId();
-      const { result: defaultSubCategory } = await imodel.elements.getElement({ id: subCategoryId });
+      const defaultSubCategoryId: Id64 = category.myDefaultSubCategoryId();
+      const defaultSubCategory = await imodel.elements.getElement(defaultSubCategoryId);
       assert.isTrue(defaultSubCategory instanceof SubCategory, "defaultSubCategory should be instance of SubCategory");
       if (defaultSubCategory instanceof SubCategory) {
-        assert.isTrue(defaultSubCategory.parent!.id.equals(thisCategoryId), "defaultSubCategory id should be prescribed value");
-        assert.isTrue(defaultSubCategory.getSubCategoryName() === thisCategory.code.getValue(), "DefaultSubcategory name should match that of Category");
+        assert.isTrue(defaultSubCategory.parent!.id.equals(categoryId), "defaultSubCategory id should be prescribed value");
+        assert.isTrue(defaultSubCategory.getSubCategoryName() === category.code.getValue(), "DefaultSubcategory name should match that of Category");
         assert.isTrue(defaultSubCategory.isDefaultSubCategory(), "isDefaultSubCategory should return true");
       }
 
       // get the subcategories
-      const queryString: string = "SELECT EcInstanceId as elementId FROM " + SubCategory.sqlName + " WHERE Parent.Id=" + thisCategoryId;
-      const { result: jsonString1 } = await imodel.executeQuery(queryString);
-      assert.exists(jsonString1, "Should have at least one SubCategory");
-      const subCategoryIdList: any[] = JSON.parse(jsonString1!);
-      for (const thisSubCategoryId of subCategoryIdList) {
-        const { result: thisSubCategory } = await imodel.elements.getElement({ id: thisSubCategoryId.elementId });
-        assert.isTrue(thisSubCategory instanceof SubCategory);
-        if (thisSubCategory instanceof SubCategory) {
-          assert.isTrue(thisSubCategory.parent!.id.equals(thisCategoryId));
+      const queryString: string = "SELECT ECInstanceId as elementId FROM " + SubCategory.sqlName + " WHERE Parent.Id=" + categoryId;
+      const { result: subCategoryJson } = await imodel.executeQuery(queryString);
+      assert.exists(subCategoryJson, "Should have at least one SubCategory");
+      const subCategoryRows: any[] = JSON.parse(subCategoryJson!);
+      for (const subCategoryRow of subCategoryRows) {
+        const subCategoryId = new Id64(subCategoryRow.elementId);
+        const subCategory = await imodel.elements.getElement(subCategoryId);
+        assert.isTrue(subCategory instanceof SubCategory);
+        if (subCategory instanceof SubCategory) {
+          assert.isTrue(subCategory.parent!.id.equals(categoryId));
         }
       }
     }
@@ -300,38 +307,34 @@ describe("Categories", () => {
 describe("2D Elements", () => {
   it("should be some 2D elements", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim", true);
-    const { result: jsonString } = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM BisCore.DrawingGraphic");
-    assert.exists(jsonString, "Should have some Drawing Graphics");
-    const drawingGraphicIdList: any[] = JSON.parse(jsonString!);
-    for (const thisDrawingGraphicIdString of drawingGraphicIdList!) {
-      const thisDrawingGraphicId: Id64 = new Id64(thisDrawingGraphicIdString.elementId);
-      const { result: thisDrawingGraphic } = await imodel.elements.getElement({ id: thisDrawingGraphicId });
-      assert.isDefined(thisDrawingGraphic, "Retrieved valid DrawingGraphic");  // not undefined.
-      assert.isTrue(thisDrawingGraphic!.constructor.name === "DrawingGraphic", "Should be instance of DrawingGraphic");
-      assert.isTrue(thisDrawingGraphic instanceof GeometricElement2d, "Is instance of GeometricElement2d");
-      if (!thisDrawingGraphic)
-        continue;
-      if (!(thisDrawingGraphic instanceof GeometricElement2d))
-        continue;
-      if (thisDrawingGraphic.id.lo === 0x25) {
-        assert.isTrue(thisDrawingGraphic.placement.origin.x === 0.0);
-        assert.isTrue(thisDrawingGraphic.placement.origin.y === 0.0);
-        assert.isTrue(thisDrawingGraphic.placement.angle.radians === 0.0);
-        assert.isTrue(thisDrawingGraphic.placement.bbox.low.x === 0.0);
-        assert.isTrue(thisDrawingGraphic.placement.bbox.low.y === 0.0);
-        assert.isTrue(thisDrawingGraphic.placement.bbox.high.x === 1.0);
-        assert.isTrue(thisDrawingGraphic.placement.bbox.high.y === 1.0);
-        assert.isDefined(thisDrawingGraphic.geom);
+    const { result: drawingGraphicJson } = await imodel.executeQuery("SELECT ECInstanceId as elementId FROM BisCore.DrawingGraphic");
+    assert.exists(drawingGraphicJson, "Should have some Drawing Graphics");
+    const drawingGraphicRows: any[] = JSON.parse(drawingGraphicJson!);
+    for (const drawingGraphicRow of drawingGraphicRows!) {
+      const drawingGraphicId: Id64 = new Id64(drawingGraphicRow.elementId);
+      const drawingGraphic = await imodel.elements.getElement(drawingGraphicId);
+      assert.exists(drawingGraphic);
+      assert.isTrue(drawingGraphic!.constructor.name === "DrawingGraphic", "Should be instance of DrawingGraphic");
+      assert.isTrue(drawingGraphic instanceof GeometricElement2d, "Is instance of GeometricElement2d");
+      if (drawingGraphic.id.lo === 0x25) {
+        assert.isTrue(drawingGraphic.placement.origin.x === 0.0);
+        assert.isTrue(drawingGraphic.placement.origin.y === 0.0);
+        assert.isTrue(drawingGraphic.placement.angle.radians === 0.0);
+        assert.isTrue(drawingGraphic.placement.bbox.low.x === 0.0);
+        assert.isTrue(drawingGraphic.placement.bbox.low.y === 0.0);
+        assert.isTrue(drawingGraphic.placement.bbox.high.x === 1.0);
+        assert.isTrue(drawingGraphic.placement.bbox.high.y === 1.0);
+        assert.isDefined(drawingGraphic.geom);
       }
-      if (thisDrawingGraphic.id.lo === 0x26) {
-        assert.isTrue(thisDrawingGraphic.placement.origin.x === 1.0);
-        assert.isTrue(thisDrawingGraphic.placement.origin.y === 1.0);
-        assert.isTrue(thisDrawingGraphic.placement.angle.radians === 0.0);
-        assert.isTrue(thisDrawingGraphic.placement.bbox.low.x === 0.0);
-        assert.isTrue(thisDrawingGraphic.placement.bbox.low.y === 0.0);
-        assert.isTrue(thisDrawingGraphic.placement.bbox.high.x === 2.0);
-        assert.isTrue(thisDrawingGraphic.placement.bbox.high.y === 2.0);
-        assert.isDefined(thisDrawingGraphic.geom);
+      if (drawingGraphic.id.lo === 0x26) {
+        assert.isTrue(drawingGraphic.placement.origin.x === 1.0);
+        assert.isTrue(drawingGraphic.placement.origin.y === 1.0);
+        assert.isTrue(drawingGraphic.placement.angle.radians === 0.0);
+        assert.isTrue(drawingGraphic.placement.bbox.low.x === 0.0);
+        assert.isTrue(drawingGraphic.placement.bbox.low.y === 0.0);
+        assert.isTrue(drawingGraphic.placement.bbox.high.x === 2.0);
+        assert.isTrue(drawingGraphic.placement.bbox.high.y === 2.0);
+        assert.isDefined(drawingGraphic.geom);
       }
     }
     imodel.closeDgnDb();
@@ -340,7 +343,6 @@ describe("2D Elements", () => {
 
 describe("Model Structure", () => {
   let imodel: IModel;
-  let rootSubject: Subject;
 
   before(async () => {
     // First, register any schemas that will be used in the tests.
@@ -353,21 +355,14 @@ describe("Model Structure", () => {
     imodel.closeDgnDb();
   });
 
-  it("should be a root subject with id from rootSubjectId", async () => {
-    const rootSubjectId: Id64 = imodel.elements.rootSubjectId;
-    const { result: rootSubjectOut } = await imodel.elements.getElement({ id: rootSubjectId });
-    assert.exists(rootSubjectOut);
-    assert.isTrue(rootSubjectOut instanceof Subject);
-    rootSubject = rootSubjectOut as Subject;
-  });
-
   it("should be children of RootSubject", async () => {
-    const queryString: string = "SELECT EcInstanceId as modelId from biscore.model WHERE parentmodel.id=" + rootSubject.id;
-    const { result: jsonString } = await imodel.executeQuery(queryString);
-    assert.exists(jsonString, "Should have at least one model within rootSubject");
-    const modelIdList: any[] = JSON.parse(jsonString!);
-    for (const thisModelId of modelIdList) {
-      const { result: thisModel } = await imodel.models.getModel({ id: thisModelId.modelId });
+    const queryString: string = "SELECT ECInstanceId as modelId FROM " + Model.sqlName + " WHERE ParentModel.Id=" + imodel.models.repositoryModelId;
+    const { result: modelJson } = await imodel.executeQuery(queryString);
+    assert.exists(modelJson, "Should have at least one model within rootSubject");
+    const modelRows: any[] = JSON.parse(modelJson!);
+    for (const modelRow of modelRows) {
+      const modelId = new Id64(modelRow.modelId);
+      const { result: thisModel } = await imodel.models.getModel({ id: modelId });
       assert.exists(thisModel, "Model should exist");
       assert.isTrue(thisModel instanceof Model);
 
@@ -375,27 +370,27 @@ describe("Model Structure", () => {
         continue;
 
       // should be an element with the same Id.
-      const { result: modelElement } = await imodel.elements.getElement({ id: thisModelId.modelId });
-      assert.exists(modelElement, "Model Element should exist");
+      const modeledElement = await imodel.elements.getElement(modelId);
+      assert.exists(modeledElement, "Modeled Element should exist");
 
       if (thisModel.constructor.name === "LinkModel") {
         // expect LinkModel to be accompanied by LinkPartition
-        assert.isTrue(modelElement instanceof LinkPartition);
+        assert.isTrue(modeledElement instanceof LinkPartition);
         continue;
       } else if (thisModel.constructor.name === "DictionaryModel") {
-        assert.isTrue(modelElement instanceof DefinitionPartition);
+        assert.isTrue(modeledElement instanceof DefinitionPartition);
         continue;
       } else if (thisModel.constructor.name === "PhysicalModel") {
-        assert.isTrue(modelElement instanceof PhysicalPartition);
+        assert.isTrue(modeledElement instanceof PhysicalPartition);
         continue;
       } else if (thisModel.constructor.name === "GroupModel") {
-        assert.isTrue(modelElement instanceof GroupInformationPartition);
+        assert.isTrue(modeledElement instanceof GroupInformationPartition);
         continue;
       } else if (thisModel.constructor.name === "DocumentListModel") {
-        assert.isTrue(modelElement instanceof DocumentPartition);
+        assert.isTrue(modeledElement instanceof DocumentPartition);
         continue;
       } else if (thisModel.constructor.name === "DefinitionModel") {
-        assert.isTrue(modelElement instanceof DefinitionPartition);
+        assert.isTrue(modeledElement instanceof DefinitionPartition);
         continue;
       } else {
         assert.isTrue(false, "Expected a known model type");
@@ -403,5 +398,4 @@ describe("Model Structure", () => {
     }
   });
 
-}); // closes desdribe.
-
+});
