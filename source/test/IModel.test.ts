@@ -73,8 +73,8 @@ describe("iModel", () => {
     const badCode = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
 
     try {
-      await elements.getElement(badCode);
-      assert.isTrue(false); // expecting above line to throw an Error
+      await elements.getElement(badCode); // trhows Error
+      assert.isTrue(false, "Expected this line to be skipped");
     } catch (error) {
       assert.isTrue(error instanceof Error);
     }
@@ -124,8 +124,13 @@ describe("iModel", () => {
     assert.exists(rootSubject);
     assert.isTrue(rootSubject instanceof Subject);
     assert.isAtLeast(rootSubject.code.getValue().length, 1);
-    const { result: subModel } = await rootSubject!.getSubModel();
-    assert.isUndefined(subModel, "Root subject should not have a subModel");
+
+    try {
+      await rootSubject.getSubModel(); // throws error
+      assert.isTrue(false, "Expected this line to be skipped");
+    } catch (error) {
+      assert.isTrue(error instanceof Error);
+    }
 
     const childIds: Id64[] = await rootSubject.queryChildren();
     assert.isAtLeast(childIds.length, 1);
@@ -137,7 +142,7 @@ describe("iModel", () => {
       testCopyAndJson(childElement);
       assert.isTrue(childElement.parent!.id.lo === rootSubject.id.lo);
       if (childElement instanceof InformationPartitionElement) {
-        const { result: childSubModel } = await childElement.getSubModel();
+        const childSubModel = await childElement.getSubModel();
         assert.exists(childSubModel, "InformationPartitionElements should have a subModel");
 
         if ((childId.lo === 16) && (childId.hi === 0)) {
@@ -164,14 +169,14 @@ describe("iModel", () => {
   it("should load a known model by Id from an existing iModel", async () => {
     const models: Models = imodel.models;
     assert.exists(models);
-    const { result: model2 } = await models.getModel({ id: "0x1c" });
+    const model2 = await models.getModel(new Id64("0x1c"));
     assert.exists(model2);
-    testCopyAndJson(model2!);
-    let { result: model } = await models.getModel({ id: "0x1" });
+    testCopyAndJson(model2);
+    let model = await models.getModel(models.repositoryModelId);
     assert.exists(model);
     testCopyAndJson(model!);
     const code1 = new Code({ spec: "0x1d", scope: "0x1d", value: "A" });
-    ({ result: model } = await models.getModel({ code: code1 }));
+    model = await models.getSubModel(code1);
     const { result: geomModel } = await ClassRegistry.getClass({ name: "PhysicalModel", schema: "BisCore" }, imodel);
     assert.exists(model);
     assert.isTrue(model instanceof geomModel!);
@@ -362,34 +367,31 @@ describe("Model Structure", () => {
     const modelRows: any[] = JSON.parse(modelJson!);
     for (const modelRow of modelRows) {
       const modelId = new Id64(modelRow.modelId);
-      const { result: thisModel } = await imodel.models.getModel({ id: modelId });
-      assert.exists(thisModel, "Model should exist");
-      assert.isTrue(thisModel instanceof Model);
-
-      if (!thisModel)
-        continue;
+      const model = await imodel.models.getModel(modelId);
+      assert.exists(model, "Model should exist");
+      assert.isTrue(model instanceof Model);
 
       // should be an element with the same Id.
       const modeledElement = await imodel.elements.getElement(modelId);
       assert.exists(modeledElement, "Modeled Element should exist");
 
-      if (thisModel.constructor.name === "LinkModel") {
+      if (model.constructor.name === "LinkModel") {
         // expect LinkModel to be accompanied by LinkPartition
         assert.isTrue(modeledElement instanceof LinkPartition);
         continue;
-      } else if (thisModel.constructor.name === "DictionaryModel") {
+      } else if (model.constructor.name === "DictionaryModel") {
         assert.isTrue(modeledElement instanceof DefinitionPartition);
         continue;
-      } else if (thisModel.constructor.name === "PhysicalModel") {
+      } else if (model.constructor.name === "PhysicalModel") {
         assert.isTrue(modeledElement instanceof PhysicalPartition);
         continue;
-      } else if (thisModel.constructor.name === "GroupModel") {
+      } else if (model.constructor.name === "GroupModel") {
         assert.isTrue(modeledElement instanceof GroupInformationPartition);
         continue;
-      } else if (thisModel.constructor.name === "DocumentListModel") {
+      } else if (model.constructor.name === "DocumentListModel") {
         assert.isTrue(modeledElement instanceof DocumentPartition);
         continue;
-      } else if (thisModel.constructor.name === "DefinitionModel") {
+      } else if (model.constructor.name === "DefinitionModel") {
         assert.isTrue(modeledElement instanceof DefinitionPartition);
         continue;
       } else {
