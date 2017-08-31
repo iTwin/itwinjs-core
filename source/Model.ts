@@ -80,12 +80,9 @@ export class Models {
     const props = JSON.parse(json) as ModelProps;
     props.iModel = this._iModel;
 
-    const modelObj = await ClassRegistry.createInstance(props);
-    if (modelObj.error)
-      return Promise.reject(new Error("Error creating model instance"));
-
-    const model = modelObj.result as Model;
-    assert(modelObj.result instanceof Model);
+    const entity = await ClassRegistry.createInstance(props);
+    assert(entity instanceof Model);
+    const model = entity as Model;
 
     // We have created the model. Cache it before we return it.
     model.setPersistent(); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that

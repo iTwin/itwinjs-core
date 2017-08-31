@@ -56,10 +56,10 @@ describe("iModel", () => {
   });
 
   it("should use schema to look up classes by name", async () => {
-    const { result: elementClass } = await BisCore.getClass(Element.name, imodel);
-    const { result: categoryClass } = await BisCore.getClass(Category.name, imodel);
-    assert.equal(elementClass!.name, "Element");
-    assert.equal(categoryClass!.name, "Category");
+    const elementClass = await BisCore.getClass(Element.name, imodel);
+    const categoryClass = await BisCore.getClass(Category.name, imodel);
+    assert.equal(elementClass.name, "Element");
+    assert.equal(categoryClass.name, "Category");
   });
 
   it("should load a known element by Id from an existing iModel", async () => {
@@ -177,7 +177,7 @@ describe("iModel", () => {
     testCopyAndJson(model!);
     const code1 = new Code({ spec: "0x1d", scope: "0x1d", value: "A" });
     model = await models.getSubModel(code1);
-    const { result: geomModel } = await ClassRegistry.getClass({ name: "PhysicalModel", schema: "BisCore" }, imodel);
+    const geomModel = await ClassRegistry.getClass({ name: "PhysicalModel", schema: "BisCore" }, imodel);
     assert.exists(model);
     assert.isTrue(model instanceof geomModel!);
     testCopyAndJson(model!);
@@ -192,8 +192,9 @@ describe("iModel", () => {
       id: new Id64(),
     };
 
-    const modelObj = await ClassRegistry.createInstance(props);
-    const selector1 = modelObj.result as ModelSelector;
+    const entity = await ClassRegistry.createInstance(props);
+    assert.isTrue(entity instanceof ModelSelector);
+    const selector1 = entity as ModelSelector;
     assert.exists(selector1);
     if (selector1) {
       selector1.addModel(new Id64([2, 1]));

@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/imodeljs-core"
   },
-  "version": "1.0.36",
+  "version": "1.0.37",
   "scripts": {
     "build": "gulp build",
     "build-release": "gulp build --release",

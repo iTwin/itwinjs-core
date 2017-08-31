@@ -46,11 +46,8 @@ export class Elements {
     const props = JSON.parse(json) as ElementProps;
     props.iModel = this._iModel;
 
-    const elObj = await ClassRegistry.createInstance(props);
-    if (elObj.error)
-      return Promise.reject(new Error("Could not create element instance"));
-
-    const el = elObj.result as Element;
+    const entity = await ClassRegistry.createInstance(props);
+    const el = entity as Element;
     assert(el instanceof Element);
 
     // We have created the element. Cache it before we return it.

@@ -32,10 +32,9 @@ describe("Class Registry", () => {
     assert.exists(el);
     if (el) {
       const metaData: EntityMetaData | undefined = await el.getClassMetaData();
-      assert.notEqual(metaData, undefined);
+      assert.exists(metaData);
       if (undefined === metaData)
         return;
-      assert.isNotNull(metaData);
       assert.equal(metaData.name, el.className);
       assert.equal(metaData.schema, el.schemaName);
       // I happen to know that this is a BisCore.RepositoryLink
@@ -46,8 +45,7 @@ describe("Class Registry", () => {
       assert.equal(metaData.baseClasses[0].name, "UrlLink");
       assert.equal(metaData.customAttributes[0].ecclass.name, "ClassHasHandler");
       //  Check the metadata on the one property that RepositoryLink defines, RepositoryGuid
-      assert.isDefined(metaData.properties);
-      assert.isNotNull(metaData.properties);
+      assert.exists(metaData.properties);
       assert.isDefined(metaData.properties.repositoryGuid);
       const p: PrimitivePropertyMetaData = metaData.properties.repositoryGuid as PrimitivePropertyMetaData;
       assert.isDefined(p.primitiveECProperty);
@@ -59,10 +57,9 @@ describe("Class Registry", () => {
     assert.exists(el2);
     if (el2) {
       const metaData: EntityMetaData | undefined = await el2.getClassMetaData();
-      assert.notEqual(metaData, undefined);
+      assert.exists(metaData);
       if (undefined === metaData)
         return;
-      assert.isNotNull(metaData);
       assert.equal(metaData.name, el2.className);
       assert.equal(metaData.schema, el2.schemaName);
       // I happen to know that this is a BisCore.SpatialViewDefinition
@@ -70,8 +67,7 @@ describe("Class Registry", () => {
       assert.equal(metaData.schema, BisCore.name);
       assert.isTrue(metaData.baseClasses.length > 0);
       assert.equal(metaData.baseClasses[0].name, ViewDefinition3d.name);
-      assert.isDefined(metaData.properties);
-      assert.isNotNull(metaData.properties);
+      assert.exists(metaData.properties);
       assert.isDefined(metaData.properties.modelSelector);
       const n: NavigationPropertyMetaData = metaData.properties.modelSelector as NavigationPropertyMetaData;
       assert.isDefined(n.navigationECProperty);

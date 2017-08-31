@@ -124,13 +124,11 @@ export class Element extends Entity implements EntityProps {
       aspectProps.eCInstanceId = undefined; // clear property from SELECT * that we don't want in the final instance
       aspectProps.eCClassId = undefined; // clear property from SELECT * that we don't want in the final instance
 
-      const { result: aspect } = await ClassRegistry.createInstance(aspectProps);
-      if (!aspect)
-        return Promise.reject(new Error("Error creating instance"));
-
-      assert(aspect instanceof ElementAspect);
+      const entity = await ClassRegistry.createInstance(aspectProps);
+      assert(entity instanceof ElementAspect);
+      const aspect = entity as ElementAspect;
       aspect.setPersistent();
-      aspects.push(aspect as ElementAspect);
+      aspects.push(aspect);
     }
 
     return aspects;

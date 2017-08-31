@@ -5,8 +5,6 @@
 import { EntityCtor, Entity, EntityProps, EntityMetaData, ClassFullName } from "./Entity";
 import { IModel } from "./IModel";
 import { Schema, Schemas } from "./Schema";
-import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
-import { DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 /** The mapping between a class name (schema.class) and its constructor function  */
@@ -22,21 +20,18 @@ export class ClassRegistry {
   }
 
   /** create an instance of a class from it properties */
-  public static async createInstance(props: EntityProps): BentleyPromise<DgnDbStatus, Entity> {
+  public static async createInstance(props: EntityProps): Promise<Entity> {
     if (!props.classFullName || !props.iModel)
-      return { error: { status: DgnDbStatus.BadArg, message: "Invalid input props" } };
+      return Promise.reject(new Error("Invalid input props"));
 
     props.classFullName = props.classFullName.toLowerCase();
     let ctor = ClassRegistry.ecClasses.get(props.classFullName);
     if (!ctor) {
-      const cls = await ClassRegistry.generateClass(props.classFullName, props.iModel);
-      if (cls.error)
-        return { error: cls.error };
-      ctor = cls.result!;
+      ctor = await ClassRegistry.generateClass(props.classFullName, props.iModel);
       assert(!!ctor);
     }
 
-    return { result: new ctor(props) };
+    return new ctor(props);
   }
 
   public static registerSchema(schema: Schema) { Schemas.registerSchema(schema); }
@@ -96,17 +91,17 @@ export class ClassRegistry {
   /** This function fetches the specified Entity from the imodel, generates a JS class for it, and registers the generated
    *  class. This function also ensures that all of the base classes of the Entity exist and are registered.
    */
-  private static async generateClass(classFullName: string, imodel: IModel): BentleyPromise<DgnDbStatus, EntityCtor> {
+  private static async generateClass(classFullName: string, imodel: IModel): Promise<EntityCtor> {
 
     if (!imodel.dgnDb)
-      throw new Error("IModel must be open");
+      return Promise.reject(new Error("IModel must be open"));
 
     const name = classFullName.split(".");
     assert(name.length === 2);
 
     const ret = await imodel.getECClassMetaData(name[0], name[1]);
     if (ret.error)
-      return { error: ret.error };
+      return Promise.reject(new Error("Error getting class meta data"));
 
     const ecClassJson = ret.result!;
     assert(!!ecClassJson);
@@ -118,14 +113,12 @@ export class ClassRegistry {
     // Therefore, I must await getRegisteredClass.
     if (metadata.baseClasses && metadata.baseClasses.length !== 0) {
       for (const base of metadata.baseClasses) {
-        const { error } = await ClassRegistry.getClass(base, imodel);
-        if (error)
-          return { error };
+        await ClassRegistry.getClass(base, imodel);
       }
     }
 
     // Now we can generate the class from the classDef.
-    return { result: ClassRegistry.generateClassForEntity(metadata) };
+    return ClassRegistry.generateClassForEntity(metadata);
   }
 
   /** This function generates a JS class for the specified Entity and registers it. It is up to the caller
@@ -150,7 +143,7 @@ export class ClassRegistry {
    * @return A promise that resolves to an object containing a result property set to the Entity.
    * In case of errors, the error property is setup in the resolved object.
    */
-  public static async getClass(fullName: ClassFullName, imodel: IModel): BentleyPromise<DgnDbStatus, EntityCtor> {
+  public static async getClass(fullName: ClassFullName, imodel: IModel): Promise<EntityCtor> {
     const key = ClassRegistry.getKeyFromName(fullName);
     if (!ClassRegistry.ecClasses.has(key)) {
       return ClassRegistry.generateClass(key, imodel);
@@ -158,7 +151,10 @@ export class ClassRegistry {
     const ctor = ClassRegistry.ecClasses.get(key);
     assert(!!ctor);
 
-    return { result: ctor };
+    if (!ctor)
+      return Promise.reject(new Error("Class not found in ClassRegistry"));
+
+    return ctor;
   }
 
   /**
