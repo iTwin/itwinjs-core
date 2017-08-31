@@ -4,8 +4,6 @@
 
 import { Code, CodeProps, GeometryStream, Placement3d, Placement2d } from "./IModel";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
-import { DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
 import { ClassRegistry } from "./ClassRegistry";
 import { ElementAspect, ElementAspectProps, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
@@ -99,11 +97,11 @@ export class Element extends Entity implements EntityProps {
   }
 
   /** Get the Model that modeling this Element (if it exists). That is, the model that is beneath this element in the hierarchy. */
-  public async getSubModel(): BentleyPromise<DgnDbStatus, Model | undefined> {
+  public async getSubModel(): Promise<Model> {
     if (this.id.equals(this.iModel.elements.rootSubjectId))
-      return { result: undefined };
+      return Promise.reject(new Error("No subModel found"));
 
-    return this.iModel.models.getModel({ id: this.id });
+    return this.iModel.models.getModel(this.id);
   }
 
   /** Query for aspects rows (by aspect class name) associated with this element. */
