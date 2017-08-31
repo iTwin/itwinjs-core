@@ -108,4 +108,7 @@ export class Models {
     this._loaded.set(model.id.toString(), model);
     return { result: model };
   }
+
+  /** The Id of the repository model. */
+  public get repositoryModelId(): Id64 { return new Id64("0x1"); }
 }
