@@ -112,9 +112,10 @@ describe("iModel", () => {
     assert.isTrue(a2!.id.equals(el3!.id));
     testCopyAndJson(el3!);
 
-    const newEl = el3!.copyForEdit();
-    const { result: a4 } = await imodel2.elements.insertElement({ id: "0x1d" });
-
+    const newEl = el3!.copyForEdit<Element>();
+    newEl.federationGuid = undefined;
+    const newId = await imodel2.elements.insertElement(newEl);
+    assert.isTrue(newId.isValid(), "insert worked");
   });
 
   it("should have a valid root subject element", async () => {
@@ -407,5 +408,4 @@ describe("Model Structure", () => {
     }
   });
 
-}); // closes desdribe.
-
+}); // closes describe.

@@ -44,13 +44,16 @@ export class MetaDataRegistry {
 export class IModel {
   private _fileName: string;
   private _db: DgnDbToken;
-  private _elements: Elements;
-  private _models: Models;
+  public elements: Elements;
+  public models: Models;
   private _classMetaDataRegistry: MetaDataRegistry;
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
   public get fileName() { return this._fileName; }
 
-  private constructor() { }
+  private constructor() {
+    this.elements = new Elements(this);
+    this.models = new Models(this);
+  }
 
   /** Open the iModel
    * @param fileName  The name of the iModel
@@ -107,6 +110,12 @@ export class IModel {
     return DgnDb.callGetElement(this._db, opt);
   }
 
+  /** Insert a new Element into the iModel. */
+  public async insertElement(el: string): Promise<Id64> {
+    const stat = await DgnDb.callInsertElement(this._db, el);
+    return stat.error ? Promise.reject(stat.error) : new Id64(JSON.parse(stat.result!).id);
+  }
+
   /**
    * Get a JSON representation of a Model.
    * @param opt A JSON string with options for loading the model
@@ -132,20 +141,6 @@ export class IModel {
     if (!this._classMetaDataRegistry)
       this._classMetaDataRegistry = new MetaDataRegistry(this);
     return this._classMetaDataRegistry;
-  }
-
-  /** Get the Elements of this iModel */
-  public get elements(): Elements {
-    if (!this._elements)
-      this._elements = new Elements(this);
-    return this._elements;
-  }
-
-  /** Get the Models of this iModel */
-  public get models(): Models {
-    if (!this._models)
-      this._models = new Models(this);
-    return this._models;
   }
 
   public get dgnDb(): DgnDb {

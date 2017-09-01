@@ -26,11 +26,7 @@
   "dependencies": {
     "@bentley/geometry-core": "^1.0.7",
     "@bentley/imodeljs-dgnplatform": "^1.0.42",
-    "@types/node": "^8.0.26",
-    "js-base64": "^2.1.9",
-    "memoizee": "^0.4.9",
-    "object.pick": "^1.3.0",
-    "tsutils": "^2.8.2"
+    "js-base64": "^2.1.9"
   },
   "devDependencies": {
     "@bentley/bentleyjs-tools": "^1.0.19",
