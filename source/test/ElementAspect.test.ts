@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { BisCore } from "../BisCore";
 import { PhysicalElement } from "../Element";
 import { ElementMultiAspect, ElementUniqueAspect } from "../ElementAspect";
@@ -26,32 +27,31 @@ describe("ElementAspect", () => {
   });
 
   it("should be able to get aspects from test file", async () => {
-    const { result: element } = await iModel.elements.getElement({ id: "0x17" });
+    const element = await iModel.elements.getElement(new Id64("0x17"));
     assert.exists(element);
     assert.isTrue(element instanceof PhysicalElement);
 
-    const { result: aspect1 } = await element!.getUniqueAspect("DgnPlatformTest.TestUniqueAspectNoHandler");
+    const aspect1 = await element.getUniqueAspect("DgnPlatformTest.TestUniqueAspectNoHandler");
     assert.exists(aspect1);
     assert.isTrue(aspect1 instanceof ElementUniqueAspect);
-    assert.equal(aspect1!.schemaName, "DgnPlatformTest");
-    assert.equal(aspect1!.className, "TestUniqueAspectNoHandler");
-    assert.equal(aspect1!.testUniqueAspectProperty, "Aspect1-Updated");
-    assert.equal(aspect1!.length, 1);
+    assert.equal(aspect1.schemaName, "DgnPlatformTest");
+    assert.equal(aspect1.className, "TestUniqueAspectNoHandler");
+    assert.equal(aspect1.testUniqueAspectProperty, "Aspect1-Updated");
+    assert.equal(aspect1.length, 1);
     assert.isTrue(Object.isFrozen(aspect1));
 
-    const { result: aspect2 } = await element!.getUniqueAspect("DgnPlatformTest.TestUniqueAspect");
+    const aspect2 = await element.getUniqueAspect("DgnPlatformTest.TestUniqueAspect");
     assert.exists(aspect2);
     assert.isTrue(aspect2 instanceof ElementUniqueAspect);
-    assert.equal(aspect2!.schemaName, "DgnPlatformTest");
-    assert.equal(aspect2!.className, "TestUniqueAspect");
-    assert.equal(aspect2!.testUniqueAspectProperty, "Aspect2-Updated");
-    assert.notExists(aspect2!.length);
+    assert.equal(aspect2.schemaName, "DgnPlatformTest");
+    assert.equal(aspect2.className, "TestUniqueAspect");
+    assert.equal(aspect2.testUniqueAspectProperty, "Aspect2-Updated");
+    assert.isNull(aspect2.length);
     assert.isTrue(Object.isFrozen(aspect2));
 
-    const responseA = await element!.getMultiAspects("DgnPlatformTest.TestMultiAspectNoHandler");
-    assert.exists(responseA.result);
-    assert.isArray(responseA.result);
-    const multiAspectsA: ElementMultiAspect[] = responseA.result!;
+    const multiAspectsA: ElementMultiAspect[] = await element.getMultiAspects("DgnPlatformTest.TestMultiAspectNoHandler");
+    assert.exists(multiAspectsA);
+    assert.isArray(multiAspectsA);
     assert.equal(multiAspectsA.length, 2);
     multiAspectsA.forEach((aspect) => {
       assert.isTrue(aspect instanceof ElementMultiAspect);
@@ -61,10 +61,9 @@ describe("ElementAspect", () => {
       assert.isTrue(Object.isFrozen(aspect));
     });
 
-    const responseB = await element!.getMultiAspects("DgnPlatformTest.TestMultiAspect");
-    assert.exists(responseB.result);
-    assert.isArray(responseB.result);
-    const multiAspectsB: ElementMultiAspect[] = responseB.result!;
+    const multiAspectsB: ElementMultiAspect[] = await element.getMultiAspects("DgnPlatformTest.TestMultiAspect");
+    assert.exists(multiAspectsB);
+    assert.isArray(multiAspectsB);
     assert.equal(multiAspectsB.length, 2);
     multiAspectsB.forEach((aspect) => {
       assert.isTrue(aspect instanceof ElementMultiAspect);
@@ -73,5 +72,26 @@ describe("ElementAspect", () => {
       assert.exists(aspect.testMultiAspectProperty);
       assert.isTrue(Object.isFrozen(aspect));
     });
+
+    let numErrorsCaught = 0;
+    const rootSubject = await iModel.elements.getRootSubject();
+
+    try {
+      await rootSubject.getUniqueAspect("DgnPlatformTest.TestUniqueAspect");
+      assert.isTrue(false, "Expected this line to be skipped");
+    } catch (error) {
+      numErrorsCaught++;
+      assert.isTrue(error instanceof Error);
+    }
+
+    try {
+      await rootSubject.getMultiAspects("DgnPlatformTest.TestMultiAspect");
+      assert.isTrue(false, "Expected this line to be skipped");
+    } catch (error) {
+      numErrorsCaught++;
+      assert.isTrue(error instanceof Error);
+    }
+
+    assert.equal(numErrorsCaught, 2);
   });
 });
