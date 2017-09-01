@@ -18,10 +18,8 @@ import { BisCore } from "../BisCore";
 import { SpatialViewDefinition, DisplayStyle3d } from "../ViewDefinition";
 import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { GeometricElement2d } from "../Element";
-// import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
 
 describe("iModel", () => {
-
   let imodel: IModel;
   let imodel2: IModel;
 
@@ -42,7 +40,7 @@ describe("iModel", () => {
   /** test the copy constructor and to/from Json methods for the supplied entity */
   const testCopyAndJson = (entity: Entity) => {
     assert.isTrue(entity.isPersistent());
-    const copyOf = entity.copyForEdit() as Entity;
+    const copyOf = entity.copyForEdit();
     assert.isFalse(copyOf.isPersistent());
     copyOf.setPersistent(); // just to allow deepEqual to work
     assert.deepEqual(entity, copyOf, "copyForEdit worked"); // make sure the copy is identical to original
@@ -315,8 +313,8 @@ describe("Categories", () => {
   });
 });
 
-describe("2D Elements", () => {
-  it("should be some 2D elements", async () => {
+describe("2d Elements", () => {
+  it("should be some 2d elements", async () => {
     const imodel: IModel = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim", true);
     const { result: drawingGraphicJson } = await imodel.executeQuery("SELECT ECInstanceId as elementId FROM BisCore.DrawingGraphic");
     assert.exists(drawingGraphicJson, "Should have some Drawing Graphics");

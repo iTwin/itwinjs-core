@@ -5,8 +5,8 @@ import { Element, ElementProps } from "./Element";
 import { Code, IModel } from "./IModel";
 import { ClassRegistry } from "./ClassRegistry";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 /** Parameters to specify what element to load. */
 export interface ElementLoadParams {
