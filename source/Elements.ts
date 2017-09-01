@@ -66,7 +66,7 @@ export class Elements {
   }
 
   public async insertElement(el: Element): Promise<Id64> {
-    assert(!el.isPersistent);
+    assert(!el.isPersistent());
     return this._iModel.insertElement(JSON.stringify(el));
   }
 
