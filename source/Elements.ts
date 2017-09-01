@@ -65,6 +65,11 @@ export class Elements {
     return Promise.reject(new Error("Invalid parameter passed to getElement"));
   }
 
+  public async insertElement(el: Element): Promise<Id64> {
+    assert(!el.isPersistent());
+    return this._iModel.insertElement(JSON.stringify(el));
+  }
+
   /** The Id of the root subject element. */
   public get rootSubjectId(): Id64 { return new Id64("0x1"); }
 

@@ -42,8 +42,9 @@ export class Entity implements EntityProps {
     });
   }
 
-  public toJSON(): any {
+  public toJSON() {
     const val: any = {};
+    val.classFullName = this.classFullName;
     this.forEachProperty((propName: string, meta: PropertyMetaData) => {
       if (!meta.isCustomHandled)
         val[propName] = this[propName];
@@ -54,8 +55,11 @@ export class Entity implements EntityProps {
   /** call a function for each property of this Entity. Function arguments are property name and property metadata. */
   public forEachProperty(func: (name: string, meta: PropertyMetaData) => void) { EntityMetaData.forEachProperty(this.iModel, this.schemaName, this.className, true, func); }
 
-  /** Get the full name of this class, in the form "schema.class"  */
+  /** STATIC method to get the full name of this class, in the form "schema.class"  */
   public static get sqlName() { return this.schema.name + "." + this.name; }
+
+  /** get full class name of this Entity. */
+  public get classFullName(): string { return this.schemaName + "." + this.className; }
 
   /** Get the name of the schema that defines this class */
   public get schemaName(): string { return Object.getPrototypeOf(this).constructor.schema.name; }
@@ -69,7 +73,7 @@ export class Entity implements EntityProps {
   public isPersistent() { return this.persistent; }
 
   /** make a copy of this Entity so that it may be be modified. */
-  public copyForEdit() { return new (this.constructor as EntityCtor)(this); }
+  public copyForEdit<T extends Entity>() { return new (this.constructor as EntityCtor)(this) as T; }
 }
 /**
  * The full name of an Entity

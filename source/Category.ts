@@ -197,7 +197,7 @@ export class Category extends DefinitionElement implements CategoryProps {
     return val;
   }
 
-  public static getDefaultSubCategoryId(id: Id64): Id64 { return id.isValid() ? new Id64([id.lo + 1, id.hi]) : new Id64(); }
+  public static getDefaultSubCategoryId(id: Id64): Id64 { return id.isValid() ? new Id64([id.getLow() + 1, id.getHigh()]) : new Id64(); }
   public myDefaultSubCategoryId(): Id64 { return Category.getDefaultSubCategoryId(this.id); }
 }
 

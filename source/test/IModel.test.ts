@@ -22,22 +22,6 @@ import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
 
 describe("iModel", () => {
 
-  /** test the copy constructor and to/from Json methods for the supplied entity */
-  const testCopyAndJson = (entity: Entity) => {
-    assert.isTrue(entity.isPersistent());
-    const copyOf = entity.copyForEdit() as Entity;
-    assert.isFalse(copyOf.isPersistent());
-    copyOf.setPersistent(); // just to allow deepEqual to work
-    assert.deepEqual(entity, copyOf, "copyForEdit worked"); // make sure the copy is identical to original
-
-    // now round trip the entity through a json string and back to a new entity.
-    const jsonObj = JSON.parse(JSON.stringify(entity)) as EntityProps;
-    jsonObj.iModel = entity.iModel; // this gets lost in the JSON string
-    const el2 = new (entity.constructor as EntityCtor)(jsonObj); // create a new entity from the json
-    el2.setPersistent(); // just to allow deepEqual to work
-    assert.deepEqual(entity, el2, "json stringify worked");
-  };
-
   let imodel: IModel;
   let imodel2: IModel;
 
@@ -54,6 +38,22 @@ describe("iModel", () => {
     imodel.closeDgnDb();
     imodel2.closeDgnDb();
   });
+
+  /** test the copy constructor and to/from Json methods for the supplied entity */
+  const testCopyAndJson = (entity: Entity) => {
+    assert.isTrue(entity.isPersistent());
+    const copyOf = entity.copyForEdit() as Entity;
+    assert.isFalse(copyOf.isPersistent());
+    copyOf.setPersistent(); // just to allow deepEqual to work
+    assert.deepEqual(entity, copyOf, "copyForEdit worked"); // make sure the copy is identical to original
+
+    // now round trip the entity through a json string and back to a new entity.
+    const jsonObj = JSON.parse(JSON.stringify(entity)) as EntityProps;
+    jsonObj.iModel = entity.iModel; // this gets lost in the JSON string
+    const el2 = new (entity.constructor as EntityCtor)(jsonObj); // create a new entity from the json
+    el2.setPersistent(); // just to allow deepEqual to work
+    assert.deepEqual(entity, el2, "json stringify worked");
+  };
 
   it("should use schema to look up classes by name", async () => {
     const elementClass = await BisCore.getClass(Element.name, imodel);
@@ -73,7 +73,7 @@ describe("iModel", () => {
     const badCode = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
 
     try {
-      await elements.getElement(badCode); // trhows Error
+      await elements.getElement(badCode); // throws Error
       assert.isTrue(false, "Expected this line to be skipped");
     } catch (error) {
       assert.isTrue(error instanceof Error);
@@ -84,10 +84,10 @@ describe("iModel", () => {
     if (subCat instanceof SubCategory) {
       assert.isTrue(subCat.appearance.color.tbgr === 16777215);
       assert.isTrue(subCat.appearance.weight === 2);
-      assert.isTrue(subCat.id.lo === 46);
-      assert.isTrue(subCat.id.hi === 0);
-      assert.isTrue(subCat.code.spec.lo === 30);
-      assert.isTrue(subCat.code.spec.hi === 0);
+      assert.isTrue(subCat.id.getLow() === 46);
+      assert.isTrue(subCat.id.getHigh() === 0);
+      assert.isTrue(subCat.code.spec.getLow() === 30);
+      assert.isTrue(subCat.code.spec.getHigh() === 0);
       assert.isTrue(subCat.code.scope === "0X2D");
       assert.isTrue(subCat.code.value === "A-Z013-G-Legn");
       testCopyAndJson(subCat);
@@ -97,11 +97,11 @@ describe("iModel", () => {
     const cat = await elements.getElement((subCat as SubCategory).getCategoryId());
     assert.isTrue(cat instanceof Category);
     if (cat instanceof Category) {
-      assert.isTrue(cat.id.lo === 45);
-      assert.isTrue(cat.id.hi === 0);
+      assert.isTrue(cat.id.getLow() === 45);
+      assert.isTrue(cat.id.getHigh() === 0);
       assert.isTrue(cat.description === "Legends, symbols keys");
-      assert.isTrue(cat.code.spec.lo === 22);
-      assert.isTrue(cat.code.spec.hi === 0);
+      assert.isTrue(cat.code.spec.getLow() === 22);
+      assert.isTrue(cat.code.spec.getHigh() === 0);
       assert.isTrue(cat.code.value === "A-Z013-G-Legn");
       testCopyAndJson(cat);
     }
@@ -117,6 +117,11 @@ describe("iModel", () => {
     assert.notEqual(a2, el3);
     assert.isTrue(a2.id.equals(el3!.id));
     testCopyAndJson(el3!);
+
+    const newEl = el3!.copyForEdit<Element>();
+    newEl.federationGuid = undefined;
+    const newId = await imodel2.elements.insertElement(newEl);
+    assert.isTrue(newId.isValid(), "insert worked");
   });
 
   it("should have a valid root subject element", async () => {
@@ -140,23 +145,23 @@ describe("iModel", () => {
       assert.isTrue(childElement instanceof Element);
 
       testCopyAndJson(childElement);
-      assert.isTrue(childElement.parent!.id.lo === rootSubject.id.lo);
+      assert.isTrue(childElement.parent!.id.getLow() === rootSubject.id.getLow());
       if (childElement instanceof InformationPartitionElement) {
         const childSubModel = await childElement.getSubModel();
         assert.exists(childSubModel, "InformationPartitionElements should have a subModel");
 
-        if ((childId.lo === 16) && (childId.hi === 0)) {
+        if ((childId.getLow() === 16) && (childId.getHigh() === 0)) {
           assert.isTrue(childElement instanceof DefinitionPartition, "ChildId 0x00000010 should be a DefinitionPartition");
           assert.isTrue(childElement.code.value === "BisCore.DictionaryModel", "Definition Partition should have code value of BisCore.DictionaryModel");
-        } else if ((childId.lo === 14) && (childId.hi === 0)) {
+        } else if ((childId.getLow() === 14) && (childId.getHigh() === 0)) {
           assert.isTrue(childElement instanceof LinkPartition);
           assert.isTrue(childElement.code.value === "BisCore.RealityDataSources");
-        } else if ((childId.lo === 17) && (childId.hi === 0)) {
+        } else if ((childId.getLow() === 17) && (childId.getHigh() === 0)) {
           assert.isTrue(childElement instanceof LinkPartition, "ChildId 0x000000011 should be a LinkPartition");
           assert.isTrue(childElement.code.value === "Repository Links");
         }
       } else if (childElement instanceof Subject) {
-        if ((childId.lo === 19) && (childId.hi === 0)) {
+        if ((childId.getLow() === 19) && (childId.getHigh() === 0)) {
           assert.isTrue(childElement instanceof Subject);
           assert.isTrue(childElement.code.value === "DgnV8:mf3, A", "Subject should have code value of DgnV8:mf3, A");
           assert.isTrue(childElement.jsonProperties.Subject.Job.DgnV8.V8File === "mf3.dgn", "Subject should have jsonProperty Subject.Job.DgnV.V8File");
@@ -244,8 +249,8 @@ describe("Views", () => {
       if (!(view instanceof SpatialViewDefinition))
         continue;
       assert.isTrue(view.code.value === "A Views - View 1", "Code value is A Views - View 1");
-      assert.isTrue(view.getDisplayStyleId().lo === 0x36, "Display Style Id is 0x36");
-      assert.isTrue(view.getCategorySelectorId().lo === 0x37, "Category Id is 0x37");
+      assert.isTrue(view.getDisplayStyleId().getLow() === 0x36, "Display Style Id is 0x36");
+      assert.isTrue(view.getCategorySelectorId().getLow() === 0x37, "Category Id is 0x37");
       assert.isFalse(view.cameraOn, "The camera is not turned on");
       assert.isTrue(view.extents.isAlmostEqual(new Vector3d(429.6229727570776, 232.24786876266097, 0.1017680889917761)), "View extents as expected");
       assert.isTrue(view.origin.isAlmostEqual(new Point3d(-87.73958171815832, -108.96514044887601, -0.0853709702222105)), "View origin as expected");
@@ -322,7 +327,7 @@ describe("2D Elements", () => {
       assert.exists(drawingGraphic);
       assert.isTrue(drawingGraphic!.constructor.name === "DrawingGraphic", "Should be instance of DrawingGraphic");
       assert.isTrue(drawingGraphic instanceof GeometricElement2d, "Is instance of GeometricElement2d");
-      if (drawingGraphic.id.lo === 0x25) {
+      if (drawingGraphic.id.getLow() === 0x25) {
         assert.isTrue(drawingGraphic.placement.origin.x === 0.0);
         assert.isTrue(drawingGraphic.placement.origin.y === 0.0);
         assert.isTrue(drawingGraphic.placement.angle.radians === 0.0);
@@ -332,7 +337,7 @@ describe("2D Elements", () => {
         assert.isTrue(drawingGraphic.placement.bbox.high.y === 1.0);
         assert.isDefined(drawingGraphic.geom);
       }
-      if (drawingGraphic.id.lo === 0x26) {
+      if (drawingGraphic.id.getLow() === 0x26) {
         assert.isTrue(drawingGraphic.placement.origin.x === 1.0);
         assert.isTrue(drawingGraphic.placement.origin.y === 1.0);
         assert.isTrue(drawingGraphic.placement.angle.radians === 0.0);
