@@ -116,10 +116,10 @@ describe("iModel", () => {
     assert.isTrue(a2.id.equals(el3!.id));
     testCopyAndJson(el3!);
 
-    const newEl = el3!.copyForEdit<Element>();
-    newEl.federationGuid = undefined;
-    const newId = await imodel2.elements.insertElement(newEl);
-    assert.isTrue(newId.isValid(), "insert worked");
+    // const newEl = el3!.copyForEdit<Element>();
+    // newEl.federationGuid = undefined;
+    // const newId = await imodel2.elements.insertElement(newEl);
+    // assert.isTrue(newId.isValid(), "insert worked");
   });
 
   it("should have a valid root subject element", async () => {
@@ -216,25 +216,7 @@ describe("iModel", () => {
     assert.notEqual(rows[0].eCInstanceId, "");
   });
 
-  // it("ElementPropertyFormatter should format", async () => {
-  //   const elements: Elements = imodel.elements;
-  //   const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
-  //   const { result: el } = await elements.getElement({ code: code1 });
-  //   if (undefined === el)
-  //     throw new Error();
-  //   const formatter: ElementPropertyFormatter = new ElementPropertyFormatter(imodel);
-  //   const { result: props } = await formatter.formatProperties(el);
-  //   assert.isArray(props);
-  //   assert.notEqual(props.length, 0);
-  //   const item = props[0];
-  //   assert.isString(item.category);
-  //   assert.isArray(item.properties);
-  // });
-});
-
-describe("Views", () => {
   it("should be at least one view element", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const { result: viewJson } = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + SpatialViewDefinition.sqlName);
     assert.exists(viewJson, "Should find some views");
     const viewRows: any[] = JSON.parse(viewJson!);
@@ -266,13 +248,9 @@ describe("Views", () => {
       const sceneBrightness: number = displayStyle.getSceneBrightness();
       assert.isTrue(sceneBrightness === 0);
     }
-    imodel.closeDgnDb();
   });
-});
 
-describe("Categories", () => {
   it("should be some categories", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const { result: categoryJson } = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + Category.sqlName);
     assert.exists(categoryJson, "Should have some Category ids");
     const categoryRows: any[] = JSON.parse(categoryJson!);
@@ -309,19 +287,15 @@ describe("Categories", () => {
         }
       }
     }
-    imodel.closeDgnDb();
   });
-});
 
-describe("2d Elements", () => {
   it("should be some 2d elements", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim", true);
-    const { result: drawingGraphicJson } = await imodel.executeQuery("SELECT ECInstanceId as elementId FROM BisCore.DrawingGraphic");
+    const { result: drawingGraphicJson } = await imodel2.executeQuery("SELECT ECInstanceId as elementId FROM BisCore.DrawingGraphic");
     assert.exists(drawingGraphicJson, "Should have some Drawing Graphics");
     const drawingGraphicRows: any[] = JSON.parse(drawingGraphicJson!);
     for (const drawingGraphicRow of drawingGraphicRows!) {
       const drawingGraphicId: Id64 = new Id64(drawingGraphicRow.elementId);
-      const drawingGraphic = await imodel.elements.getElement(drawingGraphicId);
+      const drawingGraphic = await imodel2.elements.getElement(drawingGraphicId);
       assert.exists(drawingGraphic);
       assert.isTrue(drawingGraphic!.constructor.name === "DrawingGraphic", "Should be instance of DrawingGraphic");
       assert.isTrue(drawingGraphic instanceof GeometricElement2d, "Is instance of GeometricElement2d");
@@ -346,37 +320,21 @@ describe("2d Elements", () => {
         assert.isDefined(drawingGraphic.geom);
       }
     }
-    imodel.closeDgnDb();
-  });
-});
-
-describe("Model Structure", () => {
-  let imodel: IModel;
-
-  before(async () => {
-    // First, register any schemas that will be used in the tests.
-    BisCore.registerSchema();
-    imodel = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim", true);
-    assert.exists(imodel);
-  });
-
-  after(() => {
-    imodel.closeDgnDb();
   });
 
   it("should be children of RootSubject", async () => {
-    const queryString: string = "SELECT ECInstanceId as modelId FROM " + Model.sqlName + " WHERE ParentModel.Id=" + imodel.models.repositoryModelId;
-    const { result: modelJson } = await imodel.executeQuery(queryString);
+    const queryString: string = "SELECT ECInstanceId as modelId FROM " + Model.sqlName + " WHERE ParentModel.Id=" + imodel2.models.repositoryModelId;
+    const { result: modelJson } = await imodel2.executeQuery(queryString);
     assert.exists(modelJson, "Should have at least one model within rootSubject");
     const modelRows: any[] = JSON.parse(modelJson!);
     for (const modelRow of modelRows) {
       const modelId = new Id64(modelRow.modelId);
-      const model = await imodel.models.getModel(modelId);
+      const model = await imodel2.models.getModel(modelId);
       assert.exists(model, "Model should exist");
       assert.isTrue(model instanceof Model);
 
       // should be an element with the same Id.
-      const modeledElement = await imodel.elements.getElement(modelId);
+      const modeledElement = await imodel2.elements.getElement(modelId);
       assert.exists(modeledElement, "Modeled Element should exist");
 
       if (model.constructor.name === "LinkModel") {

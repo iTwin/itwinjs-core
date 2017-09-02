@@ -100,7 +100,6 @@ export class Element extends Entity implements EntityProps {
   public async getSubModel(): Promise<Model> {
     if (this.id.equals(this.iModel.elements.rootSubjectId))
       return Promise.reject(new Error("No subModel found"));
-
     return this.iModel.models.getModel(this.id);
   }
 
