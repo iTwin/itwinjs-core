@@ -5,7 +5,7 @@
 import { Elements } from "./Elements";
 import { EntityMetaData } from "./Entity";
 import { Models } from "./Model";
-import { DgnDb, DgnDbToken, DgnDbStatus } from "@bentley/imodeljs-dgnplatform/lib/DgnDb";
+import { DgnDb, DgnDbToken, DgnDbStatus } from "./dgnplatform/DgnDb";
 import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Point3d, Vector3d, Range3d, YawPitchRollAngles, Point2d, Range2d, Transform, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
