@@ -19,6 +19,8 @@ export interface EntityCtor extends FunctionConstructor {
   new(args: EntityProps | Entity): Entity;
 }
 
+export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
+
 /** Base class for all ECEntityClasses. */
 export class Entity implements EntityProps {
   private persistent: boolean = false;
@@ -34,26 +36,21 @@ export class Entity implements EntityProps {
   /** The Id of this Entity. Valid only if persistent. */
   public id: Id64;
 
-  constructor(opt: EntityProps) {
-    this.iModel = opt.iModel;
-    this.forEachProperty((propName: string, meta: PropertyMetaData) => {
-      if (!meta.isCustomHandled)
-        this[propName] = opt[propName];
-    });
+  constructor(props: EntityProps) {
+    this.iModel = props.iModel;
+    // copy all non-custom-handled properties from input to the object being constructed
+    this.forEachProperty((propName: string) => this[propName] = props[propName]);
   }
 
   public toJSON() {
     const val: any = {};
     val.classFullName = this.classFullName;
-    this.forEachProperty((propName: string, meta: PropertyMetaData) => {
-      if (!meta.isCustomHandled)
-        val[propName] = this[propName];
-    });
+    this.forEachProperty((propName: string) => val[propName] = this[propName]);
     return val;
   }
 
   /** call a function for each property of this Entity. Function arguments are property name and property metadata. */
-  public forEachProperty(func: (name: string, meta: PropertyMetaData) => void) { EntityMetaData.forEachProperty(this.iModel, this.schemaName, this.className, true, func); }
+  public forEachProperty(func: PropertyCallback, includeCustom: boolean = false) { EntityMetaData.forEach(this.iModel, this.schemaName, this.className, true, func, includeCustom); }
 
   /** STATIC method to get the full name of this class, in the form "schema.class"  */
   public static get sqlName() { return this.schema.name + "." + this.name; }
@@ -166,21 +163,23 @@ export class EntityMetaData {
    * @param wantSuper If true, superclass properties will also be processed
    * @param func The callback to be invoked on each property
    */
-  public static forEachProperty(imodel: IModel, schemaName: string, className: string, wantSuper: boolean, func: (name: string, meta: PropertyMetaData) => void) {
+  public static forEach(imodel: IModel, schemaName: string, className: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean) {
     const meta = imodel.classMetaDataRegistry.get(schemaName, className);
     if (meta === undefined) {
       throw new TypeError(schemaName + "." + className + " missing class metadata");
     }
 
     for (const propName in meta.properties) {
-      if (typeof propName === "string") { // this is a) just to be very safe and b) to satisfy TypeScript
-        func(propName, meta.properties[propName]);
+      if (propName) {
+        const propMeta = meta.properties[propName];
+        if (includeCustom || !propMeta.isCustomHandled)
+          func(propName, propMeta);
       }
     }
 
     if (wantSuper && meta.baseClasses) {
       for (const base of meta.baseClasses) {
-        EntityMetaData.forEachProperty(imodel, base.schema, base.name, true, func);
+        EntityMetaData.forEach(imodel, base.schema, base.name, true, func, includeCustom);
       }
     }
   }
