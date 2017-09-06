@@ -390,17 +390,6 @@ describe("iModel", () => {
     assert.notEqual(rows[0].ecinstanceid, "");
   });
 
-  it("should get a well-known element by ID", async () => {
-    const {error, result: eldata} = await imodel.getElement(JSON.stringify({id: "0X1"}));
-    assert.equal(undefined, error);
-    if (undefined === eldata)
-      assert.fail();
-    else {
-      assert.isNotNull(eldata);
-      assert.isString(eldata);
-    }
-  });
-
   /* Needs work
   it("should get display properties", async () => {
     const el = await imodel.elements.getElement(new Id64("0x1"));

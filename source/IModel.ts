@@ -332,13 +332,8 @@ export class IModel {
     return DgnDbNativeCode.callGetElementPropertiesForDisplay(this._db, eid);
   }
 
-  /**
-   * Get a JSON representation of an element.
-   * @param opt A JSON string with options for loading the element
-   * @return Promise that resolves to an object with a result property set to the JSON string of the element.
-   * The resolved object contains an error property if the operation failed.
-   */
-  public getElement(opt: string): BentleyPromise<DgnDbStatus, string> {
+  /** Internal implementation of iModel.elements.getElement */
+  public _getElementJson(opt: string): BentleyPromise<DgnDbStatus, string> {
     return DgnDbNativeCode.callGetElement(this._db, opt);
   }
 
@@ -348,13 +343,8 @@ export class IModel {
     return stat.error ? Promise.reject(stat.error) : new Id64(JSON.parse(stat.result!).id);
   }
 
-  /**
-   * Get a JSON representation of a Model.
-   * @param opt A JSON string with options for loading the model
-   * @return Promise that resolves to an object with a result property set to the JSON string of the model.
-   * The resolved object contains an error property if the operation failed.
-   */
-  public getModel(opt: string): BentleyPromise<DbResult, string> {
+  /** Internal implementation of iModel.models.getModel */
+  public _getModelJson(opt: string): BentleyPromise<DbResult, string> {
     return DgnDbNativeCode.callGetModel(this._db, opt);
   }
 

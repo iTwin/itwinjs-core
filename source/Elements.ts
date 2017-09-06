@@ -37,7 +37,7 @@ export class Elements {
     }
 
     // Must go get the element from the iModel. Start by requesting the element's data.
-    const getObj = await this._iModel.getElement(JSON.stringify(opts));
+    const getObj = await this._iModel._getElementJson(JSON.stringify(opts));
     if (getObj.error || !getObj.result) { // todo: Shouldn't getObj.result always be non-empty if there is no error?
       return Promise.reject(new Error("Didn't find an element with the specified identity"));
     }
