@@ -129,7 +129,6 @@ export class MetaDataRegistry {
 class DgnDbNativeCode {
   private static dbs = new Map<string, any>();    // services tier only
 
-
 private static getReturnError<StatusType, ResType>(s: StatusType, m: string): BentleyReturn<StatusType, ResType> {
     return { error: { status: s, message: m } };
 }
@@ -296,21 +295,16 @@ export class IModel {
   /** Open the iModel
    * @param fileName  The name of the iModel
    * @param mode      Open mode for database
-   * @return non-zero error status if the iModel could not be opened
    */
-  public static async openDgnDb(fileName: string, mode: OpenMode = OpenMode.ReadWrite): BentleyPromise<DbResult, IModel> {
-    return new Promise((resolve, _reject) => {
-      DgnDbNativeCode.callOpenDb(fileName, mode).then((res: BentleyReturn<DbResult, DgnDbToken>) => {
-        if (res.error || !res.result)
-          resolve({ error: res.error });
-        else {
-          const imodel = new IModel();
-          imodel._fileName = fileName;
-          imodel._db = res.result;
-          resolve({ result: imodel });
-        }
-      });
-    });
+  public static async openDgnDb(fileName: string, mode: OpenMode = OpenMode.ReadWrite): Promise<IModel> {
+    const response: BentleyReturn<DbResult, DgnDbToken> = await DgnDbNativeCode.callOpenDb(fileName, mode);
+    if (response.error || !response.result)
+      return Promise.reject(new Error("Error opening '" + fileName + "'"));
+
+    const iModel = new IModel();
+    iModel._fileName = fileName;
+    iModel._db = response.result;
+    return iModel;
   }
 
   /** Close this iModel, if it is currently open */

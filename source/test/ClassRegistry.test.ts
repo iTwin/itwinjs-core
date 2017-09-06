@@ -17,7 +17,7 @@ describe("Class Registry", () => {
   before(async () => {
     // First, register any schemas that will be used in the tests.
     BisCore.registerSchema();
-    imodel = await IModelTestUtils.openIModel("test.bim", true);
+    imodel = await IModelTestUtils.openIModel("test.bim");
     assert.exists(imodel);
   });
 
