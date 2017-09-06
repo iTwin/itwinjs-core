@@ -98,7 +98,12 @@ export class DgnDbToken {
 /** The mapping between a class name and its the metadata for that class  */
 export class MetaDataRegistry {
   private reg: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();
-  constructor(private imodel: IModel) { }
+
+  constructor(private imodel: IModel) {
+    if (!(imodel instanceof IModel))
+      throw new TypeError("bad imodel");
+  }
+
   private static getKey(schemaName: string, className: string) { return (schemaName + "." + className).toLowerCase(); }
 
   /** Get the specified Entity metadata */
