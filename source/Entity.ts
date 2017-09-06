@@ -73,11 +73,6 @@ export class Entity implements EntityProps {
   public copyForEdit<T extends Entity>() { return new (this.constructor as EntityCtor)(this) as T; }
 }
 
-/*  ***
-    *** WARNING: In the classes below, the property names are set in imodel-dgnplatform and must match.
-    ***
-*/
-
 /** A custom attribute instance */
 export class CustomAttribute {
   /** The class of the CustomAttribute */

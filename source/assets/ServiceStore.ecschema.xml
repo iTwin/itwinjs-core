@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="ServiceStore" alias="test" version="01.00.00" description="Schema for the persisted local store of a service" displayLabel="Service Store" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+    <ECSchemaReference name="ECDbMap" version="02.00.00" alias="ecdbmap"/>
+    <ECCustomAttributes>
+        <SchemaMap xmlns="ECDbMap.02.00">
+            <TablePrefix>test</TablePrefix>
+        </SchemaMap>
+    </ECCustomAttributes>
+
+    <ECEntityClass typeName="WsgInstance" modifier="Abstract" description="Base class for all instances coming in from WSG">
+        <ECProperty propertyName="wsgId" typeName="string"/>
+        <ECProperty propertyName="eTag" typeName="string"/>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="Briefcase">
+        <ECCustomAttributes>
+            <ClassMap xmlns="ECDbMap.02.00">
+                <MapStrategy>TablePerHierarchy</MapStrategy>
+            </ClassMap>
+        </ECCustomAttributes>
+        <BaseClass>WsgInstance</BaseClass>
+        <ECProperty propertyName="BriefcaseId" typeName="int"/>
+        <ECProperty propertyName="UserId" typeName="string"/>
+        <ECProperty propertyName="IsReadOnly" typeName="boolean"/>
+        <ECProperty propertyName="AccessMode" typeName="BriefcaseAccessMode"/>
+        <ECProperty propertyName="LocalPathname" typeName="string"/>
+        <ECProperty propertyName="LastAccessedAt" typeName="dateTime"/>
+        <ECProperty propertyName="ChangeSetId" typeName="string"/>
+        <ECProperty propertyName="IModelId" typeName="string"/>
+    </ECEntityClass>
+
+    <ECEnumeration typeName="BriefcaseAccessMode" backingTypeName="int" isStrict="true">
+        <ECEnumerator value="0" displayLabel="Shared"/>
+        <ECEnumerator value="1" displayLabel="Exclusive"/>
+    </ECEnumeration>
+
+</ECSchema>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="TestSchema" alias="test" version="01.00.00" description="Test Schema" displayLabel="Test Schema" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+    <ECSchemaReference name="CoreCustomAttributes" version="01.00.00" alias="CoreCA"/>
+    <ECSchemaReference name="ECDbMap" version="02.00.00" alias="ecdbmap"/>
+    <ECCustomAttributes>
+        <SchemaMap xmlns="ECDbMap.02.00">
+            <TablePrefix>test</TablePrefix>
+        </SchemaMap>
+    </ECCustomAttributes>
+
+    <ECEntityClass typeName="TestAbstractBaseClass">
+        <ECCustomAttributes>
+            <ClassMap xmlns="ECDbMap.02.00">
+                <MapStrategy>TablePerHierarchy</MapStrategy>
+            </ClassMap>
+        </ECCustomAttributes>
+        <ECProperty propertyName="AbstractBaseStringProperty" typeName="string"/>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="TestBaseClass">
+        <BaseClass>TestAbstractBaseClass</BaseClass>
+        <ECProperty propertyName="BaseStringProperty" typeName="string"/>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="TestClass">
+        <BaseClass>TestBaseClass</BaseClass>
+        <ECProperty propertyName="IntegerProperty" typeName="int"/>
+        <ECProperty propertyName="DoubleProperty" typeName="double"/>
+        <ECProperty propertyName="BooleanProperty" typeName="boolean"/>
+        <ECProperty propertyName="StringProperty" typeName="string"/>
+        <ECProperty propertyName="RelatedStringProperty" typeName="string"/>
+    </ECEntityClass>
+
+    <ECStructClass typeName="TestStruct">
+        <ECProperty propertyName="Alpha" typeName="double"/>
+        <ECProperty propertyName="Beta" typeName="double"/>
+        <ECProperty propertyName="Theta" typeName="double"/>
+    </ECStructClass>
+
+    <ECEntityClass typeName="KitchenSink">
+        <ECCustomAttributes>
+            <ClassMap xmlns="ECDbMap.02.00">
+                <MapStrategy>TablePerHierarchy</MapStrategy>
+            </ClassMap>
+        </ECCustomAttributes>
+        <ECProperty propertyName="BinaryProperty" typeName="binary"/>
+        <ECProperty propertyName="BooleanProperty" typeName="boolean"/>
+        <ECProperty propertyName="DateTimeProperty" typeName="dateTime"/>
+        <ECProperty propertyName="DoubleProperty" typeName="double"/>
+        <ECProperty propertyName="IntegerProperty" typeName="int"/>
+        <ECProperty propertyName="LongProperty" typeName="long"/>
+        <ECProperty propertyName="Point2dProperty" typeName="point2d"/>
+        <ECProperty propertyName="Point3dProperty" typeName="point3d"/>
+        <ECProperty propertyName="StringProperty" typeName="string"/>
+        <ECStructProperty propertyName="StructProperty" typeName="TestStruct"/>
+        <ECArrayProperty propertyName="ArrayOfIntegersProperty" typeName="int" minOccurs="1" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="ArrayOfPoint2dsProperty" typeName="point2d" minOccurs="1" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="ArrayOfPoint3dsProperty" typeName="point3d" minOccurs="1" maxOccurs="unbounded"/>
+        <ECStructArrayProperty propertyName="ArrayOfStructsProperty" typeName="TestStruct" minOccurs="0" maxOccurs="unbounded"/>
+    </ECEntityClass>
+
+</ECSchema>

@@ -7,12 +7,13 @@
     "type": "git",
     "url": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/imodeljs-core"
   },
-  "version": "1.0.40",
+  "version": "1.0.43",
   "scripts": {
     "build": "gulp build",
     "build-release": "gulp build --release",
     "clean": "gulp clean",
-    "test": "gulp test"
+    "test": "gulp test",
+    "install": "node scripts/install-imodeljs-addon.js"
   },
   "keywords": [
     "Bentley",
@@ -24,20 +25,21 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
+    "@bentley/bentleyjs-core": "^1.0.23",
     "@bentley/geometry-core": "^1.0.7",
-    "@bentley/imodeljs-dgnplatform": "^1.0.44",
+    "@bentley/imodeljs-clients": "^1.0.12",
     "js-base64": "^2.1.9"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "^1.0.31",
+    "@bentley/bentleyjs-tools": "^1.0.33",
     "@types/chai": "^4.0.4",
-    "@types/fs-extra": "^4.0.1",
+    "@types/fs-extra": "^4.0.2",
     "@types/js-base64": "^2.1.5",
     "@types/mocha": "^2.2.42",
     "chai": "^4.1.2",
     "commander": "^2.11.0",
     "debug-fabulous": "^0.1.1",
-    "diff": "^3.3.0",
+    "diff": "^3.3.1",
     "duplexify": "^3.5.1",
     "fs-extra": "latest",
     "gulp": "latest",
