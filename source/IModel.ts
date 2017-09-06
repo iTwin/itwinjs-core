@@ -17,7 +17,7 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 declare function require(arg: string): any;
 // tslint:disable-next-line:no-var-requires
 const addonLoader = require("../scripts/addonLoader");
-let dgnDbNodeAddon: any|undefined;
+let dgnDbNodeAddon: any | undefined;
 if (addonLoader !== undefined)
   dgnDbNodeAddon = addonLoader.loadNodeAddon(); // Note that evaluating this script has the side-effect of loading the addon
 
@@ -98,17 +98,11 @@ export class DgnDbToken {
 /** The mapping between a class name and its the metadata for that class  */
 export class MetaDataRegistry {
   private reg: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();
-<<<<<<< HEAD
-  constructor(private imodel: IModel) { }
-=======
 
   constructor(private imodel: IModel) {
     if (!(imodel instanceof IModel))
       throw new TypeError("bad imodel");
   }
-
-  private static getKey(schemaName: string, className: string) { return (schemaName + "." + className).toLowerCase(); }
->>>>>>> 53cd205a3b4992f8aac5f7490bc47f0f1ac27d30
 
   /** Get the specified Entity metadata */
   public get(classFullName: string): EntityMetaData | undefined {
@@ -134,19 +128,18 @@ export class MetaDataRegistry {
 class DgnDbNativeCode {
   private static dbs = new Map<string, any>();    // services tier only
 
-
-private static getReturnError<StatusType, ResType>(s: StatusType, m: string): BentleyReturn<StatusType, ResType> {
+  private static getReturnError<StatusType, ResType>(s: StatusType, m: string): BentleyReturn<StatusType, ResType> {
     return { error: { status: s, message: m } };
-}
+  }
 
-private static getPromiseError<StatusType, ResType>(s: StatusType, m: string): BentleyPromise<StatusType, ResType> {
+  private static getPromiseError<StatusType, ResType>(s: StatusType, m: string): BentleyPromise<StatusType, ResType> {
     return Promise.resolve(DgnDbNativeCode.getReturnError(s, m));
-}
+  }
 
-// *** NEEDS WORK: What is the correct DbResult for "the db is not open"?
-private static getNotOpenDbResultPromise<ResType>(): BentleyPromise<DbResult, ResType> {
+  // *** NEEDS WORK: What is the correct DbResult for "the db is not open"?
+  private static getNotOpenDbResultPromise<ResType>(): BentleyPromise<DbResult, ResType> {
     return Promise.resolve(DgnDbNativeCode.getReturnError(DbResult.BE_SQLITE_CANTOPEN, ""));
-}
+  }
 
   /**
    * Open the Db.
@@ -157,30 +150,30 @@ private static getNotOpenDbResultPromise<ResType>(): BentleyPromise<DbResult, Re
    */
   @RunsIn(Tier.Services)
   public static callOpenDb(fileName: string, mode: OpenMode): BentleyPromise<DbResult, DgnDbToken> {
-      let dgndb = DgnDbNativeCode.dbs.get(fileName);
-      if (undefined !== dgndb)    // If the file is already open, just acknowledge that
-          return Promise.resolve({ result: new DgnDbToken(fileName) }); // for now, we just use the fileName as the "token" that identifies the Db
-      return new Promise((resolve, _reject) => {
-          dgndb = new dgnDbNodeAddon.DgnDb();
-          dgndb.openDgnDb(fileName, mode).then((res: BentleyReturn<DbResult, void>) => {
-              if (res.error)
-                  resolve({ error: res.error });
-              else {
-                  DgnDbNativeCode.dbs.set(fileName, dgndb);
-                  resolve({ result: new DgnDbToken(fileName) });        // for now, we just use the fileName as the "token" that identifies the Db
-              }
-          });
+    let dgndb = DgnDbNativeCode.dbs.get(fileName);
+    if (undefined !== dgndb)    // If the file is already open, just acknowledge that
+      return Promise.resolve({ result: new DgnDbToken(fileName) }); // for now, we just use the fileName as the "token" that identifies the Db
+    return new Promise((resolve, _reject) => {
+      dgndb = new dgnDbNodeAddon.DgnDb();
+      dgndb.openDgnDb(fileName, mode).then((res: BentleyReturn<DbResult, void>) => {
+        if (res.error)
+          resolve({ error: res.error });
+        else {
+          DgnDbNativeCode.dbs.set(fileName, dgndb);
+          resolve({ result: new DgnDbToken(fileName) });        // for now, we just use the fileName as the "token" that identifies the Db
+        }
       });
+    });
   }
 
   @RunsIn(Tier.Services, { synchronous: true })
   public static callCloseDb(dbToken: DgnDbToken) {
-      const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
-      if (undefined === dgndb) {
-          return;
-      }
-      dgndb.closeDgnDb();
-      DgnDbNativeCode.dbs.delete(dbToken.id);
+    const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
+    if (undefined === dgndb) {
+      return;
+    }
+    dgndb.closeDgnDb();
+    DgnDbNativeCode.dbs.delete(dbToken.id);
   }
 
   /**
@@ -191,20 +184,20 @@ private static getNotOpenDbResultPromise<ResType>(): BentleyPromise<DbResult, Re
    */
   @RunsIn(Tier.Services)
   public static callGetElement(dbToken: DgnDbToken, opt: string): BentleyPromise<DgnDbStatus, string> {
-      const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
-      if (undefined === dgndb) {
-          return DgnDbNativeCode.getPromiseError(DgnDbStatus.NotOpen, "");
-      }
-      return dgndb.getElement(opt);
+    const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
+    if (undefined === dgndb) {
+      return DgnDbNativeCode.getPromiseError(DgnDbStatus.NotOpen, "");
+    }
+    return dgndb.getElement(opt);
   }
 
   @RunsIn(Tier.Services)
   public static callGetElementPropertiesForDisplay(dbToken: DgnDbToken, eid: string): BentleyPromise<DbResult, string> {
-      const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
-      if (undefined === dgndb) {
-          return DgnDbNativeCode.getNotOpenDbResultPromise();
-      }
-      return dgndb.getElementPropertiesForDisplay(eid);
+    const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
+    if (undefined === dgndb) {
+      return DgnDbNativeCode.getNotOpenDbResultPromise();
+    }
+    return dgndb.getElementPropertiesForDisplay(eid);
   }
   /**
    * Insert a new element into the DgnDb.
@@ -214,11 +207,11 @@ private static getNotOpenDbResultPromise<ResType>(): BentleyPromise<DbResult, Re
    */
   @RunsIn(Tier.Services)
   public static callInsertElement(dbToken: DgnDbToken, props: string): BentleyPromise<DgnDbStatus, string> {
-      const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
-      if (undefined === dgndb) {
-          return DgnDbNativeCode.getPromiseError(DgnDbStatus.NotOpen, "");
-      }
-      return dgndb.insertElement(props);
+    const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
+    if (undefined === dgndb) {
+      return DgnDbNativeCode.getPromiseError(DgnDbStatus.NotOpen, "");
+    }
+    return dgndb.insertElement(props);
   }
 
   /**
@@ -229,11 +222,11 @@ private static getNotOpenDbResultPromise<ResType>(): BentleyPromise<DbResult, Re
    */
   @RunsIn(Tier.Services)
   public static callGetModel(dbToken: DgnDbToken, opt: string): BentleyPromise<DbResult, string> {
-      const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
-      if (undefined === dgndb) {
-          return DgnDbNativeCode.getNotOpenDbResultPromise();
-      }
-      return dgndb.getModel(opt);
+    const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
+    if (undefined === dgndb) {
+      return DgnDbNativeCode.getNotOpenDbResultPromise();
+    }
+    return dgndb.getModel(opt);
   }
 
   /**
@@ -244,11 +237,11 @@ private static getNotOpenDbResultPromise<ResType>(): BentleyPromise<DbResult, Re
    */
   @RunsIn(Tier.Services)
   public static callExecuteQuery(dbToken: DgnDbToken, ecsql: string): BentleyPromise<DbResult, string> {
-      const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
-      if (undefined === dgndb) {
-          return DgnDbNativeCode.getNotOpenDbResultPromise();
-      }
-      return dgndb.executeQuery(ecsql);
+    const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
+    if (undefined === dgndb) {
+      return DgnDbNativeCode.getNotOpenDbResultPromise();
+    }
+    return dgndb.executeQuery(ecsql);
   }
 
   /**
@@ -260,11 +253,11 @@ private static getNotOpenDbResultPromise<ResType>(): BentleyPromise<DbResult, Re
    */
   @RunsIn(Tier.Services)
   public static callGetECClassMetaData(dbToken: DgnDbToken, ecschemaname: string, ecclassname: string): BentleyPromise<DgnDbStatus, string> {
-      const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
-      if (undefined === dgndb) {
-          return DgnDbNativeCode.getPromiseError(DgnDbStatus.NotOpen, "");
-      }
-      return dgndb.getECClassMetaData(ecschemaname, ecclassname);
+    const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
+    if (undefined === dgndb) {
+      return DgnDbNativeCode.getPromiseError(DgnDbStatus.NotOpen, "");
+    }
+    return dgndb.getECClassMetaData(ecschemaname, ecclassname);
   }
 
   /**
@@ -275,11 +268,11 @@ private static getNotOpenDbResultPromise<ResType>(): BentleyPromise<DbResult, Re
    */
   @RunsIn(Tier.Services, { synchronous: true })
   public static callGetECClassMetaDataSync(dbToken: DgnDbToken, ecschemaname: string, ecclassname: string): BentleyReturn<DgnDbStatus, string> {
-      const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
-      if (undefined === dgndb) {
-          return DgnDbNativeCode.getReturnError(DgnDbStatus.NotOpen, "");
-      }
-      return dgndb.getECClassMetaDataSync(ecschemaname, ecclassname);
+    const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
+    if (undefined === dgndb) {
+      return DgnDbNativeCode.getReturnError(DgnDbStatus.NotOpen, "");
+    }
+    return dgndb.getECClassMetaDataSync(ecschemaname, ecclassname);
   }
 }
 
