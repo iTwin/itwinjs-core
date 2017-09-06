@@ -27,10 +27,8 @@ describe("iModel", () => {
   before(async () => {
     // First, register any schemas that will be used in the tests.
     BisCore.registerSchema();
-    imodel = await IModelTestUtils.openIModel("test.bim", true);
-    assert.exists(imodel);
-    imodel2 = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim", true);
-    assert.exists(imodel);
+    imodel = await IModelTestUtils.openIModel("test.bim");
+    imodel2 = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
   });
 
   after(() => {

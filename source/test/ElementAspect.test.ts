@@ -18,8 +18,7 @@ describe("ElementAspect", () => {
     // First, register any schemas that will be used in the tests.
     BisCore.registerSchema();
     // NOTE: see ElementAspectTests.PresentationRuleScenarios in DgnPlatform\Tests\DgnProject\NonPublished\ElementAspect_Test.cpp for how ElementAspectTest.bim was created
-    iModel = await IModelTestUtils.openIModel("ElementAspectTest.bim", true);
-    assert.exists(iModel);
+    iModel = await IModelTestUtils.openIModel("ElementAspectTest.bim");
   });
 
   after(() => {

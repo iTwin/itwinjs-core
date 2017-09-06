@@ -18,7 +18,7 @@ export class IModelTestUtils {
     return stat;
   }
 
-  public static async openIModel(filename: string, expectSuccess: boolean, mode: OpenMode = OpenMode.ReadWrite): Promise<IModel> {
+  public static async openIModel(filename: string, mode: OpenMode = OpenMode.ReadWrite): Promise<IModel> {
     const destPath = __dirname + "/output";
     if (!fs.existsSync(destPath))
       fs.mkdirSync(destPath);
@@ -30,15 +30,9 @@ export class IModelTestUtils {
     if (!srcstat || !destStat || srcstat.mtime.getTime() !== destStat.mtime.getTime()) {
       fs.copySync(srcName, dbName, { preserveTimestamps: true });
     }
-    const { error, result: imodel } = await IModel.openDgnDb(dbName, mode);
-    if (expectSuccess) {
-      assert.isUndefined(error);
-      assert.isTrue(undefined !== imodel);
-      assert.isTrue(null !== imodel);
-      return imodel!;
-    }
-    assert.isTrue(undefined !== imodel);
-    assert.isUndefined(imodel);
-    return undefined!;
+
+    const iModel: IModel = await IModel.openDgnDb(dbName, mode); // could throw Error
+    assert.exists(iModel);
+    return iModel!;
   }
 }
