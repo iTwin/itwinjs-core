@@ -117,10 +117,10 @@ describe("iModel", () => {
     assert.isTrue(a2.id.equals(el3!.id));
     testCopyAndJson(el3!);
 
-    // const newEl = el3!.copyForEdit<Element>();
-    // newEl.federationGuid = undefined;
-    // const newId = await imodel2.elements.insertElement(newEl);
-    // assert.isTrue(newId.isValid(), "insert worked");
+    const newEl = el3!.copyForEdit<Element>();
+    newEl.federationGuid = undefined;
+    const newId = await imodel2.elements.insertElement(newEl);
+    assert.isTrue(newId.isValid(), "insert worked");
   });
 
   it("should have a valid root subject element", async () => {
@@ -181,7 +181,7 @@ describe("iModel", () => {
     testCopyAndJson(model!);
     const code1 = new Code({ spec: "0x1d", scope: "0x1d", value: "A" });
     model = await models.getSubModel(code1);
-    const geomModel = await ClassRegistry.getClass({ name: "PhysicalModel", schema: "BisCore" }, imodel);
+    const geomModel = await ClassRegistry.getClass("BisCore:PhysicalModel", imodel);
     assert.exists(model);
     assert.isTrue(model instanceof geomModel!);
     testCopyAndJson(model!);
@@ -190,7 +190,7 @@ describe("iModel", () => {
   it("Model Selectors should hold models", async () => {
     const props: ElementProps = {
       iModel: imodel,
-      classFullName: BisCore.name + "." + ModelSelector.name,
+      classFullName: BisCore.name + ":" + ModelSelector.name,
       model: new Id64([1, 1]),
       code: Code.createDefault(),
       id: new Id64(),

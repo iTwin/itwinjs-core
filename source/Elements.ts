@@ -66,7 +66,10 @@ export class Elements {
   }
 
   public async insertElement(el: Element): Promise<Id64> {
-    assert(!el.isPersistent());
+    if (el.isPersistent()) {
+      assert(false); // you cannot insert a persistent element. call copyForEdit
+      return new Id64();
+    }
     return this._iModel.insertElement(JSON.stringify(el));
   }
 

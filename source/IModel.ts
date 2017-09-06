@@ -19,16 +19,16 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 export class MetaDataRegistry {
   private reg: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();
   constructor(private imodel: IModel) { }
-  private static getKey(schemaName: string, className: string) { return (schemaName + "." + className).toLowerCase(); }
 
   /** Get the specified Entity metadata */
-  public get(schemaName: string, className: string): EntityMetaData | undefined {
-    const key: string = MetaDataRegistry.getKey(schemaName, className);
+  public get(classFullName: string): EntityMetaData | undefined {
+    const key = classFullName.toLowerCase();
     let mdata = this.reg.get(key);
     if (mdata)
       return mdata;
 
-    const { error, result: mstr } = this.imodel.getECClassMetaDataSync(schemaName, className);
+    const name = classFullName.split(":");
+    const { error, result: mstr } = this.imodel.getECClassMetaDataSync(name[0], name[1]);
     if (error || !mstr)
       return undefined;
 
