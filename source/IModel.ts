@@ -337,8 +337,8 @@ export class IModel {
     return DgnDbNativeCode.callGetElement(this._db, opt);
   }
 
-  /** Insert a new Element into the iModel. */
-  public async insertElement(el: string): Promise<Id64> {
+  /** Internal implementation of iModel.elements.insertElement */
+  public async _insertElementFromJson(el: string): Promise<Id64> {
     const stat = await DgnDbNativeCode.callInsertElement(this._db, el);
     return stat.error ? Promise.reject(stat.error) : new Id64(JSON.parse(stat.result!).id);
   }

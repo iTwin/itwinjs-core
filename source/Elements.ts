@@ -67,7 +67,7 @@ export class Elements {
 
   public async insertElement(el: Element): Promise<Id64> {
     assert(!el.isPersistent());
-    return this._iModel.insertElement(JSON.stringify(el));
+    return this._iModel._insertElementFromJson(JSON.stringify(el));
   }
 
   /** The Id of the root subject element. */
