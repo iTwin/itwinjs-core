@@ -115,10 +115,10 @@ describe("iModel", () => {
     const el3 = await imodel2.elements.getElement(new Guid(a2.federationGuid!.value));
     assert.exists(el3);
     assert.notEqual(a2, el3);
-    assert.isTrue(a2.id.equals(el3!.id));
+    assert.isTrue(a2.id.equals(el3.id));
     testCopyAndJson(el3!);
 
-    const newEl = el3!.copyForEdit<Element>();
+    const newEl = el3.copyForEdit<Element>();
     newEl.federationGuid = undefined;
     const newId = await imodel2.elements.insertElement(newEl);
     assert.isTrue(newId.isValid(), "insert worked");
@@ -325,7 +325,7 @@ describe("2D Elements", () => {
       const drawingGraphicId: Id64 = new Id64(drawingGraphicRow.elementId);
       const drawingGraphic = await imodel.elements.getElement(drawingGraphicId);
       assert.exists(drawingGraphic);
-      assert.isTrue(drawingGraphic!.constructor.name === "DrawingGraphic", "Should be instance of DrawingGraphic");
+      assert.isTrue(drawingGraphic.constructor.name === "DrawingGraphic", "Should be instance of DrawingGraphic");
       assert.isTrue(drawingGraphic instanceof GeometricElement2d, "Is instance of GeometricElement2d");
       if (drawingGraphic.id.getLow() === 0x25) {
         assert.isTrue(drawingGraphic.placement.origin.x === 0.0);
