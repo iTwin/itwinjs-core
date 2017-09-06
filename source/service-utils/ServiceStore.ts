@@ -17,11 +17,11 @@ export class ServiceStore {
   private constructor(private db: ECDb) {}
 
   private static getDbPathname(): string {
-    return __dirname + "/assets/ServiceStore.ecdb";
+    return __dirname + "/../assets/ServiceStore.ecdb";
   }
 
   private static getSchemaPathname(): string {
-    return __dirname + "/assets/ServiceStore.ecschema.xml";
+    return __dirname + "/../assets/ServiceStore.ecschema.xml";
   }
 
   private static async openOrCreateDb(): BentleyPromise<DbResult, ECDb> {

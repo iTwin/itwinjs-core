@@ -1,9 +1,13 @@
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { ECJsonTypeMap, ECInstance } from "@bentley/bentleyjs-core/lib/ECJsonTypeMap";
-import { loadNodeAddon } from "./addonLoader";
 import { BentleyPromise, BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
 
-const dgnDbNodeAddon = loadNodeAddon();
+declare function require(arg: string): any;
+// tslint:disable-next-line:no-var-requires
+const addonLoader = require("../../scripts/addonLoader");
+let dgnDbNodeAddon: any|undefined;
+if (addonLoader !== undefined)
+  dgnDbNodeAddon = addonLoader.loadNodeAddon(); // Note that evaluating this script has the side-effect of loading the addon
 
 /** ECPrimitive types (Match this to ECN::PrimitiveType in ECObjects.h) */
 export const enum PrimitiveTypeCode {

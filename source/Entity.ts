@@ -82,11 +82,6 @@ export interface ClassFullName {
   schema: string;
 }
 
-/*  ***
-    *** WARNING: In the classes below, the property names are set in imodel-dgnplatform and must match.
-    ***
-*/
-
 /** A custom attribute instance */
 export class CustomAttribute {
   /** The class of the CustomAttribute */

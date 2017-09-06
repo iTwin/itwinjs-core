@@ -8,8 +8,13 @@ import * as path from "path";
 
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { ECJsonTypeMap, ECInstance } from "@bentley/bentleyjs-core/lib/ECJsonTypeMap";
-import { ECDb, BindingValue } from "../dgnplatform/ECDb";
-import { DgnDbTestUtils } from "./DgnDbTestUtils";
+import { ECDb, BindingValue } from "../service-utils/ECDb";
+
+export class ECDbTestUtils {
+  public static getTestAssetsPath(): string {
+    return __dirname + "/assets/";
+  }
+}
 
 abstract class TestAbstractBaseClass extends ECInstance {
   @ECJsonTypeMap.propertyToJson("ecdb", "AbstractBaseStringProperty")
@@ -42,8 +47,8 @@ class TestClass extends TestBaseClass {
 
 describe("ECDb", () => {
   const ecdb = new ECDb();
-  const dbPathname = path.join(DgnDbTestUtils.getTestAssetsPath(), "ECDbTest.ecdb");
-  const schemaPathname = path.join(DgnDbTestUtils.getTestAssetsPath(), "TestSchema.ecschema.xml");
+  const dbPathname = path.join(ECDbTestUtils.getTestAssetsPath(), "ECDbTest.ecdb");
+  const schemaPathname = path.join(ECDbTestUtils.getTestAssetsPath(), "TestSchema.ecschema.xml");
   const testInstance = new TestClass();
   const testInstanceKey = new TestClass();
 

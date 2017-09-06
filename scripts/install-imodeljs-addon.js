@@ -3,7 +3,7 @@
 +--------------------------------------------------------------------------------------*/
 var exec = require('child_process').exec;
 
-let addonloader = require('../lib/dgnplatform/addonLoader');
+let addonloader = require('./addonLoader');
 
 let cmdLine = 'npm install ' + addonloader.computeAddonPackageName();
 
