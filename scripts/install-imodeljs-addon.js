@@ -5,7 +5,7 @@ var exec = require('child_process').exec;
 
 let addonloader = require('./addonLoader');
 
-let cmdLine = 'npm install ' + addonloader.computeAddonPackageName();
+let cmdLine = 'npm install --no-save ' + addonloader.computeAddonPackageName();
 
 console.log(cmdLine + " ...");
 
