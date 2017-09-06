@@ -21,7 +21,6 @@ import { GeometricElement2d } from "../Element";
 import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
 
 describe("iModel", () => {
-
   let imodel: IModel;
   let imodel2: IModel;
 
@@ -42,7 +41,7 @@ describe("iModel", () => {
   /** test the copy constructor and to/from Json methods for the supplied entity */
   const testCopyAndJson = (entity: Entity) => {
     assert.isTrue(entity.isPersistent());
-    const copyOf = entity.copyForEdit() as Entity;
+    const copyOf = entity.copyForEdit();
     assert.isFalse(copyOf.isPersistent());
     copyOf.setPersistent(); // just to allow deepEqual to work
     assert.deepEqual(entity, copyOf, "copyForEdit worked"); // make sure the copy is identical to original
@@ -118,10 +117,10 @@ describe("iModel", () => {
     assert.isTrue(a2.id.equals(el3.id));
     testCopyAndJson(el3!);
 
-    const newEl = el3.copyForEdit<Element>();
-    newEl.federationGuid = undefined;
-    const newId = await imodel2.elements.insertElement(newEl);
-    assert.isTrue(newId.isValid(), "insert worked");
+    // const newEl = el3.copyForEdit<Element>();
+    // newEl.federationGuid = undefined;
+    // const newId = await imodel2.elements.insertElement(newEl);
+    // assert.isTrue(newId.isValid(), "insert worked");
   });
 
   it("should have a valid root subject element", async () => {
@@ -232,11 +231,8 @@ describe("iModel", () => {
     // assert.isString(item.category);
     // assert.isArray(item.properties);
   });
-});
 
-describe("Views", () => {
   it("should be at least one view element", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const { result: viewJson } = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + SpatialViewDefinition.sqlName);
     assert.exists(viewJson, "Should find some views");
     const viewRows: any[] = JSON.parse(viewJson!);
@@ -268,13 +264,9 @@ describe("Views", () => {
       const sceneBrightness: number = displayStyle.getSceneBrightness();
       assert.isTrue(sceneBrightness === 0);
     }
-    imodel.closeDgnDb();
   });
-});
 
-describe("Categories", () => {
   it("should be some categories", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("test.bim", true);
     const { result: categoryJson } = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + Category.sqlName);
     assert.exists(categoryJson, "Should have some Category ids");
     const categoryRows: any[] = JSON.parse(categoryJson!);
@@ -311,19 +303,15 @@ describe("Categories", () => {
         }
       }
     }
-    imodel.closeDgnDb();
   });
-});
 
-describe("2D Elements", () => {
-  it("should be some 2D elements", async () => {
-    const imodel: IModel = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim", true);
-    const { result: drawingGraphicJson } = await imodel.executeQuery("SELECT ECInstanceId as elementId FROM BisCore.DrawingGraphic");
+  it("should be some 2d elements", async () => {
+    const { result: drawingGraphicJson } = await imodel2.executeQuery("SELECT ECInstanceId as elementId FROM BisCore.DrawingGraphic");
     assert.exists(drawingGraphicJson, "Should have some Drawing Graphics");
     const drawingGraphicRows: any[] = JSON.parse(drawingGraphicJson!);
     for (const drawingGraphicRow of drawingGraphicRows!) {
       const drawingGraphicId: Id64 = new Id64(drawingGraphicRow.elementId);
-      const drawingGraphic = await imodel.elements.getElement(drawingGraphicId);
+      const drawingGraphic = await imodel2.elements.getElement(drawingGraphicId);
       assert.exists(drawingGraphic);
       assert.isTrue(drawingGraphic.constructor.name === "DrawingGraphic", "Should be instance of DrawingGraphic");
       assert.isTrue(drawingGraphic instanceof GeometricElement2d, "Is instance of GeometricElement2d");
@@ -348,37 +336,21 @@ describe("2D Elements", () => {
         assert.isDefined(drawingGraphic.geom);
       }
     }
-    imodel.closeDgnDb();
-  });
-});
-
-describe("Model Structure", () => {
-  let imodel: IModel;
-
-  before(async () => {
-    // First, register any schemas that will be used in the tests.
-    BisCore.registerSchema();
-    imodel = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim", true);
-    assert.exists(imodel);
-  });
-
-  after(() => {
-    imodel.closeDgnDb();
   });
 
   it("should be children of RootSubject", async () => {
-    const queryString: string = "SELECT ECInstanceId as modelId FROM " + Model.sqlName + " WHERE ParentModel.Id=" + imodel.models.repositoryModelId;
-    const { result: modelJson } = await imodel.executeQuery(queryString);
+    const queryString: string = "SELECT ECInstanceId as modelId FROM " + Model.sqlName + " WHERE ParentModel.Id=" + imodel2.models.repositoryModelId;
+    const { result: modelJson } = await imodel2.executeQuery(queryString);
     assert.exists(modelJson, "Should have at least one model within rootSubject");
     const modelRows: any[] = JSON.parse(modelJson!);
     for (const modelRow of modelRows) {
       const modelId = new Id64(modelRow.modelId);
-      const model = await imodel.models.getModel(modelId);
+      const model = await imodel2.models.getModel(modelId);
       assert.exists(model, "Model should exist");
       assert.isTrue(model instanceof Model);
 
       // should be an element with the same Id.
-      const modeledElement = await imodel.elements.getElement(modelId);
+      const modeledElement = await imodel2.elements.getElement(modelId);
       assert.exists(modeledElement, "Modeled Element should exist");
 
       if (model.constructor.name === "LinkModel") {
@@ -404,6 +376,298 @@ describe("Model Structure", () => {
         assert.isTrue(false, "Expected a known model type");
       }
     }
+  });
+
+  it("should produce an array of rows with executeQuery", async () => {
+    const {result: allrowsdata} = await imodel.executeQuery("SELECT * FROM bis.Element");
+
+    if (!allrowsdata) {
+      assert(false);
+      return;
+    }
+
+    const rows: any = JSON.parse(allrowsdata);
+    assert.isArray(rows);
+    assert.notEqual(rows.length, 0);
+    assert.notEqual(rows[0].ecinstanceid, "");
+  });
+
+  it("should get a well-known element by ID", async () => {
+    const {error, result: eldata} = await imodel.getElement(JSON.stringify({id: "0X1"}));
+    assert.equal(undefined, error);
+    if (undefined === eldata)
+      assert.fail();
+    else {
+      assert.isNotNull(eldata);
+      assert.isString(eldata);
+    }
+  });
+
+  /* Needs work
+  it("should get display properties", async () => {
+    const el = await imodel.elements.getElement(new Id64("0x1"));
+    const formatter = new ElementPropertyFormatter(imodel);
+    const input = await formatter.formatProperties(el);
+    if (undefined === input)
+      assert.fail();
+    else {
+      var output : any =
+      {
+        'Descriptor': {
+            'PreferredDisplayType': 'PropertyPane',
+            'SelectClasses': [
+                {
+                    'SelectClassInfo': {
+                        'Id': '206',
+                        'Name': 'BisCore:Subject',
+                        'Label': 'Subject'
+                    },
+                    'IsPolymorphic': false,
+                    'PathToPrimaryClass': [ ],
+                    'RelatedPropertyPaths': [ ]
+                }
+            ],
+            'Fields': [
+                {
+                    'Category': {
+                        'Name': 'Miscellaneous',
+                        'DisplayLabel': 'Miscellaneous',
+                        'Expand': false,
+                        'Priority': 1000
+                    },
+                    'Name': 'Subject_CodeValue',
+                    'DisplayLabel': 'Code',
+                    'Type': 'string',
+                    'IsReadOnly': false,
+                    'Priority': 1000,
+                    'Editor': '',
+                    'Properties': [
+                        {
+                            'Property': {
+                                'BaseClassInfo': {
+                                    'Id': '63',
+                                    'Name': 'BisCore:Element',
+                                    'Label': 'Element'
+                                },
+                                'ActualClassInfo': {
+                                    'Id': '206',
+                                    'Name': 'BisCore:Subject',
+                                    'Label': 'Subject'
+                                },
+                                'Name': 'CodeValue',
+                                'Type': 'string'
+                            },
+                            'RelatedClassPath': [ ]
+                        }
+                    ]
+                },
+                {
+                    'Category': {
+                        'Name': 'Miscellaneous',
+                        'DisplayLabel': 'Miscellaneous',
+                        'Expand': false,
+                        'Priority': 1000
+                    },
+                    'Name': 'Subject_UserLabel',
+                    'DisplayLabel': 'User Label',
+                    'Type': 'string',
+                    'IsReadOnly': false,
+                    'Priority': 1000,
+                    'Editor': '',
+                    'Properties': [
+                        {
+                            'Property': {
+                                'BaseClassInfo': {
+                                    'Id': '63',
+                                    'Name': 'BisCore:Element',
+                                    'Label': 'Element'
+                                },
+                                'ActualClassInfo': {
+                                    'Id': '206',
+                                    'Name': 'BisCore:Subject',
+                                    'Label': 'Subject'
+                                },
+                                'Name': 'UserLabel',
+                                'Type': 'string'
+                            },
+                            'RelatedClassPath': [ ]
+                        }
+                    ]
+                },
+                {
+                    'Category': {
+                        'Name': 'Miscellaneous',
+                        'DisplayLabel': 'Miscellaneous',
+                        'Expand': false,
+                        'Priority': 1000
+                    },
+                    'Name': 'Subject_Description',
+                    'DisplayLabel': 'Description',
+                    'Type': 'string',
+                    'IsReadOnly': false,
+                    'Priority': 1000,
+                    'Editor': '',
+                    'Properties': [
+                        {
+                            'Property': {
+                                'BaseClassInfo': {
+                                    'Id': '206',
+                                    'Name': 'BisCore:Subject',
+                                    'Label': 'Subject'
+                                },
+                                'ActualClassInfo': {
+                                    'Id': '206',
+                                    'Name': 'BisCore:Subject',
+                                    'Label': 'Subject'
+                                },
+                                'Name': 'Description',
+                                'Type': 'string'
+                            },
+                            'RelatedClassPath': [ ]
+                        }
+                    ]
+                }
+            ],
+            'SortingFieldIndex': -1,
+            'SortDirection': 0,
+            'ContentFlags': 8,
+            'FilterExpression': ''
+        },
+        'ContentSet': [
+            {
+                'DisplayLabel': '',
+                'ImageId': '',
+                'Values': {
+                    'Subject_CodeValue': 'TBD',
+                    'Subject_UserLabel': null,
+                    'Subject_Description': ''
+                },
+                'DisplayValues': {
+                    'Subject_CodeValue': 'TBD',
+                    'Subject_UserLabel': null,
+                    'Subject_Description': ''
+                },
+                'ClassInfo': {
+                    'Id': '206',
+                    'Name': 'BisCore:Subject',
+                    'Label': 'Subject'
+                },
+                'PrimaryKeys': [
+                    {
+                        'ECClassId': '206',
+                        'ECInstanceId': '1'
+                    }
+                ],
+                'MergedFieldNames': [ ],
+                'FieldValueKeys': {
+                    'Subject_CodeValue': [
+                        {
+                            'PropertyIndex': 0,
+                            'Keys': [
+                                {
+                                    'ECClassId': '206',
+                                    'ECInstanceId': '1'
+                                }
+                            ]
+                        }
+                    ],
+                    'Subject_Description': [
+                        {
+                            'PropertyIndex': 0,
+                            'Keys': [
+                                {
+                                    'ECClassId': '206',
+                                    'ECInstanceId': '1'
+                                }
+                            ]
+                        }
+                    ],
+                    'Subject_UserLabel': [
+                        {
+                            'PropertyIndex': 0,
+                            'Keys': [
+                                {
+                                    'ECClassId': '206',
+                                    'ECInstanceId': '1'
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    };
+    assert.equal(JSON.stringify(input), JSON.stringify(output));
+  }
+
+  });
+  */
+
+  function checkElementMetaData(metadataStr: string) {
+    assert(metadataStr && metadataStr.length > 0);
+    const obj: any = JSON.parse(metadataStr || "");
+    assert.isNotNull(obj);
+    assert.isString(obj.name);
+    assert.equal(obj.name, "Element");
+    assert.equal(obj.schema, "BisCore");
+    assert.isArray(obj.baseClasses);
+    assert.equal(obj.baseClasses.length, 0);
+
+    assert.isArray(obj.customAttributes);
+    let foundClassHasHandler = false;
+    let foundClassHasCurrentTimeStampProperty = false;
+    for (const ca of obj.customAttributes) {
+      if (ca.ecclass.name === "ClassHasHandler")
+        foundClassHasHandler = true;
+      else if (ca.ecclass.name === "ClassHasCurrentTimeStampProperty")
+        foundClassHasCurrentTimeStampProperty = true;
+    }
+    assert.isTrue(foundClassHasHandler);
+    assert.isTrue(foundClassHasCurrentTimeStampProperty);
+    assert.isDefined(obj.properties.federationGuid);
+    assert.isDefined(obj.properties.federationGuid.primitiveECProperty);
+    assert.equal(obj.properties.federationGuid.primitiveECProperty.type, "binary");
+    assert.equal(obj.properties.federationGuid.primitiveECProperty.extendedType, "BeGuid");
+  }
+
+  it("should get metadata for class (sync)", async () => {
+    const {result: metadataStr} = await imodel.getECClassMetaDataSync("BisCore", "Element");
+    assert.notEqual(undefined, metadataStr);
+    if (undefined !== metadataStr)
+      checkElementMetaData(metadataStr);
+    });
+
+  it("should get metadata for class (async)", async () => {
+    const {result: metadataStr} = await imodel.getECClassMetaData("BisCore", "Element");
+    if (undefined === metadataStr)
+      assert.fail();
+    else
+      checkElementMetaData(metadataStr);
+  });
+
+  function checkClassHasHandlerMetaData(metadataStr: string) {
+    assert(metadataStr && metadataStr.length > 0);
+    const obj: any = JSON.parse(metadataStr || "");
+    assert.isDefined(obj.properties.restrictions);
+    assert.isDefined(obj.properties.restrictions.primitiveArrayECProperty);
+    assert.equal(obj.properties.restrictions.primitiveArrayECProperty.type, "string");
+    assert.equal(obj.properties.restrictions.primitiveArrayECProperty.minOccurs, 0);
+  }
+
+  it("should get metadata for CA class just as well (and we'll see a array-typed property) (sync)", async () => {
+    const {result: metadataStr} = await imodel.getECClassMetaDataSync("BisCore", "ClassHasHandler");
+    if (undefined === metadataStr)
+      assert.fail();
+    else
+      checkClassHasHandlerMetaData(metadataStr);
+  });
+
+  it("should get metadata for CA class just as well (and we'll see a array-typed property) (async)", async () => {
+    const {result: metadataStr} = await imodel.getECClassMetaData("BisCore", "ClassHasHandler");
+    if (undefined === metadataStr)
+      assert.fail();
+    else
+      checkClassHasHandlerMetaData(metadataStr);
   });
 
 });
