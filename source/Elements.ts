@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Element, ElementProps } from "./Element";
-import { Code, DgnDbStatus, IModel } from "./IModel";
-import { IModelError } from "./IModelError";
+import { Code, IModel } from "./IModel";
+import { DgnDbStatus, IModelError } from "./IModelError";
 import { ClassRegistry } from "./ClassRegistry";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";

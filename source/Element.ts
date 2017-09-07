@@ -5,8 +5,8 @@
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { Code, CodeProps, DgnDbStatus, GeometryStream, Placement3d, Placement2d } from "./IModel";
-import { IModelError } from "./IModelError";
+import { Code, CodeProps, GeometryStream, Placement3d, Placement2d } from "./IModel";
+import { DgnDbStatus, IModelError } from "./IModelError";
 import { ClassRegistry } from "./ClassRegistry";
 import { ElementAspect, ElementAspectProps, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { Entity, EntityProps, EntityMetaData } from "./Entity";

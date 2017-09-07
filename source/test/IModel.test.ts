@@ -135,6 +135,8 @@ describe("iModel", () => {
     } catch (error) {
       assert.isTrue(error instanceof Error);
       assert.isTrue(error instanceof IModelError);
+      const iModelError: IModelError = error as IModelError;
+      assert.equal(iModelError.toDebugString(), "DgnDbStatus.NotFound");
     }
 
     const childIds: Id64[] = await rootSubject.queryChildren();
