@@ -43,7 +43,7 @@ describe("ElementAspect", () => {
     assert.isTrue(aspect2 instanceof ElementUniqueAspect);
     assert.equal(aspect2.classFullName, "DgnPlatformTest:TestUniqueAspect");
     assert.equal(aspect2.testUniqueAspectProperty, "Aspect2-Updated");
-    assert.isNull(aspect2.length);
+    assert.isUndefined(aspect2.length);
     assert.isTrue(Object.isFrozen(aspect2));
 
     const multiAspectsA: ElementMultiAspect[] = await element.getMultiAspects("DgnPlatformTest:TestMultiAspectNoHandler");
