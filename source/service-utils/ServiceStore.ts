@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
-import { ECDb } from "./ECdb";
+import { ECDb } from "./ECDb";
 import { Briefcase, BriefcaseAccessMode } from "@bentley/imodeljs-clients";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
