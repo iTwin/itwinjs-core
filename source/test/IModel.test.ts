@@ -27,10 +27,8 @@ describe("iModel", () => {
   before(async () => {
     // First, register any schemas that will be used in the tests.
     BisCore.registerSchema();
-    imodel = await IModelTestUtils.openIModel("test.bim", true);
-    assert.exists(imodel);
-    imodel2 = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim", true);
-    assert.exists(imodel);
+    imodel = await IModelTestUtils.openIModel("test.bim");
+    imodel2 = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
   });
 
   after(() => {
@@ -390,17 +388,6 @@ describe("iModel", () => {
     assert.isArray(rows);
     assert.notEqual(rows.length, 0);
     assert.notEqual(rows[0].ecinstanceid, "");
-  });
-
-  it("should get a well-known element by ID", async () => {
-    const { error, result: eldata } = await imodel.getElement(JSON.stringify({ id: "0X1" }));
-    assert.equal(undefined, error);
-    if (undefined === eldata)
-      assert.fail();
-    else {
-      assert.isNotNull(eldata);
-      assert.isString(eldata);
-    }
   });
 
   /* Needs work

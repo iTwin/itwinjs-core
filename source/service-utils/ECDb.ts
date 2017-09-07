@@ -1,6 +1,7 @@
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { ECJsonTypeMap, ECInstance } from "@bentley/bentleyjs-core/lib/ECJsonTypeMap";
-import { BentleyPromise, BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
+import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
+import { BindingUtility, BindingValue } from "./BindingUtility";
 
 declare function require(arg: string): any;
 // tslint:disable-next-line:no-var-requires
@@ -235,71 +236,6 @@ export class ECDb {
     return this.ecdb.containsInstance(JSON.stringify(jsonInstanceKey));
   }
 
-  private static getPrimitiveType(bindingValue: BindingValue): PrimitiveTypeCode {
-    if (typeof bindingValue === "string")
-      return PrimitiveTypeCode.String;
-    if (typeof bindingValue === "number")
-      return PrimitiveTypeCode.Integer;
-    if (typeof bindingValue === "boolean")
-      return PrimitiveTypeCode.Boolean;
-    if (isPoint2dType(bindingValue))
-      return PrimitiveTypeCode.Point2d;
-    if (isPoint3dType(bindingValue))
-      return PrimitiveTypeCode.Point3d;
-
-    return PrimitiveTypeCode.Uninitialized;
-  }
-
-  private static convertToECValue(bindingValue: BindingValue | undefined): ECValue | undefined {
-    if (typeof bindingValue === "undefined")
-      return undefined;
-
-    if (!bindingValue)
-      return { kind: ValueKind.Uninitialized, type: PrimitiveTypeCode.Uninitialized, value: null }; // explicit binding to null
-
-    if (bindingValue instanceof ECValue)
-      return bindingValue;
-
-    const primitiveType = ECDb.getPrimitiveType(bindingValue);
-    if (primitiveType === PrimitiveTypeCode.Uninitialized)
-      return undefined;
-
-    return { kind: ValueKind.Primitive, type: primitiveType, value: bindingValue };
-  }
-
-  /**
-   * Helper utility to pre-process bindings to standardize them into a fixed format containing ECValue-s
-   * @param bindings Array or map of bindings
-   * @return Array or map of ECValue-s.
-   */
-  private static preProcessBindings(bindings: Map<string, BindingValue> | BindingValue[]): BentleyReturn<DbResult, ECValue[] | Map<string, ECValue>> {
-    if (bindings instanceof Array) {
-      const ret = new Array<ECValue>();
-      for (let ii = 0; ii < bindings.length; ii++) {
-        const bindingValue = bindings[ii];
-        const ecValue = ECDb.convertToECValue(bindingValue);
-        if (!ecValue)
-          return { error: { status: DbResult.BE_SQLITE_ERROR, message: `Invalid binding [${ii}]=${bindingValue}` } };
-        ret.push(ecValue);
-      }
-      return { result: ret };
-    }
-
-    if (bindings instanceof Map) {
-      const ret = new Map<string, ECValue>();
-      for (const key of bindings.keys()) {
-        const bindingValue = bindings.get(key);
-        const ecValue = ECDb.convertToECValue(bindingValue);
-        if (!ecValue)
-          return { error: { status: DbResult.BE_SQLITE_ERROR, message: `Invalid binding [${key}]=${bindingValue}` } };
-        ret.set(key, ecValue);
-      }
-      return { result: ret };
-    }
-
-    return { error: { status: DbResult.BE_SQLITE_ERROR, message: `Bindings must be specified as an array or a map` } };
-  }
-
   /**
    * Execute an ECSql query returning all rows as an array of objects in JSON syntax.
    * @return all rows in JSON syntax or the empty string if nothing was selected
@@ -322,7 +258,7 @@ export class ECDb {
 
     let ecBindingsStr: string | undefined;
     if (bindings) {
-      const { error, result: ecBindings } = ECDb.preProcessBindings(bindings);
+      const { error, result: ecBindings } = BindingUtility.preProcessBindings(bindings);
       if (error)
         return { error };
       ecBindingsStr = JSON.stringify(ecBindings);
@@ -346,7 +282,7 @@ export class ECDb {
 
     let ecBindingsStr: string | undefined;
     if (bindings) {
-      const { error, result: ecBindings } = ECDb.preProcessBindings(bindings);
+      const { error, result: ecBindings } = BindingUtility.preProcessBindings(bindings);
       if (error)
         return { error };
       ecBindingsStr = JSON.stringify(ecBindings);
