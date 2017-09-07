@@ -2,7 +2,8 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Element, ElementProps } from "./Element";
-import { Code, IModel } from "./IModel";
+import { Code, DgnDbStatus, IModel } from "./IModel";
+import { IModelError } from "./IModelError";
 import { ClassRegistry } from "./ClassRegistry";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
@@ -39,7 +40,7 @@ export class Elements {
     // Must go get the element from the iModel. Start by requesting the element's data.
     const getObj = await this._iModel._getElementJson(JSON.stringify(opts));
     if (getObj.error || !getObj.result) { // todo: Shouldn't getObj.result always be non-empty if there is no error?
-      return Promise.reject(new Error("Didn't find an element with the specified identity"));
+      return Promise.reject(new IModelError(DgnDbStatus.InvalidId));
     }
     const json = getObj.result;
 
@@ -62,7 +63,7 @@ export class Elements {
     if (elementId instanceof Guid) return this.doGetElement({ federationGuid: elementId.toString() });
     if (elementId instanceof Code) return this.doGetElement({ code: elementId });
     assert(false);
-    return Promise.reject(new Error("Invalid parameter passed to getElement"));
+    return Promise.reject(new IModelError(DgnDbStatus.BadArg));
   }
 
   public async insertElement(el: Element): Promise<Id64> {
