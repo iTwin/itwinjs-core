@@ -2,18 +2,21 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { MultiTierExecutionHost, RunsIn, Tier } from "@bentley/bentleyjs-core/lib/tiering";
-import { Elements } from "./Elements";
+import { ClassRegistry } from "./ClassRegistry";
+import { Element, ElementProps } from "./Element";
 import { EntityMetaData } from "./Entity";
-import { DgnDbStatus } from "./IModelError";
-import { Models } from "./Model";
+import { DgnDbStatus, IModelError } from "./IModelError";
+import { Model, ModelProps } from "./Model";
 import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Point3d, Vector3d, Range3d, YawPitchRollAngles, Point2d, Range2d, Transform, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Base64 } from "js-base64";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BentleyPromise, BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 
 declare function require(arg: string): any;
 // tslint:disable-next-line:no-var-requires
@@ -264,22 +267,6 @@ export class IModel {
     return DgnDbNativeCode.callGetElementPropertiesForDisplay(this.dbToken, eid);
   }
 
-  /** Internal implementation of iModel.elements.getElement */
-  public _getElementJson(opt: string): BentleyPromise<DgnDbStatus, string> {
-    return DgnDbNativeCode.callGetElement(this.dbToken, opt);
-  }
-
-  /** Internal implementation of iModel.elements.insertElement */
-  public async _insertElementFromJson(el: string): Promise<Id64> {
-    const stat = await DgnDbNativeCode.callInsertElement(this.dbToken, el);
-    return stat.error ? Promise.reject(stat.error) : new Id64(JSON.parse(stat.result!).id);
-  }
-
-  /** Internal implementation of iModel.models.getModel */
-  public _getModelJson(opt: string): BentleyPromise<DbResult, string> {
-    return DgnDbNativeCode.callGetModel(this.dbToken, opt);
-  }
-
   /**
    * Get the meta data for the specified class defined in imodel iModel (asynchronously).
    * @param ecschemaname  The name of the schema
@@ -306,6 +293,120 @@ export class IModel {
   public executeQuery(ecsql: string): BentleyPromise<DbResult, string> {
     return DgnDbNativeCode.callExecuteQuery(this.dbToken, ecsql);
   }
+}
+
+/** The collection of Models in an iModel  */
+export class Models {
+  private _iModel: IModel;
+  private _loaded: LRUMap<string, Model>;
+
+  public constructor(iModel: IModel, max: number = 500) { this._iModel = iModel; this._loaded = new LRUMap<string, Model>(max); }
+
+  public async getModel(modelId: Id64): Promise<Model> {
+    // first see if the model is already in the local cache.
+    const loaded = this._loaded.get(modelId.toString());
+    if (loaded)
+      return loaded;
+
+    // Must go get the model from the iModel. Start by requesting the model's data.
+    const getObj = await DgnDbNativeCode.callGetModel(this._iModel.dbToken, JSON.stringify({ id: modelId }));
+    if (getObj.error || !getObj.result) { // todo: Shouldn't getObj.result always be non-empty if there is no error?
+      return Promise.reject(new Error("Model not found"));
+    }
+    const json = getObj.result;
+    const props = JSON.parse(json) as ModelProps;
+    props.iModel = this._iModel;
+
+    const entity = await ClassRegistry.createInstance(props);
+    assert(entity instanceof Model);
+    const model = entity as Model;
+
+    // We have created the model. Cache it before we return it.
+    model.setPersistent(); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
+    this._loaded.set(model.id.toString(), model);
+    return model;
+  }
+
+  public async getSubModel(modeledElementId: Id64 | Guid | Code): Promise<Model> {
+    const modeledElement: Element = await this._iModel.elements.getElement(modeledElementId);
+    return this.getModel(modeledElement.id);
+  }
+
+  /** The Id of the repository model. */
+  public get repositoryModelId(): Id64 { return new Id64("0x1"); }
+}
+
+/** Parameters to specify what element to load. */
+export interface ElementLoadParams {
+  id?: Id64 | string;
+  code?: Code;
+  federationGuid?: string;
+  /** if true, do not load the geometry of the element */
+  noGeometry?: boolean;
+}
+
+/** The collection of Elements in an iModel  */
+export class Elements {
+  private _iModel: IModel;
+  private _loaded: LRUMap<string, Element>;
+
+  /** get the map of loaded elements */
+  public get loaded() { return this._loaded; }
+
+  public constructor(iModel: IModel, maxElements: number = 2000) { this._iModel = iModel; this._loaded = new LRUMap<string, Element>(maxElements); }
+
+  /** Private implementation details of getElement */
+  private async doGetElement(opts: ElementLoadParams): Promise<Element> {
+    // first see if the element is already in the local cache.
+    if (opts.id) {
+      const loaded = this._loaded.get(opts.id.toString());
+      if (loaded)
+        return loaded;
+    }
+
+    // Must go get the element from the iModel. Start by requesting the element's data.
+    const getObj = await DgnDbNativeCode.callGetElement(this._iModel.dbToken, JSON.stringify(opts));
+    if (getObj.error || !getObj.result) { // todo: Shouldn't getObj.result always be non-empty if there is no error?
+      return Promise.reject(new IModelError(DgnDbStatus.InvalidId));
+    }
+    const json = getObj.result;
+
+    const props = JSON.parse(json) as ElementProps;
+    props.iModel = this._iModel;
+
+    const entity = await ClassRegistry.createInstance(props);
+    const el = entity as Element;
+    assert(el instanceof Element);
+
+    // We have created the element. Cache it before we return it.
+    el.setPersistent(); // elements in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
+    this._loaded.set(el.id.toString(), el);
+    return el;
+  }
+
+  /** Get an element by Id, FederationGuid, or Code */
+  public async getElement(elementId: Id64 | Guid | Code): Promise<Element> {
+    if (elementId instanceof Id64) return this.doGetElement({ id: elementId });
+    if (elementId instanceof Guid) return this.doGetElement({ federationGuid: elementId.toString() });
+    if (elementId instanceof Code) return this.doGetElement({ code: elementId });
+    assert(false);
+    return Promise.reject(new IModelError(DgnDbStatus.BadArg));
+  }
+
+  public async insertElement(el: Element): Promise<Id64> {
+    if (el.isPersistent()) {
+      assert(false); // you cannot insert a persistent element. call copyForEdit
+      return new Id64();
+    }
+    const stat = await DgnDbNativeCode.callInsertElement(this._iModel.dbToken, JSON.stringify(el));
+    return stat.error ? Promise.reject(stat.error) : new Id64(JSON.parse(stat.result!).id);
+  }
+
+  /** The Id of the root subject element. */
+  public get rootSubjectId(): Id64 { return new Id64("0x1"); }
+
+  /** Get the root subject element. */
+  public async getRootSubject(): Promise<Element> { return this.getElement(this.rootSubjectId); }
 }
 
 /** Properties that define a Code */

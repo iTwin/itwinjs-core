@@ -5,15 +5,14 @@
 import { assert } from "chai";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
-import { Code, IModel } from "../IModel";
+import { Code, Elements, IModel, Models } from "../IModel";
 import { ColorDef } from "../Render";
 import { ElementProps, Element, GeometricElement3d, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../Element";
 import { Entity, EntityCtor, EntityProps } from "../Entity";
-import { Model, Models } from "../Model";
+import { Model } from "../Model";
 import { Category, SubCategory } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
 import { ModelSelector } from "../ViewDefinition";
-import { Elements } from "../Elements";
 import { IModelError } from "../IModelError";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { BisCore } from "../BisCore";

@@ -1,13 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Code, IModel } from "./IModel";
 import { Entity, EntityProps } from "./Entity";
-import { ClassRegistry } from "./ClassRegistry";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 export interface ModelProps extends EntityProps {
   id: Id64 | string;
@@ -56,45 +52,4 @@ export class Model extends Entity implements ModelProps {
 
 /** A geometric model */
 export class GeometricModel extends Model {
-}
-
-/** The collection of Models in an iModel  */
-export class Models {
-  private _iModel: IModel;
-  private _loaded: LRUMap<string, Model>;
-
-  public constructor(iModel: IModel, max: number = 500) { this._iModel = iModel; this._loaded = new LRUMap<string, Model>(max); }
-
-  public async getModel(modelId: Id64): Promise<Model> {
-    // first see if the model is already in the local cache.
-    const loaded = this._loaded.get(modelId.toString());
-    if (loaded)
-      return loaded;
-
-    // Must go get the model from the iModel. Start by requesting the model's data.
-    const getObj = await this._iModel._getModelJson(JSON.stringify({ id: modelId }));
-    if (getObj.error || !getObj.result) { // todo: Shouldn't getObj.result always be non-empty if there is no error?
-      return Promise.reject(new Error("Model not found"));
-    }
-    const json = getObj.result;
-    const props = JSON.parse(json) as ModelProps;
-    props.iModel = this._iModel;
-
-    const entity = await ClassRegistry.createInstance(props);
-    assert(entity instanceof Model);
-    const model = entity as Model;
-
-    // We have created the model. Cache it before we return it.
-    model.setPersistent(); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
-    this._loaded.set(model.id.toString(), model);
-    return model;
-  }
-
-  public async getSubModel(modeledElementId: Id64 | Guid | Code): Promise<Model> {
-    const modeledElement = await this._iModel.elements.getElement(modeledElementId);
-    return this.getModel(modeledElement.id);
-  }
-
-  /** The Id of the repository model. */
-  public get repositoryModelId(): Id64 { return new Id64("0x1"); }
 }
