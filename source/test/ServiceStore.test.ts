@@ -38,7 +38,7 @@ describe("ServiceStore", () => {
 
   it("should be able to get a briefcase from the store", async () => {
     const { error, result: briefcase } = await
-      store.getBriefcase(hub.testIModel.wsgId, hub.testUserProfile.userId, hub.testBriefcase.accessMode);
+      store.getBriefcase(hub.testIModel.wsgId, undefined, hub.testUserProfile.userId, hub.testBriefcase.accessMode);
     assert.isUndefined(error);
     assert.isDefined(briefcase);
     assert.isNotNull(briefcase);
@@ -49,7 +49,7 @@ describe("ServiceStore", () => {
 
   it("should be able to check if the store contains a briefcase", async () => {
     const {error, result: contains} = await
-      store.containsBriefcase(hub.testIModel.wsgId, hub.testUserProfile.userId, hub.testBriefcase.accessMode);
+      store.containsBriefcase(hub.testIModel.wsgId, undefined, hub.testUserProfile.userId, hub.testBriefcase.accessMode);
     assert.isUndefined(error);
     assert.isTrue(contains);
   });
@@ -60,7 +60,7 @@ describe("ServiceStore", () => {
 
     let contains: boolean|undefined = false;
     ({ error, result: contains } = await
-      store.containsBriefcase(hub.testIModel.wsgId, hub.testUserProfile.userId, hub.testBriefcase.accessMode));
+      store.containsBriefcase(hub.testIModel.wsgId, undefined, hub.testUserProfile.userId, hub.testBriefcase.accessMode));
     assert.isUndefined(error);
     assert.isFalse(contains);
   });

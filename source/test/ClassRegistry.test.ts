@@ -4,11 +4,10 @@
 
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { EntityMetaData, NavigationPropertyMetaData, PrimitivePropertyMetaData } from "../Entity";
+import { EntityMetaData } from "../Entity";
 import { Code, IModel } from "../IModel";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Elements } from "../Elements";
-import { SpatialViewDefinition, ViewDefinition3d } from "../ViewDefinition";
 import { BisCore } from "../BisCore";
 
 describe("Class Registry", () => {
@@ -17,7 +16,7 @@ describe("Class Registry", () => {
   before(async () => {
     // First, register any schemas that will be used in the tests.
     BisCore.registerSchema();
-    imodel = await IModelTestUtils.openIModel("test.bim", true);
+    imodel = await IModelTestUtils.openIModel("test.bim");
     assert.exists(imodel);
   });
 
@@ -35,43 +34,36 @@ describe("Class Registry", () => {
       assert.exists(metaData);
       if (undefined === metaData)
         return;
-      assert.equal(metaData.name, el.className);
-      assert.equal(metaData.schema, el.schemaName);
-      // I happen to know that this is a BisCore.RepositoryLink
-      assert.equal(metaData.name, "RepositoryLink");
-      assert.equal(metaData.schema, BisCore.name);
+      assert.equal(metaData.ecclass, el.classFullName);
+      // I happen to know that this is a BisCore:RepositoryLink
+      assert.equal(metaData.ecclass, "BisCore:RepositoryLink");
       //  Check the metadata on the class itself
       assert.isTrue(metaData.baseClasses.length > 0);
-      assert.equal(metaData.baseClasses[0].name, "UrlLink");
-      assert.equal(metaData.customAttributes[0].ecclass.name, "ClassHasHandler");
+      assert.equal(metaData.baseClasses[0], "BisCore:UrlLink");
+      assert.equal(metaData.customAttributes[0].ecclass, "BisCore:ClassHasHandler");
       //  Check the metadata on the one property that RepositoryLink defines, RepositoryGuid
       assert.exists(metaData.properties);
       assert.isDefined(metaData.properties.repositoryGuid);
-      const p: PrimitivePropertyMetaData = metaData.properties.repositoryGuid as PrimitivePropertyMetaData;
-      assert.isDefined(p.primitiveECProperty);
-      assert.equal(p.primitiveECProperty.type, "binary");
-      assert.equal(p.primitiveECProperty.extendedType, "BeGuid");
-      assert.equal(p.customAttributes[1].ecclass.name, "HiddenProperty");
+      const p = metaData.properties.repositoryGuid;
+      assert.equal(p.extendedType, "BeGuid");
+      assert.equal(p.customAttributes[1].ecclass, "CoreCustomAttributes:HiddenProperty");
     }
     const el2 = await elements.getElement(new Id64("0x34"));
     assert.exists(el2);
     if (el2) {
-      const metaData: EntityMetaData | undefined = await el2.getClassMetaData();
+      const metaData = await el2.getClassMetaData();
       assert.exists(metaData);
       if (undefined === metaData)
         return;
-      assert.equal(metaData.name, el2.className);
-      assert.equal(metaData.schema, el2.schemaName);
+      assert.equal(metaData.ecclass, el2.classFullName);
       // I happen to know that this is a BisCore.SpatialViewDefinition
-      assert.equal(metaData.name, SpatialViewDefinition.name);
-      assert.equal(metaData.schema, BisCore.name);
+      assert.equal(metaData.ecclass, "BisCore:SpatialViewDefinition");
       assert.isTrue(metaData.baseClasses.length > 0);
-      assert.equal(metaData.baseClasses[0].name, ViewDefinition3d.name);
+      assert.equal(metaData.baseClasses[0], "BisCore:ViewDefinition3d");
       assert.exists(metaData.properties);
       assert.isDefined(metaData.properties.modelSelector);
-      const n: NavigationPropertyMetaData = metaData.properties.modelSelector as NavigationPropertyMetaData;
-      assert.isDefined(n.navigationECProperty);
-      assert.equal(n.navigationECProperty.relationshipClass.name, "SpatialViewDefinitionUsesModelSelector");
+      const n = metaData.properties.modelSelector;
+      assert.equal(n.relationshipClass, "BisCore:SpatialViewDefinitionUsesModelSelector");
     }
   });
 

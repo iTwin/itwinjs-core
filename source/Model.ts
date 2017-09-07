@@ -72,7 +72,7 @@ export class Models {
       return loaded;
 
     // Must go get the model from the iModel. Start by requesting the model's data.
-    const getObj = await this._iModel.getModel(JSON.stringify({ id: modelId }));
+    const getObj = await this._iModel._getModelJson(JSON.stringify({ id: modelId }));
     if (getObj.error || !getObj.result) { // todo: Shouldn't getObj.result always be non-empty if there is no error?
       return Promise.reject(new Error("Model not found"));
     }

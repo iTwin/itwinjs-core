@@ -8,7 +8,8 @@ import * as path from "path";
 
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { ECJsonTypeMap, ECInstance } from "@bentley/bentleyjs-core/lib/ECJsonTypeMap";
-import { ECDb, BindingValue } from "../service-utils/ECDb";
+import { ECDb } from "../service-utils/ECDb";
+import { BindingValue } from "../service-utils/BindingUtility";
 
 export class ECDbTestUtils {
   public static getTestAssetsPath(): string {

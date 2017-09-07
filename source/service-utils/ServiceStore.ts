@@ -6,6 +6,7 @@ import { ECDb } from "./ECDb";
 import { Briefcase, BriefcaseAccessMode } from "@bentley/imodeljs-clients";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { BindingValue } from "./BindingUtility";
 
 declare const __dirname: string;
 
@@ -60,8 +61,8 @@ export class ServiceStore {
   }
 
   /** Get a briefcase given some query paramters */
-  public async getBriefcase(iModelId: string, userId: string, accessMode: BriefcaseAccessMode): BentleyPromise<DbResult, Briefcase|undefined> {
-    const {error, result: briefcaseId} = await this.queryBriefcaseId(iModelId, userId, accessMode);
+  public async getBriefcase(iModelId: string, changeSetId?: string|undefined, userId?: string|undefined, accessMode: BriefcaseAccessMode = BriefcaseAccessMode.Shared): BentleyPromise<DbResult, Briefcase|undefined> {
+    const {error, result: briefcaseId} = await this.queryBriefcaseId(iModelId, changeSetId, userId, accessMode);
     if (error)
       return {error};
 
@@ -72,8 +73,8 @@ export class ServiceStore {
   }
 
   /** Determine if the store contains a briefcase with the supplied parameters */
-  public async containsBriefcase(iModelId: string, userId: string, accessMode: BriefcaseAccessMode): BentleyPromise<DbResult, boolean> {
-    const {error, result: briefcaseId} = await this.queryBriefcaseId(iModelId, userId, accessMode);
+  public async containsBriefcase(iModelId: string, changeSetId?: string|undefined, userId?: string|undefined, accessMode: BriefcaseAccessMode = BriefcaseAccessMode.Shared): BentleyPromise<DbResult, boolean> {
+    const {error, result: briefcaseId} = await this.queryBriefcaseId(iModelId, changeSetId, userId, accessMode);
     if (error)
       return {error};
     return {result: !!briefcaseId};
@@ -105,9 +106,28 @@ export class ServiceStore {
   }
 
   /** Query for a briefcase id */
-  private async queryBriefcaseId(iModelId: string, userId: string, accessMode: BriefcaseAccessMode): BentleyPromise<DbResult, string|undefined> {
-    const ecsql = "SELECT ECInstanceId FROM ServiceStore.Briefcase WHERE IModelId=? AND UserId=? AND AccessMode=?";
-    const {error, result: strRows} = await this.db.executeQuery(ecsql, [iModelId, userId, accessMode]);
+  private async queryBriefcaseId(iModelId: string, changeSetId?: string|undefined, userId?: string|undefined, accessMode: BriefcaseAccessMode = BriefcaseAccessMode.Shared): BentleyPromise<DbResult, string|undefined> {
+    let ecsql = "SELECT ECInstanceId FROM ServiceStore.Briefcase WHERE IModelId=?";
+
+    const bindings = new Array<BindingValue>();
+    bindings.push(iModelId);
+
+    if (changeSetId) {
+      ecsql = ecsql.concat(" AND ChangeSetId=?");
+      bindings.push(changeSetId);
+    }
+
+    if (userId) {
+      ecsql = ecsql.concat(" AND UserId=?");
+      bindings.push(userId);
+    }
+
+    if (accessMode) {
+      ecsql = ecsql.concat(" AND AccessMode=?");
+      bindings.push(accessMode);
+    }
+
+    const {error, result: strRows} = await this.db.executeQuery(ecsql, bindings);
     if (error)
       return {error};
 

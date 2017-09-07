@@ -4,6 +4,7 @@
 
 import { assert } from "chai";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { Code, IModel } from "../IModel";
 import { ColorDef } from "../Render";
 import { ElementProps, Element, GeometricElement3d, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../Element";
@@ -13,10 +14,10 @@ import { Category, SubCategory } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
 import { ModelSelector } from "../ViewDefinition";
 import { Elements } from "../Elements";
+import { IModelError } from "../IModelError";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { BisCore } from "../BisCore";
 import { SpatialViewDefinition, DisplayStyle3d } from "../ViewDefinition";
-import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { GeometricElement2d } from "../Element";
 import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
 
@@ -27,10 +28,8 @@ describe("iModel", () => {
   before(async () => {
     // First, register any schemas that will be used in the tests.
     BisCore.registerSchema();
-    imodel = await IModelTestUtils.openIModel("test.bim", true);
-    assert.exists(imodel);
-    imodel2 = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim", true);
-    assert.exists(imodel);
+    imodel = await IModelTestUtils.openIModel("test.bim");
+    imodel2 = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
   });
 
   after(() => {
@@ -73,9 +72,10 @@ describe("iModel", () => {
 
     try {
       await elements.getElement(badCode); // throws Error
-      assert.isTrue(false, "Expected this line to be skipped");
+      assert.fail(); // this line should be skipped
     } catch (error) {
       assert.isTrue(error instanceof Error);
+      assert.isTrue(error instanceof IModelError);
     }
 
     const subCat = await elements.getElement(new Id64("0x2e"));
@@ -114,13 +114,13 @@ describe("iModel", () => {
     const el3 = await imodel2.elements.getElement(new Guid(a2.federationGuid!.value));
     assert.exists(el3);
     assert.notEqual(a2, el3);
-    assert.isTrue(a2.id.equals(el3!.id));
+    assert.isTrue(a2.id.equals(el3.id));
     testCopyAndJson(el3!);
 
-    // const newEl = el3!.copyForEdit<Element>();
-    // newEl.federationGuid = undefined;
-    // const newId = await imodel2.elements.insertElement(newEl);
-    // assert.isTrue(newId.isValid(), "insert worked");
+    const newEl = el3!.copyForEdit<Element>();
+    newEl.federationGuid = undefined;
+    const newId = await imodel2.elements.insertElement(newEl);
+    assert.isTrue(newId.isValid(), "insert worked");
   });
 
   it("should have a valid root subject element", async () => {
@@ -131,9 +131,10 @@ describe("iModel", () => {
 
     try {
       await rootSubject.getSubModel(); // throws error
-      assert.isTrue(false, "Expected this line to be skipped");
+      assert.fail(); // this line should be skipped
     } catch (error) {
       assert.isTrue(error instanceof Error);
+      assert.isTrue(error instanceof IModelError);
     }
 
     const childIds: Id64[] = await rootSubject.queryChildren();
@@ -181,7 +182,7 @@ describe("iModel", () => {
     testCopyAndJson(model!);
     const code1 = new Code({ spec: "0x1d", scope: "0x1d", value: "A" });
     model = await models.getSubModel(code1);
-    const geomModel = await ClassRegistry.getClass({ name: "PhysicalModel", schema: "BisCore" }, imodel);
+    const geomModel = await ClassRegistry.getClass("BisCore:PhysicalModel", imodel);
     assert.exists(model);
     assert.isTrue(model instanceof geomModel!);
     testCopyAndJson(model!);
@@ -190,7 +191,7 @@ describe("iModel", () => {
   it("Model Selectors should hold models", async () => {
     const props: ElementProps = {
       iModel: imodel,
-      classFullName: BisCore.name + "." + ModelSelector.name,
+      classFullName: BisCore.name + ":" + ModelSelector.name,
       model: new Id64([1, 1]),
       code: Code.createDefault(),
       id: new Id64(),
@@ -313,7 +314,7 @@ describe("iModel", () => {
       const drawingGraphicId: Id64 = new Id64(drawingGraphicRow.elementId);
       const drawingGraphic = await imodel2.elements.getElement(drawingGraphicId);
       assert.exists(drawingGraphic);
-      assert.isTrue(drawingGraphic!.constructor.name === "DrawingGraphic", "Should be instance of DrawingGraphic");
+      assert.isTrue(drawingGraphic.constructor.name === "DrawingGraphic", "Should be instance of DrawingGraphic");
       assert.isTrue(drawingGraphic instanceof GeometricElement2d, "Is instance of GeometricElement2d");
       if (drawingGraphic.id.getLow() === 0x25) {
         assert.isTrue(drawingGraphic.placement.origin.x === 0.0);
@@ -379,7 +380,7 @@ describe("iModel", () => {
   });
 
   it("should produce an array of rows with executeQuery", async () => {
-    const {result: allrowsdata} = await imodel.executeQuery("SELECT * FROM bis.Element");
+    const { result: allrowsdata } = await imodel.executeQuery("SELECT * FROM bis.Element");
 
     if (!allrowsdata) {
       assert(false);
@@ -390,17 +391,6 @@ describe("iModel", () => {
     assert.isArray(rows);
     assert.notEqual(rows.length, 0);
     assert.notEqual(rows[0].ecinstanceid, "");
-  });
-
-  it("should get a well-known element by ID", async () => {
-    const {error, result: eldata} = await imodel.getElement(JSON.stringify({id: "0X1"}));
-    assert.equal(undefined, error);
-    if (undefined === eldata)
-      assert.fail();
-    else {
-      assert.isNotNull(eldata);
-      assert.isString(eldata);
-    }
   });
 
   /* Needs work
@@ -607,9 +597,7 @@ describe("iModel", () => {
     assert(metadataStr && metadataStr.length > 0);
     const obj: any = JSON.parse(metadataStr || "");
     assert.isNotNull(obj);
-    assert.isString(obj.name);
-    assert.equal(obj.name, "Element");
-    assert.equal(obj.schema, "BisCore");
+    assert.equal(obj.ecclass, "BisCore:Element");
     assert.isArray(obj.baseClasses);
     assert.equal(obj.baseClasses.length, 0);
 
@@ -617,28 +605,20 @@ describe("iModel", () => {
     let foundClassHasHandler = false;
     let foundClassHasCurrentTimeStampProperty = false;
     for (const ca of obj.customAttributes) {
-      if (ca.ecclass.name === "ClassHasHandler")
+      if (ca.ecclass === "BisCore:ClassHasHandler")
         foundClassHasHandler = true;
-      else if (ca.ecclass.name === "ClassHasCurrentTimeStampProperty")
+      else if (ca.ecclass === "CoreCustomAttributes:ClassHasCurrentTimeStampProperty")
         foundClassHasCurrentTimeStampProperty = true;
     }
     assert.isTrue(foundClassHasHandler);
     assert.isTrue(foundClassHasCurrentTimeStampProperty);
     assert.isDefined(obj.properties.federationGuid);
-    assert.isDefined(obj.properties.federationGuid.primitiveECProperty);
-    assert.equal(obj.properties.federationGuid.primitiveECProperty.type, "binary");
-    assert.equal(obj.properties.federationGuid.primitiveECProperty.extendedType, "BeGuid");
+    assert.equal(obj.properties.federationGuid.primitiveType, 257);
+    assert.equal(obj.properties.federationGuid.extendedType, "BeGuid");
   }
 
-  it("should get metadata for class (sync)", async () => {
-    const {result: metadataStr} = await imodel.getECClassMetaDataSync("BisCore", "Element");
-    assert.notEqual(undefined, metadataStr);
-    if (undefined !== metadataStr)
-      checkElementMetaData(metadataStr);
-    });
-
   it("should get metadata for class (async)", async () => {
-    const {result: metadataStr} = await imodel.getECClassMetaData("BisCore", "Element");
+    const { result: metadataStr } = await imodel.getECClassMetaData("BisCore", "Element");
     if (undefined === metadataStr)
       assert.fail();
     else
@@ -649,13 +629,12 @@ describe("iModel", () => {
     assert(metadataStr && metadataStr.length > 0);
     const obj: any = JSON.parse(metadataStr || "");
     assert.isDefined(obj.properties.restrictions);
-    assert.isDefined(obj.properties.restrictions.primitiveArrayECProperty);
-    assert.equal(obj.properties.restrictions.primitiveArrayECProperty.type, "string");
-    assert.equal(obj.properties.restrictions.primitiveArrayECProperty.minOccurs, 0);
+    assert.equal(obj.properties.restrictions.primitiveType, 2305);
+    assert.equal(obj.properties.restrictions.minOccurs, 0);
   }
 
   it("should get metadata for CA class just as well (and we'll see a array-typed property) (sync)", async () => {
-    const {result: metadataStr} = await imodel.getECClassMetaDataSync("BisCore", "ClassHasHandler");
+    const { result: metadataStr } = await imodel.getECClassMetaDataSync("BisCore", "ClassHasHandler");
     if (undefined === metadataStr)
       assert.fail();
     else
@@ -663,7 +642,7 @@ describe("iModel", () => {
   });
 
   it("should get metadata for CA class just as well (and we'll see a array-typed property) (async)", async () => {
-    const {result: metadataStr} = await imodel.getECClassMetaData("BisCore", "ClassHasHandler");
+    const { result: metadataStr } = await imodel.getECClassMetaData("BisCore", "ClassHasHandler");
     if (undefined === metadataStr)
       assert.fail();
     else
