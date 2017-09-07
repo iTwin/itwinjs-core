@@ -50,13 +50,13 @@ export class Entity implements EntityProps {
   }
 
   /** call a function for each property of this Entity. Function arguments are property name and property metadata. */
-  public forEachProperty(func: PropertyCallback, includeCustom: boolean = false) { EntityMetaData.forEach(this.iModel, this.schemaName, this.className, true, func, includeCustom); }
+  public forEachProperty(func: PropertyCallback, includeCustom: boolean = false) { EntityMetaData.forEach(this.iModel, this.classFullName, true, func, includeCustom); }
 
   /** STATIC method to get the full name of this class, in the form "schema.class"  */
   public static get sqlName() { return this.schema.name + "." + this.name; }
 
-  /** get full class name of this Entity. */
-  public get classFullName(): string { return this.schemaName + "." + this.className; }
+  /** get full class name of this Entity in the form "Schema:ClassName". */
+  public get classFullName(): string { return this.schemaName + ":" + this.className; }
 
   /** Get the name of the schema that defines this class */
   public get schemaName(): string { return Object.getPrototypeOf(this).constructor.schema.name; }
@@ -72,26 +72,18 @@ export class Entity implements EntityProps {
   /** make a copy of this Entity so that it may be be modified. */
   public copyForEdit<T extends Entity>() { return new (this.constructor as EntityCtor)(this) as T; }
 }
-/**
- * The full name of an Entity
- * @property name The name of the class
- * @property schema  The name of the ECSchema that defines this class
- */
-export interface ClassFullName {
-  name: string;
-  schema: string;
-}
 
 /** A custom attribute instance */
 export class CustomAttribute {
   /** The class of the CustomAttribute */
-  public ecclass: ClassFullName;
+  public ecclass: string;
   /** An object whose properties correspond by name to the properties of this custom attribute instance. */
   public properties: { [propName: string]: PropertyMetaData };
 }
 
 /** Metadata for a property. */
 export class PropertyMetaData {
+  public type: string;
   public description?: string;
   public displayLabel?: string;
   public minimumValue?: any;
@@ -101,51 +93,25 @@ export class PropertyMetaData {
   public readOnly?: boolean;
   public kindOfQuantity?: string;
   public isCustomHandled: boolean;
+  public minOccurs?: number;
+  public maxOccurs?: number;
+  public extendedType?: string;
+  public direction?: string;
+  public relationshipClass?: string;
+
   /** The Custom Attributes for the property */
   public customAttributes: CustomAttribute[];
-}
-
-/** Metadata for a primitive type. */
-export class PrimitivePropertyMetaData extends PropertyMetaData {
-  /** primitiveECProperty Describes the type */
-  public primitiveECProperty: { type: string, extendedType?: string };
-}
-
-/** Metadata for a Navigation property (aka a pointer to another element in the iModel). */
-export class NavigationPropertyMetaData extends PropertyMetaData {
-  /** Describes the type */
-  public navigationECProperty: { type: string, direction: string, relationshipClass: ClassFullName };
-}
-
-/** Metadata for a struct. */
-export class StructPropertyMetaData extends PropertyMetaData {
-  /** Describes the type */
-  public structECProperty: { type: string };
-}
-
-/** Metadata for a primitive array. */
-export class PrimitiveArrayPropertyMetaData extends PropertyMetaData {
-  /**  Describes the type */
-  public primitiveArrayECProperty: { type: string, minOccurs: number, maxOccurs?: number };
-}
-
-/** Metadata for a struct array. */
-export class StructArrayPropertyMetaData extends PropertyMetaData {
-  /** Describes the type */
-  public structArrayECProperty: { type: string, minOccurs: number, maxOccurs?: number };
 }
 
 /** Metadata for an Entity. */
 export class EntityMetaData {
   /** The Entity name */
-  public name: string;
-  /** The name of the ECSchema that defines this class */
-  public schema: string;
+  public ecclass: string;
   public description?: string;
   public modifier?: string;
   public displayLabel?: string;
   /** The  base class that this class is derives from. If more than one, the first is the actual base class and the others are mixins. */
-  public baseClasses: ClassFullName[];
+  public baseClasses: string[];
   /** The Custom Attributes for this class */
   public customAttributes: CustomAttribute[];
   /** An object whose properties correspond by name to the properties of this class. */
@@ -158,10 +124,10 @@ export class EntityMetaData {
    * @param wantSuper If true, superclass properties will also be processed
    * @param func The callback to be invoked on each property
    */
-  public static forEach(imodel: IModel, schemaName: string, className: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean) {
-    const meta = imodel.classMetaDataRegistry.get(schemaName, className);
+  public static forEach(imodel: IModel, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean) {
+    const meta = imodel.classMetaDataRegistry.get(classFullName);
     if (meta === undefined) {
-      throw new TypeError(schemaName + "." + className + " missing class metadata");
+      throw new TypeError(classFullName + " missing class metadata");
     }
 
     for (const propName in meta.properties) {
@@ -174,7 +140,7 @@ export class EntityMetaData {
 
     if (wantSuper && meta.baseClasses) {
       for (const base of meta.baseClasses) {
-        EntityMetaData.forEach(imodel, base.schema, base.name, true, func, includeCustom);
+        EntityMetaData.forEach(imodel, base, true, func, includeCustom);
       }
     }
   }

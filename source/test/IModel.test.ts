@@ -117,10 +117,10 @@ describe("iModel", () => {
     assert.isTrue(a2.id.equals(el3.id));
     testCopyAndJson(el3!);
 
-    // const newEl = el3.copyForEdit<Element>();
-    // newEl.federationGuid = undefined;
-    // const newId = await imodel2.elements.insertElement(newEl);
-    // assert.isTrue(newId.isValid(), "insert worked");
+    const newEl = el3!.copyForEdit<Element>();
+    newEl.federationGuid = undefined;
+    const newId = await imodel2.elements.insertElement(newEl);
+    assert.isTrue(newId.isValid(), "insert worked");
   });
 
   it("should have a valid root subject element", async () => {
@@ -182,7 +182,7 @@ describe("iModel", () => {
     testCopyAndJson(model!);
     const code1 = new Code({ spec: "0x1d", scope: "0x1d", value: "A" });
     model = await models.getSubModel(code1);
-    const geomModel = await ClassRegistry.getClass({ name: "PhysicalModel", schema: "BisCore" }, imodel);
+    const geomModel = await ClassRegistry.getClass("BisCore:PhysicalModel", imodel);
     assert.exists(model);
     assert.isTrue(model instanceof geomModel!);
     testCopyAndJson(model!);
@@ -191,7 +191,7 @@ describe("iModel", () => {
   it("Model Selectors should hold models", async () => {
     const props: ElementProps = {
       iModel: imodel,
-      classFullName: BisCore.name + "." + ModelSelector.name,
+      classFullName: BisCore.name + ":" + ModelSelector.name,
       model: new Id64([1, 1]),
       code: Code.createDefault(),
       id: new Id64(),
@@ -380,7 +380,7 @@ describe("iModel", () => {
   });
 
   it("should produce an array of rows with executeQuery", async () => {
-    const {result: allrowsdata} = await imodel.executeQuery("SELECT * FROM bis.Element");
+    const { result: allrowsdata } = await imodel.executeQuery("SELECT * FROM bis.Element");
 
     if (!allrowsdata) {
       assert(false);
@@ -597,9 +597,7 @@ describe("iModel", () => {
     assert(metadataStr && metadataStr.length > 0);
     const obj: any = JSON.parse(metadataStr || "");
     assert.isNotNull(obj);
-    assert.isString(obj.name);
-    assert.equal(obj.name, "Element");
-    assert.equal(obj.schema, "BisCore");
+    assert.equal(obj.ecclass, "BisCore:Element");
     assert.isArray(obj.baseClasses);
     assert.equal(obj.baseClasses.length, 0);
 
@@ -607,28 +605,20 @@ describe("iModel", () => {
     let foundClassHasHandler = false;
     let foundClassHasCurrentTimeStampProperty = false;
     for (const ca of obj.customAttributes) {
-      if (ca.ecclass.name === "ClassHasHandler")
+      if (ca.ecclass === "BisCore:ClassHasHandler")
         foundClassHasHandler = true;
-      else if (ca.ecclass.name === "ClassHasCurrentTimeStampProperty")
+      else if (ca.ecclass === "CoreCustomAttributes:ClassHasCurrentTimeStampProperty")
         foundClassHasCurrentTimeStampProperty = true;
     }
     assert.isTrue(foundClassHasHandler);
     assert.isTrue(foundClassHasCurrentTimeStampProperty);
     assert.isDefined(obj.properties.federationGuid);
-    assert.isDefined(obj.properties.federationGuid.primitiveECProperty);
-    assert.equal(obj.properties.federationGuid.primitiveECProperty.type, "binary");
-    assert.equal(obj.properties.federationGuid.primitiveECProperty.extendedType, "BeGuid");
+    assert.equal(obj.properties.federationGuid.primitiveType, 257);
+    assert.equal(obj.properties.federationGuid.extendedType, "BeGuid");
   }
 
-  it("should get metadata for class (sync)", async () => {
-    const {result: metadataStr} = await imodel.getECClassMetaDataSync("BisCore", "Element");
-    assert.notEqual(undefined, metadataStr);
-    if (undefined !== metadataStr)
-      checkElementMetaData(metadataStr);
-    });
-
   it("should get metadata for class (async)", async () => {
-    const {result: metadataStr} = await imodel.getECClassMetaData("BisCore", "Element");
+    const { result: metadataStr } = await imodel.getECClassMetaData("BisCore", "Element");
     if (undefined === metadataStr)
       assert.fail();
     else
@@ -639,13 +629,12 @@ describe("iModel", () => {
     assert(metadataStr && metadataStr.length > 0);
     const obj: any = JSON.parse(metadataStr || "");
     assert.isDefined(obj.properties.restrictions);
-    assert.isDefined(obj.properties.restrictions.primitiveArrayECProperty);
-    assert.equal(obj.properties.restrictions.primitiveArrayECProperty.type, "string");
-    assert.equal(obj.properties.restrictions.primitiveArrayECProperty.minOccurs, 0);
+    assert.equal(obj.properties.restrictions.primitiveType, 2305);
+    assert.equal(obj.properties.restrictions.minOccurs, 0);
   }
 
   it("should get metadata for CA class just as well (and we'll see a array-typed property) (sync)", async () => {
-    const {result: metadataStr} = await imodel.getECClassMetaDataSync("BisCore", "ClassHasHandler");
+    const { result: metadataStr } = await imodel.getECClassMetaDataSync("BisCore", "ClassHasHandler");
     if (undefined === metadataStr)
       assert.fail();
     else
@@ -653,7 +642,7 @@ describe("iModel", () => {
   });
 
   it("should get metadata for CA class just as well (and we'll see a array-typed property) (async)", async () => {
-    const {result: metadataStr} = await imodel.getECClassMetaData("BisCore", "ClassHasHandler");
+    const { result: metadataStr } = await imodel.getECClassMetaData("BisCore", "ClassHasHandler");
     if (undefined === metadataStr)
       assert.fail();
     else

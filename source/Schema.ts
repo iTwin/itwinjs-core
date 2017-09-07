@@ -10,8 +10,6 @@ export class Schema {
 
   public get name(): string { return this.constructor.name; }
 
-  public static getFullClassName(className: string) { return this.name + "." + className; }
-
   /**
    * Get the ClassCtor for the specified class name
    * @param className The name of the Entity
@@ -19,7 +17,7 @@ export class Schema {
    * @return The corresponding ClassCtor
    */
   public static async getClass(className: string, imodel: IModel): Promise<EntityCtor> {
-    return ClassRegistry.getClass({ schema: this.name, name: className }, imodel);
+    return ClassRegistry.getClass(this.name + ":" + className, imodel);
   }
 }
 

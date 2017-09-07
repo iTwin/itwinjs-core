@@ -71,7 +71,7 @@ export class Element extends Entity implements EntityProps {
   }
 
   /** Get the metadata for the Entity of this element. */
-  public async getClassMetaData(): Promise<EntityMetaData | undefined> { return this.iModel.classMetaDataRegistry.get(this.schemaName, this.className); }
+  public async getClassMetaData(): Promise<EntityMetaData | undefined> { return this.iModel.classMetaDataRegistry.get(this.classFullName); }
 
   private getAllUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
 
@@ -106,7 +106,8 @@ export class Element extends Entity implements EntityProps {
 
   /** Query for aspects rows (by aspect class name) associated with this element. */
   private async queryAspects(aspectClassName: string): Promise<ElementAspect[]> {
-    const response = await this.iModel.executeQuery("SELECT * FROM " + aspectClassName + " WHERE Element.Id=" + this.id.toString()); // WIP: need to bind!
+    const name = aspectClassName.split(":");
+    const response = await this.iModel.executeQuery("SELECT * FROM " + name[0] + "." + name[1] + " WHERE Element.Id=" + this.id.toString()); // WIP: need to bind!
     if (response.error || !response.result)
       return Promise.reject(new IModelError(DgnDbStatus.SQLiteError));
 
