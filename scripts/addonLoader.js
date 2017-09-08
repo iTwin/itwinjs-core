@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 function getVersionCode(identifier) {
     const nums = identifier.split(".");
-    nums[0] = nums[0].substring(1); // strip off the character 'v' from the start of the string
     // For normal addons, we assume the api is stable accross all builds/patches of a given major.minor release.
     let vcode = nums[0] + "_" + nums[1];
     if (typeof (process.versions.electron) !== "undefined")
@@ -26,7 +25,8 @@ function computeAddonPackageName() {
         versionCode = "e_" + getVersionCode(electronVersion);
     }
     else {
-        versionCode = "n_" + getVersionCode(process.version);
+        const nodeVersion = process.version.substring(1); // strip off the character 'v' from the start of the string
+        versionCode = "n_" + getVersionCode(nodeVersion);
     }
     return "@bentley/imodeljs-" + versionCode + "-" + getPlatformDir();
 }
