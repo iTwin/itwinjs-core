@@ -4,19 +4,19 @@
 
 import { assert } from "chai";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { Code, IModel } from "../IModel";
+import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
+import { Code, Elements, IModel, Models } from "../IModel";
 import { ColorDef } from "../Render";
 import { ElementProps, Element, GeometricElement3d, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../Element";
 import { Entity, EntityCtor, EntityProps } from "../Entity";
-import { Model, Models } from "../Model";
+import { Model } from "../Model";
 import { Category, SubCategory } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
 import { ModelSelector } from "../ViewDefinition";
-import { Elements } from "../Elements";
+import { IModelError } from "../IModelError";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { BisCore } from "../BisCore";
 import { SpatialViewDefinition, DisplayStyle3d } from "../ViewDefinition";
-import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { GeometricElement2d } from "../Element";
 import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
 
@@ -71,9 +71,10 @@ describe("iModel", () => {
 
     try {
       await elements.getElement(badCode); // throws Error
-      assert.isTrue(false, "Expected this line to be skipped");
+      assert.fail(); // this line should be skipped
     } catch (error) {
       assert.isTrue(error instanceof Error);
+      assert.isTrue(error instanceof IModelError);
     }
 
     const subCat = await elements.getElement(new Id64("0x2e"));
@@ -129,9 +130,12 @@ describe("iModel", () => {
 
     try {
       await rootSubject.getSubModel(); // throws error
-      assert.isTrue(false, "Expected this line to be skipped");
+      assert.fail(); // this line should be skipped
     } catch (error) {
       assert.isTrue(error instanceof Error);
+      assert.isTrue(error instanceof IModelError);
+      const iModelError: IModelError = error as IModelError;
+      assert.equal(iModelError.toDebugString(), "DgnDbStatus.NotFound");
     }
 
     const childIds: Id64[] = await rootSubject.queryChildren();

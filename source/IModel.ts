@@ -2,17 +2,21 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { MultiTierExecutionHost, RunsIn, Tier } from "@bentley/bentleyjs-core/lib/tiering";
-import { Elements } from "./Elements";
+import { ClassRegistry } from "./ClassRegistry";
+import { Element, ElementProps } from "./Element";
 import { EntityMetaData } from "./Entity";
-import { Models } from "./Model";
+import { DgnDbStatus, IModelError } from "./IModelError";
+import { Model, ModelProps } from "./Model";
 import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Point3d, Vector3d, Range3d, YawPitchRollAngles, Point2d, Range2d, Transform, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Base64 } from "js-base64";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BentleyPromise, BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 
 declare function require(arg: string): any;
 // tslint:disable-next-line:no-var-requires
@@ -20,75 +24,6 @@ const addonLoader = require("../scripts/addonLoader");
 let dgnDbNodeAddon: any | undefined;
 if (addonLoader !== undefined)
   dgnDbNodeAddon = addonLoader.loadNodeAddon(); // Note that evaluating this script has the side-effect of loading the addon
-
-export const enum DgnDbStatus {
-  DGNDB_ERROR_BASE = 0x10000,
-  Success = 0,
-  AlreadyLoaded = DGNDB_ERROR_BASE + 1,
-  AlreadyOpen = DGNDB_ERROR_BASE + 2,
-  BadArg = DGNDB_ERROR_BASE + 3,
-  BadElement = DGNDB_ERROR_BASE + 4,
-  BadModel = DGNDB_ERROR_BASE + 5,
-  BadRequest = DGNDB_ERROR_BASE + 6,
-  BadSchema = DGNDB_ERROR_BASE + 7,
-  CannotUndo = DGNDB_ERROR_BASE + 8,
-  CodeNotReserved = DGNDB_ERROR_BASE + 9,
-  DeletionProhibited = DGNDB_ERROR_BASE + 10,
-  DuplicateCode = DGNDB_ERROR_BASE + 11,
-  DuplicateName = DGNDB_ERROR_BASE + 12,
-  ElementBlockedChange = DGNDB_ERROR_BASE + 13,
-  FileAlreadyExists = DGNDB_ERROR_BASE + 14,
-  FileNotFound = DGNDB_ERROR_BASE + 15,
-  FileNotLoaded = DGNDB_ERROR_BASE + 16,
-  ForeignKeyConstraint = DGNDB_ERROR_BASE + 17,
-  IdExists = DGNDB_ERROR_BASE + 18,
-  InDynamicTransaction = DGNDB_ERROR_BASE + 19,
-  InvalidCategory = DGNDB_ERROR_BASE + 20,
-  InvalidCode = DGNDB_ERROR_BASE + 21,
-  InvalidCodeSpec = DGNDB_ERROR_BASE + 22,
-  InvalidId = DGNDB_ERROR_BASE + 23,
-  InvalidName = DGNDB_ERROR_BASE + 24,
-  InvalidParent = DGNDB_ERROR_BASE + 25,
-  InvalidProfileVersion = DGNDB_ERROR_BASE + 26,
-  IsCreatingRevision = DGNDB_ERROR_BASE + 27,
-  LockNotHeld = DGNDB_ERROR_BASE + 28,
-  Mismatch2d3d = DGNDB_ERROR_BASE + 29,
-  MismatchGcs = DGNDB_ERROR_BASE + 30,  // The Geographic Coordinate Systems of the source and target are not based on equivalent projections
-  MissingDomain = DGNDB_ERROR_BASE + 31,
-  MissingHandler = DGNDB_ERROR_BASE + 32,
-  MissingId = DGNDB_ERROR_BASE + 33,
-  NoGeometry = DGNDB_ERROR_BASE + 34,
-  NoMultiTxnOperation = DGNDB_ERROR_BASE + 35,
-  NotDgnMarkupProject = DGNDB_ERROR_BASE + 36,
-  NotEnabled = DGNDB_ERROR_BASE + 37,
-  NotFound = DGNDB_ERROR_BASE + 38,
-  NotOpen = DGNDB_ERROR_BASE + 39,
-  NotOpenForWrite = DGNDB_ERROR_BASE + 40,
-  NotSameUnitBase = DGNDB_ERROR_BASE + 41,
-  NothingToRedo = DGNDB_ERROR_BASE + 42,
-  NothingToUndo = DGNDB_ERROR_BASE + 43,
-  ParentBlockedChange = DGNDB_ERROR_BASE + 44,
-  ReadError = DGNDB_ERROR_BASE + 45,
-  ReadOnly = DGNDB_ERROR_BASE + 46,
-  ReadOnlyDomain = DGNDB_ERROR_BASE + 47,
-  RepositoryManagerError = DGNDB_ERROR_BASE + 48,
-  SQLiteError = DGNDB_ERROR_BASE + 49,
-  TransactionActive = DGNDB_ERROR_BASE + 50,
-  UnitsMissing = DGNDB_ERROR_BASE + 51,
-  UnknownFormat = DGNDB_ERROR_BASE + 52,
-  UpgradeFailed = DGNDB_ERROR_BASE + 53,
-  ValidationFailed = DGNDB_ERROR_BASE + 54,
-  VersionTooNew = DGNDB_ERROR_BASE + 55,
-  VersionTooOld = DGNDB_ERROR_BASE + 56,
-  ViewNotFound = DGNDB_ERROR_BASE + 57,
-  WriteError = DGNDB_ERROR_BASE + 58,
-  WrongClass = DGNDB_ERROR_BASE + 59,
-  WrongDgnDb = DGNDB_ERROR_BASE + 60,
-  WrongDomain = DGNDB_ERROR_BASE + 61,
-  WrongElement = DGNDB_ERROR_BASE + 62,
-  WrongHandler = DGNDB_ERROR_BASE + 63,
-  WrongModel = DGNDB_ERROR_BASE + 64,
-}
 
 /** A token that identifies a DgnDb */
 export class DgnDbToken {
@@ -279,12 +214,13 @@ class DgnDbNativeCode {
 /** An iModel database. */
 export class IModel {
   private _fileName: string;
-  private _db: DgnDbToken;
+  private _dbToken: DgnDbToken;
   public elements: Elements;
   public models: Models;
   private _classMetaDataRegistry: MetaDataRegistry;
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
-  public get fileName() { return this._fileName; }
+  public get fileName(): string { return this._fileName; }
+  public get dbToken(): DgnDbToken { return this._dbToken; }
 
   private constructor() {
     this.elements = new Elements(this);
@@ -302,17 +238,17 @@ export class IModel {
 
     const iModel = new IModel();
     iModel._fileName = fileName;
-    iModel._db = response.result;
+    iModel._dbToken = response.result;
     return iModel;
   }
 
   /** Close this iModel, if it is currently open */
   public closeDgnDb() {
-    if (!this._db)
+    if (!this._dbToken)
       return;
-    DgnDbNativeCode.callCloseDb(this._db);
-    (this._db as any) = undefined;  // I am deliberately violating the guarantee that _db can't be undefined. That is so that, if the caller
-    // continues to use imodel IModel after closing it HE WILL BLOW UP.
+    DgnDbNativeCode.callCloseDb(this._dbToken);
+    (this._dbToken as any) = undefined;  // I am deliberately violating the guarantee that _dbToken can't be undefined. That is so that, if the caller
+    // continues to use the IModel after closing it HE WILL BLOW UP.
     this._fileName = "";
   }
 
@@ -323,28 +259,12 @@ export class IModel {
    * @return On success, the BentleyReturn result property will be the class meta data in JSON format.
    */
   public getECClassMetaDataSync(ecschemaname: string, ecclassname: string): BentleyReturn<DgnDbStatus, string> {
-    return DgnDbNativeCode.callGetECClassMetaDataSync(this._db, ecschemaname, ecclassname);
+    return DgnDbNativeCode.callGetECClassMetaDataSync(this.dbToken, ecschemaname, ecclassname);
   }
 
   /** @deprecated */
   public GetElementPropertiesForDisplay(eid: string): BentleyPromise<DbResult, string> {
-    return DgnDbNativeCode.callGetElementPropertiesForDisplay(this._db, eid);
-  }
-
-  /** Internal implementation of iModel.elements.getElement */
-  public _getElementJson(opt: string): BentleyPromise<DgnDbStatus, string> {
-    return DgnDbNativeCode.callGetElement(this._db, opt);
-  }
-
-  /** Internal implementation of iModel.elements.insertElement */
-  public async _insertElementFromJson(el: string): Promise<Id64> {
-    const stat = await DgnDbNativeCode.callInsertElement(this._db, el);
-    return stat.error ? Promise.reject(stat.error) : new Id64(JSON.parse(stat.result!).id);
-  }
-
-  /** Internal implementation of iModel.models.getModel */
-  public _getModelJson(opt: string): BentleyPromise<DbResult, string> {
-    return DgnDbNativeCode.callGetModel(this._db, opt);
+    return DgnDbNativeCode.callGetElementPropertiesForDisplay(this.dbToken, eid);
   }
 
   /**
@@ -354,7 +274,7 @@ export class IModel {
    * @return On success, the BentleyReturn result property will be the class meta data in JSON format.
    */
   public getECClassMetaData(ecschemaname: string, ecclassname: string): BentleyPromise<DgnDbStatus, string> {
-    return DgnDbNativeCode.callGetECClassMetaData(this._db, ecschemaname, ecclassname);
+    return DgnDbNativeCode.callGetECClassMetaData(this.dbToken, ecschemaname, ecclassname);
   }
 
   /** Get the ClassMetaDataRegistry for this iModel */
@@ -371,8 +291,122 @@ export class IModel {
    * @throws Error if the statement is invalid
    */
   public executeQuery(ecsql: string): BentleyPromise<DbResult, string> {
-    return DgnDbNativeCode.callExecuteQuery(this._db, ecsql);
+    return DgnDbNativeCode.callExecuteQuery(this.dbToken, ecsql);
   }
+}
+
+/** The collection of Models in an iModel  */
+export class Models {
+  private _iModel: IModel;
+  private _loaded: LRUMap<string, Model>;
+
+  public constructor(iModel: IModel, max: number = 500) { this._iModel = iModel; this._loaded = new LRUMap<string, Model>(max); }
+
+  public async getModel(modelId: Id64): Promise<Model> {
+    // first see if the model is already in the local cache.
+    const loaded = this._loaded.get(modelId.toString());
+    if (loaded)
+      return loaded;
+
+    // Must go get the model from the iModel. Start by requesting the model's data.
+    const getObj = await DgnDbNativeCode.callGetModel(this._iModel.dbToken, JSON.stringify({ id: modelId }));
+    if (getObj.error || !getObj.result) { // todo: Shouldn't getObj.result always be non-empty if there is no error?
+      return Promise.reject(new Error("Model not found"));
+    }
+    const json = getObj.result;
+    const props = JSON.parse(json) as ModelProps;
+    props.iModel = this._iModel;
+
+    const entity = await ClassRegistry.createInstance(props);
+    assert(entity instanceof Model);
+    const model = entity as Model;
+
+    // We have created the model. Cache it before we return it.
+    model.setPersistent(); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
+    this._loaded.set(model.id.toString(), model);
+    return model;
+  }
+
+  public async getSubModel(modeledElementId: Id64 | Guid | Code): Promise<Model> {
+    const modeledElement: Element = await this._iModel.elements.getElement(modeledElementId);
+    return this.getModel(modeledElement.id);
+  }
+
+  /** The Id of the repository model. */
+  public get repositoryModelId(): Id64 { return new Id64("0x1"); }
+}
+
+/** Parameters to specify what element to load. */
+export interface ElementLoadParams {
+  id?: Id64 | string;
+  code?: Code;
+  federationGuid?: string;
+  /** if true, do not load the geometry of the element */
+  noGeometry?: boolean;
+}
+
+/** The collection of Elements in an iModel  */
+export class Elements {
+  private _iModel: IModel;
+  private _loaded: LRUMap<string, Element>;
+
+  /** get the map of loaded elements */
+  public get loaded() { return this._loaded; }
+
+  public constructor(iModel: IModel, maxElements: number = 2000) { this._iModel = iModel; this._loaded = new LRUMap<string, Element>(maxElements); }
+
+  /** Private implementation details of getElement */
+  private async doGetElement(opts: ElementLoadParams): Promise<Element> {
+    // first see if the element is already in the local cache.
+    if (opts.id) {
+      const loaded = this._loaded.get(opts.id.toString());
+      if (loaded)
+        return loaded;
+    }
+
+    // Must go get the element from the iModel. Start by requesting the element's data.
+    const getObj = await DgnDbNativeCode.callGetElement(this._iModel.dbToken, JSON.stringify(opts));
+    if (getObj.error || !getObj.result) { // todo: Shouldn't getObj.result always be non-empty if there is no error?
+      return Promise.reject(new IModelError(DgnDbStatus.InvalidId));
+    }
+    const json = getObj.result;
+
+    const props = JSON.parse(json) as ElementProps;
+    props.iModel = this._iModel;
+
+    const entity = await ClassRegistry.createInstance(props);
+    const el = entity as Element;
+    assert(el instanceof Element);
+
+    // We have created the element. Cache it before we return it.
+    el.setPersistent(); // elements in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
+    this._loaded.set(el.id.toString(), el);
+    return el;
+  }
+
+  /** Get an element by Id, FederationGuid, or Code */
+  public async getElement(elementId: Id64 | Guid | Code): Promise<Element> {
+    if (elementId instanceof Id64) return this.doGetElement({ id: elementId });
+    if (elementId instanceof Guid) return this.doGetElement({ federationGuid: elementId.toString() });
+    if (elementId instanceof Code) return this.doGetElement({ code: elementId });
+    assert(false);
+    return Promise.reject(new IModelError(DgnDbStatus.BadArg));
+  }
+
+  public async insertElement(el: Element): Promise<Id64> {
+    if (el.isPersistent()) {
+      assert(false); // you cannot insert a persistent element. call copyForEdit
+      return new Id64();
+    }
+    const stat = await DgnDbNativeCode.callInsertElement(this._iModel.dbToken, JSON.stringify(el));
+    return stat.error ? Promise.reject(stat.error) : new Id64(JSON.parse(stat.result!).id);
+  }
+
+  /** The Id of the root subject element. */
+  public get rootSubjectId(): Id64 { return new Id64("0x1"); }
+
+  /** Get the root subject element. */
+  public async getRootSubject(): Promise<Element> { return this.getElement(this.rootSubjectId); }
 }
 
 /** Properties that define a Code */

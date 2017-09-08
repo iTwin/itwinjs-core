@@ -5,9 +5,8 @@
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { EntityMetaData } from "../Entity";
-import { Code, IModel } from "../IModel";
+import { Code, Elements, IModel } from "../IModel";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { Elements } from "../Elements";
 import { BisCore } from "../BisCore";
 
 describe("Class Registry", () => {

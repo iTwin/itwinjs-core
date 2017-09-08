@@ -10,12 +10,9 @@ function getVersionCode(identifier) {
     return vcode;
 }
 function getPlatformDir() {
-    const arch = (process.arch === "x64") ? "X64" : process.arch;
+    const arch = process.arch;
     if (process.platform === "win32") {
         return "win" + arch;
-    }
-    if (process.platform === "linux") {
-        return "linux" + arch;
     }
     return process.platform + arch;
 }

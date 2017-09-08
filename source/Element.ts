@@ -2,14 +2,15 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { Code, CodeProps, GeometryStream, Placement3d, Placement2d } from "./IModel";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
+import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
+import { Code, CodeProps, GeometryStream, Placement3d, Placement2d } from "./IModel";
+import { DgnDbStatus, IModelError } from "./IModelError";
 import { ClassRegistry } from "./ClassRegistry";
 import { ElementAspect, ElementAspectProps, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
-import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Entity, EntityProps, EntityMetaData } from "./Entity";
 import { Model } from "./Model";
-import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 
 /** The Id and relationship class of an Element that is related to another Element */
 export class RelatedElement {
@@ -99,7 +100,7 @@ export class Element extends Entity implements EntityProps {
   /** Get the Model that modeling this Element (if it exists). That is, the model that is beneath this element in the hierarchy. */
   public async getSubModel(): Promise<Model> {
     if (this.id.equals(this.iModel.elements.rootSubjectId))
-      return Promise.reject(new Error("No subModel found"));
+      return Promise.reject(new IModelError(DgnDbStatus.NotFound));
     return this.iModel.models.getModel(this.id);
   }
 
@@ -108,11 +109,11 @@ export class Element extends Entity implements EntityProps {
     const name = aspectClassName.split(":");
     const response = await this.iModel.executeQuery("SELECT * FROM [" + name[0] + "].[" + name[1] + "] WHERE Element.Id=" + this.id.toString()); // WIP: need to bind!
     if (response.error || !response.result)
-      return Promise.reject(new Error("Invalid SQL"));
+      return Promise.reject(new IModelError(DgnDbStatus.SQLiteError));
 
     const rows: any[] = JSON.parse(response.result);
     if (!rows || rows.length === 0)
-      return Promise.reject(new Error("No " + aspectClassName + " aspects found for this element"));
+      return Promise.reject(new IModelError(DgnDbStatus.NotFound));
 
     const aspects: ElementAspect[] = [];
     for (const row of rows) {
