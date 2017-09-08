@@ -1,13 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-function getVersionCode(identifier) {
-    const nums = identifier.split(".");
-    // For normal addons, we assume the api is stable accross all builds/patches of a given major.minor release.
-    let vcode = nums[0] + "_" + nums[1];
-    if (typeof (process.versions.electron) !== "undefined")
-        vcode = vcode + "_" + nums[2]; // for Electron, we make no assumptions about API stability but latch on to one particular build.
-    return vcode;
-}
+
 function getPlatformDir() {
     const arch = process.arch;
     if (process.platform === "win32") {
@@ -22,11 +15,11 @@ function computeAddonPackageName() {
     let versionCode;
     const electronVersion = process.versions.electron;
     if (typeof (electronVersion) !== "undefined") {
-        versionCode = "e_" + getVersionCode(electronVersion);
+        versionCode = "e_" + electronVersion.replace('.', '_');
     }
     else {
-        const nodeVersion = process.version.substring(1); // strip off the character 'v' from the start of the string
-        versionCode = "n_" + getVersionCode(nodeVersion);
+        const nodeVersion = process.version.substring(1).split('.'); // strip off the character 'v' from the start of the string
+        versionCode = "n_" + nodeVersion[0] + '_' + nodeVersion[1]; // use only major and minor version numbers
     }
     return "@bentley/imodeljs-" + versionCode + "-" + getPlatformDir();
 }
