@@ -116,7 +116,7 @@ export class MetaDataRegistry {
     if (error || !mstr)
       return undefined;
 
-    mdata = JSON.parse(mstr) as EntityMetaData | undefined;
+    mdata = new EntityMetaData(JSON.parse(mstr));
     if (undefined === mdata)
       return undefined;
     this.reg.set(key, mdata);

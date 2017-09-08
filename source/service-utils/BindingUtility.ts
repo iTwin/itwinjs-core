@@ -3,20 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
-
-/** ECPrimitive types (Match this to ECN::PrimitiveType in ECObjects.h) */
-export const enum PrimitiveTypeCode {
-  Uninitialized = 0x00,
-  Binary = 0x101,
-  Boolean = 0x201,
-  DateTime = 0x301,
-  Double = 0x401,
-  Integer = 0x501,
-  Long = 0x601,
-  Point2d = 0x701,
-  Point3d = 0x801,
-  String = 0x901,
-}
+import { PrimitiveTypeCode } from "../Entity";
 
 /** Value type  (Match this to ECN::ValueKind in ECObjects.h) */
 export const enum ValueKind {

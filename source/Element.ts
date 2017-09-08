@@ -106,7 +106,7 @@ export class Element extends Entity implements EntityProps {
   /** Query for aspects rows (by aspect class name) associated with this element. */
   private async queryAspects(aspectClassName: string): Promise<ElementAspect[]> {
     const name = aspectClassName.split(":");
-    const response = await this.iModel.executeQuery("SELECT * FROM " + name[0] + "." + name[1] + " WHERE Element.Id=" + this.id.toString()); // WIP: need to bind!
+    const response = await this.iModel.executeQuery("SELECT * FROM [" + name[0] + "].[" + name[1] + "] WHERE Element.Id=" + this.id.toString()); // WIP: need to bind!
     if (response.error || !response.result)
       return Promise.reject(new Error("Invalid SQL"));
 

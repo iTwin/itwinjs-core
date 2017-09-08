@@ -21,8 +21,7 @@ export class ClassRegistry {
     if (!props.classFullName || !props.iModel)
       return Promise.reject(new Error("Invalid input props"));
 
-    props.classFullName = props.classFullName.toLowerCase();
-    let ctor = ClassRegistry.classMap.get(props.classFullName);
+    let ctor = ClassRegistry.classMap.get(props.classFullName.toLowerCase());
     if (!ctor) {
       ctor = await ClassRegistry.generateClass(props.classFullName, props.iModel);
       assert(!!ctor);
