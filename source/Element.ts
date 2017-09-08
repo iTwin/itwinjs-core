@@ -86,19 +86,14 @@ export class Element extends Entity implements EntityProps {
 
   /** Query for the child elements of this element. */
   public async queryChildren(): Promise<Id64[]> {
-    const { error, result: rowsJson } = await this.iModel.executeQuery("SELECT ECInstanceId as id FROM " + Element.sqlName + " WHERE Parent.Id=" + this.id.toString()); // WIP: need to bind!
-    if (error || !rowsJson) {
-      assert(false);
-      return Promise.resolve([]);
-    }
-
+    const rowsJson: string = await this.iModel.executeQuery("SELECT ECInstanceId as id FROM " + Element.sqlName + " WHERE Parent.Id=" + this.id.toString()); // WIP: need to bind!
     const childIds: Id64[] = [];
     JSON.parse(rowsJson).forEach((row: any) => childIds.push(new Id64(row.id))); // WIP: executeQuery should return eCInstanceId as a string
     return Promise.resolve(childIds);
   }
 
   /** Get the Model that modeling this Element (if it exists). That is, the model that is beneath this element in the hierarchy. */
-  public async getSubModel(): Promise<Model> {
+  public getSubModel(): Promise<Model> {
     if (this.id.equals(this.iModel.elements.rootSubjectId))
       return Promise.reject(new IModelError(DgnDbStatus.NotFound));
     return this.iModel.models.getModel(this.id);
@@ -107,11 +102,8 @@ export class Element extends Entity implements EntityProps {
   /** Query for aspects rows (by aspect class name) associated with this element. */
   private async queryAspects(aspectClassName: string): Promise<ElementAspect[]> {
     const name = aspectClassName.split(":");
-    const response = await this.iModel.executeQuery("SELECT * FROM " + name[0] + "." + name[1] + " WHERE Element.Id=" + this.id.toString()); // WIP: need to bind!
-    if (response.error || !response.result)
-      return Promise.reject(new IModelError(DgnDbStatus.SQLiteError));
-
-    const rows: any[] = JSON.parse(response.result);
+    const rowsJson: string = await this.iModel.executeQuery("SELECT * FROM " + name[0] + "." + name[1] + " WHERE Element.Id=" + this.id.toString()); // WIP: need to bind!
+    const rows: any[] = JSON.parse(rowsJson);
     if (!rows || rows.length === 0)
       return Promise.reject(new IModelError(DgnDbStatus.NotFound));
 

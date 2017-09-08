@@ -95,11 +95,7 @@ export class ClassRegistry {
     const name = classFullName.split(":");
     assert(name.length === 2);
 
-    const ret = await imodel.getECClassMetaData(name[0], name[1]);
-    if (ret.error)
-      return Promise.reject(new Error("Error getting class meta data"));
-
-    const ecClassJson = ret.result!;
+    const ecClassJson: string = await imodel.getECClassMetaData(name[0], name[1]);
     assert(!!ecClassJson);
 
     const metadata: EntityMetaData = JSON.parse(ecClassJson);
