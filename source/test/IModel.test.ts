@@ -114,9 +114,9 @@ describe("iModel", () => {
     assert.exists(el3);
     assert.notEqual(a2, el3);
     assert.isTrue(a2.id.equals(el3.id));
-    testCopyAndJson(el3!);
+    testCopyAndJson(el3);
 
-    const newEl = el3!.copyForEdit<Element>();
+    const newEl = el3.copyForEdit<Element>();
     newEl.federationGuid = undefined;
     const newId = await imodel2.elements.insertElement(newEl);
     assert.isTrue(newId.isValid(), "insert worked");
