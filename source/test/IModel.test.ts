@@ -114,9 +114,9 @@ describe("iModel", () => {
     assert.exists(el3);
     assert.notEqual(a2, el3);
     assert.isTrue(a2.id.equals(el3.id));
-    testCopyAndJson(el3!);
+    testCopyAndJson(el3);
 
-    const newEl = el3!.copyForEdit<Element>();
+    const newEl = el3.copyForEdit<Element>();
     newEl.federationGuid = undefined;
     const newId = await imodel2.elements.insertElement(newEl);
     assert.isTrue(newId.isValid(), "insert worked");
@@ -210,9 +210,9 @@ describe("iModel", () => {
   });
 
   it("should produce an array of rows", async () => {
-    const { result: allrowsdata } = await imodel.executeQuery("SELECT * FROM " + Category.sqlName);
-    assert.exists(allrowsdata);
-    const rows: any = JSON.parse(allrowsdata!);
+    const rowsJson: string = await imodel.executeQuery("SELECT * FROM " + Category.sqlName);
+    assert.exists(rowsJson);
+    const rows: any = JSON.parse(rowsJson!);
     assert.isArray(rows);
     assert.isAtLeast(rows.length, 1);
     assert.exists(rows[0].eCInstanceId);
@@ -235,7 +235,7 @@ describe("iModel", () => {
   });
 
   it("should be at least one view element", async () => {
-    const { result: viewJson } = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + SpatialViewDefinition.sqlName);
+    const viewJson: string = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + SpatialViewDefinition.sqlName);
     assert.exists(viewJson, "Should find some views");
     const viewRows: any[] = JSON.parse(viewJson!);
     for (const viewRow of viewRows!) {
@@ -269,7 +269,7 @@ describe("iModel", () => {
   });
 
   it("should be some categories", async () => {
-    const { result: categoryJson } = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + Category.sqlName);
+    const categoryJson: string = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + Category.sqlName);
     assert.exists(categoryJson, "Should have some Category ids");
     const categoryRows: any[] = JSON.parse(categoryJson!);
     for (const categoryRow of categoryRows!) {
@@ -293,7 +293,7 @@ describe("iModel", () => {
 
       // get the subcategories
       const queryString: string = "SELECT ECInstanceId as elementId FROM " + SubCategory.sqlName + " WHERE Parent.Id=" + categoryId;
-      const { result: subCategoryJson } = await imodel.executeQuery(queryString);
+      const subCategoryJson: string = await imodel.executeQuery(queryString);
       assert.exists(subCategoryJson, "Should have at least one SubCategory");
       const subCategoryRows: any[] = JSON.parse(subCategoryJson!);
       for (const subCategoryRow of subCategoryRows) {
@@ -308,7 +308,7 @@ describe("iModel", () => {
   });
 
   it("should be some 2d elements", async () => {
-    const { result: drawingGraphicJson } = await imodel2.executeQuery("SELECT ECInstanceId as elementId FROM BisCore.DrawingGraphic");
+    const drawingGraphicJson: string = await imodel2.executeQuery("SELECT ECInstanceId as elementId FROM BisCore.DrawingGraphic");
     assert.exists(drawingGraphicJson, "Should have some Drawing Graphics");
     const drawingGraphicRows: any[] = JSON.parse(drawingGraphicJson!);
     for (const drawingGraphicRow of drawingGraphicRows!) {
@@ -342,7 +342,7 @@ describe("iModel", () => {
 
   it("should be children of RootSubject", async () => {
     const queryString: string = "SELECT ECInstanceId as modelId FROM " + Model.sqlName + " WHERE ParentModel.Id=" + imodel2.models.repositoryModelId;
-    const { result: modelJson } = await imodel2.executeQuery(queryString);
+    const modelJson: string = await imodel2.executeQuery(queryString);
     assert.exists(modelJson, "Should have at least one model within rootSubject");
     const modelRows: any[] = JSON.parse(modelJson!);
     for (const modelRow of modelRows) {
@@ -381,13 +381,8 @@ describe("iModel", () => {
   });
 
   it("should produce an array of rows with executeQuery", async () => {
-    const { result: allrowsdata } = await imodel.executeQuery("SELECT * FROM bis.Element");
-
-    if (!allrowsdata) {
-      assert(false);
-      return;
-    }
-
+    const allrowsdata: string = await imodel.executeQuery("SELECT * FROM bis.Element");
+    assert.exists(allrowsdata);
     const rows: any = JSON.parse(allrowsdata);
     assert.isArray(rows);
     assert.notEqual(rows.length, 0);
@@ -433,11 +428,9 @@ describe("iModel", () => {
   }
 
   it("should get metadata for class (async)", async () => {
-    const { result: metadataStr } = await imodel.getECClassMetaData("BisCore", "Element");
-    if (undefined === metadataStr)
-      assert.fail();
-    else
-      checkElementMetaData(metadataStr);
+    const metadataStr: string = await imodel.getECClassMetaData("BisCore", "Element");
+    assert.exists(metadataStr);
+    checkElementMetaData(metadataStr);
   });
 
   function checkClassHasHandlerMetaData(metadataStr: string) {
@@ -449,19 +442,15 @@ describe("iModel", () => {
   }
 
   it("should get metadata for CA class just as well (and we'll see a array-typed property) (sync)", async () => {
-    const { result: metadataStr } = await imodel.getECClassMetaDataSync("BisCore", "ClassHasHandler");
-    if (undefined === metadataStr)
-      assert.fail();
-    else
-      checkClassHasHandlerMetaData(metadataStr);
+    const metadataStr: string = imodel.getECClassMetaDataSync("BisCore", "ClassHasHandler");
+    assert.exists(metadataStr);
+    checkClassHasHandlerMetaData(metadataStr);
   });
 
   it("should get metadata for CA class just as well (and we'll see a array-typed property) (async)", async () => {
-    const { result: metadataStr } = await imodel.getECClassMetaData("BisCore", "ClassHasHandler");
-    if (undefined === metadataStr)
-      assert.fail();
-    else
-      checkClassHasHandlerMetaData(metadataStr);
+    const metadataStr: string = await imodel.getECClassMetaData("BisCore", "ClassHasHandler");
+    assert.exists(metadataStr);
+    checkClassHasHandlerMetaData(metadataStr);
   });
 
 });
