@@ -120,7 +120,8 @@ export class PropertyMetaData {
 
   public constructor(jsonObj: any) {
     this.primitiveType = jsonObj.primitiveType;
-    this.structName = jsonObj.structName;
+    if (jsonObj.structName)
+      this.structName = jsonObj.structName;
     this.extendedType = jsonObj.extendedType;
     this.description = jsonObj.description;
     this.displayLabel = jsonObj.displayLabel;

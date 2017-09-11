@@ -30,7 +30,7 @@ export class DgnDbToken {
   constructor(public id: string) { }
 }
 
-/** The mapping between a class name and its the metadata for that class  */
+/** The mapping between a class name and its metadata */
 export class MetaDataRegistry {
   private reg: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();
 
