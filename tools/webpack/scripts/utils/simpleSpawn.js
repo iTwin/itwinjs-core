@@ -11,8 +11,16 @@ function simpleSpawn(cmd, args, cwd) {
   return new Promise((resolve, reject) => {
     const child = spawn(cmd, args, {
       cwd: cwd,
-      stdio: ['pipe', process.stdout, process.stderr]
+      env: {FORCE_COLOR: "1"},
+      stdio: 'pipe'
     });
+
+    child.stdout.on('data', (data) => {
+        process.stdout.write(data);
+      })
+    child.stderr.on('data', (data) => {
+      process.stderr.write(data);
+    })
     child.on('error', function(data) { console.log(chalk.red(data)); });  
     child.on('close', ()=> resolve());
     simpleSpawn.children.push(child);
