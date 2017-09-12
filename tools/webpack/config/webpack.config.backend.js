@@ -91,8 +91,21 @@ module.exports = {
         test: /\.ts$/,
         include: paths.appSrc,
         loader: require.resolve('ts-loader'),
+        options: {
+          logLevel: 'warn'
+        }
       },
     ],
+  },
+  target: 'electron-main',
+  node: {
+    console: false,
+    global: false,
+    process: false,
+    __filename: false,
+    __dirname: false,
+    Buffer: false,
+    setImmediate: false
   },
   externals: [nodeExternals()],
   plugins: [
