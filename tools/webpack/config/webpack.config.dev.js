@@ -180,11 +180,18 @@ module.exports = {
           name: 'static/media/[name].[hash:8].[ext]',
         },
       },
+      { 
+        test: /node_modules[\/\\]ws/, 
+        use: require.resolve('null-loader'),
+      },
       // Compile .tsx?
       {
         test: /\.(ts|tsx)$/,
         include: paths.appSrc,
         loader: require.resolve('ts-loader'),
+        options: {
+          logLevel: 'warn'
+        }
       },
       // "postcss" loader applies autoprefixer to our CSS.
       // "css" loader resolves paths in CSS and adds assets as dependencies.
