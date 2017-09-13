@@ -68,7 +68,7 @@ export const enum IModelStatus {
   ViewNotFound = IMODEL_ERROR_BASE + 57,
   WriteError = IMODEL_ERROR_BASE + 58,
   WrongClass = IMODEL_ERROR_BASE + 59,
-  WrongDgnDb = IMODEL_ERROR_BASE + 60,
+  WrongIModel = IMODEL_ERROR_BASE + 60,
   WrongDomain = IMODEL_ERROR_BASE + 61,
   WrongElement = IMODEL_ERROR_BASE + 62,
   WrongHandler = IMODEL_ERROR_BASE + 63,
@@ -143,7 +143,7 @@ export class IModelError extends Error {
       case IModelStatus.ViewNotFound: return this._appendMessage("IModelStatus.ViewNotFound");
       case IModelStatus.WriteError: return this._appendMessage("IModelStatus.WriteError");
       case IModelStatus.WrongClass: return this._appendMessage("IModelStatus.WrongClass");
-      case IModelStatus.WrongDgnDb: return this._appendMessage("IModelStatus.WrongDgnDb");
+      case IModelStatus.WrongIModel: return this._appendMessage("IModelStatus.WrongIModel");
       case IModelStatus.WrongDomain: return this._appendMessage("IModelStatus.WrongDomain");
       case IModelStatus.WrongElement: return this._appendMessage("IModelStatus.WrongElement");
       case IModelStatus.WrongHandler: return this._appendMessage("IModelStatus.WrongHandler");
