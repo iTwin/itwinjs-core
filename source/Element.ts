@@ -6,7 +6,7 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Code, CodeProps, GeometryStream, Placement3d, Placement2d } from "./IModel";
-import { DgnDbStatus, IModelError } from "./IModelError";
+import { IModelStatus, IModelError } from "./IModelError";
 import { ClassRegistry } from "./ClassRegistry";
 import { ElementAspect, ElementAspectProps, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { Entity, EntityProps, EntityMetaData } from "./Entity";
@@ -95,7 +95,7 @@ export class Element extends Entity implements EntityProps {
   /** Get the Model that modeling this Element (if it exists). That is, the model that is beneath this element in the hierarchy. */
   public getSubModel(): Promise<Model> {
     if (this.id.equals(this.iModel.elements.rootSubjectId))
-      return Promise.reject(new IModelError(DgnDbStatus.NotFound));
+      return Promise.reject(new IModelError(IModelStatus.NotFound));
     return this.iModel.models.getModel(this.id);
   }
 
@@ -105,7 +105,7 @@ export class Element extends Entity implements EntityProps {
     const rowsJson: string = await this.iModel.executeQuery("SELECT * FROM [" + name[0] + "].[" + name[1] + "] WHERE Element.Id=" + this.id.toString()); // WIP: need to bind!
     const rows: any[] = JSON.parse(rowsJson);
     if (!rows || rows.length === 0)
-      return Promise.reject(new IModelError(DgnDbStatus.NotFound));
+      return Promise.reject(new IModelError(IModelStatus.NotFound));
 
     const aspects: ElementAspect[] = [];
     for (const row of rows) {
@@ -157,6 +157,7 @@ export class GeometricElement extends Element implements GeometricElementProps {
     this.geom = GeometryStream.fromJSON(props.geom);
   }
 
+  /** convert this geometric element to a JSON object */
   public toJSON(): any {
     const val = super.toJSON();
     val.category = this.category;

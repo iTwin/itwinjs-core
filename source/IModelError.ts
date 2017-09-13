@@ -6,148 +6,148 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 
-export const enum DgnDbStatus {
-  DGNDB_ERROR_BASE = 0x10000,
+export const enum IModelStatus {
+  IMODEL_ERROR_BASE = 0x10000,
   Success = 0,
-  AlreadyLoaded = DGNDB_ERROR_BASE + 1,
-  AlreadyOpen = DGNDB_ERROR_BASE + 2,
-  BadArg = DGNDB_ERROR_BASE + 3,
-  BadElement = DGNDB_ERROR_BASE + 4,
-  BadModel = DGNDB_ERROR_BASE + 5,
-  BadRequest = DGNDB_ERROR_BASE + 6,
-  BadSchema = DGNDB_ERROR_BASE + 7,
-  CannotUndo = DGNDB_ERROR_BASE + 8,
-  CodeNotReserved = DGNDB_ERROR_BASE + 9,
-  DeletionProhibited = DGNDB_ERROR_BASE + 10,
-  DuplicateCode = DGNDB_ERROR_BASE + 11,
-  DuplicateName = DGNDB_ERROR_BASE + 12,
-  ElementBlockedChange = DGNDB_ERROR_BASE + 13,
-  FileAlreadyExists = DGNDB_ERROR_BASE + 14,
-  FileNotFound = DGNDB_ERROR_BASE + 15,
-  FileNotLoaded = DGNDB_ERROR_BASE + 16,
-  ForeignKeyConstraint = DGNDB_ERROR_BASE + 17,
-  IdExists = DGNDB_ERROR_BASE + 18,
-  InDynamicTransaction = DGNDB_ERROR_BASE + 19,
-  InvalidCategory = DGNDB_ERROR_BASE + 20,
-  InvalidCode = DGNDB_ERROR_BASE + 21,
-  InvalidCodeSpec = DGNDB_ERROR_BASE + 22,
-  InvalidId = DGNDB_ERROR_BASE + 23,
-  InvalidName = DGNDB_ERROR_BASE + 24,
-  InvalidParent = DGNDB_ERROR_BASE + 25,
-  InvalidProfileVersion = DGNDB_ERROR_BASE + 26,
-  IsCreatingRevision = DGNDB_ERROR_BASE + 27,
-  LockNotHeld = DGNDB_ERROR_BASE + 28,
-  Mismatch2d3d = DGNDB_ERROR_BASE + 29,
-  MismatchGcs = DGNDB_ERROR_BASE + 30,  // The Geographic Coordinate Systems of the source and target are not based on equivalent projections
-  MissingDomain = DGNDB_ERROR_BASE + 31,
-  MissingHandler = DGNDB_ERROR_BASE + 32,
-  MissingId = DGNDB_ERROR_BASE + 33,
-  NoGeometry = DGNDB_ERROR_BASE + 34,
-  NoMultiTxnOperation = DGNDB_ERROR_BASE + 35,
-  NotDgnMarkupProject = DGNDB_ERROR_BASE + 36,
-  NotEnabled = DGNDB_ERROR_BASE + 37,
-  NotFound = DGNDB_ERROR_BASE + 38,
-  NotOpen = DGNDB_ERROR_BASE + 39,
-  NotOpenForWrite = DGNDB_ERROR_BASE + 40,
-  NotSameUnitBase = DGNDB_ERROR_BASE + 41,
-  NothingToRedo = DGNDB_ERROR_BASE + 42,
-  NothingToUndo = DGNDB_ERROR_BASE + 43,
-  ParentBlockedChange = DGNDB_ERROR_BASE + 44,
-  ReadError = DGNDB_ERROR_BASE + 45,
-  ReadOnly = DGNDB_ERROR_BASE + 46,
-  ReadOnlyDomain = DGNDB_ERROR_BASE + 47,
-  RepositoryManagerError = DGNDB_ERROR_BASE + 48,
-  SQLiteError = DGNDB_ERROR_BASE + 49,
-  TransactionActive = DGNDB_ERROR_BASE + 50,
-  UnitsMissing = DGNDB_ERROR_BASE + 51,
-  UnknownFormat = DGNDB_ERROR_BASE + 52,
-  UpgradeFailed = DGNDB_ERROR_BASE + 53,
-  ValidationFailed = DGNDB_ERROR_BASE + 54,
-  VersionTooNew = DGNDB_ERROR_BASE + 55,
-  VersionTooOld = DGNDB_ERROR_BASE + 56,
-  ViewNotFound = DGNDB_ERROR_BASE + 57,
-  WriteError = DGNDB_ERROR_BASE + 58,
-  WrongClass = DGNDB_ERROR_BASE + 59,
-  WrongDgnDb = DGNDB_ERROR_BASE + 60,
-  WrongDomain = DGNDB_ERROR_BASE + 61,
-  WrongElement = DGNDB_ERROR_BASE + 62,
-  WrongHandler = DGNDB_ERROR_BASE + 63,
-  WrongModel = DGNDB_ERROR_BASE + 64,
+  AlreadyLoaded = IMODEL_ERROR_BASE + 1,
+  AlreadyOpen = IMODEL_ERROR_BASE + 2,
+  BadArg = IMODEL_ERROR_BASE + 3,
+  BadElement = IMODEL_ERROR_BASE + 4,
+  BadModel = IMODEL_ERROR_BASE + 5,
+  BadRequest = IMODEL_ERROR_BASE + 6,
+  BadSchema = IMODEL_ERROR_BASE + 7,
+  CannotUndo = IMODEL_ERROR_BASE + 8,
+  CodeNotReserved = IMODEL_ERROR_BASE + 9,
+  DeletionProhibited = IMODEL_ERROR_BASE + 10,
+  DuplicateCode = IMODEL_ERROR_BASE + 11,
+  DuplicateName = IMODEL_ERROR_BASE + 12,
+  ElementBlockedChange = IMODEL_ERROR_BASE + 13,
+  FileAlreadyExists = IMODEL_ERROR_BASE + 14,
+  FileNotFound = IMODEL_ERROR_BASE + 15,
+  FileNotLoaded = IMODEL_ERROR_BASE + 16,
+  ForeignKeyConstraint = IMODEL_ERROR_BASE + 17,
+  IdExists = IMODEL_ERROR_BASE + 18,
+  InDynamicTransaction = IMODEL_ERROR_BASE + 19,
+  InvalidCategory = IMODEL_ERROR_BASE + 20,
+  InvalidCode = IMODEL_ERROR_BASE + 21,
+  InvalidCodeSpec = IMODEL_ERROR_BASE + 22,
+  InvalidId = IMODEL_ERROR_BASE + 23,
+  InvalidName = IMODEL_ERROR_BASE + 24,
+  InvalidParent = IMODEL_ERROR_BASE + 25,
+  InvalidProfileVersion = IMODEL_ERROR_BASE + 26,
+  IsCreatingRevision = IMODEL_ERROR_BASE + 27,
+  LockNotHeld = IMODEL_ERROR_BASE + 28,
+  Mismatch2d3d = IMODEL_ERROR_BASE + 29,
+  MismatchGcs = IMODEL_ERROR_BASE + 30,  // The Geographic Coordinate Systems of the source and target are not based on equivalent projections
+  MissingDomain = IMODEL_ERROR_BASE + 31,
+  MissingHandler = IMODEL_ERROR_BASE + 32,
+  MissingId = IMODEL_ERROR_BASE + 33,
+  NoGeometry = IMODEL_ERROR_BASE + 34,
+  NoMultiTxnOperation = IMODEL_ERROR_BASE + 35,
+  NotDgnMarkupProject = IMODEL_ERROR_BASE + 36,
+  NotEnabled = IMODEL_ERROR_BASE + 37,
+  NotFound = IMODEL_ERROR_BASE + 38,
+  NotOpen = IMODEL_ERROR_BASE + 39,
+  NotOpenForWrite = IMODEL_ERROR_BASE + 40,
+  NotSameUnitBase = IMODEL_ERROR_BASE + 41,
+  NothingToRedo = IMODEL_ERROR_BASE + 42,
+  NothingToUndo = IMODEL_ERROR_BASE + 43,
+  ParentBlockedChange = IMODEL_ERROR_BASE + 44,
+  ReadError = IMODEL_ERROR_BASE + 45,
+  ReadOnly = IMODEL_ERROR_BASE + 46,
+  ReadOnlyDomain = IMODEL_ERROR_BASE + 47,
+  RepositoryManagerError = IMODEL_ERROR_BASE + 48,
+  SQLiteError = IMODEL_ERROR_BASE + 49,
+  TransactionActive = IMODEL_ERROR_BASE + 50,
+  UnitsMissing = IMODEL_ERROR_BASE + 51,
+  UnknownFormat = IMODEL_ERROR_BASE + 52,
+  UpgradeFailed = IMODEL_ERROR_BASE + 53,
+  ValidationFailed = IMODEL_ERROR_BASE + 54,
+  VersionTooNew = IMODEL_ERROR_BASE + 55,
+  VersionTooOld = IMODEL_ERROR_BASE + 56,
+  ViewNotFound = IMODEL_ERROR_BASE + 57,
+  WriteError = IMODEL_ERROR_BASE + 58,
+  WrongClass = IMODEL_ERROR_BASE + 59,
+  WrongDgnDb = IMODEL_ERROR_BASE + 60,
+  WrongDomain = IMODEL_ERROR_BASE + 61,
+  WrongElement = IMODEL_ERROR_BASE + 62,
+  WrongHandler = IMODEL_ERROR_BASE + 63,
+  WrongModel = IMODEL_ERROR_BASE + 64,
 }
 
 export class IModelError extends Error {
-  public constructor(public readonly errorNumber: number | DgnDbStatus | DbResult | BentleyStatus, message?: string) {
+  public constructor(public readonly errorNumber: number | IModelStatus | DbResult | BentleyStatus, message?: string) {
     super(message);
-    assert(errorNumber as number !== DgnDbStatus.Success as number);
+    assert(errorNumber as number !== IModelStatus.Success as number);
   }
 
   public toDebugString(): string {
     switch (this.errorNumber) {
-      // DgnDbStatus cases
-      case DgnDbStatus.AlreadyLoaded: return this._appendMessage("DgnDbStatus.AlreadyLoaded");
-      case DgnDbStatus.AlreadyOpen: return this._appendMessage("DgnDbStatus.AlreadyOpen");
-      case DgnDbStatus.BadArg: return this._appendMessage("DgnDbStatus.BadArg");
-      case DgnDbStatus.BadElement: return this._appendMessage("DgnDbStatus.BadElement");
-      case DgnDbStatus.BadModel: return this._appendMessage("DgnDbStatus.BadModel");
-      case DgnDbStatus.BadRequest: return this._appendMessage("DgnDbStatus.BadRequest");
-      case DgnDbStatus.BadSchema: return this._appendMessage("DgnDbStatus.BadSchema");
-      case DgnDbStatus.CannotUndo: return this._appendMessage("DgnDbStatus.CannotUndo");
-      case DgnDbStatus.CodeNotReserved: return this._appendMessage("DgnDbStatus.CodeNotReserved");
-      case DgnDbStatus.DeletionProhibited: return this._appendMessage("DgnDbStatus.DeletionProhibited");
-      case DgnDbStatus.DuplicateCode: return this._appendMessage("DgnDbStatus.DuplicateCode");
-      case DgnDbStatus.DuplicateName: return this._appendMessage("DgnDbStatus.DuplicateName");
-      case DgnDbStatus.ElementBlockedChange: return this._appendMessage("DgnDbStatus.ElementBlockedChange");
-      case DgnDbStatus.FileAlreadyExists: return this._appendMessage("DgnDbStatus.FileAlreadyExists");
-      case DgnDbStatus.FileNotFound: return this._appendMessage("DgnDbStatus.FileNotFound");
-      case DgnDbStatus.FileNotLoaded: return this._appendMessage("DgnDbStatus.FileNotLoaded");
-      case DgnDbStatus.ForeignKeyConstraint: return this._appendMessage("DgnDbStatus.ForeignKeyConstraint");
-      case DgnDbStatus.IdExists: return this._appendMessage("DgnDbStatus.IdExists");
-      case DgnDbStatus.InDynamicTransaction: return this._appendMessage("DgnDbStatus.InDynamicTransaction");
-      case DgnDbStatus.InvalidCategory: return this._appendMessage("DgnDbStatus.InvalidCategory");
-      case DgnDbStatus.InvalidCode: return this._appendMessage("DgnDbStatus.InvalidCode");
-      case DgnDbStatus.InvalidCodeSpec: return this._appendMessage("DgnDbStatus.InvalidCodeSpec");
-      case DgnDbStatus.InvalidId: return this._appendMessage("DgnDbStatus.InvalidId");
-      case DgnDbStatus.InvalidName: return this._appendMessage("DgnDbStatus.InvalidName");
-      case DgnDbStatus.InvalidParent: return this._appendMessage("DgnDbStatus.InvalidParent");
-      case DgnDbStatus.InvalidProfileVersion: return this._appendMessage("DgnDbStatus.InvalidProfileVersion");
-      case DgnDbStatus.IsCreatingRevision: return this._appendMessage("DgnDbStatus.IsCreatingRevision");
-      case DgnDbStatus.LockNotHeld: return this._appendMessage("DgnDbStatus.LockNotHeld");
-      case DgnDbStatus.Mismatch2d3d: return this._appendMessage("DgnDbStatus.Mismatch2d3d");
-      case DgnDbStatus.MismatchGcs: return this._appendMessage("DgnDbStatus.MismatchGcs");
-      case DgnDbStatus.MissingDomain: return this._appendMessage("DgnDbStatus.MissingDomain");
-      case DgnDbStatus.MissingHandler: return this._appendMessage("DgnDbStatus.MissingHandler");
-      case DgnDbStatus.MissingId: return this._appendMessage("DgnDbStatus.MissingId");
-      case DgnDbStatus.NoGeometry: return this._appendMessage("DgnDbStatus.NoGeometry");
-      case DgnDbStatus.NoMultiTxnOperation: return this._appendMessage("DgnDbStatus.NoMultiTxnOperation");
-      case DgnDbStatus.NotDgnMarkupProject: return this._appendMessage("DgnDbStatus.NotDgnMarkupProject");
-      case DgnDbStatus.NotEnabled: return this._appendMessage("DgnDbStatus.NotEnabled");
-      case DgnDbStatus.NotFound: return this._appendMessage("DgnDbStatus.NotFound");
-      case DgnDbStatus.NotOpen: return this._appendMessage("DgnDbStatus.NotOpen");
-      case DgnDbStatus.NotOpenForWrite: return this._appendMessage("DgnDbStatus.NotOpenForWrite");
-      case DgnDbStatus.NotSameUnitBase: return this._appendMessage("DgnDbStatus.NotSameUnitBase");
-      case DgnDbStatus.NothingToRedo: return this._appendMessage("DgnDbStatus.NothingToRedo");
-      case DgnDbStatus.NothingToUndo: return this._appendMessage("DgnDbStatus.NothingToUndo");
-      case DgnDbStatus.ParentBlockedChange: return this._appendMessage("DgnDbStatus.ParentBlockedChange");
-      case DgnDbStatus.ReadError: return this._appendMessage("DgnDbStatus.ReadError");
-      case DgnDbStatus.ReadOnly: return this._appendMessage("DgnDbStatus.ReadOnly");
-      case DgnDbStatus.ReadOnlyDomain: return this._appendMessage("DgnDbStatus.ReadOnlyDomain");
-      case DgnDbStatus.RepositoryManagerError: return this._appendMessage("DgnDbStatus.RepositoryManagerError");
-      case DgnDbStatus.SQLiteError: return this._appendMessage("DgnDbStatus.SQLiteError");
-      case DgnDbStatus.TransactionActive: return this._appendMessage("DgnDbStatus.TransactionActive");
-      case DgnDbStatus.UnitsMissing: return this._appendMessage("DgnDbStatus.UnitsMissing");
-      case DgnDbStatus.UnknownFormat: return this._appendMessage("DgnDbStatus.UnknownFormat");
-      case DgnDbStatus.UpgradeFailed: return this._appendMessage("DgnDbStatus.UpgradeFailed");
-      case DgnDbStatus.ValidationFailed: return this._appendMessage("DgnDbStatus.ValidationFailed");
-      case DgnDbStatus.VersionTooNew: return this._appendMessage("DgnDbStatus.VersionTooNew");
-      case DgnDbStatus.VersionTooOld: return this._appendMessage("DgnDbStatus.VersionTooOld");
-      case DgnDbStatus.ViewNotFound: return this._appendMessage("DgnDbStatus.ViewNotFound");
-      case DgnDbStatus.WriteError: return this._appendMessage("DgnDbStatus.WriteError");
-      case DgnDbStatus.WrongClass: return this._appendMessage("DgnDbStatus.WrongClass");
-      case DgnDbStatus.WrongDgnDb: return this._appendMessage("DgnDbStatus.WrongDgnDb");
-      case DgnDbStatus.WrongDomain: return this._appendMessage("DgnDbStatus.WrongDomain");
-      case DgnDbStatus.WrongElement: return this._appendMessage("DgnDbStatus.WrongElement");
-      case DgnDbStatus.WrongHandler: return this._appendMessage("DgnDbStatus.WrongHandler");
-      case DgnDbStatus.WrongModel: return this._appendMessage("DgnDbStatus.WrongModel");
+      // IModelStatus cases
+      case IModelStatus.AlreadyLoaded: return this._appendMessage("IModelStatus.AlreadyLoaded");
+      case IModelStatus.AlreadyOpen: return this._appendMessage("IModelStatus.AlreadyOpen");
+      case IModelStatus.BadArg: return this._appendMessage("IModelStatus.BadArg");
+      case IModelStatus.BadElement: return this._appendMessage("IModelStatus.BadElement");
+      case IModelStatus.BadModel: return this._appendMessage("IModelStatus.BadModel");
+      case IModelStatus.BadRequest: return this._appendMessage("IModelStatus.BadRequest");
+      case IModelStatus.BadSchema: return this._appendMessage("IModelStatus.BadSchema");
+      case IModelStatus.CannotUndo: return this._appendMessage("IModelStatus.CannotUndo");
+      case IModelStatus.CodeNotReserved: return this._appendMessage("IModelStatus.CodeNotReserved");
+      case IModelStatus.DeletionProhibited: return this._appendMessage("IModelStatus.DeletionProhibited");
+      case IModelStatus.DuplicateCode: return this._appendMessage("IModelStatus.DuplicateCode");
+      case IModelStatus.DuplicateName: return this._appendMessage("IModelStatus.DuplicateName");
+      case IModelStatus.ElementBlockedChange: return this._appendMessage("IModelStatus.ElementBlockedChange");
+      case IModelStatus.FileAlreadyExists: return this._appendMessage("IModelStatus.FileAlreadyExists");
+      case IModelStatus.FileNotFound: return this._appendMessage("IModelStatus.FileNotFound");
+      case IModelStatus.FileNotLoaded: return this._appendMessage("IModelStatus.FileNotLoaded");
+      case IModelStatus.ForeignKeyConstraint: return this._appendMessage("IModelStatus.ForeignKeyConstraint");
+      case IModelStatus.IdExists: return this._appendMessage("IModelStatus.IdExists");
+      case IModelStatus.InDynamicTransaction: return this._appendMessage("IModelStatus.InDynamicTransaction");
+      case IModelStatus.InvalidCategory: return this._appendMessage("IModelStatus.InvalidCategory");
+      case IModelStatus.InvalidCode: return this._appendMessage("IModelStatus.InvalidCode");
+      case IModelStatus.InvalidCodeSpec: return this._appendMessage("IModelStatus.InvalidCodeSpec");
+      case IModelStatus.InvalidId: return this._appendMessage("IModelStatus.InvalidId");
+      case IModelStatus.InvalidName: return this._appendMessage("IModelStatus.InvalidName");
+      case IModelStatus.InvalidParent: return this._appendMessage("IModelStatus.InvalidParent");
+      case IModelStatus.InvalidProfileVersion: return this._appendMessage("IModelStatus.InvalidProfileVersion");
+      case IModelStatus.IsCreatingRevision: return this._appendMessage("IModelStatus.IsCreatingRevision");
+      case IModelStatus.LockNotHeld: return this._appendMessage("IModelStatus.LockNotHeld");
+      case IModelStatus.Mismatch2d3d: return this._appendMessage("IModelStatus.Mismatch2d3d");
+      case IModelStatus.MismatchGcs: return this._appendMessage("IModelStatus.MismatchGcs");
+      case IModelStatus.MissingDomain: return this._appendMessage("IModelStatus.MissingDomain");
+      case IModelStatus.MissingHandler: return this._appendMessage("IModelStatus.MissingHandler");
+      case IModelStatus.MissingId: return this._appendMessage("IModelStatus.MissingId");
+      case IModelStatus.NoGeometry: return this._appendMessage("IModelStatus.NoGeometry");
+      case IModelStatus.NoMultiTxnOperation: return this._appendMessage("IModelStatus.NoMultiTxnOperation");
+      case IModelStatus.NotDgnMarkupProject: return this._appendMessage("IModelStatus.NotDgnMarkupProject");
+      case IModelStatus.NotEnabled: return this._appendMessage("IModelStatus.NotEnabled");
+      case IModelStatus.NotFound: return this._appendMessage("IModelStatus.NotFound");
+      case IModelStatus.NotOpen: return this._appendMessage("IModelStatus.NotOpen");
+      case IModelStatus.NotOpenForWrite: return this._appendMessage("IModelStatus.NotOpenForWrite");
+      case IModelStatus.NotSameUnitBase: return this._appendMessage("IModelStatus.NotSameUnitBase");
+      case IModelStatus.NothingToRedo: return this._appendMessage("IModelStatus.NothingToRedo");
+      case IModelStatus.NothingToUndo: return this._appendMessage("IModelStatus.NothingToUndo");
+      case IModelStatus.ParentBlockedChange: return this._appendMessage("IModelStatus.ParentBlockedChange");
+      case IModelStatus.ReadError: return this._appendMessage("IModelStatus.ReadError");
+      case IModelStatus.ReadOnly: return this._appendMessage("IModelStatus.ReadOnly");
+      case IModelStatus.ReadOnlyDomain: return this._appendMessage("IModelStatus.ReadOnlyDomain");
+      case IModelStatus.RepositoryManagerError: return this._appendMessage("IModelStatus.RepositoryManagerError");
+      case IModelStatus.SQLiteError: return this._appendMessage("IModelStatus.SQLiteError");
+      case IModelStatus.TransactionActive: return this._appendMessage("IModelStatus.TransactionActive");
+      case IModelStatus.UnitsMissing: return this._appendMessage("IModelStatus.UnitsMissing");
+      case IModelStatus.UnknownFormat: return this._appendMessage("IModelStatus.UnknownFormat");
+      case IModelStatus.UpgradeFailed: return this._appendMessage("IModelStatus.UpgradeFailed");
+      case IModelStatus.ValidationFailed: return this._appendMessage("IModelStatus.ValidationFailed");
+      case IModelStatus.VersionTooNew: return this._appendMessage("IModelStatus.VersionTooNew");
+      case IModelStatus.VersionTooOld: return this._appendMessage("IModelStatus.VersionTooOld");
+      case IModelStatus.ViewNotFound: return this._appendMessage("IModelStatus.ViewNotFound");
+      case IModelStatus.WriteError: return this._appendMessage("IModelStatus.WriteError");
+      case IModelStatus.WrongClass: return this._appendMessage("IModelStatus.WrongClass");
+      case IModelStatus.WrongDgnDb: return this._appendMessage("IModelStatus.WrongDgnDb");
+      case IModelStatus.WrongDomain: return this._appendMessage("IModelStatus.WrongDomain");
+      case IModelStatus.WrongElement: return this._appendMessage("IModelStatus.WrongElement");
+      case IModelStatus.WrongHandler: return this._appendMessage("IModelStatus.WrongHandler");
+      case IModelStatus.WrongModel: return this._appendMessage("IModelStatus.WrongModel");
 
       // DbResult cases
       case DbResult.BE_SQLITE_ERROR: return this._appendMessage("DbResult.BE_SQLITE_ERROR");
@@ -181,7 +181,7 @@ export class IModelError extends Error {
       case BentleyStatus.ERROR: return this._appendMessage("BentleyStatus.ERROR");
 
       // Unexpected cases
-      case DgnDbStatus.Success:
+      case IModelStatus.Success:
       case DbResult.BE_SQLITE_OK:
       case DbResult.BE_SQLITE_ROW:
       case DbResult.BE_SQLITE_DONE:

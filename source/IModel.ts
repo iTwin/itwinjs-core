@@ -5,7 +5,7 @@ import { MultiTierExecutionHost, RunsIn, Tier } from "@bentley/bentleyjs-core/li
 import { ClassRegistry } from "./ClassRegistry";
 import { Element, ElementProps } from "./Element";
 import { EntityMetaData } from "./Entity";
-import { DgnDbStatus, IModelError } from "./IModelError";
+import { IModelStatus, IModelError } from "./IModelError";
 import { Model, ModelProps } from "./Model";
 import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
@@ -108,9 +108,9 @@ class DgnDbNativeCode {
   public static async callGetElement(dbToken: DgnDbToken, opt: string): Promise<string> {
     const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
     if (undefined === dgndb)
-      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
-    const response: BentleyReturn<DgnDbStatus, string> = await dgndb.getElement(opt);
+    const response: BentleyReturn<IModelStatus, string> = await dgndb.getElement(opt);
     if (response.error)
       return Promise.reject(new IModelError(response.error.status));
 
@@ -140,9 +140,9 @@ class DgnDbNativeCode {
   public static async callInsertElement(dbToken: DgnDbToken, props: string): Promise<string> {
     const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
     if (undefined === dgndb)
-      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
-    const response: BentleyReturn<DgnDbStatus, string> = await dgndb.insertElement(props);
+    const response: BentleyReturn<IModelStatus, string> = await dgndb.insertElement(props);
     if (response.error)
       return Promise.reject(new IModelError(response.error.status));
 
@@ -198,9 +198,9 @@ class DgnDbNativeCode {
   public static async callGetECClassMetaData(dbToken: DgnDbToken, ecschemaname: string, ecclassname: string): Promise<string> {
     const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
     if (undefined === dgndb)
-      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
-    const response: BentleyReturn<DgnDbStatus, string> = await dgndb.getECClassMetaData(ecschemaname, ecclassname);
+    const response: BentleyReturn<IModelStatus, string> = await dgndb.getECClassMetaData(ecschemaname, ecclassname);
     if (response.error)
       return Promise.reject(new IModelError(response.error.status));
 
@@ -217,9 +217,9 @@ class DgnDbNativeCode {
   public static callGetECClassMetaDataSync(dbToken: DgnDbToken, ecschemaname: string, ecclassname: string): string {
     const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
     if (undefined === dgndb)
-      throw new IModelError(DgnDbStatus.NotOpen);
+      throw new IModelError(IModelStatus.NotOpen);
 
-    const response: BentleyReturn<DgnDbStatus, string> = dgndb.getECClassMetaDataSync(ecschemaname, ecclassname);
+    const response: BentleyReturn<IModelStatus, string> = dgndb.getECClassMetaDataSync(ecschemaname, ecclassname);
     if (response.error)
       throw new IModelError(response.error.status);
 
@@ -394,7 +394,7 @@ export class Elements {
     if (elementId instanceof Guid) return this.doGetElement({ federationGuid: elementId.toString() });
     if (elementId instanceof Code) return this.doGetElement({ code: elementId });
     assert(false);
-    return Promise.reject(new IModelError(DgnDbStatus.BadArg));
+    return Promise.reject(new IModelError(IModelStatus.BadArg));
   }
 
   public async insertElement(el: Element): Promise<Id64> {

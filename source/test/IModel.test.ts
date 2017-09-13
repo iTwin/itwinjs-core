@@ -13,7 +13,7 @@ import { Model } from "../Model";
 import { Category, SubCategory } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
 import { ModelSelector } from "../ViewDefinition";
-import { IModelError } from "../IModelError";
+import { IModelError, IModelStatus } from "../IModelError";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { BisCore } from "../BisCore";
 import { SpatialViewDefinition, DisplayStyle3d } from "../ViewDefinition";
@@ -134,8 +134,8 @@ describe("iModel", () => {
     } catch (error) {
       assert.isTrue(error instanceof Error);
       assert.isTrue(error instanceof IModelError);
-      const iModelError: IModelError = error as IModelError;
-      assert.equal(iModelError.toDebugString(), "DgnDbStatus.NotFound");
+      assert.equal(error.errorNumber, IModelStatus.NotFound);
+      assert.equal(error.toDebugString(), "IModelStatus.NotFound");
     }
 
     const childIds: Id64[] = await rootSubject.queryChildren();

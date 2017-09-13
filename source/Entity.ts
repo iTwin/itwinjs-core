@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+*--------------------------------------------------------------------------------------------*/
 
 import { Schema } from "./Schema";
 import { IModel } from "./IModel";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
 
-/** ECPrimitive types (Match this to ECN::PrimitiveType in ECObjects.h) */
+/** The primitive types of an Entity property. */
 export const enum PrimitiveTypeCode {
   Uninitialized = 0x00,
   Binary = 0x101,
@@ -21,14 +21,14 @@ export const enum PrimitiveTypeCode {
   String = 0x901,
 }
 
-/** The properties of any ECEntityCLass. Every instance has at least the iModel and the name of the schema and class that defines it. */
+/** The properties to create an Entity. Every Entity must have an iModel and the full name of the class that defines it. */
 export interface EntityProps {
-  [propName: string]: any;
-
   iModel: IModel;
   classFullName?: string;
+  [propName: string]: any;
 }
 
+/** the constructor for an Entity. Must have a static member named schema and a ctor that accepts either an EntityProp or an Entity (for cloning). */
 export interface EntityCtor extends FunctionConstructor {
   schema: Schema;
   new(args: EntityProps | Entity): Entity;
@@ -36,7 +36,7 @@ export interface EntityCtor extends FunctionConstructor {
 
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
-/** Base class for all ECEntityClasses. */
+/** Base class for all Entities. */
 export class Entity implements EntityProps {
   private persistent: boolean = false;
   public setPersistent() { this.persistent = true; Object.freeze(this); } // internal use only
@@ -53,7 +53,7 @@ export class Entity implements EntityProps {
 
   constructor(props: EntityProps) {
     this.iModel = props.iModel;
-    // copy all non-custom-handled properties from input to the object being constructed
+    // copy all auto-handled properties from input to the object being constructed
     this.forEachProperty((propName: string, meta: PropertyMetaData) => this[propName] = meta.createProperty(props[propName]));
   }
 
@@ -145,15 +145,17 @@ export class PropertyMetaData {
     this.customAttributes = jsonObj.customAttributes;
   }
 
+  /** create a typed value, or array of values, from a factory and an input object */
   private createValueOrArray(func: FactoryFunc, jsonObj: any) {
-    if (null != this.minOccurs)
+    if (null == this.minOccurs)
       return func(jsonObj); // not an array
 
-    let val: any = [];
-    jsonObj.forEach((element: any) => val = func(element));
+    const val: any = [];
+    jsonObj.forEach((element: any) => val.push(func(element)));
     return val;
   }
 
+  /** construct a single property from an input object according to this metadata */
   public createProperty(jsonObj: any): any {
     if (!jsonObj)
       return undefined;
