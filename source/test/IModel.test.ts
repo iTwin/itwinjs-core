@@ -403,6 +403,31 @@ describe("iModel", () => {
     imodel3.closeDgnDb();
   });
 
+  it("should insert auto-handled properties", async () => {
+    const imodel3 = await IModelTestUtils.openIModel("GetSetAutoHandledArrayProperties.bim");
+    const testElem = await imodel3.elements.getElement(new Id64("0x14"));
+    assert.isDefined(testElem);
+    assert.equal(testElem.classFullName, "DgnPlatformTest:TestElementWithNoHandler");
+    assert.isUndefined(testElem.integerProperty1);
+
+    const newTestElem = testElem.copyForEdit<Element>();
+    assert.equal(newTestElem.classFullName, testElem.classFullName);
+    newTestElem.integerProperty1 = 999;
+    assert.isTrue(testElem.arrayOfPoint3d[0].isAlmostEqual(newTestElem.arrayOfPoint3d[0]));
+    const newTestElemId = await imodel3.elements.insertElement(newTestElem);
+    assert.isTrue(newTestElemId.isValid(), "insert worked");
+
+    const newTestElemFetched = await imodel3.elements.getElement(newTestElemId);
+    assert.isDefined(newTestElemFetched);
+    assert.isTrue(newTestElemFetched.id.equals(newTestElemId));
+    assert.equal(newTestElemFetched.classFullName, newTestElem.classFullName);
+    assert.isDefined(newTestElemFetched.integerProperty1);
+    assert.equal(newTestElemFetched.integerProperty1, newTestElem.integerProperty1);
+    assert.isTrue(newTestElemFetched.arrayOfPoint3d[0].isAlmostEqual(newTestElem.arrayOfPoint3d[0]));
+
+    imodel3.closeDgnDb();
+  });
+
   function checkElementMetaData(metadataStr: string) {
     assert(metadataStr && metadataStr.length > 0);
     const obj: any = JSON.parse(metadataStr || "");
