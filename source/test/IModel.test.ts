@@ -403,7 +403,7 @@ describe("iModel", () => {
     imodel3.closeDgnDb();
   });
 
-  it("should insert auto-handled properties", async () => {
+  it("should insert and update auto-handled properties", async () => {
     const imodel3 = await IModelTestUtils.openIModel("GetSetAutoHandledArrayProperties.bim");
     const testElem = await imodel3.elements.getElement(new Id64("0x14"));
     assert.isDefined(testElem);
@@ -453,6 +453,16 @@ describe("iModel", () => {
     // TODO: autoHandlePropertiesToJson in native code must convert property names to lowercase - assert.deepEqual(afterUpdateElemFetched.location, loc2, " location property should be the new one");
     assert.deepEqual(afterUpdateElemFetched.id, editElem.id, " the id should not have changed.");
     assert.deepEqual(afterUpdateElemFetched.p3d, wasp3d, " p3d property should not have changed");
+
+    // ------------ delete -----------------
+    const elid = afterUpdateElemFetched.id;
+    await afterUpdateElemFetched.delete();
+    try {
+      await imodel3.elements.getElement(elid);
+      assert.fail("should fail to load the element.");
+    } catch(error) {
+      // TODO: test that error is what I expect assert.equal(error.status == IModelStatus.)
+    }
 
     imodel3.closeDgnDb();
   });

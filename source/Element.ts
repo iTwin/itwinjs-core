@@ -104,6 +104,11 @@ export class Element extends Entity implements EntityProps {
     return this.iModel.elements.updateElement(this);
   }
 
+  /** Delete the element from the iModel. */
+  public delete(): Promise<void> {
+    return this.iModel.elements.deleteElement(this);
+  }
+
   /** Query for aspects rows (by aspect class name) associated with this element. */
   private async queryAspects(aspectClassName: string): Promise<ElementAspect[]> {
     const name = aspectClassName.split(":");

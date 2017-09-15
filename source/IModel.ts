@@ -162,6 +162,21 @@ class DgnDbNativeCode {
       return Promise.reject(new IModelError(response.error.status));
   }
 
+  @RunsIn(Tier.Services)
+  public static async callDeleteElement(dbToken: DgnDbToken, elemid: string): Promise<void> {
+    const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
+    if (undefined === dgndb)
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
+
+    // Note that deleting an element is always done synchronously. That is because of constraints
+    // on the native code side. Nevertheless, we want the signature of this method to be
+    // that of an asynchronous method, since it must run in the services tier and will be
+    // asynchronous from a remote client's point of view in any case.
+    const response: BentleyReturn<IModelStatus, string> = dgndb.deleteElementSync(elemid);
+    if (response.error)
+      return Promise.reject(new IModelError(response.error.status));
+  }
+
   /**
    * Get a JSON representation of a Model.
    * @param opt A JSON string with options for loading the model
@@ -434,6 +449,16 @@ export class Elements {
     await DgnDbNativeCode.callUpdateElement(this._iModel.dbToken, JSON.stringify(el));
 
     // Discard from the cache, to make sure that the next fetch see the updated version.
+    this._loaded.delete(el.id.toString());
+  }
+
+  /** Delete an existing element.
+   * @param el  The element to be deleted
+   */
+  public async deleteElement(el: Element): Promise<void> {
+    await DgnDbNativeCode.callDeleteElement(this._iModel.dbToken, el.id.toString());
+
+    // Discard from the cachex
     this._loaded.delete(el.id.toString());
   }
 
