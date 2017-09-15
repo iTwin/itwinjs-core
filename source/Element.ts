@@ -99,6 +99,11 @@ export class Element extends Entity implements EntityProps {
     return this.iModel.models.getModel(this.id);
   }
 
+  /** Update the element in the iModel. */
+  public update(): Promise<void> {
+    return this.iModel.elements.updateElement(this);
+  }
+
   /** Query for aspects rows (by aspect class name) associated with this element. */
   private async queryAspects(aspectClassName: string): Promise<ElementAspect[]> {
     const name = aspectClassName.split(":");

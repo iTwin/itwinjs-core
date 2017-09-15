@@ -130,12 +130,6 @@ class DgnDbNativeCode {
     return response.result!;
   }
 
-  /**
-   * Insert a new element into the DgnDb.
-   * @param props A JSON string with properties of new element
-   * @return Promise that resolves to an object with
-   * The resolved object contains an error property if the operation failed.
-   */
   @RunsIn(Tier.Services)
   public static async callInsertElement(dbToken: DgnDbToken, props: string): Promise<string> {
     const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
@@ -151,6 +145,21 @@ class DgnDbNativeCode {
       return Promise.reject(new IModelError(response.error.status));
 
     return response.result!;
+  }
+
+  @RunsIn(Tier.Services)
+  public static async callUpdateElement(dbToken: DgnDbToken, props: string): Promise<void> {
+    const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
+    if (undefined === dgndb)
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
+
+    // Note that updating an element is always done synchronously. That is because of constraints
+    // on the native code side. Nevertheless, we want the signature of this method to be
+    // that of an asynchronous method, since it must run in the services tier and will be
+    // asynchronous from a remote client's point of view in any case.
+    const response: BentleyReturn<IModelStatus, string> = dgndb.updateElementSync(props);
+    if (response.error)
+      return Promise.reject(new IModelError(response.error.status));
   }
 
   /**
@@ -412,6 +421,20 @@ export class Elements {
     }
     const json: string = await DgnDbNativeCode.callInsertElement(this._iModel.dbToken, JSON.stringify(el));
     return new Id64(JSON.parse(json).id);
+  }
+
+  /** Update an existing element.
+   * @param el  An editable copy of the element, containing the new/proposed data.
+   */
+  public async updateElement(el: Element): Promise<void> {
+    if (el.isPersistent()) {
+      assert(false); // you cannot insert a persistent element. call copyForEdit
+      return;
+    }
+    await DgnDbNativeCode.callUpdateElement(this._iModel.dbToken, JSON.stringify(el));
+
+    // Discard from the cache, to make sure that the next fetch see the updated version.
+    this._loaded.delete(el.id.toString());
   }
 
   /** The Id of the root subject element. */

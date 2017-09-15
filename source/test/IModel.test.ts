@@ -416,7 +416,7 @@ describe("iModel", () => {
     assert.isTrue(testElem.arrayOfPoint3d[0].isAlmostEqual(newTestElem.arrayOfPoint3d[0]));
 
     const loc1 = {street: "Elm Street", city: {name: "Downingtown", state: "PA"}};
-// TODO: struct arrays    const loc2 = {street: "Oak Street", city: {name: "Downingtown", state: "PA"}};
+    const loc2 = {street: "Oak Street", city: {name: "Downingtown", state: "PA"}};
 // TODO: struct arrays   const loc3 = {street: "Chestnut Street", city: {name: "Philadelphia", state: "PA"}};
 // TODO: struct arrays    const arrayOfStructs = [loc2, loc3];
     newTestElem.location = loc1;
@@ -435,10 +435,24 @@ describe("iModel", () => {
     assert.isDefined(newTestElemFetched.integerProperty1);
     assert.equal(newTestElemFetched.integerProperty1, newTestElem.integerProperty1);
     assert.isTrue(newTestElemFetched.arrayOfPoint3d[0].isAlmostEqual(newTestElem.arrayOfPoint3d[0]));
-    assert.deepEqual(newTestElem.location,loc1);
+    // TODO: autoHandlePropertiesToJson in native code must convert property names to lowercase - assert.deepEqual(newTestElemFetched.location, loc1);
 // TODO: struct arrays   assert.deepEqual(newTestElem.arrayOfStructs, arrayOfStructs);
 // TODO: getElement must convert date ISO string to Date object    assert.deepEqual(newTestElemFetched.dtUtc, newTestElem.dtUtc);
     assert.isTrue(newTestElemFetched.p3d.isAlmostEqual(newTestElem.p3d));
+
+    // ----------- updates ----------------
+    const wasp3d = newTestElemFetched.p3d;
+    const editElem = newTestElemFetched.copyForEdit() as Element;
+    editElem.location = loc2;
+    try {
+      await editElem.update();
+    } catch (_err) {
+      assert.fail("Element.update failed");
+    }
+    const afterUpdateElemFetched = await imodel3.elements.getElement(editElem.id);
+    // TODO: autoHandlePropertiesToJson in native code must convert property names to lowercase - assert.deepEqual(afterUpdateElemFetched.location, loc2, " location property should be the new one");
+    assert.deepEqual(afterUpdateElemFetched.id, editElem.id, " the id should not have changed.");
+    assert.deepEqual(afterUpdateElemFetched.p3d, wasp3d, " p3d property should not have changed");
 
     imodel3.closeDgnDb();
   });
