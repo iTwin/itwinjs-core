@@ -435,9 +435,9 @@ describe("iModel", () => {
     assert.isDefined(newTestElemFetched.integerProperty1);
     assert.equal(newTestElemFetched.integerProperty1, newTestElem.integerProperty1);
     assert.isTrue(newTestElemFetched.arrayOfPoint3d[0].isAlmostEqual(newTestElem.arrayOfPoint3d[0]));
-    assert.equal(JSON.stringify(newTestElem.location), JSON.stringify(loc1));
-//    assert.equal(JSON.stringify(newTestElem.arrayOfStructs), JSON.stringify(arrayOfStructs));
-    assert.equal(JSON.stringify(newTestElemFetched.dtUtc), JSON.stringify(newTestElem.dtUtc));
+    assert.deepEqual(newTestElem.location,loc1);
+//    assert.deepEqual(newTestElem.arrayOfStructs, arrayOfStructs);
+    assert.deepEqual(newTestElemFetched.dtUtc, newTestElem.dtUtc);
     assert.isTrue(newTestElemFetched.p3d.isAlmostEqual(newTestElem.p3d));
 
     imodel3.closeDgnDb();
