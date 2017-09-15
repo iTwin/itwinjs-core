@@ -142,7 +142,11 @@ class DgnDbNativeCode {
     if (undefined === dgndb)
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
-    const response: BentleyReturn<IModelStatus, string> = await dgndb.insertElement(props);
+    // Note that inserting an element is always done synchronously. That is because of constraints
+    // on the native code side. Nevertheless, we want the signature of this method to be
+    // that of an asynchronous method, since it must run in the services tier and will be
+    // asynchronous from a remote client's point of view in any case.
+    const response: BentleyReturn<IModelStatus, string> = dgndb.insertElementSync(props);
     if (response.error)
       return Promise.reject(new IModelError(response.error.status));
 
@@ -397,6 +401,10 @@ export class Elements {
     return Promise.reject(new IModelError(IModelStatus.BadArg));
   }
 
+  /** Insert a new element.
+   * @param el  The data for the new element.
+   * @return The newly inserted element's Id.
+   */
   public async insertElement(el: Element): Promise<Id64> {
     if (el.isPersistent()) {
       assert(false); // you cannot insert a persistent element. call copyForEdit
