@@ -70,7 +70,7 @@ export class Element extends Entity implements EntityProps {
     return val;
   }
 
-  /** Get the metadata for the Entity of this element. */
+  /** Get the class metadata for this element. */
   public async getClassMetaData(): Promise<EntityMetaData | undefined> { return this.iModel.classMetaDataRegistry.get(this.classFullName); }
 
   private getAllUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
@@ -85,7 +85,7 @@ export class Element extends Entity implements EntityProps {
   public removeUserProperties(nameSpace: string) { delete this.getAllUserProperties()[nameSpace]; }
 
   /** Query for the child elements of this element.
-   * @throws {IModelError}
+   * @throws [[IModelError]]
    */
   public async queryChildren(): Promise<Id64[]> {
     const rowsJson: string = await this.iModel.executeQuery("SELECT ECInstanceId as id FROM " + Element.sqlName + " WHERE Parent.Id=" + this.id.toString()); // WIP: need to bind!
@@ -94,8 +94,8 @@ export class Element extends Entity implements EntityProps {
     return Promise.resolve(childIds);
   }
 
-  /** Get the Model that modeling this Element (if it exists). That is, the model that is beneath this element in the hierarchy.
-   * @throws {IModelError}
+  /** Get the [[Model]] that is modeling this element (if it exists). That is, the model that is beneath this element in the information hierarchy.
+   * @throws [[IModelError]]
    */
   public getSubModel(): Promise<Model> {
     if (this.id.equals(this.iModel.elements.rootSubjectId))
@@ -104,21 +104,21 @@ export class Element extends Entity implements EntityProps {
   }
 
   /** Update the element in the iModel.
-   * @throws {IModelError}
+   * @throws [[IModelError]]
    */
   public update(): Promise<void> {
     return this.iModel.elements.updateElement(this);
   }
 
   /** Delete the element from the iModel.
-   * @throws {IModelError}
+   * @throws [[IModelError]]
    */
   public delete(): Promise<void> {
     return this.iModel.elements.deleteElement(this);
   }
 
   /** Query for aspects rows (by aspect class name) associated with this element.
-   * @throws {IModelError}
+   * @throws [[IModelError]]
    */
   private async _queryAspects(aspectClassName: string): Promise<ElementAspect[]> {
     const name = aspectClassName.split(":");
@@ -148,7 +148,7 @@ export class Element extends Entity implements EntityProps {
   }
 
   /** Get an ElementUniqueAspect instance (by class name) that is related to this element.
-   * @throws {IModelError}
+   * @throws [[IModelError]]
    */
   public async getUniqueAspect(aspectClassName: string): Promise<ElementUniqueAspect> {
     const aspects: ElementAspect[] = await this._queryAspects(aspectClassName);
@@ -157,7 +157,7 @@ export class Element extends Entity implements EntityProps {
   }
 
   /** Get the ElementMultiAspect instances (by class name) that are related to this element.
-   * @throws {IModelError}
+   * @throws [[IModelError]]
    */
   public async getMultiAspects(aspectClassName: string): Promise<ElementMultiAspect[]> {
     const aspects: ElementAspect[] = await this._queryAspects(aspectClassName);

@@ -80,7 +80,7 @@ export class Entity implements EntityProps {
   public get className(): string { return Object.getPrototypeOf(this).constructor.name; }
 
   /** Determine whether this Entity is in the persistent (unmodified) state from the database. Persistent Entities may
-   * not be changed in any way. To modify an Entity, make a copy of it using #copyForEdit.
+   * not be changed in any way. To modify an Entity, make a copy of it using [[copyForEdit]].
    */
   public isPersistent() { return this.persistent; }
 

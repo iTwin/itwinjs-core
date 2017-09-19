@@ -274,7 +274,7 @@ export class IModel {
   /** Open the iModel
    * @param fileName  The name of the iModel
    * @param mode      Open mode for database
-   * @throws {IModelError}
+   * @throws [[IModelError]]
    */
   public static async openDgnDb(fileName: string, mode: OpenMode = OpenMode.ReadWrite): Promise<IModel> {
     const dbToken: DgnDbToken = await DgnDbNativeCode.callOpenDb(fileName, mode);
@@ -314,7 +314,7 @@ export class IModel {
    * @param ecschemaname  The name of the schema
    * @param ecclassname   The name of the class
    * @return The class meta data in JSON format.
-   * @throws {IModelError}
+   * @throws [[IModelError]]
    */
   public getECClassMetaData(ecschemaname: string, ecclassname: string): Promise<string> {
     return DgnDbNativeCode.callGetECClassMetaData(this.dbToken, ecschemaname, ecclassname);
@@ -331,7 +331,7 @@ export class IModel {
    * Execute a query against this iModel
    * @param ecsql  The ECSql statement to execute
    * @return all rows in JSON syntax or the empty string if nothing was selected
-   * @throws {IModelError} If the statement is invalid
+   * @throws [[IModelError]] If the statement is invalid
    */
   public executeQuery(ecsql: string): Promise<string> {
     return DgnDbNativeCode.callExecuteQuery(this.dbToken, ecsql);
@@ -347,7 +347,7 @@ export class Models {
 
   /** Get the Model with the specified identifier.
    * @param modelId The Model identifier.
-   * @throws {IModelError}
+   * @throws [[IModelError]]
    */
   public async getModel(modelId: Id64): Promise<Model> {
     // first see if the model is already in the local cache.
@@ -372,7 +372,7 @@ export class Models {
 
   /** Get the sub-model of the specified Element.
    * @param elementId The Element identifier.
-   * @throws {IModelError}
+   * @throws [[IModelError]]
    */
   public async getSubModel(modeledElementId: Id64 | Guid | Code): Promise<Model> {
     const modeledElement: Element = await this._iModel.elements.getElement(modeledElementId);
@@ -427,7 +427,7 @@ export class Elements {
   }
 
   /** Get an element by Id, FederationGuid, or Code
-   * @throws {IModelError}
+   * @throws [[IModelError]]
    */
   public getElement(elementId: Id64 | Guid | Code): Promise<Element> {
     if (elementId instanceof Id64) return this._doGetElement({ id: elementId });
@@ -440,7 +440,7 @@ export class Elements {
   /** Insert a new element.
    * @param el  The data for the new element.
    * @return The newly inserted element's Id.
-   * @throws {IModelError}
+   * @throws [[IModelError]]
    */
   public async insertElement(el: Element): Promise<Id64> {
     if (el.isPersistent()) {
@@ -453,7 +453,7 @@ export class Elements {
 
   /** Update an existing element.
    * @param el  An editable copy of the element, containing the new/proposed data.
-   * @throws {IModelError}
+   * @throws [[IModelError]]
    */
   public async updateElement(el: Element): Promise<void> {
     if (el.isPersistent()) {
@@ -468,7 +468,7 @@ export class Elements {
 
   /** Delete an existing element.
    * @param el  The element to be deleted
-   * @throws {IModelError}
+   * @throws [[IModelError]]
    */
   public async deleteElement(el: Element): Promise<void> {
     await DgnDbNativeCode.callDeleteElement(this._iModel.dbToken, el.id.toString());
