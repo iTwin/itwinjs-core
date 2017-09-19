@@ -28,10 +28,10 @@
     "@bentley/bentleyjs-core": "^1.0.23",
     "@bentley/geometry-core": "^1.0.7",
     "@bentley/imodeljs-clients": "^1.0.12",
-    "js-base64": "^2.2.1"
+    "js-base64": "^2.3.2"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "^1.0.34",
+    "@bentley/bentleyjs-tools": "^1.0.36",
     "@types/chai": "^4.0.4",
     "@types/fs-extra": "^4.0.2",
     "@types/js-base64": "^2.1.5",
