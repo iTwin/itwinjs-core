@@ -36,6 +36,14 @@
 //     return new Promise<number>((resolve) => setTimeout(() => { resolve(n * 2); }, millis));
 //   }
 
+//   public static async doubleWithDelayWrapper1(n: number, millis: number = 0): Promise<number> {
+//     return PromiseTest.doubleWithDelay(n, millis);
+//   }
+
+//   public static doubleWithDelayWrapper2(n: number, millis: number = 0): Promise<number> {
+//     return PromiseTest.doubleWithDelay(n, millis);
+//   }
+
 //   public static async quadrupleWithDelay(n: number, millis: number = 0): Promise<number> {
 //     return await PromiseTest.doubleWithDelay(n, millis / 2) + await PromiseTest.doubleWithDelay(n, millis / 2);
 //   }
@@ -183,6 +191,18 @@
 //     PromiseTest.quadrupleWithDelay(5).then((z) => total += z);
 //     await PromiseTest.sleep(1200);
 //     assert.equal(total, 40);
+//   });
+
+//   it("16", async () => {
+//     for (let i: number = 0; i < 1000; i++) {
+//       await PromiseTest.doubleWithDelayWrapper1(i + 1, 1);
+//     }
+//   });
+
+//   it("17", async () => {
+//     for (let i: number = 0; i < 1000; i++) {
+//       await PromiseTest.doubleWithDelayWrapper2(i + 1, 1);
+//     }
 //   });
 
 // });
