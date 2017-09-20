@@ -85,7 +85,7 @@ export class Element extends Entity implements EntityProps {
   public removeUserProperties(nameSpace: string) { delete this.getAllUserProperties()[nameSpace]; }
 
   /** Query for the child elements of this element.
-   * @returns Array of child element identifiers.
+   * @returns Returns an array of child element identifiers.
    * @throws [[IModelError]]
    */
   public async queryChildren(): Promise<Id64[]> {
