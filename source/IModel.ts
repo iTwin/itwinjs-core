@@ -70,7 +70,7 @@ class DgnDbNativeCode {
    * Open the Db.
    * @param fileName  The name of the db file.
    * @param mode      The open mode
-   * @return Promise that resolves to an object that contains an error property if the operation failed
+   * @returns Promise that resolves to an object that contains an error property if the operation failed
    *          or the "token" that identifies the Db on the server if success.
    */
   @RunsIn(Tier.Services)
@@ -101,7 +101,7 @@ class DgnDbNativeCode {
   /**
    * Get a JSON representation of an element.
    * @param opt A JSON string with options for loading the element
-   * @return Promise that resolves to an object with a result property set to the JSON string of the element.
+   * @returns Promise that resolves to an object with a result property set to the JSON string of the element.
    * The resolved object contains an error property if the operation failed.
    */
   @RunsIn(Tier.Services)
@@ -180,7 +180,7 @@ class DgnDbNativeCode {
   /**
    * Get a JSON representation of a Model.
    * @param opt A JSON string with options for loading the model
-   * @return Promise that resolves to an object with a result property set to the JSON string of the model.
+   * @returns Promise that resolves to an object with a result property set to the JSON string of the model.
    * The resolved object contains an error property if the operation failed.
    */
   @RunsIn(Tier.Services)
@@ -199,7 +199,7 @@ class DgnDbNativeCode {
   /**
    * Execute an ECSql select statement
    * @param ecsql The ECSql select statement to prepare
-   * @return Promise that resolves to an object with a result property set to a JSON array containing the rows returned from the query
+   * @returns Promise that resolves to an object with a result property set to a JSON array containing the rows returned from the query
    * The resolved object contains an error property if the operation failed.
    */
   @RunsIn(Tier.Services)
@@ -219,7 +219,7 @@ class DgnDbNativeCode {
    * Get the meta data for the specified ECClass from the schema in this DgnDbNativeCode.
    * @param ecschemaname  The name of the schema
    * @param ecclassname   The name of the class
-   * @return Promise that resolves to an object with a result property set to a the meta data in JSON format
+   * @returns Promise that resolves to an object with a result property set to a the meta data in JSON format
    * The resolved object contains an error property if the operation failed.
    */
   @RunsIn(Tier.Services)
@@ -239,7 +239,7 @@ class DgnDbNativeCode {
    * Get the meta data for the specified ECClass from the schema in this iModel, blocking until the result is returned.
    * @param ecschemaname  The name of the schema
    * @param ecclassname   The name of the class
-   * @return On success, the BentleyReturn result property will be the class meta data in JSON format.
+   * @returns On success, the BentleyReturn result property will be the class meta data in JSON format.
    */
   @RunsIn(Tier.Services, { synchronous: true })
   public static callGetECClassMetaDataSync(dbToken: DgnDbToken, ecschemaname: string, ecclassname: string): string {
@@ -298,7 +298,7 @@ export class IModel {
    * Get the meta data for the specified class defined in imodel iModel, blocking until the result is returned.
    * @param ecschemaname  The name of the schema
    * @param ecclassname   The name of the class
-   * @return On success, the BentleyReturn result property will be the class meta data in JSON format.
+   * @returns On success, the BentleyReturn result property will be the class meta data in JSON format.
    */
   public getECClassMetaDataSync(ecschemaname: string, ecclassname: string): string {
     return DgnDbNativeCode.callGetECClassMetaDataSync(this.dbToken, ecschemaname, ecclassname);
@@ -313,7 +313,7 @@ export class IModel {
    * Get the meta data for the specified class defined in imodel iModel (asynchronously).
    * @param ecschemaname  The name of the schema
    * @param ecclassname   The name of the class
-   * @return The class meta data in JSON format.
+   * @returns The class meta data in JSON format.
    * @throws [[IModelError]]
    */
   public getECClassMetaData(ecschemaname: string, ecclassname: string): Promise<string> {
@@ -330,7 +330,7 @@ export class IModel {
   /**
    * Execute a query against this iModel
    * @param ecsql  The ECSql statement to execute
-   * @return all rows in JSON syntax or the empty string if nothing was selected
+   * @returns all rows in JSON syntax or the empty string if nothing was selected
    * @throws [[IModelError]] If the statement is invalid
    */
   public executeQuery(ecsql: string): Promise<string> {
@@ -439,7 +439,7 @@ export class Elements {
 
   /** Insert a new element.
    * @param el  The data for the new element.
-   * @return The newly inserted element's Id.
+   * @returns The newly inserted element's Id.
    * @throws [[IModelError]]
    */
   public async insertElement(el: Element): Promise<Id64> {

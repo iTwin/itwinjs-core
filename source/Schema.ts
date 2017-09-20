@@ -10,11 +10,10 @@ export class Schema {
 
   public get name(): string { return this.constructor.name; }
 
-  /**
-   * Get the ClassCtor for the specified class name
+  /** Get the ClassCtor for the specified class name
    * @param className The name of the Entity
    * @param imodel The IModel that contains the class definitions
-   * @return The corresponding ClassCtor
+   * @returns The corresponding ClassCtor
    */
   public static async getClass(className: string, imodel: IModel): Promise<EntityCtor> {
     return ClassRegistry.getClass(this.name + ":" + className, imodel);
@@ -33,10 +32,9 @@ export class Schemas {
     Schemas._registeredSchemas[key] = schema;
   }
 
-  /**
-   * Look up a previously registered schema
+  /** Look up a previously registered schema
    * @param schemaName The name of the schema
-   * @return the previously registered schema or undefined if not registered.
+   * @returns the previously registered schema or undefined if not registered.
    */
   public static getRegisteredSchema(schemaName: string): Schema | undefined {
     return Schemas._registeredSchemas[schemaName.toLowerCase()];

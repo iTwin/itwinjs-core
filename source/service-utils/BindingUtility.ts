@@ -83,10 +83,9 @@ export class BindingUtility {
     return { kind: ValueKind.Primitive, type: primitiveType, value: bindingValue };
   }
 
-  /**
-   * Helper utility to pre-process bindings to standardize them into a fixed format containing ECValue-s
+  /** Helper utility to pre-process bindings to standardize them into a fixed format containing ECValue-s
    * @param bindings Array or map of bindings
-   * @return Array or map of ECValue-s.
+   * @returns Array or map of ECValue-s.
    */
   public static preProcessBindings(bindings: Map<string, BindingValue> | BindingValue[]): BentleyReturn<DbResult, ECValue[] | Map<string, ECValue>> {
     if (bindings instanceof Array) {

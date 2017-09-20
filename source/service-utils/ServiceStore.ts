@@ -80,9 +80,8 @@ export class ServiceStore {
     return {result: !!briefcaseId};
   }
 
-  /**
-   * Insert a new briefcase
-   * @return Valid id if successful. Error status otherwise.
+  /** Insert a new briefcase
+   * @returns Valid id if successful. Error status otherwise.
    */
   public async insertBriefcase(briefcase: Briefcase): BentleyPromise<DbResult, void> {
     const opObj = await this.db.insertInstance<Briefcase>(briefcase);

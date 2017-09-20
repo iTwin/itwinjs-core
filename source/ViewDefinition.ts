@@ -252,7 +252,7 @@ export class ModelSelector extends DefinitionElement {
   public addModel(id: Id64): void { this.models.add(id.toString()); }
 
   /** Drop a model from this ModelSelector. Model will no longer be displayed by views that use this ModelSelector.
-   *  @return true if the model was dropped, false if it was not previously in this ModelSelector
+   *  @returns true if the model was dropped, false if it was not previously in this ModelSelector
    */
   public dropModel(id: Id64): boolean { return this.models.delete(id.toString()); }
 }
@@ -532,8 +532,8 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
   public getZVector(): Vector3d { return this.getRotation().getRow(2); }
 
   // //! Change the view orientation to one of the standard views.
-  // //! @param[in] standardView the rotation to which the view should be set.
-  // //! @return SUCCESS if the view was changed.
+  // //! @param standardView the rotation to which the view should be set.
+  // //! @returns SUCCESS if the view was changed.
   // DGNPLATFORM_EXPORT BentleyStatus SetStandardViewRotation(StandardView standardView);
 
   // //! Set the clipping volume for elements in this view
@@ -581,14 +581,14 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
 // };
 
 // //! Change the volume that this view displays, keeping its current rotation.
-// //! @param[in] worldVolume The new volume, in world-coordinates, for the view. The resulting view will show all of worldVolume, by fitting a
+// //! @param worldVolume The new volume, in world-coordinates, for the view. The resulting view will show all of worldVolume, by fitting a
 // //! view-axis-aligned bounding box around it. For views that are not aligned with the world coordinate system, this will sometimes
 // //! result in a much larger volume than worldVolume.
-// //! @param[in] aspectRatio The X/Y aspect ratio of the view into which the result will be displayed. If the aspect ratio of the volume does not
+// //! @param aspectRatio The X/Y aspect ratio of the view into which the result will be displayed. If the aspect ratio of the volume does not
 // //! match aspectRatio, the shorter axis is lengthened and the volume is centered. If aspectRatio is nullptr, no adjustment is made.
-// //! @param[in] margin The amount of "white space" to leave around the view volume (which essentially increases the volume
+// //! @param margin The amount of "white space" to leave around the view volume (which essentially increases the volume
 // //! of space shown in the view.) If nullptr, no additional white space is added.
-// //! @param[in] expandClippingPlanes If false, the front and back clipping planes are not moved. This is rarely desired.
+// //! @param expandClippingPlanes If false, the front and back clipping planes are not moved. This is rarely desired.
 // //! @note For 3d views, the camera is centered on the new volume and moved along the view z axis using the default lens angle
 // //! such that the entire volume is visible.
 // //! @note, for 2d views, only the X and Y values of volume are used.
@@ -765,14 +765,14 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
   }
 
   /**  Position the camera for this view and point it at a new target point.
-   * @param[in] eyePoint The new location of the camera.
-   * @param[in] targetPoint The new location to which the camera should point. This becomes the center of the view on the focus plane.
-   * @param[in] upVector A vector that orients the camera's "up" (view y). This vector must not be parallel to the vector from eye to target.
-   * @param[in] viewDelta The new size (width and height) of the view rectangle. The view rectangle is on the focus plane centered on the targetPoint.
+   * @param eyePoint The new location of the camera.
+   * @param targetPoint The new location to which the camera should point. This becomes the center of the view on the focus plane.
+   * @param upVector A vector that orients the camera's "up" (view y). This vector must not be parallel to the vector from eye to target.
+   * @param viewDelta The new size (width and height) of the view rectangle. The view rectangle is on the focus plane centered on the targetPoint.
    * If viewDelta is nullptr, the existing size is unchanged.
-   * @param[in] frontDistance The distance from the eyePoint to the front plane. If nullptr, the existing front distance is used.
-   * @param[in] backDistance The distance from the eyePoint to the back plane. If nullptr, the existing back distance is used.
-   * @return a status indicating whether the camera was successfully positioned. See values at #ViewportStatus for possible errors.
+   * @param frontDistance The distance from the eyePoint to the front plane. If nullptr, the existing front distance is used.
+   * @param backDistance The distance from the eyePoint to the back plane. If nullptr, the existing back distance is used.
+   * @returns a status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
    * @note If the aspect ratio of viewDelta does not match the aspect ratio of a DgnViewport into which this view is displayed, it will be
    * adjusted when the DgnViewport is synchronized from this view.
    * @note This method modifies this ViewController. If this ViewController is attached to DgnViewport, you must call DgnViewport.synchWithViewController
@@ -842,13 +842,13 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
   }
 
   // //! Position the camera for this view and point it at a new target point, using a specified lens angle.
-  // //! @param[in] eyePoint The new location of the camera.
-  // //! @param[in] targetPoint The new location to which the camera should point. This becomes the center of the view on the focus plane.
-  // //! @param[in] upVector A vector that orients the camera's "up" (view y). This vector must not be parallel to the vector from eye to target.
-  // //! @param[in] fov The angle, in radians, that defines the field-of-view for the camera. Must be between .0001 and pi.
-  // //! @param[in] frontDistance The distance from the eyePoint to the front plane. If nullptr, the existing front distance is used.
-  // //! @param[in] backDistance The distance from the eyePoint to the back plane. If nullptr, the existing back distance is used.
-  // //! @return Status indicating whether the camera was successfully positioned. See values at #ViewportStatus for possible errors.
+  // //! @param eyePoint The new location of the camera.
+  // //! @param targetPoint The new location to which the camera should point. This becomes the center of the view on the focus plane.
+  // //! @param upVector A vector that orients the camera's "up" (view y). This vector must not be parallel to the vector from eye to target.
+  // //! @param fov The angle, in radians, that defines the field-of-view for the camera. Must be between .0001 and pi.
+  // //! @param frontDistance The distance from the eyePoint to the front plane. If nullptr, the existing front distance is used.
+  // //! @param backDistance The distance from the eyePoint to the back plane. If nullptr, the existing back distance is used.
+  // //! @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
   // //! @note The aspect ratio of the view remains unchanged.
   // //! @note This method modifies this ViewController. If this ViewController is attached to DgnViewport, you must call DgnViewport::SynchWithViewController
   // //! to see the new changes in the DgnViewport.
@@ -856,36 +856,36 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
   //   Angle fov, double const* frontDistance=nullptr, double const* backDistance=nullptr);
 
   // //! Move the camera relative to its current location by a distance in camera coordinates.
-  // //! @param[in] distance to move camera. Length is in world units, direction relative to current camera orientation.
-  // //! @return Status indicating whether the camera was successfully positioned. See values at #ViewportStatus for possible errors.
+  // //! @param distance to move camera. Length is in world units, direction relative to current camera orientation.
+  // //! @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
   // //! @note This method modifies this ViewController. If this ViewController is attached to DgnViewport, you must call DgnViewport::SynchWithViewController
   // //! to see the new changes in the DgnViewport.
   // DGNPLATFORM_EXPORT ViewportStatus MoveCameraLocal(DVec3dCR distance);
 
   // //! Move the camera relative to its current location by a distance in world coordinates.
-  // //! @param[in] distance in world units.
-  // //! @return Status indicating whether the camera was successfully positioned. See values at #ViewportStatus for possible errors.
+  // //! @param distance in world units.
+  // //! @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
   // //! @note This method modifies this ViewController. If this ViewController is attached to DgnViewport, you must call DgnViewport::SynchWithViewController
   // //! to see the new changes in the DgnViewport.
   // DGNPLATFORM_EXPORT ViewportStatus MoveCameraWorld(DVec3dCR distance);
 
   // //! Rotate the camera from its current location about an axis relative to its current orientation.
-  // //! @param[in] angle The angle to rotate the camera, in radians.
-  // //! @param[in] axis The axis about which to rotate the camera. The axis is a direction relative to the current camera orientation.
-  // //! @param[in] aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is nullptr, the camera rotates in place
+  // //! @param angle The angle to rotate the camera, in radians.
+  // //! @param axis The axis about which to rotate the camera. The axis is a direction relative to the current camera orientation.
+  // //! @param aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is nullptr, the camera rotates in place
   // //! (i.e. about the current eyePoint).
   // //! @note Even though the axis is relative to the current camera orientation, the aboutPt is in world coordinates, \b not relative to the camera.
-  // //! @return Status indicating whether the camera was successfully positioned. See values at #ViewportStatus for possible errors.
+  // //! @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
   // //! @note This method modifies this ViewController. If this ViewController is attached to DgnViewport, you must call DgnViewport::SynchWithViewController
   // //! to see the new changes in the DgnViewport.
   // DGNPLATFORM_EXPORT ViewportStatus RotateCameraLocal(double angle, DVec3dCR axis, DPoint3dCP aboutPt= nullptr);
 
   // //! Rotate the camera from its current location about an axis in world coordinates.
-  // //! @param[in] angle The angle to rotate the camera, in radians.
-  // //! @param[in] axis The world-based axis (direction) about which to rotate the camera.
-  // //! @param[in] aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is nullptr, the camera rotates in place
+  // //! @param angle The angle to rotate the camera, in radians.
+  // //! @param axis The world-based axis (direction) about which to rotate the camera.
+  // //! @param aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is nullptr, the camera rotates in place
   // //! (i.e. about the current eyePoint).
-  // //! @return Status indicating whether the camera was successfully positioned. See values at #ViewportStatus for possible errors.
+  // //! @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
   // //! @note This method modifies this ViewController. If this ViewController is attached to DgnViewport, you must call DgnViewport::SynchWithViewController
   // //! to see the new changes in the DgnViewport.
   // DGNPLATFORM_EXPORT ViewportStatus RotateCameraWorld(double angle, DVec3dCR axis, DPoint3dCP aboutPt= nullptr);
@@ -903,7 +903,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
 
   // //! Place the eyepoint of the camera so it is centered in the view. This removes any 1-point perspective skewing that may be
   // //! present in the current view.
-  // //! @param[in] backDistance optional, If not nullptr, the new the distance from the eyepoint to the back plane. Otherwise the distance from the
+  // //! @param backDistance optional, If not nullptr, the new the distance from the eyepoint to the back plane. Otherwise the distance from the
   // //! current eyepoint is used.
   // DGNPLATFORM_EXPORT void CenterEyePoint(double const* backDistance=nullptr);
 
@@ -919,7 +919,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
   public getLensAngle(): Angle { return this.camera.lens; }
 
   /**  Set the lens angle for this view.
-   *  @param[in] angle The new lens angle in radians. Must be greater than 0 and less than pi.
+   *  @param angle The new lens angle in radians. Must be greater than 0 and less than pi.
    *  @note This does not change the view's current field-of-view. Instead, it changes the lens that will be used if the view
    *  is subsequently modified and the lens angle is used to position the eyepoint.
    *  @note To change the field-of-view (i.e. "zoom") of a view, pass a new viewDelta to #lookAt
@@ -927,7 +927,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
   public setLensAngle(angle: Angle): void { this.camera.lens = angle; }
 
   /**  Change the location of the eyePoint for the camera in this view.
-   *  @param[in] pt The new eyepoint.
+   *  @param pt The new eyepoint.
    *  @note This method is generally for internal use only. Moving the eyePoint arbitrarily can result in skewed or illegal perspectives.
    *  The most common method for user-level camera positioning is #lookAt.
    */
@@ -949,7 +949,7 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
 }
 
 /** Defines a view of one or more SpatialModels.
- *  The list of viewed models is stored by the ModelSelector.
+ * The list of viewed models is stored by the ModelSelector.
  */
 export class SpatialViewDefinition extends ViewDefinition3d implements SpatialViewDefinitionProps {
   public modelSelectorId: Id64;
@@ -969,7 +969,7 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
   public viewsModel(modelId: Id64) { return this._modelSelector.containsModel(modelId); }
 
   /** Set the ModelSelector for this SpatialViewDefinition
-   *  @param[in] models The new ModelSelector.
+   * @param models The new ModelSelector.
    */
   public setModelSelector(models: ModelSelector) { this._modelSelector = models; this.modelSelectorId = models.id; }
 }
