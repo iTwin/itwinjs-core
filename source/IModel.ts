@@ -1,34 +1,23 @@
+
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { MultiTierExecutionHost, RunsIn, Tier } from "@bentley/bentleyjs-core/lib/tiering";
 import { ClassRegistry } from "./ClassRegistry";
 import { Element, ElementProps } from "./Element";
 import { EntityMetaData } from "./Entity";
 import { DgnDbStatus, IModelError } from "./IModelError";
 import { Model, ModelProps } from "./Model";
-import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Point3d, Vector3d, Range3d, YawPitchRollAngles, Point2d, Range2d, Transform, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Base64 } from "js-base64";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
-
-declare function require(arg: string): any;
-// tslint:disable-next-line:no-var-requires
-const addonLoader = require("../scripts/addonLoader");
-let dgnDbNodeAddon: any | undefined;
-if (addonLoader !== undefined)
-  dgnDbNodeAddon = addonLoader.loadNodeAddon(); // Note that evaluating this script has the side-effect of loading the addon
-
-/** A token that identifies a DgnDb */
-export class DgnDbToken {
-  constructor(public id: string) { }
-}
+import { AccessToken } from "@bentley/imodeljs-clients";
+import { BriefcaseToken, BriefcaseManager, IModelVersion, KeepBriefcase } from "./service-utils/BriefcaseManager";
+import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 
 /** The mapping between a class name and its the metadata for that class  */
 export class MetaDataRegistry {
@@ -62,207 +51,54 @@ export class MetaDataRegistry {
   }
 }
 
-@MultiTierExecutionHost("@bentley/imodeljs-core/IModel")
-class DgnDbNativeCode {
-  private static dbs = new Map<string, any>();    // services tier only
-
-  /**
-   * Open the Db.
-   * @param fileName  The name of the db file.
-   * @param mode      The open mode
-   * @return Promise that resolves to an object that contains an error property if the operation failed
-   *          or the "token" that identifies the Db on the server if success.
-   */
-  @RunsIn(Tier.Services)
-  public static async callOpenDb(fileName: string, mode: OpenMode): Promise<DgnDbToken> {
-    let dgndb = DgnDbNativeCode.dbs.get(fileName);
-    if (undefined !== dgndb) // If the file is already open, just acknowledge that
-      return Promise.resolve(new DgnDbToken(fileName)); // for now, we just use the fileName as the "token" that identifies the Db
-
-    dgndb = new dgnDbNodeAddon.DgnDb();
-    const res: BentleyReturn<DbResult, void> = await dgndb.openDgnDb(fileName, mode);
-    if (res.error)
-      return Promise.reject(new IModelError(res.error.status));
-
-    DgnDbNativeCode.dbs.set(fileName, dgndb);
-    return new DgnDbToken(fileName); // for now, we just use the fileName as the "token" that identifies the Db
-  }
-
-  @RunsIn(Tier.Services, { synchronous: true })
-  public static callCloseDb(dbToken: DgnDbToken) {
-    const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
-    if (undefined === dgndb) {
-      return;
-    }
-    dgndb.closeDgnDb();
-    DgnDbNativeCode.dbs.delete(dbToken.id);
-  }
-
-  /**
-   * Get a JSON representation of an element.
-   * @param opt A JSON string with options for loading the element
-   * @return Promise that resolves to an object with a result property set to the JSON string of the element.
-   * The resolved object contains an error property if the operation failed.
-   */
-  @RunsIn(Tier.Services)
-  public static async callGetElement(dbToken: DgnDbToken, opt: string): Promise<string> {
-    const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
-    if (undefined === dgndb)
-      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
-
-    const response: BentleyReturn<DgnDbStatus, string> = await dgndb.getElement(opt);
-    if (response.error)
-      return Promise.reject(new IModelError(response.error.status));
-
-    return response.result!;
-  }
-
-  @RunsIn(Tier.Services)
-  public static async callGetElementPropertiesForDisplay(dbToken: DgnDbToken, elementId: string): Promise<string> {
-    const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
-    if (undefined === dgndb)
-      return Promise.reject(new IModelError(DbResult.BE_SQLITE_CANTOPEN));
-
-    const response: BentleyReturn<DbResult, string> = await dgndb.getElementPropertiesForDisplay(elementId);
-    if (response.error)
-      return Promise.reject(new IModelError(response.error.status));
-
-    return response.result!;
-  }
-
-  /**
-   * Insert a new element into the DgnDb.
-   * @param props A JSON string with properties of new element
-   * @return Promise that resolves to an object with
-   * The resolved object contains an error property if the operation failed.
-   */
-  @RunsIn(Tier.Services)
-  public static async callInsertElement(dbToken: DgnDbToken, props: string): Promise<string> {
-    const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
-    if (undefined === dgndb)
-      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
-
-    const response: BentleyReturn<DgnDbStatus, string> = await dgndb.insertElement(props);
-    if (response.error)
-      return Promise.reject(new IModelError(response.error.status));
-
-    return response.result!;
-  }
-
-  /**
-   * Get a JSON representation of a Model.
-   * @param opt A JSON string with options for loading the model
-   * @return Promise that resolves to an object with a result property set to the JSON string of the model.
-   * The resolved object contains an error property if the operation failed.
-   */
-  @RunsIn(Tier.Services)
-  public static async callGetModel(dbToken: DgnDbToken, opt: string): Promise<string> {
-    const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
-    if (undefined === dgndb)
-      return Promise.reject(new IModelError(DbResult.BE_SQLITE_CANTOPEN));
-
-    const response: BentleyReturn<DbResult, string> = await dgndb.getModel(opt);
-    if (response.error)
-      return Promise.reject(new IModelError(response.error.status));
-
-    return response.result!;
-  }
-
-  /**
-   * Execute an ECSql select statement
-   * @param ecsql The ECSql select statement to prepare
-   * @return Promise that resolves to an object with a result property set to a JSON array containing the rows returned from the query
-   * The resolved object contains an error property if the operation failed.
-   */
-  @RunsIn(Tier.Services)
-  public static async callExecuteQuery(dbToken: DgnDbToken, ecsql: string): Promise<string> {
-    const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
-    if (undefined === dgndb)
-      return Promise.reject(new IModelError(DbResult.BE_SQLITE_CANTOPEN));
-
-    const response: BentleyReturn<DbResult, string> = await dgndb.executeQuery(ecsql);
-    if (response.error)
-      return Promise.reject(new IModelError(response.error.status));
-
-    return response.result!;
-  }
-
-  /**
-   * Get the meta data for the specified ECClass from the schema in this DgnDbNativeCode.
-   * @param ecschemaname  The name of the schema
-   * @param ecclassname   The name of the class
-   * @return Promise that resolves to an object with a result property set to a the meta data in JSON format
-   * The resolved object contains an error property if the operation failed.
-   */
-  @RunsIn(Tier.Services)
-  public static async callGetECClassMetaData(dbToken: DgnDbToken, ecschemaname: string, ecclassname: string): Promise<string> {
-    const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
-    if (undefined === dgndb)
-      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
-
-    const response: BentleyReturn<DgnDbStatus, string> = await dgndb.getECClassMetaData(ecschemaname, ecclassname);
-    if (response.error)
-      return Promise.reject(new IModelError(response.error.status));
-
-    return response.result!;
-  }
-
-  /**
-   * Get the meta data for the specified ECClass from the schema in this iModel, blocking until the result is returned.
-   * @param ecschemaname  The name of the schema
-   * @param ecclassname   The name of the class
-   * @return On success, the BentleyReturn result property will be the class meta data in JSON format.
-   */
-  @RunsIn(Tier.Services, { synchronous: true })
-  public static callGetECClassMetaDataSync(dbToken: DgnDbToken, ecschemaname: string, ecclassname: string): string {
-    const dgndb = DgnDbNativeCode.dbs.get(dbToken.id);
-    if (undefined === dgndb)
-      throw new IModelError(DgnDbStatus.NotOpen);
-
-    const response: BentleyReturn<DgnDbStatus, string> = dgndb.getECClassMetaDataSync(ecschemaname, ecclassname);
-    if (response.error)
-      throw new IModelError(response.error.status);
-
-    return response.result!;
-  }
-}
-
 /** An iModel database. */
 export class IModel {
-  private _fileName: string;
-  private _dbToken: DgnDbToken;
+  private _briefcaseKey: BriefcaseToken|undefined;
   public elements: Elements;
   public models: Models;
   private _classMetaDataRegistry: MetaDataRegistry;
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
-  public get fileName(): string { return this._fileName; }
-  public get dbToken(): DgnDbToken { return this._dbToken; }
+  public get briefcaseKey(): BriefcaseToken|undefined { return this._briefcaseKey; }
 
   private constructor() {
     this.elements = new Elements(this);
     this.models = new Models(this);
   }
 
-  /** Open the iModel
+  /** Open the iModel from a local file
    * @param fileName  The name of the iModel
-   * @param mode      Open mode for database
+   * @param openMode      Open mode for database
    */
-  public static async openDgnDb(fileName: string, mode: OpenMode = OpenMode.ReadWrite): Promise<IModel> {
-    const dbToken: DgnDbToken = await DgnDbNativeCode.callOpenDb(fileName, mode);
+  public static async openStandalone(fileName: string, openMode: OpenMode = OpenMode.ReadWrite): Promise<IModel> {
     const iModel = new IModel();
-    iModel._fileName = fileName;
-    iModel._dbToken = dbToken;
+    iModel._briefcaseKey = await BriefcaseManager.openStandalone(fileName, openMode);
     return iModel;
   }
 
-  /** Close this iModel, if it is currently open */
-  public closeDgnDb() {
-    if (!this._dbToken)
+  /**
+   * Open the iModel from the Hub
+   */
+  public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModel> {
+    const iModel = new IModel();
+    iModel._briefcaseKey = await BriefcaseManager.open(accessToken, iModelId, openMode, version);
+    return iModel;
+  }
+
+  /**
+   * Close this iModel, if it is currently open
+   * @description This needs to be called only for read-write iModels. For read-only iMdodels this is a no-op.
+   */
+  public async close(accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
+    if (!this.briefcaseKey)
       return;
-    DgnDbNativeCode.callCloseDb(this._dbToken);
-    (this._dbToken as any) = undefined;  // I am deliberately violating the guarantee that _dbToken can't be undefined. That is so that, if the caller
-    // continues to use the IModel after closing it HE WILL BLOW UP.
-    this._fileName = "";
+    await BriefcaseManager.close(accessToken, this.briefcaseKey, keepBriefcase);
+  }
+
+  /** Close this iModel, if it is currently open */
+  public closeStandalone() {
+    if (!this.briefcaseKey)
+      return;
+    BriefcaseManager.closeStandalone(this.briefcaseKey);
   }
 
   /**
@@ -272,12 +108,16 @@ export class IModel {
    * @return On success, the BentleyReturn result property will be the class meta data in JSON format.
    */
   public getECClassMetaDataSync(ecschemaname: string, ecclassname: string): string {
-    return DgnDbNativeCode.callGetECClassMetaDataSync(this.dbToken, ecschemaname, ecclassname);
+    if (!this.briefcaseKey)
+      throw new IModelError(DgnDbStatus.NotOpen);
+    return BriefcaseManager.getECClassMetaDataSync(this.briefcaseKey, ecschemaname, ecclassname);
   }
 
   /** @deprecated */
-  public GetElementPropertiesForDisplay(elementId: string): Promise<string> {
-    return DgnDbNativeCode.callGetElementPropertiesForDisplay(this.dbToken, elementId);
+  public getElementPropertiesForDisplay(elementId: string): Promise<string> {
+    if (!this.briefcaseKey)
+      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
+    return BriefcaseManager.getElementPropertiesForDisplay(this.briefcaseKey, elementId);
   }
 
   /**
@@ -287,7 +127,9 @@ export class IModel {
    * @return On success, the BentleyReturn result property will be the class meta data in JSON format.
    */
   public getECClassMetaData(ecschemaname: string, ecclassname: string): Promise<string> {
-    return DgnDbNativeCode.callGetECClassMetaData(this.dbToken, ecschemaname, ecclassname);
+    if (!this.briefcaseKey)
+      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
+    return BriefcaseManager.getECClassMetaData(this.briefcaseKey, ecschemaname, ecclassname);
   }
 
   /** Get the ClassMetaDataRegistry for this iModel */
@@ -304,7 +146,9 @@ export class IModel {
    * @throws Error if the statement is invalid
    */
   public executeQuery(ecsql: string): Promise<string> {
-    return DgnDbNativeCode.callExecuteQuery(this.dbToken, ecsql);
+    if (!this.briefcaseKey)
+      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
+    return BriefcaseManager.executeQuery(this.briefcaseKey, ecsql);
   }
 }
 
@@ -316,13 +160,16 @@ export class Models {
   public constructor(iModel: IModel, max: number = 500) { this._iModel = iModel; this._loaded = new LRUMap<string, Model>(max); }
 
   public async getModel(modelId: Id64): Promise<Model> {
+    if (!this._iModel.briefcaseKey)
+      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
+
     // first see if the model is already in the local cache.
     const loaded = this._loaded.get(modelId.toString());
     if (loaded)
       return loaded;
 
     // Must go get the model from the iModel. Start by requesting the model's data.
-    const json: string = await DgnDbNativeCode.callGetModel(this._iModel.dbToken, JSON.stringify({ id: modelId }));
+    const json: string = await BriefcaseManager.getModel(this._iModel.briefcaseKey, JSON.stringify({ id: modelId }));
     const props = JSON.parse(json) as ModelProps;
     props.iModel = this._iModel;
 
@@ -366,6 +213,9 @@ export class Elements {
 
   /** Private implementation details of getElement */
   private async doGetElement(opts: ElementLoadParams): Promise<Element> {
+    if (!this._iModel.briefcaseKey)
+      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
+
     // first see if the element is already in the local cache.
     if (opts.id) {
       const loaded = this._loaded.get(opts.id.toString());
@@ -374,7 +224,7 @@ export class Elements {
     }
 
     // Must go get the element from the iModel. Start by requesting the element's data.
-    const json = await DgnDbNativeCode.callGetElement(this._iModel.dbToken, JSON.stringify(opts));
+    const json = await BriefcaseManager.getElement(this._iModel.briefcaseKey, JSON.stringify(opts));
     const props = JSON.parse(json) as ElementProps;
     props.iModel = this._iModel;
 
@@ -398,11 +248,14 @@ export class Elements {
   }
 
   public async insertElement(el: Element): Promise<Id64> {
+    if (!this._iModel.briefcaseKey)
+      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
+
     if (el.isPersistent()) {
       assert(false); // you cannot insert a persistent element. call copyForEdit
       return new Id64();
     }
-    const json: string = await DgnDbNativeCode.callInsertElement(this._iModel.dbToken, JSON.stringify(el));
+    const json: string = await BriefcaseManager.insertElement(this._iModel.briefcaseKey, JSON.stringify(el));
     return new Id64(JSON.parse(json).id);
   }
 

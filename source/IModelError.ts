@@ -5,6 +5,7 @@
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { BriefcaseError } from "./service-utils/BriefcaseManager";
 
 export const enum DgnDbStatus {
   DGNDB_ERROR_BASE = 0x10000,
@@ -76,7 +77,7 @@ export const enum DgnDbStatus {
 }
 
 export class IModelError extends Error {
-  public constructor(public readonly errorNumber: number | DgnDbStatus | DbResult | BentleyStatus, message?: string) {
+  public constructor(public readonly errorNumber: number | DgnDbStatus | DbResult | BentleyStatus | BriefcaseError, message?: string) {
     super(message);
     assert(errorNumber as number !== DgnDbStatus.Success as number);
   }
@@ -179,6 +180,16 @@ export class IModelError extends Error {
 
       // BentleyStatus cases
       case BentleyStatus.ERROR: return this._appendMessage("BentleyStatus.ERROR");
+
+      // Briefcase Error
+      case BriefcaseError.NotInitialized: return this._appendMessage("BriefcaseError.NotInitialized");
+      case BriefcaseError.CannotAcquire: return this._appendMessage("BriefcaseError.CannotAcquire");
+      case BriefcaseError.CannotDownload: return this._appendMessage("BriefcaseError.CannotDownload");
+      case BriefcaseError.CannotCopy: return this._appendMessage("BriefcaseError.CannotCopy");
+      case BriefcaseError.CannotDelete: return this._appendMessage("BriefcaseError.CannotDelete");
+      case BriefcaseError.VersionNotFound: return this._appendMessage("BriefcaseError.VersionNotFound");
+      case BriefcaseError.BriefcaseNotFound: return this._appendMessage("BriefcaseError.BriefcaseNotFound");
+      case BriefcaseError.NotSupportedYet: return this._appendMessage("BriefcaseError.NotSupportedYet");
 
       // Unexpected cases
       case DgnDbStatus.Success:

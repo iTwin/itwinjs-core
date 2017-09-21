@@ -32,8 +32,8 @@ describe("iModel", () => {
   });
 
   after(() => {
-    imodel.closeDgnDb();
-    imodel2.closeDgnDb();
+    IModelTestUtils.closeIModel(imodel);
+    IModelTestUtils.closeIModel(imodel2);
   });
 
   /** test the copy constructor and to/from Json methods for the supplied entity */
