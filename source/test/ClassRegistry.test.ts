@@ -39,13 +39,13 @@ describe("Class Registry", () => {
       //  Check the metadata on the class itself
       assert.isTrue(metaData.baseClasses.length > 0);
       assert.equal(metaData.baseClasses[0], "BisCore:UrlLink");
-      assert.equal(metaData.customAttributes[0].ecclass, "BisCore:ClassHasHandler");
+      assert.equal(metaData.customAttributes![0].ecclass, "BisCore:ClassHasHandler");
       //  Check the metadata on the one property that RepositoryLink defines, RepositoryGuid
       assert.exists(metaData.properties);
       assert.isDefined(metaData.properties.repositoryGuid);
       const p = metaData.properties.repositoryGuid;
       assert.equal(p.extendedType, "BeGuid");
-      assert.equal(p.customAttributes[1].ecclass, "CoreCustomAttributes:HiddenProperty");
+      assert.equal(p.customAttributes![1].ecclass, "CoreCustomAttributes:HiddenProperty");
     }
     const el2 = await elements.getElement(new Id64("0x34"));
     assert.exists(el2);

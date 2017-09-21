@@ -21,7 +21,7 @@ export const enum LightType {
 }
 
 /** Parameters to create a Light */
-export interface ILight {
+export interface LightProps {
   lightType?: LightType;  // the type of light from LightType enum
   intensity?: number;     // intensity of the light
   color?: ColorDef;       // color of the light. ColorDef as integer
@@ -45,7 +45,7 @@ export class Light {
   public bulbs: number;
   public lumens: number;
 
-  constructor(opts?: ILight) {
+  constructor(opts?: LightProps) {
     opts = opts ? opts : {};
     this.lightType = JsonUtils.asInt(opts.lightType);
     this.intensity = JsonUtils.asDouble(opts.intensity);
@@ -64,8 +64,8 @@ export class Light {
   public isVisible(): boolean { return this.isValid() && this.intensity > 0.0; }
 }
 
-/** Parameters to create a Spot light. */
-export interface ISpot extends ILight {
+/** Properties of a Spot light. */
+export interface SpotProps extends LightProps {
   inner?: Angle;
   outer?: Angle;
 }
@@ -75,7 +75,7 @@ export class Spot extends Light {
   public inner: Angle;
   public outer: Angle;
 
-  constructor(opts?: ISpot) {
+  constructor(opts?: SpotProps) {
     opts = opts ? opts : {};
     super(opts);
     this.lightType = LightType.Spot;

@@ -1,11 +1,10 @@
-
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ClassRegistry } from "./ClassRegistry";
 import { Element, ElementProps } from "./Element";
 import { EntityMetaData } from "./Entity";
-import { DgnDbStatus, IModelError } from "./IModelError";
+import { IModelStatus, IModelError } from "./IModelError";
 import { Model, ModelProps } from "./Model";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Point3d, Vector3d, Range3d, YawPitchRollAngles, Point2d, Range2d, Transform, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
@@ -19,7 +18,7 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import { BriefcaseToken, BriefcaseManager, IModelVersion, KeepBriefcase } from "./service-utils/BriefcaseManager";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 
-/** The mapping between a class name and its the metadata for that class  */
+/** The mapping between a class name and its metadata */
 export class MetaDataRegistry {
   private reg: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();
 
@@ -43,7 +42,7 @@ export class MetaDataRegistry {
       return undefined;
     }
 
-    mdata = JSON.parse(mstr) as EntityMetaData | undefined;
+    mdata = new EntityMetaData(JSON.parse(mstr));
     if (undefined === mdata)
       return undefined;
     this.reg.set(key, mdata);
@@ -68,6 +67,7 @@ export class IModel {
   /** Open the iModel from a local file
    * @param fileName  The name of the iModel
    * @param openMode      Open mode for database
+   * @throws [[IModelError]]
    */
   public static async openStandalone(fileName: string, openMode: OpenMode = OpenMode.ReadWrite): Promise<IModel> {
     const iModel = new IModel();
@@ -105,18 +105,18 @@ export class IModel {
    * Get the meta data for the specified class defined in imodel iModel, blocking until the result is returned.
    * @param ecschemaname  The name of the schema
    * @param ecclassname   The name of the class
-   * @return On success, the BentleyReturn result property will be the class meta data in JSON format.
+   * @returns On success, the BentleyReturn result property will be the class meta data in JSON format.
    */
   public getECClassMetaDataSync(ecschemaname: string, ecclassname: string): string {
     if (!this.briefcaseKey)
-      throw new IModelError(DgnDbStatus.NotOpen);
+      throw new IModelError(IModelStatus.NotOpen);
     return BriefcaseManager.getECClassMetaDataSync(this.briefcaseKey, ecschemaname, ecclassname);
   }
 
   /** @deprecated */
   public getElementPropertiesForDisplay(elementId: string): Promise<string> {
     if (!this.briefcaseKey)
-      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
     return BriefcaseManager.getElementPropertiesForDisplay(this.briefcaseKey, elementId);
   }
 
@@ -124,11 +124,12 @@ export class IModel {
    * Get the meta data for the specified class defined in imodel iModel (asynchronously).
    * @param ecschemaname  The name of the schema
    * @param ecclassname   The name of the class
-   * @return On success, the BentleyReturn result property will be the class meta data in JSON format.
+   * @returns The class meta data in JSON format.
+   * @throws [[IModelError]]
    */
   public getECClassMetaData(ecschemaname: string, ecclassname: string): Promise<string> {
     if (!this.briefcaseKey)
-      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
     return BriefcaseManager.getECClassMetaData(this.briefcaseKey, ecschemaname, ecclassname);
   }
 
@@ -142,12 +143,12 @@ export class IModel {
   /**
    * Execute a query against this iModel
    * @param ecsql  The ECSql statement to execute
-   * @return all rows in JSON syntax or the empty string if nothing was selected
-   * @throws Error if the statement is invalid
+   * @returns all rows in JSON syntax or the empty string if nothing was selected
+   * @throws [[IModelError]] If the statement is invalid
    */
   public executeQuery(ecsql: string): Promise<string> {
     if (!this.briefcaseKey)
-      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
     return BriefcaseManager.executeQuery(this.briefcaseKey, ecsql);
   }
 }
@@ -159,9 +160,13 @@ export class Models {
 
   public constructor(iModel: IModel, max: number = 500) { this._iModel = iModel; this._loaded = new LRUMap<string, Model>(max); }
 
+  /** Get the Model with the specified identifier.
+   * @param modelId The Model identifier.
+   * @throws [[IModelError]]
+   */
   public async getModel(modelId: Id64): Promise<Model> {
     if (!this._iModel.briefcaseKey)
-      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
     // first see if the model is already in the local cache.
     const loaded = this._loaded.get(modelId.toString());
@@ -183,6 +188,10 @@ export class Models {
     return model;
   }
 
+  /** Get the sub-model of the specified Element.
+   * @param elementId The Element identifier.
+   * @throws [[IModelError]]
+   */
   public async getSubModel(modeledElementId: Id64 | Guid | Code): Promise<Model> {
     const modeledElement: Element = await this._iModel.elements.getElement(modeledElementId);
     return this.getModel(modeledElement.id);
@@ -212,9 +221,9 @@ export class Elements {
   public constructor(iModel: IModel, maxElements: number = 2000) { this._iModel = iModel; this._loaded = new LRUMap<string, Element>(maxElements); }
 
   /** Private implementation details of getElement */
-  private async doGetElement(opts: ElementLoadParams): Promise<Element> {
+  private async _doGetElement(opts: ElementLoadParams): Promise<Element> {
     if (!this._iModel.briefcaseKey)
-      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
     // first see if the element is already in the local cache.
     if (opts.id) {
@@ -238,18 +247,25 @@ export class Elements {
     return el;
   }
 
-  /** Get an element by Id, FederationGuid, or Code */
+  /** Get an element by Id, FederationGuid, or Code
+   * @throws [[IModelError]]
+   */
   public getElement(elementId: Id64 | Guid | Code): Promise<Element> {
-    if (elementId instanceof Id64) return this.doGetElement({ id: elementId });
-    if (elementId instanceof Guid) return this.doGetElement({ federationGuid: elementId.toString() });
-    if (elementId instanceof Code) return this.doGetElement({ code: elementId });
+    if (elementId instanceof Id64) return this._doGetElement({ id: elementId });
+    if (elementId instanceof Guid) return this._doGetElement({ federationGuid: elementId.toString() });
+    if (elementId instanceof Code) return this._doGetElement({ code: elementId });
     assert(false);
-    return Promise.reject(new IModelError(DgnDbStatus.BadArg));
+    return Promise.reject(new IModelError(IModelStatus.BadArg));
   }
 
+  /** Insert a new element.
+   * @param el  The data for the new element.
+   * @returns The newly inserted element's Id.
+   * @throws [[IModelError]]
+   */
   public async insertElement(el: Element): Promise<Id64> {
     if (!this._iModel.briefcaseKey)
-      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
     if (el.isPersistent()) {
       assert(false); // you cannot insert a persistent element. call copyForEdit
@@ -257,6 +273,38 @@ export class Elements {
     }
     const json: string = await BriefcaseManager.insertElement(this._iModel.briefcaseKey, JSON.stringify(el));
     return new Id64(JSON.parse(json).id);
+  }
+
+  /** Update an existing element.
+   * @param el  An editable copy of the element, containing the new/proposed data.
+   * @throws [[IModelError]]
+   */
+  public async updateElement(el: Element): Promise<void> {
+    if (!this._iModel.briefcaseKey)
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
+
+    if (el.isPersistent()) {
+      assert(false); // you cannot insert a persistent element. call copyForEdit
+      return;
+    }
+    await BriefcaseManager.updateElement(this._iModel.briefcaseKey, JSON.stringify(el));
+
+    // Discard from the cache, to make sure that the next fetch see the updated version.
+    this._loaded.delete(el.id.toString());
+  }
+
+  /** Delete an existing element.
+   * @param el  The element to be deleted
+   * @throws [[IModelError]]
+   */
+  public async deleteElement(el: Element): Promise<void> {
+    if (!this._iModel.briefcaseKey)
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
+
+    await BriefcaseManager.deleteElement(this._iModel.briefcaseKey, el.id.toString());
+
+    // Discard from the cachex
+    this._loaded.delete(el.id.toString());
   }
 
   /** The Id of the root subject element. */

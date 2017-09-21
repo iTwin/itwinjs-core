@@ -3,20 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
-
-/** ECPrimitive types (Match this to ECN::PrimitiveType in ECObjects.h) */
-export const enum PrimitiveTypeCode {
-  Uninitialized = 0x00,
-  Binary = 0x101,
-  Boolean = 0x201,
-  DateTime = 0x301,
-  Double = 0x401,
-  Integer = 0x501,
-  Long = 0x601,
-  Point2d = 0x701,
-  Point3d = 0x801,
-  String = 0x901,
-}
+import { PrimitiveTypeCode } from "../Entity";
 
 /** Value type  (Match this to ECN::ValueKind in ECObjects.h) */
 export const enum ValueKind {
@@ -96,10 +83,9 @@ export class BindingUtility {
     return { kind: ValueKind.Primitive, type: primitiveType, value: bindingValue };
   }
 
-  /**
-   * Helper utility to pre-process bindings to standardize them into a fixed format containing ECValue-s
+  /** Helper utility to pre-process bindings to standardize them into a fixed format containing ECValue-s
    * @param bindings Array or map of bindings
-   * @return Array or map of ECValue-s.
+   * @returns Array or map of ECValue-s.
    */
   public static preProcessBindings(bindings: Map<string, BindingValue> | BindingValue[]): BentleyReturn<DbResult, ECValue[] | Map<string, ECValue>> {
     if (bindings instanceof Array) {

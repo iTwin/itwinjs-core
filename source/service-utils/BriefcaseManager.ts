@@ -7,7 +7,7 @@ import { AccessToken, Briefcase, IModelHubClient, ChangeSet } from "@bentley/imo
 import { BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { assert } from "@bentley/bentleyjs-core/lib/assert";
-import { DgnDbStatus, IModelError } from "../IModelError";
+import { IModelStatus, IModelError } from "../IModelError";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -581,16 +581,16 @@ export class BriefcaseManager {
   /**
    * Get a JSON representation of an element.
    * @param opt A JSON string with options for loading the element
-   * @return Promise that resolves to an object with a result property set to the JSON string of the element.
+   * @returns Promise that resolves to an object with a result property set to the JSON string of the element.
    * The resolved object contains an error property if the operation failed.
    */
   @RunsIn(Tier.Services)
   public static async getElement(briefcaseToken: BriefcaseToken, opt: string): Promise<string> {
     const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
     if (!db)
-      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
-    const response: BentleyReturn<DgnDbStatus, string> = await db.getElement(opt);
+    const response: BentleyReturn<IModelStatus, string> = await db.getElement(opt);
     if (response.error)
       return Promise.reject(new IModelError(response.error.status));
 
@@ -601,7 +601,7 @@ export class BriefcaseManager {
   public static async getElementPropertiesForDisplay(briefcaseToken: BriefcaseToken, elementId: string): Promise<string> {
     const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
     if (!db)
-      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
     const response: BentleyReturn<DbResult, string> = await db.getElementPropertiesForDisplay(elementId);
     if (response.error)
@@ -613,33 +613,67 @@ export class BriefcaseManager {
   /**
    * Insert a new element into the DgnDb.
    * @param props A JSON string with properties of new element
-   * @return Promise that resolves to an object with
+   * @returns Promise that resolves to an object with
    * The resolved object contains an error property if the operation failed.
    */
   @RunsIn(Tier.Services)
   public static async insertElement(briefcaseToken: BriefcaseToken, props: string): Promise<string> {
     const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
     if (!db)
-      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
-    const response: BentleyReturn<DgnDbStatus, string> = await db.insertElement(props);
+    // Note that inserting an element is always done synchronously. That is because of constraints
+    // on the native code side. Nevertheless, we want the signature of this method to be
+    // that of an asynchronous method, since it must run in the services tier and will be
+    // asynchronous from a remote client's point of view in any case.
+    const response: BentleyReturn<IModelStatus, string> = db.insertElementSync(props);
     if (response.error)
       return Promise.reject(new IModelError(response.error.status));
 
     return response.result!;
   }
 
+  @RunsIn(Tier.Services)
+  public static async updateElement(briefcaseToken: BriefcaseToken, props: string): Promise<void> {
+    const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
+    if (!db)
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
+
+    // Note that updating an element is always done synchronously. That is because of constraints
+    // on the native code side. Nevertheless, we want the signature of this method to be
+    // that of an asynchronous method, since it must run in the services tier and will be
+    // asynchronous from a remote client's point of view in any case.
+    const response: BentleyReturn<IModelStatus, string> = db.updateElementSync(props);
+    if (response.error)
+      return Promise.reject(new IModelError(response.error.status));
+  }
+
+  @RunsIn(Tier.Services)
+  public static async deleteElement(briefcaseToken: BriefcaseToken, elemid: string): Promise<void> {
+    const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
+    if (!db)
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
+
+    // Note that deleting an element is always done synchronously. That is because of constraints
+    // on the native code side. Nevertheless, we want the signature of this method to be
+    // that of an asynchronous method, since it must run in the services tier and will be
+    // asynchronous from a remote client's point of view in any case.
+    const response: BentleyReturn<IModelStatus, string> = db.deleteElementSync(elemid);
+    if (response.error)
+      return Promise.reject(new IModelError(response.error.status));
+  }
+
   /**
    * Get a JSON representation of a Model.
    * @param opt A JSON string with options for loading the model
-   * @return Promise that resolves to an object with a result property set to the JSON string of the model.
+   * @returns Promise that resolves to an object with a result property set to the JSON string of the model.
    * The resolved object contains an error property if the operation failed.
    */
   @RunsIn(Tier.Services)
   public static async getModel(briefcaseToken: BriefcaseToken, opt: string): Promise<string> {
     const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
     if (!db)
-      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
     const response: BentleyReturn<DbResult, string> = await db.getModel(opt);
     if (response.error)
@@ -651,14 +685,14 @@ export class BriefcaseManager {
   /**
    * Execute an ECSql select statement
    * @param ecsql The ECSql select statement to prepare
-   * @return Promise that resolves to an object with a result property set to a JSON array containing the rows returned from the query
+   * @returns Promise that resolves to an object with a result property set to a JSON array containing the rows returned from the query
    * The resolved object contains an error property if the operation failed.
    */
   @RunsIn(Tier.Services)
   public static async executeQuery(briefcaseToken: BriefcaseToken, ecsql: string): Promise<string> {
     const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
     if (!db)
-      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
     const response: BentleyReturn<DbResult, string> = await db.executeQuery(ecsql);
     if (response.error)
@@ -671,16 +705,16 @@ export class BriefcaseManager {
    * Get the meta data for the specified ECClass from the schema in this DgnDbNativeCode.
    * @param ecschemaname  The name of the schema
    * @param ecclassname   The name of the class
-   * @return Promise that resolves to an object with a result property set to a the meta data in JSON format
+   * @returns Promise that resolves to an object with a result property set to a the meta data in JSON format
    * The resolved object contains an error property if the operation failed.
    */
   @RunsIn(Tier.Services)
   public static async getECClassMetaData(briefcaseToken: BriefcaseToken, ecschemaname: string, ecclassname: string): Promise<string> {
     const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
     if (!db)
-      return Promise.reject(new IModelError(DgnDbStatus.NotOpen));
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
-    const response: BentleyReturn<DgnDbStatus, string> = await db.getECClassMetaData(ecschemaname, ecclassname);
+    const response: BentleyReturn<IModelStatus, string> = await db.getECClassMetaData(ecschemaname, ecclassname);
     if (response.error)
       return Promise.reject(new IModelError(response.error.status));
 
@@ -691,15 +725,15 @@ export class BriefcaseManager {
    * Get the meta data for the specified ECClass from the schema in this iModel, blocking until the result is returned.
    * @param ecschemaname  The name of the schema
    * @param ecclassname   The name of the class
-   * @return On success, the BentleyReturn result property will be the class meta data in JSON format.
+   * @returns On success, the BentleyReturn result property will be the class meta data in JSON format.
    */
   @RunsIn(Tier.Services, { synchronous: true })
   public static getECClassMetaDataSync(briefcaseToken: BriefcaseToken, ecschemaname: string, ecclassname: string): string {
     const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
     if (!db)
-      throw new IModelError(DgnDbStatus.NotOpen);
+      throw new IModelError(IModelStatus.NotOpen);
 
-    const response: BentleyReturn<DgnDbStatus, string> = db.getECClassMetaDataSync(ecschemaname, ecclassname);
+    const response: BentleyReturn<IModelStatus, string> = db.getECClassMetaDataSync(ecschemaname, ecclassname);
     if (response.error)
       throw new IModelError(response.error.status);
 

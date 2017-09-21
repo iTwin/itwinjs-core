@@ -4,7 +4,7 @@
 
 import { assert } from "chai";
 import { ViewFlags, RenderMode, ColorDef, ColorRgb } from "../Render";
-import { Light, ILight, Spot, LightType } from "../Lighting";
+import { Light, LightProps, Spot, LightType } from "../Lighting";
 import { BisCore } from "../BisCore";
 
 // First, register any domains that will be used in the tests.
@@ -71,7 +71,7 @@ describe("Render", () => {
   });
 
   it("Lights", () => {
-    const opts: ILight = {
+    const opts: LightProps = {
       lightType: LightType.Ambient,
       intensity: 10,
       color: ColorDef.white,

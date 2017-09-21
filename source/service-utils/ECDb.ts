@@ -2,27 +2,14 @@ import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { ECJsonTypeMap, ECInstance } from "@bentley/bentleyjs-core/lib/ECJsonTypeMap";
 import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
 import { BindingUtility, BindingValue } from "./BindingUtility";
+import { PrimitiveTypeCode } from "../Entity";
 
 declare function require(arg: string): any;
 // tslint:disable-next-line:no-var-requires
 const addonLoader = require("../../scripts/addonLoader");
-let dgnDbNodeAddon: any|undefined;
+let dgnDbNodeAddon: any | undefined;
 if (addonLoader !== undefined)
   dgnDbNodeAddon = addonLoader.loadNodeAddon(); // Note that evaluating this script has the side-effect of loading the addon
-
-/** ECPrimitive types (Match this to ECN::PrimitiveType in ECObjects.h) */
-export const enum PrimitiveTypeCode {
-  Uninitialized = 0x00,
-  Binary = 0x101,
-  Boolean = 0x201,
-  DateTime = 0x301,
-  Double = 0x401,
-  Integer = 0x501,
-  Long = 0x601,
-  Point2d = 0x701,
-  Point3d = 0x801,
-  String = 0x901,
-}
 
 /** Value type  (Match this to ECN::ValueKind in ECObjects.h) */
 export const enum ValueKind {
@@ -74,7 +61,7 @@ export class ECDb {
   /**
    * Create an ECDb
    * @param pathname  The pathname of the Db.
-   * @return Promise that resolves to an object that contains an error property if the operation failed.
+   * @returns Promise that resolves to an object that contains an error property if the operation failed.
    */
   public async createDb(pathname: string): BentleyPromise<DbResult, void> {
     if (!this.ecdb)
@@ -86,7 +73,7 @@ export class ECDb {
    * Open the ECDb.
    * @param pathname The pathname of the Db
    * @param mode  Open mode
-   * @return Promise that resolves to an object that contains an error property if the operation failed.
+   * @returns Promise that resolves to an object that contains an error property if the operation failed.
    */
   public async openDb(pathname: string, mode: OpenMode = OpenMode.Readonly): BentleyPromise<DbResult, void> {
     if (!this.ecdb)
@@ -101,7 +88,7 @@ export class ECDb {
 
   /**
    * Close the Db after saving any uncommitted changes.
-   * @return Promise that resolves to an object that contains an error property if the operation failed.
+   * @returns Promise that resolves to an object that contains an error property if the operation failed.
    * If the Db is not already open it's considered as an error.
    */
   public async closeDb(): BentleyPromise<DbResult, void> {
@@ -114,7 +101,7 @@ export class ECDb {
   /**
    * Commit the outermost transaction, writing changes to the file. Then, restart the transaction.
    * @param changeSetName The name of the operation that generated these changes.
-   * @return Promise that resolves to an object that contains an error property if the operation failed.
+   * @returns Promise that resolves to an object that contains an error property if the operation failed.
    */
   public async saveChanges(changeSetName?: string): BentleyPromise<DbResult, void> {
     if (!this.ecdb)
@@ -125,7 +112,7 @@ export class ECDb {
 
   /**
    * Abandon (cancel) the outermost transaction, discarding all changes since last save. Then, restart the transaction.
-   * @return Promise that resolves to an object that contains an error property if the operation failed.
+   * @returns Promise that resolves to an object that contains an error property if the operation failed.
    */
   public async abandonChanges(): BentleyPromise<DbResult, void> {
     if (!this.ecdb)
@@ -137,7 +124,7 @@ export class ECDb {
   /**
    * Import a schema
    * Note that if the import was successful, the database is automatically saved to disk.
-   * @return Promise that resolves to an object that contains an error if the operation failed.
+   * @returns Promise that resolves to an object that contains an error if the operation failed.
    * Check the existence of the error property to determine if the operation was successful.
    */
   public async importSchema(pathname: string): BentleyPromise<DbResult, void> {
@@ -150,7 +137,7 @@ export class ECDb {
   /**
    * Insert an instance
    * @description This method is not meant for bulk inserts
-   * @return Promise that resolves to an object with a result property set to the id of the inserted instance.
+   * @returns Promise that resolves to an object with a result property set to the id of the inserted instance.
    * The resolved object contains an error property if the operation failed.
    */
   public async insertInstance<T extends ECInstance>(typedInstance: T): BentleyPromise<DbResult, void> {
@@ -172,7 +159,7 @@ export class ECDb {
   /**
    * Read an instance
    * @description This method is not meant for bulk reads.
-   * @return Promise that resolves to an object with a result property set to the instance that was read from the Db.
+   * @returns Promise that resolves to an object with a result property set to the instance that was read from the Db.
    * The resolved object contains an error property if the operation failed.
    */
   public async readInstance<T extends ECInstance>(typedInstanceKey: T): BentleyPromise<DbResult, T> {
@@ -200,7 +187,7 @@ export class ECDb {
   /**
    * Update an instance
    * @description This method is not meant for bulk updates
-   * @return Promise that resolves to an object that contains an error property if the operation failed.
+   * @returns Promise that resolves to an object that contains an error property if the operation failed.
    */
   public async updateInstance<T extends ECInstance>(typedInstance: T): BentleyPromise<DbResult, void> {
     if (!this.ecdb)
@@ -213,7 +200,7 @@ export class ECDb {
   /**
    * Delete an instance
    * @description This method is not meant for bulk deletes
-   * @return Promise that resolves to an object that contains an error property if the operation failed.
+   * @returns Promise that resolves to an object that contains an error property if the operation failed.
    */
   public async deleteInstance<T extends ECInstance>(typedInstanceKey: T): BentleyPromise<DbResult, void> {
     if (!this.ecdb)
@@ -225,7 +212,7 @@ export class ECDb {
 
   /**
    * Check if an instance exists
-   * @return Promise that resolves to an object with a result property set to true or false depending on whether the Db contains the instance with the specified key.
+   * @returns Promise that resolves to an object with a result property set to true or false depending on whether the Db contains the instance with the specified key.
    * The resolved object contains an error property if the operation failed.
    */
   public async containsInstance<T extends ECInstance>(typedInstanceKey: T): BentleyPromise<DbResult, boolean> {
@@ -238,7 +225,7 @@ export class ECDb {
 
   /**
    * Execute an ECSql query returning all rows as an array of objects in JSON syntax.
-   * @return all rows in JSON syntax or the empty string if nothing was selected
+   * @returns all rows in JSON syntax or the empty string if nothing was selected
    * @todo Extend bindings to other types.
    * @todo Simplify binding of values to ECSQL statements.
    * The bindings parameter includes meta-data information in some cases now, but the typical consumer
@@ -247,7 +234,7 @@ export class ECDb {
    * @todo Consider writing Guid-s as Blobs. Guids are serialized as strings now, but they may need to
    * be written as blobs for performance (see the ECSqlStatement API). Note that even if we did want
    * to do this, the Guid type information is not part of the EC meta data.
-   * @return Promise that resolves to an object with a result property set to a JSON array containing the rows returned from the query
+   * @returns Promise that resolves to an object with a result property set to a JSON array containing the rows returned from the query
    * The resolved object contains an error property if the operation failed.
    */
   public async executeQuery(ecsql: string, bindings?: BindingValue[]): BentleyPromise<DbResult, string>;
@@ -271,7 +258,7 @@ export class ECDb {
    * Execute an ECSql statement
    * @param ecsql ECSql string
    * @param bindings Optional bindings required to execute the statement.
-   * @return Promise that resolves to an object that contains an error property if the operation failed.
+   * @returns Promise that resolves to an object that contains an error property if the operation failed.
    * If the operation was successful and it was an insert, the returned object will contain a result property set to the id of the inserted instance.
    */
   public async executeStatement(ecsql: string, isInsertStatement?: boolean, bindings?: BindingValue[]): BentleyPromise<DbResult, string>;

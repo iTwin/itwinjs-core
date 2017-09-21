@@ -13,7 +13,7 @@ import { Model } from "../Model";
 import { Category, SubCategory } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
 import { ModelSelector } from "../ViewDefinition";
-import { IModelError } from "../IModelError";
+import { IModelError, IModelStatus } from "../IModelError";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { BisCore } from "../BisCore";
 import { SpatialViewDefinition, DisplayStyle3d } from "../ViewDefinition";
@@ -134,8 +134,8 @@ describe("iModel", () => {
     } catch (error) {
       assert.isTrue(error instanceof Error);
       assert.isTrue(error instanceof IModelError);
-      const iModelError: IModelError = error as IModelError;
-      assert.equal(iModelError.toDebugString(), "DgnDbStatus.NotFound");
+      assert.equal(error.errorNumber, IModelStatus.NotFound);
+      assert.equal(error.toDebugString(), "IModelStatus.NotFound");
     }
 
     const childIds: Id64[] = await rootSubject.queryChildren();
@@ -389,205 +389,82 @@ describe("iModel", () => {
     assert.notEqual(rows[0].ecinstanceid, "");
   });
 
-  /* Needs work
-  it("should get display properties", async () => {
-    const el = await imodel.elements.getElement(new Id64("0x1"));
-    const formatter = new ElementPropertyFormatter(imodel);
-    const input = await formatter.formatProperties(el);
-    if (undefined === input)
-      assert.fail();
-    else {
-      var output : any =
-      {
-        'Descriptor': {
-            'PreferredDisplayType': 'PropertyPane',
-            'SelectClasses': [
-                {
-                    'SelectClassInfo': {
-                        'Id': '206',
-                        'Name': 'BisCore:Subject',
-                        'Label': 'Subject'
-                    },
-                    'IsPolymorphic': false,
-                    'PathToPrimaryClass': [ ],
-                    'RelatedPropertyPaths': [ ]
-                }
-            ],
-            'Fields': [
-                {
-                    'Category': {
-                        'Name': 'Miscellaneous',
-                        'DisplayLabel': 'Miscellaneous',
-                        'Expand': false,
-                        'Priority': 1000
-                    },
-                    'Name': 'Subject_CodeValue',
-                    'DisplayLabel': 'Code',
-                    'Type': 'string',
-                    'IsReadOnly': false,
-                    'Priority': 1000,
-                    'Editor': '',
-                    'Properties': [
-                        {
-                            'Property': {
-                                'BaseClassInfo': {
-                                    'Id': '63',
-                                    'Name': 'BisCore:Element',
-                                    'Label': 'Element'
-                                },
-                                'ActualClassInfo': {
-                                    'Id': '206',
-                                    'Name': 'BisCore:Subject',
-                                    'Label': 'Subject'
-                                },
-                                'Name': 'CodeValue',
-                                'Type': 'string'
-                            },
-                            'RelatedClassPath': [ ]
-                        }
-                    ]
-                },
-                {
-                    'Category': {
-                        'Name': 'Miscellaneous',
-                        'DisplayLabel': 'Miscellaneous',
-                        'Expand': false,
-                        'Priority': 1000
-                    },
-                    'Name': 'Subject_UserLabel',
-                    'DisplayLabel': 'User Label',
-                    'Type': 'string',
-                    'IsReadOnly': false,
-                    'Priority': 1000,
-                    'Editor': '',
-                    'Properties': [
-                        {
-                            'Property': {
-                                'BaseClassInfo': {
-                                    'Id': '63',
-                                    'Name': 'BisCore:Element',
-                                    'Label': 'Element'
-                                },
-                                'ActualClassInfo': {
-                                    'Id': '206',
-                                    'Name': 'BisCore:Subject',
-                                    'Label': 'Subject'
-                                },
-                                'Name': 'UserLabel',
-                                'Type': 'string'
-                            },
-                            'RelatedClassPath': [ ]
-                        }
-                    ]
-                },
-                {
-                    'Category': {
-                        'Name': 'Miscellaneous',
-                        'DisplayLabel': 'Miscellaneous',
-                        'Expand': false,
-                        'Priority': 1000
-                    },
-                    'Name': 'Subject_Description',
-                    'DisplayLabel': 'Description',
-                    'Type': 'string',
-                    'IsReadOnly': false,
-                    'Priority': 1000,
-                    'Editor': '',
-                    'Properties': [
-                        {
-                            'Property': {
-                                'BaseClassInfo': {
-                                    'Id': '206',
-                                    'Name': 'BisCore:Subject',
-                                    'Label': 'Subject'
-                                },
-                                'ActualClassInfo': {
-                                    'Id': '206',
-                                    'Name': 'BisCore:Subject',
-                                    'Label': 'Subject'
-                                },
-                                'Name': 'Description',
-                                'Type': 'string'
-                            },
-                            'RelatedClassPath': [ ]
-                        }
-                    ]
-                }
-            ],
-            'SortingFieldIndex': -1,
-            'SortDirection': 0,
-            'ContentFlags': 8,
-            'FilterExpression': ''
-        },
-        'ContentSet': [
-            {
-                'DisplayLabel': '',
-                'ImageId': '',
-                'Values': {
-                    'Subject_CodeValue': 'TBD',
-                    'Subject_UserLabel': null,
-                    'Subject_Description': ''
-                },
-                'DisplayValues': {
-                    'Subject_CodeValue': 'TBD',
-                    'Subject_UserLabel': null,
-                    'Subject_Description': ''
-                },
-                'ClassInfo': {
-                    'Id': '206',
-                    'Name': 'BisCore:Subject',
-                    'Label': 'Subject'
-                },
-                'PrimaryKeys': [
-                    {
-                        'ECClassId': '206',
-                        'ECInstanceId': '1'
-                    }
-                ],
-                'MergedFieldNames': [ ],
-                'FieldValueKeys': {
-                    'Subject_CodeValue': [
-                        {
-                            'PropertyIndex': 0,
-                            'Keys': [
-                                {
-                                    'ECClassId': '206',
-                                    'ECInstanceId': '1'
-                                }
-                            ]
-                        }
-                    ],
-                    'Subject_Description': [
-                        {
-                            'PropertyIndex': 0,
-                            'Keys': [
-                                {
-                                    'ECClassId': '206',
-                                    'ECInstanceId': '1'
-                                }
-                            ]
-                        }
-                    ],
-                    'Subject_UserLabel': [
-                        {
-                            'PropertyIndex': 0,
-                            'Keys': [
-                                {
-                                    'ECClassId': '206',
-                                    'ECInstanceId': '1'
-                                }
-                            ]
-                        }
-                    ]
-                }
-            }
-        ]
-    };
-    assert.equal(JSON.stringify(input), JSON.stringify(output));
-  }
-
+  it("should load struct properties", async () => {
+    const imodel3 = await IModelTestUtils.openIModel("GetSetAutoHandledStructProperties.bim");
+    const el1 = await imodel3.elements.getElement(new Id64("0x14"));
+    assert.isDefined(el1);
+    IModelTestUtils.closeIModel(imodel3);
   });
-  */
+
+  it("should load array properties", async () => {
+    const imodel3 = await IModelTestUtils.openIModel("GetSetAutoHandledArrayProperties.bim");
+    const el1 = await imodel3.elements.getElement(new Id64("0x14"));
+    assert.isDefined(el1);
+    IModelTestUtils.closeIModel(imodel3);
+  });
+
+  it("should insert and update auto-handled properties", async () => {
+    const imodel3 = await IModelTestUtils.openIModel("GetSetAutoHandledArrayProperties.bim");
+    const testElem = await imodel3.elements.getElement(new Id64("0x14"));
+    assert.isDefined(testElem);
+    assert.equal(testElem.classFullName, "DgnPlatformTest:TestElementWithNoHandler");
+    assert.isUndefined(testElem.integerProperty1);
+
+    const newTestElem = testElem.copyForEdit<Element>();
+    assert.equal(newTestElem.classFullName, testElem.classFullName);
+    newTestElem.integerProperty1 = 999;
+    assert.isTrue(testElem.arrayOfPoint3d[0].isAlmostEqual(newTestElem.arrayOfPoint3d[0]));
+
+    const loc1 = {street: "Elm Street", city: {name: "Downingtown", state: "PA"}};
+    const loc2 = {street: "Oak Street", city: {name: "Downingtown", state: "PA"}};
+// TODO: struct arrays   const loc3 = {street: "Chestnut Street", city: {name: "Philadelphia", state: "PA"}};
+// TODO: struct arrays    const arrayOfStructs = [loc2, loc3];
+    newTestElem.location = loc1;
+// TODO: struct arrays    newTestElem.arrayOfStructs = arrayOfStructs;
+    newTestElem.dtUtc = new Date("2015-03-25");
+    newTestElem.p3d = new Point3d(1, 2, 3);
+
+    const newTestElemId = await imodel3.elements.insertElement(newTestElem);
+
+    assert.isTrue(newTestElemId.isValid(), "insert worked");
+
+    const newTestElemFetched = await imodel3.elements.getElement(newTestElemId);
+    assert.isDefined(newTestElemFetched);
+    assert.isTrue(newTestElemFetched.id.equals(newTestElemId));
+    assert.equal(newTestElemFetched.classFullName, newTestElem.classFullName);
+    assert.isDefined(newTestElemFetched.integerProperty1);
+    assert.equal(newTestElemFetched.integerProperty1, newTestElem.integerProperty1);
+    assert.isTrue(newTestElemFetched.arrayOfPoint3d[0].isAlmostEqual(newTestElem.arrayOfPoint3d[0]));
+    // TODO: autoHandlePropertiesToJson in native code must convert property names to lowercase - assert.deepEqual(newTestElemFetched.location, loc1);
+// TODO: struct arrays   assert.deepEqual(newTestElem.arrayOfStructs, arrayOfStructs);
+// TODO: getElement must convert date ISO string to Date object    assert.deepEqual(newTestElemFetched.dtUtc, newTestElem.dtUtc);
+    assert.isTrue(newTestElemFetched.p3d.isAlmostEqual(newTestElem.p3d));
+
+    // ----------- updates ----------------
+    const wasp3d = newTestElemFetched.p3d;
+    const editElem = newTestElemFetched.copyForEdit() as Element;
+    editElem.location = loc2;
+    try {
+      await editElem.update();
+    } catch (_err) {
+      assert.fail("Element.update failed");
+    }
+    const afterUpdateElemFetched = await imodel3.elements.getElement(editElem.id);
+    // TODO: autoHandlePropertiesToJson in native code must convert property names to lowercase - assert.deepEqual(afterUpdateElemFetched.location, loc2, " location property should be the new one");
+    assert.deepEqual(afterUpdateElemFetched.id, editElem.id, " the id should not have changed.");
+    assert.deepEqual(afterUpdateElemFetched.p3d, wasp3d, " p3d property should not have changed");
+
+    // ------------ delete -----------------
+    const elid = afterUpdateElemFetched.id;
+    await afterUpdateElemFetched.delete();
+    try {
+      await imodel3.elements.getElement(elid);
+      assert.fail("should fail to load the element.");
+    } catch(error) {
+      // TODO: test that error is what I expect assert.equal(error.status == IModelStatus.)
+    }
+    IModelTestUtils.closeIModel(imodel3);
+  });
 
   function checkElementMetaData(metadataStr: string) {
     assert(metadataStr && metadataStr.length > 0);

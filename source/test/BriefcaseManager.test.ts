@@ -14,7 +14,7 @@ import * as path from "path";
 
 declare const __dirname: string;
 
-describe.only("BriefcaseManager", () => {
+describe("BriefcaseManager", () => {
   const projectName = "NodeJsTestProject";
   const iModelName = "MyTestModel";
   let accessToken: AccessToken;
