@@ -215,8 +215,8 @@ describe("iModel", () => {
     const rows: any = JSON.parse(rowsJson!);
     assert.isArray(rows);
     assert.isAtLeast(rows.length, 1);
-    assert.exists(rows[0].eCInstanceId);
-    assert.notEqual(rows[0].eCInstanceId, "");
+    assert.exists(rows[0].id);
+    assert.notEqual(rows[0].id, "");
   });
 
   it("ElementPropertyFormatter should format", async () => {

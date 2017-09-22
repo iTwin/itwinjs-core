@@ -91,7 +91,7 @@ export class Element extends Entity implements EntityProps {
   public async queryChildren(): Promise<Id64[]> {
     const rowsJson: string = await this.iModel.executeQuery("SELECT ECInstanceId as id FROM " + Element.sqlName + " WHERE Parent.Id=" + this.id.toString()); // WIP: need to bind!
     const childIds: Id64[] = [];
-    JSON.parse(rowsJson).forEach((row: any) => childIds.push(new Id64(row.id))); // WIP: executeQuery should return eCInstanceId as a string
+    JSON.parse(rowsJson).forEach((row: any) => childIds.push(new Id64(row.id))); // WIP: executeQuery should return ECInstanceId as a string
     return Promise.resolve(childIds);
   }
 
@@ -134,9 +134,7 @@ export class Element extends Entity implements EntityProps {
       aspectProps.classFullName = aspectClassName; // add in property required by EntityProps
       aspectProps.iModel = this.iModel; // add in property required by EntityProps
       aspectProps.element = this.id; // add in property required by ElementAspectProps
-      aspectProps.id = aspectProps.eCInstanceId; // add in property required by ElementAspectProps
-      aspectProps.eCInstanceId = undefined; // clear property from SELECT * that we don't want in the final instance
-      aspectProps.eCClassId = undefined; // clear property from SELECT * that we don't want in the final instance
+      aspectProps.classId = undefined; // clear property from SELECT * that we don't want in the final instance
 
       const entity = await ClassRegistry.createInstance(aspectProps);
       assert(entity instanceof ElementAspect);

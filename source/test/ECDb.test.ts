@@ -18,31 +18,31 @@ export class ECDbTestUtils {
 }
 
 abstract class TestAbstractBaseClass extends ECInstance {
-  @ECJsonTypeMap.propertyToJson("ecdb", "AbstractBaseStringProperty")
+  @ECJsonTypeMap.propertyToJson("ecdb", "abstractBaseStringProperty")
   public abstractBaseStringProperty: string;
 }
 
-@ECJsonTypeMap.classToJson("ecdb", "TestSchema.TestBaseClass", { classKeyPropertyName: "$ECClassKey" })
+@ECJsonTypeMap.classToJson("ecdb", "TestSchema.TestBaseClass", { classKeyPropertyName: "className" })
 class TestBaseClass extends TestAbstractBaseClass {
-  @ECJsonTypeMap.propertyToJson("ecdb", "BaseStringProperty")
+  @ECJsonTypeMap.propertyToJson("ecdb", "baseStringProperty")
   public baseStringProperty: string;
 }
 
-@ECJsonTypeMap.classToJson("ecdb", "TestSchema.TestClass", { classKeyPropertyName: "$ECClassKey" })
+@ECJsonTypeMap.classToJson("ecdb", "TestSchema.TestClass", { classKeyPropertyName: "className" })
 class TestClass extends TestBaseClass {
-  @ECJsonTypeMap.propertyToJson("ecdb", "IntegerProperty")
+  @ECJsonTypeMap.propertyToJson("ecdb", "integerProperty")
   public integerProperty: number;
 
-  @ECJsonTypeMap.propertyToJson("ecdb", "DoubleProperty")
+  @ECJsonTypeMap.propertyToJson("ecdb", "doubleProperty")
   public doubleProperty: number;
 
-  @ECJsonTypeMap.propertyToJson("ecdb", "BooleanProperty")
+  @ECJsonTypeMap.propertyToJson("ecdb", "booleanProperty")
   public booleanProperty: boolean;
 
-  @ECJsonTypeMap.propertyToJson("ecdb", "StringProperty")
+  @ECJsonTypeMap.propertyToJson("ecdb", "stringProperty")
   public stringProperty: string;
 
-  @ECJsonTypeMap.propertyToJson("ecdb", "RelatedStringProperty")
+  @ECJsonTypeMap.propertyToJson("ecdb", "relatedStringProperty")
   public relatedStringProperty: string;
 }
 
@@ -189,7 +189,7 @@ describe("ECDb", () => {
     assert.isArray(jsonRows);
     assert.equal(jsonRows.length, 1);
 
-    assert.equal(jsonRows[0].eCInstanceId, testInstance.id);
+    assert.equal(jsonRows[0].id, testInstance.id);
 
     ({ error, result: strRows } = await ecdb.executeQuery("SELECT * FROM TestSchema.TestClass WHERE ECInstanceId=?", [testInstanceKey.id]));
     expect(error).is.undefined;

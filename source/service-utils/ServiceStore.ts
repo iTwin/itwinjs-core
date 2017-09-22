@@ -137,7 +137,7 @@ export class ServiceStore {
     if (!jsonRows || jsonRows.length === 0)
       return {result: undefined};
 
-    return {result: jsonRows[0].eCInstanceId};
+    return {result: jsonRows[0].id};
   }
 
   /** Get a briefcase given it's id */
