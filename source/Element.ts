@@ -104,6 +104,13 @@ export class Element extends Entity implements EntityProps {
     return this.iModel.models.getModel(this.id);
   }
 
+  /** Insert the element into the iModel.
+   * @throws [[IModelError]]
+   */
+  public insert(): Promise<Id64> {
+    return this.iModel.elements.insertElement(this);
+  }
+
   /** Update the element in the iModel.
    * @throws [[IModelError]]
    */

@@ -25,9 +25,9 @@ export class IModelTestUtils {
 
     const srcName = __dirname + "/assets/" + filename;
     const dbName = destPath + "/" + filename;
-    const srcstat = IModelTestUtils.getStat(srcName);
+    const srcStat = IModelTestUtils.getStat(srcName);
     const destStat = IModelTestUtils.getStat(dbName);
-    if (!srcstat || !destStat || srcstat.mtime.getTime() !== destStat.mtime.getTime()) {
+    if (!srcStat || !destStat || srcStat.mtime.getTime() !== destStat.mtime.getTime()) {
       fs.copySync(srcName, dbName, { preserveTimestamps: true });
     }
 

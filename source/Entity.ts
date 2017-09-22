@@ -39,7 +39,12 @@ export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 /** Base class for all Entities. */
 export class Entity implements EntityProps {
   private persistent: boolean = false;
-  public setPersistent() { this.persistent = true; Object.freeze(this); } // internal use only
+
+  /** Internal use only
+   * @private
+   */
+  public setPersistent() { this.persistent = true; Object.freeze(this); }
+
   [propName: string]: any;
 
   /** The schema that defines this class. */

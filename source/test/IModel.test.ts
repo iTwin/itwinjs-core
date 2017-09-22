@@ -7,7 +7,7 @@ import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { Code, Elements, IModel, Models } from "../IModel";
 import { ColorDef } from "../Render";
-import { ElementProps, Element, GeometricElement3d, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../Element";
+import { ElementProps, Element, GeometricElement3d, GeometricElementProps, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../Element";
 import { Entity, EntityCtor, EntityProps } from "../Entity";
 import { Model } from "../Model";
 import { Category, SubCategory } from "../Category";
@@ -120,6 +120,31 @@ describe("iModel", () => {
     newEl.federationGuid = undefined;
     const newId = await imodel2.elements.insertElement(newEl);
     assert.isTrue(newId.isValid(), "insert worked");
+  });
+
+  it("should create elements", async () => {
+    const seedElement = await imodel2.elements.getElement(new Id64("0x1d"));
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    for (let i = 0; i < 25; i++) {
+      const elementProps: GeometricElementProps = {
+        classFullName: "Generic:PhysicalObject",
+        iModel: imodel2,
+        model: seedElement.model,
+        category: seedElement.category,
+        id: new Id64(),
+        code: Code.createDefault(),
+        federationGuid: new Guid(true),
+        userLabel: "UserLabel-" + i,
+      };
+
+      const element: Element = await imodel2.elements.createElement(elementProps);
+      element.setUserProperties("performanceTest", { s: "String-" + i, n: i });
+
+      const elementId = await element.insert();
+      assert.isTrue(elementId.isValid());
+    }
   });
 
   it("should have a valid root subject element", async () => {
