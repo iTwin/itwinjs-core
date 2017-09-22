@@ -40,10 +40,8 @@ export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 export class Entity implements EntityProps {
   private persistent: boolean = false;
 
-  /** Internal use only
-   * @private
-   */
-  public setPersistent() { this.persistent = true; Object.freeze(this); }
+  /** @hidden */
+  public setPersistent() { this.persistent = true; Object.freeze(this); } // Internal use only
 
   [propName: string]: any;
 
