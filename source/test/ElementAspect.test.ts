@@ -22,7 +22,7 @@ describe("ElementAspect", () => {
   });
 
   after(() => {
-    iModel.closeDgnDb();
+    IModelTestUtils.closeIModel(iModel);
   });
 
   it("should be able to get aspects from test file", async () => {

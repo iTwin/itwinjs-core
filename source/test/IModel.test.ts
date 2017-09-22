@@ -32,8 +32,8 @@ describe("iModel", () => {
   });
 
   after(() => {
-    imodel.closeDgnDb();
-    imodel2.closeDgnDb();
+    IModelTestUtils.closeIModel(imodel);
+    IModelTestUtils.closeIModel(imodel2);
   });
 
   /** test the copy constructor and to/from Json methods for the supplied entity */
@@ -240,8 +240,8 @@ describe("iModel", () => {
     const rows: any = JSON.parse(rowsJson!);
     assert.isArray(rows);
     assert.isAtLeast(rows.length, 1);
-    assert.exists(rows[0].eCInstanceId);
-    assert.notEqual(rows[0].eCInstanceId, "");
+    assert.exists(rows[0].id);
+    assert.notEqual(rows[0].id, "");
   });
 
   it("ElementPropertyFormatter should format", async () => {
@@ -418,14 +418,14 @@ describe("iModel", () => {
     const imodel3 = await IModelTestUtils.openIModel("GetSetAutoHandledStructProperties.bim");
     const el1 = await imodel3.elements.getElement(new Id64("0x14"));
     assert.isDefined(el1);
-    imodel3.closeDgnDb();
+    IModelTestUtils.closeIModel(imodel3);
   });
 
   it("should load array properties", async () => {
     const imodel3 = await IModelTestUtils.openIModel("GetSetAutoHandledArrayProperties.bim");
     const el1 = await imodel3.elements.getElement(new Id64("0x14"));
     assert.isDefined(el1);
-    imodel3.closeDgnDb();
+    IModelTestUtils.closeIModel(imodel3);
   });
 
   it("should insert and update auto-handled properties", async () => {
@@ -488,8 +488,7 @@ describe("iModel", () => {
     } catch(error) {
       // TODO: test that error is what I expect assert.equal(error.status == IModelStatus.)
     }
-
-    imodel3.closeDgnDb();
+    IModelTestUtils.closeIModel(imodel3);
   });
 
   function checkElementMetaData(metadataStr: string) {
