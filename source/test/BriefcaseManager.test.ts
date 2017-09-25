@@ -9,15 +9,15 @@ import { ConnectClient, Project, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelHubClient } from "@bentley/imodeljs-clients";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { expect, assert } from "chai";
+import { IModelVersion } from "../service-utils/BriefcaseManager";
 import * as fs from "fs";
 import * as path from "path";
 
 declare const __dirname: string;
 
 describe("BriefcaseManager", () => {
-  const projectName = "NodeJsTestProject";
-  const iModelName = "MyTestModel";
   let accessToken: AccessToken;
+  let projectId: string;
   let iModelId: string;
   const hubClient = new IModelHubClient("QA");
   let changeSets: ChangeSet[];
@@ -34,21 +34,18 @@ describe("BriefcaseManager", () => {
     expect(token);
     accessToken = token!;
 
+    const projectName = "NodeJsTestProject";
     const project: Project | undefined = await (new ConnectClient("QA")).getProject(accessToken, {
       $select: "*",
       $filter: "Name+eq+'" + projectName + "'",
     });
     expect(project);
-    expect(project.wsgId);
 
-    const iModels = await hubClient.getIModels(accessToken, project.wsgId, {
-      $select: "*",
-      $filter: "Name+eq+'" + iModelName + "'",
-    });
-    expect(iModels.length > 0);
+    projectId = project.wsgId;
+    expect(projectId);
 
-    iModelId = iModels[0].wsgId;
-    expect(!!iModelId);
+    const iModelName = "MyTestModel";
+    iModelId = await getIModelId(iModelName);
 
     changeSets = await hubClient.getChangeSets(accessToken, iModelId, false);
     expect(changeSets.length).greaterThan(2);
@@ -56,6 +53,19 @@ describe("BriefcaseManager", () => {
     iModelLocalPath = path.join(__dirname, "../assets/imodels/", iModelId);
     // deleteAllBriefcases();
   });
+
+  const getIModelId = async (iModelName: string) => {
+    const iModels = await hubClient.getIModels(accessToken, projectId, {
+      $select: "*",
+      $filter: "Name+eq+'" + iModelName + "'",
+    });
+    expect(iModels.length > 0);
+
+    const id = iModels[0].wsgId;
+    expect(!!id);
+
+    return id;
+  };
 
   // const deleteAllBriefcases = async () => {
   //   const promises = new Array<Promise<void>>();
@@ -107,6 +117,19 @@ describe("BriefcaseManager", () => {
     expect(diff.length).equals(0);
   });
 
+  it("should open a briefcase of a specific version in Readonly mode", async () => {
+    const iModel: IModel = await IModel.open(accessToken, iModelId, OpenMode.Readonly, IModelVersion.afterChangeSet(changeSets[1].wsgId));
+    assert.exists(iModel);
+  });
+
+  it("should open a briefcase of an iModel with no versions", async () => {
+    const iModelId2 = await getIModelId("NoVersionsTest");
+
+    const iModel: IModel = await IModel.open(accessToken, iModelId2, OpenMode.Readonly);
+    assert.exists(iModel);
+  });
+
+  // should keep previously downloaded seed files and change sets
   // should not reuse open briefcases in ReadWrite mode
   // should not reuse open briefcases for different versions in Readonly mode
   // should reuse closed briefcases for newer versions
