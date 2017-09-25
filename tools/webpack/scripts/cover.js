@@ -8,7 +8,11 @@ process.env.BABEL_ENV = "test";
 process.env.NODE_ENV = "test";
 process.env.MOCHA_ENV = "coverage";
 
-const isCI = (process.env.CONTINUOUS_INTEGRATION);
+let isCI = (process.env.CONTINUOUS_INTEGRATION);
+if (isCI) {
+  console.log("=========== THIS IS A CONTINUOUS INTEGRATION BUILD ===========");
+}
+isCI=true;
 
 // Makes the script crash on unhandled rejections instead of silently
 // ignoring them. In the future, promise rejections that are not handled will
