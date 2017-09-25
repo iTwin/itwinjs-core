@@ -248,7 +248,7 @@ export class Elements {
   }
 
   /** Get an element by Id, FederationGuid, or Code
-   * @throws [[IModelError]]
+   * @throws [[IModelError]] if the element is not found.
    */
   public getElement(elementId: Id64 | Guid | Code): Promise<Element> {
     if (elementId instanceof Id64) return this._doGetElement({ id: elementId });
@@ -258,10 +258,20 @@ export class Elements {
     return Promise.reject(new IModelError(IModelStatus.BadArg));
   }
 
+  /** Create a new element in memory.
+   * @param elementProps The properties to use when creating the element.
+   * @throws [[IModelError]] if there is a problem creating the element.
+   */
+  public async createElement(elementProps: ElementProps): Promise<Element> {
+    const element: Element = await ClassRegistry.createInstance(elementProps) as Element;
+    assert(element instanceof Element);
+    return element;
+  }
+
   /** Insert a new element.
    * @param el  The data for the new element.
    * @returns The newly inserted element's Id.
-   * @throws [[IModelError]]
+   * @throws [[IModelError]] if unable to insert the element.
    */
   public async insertElement(el: Element): Promise<Id64> {
     if (!this._iModel.briefcaseKey)
@@ -277,7 +287,7 @@ export class Elements {
 
   /** Update an existing element.
    * @param el  An editable copy of the element, containing the new/proposed data.
-   * @throws [[IModelError]]
+   * @throws [[IModelError]] if unable to update the element.
    */
   public async updateElement(el: Element): Promise<void> {
     if (!this._iModel.briefcaseKey)
