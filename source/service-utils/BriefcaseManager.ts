@@ -295,31 +295,32 @@ export class BriefcaseManager {
   }
 
   @RunsIn(Tier.Services)
-  private static copyFile(targetPathname: string, sourcePathname: string): boolean {
-    let status: boolean = true;
+  private static async copyFile(targetPathname: string, sourcePathname: string): Promise<void> {
+    return new Promise<void> ((resolve, reject) => {
+      let status = true;
 
-    const readStream = fs.createReadStream(sourcePathname);
-    readStream.on("error", () => { status = false; });
+      const readStream = fs.createReadStream(sourcePathname);
+      readStream.on("error", () => { status = false; });
 
-    const writeStream = fs.createWriteStream(targetPathname);
-    writeStream.on("error", () => { status = false; });
+      const writeStream = fs.createWriteStream(targetPathname);
+      writeStream.on("error", () => { status = false; });
 
-    readStream.pipe(writeStream);
+      readStream.pipe(writeStream);
 
-    return status;
+      writeStream.on("close", () => { status ? resolve() : reject(); });
+    });
   }
 
   @RunsIn(Tier.Services)
-  private static copyBriefcase(iModelId: string, briefcase: Briefcase, seedPathname: string): string {
+  private static async copyBriefcase(iModelId: string, briefcase: Briefcase, seedPathname: string): Promise<string> {
     const briefcasePathname: string = BriefcaseManager.getBriefcasePathname(iModelId, briefcase);
 
     const briefcasePath: string = path.dirname(briefcasePathname);
     if (!fs.existsSync(briefcasePath))
       fs.mkdirSync(briefcasePath);
 
-    if (!BriefcaseManager.copyFile(briefcasePathname, seedPathname)) {
-      throw (new IModelError(BriefcaseError.CannotCopy));
-    }
+    await BriefcaseManager.copyFile(briefcasePathname, seedPathname)
+      .catch(() => {Promise.reject(new IModelError(BriefcaseError.CannotCopy)); });
 
     return briefcasePathname;
   }
@@ -467,7 +468,7 @@ export class BriefcaseManager {
 
     const seedPathname = BriefcaseManager.getSeedPathname(iModelId, briefcase);
     await BriefcaseManager.downloadBriefcase(briefcase, seedPathname);
-    const briefcasePathname = BriefcaseManager.copyBriefcase(iModelId, briefcase, seedPathname);
+    const briefcasePathname = await BriefcaseManager.copyBriefcase(iModelId, briefcase, seedPathname);
 
     const userId = accessToken.getUserProfile().userId;
     const briefcaseToken = BriefcaseToken.fromBriefcase(briefcase.iModelId, briefcase.briefcaseId, briefcasePathname, userId);
