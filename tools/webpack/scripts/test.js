@@ -8,7 +8,7 @@ process.env.BABEL_ENV = "test";
 process.env.NODE_ENV = "test";
 
 const isCoverage = (process.env.MOCHA_ENV === "coverage");
-let isCI = (process.env.CONTINUOUS_INTEGRATION);
+let isCI = (process.env.TF_BUILD);
 
 if (isCI) {
   console.log("=========== THIS IS A CONTINUOUS INTEGRATION BUILD ===========");
