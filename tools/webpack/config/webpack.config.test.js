@@ -30,6 +30,9 @@ const modulesToIgnore = [
   paths.appSrcElectron,
 ]
 
+// WIP: This is needed for the imports-loader hack below.
+const nodeExternalsWhitelist = modulesToIgnore.concat([/@bentley/])
+
 const isCoverage = (process.env.MOCHA_ENV === "coverage");
 const coverageLoaders = (isCoverage) ? [
   {
@@ -41,13 +44,24 @@ const coverageLoaders = (isCoverage) ? [
   },
 ] : [];
 
+
+// WIP: This is also needed for the imports-loader hack below.
+const fixAddonLoaderRelPaths = (context, request, callback) => {
+  if (/addonLoader/.test(request)){
+    return callback(null, 'commonjs ' + path.resolve(context, request));
+  }
+  callback();
+}
+
 // This is the test configuration.
 module.exports = {
   // Compile node compatible code
   target: 'node',
   
   // Ignore all modules in node_modules folder
-  externals: [nodeExternals({whitelist: modulesToIgnore})],
+  externals: [
+    fixAddonLoaderRelPaths,
+    nodeExternals({whitelist: nodeExternalsWhitelist})],
 
   // You may want 'eval' instead if you prefer to see the compiled output in DevTools.
   // See the discussion in https://github.com/facebookincubator/create-react-app/issues/343.
@@ -87,6 +101,15 @@ module.exports = {
     strictExportPresence: true,
     rules: [
       ...coverageLoaders,
+
+      // WIP: This is a temporary (hack) workaround for the tiering in bentleyjs-core
+      // thinking we're in a browser just because document is defined.
+      {
+        loader: require.resolve('imports-loader'),
+        query: "document=>{}",
+        test: /@bentley.*\.(jsx?|tsx?)$/,
+        enforce: 'post',
+      },
 
       // First, run the linter.
       // It's important to do this before Babel processes the JS.

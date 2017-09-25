@@ -30,6 +30,7 @@
     "file-loader": "0.11.2",
     "fs-extra": "3.0.1",
     "html-webpack-plugin": "2.28.0",
+    "imports-loader": "^0.7.1",
     "istanbul-instrumenter-loader": "^3.0.0",
     "jsdom": "10.0.0",
     "mocha": "^3.5.3",
