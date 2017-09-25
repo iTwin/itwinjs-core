@@ -32,8 +32,8 @@ const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 
 // Some additional options are required for CI builds
 const reporterOptions = (!isCI) ? [] : [
-  "--reporter", "xunit",
-  "--reporter-options", `output=${paths.appXUnitTestResults}`,
+  "--reporter", "mocha-junit-reporter",
+  "--reporter-options", `mochaFile=${paths.appJUnitTestResults}`,
 ];
 
 // Start the tests

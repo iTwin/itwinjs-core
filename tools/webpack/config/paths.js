@@ -60,5 +60,5 @@ module.exports = {
   servedPath: getServedPath(resolveApp('package.json')),
   appMainJs: resolveApp('src/main.ts'),
   appBuiltMainJs: resolveApp('lib/main.js'),
-  appXUnitTestResults: resolveApp('lib/xunit_results.xml'),
+  appJUnitTestResults: resolveApp('lib/junit_results.xml'),
 };
