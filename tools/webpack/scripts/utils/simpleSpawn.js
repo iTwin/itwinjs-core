@@ -22,7 +22,7 @@ function simpleSpawn(cmd, args, cwd) {
       process.stderr.write(data);
     })
     child.on('error', function(data) { console.log(chalk.red(data)); });  
-    child.on('close', ()=> resolve());
+    child.on('close', (code)=> resolve(code));
     simpleSpawn.children.push(child);
   });
 }

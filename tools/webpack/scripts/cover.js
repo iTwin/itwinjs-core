@@ -30,5 +30,5 @@ const args = [
   "imodeljs-react-scripts",
   "test",
 ];
-spawn(path.resolve(__dirname, "../node_modules/.bin/nyc"), args).then(() =>  process.exit());
+spawn(path.resolve(__dirname, "../node_modules/.bin/nyc"), args).then((code) =>  process.exit(code));
 handleInterrupts();

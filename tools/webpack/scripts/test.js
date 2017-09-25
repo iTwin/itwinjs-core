@@ -36,5 +36,5 @@ const args = [
 if (isCoverage)
   args.push(path.resolve(paths.appSrc, "**/*!(.d).@(js|jsx|ts|tsx)"));
 
-spawn(path.resolve(__dirname, "../node_modules/.bin/mocha-webpack"), args).then(() =>  process.exit());
+spawn(path.resolve(__dirname, "../node_modules/.bin/mocha-webpack"), args).then((code) =>  process.exit(code));
 handleInterrupts();
