@@ -103,6 +103,7 @@ export class ViewFlags {
     return val;
   }
 }
+
 const scratchBytes: Uint8Array = new Uint8Array(4);
 const scratchUInt32: Uint32Array = new Uint32Array(scratchBytes.buffer);
 
@@ -315,7 +316,7 @@ export class ColorDef {
   public getColors() { scratchUInt32[0] = this._tbgr; return { r: scratchBytes[0], g: scratchBytes[1], b: scratchBytes[2], t: scratchBytes[3] }; }
   public get tbgr(): number { return this._tbgr; }
   public set tbgr(tbgr: number) { this._tbgr = tbgr | 0; }
-  /** get the RGB value of this ColorDef. Transparency is ignored. Value will be 0-255 */
+  /** get the RGB value of this ColorDef. Transparency is ignored. Value will be from 0 to 2^24 */
   public getRgb() { scratchUInt32[0] = this._tbgr; return (scratchBytes[0] << 16) + (scratchBytes[1] << 8) + scratchBytes[2]; }
   /** change the alpha value for this ColorDef.
    * @param alpha the new alpha value. Should be between 0-255.
@@ -335,8 +336,9 @@ export class ColorDef {
    * "hsl(120,50%,50%)"
    * "#ff0000"
    * "red" (see values from ColorRgb)
+   * @return this
    */
-  public fromString(val: string) {
+  public fromString(val: string): ColorDef {
     if (typeof val !== "string")
       return this;
 
@@ -381,7 +383,6 @@ export class ColorDef {
             return ColorDef.fromHSL(h, s, l, this);
           }
           break;
-
       }
 
       // tslint:disable-next-line:no-conditional-assignment

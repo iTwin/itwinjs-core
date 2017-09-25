@@ -23,17 +23,23 @@ import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
 describe("iModel", () => {
   let imodel: IModel;
   let imodel2: IModel;
+  let imodel3: IModel;
+  let imodel4: IModel;
 
   before(async () => {
     // First, register any schemas that will be used in the tests.
     BisCore.registerSchema();
     imodel = await IModelTestUtils.openIModel("test.bim");
     imodel2 = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
+    imodel3 = await IModelTestUtils.openIModel("GetSetAutoHandledStructProperties.bim");
+    imodel4 = await IModelTestUtils.openIModel("GetSetAutoHandledArrayProperties.bim");
   });
 
   after(() => {
     imodel.closeDgnDb();
     imodel2.closeDgnDb();
+    imodel3.closeDgnDb();
+    imodel4.closeDgnDb();
   });
 
   /** test the copy constructor and to/from Json methods for the supplied entity */
@@ -390,22 +396,18 @@ describe("iModel", () => {
   });
 
   it("should load struct properties", async () => {
-    const imodel3 = await IModelTestUtils.openIModel("GetSetAutoHandledStructProperties.bim");
     const el1 = await imodel3.elements.getElement(new Id64("0x14"));
     assert.isDefined(el1);
     imodel3.closeDgnDb();
   });
 
   it("should load array properties", async () => {
-    const imodel3 = await IModelTestUtils.openIModel("GetSetAutoHandledArrayProperties.bim");
     const el1 = await imodel3.elements.getElement(new Id64("0x14"));
     assert.isDefined(el1);
-    imodel3.closeDgnDb();
   });
 
   it("should insert auto-handled properties", async () => {
-    const imodel3 = await IModelTestUtils.openIModel("GetSetAutoHandledArrayProperties.bim");
-    const testElem = await imodel3.elements.getElement(new Id64("0x14"));
+    const testElem = await imodel4.elements.getElement(new Id64("0x14"));
     assert.isDefined(testElem);
     assert.equal(testElem.classFullName, "DgnPlatformTest:TestElementWithNoHandler");
     assert.isUndefined(testElem.integerProperty1);
@@ -414,18 +416,16 @@ describe("iModel", () => {
     assert.equal(newTestElem.classFullName, testElem.classFullName);
     newTestElem.integerProperty1 = 999;
     assert.isTrue(testElem.arrayOfPoint3d[0].isAlmostEqual(newTestElem.arrayOfPoint3d[0]));
-    const newTestElemId = await imodel3.elements.insertElement(newTestElem);
+    const newTestElemId = await imodel4.elements.insertElement(newTestElem);
     assert.isTrue(newTestElemId.isValid(), "insert worked");
 
-    const newTestElemFetched = await imodel3.elements.getElement(newTestElemId);
+    const newTestElemFetched = await imodel4.elements.getElement(newTestElemId);
     assert.isDefined(newTestElemFetched);
     assert.isTrue(newTestElemFetched.id.equals(newTestElemId));
     assert.equal(newTestElemFetched.classFullName, newTestElem.classFullName);
     assert.isDefined(newTestElemFetched.integerProperty1);
     assert.equal(newTestElemFetched.integerProperty1, newTestElem.integerProperty1);
     assert.isTrue(newTestElemFetched.arrayOfPoint3d[0].isAlmostEqual(newTestElem.arrayOfPoint3d[0]));
-
-    imodel3.closeDgnDb();
   });
 
   function checkElementMetaData(metadataStr: string) {
