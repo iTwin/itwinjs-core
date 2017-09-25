@@ -11,7 +11,7 @@ function simpleSpawn(cmd, args, cwd) {
   return new Promise((resolve, reject) => {
     const child = spawn(cmd, args, {
       cwd: cwd,
-      env: {FORCE_COLOR: "1"},
+      env: Object.assign({FORCE_COLOR: "1"}, process.env),
       stdio: 'pipe'
     });
 
