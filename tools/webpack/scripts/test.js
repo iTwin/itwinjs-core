@@ -8,6 +8,7 @@ process.env.BABEL_ENV = "test";
 process.env.NODE_ENV = "test";
 
 const isCoverage = (process.env.MOCHA_ENV === "coverage");
+const isCI = (process.env.CONTINUOUS_INTEGRATION);
 
 // Makes the script crash on unhandled rejections instead of silently
 // ignoring them. In the future, promise rejections that are not handled will
@@ -24,11 +25,17 @@ const paths = require("../config/paths");
 
 const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 
+// Some additional options are required for CI builds
+const reporterOptions = (!isCI) ? [] : [
+  "--reporter", "xunit",
+  "--reporter-options", `output=${paths.appXUnitTestResults}`,
+];
 
 // Start the tests
 const args = [
   "--webpack-config",  require.resolve("../config/webpack.config.test.js"),
   "--require", require.resolve("./utils/testSetup"),
+  ...reporterOptions,
   path.resolve(paths.appTest, "**/*.@(js|jsx|ts|tsx)"),
 ];
 
