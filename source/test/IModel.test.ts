@@ -477,7 +477,7 @@ describe("iModel", () => {
     } catch (_err) {
       assert.fail("Element.update failed");
     }
-    const afterUpdateElemFetched = await imodel3.elements.getElement(editElem.id);
+    const afterUpdateElemFetched = await imodel4.elements.getElement(editElem.id);
     // TODO: autoHandlePropertiesToJson in native code must convert property names to lowercase - assert.deepEqual(afterUpdateElemFetched.location, loc2, " location property should be the new one");
     assert.deepEqual(afterUpdateElemFetched.id, editElem.id, " the id should not have changed.");
     assert.deepEqual(afterUpdateElemFetched.p3d, wasp3d, " p3d property should not have changed");
@@ -486,7 +486,7 @@ describe("iModel", () => {
     const elid = afterUpdateElemFetched.id;
     await afterUpdateElemFetched.delete();
     try {
-      await imodel3.elements.getElement(elid);
+      await imodel4.elements.getElement(elid);
       assert.fail("should fail to load the element.");
     } catch (error) {
       // TODO: test that error is what I expect assert.equal(error.status == IModelStatus.)
