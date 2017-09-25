@@ -4,6 +4,7 @@
 
 import { EntityCtor, Entity, EntityProps, EntityMetaData } from "./Entity";
 import { IModel } from "./IModel";
+import { IModelError, IModelStatus } from "./IModelError";
 import { Schema, Schemas } from "./Schema";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
@@ -16,7 +17,7 @@ export class ClassRegistry {
   }
   public static lookupClass(name: string) { return this.classMap.get(name.toLowerCase()); }
 
-  /** create an instance of a class from it properties */
+  /** Create an instance of a class from it properties */
   public static async createInstance(props: EntityProps): Promise<Entity> {
     if (!props.classFullName || !props.iModel)
       return Promise.reject(new Error("Invalid input props"));
@@ -38,8 +39,7 @@ export class ClassRegistry {
     return "class " + schemaName + " extends ClassRegistry.getSchemaBaseClass(){} ClassRegistry.registerSchema(" + schemaName + ");";
   }
 
-  /**
-   * Generate a JS class from an Entity metadata
+  /** Generate a JS class from an Entity metadata
    * @param entityMetaData The Entity metadata
    */
   private static generateClassFromMetaData(entityMetaData: EntityMetaData): string {
@@ -70,7 +70,7 @@ export class ClassRegistry {
     ClassRegistry.classMap.set(key, ctor);
   }
 
-  /** register all of the classes that derive from Entity, that are found in a given module
+  /** Register all of the classes that derive from Entity, that are found in a given module
    * @param moduleObj The module to search for subclasses of Entity
    * @param schema The schema for all found classes
    */
@@ -88,7 +88,7 @@ export class ClassRegistry {
   }
 
   /** This function fetches the specified Entity from the imodel, generates a JS class for it, and registers the generated
-   *  class. This function also ensures that all of the base classes of the Entity exist and are registered.
+   * class. This function also ensures that all of the base classes of the Entity exist and are registered.
    */
   private static async generateClass(classFullName: string, imodel: IModel): Promise<EntityCtor> {
     const name = classFullName.split(":");
@@ -113,7 +113,7 @@ export class ClassRegistry {
   }
 
   /** This function generates a JS class for the specified Entity and registers it. It is up to the caller
-   *  to make sure that all superclasses are already registered.
+   * to make sure that all superclasses are already registered.
    */
   public static generateClassForEntity(entityMetaData: EntityMetaData): EntityCtor {
     const name = entityMetaData.ecclass.split(":");
@@ -128,29 +128,27 @@ export class ClassRegistry {
     return ctor;
   }
 
-  /**
-   * Get the class for the specified Entity.
+  /** Get the class for the specified Entity.
    * @param fullName The name of the Entity
-   * @param imodel The IModel that contains the class definitions
-   * @return A promise that resolves to an object containing a result property set to the Entity.
-   * In case of errors, the error property is setup in the resolved object.
+   * @param iModel The IModel that contains the class definitions
+   * @returns A promise that resolves to an object containing a result property set to the Entity.
+   * @throws [[IModelError]] if the class is not found.
    */
-  public static async getClass(fullName: string, imodel: IModel): Promise<EntityCtor> {
+  public static async getClass(fullName: string, iModel: IModel): Promise<EntityCtor> {
     const key = fullName.toLowerCase();
     if (!ClassRegistry.classMap.has(key)) {
-      return ClassRegistry.generateClass(fullName, imodel);
+      return ClassRegistry.generateClass(fullName, iModel);
     }
     const ctor = ClassRegistry.classMap.get(key);
     assert(!!ctor);
 
     if (!ctor)
-      return Promise.reject(new Error("Class not found in ClassRegistry"));
+      return Promise.reject(new IModelError(IModelStatus.NotFound, "Class not found in ClassRegistry"));
 
     return ctor;
   }
 
-  /**
-   * Check if the class for the specified Entity is in the registry.
+  /** Check if the class for the specified Entity is in the registry.
    * @param schemaName The name of the schema
    * @param className The name of the class
    */

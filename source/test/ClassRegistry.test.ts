@@ -20,7 +20,7 @@ describe("Class Registry", () => {
   });
 
   after(() => {
-    imodel.closeDgnDb();
+    IModelTestUtils.closeIModel(imodel);
   });
 
   it("should verify the Entity metadata of known element subclasses", async () => {

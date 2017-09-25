@@ -7,7 +7,7 @@ import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { Code, Elements, IModel, Models } from "../IModel";
 import { ColorDef } from "../Render";
-import { ElementProps, Element, GeometricElement3d, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../Element";
+import { ElementProps, Element, GeometricElement3d, GeometricElementProps, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../Element";
 import { Entity, EntityCtor, EntityProps } from "../Entity";
 import { Model } from "../Model";
 import { Category, SubCategory } from "../Category";
@@ -36,10 +36,10 @@ describe("iModel", () => {
   });
 
   after(() => {
-    imodel.closeDgnDb();
-    imodel2.closeDgnDb();
-    imodel3.closeDgnDb();
-    imodel4.closeDgnDb();
+    IModelTestUtils.closeIModel(imodel);
+    IModelTestUtils.closeIModel(imodel2);
+    IModelTestUtils.closeIModel(imodel3);
+    IModelTestUtils.closeIModel(imodel4);
   });
 
   /** test the copy constructor and to/from Json methods for the supplied entity */
@@ -126,6 +126,31 @@ describe("iModel", () => {
     newEl.federationGuid = undefined;
     const newId = await imodel2.elements.insertElement(newEl);
     assert.isTrue(newId.isValid(), "insert worked");
+  });
+
+  it("should create elements", async () => {
+    const seedElement = await imodel2.elements.getElement(new Id64("0x1d"));
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    for (let i = 0; i < 25; i++) {
+      const elementProps: GeometricElementProps = {
+        classFullName: "Generic:PhysicalObject",
+        iModel: imodel2,
+        model: seedElement.model,
+        category: seedElement.category,
+        id: new Id64(),
+        code: Code.createDefault(),
+        federationGuid: new Guid(true),
+        userLabel: "UserLabel-" + i,
+      };
+
+      const element: Element = await imodel2.elements.createElement(elementProps);
+      element.setUserProperties("performanceTest", { s: "String-" + i, n: i });
+
+      const elementId = await element.insert();
+      assert.isTrue(elementId.isValid());
+    }
   });
 
   it("should have a valid root subject element", async () => {
@@ -221,8 +246,8 @@ describe("iModel", () => {
     const rows: any = JSON.parse(rowsJson!);
     assert.isArray(rows);
     assert.isAtLeast(rows.length, 1);
-    assert.exists(rows[0].eCInstanceId);
-    assert.notEqual(rows[0].eCInstanceId, "");
+    assert.exists(rows[0].id);
+    assert.notEqual(rows[0].id, "");
   });
 
   it("ElementPropertyFormatter should format", async () => {
@@ -398,15 +423,16 @@ describe("iModel", () => {
   it("should load struct properties", async () => {
     const el1 = await imodel3.elements.getElement(new Id64("0x14"));
     assert.isDefined(el1);
-    imodel3.closeDgnDb();
+    IModelTestUtils.closeIModel(imodel3);
   });
 
   it("should load array properties", async () => {
     const el1 = await imodel3.elements.getElement(new Id64("0x14"));
     assert.isDefined(el1);
+    IModelTestUtils.closeIModel(imodel3);
   });
 
-  it("should insert auto-handled properties", async () => {
+  it("should insert and update auto-handled properties", async () => {
     const testElem = await imodel4.elements.getElement(new Id64("0x14"));
     assert.isDefined(testElem);
     assert.equal(testElem.classFullName, "DgnPlatformTest:TestElementWithNoHandler");
@@ -416,7 +442,18 @@ describe("iModel", () => {
     assert.equal(newTestElem.classFullName, testElem.classFullName);
     newTestElem.integerProperty1 = 999;
     assert.isTrue(testElem.arrayOfPoint3d[0].isAlmostEqual(newTestElem.arrayOfPoint3d[0]));
+
+    const loc1 = { street: "Elm Street", city: { name: "Downingtown", state: "PA" } };
+    const loc2 = { street: "Oak Street", city: { name: "Downingtown", state: "PA" } };
+    // TODO: struct arrays   const loc3 = {street: "Chestnut Street", city: {name: "Philadelphia", state: "PA"}};
+    // TODO: struct arrays    const arrayOfStructs = [loc2, loc3];
+    newTestElem.location = loc1;
+    // TODO: struct arrays    newTestElem.arrayOfStructs = arrayOfStructs;
+    newTestElem.dtUtc = new Date("2015-03-25");
+    newTestElem.p3d = new Point3d(1, 2, 3);
+
     const newTestElemId = await imodel4.elements.insertElement(newTestElem);
+
     assert.isTrue(newTestElemId.isValid(), "insert worked");
 
     const newTestElemFetched = await imodel4.elements.getElement(newTestElemId);
@@ -426,6 +463,35 @@ describe("iModel", () => {
     assert.isDefined(newTestElemFetched.integerProperty1);
     assert.equal(newTestElemFetched.integerProperty1, newTestElem.integerProperty1);
     assert.isTrue(newTestElemFetched.arrayOfPoint3d[0].isAlmostEqual(newTestElem.arrayOfPoint3d[0]));
+    // TODO: autoHandlePropertiesToJson in native code must convert property names to lowercase - assert.deepEqual(newTestElemFetched.location, loc1);
+    // TODO: struct arrays   assert.deepEqual(newTestElem.arrayOfStructs, arrayOfStructs);
+    // TODO: getElement must convert date ISO string to Date object    assert.deepEqual(newTestElemFetched.dtUtc, newTestElem.dtUtc);
+    assert.isTrue(newTestElemFetched.p3d.isAlmostEqual(newTestElem.p3d));
+
+    // ----------- updates ----------------
+    const wasp3d = newTestElemFetched.p3d;
+    const editElem = newTestElemFetched.copyForEdit() as Element;
+    editElem.location = loc2;
+    try {
+      await editElem.update();
+    } catch (_err) {
+      assert.fail("Element.update failed");
+    }
+    const afterUpdateElemFetched = await imodel3.elements.getElement(editElem.id);
+    // TODO: autoHandlePropertiesToJson in native code must convert property names to lowercase - assert.deepEqual(afterUpdateElemFetched.location, loc2, " location property should be the new one");
+    assert.deepEqual(afterUpdateElemFetched.id, editElem.id, " the id should not have changed.");
+    assert.deepEqual(afterUpdateElemFetched.p3d, wasp3d, " p3d property should not have changed");
+
+    // ------------ delete -----------------
+    const elid = afterUpdateElemFetched.id;
+    await afterUpdateElemFetched.delete();
+    try {
+      await imodel3.elements.getElement(elid);
+      assert.fail("should fail to load the element.");
+    } catch (error) {
+      // TODO: test that error is what I expect assert.equal(error.status == IModelStatus.)
+    }
+    IModelTestUtils.closeIModel(imodel3);
   });
 
   function checkElementMetaData(metadataStr: string) {
