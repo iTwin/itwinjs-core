@@ -7,6 +7,7 @@ import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
 import { ConnectClient, Project, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelHubClient } from "@bentley/imodeljs-clients";
+import { Briefcase } from "@bentley/imodeljs-clients";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { expect, assert } from "chai";
 import { IModelVersion } from "../service-utils/BriefcaseManager";
@@ -22,9 +23,9 @@ describe("BriefcaseManager", () => {
   const hubClient = new IModelHubClient("QA");
   let changeSets: ChangeSet[];
   let iModelLocalPath: string;
+  const shouldDeleteAllBriefcases: boolean = false;
 
   before(async () => {
-    // First, register any schemas that will be used in the tests.
     BisCore.registerSchema();
 
     const authToken: AuthorizationToken|undefined = await (new ImsActiveSecureTokenClient("QA")).getToken(IModelTestUtils.user.email, IModelTestUtils.user.password);
@@ -51,7 +52,9 @@ describe("BriefcaseManager", () => {
     expect(changeSets.length).greaterThan(2);
 
     iModelLocalPath = path.join(__dirname, "../assets/imodels/", iModelId);
-    // deleteAllBriefcases();
+
+    if (shouldDeleteAllBriefcases)
+      await deleteAllBriefcases(iModelId);
   });
 
   const getIModelId = async (iModelName: string) => {
@@ -67,14 +70,14 @@ describe("BriefcaseManager", () => {
     return id;
   };
 
-  // const deleteAllBriefcases = async () => {
-  //   const promises = new Array<Promise<void>>();
-  //   const briefcases = await hubClient.getBriefcases(accessToken, iModelId);
-  //   briefcases.forEach((briefcase: Briefcase) => {
-  //     promises.push(hubClient.deleteBriefcase(accessToken, iModelId, briefcase.briefcaseId));
-  //   });
-  //   await Promise.all(promises);
-  // };
+  const deleteAllBriefcases = async (id: string) => {
+    const promises = new Array<Promise<void>>();
+    const briefcases = await hubClient.getBriefcases(accessToken, id);
+    briefcases.forEach((briefcase: Briefcase) => {
+      promises.push(hubClient.deleteBriefcase(accessToken, id, briefcase.briefcaseId));
+    });
+    await Promise.all(promises);
+  };
 
   it("should be able to open an IModel from the Hub", async () => {
     const iModel: IModel = await IModel.open(accessToken, iModelId);
@@ -125,10 +128,14 @@ describe("BriefcaseManager", () => {
   it("should open a briefcase of an iModel with no versions", async () => {
     const iModelId2 = await getIModelId("NoVersionsTest");
 
+    if (shouldDeleteAllBriefcases)
+      await deleteAllBriefcases(iModelId2);
+
     const iModel: IModel = await IModel.open(accessToken, iModelId2, OpenMode.Readonly);
     assert.exists(iModel);
   });
 
+  // readme cases should always use standalone briefcase
   // should keep previously downloaded seed files and change sets
   // should not reuse open briefcases in ReadWrite mode
   // should not reuse open briefcases for different versions in Readonly mode

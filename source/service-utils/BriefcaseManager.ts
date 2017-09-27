@@ -429,36 +429,51 @@ export class BriefcaseManager {
 
   @RunsIn(Tier.Services)
   private static async findUnusedBriefcase(accessToken: AccessToken, iModelId: string, openMode: OpenMode, requiredChangeSet: ChangeSet|null): Promise<BriefcaseToken|undefined> {
-    /*
-     * For read write cases, find any briefcase that's been acquired by the user, is closed and with a version <= requiredVersion (to allow for an upgrade)
-     * For read only cases, find any briefcase that's closed with a version <= required version, or open+read-only briefcase with version = requiredVersion
-     */
     const requiredChangeSetIndex: number = requiredChangeSet ? +requiredChangeSet.index : 0;
     const cache = BriefcaseManager.cache!;
-    const briefcases = cache.briefcases;
-    for (const entry of briefcases.values()) {
-      const briefcaseToken = entry.briefcaseToken;
+    let briefcaseToken: BriefcaseToken|undefined;
+
+    const briefcases = new Array<BriefcaseToken>();
+    for (const entry of cache.briefcases.values()) {
+      briefcaseToken = entry.briefcaseToken;
       if (briefcaseToken.imodelId !== iModelId)
         continue;
       if (briefcaseToken.changeSetIndex! > requiredChangeSetIndex)
-      continue;
-
-      if (!briefcaseToken.isOpen) {
-        if (openMode === OpenMode.Readonly)
-          return briefcaseToken;
-
-        /* openMode === OpenMode.ReadWrite */
-        if (briefcaseToken.userId === accessToken.getUserProfile().userId)
-          return briefcaseToken;
         continue;
-      }
-      if (openMode === OpenMode.ReadWrite)
-        continue;
-
-      /* openMode === OpenMode.Readonly */
-      if (briefcaseToken.openMode === OpenMode.Readonly && briefcaseToken.changeSetIndex === requiredChangeSetIndex)
-        return briefcaseToken;
+      briefcases.push(entry.briefcaseToken);
     }
+
+    // For read-only cases...
+    if (openMode === OpenMode.Readonly) {
+      // first prefer any briefcase that's opened already, is read-only and with version = requiredVersion
+      briefcaseToken = briefcases.find((entry: BriefcaseToken): boolean => !!entry.isOpen && entry.openMode === OpenMode.Readonly && entry.changeSetIndex === requiredChangeSetIndex);
+      if (briefcaseToken)
+        return briefcaseToken;
+
+      // next prefer any briefcase that's closed, and with version = requiredVersion
+      briefcaseToken = briefcases.find((entry: BriefcaseToken): boolean => !entry.isOpen && entry.changeSetIndex === requiredChangeSetIndex);
+      if (briefcaseToken)
+        return briefcaseToken;
+
+      // next prefer any briefcase that's closed, and with version < requiredVersion
+      briefcaseToken = briefcases.find((entry: BriefcaseToken): boolean => !entry.isOpen && entry.changeSetIndex! < requiredChangeSetIndex);
+      if (briefcaseToken)
+        return briefcaseToken;
+
+      return undefined;
+    }
+
+    // For read-write cases...
+    // first prefer any briefcase that's been acquired by the user, is currently closed, and with version = requiredVersion
+    briefcaseToken = briefcases.find((entry: BriefcaseToken): boolean => !entry.isOpen && entry.changeSetIndex === requiredChangeSetIndex && entry.userId === accessToken.getUserProfile().userId);
+    if (briefcaseToken)
+      return briefcaseToken;
+
+    // next prefer any briefcase that's been acquired by the user, is currently closed, and with version < requiredVersion
+    briefcaseToken = briefcases.find((entry: BriefcaseToken): boolean => !entry.isOpen && entry.changeSetIndex! < requiredChangeSetIndex && entry.userId === accessToken.getUserProfile().userId);
+    if (briefcaseToken)
+      return briefcaseToken;
+
     return undefined;
   }
 
