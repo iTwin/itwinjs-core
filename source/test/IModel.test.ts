@@ -463,7 +463,7 @@ describe("iModel", () => {
     assert.isDefined(newTestElemFetched.integerProperty1);
     assert.equal(newTestElemFetched.integerProperty1, newTestElem.integerProperty1);
     assert.isTrue(newTestElemFetched.arrayOfPoint3d[0].isAlmostEqual(newTestElem.arrayOfPoint3d[0]));
-    // TODO: autoHandlePropertiesToJson in native code must convert property names to lowercase - assert.deepEqual(newTestElemFetched.location, loc1);
+    assert.deepEqual(newTestElemFetched.location, loc1);
     // TODO: struct arrays   assert.deepEqual(newTestElem.arrayOfStructs, arrayOfStructs);
     // TODO: getElement must convert date ISO string to Date object    assert.deepEqual(newTestElemFetched.dtUtc, newTestElem.dtUtc);
     assert.isTrue(newTestElemFetched.p3d.isAlmostEqual(newTestElem.p3d));
