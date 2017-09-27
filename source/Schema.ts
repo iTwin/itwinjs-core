@@ -15,7 +15,7 @@ export class Schema {
    * @param imodel The IModel that contains the class definitions
    * @returns The corresponding ClassCtor
    */
-  public static async getClass(className: string, imodel: IModel): Promise<EntityCtor> {
+  public static getClass(className: string, imodel: IModel): Promise<EntityCtor> {
     return ClassRegistry.getClass(this.name + ":" + className, imodel);
   }
 }

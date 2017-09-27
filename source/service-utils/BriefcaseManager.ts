@@ -233,7 +233,6 @@ export class BriefcaseManager {
         briefcaseToken.isOpen = undefined;
         briefcaseToken.changeSetId = localBriefcase.parentChangeSetId;
         briefcaseToken.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, localIModelId, briefcaseToken.changeSetId!);
-        assert(!!briefcaseToken.changeSetId && !!briefcaseToken.changeSetIndex);
         BriefcaseManager.cache.setBriefcase(briefcaseToken, undefined);
       }
 
@@ -296,44 +295,42 @@ export class BriefcaseManager {
   }
 
   @RunsIn(Tier.Services)
-  private static copyFile(targetPathname: string, sourcePathname: string): boolean {
-    let status: boolean = true;
+  private static async copyFile(targetPathname: string, sourcePathname: string): Promise<void> {
+    return new Promise<void> ((resolve, reject) => {
+      let status = true;
 
-    const readStream = fs.createReadStream(sourcePathname);
-    readStream.on("error", () => { status = false; });
+      const readStream = fs.createReadStream(sourcePathname);
+      readStream.on("error", () => { status = false; });
 
-    const writeStream = fs.createWriteStream(targetPathname);
-    writeStream.on("error", () => { status = false; });
+      const writeStream = fs.createWriteStream(targetPathname);
+      writeStream.on("error", () => { status = false; });
 
-    readStream.pipe(writeStream);
+      readStream.pipe(writeStream);
 
-    return status;
+      writeStream.on("close", () => { status ? resolve() : reject(); });
+    });
   }
 
   @RunsIn(Tier.Services)
-  private static copyBriefcase(iModelId: string, briefcase: Briefcase, seedPathname: string): string {
+  private static async copyBriefcase(iModelId: string, briefcase: Briefcase, seedPathname: string): Promise<string> {
     const briefcasePathname: string = BriefcaseManager.getBriefcasePathname(iModelId, briefcase);
 
     const briefcasePath: string = path.dirname(briefcasePathname);
     if (!fs.existsSync(briefcasePath))
       fs.mkdirSync(briefcasePath);
 
-    if (!BriefcaseManager.copyFile(briefcasePathname, seedPathname)) {
-      throw (new IModelError(BriefcaseError.CannotCopy));
-    }
+    await BriefcaseManager.copyFile(briefcasePathname, seedPathname)
+      .catch(() => {Promise.reject(new IModelError(BriefcaseError.CannotCopy)); });
 
     return briefcasePathname;
   }
 
   @RunsIn(Tier.Services)
   private static async getChangeSetIndexFromId(accessToken: AccessToken, iModelId: string, changeSetId: string): Promise<number|undefined> {
-    // todo: There's a iModelHub query for this. Also consider not requiring this lookup at all by setting up a ECDb to store briefcase info
-    const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.getChangeSets(accessToken, iModelId, false);
-    for (const changeSet of changeSets) {
-      if (changeSet.wsgId === changeSetId)
-        return +changeSet.index;
-    }
-    return undefined;
+    if (changeSetId === "")
+      return 0; // todo: perhaps this needs to be in the lower level hubClient method?
+    const changeSet: ChangeSet = await BriefcaseManager.hubClient.getChangeSet(accessToken, iModelId, false, changeSetId);
+    return +changeSet.index;
   }
 
   @RunsIn(Tier.Services)
@@ -436,7 +433,7 @@ export class BriefcaseManager {
      * For read write cases, find any briefcase that's been acquired by the user, is closed and with a version <= requiredVersion (to allow for an upgrade)
      * For read only cases, find any briefcase that's closed with a version <= required version, or open+read-only briefcase with version = requiredVersion
      */
-    const requiredChangeSetIndex: number = requiredChangeSet ? +requiredChangeSet.index : -1;
+    const requiredChangeSetIndex: number = requiredChangeSet ? +requiredChangeSet.index : 0;
     const cache = BriefcaseManager.cache!;
     const briefcases = cache.briefcases;
     for (const entry of briefcases.values()) {
@@ -471,7 +468,7 @@ export class BriefcaseManager {
 
     const seedPathname = BriefcaseManager.getSeedPathname(iModelId, briefcase);
     await BriefcaseManager.downloadBriefcase(briefcase, seedPathname);
-    const briefcasePathname = BriefcaseManager.copyBriefcase(iModelId, briefcase, seedPathname);
+    const briefcasePathname = await BriefcaseManager.copyBriefcase(iModelId, briefcase, seedPathname);
 
     const userId = accessToken.getUserProfile().userId;
     const briefcaseToken = BriefcaseToken.fromBriefcase(briefcase.iModelId, briefcase.briefcaseId, briefcasePathname, userId);
@@ -483,7 +480,7 @@ export class BriefcaseManager {
     briefcaseToken.openMode = openMode;
 
     const toChangeSetId: string = !!changeSet ? changeSet.wsgId : "";
-    const toChangeSetIndex: number = !!changeSet ? +changeSet.index : -1;
+    const toChangeSetIndex: number = !!changeSet ? +changeSet.index : 0;
     const fromChangeSetId: string = briefcaseToken.changeSetId!;
     const changeSetTokens = await BriefcaseManager.downloadChangeSets(accessToken, briefcaseToken.imodelId!, toChangeSetId, fromChangeSetId);
 
