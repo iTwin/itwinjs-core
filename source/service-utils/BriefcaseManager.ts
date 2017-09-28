@@ -6,7 +6,7 @@ import { MultiTierExecutionHost, RunsIn, Tier } from "@bentley/bentleyjs-core/li
 import { AccessToken, Briefcase, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
 import { BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { assert } from "@bentley/bentleyjs-core/lib/assert";
+import { Assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { IModelStatus, IModelError } from "../IModelError";
 import * as fs from "fs";
 import * as path from "path";
@@ -227,7 +227,7 @@ export class BriefcaseManager {
         const localBriefcase = localBriefcases[hubBriefcase.briefcaseId.toString()];
         if (!localBriefcase)
           continue;
-        assert (localIModelId === hubBriefcase.iModelId);
+        Assert (localIModelId === hubBriefcase.iModelId);
 
         const briefcaseToken = BriefcaseToken.fromBriefcase(localIModelId, hubBriefcase.briefcaseId, localBriefcase.pathname, hubBriefcase.userId);
         briefcaseToken.isOpen = undefined;
@@ -250,7 +250,7 @@ export class BriefcaseManager {
     if (!briefcase) {
       await BriefcaseManager.hubClient.deleteBriefcase(accessToken, iModelId, briefcaseId)
         .catch(() => {
-          assert(false, "Could not delete acquired briefcase");
+          Assert(false, "Could not delete acquired briefcase");
           return Promise.reject(new IModelError(BriefcaseError.CannotDelete));
         });
     }
@@ -266,11 +266,11 @@ export class BriefcaseManager {
       fs.unlinkSync(briefcaseToken.pathname!);
 
     // Delete from the hub
-    assert(!!briefcaseToken.imodelId);
-    assert(!!briefcaseToken.briefcaseId);
+    Assert(!!briefcaseToken.imodelId);
+    Assert(!!briefcaseToken.briefcaseId);
     await BriefcaseManager.hubClient.deleteBriefcase(accessToken, briefcaseToken.imodelId!, briefcaseToken.briefcaseId!)
       .catch(() => {
-        assert(false, "Could not delete the accquired briefcase");
+        Assert(false, "Could not delete the accquired briefcase");
         return Promise.reject(new IModelError(BriefcaseError.CannotDelete));
       });
 
@@ -287,7 +287,7 @@ export class BriefcaseManager {
     BriefcaseManager.makeDirectoryRecursive(path.dirname(seedPathname)); // todo: move this to IModel Hub Client
     await BriefcaseManager.hubClient.downloadBriefcase(briefcase, seedPathname)
       .catch(() => {
-        assert(false, "Could not download briefcase");
+        Assert(false, "Could not download briefcase");
         if (fs.existsSync(seedPathname))
           fs.unlinkSync(seedPathname); // Just in case there was a partial download, delete the file
         return Promise.reject(new IModelError(BriefcaseError.CannotDownload));
@@ -372,7 +372,7 @@ export class BriefcaseManager {
       BriefcaseManager.makeDirectoryRecursive(changeSetsPath); // todo: move this to IModel Hub Client
       await BriefcaseManager.hubClient.downloadChangeSets(changeSetsToDownload, changeSetsPath)
         .catch(() => {
-          assert(false, "Could not download ChangeSets");
+          Assert(false, "Could not download ChangeSets");
           fs.unlinkSync(changeSetsPath); // Just in case there was a partial download, delete the entire folder
           Promise.reject(new IModelError(BriefcaseError.CannotDownload));
         });
@@ -422,7 +422,7 @@ export class BriefcaseManager {
     if (!!afterChangeSetId)
       return await BriefcaseManager.getChangeSetFromId(accessToken, iModelId, afterChangeSetId);
 
-    assert(false, "version.isWithName() || version.shouldUseExisting() not supported yet");
+    Assert(false, "version.isWithName() || version.shouldUseExisting() not supported yet");
     return Promise.reject(new IModelError(BriefcaseError.NotSupportedYet));
     // todo: support version.isWithName() || version.shouldUseExisting()
   }
