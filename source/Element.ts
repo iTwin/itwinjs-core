@@ -5,7 +5,8 @@
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { Code, CodeProps, GeometryStream, Placement3d, Placement2d } from "./IModel";
+import { Code, CodeProps } from "./Code";
+import { GeometryStream, Placement3d, Placement2d } from "./ElementGeometry";
 import { IModelStatus, IModelError } from "./IModelError";
 import { ClassRegistry } from "./ClassRegistry";
 import { ElementAspect, ElementAspectProps, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
@@ -28,6 +29,15 @@ export interface ElementProps extends EntityProps {
   federationGuid?: Guid;
   userLabel?: string;
   jsonProperties?: any;
+}
+
+/** Parameters to specify what element to load. */
+export interface ElementLoadParams {
+  id?: Id64 | string;
+  code?: Code;
+  federationGuid?: string;
+  /** if true, do not load the geometry of the element */
+  noGeometry?: boolean;
 }
 
 /** An element within an iModel. */
