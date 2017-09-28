@@ -4,7 +4,11 @@
 import { Schema, Schemas } from "./Schema";
 import { ClassRegistry } from "./ClassRegistry";
 
-/** Represents the BisCore schema. */
+/** Represents the BisCore schema.
+ * ``` ts
+ * [[include:BisCore1.sampleCode]]
+ * ```
+ */
 export class BisCore extends Schema {
 
   /** Call this to register the BisCore schema prior to using it. */

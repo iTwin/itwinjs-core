@@ -1,54 +1,17 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ClassRegistry } from "./ClassRegistry";
-import { Element, ElementProps } from "./Element";
-import { EntityMetaData } from "./Entity";
+import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
+import { Code } from "./Code";
+import { Element, ElementLoadParams, ElementProps } from "./Element";
 import { IModelStatus, IModelError } from "./IModelError";
 import { Model, ModelProps } from "./Model";
-import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { Point3d, Vector3d, Range3d, YawPitchRollAngles, Point2d, Range2d, Transform, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
-import { Constant } from "@bentley/geometry-core/lib/Constant";
-import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { Base64 } from "js-base64";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { BriefcaseToken, BriefcaseManager, IModelVersion, KeepBriefcase } from "./service-utils/BriefcaseManager";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-
-/** The mapping between a class name and its metadata */
-export class MetaDataRegistry {
-  private reg: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();
-
-  constructor(private imodel: IModel) {
-    if (!(imodel instanceof IModel))
-      throw new TypeError("bad imodel");
-  }
-
-  /** Get the specified Entity metadata */
-  public get(classFullName: string): EntityMetaData | undefined {
-    const key = classFullName.toLowerCase();
-    let mdata = this.reg.get(key);
-    if (mdata)
-      return mdata;
-
-    const name: string[] = classFullName.split(":");
-    let mstr: string;
-    try {
-      mstr = this.imodel.getECClassMetaDataSync(name[0], name[1]);
-    } catch (error) {
-      return undefined;
-    }
-
-    mdata = new EntityMetaData(JSON.parse(mstr));
-    if (undefined === mdata)
-      return undefined;
-    this.reg.set(key, mdata);
-    return mdata;
-  }
-}
 
 /** An iModel database. */
 export class IModel {
@@ -201,15 +164,6 @@ export class Models {
   public get repositoryModelId(): Id64 { return new Id64("0x1"); }
 }
 
-/** Parameters to specify what element to load. */
-export interface ElementLoadParams {
-  id?: Id64 | string;
-  code?: Code;
-  federationGuid?: string;
-  /** if true, do not load the geometry of the element */
-  noGeometry?: boolean;
-}
-
 /** The collection of Elements in an iModel  */
 export class Elements {
   private _iModel: IModel;
@@ -322,111 +276,4 @@ export class Elements {
 
   /** Get the root subject element. */
   public getRootSubject(): Promise<Element> { return this.getElement(this.rootSubjectId); }
-}
-
-/** Properties that define a Code */
-export interface CodeProps {
-  spec: Id64 | string;
-  scope: string;
-  value?: string;
-}
-
-/** A 3 part Code that identifies an Element */
-export class Code implements CodeProps {
-  public spec: Id64;
-  public scope: string;
-  public value?: string;
-
-  constructor(val: CodeProps) {
-    this.spec = new Id64(val.spec);
-    this.scope = JsonUtils.asString(val.scope, "");
-    this.value = JsonUtils.asString(val.value);
-  }
-
-  /** Create an instance of the default code (1,1,undefined) */
-  public static createDefault(): Code { return new Code({ spec: new Id64([1, 0]), scope: "1" }); }
-  public getValue(): string { return this.value ? this.value : ""; }
-  public equals(other: Code): boolean { return this.spec.equals(other.spec) && this.scope === other.scope && this.value === other.value; }
-}
-
-/** A bounding box aligned to the orientation of a 3d Element */
-export class ElementAlignedBox3d extends Range3d {
-  public constructor(low: Point3d, high: Point3d) { super(low.x, low.y, low.z, high.x, high.y, high.z); }
-  public get left(): number { return this.low.x; }
-  public get bottom(): number { return this.low.y; }
-  public get front(): number { return this.low.z; }
-  public get right(): number { return this.high.x; }
-  public get top(): number { return this.high.y; }
-  public get back(): number { return this.high.z; }
-  public get width(): number { return this.xLength(); }
-  public get depth(): number { return this.yLength(); }
-  public get height(): number { return this.zLength(); }
-  public isValid(): boolean {
-    const max = Constant.circumferenceOfEarth; const lo = this.low; const hi = this.high;
-    return !this.isNull() && lo.x > -max && lo.y > -max && lo.z > -max && hi.x < max && hi.y < max && hi.z < max;
-  }
-  public static fromJSON(json?: any): ElementAlignedBox3d {
-    json = json ? json : {};
-    return new ElementAlignedBox3d(Point3d.fromJSON(json.low), Point3d.fromJSON(json.high));
-  }
-}
-
-/** A bounding box aligned to the orientation of a 2d Element */
-export class ElementAlignedBox2d extends Range2d {
-  public constructor(low: Point2d, high: Point2d) { super(low.x, low.y, high.x, high.y); }
-  public get left(): number { return this.low.x; }
-  public get bottom(): number { return this.low.y; }
-  public get right(): number { return this.high.x; }
-  public get top(): number { return this.high.y; }
-  public get width(): number { return this.xLength(); }
-  public get depth(): number { return this.yLength(); }
-  public static fromJSON(json?: any): ElementAlignedBox2d {
-    json = json ? json : {};
-    return new ElementAlignedBox2d(Point2d.fromJSON(json.low), Point2d.fromJSON(json.high));
-  }
-  public isValid(): boolean {
-    const max = Constant.circumferenceOfEarth; const lo = this.low; const hi = this.high;
-    return !this.isNull() && lo.x > -max && lo.y > -max && hi.x < max && hi.y < max;
-  }
-}
-
-export class GeometryStream {
-  public geomStream: ArrayBuffer;
-  public constructor(stream: any) { this.geomStream = stream; }
-  public toJSON(): any { return Base64.encode(this.geomStream as any); }
-
-  /** return false if this GeometryStream is empty. */
-  public hasGeometry(): boolean { return this.geomStream.byteLength !== 0; }
-  public static fromJSON(json?: any): GeometryStream | undefined {
-    return json ? new GeometryStream(json instanceof GeometryStream ? json.geomStream : Base64.decode(json)) : undefined;
-  }
-}
-
-/**
- * The placement of a GeometricElement3d. This includes the origin, orientation, and size (bounding box) of the element.
- * All geometry of a GeometricElement are relative to its placement.
- */
-export class Placement3d {
-  public constructor(public origin: Point3d, public angles: YawPitchRollAngles, public bbox: ElementAlignedBox3d) { }
-  public getTransform() { return Transform.createOriginAndMatrix(this.origin, this.angles.toRotMatrix()); }
-  public static fromJSON(json?: any): Placement3d {
-    json = json ? json : {};
-    return new Placement3d(Point3d.fromJSON(json.origin), YawPitchRollAngles.fromJSON(json.angles), ElementAlignedBox3d.fromJSON(json.bbox));
-  }
-
-  /** Determine whether this Placement3d is valid. */
-  public isValid(): boolean { return this.bbox.isValid() && this.origin.maxAbs() < Constant.circumferenceOfEarth; }
-}
-
-/** The placement of a GeometricElement2d. This includes the origin, orientation, and size (bounding box) of the element. */
-export class Placement2d {
-  public constructor(public origin: Point2d, public angle: Angle, public bbox: ElementAlignedBox2d) { }
-  public getTransform() { return Transform.createOriginAndMatrix(Point3d.createFrom(this.origin), RotMatrix.createRotationAroundVector(Vector3d.unitZ(), this.angle)!); }
-  public static fromJSON(json?: any): Placement2d {
-    json = json ? json : {};
-    return new Placement2d(Point2d.fromJSON(json.origin), Angle.fromJSON(json.angle), ElementAlignedBox2d.fromJSON(json.bbox));
-  }
-
-  /** Determine whether this Placement2d is valid. */
-  public isValid(): boolean { return this.bbox.isValid() && this.origin.maxAbs() < Constant.circumferenceOfEarth; }
 }

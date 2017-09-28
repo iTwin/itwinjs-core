@@ -4,8 +4,9 @@
 
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Code } from "../Code";
 import { EntityMetaData } from "../Entity";
-import { Code, Elements, IModel } from "../IModel";
+import { Elements, IModel } from "../IModel";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { BisCore } from "../BisCore";
 
