@@ -22,6 +22,14 @@ const publicUrl = '';
 // Get environment variables to inject into our app.
 const env = getClientEnvironment(publicUrl);
 
+// WIP: This is needed for the exports-loader hack below.
+const fixAddonLoaderRelPaths = (context, request, callback) => {
+  if (/addonLoader/.test(request)) {
+    return callback(null, 'commonjs ' + path.resolve(context, request).replace(/^(.*node_modules[\/\\])*/, ""));
+  }
+  callback();
+}
+
 // This is the development configuration.
 // It is focused on developer experience and fast rebuilds.
 // The production configuration is different and lives in a separate file.
@@ -29,6 +37,8 @@ module.exports = {
   // You may want 'eval' instead if you prefer to see the compiled output in DevTools.
   // See the discussion in https://github.com/facebookincubator/create-react-app/issues/343.
   devtool: 'cheap-module-source-map',
+  
+  externals: [fixAddonLoaderRelPaths, nodeExternals({whitelist: [/imodeljs-core/]})],
   // These are the "entry points" to our application.
   // This means they will be the "root" imports that are included in JS bundle.
   // The first two entry points enable "hot" CSS and auto-refreshes for JS.
@@ -82,6 +92,14 @@ module.exports = {
         enforce: 'pre',
         include: paths.appSrc,
       },
+      // WIP: This is a temporary (hack) workaround to allow us to get a native dgndb handle to pass to our addon.
+      {
+        test: /IModel\.js$/,
+        loader: require.resolve('exports-loader'),
+        query: "DgnDbNativeCode=DgnDbNativeCode",
+        enforce: 'pre',
+        include: paths.appNodeModules,
+      },
       { 
         test: /node_modules[\/\\]ws/, 
         use: require.resolve('null-loader'),
@@ -107,7 +125,6 @@ module.exports = {
     Buffer: false,
     setImmediate: false
   },
-  externals: [nodeExternals()],
   plugins: [
     // Add module names to factory functions so they appear in browser profiler.
     new webpack.NamedModulesPlugin(),
