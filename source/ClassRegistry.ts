@@ -156,3 +156,35 @@ export class ClassRegistry {
     return ClassRegistry.classMap.has(ClassRegistry.getKey(schemaName, className));
   }
 }
+
+/** The mapping between a class name and its metadata */
+export class MetaDataRegistry {
+  private reg: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();
+
+  constructor(private imodel: IModel) {
+    if (!(imodel instanceof IModel))
+      throw new TypeError("bad imodel");
+  }
+
+  /** Get the specified Entity metadata */
+  public get(classFullName: string): EntityMetaData | undefined {
+    const key = classFullName.toLowerCase();
+    let mdata = this.reg.get(key);
+    if (mdata)
+      return mdata;
+
+    const name: string[] = classFullName.split(":");
+    let mstr: string;
+    try {
+      mstr = this.imodel.getECClassMetaDataSync(name[0], name[1]);
+    } catch (error) {
+      return undefined;
+    }
+
+    mdata = new EntityMetaData(JSON.parse(mstr));
+    if (undefined === mdata)
+      return undefined;
+    this.reg.set(key, mdata);
+    return mdata;
+  }
+}

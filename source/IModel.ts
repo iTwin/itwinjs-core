@@ -1,9 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ClassRegistry } from "./ClassRegistry";
+import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element, ElementProps } from "./Element";
-import { EntityMetaData } from "./Entity";
 import { IModelStatus, IModelError } from "./IModelError";
 import { Model, ModelProps } from "./Model";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
@@ -17,38 +16,6 @@ import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { BriefcaseToken, BriefcaseManager, IModelVersion, KeepBriefcase } from "./service-utils/BriefcaseManager";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-
-/** The mapping between a class name and its metadata */
-export class MetaDataRegistry {
-  private reg: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();
-
-  constructor(private imodel: IModel) {
-    if (!(imodel instanceof IModel))
-      throw new TypeError("bad imodel");
-  }
-
-  /** Get the specified Entity metadata */
-  public get(classFullName: string): EntityMetaData | undefined {
-    const key = classFullName.toLowerCase();
-    let mdata = this.reg.get(key);
-    if (mdata)
-      return mdata;
-
-    const name: string[] = classFullName.split(":");
-    let mstr: string;
-    try {
-      mstr = this.imodel.getECClassMetaDataSync(name[0], name[1]);
-    } catch (error) {
-      return undefined;
-    }
-
-    mdata = new EntityMetaData(JSON.parse(mstr));
-    if (undefined === mdata)
-      return undefined;
-    this.reg.set(key, mdata);
-    return mdata;
-  }
-}
 
 /** An iModel database. */
 export class IModel {
