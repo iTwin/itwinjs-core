@@ -31,10 +31,13 @@ const reporterOptions = (!isCI) ? [] : [
   "--reporter-options", `mochaFile=${paths.appJUnitTestResults}`,
 ];
 
+const watchOptions = (process.argv[process.argv.length-1].toLowerCase() === "watch") ? ["--watch"] : [];
+
 // Start the tests
 const args = [
   "--webpack-config",  require.resolve("../config/webpack.config.test.js"),
   "--require", require.resolve("./utils/testSetup"),
+  ...watchOptions,  
   ...reporterOptions,
   path.resolve(paths.appTest, "**/*.@(js|jsx|ts|tsx)"),
 ];
