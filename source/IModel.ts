@@ -25,16 +25,15 @@ export class IModel {
     this.models = new Models(this);
   }
 
-  /**
-   * Get the meta data for the specified class defined in imodel iModel, blocking until the result is returned.
-   * @param ecschemaname  The name of the schema
-   * @param ecclassname   The name of the class
+  /** Get the meta data for the specified class defined in imodel iModel, blocking until the result is returned.
+   * @param schemaName The name of the schema
+   * @param className The name of the class
    * @returns On success, the BentleyReturn result property will be the class meta data in JSON format.
    */
-  public getECClassMetaDataSync(ecschemaname: string, ecclassname: string): string {
+  public getECClassMetaDataSync(schemaName: string, className: string): string {
     if (!this.briefcaseKey)
       throw new IModelError(IModelStatus.NotOpen);
-    return BriefcaseManager.getECClassMetaDataSync(this.briefcaseKey, ecschemaname, ecclassname);
+    return BriefcaseManager.getECClassMetaDataSync(this.briefcaseKey, schemaName, className);
   }
 
   /** @deprecated */
@@ -44,17 +43,16 @@ export class IModel {
     return BriefcaseManager.getElementPropertiesForDisplay(this.briefcaseKey, elementId);
   }
 
-  /**
-   * Get the meta data for the specified class defined in imodel iModel (asynchronously).
-   * @param ecschemaname  The name of the schema
-   * @param ecclassname   The name of the class
+  /** Get the meta data for the specified class defined in imodel iModel (asynchronously).
+   * @param schemaName The name of the schema
+   * @param className The name of the class
    * @returns The class meta data in JSON format.
    * @throws [[IModelError]]
    */
-  public getECClassMetaData(ecschemaname: string, ecclassname: string): Promise<string> {
+  public getECClassMetaData(schemaName: string, className: string): Promise<string> {
     if (!this.briefcaseKey)
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
-    return BriefcaseManager.getECClassMetaData(this.briefcaseKey, ecschemaname, ecclassname);
+    return BriefcaseManager.getECClassMetaData(this.briefcaseKey, schemaName, className);
   }
 
   /** Get the ClassMetaDataRegistry for this iModel */
@@ -66,14 +64,14 @@ export class IModel {
 
   /**
    * Execute a query against this iModel
-   * @param ecsql  The ECSql statement to execute
+   * @param sql The ECSql statement to execute
    * @returns all rows in JSON syntax or the empty string if nothing was selected
    * @throws [[IModelError]] If the statement is invalid
    */
-  public executeQuery(ecsql: string): Promise<string> {
+  public executeQuery(sql: string): Promise<string> {
     if (!this.briefcaseKey)
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
-    return BriefcaseManager.executeQuery(this.briefcaseKey, ecsql);
+    return BriefcaseManager.executeQuery(this.briefcaseKey, sql);
   }
 }
 
@@ -184,7 +182,7 @@ export class Elements {
   }
 
   /** Insert a new element.
-   * @param el  The data for the new element.
+   * @param el The data for the new element.
    * @returns The newly inserted element's Id.
    * @throws [[IModelError]] if unable to insert the element.
    */
@@ -201,7 +199,7 @@ export class Elements {
   }
 
   /** Update an existing element.
-   * @param el  An editable copy of the element, containing the new/proposed data.
+   * @param el An editable copy of the element, containing the new/proposed data.
    * @throws [[IModelError]] if unable to update the element.
    */
   public async updateElement(el: Element): Promise<void> {
@@ -219,7 +217,7 @@ export class Elements {
   }
 
   /** Delete an existing element.
-   * @param el  The element to be deleted
+   * @param el The element to be deleted
    * @throws [[IModelError]]
    */
   public async deleteElement(el: Element): Promise<void> {
@@ -228,7 +226,7 @@ export class Elements {
 
     await BriefcaseManager.deleteElement(this._iModel.briefcaseKey, el.id.toString());
 
-    // Discard from the cachex
+    // Discard from the cache
     this._loaded.delete(el.id.toString());
   }
 
