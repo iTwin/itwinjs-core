@@ -39,7 +39,7 @@
     "@types/request-promise-native": "^1.0.7",
     "chai": "^4.1.2",
     "commander": "^2.11.0",
-    "debug-fabulous": "^0.1.1",
+    "debug-fabulous": "^0.1.2",
     "diff": "^3.3.1",
     "duplexify": "^3.5.1",
     "fs-extra": "latest",

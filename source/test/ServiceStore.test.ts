@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import {ServiceStore} from "../service-utils/ServiceStore";
+import {ServiceStore} from "../backend/ServiceStore";
 import {HubTestUtils} from "./HubTestUtils";
 import {BriefcaseAccessMode} from "@bentley/imodeljs-clients";
 

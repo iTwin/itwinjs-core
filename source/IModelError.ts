@@ -5,7 +5,7 @@
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { BriefcaseError } from "./service-utils/BriefcaseManager";
+import { BriefcaseError } from "./backend/BriefcaseManager";
 
 export const enum IModelStatus {
   IMODEL_ERROR_BASE = 0x10000,

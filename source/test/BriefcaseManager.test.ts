@@ -10,7 +10,7 @@ import { IModelHubClient } from "@bentley/imodeljs-clients";
 import { Briefcase } from "@bentley/imodeljs-clients";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { expect, assert } from "chai";
-import { IModelVersion } from "../service-utils/BriefcaseManager";
+import { IModelVersion } from "../IModelVersion";
 import * as fs from "fs";
 import * as path from "path";
 

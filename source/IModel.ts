@@ -5,12 +5,13 @@ import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Code } from "./Code";
 import { Element, ElementLoadParams, ElementProps } from "./Element";
 import { IModelStatus, IModelError } from "./IModelError";
+import { IModelVersion } from "./IModelVersion";
 import { Model, ModelProps } from "./Model";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { BriefcaseToken, BriefcaseManager, IModelVersion, KeepBriefcase } from "./service-utils/BriefcaseManager";
+import { BriefcaseToken, BriefcaseManager, KeepBriefcase } from "./backend/BriefcaseManager";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 
 /** An iModel database. */
