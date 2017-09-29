@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { Code } from "../Code";
-import { Elements, IModel, Models } from "../IModel";
+import { Elements, Models } from "../IModel";
 import { ColorDef } from "../Render";
 import { ElementProps, Element, GeometricElement3d, GeometricElementProps, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../Element";
 import { Entity, EntityCtor, EntityProps } from "../Entity";
@@ -20,12 +20,13 @@ import { BisCore } from "../BisCore";
 import { SpatialViewDefinition, DisplayStyle3d } from "../ViewDefinition";
 import { GeometricElement2d } from "../Element";
 import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
+import { IModelDb } from "../backend/IModelDb";
 
 describe("iModel", () => {
-  let imodel: IModel;
-  let imodel2: IModel;
-  let imodel3: IModel;
-  let imodel4: IModel;
+  let imodel: IModelDb;
+  let imodel2: IModelDb;
+  let imodel3: IModelDb;
+  let imodel4: IModelDb;
 
   before(async () => {
     // First, register any schemas that will be used in the tests.

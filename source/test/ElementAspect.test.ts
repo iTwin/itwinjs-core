@@ -7,12 +7,12 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { BisCore } from "../BisCore";
 import { PhysicalElement } from "../Element";
 import { ElementMultiAspect, ElementUniqueAspect } from "../ElementAspect";
-import { IModel } from "../IModel";
+import { IModelDb } from "../backend/IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 describe("ElementAspect", () => {
 
-  let iModel: IModel;
+  let iModel: IModelDb;
 
   before(async () => {
     // First, register any schemas that will be used in the tests.

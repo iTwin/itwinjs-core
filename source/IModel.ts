@@ -5,64 +5,24 @@ import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Code } from "./Code";
 import { Element, ElementLoadParams, ElementProps } from "./Element";
 import { IModelStatus, IModelError } from "./IModelError";
-import { IModelVersion } from "./IModelVersion";
 import { Model, ModelProps } from "./Model";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
-import { AccessToken } from "@bentley/imodeljs-clients";
-import { BriefcaseToken, BriefcaseManager, KeepBriefcase } from "./backend/BriefcaseManager";
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { BriefcaseToken, BriefcaseManager } from "./backend/BriefcaseManager";
 
-/** An iModel database. */
+/** An abstract class representing an instance of an iModel. */
 export class IModel {
-  private _briefcaseKey: BriefcaseToken|undefined;
+  protected _briefcaseKey: BriefcaseToken | undefined;
   public elements: Elements;
   public models: Models;
   private _classMetaDataRegistry: MetaDataRegistry;
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
   public get briefcaseKey(): BriefcaseToken|undefined { return this._briefcaseKey; }
 
-  private constructor() {
+  protected constructor() {
     this.elements = new Elements(this);
     this.models = new Models(this);
-  }
-
-  /** Open the iModel from a local file
-   * @param fileName  The name of the iModel
-   * @param openMode      Open mode for database
-   * @throws [[IModelError]]
-   */
-  public static async openStandalone(fileName: string, openMode: OpenMode = OpenMode.ReadWrite): Promise<IModel> {
-    const iModel = new IModel();
-    iModel._briefcaseKey = await BriefcaseManager.openStandalone(fileName, openMode);
-    return iModel;
-  }
-
-  /**
-   * Open the iModel from the Hub
-   */
-  public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModel> {
-    const iModel = new IModel();
-    iModel._briefcaseKey = await BriefcaseManager.open(accessToken, iModelId, openMode, version);
-    return iModel;
-  }
-
-  /**
-   * Close this iModel, if it is currently open
-   * @description This needs to be called only for read-write iModels. For read-only iMdodels this is a no-op.
-   */
-  public async close(accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
-    if (!this.briefcaseKey)
-      return;
-    await BriefcaseManager.close(accessToken, this.briefcaseKey, keepBriefcase);
-  }
-
-  /** Close this iModel, if it is currently open */
-  public closeStandalone() {
-    if (!this.briefcaseKey)
-      return;
-    BriefcaseManager.closeStandalone(this.briefcaseKey);
   }
 
   /**
