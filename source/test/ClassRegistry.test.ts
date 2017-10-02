@@ -6,12 +6,13 @@ import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Code } from "../Code";
 import { EntityMetaData } from "../Entity";
-import { Elements, IModel } from "../IModel";
+import { Elements } from "../IModel";
+import { IModelDb } from "../backend/IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { BisCore } from "../BisCore";
 
 describe("Class Registry", () => {
-  let imodel: IModel;
+  let imodel: IModelDb;
 
   before(async () => {
     // First, register any schemas that will be used in the tests.

@@ -6,12 +6,12 @@ import { assert } from "chai";
 import { BisCore } from "../BisCore";
 import { Element } from "../Element";
 import { EntityCtor } from "../Entity";
-import { IModel } from "../IModel";
+import { IModelDb } from "../backend/IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Sample code organized as tests to make sure that it builds and runs successfully. */
 describe("Sample Code", () => {
-  let iModel: IModel;
+  let iModel: IModelDb;
 
   before(async () => {
     iModel = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim");

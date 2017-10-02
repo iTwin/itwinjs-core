@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModel } from "../IModel";
+import { IModelDb } from "../backend/IModelDb";
 import { BisCore } from "../BisCore";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
@@ -80,7 +80,7 @@ describe("BriefcaseManager", () => {
   };
 
   it("should be able to open an IModel from the Hub", async () => {
-    const iModel: IModel = await IModel.open(accessToken, iModelId);
+    const iModel: IModelDb = await IModelDb.open(accessToken, iModelId);
     assert.exists(iModel);
 
     expect(fs.existsSync(iModelLocalPath));
@@ -93,7 +93,7 @@ describe("BriefcaseManager", () => {
   it("should reuse closed briefcases in ReadWrite mode", async () => {
     const files = fs.readdirSync(iModelLocalPath);
 
-    const iModel: IModel = await IModel.open(accessToken, iModelId);
+    const iModel: IModelDb = await IModelDb.open(accessToken, iModelId);
     assert.exists(iModel);
     await iModel.close(accessToken);
 
@@ -107,9 +107,9 @@ describe("BriefcaseManager", () => {
     const briefcases = fs.readdirSync(iModelLocalPath);
     expect(briefcases.length).greaterThan(0);
 
-    const iModels = new Array<IModel>();
+    const iModels = new Array<IModelDb>();
     for (let ii = 0; ii < 5; ii++) {
-      const iModel: IModel = await IModel.open(accessToken, iModelId, OpenMode.Readonly);
+      const iModel: IModelDb = await IModelDb.open(accessToken, iModelId, OpenMode.Readonly);
       assert.exists(iModel);
       iModels.push(iModel);
     }
@@ -121,7 +121,7 @@ describe("BriefcaseManager", () => {
   });
 
   it("should open a briefcase of a specific version in Readonly mode", async () => {
-    const iModel: IModel = await IModel.open(accessToken, iModelId, OpenMode.Readonly, IModelVersion.afterChangeSet(changeSets[1].wsgId));
+    const iModel: IModelDb = await IModelDb.open(accessToken, iModelId, OpenMode.Readonly, IModelVersion.afterChangeSet(changeSets[1].wsgId));
     assert.exists(iModel);
   });
 
@@ -131,7 +131,7 @@ describe("BriefcaseManager", () => {
     if (shouldDeleteAllBriefcases)
       await deleteAllBriefcases(iModelId2);
 
-    const iModel: IModel = await IModel.open(accessToken, iModelId2, OpenMode.Readonly);
+    const iModel: IModelDb = await IModelDb.open(accessToken, iModelId2, OpenMode.Readonly);
     assert.exists(iModel);
   });
 

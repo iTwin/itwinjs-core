@@ -4,78 +4,38 @@
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Code } from "./Code";
 import { Element, ElementLoadParams, ElementProps } from "./Element";
+import { ElementAspect, ElementAspectProps, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { IModelStatus, IModelError } from "./IModelError";
-import { IModelVersion } from "./IModelVersion";
 import { Model, ModelProps } from "./Model";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
-import { AccessToken } from "@bentley/imodeljs-clients";
-import { BriefcaseToken, BriefcaseManager, KeepBriefcase } from "./backend/BriefcaseManager";
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { BriefcaseToken, BriefcaseManager } from "./backend/BriefcaseManager";
 import { ECSqlStatement } from "./backend/ECSqlStatement";
 
-/** An iModel database. */
+/** An abstract class representing an instance of an iModel. */
 export class IModel {
-  private _briefcaseKey: BriefcaseToken|undefined;
+  protected _briefcaseKey: BriefcaseToken | undefined;
   public elements: Elements;
   public models: Models;
   private _classMetaDataRegistry: MetaDataRegistry;
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
   public get briefcaseKey(): BriefcaseToken|undefined { return this._briefcaseKey; }
 
-  private constructor() {
+  protected constructor() {
     this.elements = new Elements(this);
     this.models = new Models(this);
   }
 
-  /** Open the iModel from a local file
-   * @param fileName  The name of the iModel
-   * @param openMode      Open mode for database
-   * @throws [[IModelError]]
-   */
-  public static async openStandalone(fileName: string, openMode: OpenMode = OpenMode.ReadWrite): Promise<IModel> {
-    const iModel = new IModel();
-    iModel._briefcaseKey = await BriefcaseManager.openStandalone(fileName, openMode);
-    return iModel;
-  }
-
-  /**
-   * Open the iModel from the Hub
-   */
-  public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModel> {
-    const iModel = new IModel();
-    iModel._briefcaseKey = await BriefcaseManager.open(accessToken, iModelId, openMode, version);
-    return iModel;
-  }
-
-  /**
-   * Close this iModel, if it is currently open
-   * @description This needs to be called only for read-write iModels. For read-only iMdodels this is a no-op.
-   */
-  public async close(accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
-    if (!this.briefcaseKey)
-      return;
-    await BriefcaseManager.close(accessToken, this.briefcaseKey, keepBriefcase);
-  }
-
-  /** Close this iModel, if it is currently open */
-  public closeStandalone() {
-    if (!this.briefcaseKey)
-      return;
-    BriefcaseManager.closeStandalone(this.briefcaseKey);
-  }
-
-  /**
-   * Get the meta data for the specified class defined in imodel iModel, blocking until the result is returned.
-   * @param ecschemaname  The name of the schema
-   * @param ecclassname   The name of the class
+  /** Get the meta data for the specified class defined in imodel iModel, blocking until the result is returned.
+   * @param schemaName The name of the schema
+   * @param className The name of the class
    * @returns On success, the BentleyReturn result property will be the class meta data in JSON format.
    */
-  public getECClassMetaDataSync(ecschemaname: string, ecclassname: string): string {
+  public getECClassMetaDataSync(schemaName: string, className: string): string {
     if (!this.briefcaseKey)
       throw new IModelError(IModelStatus.NotOpen);
-    return BriefcaseManager.getECClassMetaDataSync(this.briefcaseKey, ecschemaname, ecclassname);
+    return BriefcaseManager.getECClassMetaDataSync(this.briefcaseKey, schemaName, className);
   }
 
   /** @deprecated */
@@ -85,17 +45,16 @@ export class IModel {
     return BriefcaseManager.getElementPropertiesForDisplay(this.briefcaseKey, elementId);
   }
 
-  /**
-   * Get the meta data for the specified class defined in imodel iModel (asynchronously).
-   * @param ecschemaname  The name of the schema
-   * @param ecclassname   The name of the class
+  /** Get the meta data for the specified class defined in imodel iModel (asynchronously).
+   * @param schemaName The name of the schema
+   * @param className The name of the class
    * @returns The class meta data in JSON format.
    * @throws [[IModelError]]
    */
-  public getECClassMetaData(ecschemaname: string, ecclassname: string): Promise<string> {
+  public getECClassMetaData(schemaName: string, className: string): Promise<string> {
     if (!this.briefcaseKey)
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
-    return BriefcaseManager.getECClassMetaData(this.briefcaseKey, ecschemaname, ecclassname);
+    return BriefcaseManager.getECClassMetaData(this.briefcaseKey, schemaName, className);
   }
 
   /** Get the ClassMetaDataRegistry for this iModel */
@@ -107,14 +66,14 @@ export class IModel {
 
   /**
    * Execute a query against this iModel
-   * @param ecsql  The ECSql statement to execute
+   * @param sql The ECSql statement to execute
    * @returns all rows in JSON syntax or the empty string if nothing was selected
    * @throws [[IModelError]] If the statement is invalid
    */
-  public executeQuery(ecsql: string): Promise<string> {
+  public executeQuery(sql: string): Promise<string> {
     if (!this.briefcaseKey)
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
-    return BriefcaseManager.executeQuery(this.briefcaseKey, ecsql);
+    return BriefcaseManager.executeQuery(this.briefcaseKey, sql);
   }
 
   /**
@@ -170,6 +129,9 @@ export class Models {
    */
   public async getSubModel(modeledElementId: Id64 | Guid | Code): Promise<Model> {
     const modeledElement: Element = await this._iModel.elements.getElement(modeledElementId);
+    if (modeledElement.id.equals(this._iModel.elements.rootSubjectId))
+      return Promise.reject(new IModelError(IModelStatus.NotFound));
+
     return this.getModel(modeledElement.id);
   }
 
@@ -236,7 +198,7 @@ export class Elements {
   }
 
   /** Insert a new element.
-   * @param el  The data for the new element.
+   * @param el The data for the new element.
    * @returns The newly inserted element's Id.
    * @throws [[IModelError]] if unable to insert the element.
    */
@@ -253,7 +215,7 @@ export class Elements {
   }
 
   /** Update an existing element.
-   * @param el  An editable copy of the element, containing the new/proposed data.
+   * @param el An editable copy of the element, containing the new/proposed data.
    * @throws [[IModelError]] if unable to update the element.
    */
   public async updateElement(el: Element): Promise<void> {
@@ -271,7 +233,7 @@ export class Elements {
   }
 
   /** Delete an existing element.
-   * @param el  The element to be deleted
+   * @param el The element to be deleted
    * @throws [[IModelError]]
    */
   public async deleteElement(el: Element): Promise<void> {
@@ -280,8 +242,19 @@ export class Elements {
 
     await BriefcaseManager.deleteElement(this._iModel.briefcaseKey, el.id.toString());
 
-    // Discard from the cachex
+    // Discard from the cache
     this._loaded.delete(el.id.toString());
+  }
+
+  /** Query for the child elements of the specified element.
+   * @returns Returns an array of child element identifiers.
+   * @throws [[IModelError]]
+   */
+  public async queryChildren(elementId: Id64): Promise<Id64[]> {
+    const rowsJson: string = await this._iModel.executeQuery("SELECT ECInstanceId as id FROM " + Element.sqlName + " WHERE Parent.Id=" + elementId.toString()); // WIP: need to bind!
+    const childIds: Id64[] = [];
+    JSON.parse(rowsJson).forEach((row: any) => childIds.push(new Id64(row.id))); // WIP: executeQuery should return ECInstanceId as a string
+    return Promise.resolve(childIds);
   }
 
   /** The Id of the root subject element. */
@@ -289,4 +262,49 @@ export class Elements {
 
   /** Get the root subject element. */
   public getRootSubject(): Promise<Element> { return this.getElement(this.rootSubjectId); }
+
+  /** Query for aspects rows (by aspect class name) associated with this element.
+   * @throws [[IModelError]]
+   */
+  private async _queryAspects(elementId: Id64, aspectClassName: string): Promise<ElementAspect[]> {
+    const name = aspectClassName.split(":");
+    const rowsJson: string = await this._iModel.executeQuery("SELECT * FROM [" + name[0] + "].[" + name[1] + "] WHERE Element.Id=" + elementId.toString()); // WIP: need to bind!
+    const rows: any[] = JSON.parse(rowsJson);
+    if (!rows || rows.length === 0)
+      return Promise.reject(new IModelError(IModelStatus.NotFound));
+
+    const aspects: ElementAspect[] = [];
+    for (const row of rows) {
+      const aspectProps: ElementAspectProps = row; // start with everything that SELECT * returned
+      aspectProps.classFullName = aspectClassName; // add in property required by EntityProps
+      aspectProps.iModel = this._iModel; // add in property required by EntityProps
+      aspectProps.element = elementId; // add in property required by ElementAspectProps
+      aspectProps.classId = undefined; // clear property from SELECT * that we don't want in the final instance
+
+      const entity = await ClassRegistry.createInstance(aspectProps);
+      assert(entity instanceof ElementAspect);
+      const aspect = entity as ElementAspect;
+      aspect.setPersistent();
+      aspects.push(aspect);
+    }
+
+    return aspects;
+  }
+
+  /** Get an ElementUniqueAspect instance (by class name) that is related to the specified element.
+   * @throws [[IModelError]]
+   */
+  public async getUniqueAspect(elementId: Id64, aspectClassName: string): Promise<ElementUniqueAspect> {
+    const aspects: ElementAspect[] = await this._queryAspects(elementId, aspectClassName);
+    assert(aspects[0] instanceof ElementUniqueAspect);
+    return aspects[0];
+  }
+
+  /** Get the ElementMultiAspect instances (by class name) that are related to the specified element.
+   * @throws [[IModelError]]
+   */
+  public async getMultiAspects(elementId: Id64, aspectClassName: string): Promise<ElementMultiAspect[]> {
+    const aspects: ElementAspect[] = await this._queryAspects(elementId, aspectClassName);
+    return aspects;
+  }
 }

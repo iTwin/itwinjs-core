@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { Code } from "../Code";
-import { Elements, IModel, Models } from "../IModel";
+import { Elements, Models } from "../IModel";
 import { ColorDef } from "../Render";
 import { ElementProps, Element, GeometricElement3d, GeometricElementProps, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../Element";
 import { Entity, EntityCtor, EntityProps } from "../Entity";
@@ -21,12 +21,13 @@ import { SpatialViewDefinition, DisplayStyle3d } from "../ViewDefinition";
 import { GeometricElement2d } from "../Element";
 import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { IModelDb } from "../backend/IModelDb";
 
 describe("iModel", () => {
-  let imodel: IModel;
-  let imodel2: IModel;
-  let imodel3: IModel;
-  let imodel4: IModel;
+  let imodel: IModelDb;
+  let imodel2: IModelDb;
+  let imodel3: IModelDb;
+  let imodel4: IModelDb;
 
   before(async () => {
     // First, register any schemas that will be used in the tests.
@@ -150,7 +151,7 @@ describe("iModel", () => {
       const element: Element = await imodel2.elements.createElement(elementProps);
       element.setUserProperties("performanceTest", { s: "String-" + i, n: i });
 
-      const elementId = await element.insert();
+      const elementId: Id64 = await imodel2.elements.insertElement(element);
       assert.isTrue(elementId.isValid());
     }
   });
@@ -162,7 +163,7 @@ describe("iModel", () => {
     assert.isAtLeast(rootSubject.code.getValue().length, 1);
 
     try {
-      await rootSubject.getSubModel(); // throws error
+      await imodel.models.getSubModel(rootSubject.id); // throws error
       assert.fail(); // this line should be skipped
     } catch (error) {
       assert.isTrue(error instanceof Error);
@@ -171,7 +172,7 @@ describe("iModel", () => {
       assert.equal(error.toDebugString(), "IModelStatus.NotFound");
     }
 
-    const childIds: Id64[] = await rootSubject.queryChildren();
+    const childIds: Id64[] = await imodel.elements.queryChildren(rootSubject.id);
     assert.isAtLeast(childIds.length, 1);
     for (const childId of childIds) {
       const childElement = await imodel.elements.getElement(childId);
@@ -181,7 +182,7 @@ describe("iModel", () => {
       testCopyAndJson(childElement);
       assert.isTrue(childElement.parent!.id.getLow() === rootSubject.id.getLow());
       if (childElement instanceof InformationPartitionElement) {
-        const childSubModel = await childElement.getSubModel();
+        const childSubModel: Model = await imodel.models.getSubModel(childElement.id);
         assert.exists(childSubModel, "InformationPartitionElements should have a subModel");
 
         if ((childId.getLow() === 16) && (childId.getHigh() === 0)) {
@@ -475,7 +476,7 @@ describe("iModel", () => {
     const editElem = newTestElemFetched.copyForEdit() as Element;
     editElem.location = loc2;
     try {
-      await editElem.update();
+      await imodel4.elements.updateElement(editElem);
     } catch (_err) {
       assert.fail("Element.update failed");
     }
@@ -486,7 +487,7 @@ describe("iModel", () => {
 
     // ------------ delete -----------------
     const elid = afterUpdateElemFetched.id;
-    await afterUpdateElemFetched.delete();
+    await imodel4.elements.deleteElement(afterUpdateElemFetched);
     try {
       await imodel4.elements.getElement(elid);
       assert.fail("should fail to load the element.");

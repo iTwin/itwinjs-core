@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { IModel } from "../IModel";
+import { IModelDb } from "../backend/IModelDb";
 import * as fs from "fs-extra";
 
 declare const __dirname: string;
@@ -22,7 +22,7 @@ export class IModelTestUtils {
     return stat;
   }
 
-  public static async openIModel(filename: string): Promise<IModel> {
+  public static async openIModel(filename: string): Promise<IModelDb> {
     const destPath = __dirname + "/output";
     if (!fs.existsSync(destPath))
       fs.mkdirSync(destPath);
@@ -35,12 +35,12 @@ export class IModelTestUtils {
       fs.copySync(srcName, dbName, { preserveTimestamps: true });
     }
 
-    const iModel: IModel = await IModel.openStandalone(dbName); // could throw Error
+    const iModel: IModelDb = await IModelDb.openStandalone(dbName); // could throw Error
     assert.exists(iModel);
     return iModel!;
   }
 
-  public static closeIModel(iModel: IModel) {
+  public static closeIModel(iModel: IModelDb) {
     iModel.closeStandalone();
   }
 }
