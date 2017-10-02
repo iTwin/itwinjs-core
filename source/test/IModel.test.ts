@@ -20,6 +20,7 @@ import { BisCore } from "../BisCore";
 import { SpatialViewDefinition, DisplayStyle3d } from "../ViewDefinition";
 import { GeometricElement2d } from "../Element";
 import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
+import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 
 describe("iModel", () => {
   let imodel: IModel;
@@ -543,6 +544,77 @@ describe("iModel", () => {
     const metadataStr: string = await imodel.getECClassMetaData("BisCore", "ClassHasHandler");
     assert.exists(metadataStr);
     checkClassHasHandlerMetaData(metadataStr);
+  });
+
+  it("should exercise ECSqlStatement (backend only)", () => {
+    // Reject an invalid statement
+    try {
+      imodel2.prepareECSqlStatement("select idd, codeValue from bis.element");
+      assert.fail("prepare should have failed with an exception");
+    } catch (err) {
+      assert.notEqual(err.status, DbResult.BE_SQLITE_OK);
+    }
+    let lastId: string = "";
+    let firstCodeValue: string = "";
+    if (true) {
+      const stmt = imodel2.prepareECSqlStatement("select ecinstanceid, codeValue from bis.element");
+      assert.isNotNull(stmt);
+      // Reject an attempt to bind when there are no placeholders in the statement
+      try {
+        stmt.bindValues({foo: 1});
+        assert.fail("bindValues should have failed with an exception");
+      } catch (err2) {
+        assert.notEqual(err2.status, DbResult.BE_SQLITE_OK);
+      }
+      // Verify that we get a bunch of rows with the expected shape
+      let count = 0;
+      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        const row = stmt.getValues();
+        assert.isNotNull(row);
+        assert.isObject(row);
+        assert.isTrue(row.id !== undefined);
+        assert.isString(row.id);
+        lastId = row.id;
+        if (row.codeValue !== undefined)
+          firstCodeValue = row.codeValue;
+        count = count + 1;
+      }
+      assert.notEqual(count, 0);
+      assert.notEqual(lastId, "");
+      assert.notEqual(firstCodeValue, "");
+    }
+
+    if (true) {
+      // Now try a statement with a placeholder
+      const idToFind: Id64 = new Id64(lastId);
+      const stmt3 = imodel2.prepareECSqlStatement("select ecinstanceid, codeValue from bis.element WHERE (ecinstanceid=?)");
+      stmt3.bindValues([idToFind]);
+      let count = 0;
+      while (DbResult.BE_SQLITE_ROW === stmt3.step()) {
+        count = count + 1;
+        const row = stmt3.getValues();
+        // Verify that we got the row that we asked for
+        assert.isTrue(idToFind.equals(new Id64(row.id)));
+      }
+      // Verify that we got the row that we asked for
+      assert.equal(count, 1);
+    }
+
+    if (true) {
+      // Try a named placeholder
+      const codeValueToFind = firstCodeValue;
+      const stmt4 = imodel2.prepareECSqlStatement("select ecinstanceid, codeValue from bis.element WHERE (codeValue = :codevalue)");
+      stmt4.bindValues({codeValue: codeValueToFind});
+      let count = 0;
+      while (DbResult.BE_SQLITE_ROW === stmt4.step()) {
+        count = count + 1;
+        const row = stmt4.getValues();
+        // Verify that we got the row that we asked for
+        assert.equal(row.codeValue, codeValueToFind);
+      }
+      // Verify that we got the row that we asked for
+      assert.equal(count, 1);
+    }
   });
 
 });

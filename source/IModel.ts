@@ -13,6 +13,7 @@ import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { BriefcaseToken, BriefcaseManager, KeepBriefcase } from "./backend/BriefcaseManager";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { ECSqlStatement } from "./backend/ECSqlStatement";
 
 /** An iModel database. */
 export class IModel {
@@ -115,6 +116,17 @@ export class IModel {
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
     return BriefcaseManager.executeQuery(this.briefcaseKey, ecsql);
   }
+
+  /**
+   * Prepare an ECSql statement.
+   * @param ecsql The ECSql statement to prepare
+   */
+  public prepareECSqlStatement(ecsql: string): ECSqlStatement {
+    if (!this.briefcaseKey)
+      throw new IModelError(IModelStatus.NotOpen);
+    return BriefcaseManager.prepareECSqlStatement(this.briefcaseKey!, ecsql);
+  }
+
 }
 
 /** The collection of Models in an iModel  */

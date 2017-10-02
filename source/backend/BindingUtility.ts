@@ -4,6 +4,7 @@
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
 import { PrimitiveTypeCode } from "../Entity";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 /** Value type  (Match this to ECN::ValueKind in ECObjects.h) */
 export const enum ValueKind {
@@ -55,7 +56,7 @@ export class BindingUtility {
     if (typeof bindingValue === "string")
       return PrimitiveTypeCode.String;
     if (typeof bindingValue === "number")
-      return PrimitiveTypeCode.Integer;
+      return PrimitiveTypeCode.Double;
     if (typeof bindingValue === "boolean")
       return PrimitiveTypeCode.Boolean;
     if (isPoint2dType(bindingValue))
@@ -76,6 +77,9 @@ export class BindingUtility {
     if (bindingValue instanceof ECValue)
       return bindingValue;
 
+    if (bindingValue instanceof Id64)
+      return { kind: ValueKind.Primitive, type: PrimitiveTypeCode.Long, value: (bindingValue as Id64).toString() };
+
     const primitiveType = BindingUtility.getPrimitiveType(bindingValue);
     if (primitiveType === PrimitiveTypeCode.Uninitialized)
       return undefined;
@@ -87,7 +91,7 @@ export class BindingUtility {
    * @param bindings Array or map of bindings
    * @returns Array or map of ECValue-s.
    */
-  public static preProcessBindings(bindings: Map<string, BindingValue> | BindingValue[]): BentleyReturn<DbResult, ECValue[] | Map<string, ECValue>> {
+  public static preProcessBindings(bindings: Map<string, BindingValue> | BindingValue[] | any): BentleyReturn<DbResult, ECValue[] | Map<string, ECValue>> {
     if (bindings instanceof Array) {
       const ret = new Array<ECValue>();
       for (let ii = 0; ii < bindings.length; ii++) {
@@ -100,18 +104,28 @@ export class BindingUtility {
       return { result: ret };
     }
 
+    // NB: We transform a Map into a vanilla object. That is so that can pass it to native code and/or across the wire via JSON. You can't stringify a Map. 
     if (bindings instanceof Map) {
-      const ret = new Map<string, ECValue>();
+      const ret: any = new Object();
       for (const key of bindings.keys()) {
         const bindingValue = bindings.get(key);
         const ecValue = BindingUtility.convertToECValue(bindingValue);
         if (!ecValue)
           return { error: { status: DbResult.BE_SQLITE_ERROR, message: `Invalid binding [${key}]=${bindingValue}` } };
-        ret.set(key, ecValue);
+        ret[key] = ecValue;
       }
       return { result: ret };
     }
 
-    return { error: { status: DbResult.BE_SQLITE_ERROR, message: `Bindings must be specified as an array or a map` } };
+    const ret2: any = new Object();
+    Object.keys(bindings).forEach((key) => {
+      const bindingValue = bindings[key];
+      const ecValue = BindingUtility.convertToECValue(bindingValue);
+      if (!ecValue)
+        throw new Error(`Invalid binding [${key}]=${bindingValue}`);
+      ret2[key] = ecValue;
+    });
+    return { result: ret2 };
+    // return { error: { status: DbResult.BE_SQLITE_ERROR, message: `Bindings must be specified as an array or a map` } };
   }
 }
