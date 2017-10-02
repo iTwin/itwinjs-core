@@ -104,7 +104,7 @@ export class BindingUtility {
       return { result: ret };
     }
 
-    // NB: We transform a Map into a vanilla object. That is so that can pass it to native code and/or across the wire via JSON. You can't stringify a Map. 
+    // NB: We transform a Map into a vanilla object. That is so that can pass it to native code and/or across the wire via JSON. You can't stringify a Map.
     if (bindings instanceof Map) {
       const ret: any = new Object();
       for (const key of bindings.keys()) {
