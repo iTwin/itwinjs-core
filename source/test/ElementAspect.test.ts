@@ -30,7 +30,7 @@ describe("ElementAspect", () => {
     assert.exists(element);
     assert.isTrue(element instanceof PhysicalElement);
 
-    const aspect1 = await element.getUniqueAspect("DgnPlatformTest:TestUniqueAspectNoHandler");
+    const aspect1 = await iModel.elements.getUniqueAspect(element.id, "DgnPlatformTest:TestUniqueAspectNoHandler");
     assert.exists(aspect1);
     assert.isTrue(aspect1 instanceof ElementUniqueAspect);
     assert.equal(aspect1.classFullName, "DgnPlatformTest:TestUniqueAspectNoHandler");
@@ -38,7 +38,7 @@ describe("ElementAspect", () => {
     assert.equal(aspect1.length, 1);
     assert.isTrue(Object.isFrozen(aspect1));
 
-    const aspect2 = await element.getUniqueAspect("DgnPlatformTest:TestUniqueAspect");
+    const aspect2 = await iModel.elements.getUniqueAspect(element.id, "DgnPlatformTest:TestUniqueAspect");
     assert.exists(aspect2);
     assert.isTrue(aspect2 instanceof ElementUniqueAspect);
     assert.equal(aspect2.classFullName, "DgnPlatformTest:TestUniqueAspect");
@@ -46,7 +46,7 @@ describe("ElementAspect", () => {
     assert.isUndefined(aspect2.length);
     assert.isTrue(Object.isFrozen(aspect2));
 
-    const multiAspectsA: ElementMultiAspect[] = await element.getMultiAspects("DgnPlatformTest:TestMultiAspectNoHandler");
+    const multiAspectsA: ElementMultiAspect[] = await iModel.elements.getMultiAspects(element.id, "DgnPlatformTest:TestMultiAspectNoHandler");
     assert.exists(multiAspectsA);
     assert.isArray(multiAspectsA);
     assert.equal(multiAspectsA.length, 2);
@@ -58,7 +58,7 @@ describe("ElementAspect", () => {
       assert.isTrue(Object.isFrozen(aspect));
     });
 
-    const multiAspectsB: ElementMultiAspect[] = await element.getMultiAspects("DgnPlatformTest:TestMultiAspect");
+    const multiAspectsB: ElementMultiAspect[] = await iModel.elements.getMultiAspects(element.id, "DgnPlatformTest:TestMultiAspect");
     assert.exists(multiAspectsB);
     assert.isArray(multiAspectsB);
     assert.equal(multiAspectsB.length, 2);
@@ -74,7 +74,7 @@ describe("ElementAspect", () => {
     const rootSubject = await iModel.elements.getRootSubject();
 
     try {
-      await rootSubject.getUniqueAspect("DgnPlatformTest:TestUniqueAspect");
+      await iModel.elements.getUniqueAspect(rootSubject.id, "DgnPlatformTest:TestUniqueAspect");
       assert.isTrue(false, "Expected this line to be skipped");
     } catch (error) {
       numErrorsCaught++;
@@ -82,7 +82,7 @@ describe("ElementAspect", () => {
     }
 
     try {
-      await rootSubject.getMultiAspects("DgnPlatformTest:TestMultiAspect");
+      await iModel.elements.getMultiAspects(rootSubject.id, "DgnPlatformTest:TestMultiAspect");
       assert.isTrue(false, "Expected this line to be skipped");
     } catch (error) {
       numErrorsCaught++;

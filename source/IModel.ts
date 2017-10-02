@@ -4,6 +4,7 @@
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Code } from "./Code";
 import { Element, ElementLoadParams, ElementProps } from "./Element";
+import { ElementAspect, ElementAspectProps, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { IModelStatus, IModelError } from "./IModelError";
 import { Model, ModelProps } from "./Model";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
@@ -116,6 +117,9 @@ export class Models {
    */
   public async getSubModel(modeledElementId: Id64 | Guid | Code): Promise<Model> {
     const modeledElement: Element = await this._iModel.elements.getElement(modeledElementId);
+    if (modeledElement.id.equals(this._iModel.elements.rootSubjectId))
+      return Promise.reject(new IModelError(IModelStatus.NotFound));
+
     return this.getModel(modeledElement.id);
   }
 
@@ -230,9 +234,65 @@ export class Elements {
     this._loaded.delete(el.id.toString());
   }
 
+  /** Query for the child elements of the specified element.
+   * @returns Returns an array of child element identifiers.
+   * @throws [[IModelError]]
+   */
+  public async queryChildren(elementId: Id64): Promise<Id64[]> {
+    const rowsJson: string = await this._iModel.executeQuery("SELECT ECInstanceId as id FROM " + Element.sqlName + " WHERE Parent.Id=" + elementId.toString()); // WIP: need to bind!
+    const childIds: Id64[] = [];
+    JSON.parse(rowsJson).forEach((row: any) => childIds.push(new Id64(row.id))); // WIP: executeQuery should return ECInstanceId as a string
+    return Promise.resolve(childIds);
+  }
+
   /** The Id of the root subject element. */
   public get rootSubjectId(): Id64 { return new Id64("0x1"); }
 
   /** Get the root subject element. */
   public getRootSubject(): Promise<Element> { return this.getElement(this.rootSubjectId); }
+
+  /** Query for aspects rows (by aspect class name) associated with this element.
+   * @throws [[IModelError]]
+   */
+  private async _queryAspects(elementId: Id64, aspectClassName: string): Promise<ElementAspect[]> {
+    const name = aspectClassName.split(":");
+    const rowsJson: string = await this._iModel.executeQuery("SELECT * FROM [" + name[0] + "].[" + name[1] + "] WHERE Element.Id=" + elementId.toString()); // WIP: need to bind!
+    const rows: any[] = JSON.parse(rowsJson);
+    if (!rows || rows.length === 0)
+      return Promise.reject(new IModelError(IModelStatus.NotFound));
+
+    const aspects: ElementAspect[] = [];
+    for (const row of rows) {
+      const aspectProps: ElementAspectProps = row; // start with everything that SELECT * returned
+      aspectProps.classFullName = aspectClassName; // add in property required by EntityProps
+      aspectProps.iModel = this._iModel; // add in property required by EntityProps
+      aspectProps.element = elementId; // add in property required by ElementAspectProps
+      aspectProps.classId = undefined; // clear property from SELECT * that we don't want in the final instance
+
+      const entity = await ClassRegistry.createInstance(aspectProps);
+      assert(entity instanceof ElementAspect);
+      const aspect = entity as ElementAspect;
+      aspect.setPersistent();
+      aspects.push(aspect);
+    }
+
+    return aspects;
+  }
+
+  /** Get an ElementUniqueAspect instance (by class name) that is related to the specified element.
+   * @throws [[IModelError]]
+   */
+  public async getUniqueAspect(elementId: Id64, aspectClassName: string): Promise<ElementUniqueAspect> {
+    const aspects: ElementAspect[] = await this._queryAspects(elementId, aspectClassName);
+    assert(aspects[0] instanceof ElementUniqueAspect);
+    return aspects[0];
+  }
+
+  /** Get the ElementMultiAspect instances (by class name) that are related to the specified element.
+   * @throws [[IModelError]]
+   */
+  public async getMultiAspects(elementId: Id64, aspectClassName: string): Promise<ElementMultiAspect[]> {
+    const aspects: ElementAspect[] = await this._queryAspects(elementId, aspectClassName);
+    return aspects;
+  }
 }
