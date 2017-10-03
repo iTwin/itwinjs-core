@@ -142,7 +142,7 @@ describe("iModel", () => {
         model: seedElement.model,
         category: seedElement.category,
         id: new Id64(),
-        code: Code.createDefault(),
+        code: Code.createEmpty(),
         federationGuid: new Guid(true),
         userLabel: "UserLabel-" + i,
       };
@@ -227,7 +227,7 @@ describe("iModel", () => {
       iModel: imodel,
       classFullName: BisCore.name + ":" + ModelSelector.name,
       model: new Id64([1, 1]),
-      code: Code.createDefault(),
+      code: Code.createEmpty(),
       id: new Id64(),
     };
 

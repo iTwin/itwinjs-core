@@ -11,7 +11,7 @@ export interface CodeProps {
   value?: string;
 }
 
-/** A 3 part Code that identifies an Element */
+/** A three part Code that identifies an Element */
 export class Code implements CodeProps {
   public spec: Id64;
   public scope: string;
@@ -23,8 +23,8 @@ export class Code implements CodeProps {
     this.value = JsonUtils.asString(val.value);
   }
 
-  /** Create an instance of the default code (1,1,undefined) */
-  public static createDefault(): Code { return new Code({ spec: new Id64([1, 0]), scope: "1" }); }
+  /** Create an empty, non-unique code with no special meaning. */
+  public static createEmpty(): Code { const id: Id64 = new Id64([1, 0]); return new Code({ spec: id, scope: id.toString() }); }
   public getValue(): string { return this.value ? this.value : ""; }
   public equals(other: Code): boolean { return this.spec.equals(other.spec) && this.scope === other.scope && this.value === other.value; }
 }
