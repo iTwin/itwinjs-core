@@ -13,10 +13,12 @@ import { BriefcaseManager, KeepBriefcase } from "../backend/BriefcaseManager"; /
 /** A connection to an iModel database hosted on the backend. */
 export class IModelConnection extends IModel {
   public models: IModelConnectionModels;
+  public elements: IModelConnectionElements;
 
   private constructor() {
     super();
     this.models = new IModelConnectionModels(this);
+    this.elements = new IModelConnectionElements(this);
   }
 
   /** Open an iModel from the iModelHub */
@@ -44,4 +46,19 @@ export class IModelConnectionModels {
 
   /** The Id of the repository model. */
   public get repositoryModelId(): Id64 { return new Id64("0x1"); }
+}
+
+/** The collection of elements in an [[IModelConnection]]. */
+export class IModelConnectionElements {
+  private _iModel: IModelConnection;
+  private _loaded: LRUMap<string, Element>;
+
+  /** get the map of loaded elements */
+  public get loaded() { return this._loaded; }
+
+  /** @hidden */
+  public constructor(iModel: IModelConnection, maxElements: number = 2000) { this._iModel = iModel; this._loaded = new LRUMap<string, Element>(maxElements); }
+
+  /** The Id of the root subject element. */
+  public get rootSubjectId(): Id64 { return new Id64("0x1"); }
 }

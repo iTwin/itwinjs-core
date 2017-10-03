@@ -6,7 +6,6 @@ import { assert } from "chai";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { Code } from "../Code";
-import { Elements } from "../IModel";
 import { ColorDef } from "../Render";
 import { ElementProps, Element, GeometricElement3d, GeometricElementProps, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../Element";
 import { Entity, EntityCtor, EntityProps } from "../Entity";
@@ -69,24 +68,23 @@ describe("iModel", () => {
   });
 
   it("should load a known element by Id from an existing iModel", async () => {
-    const elements: Elements = imodel.elements;
-    assert.exists(elements);
+    assert.exists(imodel.elements);
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
-    const el = await elements.getElement(code1);
+    const el = await imodel.elements.getElement(code1);
     assert.exists(el);
-    const el2 = await elements.getElement(new Id64("0x34"));
+    const el2 = await imodel.elements.getElement(new Id64("0x34"));
     assert.exists(el2);
     const badCode = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
 
     try {
-      await elements.getElement(badCode); // throws Error
+      await imodel.elements.getElement(badCode); // throws Error
       assert.fail(); // this line should be skipped
     } catch (error) {
       assert.isTrue(error instanceof Error);
       assert.isTrue(error instanceof IModelError);
     }
 
-    const subCat = await elements.getElement(new Id64("0x2e"));
+    const subCat = await imodel.elements.getElement(new Id64("0x2e"));
     assert.isTrue(subCat instanceof SubCategory);
     if (subCat instanceof SubCategory) {
       assert.isTrue(subCat.appearance.color.tbgr === 16777215);
@@ -101,7 +99,7 @@ describe("iModel", () => {
     }
 
     /// Get the parent Category of the subcategory.
-    const cat = await elements.getElement((subCat as SubCategory).getCategoryId());
+    const cat = await imodel.elements.getElement((subCat as SubCategory).getCategoryId());
     assert.isTrue(cat instanceof Category);
     if (cat instanceof Category) {
       assert.isTrue(cat.id.getLow() === 45);
@@ -113,7 +111,7 @@ describe("iModel", () => {
       testCopyAndJson(cat);
     }
 
-    const phys = await elements.getElement(new Id64("0x38"));
+    const phys = await imodel.elements.getElement(new Id64("0x38"));
     assert.isTrue(phys instanceof GeometricElement3d);
 
     const a2 = await imodel2.elements.getElement(new Id64("0x1d"));
@@ -253,9 +251,8 @@ describe("iModel", () => {
   });
 
   it("ElementPropertyFormatter should format", async () => {
-    const elements: Elements = imodel.elements;
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
-    const el = await elements.getElement(code1);
+    const el = await imodel.elements.getElement(code1);
     const formatter: ElementPropertyFormatter = new ElementPropertyFormatter(imodel);
     const props = await formatter.formatProperties(el);
     assert.exists(props);
