@@ -1,17 +1,22 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModel } from "../IModel";
 import { IModelVersion } from "../IModelVersion";
+import { Model } from "../Model";
 import { BriefcaseManager, KeepBriefcase } from "../backend/BriefcaseManager"; // WIP: cannot include backend classes in the frontend
 
 /** A connection to an iModel database hosted on the backend. */
 export class IModelConnection extends IModel {
+  public models: IModelConnectionModels;
 
   private constructor() {
     super();
+    this.models = new IModelConnectionModels(this);
   }
 
   /** Open an iModel from the iModelHub */
@@ -27,5 +32,16 @@ export class IModelConnection extends IModel {
       return;
     await BriefcaseManager.close(accessToken, this.briefcaseKey, keepBriefcase);
   }
+}
 
+/** The collection of models in an [[IModelConnection]]. */
+export class IModelConnectionModels {
+  private _iModel: IModelConnection;
+  private _loaded: LRUMap<string, Model>;
+
+  /** @hidden */
+  public constructor(iModel: IModelConnection, max: number = 500) { this._iModel = iModel; this._loaded = new LRUMap<string, Model>(max); }
+
+  /** The Id of the repository model. */
+  public get repositoryModelId(): Id64 { return new Id64("0x1"); }
 }

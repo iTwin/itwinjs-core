@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { Code } from "../Code";
-import { Elements, Models } from "../IModel";
+import { Elements } from "../IModel";
 import { ColorDef } from "../Render";
 import { ElementProps, Element, GeometricElement3d, GeometricElementProps, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../Element";
 import { Entity, EntityCtor, EntityProps } from "../Entity";
@@ -207,16 +207,15 @@ describe("iModel", () => {
   });
 
   it("should load a known model by Id from an existing iModel", async () => {
-    const models: Models = imodel.models;
-    assert.exists(models);
-    const model2 = await models.getModel(new Id64("0x1c"));
+    assert.exists(imodel.models);
+    const model2 = await imodel.models.getModel(new Id64("0x1c"));
     assert.exists(model2);
     testCopyAndJson(model2);
-    let model = await models.getModel(models.repositoryModelId);
+    let model = await imodel.models.getModel(imodel.models.repositoryModelId);
     assert.exists(model);
     testCopyAndJson(model!);
     const code1 = new Code({ spec: "0x1d", scope: "0x1d", value: "A" });
-    model = await models.getSubModel(code1);
+    model = await imodel.models.getSubModel(code1);
     const geomModel = await ClassRegistry.getClass("BisCore:PhysicalModel", imodel);
     assert.exists(model);
     assert.isTrue(model instanceof geomModel!);

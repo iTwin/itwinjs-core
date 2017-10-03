@@ -6,7 +6,6 @@ import { Code } from "./Code";
 import { Element, ElementLoadParams, ElementProps } from "./Element";
 import { ElementAspect, ElementAspectProps, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { IModelStatus, IModelError } from "./IModelError";
-import { Model, ModelProps } from "./Model";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
@@ -16,14 +15,12 @@ import { BriefcaseToken, BriefcaseManager } from "./backend/BriefcaseManager";
 export class IModel {
   protected _briefcaseKey: BriefcaseToken | undefined;
   public elements: Elements;
-  public models: Models;
   private _classMetaDataRegistry: MetaDataRegistry;
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
   public get briefcaseKey(): BriefcaseToken|undefined { return this._briefcaseKey; }
 
   protected constructor() {
     this.elements = new Elements(this);
-    this.models = new Models(this);
   }
 
   /** Get the meta data for the specified class defined in imodel iModel, blocking until the result is returned.
@@ -74,57 +71,6 @@ export class IModel {
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
     return BriefcaseManager.executeQuery(this.briefcaseKey, sql);
   }
-}
-
-/** The collection of Models in an iModel  */
-export class Models {
-  private _iModel: IModel;
-  private _loaded: LRUMap<string, Model>;
-
-  public constructor(iModel: IModel, max: number = 500) { this._iModel = iModel; this._loaded = new LRUMap<string, Model>(max); }
-
-  /** Get the Model with the specified identifier.
-   * @param modelId The Model identifier.
-   * @throws [[IModelError]]
-   */
-  public async getModel(modelId: Id64): Promise<Model> {
-    if (!this._iModel.briefcaseKey)
-      return Promise.reject(new IModelError(IModelStatus.NotOpen));
-
-    // first see if the model is already in the local cache.
-    const loaded = this._loaded.get(modelId.toString());
-    if (loaded)
-      return loaded;
-
-    // Must go get the model from the iModel. Start by requesting the model's data.
-    const json: string = await BriefcaseManager.getModel(this._iModel.briefcaseKey, JSON.stringify({ id: modelId }));
-    const props = JSON.parse(json) as ModelProps;
-    props.iModel = this._iModel;
-
-    const entity = await ClassRegistry.createInstance(props);
-    assert(entity instanceof Model);
-    const model = entity as Model;
-
-    // We have created the model. Cache it before we return it.
-    model.setPersistent(); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
-    this._loaded.set(model.id.toString(), model);
-    return model;
-  }
-
-  /** Get the sub-model of the specified Element.
-   * @param elementId The Element identifier.
-   * @throws [[IModelError]]
-   */
-  public async getSubModel(modeledElementId: Id64 | Guid | Code): Promise<Model> {
-    const modeledElement: Element = await this._iModel.elements.getElement(modeledElementId);
-    if (modeledElement.id.equals(this._iModel.elements.rootSubjectId))
-      return Promise.reject(new IModelError(IModelStatus.NotFound));
-
-    return this.getModel(modeledElement.id);
-  }
-
-  /** The Id of the repository model. */
-  public get repositoryModelId(): Id64 { return new Id64("0x1"); }
 }
 
 /** The collection of Elements in an iModel  */
