@@ -582,9 +582,29 @@ describe("iModel", () => {
           firstCodeValue = row.codeValue;
         count = count + 1;
       }
-      assert.notEqual(count, 0);
+      assert.isTrue(count > 1);
       assert.notEqual(lastId, "");
       assert.notEqual(firstCodeValue, "");
+
+      // Try iterator style
+      let firstCodeValueIter: string = "";
+      let iteratorCount = 0;
+      let lastIterId: string = "";
+      stmt.reset();
+      for (const row of stmt) {
+        assert.isNotNull(row);
+        assert.isObject(row);
+        assert.isTrue(row.id !== undefined);
+        assert.isString(row.id);
+        lastIterId = row.id;
+        iteratorCount = iteratorCount + 1;
+        if (row.codeValue !== undefined)
+          firstCodeValueIter = row.codeValue;
+      }
+      assert.equal(iteratorCount, count, "iterator loop should find the same number of rows as the step loop");
+      assert.equal(lastIterId, lastId, "iterator loop should see the same last row as the step loop");
+      assert.equal(firstCodeValueIter, firstCodeValue, "iterator loop should find the first non-null code value as the step loop");
+
       stmt.dispose();
     }
 
@@ -621,6 +641,7 @@ describe("iModel", () => {
       assert.equal(count, 1);
       stmt4.dispose();
     }
+
   });
 
 });

@@ -14,7 +14,7 @@ if (addonLoader !== undefined)
   dgnDbNodeAddon = addonLoader.loadNodeAddon(); // Note that evaluating this script has the side-effect of loading the addon
 
 @MultiTierExecutionHost("@bentley/imodeljs-core/ECSqlStatement")
-export class ECSqlStatement {
+export class ECSqlStatement implements IterableIterator<any> {
   private stmt: any;
 
   constructor() {
@@ -65,4 +65,23 @@ export class ECSqlStatement {
   public getValues(): any {
     return this.stmt.getValues();
   }
+
+  public next(): IteratorResult<any> {
+    if (DbResult.BE_SQLITE_ROW === this.step()) {
+      return {
+        done: false,
+        value: this.getValues(),
+      };
+    } else {
+      return {
+        done: true,
+        value: undefined,
+      };
+    }
+  }
+
+  public [Symbol.iterator](): IterableIterator<any> {
+    return this;
+  }
+
 }
