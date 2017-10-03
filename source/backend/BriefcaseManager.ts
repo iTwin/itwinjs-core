@@ -8,6 +8,7 @@ import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { IModelStatus, IModelError } from "../IModelError";
 import { IModelVersion } from "../IModelVersion";
+import { ECSqlStatement } from "./ECSqlStatement";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -111,6 +112,14 @@ export class BriefcaseManager {
   private static hubClient = new IModelHubClient("QA");
   private static rootPath = path.join(__dirname, "../assets/imodels");
   private static cache?: BriefcaseCache;
+
+  /** @private */
+  @RunsIn(Tier.Services)
+  public static prepareECSqlStatement(bctok: BriefcaseToken, ecsql: string): ECSqlStatement {
+    const s = new ECSqlStatement();
+    s.prepare(BriefcaseManager.getBriefcaseFromCache(bctok), ecsql);
+    return s;
+  }
 
   /**
    * Get the local path of the root folder storing the imodel seed file, change sets and briefcases
@@ -709,3 +718,4 @@ export class BriefcaseManager {
     return response.result!;
   }
 }
+

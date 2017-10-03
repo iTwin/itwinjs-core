@@ -20,6 +20,7 @@ import { BisCore } from "../BisCore";
 import { SpatialViewDefinition, DisplayStyle3d } from "../ViewDefinition";
 import { GeometricElement2d } from "../Element";
 import { ElementPropertyFormatter } from "../backend/ElementPropertyFormatter";
+import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelDb } from "../backend/IModelDb";
 
 describe("iModel", () => {
@@ -544,6 +545,103 @@ describe("iModel", () => {
     const metadataStr: string = await imodel.getECClassMetaData("BisCore", "ClassHasHandler");
     assert.exists(metadataStr);
     checkClassHasHandlerMetaData(metadataStr);
+  });
+
+  it("should exercise ECSqlStatement (backend only)", () => {
+    // Reject an invalid statement
+    try {
+      imodel2.prepareECSqlStatement("select no_such_property, codeValue from bis.element");
+      assert.fail("prepare should have failed with an exception");
+    } catch (err) {
+      assert.isTrue(err.constructor.name === "IModelError");
+      assert.notEqual(err.status, DbResult.BE_SQLITE_OK);
+    }
+    let lastId: string = "";
+    let firstCodeValue: string = "";
+    if (true) {
+      const stmt = imodel2.prepareECSqlStatement("select ecinstanceid, codeValue from bis.element");
+      assert.isNotNull(stmt);
+      // Reject an attempt to bind when there are no placeholders in the statement
+      try {
+        stmt.bindValues({foo: 1});
+        assert.fail("bindValues should have failed with an exception");
+      } catch (err2) {
+        assert.isTrue(err2.constructor.name === "IModelError");
+        assert.notEqual(err2.status, DbResult.BE_SQLITE_OK);
+      }
+      // Verify that we get a bunch of rows with the expected shape
+      let count = 0;
+      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        const row = stmt.getValues();
+        assert.isNotNull(row);
+        assert.isObject(row);
+        assert.isTrue(row.id !== undefined);
+        assert.isString(row.id);
+        lastId = row.id;
+        if (row.codeValue !== undefined)
+          firstCodeValue = row.codeValue;
+        count = count + 1;
+      }
+      assert.isTrue(count > 1);
+      assert.notEqual(lastId, "");
+      assert.notEqual(firstCodeValue, "");
+
+      // Try iterator style
+      let firstCodeValueIter: string = "";
+      let iteratorCount = 0;
+      let lastIterId: string = "";
+      stmt.reset();
+      for (const row of stmt) {
+        assert.isNotNull(row);
+        assert.isObject(row);
+        assert.isTrue(row.id !== undefined);
+        assert.isString(row.id);
+        lastIterId = row.id;
+        iteratorCount = iteratorCount + 1;
+        if (row.codeValue !== undefined)
+          firstCodeValueIter = row.codeValue;
+      }
+      assert.equal(iteratorCount, count, "iterator loop should find the same number of rows as the step loop");
+      assert.equal(lastIterId, lastId, "iterator loop should see the same last row as the step loop");
+      assert.equal(firstCodeValueIter, firstCodeValue, "iterator loop should find the first non-null code value as the step loop");
+
+      stmt.dispose();
+    }
+
+    if (true) {
+      // Now try a statement with a placeholder
+      const idToFind: Id64 = new Id64(lastId);
+      const stmt3 = imodel2.prepareECSqlStatement("select ecinstanceid, codeValue from bis.element WHERE (ecinstanceid=?)");
+      stmt3.bindValues([idToFind]);
+      let count = 0;
+      while (DbResult.BE_SQLITE_ROW === stmt3.step()) {
+        count = count + 1;
+        const row = stmt3.getValues();
+        // Verify that we got the row that we asked for
+        assert.isTrue(idToFind.equals(new Id64(row.id)));
+      }
+      // Verify that we got the row that we asked for
+      assert.equal(count, 1);
+      stmt3.dispose();
+    }
+
+    if (true) {
+      // Try a named placeholder
+      const codeValueToFind = firstCodeValue;
+      const stmt4 = imodel2.prepareECSqlStatement("select ecinstanceid, codeValue from bis.element WHERE (codeValue = :codevalue)");
+      stmt4.bindValues({codeValue: codeValueToFind});
+      let count = 0;
+      while (DbResult.BE_SQLITE_ROW === stmt4.step()) {
+        count = count + 1;
+        const row = stmt4.getValues();
+        // Verify that we got the row that we asked for
+        assert.equal(row.codeValue, codeValueToFind);
+      }
+      // Verify that we got the row that we asked for
+      assert.equal(count, 1);
+      stmt4.dispose();
+    }
+
   });
 
 });
