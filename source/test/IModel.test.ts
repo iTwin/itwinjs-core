@@ -553,6 +553,7 @@ describe("iModel", () => {
       imodel2.prepareECSqlStatement("select idd, codeValue from bis.element");
       assert.fail("prepare should have failed with an exception");
     } catch (err) {
+      assert.isTrue(err.constructor.name === "IModelError");
       assert.notEqual(err.status, DbResult.BE_SQLITE_OK);
     }
     let lastId: string = "";
@@ -565,6 +566,7 @@ describe("iModel", () => {
         stmt.bindValues({foo: 1});
         assert.fail("bindValues should have failed with an exception");
       } catch (err2) {
+        assert.isTrue(err2.constructor.name === "IModelError");
         assert.notEqual(err2.status, DbResult.BE_SQLITE_OK);
       }
       // Verify that we get a bunch of rows with the expected shape
