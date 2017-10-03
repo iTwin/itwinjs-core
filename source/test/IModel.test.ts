@@ -583,6 +583,7 @@ describe("iModel", () => {
       assert.notEqual(count, 0);
       assert.notEqual(lastId, "");
       assert.notEqual(firstCodeValue, "");
+      stmt.dispose();
     }
 
     if (true) {
@@ -599,6 +600,7 @@ describe("iModel", () => {
       }
       // Verify that we got the row that we asked for
       assert.equal(count, 1);
+      stmt3.dispose();
     }
 
     if (true) {
@@ -615,6 +617,7 @@ describe("iModel", () => {
       }
       // Verify that we got the row that we asked for
       assert.equal(count, 1);
+      stmt4.dispose;
     }
   });
 

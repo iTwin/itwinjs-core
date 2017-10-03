@@ -34,6 +34,13 @@ export class ECSqlStatement {
   }
 
   @RunsIn(Tier.Services)
+  public dispose(): void {
+    const stmt = this.stmt;
+    this.stmt = undefined;
+    stmt.dispose();
+  }
+
+  @RunsIn(Tier.Services)
   public clearBindings(): DbResult {
     return this.stmt.clearBindings();
   }
