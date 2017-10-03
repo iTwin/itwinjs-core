@@ -19,7 +19,7 @@ import { IModelTestUtils } from "./IModelTestUtils";
 import { BisCore } from "../BisCore";
 import { SpatialViewDefinition, DisplayStyle3d } from "../ViewDefinition";
 import { GeometricElement2d } from "../Element";
-import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
+import { ElementPropertyFormatter } from "../backend/ElementPropertyFormatter";
 import { IModelDb } from "../backend/IModelDb";
 
 describe("iModel", () => {

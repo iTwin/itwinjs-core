@@ -1,20 +1,20 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
-import { IModel } from "./IModel";
-import { Element } from "./Element";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { Element } from "../Element";
+import { IModelDb } from "./IModelDb";
 
-/** Base class for all schema classes. */
+/** @hidden */
 export class ElementPropertyFormatter {
 
-  private _iModel: IModel;
+  private _iModel: IModelDb;
 
   /** Construct a formatter
    * @param iModel  The IModel that contains the elements that are to be formatted.
    * *** TBD: Take presentation rules as an argument?
    */
-  public constructor(iModel: IModel) { this._iModel = iModel; }
+  public constructor(iModel: IModelDb) { this._iModel = iModel; }
 
   /**Format the properties of an element, suitable for display in a property browser.
    * The returned object will contain the formatted properties, organized according to the presentation rules.
