@@ -550,7 +550,7 @@ describe("iModel", () => {
   it("should exercise ECSqlStatement (backend only)", () => {
     // Reject an invalid statement
     try {
-      imodel2.prepareECSqlStatement("select idd, codeValue from bis.element");
+      imodel2.prepareECSqlStatement("select no_such_property, codeValue from bis.element");
       assert.fail("prepare should have failed with an exception");
     } catch (err) {
       assert.isTrue(err.constructor.name === "IModelError");
@@ -619,7 +619,7 @@ describe("iModel", () => {
       }
       // Verify that we got the row that we asked for
       assert.equal(count, 1);
-      stmt4.dispose;
+      stmt4.dispose();
     }
   });
 
