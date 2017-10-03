@@ -11,7 +11,6 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { BriefcaseToken, BriefcaseManager } from "./backend/BriefcaseManager";
-import { ECSqlStatement } from "./backend/ECSqlStatement";
 
 /** An abstract class representing an instance of an iModel. */
 export class IModel {
@@ -75,17 +74,6 @@ export class IModel {
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
     return BriefcaseManager.executeQuery(this.briefcaseKey, sql);
   }
-
-  /**
-   * Prepare an ECSql statement.
-   * @param ecsql The ECSql statement to prepare
-   */
-  public prepareECSqlStatement(ecsql: string): ECSqlStatement {
-    if (!this.briefcaseKey)
-      throw new IModelError(IModelStatus.NotOpen);
-    return BriefcaseManager.prepareECSqlStatement(this.briefcaseKey!, ecsql);
-  }
-
 }
 
 /** The collection of Models in an iModel  */

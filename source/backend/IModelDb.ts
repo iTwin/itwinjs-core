@@ -4,8 +4,10 @@
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModel } from "../IModel";
+import { IModelError, IModelStatus } from "../IModelError";
 import { IModelVersion } from "../IModelVersion";
 import { BriefcaseManager, KeepBriefcase } from "./BriefcaseManager";
+import { ECSqlStatement } from "./ECSqlStatement";
 
 /** Represents a physical copy (briefcase) of an iModel that can be accessed as a file. */
 export class IModelDb extends IModel {
@@ -46,4 +48,12 @@ export class IModelDb extends IModel {
     await BriefcaseManager.close(accessToken, this.briefcaseKey, keepBriefcase);
   }
 
+  /** Prepare an ECSql statement.
+   * @param sql The ECSql statement to prepare
+   */
+  public prepareECSqlStatement(sql: string): ECSqlStatement {
+    if (!this.briefcaseKey)
+      throw new IModelError(IModelStatus.NotOpen);
+    return BriefcaseManager.prepareECSqlStatement(this.briefcaseKey!, sql);
+  }
 }
