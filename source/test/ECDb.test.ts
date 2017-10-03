@@ -127,7 +127,7 @@ describe("ECDb", () => {
     expect(readInstance).to.deep.equal(testInstance);
   });
 
-  it("should be able to update an instance", async () => {
+  it.skip("should be able to update an instance", async () => {
     testInstance.integerProperty = 456;
     testInstance.stringProperty = "Modified Test String Property";
     testInstance.doubleProperty = 456.789;
