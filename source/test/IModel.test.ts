@@ -645,12 +645,12 @@ describe("iModel", () => {
     ASSERT_TRUE(m_defaultCategoryId.IsValid());
   */
 
-  it("should measure insert performance (backend))", async () => {
+  it("should measure insert performance (backend))", () => {
 
     // TODO: Make a copy of imodel3 before writing to it
 
     const theModel = new Id64("0X11"); // TODO: Look up model by code (i.e., codevalue of a child of root subject, where child has a PhysicalPartition)
-    const defaultCategoryId = new Id64("0x12"); // (await IModelTestUtils.getSpatiallCategoryByName(imodel3, "DefaultCategory")).Id;
+    const defaultCategoryId = IModelTestUtils.getSpatiallCategoryIdByName(imodel3, "DefaultCategory");
 
     const elementCount = 10000;
     for (let i = 0; i < elementCount; ++i) {
@@ -660,7 +660,7 @@ describe("iModel", () => {
           iModel: imodel3,
           model: theModel,
           id: new Id64(),
-          code: Code.createDefault(),
+          code: Code.createEmpty(),
           category: defaultCategoryId,
         });
 

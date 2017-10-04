@@ -79,19 +79,21 @@ export class IModelTestUtils {
   }
 
   // TODO: This needs a home
-  public static async getSpatiallCategoryByName(imodel: IModelDb, catname: string): Promise<SpatialCategory> {
+  public static getSpatiallCategoryIdByName(imodel: IModelDb, catname: string): Id64 {
     // TODO: Use a statement cache
     const stmt = imodel.getPreparedECSqlStatement("SELECT EcInstanceId as elementId FROM " + SpatialCategory.sqlName + " WHERE codevalue = ?");
     stmt.bindValues([catname]);
     if (DbResult.BE_SQLITE_ROW !== stmt.step()) {
-      return Promise.reject(new IModelError(DbResult.BE_SQLITE_NOTFOUND));
+      throw new IModelError(DbResult.BE_SQLITE_NOTFOUND);
     }
     const categoryId: string = stmt.getValues().elementId;
     imodel.releasePreparedECSqlStatement(stmt);
 
-    const category = await imodel.elements.getElement(new Id64(categoryId));
-    assert.isTrue(category instanceof SpatialCategory, "Should be instance of Category");
-    return category as SpatialCategory;
+    const id = new Id64(categoryId);
+    if (!id.isValid())
+      throw new IModelError(DbResult.BE_SQLITE_NOTFOUND);
+
+    return id;
   }
 
 }
