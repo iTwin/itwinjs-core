@@ -424,17 +424,19 @@ describe("iModel", () => {
     assert.notEqual(rows[0].ecinstanceid, "");
   });
 
+  /* TBD
   it("should load struct properties", async () => {
     const el1 = await imodel3.elements.getElement(new Id64("0x14"));
     assert.isDefined(el1);
-    IModelTestUtils.closeIModel(imodel3);
+    // *** TODO: Check that struct property was loaded
   });
 
   it("should load array properties", async () => {
     const el1 = await imodel3.elements.getElement(new Id64("0x14"));
     assert.isDefined(el1);
-    IModelTestUtils.closeIModel(imodel3);
+    // *** TODO: Check that array property was loaded
   });
+  */
 
   it("should insert and update auto-handled properties", async () => {
     const testElem = await imodel4.elements.getElement(new Id64("0x14"));
@@ -495,7 +497,6 @@ describe("iModel", () => {
     } catch (error) {
       // TODO: test that error is what I expect assert.equal(error.status == IModelStatus.)
     }
-    IModelTestUtils.closeIModel(imodel3);
   });
 
   function checkElementMetaData(metadataStr: string) {
@@ -570,6 +571,7 @@ describe("iModel", () => {
         assert.isTrue(err2.constructor.name === "IModelError");
         assert.notEqual(err2.status, DbResult.BE_SQLITE_OK);
       }
+      imodel2.releasePreparedECSqlStatement(stmt);
       // Verify that we get a bunch of rows with the expected shape
       let count = 0;
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
@@ -619,6 +621,7 @@ describe("iModel", () => {
         // Verify that we got the row that we asked for
         assert.isTrue(idToFind.equals(new Id64(row.id)));
       }
+      imodel2.releasePreparedECSqlStatement(stmt3);
       // Verify that we got the row that we asked for
       assert.equal(count, 1);
     }
@@ -635,6 +638,7 @@ describe("iModel", () => {
         // Verify that we got the row that we asked for
         assert.equal(row.codeValue, codeValueToFind);
       }
+      imodel2.releasePreparedECSqlStatement(stmt4);
       // Verify that we got the row that we asked for
       assert.equal(count, 1);
     }
@@ -650,7 +654,7 @@ describe("iModel", () => {
     ASSERT_TRUE(m_defaultCategoryId.IsValid());
   */
 
-  it.only("should measure insert performance (backend))", () => {
+  it("should measure insert performance (backend))", async () => {
 
     const theModel = new Id64("0X11"); // TODO: Look up model by code (i.e., codevalue of a child of root subject, where child has a PhysicalPartition)
     const defaultCategoryId = new Id64("0x12"); // (await IModelTestUtils.getSpatiallCategoryByName(imodel3, "DefaultCategory")).Id;

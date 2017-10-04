@@ -59,6 +59,7 @@ export class IModelTestUtils {
       return undefined;
     }
     const id = new Id64(stmt.getValues().ecinstanceid);
+    imodel.releasePreparedECSqlStatement(stmt);
     return id;
 }
 
@@ -71,6 +72,7 @@ export class IModelTestUtils {
       return undefined;
     }
     const id = new Id64(stmt.getValues().ecinstanceid);
+    imodel.releasePreparedECSqlStatement(stmt);
     return id;
   }
 
@@ -83,6 +85,8 @@ export class IModelTestUtils {
       return Promise.reject(new IModelError(DbResult.BE_SQLITE_NOTFOUND));
     }
     const categoryId: string = stmt.getValues().elementId;
+    imodel.releasePreparedECSqlStatement(stmt);
+
     const category = await imodel.elements.getElement(new Id64(categoryId));
     assert.isTrue(category instanceof SpatialCategory, "Should be instance of Category");
     return category as SpatialCategory;
