@@ -10,6 +10,7 @@ import { SpatialCategory } from "../Category";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelError } from "../IModelError";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { ECSqlStatement } from "../backend/ECSqlStatement";
 import * as fs from "fs-extra";
 
 declare const __dirname: string;
@@ -53,13 +54,14 @@ export class IModelTestUtils {
   // TODO: This neeeds a home
   public static queryCodeSpecId(imodel: IModelDb, name: string): Id64 | undefined {
     // TODO: Use a statement cache
-    const stmt = imodel.getPreparedECSqlStatement("SELECT ecinstanceid FROM BisCore.CodeSpec WHERE Name=?");
-    stmt.bindValues([name]);
-    if (DbResult.BE_SQLITE_ROW !== stmt.step()) {
-      return undefined;
-    }
-    const id = new Id64(stmt.getValues().ecinstanceid);
-    imodel.releasePreparedECSqlStatement(stmt);
+    let id: Id64 | undefined;
+    imodel.withPreparedECSqlStatement("SELECT ecinstanceid FROM BisCore.CodeSpec WHERE Name=?", (stmt: ECSqlStatement) => {
+      stmt.bindValues([name]);
+      if (DbResult.BE_SQLITE_ROW !== stmt.step()) {
+        return;
+      }
+      id = new Id64(stmt.getValues().ecinstanceid);
+    });
     return id;
 }
 

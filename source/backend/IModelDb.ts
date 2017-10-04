@@ -142,6 +142,18 @@ export class IModelDb extends IModel {
     return stmt;
   }
 
+  /** Use a prepared statement. This function takes care of preparing the statement and then releasing it. */
+  public withPreparedECSqlStatement(ecsql: string, cb: any): void {
+    const stmt = this.getPreparedECSqlStatement(ecsql);
+    try {
+      cb(stmt);
+    } catch (err) {
+      this.releasePreparedECSqlStatement(stmt);
+      throw err;
+    }
+    this.releasePreparedECSqlStatement(stmt);
+  }
+
   /**
    * Get a prepared ECSql statement - may require preparing the statement, if not found in the cache.
    * @param ecsql The ECSql statement to prepare

@@ -560,8 +560,7 @@ describe("iModel", () => {
     }
     let lastId: string = "";
     let firstCodeValue: string = "";
-    if (true) {
-      const stmt = imodel2.getPreparedECSqlStatement("select ecinstanceid, codeValue from bis.element");
+    imodel2.withPreparedECSqlStatement("select ecinstanceid, codeValue from bis.element", (stmt: ECSqlStatement) => {
       assert.isNotNull(stmt);
       // Reject an attempt to bind when there are no placeholders in the statement
       try {
@@ -571,7 +570,7 @@ describe("iModel", () => {
         assert.isTrue(err2.constructor.name === "IModelError");
         assert.notEqual(err2.status, DbResult.BE_SQLITE_OK);
       }
-      imodel2.releasePreparedECSqlStatement(stmt);
+
       // Verify that we get a bunch of rows with the expected shape
       let count = 0;
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
@@ -607,12 +606,11 @@ describe("iModel", () => {
       assert.equal(iteratorCount, count, "iterator loop should find the same number of rows as the step loop");
       assert.equal(lastIterId, lastId, "iterator loop should see the same last row as the step loop");
       assert.equal(firstCodeValueIter, firstCodeValue, "iterator loop should find the first non-null code value as the step loop");
-    }
+    });
 
-    if (true) {
+    imodel2.withPreparedECSqlStatement("select ecinstanceid, codeValue from bis.element WHERE (ecinstanceid=?)", (stmt3: ECSqlStatement) => {
       // Now try a statement with a placeholder
       const idToFind: Id64 = new Id64(lastId);
-      const stmt3 = imodel2.getPreparedECSqlStatement("select ecinstanceid, codeValue from bis.element WHERE (ecinstanceid=?)");
       stmt3.bindValues([idToFind]);
       let count = 0;
       while (DbResult.BE_SQLITE_ROW === stmt3.step()) {
@@ -621,15 +619,13 @@ describe("iModel", () => {
         // Verify that we got the row that we asked for
         assert.isTrue(idToFind.equals(new Id64(row.id)));
       }
-      imodel2.releasePreparedECSqlStatement(stmt3);
       // Verify that we got the row that we asked for
       assert.equal(count, 1);
-    }
+    });
 
-    if (true) {
+    imodel2.withPreparedECSqlStatement("select ecinstanceid, codeValue from bis.element WHERE (codeValue = :codevalue)", (stmt4: ECSqlStatement) => {
       // Try a named placeholder
       const codeValueToFind = firstCodeValue;
-      const stmt4 = imodel2.getPreparedECSqlStatement("select ecinstanceid, codeValue from bis.element WHERE (codeValue = :codevalue)");
       stmt4.bindValues({codeValue: codeValueToFind});
       let count = 0;
       while (DbResult.BE_SQLITE_ROW === stmt4.step()) {
@@ -638,10 +634,9 @@ describe("iModel", () => {
         // Verify that we got the row that we asked for
         assert.equal(row.codeValue, codeValueToFind);
       }
-      imodel2.releasePreparedECSqlStatement(stmt4);
       // Verify that we got the row that we asked for
       assert.equal(count, 1);
-    }
+    });
 
   });
 
@@ -655,6 +650,8 @@ describe("iModel", () => {
   */
 
   it("should measure insert performance (backend))", async () => {
+
+    // TODO: Make a copy of imodel3 before writing to it
 
     const theModel = new Id64("0X11"); // TODO: Look up model by code (i.e., codevalue of a child of root subject, where child has a PhysicalPartition)
     const defaultCategoryId = new Id64("0x12"); // (await IModelTestUtils.getSpatiallCategoryByName(imodel3, "DefaultCategory")).Id;
@@ -696,11 +693,11 @@ describe("iModel", () => {
 
     imodel3.saveChanges();
 
-    const stmt: ECSqlStatement = imodel3.getPreparedECSqlStatement("select count(*) as [count] from DgnPlatformTest.TestElement");
-    assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
-    const row = stmt.getValues();
-    imodel3.releasePreparedECSqlStatement(stmt);
-    const expectedCountAsHex = "0X" + (elementCount + 1).toString(16).toUpperCase();
-    assert.equal(row.count, expectedCountAsHex);
+    imodel3.withPreparedECSqlStatement("select count(*) as [count] from DgnPlatformTest.TestElement", (stmt: ECSqlStatement) => {
+      assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
+      const row = stmt.getValues();
+      const expectedCountAsHex = "0X" + (elementCount + 1).toString(16).toUpperCase();
+      assert.equal(row.count, expectedCountAsHex);
+    });
   });
 });
