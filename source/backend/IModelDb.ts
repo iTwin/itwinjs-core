@@ -24,8 +24,9 @@ class ECSqlStatementCache {
     assert(stmt.isPrepared(), "you must cache only cached statements.");
 
     const existing = this.statements.get(str);
-    if (existing !== undefined)
-      throw new Error("collision");
+    if (existing !== undefined) {
+      assert(existing.useCount > 0, "you should only add a statement if all existing copies of it are in use.");
+    }
     const cs = new CachedECSqlStatement();
     cs.statement = stmt;
     cs.statement.setIsShared(true);
@@ -47,10 +48,16 @@ class ECSqlStatementCache {
       if (css.statement === stmt) {
         if (css.useCount > 0) {
           css.useCount--;
+          if (css.useCount === 0) {
+            css.statement.reset();
+            css.statement.clearBindings();
+          }
         } else {
           assert(false, "double-release of cached statement");
         }
         // leave the statement in the cache, even if its use count goes to zero. See removeUnusedStatements and clearOnClose.
+        // *** TODO: we should remove it if it is a duplicate of another unused statement in the cache. The trouble is that we don't have the ecsql for the statement,
+        //           so we can't check for other equivalent statements.
         break;
       }
     }
@@ -126,7 +133,7 @@ export class IModelDb extends IModel {
    */
   public getPreparedECSqlStatement(ecsql: string): ECSqlStatement {
     const cs = this.statementCache.find(ecsql);
-    if (cs !== undefined) {
+    if (cs !== undefined && cs.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
       assert(cs.statement.isShared());
       assert(cs.statement.isPrepared());
       cs.useCount++;
