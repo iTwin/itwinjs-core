@@ -22,6 +22,7 @@ import { GeometricElement2d } from "../Element";
 import { ElementPropertyFormatter } from "../backend/ElementPropertyFormatter";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelDb } from "../backend/IModelDb";
+import { ECSqlStatement } from "../backend/ECSqlStatement";
 
 describe("iModel", () => {
   let imodel: IModelDb;
@@ -127,7 +128,7 @@ describe("iModel", () => {
 
     const newEl = el3.copyForEdit<Element>();
     newEl.federationGuid = undefined;
-    const newId = await imodel2.elements.insertElement(newEl);
+    const newId = imodel2.elements.insertElement(newEl);
     assert.isTrue(newId.isValid(), "insert worked");
   });
 
@@ -151,7 +152,7 @@ describe("iModel", () => {
       const element: Element = await imodel2.elements.createElement(elementProps);
       element.setUserProperties("performanceTest", { s: "String-" + i, n: i });
 
-      const elementId: Id64 = await imodel2.elements.insertElement(element);
+      const elementId: Id64 = imodel2.elements.insertElement(element);
       assert.isTrue(elementId.isValid());
     }
   });
@@ -455,7 +456,7 @@ describe("iModel", () => {
     newTestElem.dtUtc = new Date("2015-03-25");
     newTestElem.p3d = new Point3d(1, 2, 3);
 
-    const newTestElemId = await imodel4.elements.insertElement(newTestElem);
+    const newTestElemId = imodel4.elements.insertElement(newTestElem);
 
     assert.isTrue(newTestElemId.isValid(), "insert worked");
 
@@ -559,7 +560,7 @@ describe("iModel", () => {
     let lastId: string = "";
     let firstCodeValue: string = "";
     if (true) {
-      const stmt = imodel2.prepareECSqlStatement("select ecinstanceid, codeValue from bis.element");
+      const stmt = imodel2.getPreparedECSqlStatement("select ecinstanceid, codeValue from bis.element");
       assert.isNotNull(stmt);
       // Reject an attempt to bind when there are no placeholders in the statement
       try {
@@ -604,14 +605,12 @@ describe("iModel", () => {
       assert.equal(iteratorCount, count, "iterator loop should find the same number of rows as the step loop");
       assert.equal(lastIterId, lastId, "iterator loop should see the same last row as the step loop");
       assert.equal(firstCodeValueIter, firstCodeValue, "iterator loop should find the first non-null code value as the step loop");
-
-      stmt.dispose();
     }
 
     if (true) {
       // Now try a statement with a placeholder
       const idToFind: Id64 = new Id64(lastId);
-      const stmt3 = imodel2.prepareECSqlStatement("select ecinstanceid, codeValue from bis.element WHERE (ecinstanceid=?)");
+      const stmt3 = imodel2.getPreparedECSqlStatement("select ecinstanceid, codeValue from bis.element WHERE (ecinstanceid=?)");
       stmt3.bindValues([idToFind]);
       let count = 0;
       while (DbResult.BE_SQLITE_ROW === stmt3.step()) {
@@ -622,13 +621,12 @@ describe("iModel", () => {
       }
       // Verify that we got the row that we asked for
       assert.equal(count, 1);
-      stmt3.dispose();
     }
 
     if (true) {
       // Try a named placeholder
       const codeValueToFind = firstCodeValue;
-      const stmt4 = imodel2.prepareECSqlStatement("select ecinstanceid, codeValue from bis.element WHERE (codeValue = :codevalue)");
+      const stmt4 = imodel2.getPreparedECSqlStatement("select ecinstanceid, codeValue from bis.element WHERE (codeValue = :codevalue)");
       stmt4.bindValues({codeValue: codeValueToFind});
       let count = 0;
       while (DbResult.BE_SQLITE_ROW === stmt4.step()) {
@@ -639,9 +637,66 @@ describe("iModel", () => {
       }
       // Verify that we got the row that we asked for
       assert.equal(count, 1);
-      stmt4.dispose();
     }
 
   });
 
+  /* TBD
+      DgnCode physicalPartitionCode = PhysicalPartition::CreateCode(*m_db->Elements().GetRootSubject(), s_seedFileInfo.physicalPartitionName);
+    m_defaultModelId = m_db->Models().QuerySubModelId(physicalPartitionCode);
+    ASSERT_TRUE(m_defaultModelId.IsValid());
+
+    m_defaultCategoryId = SpatialCategory::QueryCategoryId(GetDgnDb().GetDictionaryModel(), s_seedFileInfo.categoryName);
+    ASSERT_TRUE(m_defaultCategoryId.IsValid());
+  */
+
+  it.only("should measure insert performance (backend))", () => {
+
+    const theModel = new Id64("0X11"); // TODO: Look up model by code (i.e., codevalue of a child of root subject, where child has a PhysicalPartition)
+    const defaultCategoryId = new Id64("0x12"); // (await IModelTestUtils.getSpatiallCategoryByName(imodel3, "DefaultCategory")).Id;
+
+    const elementCount = 10000;
+    for (let i = 0; i < elementCount; ++i) {
+
+        const element: Element = imodel3.elements.createElementSync({
+          classFullName: "DgnPlatformTest:TestElement",
+          iModel: imodel3,
+          model: theModel,
+          id: new Id64(),
+          code: Code.createDefault(),
+          category: defaultCategoryId,
+        });
+
+        element.IntegerProperty1 = i;        // auto-handled
+        element.IntegerProperty2 = i;        // auto-handled
+        element.IntegerProperty3 = i;        // auto-handled
+        element.IntegerProperty4 = i;        // auto-handled
+        element.TestElementProperty = i;     // custom-handled
+        element.DoubleProperty1 = i;
+        element.DoubleProperty2 = i;
+        element.DoubleProperty3 = i;
+        element.DoubleProperty4 = i;
+        element.b = (0 === (i % 100));
+        const pt: Point3d = new Point3d(i, 0, 0);
+        element.PointProperty1 = pt;
+        element.PointProperty2 = pt;
+        element.PointProperty3 = pt;
+        element.PointProperty4 = pt;
+        const dtUtc: Date = new Date("2013-09-15 12:05:39");
+        element.dtUtc = dtUtc;
+
+        assert.isTrue((imodel3.elements.insertElement(element)).isValid(), "insert worked");
+        if (0 === (i % 100))
+            imodel3.saveChanges();
+        }
+
+    imodel3.saveChanges();
+
+    const stmt: ECSqlStatement = imodel3.getPreparedECSqlStatement("select count(*) as [count] from DgnPlatformTest.TestElement");
+    assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
+    const row = stmt.getValues();
+    imodel3.releasePreparedECSqlStatement(stmt);
+    const expectedCountAsHex = "0X" + (elementCount + 1).toString(16).toUpperCase();
+    assert.equal(row.count, expectedCountAsHex);
+  });
 });

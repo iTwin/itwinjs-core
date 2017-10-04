@@ -31,6 +31,21 @@ export class ClassRegistry {
     return new ctor(props);
   }
 
+  /** Create an instance of a class from its properties */
+  public static createInstanceSync(props: EntityProps): Entity {
+    if (!props.classFullName || !props.iModel)
+      throw new Error("Invalid input props");
+
+    let ctor = ClassRegistry.classMap.get(props.classFullName.toLowerCase());
+    if (!ctor) {
+      ctor = ClassRegistry.generateClassSync(props.classFullName, props.iModel);
+      if (!ctor)
+        throw new Error("class not found");
+    }
+
+    return new ctor(props);
+  }
+
   public static registerSchema(schema: Schema) { Schemas.registerSchema(schema); }
   public static getRegisteredSchema(domainName: string) { return Schemas.getRegisteredSchema(domainName); }
   public static getSchemaBaseClass() { return Schema; }
@@ -98,6 +113,8 @@ export class ClassRegistry {
     assert(!!ecClassJson);
 
     const metadata: EntityMetaData = JSON.parse(ecClassJson);
+    if (metadata.ecclass === undefined)
+      return Promise.reject(new IModelError(IModelStatus.NotFound));
 
     // Make sure that we have all base classes registered.
     // This recurses. I have to know that the super class is defined and registered before defining a derived class.
@@ -105,6 +122,33 @@ export class ClassRegistry {
     if (metadata.baseClasses && metadata.baseClasses.length !== 0) {
       for (const base of metadata.baseClasses) {
         await ClassRegistry.getClass(base, imodel);
+      }
+    }
+
+    // Now we can generate the class from the classDef.
+    return ClassRegistry.generateClassForEntity(metadata);
+  }
+
+  /** This function fetches the specified Entity from the imodel, generates a JS class for it, and registers the generated
+   * class. This function also ensures that all of the base classes of the Entity exist and are registered.
+   */
+  private static generateClassSync(classFullName: string, imodel: IModel): EntityCtor {
+    const name = classFullName.split(":");
+    assert(name.length === 2);
+
+    const ecClassJson: string = imodel.getECClassMetaDataSync(name[0], name[1]);
+    assert(!!ecClassJson);
+
+    const metadata: EntityMetaData = JSON.parse(ecClassJson);
+    if (metadata.ecclass === undefined)
+      throw new IModelError(IModelStatus.NotFound);
+
+    // Make sure that we have all base classes registered.
+    // This recurses. I have to know that the super class is defined and registered before defining a derived class.
+    // Therefore, I must await getRegisteredClass.
+    if (metadata.baseClasses && metadata.baseClasses.length !== 0) {
+      for (const base of metadata.baseClasses) {
+        ClassRegistry.getClassSync(base, imodel);
       }
     }
 
@@ -144,6 +188,26 @@ export class ClassRegistry {
 
     if (!ctor)
       return Promise.reject(new IModelError(IModelStatus.NotFound, "Class not found in ClassRegistry"));
+
+    return ctor;
+  }
+
+  /** Get the class for the specified Entity.
+   * @param fullName The name of the Entity
+   * @param iModel The IModel that contains the class definitions
+   * @returns A promise that resolves to an object containing a result property set to the Entity.
+   * @throws [[IModelError]] if the class is not found.
+   */
+  public static getClassSync(fullName: string, iModel: IModel): EntityCtor {
+    const key = fullName.toLowerCase();
+    if (!ClassRegistry.classMap.has(key)) {
+      return ClassRegistry.generateClassSync(fullName, iModel);
+    }
+    const ctor = ClassRegistry.classMap.get(key);
+    assert(!!ctor);
+
+    if (!ctor)
+      throw new IModelError(IModelStatus.NotFound, "Class not found in ClassRegistry");
 
     return ctor;
   }

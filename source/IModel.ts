@@ -11,7 +11,6 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { BriefcaseToken, BriefcaseManager } from "./backend/BriefcaseManager";
-import { ECSqlStatement } from "./backend/ECSqlStatement";
 
 /** An abstract class representing an instance of an iModel. */
 export class IModel {
@@ -74,16 +73,6 @@ export class IModel {
     if (!this.briefcaseKey)
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
     return BriefcaseManager.executeQuery(this.briefcaseKey, sql);
-  }
-
-  /**
-   * Prepare an ECSql statement.
-   * @param ecsql The ECSql statement to prepare
-   */
-  public prepareECSqlStatement(ecsql: string): ECSqlStatement {
-    if (!this.briefcaseKey)
-      throw new IModelError(IModelStatus.NotOpen);
-    return BriefcaseManager.prepareECSqlStatement(this.briefcaseKey!, ecsql);
   }
 
 }
@@ -197,20 +186,30 @@ export class Elements {
     return element;
   }
 
+  /** Create a new element in memory.
+   * @param elementProps The properties to use when creating the element.
+   * @throws [[IModelError]] if there is a problem creating the element.
+   */
+  public createElementSync(elementProps: ElementProps): Element {
+    const element: Element = ClassRegistry.createInstanceSync(elementProps) as Element;
+    assert(element instanceof Element);
+    return element;
+  }
+
   /** Insert a new element.
    * @param el The data for the new element.
    * @returns The newly inserted element's Id.
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public async insertElement(el: Element): Promise<Id64> {
+  public insertElement(el: Element): Id64 {
     if (!this._iModel.briefcaseKey)
-      return Promise.reject(new IModelError(IModelStatus.NotOpen));
+      throw new IModelError(IModelStatus.NotOpen);
 
     if (el.isPersistent()) {
       assert(false); // you cannot insert a persistent element. call copyForEdit
       return new Id64();
     }
-    const json: string = await BriefcaseManager.insertElement(this._iModel.briefcaseKey, JSON.stringify(el));
+    const json: string = BriefcaseManager.insertElement(this._iModel.briefcaseKey, JSON.stringify(el));
     return new Id64(JSON.parse(json).id);
   }
 

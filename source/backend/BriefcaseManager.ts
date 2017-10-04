@@ -556,6 +556,16 @@ export class BriefcaseManager {
     BriefcaseManager.cache!.setBriefcase(briefcaseToken, undefined);
   }
 
+  @RunsIn(Tier.Services, { synchronous: true })
+  public static saveChanges(briefcaseToken: BriefcaseToken) {
+    const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
+    if (!db)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR);
+    const stat = db.saveChanges();
+    if (DbResult.BE_SQLITE_OK !== stat)
+      throw new IModelError(stat);
+  }
+
   /**
    * Get a JSON representation of an element.
    * @param opt A JSON string with options for loading the element
@@ -591,22 +601,17 @@ export class BriefcaseManager {
   /**
    * Insert a new element into the DgnDb.
    * @param props A JSON string with properties of new element
-   * @returns Promise that resolves to an object with
-   * The resolved object contains an error property if the operation failed.
+   * @returns the new element's Id
    */
   @RunsIn(Tier.Services)
-  public static async insertElement(briefcaseToken: BriefcaseToken, props: string): Promise<string> {
+  public static insertElement(briefcaseToken: BriefcaseToken, props: string): string {
     const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
     if (!db)
-      return Promise.reject(new IModelError(IModelStatus.NotOpen));
+      throw new IModelError(IModelStatus.NotOpen);
 
-    // Note that inserting an element is always done synchronously. That is because of constraints
-    // on the native code side. Nevertheless, we want the signature of this method to be
-    // that of an asynchronous method, since it must run in the services tier and will be
-    // asynchronous from a remote client's point of view in any case.
     const response: BentleyReturn<IModelStatus, string> = db.insertElementSync(props);
     if (response.error)
-      return Promise.reject(new IModelError(response.error.status));
+      throw new IModelError(response.error.status);
 
     return response.result!;
   }
@@ -718,4 +723,3 @@ export class BriefcaseManager {
     return response.result!;
   }
 }
-

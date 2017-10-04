@@ -2,9 +2,11 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { DefinitionElement, ElementProps } from "./Element";
+import { Model } from "./Model";
 import { ColorDef } from "./Render";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
+import { Code, CodeSpec } from "./Code";
 
 /** Properties to create a SubCategory Appearance */
 export interface AppearanceProps {
@@ -204,9 +206,20 @@ export class Category extends DefinitionElement implements CategoryProps {
 /** Categorizes 2d graphical elements. */
 export class DrawingCategory extends Category {
   public constructor(opts: ElementProps) { super(opts); }
+
+  /** Create a DgnCode for a SpatialCategory given a name that is meant to be unique within the scope of the specified DefinitionModel */
+  public static createCode(parentModel: Model, codeValue: string): Code { // *** TODO: Model -> DefinitionModel
+    return new Code({spec: CodeSpec.DrawingCategory(), scope: parentModel.id.toString(), value: codeValue});
+  }
 }
 
 /** Categorizes a SpatialElement. */
 export class SpatialCategory extends Category {
   public constructor(opts: ElementProps) { super(opts); }
+
+  /** Create a DgnCode for a SpatialCategory given a name that is meant to be unique within the scope of the specified DefinitionModel */
+  public static createCode(parentModel: Model, codeValue: string): Code { // *** TODO: Model -> DefinitionModel
+    return new Code({spec: CodeSpec.SpatialCategory(), scope: parentModel.id.toString(), value: codeValue});
+  }
+
 }
