@@ -1,30 +1,19 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
-import { Code } from "./Code";
-import { Element, ElementLoadParams, ElementProps } from "./Element";
-import { ElementAspect, ElementAspectProps, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
+import { MetaDataRegistry } from "./ClassRegistry";
 import { IModelStatus, IModelError } from "./IModelError";
-import { Model, ModelProps } from "./Model";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { BriefcaseToken, BriefcaseManager } from "./backend/BriefcaseManager";
 
 /** An abstract class representing an instance of an iModel. */
 export class IModel {
   protected _briefcaseKey: BriefcaseToken | undefined;
-  public elements: Elements;
-  public models: Models;
   private _classMetaDataRegistry: MetaDataRegistry;
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
   public get briefcaseKey(): BriefcaseToken|undefined { return this._briefcaseKey; }
 
-  protected constructor() {
-    this.elements = new Elements(this);
-    this.models = new Models(this);
-  }
+  /** @hidden */
+  protected constructor() { }
 
   /** Get the meta data for the specified class defined in imodel iModel, blocking until the result is returned.
    * @param schemaName The name of the schema
@@ -63,8 +52,7 @@ export class IModel {
     return this._classMetaDataRegistry;
   }
 
-  /**
-   * Execute a query against this iModel
+  /** Execute a query against this iModel
    * @param sql The ECSql statement to execute
    * @returns all rows in JSON syntax or the empty string if nothing was selected
    * @throws [[IModelError]] If the statement is invalid
@@ -74,6 +62,7 @@ export class IModel {
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
     return BriefcaseManager.executeQuery(this.briefcaseKey, sql);
   }
+<<<<<<< HEAD
 
 }
 
@@ -306,4 +295,6 @@ export class Elements {
     const aspects: ElementAspect[] = await this._queryAspects(elementId, aspectClassName);
     return aspects;
   }
+=======
+>>>>>>> ed7e83395cb0e7d6f699424bb33d10dc13124fbf
 }

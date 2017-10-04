@@ -110,7 +110,7 @@ class BriefcaseCache {
 @MultiTierExecutionHost("@bentley/imodeljs-core/IModel")
 export class BriefcaseManager {
   private static hubClient = new IModelHubClient("QA");
-  private static rootPath = path.join(__dirname, "../assets/imodels");
+  public static rootPath = path.join(__dirname, "../assets/imodels");
   private static cache?: BriefcaseCache;
 
   /** @private */
