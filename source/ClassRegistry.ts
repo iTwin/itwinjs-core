@@ -223,7 +223,7 @@ export class ClassRegistry {
 
 /** The mapping between a class name and its metadata */
 export class MetaDataRegistry {
-  private reg: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();
+  private _registry: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();
 
   constructor(private imodel: IModel) {
     if (!(imodel instanceof IModel))
@@ -233,22 +233,22 @@ export class MetaDataRegistry {
   /** Get the specified Entity metadata */
   public get(classFullName: string): EntityMetaData | undefined {
     const key = classFullName.toLowerCase();
-    let mdata = this.reg.get(key);
-    if (mdata)
-      return mdata;
+    let metaData = this._registry.get(key);
+    if (metaData)
+      return metaData;
 
     const name: string[] = classFullName.split(":");
-    let mstr: string;
+    let metaDataStr: string;
     try {
-      mstr = this.imodel.getECClassMetaDataSync(name[0], name[1]);
+      metaDataStr = this.imodel.getECClassMetaDataSync(name[0], name[1]);
     } catch (error) {
       return undefined;
     }
 
-    mdata = new EntityMetaData(JSON.parse(mstr));
-    if (undefined === mdata)
+    metaData = new EntityMetaData(JSON.parse(metaDataStr));
+    if (undefined === metaData)
       return undefined;
-    this.reg.set(key, mdata);
-    return mdata;
+    this._registry.set(key, metaData);
+    return metaData;
   }
 }

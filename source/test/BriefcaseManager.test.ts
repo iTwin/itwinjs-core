@@ -1,17 +1,20 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelDb } from "../backend/IModelDb";
-import { BisCore } from "../BisCore";
+import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "../frontend/IModelConnection";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
 import { ConnectClient, Project, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelHubClient } from "@bentley/imodeljs-clients";
 import { Briefcase } from "@bentley/imodeljs-clients";
-import { BriefcaseManager } from "../backend/BriefcaseManager";
+// import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { expect, assert } from "chai";
+import { BisCore } from "../BisCore";
+import { Element, Subject } from "../Element";
 import { IModelVersion } from "../IModelVersion";
+import { Model } from "../Model";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -24,7 +27,7 @@ describe("BriefcaseManager", () => {
   const hubClient = new IModelHubClient("QA");
   let changeSets: ChangeSet[];
   let iModelLocalPath: string;
-  let shouldDeleteAllBriefcases: boolean = false;
+  const shouldDeleteAllBriefcases: boolean = false;
 
   before(async () => {
     BisCore.registerSchema();
@@ -54,10 +57,10 @@ describe("BriefcaseManager", () => {
 
     iModelLocalPath = path.join(__dirname, "../assets/imodels/", iModelId);
 
-    // Recreate briefcases if it's a TMR. todo: Figure a better way to prevent bleeding briefcase ids
-    shouldDeleteAllBriefcases = !fs.existsSync(BriefcaseManager.rootPath);
-    if (shouldDeleteAllBriefcases)
-      await deleteAllBriefcases(iModelId);
+    // // Recreate briefcases if it's a TMR. todo: Figure a better way to prevent bleeding briefcase ids
+    // shouldDeleteAllBriefcases = !fs.existsSync(BriefcaseManager.rootPath);
+    // if (shouldDeleteAllBriefcases)
+    //   await deleteAllBriefcases(iModelId);
   });
 
   const getIModelId = async (iModelName: string) => {
@@ -83,7 +86,7 @@ describe("BriefcaseManager", () => {
   };
 
   it("should be able to open an IModel from the Hub", async () => {
-    const iModel: IModelDb = await IModelDb.open(accessToken, iModelId);
+    const iModel: IModelConnection = await IModelConnection.open(accessToken, iModelId);
     assert.exists(iModel);
 
     expect(fs.existsSync(iModelLocalPath));
@@ -96,7 +99,7 @@ describe("BriefcaseManager", () => {
   it("should reuse closed briefcases in ReadWrite mode", async () => {
     const files = fs.readdirSync(iModelLocalPath);
 
-    const iModel: IModelDb = await IModelDb.open(accessToken, iModelId);
+    const iModel: IModelConnection = await IModelConnection.open(accessToken, iModelId);
     assert.exists(iModel);
     await iModel.close(accessToken);
 
@@ -110,9 +113,9 @@ describe("BriefcaseManager", () => {
     const briefcases = fs.readdirSync(iModelLocalPath);
     expect(briefcases.length).greaterThan(0);
 
-    const iModels = new Array<IModelDb>();
+    const iModels = new Array<IModelConnection>();
     for (let ii = 0; ii < 5; ii++) {
-      const iModel: IModelDb = await IModelDb.open(accessToken, iModelId, OpenMode.Readonly);
+      const iModel: IModelConnection = await IModelConnection.open(accessToken, iModelId, OpenMode.Readonly);
       assert.exists(iModel);
       iModels.push(iModel);
     }
@@ -124,8 +127,13 @@ describe("BriefcaseManager", () => {
   });
 
   it("should open a briefcase of a specific version in Readonly mode", async () => {
-    const iModel: IModelDb = await IModelDb.open(accessToken, iModelId, OpenMode.Readonly, IModelVersion.afterChangeSet(changeSets[1].wsgId));
+    const iModel: IModelConnection = await IModelConnection.open(accessToken, iModelId, OpenMode.Readonly, IModelVersion.afterChangeSet(changeSets[1].wsgId));
     assert.exists(iModel);
+
+    const iModel2: IModelConnection = await IModelConnection.open(accessToken, iModelId, OpenMode.Readonly, IModelVersion.withName("SecondVersion"));
+    assert.exists(iModel2);
+
+    expect(iModel.briefcaseKey!.pathname).equals(iModel2.briefcaseKey!.pathname);
   });
 
   it("should open a briefcase of an iModel with no versions", async () => {
@@ -134,8 +142,33 @@ describe("BriefcaseManager", () => {
     if (shouldDeleteAllBriefcases)
       await deleteAllBriefcases(iModelId2);
 
-    const iModel: IModelDb = await IModelDb.open(accessToken, iModelId2, OpenMode.Readonly);
+    const iModel: IModelConnection = await IModelConnection.open(accessToken, iModelId2, OpenMode.Readonly);
     assert.exists(iModel);
+  });
+
+  it("should be able to get elements and models from an IModelConnection", async () => {
+    const iModel: IModelConnection = await IModelConnection.open(accessToken, iModelId);
+    assert.exists(iModel);
+    assert.isTrue(iModel instanceof IModelConnection);
+    assert.exists(iModel.models);
+    assert.isTrue(iModel.models instanceof IModelConnectionModels);
+    assert.exists(iModel.elements);
+    assert.isTrue(iModel.elements instanceof IModelConnectionElements);
+
+    const elementIds: Id64[] = [iModel.elements.rootSubjectId];
+    const elements: Element[] = await iModel.elements.getElements(elementIds);
+    assert.equal(elements.length, elementIds.length);
+    assert.isTrue(elements[0] instanceof Subject);
+    assert.isTrue(elements[0].id.equals(iModel.elements.rootSubjectId));
+    assert.isTrue(elements[0].model.equals(iModel.models.repositoryModelId));
+
+    const modelIds: Id64[] = [iModel.models.repositoryModelId];
+    const models: Model[] = await iModel.models.getModels(modelIds);
+    assert.exists(models);
+    assert.equal(models.length, modelIds.length);
+    assert.isTrue(models[0].id.equals(iModel.models.repositoryModelId));
+
+    await iModel.close(accessToken);
   });
 
   // readme cases should always use standalone briefcase

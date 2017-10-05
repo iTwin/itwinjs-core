@@ -12,9 +12,9 @@ import { ElementAspect, ElementAspectProps, ElementMultiAspect, ElementUniqueAsp
 import { IModel } from "../IModel";
 import { IModelVersion } from "../IModelVersion";
 import { Model, ModelProps } from "../Model";
-import { BriefcaseManager, KeepBriefcase } from "./BriefcaseManager";
-import { IModelError, IModelStatus } from "../IModelError";
+import { BriefcaseManager, BriefcaseToken, KeepBriefcase } from "./BriefcaseManager";
 import { ECSqlStatement } from "./ECSqlStatement";
+import { IModelError, IModelStatus } from "../IModelError";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BindingValue } from "./BindingUtility";
 
@@ -111,6 +111,7 @@ export class IModelDb extends IModel {
   public elements: IModelDbElements;
   private statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private _maxStatementCacheCount = 20;
+  private static _openDbMap: Map<string, IModelDb> = new Map<string, IModelDb>();
 
   private constructor() {
     super();
@@ -126,6 +127,7 @@ export class IModelDb extends IModel {
   public static async openStandalone(fileName: string, openMode: OpenMode = OpenMode.ReadWrite): Promise<IModelDb> {
     const iModel = new IModelDb();
     iModel._briefcaseKey = await BriefcaseManager.openStandalone(fileName, openMode);
+    IModelDb._openDbMap.set(iModel._briefcaseKey.pathname, iModel);
     return iModel;
   }
 
@@ -161,7 +163,7 @@ export class IModelDb extends IModel {
     return stmt;
   }
 
-  /** Use a prepared statement. This function takes care of preparing the statement and then releasing it. 
+  /** Use a prepared statement. This function takes care of preparing the statement and then releasing it.
    * @param ecsql The ECSql statement to execute
    * @param cb the callback to invoke on the prepared statement
    * @return the value returned by cb
@@ -214,7 +216,9 @@ export class IModelDb extends IModel {
     this.clearStatementCacheOnClose();
     if (!this.briefcaseKey)
       return;
+
     BriefcaseManager.closeStandalone(this.briefcaseKey);
+    IModelDb._openDbMap.delete(this.briefcaseKey.pathname);
   }
 
   /** Commit pending changes to this iModel */
@@ -228,6 +232,7 @@ export class IModelDb extends IModel {
   public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
     const iModel = new IModelDb();
     iModel._briefcaseKey = await BriefcaseManager.open(accessToken, iModelId, openMode, version);
+    IModelDb._openDbMap.set(iModel._briefcaseKey.pathname, iModel);
     return iModel;
   }
 
@@ -237,6 +242,18 @@ export class IModelDb extends IModel {
     if (!this.briefcaseKey)
       return;
     await BriefcaseManager.close(accessToken, this.briefcaseKey, keepBriefcase);
+    IModelDb._openDbMap.delete(this.briefcaseKey.pathname);
+  }
+
+  /** Find an already open IModelDb from its token. Used by the remoting logic.
+   * @hidden
+   */
+  public static find(token: BriefcaseToken): IModelDb {
+    const iModel: IModelDb | undefined = IModelDb._openDbMap.get(token.pathname);
+    if (!iModel)
+      throw new IModelError(IModelStatus.NotFound);
+
+    return iModel;
   }
 
 }
