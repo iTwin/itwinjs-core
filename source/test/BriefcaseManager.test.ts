@@ -8,7 +8,7 @@ import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegat
 import { ConnectClient, Project, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelHubClient } from "@bentley/imodeljs-clients";
 import { Briefcase } from "@bentley/imodeljs-clients";
-// import { BriefcaseManager } from "../backend/BriefcaseManager";
+import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { expect, assert } from "chai";
 import { BisCore } from "../BisCore";
@@ -27,7 +27,7 @@ describe("BriefcaseManager", () => {
   const hubClient = new IModelHubClient("QA");
   let changeSets: ChangeSet[];
   let iModelLocalPath: string;
-  const shouldDeleteAllBriefcases: boolean = false;
+  let shouldDeleteAllBriefcases: boolean = false;
 
   before(async () => {
     BisCore.registerSchema();
@@ -57,10 +57,10 @@ describe("BriefcaseManager", () => {
 
     iModelLocalPath = path.join(__dirname, "../assets/imodels/", iModelId);
 
-    // // Recreate briefcases if it's a TMR. todo: Figure a better way to prevent bleeding briefcase ids
-    // shouldDeleteAllBriefcases = !fs.existsSync(BriefcaseManager.rootPath);
-    // if (shouldDeleteAllBriefcases)
-    //   await deleteAllBriefcases(iModelId);
+    // Recreate briefcases if it's a TMR. todo: Figure a better way to prevent bleeding briefcase ids
+    shouldDeleteAllBriefcases = !fs.existsSync(BriefcaseManager.rootPath);
+    if (shouldDeleteAllBriefcases)
+      await deleteAllBriefcases(iModelId);
   });
 
   const getIModelId = async (iModelName: string) => {
