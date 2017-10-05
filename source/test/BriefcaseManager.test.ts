@@ -129,6 +129,11 @@ describe("BriefcaseManager", () => {
   it("should open a briefcase of a specific version in Readonly mode", async () => {
     const iModel: IModelConnection = await IModelConnection.open(accessToken, iModelId, OpenMode.Readonly, IModelVersion.afterChangeSet(changeSets[1].wsgId));
     assert.exists(iModel);
+
+    const iModel2: IModelDb = await IModelDb.open(accessToken, iModelId, OpenMode.Readonly, IModelVersion.withName("SecondVersion"));
+    assert.exists(iModel2);
+
+    expect(iModel.briefcaseKey!.pathname).equals(iModel2.briefcaseKey!.pathname);
   });
 
   it("should open a briefcase of an iModel with no versions", async () => {
