@@ -376,6 +376,16 @@ export class BriefcaseManager {
     return Promise.reject(new IModelError(BriefcaseError.VersionNotFound));
   }
 
+  private static async getChangeSetFromNamedVersion(accessToken: AccessToken, iModelId: string, versionName: string): Promise<ChangeSet|null> {
+    const version = await BriefcaseManager.hubClient.getVersion(accessToken, iModelId, {
+      $select: "*",
+      $filter: `Name+eq+'${versionName}'`,
+    });
+
+    assert(!!version.changeSetId);
+    return BriefcaseManager.getChangeSetFromId(accessToken, iModelId, version.changeSetId);
+  }
+
   @RunsIn(Tier.Services)
   private static async getChangeSetFromVersion(accessToken: AccessToken, iModelId: string, version: IModelVersion): Promise<ChangeSet|null> {
     if (version.isFirst())
@@ -385,12 +395,14 @@ export class BriefcaseManager {
       return await BriefcaseManager.getLatestChangeSet(accessToken, iModelId);
 
     const afterChangeSetId: string | undefined = version.getAfterChangeSetId();
-    if (!!afterChangeSetId)
+    if (afterChangeSetId)
       return await BriefcaseManager.getChangeSetFromId(accessToken, iModelId, afterChangeSetId);
 
-    assert(false, "version.isWithName() || version.shouldUseExisting() not supported yet");
-    return Promise.reject(new IModelError(BriefcaseError.NotSupportedYet));
-    // todo: support version.isWithName() || version.shouldUseExisting()
+    const versionName: string | undefined = version.getName();
+    if (versionName)
+      return await BriefcaseManager.getChangeSetFromNamedVersion(accessToken, iModelId, versionName);
+
+    return Promise.reject(new IModelError(BriefcaseError.VersionNotFound));
   }
 
   @RunsIn(Tier.Services)

@@ -42,5 +42,5 @@ export class IModelVersion {
   public isFirst(): boolean { return !!this._first; }
   public isLatest(): boolean { return !!this._latest; }
   public getAfterChangeSetId(): string | undefined { return this._afterChangeSetId; }
-  public isWithName(): string | undefined { return this._versionName; }
+  public getName(): string | undefined { return this._versionName; }
 }
