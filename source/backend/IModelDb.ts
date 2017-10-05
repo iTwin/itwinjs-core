@@ -172,15 +172,14 @@ export class IModelDb extends IModel {
    */
   public withPreparedECSqlStatement<T>(ecsql: string, cb: (stmt: ECSqlStatement) => T): T {
     const stmt = this.getPreparedECSqlStatement(ecsql);
-    let val: T;
     try {
-      val = cb(stmt);
+      const val: T = cb(stmt);
+      this.releasePreparedECSqlStatement(stmt);
+      return val;
     } catch (err) {
       this.releasePreparedECSqlStatement(stmt);
       throw err;
     }
-    this.releasePreparedECSqlStatement(stmt);
-    return val;
   }
 
   /** Execute a query against this iModel (overridden to improve performance)
