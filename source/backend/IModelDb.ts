@@ -14,13 +14,14 @@ import { IModel } from "../IModel";
 import { IModelError, IModelStatus } from "../IModelError";
 import { IModelVersion } from "../IModelVersion";
 import { Model, ModelProps } from "../Model";
-import { BriefcaseManager, KeepBriefcase } from "./BriefcaseManager";
+import { BriefcaseManager, BriefcaseToken, KeepBriefcase } from "./BriefcaseManager";
 import { ECSqlStatement } from "./ECSqlStatement";
 
 /** Represents a physical copy (briefcase) of an iModel that can be accessed as a file. */
 export class IModelDb extends IModel {
   public models: IModelDbModels;
   public elements: IModelDbElements;
+  private static _openDbMap: Map<string, IModelDb> = new Map<string, IModelDb>();
 
   private constructor() {
     super();
@@ -36,6 +37,7 @@ export class IModelDb extends IModel {
   public static async openStandalone(fileName: string, openMode: OpenMode = OpenMode.ReadWrite): Promise<IModelDb> {
     const iModel = new IModelDb();
     iModel._briefcaseKey = await BriefcaseManager.openStandalone(fileName, openMode);
+    IModelDb._openDbMap.set(iModel._briefcaseKey.pathname, iModel);
     return iModel;
   }
 
@@ -43,13 +45,16 @@ export class IModelDb extends IModel {
   public closeStandalone() {
     if (!this.briefcaseKey)
       return;
+
     BriefcaseManager.closeStandalone(this.briefcaseKey);
+    IModelDb._openDbMap.delete(this.briefcaseKey.pathname);
   }
 
   /** Open an iModel from the iModelHub */
   public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
     const iModel = new IModelDb();
     iModel._briefcaseKey = await BriefcaseManager.open(accessToken, iModelId, openMode, version);
+    IModelDb._openDbMap.set(iModel._briefcaseKey.pathname, iModel);
     return iModel;
   }
 
@@ -58,6 +63,18 @@ export class IModelDb extends IModel {
     if (!this.briefcaseKey)
       return;
     await BriefcaseManager.close(accessToken, this.briefcaseKey, keepBriefcase);
+    IModelDb._openDbMap.delete(this.briefcaseKey.pathname);
+  }
+
+  /** Find an already open IModelDb from its token. Used by the remoting logic.
+   * @hidden
+   */
+  public static find(token: BriefcaseToken): IModelDb {
+    const iModel: IModelDb | undefined = IModelDb._openDbMap.get(token.pathname);
+    if (!iModel)
+      throw new IModelError(IModelStatus.NotFound);
+
+    return iModel;
   }
 
   /** Prepare an ECSql statement.

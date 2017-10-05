@@ -12,6 +12,8 @@
         "bentleyjs",
         "imodel",
         "imodeljs",
+        "remotable",
+        "remoting",
         "struct",
         "subtractive",
         "superclass",
