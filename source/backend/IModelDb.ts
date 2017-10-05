@@ -17,6 +17,7 @@ import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelError, IModelStatus } from "../IModelError";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BindingValue } from "./BindingUtility";
+import { CodeSpecs } from "./CodeSpecs";
 
 class CachedECSqlStatement {
   public statement: ECSqlStatement;
@@ -112,6 +113,7 @@ export class IModelDb extends IModel {
   private statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private _maxStatementCacheCount = 20;
   private static _openDbMap: Map<string, IModelDb> = new Map<string, IModelDb>();
+  private _codeSpecs: CodeSpecs;
 
   private constructor() {
     super();
@@ -193,7 +195,7 @@ export class IModelDb extends IModel {
         stmt.bindValues(bindings);
       const rows: any[] = [];
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
-        rows.push(stmt.getValues());
+        rows.push(stmt.getRow());
       }
       return rows;
     });
@@ -254,6 +256,13 @@ export class IModelDb extends IModel {
       throw new IModelError(IModelStatus.NotFound);
 
     return iModel;
+  }
+
+  /** Get access to the CodeSpecs in this IModel */
+  public get codeSpecs(): CodeSpecs {
+    if (this._codeSpecs === undefined)
+      this._codeSpecs = new CodeSpecs(this);
+    return this._codeSpecs;
   }
 
 }

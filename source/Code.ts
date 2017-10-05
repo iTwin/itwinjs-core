@@ -4,7 +4,6 @@
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { IModel } from "./IModel";
-import { IModelError, IModelStatus } from "./IModelError";
 
 /** Properties that define a Code */
 export interface CodeProps {
@@ -75,91 +74,4 @@ export class CodeSpec {
   public properties: any; // TODO: CodeSpec handlers and custom properties
 
   public isValid(): boolean { return this.id.isValid(); }
-}
-
-/** Manages CodeSpecs within an IModel */
-export class CodeSpecs {
-  private _imodel: IModel;
-  private _loadedCodeSpecs: CodeSpec[] = [];
-
-  constructor(imodel: IModel) {
-    this._imodel = imodel;
-  }
-
-  /** Look up the Id of the CodeSpec with the specified name. */
-  public async queryCodeSpecId(name: string): Promise<Id64> {
-    const rows: any[] = await this._imodel.executeQuery("SELECT ECInstanceId as id FROM BisCore.CodeSpec WHERE Name=?", [name]);
-    if (rows.length === 0 || rows[0].id === undefined)
-      return Promise.reject(new IModelError(IModelStatus.NotFound));
-    return new Id64(rows[0].id);
-  }
-
-  /** Look up an CodeSpec by Id. The CodeSpec will be loaded from the database if necessary.
-   * @param[in] codeSpecId The Id of the CodeSpec to load
-   * @returns The CodeSpec with the specified Id, or nullptr if the CodeSpec could not be loaded
-   */
-  public async getCodeSpecById(codeSpecId: Id64): Promise<CodeSpec> {
-    if (!codeSpecId.isValid())
-      return Promise.reject(new IModelError(IModelStatus.NotFound));
-
-    // good chance it's already loaded - check there before running a query
-    const found: CodeSpec | undefined = this._loadedCodeSpecs.find((codeSpec: CodeSpec) => {
-      return codeSpec.id === codeSpecId;
-    });
-    if (found !== undefined)
-      return found;
-
-    // must load this codespec
-    const loadedCodeSpec = await this.loadCodeSpec(codeSpecId);
-    this._loadedCodeSpecs.push(loadedCodeSpec);
-    return loadedCodeSpec;
-  }
-
-  /** Look up an CodeSpec by name. The CodeSpec will be loaded from the database if necessary.
-   * @param[in] name The name of the CodeSpec to load
-   * @returns The CodeSpec with the specified name, or nullptr if the CodeSpec could not be loaded
-   */
-  public async getCodeSpecByName(name: string): Promise<CodeSpec> {
-    // good chance it's already loaded - check there before running a query
-    const found: CodeSpec | undefined = this._loadedCodeSpecs.find((codeSpec: CodeSpec) => {
-      return codeSpec.name === name;
-    });
-    if (found !== undefined)
-      return found;
-    const csid = await this.queryCodeSpecId(name);
-    if (csid === undefined)
-      return Promise.reject(new IModelError(IModelStatus.NotFound));
-    return this.getCodeSpecById(csid);
-  }
-
-  /** Add a new CodeSpec to the table.
-   * @param[in]  codeSpec The new entry to add.
-   * @return The result of the insert operation.
-   * @remarks If successful, this method will assign a valid CodeSpecId to the supplied CodeSpec
-   */
-  public insert(_codeSpec: CodeSpec): Id64 {
-    // *** TODO
-    throw new Error("TODO");
-  }
-
-  /**
-   * Load a CodeSpec from IModel
-   * @param id  The persistent Id of the CodeSpec to load
-   */
-  public async loadCodeSpec(id: Id64): Promise<CodeSpec> {
-    if (!id.isValid()) {
-      return Promise.reject(new IModelError(IModelStatus.InvalidId));
-    }
-
-    const rows: any[] = await this._imodel.executeQuery("SELECT name,jsonProperties FROM BisCore.CodeSpec WHERE ECInstanceId=?", [id]);
-    if (rows.length === 0 || rows[0].name === undefined)
-      return Promise.reject(new IModelError(IModelStatus.InvalidId));
-
-    const codeSpec = new CodeSpec();
-    codeSpec.imodel = this._imodel;
-    codeSpec.id = id;
-    codeSpec.name = rows[0].name;
-    codeSpec.properties = JSON.parse(rows[0].jsonProperties); // TODO: CodeSpec handlers and custom properties
-    return codeSpec;
-  }
 }

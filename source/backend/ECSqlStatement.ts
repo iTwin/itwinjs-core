@@ -81,15 +81,15 @@ export class ECSqlStatement implements IterableIterator<any> {
   }
 
   @RunsIn(Tier.Services)
-  public getValues(): any {
-    return this._stmt.getValues();
+  public getRow(): any {
+    return this._stmt.getRow();
   }
 
   public next(): IteratorResult<any> {
     if (DbResult.BE_SQLITE_ROW === this.step()) {
       return {
         done: false,
-        value: this.getValues(),
+        value: this.getRow(),
       };
     } else {
       return {

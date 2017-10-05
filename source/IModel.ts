@@ -4,7 +4,6 @@
 import { MetaDataRegistry } from "./ClassRegistry";
 import { IModelStatus, IModelError } from "./IModelError";
 import { BriefcaseToken, BriefcaseManager } from "./backend/BriefcaseManager";
-import { CodeSpecs } from "./Code";
 import { BindingValue } from "./backend/BindingUtility";
 
 /** An abstract class representing an instance of an iModel. */
@@ -13,14 +12,6 @@ export class IModel {
   private _classMetaDataRegistry: MetaDataRegistry;
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
   public get briefcaseKey(): BriefcaseToken|undefined { return this._briefcaseKey; }
-  private _codeSpecs: CodeSpecs;
-
-  /** Get access to the CodeSpecs in this IModel */
-  public get codeSpecs(): CodeSpecs {
-    if (this._codeSpecs === undefined)
-      this._codeSpecs = new CodeSpecs(this);
-    return this._codeSpecs;
-  }
 
   /** @hidden */
   protected constructor() {}

@@ -563,7 +563,7 @@ describe("iModel", () => {
       // Verify that we get a bunch of rows with the expected shape
       let count = 0;
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
-        const row = stmt.getValues();
+        const row = stmt.getRow();
         assert.isNotNull(row);
         assert.isObject(row);
         assert.isTrue(row.id !== undefined);
@@ -604,7 +604,7 @@ describe("iModel", () => {
       let count = 0;
       while (DbResult.BE_SQLITE_ROW === stmt3.step()) {
         count = count + 1;
-        const row = stmt3.getValues();
+        const row = stmt3.getRow();
         // Verify that we got the row that we asked for
         assert.isTrue(idToFind.equals(new Id64(row.id)));
       }
@@ -619,7 +619,7 @@ describe("iModel", () => {
       let count = 0;
       while (DbResult.BE_SQLITE_ROW === stmt4.step()) {
         count = count + 1;
-        const row = stmt4.getValues();
+        const row = stmt4.getRow();
         // Verify that we got the row that we asked for
         assert.equal(row.codeValue, codeValueToFind);
       }
@@ -638,12 +638,12 @@ describe("iModel", () => {
     ASSERT_TRUE(m_defaultCategoryId.IsValid());
   */
 
-  it.skip("should measure insert performance (backend))", async () => {
+  it.skip("should measure insert performance (backend))", () => {
 
     // TODO: Make a copy of imodel3 before writing to it
 
     const theModel = new Id64("0X11"); // TODO: Look up model by code (i.e., codevalue of a child of root subject, where child has a PhysicalPartition)
-    const defaultCategoryId = await IModelTestUtils.getSpatiallCategoryIdByName(imodel3, "DefaultCategory");
+    const defaultCategoryId = IModelTestUtils.getSpatiallCategoryIdByName(imodel3, "DefaultCategory");
 
     const elementCount = 10000;
     for (let i = 0; i < elementCount; ++i) {
@@ -684,7 +684,7 @@ describe("iModel", () => {
 
     imodel3.withPreparedECSqlStatement("select count(*) as [count] from DgnPlatformTest.TestElement", (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
-      const row = stmt.getValues();
+      const row = stmt.getRow();
       const expectedCountAsHex = "0X" + (elementCount + 1).toString(16).toUpperCase();
       assert.equal(row.count, expectedCountAsHex);
     });
