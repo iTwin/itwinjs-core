@@ -237,9 +237,7 @@ export class ECDb {
    * @returns Promise that resolves to an object with a result property set to a JSON array containing the rows returned from the query
    * The resolved object contains an error property if the operation failed.
    */
-  public async executeQuery(ecsql: string, bindings?: BindingValue[]): BentleyPromise<DbResult, string>;
-  public async executeQuery(ecsql: string, bindings?: Map<string, BindingValue>): BentleyPromise<DbResult, string>;
-  public async executeQuery(ecsql: string, bindings?: BindingValue[] | Map<string, BindingValue>): BentleyPromise<DbResult, string> {
+  public async executeQuery(ecsql: string, bindings?: BindingValue[] | Map<string, BindingValue> | any): BentleyPromise<DbResult, any[]> {
     if (!this.ecdb)
       return { error: { status: DbResult.BE_SQLITE_ERROR, message: "ECDb must be created or opened to complete this operation" } };
 
@@ -251,7 +249,14 @@ export class ECDb {
       ecBindingsStr = JSON.stringify(ecBindings);
     }
 
-    return this.ecdb.executeQuery(ecsql, ecBindingsStr);
+    const {reserror, result: rowsJson} = await this.ecdb.executeQuery(ecsql, ecBindingsStr);
+    if (reserror !== undefined) {
+      return {error: reserror};
+    }
+    if (rowsJson === undefined) {
+      return {error: {status: DbResult.BE_SQLITE_ERROR, message: ""}};
+    }
+    return {result: JSON.parse(rowsJson)};
   }
 
   /**
@@ -261,9 +266,7 @@ export class ECDb {
    * @returns Promise that resolves to an object that contains an error property if the operation failed.
    * If the operation was successful and it was an insert, the returned object will contain a result property set to the id of the inserted instance.
    */
-  public async executeStatement(ecsql: string, isInsertStatement?: boolean, bindings?: BindingValue[]): BentleyPromise<DbResult, string>;
-  public async executeStatement(ecsql: string, isInsertStatement?: boolean, bindings?: Map<string, BindingValue>): BentleyPromise<DbResult, string>;
-  public async executeStatement(ecsql: string, isInsertStatement?: boolean, bindings?: BindingValue[] | Map<string, BindingValue>): BentleyPromise<DbResult, string> {
+  public async executeStatement(ecsql: string, isInsertStatement?: boolean, bindings?: BindingValue[] | Map<string, BindingValue> | any): BentleyPromise<DbResult, string> {
     if (!this.ecdb)
       return { error: { status: DbResult.BE_SQLITE_ERROR, message: "ECDb must be created or opened to complete this operation" } };
 

@@ -4,11 +4,14 @@
 
 import { assert } from "chai";
 import { Element } from "../Element";
+import { Model } from "../Model";
+import { IModel } from "../IModel";
 import { IModelDb } from "../backend/IModelDb";
-import { SpatialCategory } from "../Category";
+import { SpatialCategory, DrawingCategory } from "../Category";
 // import { Model } from "../Model";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { IModelError } from "../IModelError";
+import { Code } from "../Code";
+import { IModelError, IModelStatus } from "../IModelError";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
 import * as fs from "fs-extra";
@@ -53,34 +56,81 @@ export class IModelTestUtils {
 
   // TODO: This neeeds a home
   public static queryCodeSpecId(imodel: IModelDb, name: string): Id64 | undefined {
-    // TODO: Use a statement cache
-    let id: Id64 | undefined;
-    imodel.withPreparedECSqlStatement("SELECT ecinstanceid FROM BisCore.CodeSpec WHERE Name=?", (stmt: ECSqlStatement) => {
+    return imodel.withPreparedECSqlStatement("SELECT ecinstanceid FROM BisCore.CodeSpec WHERE Name=?", (stmt: ECSqlStatement) => {
       stmt.bindValues([name]);
       if (DbResult.BE_SQLITE_ROW !== stmt.step()) {
         return;
       }
-      id = new Id64(stmt.getValues().ecinstanceid);
+      return new Id64(stmt.getValues().ecinstanceid);
     });
-    return id;
-}
-
-  // TODO: This needs a home
-  public static queryElementIdByCode(imodel: IModelDb, codeSpec: Id64, scopeElementId: Id64, value: string): Id64 | undefined {
-    // TODO: Use a statement cache
-    const stmt = imodel.getPreparedECSqlStatement("SELECT ecinstanceid FROM " + Element.sqlName + " WHERE CodeSpecId=? AND CodeScopeId=? AND CodeValue=? LIMIT 1");
-    stmt.bindValues([codeSpec, scopeElementId, value]);
-    if (DbResult.BE_SQLITE_ROW !== stmt.step()) {
-      return undefined;
-    }
-    const id = new Id64(stmt.getValues().ecinstanceid);
-    imodel.releasePreparedECSqlStatement(stmt);
-    return id;
   }
 
   // TODO: This needs a home
-  public static getSpatiallCategoryIdByName(imodel: IModelDb, catname: string): Id64 {
-    // TODO: Use a statement cache
+  public static queryElementIdByCodeSync(imodel: IModelDb, code: Code): Id64 | undefined {
+    if (!code.spec.isValid()) {
+      throw new IModelError(IModelStatus.InvalidCodeSpec);
+    }
+    if (code.value === undefined) {
+      throw new IModelError(IModelStatus.InvalidCode);
+    }
+    return imodel.withPreparedECSqlStatement("SELECT ecinstanceid FROM " + Element.sqlName + " WHERE CodeSpec=? AND CodeScope=? AND CodeValue=?", (stmt: ECSqlStatement) => {
+      stmt.bindValues([code.spec, new Id64(code.scope), code.value!]);
+      if (DbResult.BE_SQLITE_ROW !== stmt.step()) {
+        return undefined;
+      }
+      const id = new Id64(stmt.getValues().ecinstanceid);
+      imodel.releasePreparedECSqlStatement(stmt);
+      return id;
+    });
+  }
+
+  // TODO: This needs a home
+  public static async queryElementIdByCode(imodel: IModel, code: Code): Promise<Id64> {
+    if (!code.spec.isValid()) {
+      throw new IModelError(IModelStatus.InvalidCodeSpec);
+    }
+    if (code.value === undefined) {
+      throw new IModelError(IModelStatus.InvalidCode);
+    }
+    const rows: any[] = await imodel.executeQuery("SELECT ecinstanceid as id FROM " + Element.sqlName + " WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?", [code.spec, new Id64(code.scope), code.value!]);
+    if (rows.length === 0 || rows[0].id === undefined)
+      return Promise.reject(new IModelError(IModelStatus.NotFound));
+    const id = new Id64(rows[0].id);
+    return id;
+  }
+
+  /** Create a Code for a DrawingCategory given a name that is meant to be unique within the scope of the specified DefinitionModel 
+   * @param imodel  The IModel
+   * @param parentModelId The scope of the category -- *** TODO: should be DefinitionModel
+   * @param codeValue The name of the category
+   * @return a Promise if the category's Code
+   */
+  public static async createDrawingCategoryCode(imodel: IModel, definitionModelId: Id64, codeValue: string): Promise<Code> {
+    const cspec = await imodel.codeSpecs.getCodeSpecByName(DrawingCategory.getCodeSpecName());
+    return new Code({ spec: cspec.id, scope: definitionModelId.toString(), value: codeValue });
+  }
+
+  /** Create a Code for a SpatialCategory given a name that is meant to be unique within the scope of the specified DefinitionModel 
+   * @param imodel  The IModel
+   * @param parentModelId The scope of the category -- *** TODO: should be DefinitionModel
+   * @param codeValue The name of the category
+   * @return a Promise if the category's Code
+   */
+  public static async createSpatialCategoryCode(imodel: IModel, definitionModelId: Id64, codeValue: string): Promise<Code> {
+    const cspec = await imodel.codeSpecs.getCodeSpecByName(SpatialCategory.getCodeSpecName());
+    return new Code({ spec: cspec.id, scope: definitionModelId.toString(), value: codeValue });
+  }
+
+  // TODO: This needs a home
+  public static async getSpatiallCategoryIdByName(imodel: IModel, catname: string, scopeId?: Id64): Promise<Id64> {
+    if (scopeId === undefined)
+      scopeId = Model.getDictionaryId();
+    const code: Code = await IModelTestUtils.createSpatialCategoryCode(imodel, scopeId, catname);
+    const id: Id64 | undefined = await IModelTestUtils.queryElementIdByCode(imodel, code);
+    if (id === undefined)
+      return Promise.reject(new IModelError(DbResult.BE_SQLITE_NOTFOUND));
+    return id;
+    /*
     const stmt = imodel.getPreparedECSqlStatement("SELECT EcInstanceId as elementId FROM " + SpatialCategory.sqlName + " WHERE codevalue = ?");
     stmt.bindValues([catname]);
     if (DbResult.BE_SQLITE_ROW !== stmt.step()) {
@@ -94,6 +144,7 @@ export class IModelTestUtils {
       throw new IModelError(DbResult.BE_SQLITE_NOTFOUND);
 
     return id;
+    */
   }
 
 }

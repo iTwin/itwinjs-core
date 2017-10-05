@@ -4,6 +4,8 @@
 import { MetaDataRegistry } from "./ClassRegistry";
 import { IModelStatus, IModelError } from "./IModelError";
 import { BriefcaseToken, BriefcaseManager } from "./backend/BriefcaseManager";
+import { CodeSpecs } from "./Code";
+import { BindingValue } from "./backend/BindingUtility";
 
 /** An abstract class representing an instance of an iModel. */
 export class IModel {
@@ -11,9 +13,17 @@ export class IModel {
   private _classMetaDataRegistry: MetaDataRegistry;
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
   public get briefcaseKey(): BriefcaseToken|undefined { return this._briefcaseKey; }
+  private _codeSpecs: CodeSpecs;
+
+  /** Get access to the CodeSpecs in this IModel */
+  public get codeSpecs(): CodeSpecs {
+    if (this._codeSpecs === undefined)
+      this._codeSpecs = new CodeSpecs(this);
+    return this._codeSpecs;
+  }
 
   /** @hidden */
-  protected constructor() { }
+  protected constructor() {}
 
   /** Get the meta data for the specified class defined in imodel iModel, blocking until the result is returned.
    * @param schemaName The name of the schema
@@ -54,12 +64,13 @@ export class IModel {
 
   /** Execute a query against this iModel
    * @param sql The ECSql statement to execute
-   * @returns all rows in JSON syntax or the empty string if nothing was selected
+   * @param bindings Optional values to bind to placeholders in the statement.
+   * @returns all rows as an array or an empty array if nothing was selected
    * @throws [[IModelError]] If the statement is invalid
    */
-  public executeQuery(sql: string): Promise<string> {
+  public executeQuery(sql: string, bindings?: BindingValue[] | Map<string, BindingValue> | any): Promise<any[]> {
     if (!this.briefcaseKey)
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
-    return BriefcaseManager.executeQuery(this.briefcaseKey, sql);
+    return BriefcaseManager.executeQuery(this.briefcaseKey, sql, bindings);
   }
 }

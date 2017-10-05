@@ -48,6 +48,10 @@ export class Model extends Entity implements ModelProps {
       val.jsonProperties = this.jsonProperties;
     return val;
   }
+
+  /** Get the Id of the special dictionary model */
+  public static getDictionaryId(): Id64 { return new Id64("0X10"); }
+
 }
 
 /** A geometric model */

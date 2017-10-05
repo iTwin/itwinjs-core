@@ -3,6 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
+import { IModel } from "./IModel";
+import { IModelError, IModelStatus } from "./IModelError";
 
 /** Properties that define a Code */
 export interface CodeProps {
@@ -30,37 +32,134 @@ export class Code implements CodeProps {
 }
 
 /** Names of built-in CodeSpecs. The best practice is to include the domain name as part of the CodeSpec name to ensure global uniqueness */
-export class CodeSpec {
+export class CodeSpecNames {
   private static BIS_CODESPEC(name: string): string { return "bis:" + name; }
-  public static NullCodeSpec()                   { return CodeSpec.BIS_CODESPEC("NullCodeSpec"); }
-  public static AnnotationFrameStyle()           { return CodeSpec.BIS_CODESPEC("AnnotationFrameStyle"); }
-  public static AnnotationLeaderStyle()          { return CodeSpec.BIS_CODESPEC("AnnotationLeaderStyle"); }
-  public static AnnotationTextStyle()            { return CodeSpec.BIS_CODESPEC("AnnotationTextStyle"); }
-  public static AuxCoordSystem2d()               { return CodeSpec.BIS_CODESPEC("AuxCoordSystem2d"); }
-  public static AuxCoordSystem3d()               { return CodeSpec.BIS_CODESPEC("AuxCoordSystem3d"); }
-  public static AuxCoordSystemSpatial()          { return CodeSpec.BIS_CODESPEC("AuxCoordSystemSpatial"); }
-  public static CategorySelector()               { return CodeSpec.BIS_CODESPEC("CategorySelector"); }
-  public static ColorBook()                      { return CodeSpec.BIS_CODESPEC("ColorBook"); }
-  public static DisplayStyle()                   { return CodeSpec.BIS_CODESPEC("DisplayStyle"); }
-  public static Drawing()                        { return CodeSpec.BIS_CODESPEC("Drawing"); }
-  public static DrawingCategory()                { return CodeSpec.BIS_CODESPEC("DrawingCategory"); }
-  public static GeometryPart()                   { return CodeSpec.BIS_CODESPEC("GeometryPart"); }
-  public static GraphicalType2d()                { return CodeSpec.BIS_CODESPEC("GraphicalType2d"); }
-  public static TemplateRecipe2d()               { return CodeSpec.BIS_CODESPEC("TemplateRecipe2d"); }
-  public static LineStyle()                      { return CodeSpec.BIS_CODESPEC("LineStyle"); }
-  public static LinkElement()                    { return CodeSpec.BIS_CODESPEC("LinkElement"); }
-  public static ModelSelector()                  { return CodeSpec.BIS_CODESPEC("ModelSelector"); }
-  public static PhysicalMaterial()               { return CodeSpec.BIS_CODESPEC("PhysicalMaterial"); }
-  public static PhysicalType()                   { return CodeSpec.BIS_CODESPEC("PhysicalType"); }
-  public static InformationPartitionElement()    { return CodeSpec.BIS_CODESPEC("InformationPartitionElement"); }
-  public static RenderMaterial()                 { return CodeSpec.BIS_CODESPEC("RenderMaterial"); }
-  public static Sheet()                          { return CodeSpec.BIS_CODESPEC("Sheet"); }
-  public static SpatialCategory()                { return CodeSpec.BIS_CODESPEC("SpatialCategory"); }
-  public static SpatialLocationType()            { return CodeSpec.BIS_CODESPEC("SpatialLocationType"); }
-  public static SubCategory()                    { return CodeSpec.BIS_CODESPEC("SubCategory"); }
-  public static Subject()                        { return CodeSpec.BIS_CODESPEC("Subject"); }
-  public static TemplateRecipe3d()               { return CodeSpec.BIS_CODESPEC("TemplateRecipe3d"); }
-  public static TextAnnotationSeed()             { return CodeSpec.BIS_CODESPEC("TextAnnotationSeed"); }
-  public static Texture()                        { return CodeSpec.BIS_CODESPEC("Texture"); }
-  public static ViewDefinition()                 { return CodeSpec.BIS_CODESPEC("ViewDefinition"); }
+  public static NullCodeSpec() { return CodeSpecNames.BIS_CODESPEC("NullCodeSpec"); }
+  public static AnnotationFrameStyle() { return CodeSpecNames.BIS_CODESPEC("AnnotationFrameStyle"); }
+  public static AnnotationLeaderStyle() { return CodeSpecNames.BIS_CODESPEC("AnnotationLeaderStyle"); }
+  public static AnnotationTextStyle() { return CodeSpecNames.BIS_CODESPEC("AnnotationTextStyle"); }
+  public static AuxCoordSystem2d() { return CodeSpecNames.BIS_CODESPEC("AuxCoordSystem2d"); }
+  public static AuxCoordSystem3d() { return CodeSpecNames.BIS_CODESPEC("AuxCoordSystem3d"); }
+  public static AuxCoordSystemSpatial() { return CodeSpecNames.BIS_CODESPEC("AuxCoordSystemSpatial"); }
+  public static CategorySelector() { return CodeSpecNames.BIS_CODESPEC("CategorySelector"); }
+  public static ColorBook() { return CodeSpecNames.BIS_CODESPEC("ColorBook"); }
+  public static DisplayStyle() { return CodeSpecNames.BIS_CODESPEC("DisplayStyle"); }
+  public static Drawing() { return CodeSpecNames.BIS_CODESPEC("Drawing"); }
+  public static DrawingCategory() { return CodeSpecNames.BIS_CODESPEC("DrawingCategory"); }
+  public static GeometryPart() { return CodeSpecNames.BIS_CODESPEC("GeometryPart"); }
+  public static GraphicalType2d() { return CodeSpecNames.BIS_CODESPEC("GraphicalType2d"); }
+  public static TemplateRecipe2d() { return CodeSpecNames.BIS_CODESPEC("TemplateRecipe2d"); }
+  public static LineStyle() { return CodeSpecNames.BIS_CODESPEC("LineStyle"); }
+  public static LinkElement() { return CodeSpecNames.BIS_CODESPEC("LinkElement"); }
+  public static ModelSelector() { return CodeSpecNames.BIS_CODESPEC("ModelSelector"); }
+  public static PhysicalMaterial() { return CodeSpecNames.BIS_CODESPEC("PhysicalMaterial"); }
+  public static PhysicalType() { return CodeSpecNames.BIS_CODESPEC("PhysicalType"); }
+  public static InformationPartitionElement() { return CodeSpecNames.BIS_CODESPEC("InformationPartitionElement"); }
+  public static RenderMaterial() { return CodeSpecNames.BIS_CODESPEC("RenderMaterial"); }
+  public static Sheet() { return CodeSpecNames.BIS_CODESPEC("Sheet"); }
+  public static SpatialCategory() { return CodeSpecNames.BIS_CODESPEC("SpatialCategory"); }
+  public static SpatialLocationType() { return CodeSpecNames.BIS_CODESPEC("SpatialLocationType"); }
+  public static SubCategory() { return CodeSpecNames.BIS_CODESPEC("SubCategory"); }
+  public static Subject() { return CodeSpecNames.BIS_CODESPEC("Subject"); }
+  public static TemplateRecipe3d() { return CodeSpecNames.BIS_CODESPEC("TemplateRecipe3d"); }
+  public static TextAnnotationSeed() { return CodeSpecNames.BIS_CODESPEC("TextAnnotationSeed"); }
+  public static Texture() { return CodeSpecNames.BIS_CODESPEC("Texture"); }
+  public static ViewDefinition() { return CodeSpecNames.BIS_CODESPEC("ViewDefinition"); }
+}
+
+/** A CodeSpec object within a particular IModel */
+export class CodeSpec {
+  public imodel: IModel;
+  public id: Id64;
+  public name: string;
+  public properties: any; // TODO: CodeSpec handlers and custom properties
+
+  public isValid(): boolean { return this.id.isValid(); }
+}
+
+/** Manages CodeSpecs within an IModel */
+export class CodeSpecs {
+  private _imodel: IModel;
+  private _loadedCodeSpecs: CodeSpec[] = [];
+
+  constructor(imodel: IModel) {
+    this._imodel = imodel;
+  }
+
+  /** Look up the Id of the CodeSpec with the specified name. */
+  public async queryCodeSpecId(name: string): Promise<Id64> {
+    const rows: any[] = await this._imodel.executeQuery("SELECT ECInstanceId as id FROM BisCore.CodeSpec WHERE Name=?", [name]);
+    if (rows.length === 0 || rows[0].id === undefined)
+      return Promise.reject(new IModelError(IModelStatus.NotFound));
+    return new Id64(rows[0].id);
+  }
+
+  /** Look up an CodeSpec by Id. The CodeSpec will be loaded from the database if necessary.
+   * @param[in] codeSpecId The Id of the CodeSpec to load
+   * @returns The CodeSpec with the specified Id, or nullptr if the CodeSpec could not be loaded
+   */
+  public async getCodeSpecById(codeSpecId: Id64): Promise<CodeSpec> {
+    if (!codeSpecId.isValid())
+      return Promise.reject(new IModelError(IModelStatus.NotFound));
+
+    // good chance it's already loaded - check there before running a query
+    const found: CodeSpec | undefined = this._loadedCodeSpecs.find((codeSpec: CodeSpec) => {
+      return codeSpec.id === codeSpecId;
+    });
+    if (found !== undefined)
+      return found;
+
+    // must load this codespec
+    const loadedCodeSpec = await this.loadCodeSpec(codeSpecId);
+    this._loadedCodeSpecs.push(loadedCodeSpec);
+    return loadedCodeSpec;
+  }
+
+  /** Look up an CodeSpec by name. The CodeSpec will be loaded from the database if necessary.
+   * @param[in] name The name of the CodeSpec to load
+   * @returns The CodeSpec with the specified name, or nullptr if the CodeSpec could not be loaded
+   */
+  public async getCodeSpecByName(name: string): Promise<CodeSpec> {
+    // good chance it's already loaded - check there before running a query
+    const found: CodeSpec | undefined = this._loadedCodeSpecs.find((codeSpec: CodeSpec) => {
+      return codeSpec.name === name;
+    });
+    if (found !== undefined)
+      return found;
+    const csid = await this.queryCodeSpecId(name);
+    if (csid === undefined)
+      return Promise.reject(new IModelError(IModelStatus.NotFound));
+    return this.getCodeSpecById(csid);
+  }
+
+  /** Add a new CodeSpec to the table.
+   * @param[in]  codeSpec The new entry to add.
+   * @return The result of the insert operation.
+   * @remarks If successful, this method will assign a valid CodeSpecId to the supplied CodeSpec
+   */
+  public insert(_codeSpec: CodeSpec): Id64 {
+    // *** TODO
+    throw new Error("TODO");
+  }
+
+  /**
+   * Load a CodeSpec from IModel
+   * @param id  The persistent Id of the CodeSpec to load
+   */
+  public async loadCodeSpec(id: Id64): Promise<CodeSpec> {
+    if (!id.isValid()) {
+      return Promise.reject(new IModelError(IModelStatus.InvalidId));
+    }
+
+    const rows: any[] = await this._imodel.executeQuery("SELECT name,jsonProperties FROM BisCore.CodeSpec WHERE ECInstanceId=?", [id]);
+    if (rows.length === 0 || rows[0].name === undefined)
+      return Promise.reject(new IModelError(IModelStatus.InvalidId));
+
+    const codeSpec = new CodeSpec();
+    codeSpec.imodel = this._imodel;
+    codeSpec.id = id;
+    codeSpec.name = rows[0].name;
+    codeSpec.properties = JSON.parse(rows[0].jsonProperties); // TODO: CodeSpec handlers and custom properties
+    return codeSpec;
+  }
 }

@@ -9,6 +9,7 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { IModelStatus, IModelError } from "../IModelError";
 import { IModelVersion } from "../IModelVersion";
 import { ECSqlStatement } from "./ECSqlStatement";
+import { BindingUtility, BindingValue } from "./BindingUtility";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -668,20 +669,29 @@ export class BriefcaseManager {
   /**
    * Execute an ECSql select statement
    * @param ecsql The ECSql select statement to prepare
-   * @returns Promise that resolves to an object with a result property set to a JSON array containing the rows returned from the query
+   * @param bindings Optional values to bind to placeholders in the statement.
+   * @returns all rows as an array or an empty array if nothing was selected
    * The resolved object contains an error property if the operation failed.
    */
   @RunsIn(Tier.Services)
-  public static async executeQuery(briefcaseToken: BriefcaseToken, ecsql: string): Promise<string> {
+  public static async executeQuery(briefcaseToken: BriefcaseToken, ecsql: string, bindings?: BindingValue[] | Map<string, BindingValue> | any): Promise<any[]> {
     const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
     if (!db)
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
-    const response: BentleyReturn<DbResult, string> = await db.executeQuery(ecsql);
+    let ecBindingsStr: string | undefined;
+    if (bindings) {
+      const { error, result: ecBindings } = BindingUtility.preProcessBindings(bindings);
+      if (error)
+        return Promise.reject(new IModelError(error.status, error.message));
+      ecBindingsStr = JSON.stringify(ecBindings);
+    }
+
+    const response: BentleyReturn<DbResult, string> = await db.executeQuery(ecsql, ecBindingsStr);
     if (response.error)
       return Promise.reject(new IModelError(response.error.status));
 
-    return response.result!;
+    return JSON.parse(response.result!);
   }
 
   /**

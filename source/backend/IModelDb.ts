@@ -16,6 +16,7 @@ import { BriefcaseManager, KeepBriefcase } from "./BriefcaseManager";
 import { IModelError, IModelStatus } from "../IModelError";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { BindingValue } from "./BindingUtility";
 
 class CachedECSqlStatement {
   public statement: ECSqlStatement;
@@ -160,16 +161,40 @@ export class IModelDb extends IModel {
     return stmt;
   }
 
-  /** Use a prepared statement. This function takes care of preparing the statement and then releasing it. */
-  public withPreparedECSqlStatement(ecsql: string, cb: any): void {
+  /** Use a prepared statement. This function takes care of preparing the statement and then releasing it. 
+   * @param ecsql The ECSql statement to execute
+   * @param cb the callback to invoke on the prepared statement
+   * @return the value returned by cb
+   */
+  public withPreparedECSqlStatement<T>(ecsql: string, cb: (stmt: ECSqlStatement) => T): T {
     const stmt = this.getPreparedECSqlStatement(ecsql);
+    let val: T;
     try {
-      cb(stmt);
+      val = cb(stmt);
     } catch (err) {
       this.releasePreparedECSqlStatement(stmt);
       throw err;
     }
     this.releasePreparedECSqlStatement(stmt);
+    return val;
+  }
+
+  /** Execute a query against this iModel (overridden to improve performance)
+   * @param sql The ECSql statement to execute
+   * @param bindings Optional values to bind to placeholders in the statement.
+   * @returns all rows as an array or an empty array if nothing was selected
+   * @throws [[IModelError]] If the statement is invalid
+   */
+  public async executeQuery(sql: string, bindings?: BindingValue[] | Map<string, BindingValue> | any): Promise<any[]> {
+    return this.withPreparedECSqlStatement(sql, (stmt: ECSqlStatement) => {
+      if (bindings !== undefined)
+        stmt.bindValues(bindings);
+      const rows: any[] = [];
+      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        rows.push(stmt.getValues());
+      }
+      return rows;
+    });
   }
 
   /**
@@ -391,9 +416,11 @@ export class IModelDbElements {
    * @throws [[IModelError]]
    */
   public async queryChildren(elementId: Id64): Promise<Id64[]> {
-    const rowsJson: string = await this._iModel.executeQuery("SELECT ECInstanceId as id FROM " + Element.sqlName + " WHERE Parent.Id=" + elementId.toString()); // WIP: need to bind!
+    const rows: any[] = await this._iModel.executeQuery("SELECT ECInstanceId as id FROM " + Element.sqlName + " WHERE Parent.Id=?", [elementId]);
     const childIds: Id64[] = [];
-    JSON.parse(rowsJson).forEach((row: any) => childIds.push(new Id64(row.id))); // WIP: executeQuery should return ECInstanceId as a string
+    for (const row of rows) {
+      childIds.push(new Id64(row.id));
+    }
     return Promise.resolve(childIds);
   }
 
@@ -408,9 +435,8 @@ export class IModelDbElements {
    */
   private async _queryAspects(elementId: Id64, aspectClassName: string): Promise<ElementAspect[]> {
     const name = aspectClassName.split(":");
-    const rowsJson: string = await this._iModel.executeQuery("SELECT * FROM [" + name[0] + "].[" + name[1] + "] WHERE Element.Id=" + elementId.toString()); // WIP: need to bind!
-    const rows: any[] = JSON.parse(rowsJson);
-    if (!rows || rows.length === 0)
+    const rows: any[] = await this._iModel.executeQuery("SELECT * FROM [" + name[0] + "].[" + name[1] + "] WHERE Element.Id=?", [elementId]);
+    if (rows.length === 0)
       return Promise.reject(new IModelError(IModelStatus.NotFound));
 
     const aspects: ElementAspect[] = [];
