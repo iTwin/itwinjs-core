@@ -7,6 +7,8 @@ import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { Element } from "../Element";
 import { IModel } from "../IModel";
+import { IModelError, IModelStatus } from "../IModelError";
+import { BriefcaseToken } from "../backend/BriefcaseManager"; // WIP: cannot include backend classes in frontend!
 import { IModelVersion } from "../IModelVersion";
 import { Model } from "../Model";
 
@@ -25,14 +27,26 @@ export class IModelConnection extends IModel {
   }
 
   /** Open an iModel from the iModelHub */
-  public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
+  public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
+    if (OpenMode.Readonly !== openMode)
+      Promise.reject(new IModelError(IModelStatus.NotEnabled, "IModelConnection does not support read/write access yet")); // WIP: waiting for decisions on how to manage read/write briefcases on the backend
+
     const iModelConnection = new IModelConnection();
     iModelConnection._briefcaseKey = await IModelDbRemoting.open(accessToken, iModelId, openMode, version);
     return iModelConnection;
   }
 
+  /** Create an IModelConnection from the token of an IModel opened on the backend. This method is for specific scenarios.
+   * In most cases it is better to call [[IModelConnection.open]] instead.
+   */
+  public static async create(iModelToken: BriefcaseToken) {
+    const iModelConnection = new IModelConnection();
+    iModelConnection._briefcaseKey = iModelToken;
+    return iModelConnection;
+  }
+
   /** Close this iModel */
-  public async close(accessToken: AccessToken): Promise<void> {
+  public async close(accessToken: AccessToken): Promise<void> { // WIP: remove AccessToken parameter
     if (!this.briefcaseKey)
       return;
     await IModelDbRemoting.close(accessToken, this.briefcaseKey);
