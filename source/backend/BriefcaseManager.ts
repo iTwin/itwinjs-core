@@ -481,7 +481,7 @@ export class BriefcaseManager {
     const db = new dgnDbNodeAddon.DgnDb();
     const res: BentleyReturn<DbResult, void> = await db.openBriefcase(JSON.stringify(briefcaseToken), JSON.stringify(changeSetTokens));
     if (res.error)
-      throw new IModelError(res.error.status);
+      return Promise.reject(new IModelError(res.error.status));
 
     // Remove any old entry in the cache if an older briefcase may be repurposed.
     if (BriefcaseManager.cache!.hasBriefcase(briefcaseToken))
@@ -534,7 +534,7 @@ export class BriefcaseManager {
     const db = new dgnDbNodeAddon.DgnDb();
     const res: BentleyReturn<DbResult, void> = await db.openDgnDb(fileName, openMode);
     if (res.error)
-      throw new IModelError(res.error.status);
+      return Promise.reject(new IModelError(res.error.status));
 
     const briefcaseToken = BriefcaseToken.fromFile(fileName, openMode, true /*isOpen*/);
     BriefcaseManager.cache!.setBriefcase(briefcaseToken, db);

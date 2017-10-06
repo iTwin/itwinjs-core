@@ -8,7 +8,12 @@ import { Point3d, Vector3d, Range3d, YawPitchRollAngles, Point2d, Range2d, Trans
 
  /** A bounding box aligned to the orientation of a 3d Element */
 export class ElementAlignedBox3d extends Range3d {
-  public constructor(low: Point3d, high: Point3d) { super(low.x, low.y, low.z, high.x, high.y, high.z); }
+  public constructor(low?: Point3d, high?: Point3d) {
+    if (low === undefined || high === undefined)
+      super(); // defines an empty box
+    else
+      super(low.x, low.y, low.z, high.x, high.y, high.z);
+  }
   public get left(): number { return this.low.x; }
   public get bottom(): number { return this.low.y; }
   public get front(): number { return this.low.z; }
@@ -23,14 +28,20 @@ export class ElementAlignedBox3d extends Range3d {
     return !this.isNull() && lo.x > -max && lo.y > -max && lo.z > -max && hi.x < max && hi.y < max && hi.z < max;
   }
   public static fromJSON(json?: any): ElementAlignedBox3d {
-    json = json ? json : {};
+    if (json === undefined)
+      return new ElementAlignedBox3d();
     return new ElementAlignedBox3d(Point3d.fromJSON(json.low), Point3d.fromJSON(json.high));
   }
 }
 
 /** A bounding box aligned to the orientation of a 2d Element */
 export class ElementAlignedBox2d extends Range2d {
-  public constructor(low: Point2d, high: Point2d) { super(low.x, low.y, high.x, high.y); }
+  public constructor(low?: Point2d, high?: Point2d) {
+    if (low === undefined || high === undefined)
+      super(); // defines an empty box
+    else
+      super(low.x, low.y, high.x, high.y);
+  }
   public get left(): number { return this.low.x; }
   public get bottom(): number { return this.low.y; }
   public get right(): number { return this.high.x; }
@@ -38,8 +49,9 @@ export class ElementAlignedBox2d extends Range2d {
   public get width(): number { return this.xLength(); }
   public get depth(): number { return this.yLength(); }
   public static fromJSON(json?: any): ElementAlignedBox2d {
-    json = json ? json : {};
-    return new ElementAlignedBox2d(Point2d.fromJSON(json.low), Point2d.fromJSON(json.high));
+  if (json === undefined)
+    return new ElementAlignedBox2d();
+  return new ElementAlignedBox2d(Point2d.fromJSON(json.low), Point2d.fromJSON(json.high));
   }
   public isValid(): boolean {
     const max = Constant.circumferenceOfEarth; const lo = this.low; const hi = this.high;
