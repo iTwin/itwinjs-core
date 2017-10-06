@@ -51,6 +51,7 @@ module.exports = {
   appPackageJson: resolveApp('package.json'),
   appSrc: resolveApp('src'),
   appTest: resolveApp('test'),
+  appSnapshots: resolveApp('.snapshots.js'),
   appSrcElectron: resolveApp('src/electron'),
   yarnLockFile: resolveApp('yarn.lock'),
   testsSetup: resolveApp('src/setupTests.ts'),

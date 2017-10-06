@@ -44,6 +44,13 @@ const coverageLoaders = (isCoverage) ? [
   },
 ] : [];
 
+// WIP: This is needed to configure our custom chai assertions...
+const fixCustomAssertionsRelPaths = (context, request, callback) => {
+  if (/customAssertions\.js$/.test(request)){
+    return callback(null, 'commonjs ' + path.resolve(context, request));
+  }
+  callback();
+}
 
 // WIP: This is also needed for the imports-loader hack below.
 const fixAddonLoaderRelPaths = (context, request, callback) => {
@@ -60,6 +67,7 @@ module.exports = {
   
   // Ignore all modules in node_modules folder
   externals: [
+    fixCustomAssertionsRelPaths,
     fixAddonLoaderRelPaths,
     nodeExternals({whitelist: nodeExternalsWhitelist})],
 
@@ -108,6 +116,13 @@ module.exports = {
         loader: require.resolve('imports-loader'),
         query: "document=>{}",
         test: /@bentley.*\.(jsx?|tsx?)$/,
+        enforce: 'post',
+      },
+      // WIP: This is a temporary (hack) workaround for the suppoting snapshots with mocha-webpack.
+      {
+        loader: require.resolve('imports-loader'),
+        query: "describe=>bedescribe",
+        test: /.*\.test\.(jsx?|tsx?)$/,
         enforce: 'post',
       },
 
