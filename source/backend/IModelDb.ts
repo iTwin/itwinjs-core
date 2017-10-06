@@ -363,7 +363,6 @@ export class IModelDbElements {
     if (elementId instanceof Id64) return this._doGetElement({ id: elementId });
     if (elementId instanceof Guid) return this._doGetElement({ federationGuid: elementId.toString() });
     if (elementId instanceof Code) return this._doGetElement({ code: elementId });
-    assert(false);
     return Promise.reject(new IModelError(IModelStatus.BadArg));
   }
 
