@@ -30,8 +30,16 @@ export class IModelConnection extends IModel {
     return new IModelConnection(iModelToken);
   }
 
+  /** Create an IModelConnection from the token of an IModel opened on the backend. This method is for specific scenarios.
+   * In most cases it is better to call [[IModelConnection.open]] instead.
+   */
+  public static async create(iModelToken: IModelToken) {
+    const iModelConnection = new IModelConnection(iModelToken);
+    return iModelConnection;
+  }
+
   /** Close this iModel */
-  public async close(accessToken: AccessToken): Promise<void> {
+  public async close(accessToken: AccessToken): Promise<void> { // WIP: remove AccessToken parameter
     if (!this.iModelToken)
       return;
     await IModelDbRemoting.close(accessToken, this.iModelToken);

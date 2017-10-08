@@ -37,7 +37,7 @@ export interface StructType {
 export type ArrayType = ECValue[];
 
 /** Types that can be used for binding paramter values */
-export type BindingValue = null | PrimitiveType | ECValue;
+export type BindingValue = null | PrimitiveType | ECValue | Id64;
 
 /** Custom type guard for Point2dType  */
 export function isPoint2dType(arg: any): arg is Point2dType {

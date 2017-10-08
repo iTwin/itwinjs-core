@@ -1,28 +1,120 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { MetaDataRegistry, ClassRegistry } from "../ClassRegistry";
+import { ClassRegistry, MetaDataRegistry } from "../ClassRegistry";
 import { Code } from "../Code";
 import { Element, ElementLoadParams, ElementProps } from "../Element";
 import { ElementAspect, ElementAspectProps, ElementMultiAspect, ElementUniqueAspect } from "../ElementAspect";
 import { IModel } from "../IModel";
-import { IModelError, IModelStatus } from "../IModelError";
 import { IModelVersion } from "../IModelVersion";
 import { Model, ModelProps } from "../Model";
 import { IModelToken } from "../IModel";
 import { BriefcaseManager, KeepBriefcase } from "./BriefcaseManager";
 import { ECSqlStatement } from "./ECSqlStatement";
+import { IModelError, IModelStatus } from "../IModelError";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { BindingValue } from "./BindingUtility";
+import { CodeSpecs } from "./CodeSpecs";
+
+class CachedECSqlStatement {
+  public statement: ECSqlStatement;
+  public useCount: number;
+}
+
+class ECSqlStatementCache {
+  private statements: Map<string, CachedECSqlStatement> = new Map<string, CachedECSqlStatement>();
+
+  public add(str: string, stmt: ECSqlStatement): void {
+
+    assert(!stmt.isShared(), "when you add a statement to the cache, the cache takes ownership of it. You can't add a statement that is already being shared in some other way");
+    assert(stmt.isPrepared(), "you must cache only cached statements.");
+
+    const existing = this.statements.get(str);
+    if (existing !== undefined) {
+      assert(existing.useCount > 0, "you should only add a statement if all existing copies of it are in use.");
+    }
+    const cs = new CachedECSqlStatement();
+    cs.statement = stmt;
+    cs.statement.setIsShared(true);
+    cs.useCount = 1;
+    this.statements.set(str, cs);
+  }
+
+  public getCount(): number {
+    return this.statements.size;
+  }
+
+  public find(str: string): CachedECSqlStatement | undefined {
+    return this.statements.get(str);
+  }
+
+  public release(stmt: ECSqlStatement): void {
+    for (const cs of this.statements) {
+      const css = cs[1];
+      if (css.statement === stmt) {
+        if (css.useCount > 0) {
+          css.useCount--;
+          if (css.useCount === 0) {
+            css.statement.reset();
+            css.statement.clearBindings();
+          }
+        } else {
+          assert(false, "double-release of cached statement");
+        }
+        // leave the statement in the cache, even if its use count goes to zero. See removeUnusedStatements and clearOnClose.
+        // *** TODO: we should remove it if it is a duplicate of another unused statement in the cache. The trouble is that we don't have the ecsql for the statement,
+        //           so we can't check for other equivalent statements.
+        break;
+      }
+    }
+  }
+
+  public removeUnusedStatements(targetCount: number) {
+    const keysToRemove = [];
+    for (const cs of this.statements) {
+      const css = cs[1];
+      assert(css.statement.isShared());
+      assert(css.statement.isPrepared());
+      if (css.useCount === 0) {
+        css.statement.setIsShared(false);
+        css.statement.dispose();
+        keysToRemove.push(cs[0]);
+        if (keysToRemove.length >= targetCount)
+          break;
+      }
+    }
+    for (const k of keysToRemove) {
+      this.statements.delete(k);
+    }
+  }
+
+  public clearOnClose() {
+    for (const cs of this.statements) {
+      assert(cs[1].useCount === 0, "statement was never released: " + cs[0]);
+      assert(cs[1].statement.isShared());
+      assert(cs[1].statement.isPrepared());
+      const stmt = cs[1].statement;
+      if (stmt !== undefined) {
+        stmt.setIsShared(false);
+        stmt.dispose();
+      }
+    }
+    this.statements.clear();
+  }
+}
 
 /** Represents a physical copy (briefcase) of an iModel that can be accessed as a file. */
 export class IModelDb extends IModel {
   public models: IModelDbModels;
   public elements: IModelDbElements;
+  private statementCache: ECSqlStatementCache = new ECSqlStatementCache();
+  private _maxStatementCacheCount = 20;
   public nativeDb: any;
+  private _codeSpecs: CodeSpecs;
   private _classMetaDataRegistry: MetaDataRegistry;
 
   public constructor(iModelToken: IModelToken, nativeDb: any) {
@@ -48,8 +140,78 @@ export class IModelDb extends IModel {
     return await BriefcaseManager.openStandalone(fileName, openMode);
   }
 
+  /**
+   * Get a prepared ECSql statement - may require preparing the statement, if not found in the cache.
+   * @param ecsql The ECSql statement to prepare
+   */
+  public getPreparedECSqlStatement(ecsql: string): ECSqlStatement {
+    const cs = this.statementCache.find(ecsql);
+    if (cs !== undefined && cs.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
+      assert(cs.statement.isShared());
+      assert(cs.statement.isPrepared());
+      cs.useCount++;
+      return cs.statement;
+    }
+
+    if (this.statementCache.getCount() > this._maxStatementCacheCount) {
+      this.statementCache.removeUnusedStatements(this._maxStatementCacheCount);
+    }
+
+    const stmt = this.prepareECSqlStatement(ecsql);
+    this.statementCache.add(ecsql, stmt);
+    return stmt;
+  }
+
+  /** Use a prepared statement. This function takes care of preparing the statement and then releasing it.
+   * @param ecsql The ECSql statement to execute
+   * @param cb the callback to invoke on the prepared statement
+   * @return the value returned by cb
+   */
+  public withPreparedECSqlStatement<T>(ecsql: string, cb: (stmt: ECSqlStatement) => T): T {
+    const stmt = this.getPreparedECSqlStatement(ecsql);
+    try {
+      const val: T = cb(stmt);
+      this.releasePreparedECSqlStatement(stmt);
+      return val;
+    } catch (err) {
+      this.releasePreparedECSqlStatement(stmt);
+      throw err;
+    }
+  }
+
+  /** Execute a query against this iModel (overridden to improve performance)
+   * @param sql The ECSql statement to execute
+   * @param bindings Optional values to bind to placeholders in the statement.
+   * @returns all rows as an array or an empty array if nothing was selected
+   * @throws [[IModelError]] If the statement is invalid
+   */
+  public async executeQuery(sql: string, bindings?: BindingValue[] | Map<string, BindingValue> | any): Promise<any[]> {
+    return this.withPreparedECSqlStatement(sql, (stmt: ECSqlStatement) => {
+      if (bindings !== undefined)
+        stmt.bindValues(bindings);
+      const rows: any[] = [];
+      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        rows.push(stmt.getRow());
+      }
+      return rows;
+    });
+  }
+
+  /**
+   * Get a prepared ECSql statement - may require preparing the statement, if not found in the cache.
+   * @param ecsql The ECSql statement to prepare
+   */
+  public releasePreparedECSqlStatement(stmt: ECSqlStatement): void {
+    this.statementCache.release(stmt);
+  }
+
+  public clearStatementCacheOnClose(): void {
+    this.statementCache.clearOnClose();
+  }
+
   /** Close this iModel, if it is currently open */
   public closeStandalone() {
+    this.clearStatementCacheOnClose();
     if (!this.iModelToken)
       return;
 
@@ -59,6 +221,15 @@ export class IModelDb extends IModel {
     BriefcaseManager.closeStandalone(this.iModelToken);
   }
 
+  /** Commit pending changes to this iModel */
+  public saveChanges() {
+    if (!this.iModelToken)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR);
+    const stat = this.nativeDb.saveChanges();
+    if (DbResult.BE_SQLITE_OK !== stat)
+      throw new IModelError(stat);
+  }
+
   /** Open an iModel from the iModelHub */
   public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
     return await BriefcaseManager.open(accessToken, iModelId, openMode, version);
@@ -66,6 +237,7 @@ export class IModelDb extends IModel {
 
   /** Close this iModel, if it is currently open. */
   public async close(accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
+    this.clearStatementCacheOnClose();
     if (!this.iModelToken.isOpen)
       return;
 
@@ -87,6 +259,13 @@ export class IModelDb extends IModel {
     if (!iModel)
       throw new IModelError(IModelStatus.NotFound);
     return iModel;
+  }
+
+  /** Get access to the CodeSpecs in this IModel */
+  public get codeSpecs(): CodeSpecs {
+    if (this._codeSpecs === undefined)
+      this._codeSpecs = new CodeSpecs(this);
+    return this._codeSpecs;
   }
 
   /** @deprecated */
@@ -111,22 +290,6 @@ export class IModelDb extends IModel {
     const s = new ECSqlStatement();
     s.prepare(this.nativeDb, ecsql);
     return s;
-  }
-
-  /** Execute a query against this iModel
-   * @param ecsql The ECSql statement to execute
-   * @returns all rows in JSON syntax or the empty string if nothing was selected
-   * @throws [[IModelError]] If the statement is invalid
-   */
-  public async executeQuery(ecsql: string): Promise<string> {
-    if (!this.iModelToken.isOpen)
-      return Promise.reject(new IModelError(IModelStatus.NotOpen));
-
-    const { error, result: json } = await this.nativeDb.executeQuery(ecsql);
-    if (error)
-      return Promise.reject(new IModelError(error.status));
-
-    return json!;
   }
 
   /** Get the meta data for the specified class defined in imodel iModel, blocking until the result is returned.
@@ -266,7 +429,6 @@ export class IModelDbElements {
     if (elementId instanceof Id64) return this._doGetElement({ id: elementId });
     if (elementId instanceof Guid) return this._doGetElement({ federationGuid: elementId.toString() });
     if (elementId instanceof Code) return this._doGetElement({ code: elementId });
-    assert(false);
     return Promise.reject(new IModelError(IModelStatus.BadArg));
   }
 
@@ -280,14 +442,24 @@ export class IModelDbElements {
     return element;
   }
 
+  /** Create a new element in memory.
+   * @param elementProps The properties to use when creating the element.
+   * @throws [[IModelError]] if there is a problem creating the element.
+   */
+  public createElementSync(elementProps: ElementProps): Element {
+    const element: Element = ClassRegistry.createInstanceSync(elementProps) as Element;
+    assert(element instanceof Element);
+    return element;
+  }
+
   /** Insert a new element.
    * @param el The data for the new element.
    * @returns The newly inserted element's Id.
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public async insertElement(el: Element): Promise<Id64> {
+  public insertElement(el: Element): Id64 {
     if (!this._iModel.iModelToken.isOpen)
-      return Promise.reject(new IModelError(IModelStatus.NotOpen));
+      throw new IModelError(IModelStatus.NotOpen);
 
     if (el.isPersistent()) {
       assert(false); // you cannot insert a persistent element. call copyForEdit
@@ -300,7 +472,7 @@ export class IModelDbElements {
     // asynchronous from a remote client's point of view in any case.
     const {error, result: json} = this._iModel.nativeDb.insertElementSync(JSON.stringify(el));
     if (error)
-    return Promise.reject(new IModelError(error.status));
+      throw new IModelError(error.status);
 
     return new Id64(JSON.parse(json).id);
   }
@@ -355,9 +527,11 @@ export class IModelDbElements {
    * @throws [[IModelError]]
    */
   public async queryChildren(elementId: Id64): Promise<Id64[]> {
-    const rowsJson: string = await this._iModel.executeQuery("SELECT ECInstanceId as id FROM " + Element.sqlName + " WHERE Parent.Id=" + elementId.toString()); // WIP: need to bind!
+    const rows: any[] = await this._iModel.executeQuery("SELECT ECInstanceId as id FROM " + Element.sqlName + " WHERE Parent.Id=?", [elementId]);
     const childIds: Id64[] = [];
-    JSON.parse(rowsJson).forEach((row: any) => childIds.push(new Id64(row.id))); // WIP: executeQuery should return ECInstanceId as a string
+    for (const row of rows) {
+      childIds.push(new Id64(row.id));
+    }
     return Promise.resolve(childIds);
   }
 
@@ -372,9 +546,8 @@ export class IModelDbElements {
    */
   private async _queryAspects(elementId: Id64, aspectClassName: string): Promise<ElementAspect[]> {
     const name = aspectClassName.split(":");
-    const rowsJson: string = await this._iModel.executeQuery("SELECT * FROM [" + name[0] + "].[" + name[1] + "] WHERE Element.Id=" + elementId.toString()); // WIP: need to bind!
-    const rows: any[] = JSON.parse(rowsJson);
-    if (!rows || rows.length === 0)
+    const rows: any[] = await this._iModel.executeQuery("SELECT * FROM [" + name[0] + "].[" + name[1] + "] WHERE Element.Id=?", [elementId]);
+    if (rows.length === 0)
       return Promise.reject(new IModelError(IModelStatus.NotFound));
 
     const aspects: ElementAspect[] = [];

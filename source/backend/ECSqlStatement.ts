@@ -5,6 +5,7 @@ import { MultiTierExecutionHost, RunsIn, Tier } from "@bentley/bentleyjs-core/li
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelError } from "../IModelError";
 import { BindingUtility, BindingValue } from "./BindingUtility";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 declare function require(arg: string): any;
 // tslint:disable-next-line:no-var-requires
@@ -15,34 +16,52 @@ if (addonLoader !== undefined)
 
 @MultiTierExecutionHost("@bentley/imodeljs-core/ECSqlStatement")
 export class ECSqlStatement implements IterableIterator<any> {
-  private stmt: any;
+  private _stmt: any | undefined;
+  private _isShared: boolean = false;
 
-  constructor() {
-    this.stmt = new dgnDbNodeAddon.ECSqlStatement();
+  public setIsShared(b: boolean) {
+    this._isShared = b;
+  }
+
+  public isShared(): boolean {
+    assert(!this._isShared || this.isPrepared(), "a shared statement must always be in the prepared state");
+    return this._isShared;
+  }
+
+  public isPrepared(): boolean {
+    return this._stmt !== undefined;
   }
 
   @RunsIn(Tier.Services)
   public prepare(db: any, ecsqlStatement: string): void {
-    const error = this.stmt.prepare(db, ecsqlStatement);
+    if (this.isPrepared())
+      throw new Error("statement is already prepared");
+    this._stmt = new dgnDbNodeAddon.ECSqlStatement();
+    const error = this._stmt.prepare(db, ecsqlStatement);
     if (error !== undefined)
       throw new IModelError(error.status, error.message);
   }
 
   @RunsIn(Tier.Services)
   public reset(): DbResult {
-    return this.stmt.reset();
+    return this._stmt.reset();
   }
 
   @RunsIn(Tier.Services)
   public dispose(): void {
-    const stmt = this.stmt;
-    this.stmt = undefined;
-    stmt.dispose();
+    if (this.isShared())
+      throw new Error("you can't dispose a statement that is shared with others (e.g., in a cache)");
+    if (!this.isPrepared())
+      return;
+    this._stmt.dispose(); // Tell the peer JS object to free its native resources immediately
+    this._stmt = undefined; // discard the peer JS object as garbage
+
+    assert(!this.isPrepared()); // leaves the statement in the un-prepared state
   }
 
   @RunsIn(Tier.Services)
   public clearBindings(): DbResult {
-    return this.stmt.clearBindings();
+    return this._stmt.clearBindings();
   }
 
   @RunsIn(Tier.Services)
@@ -51,26 +70,26 @@ export class ECSqlStatement implements IterableIterator<any> {
     if (error)
       throw new IModelError(error.status, error.message);
     const bindingsStr = JSON.stringify(ecBindings);
-    const nativeerror = this.stmt.bindValues(bindingsStr);
+    const nativeerror = this._stmt.bindValues(bindingsStr);
     if (nativeerror !== undefined)
       throw new IModelError(nativeerror.status, nativeerror.message);
   }
 
   @RunsIn(Tier.Services)
   public step(): DbResult {
-    return this.stmt.step();
+    return this._stmt.step();
   }
 
   @RunsIn(Tier.Services)
-  public getValues(): any {
-    return this.stmt.getValues();
+  public getRow(): any {
+    return this._stmt.getRow();
   }
 
   public next(): IteratorResult<any> {
     if (DbResult.BE_SQLITE_ROW === this.step()) {
       return {
         done: false,
-        value: this.getValues(),
+        value: this.getRow(),
       };
     } else {
       return {
