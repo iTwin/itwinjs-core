@@ -8,7 +8,7 @@ import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { IModelError } from "../IModelError";
 import { IModelVersion } from "../IModelVersion";
-import { BriefcaseToken } from "../IModel";
+import { IModelToken } from "../IModel";
 import { IModelDb } from "./IModelDb";
 
 import * as fs from "fs";
@@ -52,21 +52,21 @@ export class ChangeSetToken {
 class BriefcaseCache {
   public readonly briefcases = new Map<string, IModelDb>(); // Indexed by local pathname of the briefcase
 
-  public setBriefcase(briefcaseToken: BriefcaseToken, db: any): void {
-    const entry = new IModelDb(briefcaseToken, db);
-    this.briefcases.set(briefcaseToken.pathname, entry);
+  public setBriefcase(iModelToken: IModelToken, db: any): void {
+    const entry = new IModelDb(iModelToken, db);
+    this.briefcases.set(iModelToken.pathname, entry);
   }
 
-  public getBriefcase(briefcaseToken: BriefcaseToken): IModelDb|undefined {
-    return this.briefcases.get(briefcaseToken.pathname);
+  public getBriefcase(iModelToken: IModelToken): IModelDb|undefined {
+    return this.briefcases.get(iModelToken.pathname);
   }
 
-  public hasBriefcase(briefcaseToken: BriefcaseToken): boolean {
-    return this.briefcases.has(briefcaseToken.pathname);
+  public hasBriefcase(iModelToken: IModelToken): boolean {
+    return this.briefcases.has(iModelToken.pathname);
   }
 
-  public deleteBriefcase(briefcaseToken: BriefcaseToken): void {
-    this.briefcases.delete(briefcaseToken.pathname);
+  public deleteBriefcase(iModelToken: IModelToken): void {
+    this.briefcases.delete(iModelToken.pathname);
   }
 }
 
@@ -143,11 +143,11 @@ export class BriefcaseManager {
           continue;
         assert (localIModelId === hubBriefcase.iModelId);
 
-        const briefcaseToken = BriefcaseToken.fromBriefcase(localIModelId, hubBriefcase.briefcaseId, localBriefcase.pathname, hubBriefcase.userId);
-        briefcaseToken.isOpen = undefined;
-        briefcaseToken.changeSetId = localBriefcase.parentChangeSetId;
-        briefcaseToken.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, localIModelId, briefcaseToken.changeSetId!);
-        BriefcaseManager.cache.setBriefcase(briefcaseToken, undefined);
+        const iModelToken = IModelToken.fromBriefcase(localIModelId, hubBriefcase.briefcaseId, localBriefcase.pathname, hubBriefcase.userId);
+        iModelToken.isOpen = undefined;
+        iModelToken.changeSetId = localBriefcase.parentChangeSetId;
+        iModelToken.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, localIModelId, iModelToken.changeSetId!);
+        BriefcaseManager.cache.setBriefcase(iModelToken, undefined);
       }
 
     }
@@ -174,22 +174,22 @@ export class BriefcaseManager {
 
   /** Deletes a briefcase, and releases it's references in the iModelHub */
   @RunsIn(Tier.Services)
-  private static async deleteBriefcase(accessToken: AccessToken, briefcaseToken: BriefcaseToken): Promise<void> {
+  private static async deleteBriefcase(accessToken: AccessToken, iModelToken: IModelToken): Promise<void> {
     // Delete from the local file system
-    if (fs.existsSync(briefcaseToken.pathname!))
-      fs.unlinkSync(briefcaseToken.pathname!);
+    if (fs.existsSync(iModelToken.pathname!))
+      fs.unlinkSync(iModelToken.pathname!);
 
     // Delete from the hub
-    assert(!!briefcaseToken.imodelId);
-    assert(!!briefcaseToken.briefcaseId);
-    await BriefcaseManager.hubClient.deleteBriefcase(accessToken, briefcaseToken.imodelId!, briefcaseToken.briefcaseId!)
+    assert(!!iModelToken.imodelId);
+    assert(!!iModelToken.briefcaseId);
+    await BriefcaseManager.hubClient.deleteBriefcase(accessToken, iModelToken.imodelId!, iModelToken.briefcaseId!)
       .catch(() => {
         assert(false, "Could not delete the accquired briefcase");
         return Promise.reject(new IModelError(BriefcaseError.CannotDelete));
       });
 
     // Delete from the cache
-    BriefcaseManager.cache!.deleteBriefcase(briefcaseToken);
+    BriefcaseManager.cache!.deleteBriefcase(iModelToken);
     }
 
   /** Downloads the briefcase seed file */
@@ -360,12 +360,9 @@ export class BriefcaseManager {
 
     const briefcases = new Array<IModelDb>();
     for (const entry of cache.briefcases.values()) {
-      const briefcaseKey = entry.briefcaseKey!;
-      assert(!!briefcaseKey);
-
-      if (briefcaseKey.imodelId !== iModelId)
+      if (entry.iModelToken.imodelId !== iModelId)
         continue;
-      if (briefcaseKey.changeSetIndex! > requiredChangeSetIndex)
+      if (entry.iModelToken.changeSetIndex! > requiredChangeSetIndex)
         continue;
       briefcases.push(entry);
     }
@@ -375,25 +372,22 @@ export class BriefcaseManager {
     if (openMode === OpenMode.Readonly) {
 
       // first prefer any briefcase that's opened already, is read-only and with version = requiredVersion
-      briefcase = briefcases.find((entry: IModelDb): boolean => {
-        const briefcaseKey = entry.briefcaseKey!;
-        return !!briefcaseKey.isOpen && briefcaseKey.openMode === OpenMode.Readonly && briefcaseKey.changeSetIndex === requiredChangeSetIndex;
+      briefcase = briefcases.find(({iModelToken}): boolean => {
+        return !!iModelToken.isOpen && iModelToken.openMode === OpenMode.Readonly && iModelToken.changeSetIndex === requiredChangeSetIndex;
       });
       if (briefcase)
         return briefcase;
 
       // next prefer any briefcase that's closed, and with version = requiredVersion
-      briefcase = briefcases.find((entry: IModelDb): boolean => {
-        const briefcaseKey = entry.briefcaseKey!;
-        return !briefcaseKey.isOpen && briefcaseKey.changeSetIndex === requiredChangeSetIndex;
+      briefcase = briefcases.find(({iModelToken}): boolean => {
+        return !iModelToken.isOpen && iModelToken.changeSetIndex === requiredChangeSetIndex;
       });
       if (briefcase)
         return briefcase;
 
       // next prefer any briefcase that's closed, and with version < requiredVersion
-      briefcase = briefcases.find((entry: IModelDb): boolean => {
-        const briefcaseKey = entry.briefcaseKey!;
-        return !briefcaseKey.isOpen && briefcaseKey.changeSetIndex! < requiredChangeSetIndex;
+      briefcase = briefcases.find(({iModelToken}): boolean => {
+        return !iModelToken.isOpen && iModelToken.changeSetIndex! < requiredChangeSetIndex;
       });
       if (briefcase)
         return briefcase;
@@ -403,17 +397,15 @@ export class BriefcaseManager {
 
     // For read-write cases...
     // first prefer any briefcase that's been acquired by the user, is currently closed, and with version = requiredVersion
-    briefcase = briefcases.find((entry: IModelDb): boolean => {
-      const briefcaseKey = entry.briefcaseKey!;
-      return !briefcaseKey.isOpen && briefcaseKey.changeSetIndex === requiredChangeSetIndex && briefcaseKey.userId === accessToken.getUserProfile().userId;
+    briefcase = briefcases.find(({iModelToken}): boolean => {
+      return !iModelToken.isOpen && iModelToken.changeSetIndex === requiredChangeSetIndex && iModelToken.userId === accessToken.getUserProfile().userId;
     });
     if (briefcase)
       return briefcase;
 
     // next prefer any briefcase that's been acquired by the user, is currently closed, and with version < requiredVersion
-    briefcase = briefcases.find((entry: IModelDb): boolean => {
-      const briefcaseKey = entry.briefcaseKey!;
-      return !briefcaseKey.isOpen && briefcaseKey.changeSetIndex! < requiredChangeSetIndex && briefcaseKey.userId === accessToken.getUserProfile().userId;
+    briefcase = briefcases.find(({iModelToken}): boolean => {
+      return !iModelToken.isOpen && iModelToken.changeSetIndex! < requiredChangeSetIndex && iModelToken.userId === accessToken.getUserProfile().userId;
     });
     if (briefcase)
       return briefcase;
@@ -422,7 +414,7 @@ export class BriefcaseManager {
   }
 
   @RunsIn(Tier.Services)
-  private static async createBriefcaseSeed(accessToken: AccessToken, iModelId: string): Promise<BriefcaseToken> {
+  private static async createBriefcaseSeed(accessToken: AccessToken, iModelId: string): Promise<IModelToken> {
     const briefcase = await BriefcaseManager.acquireBriefcase(accessToken, iModelId);
 
     const seedPathname = BriefcaseManager.getSeedPathname(iModelId, briefcase);
@@ -430,34 +422,34 @@ export class BriefcaseManager {
     const briefcasePathname = await BriefcaseManager.copyBriefcase(iModelId, briefcase, seedPathname);
 
     const userId = accessToken.getUserProfile().userId;
-    const briefcaseToken = BriefcaseToken.fromBriefcase(briefcase.iModelId, briefcase.briefcaseId, briefcasePathname, userId);
-    return briefcaseToken;
+    const iModelToken = IModelToken.fromBriefcase(briefcase.iModelId, briefcase.briefcaseId, briefcasePathname, userId);
+    return iModelToken;
   }
 
   @RunsIn(Tier.Services)
-  private static async updateAndOpenBriefcase(accessToken: AccessToken, briefcaseKey: BriefcaseToken, openMode: OpenMode, changeSet: ChangeSet|null): Promise<IModelDb> {
-    briefcaseKey.openMode = openMode;
+  private static async updateAndOpenBriefcase(accessToken: AccessToken, iModelToken: IModelToken, openMode: OpenMode, changeSet: ChangeSet|null): Promise<IModelDb> {
+    iModelToken.openMode = openMode;
 
     const toChangeSetId: string = !!changeSet ? changeSet.wsgId : "";
     const toChangeSetIndex: number = !!changeSet ? +changeSet.index : 0;
-    const fromChangeSetId: string = briefcaseKey.changeSetId!;
-    const changeSetTokens = await BriefcaseManager.downloadChangeSets(accessToken, briefcaseKey.imodelId!, toChangeSetId, fromChangeSetId);
+    const fromChangeSetId: string = iModelToken.changeSetId!;
+    const changeSetTokens = await BriefcaseManager.downloadChangeSets(accessToken, iModelToken.imodelId!, toChangeSetId, fromChangeSetId);
 
     const db = new dgnDbNodeAddon.DgnDb();
-    const res: BentleyReturn<DbResult, void> = await db.openBriefcase(JSON.stringify(briefcaseKey), JSON.stringify(changeSetTokens));
+    const res: BentleyReturn<DbResult, void> = await db.openBriefcase(JSON.stringify(iModelToken), JSON.stringify(changeSetTokens));
     if (res.error)
       throw new IModelError(res.error.status);
 
     // Remove any old entry in the cache if an older briefcase may be repurposed.
-    if (BriefcaseManager.cache!.hasBriefcase(briefcaseKey))
-      BriefcaseManager.cache!.deleteBriefcase(briefcaseKey);
+    if (BriefcaseManager.cache!.hasBriefcase(iModelToken))
+      BriefcaseManager.cache!.deleteBriefcase(iModelToken);
 
-    briefcaseKey.isOpen = true;
-    briefcaseKey.changeSetId = toChangeSetId;
-    briefcaseKey.changeSetIndex = toChangeSetIndex;
-    BriefcaseManager.cache!.setBriefcase(briefcaseKey, db);
+    iModelToken.isOpen = true;
+    iModelToken.changeSetId = toChangeSetId;
+    iModelToken.changeSetIndex = toChangeSetIndex;
+    BriefcaseManager.cache!.setBriefcase(iModelToken, db);
 
-    return new IModelDb(briefcaseKey, db);
+    return new IModelDb(iModelToken, db);
   }
 
   /** Purge closed briefcases */
@@ -468,10 +460,10 @@ export class BriefcaseManager {
     const cache = BriefcaseManager.cache!;
     const briefcases = cache.briefcases;
     for (const entry of briefcases.values()) {
-      const briefcaseKey = entry.briefcaseKey!;
-      if (briefcaseKey.isOpen)
+      const iModelToken = entry.iModelToken;
+      if (iModelToken.isOpen)
         continue;
-      await BriefcaseManager.deleteBriefcase(accessToken, briefcaseKey);
+      await BriefcaseManager.deleteBriefcase(accessToken, iModelToken);
     }
   }
 
@@ -483,16 +475,16 @@ export class BriefcaseManager {
     const changeSet: ChangeSet|null = await BriefcaseManager.getChangeSetFromVersion(accessToken, iModelId, version);
 
     const briefcase = await BriefcaseManager.findUnusedBriefcase(accessToken, iModelId, openMode, changeSet);
-    if (briefcase && openMode === OpenMode.Readonly && briefcase.briefcaseKey!.isOpen)
+    if (briefcase && openMode === OpenMode.Readonly && briefcase.iModelToken.isOpen)
       return briefcase;
 
-    let briefcaseKey: BriefcaseToken;
+    let iModelToken: IModelToken;
     if (briefcase)
-      briefcaseKey = briefcase.briefcaseKey!;
+      iModelToken = briefcase.iModelToken;
     else
-      briefcaseKey = await BriefcaseManager.createBriefcaseSeed(accessToken, iModelId);
+      iModelToken = await BriefcaseManager.createBriefcaseSeed(accessToken, iModelId);
 
-    return await BriefcaseManager.updateAndOpenBriefcase(accessToken, briefcaseKey, openMode, changeSet);
+    return await BriefcaseManager.updateAndOpenBriefcase(accessToken, iModelToken, openMode, changeSet);
   }
 
   @RunsIn(Tier.Services)
@@ -505,28 +497,28 @@ export class BriefcaseManager {
     if (res.error)
       throw new IModelError(res.error.status);
 
-    const briefcaseKey = BriefcaseToken.fromFile(fileName, openMode, true /*isOpen*/);
-    BriefcaseManager.cache!.setBriefcase(briefcaseKey, db);
+    const iModelToken = IModelToken.fromFile(fileName, openMode, true /*isOpen*/);
+    BriefcaseManager.cache!.setBriefcase(iModelToken, db);
 
-    return new IModelDb(briefcaseKey, db);
+    return new IModelDb(iModelToken, db);
   }
 
-  public static async close(accessToken: AccessToken, briefcaseToken: BriefcaseToken, keepBriefcase: KeepBriefcase): Promise<void> {
+  public static async close(accessToken: AccessToken, iModelToken: IModelToken, keepBriefcase: KeepBriefcase): Promise<void> {
     if (keepBriefcase === KeepBriefcase.No)
-      await BriefcaseManager.deleteBriefcase(accessToken, briefcaseToken);
+      await BriefcaseManager.deleteBriefcase(accessToken, iModelToken);
     else
-      BriefcaseManager.cache!.setBriefcase(briefcaseToken, undefined);
+      BriefcaseManager.cache!.setBriefcase(iModelToken, undefined);
   }
 
-  public static closeStandalone(briefcaseToken: BriefcaseToken) {
-    BriefcaseManager.cache!.setBriefcase(briefcaseToken, undefined);
+  public static closeStandalone(iModelToken: IModelToken) {
+    BriefcaseManager.cache!.setBriefcase(iModelToken, undefined);
   }
 
-  public static getBriefcase(briefcaseToken: BriefcaseToken): IModelDb|undefined {
+  public static getBriefcase(iModelToken: IModelToken): IModelDb|undefined {
     if (!BriefcaseManager.cache)
       return undefined;
 
-    return BriefcaseManager.cache.getBriefcase(briefcaseToken);
+    return BriefcaseManager.cache.getBriefcase(iModelToken);
   }
 
 }

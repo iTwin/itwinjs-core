@@ -4,7 +4,7 @@
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 
 /** A token that represents a Briefcase */
-export class BriefcaseToken {
+export class IModelToken {
   public pathname: string;
   public openMode?: OpenMode;
 
@@ -17,16 +17,16 @@ export class BriefcaseToken {
 
   public isOpen?: boolean;
 
-  public static fromFile(pathname: string, openMode: OpenMode, isOpen: boolean): BriefcaseToken {
-    const token = new BriefcaseToken();
+  public static fromFile(pathname: string, openMode: OpenMode, isOpen: boolean): IModelToken {
+    const token = new IModelToken();
     token.pathname = pathname;
     token.openMode = openMode;
     token.isOpen = isOpen;
     return token;
   }
 
-  public static fromBriefcase(imodelId: string, briefcaseId: number, pathname: string, userId: string): BriefcaseToken {
-    const token = new BriefcaseToken();
+  public static fromBriefcase(imodelId: string, briefcaseId: number, pathname: string, userId: string): IModelToken {
+    const token = new IModelToken();
     token.imodelId = imodelId;
     token.briefcaseId = briefcaseId;
     token.pathname = pathname;
@@ -37,13 +37,13 @@ export class BriefcaseToken {
 
 /** An abstract class representing an instance of an iModel. */
 export class IModel {
-  protected _briefcaseKey: BriefcaseToken;
+  protected _iModelToken: IModelToken;
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
-  public get briefcaseKey(): BriefcaseToken { return this._briefcaseKey; }
+  public get iModelToken(): IModelToken { return this._iModelToken; }
 
   /** @hidden */
-  protected constructor(briefcaseKey: BriefcaseToken) {
-    this._briefcaseKey = briefcaseKey;
+  protected constructor(iModelToken: IModelToken) {
+    this._iModelToken = iModelToken;
    }
 
 }

@@ -14,7 +14,7 @@ import { IModel } from "../IModel";
 import { IModelError, IModelStatus } from "../IModelError";
 import { IModelVersion } from "../IModelVersion";
 import { Model, ModelProps } from "../Model";
-import { BriefcaseToken } from "../IModel";
+import { IModelToken } from "../IModel";
 import { BriefcaseManager, KeepBriefcase } from "./BriefcaseManager";
 import { ECSqlStatement } from "./ECSqlStatement";
 
@@ -25,8 +25,8 @@ export class IModelDb extends IModel {
   public nativeDb: any;
   private _classMetaDataRegistry: MetaDataRegistry;
 
-  public constructor(briefcaseKey: BriefcaseToken, nativeDb: any) {
-    super(briefcaseKey);
+  public constructor(iModelToken: IModelToken, nativeDb: any) {
+    super(iModelToken);
     this.nativeDb = nativeDb;
     this.models = new IModelDbModels(this);
     this.elements = new IModelDbElements(this);
@@ -50,13 +50,13 @@ export class IModelDb extends IModel {
 
   /** Close this iModel, if it is currently open */
   public closeStandalone() {
-    if (!this.briefcaseKey)
+    if (!this.iModelToken)
       return;
 
     this.nativeDb.closeDgnDb();
-    this.briefcaseKey.isOpen = false;
+    this.iModelToken.isOpen = false;
 
-    BriefcaseManager.closeStandalone(this.briefcaseKey);
+    BriefcaseManager.closeStandalone(this.iModelToken);
   }
 
   /** Open an iModel from the iModelHub */
@@ -66,24 +66,24 @@ export class IModelDb extends IModel {
 
   /** Close this iModel, if it is currently open. */
   public async close(accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
-    if (!this.briefcaseKey.isOpen)
+    if (!this.iModelToken.isOpen)
       return;
 
     // todo: consider removing this
-    if (this.briefcaseKey.openMode === OpenMode.Readonly)
+    if (this.iModelToken.openMode === OpenMode.Readonly)
       return;
 
     this.nativeDb.closeDgnDb();
-    this.briefcaseKey.isOpen = false;
+    this.iModelToken.isOpen = false;
 
-    await BriefcaseManager.close(accessToken, this.briefcaseKey, keepBriefcase);
+    await BriefcaseManager.close(accessToken, this.iModelToken, keepBriefcase);
   }
 
   /** Find an already open IModelDb from its token. Used by the remoting logic.
    * @hidden
    */
-  public static find(token: BriefcaseToken): IModelDb {
-    const iModel = BriefcaseManager.getBriefcase(token);
+  public static find(iModelToken: IModelToken): IModelDb {
+    const iModel = BriefcaseManager.getBriefcase(iModelToken);
     if (!iModel)
       throw new IModelError(IModelStatus.NotFound);
     return iModel;
@@ -91,7 +91,7 @@ export class IModelDb extends IModel {
 
   /** @deprecated */
   public async getElementPropertiesForDisplay(elementId: string): Promise<string> {
-    if (!this.briefcaseKey.isOpen)
+    if (!this.iModelToken.isOpen)
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
     const {error, result: json} = await this.nativeDb.getElementPropertiesForDisplay(elementId);
@@ -105,7 +105,7 @@ export class IModelDb extends IModel {
    * @param sql The ECSql statement to prepare
    */
   public prepareECSqlStatement(ecsql: string): ECSqlStatement {
-    if (!this.briefcaseKey.isOpen)
+    if (!this.iModelToken.isOpen)
       throw new IModelError(IModelStatus.NotOpen);
 
     const s = new ECSqlStatement();
@@ -119,7 +119,7 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] If the statement is invalid
    */
   public async executeQuery(ecsql: string): Promise<string> {
-    if (!this.briefcaseKey.isOpen)
+    if (!this.iModelToken.isOpen)
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
     const { error, result: json } = await this.nativeDb.executeQuery(ecsql);
@@ -135,7 +135,7 @@ export class IModelDb extends IModel {
    * @returns On success, the BentleyReturn result property will be the class meta data in JSON format.
    */
   public getECClassMetaDataSync(schemaName: string, className: string): string {
-    if (!this.briefcaseKey.isOpen)
+    if (!this.iModelToken.isOpen)
       throw new IModelError(IModelStatus.NotOpen);
 
     const { error, result: json } = this.nativeDb.getECClassMetaDataSync(schemaName, className);
@@ -152,7 +152,7 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]]
    */
   public async getECClassMetaData(schemaName: string, className: string): Promise<string> {
-    if (!this.briefcaseKey.isOpen)
+    if (!this.iModelToken.isOpen)
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
     const { error, result: json } = await this.nativeDb.getECClassMetaData(schemaName, className);
@@ -177,7 +177,7 @@ export class IModelDbModels {
    * @throws [[IModelError]]
    */
   public async getModel(modelId: Id64): Promise<Model> {
-    if (!this._iModel.briefcaseKey.isOpen)
+    if (!this._iModel.iModelToken.isOpen)
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
     // first see if the model is already in the local cache.
@@ -231,7 +231,7 @@ export class IModelDbElements {
 
   /** Private implementation details of getElement */
   private async _doGetElement(opts: ElementLoadParams): Promise<Element> {
-    if (!this._iModel.briefcaseKey.isOpen)
+    if (!this._iModel.iModelToken.isOpen)
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
     // first see if the element is already in the local cache.
@@ -286,7 +286,7 @@ export class IModelDbElements {
    * @throws [[IModelError]] if unable to insert the element.
    */
   public async insertElement(el: Element): Promise<Id64> {
-    if (!this._iModel.briefcaseKey.isOpen)
+    if (!this._iModel.iModelToken.isOpen)
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
     if (el.isPersistent()) {
@@ -310,7 +310,7 @@ export class IModelDbElements {
    * @throws [[IModelError]] if unable to update the element.
    */
   public async updateElement(el: Element): Promise<void> {
-    if (!this._iModel.briefcaseKey.isOpen)
+    if (!this._iModel.iModelToken.isOpen)
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
     if (el.isPersistent()) {
@@ -335,7 +335,7 @@ export class IModelDbElements {
    * @throws [[IModelError]]
    */
   public async deleteElement(el: Element): Promise<void> {
-    if (!this._iModel.briefcaseKey.isOpen)
+    if (!this._iModel.iModelToken.isOpen)
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
     // Note that deleting an element is always done synchronously. That is because of constraints

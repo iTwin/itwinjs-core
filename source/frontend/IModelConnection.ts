@@ -6,7 +6,7 @@ import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { Element } from "../Element";
-import { IModel, BriefcaseToken } from "../IModel";
+import { IModel, IModelToken } from "../IModel";
 import { IModelVersion } from "../IModelVersion";
 import { Model } from "../Model";
 
@@ -18,23 +18,23 @@ export class IModelConnection extends IModel {
   public models: IModelConnectionModels;
   public elements: IModelConnectionElements;
 
-  private constructor(briefcaseKey: BriefcaseToken) {
-    super(briefcaseKey);
+  private constructor(iModelToken: IModelToken) {
+    super(iModelToken);
     this.models = new IModelConnectionModels(this);
     this.elements = new IModelConnectionElements(this);
   }
 
   /** Open an iModel from the iModelHub */
   public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
-    const briefcaseKey = await IModelDbRemoting.open(accessToken, iModelId, openMode, version);
-    return new IModelConnection(briefcaseKey);
+    const iModelToken = await IModelDbRemoting.open(accessToken, iModelId, openMode, version);
+    return new IModelConnection(iModelToken);
   }
 
   /** Close this iModel */
   public async close(accessToken: AccessToken): Promise<void> {
-    if (!this.briefcaseKey)
+    if (!this.iModelToken)
       return;
-    await IModelDbRemoting.close(accessToken, this.briefcaseKey);
+    await IModelDbRemoting.close(accessToken, this.iModelToken);
   }
 }
 
@@ -51,7 +51,7 @@ export class IModelConnectionModels {
 
   /** Ask the backend for a batch of models given a list of model ids. */
   public async getModels(modelIds: Id64[]): Promise<Model[]> {
-    return await IModelDbRemoting.getModels(this._iModel.briefcaseKey!, modelIds);
+    return await IModelDbRemoting.getModels(this._iModel.iModelToken, modelIds);
   }
 }
 
@@ -71,6 +71,6 @@ export class IModelConnectionElements {
 
   /** Ask the backend for a batch of elements given a list of element ids. */
   public async getElements(elementIds: Id64[]): Promise<Element[]> {
-    return await IModelDbRemoting.getElements(this._iModel.briefcaseKey!, elementIds);
+    return await IModelDbRemoting.getElements(this._iModel.iModelToken, elementIds);
   }
 }
