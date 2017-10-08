@@ -6,9 +6,11 @@ import { AccessToken, Briefcase, IModelHubClient, ChangeSet } from "@bentley/imo
 import { BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { IModelStatus, IModelError } from "../IModelError";
+import { IModelError } from "../IModelError";
 import { IModelVersion } from "../IModelVersion";
-import { ECSqlStatement } from "./ECSqlStatement";
+import { BriefcaseToken } from "../IModel";
+import { IModelDb } from "./IModelDb";
+
 import * as fs from "fs";
 import * as path from "path";
 
@@ -41,61 +43,22 @@ export const enum KeepBriefcase {
   No,
 }
 
-/** A token that represents a Briefcase */
-export class BriefcaseToken {
-  public pathname: string;
-  public openMode?: OpenMode;
-
-  public imodelId?: string;
-  public briefcaseId?: number;
-  public userId?: string;
-
-  public changeSetId?: string;
-  public changeSetIndex?: number;
-
-  public isOpen?: boolean;
-
-  public static fromFile(pathname: string, openMode: OpenMode, isOpen: boolean): BriefcaseToken {
-    const token = new BriefcaseToken();
-    token.pathname = pathname;
-    token.openMode = openMode;
-    token.isOpen = isOpen;
-    return token;
-  }
-
-  public static fromBriefcase(imodelId: string, briefcaseId: number, pathname: string, userId: string): BriefcaseToken {
-    const token = new BriefcaseToken();
-    token.imodelId = imodelId;
-    token.briefcaseId = briefcaseId;
-    token.pathname = pathname;
-    token.userId = userId;
-    return token;
-  }
-}
-
 /** A token that represents a ChangeSet  */
 export class ChangeSetToken {
   constructor(public id: string, public index: number, public pathname: string) {}
 }
 
-/** An entry in the briefcase cache */
-class BriefcaseCacheEntry {
-  public constructor(public briefcaseToken: BriefcaseToken, public db: any|undefined) {
-  }
-}
-
 /** In-memory cache of briefcases  */
 class BriefcaseCache {
-  public readonly briefcases = new Map<string, BriefcaseCacheEntry>(); // Indexed by local pathname of the briefcase
+  public readonly briefcases = new Map<string, IModelDb>(); // Indexed by local pathname of the briefcase
 
   public setBriefcase(briefcaseToken: BriefcaseToken, db: any): void {
-    const entry = new BriefcaseCacheEntry(briefcaseToken, db);
+    const entry = new IModelDb(briefcaseToken, db);
     this.briefcases.set(briefcaseToken.pathname, entry);
   }
 
-  public getBriefcase(briefcaseToken: BriefcaseToken): any|undefined {
-    const entry: BriefcaseCacheEntry|undefined = this.briefcases.get(briefcaseToken.pathname);
-    return entry ? entry.db : undefined;
+  public getBriefcase(briefcaseToken: BriefcaseToken): IModelDb|undefined {
+    return this.briefcases.get(briefcaseToken.pathname);
   }
 
   public hasBriefcase(briefcaseToken: BriefcaseToken): boolean {
@@ -112,14 +75,6 @@ export class BriefcaseManager {
   private static hubClient = new IModelHubClient("QA");
   public static rootPath = path.join(__dirname, "../assets/imodels");
   private static cache?: BriefcaseCache;
-
-  /** @private */
-  @RunsIn(Tier.Services)
-  public static prepareECSqlStatement(bctok: BriefcaseToken, ecsql: string): ECSqlStatement {
-    const s = new ECSqlStatement();
-    s.prepare(BriefcaseManager.getBriefcaseFromCache(bctok), ecsql);
-    return s;
-  }
 
   /**
    * Get the local path of the root folder storing the imodel seed file, change sets and briefcases
@@ -150,13 +105,6 @@ export class BriefcaseManager {
   @RunsIn(Tier.Services)
   private static getBriefcasePathname(iModelId: string, briefcase: Briefcase) {
     return path.join(BriefcaseManager.getIModelPath(iModelId), briefcase.briefcaseId.toString(), briefcase.fileName);
-  }
-
-  @RunsIn(Tier.Services)
-  private static getBriefcaseFromCache(briefcaseToken: BriefcaseToken): any | undefined {
-    if (!BriefcaseManager.cache)
-      throw new IModelError(BriefcaseError.NotInitialized, "Call BriefcaseManager.initialize(), and reopen iModel");
-    return BriefcaseManager.cache.getBriefcase(briefcaseToken);
   }
 
   /** Initialize the briefcase manager */
@@ -406,51 +354,69 @@ export class BriefcaseManager {
   }
 
   @RunsIn(Tier.Services)
-  private static async findUnusedBriefcase(accessToken: AccessToken, iModelId: string, openMode: OpenMode, requiredChangeSet: ChangeSet|null): Promise<BriefcaseToken|undefined> {
+  private static async findUnusedBriefcase(accessToken: AccessToken, iModelId: string, openMode: OpenMode, requiredChangeSet: ChangeSet|null): Promise<IModelDb|undefined> {
     const requiredChangeSetIndex: number = requiredChangeSet ? +requiredChangeSet.index : 0;
     const cache = BriefcaseManager.cache!;
-    let briefcaseToken: BriefcaseToken|undefined;
 
-    const briefcases = new Array<BriefcaseToken>();
+    const briefcases = new Array<IModelDb>();
     for (const entry of cache.briefcases.values()) {
-      briefcaseToken = entry.briefcaseToken;
-      if (briefcaseToken.imodelId !== iModelId)
+      const briefcaseKey = entry.briefcaseKey!;
+      assert(!!briefcaseKey);
+
+      if (briefcaseKey.imodelId !== iModelId)
         continue;
-      if (briefcaseToken.changeSetIndex! > requiredChangeSetIndex)
+      if (briefcaseKey.changeSetIndex! > requiredChangeSetIndex)
         continue;
-      briefcases.push(entry.briefcaseToken);
+      briefcases.push(entry);
     }
 
     // For read-only cases...
+    let briefcase: IModelDb|undefined;
     if (openMode === OpenMode.Readonly) {
+
       // first prefer any briefcase that's opened already, is read-only and with version = requiredVersion
-      briefcaseToken = briefcases.find((entry: BriefcaseToken): boolean => !!entry.isOpen && entry.openMode === OpenMode.Readonly && entry.changeSetIndex === requiredChangeSetIndex);
-      if (briefcaseToken)
-        return briefcaseToken;
+      briefcase = briefcases.find((entry: IModelDb): boolean => {
+        const briefcaseKey = entry.briefcaseKey!;
+        return !!briefcaseKey.isOpen && briefcaseKey.openMode === OpenMode.Readonly && briefcaseKey.changeSetIndex === requiredChangeSetIndex;
+      });
+      if (briefcase)
+        return briefcase;
 
       // next prefer any briefcase that's closed, and with version = requiredVersion
-      briefcaseToken = briefcases.find((entry: BriefcaseToken): boolean => !entry.isOpen && entry.changeSetIndex === requiredChangeSetIndex);
-      if (briefcaseToken)
-        return briefcaseToken;
+      briefcase = briefcases.find((entry: IModelDb): boolean => {
+        const briefcaseKey = entry.briefcaseKey!;
+        return !briefcaseKey.isOpen && briefcaseKey.changeSetIndex === requiredChangeSetIndex;
+      });
+      if (briefcase)
+        return briefcase;
 
       // next prefer any briefcase that's closed, and with version < requiredVersion
-      briefcaseToken = briefcases.find((entry: BriefcaseToken): boolean => !entry.isOpen && entry.changeSetIndex! < requiredChangeSetIndex);
-      if (briefcaseToken)
-        return briefcaseToken;
+      briefcase = briefcases.find((entry: IModelDb): boolean => {
+        const briefcaseKey = entry.briefcaseKey!;
+        return !briefcaseKey.isOpen && briefcaseKey.changeSetIndex! < requiredChangeSetIndex;
+      });
+      if (briefcase)
+        return briefcase;
 
       return undefined;
     }
 
     // For read-write cases...
     // first prefer any briefcase that's been acquired by the user, is currently closed, and with version = requiredVersion
-    briefcaseToken = briefcases.find((entry: BriefcaseToken): boolean => !entry.isOpen && entry.changeSetIndex === requiredChangeSetIndex && entry.userId === accessToken.getUserProfile().userId);
-    if (briefcaseToken)
-      return briefcaseToken;
+    briefcase = briefcases.find((entry: IModelDb): boolean => {
+      const briefcaseKey = entry.briefcaseKey!;
+      return !briefcaseKey.isOpen && briefcaseKey.changeSetIndex === requiredChangeSetIndex && briefcaseKey.userId === accessToken.getUserProfile().userId;
+    });
+    if (briefcase)
+      return briefcase;
 
     // next prefer any briefcase that's been acquired by the user, is currently closed, and with version < requiredVersion
-    briefcaseToken = briefcases.find((entry: BriefcaseToken): boolean => !entry.isOpen && entry.changeSetIndex! < requiredChangeSetIndex && entry.userId === accessToken.getUserProfile().userId);
-    if (briefcaseToken)
-      return briefcaseToken;
+    briefcase = briefcases.find((entry: IModelDb): boolean => {
+      const briefcaseKey = entry.briefcaseKey!;
+      return !briefcaseKey.isOpen && briefcaseKey.changeSetIndex! < requiredChangeSetIndex && briefcaseKey.userId === accessToken.getUserProfile().userId;
+    });
+    if (briefcase)
+      return briefcase;
 
     return undefined;
   }
@@ -469,27 +435,29 @@ export class BriefcaseManager {
   }
 
   @RunsIn(Tier.Services)
-  private static async updateAndOpenBriefcase(accessToken: AccessToken, briefcaseToken: BriefcaseToken, openMode: OpenMode, changeSet: ChangeSet|null): Promise<void> {
-    briefcaseToken.openMode = openMode;
+  private static async updateAndOpenBriefcase(accessToken: AccessToken, briefcaseKey: BriefcaseToken, openMode: OpenMode, changeSet: ChangeSet|null): Promise<IModelDb> {
+    briefcaseKey.openMode = openMode;
 
     const toChangeSetId: string = !!changeSet ? changeSet.wsgId : "";
     const toChangeSetIndex: number = !!changeSet ? +changeSet.index : 0;
-    const fromChangeSetId: string = briefcaseToken.changeSetId!;
-    const changeSetTokens = await BriefcaseManager.downloadChangeSets(accessToken, briefcaseToken.imodelId!, toChangeSetId, fromChangeSetId);
+    const fromChangeSetId: string = briefcaseKey.changeSetId!;
+    const changeSetTokens = await BriefcaseManager.downloadChangeSets(accessToken, briefcaseKey.imodelId!, toChangeSetId, fromChangeSetId);
 
     const db = new dgnDbNodeAddon.DgnDb();
-    const res: BentleyReturn<DbResult, void> = await db.openBriefcase(JSON.stringify(briefcaseToken), JSON.stringify(changeSetTokens));
+    const res: BentleyReturn<DbResult, void> = await db.openBriefcase(JSON.stringify(briefcaseKey), JSON.stringify(changeSetTokens));
     if (res.error)
       throw new IModelError(res.error.status);
 
     // Remove any old entry in the cache if an older briefcase may be repurposed.
-    if (BriefcaseManager.cache!.hasBriefcase(briefcaseToken))
-      BriefcaseManager.cache!.deleteBriefcase(briefcaseToken);
+    if (BriefcaseManager.cache!.hasBriefcase(briefcaseKey))
+      BriefcaseManager.cache!.deleteBriefcase(briefcaseKey);
 
-    briefcaseToken.isOpen = true;
-    briefcaseToken.changeSetId = toChangeSetId;
-    briefcaseToken.changeSetIndex = toChangeSetIndex;
-    BriefcaseManager.cache!.setBriefcase(briefcaseToken, db);
+    briefcaseKey.isOpen = true;
+    briefcaseKey.changeSetId = toChangeSetId;
+    briefcaseKey.changeSetIndex = toChangeSetIndex;
+    BriefcaseManager.cache!.setBriefcase(briefcaseKey, db);
+
+    return new IModelDb(briefcaseKey, db);
   }
 
   /** Purge closed briefcases */
@@ -500,33 +468,35 @@ export class BriefcaseManager {
     const cache = BriefcaseManager.cache!;
     const briefcases = cache.briefcases;
     for (const entry of briefcases.values()) {
-      const briefcaseToken = entry.briefcaseToken;
-      if (briefcaseToken.isOpen)
+      const briefcaseKey = entry.briefcaseKey!;
+      if (briefcaseKey.isOpen)
         continue;
-      await BriefcaseManager.deleteBriefcase(accessToken, briefcaseToken);
+      await BriefcaseManager.deleteBriefcase(accessToken, briefcaseKey);
     }
   }
 
   @RunsIn(Tier.Services)
-  public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode, version: IModelVersion): Promise<BriefcaseToken> {
+  public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode, version: IModelVersion): Promise<IModelDb> {
     if (!BriefcaseManager.cache)
       await BriefcaseManager.initialize(accessToken);
 
     const changeSet: ChangeSet|null = await BriefcaseManager.getChangeSetFromVersion(accessToken, iModelId, version);
 
-    let briefcaseToken = await BriefcaseManager.findUnusedBriefcase(accessToken, iModelId, openMode, changeSet);
-    if (briefcaseToken && openMode === OpenMode.Readonly && briefcaseToken.isOpen)
-      return briefcaseToken;
+    const briefcase = await BriefcaseManager.findUnusedBriefcase(accessToken, iModelId, openMode, changeSet);
+    if (briefcase && openMode === OpenMode.Readonly && briefcase.briefcaseKey!.isOpen)
+      return briefcase;
 
-    if (!briefcaseToken)
-      briefcaseToken = await BriefcaseManager.createBriefcaseSeed(accessToken, iModelId);
+    let briefcaseKey: BriefcaseToken;
+    if (briefcase)
+      briefcaseKey = briefcase.briefcaseKey!;
+    else
+      briefcaseKey = await BriefcaseManager.createBriefcaseSeed(accessToken, iModelId);
 
-    await BriefcaseManager.updateAndOpenBriefcase(accessToken, briefcaseToken, openMode, changeSet);
-    return briefcaseToken;
+    return await BriefcaseManager.updateAndOpenBriefcase(accessToken, briefcaseKey, openMode, changeSet);
   }
 
   @RunsIn(Tier.Services)
-  public static async openStandalone(fileName: string, openMode: OpenMode): Promise<BriefcaseToken> {
+  public static async openStandalone(fileName: string, openMode: OpenMode): Promise<IModelDb> {
     if (!BriefcaseManager.cache)
       BriefcaseManager.initialize();
 
@@ -535,199 +505,28 @@ export class BriefcaseManager {
     if (res.error)
       throw new IModelError(res.error.status);
 
-    const briefcaseToken = BriefcaseToken.fromFile(fileName, openMode, true /*isOpen*/);
-    BriefcaseManager.cache!.setBriefcase(briefcaseToken, db);
+    const briefcaseKey = BriefcaseToken.fromFile(fileName, openMode, true /*isOpen*/);
+    BriefcaseManager.cache!.setBriefcase(briefcaseKey, db);
 
-    return briefcaseToken;
+    return new IModelDb(briefcaseKey, db);
   }
 
-  @RunsIn(Tier.Services)
   public static async close(accessToken: AccessToken, briefcaseToken: BriefcaseToken, keepBriefcase: KeepBriefcase): Promise<void> {
-    if (briefcaseToken.openMode === OpenMode.Readonly)
-      return;
-
-    const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
-    if (!db)
-      return;
-    db.closeDgnDb();
-    briefcaseToken.isOpen = false;
-
     if (keepBriefcase === KeepBriefcase.No)
       await BriefcaseManager.deleteBriefcase(accessToken, briefcaseToken);
     else
       BriefcaseManager.cache!.setBriefcase(briefcaseToken, undefined);
   }
 
-  @RunsIn(Tier.Services, { synchronous: true })
   public static closeStandalone(briefcaseToken: BriefcaseToken) {
-    const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
-    if (!db)
-      return;
-    db.closeDgnDb();
-    briefcaseToken.isOpen = false;
     BriefcaseManager.cache!.setBriefcase(briefcaseToken, undefined);
   }
 
-  /**
-   * Get a JSON representation of an element.
-   * @param opt A JSON string with options for loading the element
-   * @returns Promise that resolves to an object with a result property set to the JSON string of the element.
-   * The resolved object contains an error property if the operation failed.
-   */
-  @RunsIn(Tier.Services)
-  public static async getElement(briefcaseToken: BriefcaseToken, opt: string): Promise<string> {
-    const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
-    if (!db)
-      return Promise.reject(new IModelError(IModelStatus.NotOpen));
+  public static getBriefcase(briefcaseToken: BriefcaseToken): IModelDb|undefined {
+    if (!BriefcaseManager.cache)
+      return undefined;
 
-    const response: BentleyReturn<IModelStatus, string> = await db.getElement(opt);
-    if (response.error)
-      return Promise.reject(new IModelError(response.error.status));
-
-    return response.result!;
+    return BriefcaseManager.cache.getBriefcase(briefcaseToken);
   }
 
-  @RunsIn(Tier.Services)
-  public static async getElementPropertiesForDisplay(briefcaseToken: BriefcaseToken, elementId: string): Promise<string> {
-    const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
-    if (!db)
-      return Promise.reject(new IModelError(IModelStatus.NotOpen));
-
-    const response: BentleyReturn<DbResult, string> = await db.getElementPropertiesForDisplay(elementId);
-    if (response.error)
-      return Promise.reject(new IModelError(response.error.status));
-
-    return response.result!;
-  }
-
-  /**
-   * Insert a new element into the DgnDb.
-   * @param props A JSON string with properties of new element
-   * @returns Promise that resolves to an object with
-   * The resolved object contains an error property if the operation failed.
-   */
-  @RunsIn(Tier.Services)
-  public static async insertElement(briefcaseToken: BriefcaseToken, props: string): Promise<string> {
-    const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
-    if (!db)
-      return Promise.reject(new IModelError(IModelStatus.NotOpen));
-
-    // Note that inserting an element is always done synchronously. That is because of constraints
-    // on the native code side. Nevertheless, we want the signature of this method to be
-    // that of an asynchronous method, since it must run in the services tier and will be
-    // asynchronous from a remote client's point of view in any case.
-    const response: BentleyReturn<IModelStatus, string> = db.insertElementSync(props);
-    if (response.error)
-      return Promise.reject(new IModelError(response.error.status));
-
-    return response.result!;
-  }
-
-  @RunsIn(Tier.Services)
-  public static async updateElement(briefcaseToken: BriefcaseToken, props: string): Promise<void> {
-    const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
-    if (!db)
-      return Promise.reject(new IModelError(IModelStatus.NotOpen));
-
-    // Note that updating an element is always done synchronously. That is because of constraints
-    // on the native code side. Nevertheless, we want the signature of this method to be
-    // that of an asynchronous method, since it must run in the services tier and will be
-    // asynchronous from a remote client's point of view in any case.
-    const response: BentleyReturn<IModelStatus, string> = db.updateElementSync(props);
-    if (response.error)
-      return Promise.reject(new IModelError(response.error.status));
-  }
-
-  @RunsIn(Tier.Services)
-  public static async deleteElement(briefcaseToken: BriefcaseToken, elemid: string): Promise<void> {
-    const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
-    if (!db)
-      return Promise.reject(new IModelError(IModelStatus.NotOpen));
-
-    // Note that deleting an element is always done synchronously. That is because of constraints
-    // on the native code side. Nevertheless, we want the signature of this method to be
-    // that of an asynchronous method, since it must run in the services tier and will be
-    // asynchronous from a remote client's point of view in any case.
-    const response: BentleyReturn<IModelStatus, string> = db.deleteElementSync(elemid);
-    if (response.error)
-      return Promise.reject(new IModelError(response.error.status));
-  }
-
-  /**
-   * Get a JSON representation of a Model.
-   * @param opt A JSON string with options for loading the model
-   * @returns Promise that resolves to an object with a result property set to the JSON string of the model.
-   * The resolved object contains an error property if the operation failed.
-   */
-  @RunsIn(Tier.Services)
-  public static async getModel(briefcaseToken: BriefcaseToken, opt: string): Promise<string> {
-    const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
-    if (!db)
-      return Promise.reject(new IModelError(IModelStatus.NotOpen));
-
-    const response: BentleyReturn<DbResult, string> = await db.getModel(opt);
-    if (response.error)
-      return Promise.reject(new IModelError(response.error.status));
-
-    return response.result!;
-  }
-
-  /**
-   * Execute an ECSql select statement
-   * @param ecsql The ECSql select statement to prepare
-   * @returns Promise that resolves to an object with a result property set to a JSON array containing the rows returned from the query
-   * The resolved object contains an error property if the operation failed.
-   */
-  @RunsIn(Tier.Services)
-  public static async executeQuery(briefcaseToken: BriefcaseToken, ecsql: string): Promise<string> {
-    const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
-    if (!db)
-      return Promise.reject(new IModelError(IModelStatus.NotOpen));
-
-    const response: BentleyReturn<DbResult, string> = await db.executeQuery(ecsql);
-    if (response.error)
-      return Promise.reject(new IModelError(response.error.status));
-
-    return response.result!;
-  }
-
-  /**
-   * Get the meta data for the specified ECClass from the schema in this DgnDbNativeCode.
-   * @param ecschemaname  The name of the schema
-   * @param ecclassname   The name of the class
-   * @returns Promise that resolves to an object with a result property set to a the meta data in JSON format
-   * The resolved object contains an error property if the operation failed.
-   */
-  @RunsIn(Tier.Services)
-  public static async getECClassMetaData(briefcaseToken: BriefcaseToken, ecschemaname: string, ecclassname: string): Promise<string> {
-    const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
-    if (!db)
-      return Promise.reject(new IModelError(IModelStatus.NotOpen));
-
-    const response: BentleyReturn<IModelStatus, string> = await db.getECClassMetaData(ecschemaname, ecclassname);
-    if (response.error)
-      return Promise.reject(new IModelError(response.error.status));
-
-    return response.result!;
-  }
-
-  /**
-   * Get the meta data for the specified ECClass from the schema in this iModel, blocking until the result is returned.
-   * @param ecschemaname  The name of the schema
-   * @param ecclassname   The name of the class
-   * @returns On success, the BentleyReturn result property will be the class meta data in JSON format.
-   */
-  @RunsIn(Tier.Services, { synchronous: true })
-  public static getECClassMetaDataSync(briefcaseToken: BriefcaseToken, ecschemaname: string, ecclassname: string): string {
-    const db = BriefcaseManager.getBriefcaseFromCache(briefcaseToken);
-    if (!db)
-      throw new IModelError(IModelStatus.NotOpen);
-
-    const response: BentleyReturn<IModelStatus, string> = db.getECClassMetaDataSync(ecschemaname, ecclassname);
-    if (response.error)
-      throw new IModelError(response.error.status);
-
-    return response.result!;
-  }
 }
-

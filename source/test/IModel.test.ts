@@ -422,13 +422,11 @@ describe("iModel", () => {
   it("should load struct properties", async () => {
     const el1 = await imodel3.elements.getElement(new Id64("0x14"));
     assert.isDefined(el1);
-    IModelTestUtils.closeIModel(imodel3);
   });
 
   it("should load array properties", async () => {
     const el1 = await imodel3.elements.getElement(new Id64("0x14"));
     assert.isDefined(el1);
-    IModelTestUtils.closeIModel(imodel3);
   });
 
   it("should insert and update auto-handled properties", async () => {
@@ -491,6 +489,7 @@ describe("iModel", () => {
       // TODO: test that error is what I expect assert.equal(error.status == IModelStatus.)
     }
     IModelTestUtils.closeIModel(imodel3);
+    imodel3 = await IModelTestUtils.openIModel("GetSetAutoHandledStructProperties.bim");
   });
 
   function checkElementMetaData(metadataStr: string) {

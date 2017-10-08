@@ -8,7 +8,7 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import { Element } from "../Element";
 import { IModelVersion } from "../IModelVersion";
 import { Model } from "../Model";
-import { BriefcaseToken } from "./BriefcaseManager";
+import { BriefcaseToken } from "../IModel";
 import { IModelDb } from "./IModelDb";
 
 /** The interface that defines how the frontend remotely talks to the backend.

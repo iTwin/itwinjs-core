@@ -6,7 +6,7 @@ import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { Element } from "../Element";
-import { IModel } from "../IModel";
+import { IModel, BriefcaseToken } from "../IModel";
 import { IModelVersion } from "../IModelVersion";
 import { Model } from "../Model";
 
@@ -18,17 +18,16 @@ export class IModelConnection extends IModel {
   public models: IModelConnectionModels;
   public elements: IModelConnectionElements;
 
-  private constructor() {
-    super();
+  private constructor(briefcaseKey: BriefcaseToken) {
+    super(briefcaseKey);
     this.models = new IModelConnectionModels(this);
     this.elements = new IModelConnectionElements(this);
   }
 
   /** Open an iModel from the iModelHub */
   public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
-    const iModelConnection = new IModelConnection();
-    iModelConnection._briefcaseKey = await IModelDbRemoting.open(accessToken, iModelId, openMode, version);
-    return iModelConnection;
+    const briefcaseKey = await IModelDbRemoting.open(accessToken, iModelId, openMode, version);
+    return new IModelConnection(briefcaseKey);
   }
 
   /** Close this iModel */
