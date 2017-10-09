@@ -26,15 +26,12 @@ if (addonLoader !== undefined)
  * Error status from various briefcase operations
  * @todo: need to setup the error numbers in a consistent way
  */
-export const enum BriefcaseError {
-  NotInitialized = 0x20000,
-  CannotAcquire,
+export const enum BriefcaseStatus {
+  CannotAcquire = 0x20000,
   CannotDownload,
   CannotCopy,
   CannotDelete,
   VersionNotFound,
-  BriefcaseNotFound,
-  NotSupportedYet,
 }
 
 /** Option to keep briefcase when the imodel is closed */
@@ -158,14 +155,14 @@ export class BriefcaseManager {
   private static async acquireBriefcase(accessToken: AccessToken, iModelId: string): Promise<Briefcase> {
     const briefcaseId: number = await BriefcaseManager.hubClient.acquireBriefcase(accessToken, iModelId);
     if (!briefcaseId)
-      return Promise.reject(new IModelError(BriefcaseError.CannotAcquire));
+      return Promise.reject(new IModelError(BriefcaseStatus.CannotAcquire));
 
     const briefcase: Briefcase = await BriefcaseManager.hubClient.getBriefcase(accessToken, iModelId, briefcaseId, true /*=getDownloadUrl*/);
     if (!briefcase) {
       await BriefcaseManager.hubClient.deleteBriefcase(accessToken, iModelId, briefcaseId)
         .catch(() => {
           assert(false, "Could not delete acquired briefcase");
-          return Promise.reject(new IModelError(BriefcaseError.CannotDelete));
+          return Promise.reject(new IModelError(BriefcaseStatus.CannotDelete));
         });
     }
 
@@ -185,7 +182,7 @@ export class BriefcaseManager {
     await BriefcaseManager.hubClient.deleteBriefcase(accessToken, iModelToken.imodelId!, iModelToken.briefcaseId!)
       .catch(() => {
         assert(false, "Could not delete the accquired briefcase");
-        return Promise.reject(new IModelError(BriefcaseError.CannotDelete));
+        return Promise.reject(new IModelError(BriefcaseStatus.CannotDelete));
       });
 
     // Delete from the cache
@@ -204,7 +201,7 @@ export class BriefcaseManager {
         assert(false, "Could not download briefcase");
         if (fs.existsSync(seedPathname))
           fs.unlinkSync(seedPathname); // Just in case there was a partial download, delete the file
-        return Promise.reject(new IModelError(BriefcaseError.CannotDownload));
+        return Promise.reject(new IModelError(BriefcaseStatus.CannotDownload));
       });
   }
 
@@ -234,7 +231,7 @@ export class BriefcaseManager {
       fs.mkdirSync(briefcasePath);
 
     await BriefcaseManager.copyFile(briefcasePathname, seedPathname)
-      .catch(() => {Promise.reject(new IModelError(BriefcaseError.CannotCopy)); });
+      .catch(() => {Promise.reject(new IModelError(BriefcaseStatus.CannotCopy)); });
 
     return briefcasePathname;
   }
@@ -262,7 +259,7 @@ export class BriefcaseManager {
         return changeSets;
     }
 
-    return Promise.reject(new IModelError(BriefcaseError.VersionNotFound));
+    return Promise.reject(new IModelError(BriefcaseStatus.VersionNotFound));
   }
 
   @RunsIn(Tier.Services)
@@ -288,7 +285,7 @@ export class BriefcaseManager {
         .catch(() => {
           assert(false, "Could not download ChangeSets");
           fs.unlinkSync(changeSetsPath); // Just in case there was a partial download, delete the entire folder
-          Promise.reject(new IModelError(BriefcaseError.CannotDownload));
+          Promise.reject(new IModelError(BriefcaseStatus.CannotDownload));
         });
     }
 
@@ -321,7 +318,7 @@ export class BriefcaseManager {
         return changeSet;
     }
 
-    return Promise.reject(new IModelError(BriefcaseError.VersionNotFound));
+    return Promise.reject(new IModelError(BriefcaseStatus.VersionNotFound));
   }
 
   private static async getChangeSetFromNamedVersion(accessToken: AccessToken, iModelId: string, versionName: string): Promise<ChangeSet|null> {
@@ -350,7 +347,7 @@ export class BriefcaseManager {
     if (versionName)
       return await BriefcaseManager.getChangeSetFromNamedVersion(accessToken, iModelId, versionName);
 
-    return Promise.reject(new IModelError(BriefcaseError.VersionNotFound));
+    return Promise.reject(new IModelError(BriefcaseStatus.VersionNotFound));
   }
 
   @RunsIn(Tier.Services)
