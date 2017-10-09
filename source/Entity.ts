@@ -242,5 +242,13 @@ export class EntityMetaData {
       }
     }
   }
+}
 
+/** Interface for capturing input into query functions. */
+export interface EntityQueryParams {
+  from: string;
+  where?: string;
+  orderBy?: string;
+  limit: number;
+  offset: number;
 }

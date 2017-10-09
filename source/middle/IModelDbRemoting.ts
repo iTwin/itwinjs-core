@@ -6,9 +6,11 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { MultiTierExecutionHost, RunsIn, Tier } from "@bentley/bentleyjs-core/lib/tiering";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { Element } from "../Element";
+import { EntityQueryParams } from "../Entity";
 import { IModelVersion } from "../IModelVersion";
 import { Model } from "../Model";
 import { IModelToken } from "../IModel";
+import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { IModelDb } from "../backend/IModelDb";
 
 /** The interface that defines how the frontend remotely talks to the backend.
@@ -53,5 +55,24 @@ export class IModelDbRemoting {
       elements.push(await iModelDb.elements.getElement(elementId));
     }
     return elements;
+  }
+
+  /** Return an [[Id64]] array of element ids from a query constructed from the specified parameters. */
+  @RunsIn(Tier.Services)
+  public static async queryElementIds(iModelToken: IModelToken, params: EntityQueryParams): Promise<Id64[]> {
+    let sql: string = "SELECT ECInstanceId AS id FROM " + params.from;
+    if (params.where) sql += " WHERE " + params.where;
+    if (params.orderBy) sql += " ORDER BY " + params.orderBy;
+    if (params.limit) sql += " LIMIT " + params.limit;
+    if (params.offset) sql += " OFFSET " + params.offset;
+
+    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    const statement: ECSqlStatement = iModelDb.getPreparedStatement(sql);
+    const elementIds: Id64[] = [];
+    for (const row of statement)
+      elementIds.push(new Id64(row.id));
+
+    iModelDb.releasePreparedStatement(statement);
+    return elementIds;
   }
 }

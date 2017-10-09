@@ -6,6 +6,7 @@ import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { Element } from "../Element";
+import { EntityQueryParams } from "../Entity";
 import { IModel, IModelToken } from "../IModel";
 import { IModelError, IModelStatus } from "../IModelError";
 import { IModelVersion } from "../IModelVersion";
@@ -83,5 +84,10 @@ export class IModelConnectionElements {
   /** Ask the backend for a batch of elements given a list of element ids. */
   public async getElements(elementIds: Id64[]): Promise<Element[]> {
     return await IModelDbRemoting.getElements(this._iModel.iModelToken, elementIds);
+  }
+
+  /** */
+  public async queryElementIds(params: EntityQueryParams): Promise<Id64[]> {
+    return await IModelDbRemoting.queryElementIds(this._iModel.iModelToken, params);
   }
 }

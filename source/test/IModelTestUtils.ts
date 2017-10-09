@@ -55,7 +55,7 @@ export class IModelTestUtils {
 
   // TODO: This neeeds a home
   public static queryCodeSpecId(imodel: IModelDb, name: string): Id64 | undefined {
-    return imodel.withPreparedECSqlStatement("SELECT ecinstanceid FROM BisCore.CodeSpec WHERE Name=?", (stmt: ECSqlStatement) => {
+    return imodel.withPreparedStatement("SELECT ecinstanceid FROM BisCore.CodeSpec WHERE Name=?", (stmt: ECSqlStatement) => {
       stmt.bindValues([name]);
       if (DbResult.BE_SQLITE_ROW !== stmt.step()) {
         return;
@@ -72,7 +72,7 @@ export class IModelTestUtils {
     if (code.value === undefined) {
       throw new IModelError(IModelStatus.InvalidCode);
     }
-    return imodel.withPreparedECSqlStatement("SELECT ecinstanceid as id FROM " + Element.sqlName + " WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?", (stmt: ECSqlStatement) => {
+    return imodel.withPreparedStatement("SELECT ecinstanceid as id FROM " + Element.sqlName + " WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?", (stmt: ECSqlStatement) => {
       stmt.bindValues([code.spec, new Id64(code.scope), code.value!]);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
         throw new IModelError(IModelStatus.NotFound);

@@ -1,7 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { MultiTierExecutionHost } from "@bentley/bentleyjs-core/lib/tiering";
 import { AccessToken, Briefcase, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
 import { BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -67,7 +66,6 @@ class BriefcaseCache {
   }
 }
 
-@MultiTierExecutionHost("@bentley/imodeljs-core/IModel")
 export class BriefcaseManager {
   private static hubClient = new IModelHubClient("QA");
   public static rootPath = path.join(__dirname, "../assets/imodels");
@@ -109,8 +107,8 @@ export class BriefcaseManager {
     if (!accessToken)
       return;
 
-    const db = new dgnDbNodeAddon.DgnDb();
-    const res: BentleyReturn<DbResult, string> = await db.getCachedBriefcaseInfos(BriefcaseManager.rootPath);
+    const nativeDb = new dgnDbNodeAddon.DgnDb();
+    const res: BentleyReturn<DbResult, string> = nativeDb.getCachedBriefcaseInfosSync(BriefcaseManager.rootPath);
     if (res.error)
       Promise.reject(new IModelError(res.error.status));
 
@@ -413,8 +411,8 @@ export class BriefcaseManager {
     const fromChangeSetId: string = iModelToken.changeSetId!;
     const changeSetTokens = await BriefcaseManager.downloadChangeSets(accessToken, iModelToken.imodelId!, toChangeSetId, fromChangeSetId);
 
-    const db = new dgnDbNodeAddon.DgnDb();
-    const res: BentleyReturn<DbResult, void> = await db.openBriefcase(JSON.stringify(iModelToken), JSON.stringify(changeSetTokens));
+    const nativeDb = new dgnDbNodeAddon.DgnDb();
+    const res: BentleyReturn<DbResult, void> = await nativeDb.openBriefcaseSync(JSON.stringify(iModelToken), JSON.stringify(changeSetTokens));
     if (res.error)
       throw new IModelError(res.error.status);
 
@@ -425,9 +423,9 @@ export class BriefcaseManager {
     iModelToken.isOpen = true;
     iModelToken.changeSetId = toChangeSetId;
     iModelToken.changeSetIndex = toChangeSetIndex;
-    BriefcaseManager.cache!.setBriefcase(iModelToken, db);
+    BriefcaseManager.cache!.setBriefcase(iModelToken, nativeDb);
 
-    return new IModelDb(iModelToken, db);
+    return new IModelDb(iModelToken, nativeDb);
   }
 
   /** Purge closed briefcases */
