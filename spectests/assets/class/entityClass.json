@@ -1,0 +1,54 @@
+[
+  {
+    "description": "entity class with invalid mixin",
+    "valid": false,
+    "data": {
+      "schemaChildType": "EntityClass",
+      "name": "EntityClassWithInvalidMixin",
+      "schema": "TestSchema",
+      "mixin": "0MissingSchemaMixin"
+    }
+  },
+  {
+    "description": "entity class with valid mixin",
+    "valid": true,
+    "data": {
+      "schemaChildType": "EntityClass",
+      "name": "EntityClassWithMixin",
+      "schema": "TestSchema",
+      "mixin": "TestSchema.MixinWithSchema"
+    }
+  },
+  {
+    "description": "fully defined ECEntity class",
+    "valid": true,
+    "data": {
+      "schemaChildType": "EntityClass",
+      "name": "FullyDefinedECEntityClass",
+      "schema": "TestSchema",
+      "schemaVersion": "1.0.0",
+      "modifier": "none",
+      "description": "A test ECEntityClass that has all possible parts avaiable to be added to it.",
+      "displayLabel": "This is a test display label",
+      "customAttributes": [
+        {
+          "className": "coreca.IsMixin",
+          "appliesToEntityClass": "biscore.element"
+        }
+      ],
+      "baseClass": "TestSchema.PartiallyDefinedECEntityClassForBaseClass",
+      "mixin": "TestSchema.FullyDefinedMixin",
+      "propertiesContents": [
+        {
+          "name": "PrimitivePropertyName",
+          "propertyType": "PrimitiveProperty",
+          "typeName": "string",
+          "description": "Description of the primitive property with a string type",
+          "displayLabel": "",
+          "readOnly": true,
+          "extendedTypeName": "Json"
+        }
+      ]
+    }
+  }
+]
