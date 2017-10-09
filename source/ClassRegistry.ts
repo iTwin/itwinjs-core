@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { EntityCtor, Entity, EntityProps, EntityMetaData } from "./Entity";
-import { IModel } from "./IModel";
+import { IModelDb } from "./backend/IModelDb"; // todo: Move ClassRegistry to backend?
 import { IModelError, IModelStatus } from "./IModelError";
 import { Schema, Schemas } from "./Schema";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
@@ -105,7 +105,7 @@ export class ClassRegistry {
   /** This function fetches the specified Entity from the imodel, generates a JS class for it, and registers the generated
    * class. This function also ensures that all of the base classes of the Entity exist and are registered.
    */
-  private static async generateClass(classFullName: string, imodel: IModel): Promise<EntityCtor> {
+  private static async generateClass(classFullName: string, imodel: IModelDb): Promise<EntityCtor> {
     const name = classFullName.split(":");
     assert(name.length === 2);
 
@@ -132,7 +132,7 @@ export class ClassRegistry {
   /** This function fetches the specified Entity from the imodel, generates a JS class for it, and registers the generated
    * class. This function also ensures that all of the base classes of the Entity exist and are registered.
    */
-  private static generateClassSync(classFullName: string, imodel: IModel): EntityCtor {
+  private static generateClassSync(classFullName: string, imodel: IModelDb): EntityCtor {
     const name = classFullName.split(":");
     assert(name.length === 2);
 
@@ -178,7 +178,7 @@ export class ClassRegistry {
    * @returns A promise that resolves to an object containing a result property set to the Entity.
    * @throws [[IModelError]] if the class is not found.
    */
-  public static async getClass(fullName: string, iModel: IModel): Promise<EntityCtor> {
+  public static async getClass(fullName: string, iModel: IModelDb): Promise<EntityCtor> {
     const key = fullName.toLowerCase();
     if (!ClassRegistry.classMap.has(key)) {
       return ClassRegistry.generateClass(fullName, iModel);
@@ -198,7 +198,7 @@ export class ClassRegistry {
    * @returns A promise that resolves to an object containing a result property set to the Entity.
    * @throws [[IModelError]] if the class is not found.
    */
-  public static getClassSync(fullName: string, iModel: IModel): EntityCtor {
+  public static getClassSync(fullName: string, iModel: IModelDb): EntityCtor {
     const key = fullName.toLowerCase();
     if (!ClassRegistry.classMap.has(key)) {
       return ClassRegistry.generateClassSync(fullName, iModel);
@@ -225,8 +225,8 @@ export class ClassRegistry {
 export class MetaDataRegistry {
   private _registry: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();
 
-  constructor(private imodel: IModel) {
-    if (!(imodel instanceof IModel))
+  constructor(private imodel: IModelDb) {
+    if (!(imodel instanceof IModelDb))
       throw new TypeError("bad imodel");
   }
 

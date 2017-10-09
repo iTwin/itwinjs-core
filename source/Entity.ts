@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Schema } from "./Schema";
-import { IModel } from "./IModel";
+import { IModelDb } from "./backend/IModelDb";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
 
@@ -23,7 +23,7 @@ export const enum PrimitiveTypeCode {
 
 /** The properties to create an Entity. Every Entity must have an iModel and the full name of the class that defines it. */
 export interface EntityProps {
-  iModel: IModel;
+  iModel: IModelDb;
   classFullName?: string;
   [propName: string]: any;
 }
@@ -49,7 +49,7 @@ export class Entity implements EntityProps {
   public static schema: Schema;
 
   /** The IModel that contains this Entity */
-  public iModel: IModel;
+  public iModel: IModelDb;
 
   /** The Id of this Entity. Valid only if persistent. */
   public id: Id64;
@@ -220,7 +220,7 @@ export class EntityMetaData {
    * @param wantSuper If true, superclass properties will also be processed
    * @param func The callback to be invoked on each property
    */
-  public static forEach(imodel: IModel, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean) {
+  public static forEach(imodel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean) {
     const meta = imodel.classMetaDataRegistry.get(classFullName);
     if (meta === undefined) {
       throw new TypeError(classFullName + " missing class metadata");

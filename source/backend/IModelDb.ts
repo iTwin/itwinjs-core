@@ -5,14 +5,15 @@ import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { ClassRegistry } from "../ClassRegistry";
+import { ClassRegistry, MetaDataRegistry } from "../ClassRegistry";
 import { Code } from "../Code";
 import { Element, ElementLoadParams, ElementProps } from "../Element";
 import { ElementAspect, ElementAspectProps, ElementMultiAspect, ElementUniqueAspect } from "../ElementAspect";
 import { IModel } from "../IModel";
 import { IModelVersion } from "../IModelVersion";
 import { Model, ModelProps } from "../Model";
-import { BriefcaseManager, BriefcaseToken, KeepBriefcase } from "./BriefcaseManager";
+import { IModelToken } from "../IModel";
+import { BriefcaseManager, KeepBriefcase } from "./BriefcaseManager";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelError, IModelStatus } from "../IModelError";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
@@ -112,13 +113,22 @@ export class IModelDb extends IModel {
   public elements: IModelDbElements;
   private statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private _maxStatementCacheCount = 20;
-  private static _openDbMap: Map<string, IModelDb> = new Map<string, IModelDb>();
+  public nativeDb: any;
   private _codeSpecs: CodeSpecs;
+  private _classMetaDataRegistry: MetaDataRegistry;
 
-  private constructor() {
-    super();
+  public constructor(iModelToken: IModelToken, nativeDb: any) {
+    super(iModelToken);
+    this.nativeDb = nativeDb;
     this.models = new IModelDbModels(this);
     this.elements = new IModelDbElements(this);
+  }
+
+  /** Get the ClassMetaDataRegistry for this iModel */
+  public get classMetaDataRegistry(): MetaDataRegistry {
+    if (!this._classMetaDataRegistry)
+      this._classMetaDataRegistry = new MetaDataRegistry(this);
+    return this._classMetaDataRegistry;
   }
 
   /** Open the iModel from a local file
@@ -127,20 +137,36 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]]
    */
   public static async openStandalone(fileName: string, openMode: OpenMode = OpenMode.ReadWrite): Promise<IModelDb> {
-    const iModel = new IModelDb();
-    iModel._briefcaseKey = await BriefcaseManager.openStandalone(fileName, openMode);
-    IModelDb._openDbMap.set(iModel._briefcaseKey.pathname, iModel);
-    return iModel;
+    return await BriefcaseManager.openStandalone(fileName, openMode);
   }
 
-  /**
-   * Prepare an ECSql statement.
-   * @param ecsql The ECSql statement to prepare
-   */
-  public prepareECSqlStatement(ecsql: string): ECSqlStatement {
-    if (!this.briefcaseKey)
-      throw new IModelError(IModelStatus.NotOpen);
-    return BriefcaseManager.prepareECSqlStatement(this.briefcaseKey!, ecsql);
+  /** Open an iModel from the iModelHub */
+  public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
+    return await BriefcaseManager.open(accessToken, iModelId, openMode, version);
+  }
+
+  /** Close this iModel, if it is currently open */
+  public closeStandalone() {
+    this.clearStatementCacheOnClose();
+    if (!this.iModelToken)
+      return;
+
+    this.nativeDb.closeDgnDb();
+    this.iModelToken.isOpen = false;
+
+    BriefcaseManager.closeStandalone(this.iModelToken);
+  }
+
+  /** Close this iModel, if it is currently open. */
+  public async close(accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
+    this.clearStatementCacheOnClose();
+    if (!this.iModelToken.isOpen)
+      return;
+
+    this.nativeDb.closeDgnDb();
+    this.iModelToken.isOpen = false;
+
+    await BriefcaseManager.close(accessToken, this.iModelToken, keepBriefcase);
   }
 
   /**
@@ -212,48 +238,22 @@ export class IModelDb extends IModel {
     this.statementCache.clearOnClose();
   }
 
-  /** Close this iModel, if it is currently open */
-  public closeStandalone() {
-    this.clearStatementCacheOnClose();
-    if (!this.briefcaseKey)
-      return;
-
-    BriefcaseManager.closeStandalone(this.briefcaseKey);
-    IModelDb._openDbMap.delete(this.briefcaseKey.pathname);
-  }
-
   /** Commit pending changes to this iModel */
   public saveChanges() {
-    if (!this.briefcaseKey)
+    if (!this.iModelToken)
       throw new IModelError(DbResult.BE_SQLITE_ERROR);
-    BriefcaseManager.saveChanges(this.briefcaseKey);
-  }
-
-  /** Open an iModel from the iModelHub */
-  public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
-    const iModel = new IModelDb();
-    iModel._briefcaseKey = await BriefcaseManager.open(accessToken, iModelId, openMode, version);
-    IModelDb._openDbMap.set(iModel._briefcaseKey.pathname, iModel);
-    return iModel;
-  }
-
-  /** Close this iModel, if it is currently open. */
-  public async close(accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
-    this.clearStatementCacheOnClose();
-    if (!this.briefcaseKey)
-      return;
-    await BriefcaseManager.close(accessToken, this.briefcaseKey, keepBriefcase);
-    IModelDb._openDbMap.delete(this.briefcaseKey.pathname);
+    const stat = this.nativeDb.saveChanges();
+    if (DbResult.BE_SQLITE_OK !== stat)
+      throw new IModelError(stat);
   }
 
   /** Find an already open IModelDb from its token. Used by the remoting logic.
    * @hidden
    */
-  public static find(token: BriefcaseToken): IModelDb {
-    const iModel: IModelDb | undefined = IModelDb._openDbMap.get(token.pathname);
+  public static find(iModelToken: IModelToken): IModelDb {
+    const iModel = BriefcaseManager.getBriefcase(iModelToken);
     if (!iModel)
       throw new IModelError(IModelStatus.NotFound);
-
     return iModel;
   }
 
@@ -262,6 +262,63 @@ export class IModelDb extends IModel {
     if (this._codeSpecs === undefined)
       this._codeSpecs = new CodeSpecs(this);
     return this._codeSpecs;
+  }
+
+  /** @deprecated */
+  public async getElementPropertiesForDisplay(elementId: string): Promise<string> {
+    if (!this.iModelToken.isOpen)
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
+
+    const {error, result: json} = await this.nativeDb.getElementPropertiesForDisplay(elementId);
+    if (error)
+    return Promise.reject(new IModelError(error.status));
+
+    return json;
+  }
+
+  /** Prepare an ECSql statement.
+   * @param sql The ECSql statement to prepare
+   */
+  public prepareECSqlStatement(ecsql: string): ECSqlStatement {
+    if (!this.iModelToken.isOpen)
+      throw new IModelError(IModelStatus.NotOpen);
+
+    const s = new ECSqlStatement();
+    s.prepare(this.nativeDb, ecsql);
+    return s;
+  }
+
+  /** Get the meta data for the specified class defined in imodel iModel, blocking until the result is returned.
+   * @param schemaName The name of the schema
+   * @param className The name of the class
+   * @returns On success, the BentleyReturn result property will be the class meta data in JSON format.
+   */
+  public getECClassMetaDataSync(schemaName: string, className: string): string {
+    if (!this.iModelToken.isOpen)
+      throw new IModelError(IModelStatus.NotOpen);
+
+    const { error, result: json } = this.nativeDb.getECClassMetaDataSync(schemaName, className);
+    if (error)
+      throw new IModelError(error.status);
+
+    return json;
+  }
+
+  /** Get the meta data for the specified class defined in imodel iModel (asynchronously).
+   * @param schemaName The name of the schema
+   * @param className The name of the class
+   * @returns The class meta data in JSON format.
+   * @throws [[IModelError]]
+   */
+  public async getECClassMetaData(schemaName: string, className: string): Promise<string> {
+    if (!this.iModelToken.isOpen)
+      return Promise.reject(new IModelError(IModelStatus.NotOpen));
+
+    const { error, result: json } = await this.nativeDb.getECClassMetaData(schemaName, className);
+    if (error)
+      return Promise.reject(new IModelError(error.status));
+
+    return json;
   }
 
 }
@@ -279,7 +336,7 @@ export class IModelDbModels {
    * @throws [[IModelError]]
    */
   public async getModel(modelId: Id64): Promise<Model> {
-    if (!this._iModel.briefcaseKey)
+    if (!this._iModel.iModelToken.isOpen)
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
     // first see if the model is already in the local cache.
@@ -288,7 +345,9 @@ export class IModelDbModels {
       return loaded;
 
     // Must go get the model from the iModel. Start by requesting the model's data.
-    const json: string = await BriefcaseManager.getModel(this._iModel.briefcaseKey, JSON.stringify({ id: modelId }));
+    const {error, result: json} = await this._iModel.nativeDb.getModel(JSON.stringify({ id: modelId }));
+    if (error)
+      return Promise.reject(new IModelError(error.status));
     const props = JSON.parse(json) as ModelProps;
     props.iModel = this._iModel;
 
@@ -331,7 +390,7 @@ export class IModelDbElements {
 
   /** Private implementation details of getElement */
   private async _doGetElement(opts: ElementLoadParams): Promise<Element> {
-    if (!this._iModel.briefcaseKey)
+    if (!this._iModel.iModelToken.isOpen)
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
     // first see if the element is already in the local cache.
@@ -342,7 +401,10 @@ export class IModelDbElements {
     }
 
     // Must go get the element from the iModel. Start by requesting the element's data.
-    const json = await BriefcaseManager.getElement(this._iModel.briefcaseKey, JSON.stringify(opts));
+    const {error, result: json} = await this._iModel.nativeDb.getElement(JSON.stringify(opts));
+    if (error)
+      return Promise.reject(new IModelError(error.status));
+
     const props = JSON.parse(json) as ElementProps;
     props.iModel = this._iModel;
 
@@ -392,14 +454,22 @@ export class IModelDbElements {
    * @throws [[IModelError]] if unable to insert the element.
    */
   public insertElement(el: Element): Id64 {
-    if (!this._iModel.briefcaseKey)
+    if (!this._iModel.iModelToken.isOpen)
       throw new IModelError(IModelStatus.NotOpen);
 
     if (el.isPersistent()) {
       assert(false); // you cannot insert a persistent element. call copyForEdit
       return new Id64();
     }
-    const json: string = BriefcaseManager.insertElement(this._iModel.briefcaseKey, JSON.stringify(el));
+
+    // Note that inserting an element is always done synchronously. That is because of constraints
+    // on the native code side. Nevertheless, we want the signature of this method to be
+    // that of an asynchronous method, since it must run in the services tier and will be
+    // asynchronous from a remote client's point of view in any case.
+    const {error, result: json} = this._iModel.nativeDb.insertElementSync(JSON.stringify(el));
+    if (error)
+      throw new IModelError(error.status);
+
     return new Id64(JSON.parse(json).id);
   }
 
@@ -408,14 +478,21 @@ export class IModelDbElements {
    * @throws [[IModelError]] if unable to update the element.
    */
   public async updateElement(el: Element): Promise<void> {
-    if (!this._iModel.briefcaseKey)
+    if (!this._iModel.iModelToken.isOpen)
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
     if (el.isPersistent()) {
       assert(false); // you cannot insert a persistent element. call copyForEdit
       return;
     }
-    await BriefcaseManager.updateElement(this._iModel.briefcaseKey, JSON.stringify(el));
+
+    // Note that updating an element is always done synchronously. That is because of constraints
+    // on the native code side. Nevertheless, we want the signature of this method to be
+    // that of an asynchronous method, since it must run in the services tier and will be
+    // asynchronous from a remote client's point of view in any case.
+    const {error} = this._iModel.nativeDb.updateElementSync(JSON.stringify(el));
+    if (error)
+      return Promise.reject(new IModelError(error.status));
 
     // Discard from the cache, to make sure that the next fetch see the updated version.
     this._loaded.delete(el.id.toString());
@@ -426,10 +503,16 @@ export class IModelDbElements {
    * @throws [[IModelError]]
    */
   public async deleteElement(el: Element): Promise<void> {
-    if (!this._iModel.briefcaseKey)
+    if (!this._iModel.iModelToken.isOpen)
       return Promise.reject(new IModelError(IModelStatus.NotOpen));
 
-    await BriefcaseManager.deleteElement(this._iModel.briefcaseKey, el.id.toString());
+    // Note that deleting an element is always done synchronously. That is because of constraints
+    // on the native code side. Nevertheless, we want the signature of this method to be
+    // that of an asynchronous method, since it must run in the services tier and will be
+    // asynchronous from a remote client's point of view in any case.
+    const {error} = this._iModel.nativeDb.deleteElementSync(el.id.toString());
+    if (error)
+      return Promise.reject(new IModelError(error.status));
 
     // Discard from the cache
     this._loaded.delete(el.id.toString());
