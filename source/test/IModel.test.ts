@@ -541,7 +541,7 @@ describe("iModel", () => {
   it("should exercise ECSqlStatement (backend only)", () => {
     // Reject an invalid statement
     try {
-      imodel2.prepareECSqlStatement("select no_such_property, codeValue from bis.element");
+      imodel2.prepareStatement("select no_such_property, codeValue from bis.element");
       assert.fail("prepare should have failed with an exception");
     } catch (err) {
       assert.isTrue(err.constructor.name === "IModelError");
@@ -549,7 +549,7 @@ describe("iModel", () => {
     }
     let lastId: string = "";
     let firstCodeValue: string = "";
-    imodel2.withPreparedECSqlStatement("select ecinstanceid, codeValue from bis.element", (stmt: ECSqlStatement) => {
+    imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element", (stmt: ECSqlStatement) => {
       assert.isNotNull(stmt);
       // Reject an attempt to bind when there are no placeholders in the statement
       try {
@@ -597,7 +597,7 @@ describe("iModel", () => {
       assert.equal(firstCodeValueIter, firstCodeValue, "iterator loop should find the first non-null code value as the step loop");
     });
 
-    imodel2.withPreparedECSqlStatement("select ecinstanceid, codeValue from bis.element WHERE (ecinstanceid=?)", (stmt3: ECSqlStatement) => {
+    imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element WHERE (ecinstanceid=?)", (stmt3: ECSqlStatement) => {
       // Now try a statement with a placeholder
       const idToFind: Id64 = new Id64(lastId);
       stmt3.bindValues([idToFind]);
@@ -612,7 +612,7 @@ describe("iModel", () => {
       assert.equal(count, 1);
     });
 
-    imodel2.withPreparedECSqlStatement("select ecinstanceid, codeValue from bis.element WHERE (codeValue = :codevalue)", (stmt4: ECSqlStatement) => {
+    imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element WHERE (codeValue = :codevalue)", (stmt4: ECSqlStatement) => {
       // Try a named placeholder
       const codeValueToFind = firstCodeValue;
       stmt4.bindValues({codeValue: codeValueToFind});
@@ -682,7 +682,7 @@ describe("iModel", () => {
 
     imodel3.saveChanges();
 
-    imodel3.withPreparedECSqlStatement("select count(*) as [count] from DgnPlatformTest.TestElement", (stmt: ECSqlStatement) => {
+    imodel3.withPreparedStatement("select count(*) as [count] from DgnPlatformTest.TestElement", (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
       const row = stmt.getRow();
       const expectedCountAsHex = "0X" + (elementCount + 1).toString(16).toUpperCase();

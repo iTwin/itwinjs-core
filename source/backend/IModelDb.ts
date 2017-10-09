@@ -169,12 +169,11 @@ export class IModelDb extends IModel {
     await BriefcaseManager.close(accessToken, this.iModelToken, keepBriefcase);
   }
 
-  /**
-   * Get a prepared ECSql statement - may require preparing the statement, if not found in the cache.
-   * @param ecsql The ECSql statement to prepare
+  /** Get a prepared ECSql statement - may require preparing the statement, if not found in the cache.
+   * @param sql The ECSql statement to prepare
    */
-  public getPreparedECSqlStatement(ecsql: string): ECSqlStatement {
-    const cs = this.statementCache.find(ecsql);
+  public getPreparedStatement(sql: string): ECSqlStatement {
+    const cs = this.statementCache.find(sql);
     if (cs !== undefined && cs.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
       assert(cs.statement.isShared());
       assert(cs.statement.isPrepared());
@@ -186,24 +185,24 @@ export class IModelDb extends IModel {
       this.statementCache.removeUnusedStatements(this._maxStatementCacheCount);
     }
 
-    const stmt = this.prepareECSqlStatement(ecsql);
-    this.statementCache.add(ecsql, stmt);
+    const stmt = this.prepareStatement(sql);
+    this.statementCache.add(sql, stmt);
     return stmt;
   }
 
   /** Use a prepared statement. This function takes care of preparing the statement and then releasing it.
-   * @param ecsql The ECSql statement to execute
+   * @param sql The ECSql statement to execute
    * @param cb the callback to invoke on the prepared statement
    * @return the value returned by cb
    */
-  public withPreparedECSqlStatement<T>(ecsql: string, cb: (stmt: ECSqlStatement) => T): T {
-    const stmt = this.getPreparedECSqlStatement(ecsql);
+  public withPreparedStatement<T>(sql: string, cb: (stmt: ECSqlStatement) => T): T {
+    const stmt = this.getPreparedStatement(sql);
     try {
       const val: T = cb(stmt);
-      this.releasePreparedECSqlStatement(stmt);
+      this.releasePreparedStatement(stmt);
       return val;
     } catch (err) {
-      this.releasePreparedECSqlStatement(stmt);
+      this.releasePreparedStatement(stmt);
       throw err;
     }
   }
@@ -215,7 +214,7 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] If the statement is invalid
    */
   public async executeQuery(sql: string, bindings?: BindingValue[] | Map<string, BindingValue> | any): Promise<any[]> {
-    return this.withPreparedECSqlStatement(sql, (stmt: ECSqlStatement) => {
+    return this.withPreparedStatement(sql, (stmt: ECSqlStatement) => {
       if (bindings !== undefined)
         stmt.bindValues(bindings);
       const rows: any[] = [];
@@ -226,11 +225,7 @@ export class IModelDb extends IModel {
     });
   }
 
-  /**
-   * Get a prepared ECSql statement - may require preparing the statement, if not found in the cache.
-   * @param ecsql The ECSql statement to prepare
-   */
-  public releasePreparedECSqlStatement(stmt: ECSqlStatement): void {
+  public releasePreparedStatement(stmt: ECSqlStatement): void {
     this.statementCache.release(stmt);
   }
 
@@ -279,13 +274,13 @@ export class IModelDb extends IModel {
   /** Prepare an ECSql statement.
    * @param sql The ECSql statement to prepare
    */
-  public prepareECSqlStatement(ecsql: string): ECSqlStatement {
+  public prepareStatement(sql: string): ECSqlStatement {
     if (!this.iModelToken.isOpen)
       throw new IModelError(IModelStatus.NotOpen);
 
-    const s = new ECSqlStatement();
-    s.prepare(this.nativeDb, ecsql);
-    return s;
+    const stmt = new ECSqlStatement();
+    stmt.prepare(this.nativeDb, sql);
+    return stmt;
   }
 
   /** Get the meta data for the specified class defined in imodel iModel, blocking until the result is returned.

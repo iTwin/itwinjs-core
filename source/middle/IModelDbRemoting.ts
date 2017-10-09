@@ -67,12 +67,12 @@ export class IModelDbRemoting {
     if (params.offset) sql += " OFFSET " + params.offset;
 
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    const statement: ECSqlStatement = iModelDb.getPreparedECSqlStatement(sql);
+    const statement: ECSqlStatement = iModelDb.getPreparedStatement(sql);
     const elementIds: Id64[] = [];
     for (const row of statement)
       elementIds.push(new Id64(row.id));
 
-    iModelDb.releasePreparedECSqlStatement(statement);
+    iModelDb.releasePreparedStatement(statement);
     return elementIds;
   }
 }
