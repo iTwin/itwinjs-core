@@ -12,7 +12,7 @@ import { IModelVersion } from "../IModelVersion";
 import { Model } from "../Model";
 
 // Imports for remoting to the backend implementation
-import { IModelDbRemoting } from "../backend/IModelDbRemoting";
+import { IModelDbRemoting } from "../middle/IModelDbRemoting";
 
 /** A connection to an iModel database hosted on the backend. */
 export class IModelConnection extends IModel {
