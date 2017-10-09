@@ -12,6 +12,7 @@ import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { expect, assert } from "chai";
 import { BisCore } from "../BisCore";
+import { Category } from "../Category";
 import { Element, Subject } from "../Element";
 import { IModelVersion } from "../IModelVersion";
 import { Model } from "../Model";
@@ -161,6 +162,9 @@ describe("BriefcaseManager", () => {
     assert.isTrue(elements[0] instanceof Subject);
     assert.isTrue(elements[0].id.equals(iModel.elements.rootSubjectId));
     assert.isTrue(elements[0].model.equals(iModel.models.repositoryModelId));
+
+    const queryElementIds: Id64[] = await iModel.elements.queryElementIds({ from: Category.sqlName, limit: 20, offset: 0 });
+    assert.isAtLeast(queryElementIds.length, 1);
 
     const modelIds: Id64[] = [iModel.models.repositoryModelId];
     const models: Model[] = await iModel.models.getModels(modelIds);
