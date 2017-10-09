@@ -7,11 +7,12 @@ import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { Element } from "../Element";
 import { IModel, IModelToken } from "../IModel";
+import { IModelError, IModelStatus } from "../IModelError";
 import { IModelVersion } from "../IModelVersion";
 import { Model } from "../Model";
 
 // Imports for remoting to the backend implementation
-import { IModelDbRemoting } from "../backend/IModelDbRemoting";
+import { IModelDbRemoting } from "../middle/IModelDbRemoting";
 
 /** A connection to an iModel database hosted on the backend. */
 export class IModelConnection extends IModel {
@@ -25,7 +26,10 @@ export class IModelConnection extends IModel {
   }
 
   /** Open an iModel from the iModelHub */
-  public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
+  public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
+    if (OpenMode.Readonly !== openMode)
+      return Promise.reject(new IModelError(IModelStatus.NotEnabled, "IModelConnection does not support read/write access yet")); // WIP: waiting for decisions on how to manage read/write briefcases on the backend
+
     const iModelToken = await IModelDbRemoting.open(accessToken, iModelId, openMode, version);
     return new IModelConnection(iModelToken);
   }
@@ -34,8 +38,7 @@ export class IModelConnection extends IModel {
    * In most cases it is better to call [[IModelConnection.open]] instead.
    */
   public static async create(iModelToken: IModelToken) {
-    const iModelConnection = new IModelConnection(iModelToken);
-    return iModelConnection;
+    return new IModelConnection(iModelToken);
   }
 
   /** Close this iModel */

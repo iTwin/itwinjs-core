@@ -9,7 +9,7 @@ import { Element } from "../Element";
 import { IModelVersion } from "../IModelVersion";
 import { Model } from "../Model";
 import { IModelToken } from "../IModel";
-import { IModelDb } from "./IModelDb";
+import { IModelDb } from "../backend/IModelDb";
 
 /** The interface that defines how the frontend remotely talks to the backend.
  * Note that only static methods can be remoted.
