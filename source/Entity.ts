@@ -115,6 +115,7 @@ export class PropertyMetaData {
   public readOnly?: boolean;
   public kindOfQuantity?: string;
   public isCustomHandled?: boolean;
+  public isCustomHandledOrphan: boolean;
   public minOccurs?: number;
   public maxOccurs?: number;
   public direction?: string;
@@ -219,6 +220,7 @@ export class EntityMetaData {
    * @param className The name of the class
    * @param wantSuper If true, superclass properties will also be processed
    * @param func The callback to be invoked on each property
+   * @param includeCustom If true, include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    */
   public static forEach(imodel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean) {
     const meta = imodel.classMetaDataRegistry.get(classFullName);
@@ -229,7 +231,7 @@ export class EntityMetaData {
     for (const propName in meta.properties) {
       if (propName) {
         const propMeta = meta.properties[propName];
-        if (includeCustom || !propMeta.isCustomHandled)
+        if (includeCustom || !propMeta.isCustomHandled || propMeta.isCustomHandledOrphan)
           func(propName, propMeta);
       }
     }
