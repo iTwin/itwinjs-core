@@ -643,7 +643,7 @@ describe("iModel", () => {
     // TODO: Make a copy of imodel3 before writing to it
 
     const theModel = new Id64("0X11"); // TODO: Look up model by code (i.e., codevalue of a child of root subject, where child has a PhysicalPartition)
-    const defaultCategoryId = IModelTestUtils.getSpatiallCategoryIdByName(imodel3, "DefaultCategory");
+    const defaultCategoryId: Id64 = IModelTestUtils.getSpatiallCategoryIdByName(imodel3, "DefaultCategory");
 
     const elementCount = 10000;
     for (let i = 0; i < elementCount; ++i) {

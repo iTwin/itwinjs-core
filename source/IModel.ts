@@ -1,67 +1,49 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { MetaDataRegistry } from "./ClassRegistry";
-import { IModelStatus, IModelError } from "./IModelError";
-import { BriefcaseToken, BriefcaseManager } from "./backend/BriefcaseManager";
-import { BindingValue } from "./backend/BindingUtility";
+import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+
+/** A token that represents a Briefcase */
+export class IModelToken {
+  public pathname: string;
+  public openMode?: OpenMode;
+
+  public imodelId?: string;
+  public briefcaseId?: number;
+  public userId?: string;
+
+  public changeSetId?: string;
+  public changeSetIndex?: number;
+
+  public isOpen?: boolean;
+
+  public static fromFile(pathname: string, openMode: OpenMode, isOpen: boolean): IModelToken {
+    const token = new IModelToken();
+    token.pathname = pathname;
+    token.openMode = openMode;
+    token.isOpen = isOpen;
+    return token;
+  }
+
+  public static fromBriefcase(imodelId: string, briefcaseId: number, pathname: string, userId: string): IModelToken {
+    const token = new IModelToken();
+    token.imodelId = imodelId;
+    token.briefcaseId = briefcaseId;
+    token.pathname = pathname;
+    token.userId = userId;
+    return token;
+  }
+}
 
 /** An abstract class representing an instance of an iModel. */
 export class IModel {
-  protected _briefcaseKey: BriefcaseToken | undefined;
-  private _classMetaDataRegistry: MetaDataRegistry;
+  protected _iModelToken: IModelToken;
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
-  public get briefcaseKey(): BriefcaseToken|undefined { return this._briefcaseKey; }
+  public get iModelToken(): IModelToken { return this._iModelToken; }
 
   /** @hidden */
-  protected constructor() {}
+  protected constructor(iModelToken: IModelToken) {
+    this._iModelToken = iModelToken;
+   }
 
-  /** Get the meta data for the specified class defined in imodel iModel, blocking until the result is returned.
-   * @param schemaName The name of the schema
-   * @param className The name of the class
-   * @returns On success, the BentleyReturn result property will be the class meta data in JSON format.
-   */
-  public getECClassMetaDataSync(schemaName: string, className: string): string {
-    if (!this.briefcaseKey)
-      throw new IModelError(IModelStatus.NotOpen);
-    return BriefcaseManager.getECClassMetaDataSync(this.briefcaseKey, schemaName, className);
-  }
-
-  /** @deprecated */
-  public getElementPropertiesForDisplay(elementId: string): Promise<string> {
-    if (!this.briefcaseKey)
-      return Promise.reject(new IModelError(IModelStatus.NotOpen));
-    return BriefcaseManager.getElementPropertiesForDisplay(this.briefcaseKey, elementId);
-  }
-
-  /** Get the meta data for the specified class defined in imodel iModel (asynchronously).
-   * @param schemaName The name of the schema
-   * @param className The name of the class
-   * @returns The class meta data in JSON format.
-   * @throws [[IModelError]]
-   */
-  public getECClassMetaData(schemaName: string, className: string): Promise<string> {
-    if (!this.briefcaseKey)
-      return Promise.reject(new IModelError(IModelStatus.NotOpen));
-    return BriefcaseManager.getECClassMetaData(this.briefcaseKey, schemaName, className);
-  }
-
-  /** Get the ClassMetaDataRegistry for this iModel */
-  public get classMetaDataRegistry(): MetaDataRegistry {
-    if (!this._classMetaDataRegistry)
-      this._classMetaDataRegistry = new MetaDataRegistry(this);
-    return this._classMetaDataRegistry;
-  }
-
-  /** Execute a query against this iModel
-   * @param sql The ECSql statement to execute
-   * @param bindings Optional values to bind to placeholders in the statement.
-   * @returns all rows as an array or an empty array if nothing was selected
-   * @throws [[IModelError]] If the statement is invalid
-   */
-  public executeQuery(sql: string, bindings?: BindingValue[] | Map<string, BindingValue> | any): Promise<any[]> {
-    if (!this.briefcaseKey)
-      return Promise.reject(new IModelError(IModelStatus.NotOpen));
-    return BriefcaseManager.executeQuery(this.briefcaseKey, sql, bindings);
-  }
 }
