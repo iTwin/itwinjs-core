@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { MultiTierExecutionHost, RunsIn, Tier } from "@bentley/bentleyjs-core/lib/tiering";
+import { MultiTierExecutionHost } from "@bentley/bentleyjs-core/lib/tiering";
 import { AccessToken, Briefcase, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
 import { BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -84,22 +84,18 @@ export class BriefcaseManager {
    *    <briefcaseId>/ (briefcase path)
    *        IModelName.bim (briefcase path name)
    */
-  @RunsIn(Tier.Services)
   private static getIModelPath(iModelId: string): string {
     return path.join(BriefcaseManager.rootPath, iModelId);
   }
 
-  @RunsIn(Tier.Services)
   private static getSeedPathname(iModelId: string, briefcase: Briefcase): string {
     return path.join(BriefcaseManager.getIModelPath(iModelId), briefcase.fileName);
   }
 
-  @RunsIn(Tier.Services)
   private static getChangeSetsPath(iModelId: string): string {
     return path.join(BriefcaseManager.getIModelPath(iModelId), "csets");
   }
 
-  @RunsIn(Tier.Services)
   private static getBriefcasePathname(iModelId: string, briefcase: Briefcase) {
     return path.join(BriefcaseManager.getIModelPath(iModelId), briefcase.briefcaseId.toString(), briefcase.fileName);
   }
@@ -151,7 +147,6 @@ export class BriefcaseManager {
   }
 
   /** Acquires a briefcase */
-  @RunsIn(Tier.Services)
   private static async acquireBriefcase(accessToken: AccessToken, iModelId: string): Promise<Briefcase> {
     const briefcaseId: number = await BriefcaseManager.hubClient.acquireBriefcase(accessToken, iModelId);
     if (!briefcaseId)
@@ -170,7 +165,6 @@ export class BriefcaseManager {
   }
 
   /** Deletes a briefcase, and releases it's references in the iModelHub */
-  @RunsIn(Tier.Services)
   private static async deleteBriefcase(accessToken: AccessToken, iModelToken: IModelToken): Promise<void> {
     // Delete from the local file system
     if (fs.existsSync(iModelToken.pathname!))
@@ -190,7 +184,6 @@ export class BriefcaseManager {
     }
 
   /** Downloads the briefcase seed file */
-  @RunsIn(Tier.Services)
   private static async downloadBriefcase(briefcase: Briefcase, seedPathname: string): Promise<void> {
     if (fs.existsSync(seedPathname))
       return;
@@ -205,7 +198,6 @@ export class BriefcaseManager {
       });
   }
 
-  @RunsIn(Tier.Services)
   private static async copyFile(targetPathname: string, sourcePathname: string): Promise<void> {
     return new Promise<void> ((resolve, reject) => {
       let status = true;
@@ -222,7 +214,6 @@ export class BriefcaseManager {
     });
   }
 
-  @RunsIn(Tier.Services)
   private static async copyBriefcase(iModelId: string, briefcase: Briefcase, seedPathname: string): Promise<string> {
     const briefcasePathname: string = BriefcaseManager.getBriefcasePathname(iModelId, briefcase);
 
@@ -236,7 +227,6 @@ export class BriefcaseManager {
     return briefcasePathname;
   }
 
-  @RunsIn(Tier.Services)
   private static async getChangeSetIndexFromId(accessToken: AccessToken, iModelId: string, changeSetId: string): Promise<number|undefined> {
     if (changeSetId === "")
       return 0; // todo: perhaps this needs to be in the lower level hubClient method?
@@ -244,7 +234,6 @@ export class BriefcaseManager {
     return +changeSet.index;
   }
 
-  @RunsIn(Tier.Services)
   private static async getChangeSets(accessToken: AccessToken, iModelId: string, toChangeSetId: string, includeDownloadLink?: boolean, fromChangeSetId?: string): Promise<ChangeSet[]> {
 
     if (toChangeSetId === "" || fromChangeSetId === toChangeSetId)
@@ -262,7 +251,6 @@ export class BriefcaseManager {
     return Promise.reject(new IModelError(BriefcaseStatus.VersionNotFound));
   }
 
-  @RunsIn(Tier.Services)
   private static async downloadChangeSets(accessToken: AccessToken, iModelId: string, toChangeSetId: string, fromChangeSetId?: string): Promise<ChangeSetToken[]> {
     const changeSets = await BriefcaseManager.getChangeSets(accessToken, iModelId, toChangeSetId, true /*includeDownloadLink*/, fromChangeSetId);
     if (changeSets.length === 0)
@@ -292,7 +280,6 @@ export class BriefcaseManager {
     return changeSetTokens;
   }
 
-  @RunsIn(Tier.Services)
   private static makeDirectoryRecursive(dirPath: string) {
     if (fs.existsSync(dirPath))
       return;
@@ -300,7 +287,6 @@ export class BriefcaseManager {
     fs.mkdirSync(dirPath);
   }
 
-  @RunsIn(Tier.Services)
   private static async getLatestChangeSet(accessToken: AccessToken, iModelId: string): Promise<ChangeSet|null> {
     const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.getChangeSets(accessToken, iModelId, false /*=includeDownloadLink*/);
       // todo: pass the last known highest change set id to improve efficiency, and cache the results also.
@@ -308,7 +294,6 @@ export class BriefcaseManager {
     return (changeSets.length === 0) ? null : changeSets[changeSets.length - 1];
   }
 
-  @RunsIn(Tier.Services)
   private static async getChangeSetFromId(accessToken: AccessToken, iModelId: string, changeSetId: string): Promise<ChangeSet> {
     const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.getChangeSets(accessToken, iModelId, false /*=includeDownloadLink*/);
     // todo: pass the last known highest change set id to improve efficiency, and cache the results also.
@@ -331,7 +316,6 @@ export class BriefcaseManager {
     return BriefcaseManager.getChangeSetFromId(accessToken, iModelId, version.changeSetId);
   }
 
-  @RunsIn(Tier.Services)
   private static async getChangeSetFromVersion(accessToken: AccessToken, iModelId: string, version: IModelVersion): Promise<ChangeSet|null> {
     if (version.isFirst())
       return null;
@@ -350,7 +334,6 @@ export class BriefcaseManager {
     return Promise.reject(new IModelError(BriefcaseStatus.VersionNotFound));
   }
 
-  @RunsIn(Tier.Services)
   private static async findUnusedBriefcase(accessToken: AccessToken, iModelId: string, openMode: OpenMode, requiredChangeSet: ChangeSet|null): Promise<IModelDb|undefined> {
     const requiredChangeSetIndex: number = requiredChangeSet ? +requiredChangeSet.index : 0;
     const cache = BriefcaseManager.cache!;
@@ -410,7 +393,6 @@ export class BriefcaseManager {
     return undefined;
   }
 
-  @RunsIn(Tier.Services)
   private static async createBriefcaseSeed(accessToken: AccessToken, iModelId: string): Promise<IModelToken> {
     const briefcase = await BriefcaseManager.acquireBriefcase(accessToken, iModelId);
 
@@ -423,7 +405,6 @@ export class BriefcaseManager {
     return iModelToken;
   }
 
-  @RunsIn(Tier.Services)
   private static async updateAndOpenBriefcase(accessToken: AccessToken, iModelToken: IModelToken, openMode: OpenMode, changeSet: ChangeSet|null): Promise<IModelDb> {
     iModelToken.openMode = openMode;
 
@@ -464,7 +445,6 @@ export class BriefcaseManager {
     }
   }
 
-  @RunsIn(Tier.Services)
   public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode, version: IModelVersion): Promise<IModelDb> {
     if (!BriefcaseManager.cache)
       await BriefcaseManager.initialize(accessToken);
@@ -484,7 +464,6 @@ export class BriefcaseManager {
     return await BriefcaseManager.updateAndOpenBriefcase(accessToken, iModelToken, openMode, changeSet);
   }
 
-  @RunsIn(Tier.Services)
   public static async openStandalone(fileName: string, openMode: OpenMode): Promise<IModelDb> {
     if (!BriefcaseManager.cache)
       BriefcaseManager.initialize();

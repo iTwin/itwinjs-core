@@ -140,6 +140,35 @@ export class IModelDb extends IModel {
     return await BriefcaseManager.openStandalone(fileName, openMode);
   }
 
+  /** Open an iModel from the iModelHub */
+  public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
+    return await BriefcaseManager.open(accessToken, iModelId, openMode, version);
+  }
+
+  /** Close this iModel, if it is currently open */
+  public closeStandalone() {
+    this.clearStatementCacheOnClose();
+    if (!this.iModelToken)
+      return;
+
+    this.nativeDb.closeDgnDb();
+    this.iModelToken.isOpen = false;
+
+    BriefcaseManager.closeStandalone(this.iModelToken);
+  }
+
+  /** Close this iModel, if it is currently open. */
+  public async close(accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
+    this.clearStatementCacheOnClose();
+    if (!this.iModelToken.isOpen)
+      return;
+
+    this.nativeDb.closeDgnDb();
+    this.iModelToken.isOpen = false;
+
+    await BriefcaseManager.close(accessToken, this.iModelToken, keepBriefcase);
+  }
+
   /**
    * Get a prepared ECSql statement - may require preparing the statement, if not found in the cache.
    * @param ecsql The ECSql statement to prepare
@@ -209,18 +238,6 @@ export class IModelDb extends IModel {
     this.statementCache.clearOnClose();
   }
 
-  /** Close this iModel, if it is currently open */
-  public closeStandalone() {
-    this.clearStatementCacheOnClose();
-    if (!this.iModelToken)
-      return;
-
-    this.nativeDb.closeDgnDb();
-    this.iModelToken.isOpen = false;
-
-    BriefcaseManager.closeStandalone(this.iModelToken);
-  }
-
   /** Commit pending changes to this iModel */
   public saveChanges() {
     if (!this.iModelToken)
@@ -228,27 +245,6 @@ export class IModelDb extends IModel {
     const stat = this.nativeDb.saveChanges();
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat);
-  }
-
-  /** Open an iModel from the iModelHub */
-  public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
-    return await BriefcaseManager.open(accessToken, iModelId, openMode, version);
-  }
-
-  /** Close this iModel, if it is currently open. */
-  public async close(accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
-    this.clearStatementCacheOnClose();
-    if (!this.iModelToken.isOpen)
-      return;
-
-    // todo: consider removing this
-    if (this.iModelToken.openMode === OpenMode.Readonly)
-      return;
-
-    this.nativeDb.closeDgnDb();
-    this.iModelToken.isOpen = false;
-
-    await BriefcaseManager.close(accessToken, this.iModelToken, keepBriefcase);
   }
 
   /** Find an already open IModelDb from its token. Used by the remoting logic.
