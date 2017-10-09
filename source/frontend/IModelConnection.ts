@@ -29,7 +29,7 @@ export class IModelConnection extends IModel {
   /** Open an iModel from the iModelHub */
   public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
     if (OpenMode.Readonly !== openMode)
-      Promise.reject(new IModelError(IModelStatus.NotEnabled, "IModelConnection does not support read/write access yet")); // WIP: waiting for decisions on how to manage read/write briefcases on the backend
+      return Promise.reject(new IModelError(IModelStatus.NotEnabled, "IModelConnection does not support read/write access yet")); // WIP: waiting for decisions on how to manage read/write briefcases on the backend
 
     const iModelConnection = new IModelConnection();
     iModelConnection._briefcaseKey = await IModelDbRemoting.open(accessToken, iModelId, openMode, version);
