@@ -1,0 +1,40 @@
+{
+  "name": "@bentley/ecobjects",
+  "version": "0.0.1",
+  "description": "ECObjects core concepts in typescript",
+  "license": "UNLICENSED",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "scripts": {
+    "compile": "tsc -p source",
+    "compile:test": "tsc -p test",
+    "build": "node scripts/build.js",
+    "test": "npm-run-all -p test:core test:spec",
+    "test:watch": "mocha --watch",
+    "test:core": "mocha",
+    "test:spec": "mocha --opts spectests/mocha.opts",
+    "clean": "rimraf node_modules lib",
+    "coverage": "rimraf ./lib/test/coverage .nyc_output && nyc npm run test:core"
+  },
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.0.4",
+    "@types/fs-extra": "^4.0.2",
+    "@types/mocha": "^2.2.43",
+    "@types/node": "^8.0.28",
+    "ajv": "^5.2.2",
+    "chai": "^4.1.2",
+    "fs-extra": "^4.0.2",
+    "mocha": "^3.5.3",
+    "npm-run-all": "^4.1.1",
+    "rimraf": "^2.6.2",
+    "ts-node": "^3.3.0",
+    "typescript": "^2.5.2"
+  }
+}

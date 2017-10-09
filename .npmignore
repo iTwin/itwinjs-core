@@ -1,0 +1,4 @@
+source
+lib/**/test
+lib/**/maps
+.nyc_output

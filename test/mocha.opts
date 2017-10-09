@@ -1,0 +1,8 @@
+-R spec
+-t 20000
+--checks-leaks
+--require source-map-support/register
+--compilers ts-node/register
+--watch-extensions ts
+--colors
+test/**/*.test.ts

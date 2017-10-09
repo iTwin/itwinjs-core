@@ -1,0 +1,38 @@
+{
+  "extension": [
+    ".ts",
+    ".tsx"
+  ],
+  "exclude": [
+    "**/*.d.ts",
+    "test/**/*.ts",
+    "spectests/**/*.ts"
+  ],
+  "reporter": [
+    "html",
+    "cobertura"
+  ],
+  "watermarks": {
+    "lines": [
+      90,
+      99
+    ],
+    "functions": [
+      90,
+      99
+    ],
+    "branches": [
+      80,
+      90
+    ],
+    "statements": [
+      80,
+      90
+    ]
+  },
+  "check-coverage": true,
+  "per-file": true,
+  "lines": 90,
+  "functions": 90,
+  "report-dir": "./lib/test/coverage"
+}
