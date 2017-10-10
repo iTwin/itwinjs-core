@@ -35,24 +35,24 @@ export class IModelDbRemoting {
     await iModelDb.close(accessToken);
   }
 
-  /** Return an [[Model]] array given an [[Id64]] array of model ids. */
+  /** Return an [[Model]] array given an array of stringified model ids. */
   @RunsIn(Tier.Services)
-  public static async getModels(iModelToken: IModelToken, modelIds: Id64[]): Promise<Model[]> {
+  public static async getModels(iModelToken: IModelToken, modelIds: string[]): Promise<Model[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const models: Model[] = [];
     for (const modelId of modelIds) {
-      models.push(await iModelDb.models.getModel(modelId));
+      models.push(await iModelDb.models.getModel(new Id64(modelId)));
     }
     return models;
   }
 
-  /** Return an [[Element]] array given an [[Id64]] array of element ids. */
+  /** Return an [[Element]] array given an array of stringified element ids. */
   @RunsIn(Tier.Services)
-  public static async getElements(iModelToken: IModelToken, elementIds: Id64[]): Promise<Element[]> {
+  public static async getElements(iModelToken: IModelToken, elementIds: string[]): Promise<Element[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const elements: Element[] = [];
     for (const elementId of elementIds) {
-      elements.push(await iModelDb.elements.getElement(elementId));
+      elements.push(await iModelDb.elements.getElement(new Id64(elementId)));
     }
     return elements;
   }

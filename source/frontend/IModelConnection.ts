@@ -12,8 +12,9 @@ import { IModelError, IModelStatus } from "../IModelError";
 import { IModelVersion } from "../IModelVersion";
 import { Model } from "../Model";
 
-// Imports for remoting to the backend implementation
+// Initialize the frontend side of remoting
 import { IModelDbRemoting } from "../middle/IModelDbRemoting";
+IModelDbRemoting;
 
 /** A connection to an iModel database hosted on the backend. */
 export class IModelConnection extends IModel {
@@ -63,7 +64,7 @@ export class IModelConnectionModels {
 
   /** Ask the backend for a batch of models given a list of model ids. */
   public async getModels(modelIds: Id64[]): Promise<Model[]> {
-    return await IModelDbRemoting.getModels(this._iModel.iModelToken, modelIds);
+    return await IModelDbRemoting.getModels(this._iModel.iModelToken, modelIds.map((id: Id64) => id.toString()));
   }
 }
 
@@ -83,7 +84,7 @@ export class IModelConnectionElements {
 
   /** Ask the backend for a batch of elements given a list of element ids. */
   public async getElements(elementIds: Id64[]): Promise<Element[]> {
-    return await IModelDbRemoting.getElements(this._iModel.iModelToken, elementIds);
+    return await IModelDbRemoting.getElements(this._iModel.iModelToken, elementIds.map((id: Id64) => id.toString()));
   }
 
   /** */
