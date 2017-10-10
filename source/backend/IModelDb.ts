@@ -13,7 +13,7 @@ import { IModel } from "../IModel";
 import { IModelVersion } from "../IModelVersion";
 import { Model, ModelProps } from "../Model";
 import { IModelToken } from "../IModel";
-import { BriefcaseManager, KeepBriefcase } from "./BriefcaseManager";
+import { BriefcaseManager, KeepBriefcase, BriefcaseId } from "./BriefcaseManager";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelError, IModelStatus } from "../IModelError";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
@@ -131,13 +131,18 @@ export class IModelDb extends IModel {
     return this._classMetaDataRegistry;
   }
 
+  /** Get the briefcase ID of this iModel */
+  public getBriefcaseId(): BriefcaseId {
+    return new BriefcaseId(this.nativeDb.getBriefcaseId());
+  }
+
   /** Open the iModel from a local file
    * @param fileName The file name of the iModel
    * @param openMode Open mode for database
    * @throws [[IModelError]]
    */
-  public static async openStandalone(fileName: string, openMode: OpenMode = OpenMode.ReadWrite): Promise<IModelDb> {
-    return await BriefcaseManager.openStandalone(fileName, openMode);
+  public static async openStandalone(fileName: string, openMode: OpenMode = OpenMode.ReadWrite, enableTransactions: boolean = false): Promise<IModelDb> {
+    return await BriefcaseManager.openStandalone(fileName, openMode, enableTransactions);
   }
 
   /** Open an iModel from the iModelHub */
@@ -235,12 +240,21 @@ export class IModelDb extends IModel {
 
   /** Commit pending changes to this iModel */
   public saveChanges() {
-    if (!this.iModelToken)
+    if (!this.iModelToken || !this.nativeDb)
       throw new IModelError(DbResult.BE_SQLITE_ERROR);
     const stat = this.nativeDb.saveChanges();
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat);
   }
+
+  /** Import an ECSchema. */
+  public importSchema(schemafilename: string) {
+      if (!this.iModelToken || !this.nativeDb)
+        throw new IModelError(DbResult.BE_SQLITE_ERROR);
+      const stat = this.nativeDb.importSchema(schemafilename);
+      if (DbResult.BE_SQLITE_OK !== stat)
+        throw new IModelError(stat);
+    }
 
   /** Find an already open IModelDb from its token. Used by the remoting logic.
    * @hidden
