@@ -20,6 +20,10 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BindingValue } from "./BindingUtility";
 import { CodeSpecs } from "./CodeSpecs";
 
+// Initialize the backend side of remoting
+import { IModelDbRemoting } from "../middle/IModelDbRemoting";
+IModelDbRemoting;
+
 class CachedECSqlStatement {
   public statement: ECSqlStatement;
   public useCount: number;
