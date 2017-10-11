@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 
-/** A token that represents a Briefcase */
+/** A token that identifies an instance of an iModel. */
 export class IModelToken {
   public pathname: string;
   public openMode?: OpenMode;
@@ -37,13 +37,16 @@ export class IModelToken {
 
 /** An abstract class representing an instance of an iModel. */
 export class IModel {
+  /** @hidden */
   protected _iModelToken: IModelToken;
-  protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
+  /** The token that can be used to find this iModel instance. */
   public get iModelToken(): IModelToken { return this._iModelToken; }
 
   /** @hidden */
   protected constructor(iModelToken: IModelToken) {
     this._iModelToken = iModelToken;
-   }
+  }
 
+  /** @hidden */
+  protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
 }
