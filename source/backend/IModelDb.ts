@@ -5,7 +5,7 @@ import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { ClassRegistry, MetaDataRegistry } from "../ClassRegistry";
+import { ClassRegistry } from "../ClassRegistry";
 import { Code } from "../Code";
 import { Element, ElementLoadParams, ElementProps } from "../Element";
 import { ElementAspect, ElementAspectProps, ElementMultiAspect, ElementUniqueAspect } from "../ElementAspect";
@@ -19,6 +19,7 @@ import { IModelError, IModelStatus } from "../IModelError";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BindingValue } from "./BindingUtility";
 import { CodeSpecs } from "./CodeSpecs";
+import { Entity, EntityMetaData } from "../Entity";
 
 // Initialize the backend side of remoting
 import { IModelDbRemoting } from "../middle/IModelDbRemoting";
@@ -119,20 +120,12 @@ export class IModelDb extends IModel {
   private _maxStatementCacheCount = 20;
   public nativeDb: any;
   private _codeSpecs: CodeSpecs;
-  private _classMetaDataRegistry: MetaDataRegistry;
 
   public constructor(iModelToken: IModelToken, nativeDb: any) {
     super(iModelToken);
     this.nativeDb = nativeDb;
     this.models = new IModelDbModels(this);
     this.elements = new IModelDbElements(this);
-  }
-
-  /** Get the ClassMetaDataRegistry for this iModel */
-  public get classMetaDataRegistry(): MetaDataRegistry {
-    if (!this._classMetaDataRegistry)
-      this._classMetaDataRegistry = new MetaDataRegistry(this);
-    return this._classMetaDataRegistry;
   }
 
   /** Get the briefcase ID of this iModel */
@@ -301,37 +294,50 @@ export class IModelDb extends IModel {
     return stmt;
   }
 
-  /** Get the meta data for the specified class defined in imodel iModel, blocking until the result is returned.
-   * @param schemaName The name of the schema
-   * @param className The name of the class
-   * @returns On success, the BentleyReturn result property will be the class meta data in JSON format.
+  /** Construct an entity (element or model). This utility method knows how to fetch the required class metadata
+   * if necessary in order to get the entity's class defined as a prerequisite.
    */
-  public getECClassMetaDataSync(schemaName: string, className: string): string {
-    if (!this.iModelToken.isOpen)
-      throw new IModelError(IModelStatus.NotOpen);
-
-    const { error, result: json } = this.nativeDb.getECClassMetaDataSync(schemaName, className);
-    if (error)
-      throw new IModelError(error.status);
-
-    return json;
+  public constructEntity(props: any): Entity {
+    let entity: Entity;
+    try {
+      entity = ClassRegistry.createInstance(props);
+    } catch (err) {
+      if (!ClassRegistry.isClassNotFoundError(err) && !ClassRegistry.isMetaDataNotFoundError(err))
+        throw err;
+      // Probably, we have not yet loaded the metadata for this class and/or its superclasses. Do that now, and retry the create.
+      this.loadMetaData(props.classFullName!);
+      entity = ClassRegistry.createInstance(props);
+    }
+    return entity;
   }
 
-  /** Get the meta data for the specified class defined in imodel iModel (asynchronously).
-   * @param schemaName The name of the schema
-   * @param className The name of the class
-   * @returns The class meta data in JSON format.
-   * @throws [[IModelError]]
-   */
-  public async getECClassMetaData(schemaName: string, className: string): Promise<string> {
-    if (!this.iModelToken.isOpen)
-      return Promise.reject(new IModelError(IModelStatus.NotOpen));
+  /** Get metadata for a class. This method will load the metadata from the DgnDb into the cache as a side-effect, if necessary. */
+  public getMetaData(classFullName: string): EntityMetaData | undefined {
+    let metadata = this.classMetaDataRegistry.find(classFullName);
+    if (metadata === undefined) {
+      this.loadMetaData(classFullName);
+      metadata = this.classMetaDataRegistry.find(classFullName);
+    }
+    return metadata;
+  }
 
-    const { error, result: json } = await this.nativeDb.getECClassMetaData(schemaName, className);
+  /*** @hidden */
+  private loadMetaData(classFullName: string) {
+    if (this.classMetaDataRegistry.find(classFullName))
+      return;
+    const className = classFullName.split(":");
+    if (className.length !== 2)
+      throw new IModelError(IModelStatus.BadArg);
+    const { error, result: json } = this.nativeDb.getECClassMetaDataSync(className[0], className[1]);
     if (error)
-      return Promise.reject(new IModelError(error.status));
+      throw new IModelError(error.status);
+    const metaData = this.classMetaDataRegistry.add(classFullName, json);
+    if (metaData === undefined)
+      throw new IModelError(IModelStatus.ValidationFailed);
 
-    return json;
+    // Recurse, to make sure that base class is cached.
+    if (metaData.baseClasses !== undefined && metaData.baseClasses.length > 0)
+      this.loadMetaData(metaData.baseClasses[0]);
   }
 
 }
@@ -364,7 +370,7 @@ export class IModelDbModels {
     const props = JSON.parse(json) as ModelProps;
     props.iModel = this._iModel;
 
-    const entity = await ClassRegistry.createInstance(props);
+    const entity = this._iModel.constructEntity(props);
     assert(entity instanceof Model);
     const model = entity as Model;
 
@@ -421,7 +427,7 @@ export class IModelDbElements {
     const props = JSON.parse(json) as ElementProps;
     props.iModel = this._iModel;
 
-    const entity = await ClassRegistry.createInstance(props);
+    const entity = this._iModel.constructEntity(props);
     const el = entity as Element;
     assert(el instanceof Element);
 
@@ -445,18 +451,8 @@ export class IModelDbElements {
    * @param elementProps The properties to use when creating the element.
    * @throws [[IModelError]] if there is a problem creating the element.
    */
-  public async createElement(elementProps: ElementProps): Promise<Element> {
-    const element: Element = await ClassRegistry.createInstance(elementProps) as Element;
-    assert(element instanceof Element);
-    return element;
-  }
-
-  /** Create a new element in memory.
-   * @param elementProps The properties to use when creating the element.
-   * @throws [[IModelError]] if there is a problem creating the element.
-   */
-  public createElementSync(elementProps: ElementProps): Element {
-    const element: Element = ClassRegistry.createInstanceSync(elementProps) as Element;
+  public createElement(elementProps: ElementProps): Element {
+    const element: Element = this._iModel.constructEntity(elementProps) as Element;
     assert(element instanceof Element);
     return element;
   }
@@ -567,7 +563,7 @@ export class IModelDbElements {
       aspectProps.element = elementId; // add in property required by ElementAspectProps
       aspectProps.classId = undefined; // clear property from SELECT * that we don't want in the final instance
 
-      const entity = await ClassRegistry.createInstance(aspectProps);
+      const entity = this._iModel.constructEntity(aspectProps);
       assert(entity instanceof ElementAspect);
       const aspect = entity as ElementAspect;
       aspect.setPersistent();

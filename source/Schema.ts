@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
-import { IModelDb } from "./backend/IModelDb";
+import { IModel } from "./IModel";
 import { EntityCtor } from "./Entity";
 import { ClassRegistry } from "./ClassRegistry";
 
@@ -15,7 +15,7 @@ export class Schema {
    * @param imodel The IModel that contains the class definitions
    * @returns The corresponding ClassCtor
    */
-  public static getClass(className: string, imodel: IModelDb): Promise<EntityCtor> {
+  public static getClass(className: string, imodel: IModel): EntityCtor | undefined {
     return ClassRegistry.getClass(this.name + ":" + className, imodel);
   }
 }

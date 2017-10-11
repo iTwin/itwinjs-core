@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { MetaDataRegistry } from "./ClassRegistry";
 
 /** A token that represents a Briefcase */
 export class IModelToken {
@@ -38,8 +39,16 @@ export class IModelToken {
 /** An abstract class representing an instance of an iModel. */
 export class IModel {
   protected _iModelToken: IModelToken;
+  private _classMetaDataRegistry: MetaDataRegistry;
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
   public get iModelToken(): IModelToken { return this._iModelToken; }
+
+  /** Get the ClassMetaDataRegistry for this iModel */
+  public get classMetaDataRegistry(): MetaDataRegistry {
+    if (!this._classMetaDataRegistry)
+      this._classMetaDataRegistry = new MetaDataRegistry();
+    return this._classMetaDataRegistry;
+  }
 
   /** @hidden */
   protected constructor(iModelToken: IModelToken) {

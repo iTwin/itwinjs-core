@@ -32,7 +32,11 @@ describe("Sample Code", () => {
     BisCore.registerSchema();
 
     // Get the class constructor for the specified class name
-    const elementClass: EntityCtor = await BisCore.getClass(Element.name, iModel);
+    const elementClass: EntityCtor | undefined = BisCore.getClass(Element.name, iModel);
+    if (elementClass === undefined) {
+      assert.fail();
+      return;
+    }
 
     // Do something with the returned element class
     doSomethingWithString(elementClass.schema.name);

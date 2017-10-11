@@ -8,7 +8,7 @@ import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVe
 import { Code } from "../Code";
 import { ColorDef } from "../Render";
 import { ElementProps, Element, GeometricElement3d, GeometricElementProps, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../Element";
-import { Entity, EntityCtor, EntityProps } from "../Entity";
+import { Entity, EntityCtor, EntityProps, EntityMetaData } from "../Entity";
 import { Model } from "../Model";
 import { Category, SubCategory } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
@@ -61,11 +61,13 @@ describe("iModel", () => {
     assert.deepEqual(entity, el2, "json stringify worked");
   };
 
-  it("should use schema to look up classes by name", async () => {
-    const elementClass = await BisCore.getClass(Element.name, imodel);
-    const categoryClass = await BisCore.getClass(Category.name, imodel);
-    assert.equal(elementClass.name, "Element");
-    assert.equal(categoryClass.name, "Category");
+  it("should use schema to look up classes by name", () => {
+    const elementClass = BisCore.getClass(Element.name, imodel);
+    const categoryClass = BisCore.getClass(Category.name, imodel);
+    assert.isTrue(elementClass !== undefined);
+    assert.isTrue(categoryClass !== undefined);
+    assert.equal(elementClass!.name, "Element");
+    assert.equal(categoryClass!.name, "Category");
   });
 
   it("should load a known element by Id from an existing iModel", async () => {
@@ -215,7 +217,8 @@ describe("iModel", () => {
     testCopyAndJson(model!);
     const code1 = new Code({ spec: "0x1d", scope: "0x1d", value: "A" });
     model = await imodel.models.getSubModel(code1);
-    const geomModel = await ClassRegistry.getClass("BisCore:PhysicalModel", imodel);
+    // By this point, we expect the submodel's class to be in the class registry *cache*
+    const geomModel = ClassRegistry.getClass("BisCore:PhysicalModel", imodel);
     assert.exists(model);
     assert.isTrue(model instanceof geomModel!);
     testCopyAndJson(model!);
@@ -230,7 +233,7 @@ describe("iModel", () => {
       id: new Id64(),
     };
 
-    const entity = await ClassRegistry.createInstance(props);
+    const entity = imodel.constructEntity(props);
     assert.isTrue(entity instanceof ModelSelector);
     const selector1 = entity as ModelSelector;
     assert.exists(selector1);
@@ -488,9 +491,7 @@ describe("iModel", () => {
     }
   });
 
-  function checkElementMetaData(metadataStr: string) {
-    assert(metadataStr && metadataStr.length > 0);
-    const obj: any = JSON.parse(metadataStr || "");
+  function checkElementMetaData(obj: EntityMetaData) {
     assert.isNotNull(obj);
     assert.equal(obj.ecclass, "BisCore:Element");
     assert.isArray(obj.baseClasses);
@@ -499,11 +500,13 @@ describe("iModel", () => {
     assert.isArray(obj.customAttributes);
     let foundClassHasHandler = false;
     let foundClassHasCurrentTimeStampProperty = false;
-    for (const ca of obj.customAttributes) {
-      if (ca.ecclass === "BisCore:ClassHasHandler")
-        foundClassHasHandler = true;
-      else if (ca.ecclass === "CoreCustomAttributes:ClassHasCurrentTimeStampProperty")
-        foundClassHasCurrentTimeStampProperty = true;
+    if (obj.customAttributes !== undefined) {
+      for (const ca of obj.customAttributes) {
+        if (ca.ecclass === "BisCore:ClassHasHandler")
+          foundClassHasHandler = true;
+        else if (ca.ecclass === "CoreCustomAttributes:ClassHasCurrentTimeStampProperty")
+          foundClassHasCurrentTimeStampProperty = true;
+      }
     }
     assert.isTrue(foundClassHasHandler);
     assert.isTrue(foundClassHasCurrentTimeStampProperty);
@@ -512,30 +515,28 @@ describe("iModel", () => {
     assert.equal(obj.properties.federationGuid.extendedType, "BeGuid");
   }
 
-  it("should get metadata for class (async)", async () => {
-    const metadataStr: string = await imodel.getECClassMetaData("BisCore", "Element");
-    assert.exists(metadataStr);
-    checkElementMetaData(metadataStr);
+  it("should get metadata for class", () => {
+    const metadata: EntityMetaData | undefined = imodel.getMetaData("BisCore:Element");
+    assert.exists(metadata);
+    checkElementMetaData(metadata!);
   });
 
-  function checkClassHasHandlerMetaData(metadataStr: string) {
-    assert(metadataStr && metadataStr.length > 0);
-    const obj: any = JSON.parse(metadataStr || "");
+  function checkClassHasHandlerMetaData(obj: EntityMetaData) {
     assert.isDefined(obj.properties.restrictions);
     assert.equal(obj.properties.restrictions.primitiveType, 2305);
     assert.equal(obj.properties.restrictions.minOccurs, 0);
   }
 
-  it("should get metadata for CA class just as well (and we'll see a array-typed property) (sync)", async () => {
-    const metadataStr: string = imodel.getECClassMetaDataSync("BisCore", "ClassHasHandler");
-    assert.exists(metadataStr);
-    checkClassHasHandlerMetaData(metadataStr);
+  it("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
+    const metadata: EntityMetaData | undefined = imodel.getMetaData("BisCore:ClassHasHandler");
+    assert.exists(metadata);
+    checkClassHasHandlerMetaData(metadata!);
   });
 
-  it("should get metadata for CA class just as well (and we'll see a array-typed property) (async)", async () => {
-    const metadataStr: string = await imodel.getECClassMetaData("BisCore", "ClassHasHandler");
-    assert.exists(metadataStr);
-    checkClassHasHandlerMetaData(metadataStr);
+  it("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
+    const metadata: EntityMetaData | undefined = imodel.getMetaData("BisCore:ClassHasHandler");
+    assert.exists(metadata);
+    checkClassHasHandlerMetaData(metadata!);
   });
 
   it("should exercise ECSqlStatement (backend only)", () => {
@@ -652,7 +653,7 @@ describe("iModel", () => {
     const elementCount = 10000;
     for (let i = 0; i < elementCount; ++i) {
 
-      const element: Element = ifperfimodel.elements.createElementSync({ classFullName: "DgnPlatformTest:ImodelJsTestElement", iModel: ifperfimodel, model: modelId, id: new Id64(), code: Code.createEmpty(), category: defaultCategoryId });
+      const element: Element = ifperfimodel.elements.createElement({ classFullName: "DgnPlatformTest:ImodelJsTestElement", iModel: ifperfimodel, model: modelId, id: new Id64(), code: Code.createEmpty(), category: defaultCategoryId });
 
       element.integerProperty1 = i;
       element.integerProperty2 = i;
