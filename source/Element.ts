@@ -76,7 +76,7 @@ export class Element extends Entity implements EntityProps {
   }
 
   /** Get the class metadata for this element. */
-  public async getClassMetaData(): Promise<EntityMetaData | undefined> { return this.iModel.classMetaDataRegistry.get(this.classFullName); }
+  public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
 
   private getAllUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
 

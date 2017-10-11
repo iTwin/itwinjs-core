@@ -6,6 +6,7 @@ import { Schema } from "./Schema";
 import { IModelDb } from "./backend/IModelDb";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
+import { ClassRegistry } from "./ClassRegistry";
 
 /** The primitive types of an Entity property. */
 export const enum PrimitiveTypeCode {
@@ -223,9 +224,9 @@ export class EntityMetaData {
    * @param includeCustom If true, include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    */
   public static forEach(imodel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean) {
-    const meta = imodel.classMetaDataRegistry.get(classFullName);
+    const meta = imodel.classMetaDataRegistry.find(classFullName);
     if (meta === undefined) {
-      throw new TypeError(classFullName + " missing class metadata");
+      throw ClassRegistry.makeMetaDataNotFoundError();
     }
 
     for (const propName in meta.properties) {
@@ -236,10 +237,8 @@ export class EntityMetaData {
       }
     }
 
-    if (wantSuper && meta.baseClasses) {
-      for (const base of meta.baseClasses) {
-        EntityMetaData.forEach(imodel, base, true, func, includeCustom);
-      }
+    if (wantSuper && meta.baseClasses && meta.baseClasses.length > 0) {
+      EntityMetaData.forEach(imodel, meta.baseClasses[0], true, func, includeCustom);
     }
   }
 }
