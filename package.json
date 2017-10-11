@@ -31,7 +31,7 @@
     "js-base64": "^2.3.2"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "^1.0.40",
+    "@bentley/bentleyjs-tools": "^1.0.44",
     "@types/chai": "^4.0.4",
     "@types/fs-extra": "^4.0.2",
     "@types/js-base64": "^2.1.5",

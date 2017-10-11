@@ -9,6 +9,7 @@ import { Element } from "../Element";
 import { EntityQueryParams } from "../Entity";
 import { IModelVersion } from "../IModelVersion";
 import { Model } from "../Model";
+import { IModelError } from "../IModelError";
 import { IModelToken } from "../IModel";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { IModelDb } from "../backend/IModelDb";
@@ -46,13 +47,17 @@ export class IModelDbRemoting {
     return models;
   }
 
-  /** Return an [[Element]] array given an array of stringified element ids. */
+  /** Return an array of element JSON strings given an array of stringified element ids. */
   @RunsIn(Tier.Services)
-  public static async getElements(iModelToken: IModelToken, elementIds: string[]): Promise<Element[]> {
+  public static async getElements(iModelToken: IModelToken, elementIds: string[]): Promise<any[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const elements: Element[] = [];
     for (const elementId of elementIds) {
-      elements.push(await iModelDb.elements.getElement(new Id64(elementId)));
+      const { error, result: elementJson } = await iModelDb.nativeDb.getElement(JSON.stringify({ id: elementId }));
+      if (error)
+        return Promise.reject(new IModelError(error.status));
+
+      elements.push(elementJson);
     }
     return elements;
   }

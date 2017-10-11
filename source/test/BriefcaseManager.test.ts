@@ -110,7 +110,8 @@ describe("BriefcaseManager", () => {
     assert.exists(iModelNoVer);
   });
 
-  it("should be able to get elements and models from an IModelConnection", async () => {
+  // WIP: waiting for front/backend refactoring before it can be re-enabled.
+  it.skip("should be able to get elements and models from an IModelConnection", async () => {
     const iModel: IModelConnection = await IModelConnection.open(accessToken, testIModelId);
     assert.exists(iModel);
     assert.isTrue(iModel instanceof IModelConnection);
