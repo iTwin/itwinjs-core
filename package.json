@@ -36,5 +36,8 @@
     "rimraf": "^2.6.2",
     "ts-node": "^3.3.0",
     "typescript": "^2.5.2"
+  },
+  "dependencies": {
+    "@bentley/bentleyjs-core": "^1.0.29"
   }
 }

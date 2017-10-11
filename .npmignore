@@ -1,4 +1,6 @@
 source
+test
+scripts
 lib/**/test
 lib/**/maps
 .nyc_output

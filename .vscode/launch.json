@@ -11,7 +11,7 @@
       "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
       "args": [
         "--opts",
-        "${workspaceRoot}/spectests/mocha.opts",
+        "${workspaceRoot}/test/mocha.opts",
         "--colors"
       ],
       "protocol": "inspector",
