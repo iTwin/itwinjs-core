@@ -27,18 +27,19 @@ export class ClassRegistry {
     return (err instanceof IModelError) && ((err as IModelError).errorNumber === IModelStatus.NotFound);
   }
 
-  /** Throw a class-not-found exception */
+  /** Construct a class-not-found exception */
   public static makeClassNotFoundError(): IModelError {
     return new IModelError(IModelStatus.NotFound);
   }
 
-  /** Throw a metadata-not-found exception */
+  /** Construct a metadata-not-found exception */
   public static makeMetaDataNotFoundError(): IModelError {
     return new IModelError(IModelStatus.NotFound);
   }
 
-  /** @hidden - called by IModelDb and others as part of constructing entities.
+  /** Called by IModelDb and others as part of constructing entities.
    * @throws IModelError if the required constructor or class metadata is not in the cache.
+   * @hidden
    */
   public static createInstance(props: EntityProps): Entity {
     if (!props.classFullName || !props.iModel)

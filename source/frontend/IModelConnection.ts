@@ -5,10 +5,9 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
-// import { ClassRegistry } from "../ClassRegistry";
-// import { Element, ElementProps } from "../Element";
-import { Element } from "../Element";
-import { EntityQueryParams } from "../Entity";
+import { ClassRegistry } from "../ClassRegistry";
+import { Element, ElementProps } from "../Element";
+import { Entity, EntityQueryParams } from "../Entity";
 import { IModel, IModelToken } from "../IModel";
 import { IModelError, IModelStatus } from "../IModelError";
 import { IModelVersion } from "../IModelVersion";
@@ -85,22 +84,37 @@ export class IModelConnectionElements {
   public get rootSubjectId(): Id64 { return new Id64("0x1"); }
 
   /** Ask the backend for a batch of elements given a list of element ids. */
-  public async getElements(_elementIds: Id64[]): Promise<Element[]> {
-    // const elementJsonArray: any[] = await IModelDbRemoting.getElements(this._iModel.iModelToken, elementIds.map((id: Id64) => id.toString()));
-    return [];
-    // return elementJsonArray.map((elementJson: any) => {
-    //   const elementProps = JSON.parse(elementJson) as ElementProps;
-    //   elementProps.iModel = IModelDb.find(this._iModel.iModelToken); // WIP: Cannot call backend directly from frontend!!!
+  public async getElements(elementIds: Id64[]): Promise<Element[]> {
+    const elementJsonArray: any[] = await IModelDbRemoting.getElements(this._iModel.iModelToken, elementIds.map((id: Id64) => id.toString()));
+    const elements: Element[] = [];
 
-    //   const entity = await ClassRegistry.createInstance(elementProps);
-    //   const el = entity as Element;
-    //   assert(el instanceof Element);
+    for (const elementJson of elementJsonArray) {
+      const elementProps = JSON.parse(elementJson) as ElementProps;
+      elementProps.iModel = this._iModel;
 
-    //   // We have created the element. Cache it before we return it.
-    //   el.setPersistent(); // elements in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
-    //   this._loaded.set(el.id.toString(), el);
-    //   return el;
-    // });
+      let entity: Entity;
+      try {
+        entity = ClassRegistry.createInstance(elementProps);
+      } catch (error) {
+        if (!ClassRegistry.isClassNotFoundError(error) && !ClassRegistry.isMetaDataNotFoundError(error))
+          throw error;
+
+        const classArray: any[] = await IModelDbRemoting.loadMetaDataForClassHierarchy(this._iModel.iModelToken, elementProps.classFullName!);
+        for (const classEntry of classArray) {
+          this._iModel.classMetaDataRegistry.add(classEntry.className, classEntry.metaData);
+        }
+        entity = ClassRegistry.createInstance(elementProps);
+      }
+      const element = entity as Element;
+      if (!(element instanceof Element))
+        return Promise.reject(new TypeError());
+
+      element.setPersistent(); // elements in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
+      this._loaded.set(element.id.toString(), element);
+      elements.push(element);
+    }
+
+    return elements;
   }
 
   /** */

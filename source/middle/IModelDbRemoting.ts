@@ -6,10 +6,10 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { MultiTierExecutionHost, RunsIn, Tier } from "@bentley/bentleyjs-core/lib/tiering";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { Element } from "../Element";
-import { EntityQueryParams } from "../Entity";
+import { EntityMetaData, EntityQueryParams } from "../Entity";
 import { IModelVersion } from "../IModelVersion";
 import { Model } from "../Model";
-import { IModelError } from "../IModelError";
+import { IModelError, IModelStatus } from "../IModelError";
 import { IModelToken } from "../IModel";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { IModelDb } from "../backend/IModelDb";
@@ -79,5 +79,27 @@ export class IModelDbRemoting {
 
     iModelDb.releasePreparedStatement(statement);
     return elementIds;
+  }
+
+  /** Returns an array of class entries given a starting class and walking up the inheritance chain.
+   * Each entry contains the class name and the class meta data.
+   */
+  @RunsIn(Tier.Services)
+  public static async loadMetaDataForClassHierarchy(iModelToken: IModelToken, startClassName: string): Promise<any[]> {
+    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    let classFullName: string = startClassName;
+    const classArray: any[] = [];
+    while (true) {
+      const classMetaData: EntityMetaData | undefined = iModelDb.getMetaData(classFullName);
+      if (!classMetaData)
+        return Promise.reject(new IModelError(IModelStatus.NotFound));
+
+      classArray.push({ className: classFullName, metaData: JSON.stringify(classMetaData) });
+      if (!classMetaData.baseClasses || classMetaData.baseClasses.length === 0)
+        break;
+
+      classFullName = classMetaData.baseClasses[0];
+    }
+    return classArray;
   }
 }
