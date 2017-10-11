@@ -3,6 +3,7 @@ const chai = require("chai");
 global.expect = chai.expect;
 
 const chaiJestSnapshot = require("chai-jest-snapshot");
+chaiJestSnapshot.addSerializer(require("enzyme-to-json/serializer"));
 chai.use(chaiJestSnapshot);
 
 // WIP: Right now, we need to monkey patch describe in order to get snapshot testing to work in "watch" mode.
