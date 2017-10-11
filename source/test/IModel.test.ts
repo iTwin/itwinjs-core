@@ -516,9 +516,9 @@ describe("iModel", () => {
   }
 
   it("should get metadata for class", () => {
-    const metadata: EntityMetaData | undefined = imodel.getMetaData("BisCore:Element");
-    assert.exists(metadata);
-    checkElementMetaData(metadata!);
+    const metaData: EntityMetaData = imodel.getMetaData("BisCore:Element");
+    assert.exists(metaData);
+    checkElementMetaData(metaData);
   });
 
   function checkClassHasHandlerMetaData(obj: EntityMetaData) {
@@ -528,15 +528,15 @@ describe("iModel", () => {
   }
 
   it("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
-    const metadata: EntityMetaData | undefined = imodel.getMetaData("BisCore:ClassHasHandler");
-    assert.exists(metadata);
-    checkClassHasHandlerMetaData(metadata!);
+    const metaData: EntityMetaData = imodel.getMetaData("BisCore:ClassHasHandler");
+    assert.exists(metaData);
+    checkClassHasHandlerMetaData(metaData);
   });
 
   it("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
-    const metadata: EntityMetaData | undefined = imodel.getMetaData("BisCore:ClassHasHandler");
-    assert.exists(metadata);
-    checkClassHasHandlerMetaData(metadata!);
+    const metaData: EntityMetaData = imodel.getMetaData("BisCore:ClassHasHandler");
+    assert.exists(metaData);
+    checkClassHasHandlerMetaData(metaData);
   });
 
   it("should exercise ECSqlStatement (backend only)", () => {

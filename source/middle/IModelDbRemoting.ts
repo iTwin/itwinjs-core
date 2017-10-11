@@ -9,7 +9,7 @@ import { Element } from "../Element";
 import { EntityMetaData, EntityQueryParams } from "../Entity";
 import { IModelVersion } from "../IModelVersion";
 import { Model } from "../Model";
-import { IModelError, IModelStatus } from "../IModelError";
+import { IModelError } from "../IModelError";
 import { IModelToken } from "../IModel";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { IModelDb } from "../backend/IModelDb";
@@ -90,10 +90,7 @@ export class IModelDbRemoting {
     let classFullName: string = startClassName;
     const classArray: any[] = [];
     while (true) {
-      const classMetaData: EntityMetaData | undefined = iModelDb.getMetaData(classFullName);
-      if (!classMetaData)
-        return Promise.reject(new IModelError(IModelStatus.NotFound));
-
+      const classMetaData: EntityMetaData = iModelDb.getMetaData(classFullName);
       classArray.push({ className: classFullName, metaData: classMetaData });
       if (!classMetaData.baseClasses || classMetaData.baseClasses.length === 0)
         break;

@@ -311,12 +311,16 @@ export class IModelDb extends IModel {
     return entity;
   }
 
-  /** Get metadata for a class. This method will load the metadata from the DgnDb into the cache as a side-effect, if necessary. */
-  public getMetaData(classFullName: string): EntityMetaData | undefined {
+  /** Get metadata for a class. This method will load the metadata from the DgnDb into the cache as a side-effect, if necessary.
+   * @throws [[IModelError]] if the metadata cannot be found nor loaded.
+   */
+  public getMetaData(classFullName: string): EntityMetaData {
     let metadata = this.classMetaDataRegistry.find(classFullName);
     if (metadata === undefined) {
       this.loadMetaData(classFullName);
       metadata = this.classMetaDataRegistry.find(classFullName);
+      if (metadata === undefined)
+        throw ClassRegistry.makeMetaDataNotFoundError();
     }
     return metadata;
   }
