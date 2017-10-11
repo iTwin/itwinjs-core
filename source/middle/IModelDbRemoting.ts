@@ -94,7 +94,7 @@ export class IModelDbRemoting {
       if (!classMetaData)
         return Promise.reject(new IModelError(IModelStatus.NotFound));
 
-      classArray.push({ className: classFullName, metaData: JSON.stringify(classMetaData) });
+      classArray.push({ className: classFullName, metaData: classMetaData });
       if (!classMetaData.baseClasses || classMetaData.baseClasses.length === 0)
         break;
 

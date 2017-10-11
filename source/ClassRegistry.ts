@@ -187,12 +187,8 @@ export class MetaDataRegistry {
   }
 
   /** Add metadata to the cache */
-  public add(classFullName: string, metaDataStr: string): EntityMetaData | undefined {
-    const metaData = new EntityMetaData(JSON.parse(metaDataStr));
-    if (undefined === metaData)
-      return undefined;
+  public add(classFullName: string, metaData: EntityMetaData): void {
     const key = classFullName.toLowerCase();
     this._registry.set(key, metaData);
-    return metaData;
   }
 }

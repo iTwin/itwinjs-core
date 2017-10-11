@@ -7,7 +7,7 @@ import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { ClassRegistry } from "../ClassRegistry";
 import { Element, ElementProps } from "../Element";
-import { Entity, EntityQueryParams } from "../Entity";
+import { Entity, EntityMetaData, EntityQueryParams } from "../Entity";
 import { IModel, IModelToken } from "../IModel";
 import { IModelError, IModelStatus } from "../IModelError";
 import { IModelVersion } from "../IModelVersion";
@@ -101,7 +101,7 @@ export class IModelConnectionElements {
 
         const classArray: any[] = await IModelDbRemoting.loadMetaDataForClassHierarchy(this._iModel.iModelToken, elementProps.classFullName!);
         for (const classEntry of classArray) {
-          this._iModel.classMetaDataRegistry.add(classEntry.className, classEntry.metaData);
+          this._iModel.classMetaDataRegistry.add(classEntry.className, new EntityMetaData(classEntry.metaData));
         }
         entity = ClassRegistry.createInstance(elementProps);
       }

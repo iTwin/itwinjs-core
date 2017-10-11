@@ -328,13 +328,12 @@ export class IModelDb extends IModel {
     const className = classFullName.split(":");
     if (className.length !== 2)
       throw new IModelError(IModelStatus.BadArg);
-    const { error, result: json } = this.nativeDb.getECClassMetaDataSync(className[0], className[1]);
+    const { error, result: metaDataJson } = this.nativeDb.getECClassMetaDataSync(className[0], className[1]);
     if (error)
       throw new IModelError(error.status);
-    const metaData = this.classMetaDataRegistry.add(classFullName, json);
-    if (metaData === undefined)
-      throw new IModelError(IModelStatus.ValidationFailed);
 
+    const metaData = new EntityMetaData(JSON.parse(metaDataJson));
+    this.classMetaDataRegistry.add(classFullName, metaData);
     // Recurse, to make sure that base class is cached.
     if (metaData.baseClasses !== undefined && metaData.baseClasses.length > 0)
       this.loadMetaData(metaData.baseClasses[0]);
