@@ -8,7 +8,7 @@ import { Model } from "../Model";
 import { IModelDb } from "../backend/IModelDb";
 import { SpatialCategory, DrawingCategory } from "../Category";
 // import { Model } from "../Model";
-import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Code } from "../Code";
 import { IModelError, IModelStatus } from "../IModelError";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
@@ -16,6 +16,12 @@ import { ECSqlStatement } from "../backend/ECSqlStatement";
 import * as fs from "fs-extra";
 
 declare const __dirname: string;
+
+export interface IModelTestUtilsOpenOptions {
+  copyFilename?: string;
+  enableTransactions?: boolean;
+  openMode?: OpenMode;
+}
 
 export class IModelTestUtils {
   public static user = {
@@ -31,20 +37,23 @@ export class IModelTestUtils {
     return stat;
   }
 
-  public static async openIModel(filename: string): Promise<IModelDb> {
+  public static async openIModel(filename: string, opts?: IModelTestUtilsOpenOptions): Promise<IModelDb> {
     const destPath = __dirname + "/output";
     if (!fs.existsSync(destPath))
       fs.mkdirSync(destPath);
 
+    if (opts === undefined)
+      opts = {};
+
     const srcName = __dirname + "/assets/" + filename;
-    const dbName = destPath + "/" + filename;
+    const dbName = destPath + "/" + (opts.copyFilename ? opts.copyFilename! : filename);
     const srcStat = IModelTestUtils.getStat(srcName);
     const destStat = IModelTestUtils.getStat(dbName);
     if (!srcStat || !destStat || srcStat.mtime.getTime() !== destStat.mtime.getTime()) {
       fs.copySync(srcName, dbName, { preserveTimestamps: true });
     }
 
-    const iModel: IModelDb = await IModelDb.openStandalone(dbName); // could throw Error
+    const iModel: IModelDb = await IModelDb.openStandalone(dbName, opts.openMode, opts.enableTransactions); // could throw Error
     assert.exists(iModel);
     return iModel!;
   }

@@ -553,7 +553,7 @@ describe("iModel", () => {
       assert.isNotNull(stmt);
       // Reject an attempt to bind when there are no placeholders in the statement
       try {
-        stmt.bindValues({foo: 1});
+        stmt.bindValues({ foo: 1 });
         assert.fail("bindValues should have failed with an exception");
       } catch (err2) {
         assert.isTrue(err2.constructor.name === "IModelError");
@@ -615,7 +615,7 @@ describe("iModel", () => {
     imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element WHERE (codeValue = :codevalue)", (stmt4: ECSqlStatement) => {
       // Try a named placeholder
       const codeValueToFind = firstCodeValue;
-      stmt4.bindValues({codeValue: codeValueToFind});
+      stmt4.bindValues({ codeValue: codeValueToFind });
       let count = 0;
       while (DbResult.BE_SQLITE_ROW === stmt4.step()) {
         count = count + 1;
@@ -638,54 +638,50 @@ describe("iModel", () => {
     ASSERT_TRUE(m_defaultCategoryId.IsValid());
   */
 
-  it.skip("should measure insert performance (backend))", () => {
+  it.skip("ImodelJsTest.MeasureInsertPerformance)", async () => {
 
-    // TODO: Make a copy of imodel3 before writing to it
+    const ifperfimodel = await IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", {copyFilename: "ImodelJsTest_MeasureInsertPerformance.bim", enableTransactions: true});
 
-    const theModel = new Id64("0X11"); // TODO: Look up model by code (i.e., codevalue of a child of root subject, where child has a PhysicalPartition)
-    const defaultCategoryId: Id64 = IModelTestUtils.getSpatiallCategoryIdByName(imodel3, "DefaultCategory");
+    // TODO: Look up model by code (i.e., codevalue of a child of root subject, where child has a PhysicalPartition)
+    // const physicalPartitionCode: Code = PhysicalPartition::CreateCode(*m_db->Elements().GetRootSubject(), "DefaultModel");
+    // const modelId: Id64 = ifperfimodel.models.querySubModelId(physicalPartitionCode);
+    const modelId = new Id64("0X11");
+
+    const defaultCategoryId: Id64 = IModelTestUtils.getSpatiallCategoryIdByName(ifperfimodel, "DefaultCategory");
 
     const elementCount = 10000;
     for (let i = 0; i < elementCount; ++i) {
 
-        const element: Element = imodel3.elements.createElementSync({
-          classFullName: "DgnPlatformTest:TestElement",
-          iModel: imodel3,
-          model: theModel,
-          id: new Id64(),
-          code: Code.createEmpty(),
-          category: defaultCategoryId,
-        });
+      const element: Element = ifperfimodel.elements.createElementSync({ classFullName: "DgnPlatformTest:ImodelJsTestElement", iModel: ifperfimodel, model: modelId, id: new Id64(), code: Code.createEmpty(), category: defaultCategoryId });
 
-        element.IntegerProperty1 = i;        // auto-handled
-        element.IntegerProperty2 = i;        // auto-handled
-        element.IntegerProperty3 = i;        // auto-handled
-        element.IntegerProperty4 = i;        // auto-handled
-        element.TestElementProperty = i;     // custom-handled
-        element.DoubleProperty1 = i;
-        element.DoubleProperty2 = i;
-        element.DoubleProperty3 = i;
-        element.DoubleProperty4 = i;
-        element.b = (0 === (i % 100));
-        const pt: Point3d = new Point3d(i, 0, 0);
-        element.PointProperty1 = pt;
-        element.PointProperty2 = pt;
-        element.PointProperty3 = pt;
-        element.PointProperty4 = pt;
-        const dtUtc: Date = new Date("2013-09-15 12:05:39");
-        element.dtUtc = dtUtc;
+      element.integerProperty1 = i;
+      element.integerProperty2 = i;
+      element.integerProperty3 = i;
+      element.integerProperty4 = i;
+      element.doubleProperty1 = i;
+      element.doubleProperty2 = i;
+      element.doubleProperty3 = i;
+      element.doubleProperty4 = i;
+      element.b = (0 === (i % 100));
+      const pt: Point3d = new Point3d(i, 0, 0);
+      element.pointProperty1 = pt;
+      element.pointProperty2 = pt;
+      element.pointProperty3 = pt;
+      element.pointProperty4 = pt;
+      const dtUtc: Date = new Date("2013-09-15 12:05:39Z");
+      element.dtUtc = dtUtc;
 
-        assert.isTrue((imodel3.elements.insertElement(element)).isValid(), "insert worked");
-        if (0 === (i % 100))
-            imodel3.saveChanges();
-        }
+      assert.isTrue((ifperfimodel.elements.insertElement(element)).isValid(), "insert worked");
+      if (0 === (i % 100))
+        ifperfimodel.saveChanges();
+    }
 
-    imodel3.saveChanges();
+    ifperfimodel.saveChanges();
 
-    imodel3.withPreparedStatement("select count(*) as [count] from DgnPlatformTest.TestElement", (stmt: ECSqlStatement) => {
+    ifperfimodel.withPreparedStatement("select count(*) as [count] from DgnPlatformTest.ImodelJsTestElement", (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
       const row = stmt.getRow();
-      const expectedCountAsHex = "0X" + (elementCount + 1).toString(16).toUpperCase();
+      const expectedCountAsHex = "0X" + elementCount.toString(16).toUpperCase();
       assert.equal(row.count, expectedCountAsHex);
     });
   });
