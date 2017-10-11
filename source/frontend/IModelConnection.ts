@@ -5,6 +5,8 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
+// import { ClassRegistry } from "../ClassRegistry";
+// import { Element, ElementProps } from "../Element";
 import { Element } from "../Element";
 import { EntityQueryParams } from "../Entity";
 import { IModel, IModelToken } from "../IModel";
@@ -83,8 +85,22 @@ export class IModelConnectionElements {
   public get rootSubjectId(): Id64 { return new Id64("0x1"); }
 
   /** Ask the backend for a batch of elements given a list of element ids. */
-  public async getElements(elementIds: Id64[]): Promise<Element[]> {
-    return await IModelDbRemoting.getElements(this._iModel.iModelToken, elementIds.map((id: Id64) => id.toString()));
+  public async getElements(_elementIds: Id64[]): Promise<Element[]> {
+    // const elementJsonArray: any[] = await IModelDbRemoting.getElements(this._iModel.iModelToken, elementIds.map((id: Id64) => id.toString()));
+    return [];
+    // return elementJsonArray.map((elementJson: any) => {
+    //   const elementProps = JSON.parse(elementJson) as ElementProps;
+    //   elementProps.iModel = IModelDb.find(this._iModel.iModelToken); // WIP: Cannot call backend directly from frontend!!!
+
+    //   const entity = await ClassRegistry.createInstance(elementProps);
+    //   const el = entity as Element;
+    //   assert(el instanceof Element);
+
+    //   // We have created the element. Cache it before we return it.
+    //   el.setPersistent(); // elements in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
+    //   this._loaded.set(el.id.toString(), el);
+    //   return el;
+    // });
   }
 
   /** */
