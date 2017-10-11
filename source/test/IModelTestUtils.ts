@@ -7,7 +7,8 @@ import { Element } from "../Element";
 import { Model } from "../Model";
 import { IModelDb } from "../backend/IModelDb";
 import { SpatialCategory, DrawingCategory } from "../Category";
-// import { Model } from "../Model";
+import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
+import { ConnectClient, Project, IModelHubClient, Briefcase} from "@bentley/imodeljs-clients";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Code } from "../Code";
 import { IModelError, IModelStatus } from "../IModelError";
@@ -28,6 +29,48 @@ export class IModelTestUtils {
     email: "bistroDEV_pmadm1@mailinator.com",
     password: "pmadm1",
   };
+
+  public static connectClient = new ConnectClient("QA");
+  public static hubClient = new IModelHubClient("QA");
+
+  public static async getTestUserAccessToken(): Promise<AccessToken> {
+    const authToken: AuthorizationToken|undefined = await (new ImsActiveSecureTokenClient("QA")).getToken(IModelTestUtils.user.email, IModelTestUtils.user.password);
+    assert(authToken);
+
+    const accessToken = await (new ImsDelegationSecureTokenClient("QA")).getToken(authToken!);
+    assert(accessToken);
+
+    return accessToken;
+  }
+
+  public static async getTestProjectId(accessToken: AccessToken, projectName: string): Promise<string> {
+    const project: Project | undefined = await IModelTestUtils.connectClient.getProject(accessToken, {
+      $select: "*",
+      $filter: "Name+eq+'" + projectName + "'",
+    });
+    assert(project && project.wsgId);
+    return project.wsgId;
+  }
+
+  public static async getTestIModelId(accessToken: AccessToken, projectId: string, iModelName: string): Promise<string> {
+    const iModels = await IModelTestUtils.hubClient.getIModels(accessToken, projectId, {
+      $select: "*",
+      $filter: "Name+eq+'" + iModelName + "'",
+    });
+    assert(iModels.length > 0);
+    assert(iModels[0].wsgId);
+
+    return iModels[0].wsgId;
+  }
+
+  public static async deleteAllBriefcases(accessToken: AccessToken, iModelId: string) {
+    const promises = new Array<Promise<void>>();
+    const briefcases = await IModelTestUtils.hubClient.getBriefcases(accessToken, iModelId);
+    briefcases.forEach((briefcase: Briefcase) => {
+      promises.push(IModelTestUtils.hubClient.deleteBriefcase(accessToken, iModelId, briefcase.briefcaseId));
+    });
+    await Promise.all(promises);
+  }
 
   private static getStat(name: string) {
     let stat: fs.Stats | undefined;

@@ -4,10 +4,8 @@
 import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "../frontend/IModelConnection";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
-import { ConnectClient, Project, ChangeSet } from "@bentley/imodeljs-clients";
-import { IModelHubClient } from "@bentley/imodeljs-clients";
-import { Briefcase } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/imodeljs-clients";
+import { ChangeSet } from "@bentley/imodeljs-clients";
 import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { expect, assert } from "chai";
@@ -23,71 +21,32 @@ declare const __dirname: string;
 
 describe("BriefcaseManager", () => {
   let accessToken: AccessToken;
-  let projectId: string;
-  let iModelId: string;
-  const hubClient = new IModelHubClient("QA");
-  let changeSets: ChangeSet[];
+  let testProjectId: string;
+  let testIModelId: string;
+  let testChangeSets: ChangeSet[];
   let iModelLocalPath: string;
   let shouldDeleteAllBriefcases: boolean = false;
 
   before(async () => {
     BisCore.registerSchema();
 
-    const authToken: AuthorizationToken|undefined = await (new ImsActiveSecureTokenClient("QA")).getToken(IModelTestUtils.user.email, IModelTestUtils.user.password);
-    expect(authToken);
+    accessToken = await IModelTestUtils.getTestUserAccessToken();
+    testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
+    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "MyTestModel");
 
-    const token = await (new ImsDelegationSecureTokenClient("QA")).getToken(authToken!);
-    expect(token);
-    accessToken = token!;
+    testChangeSets = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
+    expect(testChangeSets.length).greaterThan(2);
 
-    const projectName = "NodeJsTestProject";
-    const project: Project | undefined = await (new ConnectClient("QA")).getProject(accessToken, {
-      $select: "*",
-      $filter: "Name+eq+'" + projectName + "'",
-    });
-    expect(project);
-
-    projectId = project.wsgId;
-    expect(projectId);
-
-    const iModelName = "MyTestModel";
-    iModelId = await getIModelId(iModelName);
-
-    changeSets = await hubClient.getChangeSets(accessToken, iModelId, false);
-    expect(changeSets.length).greaterThan(2);
-
-    iModelLocalPath = path.join(__dirname, "../assets/imodels/", iModelId);
+    iModelLocalPath = path.join(__dirname, "../assets/imodels/", testIModelId);
 
     // Recreate briefcases if it's a TMR. todo: Figure a better way to prevent bleeding briefcase ids
     shouldDeleteAllBriefcases = !fs.existsSync(BriefcaseManager.rootPath);
     if (shouldDeleteAllBriefcases)
-      await deleteAllBriefcases(iModelId);
+      await IModelTestUtils.deleteAllBriefcases(accessToken, testIModelId);
   });
 
-  const getIModelId = async (iModelName: string) => {
-    const iModels = await hubClient.getIModels(accessToken, projectId, {
-      $select: "*",
-      $filter: "Name+eq+'" + iModelName + "'",
-    });
-    expect(iModels.length > 0);
-
-    const id = iModels[0].wsgId;
-    expect(!!id);
-
-    return id;
-  };
-
-  const deleteAllBriefcases = async (id: string) => {
-    const promises = new Array<Promise<void>>();
-    const briefcases = await hubClient.getBriefcases(accessToken, id);
-    briefcases.forEach((briefcase: Briefcase) => {
-      promises.push(hubClient.deleteBriefcase(accessToken, id, briefcase.briefcaseId));
-    });
-    await Promise.all(promises);
-  };
-
   it("should be able to open an IModel from the Hub", async () => {
-    const iModel: IModelConnection = await IModelConnection.open(accessToken, iModelId);
+    const iModel: IModelConnection = await IModelConnection.open(accessToken, testIModelId);
     assert.exists(iModel);
 
     expect(fs.existsSync(iModelLocalPath));
@@ -100,7 +59,7 @@ describe("BriefcaseManager", () => {
   it("should reuse closed briefcases in ReadWrite mode", async () => {
     const files = fs.readdirSync(iModelLocalPath);
 
-    const iModel: IModelConnection = await IModelConnection.open(accessToken, iModelId);
+    const iModel: IModelConnection = await IModelConnection.open(accessToken, testIModelId);
     assert.exists(iModel);
     await iModel.close(accessToken);
 
@@ -116,7 +75,7 @@ describe("BriefcaseManager", () => {
 
     const iModels = new Array<IModelConnection>();
     for (let ii = 0; ii < 5; ii++) {
-      const iModel: IModelConnection = await IModelConnection.open(accessToken, iModelId, OpenMode.Readonly);
+      const iModel: IModelConnection = await IModelConnection.open(accessToken, testIModelId, OpenMode.Readonly);
       assert.exists(iModel);
       iModels.push(iModel);
     }
@@ -127,28 +86,32 @@ describe("BriefcaseManager", () => {
     expect(diff.length).equals(0);
   });
 
-  it("should open a briefcase of a specific version in Readonly mode", async () => {
-    const iModel: IModelConnection = await IModelConnection.open(accessToken, iModelId, OpenMode.Readonly, IModelVersion.afterChangeSet(changeSets[1].wsgId));
-    assert.exists(iModel);
+  it("should open briefcases of specific versions in Readonly mode", async () => {
+    const versionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
 
-    const iModel2: IModelConnection = await IModelConnection.open(accessToken, iModelId, OpenMode.Readonly, IModelVersion.withName("SecondVersion"));
-    assert.exists(iModel2);
+    for (const [changeSetIndex, versionName] of versionNames.entries()) {
+      const iModelFromVersion: IModelConnection = await IModelConnection.open(accessToken, testIModelId, OpenMode.Readonly, IModelVersion.afterChangeSet(testChangeSets[changeSetIndex].wsgId));
+      assert.exists(iModelFromVersion);
 
-    expect(iModel.iModelToken.pathname).equals(iModel2.iModelToken.pathname);
+      const iModelFromChangeSet: IModelConnection = await IModelConnection.open(accessToken, testIModelId, OpenMode.Readonly, IModelVersion.withName(versionName));
+      assert.exists(iModelFromChangeSet);
+
+      expect(iModelFromVersion.iModelToken.pathname).equals(iModelFromChangeSet.iModelToken.pathname);
+    }
   });
 
   it("should open a briefcase of an iModel with no versions", async () => {
-    const iModelId2 = await getIModelId("NoVersionsTest");
+    const iModelNoVerId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "NoVersionsTest");
 
     if (shouldDeleteAllBriefcases)
-      await deleteAllBriefcases(iModelId2);
+      await IModelTestUtils.deleteAllBriefcases(accessToken, iModelNoVerId);
 
-    const iModel: IModelConnection = await IModelConnection.open(accessToken, iModelId2, OpenMode.Readonly);
-    assert.exists(iModel);
+    const iModelNoVer: IModelConnection = await IModelConnection.open(accessToken, iModelNoVerId, OpenMode.Readonly);
+    assert.exists(iModelNoVer);
   });
 
   it("should be able to get elements and models from an IModelConnection", async () => {
-    const iModel: IModelConnection = await IModelConnection.open(accessToken, iModelId);
+    const iModel: IModelConnection = await IModelConnection.open(accessToken, testIModelId);
     assert.exists(iModel);
     assert.isTrue(iModel instanceof IModelConnection);
     assert.exists(iModel.models);
