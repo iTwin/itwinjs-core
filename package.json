@@ -6,7 +6,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "http://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/ec-js"
   },
   "scripts": {
     "compile": "tsc -p source",
