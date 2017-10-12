@@ -129,6 +129,9 @@ describe("BriefcaseManager", () => {
     const queryElementIds: Id64[] = await iModel.elements.queryElementIds({ from: Category.sqlName, limit: 20, offset: 0 });
     assert.isAtLeast(queryElementIds.length, 1);
 
+    const formatObjs: any[] = await iModel.elements.formatElements(queryElementIds);
+    assert.isAtLeast(formatObjs.length, 1);
+
     const modelIds: Id64[] = [iModel.models.repositoryModelId];
     const models: Model[] = await iModel.models.getModels(modelIds);
     assert.exists(models);

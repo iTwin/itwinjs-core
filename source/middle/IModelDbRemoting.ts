@@ -81,6 +81,18 @@ export class IModelDbRemoting {
     return elementIds;
   }
 
+  /** Return an array of elements formatted for presentation given an array of stringified element ids. */
+  @RunsIn(Tier.Services)
+  public static async formatElements(iModelToken: IModelToken, elementIds: string[]): Promise<any[]> {
+    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    const formatArray: any[] = [];
+    for (const elementId of elementIds) {
+      const formatString: string = await iModelDb.getElementPropertiesForDisplay(elementId);
+      formatArray.push(JSON.parse(formatString));
+    }
+    return formatArray;
+  }
+
   /** Returns an array of class entries given a starting class and walking up the inheritance chain.
    * Each entry contains the class name and the class meta data.
    */

@@ -117,6 +117,11 @@ export class IModelConnectionElements {
     return elements;
   }
 
+  /** Ask the backend to format (for presentation) the specified list of element ids. */
+  public async formatElements(elementIds: Id64[]): Promise<any[]> {
+    return await IModelDbRemoting.formatElements(this._iModel.iModelToken, elementIds.map((id: Id64) => id.toString()));
+  }
+
   /** */
   public async queryElementIds(params: EntityQueryParams): Promise<Id64[]> {
     return await IModelDbRemoting.queryElementIds(this._iModel.iModelToken, params);
