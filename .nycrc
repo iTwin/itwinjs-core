@@ -1,12 +1,10 @@
 {
   "extension": [
-    ".ts",
-    ".tsx"
+    ".ts"
   ],
   "exclude": [
     "**/*.d.ts",
-    "test/**/*.ts",
-    "spectests/**/*.ts"
+    "test/**/*.ts"
   ],
   "reporter": [
     "html",
@@ -30,9 +28,5 @@
       90
     ]
   },
-  "check-coverage": true,
-  "per-file": true,
-  "lines": 90,
-  "functions": 90,
   "report-dir": "./lib/test/coverage"
 }
