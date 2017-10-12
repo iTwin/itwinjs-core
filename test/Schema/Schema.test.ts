@@ -2,10 +2,10 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { assert, expect } from "chai";
 
 import { ECSchema } from "../../source/Metadata/Schema";
-// import { ECObjectsError, ECObjectsStatus } from "../../source/Exception";
+import { ECObjectsError } from "../../source/Exception";
 
 describe("essential pieces of a schema", () => {
   it("should be able to create a schema with only the essentials", () => {
@@ -16,18 +16,30 @@ describe("essential pieces of a schema", () => {
     assert.equal(testSchema.minorVersion, 15);
   });
 
-  // it("should fail to create schema with invalid version numbers", () => {
-  //   const ecError = new ECObjectsError(ECObjectsStatus.InvalidECVersion);
+  it("setting properties", () => {
+    const testSchema = new ECSchema("TestSchema", 1, 0, 2);
+    testSchema.alias = "ts";
+    assert.isDefined(testSchema.alias);
+    assert.equal(testSchema.alias, "ts");
 
-  //   try {
-  //     new ECSchema("NewSchemaWithInvalidReadVersion", 123, 4, 5);
-  //     assert.fail();
-  //   } catch (err) {
-  //     assert.isTrue(err instanceof ECObjectsError);
-  //   }
+    testSchema.description = "Test setting a description";
+    assert.isDefined(testSchema.description);
+    assert.equal(testSchema.description, "Test setting a description");
+  });
 
-  //   expect(() => {new ECSchema("NewSchemaWithInvalidReadVersion", 123, 4, 5); }).to.throw(ecError);
-  //   expect(() => {new ECSchema("NewSchemaWithInvalidWriteVersion", 12, 345, 6); }).to.throw(ECObjectsError, "ECObjectsStatus.InvalidECVersion", "Should throw an Error when write version is too long");
-  //   expect(() => {new ECSchema("NewSchemaWithInvalidMinorVersion", 12, 34, 567); }).to.throw(ECObjectsError, "ECObjectsStatus.InvalidECVersion", "Should throw an Error when minor version is too long");
-  // });
+  it("should fail to create schema with invalid version numbers", () => {
+    expect(() => {new ECSchema("NewSchemaWithInvalidReadVersion", 123, 4, 5); }).to.throw(ECObjectsError);
+    expect(() => {new ECSchema("NewSchemaWithInvalidWriteVersion", 12, 345, 6); }).to.throw(ECObjectsError);
+    expect(() => {new ECSchema("NewSchemaWithInvalidMinorVersion", 12, 34, 567); }).to.throw(ECObjectsError);
+  });
+
+  it("should throw when attempting to change the version to an invalid version", () => {
+    const testSchema = new ECSchema("TestSchema", 1, 1, 1);
+    expect(() => {testSchema.readVersion = 123; }).to.throw(ECObjectsError);
+    expect(testSchema.readVersion).equal(1);
+    expect(() => {testSchema.writeVersion = 123; }).to.throw(ECObjectsError);
+    expect(testSchema.writeVersion).equal(1);
+    expect(() => {testSchema.minorVersion = 123; }).to.throw(ECObjectsError);
+    expect(testSchema.minorVersion).equal(1);
+  });
 });
