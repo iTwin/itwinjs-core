@@ -209,7 +209,7 @@ export class IModelDb extends IModel {
     }
   }
 
-  /** Execute a query against this iModel (overridden to improve performance)
+  /** Execute a query against this IModelDb.
    * @param sql The ECSql statement to execute
    * @param bindings Optional values to bind to placeholders in the statement.
    * @returns all rows as an array or an empty array if nothing was selected

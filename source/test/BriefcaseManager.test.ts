@@ -138,6 +138,11 @@ describe("BriefcaseManager", () => {
     assert.equal(models.length, modelIds.length);
     assert.isTrue(models[0].id.equals(iModel.models.repositoryModelId));
 
+    const rows: any[] = await iModel.executeQuery("SELECT CodeValue AS code FROM BisCore.Category");
+    assert.isAtLeast(rows.length, 1);
+    assert.exists(rows[0].code);
+    assert.equal(rows.length, queryElementIds.length);
+
     await iModel.close(accessToken);
   });
 

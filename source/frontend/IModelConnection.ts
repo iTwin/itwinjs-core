@@ -50,6 +50,16 @@ export class IModelConnection extends IModel {
       return;
     await IModelDbRemoting.close(accessToken, this.iModelToken);
   }
+
+  /** Execute a query against the iModel.
+   * @param sql The ECSql to execute
+   * @param bindings Optional values to bind to placeholders in the statement.
+   * @returns All rows as an array or an empty array if nothing was selected
+   * @throws [[IModelError]] if the ECSql is invalid
+   */
+  public async executeQuery(sql: string, bindings?: any): Promise<any[]> {
+    return await IModelDbRemoting.executeQuery(this.iModelToken, sql, bindings);
+  }
 }
 
 /** The collection of models in an [[IModelConnection]]. */

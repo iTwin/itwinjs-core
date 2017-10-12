@@ -36,6 +36,19 @@ export class IModelDbRemoting {
     await iModelDb.close(accessToken);
   }
 
+  /** Execute a query against the iModel.
+   * @param iModelToken The token which identifies the iModel.
+   * @param sql The ECSql to execute
+   * @param bindings Optional values to bind to placeholders in the statement.
+   * @returns All rows as an array or an empty array if nothing was selected
+   * @throws [[IModelError]] if the ECSql is invalid
+   */
+  @RunsIn(Tier.Services)
+  public static async executeQuery(iModelToken: IModelToken, sql: string, bindings?: any): Promise<any[]> {
+    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    return iModelDb.executeQuery(sql, bindings);
+  }
+
   /** Return an [[Model]] array given an array of stringified model ids. */
   @RunsIn(Tier.Services)
   public static async getModels(iModelToken: IModelToken, modelIds: string[]): Promise<Model[]> {
