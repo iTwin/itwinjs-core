@@ -11,11 +11,9 @@
   "scripts": {
     "compile": "tsc -p source",
     "compile:test": "tsc -p test",
-    "build": "node scripts/build.js",
-    "test": "npm-run-all -p test:core test:spec",
+    "test": "npm-run-all -p test:core",
     "test:watch": "mocha --watch",
     "test:core": "mocha",
-    "test:spec": "mocha --opts spectests/mocha.opts",
     "clean": "rimraf node_modules lib",
     "coverage": "rimraf ./lib/test/coverage .nyc_output && nyc npm run test:core"
   },
