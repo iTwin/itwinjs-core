@@ -5,7 +5,7 @@ import { AccessToken, Briefcase, IModelHubClient, ChangeSet } from "@bentley/imo
 import { BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { IModelError } from "../IModelError";
+import { BriefcaseStatus, IModelError } from "../IModelError";
 import { IModelVersion } from "../IModelVersion";
 import { IModelToken } from "../IModel";
 import { IModelDb } from "./IModelDb";
@@ -36,18 +36,6 @@ export class BriefcaseId {
   public isMaster(): boolean { return this.value !== BriefcaseId.Master; }
   public isStandaloneId(): boolean { return this.value !== BriefcaseId.Standalone; }
   public getValue(): number { return this.value; }
-}
-
-/**
- * Error status from various briefcase operations
- * @todo: need to setup the error numbers in a consistent way
- */
-export const enum BriefcaseStatus {
-  CannotAcquire = 0x20000,
-  CannotDownload,
-  CannotCopy,
-  CannotDelete,
-  VersionNotFound,
 }
 
 /** Option to keep briefcase when the imodel is closed */
