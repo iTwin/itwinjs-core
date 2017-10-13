@@ -15,7 +15,7 @@ function computeAddonPackageName() {
     let versionCode;
     const electronVersion = process.versions.electron;
     if (typeof (electronVersion) !== "undefined") {
-        versionCode = "e_" + electronVersion.replace(/\./, '_');
+        versionCode = "e_" + electronVersion.replace(/\./g, '_');
     }
     else {
         const nodeVersion = process.version.substring(1).split('.'); // strip off the character 'v' from the start of the string
