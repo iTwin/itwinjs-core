@@ -16,3 +16,7 @@ Object.keys(window).forEach((property) => {
 global.navigator = {
   userAgent: 'node.js'
 };
+
+const enzyme = require('enzyme');
+const Adapter = require('enzyme-adapter-react-15');
+enzyme.configure({ adapter: new Adapter() });
