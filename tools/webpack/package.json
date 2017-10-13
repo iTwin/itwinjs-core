@@ -10,7 +10,7 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "version": "1.0.3",
+  "version": "1.0.4",
   "engines": {
     "node": "8.2.1"
   },
