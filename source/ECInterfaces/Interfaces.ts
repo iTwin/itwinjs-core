@@ -2,41 +2,72 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { ECVersion, ECName } from "../ECObjects";
+import { ECVersion, ECName, ECClassModifier } from "../ECObjects";
+import { DeserializableSchemaInterface, DeserializableClassInterface } from "./DeserializationInterfaces";
 
-export interface Deserializable {
-  fromJson(obj: any): void;
-  // toJson(): ECSchema;
-}
-
-export interface SchemaReference {
+export interface SchemaKeyInterface {
   name: string;
-  vesrion: ECVersion;
+  version: ECVersion;
 }
 
-export interface ECSchemaInterface extends Deserializable {
-  references?: SchemaReference[] | ECSchemaInterface[];
+export interface ReferencesInterface {
+  name: string;
+  version: string;
+}
+
+export interface SchemaInterface extends DeserializableSchemaInterface {
+  schemaKey: SchemaKeyInterface;
+  alias: string;
+  label?: string;
+  description?: string;
+  references?: ReferencesInterface[];
   children?: SchemaChildInterface[];
 }
 
-export interface SchemaChildInterface extends Deserializable {
-  schema?: ECName | ECSchemaInterface;
+export interface SchemaChildInterface {
+  schema?: string | SchemaInterface;
   schemaVersion?: ECVersion;
+  name: string;
+  label?: string;
+  description?: string;
 }
 
 export interface ClassInterface extends SchemaChildInterface {
+  modifier: ECClassModifier;
   baseClass?: string | ClassInterface; // string should be a ECFullName
-  properties: PropertyInterface[];
+  properties?: PropertyInterface[];
+}
+
+export interface EntityInterface extends ClassInterface, DeserializableClassInterface {
+  mixin?: string | MixinInterface; // string should be an ECFullName
 }
 
 export interface MixinInterface extends ClassInterface {
-  appliesTo?: EntityClassInterface;
+  appliesTo?: string | EntityInterface; // string should be an ECFullName
 }
 
-export interface EntityClassInterface extends ClassInterface {
-  mixin?: MixinInterface;
+export interface RelationshipInterface extends ClassInterface {
+  strength: string;
+  strengthDirection: string;
+  source: RelationshipConstraintInterface;
+  target: RelationshipConstraintInterface;
 }
 
-export interface PropertyInterface extends Deserializable {
-  category?: string | SchemaChildInterface;
+export interface RelationshipConstraintInterface {
+  multiplicity: string;
+  roleLabel: string;
+  polymorphic: boolean;
+  abstractConstraint: string; // string should be an ECFullName
+  customAttributes: object[];  // TODO: Fix this
+  constraintClasses: EntityInterface[] | RelationshipInterface[];
+}
+
+export interface CustomAttributeInterface {
+  appliesTo: string; // string should be a CustomAttributeContainerType
+}
+
+// export interface ECEnumeratio 
+
+export interface PropertyInterface {
+
 }

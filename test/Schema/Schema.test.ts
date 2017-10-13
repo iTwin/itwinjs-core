@@ -5,6 +5,7 @@
 import { assert, expect } from "chai";
 
 import { ECSchema } from "../../source/Metadata/Schema";
+import { Class, EntityClass } from "../../source/Metadata/Class";
 import { ECObjectsError } from "../../source/Exception";
 
 describe("essential pieces of a schema", () => {
@@ -41,5 +42,15 @@ describe("essential pieces of a schema", () => {
     expect(testSchema.writeVersion).equal(1);
     expect(() => {testSchema.minorVersion = 123; }).to.throw(ECObjectsError);
     expect(testSchema.minorVersion).equal(1);
+  });
+});
+
+describe("create class in a schema", () => {
+  it("", () => {
+    const testSchema = new ECSchema("TestSchema", 1, 1, 1);
+    testSchema.createEntityClass("TestEntity");
+
+    expect(testSchema.getClass("TestEntity")).instanceof(Class);
+    expect(testSchema.getClass<EntityClass>("TestEntity")).instanceof(EntityClass);
   });
 });

@@ -114,12 +114,17 @@ export class ECVersion {
 }
 
 export class ECName {
-  public name: string;
+  private _name: string;
+
   constructor(name: string) {
     this.name = name;
   }
 
-  // set name(: string) {
-  //   this.name = name; // TODO
-  // }
+  get name() { return this._name; }
+  set name(name: string) {
+    const test: boolean = /^([a-zA-Z_.]+[a-zA-Z0-9_.]*)$/i.test(name);
+    if (!test)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECName);
+    this._name = name;
+  }
 }

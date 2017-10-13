@@ -2,12 +2,13 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { assert, expect } from "chai";
 import { ECSchema } from "../../source/Metadata/Schema";
+import { Class, EntityClass } from "../../source/Metadata/Class";
 import { ECObjectsError } from "../../source/Exception";
 
-describe("schema deserialization from json string", () => {
-  it("should succeed with name and version", () => {
+describe("schema deserialization", () => {
+  it("from json string should succeed with name and version", () => {
     const schemaString = JSON.stringify({
       $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
       name: "TestSchema",
@@ -24,9 +25,7 @@ describe("schema deserialization from json string", () => {
     expect(ecschema.description).equal("This is a test description");
     expect(ecschema.label).equal("This is a test label");
   });
-});
 
-describe("schema deserialization from json object", () => {
   it("should succeed with name and version", () => {
     const schemaJson = {
       $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
@@ -53,5 +52,25 @@ describe("schema deserialization from json object", () => {
     };
 
     expect(() => {ECSchema.fromObject(schemaJson); }).to.throw(ECObjectsError);
+  });
+
+  it("", () => {
+    const schemaJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+      name: "TestSchema",
+      version: "1.2.3",
+      children: {
+        testEntityClass: {
+          schemaChildType: "EntityClass",
+        },
+      },
+    };
+
+    const ecschema = ECSchema.fromObject(schemaJson);
+    const testClass = ecschema.getClass<Class>("testEntityClass");
+    assert.isDefined(testClass);
+
+    const testEntity = ecschema.getClass<EntityClass>("testEntityClass");
+    assert.isDefined(testEntity);
   });
 });

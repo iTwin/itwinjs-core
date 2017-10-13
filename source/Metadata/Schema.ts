@@ -1,20 +1,26 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
-import { ECVersion, ECName } from "../ECObjects";
-import { ECSchemaInterface } from "../ECInterfaces/Interfaces";
+import { ECVersion, ECName, ECClassModifier } from "../ECObjects";
+import { SchemaInterface, SchemaChildInterface, SchemaKeyInterface } from "../ECInterfaces/Interfaces";
+import { Class, MixinClass, EntityClass, StructClass } from "../Metadata/Class";
 import DeserializationHelper from "../Deserialization/Helper";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ICustomAttributeContainer, CustomAttributeSet } from "./CustomAttribute";
+
+const SCHEMAURL3_1 = "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema";
 
 /**
  *
  */
-export class ECSchema  implements ECSchemaInterface {
+export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
   private _immutable: boolean = false;
   public schemaKey: SchemaKey;
-  public alias?: string;
+  public alias: string;
   public label?: string;
   public description?: string;
+  public customAttributes?: CustomAttributeSet;
+  private _children?: SchemaChildInterface[];
 
   constructor(name?: string, readVersion?: number, writeVersion?: number, minorVersion?: number) {
     this.schemaKey = new SchemaKey(name, readVersion, writeVersion, minorVersion);
@@ -64,12 +70,81 @@ export class ECSchema  implements ECSchemaInterface {
     this.schemaKey.minorVersion = version;
   }
 
+  public createEntityClass(name: string, modifier?: ECClassModifier): EntityClass {
+    const newEntity = new EntityClass(name);
+
+    if (modifier)
+      newEntity.modifier = modifier;
+
+    if (!this._children)
+      this._children = [];
+    this._children.push(newEntity);
+
+    newEntity.schema = this;
+
+    return newEntity;
+  }
+
+  public createMixinClass(name: string): MixinClass {
+    const newMixin = new MixinClass(name);
+
+    if (!this._children)
+      this._children = [];
+    this._children.push(newMixin);
+
+    newMixin.schema = this;
+
+    return newMixin;
+  }
+
+  public createStructClass(name: string, modifier?: ECClassModifier): StructClass {
+    const newStruct = new StructClass(name);
+
+    if (modifier)
+    newStruct.modifier = modifier;
+
+    if (!this._children)
+      this._children = [];
+    this._children.push(newStruct);
+
+    newStruct.schema = this;
+
+    return newStruct;
+  }
+
+  public getClass<T extends Class>(name: string): T | undefined {
+    if (!this._children)
+      return undefined;
+
+    const foundClass = this._children.find((child) => child.name === name);
+
+    if (!foundClass || !(foundClass instanceof Class))
+      return undefined;
+
+    return foundClass as T;
+  }
+
+  public getClasses(): Class[] {
+    if (!this._children)
+      return [];
+
+    const classList = this._children.filter((child) => child instanceof Class);
+
+    if (!classList)
+      return [];
+
+    return classList as Class[];
+  }
+
   /**
    *
    * @param jsonObj
    */
   public fromJson(jsonObj: any): void {
     if (this._immutable) throw new ECObjectsError(ECObjectsStatus.ImmutableSchema);
+
+    if (!jsonObj.$schema || jsonObj.$schema !== SCHEMAURL3_1)
+      throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl);
 
     if (jsonObj.name) this.name = jsonObj.name;
     if (jsonObj.alias) this.alias = jsonObj.alias;
@@ -103,7 +178,7 @@ export class ECSchema  implements ECSchemaInterface {
 /**
  *
  */
-export class SchemaKey {
+export class SchemaKey implements SchemaKeyInterface {
   private _name: ECName;
   public version: ECVersion;
 

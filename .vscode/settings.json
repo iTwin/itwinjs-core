@@ -3,6 +3,7 @@
   "editor.tabSize": 2,
   "files.exclude": {
     "node_modules": true,
-    "lib": true
+    "lib": true,
+    ".nyc_output": true
   }
 }
