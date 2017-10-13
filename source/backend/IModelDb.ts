@@ -173,6 +173,8 @@ export class IModelDb extends IModel {
 
   /** Get a prepared ECSql statement - may require preparing the statement, if not found in the cache.
    * @param sql The ECSql statement to prepare
+   * @return the prepared statement
+   * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSql syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
    */
   public getPreparedStatement(sql: string): ECSqlStatement {
     const cs = this.statementCache.find(sql);

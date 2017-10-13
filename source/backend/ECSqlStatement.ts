@@ -38,7 +38,7 @@ export class ECSqlStatement implements IterableIterator<any> {
   }
 
   /** Prepare this statement prior to first use.
-   * @throws IModelError in case of preparation errors. Normally, errors are due to ECSql syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
+   * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSql syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
    */
   public prepare(db: any, statement: string): void {
     if (this.isPrepared())
