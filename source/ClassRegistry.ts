@@ -17,15 +17,39 @@ export class ClassRegistry {
   }
   public static lookupClass(name: string) { return this.classMap.get(name.toLowerCase()); }
 
-  /** Create an instance of a class from it properties */
-  public static async createInstance(props: EntityProps): Promise<Entity> {
+  /** Check if the specified Error is a class-not-found error */
+  public static isClassNotFoundError(err: any) {
+    return (err instanceof IModelError) && ((err as IModelError).errorNumber === IModelStatus.NotFound);
+  }
+
+  /** Check if the specified Error is a metadata-not-found error */
+  public static isMetaDataNotFoundError(err: any) {
+    return (err instanceof IModelError) && ((err as IModelError).errorNumber === IModelStatus.NotFound);
+  }
+
+  /** Construct a class-not-found exception */
+  public static makeClassNotFoundError(): IModelError {
+    return new IModelError(IModelStatus.NotFound);
+  }
+
+  /** Construct a metadata-not-found exception */
+  public static makeMetaDataNotFoundError(): IModelError {
+    return new IModelError(IModelStatus.NotFound);
+  }
+
+  /** Called by IModelDb and others as part of constructing entities.
+   * @throws IModelError if the required constructor or class metadata is not in the cache.
+   * @hidden
+   */
+  public static createInstance(props: EntityProps): Entity {
     if (!props.classFullName || !props.iModel)
-      return Promise.reject(new Error("Invalid input props"));
+      throw new IModelError(IModelStatus.BadArg);
 
     let ctor = ClassRegistry.classMap.get(props.classFullName.toLowerCase());
     if (!ctor) {
-      ctor = await ClassRegistry.generateClass(props.classFullName, props.iModel);
-      assert(!!ctor);
+      ctor = ClassRegistry.generateClass(props.classFullName, props.iModel);
+      if (!ctor)
+        throw ClassRegistry.makeClassNotFoundError();
     }
 
     return new ctor(props);
@@ -90,22 +114,17 @@ export class ClassRegistry {
   /** This function fetches the specified Entity from the imodel, generates a JS class for it, and registers the generated
    * class. This function also ensures that all of the base classes of the Entity exist and are registered.
    */
-  private static async generateClass(classFullName: string, imodel: IModel): Promise<EntityCtor> {
-    const name = classFullName.split(":");
-    assert(name.length === 2);
+  private static generateClass(classFullName: string, imodel: IModel): EntityCtor {
 
-    const ecClassJson: string = await imodel.getECClassMetaData(name[0], name[1]);
-    assert(!!ecClassJson);
-
-    const metadata: EntityMetaData = JSON.parse(ecClassJson);
+    const metadata: EntityMetaData | undefined = imodel.classMetaDataRegistry.find(classFullName);
+    if (metadata === undefined || metadata.ecclass === undefined)
+      throw ClassRegistry.makeMetaDataNotFoundError();
 
     // Make sure that we have all base classes registered.
     // This recurses. I have to know that the super class is defined and registered before defining a derived class.
     // Therefore, I must await getRegisteredClass.
-    if (metadata.baseClasses && metadata.baseClasses.length !== 0) {
-      for (const base of metadata.baseClasses) {
-        await ClassRegistry.getClass(base, imodel);
-      }
+    if (metadata!.baseClasses && metadata.baseClasses.length !== 0) {
+      ClassRegistry.getClass(metadata.baseClasses[0], imodel);
     }
 
     // Now we can generate the class from the classDef.
@@ -134,7 +153,7 @@ export class ClassRegistry {
    * @returns A promise that resolves to an object containing a result property set to the Entity.
    * @throws [[IModelError]] if the class is not found.
    */
-  public static async getClass(fullName: string, iModel: IModel): Promise<EntityCtor> {
+  public static getClass(fullName: string, iModel: IModel): EntityCtor {
     const key = fullName.toLowerCase();
     if (!ClassRegistry.classMap.has(key)) {
       return ClassRegistry.generateClass(fullName, iModel);
@@ -143,9 +162,9 @@ export class ClassRegistry {
     assert(!!ctor);
 
     if (!ctor)
-      return Promise.reject(new IModelError(IModelStatus.NotFound, "Class not found in ClassRegistry"));
+      throw ClassRegistry.makeClassNotFoundError();
 
-    return ctor;
+    return ctor!;
   }
 
   /** Check if the class for the specified Entity is in the registry.
@@ -154,5 +173,22 @@ export class ClassRegistry {
    */
   public static isClassRegistered(schemaName: string, className: string): boolean {
     return ClassRegistry.classMap.has(ClassRegistry.getKey(schemaName, className));
+  }
+}
+
+/** A cache that records mappings between class names and class metadata */
+export class MetaDataRegistry {
+  private _registry: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();
+
+  /** Get the specified Entity metadata */
+  public find(classFullName: string): EntityMetaData | undefined {
+    const key = classFullName.toLowerCase();
+    return this._registry.get(key);
+  }
+
+  /** Add metadata to the cache */
+  public add(classFullName: string, metaData: EntityMetaData): void {
+    const key = classFullName.toLowerCase();
+    this._registry.set(key, metaData);
   }
 }

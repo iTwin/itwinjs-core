@@ -6,10 +6,14 @@
     "language": "en",
     // words - list of words to be always considered correct
     "words": [
+        "Guid",
         "Wireframe",
+        "backend",
         "bentleyjs",
         "imodel",
         "imodeljs",
+        "remotable",
+        "remoting",
         "struct",
         "subtractive",
         "superclass",

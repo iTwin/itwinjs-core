@@ -8,8 +8,9 @@ import * as path from "path";
 
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { ECJsonTypeMap, ECInstance } from "@bentley/bentleyjs-core/lib/ECJsonTypeMap";
-import { ECDb } from "../service-utils/ECDb";
-import { BindingValue } from "../service-utils/BindingUtility";
+import { ECDb } from "../backend/ECDb";
+import { BindingValue } from "../backend/BindingUtility";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 export class ECDbTestUtils {
   public static getTestAssetsPath(): string {
@@ -178,31 +179,32 @@ describe("ECDb", () => {
   });
 
   it("should be able to execute queries", async () => {
-    let { error, result: strRows } = await ecdb.executeQuery("SELECT * FROM TestSchema.TestClass");
+    let { error, result: rows } = await ecdb.executeQuery("SELECT * FROM TestSchema.TestClass");
     expect(error).is.undefined;
-    if (!strRows) {
+    if (rows!.length === 0) {
       assert(false);
       return;
     }
 
-    const jsonRows: any = JSON.parse(strRows);
-    assert.isArray(jsonRows);
-    assert.equal(jsonRows.length, 1);
+    assert.isArray(rows);
+    assert.equal(rows!.length, 1);
 
-    assert.equal(jsonRows[0].id, testInstance.id);
+    assert.equal(rows![0].id, testInstance.id);
 
-    ({ error, result: strRows } = await ecdb.executeQuery("SELECT * FROM TestSchema.TestClass WHERE ECInstanceId=?", [testInstanceKey.id]));
+    const testInstanceId = new Id64(testInstanceKey.id);  // NB: In the queries that follow, ECInstanceId must be strongly typed as an Id64, not a string! The ECSql binding logic will insist on that.
+
+    ({ error, result: rows } = await ecdb.executeQuery("SELECT * FROM TestSchema.TestClass WHERE ECInstanceId=?", [testInstanceId]));
     expect(error).is.undefined;
-    if (!strRows) {
+    if (rows!.length === 0) {
       assert(false);
       return;
     }
 
     const map = new Map<string, BindingValue>([
-      ["instanceId", testInstanceKey.id],
+      ["instanceId", testInstanceId],
     ]);
-    ({ error, result: strRows } = await ecdb.executeQuery("SELECT * FROM TestSchema.TestClass WHERE ECInstanceId=:instanceId", map));
-    assert(strRows);
+    ({ error, result: rows } = await ecdb.executeQuery("SELECT * FROM TestSchema.TestClass WHERE ECInstanceId=:instanceId", map));
+    assert(rows!.length !== 0);
   });
 
   it("should be able to execute statements", async () => {

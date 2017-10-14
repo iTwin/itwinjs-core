@@ -5,10 +5,10 @@
 import { assert } from "chai";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
-import { Code, Elements, IModel, Models } from "../IModel";
+import { Code } from "../Code";
 import { ColorDef } from "../Render";
 import { ElementProps, Element, GeometricElement3d, GeometricElementProps, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../Element";
-import { Entity, EntityCtor, EntityProps } from "../Entity";
+import { Entity, EntityCtor, EntityProps, EntityMetaData } from "../Entity";
 import { Model } from "../Model";
 import { Category, SubCategory } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
@@ -18,13 +18,16 @@ import { IModelTestUtils } from "./IModelTestUtils";
 import { BisCore } from "../BisCore";
 import { SpatialViewDefinition, DisplayStyle3d } from "../ViewDefinition";
 import { GeometricElement2d } from "../Element";
-import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
+import { ElementPropertyFormatter } from "../backend/ElementPropertyFormatter";
+import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { IModelDb } from "../backend/IModelDb";
+import { ECSqlStatement } from "../backend/ECSqlStatement";
 
 describe("iModel", () => {
-  let imodel: IModel;
-  let imodel2: IModel;
-  let imodel3: IModel;
-  let imodel4: IModel;
+  let imodel: IModelDb;
+  let imodel2: IModelDb;
+  let imodel3: IModelDb;
+  let imodel4: IModelDb;
 
   before(async () => {
     // First, register any schemas that will be used in the tests.
@@ -58,32 +61,33 @@ describe("iModel", () => {
     assert.deepEqual(entity, el2, "json stringify worked");
   };
 
-  it("should use schema to look up classes by name", async () => {
-    const elementClass = await BisCore.getClass(Element.name, imodel);
-    const categoryClass = await BisCore.getClass(Category.name, imodel);
-    assert.equal(elementClass.name, "Element");
-    assert.equal(categoryClass.name, "Category");
+  it("should use schema to look up classes by name", () => {
+    const elementClass = BisCore.getClass(Element.name, imodel);
+    const categoryClass = BisCore.getClass(Category.name, imodel);
+    assert.isTrue(elementClass !== undefined);
+    assert.isTrue(categoryClass !== undefined);
+    assert.equal(elementClass!.name, "Element");
+    assert.equal(categoryClass!.name, "Category");
   });
 
   it("should load a known element by Id from an existing iModel", async () => {
-    const elements: Elements = imodel.elements;
-    assert.exists(elements);
+    assert.exists(imodel.elements);
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
-    const el = await elements.getElement(code1);
+    const el = await imodel.elements.getElement(code1);
     assert.exists(el);
-    const el2 = await elements.getElement(new Id64("0x34"));
+    const el2 = await imodel.elements.getElement(new Id64("0x34"));
     assert.exists(el2);
     const badCode = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
 
     try {
-      await elements.getElement(badCode); // throws Error
+      await imodel.elements.getElement(badCode); // throws Error
       assert.fail(); // this line should be skipped
     } catch (error) {
       assert.isTrue(error instanceof Error);
       assert.isTrue(error instanceof IModelError);
     }
 
-    const subCat = await elements.getElement(new Id64("0x2e"));
+    const subCat = await imodel.elements.getElement(new Id64("0x2e"));
     assert.isTrue(subCat instanceof SubCategory);
     if (subCat instanceof SubCategory) {
       assert.isTrue(subCat.appearance.color.tbgr === 16777215);
@@ -98,7 +102,7 @@ describe("iModel", () => {
     }
 
     /// Get the parent Category of the subcategory.
-    const cat = await elements.getElement((subCat as SubCategory).getCategoryId());
+    const cat = await imodel.elements.getElement((subCat as SubCategory).getCategoryId());
     assert.isTrue(cat instanceof Category);
     if (cat instanceof Category) {
       assert.isTrue(cat.id.getLow() === 45);
@@ -110,7 +114,7 @@ describe("iModel", () => {
       testCopyAndJson(cat);
     }
 
-    const phys = await elements.getElement(new Id64("0x38"));
+    const phys = await imodel.elements.getElement(new Id64("0x38"));
     assert.isTrue(phys instanceof GeometricElement3d);
 
     const a2 = await imodel2.elements.getElement(new Id64("0x1d"));
@@ -124,7 +128,7 @@ describe("iModel", () => {
 
     const newEl = el3.copyForEdit<Element>();
     newEl.federationGuid = undefined;
-    const newId = await imodel2.elements.insertElement(newEl);
+    const newId = imodel2.elements.insertElement(newEl);
     assert.isTrue(newId.isValid(), "insert worked");
   });
 
@@ -140,7 +144,7 @@ describe("iModel", () => {
         model: seedElement.model,
         category: seedElement.category,
         id: new Id64(),
-        code: Code.createDefault(),
+        code: Code.createEmpty(),
         federationGuid: new Guid(true),
         userLabel: "UserLabel-" + i,
       };
@@ -148,7 +152,7 @@ describe("iModel", () => {
       const element: Element = await imodel2.elements.createElement(elementProps);
       element.setUserProperties("performanceTest", { s: "String-" + i, n: i });
 
-      const elementId = await element.insert();
+      const elementId: Id64 = imodel2.elements.insertElement(element);
       assert.isTrue(elementId.isValid());
     }
   });
@@ -160,7 +164,7 @@ describe("iModel", () => {
     assert.isAtLeast(rootSubject.code.getValue().length, 1);
 
     try {
-      await rootSubject.getSubModel(); // throws error
+      await imodel.models.getSubModel(rootSubject.id); // throws error
       assert.fail(); // this line should be skipped
     } catch (error) {
       assert.isTrue(error instanceof Error);
@@ -169,7 +173,7 @@ describe("iModel", () => {
       assert.equal(error.toDebugString(), "IModelStatus.NotFound");
     }
 
-    const childIds: Id64[] = await rootSubject.queryChildren();
+    const childIds: Id64[] = await imodel.elements.queryChildren(rootSubject.id);
     assert.isAtLeast(childIds.length, 1);
     for (const childId of childIds) {
       const childElement = await imodel.elements.getElement(childId);
@@ -179,7 +183,7 @@ describe("iModel", () => {
       testCopyAndJson(childElement);
       assert.isTrue(childElement.parent!.id.getLow() === rootSubject.id.getLow());
       if (childElement instanceof InformationPartitionElement) {
-        const childSubModel = await childElement.getSubModel();
+        const childSubModel: Model = await imodel.models.getSubModel(childElement.id);
         assert.exists(childSubModel, "InformationPartitionElements should have a subModel");
 
         if ((childId.getLow() === 16) && (childId.getHigh() === 0)) {
@@ -204,17 +208,17 @@ describe("iModel", () => {
   });
 
   it("should load a known model by Id from an existing iModel", async () => {
-    const models: Models = imodel.models;
-    assert.exists(models);
-    const model2 = await models.getModel(new Id64("0x1c"));
+    assert.exists(imodel.models);
+    const model2 = await imodel.models.getModel(new Id64("0x1c"));
     assert.exists(model2);
     testCopyAndJson(model2);
-    let model = await models.getModel(models.repositoryModelId);
+    let model = await imodel.models.getModel(imodel.models.repositoryModelId);
     assert.exists(model);
     testCopyAndJson(model!);
     const code1 = new Code({ spec: "0x1d", scope: "0x1d", value: "A" });
-    model = await models.getSubModel(code1);
-    const geomModel = await ClassRegistry.getClass("BisCore:PhysicalModel", imodel);
+    model = await imodel.models.getSubModel(code1);
+    // By this point, we expect the submodel's class to be in the class registry *cache*
+    const geomModel = ClassRegistry.getClass("BisCore:PhysicalModel", imodel);
     assert.exists(model);
     assert.isTrue(model instanceof geomModel!);
     testCopyAndJson(model!);
@@ -225,11 +229,11 @@ describe("iModel", () => {
       iModel: imodel,
       classFullName: BisCore.name + ":" + ModelSelector.name,
       model: new Id64([1, 1]),
-      code: Code.createDefault(),
+      code: Code.createEmpty(),
       id: new Id64(),
     };
 
-    const entity = await ClassRegistry.createInstance(props);
+    const entity = imodel.constructEntity(props);
     assert.isTrue(entity instanceof ModelSelector);
     const selector1 = entity as ModelSelector;
     assert.exists(selector1);
@@ -241,9 +245,8 @@ describe("iModel", () => {
   });
 
   it("should produce an array of rows", async () => {
-    const rowsJson: string = await imodel.executeQuery("SELECT * FROM " + Category.sqlName);
-    assert.exists(rowsJson);
-    const rows: any = JSON.parse(rowsJson!);
+    const rows: any[] = await imodel.executeQuery("SELECT * FROM " + Category.sqlName);
+    assert.exists(rows);
     assert.isArray(rows);
     assert.isAtLeast(rows.length, 1);
     assert.exists(rows[0].id);
@@ -251,9 +254,8 @@ describe("iModel", () => {
   });
 
   it("ElementPropertyFormatter should format", async () => {
-    const elements: Elements = imodel.elements;
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
-    const el = await elements.getElement(code1);
+    const el = await imodel.elements.getElement(code1);
     const formatter: ElementPropertyFormatter = new ElementPropertyFormatter(imodel);
     const props = await formatter.formatProperties(el);
     assert.exists(props);
@@ -266,9 +268,8 @@ describe("iModel", () => {
   });
 
   it("should be at least one view element", async () => {
-    const viewJson: string = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + SpatialViewDefinition.sqlName);
-    assert.exists(viewJson, "Should find some views");
-    const viewRows: any[] = JSON.parse(viewJson!);
+    const viewRows: any[] = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + SpatialViewDefinition.sqlName);
+    assert.exists(viewRows, "Should find some views");
     for (const viewRow of viewRows!) {
       const viewId = new Id64(viewRow.elementId);
       const view = await imodel.elements.getElement(viewId);
@@ -300,9 +301,8 @@ describe("iModel", () => {
   });
 
   it("should be some categories", async () => {
-    const categoryJson: string = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + Category.sqlName);
-    assert.exists(categoryJson, "Should have some Category ids");
-    const categoryRows: any[] = JSON.parse(categoryJson!);
+    const categoryRows: any[] = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + Category.sqlName);
+    assert.exists(categoryRows, "Should have some Category ids");
     for (const categoryRow of categoryRows!) {
       const categoryId: Id64 = new Id64(categoryRow.elementId);
       const category = await imodel.elements.getElement(categoryId);
@@ -323,10 +323,9 @@ describe("iModel", () => {
       }
 
       // get the subcategories
-      const queryString: string = "SELECT ECInstanceId as elementId FROM " + SubCategory.sqlName + " WHERE Parent.Id=" + categoryId;
-      const subCategoryJson: string = await imodel.executeQuery(queryString);
-      assert.exists(subCategoryJson, "Should have at least one SubCategory");
-      const subCategoryRows: any[] = JSON.parse(subCategoryJson!);
+      const queryString: string = "SELECT ECInstanceId as elementId FROM " + SubCategory.sqlName + " WHERE Parent.Id=?";
+      const subCategoryRows: any[] = await imodel.executeQuery(queryString, [categoryId]);
+      assert.exists(subCategoryRows, "Should have at least one SubCategory");
       for (const subCategoryRow of subCategoryRows) {
         const subCategoryId = new Id64(subCategoryRow.elementId);
         const subCategory = await imodel.elements.getElement(subCategoryId);
@@ -339,9 +338,8 @@ describe("iModel", () => {
   });
 
   it("should be some 2d elements", async () => {
-    const drawingGraphicJson: string = await imodel2.executeQuery("SELECT ECInstanceId as elementId FROM BisCore.DrawingGraphic");
-    assert.exists(drawingGraphicJson, "Should have some Drawing Graphics");
-    const drawingGraphicRows: any[] = JSON.parse(drawingGraphicJson!);
+    const drawingGraphicRows: any[] = await imodel2.executeQuery("SELECT ECInstanceId as elementId FROM BisCore.DrawingGraphic");
+    assert.exists(drawingGraphicRows, "Should have some Drawing Graphics");
     for (const drawingGraphicRow of drawingGraphicRows!) {
       const drawingGraphicId: Id64 = new Id64(drawingGraphicRow.elementId);
       const drawingGraphic = await imodel2.elements.getElement(drawingGraphicId);
@@ -373,9 +371,8 @@ describe("iModel", () => {
 
   it("should be children of RootSubject", async () => {
     const queryString: string = "SELECT ECInstanceId as modelId FROM " + Model.sqlName + " WHERE ParentModel.Id=" + imodel2.models.repositoryModelId;
-    const modelJson: string = await imodel2.executeQuery(queryString);
-    assert.exists(modelJson, "Should have at least one model within rootSubject");
-    const modelRows: any[] = JSON.parse(modelJson!);
+    const modelRows: any[] = await imodel2.executeQuery(queryString);
+    assert.exists(modelRows, "Should have at least one model within rootSubject");
     for (const modelRow of modelRows) {
       const modelId = new Id64(modelRow.modelId);
       const model = await imodel2.models.getModel(modelId);
@@ -412,25 +409,26 @@ describe("iModel", () => {
   });
 
   it("should produce an array of rows with executeQuery", async () => {
-    const allrowsdata: string = await imodel.executeQuery("SELECT * FROM bis.Element");
-    assert.exists(allrowsdata);
-    const rows: any = JSON.parse(allrowsdata);
+    const rows: any[] = await imodel.executeQuery("SELECT * FROM bis.Element");
+    assert.exists(rows);
     assert.isArray(rows);
     assert.notEqual(rows.length, 0);
     assert.notEqual(rows[0].ecinstanceid, "");
   });
 
+  /* TBD
   it("should load struct properties", async () => {
     const el1 = await imodel3.elements.getElement(new Id64("0x14"));
     assert.isDefined(el1);
-    IModelTestUtils.closeIModel(imodel3);
+    // *** TODO: Check that struct property was loaded
   });
 
   it("should load array properties", async () => {
     const el1 = await imodel3.elements.getElement(new Id64("0x14"));
     assert.isDefined(el1);
-    IModelTestUtils.closeIModel(imodel3);
+    // *** TODO: Check that array property was loaded
   });
+  */
 
   it("should insert and update auto-handled properties", async () => {
     const testElem = await imodel4.elements.getElement(new Id64("0x14"));
@@ -452,7 +450,7 @@ describe("iModel", () => {
     newTestElem.dtUtc = new Date("2015-03-25");
     newTestElem.p3d = new Point3d(1, 2, 3);
 
-    const newTestElemId = await imodel4.elements.insertElement(newTestElem);
+    const newTestElemId = imodel4.elements.insertElement(newTestElem);
 
     assert.isTrue(newTestElemId.isValid(), "insert worked");
 
@@ -463,7 +461,7 @@ describe("iModel", () => {
     assert.isDefined(newTestElemFetched.integerProperty1);
     assert.equal(newTestElemFetched.integerProperty1, newTestElem.integerProperty1);
     assert.isTrue(newTestElemFetched.arrayOfPoint3d[0].isAlmostEqual(newTestElem.arrayOfPoint3d[0]));
-    // TODO: autoHandlePropertiesToJson in native code must convert property names to lowercase - assert.deepEqual(newTestElemFetched.location, loc1);
+    assert.deepEqual(newTestElemFetched.location, loc1);
     // TODO: struct arrays   assert.deepEqual(newTestElem.arrayOfStructs, arrayOfStructs);
     // TODO: getElement must convert date ISO string to Date object    assert.deepEqual(newTestElemFetched.dtUtc, newTestElem.dtUtc);
     assert.isTrue(newTestElemFetched.p3d.isAlmostEqual(newTestElem.p3d));
@@ -473,7 +471,7 @@ describe("iModel", () => {
     const editElem = newTestElemFetched.copyForEdit() as Element;
     editElem.location = loc2;
     try {
-      await editElem.update();
+      await imodel4.elements.updateElement(editElem);
     } catch (_err) {
       assert.fail("Element.update failed");
     }
@@ -484,19 +482,16 @@ describe("iModel", () => {
 
     // ------------ delete -----------------
     const elid = afterUpdateElemFetched.id;
-    await afterUpdateElemFetched.delete();
+    await imodel4.elements.deleteElement(afterUpdateElemFetched);
     try {
       await imodel4.elements.getElement(elid);
       assert.fail("should fail to load the element.");
     } catch (error) {
       // TODO: test that error is what I expect assert.equal(error.status == IModelStatus.)
     }
-    IModelTestUtils.closeIModel(imodel3);
   });
 
-  function checkElementMetaData(metadataStr: string) {
-    assert(metadataStr && metadataStr.length > 0);
-    const obj: any = JSON.parse(metadataStr || "");
+  function checkElementMetaData(obj: EntityMetaData) {
     assert.isNotNull(obj);
     assert.equal(obj.ecclass, "BisCore:Element");
     assert.isArray(obj.baseClasses);
@@ -505,11 +500,13 @@ describe("iModel", () => {
     assert.isArray(obj.customAttributes);
     let foundClassHasHandler = false;
     let foundClassHasCurrentTimeStampProperty = false;
-    for (const ca of obj.customAttributes) {
-      if (ca.ecclass === "BisCore:ClassHasHandler")
-        foundClassHasHandler = true;
-      else if (ca.ecclass === "CoreCustomAttributes:ClassHasCurrentTimeStampProperty")
-        foundClassHasCurrentTimeStampProperty = true;
+    if (obj.customAttributes !== undefined) {
+      for (const ca of obj.customAttributes) {
+        if (ca.ecclass === "BisCore:ClassHasHandler")
+          foundClassHasHandler = true;
+        else if (ca.ecclass === "CoreCustomAttributes:ClassHasCurrentTimeStampProperty")
+          foundClassHasCurrentTimeStampProperty = true;
+      }
     }
     assert.isTrue(foundClassHasHandler);
     assert.isTrue(foundClassHasCurrentTimeStampProperty);
@@ -518,30 +515,175 @@ describe("iModel", () => {
     assert.equal(obj.properties.federationGuid.extendedType, "BeGuid");
   }
 
-  it("should get metadata for class (async)", async () => {
-    const metadataStr: string = await imodel.getECClassMetaData("BisCore", "Element");
-    assert.exists(metadataStr);
-    checkElementMetaData(metadataStr);
+  it("should get metadata for class", () => {
+    const metaData: EntityMetaData = imodel.getMetaData("BisCore:Element");
+    assert.exists(metaData);
+    checkElementMetaData(metaData);
   });
 
-  function checkClassHasHandlerMetaData(metadataStr: string) {
-    assert(metadataStr && metadataStr.length > 0);
-    const obj: any = JSON.parse(metadataStr || "");
+  function checkClassHasHandlerMetaData(obj: EntityMetaData) {
     assert.isDefined(obj.properties.restrictions);
     assert.equal(obj.properties.restrictions.primitiveType, 2305);
     assert.equal(obj.properties.restrictions.minOccurs, 0);
   }
 
-  it("should get metadata for CA class just as well (and we'll see a array-typed property) (sync)", async () => {
-    const metadataStr: string = imodel.getECClassMetaDataSync("BisCore", "ClassHasHandler");
-    assert.exists(metadataStr);
-    checkClassHasHandlerMetaData(metadataStr);
+  it("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
+    const metaData: EntityMetaData = imodel.getMetaData("BisCore:ClassHasHandler");
+    assert.exists(metaData);
+    checkClassHasHandlerMetaData(metaData);
   });
 
-  it("should get metadata for CA class just as well (and we'll see a array-typed property) (async)", async () => {
-    const metadataStr: string = await imodel.getECClassMetaData("BisCore", "ClassHasHandler");
-    assert.exists(metadataStr);
-    checkClassHasHandlerMetaData(metadataStr);
+  it("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
+    const metaData: EntityMetaData = imodel.getMetaData("BisCore:ClassHasHandler");
+    assert.exists(metaData);
+    checkClassHasHandlerMetaData(metaData);
   });
 
+  it("should exercise ECSqlStatement (backend only)", () => {
+    // Reject an invalid statement
+    try {
+      imodel2.prepareStatement("select no_such_property, codeValue from bis.element");
+      assert.fail("prepare should have failed with an exception");
+    } catch (err) {
+      assert.isTrue(err.constructor.name === "IModelError");
+      assert.notEqual(err.status, DbResult.BE_SQLITE_OK);
+    }
+    let lastId: string = "";
+    let firstCodeValue: string = "";
+    imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element", (stmt: ECSqlStatement) => {
+      assert.isNotNull(stmt);
+      // Reject an attempt to bind when there are no placeholders in the statement
+      try {
+        stmt.bindValues({ foo: 1 });
+        assert.fail("bindValues should have failed with an exception");
+      } catch (err2) {
+        assert.isTrue(err2.constructor.name === "IModelError");
+        assert.notEqual(err2.status, DbResult.BE_SQLITE_OK);
+      }
+
+      // Verify that we get a bunch of rows with the expected shape
+      let count = 0;
+      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        const row = stmt.getRow();
+        assert.isNotNull(row);
+        assert.isObject(row);
+        assert.isTrue(row.id !== undefined);
+        assert.isString(row.id);
+        lastId = row.id;
+        if (row.codeValue !== undefined)
+          firstCodeValue = row.codeValue;
+        count = count + 1;
+      }
+      assert.isTrue(count > 1);
+      assert.notEqual(lastId, "");
+      assert.notEqual(firstCodeValue, "");
+
+      // Try iterator style
+      let firstCodeValueIter: string = "";
+      let iteratorCount = 0;
+      let lastIterId: string = "";
+      stmt.reset();
+      for (const row of stmt) {
+        assert.isNotNull(row);
+        assert.isObject(row);
+        assert.isTrue(row.id !== undefined);
+        assert.isString(row.id);
+        lastIterId = row.id;
+        iteratorCount = iteratorCount + 1;
+        if (row.codeValue !== undefined)
+          firstCodeValueIter = row.codeValue;
+      }
+      assert.equal(iteratorCount, count, "iterator loop should find the same number of rows as the step loop");
+      assert.equal(lastIterId, lastId, "iterator loop should see the same last row as the step loop");
+      assert.equal(firstCodeValueIter, firstCodeValue, "iterator loop should find the first non-null code value as the step loop");
+    });
+
+    imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element WHERE (ecinstanceid=?)", (stmt3: ECSqlStatement) => {
+      // Now try a statement with a placeholder
+      const idToFind: Id64 = new Id64(lastId);
+      stmt3.bindValues([idToFind]);
+      let count = 0;
+      while (DbResult.BE_SQLITE_ROW === stmt3.step()) {
+        count = count + 1;
+        const row = stmt3.getRow();
+        // Verify that we got the row that we asked for
+        assert.isTrue(idToFind.equals(new Id64(row.id)));
+      }
+      // Verify that we got the row that we asked for
+      assert.equal(count, 1);
+    });
+
+    imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element WHERE (codeValue = :codevalue)", (stmt4: ECSqlStatement) => {
+      // Try a named placeholder
+      const codeValueToFind = firstCodeValue;
+      stmt4.bindValues({ codeValue: codeValueToFind });
+      let count = 0;
+      while (DbResult.BE_SQLITE_ROW === stmt4.step()) {
+        count = count + 1;
+        const row = stmt4.getRow();
+        // Verify that we got the row that we asked for
+        assert.equal(row.codeValue, codeValueToFind);
+      }
+      // Verify that we got the row that we asked for
+      assert.equal(count, 1);
+    });
+
+  });
+
+  /* TBD
+      DgnCode physicalPartitionCode = PhysicalPartition::CreateCode(*m_db->Elements().GetRootSubject(), s_seedFileInfo.physicalPartitionName);
+    m_defaultModelId = m_db->Models().QuerySubModelId(physicalPartitionCode);
+    ASSERT_TRUE(m_defaultModelId.IsValid());
+
+    m_defaultCategoryId = SpatialCategory::QueryCategoryId(GetDgnDb().GetDictionaryModel(), s_seedFileInfo.categoryName);
+    ASSERT_TRUE(m_defaultCategoryId.IsValid());
+  */
+
+  it.skip("ImodelJsTest.MeasureInsertPerformance)", async () => {
+
+    const ifperfimodel = await IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", {copyFilename: "ImodelJsTest_MeasureInsertPerformance.bim", enableTransactions: true});
+
+    // TODO: Look up model by code (i.e., codevalue of a child of root subject, where child has a PhysicalPartition)
+    // const physicalPartitionCode: Code = PhysicalPartition::CreateCode(*m_db->Elements().GetRootSubject(), "DefaultModel");
+    // const modelId: Id64 = ifperfimodel.models.querySubModelId(physicalPartitionCode);
+    const modelId = new Id64("0X11");
+
+    const defaultCategoryId: Id64 = IModelTestUtils.getSpatiallCategoryIdByName(ifperfimodel, "DefaultCategory");
+
+    const elementCount = 10000;
+    for (let i = 0; i < elementCount; ++i) {
+
+      const element: Element = ifperfimodel.elements.createElement({ classFullName: "DgnPlatformTest:ImodelJsTestElement", iModel: ifperfimodel, model: modelId, id: new Id64(), code: Code.createEmpty(), category: defaultCategoryId });
+
+      element.integerProperty1 = i;
+      element.integerProperty2 = i;
+      element.integerProperty3 = i;
+      element.integerProperty4 = i;
+      element.doubleProperty1 = i;
+      element.doubleProperty2 = i;
+      element.doubleProperty3 = i;
+      element.doubleProperty4 = i;
+      element.b = (0 === (i % 100));
+      const pt: Point3d = new Point3d(i, 0, 0);
+      element.pointProperty1 = pt;
+      element.pointProperty2 = pt;
+      element.pointProperty3 = pt;
+      element.pointProperty4 = pt;
+      const dtUtc: Date = new Date("2013-09-15 12:05:39Z");
+      element.dtUtc = dtUtc;
+
+      assert.isTrue((ifperfimodel.elements.insertElement(element)).isValid(), "insert worked");
+      if (0 === (i % 100))
+        ifperfimodel.saveChanges();
+    }
+
+    ifperfimodel.saveChanges();
+
+    ifperfimodel.withPreparedStatement("select count(*) as [count] from DgnPlatformTest.ImodelJsTestElement", (stmt: ECSqlStatement) => {
+      assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
+      const row = stmt.getRow();
+      const expectedCountAsHex = "0X" + elementCount.toString(16).toUpperCase();
+      assert.equal(row.count, expectedCountAsHex);
+    });
+  });
 });

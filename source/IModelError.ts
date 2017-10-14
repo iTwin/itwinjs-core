@@ -5,7 +5,7 @@
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { BriefcaseError } from "./service-utils/BriefcaseManager";
+import { BriefcaseStatus } from "./backend/BriefcaseManager";
 
 export const enum IModelStatus {
   IMODEL_ERROR_BASE = 0x10000,
@@ -77,7 +77,7 @@ export const enum IModelStatus {
 }
 
 export class IModelError extends Error {
-  public constructor(public readonly errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseError, message?: string) {
+  public constructor(public readonly errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus, message?: string) {
     super(message);
     assert(errorNumber as number !== IModelStatus.Success as number);
   }
@@ -181,15 +181,12 @@ export class IModelError extends Error {
       // BentleyStatus cases
       case BentleyStatus.ERROR: return this._appendMessage("BentleyStatus.ERROR");
 
-      // Briefcase Error
-      case BriefcaseError.NotInitialized: return this._appendMessage("BriefcaseError.NotInitialized");
-      case BriefcaseError.CannotAcquire: return this._appendMessage("BriefcaseError.CannotAcquire");
-      case BriefcaseError.CannotDownload: return this._appendMessage("BriefcaseError.CannotDownload");
-      case BriefcaseError.CannotCopy: return this._appendMessage("BriefcaseError.CannotCopy");
-      case BriefcaseError.CannotDelete: return this._appendMessage("BriefcaseError.CannotDelete");
-      case BriefcaseError.VersionNotFound: return this._appendMessage("BriefcaseError.VersionNotFound");
-      case BriefcaseError.BriefcaseNotFound: return this._appendMessage("BriefcaseError.BriefcaseNotFound");
-      case BriefcaseError.NotSupportedYet: return this._appendMessage("BriefcaseError.NotSupportedYet");
+      // BriefcaseStatus
+      case BriefcaseStatus.CannotAcquire: return this._appendMessage("BriefcaseError.CannotAcquire");
+      case BriefcaseStatus.CannotDownload: return this._appendMessage("BriefcaseError.CannotDownload");
+      case BriefcaseStatus.CannotCopy: return this._appendMessage("BriefcaseError.CannotCopy");
+      case BriefcaseStatus.CannotDelete: return this._appendMessage("BriefcaseError.CannotDelete");
+      case BriefcaseStatus.VersionNotFound: return this._appendMessage("BriefcaseError.VersionNotFound");
 
       // Unexpected cases
       case IModelStatus.Success:

@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
-
-import { Schema } from "./Schema";
-import { IModel } from "./IModel";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
+import { ClassRegistry } from "./ClassRegistry";
+import { IModel } from "./IModel";
+import { Schema } from "./Schema";
 
 /** The primitive types of an Entity property. */
 export const enum PrimitiveTypeCode {
@@ -21,7 +21,7 @@ export const enum PrimitiveTypeCode {
   String = 0x901,
 }
 
-/** The properties to create an Entity. Every Entity must have an iModel and the full name of the class that defines it. */
+/** The properties to create an Entity. Every Entity must have an [[IModel]] and the full name of the class that defines it. */
 export interface EntityProps {
   iModel: IModel;
   classFullName?: string;
@@ -115,6 +115,7 @@ export class PropertyMetaData {
   public readOnly?: boolean;
   public kindOfQuantity?: string;
   public isCustomHandled?: boolean;
+  public isCustomHandledOrphan: boolean;
   public minOccurs?: number;
   public maxOccurs?: number;
   public direction?: string;
@@ -214,31 +215,38 @@ export class EntityMetaData {
   }
 
   /** Invoke a callback on each property of the specified class, optionally including superclass properties.
-   * @param imodel  The IModel that contains the schema
+   * @param iModel  The IModel that contains the schema
    * @param schemaName The schema that defines the class
    * @param className The name of the class
    * @param wantSuper If true, superclass properties will also be processed
    * @param func The callback to be invoked on each property
+   * @param includeCustom If true, include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    */
-  public static forEach(imodel: IModel, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean) {
-    const meta = imodel.classMetaDataRegistry.get(classFullName);
+  public static forEach(iModel: IModel, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean) {
+    const meta = iModel.classMetaDataRegistry.find(classFullName);
     if (meta === undefined) {
-      throw new TypeError(classFullName + " missing class metadata");
+      throw ClassRegistry.makeMetaDataNotFoundError();
     }
 
     for (const propName in meta.properties) {
       if (propName) {
         const propMeta = meta.properties[propName];
-        if (includeCustom || !propMeta.isCustomHandled)
+        if (includeCustom || !propMeta.isCustomHandled || propMeta.isCustomHandledOrphan)
           func(propName, propMeta);
       }
     }
 
-    if (wantSuper && meta.baseClasses) {
-      for (const base of meta.baseClasses) {
-        EntityMetaData.forEach(imodel, base, true, func, includeCustom);
-      }
+    if (wantSuper && meta.baseClasses && meta.baseClasses.length > 0) {
+      EntityMetaData.forEach(iModel, meta.baseClasses[0], true, func, includeCustom);
     }
   }
+}
 
+/** Interface for capturing input into query functions. */
+export interface EntityQueryParams {
+  from: string;
+  where?: string;
+  orderBy?: string;
+  limit: number;
+  offset: number;
 }

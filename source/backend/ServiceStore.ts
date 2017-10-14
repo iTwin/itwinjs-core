@@ -126,14 +126,13 @@ export class ServiceStore {
       bindings.push(accessMode);
     }
 
-    const {error, result: strRows} = await this.db.executeQuery(ecsql, bindings);
+    const {error, result: jsonRows} = await this.db.executeQuery(ecsql, bindings);
     if (error)
       return {error};
 
-    if (!strRows)
+    if (!jsonRows)
       return {result: undefined};
 
-    const jsonRows: any = JSON.parse(strRows);
     if (!jsonRows || jsonRows.length === 0)
       return {result: undefined};
 

@@ -5,6 +5,7 @@ import { DefinitionElement, ElementProps } from "./Element";
 import { ColorDef } from "./Render";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
+import { CodeSpecNames } from "./Code";
 
 /** Properties to create a SubCategory Appearance */
 export interface AppearanceProps {
@@ -204,9 +205,13 @@ export class Category extends DefinitionElement implements CategoryProps {
 /** Categorizes 2d graphical elements. */
 export class DrawingCategory extends Category {
   public constructor(opts: ElementProps) { super(opts); }
+
+  public static getCodeSpecName(): string { return CodeSpecNames.DrawingCategory(); }
 }
 
-/** Categorizes a SpatialElement. */
+/** Categorizes SpatialElements. */
 export class SpatialCategory extends Category {
   public constructor(opts: ElementProps) { super(opts); }
+
+  public static getCodeSpecName(): string { return CodeSpecNames.SpatialCategory(); }
 }
