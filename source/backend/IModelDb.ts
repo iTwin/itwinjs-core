@@ -5,6 +5,7 @@ import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
+import { BisCore } from "../BisCore";
 import { ClassRegistry } from "../ClassRegistry";
 import { Code } from "../Code";
 import { Element, ElementLoadParams, ElementProps } from "../Element";
@@ -24,6 +25,9 @@ import { Entity, EntityMetaData } from "../Entity";
 // Initialize the backend side of remoting
 import { IModelDbRemoting } from "../middle/IModelDbRemoting";
 IModelDbRemoting;
+
+// Register the use of BisCore for the backend
+BisCore.registerSchema();
 
 class CachedECSqlStatement {
   public statement: ECSqlStatement;

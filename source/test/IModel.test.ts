@@ -30,8 +30,6 @@ describe("iModel", () => {
   let imodel4: IModelDb;
 
   before(async () => {
-    // First, register any schemas that will be used in the tests.
-    BisCore.registerSchema();
     imodel = await IModelTestUtils.openIModel("test.bim");
     imodel2 = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
     imodel3 = await IModelTestUtils.openIModel("GetSetAutoHandledStructProperties.bim");

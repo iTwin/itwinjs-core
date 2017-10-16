@@ -5,6 +5,7 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
+import { BisCore } from "../BisCore";
 import { ClassRegistry } from "../ClassRegistry";
 import { Element, ElementProps } from "../Element";
 import { Entity, EntityMetaData, EntityQueryParams } from "../Entity";
@@ -16,6 +17,9 @@ import { Model } from "../Model";
 // Initialize the frontend side of remoting
 import { IModelDbRemoting } from "../middle/IModelDbRemoting";
 IModelDbRemoting;
+
+// Register the use of BisCore for the frontend
+BisCore.registerSchema();
 
 /** A connection to an iModel database hosted on the backend. */
 export class IModelConnection extends IModel {
