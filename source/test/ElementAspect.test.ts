@@ -1,10 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { BisCore } from "../BisCore";
 import { PhysicalElement } from "../Element";
 import { ElementMultiAspect, ElementUniqueAspect } from "../ElementAspect";
 import { IModelDb } from "../backend/IModelDb";
@@ -15,8 +13,6 @@ describe("ElementAspect", () => {
   let iModel: IModelDb;
 
   before(async () => {
-    // First, register any schemas that will be used in the tests.
-    BisCore.registerSchema();
     // NOTE: see ElementAspectTests.PresentationRuleScenarios in DgnPlatform\Tests\DgnProject\NonPublished\ElementAspect_Test.cpp for how ElementAspectTest.bim was created
     iModel = await IModelTestUtils.openIModel("ElementAspectTest.bim");
   });

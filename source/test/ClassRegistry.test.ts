@@ -8,14 +8,11 @@ import { Code } from "../Code";
 import { EntityMetaData } from "../Entity";
 import { IModelDb } from "../backend/IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { BisCore } from "../BisCore";
 
 describe("Class Registry", () => {
   let imodel: IModelDb;
 
   before(async () => {
-    // First, register any schemas that will be used in the tests.
-    BisCore.registerSchema();
     imodel = await IModelTestUtils.openIModel("test.bim");
     assert.exists(imodel);
   });

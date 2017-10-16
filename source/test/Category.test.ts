@@ -6,10 +6,6 @@ import { assert } from "chai";
 import { Appearance, AppearanceProps, SubCategoryOverride } from "../Category";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { ColorDef, ColorRgb } from "../Render";
-import { BisCore } from "../BisCore";
-
-// First, register any domains that will be used in the tests.
-BisCore.registerSchema();
 
 describe("Category tests", () => {
 

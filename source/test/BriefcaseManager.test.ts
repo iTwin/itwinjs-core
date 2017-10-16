@@ -9,7 +9,6 @@ import { ChangeSet } from "@bentley/imodeljs-clients";
 import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { expect, assert } from "chai";
-import { BisCore } from "../BisCore";
 import { Category } from "../Category";
 import { Element, Subject } from "../Element";
 import { IModelVersion } from "../IModelVersion";
@@ -28,8 +27,6 @@ describe("BriefcaseManager", () => {
   let shouldDeleteAllBriefcases: boolean = false;
 
   before(async () => {
-    BisCore.registerSchema();
-
     accessToken = await IModelTestUtils.getTestUserAccessToken();
     testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
     testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "MyTestModel");
