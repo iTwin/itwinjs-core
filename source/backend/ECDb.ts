@@ -1,8 +1,8 @@
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { ECJsonTypeMap, ECInstance } from "@bentley/bentleyjs-core/lib/ECJsonTypeMap";
-import { BentleyPromise } from "@bentley/bentleyjs-core/lib/Bentley";
-import { BindingUtility, BindingValue } from "./BindingUtility";
 import { PrimitiveTypeCode } from "../Entity";
+import { IModelError } from "../IModelError";
+import { BindingUtility, BindingValue } from "./BindingUtility";
 
 declare function require(arg: string): any;
 // tslint:disable-next-line:no-var-requires
@@ -56,175 +56,183 @@ export function isPoint3dType(arg: any): arg is Point3dType {
 
 /** Allows performing CRUD operations in an ECDb */
 export class ECDb {
-  private ecdb: any;
+  private _ecdb: any;
 
-  /**
-   * Create an ECDb
-   * @param pathname  The pathname of the Db.
-   * @returns Promise that resolves to an object that contains an error property if the operation failed.
-   */
-  public async createDb(pathname: string): BentleyPromise<DbResult, void> {
-    if (!this.ecdb)
-      this.ecdb = await new dgnDbNodeAddon.ECDb();
-    return await this.ecdb.createDb(pathname);
+  /** Construct an invalid ECDb Error. */
+  private _newInvalidDatabaseError(): IModelError {
+    return new IModelError(DbResult.BE_SQLITE_ERROR, "ECDb must be created or opened to complete this operation");
   }
 
-  /**
-   * Open the ECDb.
-   * @param pathname The pathname of the Db
-   * @param mode  Open mode
-   * @returns Promise that resolves to an object that contains an error property if the operation failed.
+  /** Create an ECDb
+   * @param pathname  The pathname of the Db.
+   * @throws [[IModelError]] if the operation failed.
    */
-  public async openDb(pathname: string, mode: OpenMode = OpenMode.Readonly): BentleyPromise<DbResult, void> {
-    if (!this.ecdb)
-      this.ecdb = await new dgnDbNodeAddon.ECDb();
-    return await this.ecdb.openDb(pathname, mode);
+  public async createDb(pathname: string): Promise<void> {
+    if (!this._ecdb)
+      this._ecdb = await new dgnDbNodeAddon.ECDb();
+    const { error } = await this._ecdb.createDb(pathname);
+    if (error)
+      return Promise.reject(new IModelError(error.status, error.message));
+  }
+
+  /** Open the ECDb.
+   * @param pathname The pathname of the Db
+   * @param openMode  Open mode
+   * @throws [[IModelError]] if the operation failed.
+   */
+  public async openDb(pathname: string, openMode: OpenMode = OpenMode.Readonly): Promise<void> {
+    if (!this._ecdb)
+      this._ecdb = await new dgnDbNodeAddon.ECDb();
+    const { error } = await this._ecdb.openDb(pathname, openMode);
+    if (error)
+      return Promise.reject(new IModelError(error.status, error.message));
   }
 
   /** Returns true if the ECDb is open */
   public isDbOpen(): boolean {
-    return this.ecdb && this.ecdb.IsDbOpen;
+    return this._ecdb && this._ecdb.IsDbOpen;
   }
 
-  /**
-   * Close the Db after saving any uncommitted changes.
+  /** Close the Db after saving any uncommitted changes.
    * @returns Promise that resolves to an object that contains an error property if the operation failed.
-   * If the Db is not already open it's considered as an error.
+   * @throws [[IModelError]] if the database is not open.
    */
-  public async closeDb(): BentleyPromise<DbResult, void> {
-    if (!this.ecdb)
-      return { error: { status: DbResult.BE_SQLITE_ERROR, message: "ECDb must be created or opened to complete this operation" } };
+  public async closeDb(): Promise<void> {
+    if (!this._ecdb)
+      return Promise.reject(this._newInvalidDatabaseError());
 
-    return await this.ecdb.closeDb();
+    const { error } = await this._ecdb.closeDb();
+    if (error)
+      return Promise.reject(new IModelError(error.status, error.message));
   }
 
-  /**
-   * Commit the outermost transaction, writing changes to the file. Then, restart the transaction.
+  /** Commit the outermost transaction, writing changes to the file. Then, restart the transaction.
    * @param changeSetName The name of the operation that generated these changes.
-   * @returns Promise that resolves to an object that contains an error property if the operation failed.
+   * @throws [[IModelError]] if the database is not open or if the operation failed.
    */
-  public async saveChanges(changeSetName?: string): BentleyPromise<DbResult, void> {
-    if (!this.ecdb)
-      return { error: { status: DbResult.BE_SQLITE_ERROR, message: "ECDb must be created or opened to complete this operation" } };
+  public async saveChanges(changeSetName?: string): Promise<void> {
+    if (!this._ecdb)
+      return Promise.reject(this._newInvalidDatabaseError());
 
-    return this.ecdb.saveChanges(changeSetName);
+    const { error } = await this._ecdb.saveChanges(changeSetName);
+    if (error)
+      return Promise.reject(new IModelError(error.status, error.message));
   }
 
-  /**
-   * Abandon (cancel) the outermost transaction, discarding all changes since last save. Then, restart the transaction.
-   * @returns Promise that resolves to an object that contains an error property if the operation failed.
+  /** Abandon (cancel) the outermost transaction, discarding all changes since last save. Then, restart the transaction.
+   * @throws [[IModelError]] if the database is not open or if the operation failed.
    */
-  public async abandonChanges(): BentleyPromise<DbResult, void> {
-    if (!this.ecdb)
-      return { error: { status: DbResult.BE_SQLITE_ERROR, message: "ECDb must be created or opened to complete this operation" } };
+  public async abandonChanges(): Promise<void> {
+    if (!this._ecdb)
+      return Promise.reject(this._newInvalidDatabaseError());
 
-    return this.ecdb.abandonChanges();
+    const { error } = await this._ecdb.abandonChanges();
+    if (error)
+      return Promise.reject(new IModelError(error.status, error.message));
   }
 
-  /**
-   * Import a schema
-   * Note that if the import was successful, the database is automatically saved to disk.
-   * @returns Promise that resolves to an object that contains an error if the operation failed.
-   * Check the existence of the error property to determine if the operation was successful.
+  /** Import a schema. If the import was successful, the database is automatically saved to disk.
+   * @throws [[IModelError]] if the database is not open or if the operation failed.
    */
-  public async importSchema(pathname: string): BentleyPromise<DbResult, void> {
-    if (!this.ecdb)
-      return { error: { status: DbResult.BE_SQLITE_ERROR, message: "ECDb must be created or opened to complete this operation" } };
+  public async importSchema(pathname: string): Promise<void> {
+    if (!this._ecdb)
+      return Promise.reject(this._newInvalidDatabaseError());
 
-    return this.ecdb.importSchema(pathname);
+    const { error } = await this._ecdb.importSchema(pathname);
+    if (error)
+      return Promise.reject(new IModelError(error.status, error.message));
   }
 
-  /**
-   * Insert an instance
-   * @description This method is not meant for bulk inserts
+  /** Insert an instance. This method is not meant for bulk inserts.
    * @returns Promise that resolves to an object with a result property set to the id of the inserted instance.
    * The resolved object contains an error property if the operation failed.
+   * @throws [[IModelError]] if the database is not open or if the operation failed.
    */
-  public async insertInstance<T extends ECInstance>(typedInstance: T): BentleyPromise<DbResult, void> {
-    if (!this.ecdb)
-      return { error: { status: DbResult.BE_SQLITE_ERROR, message: "ECDb must be created or opened to complete this operation" } };
+  public async insertInstance<T extends ECInstance>(typedInstance: T): Promise<void> {
+    if (!this._ecdb)
+      return Promise.reject(this._newInvalidDatabaseError());
 
     const jsonInstance: any = ECJsonTypeMap.toJson<T>("ecdb", typedInstance);
     if (!jsonInstance)
-      return { error: { status: DbResult.BE_SQLITE_ERROR, message: "Error writing instance as JSON" } };
+      return Promise.reject(new IModelError(DbResult.BE_SQLITE_ERROR, "Error writing instance as JSON"));
 
-    const { error, result: id } = await this.ecdb.insertInstance(JSON.stringify(jsonInstance));
+    const { error, result: id } = await this._ecdb.insertInstance(JSON.stringify(jsonInstance));
     if (error)
-      return { error };
+      return Promise.reject(new IModelError(error.status, error.message));
 
     typedInstance.id = id;
-    return {};
   }
 
-  /**
-   * Read an instance
+  /** Read an instance
    * @description This method is not meant for bulk reads.
    * @returns Promise that resolves to an object with a result property set to the instance that was read from the Db.
    * The resolved object contains an error property if the operation failed.
+   * @throws [[IModelError]] if the database is not open.
    */
-  public async readInstance<T extends ECInstance>(typedInstanceKey: T): BentleyPromise<DbResult, T> {
-    if (!this.ecdb)
-      return { error: { status: DbResult.BE_SQLITE_ERROR, message: "ECDb must be created or opened to complete this operation" } };
+  public async readInstance<T extends ECInstance>(typedInstanceKey: T): Promise<T> {
+    if (!this._ecdb)
+      return Promise.reject(this._newInvalidDatabaseError());
 
     const jsonInstanceKey: any = ECJsonTypeMap.toJson<T>("ecdb", typedInstanceKey);
     if (!jsonInstanceKey)
-      throw Error("Invalid key. Check that the typescript class is mapped to JSON properly");
+      return Promise.reject(new IModelError(DbResult.BE_SQLITE_ERROR, "Invalid key. Check that the typescript class is mapped to JSON properly"));
 
-    const { error, result: untypedInstanceStr } = await this.ecdb.readInstance(JSON.stringify(jsonInstanceKey));
+    const { error, result: untypedInstanceStr } = await this._ecdb.readInstance(JSON.stringify(jsonInstanceKey));
     if (error)
-      return { error };
+      return Promise.reject(new IModelError(error.status, error.message));
 
     const untypedInstance = JSON.parse(untypedInstanceStr);
-
     const typedConstructor = Object.getPrototypeOf(typedInstanceKey).constructor;
     const typedInstance: T | undefined = ECJsonTypeMap.fromJson<T>(typedConstructor, "ecdb", untypedInstance);
     if (!typedInstance)
-      return { error: { status: DbResult.BE_SQLITE_ERROR, message: "Error reading instance" } };
+      return Promise.reject(new IModelError(DbResult.BE_SQLITE_ERROR, "Error reading instance"));
 
-    return { result: typedInstance };
+    return typedInstance;
   }
 
-  /**
-   * Update an instance
-   * @description This method is not meant for bulk updates
-   * @returns Promise that resolves to an object that contains an error property if the operation failed.
+  /** Update an instance. This method is not meant for bulk updates.
+   * @throws [[IModelError]] if the database is not open or if the operation failed.
    */
-  public async updateInstance<T extends ECInstance>(typedInstance: T): BentleyPromise<DbResult, void> {
-    if (!this.ecdb)
-      return { error: { status: DbResult.BE_SQLITE_ERROR, message: "ECDb must be created or opened to complete this operation" } };
+  public async updateInstance<T extends ECInstance>(typedInstance: T): Promise<void> {
+    if (!this._ecdb)
+      return Promise.reject(this._newInvalidDatabaseError());
 
     const untypedInstance: any = ECJsonTypeMap.toJson<T>("ecdb", typedInstance);
-    return await this.ecdb.updateInstance(JSON.stringify(untypedInstance));
+    const { error } = await this._ecdb.updateInstance(JSON.stringify(untypedInstance));
+    if (error)
+      return Promise.reject(new IModelError(error.status, error.message));
   }
 
-  /**
-   * Delete an instance
-   * @description This method is not meant for bulk deletes
-   * @returns Promise that resolves to an object that contains an error property if the operation failed.
+  /** Delete an instance. This method is not meant for bulk deletes.
+   * @throws [[IModelError]] if the database is not open or if the operation failed.
    */
-  public async deleteInstance<T extends ECInstance>(typedInstanceKey: T): BentleyPromise<DbResult, void> {
-    if (!this.ecdb)
-      return { error: { status: DbResult.BE_SQLITE_ERROR, message: "ECDb must be created or opened to complete this operation" } };
+  public async deleteInstance<T extends ECInstance>(typedInstanceKey: T): Promise<void> {
+    if (!this._ecdb)
+      return Promise.reject(this._newInvalidDatabaseError());
 
     const jsonInstanceKey: any = ECJsonTypeMap.toJson<T>("ecdb", typedInstanceKey);
-    return await this.ecdb.deleteInstance(JSON.stringify(jsonInstanceKey));
+    const { error } = await this._ecdb.deleteInstance(JSON.stringify(jsonInstanceKey));
+    if (error)
+      return Promise.reject(new IModelError(error.status, error.message));
   }
 
-  /**
-   * Check if an instance exists
-   * @returns Promise that resolves to an object with a result property set to true or false depending on whether the Db contains the instance with the specified key.
-   * The resolved object contains an error property if the operation failed.
+  /** Check if an instance exists
+   * @returns True or false depending on whether the Db contains the instance with the specified key.
+   * @throws [[IModelError]] if the database is not open.
    */
-  public async containsInstance<T extends ECInstance>(typedInstanceKey: T): BentleyPromise<DbResult, boolean> {
-    if (!this.ecdb)
-      return { error: { status: DbResult.BE_SQLITE_ERROR, message: "ECDb must be created or opened to complete this operation" } };
+  public async containsInstance<T extends ECInstance>(typedInstanceKey: T): Promise<boolean> {
+    if (!this._ecdb)
+      return Promise.reject(this._newInvalidDatabaseError());
 
     const jsonInstanceKey: any = ECJsonTypeMap.toJson<T>("ecdb", typedInstanceKey);
-    return this.ecdb.containsInstance(JSON.stringify(jsonInstanceKey));
+    const { error, result } = await this._ecdb.containsInstance(JSON.stringify(jsonInstanceKey));
+    if (error)
+      return Promise.reject(new IModelError(error.status, error.message));
+
+    return result;
   }
 
-  /**
-   * Execute an ECSql query returning all rows as an array of objects in JSON syntax.
+  /** Execute an ECSql query returning all rows as an array of objects in JSON syntax.
    * @returns all rows in JSON syntax or the empty string if nothing was selected
    * @todo Extend bindings to other types.
    * @todo Simplify binding of values to ECSQL statements.
@@ -235,49 +243,53 @@ export class ECDb {
    * be written as blobs for performance (see the ECSqlStatement API). Note that even if we did want
    * to do this, the Guid type information is not part of the EC meta data.
    * @returns Promise that resolves to an object with a result property set to a JSON array containing the rows returned from the query
-   * The resolved object contains an error property if the operation failed.
+   * @throws [[IModelError]] if the database is not open or if the operation failed.
    */
-  public async executeQuery(ecsql: string, bindings?: BindingValue[] | Map<string, BindingValue> | any): BentleyPromise<DbResult, any[]> {
-    if (!this.ecdb)
-      return { error: { status: DbResult.BE_SQLITE_ERROR, message: "ECDb must be created or opened to complete this operation" } };
+  public async executeQuery(ecsql: string, bindings?: BindingValue[] | Map<string, BindingValue> | any): Promise<any[]> {
+    if (!this._ecdb)
+      return Promise.reject(this._newInvalidDatabaseError());
 
     let ecBindingsStr: string | undefined;
     if (bindings) {
       const { error, result: ecBindings } = BindingUtility.preProcessBindings(bindings);
       if (error)
-        return { error };
+        return Promise.reject(new IModelError(error.status, error.message));
       ecBindingsStr = JSON.stringify(ecBindings);
     }
 
-    const {reserror, result: rowsJson} = await this.ecdb.executeQuery(ecsql, ecBindingsStr);
-    if (reserror !== undefined) {
-      return {error: reserror};
+    const { error: queryError, result: rowsJson } = await this._ecdb.executeQuery(ecsql, ecBindingsStr);
+    if (queryError) {
+      return Promise.reject(new IModelError(queryError.status, queryError.message));
     }
     if (rowsJson === undefined) {
-      return {error: {status: DbResult.BE_SQLITE_ERROR, message: ""}};
+      return Promise.reject(new IModelError(DbResult.BE_SQLITE_ERROR));
     }
-    return {result: JSON.parse(rowsJson)};
+    return JSON.parse(rowsJson);
   }
 
-  /**
-   * Execute an ECSql statement
+  /** Execute an ECSql statement
    * @param ecsql ECSql string
    * @param bindings Optional bindings required to execute the statement.
    * @returns Promise that resolves to an object that contains an error property if the operation failed.
    * If the operation was successful and it was an insert, the returned object will contain a result property set to the id of the inserted instance.
+   * @throws [[IModelError]] if the database is not open.
    */
-  public async executeStatement(ecsql: string, isInsertStatement?: boolean, bindings?: BindingValue[] | Map<string, BindingValue> | any): BentleyPromise<DbResult, string> {
-    if (!this.ecdb)
-      return { error: { status: DbResult.BE_SQLITE_ERROR, message: "ECDb must be created or opened to complete this operation" } };
+  public async executeStatement(ecsql: string, isInsertStatement?: boolean, bindings?: BindingValue[] | Map<string, BindingValue> | any): Promise<string> {
+    if (!this._ecdb)
+      return Promise.reject(this._newInvalidDatabaseError());
 
     let ecBindingsStr: string | undefined;
     if (bindings) {
-      const { error, result: ecBindings } = BindingUtility.preProcessBindings(bindings);
-      if (error)
-        return { error };
+      const { error: bindingError, result: ecBindings } = BindingUtility.preProcessBindings(bindings);
+      if (bindingError)
+        return Promise.reject(new IModelError(bindingError.status, bindingError.message));
       ecBindingsStr = JSON.stringify(ecBindings);
     }
 
-    return this.ecdb.executeStatement(ecsql, isInsertStatement, ecBindingsStr);
+    const { error, result } = await this._ecdb.executeStatement(ecsql, isInsertStatement, ecBindingsStr);
+    if (error)
+      return Promise.reject(new IModelError(error.status, error.message));
+
+    return result;
   }
 }
