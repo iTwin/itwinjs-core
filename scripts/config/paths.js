@@ -15,5 +15,8 @@ module.exports = {
   appRoot: resolveApp(''),
   appSrc: resolveApp('source'),
   appTest: resolveApp('test'),
+  appBuild: resolveApp('lib'),
+  appDocs: resolveApp('lib/docs'), 
+  appJsonDocs: resolveApp('lib/docs/file.json'),
   appJUnitTestResults: resolveApp('lib/test/junit_results.xml'),
 };

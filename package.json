@@ -12,6 +12,8 @@
     "build": "tsc",
     "test": "node scripts/test.js",
     "test:watch": "node scripts/test.js watch",
+    "docs": "node scripts/docs.js ",
+    "docs:dev": "npm run docs && bmsBuild --destination ./lib/docs/public",
     "clean": "rimraf lib .nyc_output",
     "coverage": "node scripts/cover.js"
   },
@@ -34,6 +36,7 @@
     "nyc": "^11.2.1",
     "rimraf": "^2.6.2",
     "ts-node": "^3.3.0",
+    "typedoc": "^0.9.0",
     "typescript": "^2.5.2"
   },
   "dependencies": {
