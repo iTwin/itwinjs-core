@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { ECVersion, ECName, ECClassModifier } from "../ECObjects";
+import { ECVersion, ECClassModifier } from "../ECObjects";
 import { DeserializableSchemaInterface, DeserializableClassInterface } from "./DeserializationInterfaces";
 
 export interface SchemaKeyInterface {
