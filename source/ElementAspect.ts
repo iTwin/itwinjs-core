@@ -19,7 +19,6 @@ export class ElementAspect extends Entity implements ElementAspectProps {
     super(props);
     this.element = new Id64(props.element);
   }
-
 }
 
 /** ElementUniqueAspect */
