@@ -9,13 +9,11 @@
     "url": "http://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/ec-js"
   },
   "scripts": {
-    "compile": "tsc -p source",
-    "compile:test": "tsc -p test",
-    "test": "npm-run-all -p test:core",
-    "test:watch": "mocha --watch",
-    "test:core": "mocha",
-    "clean": "rimraf node_modules lib",
-    "coverage": "rimraf ./lib/test/coverage .nyc_output && nyc npm run test:core"
+    "build": "tsc",
+    "test": "node scripts/test.js",
+    "test:watch": "node scripts/test.js watch",
+    "clean": "rimraf lib .nyc_output",
+    "coverage": "node scripts/cover.js"
   },
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -28,9 +26,11 @@
     "@types/node": "^8.0.28",
     "ajv": "^5.2.2",
     "chai": "^4.1.2",
+    "chalk": "^2.1.0",
+    "cross-spawn": "^5.1.0",
     "fs-extra": "^4.0.2",
     "mocha": "^3.5.3",
-    "npm-run-all": "^4.1.1",
+    "mocha-junit-reporter": "^1.15.0",
     "nyc": "^11.2.1",
     "rimraf": "^2.6.2",
     "ts-node": "^3.3.0",
