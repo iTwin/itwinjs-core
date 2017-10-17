@@ -107,7 +107,7 @@ describe("BriefcaseManager", () => {
     assert.exists(iModelNoVer);
   });
 
-  it.skip("should be able to get elements and models from an IModelConnection", async () => {
+  it("should be able to get elements and models from an IModelConnection", async () => {
     const iModel: IModelConnection = await IModelConnection.open(accessToken, testIModelId);
     assert.exists(iModel);
     assert.isTrue(iModel instanceof IModelConnection);
@@ -125,6 +125,7 @@ describe("BriefcaseManager", () => {
 
     const queryElementIds: Id64[] = await iModel.elements.queryElementIds({ from: Category.sqlName, limit: 20, offset: 0 });
     assert.isAtLeast(queryElementIds.length, 1);
+    assert.isTrue(queryElementIds[0] instanceof Id64);
 
     const formatObjs: any[] = await iModel.elements.formatElements(queryElementIds);
     assert.isAtLeast(formatObjs.length, 1);
@@ -133,6 +134,7 @@ describe("BriefcaseManager", () => {
     const models: Model[] = await iModel.models.getModels(modelIds);
     assert.exists(models);
     assert.equal(models.length, modelIds.length);
+    assert.isTrue(models[0] instanceof Model);
     assert.isTrue(models[0].id.equals(iModel.models.repositoryModelId));
 
     const rows: any[] = await iModel.executeQuery("SELECT CodeValue AS code FROM BisCore.Category");

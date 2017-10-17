@@ -12,7 +12,7 @@ import { Entity, EntityMetaData, EntityQueryParams } from "../Entity";
 import { IModel, IModelToken } from "../IModel";
 import { IModelError, IModelStatus } from "../IModelError";
 import { IModelVersion } from "../IModelVersion";
-import { Model } from "../Model";
+import { Model, ModelProps } from "../Model";
 
 // Initialize the frontend side of remoting
 import { IModelDbRemoting } from "../middle/IModelDbRemoting";
@@ -79,7 +79,36 @@ export class IModelConnectionModels {
 
   /** Ask the backend for a batch of models given a list of model ids. */
   public async getModels(modelIds: Id64[]): Promise<Model[]> {
-    return await IModelDbRemoting.getModels(this._iModel.iModelToken, modelIds.map((id: Id64) => id.toString()));
+    const modelJsonArray = await IModelDbRemoting.getModels(this._iModel.iModelToken, modelIds.map((id: Id64) => id.toString()));
+    const models: Model[] = [];
+
+    for (const modelJson of modelJsonArray) {
+      const modelProps = JSON.parse(modelJson) as ModelProps;
+      modelProps.iModel = this._iModel;
+
+      let entity: Entity;
+      try {
+        entity = ClassRegistry.createInstance(modelProps);
+      } catch (error) {
+        if (!ClassRegistry.isClassNotFoundError(error) && !ClassRegistry.isMetaDataNotFoundError(error))
+          throw error;
+
+        const classArray: any[] = await IModelDbRemoting.loadMetaDataForClassHierarchy(this._iModel.iModelToken, modelProps.classFullName!);
+        for (const classEntry of classArray) {
+          this._iModel.classMetaDataRegistry.add(classEntry.className, new EntityMetaData(classEntry.metaData));
+        }
+        entity = ClassRegistry.createInstance(modelProps);
+      }
+      const model = entity as Model;
+      if (!(model instanceof Model))
+        return Promise.reject(new TypeError());
+
+      model.setPersistent(); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
+      this._loaded.set(model.id.toString(), model);
+      models.push(model);
+    }
+
+    return models;
   }
 }
 
@@ -138,6 +167,7 @@ export class IModelConnectionElements {
 
   /** */
   public async queryElementIds(params: EntityQueryParams): Promise<Id64[]> {
-    return await IModelDbRemoting.queryElementIds(this._iModel.iModelToken, params);
+    const elementIds: string[] = await IModelDbRemoting.queryElementIds(this._iModel.iModelToken, params);
+    return elementIds.map((elementId: string) => new Id64(elementId));
   }
 }

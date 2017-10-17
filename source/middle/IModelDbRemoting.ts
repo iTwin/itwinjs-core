@@ -2,7 +2,6 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { MultiTierExecutionHost, RunsIn, Tier } from "@bentley/bentleyjs-core/lib/tiering";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { Element } from "../Element";
@@ -49,16 +48,20 @@ export class IModelDbRemoting {
   @RunsIn(Tier.Services)
   public static async executeQuery(iModelToken: IModelToken, sql: string, bindings?: any): Promise<any[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    return iModelDb.executeQuery(sql, bindings);
+    return await iModelDb.executeQuery(sql, bindings);
   }
 
-  /** Return an [[Model]] array given an array of stringified model ids. */
+  /** Return an array of model JSON strings given an array of stringified model ids. */
   @RunsIn(Tier.Services)
-  public static async getModels(iModelToken: IModelToken, modelIds: string[]): Promise<Model[]> {
+  public static async getModels(iModelToken: IModelToken, modelIds: string[]): Promise<any[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const models: Model[] = [];
     for (const modelId of modelIds) {
-      models.push(await iModelDb.models.getModel(new Id64(modelId)));
+      const { error, result: modelJson } = await iModelDb.nativeDb.getModel(JSON.stringify({ id: modelId }));
+      if (error)
+        return Promise.reject(new IModelError(error.status, error.message));
+
+      models.push(modelJson);
     }
     return models;
   }
@@ -71,16 +74,16 @@ export class IModelDbRemoting {
     for (const elementId of elementIds) {
       const { error, result: elementJson } = await iModelDb.nativeDb.getElement(JSON.stringify({ id: elementId }));
       if (error)
-        return Promise.reject(new IModelError(error.status));
+        return Promise.reject(new IModelError(error.status, error.message));
 
       elements.push(elementJson);
     }
     return elements;
   }
 
-  /** Return an [[Id64]] array of element ids from a query constructed from the specified parameters. */
+  /** Return an array of element id strings from a query constructed from the specified parameters. */
   @RunsIn(Tier.Services)
-  public static async queryElementIds(iModelToken: IModelToken, params: EntityQueryParams): Promise<Id64[]> {
+  public static async queryElementIds(iModelToken: IModelToken, params: EntityQueryParams): Promise<string[]> {
     let sql: string = "SELECT ECInstanceId AS id FROM " + params.from;
     if (params.where) sql += " WHERE " + params.where;
     if (params.orderBy) sql += " ORDER BY " + params.orderBy;
@@ -89,9 +92,9 @@ export class IModelDbRemoting {
 
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const statement: ECSqlStatement = iModelDb.getPreparedStatement(sql);
-    const elementIds: Id64[] = [];
+    const elementIds: string[] = [];
     for (const row of statement)
-      elementIds.push(new Id64(row.id));
+      elementIds.push(row.id);
 
     iModelDb.releasePreparedStatement(statement);
     return elementIds;
