@@ -14,6 +14,8 @@ import { IModelToken } from "../IModel";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { IModelDb } from "../backend/IModelDb";
 
+export type ConstructorType = new () => any;
+
 /** The interface that defines how the frontend remotely talks to the backend.
  * Note that only static methods can be remoted.
  * @hidden
@@ -24,16 +26,17 @@ export class IModelDbRemoting {
 
   /** Opens an IModelDb on the backend to service frontend requests. */
   @RunsIn(Tier.Services)
-  public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelToken> {
-    const iModelDb: IModelDb = await IModelDb.open(accessToken, iModelId, openMode, version);
+  public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion): Promise<IModelToken> {
+    const iModelDb: IModelDb = await IModelDb.open(AccessToken.clone(accessToken), iModelId, openMode, IModelVersion.clone(version));
     return iModelDb.iModelToken;
   }
 
   /** Closes an IModelDb on the backend. */
   @RunsIn(Tier.Services)
-  public static async close(accessToken: AccessToken, iModelToken: IModelToken): Promise<void> {
+  public static async close(accessToken: AccessToken, iModelToken: IModelToken): Promise<boolean> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    await iModelDb.close(accessToken);
+    await iModelDb.close(AccessToken.clone(accessToken));
+    return true; // NEEDS_WORK: Promise<void> seems to crash the transport layer.
   }
 
   /** Execute a query against the iModel.
