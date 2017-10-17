@@ -53,8 +53,7 @@ export class ChangeSetToken {
 class BriefcaseCache {
   public readonly briefcases = new Map<string, IModelDb>(); // Indexed by local pathname of the briefcase
 
-  public setBriefcase(iModelToken: IModelToken, db: any): void {
-    const entry = new IModelDb(iModelToken, db);
+  public setBriefcase(iModelToken: IModelToken, entry: IModelDb): void {
     this.briefcases.set(iModelToken.pathname, entry);
   }
 
@@ -143,7 +142,7 @@ export class BriefcaseManager {
         iModelToken.isOpen = undefined;
         iModelToken.changeSetId = localBriefcase.parentChangeSetId;
         iModelToken.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, localIModelId, iModelToken.changeSetId!);
-        BriefcaseManager.cache.setBriefcase(iModelToken, undefined);
+        BriefcaseManager.cache.setBriefcase(iModelToken, new IModelDb(iModelToken, undefined));
       }
 
     }
@@ -428,9 +427,11 @@ export class BriefcaseManager {
     iModelToken.isOpen = true;
     iModelToken.changeSetId = toChangeSetId;
     iModelToken.changeSetIndex = toChangeSetIndex;
-    BriefcaseManager.cache!.setBriefcase(iModelToken, nativeDb);
 
-    return new IModelDb(iModelToken, nativeDb);
+    const iModelDb = new IModelDb(iModelToken, nativeDb);
+    BriefcaseManager.cache!.setBriefcase(iModelToken, iModelDb);
+
+    return iModelDb;
   }
 
   /** Purge closed briefcases */
@@ -471,33 +472,33 @@ export class BriefcaseManager {
     if (!BriefcaseManager.cache)
       BriefcaseManager.initialize();
 
-    const db = new dgnDbNodeAddon.DgnDb();
-    const res: BentleyReturn<DbResult, void> = await db.openDgnDb(fileName, openMode);
+    const nativeDb = new dgnDbNodeAddon.DgnDb();
+    const res: BentleyReturn<DbResult, void> = await nativeDb.openDgnDb(fileName, openMode);
     if (res.error)
       return Promise.reject(new IModelError(res.error.status));
 
     if (enableTransactions) {
-      const bid: number = db.getBriefcaseId();
+      const bid: number = nativeDb.getBriefcaseId();
       if (bid === BriefcaseId.Illegal || bid === BriefcaseId.Master)
-        db.setBriefcaseId(BriefcaseId.Standalone);
-      assert(db.getBriefcaseId() !== BriefcaseId.Illegal || db.getBriefcaseId() !== BriefcaseId.Master);
+        nativeDb.setBriefcaseId(BriefcaseId.Standalone);
+      assert(nativeDb.getBriefcaseId() !== BriefcaseId.Illegal || nativeDb.getBriefcaseId() !== BriefcaseId.Master);
     }
 
     const iModelToken = IModelToken.fromFile(fileName, openMode, true /*isOpen*/);
-    BriefcaseManager.cache!.setBriefcase(iModelToken, db);
+    BriefcaseManager.cache!.setBriefcase(iModelToken, new IModelDb(iModelToken, nativeDb));
 
-    return new IModelDb(iModelToken, db);
+    return new IModelDb(iModelToken, nativeDb);
   }
 
   public static async close(accessToken: AccessToken, iModelToken: IModelToken, keepBriefcase: KeepBriefcase): Promise<void> {
     if (keepBriefcase === KeepBriefcase.No)
       await BriefcaseManager.deleteBriefcase(accessToken, iModelToken);
     else
-      BriefcaseManager.cache!.setBriefcase(iModelToken, undefined);
+      BriefcaseManager.cache!.setBriefcase(iModelToken, new IModelDb(iModelToken, undefined));
   }
 
   public static closeStandalone(iModelToken: IModelToken) {
-    BriefcaseManager.cache!.setBriefcase(iModelToken, undefined);
+    BriefcaseManager.cache!.setBriefcase(iModelToken, new IModelDb(iModelToken, undefined));
   }
 
   public static getBriefcase(iModelToken: IModelToken): IModelDb | undefined {
