@@ -25,9 +25,9 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "^1.0.29",
+    "@bentley/bentleyjs-core": "^1.0.32",
     "@bentley/geometry-core": "^1.0.7",
-    "@bentley/imodeljs-clients": "^1.0.16",
+    "@bentley/imodeljs-clients": "^1.0.18",
     "js-base64": "^2.3.2"
   },
   "devDependencies": {
