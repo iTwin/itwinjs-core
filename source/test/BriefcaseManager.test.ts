@@ -10,6 +10,7 @@ import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { expect, assert } from "chai";
 import { Category } from "../Category";
+import { CodeSpec, CodeSpecNames } from "../Code";
 import { Element, Subject } from "../Element";
 import { IModelVersion } from "../IModelVersion";
 import { Model } from "../Model";
@@ -141,6 +142,11 @@ describe("BriefcaseManager", () => {
     assert.isAtLeast(rows.length, 1);
     assert.exists(rows[0].code);
     assert.equal(rows.length, queryElementIds.length);
+
+    const codeSpecByName: CodeSpec = await iModel.codeSpecs.getCodeSpecByName(CodeSpecNames.SpatialCategory());
+    assert.exists(codeSpecByName);
+    const codeSpecById: CodeSpec = await iModel.codeSpecs.getCodeSpecById(codeSpecByName.id);
+    assert.exists(codeSpecById);
 
     await iModel.close(accessToken);
   });

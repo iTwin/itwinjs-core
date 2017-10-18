@@ -130,4 +130,17 @@ export class IModelDbRemoting {
     }
     return classArray;
   }
+
+  /** Returns an array with an entry per CodeSpec in the iModel. */
+  @RunsIn(Tier.Services)
+  public static async getAllCodeSpecs(iModelToken: IModelToken): Promise<any[]> {
+    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    const statement: ECSqlStatement = iModelDb.getPreparedStatement("SELECT ECInstanceId AS id, name, jsonProperties FROM BisCore.CodeSpec");
+    const codeSpecs: any[] = [];
+    for (const row of statement)
+      codeSpecs.push({ id: row.id, name: row.name, jsonProperties: JSON.parse(row.jsonProperties) });
+
+    iModelDb.releasePreparedStatement(statement);
+    return codeSpecs;
+  }
 }
