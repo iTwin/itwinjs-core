@@ -9,7 +9,7 @@ import { Light, LightType } from "./Lighting";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Vector3d, Point3d, Range3d, RotMatrix, Transform, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { AxisOrder, Angle, Geometry } from "@bentley/geometry-core/lib/Geometry";
-import { Map4d } from "@bentley/geometry-core/lib/Geometry4d";
+import { Map4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 
