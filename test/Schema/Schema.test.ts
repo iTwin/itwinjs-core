@@ -5,9 +5,10 @@
 import { assert, expect } from "chai";
 
 import { ECSchema } from "../../source/Metadata/Schema";
-import { Class, EntityClass } from "../../source/Metadata/Class";
+import { Class, EntityClass, MixinClass, StructClass } from "../../source/Metadata/Class";
 import { ECObjectsError } from "../../source/Exception";
 
+describe("schema api test", () => {
 describe("essential pieces of a schema", () => {
   it("should be able to create a schema with only the essentials", () => {
     const testSchema = new ECSchema("TestSchemaCreation", 10, 99, 15);
@@ -45,12 +46,39 @@ describe("essential pieces of a schema", () => {
   });
 });
 
-describe("create class in a schema", () => {
-  it("", () => {
+describe("class", () => {
+  it("should succeed for entity class", () => {
     const testSchema = new ECSchema("TestSchema", 1, 1, 1);
     testSchema.createEntityClass("TestEntity");
 
     expect(testSchema.getClass("TestEntity")).instanceof(Class);
     expect(testSchema.getClass<EntityClass>("TestEntity")).instanceof(EntityClass);
   });
+
+  it("should succeed for mixin class", () => {
+    const testSchema = new ECSchema("TestSchema", 1, 2, 3);
+    testSchema.createMixinClass("TestMixin");
+
+    expect(testSchema.getClass("TestMixin")).instanceof(Class);
+    expect(testSchema.getClass<MixinClass>("TestMixin")).instanceof(MixinClass);
+  });
+
+  it("should succeed for struct class", () => {
+    const testSchema = new ECSchema("TestSchema", 1, 2, 3);
+    testSchema.createStructClass("TestStruct");
+
+    expect(testSchema.getClass("TestStruct")).instanceof(Class);
+    expect(testSchema.getClass<StructClass>("TestStruct")).instanceof(StructClass);
+  });
+
+  it("should succeed with case-insentive search", () => {
+    const testSchema = new ECSchema("TestSchema", 1, 0, 0);
+    testSchema.createEntityClass("testEntity");
+
+    expect(testSchema.getClass("TESTENTITY")).not.undefined;
+    expect(testSchema.getClass("TestEntity")).not.undefined;
+    expect(testSchema.getClass("testEntity")).not.undefined;
+  });
 });
+
+}); // Schema tests

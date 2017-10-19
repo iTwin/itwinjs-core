@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { ECVersion, ECClassModifier } from "../ECObjects";
-import { DeserializableSchemaInterface, DeserializableClassInterface } from "./DeserializationInterfaces";
+import { ECVersion, ECClassModifier, CustomAttributeContainerType, PrimitiveType } from "../ECObjects";
+// import { DeserializableSchemaInterface, DeserializableClassInterface, DeserializableItem } from "./DeserializationInterfaces";
 
 export interface SchemaKeyInterface {
   name: string;
@@ -15,13 +15,22 @@ export interface ReferencesInterface {
   version: string;
 }
 
-export interface SchemaInterface extends DeserializableSchemaInterface {
+export interface SchemaInterface {
   schemaKey: SchemaKeyInterface;
   alias: string;
   label?: string;
   description?: string;
   references?: ReferencesInterface[];
   children?: SchemaChildInterface[];
+  getChild<T extends SchemaChildInterface>(name: string): T | undefined;
+  createEntityClass(name: string): any;
+  createMixinClass(name: string): any;
+  createStructClass(name: string): any;
+  createCustomAttributeClass(name: string): any;
+  createKindOfQuantity(name: string): any;
+  createEnumeration(name: string): any;
+  createPropertyCategory(name: string): any;
+  fromJson(obj: any): void;
 }
 
 export interface SchemaChildInterface {
@@ -30,15 +39,17 @@ export interface SchemaChildInterface {
   name: string;
   label?: string;
   description?: string;
+  fromJson(obj: any): void;
 }
 
 export interface ClassInterface extends SchemaChildInterface {
   modifier: ECClassModifier;
   baseClass?: string | ClassInterface; // string should be a ECFullName
   properties?: PropertyInterface[];
+  createProperty(name: string): any;
 }
 
-export interface EntityInterface extends ClassInterface, DeserializableClassInterface {
+export interface EntityInterface extends ClassInterface {
   mixin?: string | MixinInterface; // string should be an ECFullName
 }
 
@@ -63,10 +74,13 @@ export interface RelationshipConstraintInterface {
 }
 
 export interface CustomAttributeInterface {
-  appliesTo: string; // string should be a CustomAttributeContainerType
+  containerType: CustomAttributeContainerType;
 }
 
-// export interface ECEnumeratio 
+export interface ECEnumeration {
+  isStrict: boolean;
+  type: PrimitiveType.Integer | PrimitiveType.String;
+}
 
 export interface PropertyInterface {
 

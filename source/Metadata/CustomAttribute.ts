@@ -2,12 +2,12 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-// class CustomAttributeInstance {
-//   public className: string;
-// }
+export interface CustomAttributeInstance {
+  className: string;
+}
 
 export class CustomAttributeSet {
-//   public [name]: CustomAttributeInstance;
+   [name: string]: CustomAttributeInstance;
 }
 
 export interface ICustomAttributeContainer {

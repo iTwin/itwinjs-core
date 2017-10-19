@@ -13,6 +13,8 @@ export const enum ECObjectsStatus {
   MissingSchemaUrl = ECOBJECTS_ERROR_BASE + 4,
   InvalidModifier = ECOBJECTS_ERROR_BASE + 5,
   InvalidECJson = ECOBJECTS_ERROR_BASE + 6,
+  InvalidContainerType = ECOBJECTS_ERROR_BASE + 7,
+  InvalidEnumValue = ECOBJECTS_ERROR_BASE + 8,
 }
 
 export class ECObjectsError extends Error {
@@ -29,6 +31,8 @@ export class ECObjectsError extends Error {
       case ECObjectsStatus.MissingSchemaUrl: return this._appendMessage("ECObjectsStatus.MissingSchemaUrl");
       case ECObjectsStatus.InvalidModifier: return this._appendMessage("ECObjectsStatus.InvalidModifier");
       case ECObjectsStatus.InvalidECJson: return this._appendMessage("ECObjectsStatus.InvalidECJson");
+      case ECObjectsStatus.InvalidContainerType: return this._appendMessage("ECObjectsStatus.InvalidContainerType");
+      case ECObjectsStatus.InvalidEnumValue: return this._appendMessage("ECObjectsStatus.InvalidEnumValue");
       default:
         assert(false);
         return this._appendMessage("Error " + this.errorNumber.toString());

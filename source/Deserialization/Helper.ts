@@ -2,7 +2,8 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { DeserializableSchemaInterface } from "../ECInterfaces/DeserializationInterfaces";
+// import { DeserializableSchemaInterface, DeserializableClassInterface, DeserializableItem } from "../ECInterfaces/DeserializationInterfaces";
+import { SchemaInterface, SchemaChildInterface, ClassInterface } from "../ECInterfaces/Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 
 /**
@@ -14,20 +15,42 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
  * and/or worry about if they ordered something properly.
  */
 export default class DeserializationHelper {
+  // private _context?: DeserializableSchemaInterface;
+  // private _schemas: { [key: string]: DeserializableSchemaInterface; };
+  // private _thingToDeserialiaze: DeserializableSchemaInterface | DeserializableClassInterface;
 
-  public static to<T extends DeserializableSchemaInterface>(schema: T, schemaJson: object | string): T {
+  // constructor(context?: DeserializableSchemaInterface) {
+  //   this._context = context;
+  //   // this._schemas = {};
+  // }
+
+  /**
+   * Populates the given schema object with the information presented in the schemaJson provided. If present, uses the provided context to resolve any references within the schema. Otherwise, those references will be unresovled.
+   * @param schema The schema object to populate. Must be an extension of the DeserializableSchemaInterface.
+   * @param schemaJson An object, or string representing that object, that follows the SchemaJson format.
+   * @param context TODO:
+   */
+  public static to<T extends SchemaInterface>(schema: T, schemaJson: object | string): T {
+    const helper = new DeserializationHelper();
+
     const jsonObj = typeof schemaJson === "string" ? JSON.parse(schemaJson) : schemaJson;
 
-    // TODO : Load schema references first
-
-    // Loads all of the properties on the ECSchemaInterface object
+    // Loads all of the properties on the SchemaInterface object
     schema.fromJson(jsonObj);
 
+    // Load schema references first
+    // Need to figure out if other schemas are present. Need some sort of context? Or when there is a lack of context all references are in string form??
+    if (jsonObj.references) {
+      // TODO
+    }
+
+    // Load all schema children
     if (jsonObj.children) {
       for (const childName in jsonObj.children) {
-        if (schema.getClass(childName) !== undefined)
+        if (schema.getChild(childName) !== undefined)
           continue;
-        DeserializationHelper.loadClass(schema, jsonObj, jsonObj.children[childName], childName);
+
+        helper.loadSchemaChild(schema, jsonObj.children[childName], childName);
       }
     }
 
@@ -37,17 +60,59 @@ export default class DeserializationHelper {
   }
 
   /**
-   * 
-   * @param schemaChildJson The json representation of the SchemaChild.
-   * @param schema A parent object to add this schemaChild to
-   * @param name The name of the Schema Child. Only needed if the Child lives within its parent.
+   *
+   * @param schemaChild The schemaChild object to populate. Must extend from DeserializableItem.
+   * @param schemaChildJson The json to deserialize from. Must follow the SchemaChildJson format.
+   * @param context The context in which the provided SchemaChild should be deserialized in. If no context is provided, none of the references within the child will be resolved. // TODO: Context should be either an ECSchema or an ECSchemaContext, which contains an entire graph of things.
    */
-  // private static loadSchemaChild(schemaChildJson: any, parent?: DeserializableSchemaInterface, name?: string): void {
-  //   // If in the context of a parent, check if the schema child already has been deserailized
-  //   if (parent) {
-  //     parent.getChild(name);
-  //   }
+  // public static loadSchemaChild<T extends DeserializableItem>(schemaChild: T, schemaChildJson: any, context?: DeserializableSchemaInterface): void {
+  //   const helper = new DeserializationHelper(context);
+  //   helper.loadSchemaChild(schemaChild, schemaChildJson);
   // }
+
+  /**
+   *
+   * @param schemaChild
+   * @param schemaChildJson
+   * @param name
+   */
+  private loadSchemaChild(schema: SchemaInterface, schemaChildJson: any, name?: string) {
+    const childName = (schemaChildJson.name) ? schemaChildJson.name : name;
+    if (!childName)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson);
+
+    switch (schemaChildJson.schemaChildType) {
+      case "EntityClass":
+        const entityClass: ClassInterface = schema.createEntityClass(childName);
+        this.loadEntityClass(entityClass, schemaChildJson);
+        break;
+      case "StructClass":
+        const structClass: ClassInterface = schema.createStructClass(childName);
+        this.loadClass(structClass, schemaChildJson);
+        break;
+      case "Mixin":
+        const mixin: ClassInterface = schema.createMixinClass(childName);
+        this.loadMixin(mixin, schemaChildJson);
+        break;
+      case "CustomAttributeClass":
+        const caClass: ClassInterface = schema.createCustomAttributeClass(childName);
+        this.loadClass(caClass, schemaChildJson);
+        break;
+      case "RelationshipClass":
+        break;
+      case "KindOfQuantity":
+        break;
+      case "PropertyCategory":
+        const propCategory: SchemaChildInterface = schema.createPropertyCategory(childName);
+        propCategory.fromJson(schemaChildJson);
+        break;
+      case "Enumeration":
+        const enumeration: SchemaChildInterface = schema.createEnumeration(childName);
+        enumeration.fromJson(schemaChildJson);
+        break;
+    }
+
+  }
 
   /**
    *
@@ -55,56 +120,42 @@ export default class DeserializationHelper {
    * @param schemaJson The original json object of the schema.
    * @param classJson The json object for this class
    */
-  private static loadClass(schema: DeserializableSchemaInterface, schemaJson: any, classJson: any, name?: string): void {
-    const className = name ? name : classJson.name;
-
-    // Load base classes first
+  private loadClass(classObj: ClassInterface, classJson: any): void {
+    // Load base class first
     if (classJson.baseClass) {
-      if (schema.getClass(classJson.baseClass) === undefined) {
-        DeserializationHelper.loadClass(schema, schemaJson, schemaJson.children[classJson.baseClass], classJson.baseClass);
-      }
+      // if (classObj.getChild(classJson.baseClass) === undefined) {
+      //   this.loadClass(schema, schemaJson.children[classJson.baseClass], classJson.baseClass);
+      // }
     }
 
-    switch (classJson.schemaChildType) {
-      case "EntityClass":
-        // Need to create the Entity first because of silly circular dependencies with Mixins...
-        const entityClass = schema.createEntityClass(className);
+    classObj.fromJson(classJson);
+  }
 
-        // Load Mixin classes first
-        if (classJson.mixin) {
-          if (typeof(classJson.mixin) === "string" && schema.getClass(classJson.mixin) === undefined)
-            DeserializationHelper.loadClass(schema, schemaJson, schemaJson.children[classJson.mixin]);
-          else if (Array.isArray(classJson.mixin)) {
-            classJson.array.forEach((mixinName: string) => {
-              if (schema.getClass(mixinName) !== undefined)
-                return;
-              DeserializationHelper.loadClass(schema, schemaJson, schemaJson.children[mixinName], mixinName);
-            });
-          }
-        }
-
-        entityClass.fromJson(classJson);
-        break;
-      case "Mixin":
-        // Need to create the Mixin first because of silly circular dependencies with the AppliesTo EntityClasses...
-        const mixinClass = schema.createMixinClass(className);
-
-        if (classJson.appliesTo) {
-          if (typeof(classJson.appliesTo) === "string" && schema.getClass(classJson.appliesTo) === undefined)
-            DeserializationHelper.loadClass(schema, schemaJson, schemaJson.children[classJson.appliesTo], classJson.appliesTo);
-          else
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, "");
-        }
-
-        mixinClass.fromJson(classJson);
-        break;
-      case "StructClass":
-        const structClass = schema.createStructClass(className);
-        structClass.fromJson(classJson);
-        break;
-      case "RelationshipClass":
-        // TODO
-        break;
+  private loadEntityClass(entity: ClassInterface, entityJson: any): void {
+    // Load Mixin classes first
+    if (entityJson.mixin) {
+      // if (typeof(entityJson.mixin) === "string" && entity.schema.getChild(entityJson.mixin) === undefined)
+      //   this.loadClass(schema, schemaJson, schemaJson.children[entityJson.mixin]);
+      // else if (Array.isArray(entityJson.mixin)) {
+      //   entityJson.mixin.array.forEach((mixinName: string) => {
+      //     if (schema.getChild(mixinName) !== undefined)
+      //       return;
+      //     this.loadClass(schema, schemaJson, schemaJson.children[mixinName], mixinName);
+      //   });
+      // }
     }
+
+    this.loadClass(entity, entityJson);
+  }
+
+  private loadMixin(mixin: ClassInterface, mixinJson: any): void {
+    if (mixinJson.appliesTo) {
+      // if (typeof(mixinJson.appliesTo) === "string" && schema.getChild(mixinJson.appliesTo) === undefined)
+      //   this.loadClass(schema, schemaJson, schemaJson.children[mixinJson.appliesTo], mixinJson.appliesTo);
+      // else
+      //   throw new ECObjectsError(ECObjectsStatus.InvalidECJson, "");
+    }
+
+    this.loadClass(mixin, mixinJson);
   }
 }

@@ -25,22 +25,152 @@ export const enum PrimitiveType {
 }
 
 export const enum CustomAttributeContainerType {
-  Schema = 1,
-  EntityClass = 2,
-  CustomAttributeClass = 4,
-  StructClass = 8,
-  RelationshipClass = 16,
-  AnyClass = 30,
-  PrimitiveProperty = 32,
-  StructProperty = 64,
-  PrimitiveArrayProperty = 128,
-  StructArrayProperty = 256,
-  NavigationProperty = 512,
-  AnyProperty = 992,
-  SourceRelationshipConstraint = 1024,
-  TargetRelationshipConstraint = 2048,
-  AnyRelationshipConstraint = 3072,
-  Any = 4095,
+  Schema = (0x0001 << 0),
+  EntityClass = (0x0001 << 1),
+  CustomAttributeClass = (0x0001 << 2),
+  StructClass = (0x0001 << 3),
+  RelationshipClass = (0x0001 << 4),
+  AnyClass = EntityClass | CustomAttributeClass | StructClass | RelationshipClass,
+  PrimitiveProperty = (0x0001 << 5),
+  StructProperty = (0x0001 << 6),
+  PrimitiveArrayProperty = (0x0001 << 7),
+  StructArrayProperty = (0x0001 << 8),
+  NavigationProperty = (0x0001 << 9),
+  AnyProperty = PrimitiveProperty | StructProperty | PrimitiveArrayProperty | StructArrayProperty | NavigationProperty,
+  SourceRelationshipConstraint = (0x0001 << 10),
+  TargetRelationshipConstraint = (0x0001 << 11),
+  AnyRelationshipConstraint = SourceRelationshipConstraint | TargetRelationshipConstraint,
+  Any = Schema | AnyClass | AnyProperty | AnyRelationshipConstraint,
+}
+
+/**
+ * Parses the provided string into an ECClassModifier if the string is a valid modifier.
+ * @param modifier The modifier string to parse
+ */
+export function parseClassModifier(modifier: string): ECClassModifier {
+  const lowerModifier = modifier.toLowerCase();
+  if (/Abstract/i.test(lowerModifier))
+    return ECClassModifier.Abstract;
+  else if (/None/i.test(lowerModifier))
+    return ECClassModifier.None;
+  else if (/Sealed/i.test(lowerModifier))
+    return ECClassModifier.Sealed;
+
+  throw new ECObjectsError(ECObjectsStatus.InvalidModifier, `${modifier} is not a valid ECClassModifier.`);
+}
+
+/**
+ * Parses the given string into the appropriate CustomAttributeContainerType if the string is valid.
+ * @param type The container type string to parse.
+ */
+export function parseCustomAttributeContainerType(type: string): CustomAttributeContainerType {
+  const typeTokens = type.split(/[|,;]+/);
+
+  let containerType = 0;
+
+  typeTokens.forEach((typeToken) => {
+    if (typeToken.length === 0)
+      return;
+
+    typeToken = typeToken.toLowerCase();
+
+    if (/Schema/i.test(typeToken))
+      containerType = containerType | CustomAttributeContainerType.Schema;
+    else if (/EntityClass/i.test(typeToken))
+      containerType = containerType | CustomAttributeContainerType.EntityClass;
+    else if (/CustomAttributeClass/i.test(typeToken))
+      containerType = containerType | CustomAttributeContainerType.CustomAttributeClass;
+    else if (/StructClass/i.test(typeToken))
+      containerType = containerType | CustomAttributeContainerType.StructClass;
+    else if (/RelationshipClass/i.test(typeToken))
+      containerType = containerType | CustomAttributeContainerType.RelationshipClass;
+    else if (/AnyClass/i.test(typeToken))
+      containerType = containerType | CustomAttributeContainerType.AnyClass;
+    else if (/PrimitiveProperty/i.test(typeToken))
+      containerType = containerType | CustomAttributeContainerType.PrimitiveProperty;
+    else if (/StructProperty/i.test(typeToken))
+      containerType = containerType | CustomAttributeContainerType.StructProperty;
+    else if (/ArrayProperty/i.test(typeToken))
+      containerType = containerType | CustomAttributeContainerType.PrimitiveArrayProperty;
+    else if (/StructArrayProperty/i.test(typeToken))
+      containerType = containerType | CustomAttributeContainerType.StructArrayProperty;
+    else if (/NavigationProperty/i.test(typeToken))
+      containerType = containerType | CustomAttributeContainerType.NavigationProperty;
+    else if (/AnyProperty/i.test(typeToken))
+      containerType = containerType | CustomAttributeContainerType.AnyProperty;
+    else if (/SourceRelationshipConstraint/i.test(typeToken))
+      containerType = containerType | CustomAttributeContainerType.SourceRelationshipConstraint;
+    else if (/TargetRelationshipConstraint/i.test(typeToken))
+      containerType = containerType | CustomAttributeContainerType.TargetRelationshipConstraint;
+    else if (/AnyRelationshipConstraint/i.test(typeToken))
+      containerType = containerType | CustomAttributeContainerType.AnyRelationshipConstraint;
+    else if (/Any/i.test(typeToken))
+      containerType = CustomAttributeContainerType.Any;
+    else
+      throw new ECObjectsError(ECObjectsStatus.InvalidContainerType, `${typeToken} is not a valid CustomAttributeContainerType value.`);
+  });
+
+  return containerType as CustomAttributeContainerType;
+}
+
+export function containerTypeToString(type: CustomAttributeContainerType): string {
+
+  const testContainerTypeValue = (compareType: CustomAttributeContainerType, otherType: CustomAttributeContainerType) => {
+    return (compareType === (compareType & otherType));
+  };
+
+  if (testContainerTypeValue(CustomAttributeContainerType.Any, type))
+    return "Any";
+
+  const setOrAppend = (str: string, val: string) => {
+    if (str.length === 0)
+      str = val;
+    else
+      str += "," + val;
+  };
+
+  let containerType: string = "";
+  if (testContainerTypeValue(CustomAttributeContainerType.Schema, type))
+    setOrAppend(containerType, "Schema");
+
+  if (testContainerTypeValue(CustomAttributeContainerType.AnyClass, type))
+    setOrAppend(containerType, "AnyClass");
+  else {
+    if (testContainerTypeValue(CustomAttributeContainerType.EntityClass, type))
+      setOrAppend(containerType, "EntityClass");
+    if (testContainerTypeValue(CustomAttributeContainerType.CustomAttributeClass, type))
+      setOrAppend(containerType, "CustomAttributeClass");
+    if (testContainerTypeValue(CustomAttributeContainerType.StructClass, type))
+      setOrAppend(containerType, "StructClass");
+    if (testContainerTypeValue(CustomAttributeContainerType.RelationshipClass, type))
+      setOrAppend(containerType, "RelationshipClass");
+  }
+
+  if (testContainerTypeValue(CustomAttributeContainerType.AnyProperty, type))
+    setOrAppend(containerType, "AnyProperty")
+  else {
+    if (testContainerTypeValue(CustomAttributeContainerType.PrimitiveProperty, type))
+      setOrAppend(containerType, "PrimitiveProperty");
+    if (testContainerTypeValue(CustomAttributeContainerType.StructProperty, type))
+      setOrAppend(containerType, "StructProperty");
+    if (testContainerTypeValue(CustomAttributeContainerType.PrimitiveArrayProperty, type))
+      setOrAppend(containerType, "PrimitiveArrayProperty");
+    if (testContainerTypeValue(CustomAttributeContainerType.StructArrayProperty, type))
+      setOrAppend(containerType, "StructArrayProperty");
+    if (testContainerTypeValue(CustomAttributeContainerType.NavigationProperty, type))
+      setOrAppend(containerType, "NavigationProperty");
+  }
+
+  if (testContainerTypeValue(CustomAttributeContainerType.AnyRelationshipConstraint, type))
+    setOrAppend(containerType, "AnyRelationshipConstraint");
+  else {
+    if (testContainerTypeValue(CustomAttributeContainerType.SourceRelationshipConstraint, type))
+      setOrAppend(containerType, "SourceRelationshipConstraint");
+    if (testContainerTypeValue(CustomAttributeContainerType.TargetRelationshipConstraint, type))
+      setOrAppend(containerType, "TargetRelationshipConstraint");
+  }
+
+  return containerType;
 }
 
 export const enum RelationshipEnd {

@@ -3,7 +3,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { ECVersion, ECName, ECClassModifier } from "../ECObjects";
 import { SchemaInterface, SchemaChildInterface, SchemaKeyInterface } from "../ECInterfaces/Interfaces";
-import { Class, MixinClass, EntityClass, StructClass } from "../Metadata/Class";
+import { Class, MixinClass, EntityClass, StructClass, CustomAttributeClass } from "./Class";
+import { Enumeration } from "./Enumeration";
 import DeserializationHelper from "../Deserialization/Helper";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { ICustomAttributeContainer, CustomAttributeSet } from "./CustomAttribute";
@@ -70,6 +71,11 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
     this.schemaKey.minorVersion = version;
   }
 
+  /**
+   *
+   * @param name
+   * @param modifier
+   */
   public createEntityClass(name: string, modifier?: ECClassModifier): EntityClass {
     const newEntity = new EntityClass(name);
 
@@ -85,6 +91,10 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
     return newEntity;
   }
 
+  /**
+   *
+   * @param name
+   */
   public createMixinClass(name: string): MixinClass {
     const newMixin = new MixinClass(name);
 
@@ -97,6 +107,11 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
     return newMixin;
   }
 
+  /**
+   *
+   * @param name
+   * @param modifier
+   */
   public createStructClass(name: string, modifier?: ECClassModifier): StructClass {
     const newStruct = new StructClass(name);
 
@@ -112,18 +127,95 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
     return newStruct;
   }
 
-  public getClass<T extends Class>(name: string): T | undefined {
+  /**
+   *
+   * @param name
+   * @param modifier
+   */
+  public createCustomAttributeClass(name: string, modifier?: ECClassModifier): CustomAttributeClass {
+    const newCAClass = new CustomAttributeClass(name);
+
+    if (modifier)
+      newCAClass.modifier = modifier;
+
+    if (!this._children)
+      this._children = [];
+    this._children.push(newCAClass);
+
+    newCAClass.schema = this;
+
+    return newCAClass;
+  }
+
+  /**
+   *
+   * @param name
+   */
+  public createEnumeration(name: string): Enumeration {
+    const newEnum = new Enumeration(name);
+
+    if (!this._children)
+      this._children = [];
+    this._children.push(newEnum);
+
+    newEnum.schema = this;
+    return newEnum;
+  }
+
+  /**
+   *
+   * @param name
+   */
+  public createKindOfQuantity(name: string) {
+    if (name)
+      return;
+    // TODO;
+  }
+
+  /**
+   *
+   * @param name
+   */
+  public createPropertyCategory(name: string) {
+    if (name)
+      return;
+    // TODO;
+  }
+
+  /**
+   * Searches the current schema for a schema child with a name matching, case-insensitive, the provided name.
+   * @param name
+   */
+  public getChild<T extends SchemaChildInterface>(name: string): T | undefined {
     if (!this._children)
       return undefined;
 
-    const foundClass = this._children.find((child) => child.name === name);
-
-    if (!foundClass || !(foundClass instanceof Class))
-      return undefined;
-
-    return foundClass as T;
+    // Do case-insensitive search
+    const foundChild = this._children.find((child) => child.name.toLowerCase() === name.toLowerCase());
+    return foundChild as T;
   }
 
+  /**
+   * Searches the current schema for a class with a name matching, case-insensitive, the provided name.
+   * @param name The name of the class to return.
+   */
+  public getClass<T extends Class>(name: string): T | undefined {
+    return this.getChild<T>(name);
+  }
+
+  /**
+   *
+   */
+  public getChildren<T extends SchemaChildInterface>(): T[] {
+    if (!this._children)
+      return [];
+
+    return this._children as T[];
+  }
+
+  /**
+   *
+   */
   public getClasses(): Class[] {
     if (!this._children)
       return [];
