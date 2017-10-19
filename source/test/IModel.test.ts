@@ -639,9 +639,11 @@ describe("iModel", () => {
     ASSERT_TRUE(m_defaultCategoryId.IsValid());
   */
 
-  it.skip("ImodelJsTest.MeasureInsertPerformance)", async () => {
+  it.only("ImodelJsTest.MeasureInsertPerformance)", async () => {
 
     const ifperfimodel = await IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", {copyFilename: "ImodelJsTest_MeasureInsertPerformance.bim", enableTransactions: true});
+
+    console.time("ImodelJsTest.MeasureInsertPerformance");
 
     // TODO: Look up model by code (i.e., codevalue of a child of root subject, where child has a PhysicalPartition)
     // const physicalPartitionCode: Code = PhysicalPartition::CreateCode(*m_db->Elements().GetRootSubject(), "DefaultModel");
@@ -685,5 +687,8 @@ describe("iModel", () => {
       const expectedCountAsHex = "0X" + elementCount.toString(16).toUpperCase();
       assert.equal(row.count, expectedCountAsHex);
     });
+
+  console.timeEnd("ImodelJsTest.MeasureInsertPerformance");
+
   });
 });
