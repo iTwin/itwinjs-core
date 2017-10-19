@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaInterface, SchemaChildInterface } from "../ECInterfaces/Interfaces";
+import { SchemaInterface, SchemaChildInterface } from "../Interfaces";
 import { ECVersion, ECName } from "../ECObjects";
 
 /**

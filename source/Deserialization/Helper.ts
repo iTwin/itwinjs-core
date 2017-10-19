@@ -2,8 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-// import { DeserializableSchemaInterface, DeserializableClassInterface, DeserializableItem } from "../ECInterfaces/DeserializationInterfaces";
-import { SchemaInterface, SchemaChildInterface, ClassInterface } from "../ECInterfaces/Interfaces";
+import { SchemaInterface, SchemaChildInterface, ClassInterface } from "../Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 
 /**

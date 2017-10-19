@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { ClassInterface, MixinInterface, EntityInterface, PropertyInterface, CustomAttributeInterface } from "../ECInterfaces/Interfaces";
+import { ClassInterface, MixinInterface, EntityInterface, PropertyInterface, CustomAttributeInterface } from "../Interfaces";
 import { ECClassModifier, CustomAttributeContainerType, parseCustomAttributeContainerType
 , parseClassModifier } from "../ECObjects";
 import { ICustomAttributeContainer, CustomAttributeSet } from "./CustomAttribute";

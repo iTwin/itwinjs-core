@@ -2,8 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { ECVersion, ECClassModifier, CustomAttributeContainerType, PrimitiveType } from "../ECObjects";
-// import { DeserializableSchemaInterface, DeserializableClassInterface, DeserializableItem } from "./DeserializationInterfaces";
+import { ECVersion, ECClassModifier, CustomAttributeContainerType, PrimitiveType } from "./ECObjects";
 
 export interface SchemaKeyInterface {
   name: string;
