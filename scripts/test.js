@@ -22,7 +22,12 @@ const options = [
   "--compilers", "ts-node/register",
   "--watch-extensions", "ts",
   "--colors"
-]
+];
+
+const watchOptions = (process.argv[process.argv.length-1].toLowerCase() === "watch") ? ["--watch", "--inline-diffs"] : [];
+
+const paths = require("./config/paths");
+const path = require("path");
 
 const reporterOptions = (!isCI) ? [
   "-R", "spec"
@@ -30,11 +35,6 @@ const reporterOptions = (!isCI) ? [
   "--reporter", "mocha-junit-reporter",
   "--reporter-options", `mochaFile=${paths.appJUnitTestResults}`,
 ]
-
-const watchOptions = (process.argv[process.argv.length-1].toLowerCase() === "watch") ? ["--watch", "--inline-diffs"] : [];
-
-const paths = require("./config/paths");
-const path = require("path");
 
 const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 
