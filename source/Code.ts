@@ -66,7 +66,7 @@ export class CodeSpecNames {
   public static ViewDefinition() { return CodeSpecNames.BIS_CODESPEC("ViewDefinition"); }
 }
 
-/** A CodeSpec object within a particular IModel */
+/** A CodeSpec object within an IModel */
 export class CodeSpec {
   public iModel: IModel;
   public id: Id64;

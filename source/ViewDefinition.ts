@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
 import { ElementProps, DefinitionElement } from "./Element";
 import { Appearance, SubCategoryOverride } from "./Category";
 import { ViewFlags, HiddenLine, ColorDef } from "./Render";
 import { Light, LightType } from "./Lighting";
+import { ClipVector } from "./ClipVector";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { Vector3d, Point3d, Range3d, RotMatrix, Transform, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
+import { Vector3d, Vector2d, Point3d, Point2d, Range3d, RotMatrix, Transform, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { AxisOrder, Angle, Geometry } from "@bentley/geometry-core/lib/Geometry";
 import { Map4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
@@ -35,6 +35,15 @@ export const enum Npc {
   LeftTopFront = 6,
   RightTopFront = 7,
   CORNER_COUNT = 8,
+}
+
+export const enum GridOrientationType {
+  View = 0,
+  WorldXY = 1, // Top
+  WorldYZ = 2, // Right
+  WorldXZ = 3, // Front
+  AuxCoord = 4,
+  GeoCoord = 5,
 }
 
 export let standardView = {
@@ -153,16 +162,12 @@ export class DisplayStyle extends DefinitionElement {
   public removeStyle(name: string) { delete this.getStyles()[name]; }
 
   /** Get the background color for this DisplayStyle */
-  public getBackgroundColor(): ColorDef {
-    return ColorDef.fromJSON(this.getStyle("backgroundColor"));
-  }
+  public getBackgroundColor(): ColorDef { return ColorDef.fromJSON(this.getStyle("backgroundColor")); }
 
   /** Set the background color for this DisplayStyle */
   public setBackgroundColor(val: ColorDef): void { this.setStyle("backgroundColor", val); }
 
-  public getMonochromeColor(): ColorDef {
-    return ColorDef.fromJSON(this.getStyle("monochromeColor"));
-  }
+  public getMonochromeColor(): ColorDef { return ColorDef.fromJSON(this.getStyle("monochromeColor")); }
   public setMonochromeColor(val: ColorDef): void { this.setStyle("monochromeColor", val); }
 }
 
@@ -308,6 +313,19 @@ export const enum ViewportStatus {
   InvalidViewport,
 }
 
+/** Margins for white space to be left around view volumes for ViewDefinition.lookAtVolume.
+ *  Values mean "percent of view" and must be between 0 and .25.
+ */
+export class MarginPercent {
+  private static limitMargin(val: number) { return (val < 0.0) ? 0.0 : (val > .25) ? .25 : val; }
+  constructor(public left: number, public top: number, public right: number, public bottom: number) {
+    this.left = MarginPercent.limitMargin(left);
+    this.top = MarginPercent.limitMargin(top);
+    this.right = MarginPercent.limitMargin(right);
+    this.bottom = MarginPercent.limitMargin(bottom);
+  }
+}
+
 /** The definition element for a view. ViewDefinitions specify the area/volume that is viewed, and points to a DisplayStyle and a CategorySelector.
  *  Subclasses of ViewDefinition determine which model(s) are viewed.
  *  A ViewController holds an editable copy of a ViewDefinition, and a ViewDefinition holds an editable copy of its DisplayStyle and CategorySelector.
@@ -326,7 +344,8 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
       this.setCategorySelector(props.categorySelector);
   }
 
-  // public abstract supplyController(): ViewController;
+  public isView3d(): boolean { return this instanceof ViewDefinition3d; }
+  public isSpatialView(): boolean { return this instanceof SpatialViewDefinition; }
 
   /** determine whether this ViewDefinition views a given model */
   public abstract viewsModel(modelId: Id64): boolean;
@@ -460,7 +479,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
     delta.z = limitWindowSize(delta.z);
 
     if (messageNeeded && error !== ViewportStatus.Success) {
-      //      DgnViewport::OutputFrustumErrorMessage(error);
+      //      Viewport::OutputFrustumErrorMessage(error);
     }
 
     return error;
@@ -528,132 +547,196 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
   /**  Get the unit vector that points in the view Y (bottom-to-top) direction. */
   public getYVector(): Vector3d { return this.getRotation().getRow(1); }
 
-  // //! Get the unit vector that points in the view Z (front-to-back) direction.
+  /** Get the unit vector that points in the view Z (front-to-back) direction. */
   public getZVector(): Vector3d { return this.getRotation().getRow(2); }
 
-  // //! Change the view orientation to one of the standard views.
-  // //! @param standardView the rotation to which the view should be set.
-  // //! @returns SUCCESS if the view was changed.
-  // DGNPLATFORM_EXPORT BentleyStatus SetStandardViewRotation(StandardView standardView);
+  /** Set the clipping volume for this view. */
+  public setViewClip(clip?: ClipVector) {
+    if (clip && clip.isValid())
+      this.setDetail("clip", clip.toJSON());
+    else
+      this.removeDetail("clip");
+  }
 
-  // //! Set the clipping volume for elements in this view
-  // DGNPLATFORM_EXPORT void SetViewClip(ClipVectorPtr clip);
+  /** Get the clipping volume for this view */
+  public getViewClip(): ClipVector { return ClipVector.fromJSON(this.getDetail("clip")); }
 
-  // //! Get the clipping volume for elements in this view
-  // DGNPLATFORM_EXPORT ClipVectorPtr GetViewClip() const;
+  /** Set the grid settings for this view */
+  public setGridSettings(orientation: GridOrientationType, spacing: Point2d, gridsPerRef: number): void {
+    switch (orientation) {
+      case GridOrientationType.WorldYZ:
+      case GridOrientationType.WorldXZ:
+        if (!this.isView3d())
+          return;
+        break;
 
-  // //! Set the grid settings for this view
-  // DGNPLATFORM_EXPORT void SetGridSettings(GridOrientationType, DPoint2dCR, uint32_t);
+      case GridOrientationType.GeoCoord:
+        if (!this.isSpatialView())
+          return;
+        break;
+    }
 
-  // //! Get the grid settings for this view
-  // DGNPLATFORM_EXPORT void GetGridSettings(GridOrientationType &, DPoint2dR, uint32_t &) const;
+    const details = this.getDetails();
+    JsonUtils.setOrRemoveNumber(details, "gridOrient", orientation, GridOrientationType.WorldXY);
+    JsonUtils.setOrRemoveNumber(details, "gridPerRef", gridsPerRef, 10);
+    JsonUtils.setOrRemoveNumber(details, "gridSpaceX", spacing.x, 1.0);
+    JsonUtils.setOrRemoveNumber(details, "gridSpaceY", spacing.y, spacing.x);
+  }
+
+  /** Get the grid settings for this view */
+  public getGridSettings() {
+    const out: any = {};
+    out.orientation = JsonUtils.asInt(this.getDetail("gridOrient"), GridOrientationType.WorldXY);
+    out.gridsPerRef = JsonUtils.asInt(this.getDetail("gridPerRef"), 10);
+    out.spacing.x = JsonUtils.asInt(this.getDetail("gridSpaceX"), 1.0);
+    out.spacing.y = JsonUtils.asInt(this.getDetail("gridSpaceY"), out.spacing.x);
+    return out;
+  }
+
+  /**
+   * Change the volume that this view displays, keeping its current rotation.
+   * @param worldVolume The new volume, in world-coordinates, for the view. The resulting view will show all of worldVolume, by fitting a
+   * view-axis-aligned bounding box around it. For views that are not aligned with the world coordinate system, this will sometimes
+   * result in a much larger volume than worldVolume.
+   * @param aspectRatio The X/Y aspect ratio of the view into which the result will be displayed. If the aspect ratio of the volume does not
+   * match aspectRatio, the shorter axis is lengthened and the volume is centered. If aspectRatio is undefined, no adjustment is made.
+   * @param margin The amount of "white space" to leave around the view volume (which essentially increases the volume
+   * of space shown in the view.) If undefined, no additional white space is added.
+   * @note, for 2d views, only the X and Y values of volume are used.
+   */
+  public lookAtViewAlignedVolume(volume: Range3d, aspect?: number, margin?: MarginPercent) {
+    const viewRot = this.getRotation().clone();
+
+    const newOrigin = volume.low.clone();
+    let newDelta = Vector3d.createStartEnd(volume.high, volume.low);
+
+    const minimumDepth = Constant.oneMillimeter;
+    if (newDelta.z < minimumDepth) {
+      newOrigin.z -= (minimumDepth - newDelta.z) / 2.0;
+      newDelta.z = minimumDepth;
+    }
+
+    let origNewDelta = newDelta.clone();
+
+    const isCamera: boolean = this.isView3d();
+    const isCameraOn: boolean = isCamera && this.cameraOn;
+    if (isCameraOn) {
+      // If the camera is on, the only way to guarantee we can see the entire volume is to set delta at the front plane, not focus plane.
+      // That generally causes the view to be too large (objects in it are too small), since we can't tell whether the objects are at
+      // the front or back of the view. For this reason, don't attempt to add any "margin" to camera views.
+    } else if (margin) {
+      // compute how much space we'll need for both of X and Y margins in root coordinates
+      const wPercent = margin.left + margin.right;
+      const hPercent = margin.top + margin.bottom;
+
+      const marginHoriz = wPercent / (1 - wPercent) * newDelta.x;
+      const marginVert = hPercent / (1 - hPercent) * newDelta.y;
+
+      // compute left and bottom margins in root coordinates
+      const marginLeft = margin.left / (1 - wPercent) * newDelta.x;
+      const marginBottom = margin.bottom / (1 - hPercent) * newDelta.y;
+
+      // add the margins to the range
+      newOrigin.x -= marginLeft;
+      newOrigin.y -= marginBottom;
+      newDelta.x += marginHoriz;
+      newDelta.y += marginVert;
+
+      // don't fix the origin due to changes in delta here
+      origNewDelta = newDelta.clone();
+    } else {
+      newDelta.scale(1.04); // default "dilation"
+    }
+
+    if (isCameraOn) {
+      // make sure that the zDelta is large enough so that entire model will be visible from any rotation
+      const diag = newDelta.magnitudeXY();
+      if (diag > newDelta.z)
+        newDelta.z = diag;
+    }
+
+    this.validateViewDelta(newDelta, true);
+
+    this.setExtents(newDelta);
+    if (aspect)
+      this.adjustAspectRatio(aspect);
+
+    newDelta = this.getExtents();
+
+    newOrigin.x -= (newDelta.x - origNewDelta.x) / 2.0;
+    newOrigin.y -= (newDelta.y - origNewDelta.y) / 2.0;
+    newOrigin.z -= (newDelta.z - origNewDelta.z) / 2.0;
+
+    this.setOrigin(viewRot.multiplyInverseXYZAsPoint3d(newOrigin.x, newOrigin.y, newOrigin.z)!);
+
+    if (!isCamera)
+      return;
+
+    const cameraDef: Camera = this.camera;
+    cameraDef.validateLens();
+    // move the camera back so the entire x,y range is visible at front plane
+    const frontDist = Math.max(newDelta.x, newDelta.y) / (2.0 * Math.tan(cameraDef.getLensAngle().radians / 2.0));
+    const backDist = frontDist + newDelta.z;
+
+    cameraDef.setFocusDistance(frontDist); // do this even if the camera isn't currently on.
+    this.centerEyePoint(backDist); // do this even if the camera isn't currently on.
+    this.verifyFocusPlane(); // changes delta/origin
+  }
 }
 
-/** Margins for "white space" to be left around view volumes for #lookAtVolume.
- *  Values mean "percent of view" and must be between 0 and .25.
+/**
+ * This is what the parameters to the camera methods, and the values stored by ViewDefinition3d mean.
+ * @verbatim
+ *                v-- {origin}
+ *           -----+-------------------------------------- -   [back plane]
+ *           ^\   .                                    /  ^
+ *           | \  .                                   /   |        P
+ *         d |  \ .                                  /    |        o
+ *         e |   \.         {targetPoint}           /     |        s
+ *         l |    |---------------+----------------|      |        i    [focus plane]
+ *         t |     \  ^delta.x    ^               /     b |        t
+ *         a |      \             |              /      a |        i
+ *         . |       \            |             /       c |        v
+ *         z |        \           | f          /        k |        e
+ *           |         \          | o         /         D |        Z
+ *           |          \         | c        /          i |        |
+ *           |           \        | u       /           s |        v
+ *           v            \       | s      /            t |
+ *           -     -       -----  | D -----               |   [front plane]
+ *                 ^              | i                     |
+ *                 |              | s                     |
+ *     frontDist ->|              | t                     |
+ *                 |              |                       |
+ *                 v           \  v  / <- lens angle      v
+ *                 -              + {eyePoint}            -     positiveX ->
+ * @endverbatim
+ *    Notes:
+ *          - Up vector (positiveY) points out of the screen towards you in this diagram. Likewise delta.y.
+ *          - The view origin is in world coordinates. It is the point at the lower left of the rectangle at the
+ *            focus plane, projected onto the back plane.
+ *          - [delta.x,delta.y] are on the focus plane and delta.z is from the back plane to the front plane.
+ *          - The three view vectors come from:
+ * @verbatim
+ *                 {vector from eyePoint->targetPoint} : -Z (positive view Z points towards negative world Z)
+ *                 {the up vector}                     : +Y
+ *                 {Z cross Y}                         : +X
+ * @endverbatim
+ *            these three vectors form the rows of the view's RotMatrix
+ *          - Objects in space in front of the front plane or behind the back plane are not displayed.
+ *          - The focus plane is not necessarily centered between the front plane and back plane (though it often is). It should generally be
+ *            between the front plane and the back plane.
+ *          - targetPoint is not stored in the view parameters. Instead it may be derived from
+ *            {origin},{eyePoint},[RotMatrix] and focusDist.
+ *          - The view volume is completely specified by: @verbatim {origin}<delta>[RotMatrix] @endverbatim
+ *          - Perspective is determined by {eyePoint}, which is independent of the view volume. Sometimes the eyepoint is not centered
+ *            on the rectangle on the focus plane (that is, a vector from the eyepoint along the viewZ does not hit the view center.)
+ *            This creates a 1-point perspective, which can be disconcerting. It is usually best to keep the camera centered.
+ *          - Cameras hold a "lens angle" value which is defines the field-of-view for the camera in radians.
+ *            The lens angle value is not used to compute the perspective transform for a view. Instead, the lens angle value
+ *            can be used to reposition {eyePoint} when the view volume or target changes.
+ *          - View volumes where one dimension is very small or large relative to the other dimensions (e.g. "long skinny telescope" views,
+ *            or "wide and shallow slices", etc.) are problematic and disallowed based on ratio limits.
  */
-
-// +===============+===============+===============+===============+===============+======*/
-// struct MarginPercent
-// {
-//   private:
-//   double m_left;
-//   double m_top;
-//   double m_right;
-//   double m_bottom;
-
-//   double LimitMargin(double val) {return (val < 0.0) ? 0.0 : (val > .25) ? .25 : val; }
-
-//   public:
-//   MarginPercent(double left, double top, double right, double bottom) {Init(left, top, right, bottom); }
-//   void Init(double left, double top, double right, double bottom)
-//   {
-//     m_left = LimitMargin(left);
-//     m_top = LimitMargin(top);
-//     m_right = LimitMargin(right);
-//     m_bottom = LimitMargin(bottom);
-//   }
-
-// double Left() const   { return m_left;}
-// double Top() const    { return m_top;}
-// double Right() const  { return m_right;}
-// double Bottom() const { return m_bottom;}
-// };
-
-// //! Change the volume that this view displays, keeping its current rotation.
-// //! @param worldVolume The new volume, in world-coordinates, for the view. The resulting view will show all of worldVolume, by fitting a
-// //! view-axis-aligned bounding box around it. For views that are not aligned with the world coordinate system, this will sometimes
-// //! result in a much larger volume than worldVolume.
-// //! @param aspectRatio The X/Y aspect ratio of the view into which the result will be displayed. If the aspect ratio of the volume does not
-// //! match aspectRatio, the shorter axis is lengthened and the volume is centered. If aspectRatio is nullptr, no adjustment is made.
-// //! @param margin The amount of "white space" to leave around the view volume (which essentially increases the volume
-// //! of space shown in the view.) If nullptr, no additional white space is added.
-// //! @param expandClippingPlanes If false, the front and back clipping planes are not moved. This is rarely desired.
-// //! @note For 3d views, the camera is centered on the new volume and moved along the view z axis using the default lens angle
-// //! such that the entire volume is visible.
-// //! @note, for 2d views, only the X and Y values of volume are used.
-// DGNPLATFORM_EXPORT void lookAtVolume(DRange3dCR worldVolume, double const* aspectRatio=nullptr, MarginPercent const* margin=nullptr, bool expandClippingPlanes= true);
-
-// DGNPLATFORM_EXPORT void lookAtViewAlignedVolume(DRange3dCR volume, double const* aspectRatio=nullptr, MarginPercent const* margin=nullptr, bool expandClippingPlanes= true);
-// };
-
-// /** @addtogroup GROUP_DgnView DgnView Module
-// <h4>%ViewDefintion3d Camera</h4>
-
-// This is what the parameters to the camera methods, and the values stored by ViewDefinition3d mean.
-// @verbatim
-//                v-- {origin}
-//           -----+-------------------------------------- -   [back plane]
-//           ^\   .                                    /  ^
-//           | \  .                                   /   |        P
-//         d |  \ .                                  /    |        o
-//         e |   \.         {targetPoint}           /     |        s
-//         l |    |---------------+----------------|      |        i    [focus plane]
-//         t |     \  ^delta.x    ^               /     b |        t
-//         a |      \             |              /      a |        i
-//         . |       \            |             /       c |        v
-//         z |        \           | f          /        k |        e
-//           |         \          | o         /         D |        Z
-//           |          \         | c        /          i |        |
-//           |           \        | u       /           s |        v
-//           v            \       | s      /            t |
-//           -     -       -----  | D -----               |   [front plane]
-//                 ^              | i                     |
-//                 |              | s                     |
-//     frontDist ->|              | t                     |
-//                 |              |                       |
-//                 v           \  v  / <- lens angle      v
-//                 -              + {eyePoint}            -     positiveX ->
-
-// @endverbatim
-
-//    Notes:
-//          - Up vector (positiveY) points out of the screen towards you in this diagram. Likewise delta.y.
-//          - The view origin is in world coordinates. It is the point at the lower left of the rectangle at the
-//            focus plane, projected onto the back plane.
-//          - [delta.x,delta.y] are on the focus plane and delta.z is from the back plane to the front plane.
-//          - The three view vectors come from:
-// @verbatim
-//                 {vector from eyePoint->targetPoint} : -Z (positive view Z points towards negative world Z)
-//                 {the up vector}                     : +Y
-//                 {Z cross Y}                         : +X
-// @endverbatim
-//            these three vectors form the rows of the view's RotMatrix
-//          - Objects in space in front of the front plane or behind the back plane are not displayed.
-//          - The focus plane is not necessarily centered between the front plane and back plane (though it often is). It should generally be
-//            between the front plane and the back plane.
-//          - targetPoint is not stored in the view parameters. Instead it may be derived from
-//            {origin},{eyePoint},[RotMatrix] and focusDist.
-//          - The view volume is completely specified by: @verbatim {origin}<delta>[RotMatrix] @endverbatim
-//          - Perspective is determined by {eyePoint}, which is independent of the view volume. Sometimes the eyepoint is not centered
-//            on the rectangle on the focus plane (that is, a vector from the eyepoint along the viewZ does not hit the view center.)
-//            This creates a 1-point perspective, which can be disconcerting. It is usually best to keep the camera centered.
-//          - Cameras hold a "lens angle" value which is defines the field-of-view for the camera in radians.
-//            The lens angle value is not used to compute the perspective transform for a view. Instead, the lens angle value
-//            can be used to reposition {eyePoint} when the view volume or target changes.
-//          - View volumes where one dimension is very small or large relative to the other dimensions (e.g. "long skinny telescope" views,
-//            or "wide and shallow slices", etc.) are problematic and disallowed based on ratio limits.
-// */
 
 /** The current position, lens angle, and focus distance of a camera. */
 export class Camera {
@@ -768,17 +851,17 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
    * @param eyePoint The new location of the camera.
    * @param targetPoint The new location to which the camera should point. This becomes the center of the view on the focus plane.
    * @param upVector A vector that orients the camera's "up" (view y). This vector must not be parallel to the vector from eye to target.
-   * @param viewDelta The new size (width and height) of the view rectangle. The view rectangle is on the focus plane centered on the targetPoint.
-   * If viewDelta is nullptr, the existing size is unchanged.
-   * @param frontDistance The distance from the eyePoint to the front plane. If nullptr, the existing front distance is used.
-   * @param backDistance The distance from the eyePoint to the back plane. If nullptr, the existing back distance is used.
+   * @param newExtents  The new size (width and height) of the view rectangle. The view rectangle is on the focus plane centered on the targetPoint.
+   * If newExtents is undefined, the existing size is unchanged.
+   * @param frontDistance The distance from the eyePoint to the front plane. If undefined, the existing front distance is used.
+   * @param backDistance The distance from the eyePoint to the back plane. If undefined, the existing back distance is used.
    * @returns a status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
-   * @note If the aspect ratio of viewDelta does not match the aspect ratio of a DgnViewport into which this view is displayed, it will be
-   * adjusted when the DgnViewport is synchronized from this view.
-   * @note This method modifies this ViewController. If this ViewController is attached to DgnViewport, you must call DgnViewport.synchWithViewController
-   * to see the new changes in the DgnViewport.
+   * @e If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
+   * adjusted when the Viewport is synchronized from this view.
+   * @e This method modifies this ViewController. If this ViewController is attached to Viewport, you must call Viewport.synchWithViewController
+   * see the new changes in the DgnViewport.
    */
-  public lookAt(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, newExtents?: Vector3d, frontDistance?: number, backDistance?: number): ViewportStatus {
+  public lookAt(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, newExtents?: Vector2d, frontDistance?: number, backDistance?: number): ViewportStatus {
     const yVec = upVector.normalize();
     if (!yVec) // up vector zero length?
       return ViewportStatus.InvalidUpVector;
@@ -786,7 +869,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     const zVec = this.getEyePoint().vectorTo(targetPoint); // z defined by direction from eye to target
     const focusDist = zVec.normalizeWithLength(zVec).mag; // set focus at target point
 
-    if (focusDist <= ViewDefinition3d.minimumFrontDistance())      // eye and target are too close together
+    if (focusDist <= ViewDefinition3d.minimumFrontDistance()) // eye and target are too close together
       return ViewportStatus.InvalidTargetPoint;
 
     const xVec = new Vector3d();
@@ -804,8 +887,8 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
 
     const delta = newExtents ? new Vector3d(Math.abs(newExtents.x), Math.abs(newExtents.y), this.extents.z) : this.extents;
 
-    frontDistance = Math.max(frontDistance, (.5 * Constant.oneMeter));
-    backDistance = Math.max(backDistance, focusDist + (.5 * Constant.oneMeter));
+    frontDistance = Math.max(frontDistance!, (.5 * Constant.oneMeter));
+    backDistance = Math.max(backDistance!, focusDist + (.5 * Constant.oneMeter));
 
     if (backDistance < focusDist) // make sure focus distance is in front of back distance.
       backDistance = focusDist + Constant.oneMillimeter;
@@ -817,7 +900,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
       frontDistance = ViewDefinition3d.minimumFrontDistance();
 
     // BeAssert(backDistance > frontDistance);
-    delta.z = (backDistance - frontDistance);
+    delta.z = (backDistance! - frontDistance);
 
     const frontDelta = delta.scale(frontDistance / focusDist);
     const stat = this.validateViewDelta(frontDelta, false); // validate window size on front (smallest) plane
@@ -829,7 +912,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
 
     // The origin is defined as the lower left of the view rectangle on the focus plane, projected to the back plane.
     // Start at eye point, and move to center of back plane, then move left half of width. and down half of height
-    const origin = eyePoint.plus3Scaled(zVec, -backDistance, xVec, -0.5 * delta.x, yVec, -0.5 * delta.y);
+    const origin = eyePoint.plus3Scaled(zVec, -backDistance!, xVec, -0.5 * delta.x, yVec, -0.5 * delta.y);
 
     this.setEyePoint(eyePoint);
     this.setRotation(rotation);
@@ -841,54 +924,84 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     return ViewportStatus.Success;
   }
 
-  // //! Position the camera for this view and point it at a new target point, using a specified lens angle.
-  // //! @param eyePoint The new location of the camera.
-  // //! @param targetPoint The new location to which the camera should point. This becomes the center of the view on the focus plane.
-  // //! @param upVector A vector that orients the camera's "up" (view y). This vector must not be parallel to the vector from eye to target.
-  // //! @param fov The angle, in radians, that defines the field-of-view for the camera. Must be between .0001 and pi.
-  // //! @param frontDistance The distance from the eyePoint to the front plane. If nullptr, the existing front distance is used.
-  // //! @param backDistance The distance from the eyePoint to the back plane. If nullptr, the existing back distance is used.
-  // //! @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
-  // //! @note The aspect ratio of the view remains unchanged.
-  // //! @note This method modifies this ViewController. If this ViewController is attached to DgnViewport, you must call DgnViewport::SynchWithViewController
-  // //! to see the new changes in the DgnViewport.
-  // DGNPLATFORM_EXPORT ViewportStatus lookAtUsingLensAngle(DPoint3dCR eyePoint, DPoint3dCR targetPoint, DVec3dCR upVector,
-  //   Angle fov, double const* frontDistance=nullptr, double const* backDistance=nullptr);
+  /** Position the camera for this view and point it at a new target point, using a specified lens angle.
+   * @param eyePoint The new location of the camera.
+   * @param targetPoint The new location to which the camera should point. This becomes the center of the view on the focus plane.
+   * @param upVector A vector that orients the camera's "up" (view y). This vector must not be parallel to the vector from eye to target.
+   * @param fov The angle, in radians, that defines the field-of-view for the camera. Must be between .0001 and pi.
+   * @param frontDistance The distance from the eyePoint to the front plane. If undefined, the existing front distance is used.
+   * @param backDistance The distance from the eyePoint to the back plane. If undefined, the existing back distance is used.
+   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
+   * @note The aspect ratio of the view remains unchanged.
+   */
+  public lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number): ViewportStatus {
+    const focusDist = eyePoint.distance(targetPoint);
+    if (focusDist <= Constant.oneMillimeter)       // eye and target are too close together
+      return ViewportStatus.InvalidTargetPoint;
 
-  // //! Move the camera relative to its current location by a distance in camera coordinates.
-  // //! @param distance to move camera. Length is in world units, direction relative to current camera orientation.
-  // //! @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
-  // //! @note This method modifies this ViewController. If this ViewController is attached to DgnViewport, you must call DgnViewport::SynchWithViewController
-  // //! to see the new changes in the DgnViewport.
-  // DGNPLATFORM_EXPORT ViewportStatus MoveCameraLocal(DVec3dCR distance);
+    if (fov.radians < .0001 || fov.radians > Math.PI)
+      return ViewportStatus.InvalidLens;
 
-  // //! Move the camera relative to its current location by a distance in world coordinates.
-  // //! @param distance in world units.
-  // //! @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
-  // //! @note This method modifies this ViewController. If this ViewController is attached to DgnViewport, you must call DgnViewport::SynchWithViewController
-  // //! to see the new changes in the DgnViewport.
-  // DGNPLATFORM_EXPORT ViewportStatus MoveCameraWorld(DVec3dCR distance);
+    const extent = 2.0 * Math.tan(fov.radians / 2.0) * focusDist;
+    const delta = Vector2d.create(this.getExtents().x, this.getExtents().y);
+    const longAxis = Math.max(delta.x, delta.y);
+    delta.scale(extent / longAxis, delta);
 
-  // //! Rotate the camera from its current location about an axis relative to its current orientation.
-  // //! @param angle The angle to rotate the camera, in radians.
-  // //! @param axis The axis about which to rotate the camera. The axis is a direction relative to the current camera orientation.
-  // //! @param aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is nullptr, the camera rotates in place
-  // //! (i.e. about the current eyePoint).
-  // //! @note Even though the axis is relative to the current camera orientation, the aboutPt is in world coordinates, \b not relative to the camera.
-  // //! @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
-  // //! @note This method modifies this ViewController. If this ViewController is attached to DgnViewport, you must call DgnViewport::SynchWithViewController
-  // //! to see the new changes in the DgnViewport.
-  // DGNPLATFORM_EXPORT ViewportStatus RotateCameraLocal(double angle, DVec3dCR axis, DPoint3dCP aboutPt= nullptr);
+    return this.lookAt(eyePoint, targetPoint, upVector, delta, frontDistance, backDistance);
+  }
 
-  // //! Rotate the camera from its current location about an axis in world coordinates.
-  // //! @param angle The angle to rotate the camera, in radians.
-  // //! @param axis The world-based axis (direction) about which to rotate the camera.
-  // //! @param aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is nullptr, the camera rotates in place
-  // //! (i.e. about the current eyePoint).
-  // //! @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
-  // //! @note This method modifies this ViewController. If this ViewController is attached to DgnViewport, you must call DgnViewport::SynchWithViewController
-  // //! to see the new changes in the DgnViewport.
-  // DGNPLATFORM_EXPORT ViewportStatus RotateCameraWorld(double angle, DVec3dCR axis, DPoint3dCP aboutPt= nullptr);
+  /** Move the camera relative to its current location by a distance in camera coordinates.
+   * @param distance to move camera. Length is in world units, direction relative to current camera orientation.
+   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
+   */
+  public moveCameraLocal(distance: Vector3d): ViewportStatus {
+    const distWorld = this.getRotation().multiplyTransposeVector(distance);
+    return this.moveCameraWorld(distWorld);
+  }
+
+  /** Move the camera relative to its current location by a distance in world coordinates.
+   * @param distance in world units.
+   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
+   */
+  public moveCameraWorld(distance: Vector3d): ViewportStatus {
+    if (!this.cameraOn) {
+      this.origin.plus(distance, this.origin);
+      return ViewportStatus.Success;
+    }
+
+    const newTarget = this.getTargetPoint().plus(distance);
+    const newEyePt = this.getEyePoint().plus(distance);
+    return this.lookAt(newEyePt, newTarget, this.getYVector());
+  }
+
+  /** Rotate the camera from its current location about an axis relative to its current orientation.
+   * @param angle The angle to rotate the camera.
+   * @param axis The axis about which to rotate the camera. The axis is a direction relative to the current camera orientation.
+   * @param aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is undefined, the camera rotates in place
+   *  (i.e. about the current eyePoint).
+   * @note Even though the axis is relative to the current camera orientation, the aboutPt is in world coordinates, \b not relative to the camera.
+   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
+   */
+  public rotateCameraLocal(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewportStatus {
+    const axisWorld = this.getRotation().multiplyTransposeVector(axis);
+    return this.rotateCameraWorld(angle, axisWorld, aboutPt);
+  }
+
+  /** Rotate the camera from its current location about an axis in world coordinates.
+   * @param angle The angle to rotate the camera.
+   * @param axis The world-based axis (direction) about which to rotate the camera.
+   * @param aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is undefined, the camera rotates in place
+   *  (i.e. about the current eyePoint).
+   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
+   */
+  public rotateCameraWorld(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewportStatus {
+    const about = aboutPt ? aboutPt : this.getEyePoint();
+    const rotation = RotMatrix.createRotationAroundVector(axis, angle);
+    const trans = Transform.createFixedPointAndMatrix(about, rotation!);
+    const newTarget = trans.multiplyPoint(this.getTargetPoint());
+    const upVec = rotation!.multiplyVector(this.gtYVector());
+    return this.lookAt(this.getEyePoint(), newTarget, upVec);
+  }
 
   /** Get the distance from the eyePoint to the front plane for this view. */
   public getFrontDistance(): number { return this.getBackDistance() - this.extents.z; }
@@ -901,16 +1014,29 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     return eyeOrg.z;
   }
 
-  // //! Place the eyepoint of the camera so it is centered in the view. This removes any 1-point perspective skewing that may be
-  // //! present in the current view.
-  // //! @param backDistance optional, If not nullptr, the new the distance from the eyepoint to the back plane. Otherwise the distance from the
-  // //! current eyepoint is used.
-  // DGNPLATFORM_EXPORT void CenterEyePoint(double const* backDistance=nullptr);
+  /** Place the eyepoint of the camera so it is aligned with the center of the view. This removes any 1-point perspective skewing that may be
+   *  present in the current view.
+   *  @param backDistance If defined, the new the distance from the eyepoint to the back plane. Otherwise the distance from the
+   *  current eyepoint is used.
+   */
+  public centerEyePoint(backDistance?: number): void {
+    const eyePoint = this.getExtents().scale(0.5);
+    eyePoint.z = backDistance ? backDistance : this.getBackDistance();
+    const eye = this.getRotation().multiplyTransposeXYZ(eyePoint.x, eyePoint.y, eyePoint.z);
+    this.camera.setEyePoint(this.getOrigin().plus(eye));
+  }
 
-  // //! Center the focus distance of the camera halfway between the front plane and the back plane, keeping the eyepoint,
-  // //! lens angle, rotation, back distance, and front distance unchanged.
-  // //! @note The focus distance, origin, and delta values are modified, but the view encloses the same volume and appears visually unchanged.
-  // DGNPLATFORM_EXPORT void CenterFocusDistance();
+  /** Center the focus distance of the camera halfway between the front plane and the back plane, keeping the eyepoint,
+   * lens angle, rotation, back distance, and front distance unchanged.
+   * @note The focus distance, origin, and delta values are modified, but the view encloses the same volume and appears visually unchanged.
+   */
+  public centerFocusDistance(): void {
+    const backDist = this.getBackDistance();
+    const frontDist = this.getFrontDistance();
+    const eye = this.getEyePoint();
+    const target = eye.plusScaled(this.getZVector(), frontDist - backDist);
+    this.lookAtUsingLensAngle(eye, target, this.getYVector(), this.getLensAngle(), frontDist, backDist);
+  }
 
   /**  Get the current location of the eyePoint for camera in this view. */
   public getEyePoint(): Point3d { return this.camera.eye; }
@@ -926,10 +1052,10 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
    */
   public setLensAngle(angle: Angle): void { this.camera.lens = angle; }
 
-  /**  Change the location of the eyePoint for the camera in this view.
-   *  @param pt The new eyepoint.
-   *  @note This method is generally for internal use only. Moving the eyePoint arbitrarily can result in skewed or illegal perspectives.
-   *  The most common method for user-level camera positioning is #lookAt.
+  /** Change the location of the eyePoint for the camera in this view.
+   * @param pt The new eyepoint.
+   * @note This method is generally for internal use only. Moving the eyePoint arbitrarily can result in skewed or illegal perspectives.
+   * The most common method for user-level camera positioning is #lookAt.
    */
   public setEyePoint(pt: Point3d): void { this.camera.eye = pt; }
 
@@ -956,13 +1082,6 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
   protected _modelSelector: ModelSelector;
   constructor(props: SpatialViewDefinitionProps) { super(props); if (props.modelSelector) this.setModelSelector(props.modelSelector); }
 
-  //   DGNPLATFORM_EXPORT void _ToJson(JsonValueR out, JsonValueCR opts) const override;
-  //   void _OnInserted(DgnElementP copiedFrom) const override {m_modelSelector=nullptr; T_Super::_OnInserted(copiedFrom); }
-  //   void _OnUpdateFinished() const override {m_modelSelector=nullptr; T_Super::_OnUpdateFinished(); }
-  //   DGNPLATFORM_EXPORT void _CopyFrom(DgnElementCR el) override;
-  //   SpatialViewDefinitionCP _ToSpatialView() const override {return this;}
-  //   DGNPLATFORM_EXPORT ViewControllerPtr _SupplyController() const override;
-
   //   //! Get a writable reference to the ModelSelector for this SpatialViewDefinition
   //   DGNPLATFORM_EXPORT ModelSelectorR GetModelSelector();
 
@@ -978,7 +1097,6 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
 export class OrthographicViewDefinition extends SpatialViewDefinition {
   constructor(props: SpatialViewDefinitionProps) { super(props); }
 
-  // DGNPLATFORM_EXPORT ViewControllerPtr _SupplyController() const override;
   // tslint:disable-next-line:no-empty
   public enableCamera(): void { }
   public supportsCamera(): boolean { return false; }

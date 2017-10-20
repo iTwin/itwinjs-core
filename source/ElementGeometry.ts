@@ -6,7 +6,7 @@ import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Point3d, Vector3d, Range3d, YawPitchRollAngles, Point2d, Range2d, Transform, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 
- /** A bounding box aligned to the orientation of a 3d Element */
+/** A bounding box aligned to the orientation of a 3d Element */
 export class ElementAlignedBox3d extends Range3d {
   public constructor(low?: Point3d, high?: Point3d) {
     if (low === undefined || high === undefined)
@@ -49,9 +49,9 @@ export class ElementAlignedBox2d extends Range2d {
   public get width(): number { return this.xLength(); }
   public get depth(): number { return this.yLength(); }
   public static fromJSON(json?: any): ElementAlignedBox2d {
-  if (json === undefined)
-    return new ElementAlignedBox2d();
-  return new ElementAlignedBox2d(Point2d.fromJSON(json.low), Point2d.fromJSON(json.high));
+    if (json === undefined)
+      return new ElementAlignedBox2d();
+    return new ElementAlignedBox2d(Point2d.fromJSON(json.low), Point2d.fromJSON(json.high));
   }
   public isValid(): boolean {
     const max = Constant.circumferenceOfEarth; const lo = this.low; const hi = this.high;
@@ -87,7 +87,7 @@ export class Placement3d {
   public isValid(): boolean { return this.bbox.isValid() && this.origin.maxAbs() < Constant.circumferenceOfEarth; }
 }
 
-/** The placement of a GeometricElement2d. This includes the origin, orientation, and size (bounding box) of the element. */
+/** The placement of a GeometricElement2d. This includes the origin, rotation, and size (bounding box) of the element. */
 export class Placement2d {
   public constructor(public origin: Point2d, public angle: Angle, public bbox: ElementAlignedBox2d) { }
   public getTransform() { return Transform.createOriginAndMatrix(Point3d.createFrom(this.origin), RotMatrix.createRotationAroundVector(Vector3d.unitZ(), this.angle)!); }

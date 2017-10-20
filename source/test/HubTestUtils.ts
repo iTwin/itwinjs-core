@@ -20,7 +20,7 @@ export class HubTestUtils {
   }
 
   public async initialize(): Promise<void> {
-    const authToken : AuthorizationToken = await (new ImsActiveSecureTokenClient("QA")).getToken(TestConfig.email, TestConfig.password);
+    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient("QA")).getToken(TestConfig.email, TestConfig.password);
     this.accessToken = await (new ImsDelegationSecureTokenClient("QA")).getToken(authToken);
 
     this.testUserProfile = this.accessToken.getUserProfile();
