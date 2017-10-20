@@ -140,8 +140,8 @@ export class IModelTestUtils {
    * @return a Promise if the category's Code
    */
   public static createDrawingCategoryCode(imodel: IModelDb, definitionModelId: Id64, codeValue: string): Code {
-    const cspec = imodel.codeSpecs.getCodeSpecByName(DrawingCategory.getCodeSpecName());
-    return new Code({ spec: cspec.id, scope: definitionModelId.toString(), value: codeValue });
+    const codeSpec = imodel.codeSpecs.getCodeSpecByName(DrawingCategory.getCodeSpecName());
+    return new Code({ spec: codeSpec.id, scope: definitionModelId.toString(), value: codeValue });
   }
 
   /** Create a Code for a SpatialCategory given a name that is meant to be unique within the scope of the specified DefinitionModelr hyy   t
@@ -151,15 +151,15 @@ export class IModelTestUtils {
    * @return a Promise if the category's Code
    */
   public static createSpatialCategoryCode(imodel: IModelDb, definitionModelId: Id64, codeValue: string): Code {
-    const cspec = imodel.codeSpecs.getCodeSpecByName(SpatialCategory.getCodeSpecName());
-    return new Code({ spec: cspec.id, scope: definitionModelId.toString(), value: codeValue });
+    const codeSpec = imodel.codeSpecs.getCodeSpecByName(SpatialCategory.getCodeSpecName());
+    return new Code({ spec: codeSpec.id, scope: definitionModelId.toString(), value: codeValue });
   }
 
   // TODO: This needs a home
-  public static getSpatiallCategoryIdByName(imodel: IModelDb, catname: string, scopeId?: Id64): Id64 {
+  public static getSpatialCategoryIdByName(imodel: IModelDb, categoryName: string, scopeId?: Id64): Id64 {
     if (scopeId === undefined)
       scopeId = Model.getDictionaryId();
-    const code: Code = IModelTestUtils.createSpatialCategoryCode(imodel, scopeId, catname);
+    const code: Code = IModelTestUtils.createSpatialCategoryCode(imodel, scopeId, categoryName);
     const id: Id64 | undefined = IModelTestUtils.queryElementIdByCode(imodel, code);
     if (id === undefined)
       throw new IModelError(DbResult.BE_SQLITE_NOTFOUND);
