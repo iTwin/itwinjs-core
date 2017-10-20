@@ -31,6 +31,7 @@ export class Model extends Entity implements ModelProps {
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
   }
+
   /** Add all custom-handled properties to a json object. */
   public toJSON(): any {
     const val = super.toJSON();
@@ -51,7 +52,6 @@ export class Model extends Entity implements ModelProps {
 
   /** Get the Id of the special dictionary model */
   public static getDictionaryId(): Id64 { return new Id64("0X10"); }
-
 }
 
 /** A geometric model */
