@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
+import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { Code } from "../Code";
@@ -16,10 +17,9 @@ import { ModelSelector } from "../ViewDefinition";
 import { IModelError, IModelStatus } from "../IModelError";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { BisCore } from "../BisCore";
-import { SpatialViewDefinition, DisplayStyle3d } from "../ViewDefinition";
 import { GeometricElement2d } from "../Element";
+import { SpatialViewDefinition, DisplayStyle3d } from "../ViewDefinition";
 import { ElementPropertyFormatter } from "../backend/ElementPropertyFormatter";
-import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelDb } from "../backend/IModelDb";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
 
@@ -637,7 +637,7 @@ describe("iModel", () => {
     ASSERT_TRUE(m_defaultCategoryId.IsValid());
   */
 
-  it.skip("ImodelJsTest.MeasureInsertPerformance)", async () => {
+  it.skip("ImodelJsTest.MeasureInsertPerformance", async () => {
 
     const ifperfimodel = await IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", {copyFilename: "ImodelJsTest_MeasureInsertPerformance.bim", enableTransactions: true});
 
@@ -646,7 +646,7 @@ describe("iModel", () => {
     // const modelId: Id64 = ifperfimodel.models.querySubModelId(physicalPartitionCode);
     const modelId = new Id64("0X11");
 
-    const defaultCategoryId: Id64 = IModelTestUtils.getSpatiallCategoryIdByName(ifperfimodel, "DefaultCategory");
+    const defaultCategoryId: Id64 = IModelTestUtils.getSpatialCategoryIdByName(ifperfimodel, "DefaultCategory");
 
     const elementCount = 10000;
     for (let i = 0; i < elementCount; ++i) {
