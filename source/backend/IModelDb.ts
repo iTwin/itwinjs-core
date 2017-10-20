@@ -223,7 +223,7 @@ export class IModelDb extends IModel {
    */
   public async executeQuery(sql: string, bindings?: BindingValue[] | Map<string, BindingValue> | any): Promise<any[]> {
     return this.withPreparedStatement(sql, (stmt: ECSqlStatement) => {
-      if (bindings !== undefined)
+      if (bindings)
         stmt.bindValues(bindings);
       const rows: any[] = [];
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {

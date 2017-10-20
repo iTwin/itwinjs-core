@@ -68,10 +68,17 @@ export class CodeSpecNames {
 
 /** A CodeSpec object within an IModel */
 export class CodeSpec {
-  public imodel: IModel;
+  public iModel: IModel;
   public id: Id64;
   public name: string;
   public properties: any; // TODO: CodeSpec handlers and custom properties
+
+  public constructor(iModel: IModel, id: Id64, name: string, properties?: any) {
+    this.iModel = iModel;
+    this.id = id;
+    this.name = name;
+    this.properties = properties;
+  }
 
   public isValid(): boolean { return this.id.isValid(); }
 }

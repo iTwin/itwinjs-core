@@ -7,12 +7,13 @@ import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { BisCore } from "../BisCore";
 import { ClassRegistry } from "../ClassRegistry";
+import { CodeSpec } from "../Code";
 import { Element, ElementProps } from "../Element";
 import { Entity, EntityMetaData, EntityQueryParams } from "../Entity";
 import { IModel, IModelToken } from "../IModel";
 import { IModelError, IModelStatus } from "../IModelError";
 import { IModelVersion } from "../IModelVersion";
-import { Model } from "../Model";
+import { Model, ModelProps } from "../Model";
 
 // Initialize the frontend side of remoting
 import { IModelDbRemoting } from "../middle/IModelDbRemoting";
@@ -23,13 +24,16 @@ BisCore.registerSchema();
 
 /** A connection to an iModel database hosted on the backend. */
 export class IModelConnection extends IModel {
-  public models: IModelConnectionModels;
-  public elements: IModelConnectionElements;
+  /** Get access to the [[Model]] entities in this IModel */
+  public readonly models: IModelConnectionModels;
+  public readonly elements: IModelConnectionElements;
+  public readonly codeSpecs: IModelConnectionCodeSpecs;
 
   private constructor(iModelToken: IModelToken) {
     super(iModelToken);
     this.models = new IModelConnectionModels(this);
     this.elements = new IModelConnectionElements(this);
+    this.codeSpecs = new IModelConnectionCodeSpecs(this);
   }
 
   /** Open an iModel from iModelHub */
@@ -66,7 +70,7 @@ export class IModelConnection extends IModel {
   }
 }
 
-/** The collection of models in an [[IModelConnection]]. */
+/** The collection of [[Model]] entities for an [[IModelConnection]]. */
 export class IModelConnectionModels {
   private _iModel: IModelConnection;
   private _loaded: LRUMap<string, Model>;
@@ -79,11 +83,40 @@ export class IModelConnectionModels {
 
   /** Ask the backend for a batch of models given a list of model ids. */
   public async getModels(modelIds: Id64[]): Promise<Model[]> {
-    return await IModelDbRemoting.getModels(this._iModel.iModelToken, modelIds.map((id: Id64) => id.toString()));
+    const modelJsonArray = await IModelDbRemoting.getModels(this._iModel.iModelToken, modelIds.map((id: Id64) => id.toString()));
+    const models: Model[] = [];
+
+    for (const modelJson of modelJsonArray) {
+      const modelProps = JSON.parse(modelJson) as ModelProps;
+      modelProps.iModel = this._iModel;
+
+      let entity: Entity;
+      try {
+        entity = ClassRegistry.createInstance(modelProps);
+      } catch (error) {
+        if (!ClassRegistry.isClassNotFoundError(error) && !ClassRegistry.isMetaDataNotFoundError(error))
+          throw error;
+
+        const classArray: any[] = await IModelDbRemoting.loadMetaDataForClassHierarchy(this._iModel.iModelToken, modelProps.classFullName!);
+        for (const classEntry of classArray) {
+          this._iModel.classMetaDataRegistry.add(classEntry.className, new EntityMetaData(classEntry.metaData));
+        }
+        entity = ClassRegistry.createInstance(modelProps);
+      }
+      const model = entity as Model;
+      if (!(model instanceof Model))
+        return Promise.reject(new TypeError());
+
+      model.setPersistent(); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
+      this._loaded.set(model.id.toString(), model);
+      models.push(model);
+    }
+
+    return models;
   }
 }
 
-/** The collection of elements in an [[IModelConnection]]. */
+/** The collection of [[Element]] entities for an [[IModelConnection]]. */
 export class IModelConnectionElements {
   private _iModel: IModelConnection;
   private _loaded: LRUMap<string, Element>;
@@ -138,6 +171,61 @@ export class IModelConnectionElements {
 
   /** */
   public async queryElementIds(params: EntityQueryParams): Promise<Id64[]> {
-    return await IModelDbRemoting.queryElementIds(this._iModel.iModelToken, params);
+    const elementIds: string[] = await IModelDbRemoting.queryElementIds(this._iModel.iModelToken, params);
+    return elementIds.map((elementId: string) => new Id64(elementId));
+  }
+}
+
+/** The collection of [[CodeSpec]] entities for an [[IModelConnection]]. */
+export class IModelConnectionCodeSpecs {
+  private _iModel: IModelConnection;
+  private _loaded: CodeSpec[];
+
+  /** @hidden */
+  constructor(imodel: IModelConnection) {
+    this._iModel = imodel;
+  }
+
+  /** Loads all CodeSpec from the remote IModelDb. */
+  private async _loadAllCodeSpecs(): Promise<void> {
+    if (this._loaded)
+      return;
+
+    this._loaded = [];
+    const codeSpecArray: any[] = await IModelDbRemoting.getAllCodeSpecs(this._iModel.iModelToken);
+    for (const codeSpec of codeSpecArray) {
+      this._loaded.push(new CodeSpec(this._iModel, new Id64(codeSpec.id), codeSpec.name, codeSpec.jsonProperties));
+    }
+  }
+
+  /** Look up a CodeSpec by Id.
+   * @param codeSpecId The Id of the CodeSpec to load
+   * @returns The CodeSpec with the specified Id
+   * @throws [[IModelError]] if the Id is invalid or if no CodeSpec with that Id could be found.
+   */
+  public async getCodeSpecById(codeSpecId: Id64): Promise<CodeSpec> {
+    if (!codeSpecId.isValid())
+      return Promise.reject(new IModelError(IModelStatus.InvalidId));
+
+    await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
+    const found: CodeSpec | undefined = this._loaded.find((codeSpec: CodeSpec) => codeSpec.id === codeSpecId);
+    if (!found)
+      return Promise.reject(new IModelError(IModelStatus.NotFound));
+
+    return found;
+  }
+
+  /** Look up a CodeSpec by name.
+   * @param name The name of the CodeSpec to load
+   * @returns The CodeSpec with the specified name
+   * @throws [[IModelError]] if no CodeSpec with the specified name could be found.
+   */
+  public async getCodeSpecByName(name: string): Promise<CodeSpec> {
+    await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
+    const found: CodeSpec | undefined = this._loaded.find((codeSpec: CodeSpec) => codeSpec.name === name);
+    if (!found)
+      return Promise.reject(new IModelError(IModelStatus.NotFound));
+
+    return found;
   }
 }

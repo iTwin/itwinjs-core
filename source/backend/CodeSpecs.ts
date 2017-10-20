@@ -8,7 +8,7 @@ import { CodeSpec } from "../Code";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 
-/** Manages CodeSpecs within an IModel */
+/** Manages CodeSpecs within an [[IModelDb]] */
 export class CodeSpecs {
   private _imodel: IModelDb;
   private _loadedCodeSpecs: CodeSpec[] = [];
@@ -28,12 +28,13 @@ export class CodeSpecs {
   }
 
   /** Look up a CodeSpec by Id. The CodeSpec will be loaded from the database if necessary.
-   * @param[in] codeSpecId The Id of the CodeSpec to load
-   * @returns The CodeSpec with the specified Id, or nullptr if the CodeSpec could not be loaded
+   * @param codeSpecId The Id of the CodeSpec to load
+   * @returns The CodeSpec with the specified Id
+   * @throws [[IModelError]] if the Id is invalid or if no CodeSpec with that Id could be found.
    */
   public getCodeSpecById(codeSpecId: Id64): CodeSpec {
     if (!codeSpecId.isValid())
-      throw new IModelError(IModelStatus.NotFound);
+      throw new IModelError(IModelStatus.InvalidId);
 
     // good chance it's already loaded - check there before running a query
     const found: CodeSpec | undefined = this._loadedCodeSpecs.find((codeSpec: CodeSpec) => {
@@ -49,8 +50,9 @@ export class CodeSpecs {
   }
 
   /** Look up a CodeSpec by name. The CodeSpec will be loaded from the database if necessary.
-   * @param[in] name The name of the CodeSpec to load
-   * @returns The CodeSpec with the specified name, or nullptr if the CodeSpec could not be loaded
+   * @param name The name of the CodeSpec to load
+   * @returns The CodeSpec with the specified name
+   * @throws [[IModelError]] if no CodeSpec with the specified name could be found.
    */
   public getCodeSpecByName(name: string): CodeSpec {
     // good chance it's already loaded - check there before running a query
@@ -59,14 +61,14 @@ export class CodeSpecs {
     });
     if (found !== undefined)
       return found;
-    const csid = this.queryCodeSpecId(name);
-    if (csid === undefined)
+    const codeSpecId = this.queryCodeSpecId(name);
+    if (codeSpecId === undefined)
       throw new IModelError(IModelStatus.NotFound);
-    return this.getCodeSpecById(csid);
+    return this.getCodeSpecById(codeSpecId);
   }
 
   /** Add a new CodeSpec to the table.
-   * @param[in]  codeSpec The new entry to add.
+   * @param  codeSpec The new entry to add.
    * @return The result of the insert operation.
    * @remarks If successful, this method will assign a valid CodeSpecId to the supplied CodeSpec
    */
@@ -75,12 +77,10 @@ export class CodeSpecs {
     throw new Error("TODO");
   }
 
-  /**
-   * Load a CodeSpec from IModel
+  /** Load a CodeSpec from IModel
    * @param id  The persistent Id of the CodeSpec to load
    */
   public loadCodeSpec(id: Id64): CodeSpec {
-
     if (!id.isValid()) {
       throw new IModelError(IModelStatus.InvalidId);
     }
@@ -91,12 +91,7 @@ export class CodeSpecs {
         throw new IModelError(IModelStatus.InvalidId);
 
       const row: any = stmt.getRow();
-      const codeSpec = new CodeSpec();
-      codeSpec.imodel = this._imodel;
-      codeSpec.id = id;
-      codeSpec.name = row.name;
-      codeSpec.properties = JSON.parse(row.jsonProperties); // TODO: CodeSpec handlers and custom properties
-      return codeSpec;
+      return new CodeSpec(this._imodel, id, row.name, JSON.parse(row.jsonProperties));
     });
   }
 }

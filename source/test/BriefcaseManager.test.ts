@@ -10,6 +10,7 @@ import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { expect, assert } from "chai";
 import { Category } from "../Category";
+import { CodeSpec, CodeSpecNames } from "../Code";
 import { Element, Subject } from "../Element";
 import { IModelVersion } from "../IModelVersion";
 import { Model } from "../Model";
@@ -107,7 +108,7 @@ describe("BriefcaseManager", () => {
     assert.exists(iModelNoVer);
   });
 
-  it.skip("should be able to get elements and models from an IModelConnection", async () => {
+  it("should be able to get elements and models from an IModelConnection", async () => {
     const iModel: IModelConnection = await IModelConnection.open(accessToken, testIModelId);
     assert.exists(iModel);
     assert.isTrue(iModel instanceof IModelConnection);
@@ -125,6 +126,7 @@ describe("BriefcaseManager", () => {
 
     const queryElementIds: Id64[] = await iModel.elements.queryElementIds({ from: Category.sqlName, limit: 20, offset: 0 });
     assert.isAtLeast(queryElementIds.length, 1);
+    assert.isTrue(queryElementIds[0] instanceof Id64);
 
     const formatObjs: any[] = await iModel.elements.formatElements(queryElementIds);
     assert.isAtLeast(formatObjs.length, 1);
@@ -133,12 +135,18 @@ describe("BriefcaseManager", () => {
     const models: Model[] = await iModel.models.getModels(modelIds);
     assert.exists(models);
     assert.equal(models.length, modelIds.length);
+    assert.isTrue(models[0] instanceof Model);
     assert.isTrue(models[0].id.equals(iModel.models.repositoryModelId));
 
     const rows: any[] = await iModel.executeQuery("SELECT CodeValue AS code FROM BisCore.Category");
     assert.isAtLeast(rows.length, 1);
     assert.exists(rows[0].code);
     assert.equal(rows.length, queryElementIds.length);
+
+    const codeSpecByName: CodeSpec = await iModel.codeSpecs.getCodeSpecByName(CodeSpecNames.SpatialCategory());
+    assert.exists(codeSpecByName);
+    const codeSpecById: CodeSpec = await iModel.codeSpecs.getCodeSpecById(codeSpecByName.id);
+    assert.exists(codeSpecById);
 
     await iModel.close(accessToken);
   });
