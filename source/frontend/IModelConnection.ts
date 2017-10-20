@@ -13,6 +13,7 @@ import { Entity, EntityMetaData, EntityQueryParams } from "../Entity";
 import { IModel, IModelToken } from "../IModel";
 import { IModelError, IModelStatus } from "../IModelError";
 import { IModelVersion } from "../IModelVersion";
+import { Logger } from "../Logger";
 import { Model, ModelProps } from "../Model";
 
 // Initialize the frontend side of remoting
@@ -42,13 +43,14 @@ export class IModelConnection extends IModel {
       return Promise.reject(new IModelError(IModelStatus.NotEnabled, "IModelConnection does not support read/write access yet")); // WIP: waiting for decisions on how to manage read/write briefcases on the backend
 
     const iModelToken = await IModelDbRemoting.open(accessToken, iModelId, openMode, version);
+    Logger.logInfo("IModelConnection.open: " + iModelId); // Important information from a DevOps perspective
     return new IModelConnection(iModelToken);
   }
 
   /** Create an IModelConnection from the token of an IModel opened on the backend. This method is for specific scenarios.
    * In most cases it is better to call [[IModelConnection.open]] instead.
    */
-  public static async create(iModelToken: IModelToken) {
+  public static async create(iModelToken: IModelToken): Promise<IModelConnection> {
     return new IModelConnection(iModelToken);
   }
 
@@ -105,7 +107,7 @@ export class IModelConnectionModels {
       }
       const model = entity as Model;
       if (!(model instanceof Model))
-        return Promise.reject(new TypeError());
+        return Logger.logErrorAndReject(new IModelError(IModelStatus.WrongClass));
 
       model.setPersistent(); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
       this._loaded.set(model.id.toString(), model);
@@ -154,7 +156,7 @@ export class IModelConnectionElements {
       }
       const element = entity as Element;
       if (!(element instanceof Element))
-        return Promise.reject(new TypeError());
+        return Logger.logErrorAndReject(new IModelError(IModelStatus.WrongClass));
 
       element.setPersistent(); // elements in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
       this._loaded.set(element.id.toString(), element);
@@ -205,12 +207,12 @@ export class IModelConnectionCodeSpecs {
    */
   public async getCodeSpecById(codeSpecId: Id64): Promise<CodeSpec> {
     if (!codeSpecId.isValid())
-      return Promise.reject(new IModelError(IModelStatus.InvalidId));
+      return Logger.logWarningAndReject(new IModelError(IModelStatus.InvalidId));
 
     await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
     const found: CodeSpec | undefined = this._loaded.find((codeSpec: CodeSpec) => codeSpec.id === codeSpecId);
     if (!found)
-      return Promise.reject(new IModelError(IModelStatus.NotFound));
+      return Logger.logWarningAndReject(new IModelError(IModelStatus.NotFound));
 
     return found;
   }
@@ -224,7 +226,7 @@ export class IModelConnectionCodeSpecs {
     await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
     const found: CodeSpec | undefined = this._loaded.find((codeSpec: CodeSpec) => codeSpec.name === name);
     if (!found)
-      return Promise.reject(new IModelError(IModelStatus.NotFound));
+      return Logger.logWarningAndReject(new IModelError(IModelStatus.NotFound));
 
     return found;
   }
