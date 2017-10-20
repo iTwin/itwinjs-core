@@ -173,9 +173,9 @@ export class BriefcaseManager {
       fs.unlinkSync(iModelToken.pathname!);
 
     // Delete from the hub
-    assert(!!iModelToken.imodelId);
+    assert(!!iModelToken.iModelId);
     assert(!!iModelToken.briefcaseId);
-    await BriefcaseManager.hubClient.deleteBriefcase(accessToken, iModelToken.imodelId!, iModelToken.briefcaseId!)
+    await BriefcaseManager.hubClient.deleteBriefcase(accessToken, iModelToken.iModelId!, iModelToken.briefcaseId!)
       .catch(() => {
         assert(false, "Could not delete the accquired briefcase");
         return Promise.reject(new IModelError(BriefcaseStatus.CannotDelete));
@@ -342,7 +342,7 @@ export class BriefcaseManager {
 
     const briefcases = new Array<IModelDb>();
     for (const entry of cache.briefcases.values()) {
-      if (entry.iModelToken.imodelId !== iModelId)
+      if (entry.iModelToken.iModelId !== iModelId)
         continue;
       if (entry.iModelToken.changeSetIndex! > requiredChangeSetIndex)
         continue;
@@ -413,7 +413,7 @@ export class BriefcaseManager {
     const toChangeSetId: string = !!changeSet ? changeSet.wsgId : "";
     const toChangeSetIndex: number = !!changeSet ? +changeSet.index : 0;
     const fromChangeSetId: string = iModelToken.changeSetId!;
-    const changeSetTokens = await BriefcaseManager.downloadChangeSets(accessToken, iModelToken.imodelId!, toChangeSetId, fromChangeSetId);
+    const changeSetTokens = await BriefcaseManager.downloadChangeSets(accessToken, iModelToken.iModelId!, toChangeSetId, fromChangeSetId);
 
     const nativeDb = new dgnDbNodeAddon.DgnDb();
     const res: BentleyReturn<DbResult, void> = await nativeDb.openBriefcaseSync(JSON.stringify(iModelToken), JSON.stringify(changeSetTokens));

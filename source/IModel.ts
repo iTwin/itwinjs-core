@@ -9,7 +9,7 @@ export class IModelToken {
   public pathname: string;
   public openMode?: OpenMode;
 
-  public imodelId?: string;
+  public iModelId?: string;
   public briefcaseId?: number;
   public userId?: string;
 
@@ -26,9 +26,9 @@ export class IModelToken {
     return token;
   }
 
-  public static fromBriefcase(imodelId: string, briefcaseId: number, pathname: string, userId: string): IModelToken {
+  public static fromBriefcase(iModelId: string, briefcaseId: number, pathname: string, userId: string): IModelToken {
     const token = new IModelToken();
-    token.imodelId = imodelId;
+    token.iModelId = iModelId;
     token.briefcaseId = briefcaseId;
     token.pathname = pathname;
     token.userId = userId;
