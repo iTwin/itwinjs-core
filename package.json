@@ -36,7 +36,6 @@
     "@types/fs-extra": "^4.0.2",
     "@types/js-base64": "^2.1.5",
     "@types/mocha": "^2.2.43",
-    "@types/request-promise-native": "^1.0.8",
     "chai": "^4.1.2",
     "commander": "^2.11.0",
     "debug-fabulous": "^0.1.2",
