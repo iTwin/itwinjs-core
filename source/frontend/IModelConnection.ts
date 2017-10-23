@@ -43,7 +43,7 @@ export class IModelConnection extends IModel {
       return Promise.reject(new IModelError(IModelStatus.NotEnabled, "IModelConnection does not support read/write access yet")); // WIP: waiting for decisions on how to manage read/write briefcases on the backend
 
     const iModelToken = await IModelDbRemoting.open(accessToken, iModelId, openMode, version);
-    Logger.logInfo("IModelConnection.open: " + iModelId); // Important information from a DevOps perspective
+    Logger.logInfo("IModelConnection.open", () => ({ iModelId, openMode, version }));
     return new IModelConnection(iModelToken);
   }
 
@@ -51,7 +51,9 @@ export class IModelConnection extends IModel {
    * In most cases it is better to call [[IModelConnection.open]] instead.
    */
   public static async create(iModelToken: IModelToken): Promise<IModelConnection> {
-    return new IModelConnection(iModelToken);
+    const iModelConnection = new IModelConnection(iModelToken);
+    Logger.logInfo("IModelConnection.create", () => ({ iModelId: iModelToken.iModelId }));
+    return iModelConnection;
   }
 
   /** Close this iModel */
@@ -68,6 +70,7 @@ export class IModelConnection extends IModel {
    * @throws [[IModelError]] if the ECSql is invalid
    */
   public async executeQuery(sql: string, bindings?: any): Promise<any[]> {
+    Logger.logInfo("IModelConnection.executeQuery", () => ({ iModelId: this.iModelToken.iModelId, sql, bindings }));
     return await IModelDbRemoting.executeQuery(this.iModelToken, sql, bindings);
   }
 }
