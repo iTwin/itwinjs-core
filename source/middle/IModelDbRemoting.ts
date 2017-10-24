@@ -7,6 +7,7 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import { Element } from "../Element";
 import { EntityMetaData, EntityQueryParams } from "../Entity";
 import { IModelVersion } from "../IModelVersion";
+import { Logger } from "../Logger";
 import { Model } from "../Model";
 import { IModelError } from "../IModelError";
 import { IModelToken } from "../IModel";
@@ -48,7 +49,9 @@ export class IModelDbRemoting {
   @RunsIn(Tier.Services)
   public static async executeQuery(iModelToken: IModelToken, sql: string, bindings?: any): Promise<any[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    return await iModelDb.executeQuery(sql, bindings);
+    const rows: any[] = await iModelDb.executeQuery(sql, bindings);
+    Logger.logInfo("IModelDbRemoting.executeQuery", () => ({ sql, numNows: rows.length }));
+    return rows;
   }
 
   /** Return an array of model JSON strings given an array of stringified model ids. */
@@ -59,7 +62,7 @@ export class IModelDbRemoting {
     for (const modelId of modelIds) {
       const { error, result: modelJson } = await iModelDb.nativeDb.getModel(JSON.stringify({ id: modelId }));
       if (error)
-        return Promise.reject(new IModelError(error.status, error.message));
+        return Logger.logWarningAndReject(new IModelError(error.status, error.message));
 
       models.push(modelJson);
     }
@@ -74,7 +77,7 @@ export class IModelDbRemoting {
     for (const elementId of elementIds) {
       const { error, result: elementJson } = await iModelDb.nativeDb.getElement(JSON.stringify({ id: elementId }));
       if (error)
-        return Promise.reject(new IModelError(error.status, error.message));
+        return Logger.logWarningAndReject(new IModelError(error.status, error.message));
 
       elements.push(elementJson);
     }
@@ -97,6 +100,7 @@ export class IModelDbRemoting {
       elementIds.push(row.id);
 
     iModelDb.releasePreparedStatement(statement);
+    Logger.logInfo("IModelDbRemoting.queryElementIds", () => ({ sql, numElements: elementIds.length }));
     return elementIds;
   }
 
@@ -141,6 +145,7 @@ export class IModelDbRemoting {
       codeSpecs.push({ id: row.id, name: row.name, jsonProperties: JSON.parse(row.jsonProperties) });
 
     iModelDb.releasePreparedStatement(statement);
+    Logger.logInfo("IModelDbRemoting.getAllCodeSpecs", () => ({ numCodeSpecs: codeSpecs.length }));
     return codeSpecs;
   }
 }

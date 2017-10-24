@@ -85,11 +85,25 @@ export const enum BriefcaseStatus { // WIP: Need to setup the error numbers in a
   VersionNotFound,
 }
 
+/** Defines the *signature* for a function that returns meta-data related to an error.
+ * Declared as a function so that the expense of creating the meta-data is only paid when it is needed.
+ */
+export type GetMetaDataFunction = () => any;
+
 /** The error type thrown by this module. `IModelError` subclasses `Error` to add an `errorNumber` member. See [[IModelStatus]] for `errorNumber` values. */
 export class IModelError extends Error {
-  public constructor(public readonly errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus, message?: string) {
+  private readonly _getMetaData: GetMetaDataFunction |  undefined;
+
+  public constructor(public readonly errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus, message?: string, getMetaData?: GetMetaDataFunction) {
     super(message);
     assert(errorNumber as number !== IModelStatus.Success as number);
+    this._getMetaData = getMetaData;
+  }
+
+  public hasMetaData(): boolean { return this._getMetaData !== undefined; }
+
+  public getMetaData(): any {
+    return this.hasMetaData() ? this._getMetaData!() : undefined;
   }
 
   public toDebugString(): string {
