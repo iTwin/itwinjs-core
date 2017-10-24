@@ -21,7 +21,7 @@ export interface AppearanceProps {
   transp?: number;
 }
 
-/** Parameters that define the way geometry drawn on a SubCategory appears. */
+/** Parameters that define the way geometry on a SubCategory appears. */
 export class Appearance {
   public color: ColorDef = ColorDef.black;
   public weight: number = 0;

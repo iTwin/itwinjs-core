@@ -32,7 +32,7 @@ export class Model extends Entity implements ModelProps {
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
   }
 
-  /** Add all custom-handled properties to a json object. */
+  /** Add all custom-handled properties of a Model to a json object. */
   public toJSON(): any {
     const val = super.toJSON();
     if (this.id.isValid())

@@ -62,8 +62,8 @@ describe("iModel", () => {
   it("should use schema to look up classes by name", () => {
     const elementClass = BisCore.getClass(Element.name, imodel);
     const categoryClass = BisCore.getClass(Category.name, imodel);
-    assert.isTrue(elementClass !== undefined);
-    assert.isTrue(categoryClass !== undefined);
+    assert.isDefined(elementClass);
+    assert.isDefined(categoryClass);
     assert.equal(elementClass!.name, "Element");
     assert.equal(categoryClass!.name, "Category");
   });
@@ -639,7 +639,7 @@ describe("iModel", () => {
 
   it.skip("ImodelJsTest.MeasureInsertPerformance", async () => {
 
-    const ifperfimodel = await IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", {copyFilename: "ImodelJsTest_MeasureInsertPerformance.bim", enableTransactions: true});
+    const ifperfimodel = await IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", { copyFilename: "ImodelJsTest_MeasureInsertPerformance.bim", enableTransactions: true });
 
     // TODO: Look up model by code (i.e., codevalue of a child of root subject, where child has a PhysicalPartition)
     // const physicalPartitionCode: Code = PhysicalPartition::CreateCode(*m_db->Elements().GetRootSubject(), "DefaultModel");

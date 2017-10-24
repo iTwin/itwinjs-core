@@ -12,6 +12,7 @@ import { AxisOrder, Angle, Geometry } from "@bentley/geometry-core/lib/Geometry"
 import { Map4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 export class ViewController { }
 
@@ -184,6 +185,7 @@ export class GroundPlane {
   public belowColor: ColorDef;     // the color to draw the ground plane if the view shows the ground from below
 }
 
+/** the SkyBox is a draws in the background of spatial views to provide context. */
 export class SkyBox {
   public enabled: boolean = false;
   public twoColor: boolean = false;
@@ -326,9 +328,10 @@ export class MarginPercent {
   }
 }
 
-/** The definition element for a view. ViewDefinitions specify the area/volume that is viewed, and points to a DisplayStyle and a CategorySelector.
- *  Subclasses of ViewDefinition determine which model(s) are viewed.
- *  A ViewController holds an editable copy of a ViewDefinition, and a ViewDefinition holds an editable copy of its DisplayStyle and CategorySelector.
+/**
+ * The definition element for a view. ViewDefinitions specify the area/volume that is viewed, and points to a DisplayStyle and a CategorySelector.
+ * Subclasses of ViewDefinition determine which model(s) are viewed.
+ * A ViewController holds an editable copy of a ViewDefinition, and a ViewDefinition holds an editable copy of its DisplayStyle and CategorySelector.
  */
 export abstract class ViewDefinition extends DefinitionElement implements ViewDefinitionProps {
   public categorySelectorId: Id64;
@@ -341,13 +344,15 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
     this.categorySelectorId = new Id64(props.categorySelectorId);
     this.displayStyleId = new Id64(props.displayStyleId);
     if (props.categorySelector)
-      this.setCategorySelector(props.categorySelector);
+      this.setCategorySelector(props.categorySelector.copyForEdit<CategorySelector>());
+    if (props.displayStyle)
+      this.setDisplayStyle(props.displayStyle.copyForEdit<DisplayStyle>());
   }
 
   public isView3d(): boolean { return this instanceof ViewDefinition3d; }
   public isSpatialView(): boolean { return this instanceof SpatialViewDefinition; }
 
-  /** determine whether this ViewDefinition views a given model */
+  /** Determine whether this ViewDefinition views a given model */
   public abstract viewsModel(modelId: Id64): boolean;
 
   /** Get the origin of this view */
@@ -379,6 +384,10 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
     return this.getOrigin().plusScaled(delta, 0.0);
   }
 
+  /**
+   * Initialize the origin, extents, and rotation of this ViewDefinition from an existing Frustum
+   * @param frustum the input Frustum.
+   */
   public setupFromFrustum(frustum: Frustum): ViewportStatus {
     const frustPts = frustum.points;
     let viewOrg = frustPts[Npc.LeftBottomRear];
@@ -414,8 +423,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
     viewDiagRoot.plusScaled(zDir, zSize);       // add in z vector perpendicular to x,y
 
     // use center of frustum and view diagonal for origin. Original frustum may not have been orthogonal
-    viewOrg = frustum.getCenter();
-    viewOrg.plusScaled(viewDiagRoot, -0.5);
+    viewOrg = frustum.getCenter().plusScaled(viewDiagRoot, -0.5);
 
     // delta is in view coordinates
     const viewDelta = viewRot.multiplyVector(viewDiagRoot);
@@ -430,7 +438,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
   }
 
   protected getExtentLimits() { return { minExtent: Constant.oneMillimeter, maxExtent: 2.0 * Constant.diameterOfEarth }; }
-  public setupDisplayStyle(style: DisplayStyle) { this._displayStyle = style; this.displayStyleId = style.id; }
+  public setDisplayStyle(style: DisplayStyle) { assert(!style.isPersistent()); this._displayStyle = style; this.displayStyleId = style.id; }
   public getDetails(): any { if (!this.jsonProperties.viewDetails) this.jsonProperties.viewDetails = new Object(); return this.jsonProperties.viewDetails; }
 
   protected adjustAspectRatio(windowAspect: number): void {
@@ -485,7 +493,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
     return error;
   }
 
-  /**  Get the name of this ViewDefinition */
+  /** Get the name of this ViewDefinition */
   public getName(): string { return this.code.getValue(); }
 
   /** Get the current value of a view detail */
@@ -500,7 +508,13 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
   /** Get the CategorySelector for this ViewDefinition.
    *  @note this method may only be called on a writeable copy of a ViewDefinition.
    */
-  public getCategorySelector() {/*NEEDS_WORK*/ return this._categorySelector; }
+  public getCategorySelector() {
+    /* NEEDS WORK if (!this._categorySelector)
+      this.categorySelector = this.iModel.iModelToken.
+    */
+    return this._categorySelector;
+
+  }
   public getCategorySelectorId() { return this.categorySelectorId; }
 
   /** Get the DisplayStyle for this ViewDefinition
@@ -604,6 +618,12 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
    * of space shown in the view.) If undefined, no additional white space is added.
    * @note, for 2d views, only the X and Y values of volume are used.
    */
+  public lookAtVolume(volume: Range3d, aspect?: number, margin?: MarginPercent) {
+    const rangeBox = volume.corners();
+    this.getRotation().multiplyVectorArrayInPlace(rangeBox);
+    return this.lookAtViewAlignedVolume(Range3d.createArray(rangeBox), aspect, margin);
+  }
+
   public lookAtViewAlignedVolume(volume: Range3d, aspect?: number, margin?: MarginPercent) {
     const viewRot = this.getRotation().clone();
 
@@ -787,8 +807,50 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
   public rotation: RotMatrix;    // Rotation of the view frustum.
   public camera: Camera;         // The camera used for this view.
 
-  // protected setupFromFrustum(Frustum const& inFrustum: Frustum): ViewportStatus;
-  // protected getTargetPoint(): Point3d;
+  public setupFromFrustum(frustum: Frustum): ViewportStatus {
+    const stat = super.setupFromFrustum(frustum);
+    if (ViewportStatus.Success !== stat)
+      return stat;
+
+    this.turnCameraOff();
+    const frustPts = frustum.points;
+
+    // use comparison of back, front plane X sizes to indicate camera or flat view ...
+    const xBack = frustPts[Npc.LeftBottomRear].distance(frustPts[Npc.RightBottomRear]);
+    const xFront = frustPts[Npc.LeftBottomFront].distance(frustPts[Npc.RightBottomFront]);
+
+    const sFlatViewFractionTolerance = 1.0e-6;
+    if (xFront > xBack * (1.0 + sFlatViewFractionTolerance))
+      return ViewportStatus.InvalidWindow;
+
+    // see if the frustum is tapered, and if so, set up camera eyepoint and adjust viewOrg and delta.
+    const compression = xFront / xBack;
+    if (compression >= (1.0 - sFlatViewFractionTolerance))
+      return ViewportStatus.Success;
+
+    let viewOrg = frustPts[Npc.LeftBottomRear];
+    const viewDelta = this.getExtents().clone();
+    const zDir = this.getZVector();
+    const frustumZ = viewOrg.vectorTo(frustPts[Npc.LeftBottomFront]);
+    const frustOrgToEye = frustumZ.scale(1.0 / (1.0 - compression));
+    const eyePoint = viewOrg.plus(frustOrgToEye);
+
+    const backDistance = frustOrgToEye.dotProduct(zDir);         // distance from eye to back plane of frustum
+    const focusDistance = backDistance - (viewDelta.z / 2.0);
+    const focalFraction = focusDistance / backDistance;           // ratio of focus plane distance to back plane distance
+
+    viewOrg = eyePoint.plus2Scaled(frustOrgToEye, -focalFraction, zDir, focusDistance - backDistance);    // now project that point onto back plane
+    viewDelta.x *= focalFraction;                                  // adjust view delta for x and y so they are also at focus plane
+    viewDelta.y *= focalFraction;
+
+    this.setEyePoint(eyePoint);
+    this.setFocusDistance(focusDistance);
+    this.setOrigin(viewOrg);
+    this.setExtents(viewDelta);
+    this.setLensAngle(this.calcLensAngle());
+    this.enableCamera();
+    return ViewportStatus.Success;
+  }
 
   protected static calculateMaxDepth(delta: Vector3d, zVec: Vector3d): number {
     // We are going to limit maximum depth to a value that will avoid subtractive cancellation
@@ -832,7 +894,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
   public getDisplayStyle3d() { return this.getDisplayStyle() as DisplayStyle3d; }
   public setupDisplayStyle3d(style: DisplayStyle3d) { super.setupDisplayStyle(style); }
 
-  /**  Turn the camera off for this view. After this call, the camera parameters in this view definition are ignored and views that use it will
+  /** Turn the camera off for this view. After this call, the camera parameters in this view definition are ignored and views that use it will
    *  display with an orthographic (infinite focal length) projection of the view volume from the view direction.
    *  @note To turn the camera back on, call #lookAt
    */
@@ -841,13 +903,23 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
   /** Determine whether the camera is valid for this view */
   public isCameraValid() { return this.camera.isValid(); }
 
-  /**  Calculate the lens angle formed by the current delta and focus distance */
+  /** Calculate the lens angle formed by the current delta and focus distance */
   public calcLensAngle(): Angle {
     const maxDelta = Math.max(this.extents.x, this.extents.y);
     return Angle.createRadians(2.0 * Math.atan2(maxDelta * 0.5, this.camera.getFocusDistance()));
   }
 
-  /**  Position the camera for this view and point it at a new target point.
+  /** Get the target point of the view. If there is no camera, view center is returned. */
+  public getTargetPoint(): Point3d {
+    if (!this.cameraOn)
+      return super.getTargetPoint();
+
+    const viewZ = this.getRotation().getRow(2);
+    return this.getEyePoint().plusScaled(viewZ, -1.0 * this.getFocusDistance());
+  }
+
+  /**
+   * Position the camera for this view and point it at a new target point.
    * @param eyePoint The new location of the camera.
    * @param targetPoint The new location to which the camera should point. This becomes the center of the view on the focus plane.
    * @param upVector A vector that orients the camera's "up" (view y). This vector must not be parallel to the vector from eye to target.
@@ -924,7 +996,8 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     return ViewportStatus.Success;
   }
 
-  /** Position the camera for this view and point it at a new target point, using a specified lens angle.
+  /**
+   * Position the camera for this view and point it at a new target point, using a specified lens angle.
    * @param eyePoint The new location of the camera.
    * @param targetPoint The new location to which the camera should point. This becomes the center of the view on the focus plane.
    * @param upVector A vector that orients the camera's "up" (view y). This vector must not be parallel to the vector from eye to target.
@@ -950,7 +1023,8 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     return this.lookAt(eyePoint, targetPoint, upVector, delta, frontDistance, backDistance);
   }
 
-  /** Move the camera relative to its current location by a distance in camera coordinates.
+  /**
+   * Move the camera relative to its current location by a distance in camera coordinates.
    * @param distance to move camera. Length is in world units, direction relative to current camera orientation.
    * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
    */
@@ -959,7 +1033,8 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     return this.moveCameraWorld(distWorld);
   }
 
-  /** Move the camera relative to its current location by a distance in world coordinates.
+  /**
+   * Move the camera relative to its current location by a distance in world coordinates.
    * @param distance in world units.
    * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
    */
@@ -974,7 +1049,8 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     return this.lookAt(newEyePt, newTarget, this.getYVector());
   }
 
-  /** Rotate the camera from its current location about an axis relative to its current orientation.
+  /**
+   * Rotate the camera from its current location about an axis relative to its current orientation.
    * @param angle The angle to rotate the camera.
    * @param axis The axis about which to rotate the camera. The axis is a direction relative to the current camera orientation.
    * @param aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is undefined, the camera rotates in place
@@ -987,7 +1063,8 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     return this.rotateCameraWorld(angle, axisWorld, aboutPt);
   }
 
-  /** Rotate the camera from its current location about an axis in world coordinates.
+  /**
+   * Rotate the camera from its current location about an axis in world coordinates.
    * @param angle The angle to rotate the camera.
    * @param axis The world-based axis (direction) about which to rotate the camera.
    * @param aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is undefined, the camera rotates in place
@@ -1014,10 +1091,11 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     return eyeOrg.z;
   }
 
-  /** Place the eyepoint of the camera so it is aligned with the center of the view. This removes any 1-point perspective skewing that may be
-   *  present in the current view.
-   *  @param backDistance If defined, the new the distance from the eyepoint to the back plane. Otherwise the distance from the
-   *  current eyepoint is used.
+  /**
+   * Place the eyepoint of the camera so it is aligned with the center of the view. This removes any 1-point perspective skewing that may be
+   * present in the current view.
+   * @param backDistance If defined, the new the distance from the eyepoint to the back plane. Otherwise the distance from the
+   * current eyepoint is used.
    */
   public centerEyePoint(backDistance?: number): void {
     const eyePoint = this.getExtents().scale(0.5);
@@ -1038,13 +1116,13 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     this.lookAtUsingLensAngle(eye, target, this.getYVector(), this.getLensAngle(), frontDist, backDist);
   }
 
-  /**  Get the current location of the eyePoint for camera in this view. */
+  /** Get the current location of the eyePoint for camera in this view. */
   public getEyePoint(): Point3d { return this.camera.eye; }
 
-  /**  Get the lens angle for this view. */
+  /** Get the lens angle for this view. */
   public getLensAngle(): Angle { return this.camera.lens; }
 
-  /**  Set the lens angle for this view.
+  /** Set the lens angle for this view.
    *  @param angle The new lens angle in radians. Must be greater than 0 and less than pi.
    *  @note This does not change the view's current field-of-view. Instead, it changes the lens that will be used if the view
    *  is subsequently modified and the lens angle is used to position the eyepoint.
@@ -1059,7 +1137,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
    */
   public setEyePoint(pt: Point3d): void { this.camera.eye = pt; }
 
-  /**  Set the focus distance for this view.
+  /** Set the focus distance for this view.
    *  @note Changing the focus distance changes the plane on which the delta.x and delta.y values lie. So, changing focus distance
    *  without making corresponding changes to delta.x and delta.y essentially changes the lens angle, causing a "zoom" effect
    */
