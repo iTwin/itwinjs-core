@@ -1,11 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ClipPlaneSet } from "@bentley/geometry-core/lib/numerics/ClipPlanes";
-import { Point2d, Transform } from "@bentley/geometry-core/lib/PointVector";
+import { ClipPlaneSet, ClipPlaneContainment } from "@bentley/geometry-core/lib/numerics/ClipPlanes";
+import { Point2d, Point3d, Transform } from "@bentley/geometry-core/lib/PointVector";
 
+/** a clipping volume comprised of a ClipPlaneSet */
 export class ClipPrimitive {
   public clipPlanes?: ClipPlaneSet;
+  public clipMasks?: ClipPlaneSet;
   public invisible: boolean;
 
   public constructor(planeSet?: ClipPlaneSet, invisible: boolean = false) {
@@ -31,8 +33,28 @@ export class ClipPrimitive {
 
     return new ClipPrimitive(new ClipPlaneSet());
   }
+
+  public classifyPointContainment(points: Point3d[], ignoreMasks: boolean): ClipPlaneContainment {
+    if (this.clipMasks) {
+      if (ignoreMasks)
+        return ClipPlaneContainment.StronglyInside;
+
+      switch (this.clipMasks.classifyPointContainment(points, true)) {
+        case ClipPlaneContainment.StronglyInside:
+          return ClipPlaneContainment.StronglyOutside;
+
+        case ClipPlaneContainment.StronglyOutside:
+          return ClipPlaneContainment.StronglyInside;
+
+        case ClipPlaneContainment.Ambiguous:
+          return ClipPlaneContainment.Ambiguous;
+      }
+    }
+    return !this.clipPlanes ? ClipPlaneContainment.StronglyInside : this.clipPlanes.classifyPointContainment(points, false);
+  }
 }
 
+/** a clipping volume defined by a shape, a transform, and zlow/zhigh offsets */
 export class ClipShape extends ClipPrimitive {
 
   public constructor(public points: Point2d[], public trans?: Transform, public zLow?: number, public zHigh?: number, public isMask: boolean = false) { super(); }
@@ -92,5 +114,22 @@ export class ClipVector {
     for (const clip of json)
       vec.clips.push(ClipPrimitive.fromJSON(clip));
     return vec;
+  }
+
+  public classifyPointContainment(points: Point3d[], ignoreMasks: boolean = false): ClipPlaneContainment {
+    let currentContainment = ClipPlaneContainment.Ambiguous;
+
+    for (const primitive of this.clips) {
+      const thisContainment = primitive.classifyPointContainment(points, ignoreMasks);
+
+      if (ClipPlaneContainment.Ambiguous === thisContainment)
+        return ClipPlaneContainment.Ambiguous;
+
+      if (ClipPlaneContainment.Ambiguous === currentContainment)
+        currentContainment = thisContainment;
+      else if (currentContainment !== thisContainment)
+        return ClipPlaneContainment.Ambiguous;
+    }
+    return currentContainment;
   }
 }

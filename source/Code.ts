@@ -66,7 +66,10 @@ export class CodeSpecNames {
   public static ViewDefinition() { return CodeSpecNames.BIS_CODESPEC("ViewDefinition"); }
 }
 
-/** A CodeSpec object within an IModel */
+/**
+ * A CodeSpec supplies the Codes for a certain type of Entity in an IModel.
+ * A CodeSpec can identify an external system that maintains and/or assigns Codes.
+ */
 export class CodeSpec {
   public iModel: IModel;
   public id: Id64;

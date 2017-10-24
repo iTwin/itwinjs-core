@@ -34,6 +34,7 @@ export interface EntityCtor extends FunctionConstructor {
   new(args: EntityProps | Entity): Entity;
 }
 
+/** a callback function to process properties of an Entity */
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
 /** Base class for all Entities. */
@@ -242,7 +243,7 @@ export class EntityMetaData {
   }
 }
 
-/** Interface for capturing input into query functions. */
+/** Interface for capturing input for query functions. */
 export interface EntityQueryParams {
   from: string;
   where?: string;
