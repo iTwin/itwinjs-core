@@ -2,26 +2,20 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { BisCore } from "../BisCore";
-import { ClassRegistry } from "../ClassRegistry";
 import { CodeSpec } from "../Code";
-import { Element, ElementProps } from "../Element";
-import { Entity, EntityMetaData, EntityQueryParams } from "../Entity";
+import { ElementProps } from "../Element";
+import { EntityQueryParams } from "../Entity";
 import { IModel, IModelToken } from "../IModel";
 import { IModelError, IModelStatus } from "../IModelError";
 import { IModelVersion } from "../IModelVersion";
 import { Logger } from "../Logger";
-import { Model, ModelProps } from "../Model";
+import { ModelProps } from "../Model";
 
 // Initialize the frontend side of remoting
 import { IModelDbRemoting } from "../middle/IModelDbRemoting";
 IModelDbRemoting;
-
-// Register the use of BisCore for the frontend
-BisCore.registerSchema();
 
 /** A connection to an iModel database hosted on the backend. */
 export class IModelConnection extends IModel {
@@ -75,97 +69,48 @@ export class IModelConnection extends IModel {
   }
 }
 
-/** The collection of [[Model]] entities for an [[IModelConnection]]. */
+/** The collection of models for an [[IModelConnection]]. */
 export class IModelConnectionModels {
   private _iModel: IModelConnection;
-  private _loaded: LRUMap<string, Model>;
 
   /** @hidden */
-  public constructor(iModel: IModelConnection, max: number = 500) { this._iModel = iModel; this._loaded = new LRUMap<string, Model>(max); }
+  public constructor(iModel: IModelConnection) { this._iModel = iModel; }
 
   /** The Id of the repository model. */
   public get repositoryModelId(): Id64 { return new Id64("0x1"); }
 
-  /** Ask the backend for a batch of models given a list of model ids. */
-  public async getModels(modelIds: Id64[]): Promise<Model[]> {
+  /** Ask the backend for a batch of [[ModelProps]] given a list of model ids. */
+  public async getModels(modelIds: Id64[]): Promise<ModelProps[]> {
     const modelJsonArray = await IModelDbRemoting.getModels(this._iModel.iModelToken, modelIds.map((id: Id64) => id.toString()));
-    const models: Model[] = [];
-
+    const models: ModelProps[] = [];
     for (const modelJson of modelJsonArray) {
       const modelProps = JSON.parse(modelJson) as ModelProps;
       modelProps.iModel = this._iModel;
-
-      let entity: Entity;
-      try {
-        entity = ClassRegistry.createInstance(modelProps);
-      } catch (error) {
-        if (!ClassRegistry.isClassNotFoundError(error) && !ClassRegistry.isMetaDataNotFoundError(error))
-          throw error;
-
-        const classArray: any[] = await IModelDbRemoting.loadMetaDataForClassHierarchy(this._iModel.iModelToken, modelProps.classFullName!);
-        for (const classEntry of classArray) {
-          this._iModel.classMetaDataRegistry.add(classEntry.className, new EntityMetaData(classEntry.metaData));
-        }
-        entity = ClassRegistry.createInstance(modelProps);
-      }
-      const model = entity as Model;
-      if (!(model instanceof Model))
-        return Logger.logErrorAndReject(new IModelError(IModelStatus.WrongClass));
-
-      model.setPersistent(); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
-      this._loaded.set(model.id.toString(), model);
-      models.push(model);
+      models.push(modelProps);
     }
-
     return models;
   }
 }
 
-/** The collection of [[Element]] entities for an [[IModelConnection]]. */
+/** The collection of elements for an [[IModelConnection]]. */
 export class IModelConnectionElements {
   private _iModel: IModelConnection;
-  private _loaded: LRUMap<string, Element>;
-
-  /** get the map of loaded elements */
-  public get loaded() { return this._loaded; }
 
   /** @hidden */
-  public constructor(iModel: IModelConnection, maxElements: number = 2000) { this._iModel = iModel; this._loaded = new LRUMap<string, Element>(maxElements); }
+  public constructor(iModel: IModelConnection) { this._iModel = iModel; }
 
   /** The Id of the root subject element. */
   public get rootSubjectId(): Id64 { return new Id64("0x1"); }
 
-  /** Ask the backend for a batch of elements given a list of element ids. */
-  public async getElements(elementIds: Id64[]): Promise<Element[]> {
+  /** Ask the backend for a batch of [[ElementProps]] given a list of element ids. */
+  public async getElements(elementIds: Id64[]): Promise<ElementProps[]> {
     const elementJsonArray: any[] = await IModelDbRemoting.getElements(this._iModel.iModelToken, elementIds.map((id: Id64) => id.toString()));
-    const elements: Element[] = [];
-
+    const elements: ElementProps[] = [];
     for (const elementJson of elementJsonArray) {
       const elementProps = JSON.parse(elementJson) as ElementProps;
       elementProps.iModel = this._iModel;
-
-      let entity: Entity;
-      try {
-        entity = ClassRegistry.createInstance(elementProps);
-      } catch (error) {
-        if (!ClassRegistry.isClassNotFoundError(error) && !ClassRegistry.isMetaDataNotFoundError(error))
-          throw error;
-
-        const classArray: any[] = await IModelDbRemoting.loadMetaDataForClassHierarchy(this._iModel.iModelToken, elementProps.classFullName!);
-        for (const classEntry of classArray) {
-          this._iModel.classMetaDataRegistry.add(classEntry.className, new EntityMetaData(classEntry.metaData));
-        }
-        entity = ClassRegistry.createInstance(elementProps);
-      }
-      const element = entity as Element;
-      if (!(element instanceof Element))
-        return Logger.logErrorAndReject(new IModelError(IModelStatus.WrongClass));
-
-      element.setPersistent(); // elements in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
-      this._loaded.set(element.id.toString(), element);
-      elements.push(element);
+      elements.push(elementProps);
     }
-
     return elements;
   }
 

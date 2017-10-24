@@ -11,9 +11,9 @@ import { IModelTestUtils } from "./IModelTestUtils";
 import { expect, assert } from "chai";
 import { Category } from "../Category";
 import { CodeSpec, CodeSpecNames } from "../Code";
-import { Element, Subject } from "../Element";
+import { ElementProps } from "../Element";
 import { IModelVersion } from "../IModelVersion";
-import { Model } from "../Model";
+import { ModelProps } from "../Model";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -118,11 +118,10 @@ describe("BriefcaseManager", () => {
     assert.isTrue(iModel.elements instanceof IModelConnectionElements);
 
     const elementIds: Id64[] = [iModel.elements.rootSubjectId];
-    const elements: Element[] = await iModel.elements.getElements(elementIds);
+    const elements: ElementProps[] = await iModel.elements.getElements(elementIds);
     assert.equal(elements.length, elementIds.length);
-    assert.isTrue(elements[0] instanceof Subject);
-    assert.isTrue(elements[0].id.equals(iModel.elements.rootSubjectId));
-    assert.isTrue(elements[0].model.equals(iModel.models.repositoryModelId));
+    assert.isTrue(iModel.elements.rootSubjectId.equals(new Id64(elements[0].id)));
+    assert.isTrue(iModel.models.repositoryModelId.equals(new Id64(elements[0].model)));
 
     const queryElementIds: Id64[] = await iModel.elements.queryElementIds({ from: Category.sqlName, limit: 20, offset: 0 });
     assert.isAtLeast(queryElementIds.length, 1);
@@ -132,11 +131,10 @@ describe("BriefcaseManager", () => {
     assert.isAtLeast(formatObjs.length, 1);
 
     const modelIds: Id64[] = [iModel.models.repositoryModelId];
-    const models: Model[] = await iModel.models.getModels(modelIds);
+    const models: ModelProps[] = await iModel.models.getModels(modelIds);
     assert.exists(models);
     assert.equal(models.length, modelIds.length);
-    assert.isTrue(models[0] instanceof Model);
-    assert.isTrue(models[0].id.equals(iModel.models.repositoryModelId));
+    assert.isTrue(iModel.models.repositoryModelId.equals(new Id64(models[0].id)));
 
     const rows: any[] = await iModel.executeQuery("SELECT CodeValue AS code FROM BisCore.Category");
     assert.isAtLeast(rows.length, 1);
