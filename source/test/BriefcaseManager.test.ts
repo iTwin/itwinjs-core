@@ -11,9 +11,9 @@ import { IModelTestUtils } from "./IModelTestUtils";
 import { expect, assert } from "chai";
 import { Category } from "../Category";
 import { CodeSpec, CodeSpecNames } from "../Code";
-import { ElementProps } from "../Element";
+import { ElementProps } from "../ElementProps";
 import { IModelVersion } from "../IModelVersion";
-import { ModelProps } from "../Model";
+import { ModelProps } from "../ModelProps";
 import * as fs from "fs";
 import * as path from "path";
 

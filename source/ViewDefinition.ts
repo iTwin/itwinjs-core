@@ -1,7 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ElementProps, DefinitionElement } from "./Element";
+import { DefinitionElement } from "./Element";
+import { ElementProps } from "./ElementProps";
 import { Appearance, SubCategoryOverride } from "./Category";
 import { ViewFlags, HiddenLine, ColorDef } from "./Render";
 import { Light, LightType } from "./Lighting";

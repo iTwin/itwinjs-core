@@ -1,30 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
-import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { Code, CodeProps } from "./Code";
+import { Code } from "./Code";
 import { GeometryStream, Placement3d, Placement2d } from "./ElementGeometry";
-import { Entity, EntityProps, EntityMetaData } from "./Entity";
-
-/** The Id and relationship class of an Element that is related to another Element */
-export class RelatedElement {
-  constructor(public id: Id64, public relClass?: string) { }
-  public static fromJSON(json?: any): RelatedElement | undefined {
-    return json ? new RelatedElement(new Id64(json.id), JsonUtils.asString(json.relClass)) : undefined;
-  }
-}
-
-export interface ElementProps extends EntityProps {
-  model: Id64 | string;
-  code: CodeProps;
-  id: Id64 | string;
-  parent?: RelatedElement;
-  federationGuid?: Guid;
-  userLabel?: string;
-  jsonProperties?: any;
-}
+import { Entity, EntityMetaData } from "./Entity";
+import { ElementProps, RelatedElement } from "./ElementProps";
 
 /** Parameters to specify what element to load. */
 export interface ElementLoadParams {
@@ -36,7 +17,7 @@ export interface ElementLoadParams {
 }
 
 /** An element within an iModel. */
-export class Element extends Entity implements EntityProps {
+export class Element extends Entity implements ElementProps {
   public model: Id64;
   public code: Code;
   public parent?: RelatedElement;

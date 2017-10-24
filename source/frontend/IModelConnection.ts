@@ -5,13 +5,13 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { CodeSpec } from "../Code";
-import { ElementProps } from "../Element";
+import { ElementProps } from "../ElementProps";
 import { EntityQueryParams } from "../Entity";
 import { IModel, IModelToken } from "../IModel";
 import { IModelError, IModelStatus } from "../IModelError";
 import { IModelVersion } from "../IModelVersion";
 import { Logger } from "../Logger";
-import { ModelProps } from "../Model";
+import { ModelProps } from "../ModelProps";
 
 // Initialize the frontend side of remoting
 import { IModelDbRemoting } from "../middle/IModelDbRemoting";

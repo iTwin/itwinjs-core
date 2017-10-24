@@ -1,11 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { DefinitionElement, ElementProps } from "./Element";
-import { ColorDef } from "./Render";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { CodeSpecNames } from "./Code";
+import { DefinitionElement } from "./Element";
+import { ElementProps } from "./ElementProps";
+import { ColorDef } from "./Render";
 
 /** Properties to create a SubCategory Appearance */
 export interface AppearanceProps {

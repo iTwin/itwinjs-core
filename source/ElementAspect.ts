@@ -1,15 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { Entity, EntityProps } from "./Entity";
-
-/** ElementAspectProps */
-export interface ElementAspectProps extends EntityProps {
-  id: Id64 | string;
-  element: Id64 | string;
-}
+import { ElementAspectProps } from "./ElementAspectProps";
+import { Entity } from "./Entity";
 
 /** ElementAspect */
 export class ElementAspect extends Entity implements ElementAspectProps {

@@ -4,6 +4,7 @@
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
 import { ClassRegistry } from "./ClassRegistry";
+import { EntityProps } from "./EntityProps";
 import { IModel } from "./IModel";
 import { Schema } from "./Schema";
 
@@ -19,13 +20,6 @@ export const enum PrimitiveTypeCode {
   Point2d = 0x701,
   Point3d = 0x801,
   String = 0x901,
-}
-
-/** The properties to create an Entity. Every Entity must have an [[IModel]] and the full name of the class that defines it. */
-export interface EntityProps {
-  iModel: IModel;
-  classFullName?: string;
-  [propName: string]: any;
 }
 
 /** the constructor for an Entity. Must have a static member named schema and a ctor that accepts either an EntityProp or an Entity (for cloning). */

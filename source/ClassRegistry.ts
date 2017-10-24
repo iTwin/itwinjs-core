@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
-import { EntityCtor, Entity, EntityProps, EntityMetaData } from "./Entity";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { EntityCtor, Entity, EntityMetaData } from "./Entity";
+import { EntityProps } from "./EntityProps";
 import { IModel } from "./IModel";
 import { IModelError, IModelStatus } from "./IModelError";
 import { Schema, Schemas } from "./Schema";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 /** The mapping between a class name (schema.class) and its constructor function  */
 export class ClassRegistry {
