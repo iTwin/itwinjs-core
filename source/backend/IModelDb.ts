@@ -5,17 +5,17 @@ import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { BisCore } from "../BisCore";
-import { ClassRegistry } from "../ClassRegistry";
+import { BisCore } from "./BisCore";
+import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Code } from "../Code";
-import { Element, ElementLoadParams } from "../Element";
+import { Element, ElementLoadParams } from "./Element";
 import { ElementProps } from "../ElementProps";
-import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "../ElementAspect";
+import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { ElementAspectProps } from "../ElementAspectProps";
 import { IModel } from "../IModel";
 import { IModelVersion } from "../IModelVersion";
 import { Logger } from "../Logger";
-import { Model } from "../Model";
+import { Model } from "./Model";
 import { ModelProps } from "../ModelProps";
 import { IModelToken } from "../IModel";
 import { BriefcaseManager, KeepBriefcase, BriefcaseId } from "./BriefcaseManager";
@@ -24,7 +24,7 @@ import { IModelError, IModelStatus } from "../IModelError";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BindingValue } from "./BindingUtility";
 import { CodeSpecs } from "./CodeSpecs";
-import { Entity, EntityMetaData } from "../Entity";
+import { Entity, EntityMetaData } from "./Entity";
 
 // Initialize the backend side of remoting
 import { IModelDbRemoting } from "../middle/IModelDbRemoting";
@@ -128,6 +128,7 @@ export class IModelDb extends IModel {
   private _maxStatementCacheCount = 20;
   public nativeDb: any;
   private _codeSpecs: CodeSpecs;
+  private _classMetaDataRegistry: MetaDataRegistry;
 
   public constructor(iModelToken: IModelToken, nativeDb: any) {
     super(iModelToken);
@@ -287,7 +288,14 @@ export class IModelDb extends IModel {
     return iModel!;
   }
 
-  /** Get access to the CodeSpecs in this IModel */
+  /** Get the ClassMetaDataRegistry for this iModel. */
+  public get classMetaDataRegistry(): MetaDataRegistry {
+    if (!this._classMetaDataRegistry)
+      this._classMetaDataRegistry = new MetaDataRegistry();
+    return this._classMetaDataRegistry;
+  }
+
+  /** Get access to the CodeSpecs in this IModel. */
   public get codeSpecs(): CodeSpecs {
     if (this._codeSpecs === undefined)
       this._codeSpecs = new CodeSpecs(this);

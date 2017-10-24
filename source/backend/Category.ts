@@ -3,10 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { CodeSpecNames } from "./Code";
+import { CodeSpecNames } from "../Code";
 import { DefinitionElement } from "./Element";
-import { ElementProps } from "./ElementProps";
-import { ColorDef } from "./Render";
+import { ElementProps } from "../ElementProps";
+import { ColorDef } from "../Render";
 
 /** Properties to create a SubCategory Appearance */
 export interface AppearanceProps {

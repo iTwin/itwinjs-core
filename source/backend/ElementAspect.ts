@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { ElementAspectProps } from "./ElementAspectProps";
+import { ElementAspectProps } from "../ElementAspectProps";
 import { Entity } from "./Entity";
 
 /** ElementAspect */

@@ -1,8 +1,8 @@
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { ECJsonTypeMap, ECInstance } from "@bentley/bentleyjs-core/lib/ECJsonTypeMap";
-import { PrimitiveTypeCode } from "../Entity";
 import { IModelError } from "../IModelError";
 import { BindingUtility, BindingValue } from "./BindingUtility";
+import { PrimitiveTypeCode } from "./Entity";
 
 declare function require(arg: string): any;
 // tslint:disable-next-line:no-var-requires

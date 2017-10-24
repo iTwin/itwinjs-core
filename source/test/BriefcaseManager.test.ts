@@ -9,7 +9,7 @@ import { ChangeSet } from "@bentley/imodeljs-clients";
 import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { expect, assert } from "chai";
-import { Category } from "../Category";
+import { Category } from "../backend/Category";
 import { CodeSpec, CodeSpecNames } from "../Code";
 import { ElementProps } from "../ElementProps";
 import { IModelVersion } from "../IModelVersion";

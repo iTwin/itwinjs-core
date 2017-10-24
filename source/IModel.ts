@@ -2,7 +2,6 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { MetaDataRegistry } from "./ClassRegistry";
 
 /** A token that identifies an instance of an iModel. */
 export class IModelToken {
@@ -42,14 +41,6 @@ export class IModel {
   protected _iModelToken: IModelToken;
   /** The token that can be used to find this iModel instance. */
   public get iModelToken(): IModelToken { return this._iModelToken; }
-
-  private _classMetaDataRegistry: MetaDataRegistry;
-  /** Get the ClassMetaDataRegistry for this iModel */
-  public get classMetaDataRegistry(): MetaDataRegistry {
-    if (!this._classMetaDataRegistry)
-      this._classMetaDataRegistry = new MetaDataRegistry();
-    return this._classMetaDataRegistry;
-  }
 
   /** @hidden */
   protected constructor(iModelToken: IModelToken) {

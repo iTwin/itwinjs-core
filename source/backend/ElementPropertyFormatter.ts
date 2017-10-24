@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { Element } from "../Element";
+import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
 
 /** @hidden */

@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { PhysicalElement } from "../Element";
-import { ElementMultiAspect, ElementUniqueAspect } from "../ElementAspect";
+import { PhysicalElement } from "../backend/Element";
+import { ElementMultiAspect, ElementUniqueAspect } from "../backend/ElementAspect";
 import { IModelDb } from "../backend/IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
 

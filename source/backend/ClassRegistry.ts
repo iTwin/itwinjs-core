@@ -2,10 +2,11 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { EntityProps } from "../EntityProps";
+import { IModel } from "../IModel";
 import { EntityCtor, Entity, EntityMetaData } from "./Entity";
-import { EntityProps } from "./EntityProps";
-import { IModel } from "./IModel";
-import { IModelError, IModelStatus } from "./IModelError";
+import { IModelDb } from "./IModelDb";
+import { IModelError, IModelStatus } from "../IModelError";
 import { Schema, Schemas } from "./Schema";
 
 /** The mapping between a class name (schema.class) and its constructor function  */
@@ -47,7 +48,7 @@ export class ClassRegistry {
 
     let ctor = ClassRegistry.classMap.get(props.classFullName.toLowerCase());
     if (!ctor) {
-      ctor = ClassRegistry.generateClass(props.classFullName, props.iModel);
+      ctor = ClassRegistry.generateClass(props.classFullName, props.iModel as IModelDb); // WIP
       if (!ctor)
         throw ClassRegistry.makeClassNotFoundError();
     }
@@ -114,9 +115,9 @@ export class ClassRegistry {
   /** This function fetches the specified Entity from the imodel, generates a JS class for it, and registers the generated
    * class. This function also ensures that all of the base classes of the Entity exist and are registered.
    */
-  private static generateClass(classFullName: string, imodel: IModel): EntityCtor {
+  private static generateClass(classFullName: string, iModel: IModelDb): EntityCtor {
 
-    const metadata: EntityMetaData | undefined = imodel.classMetaDataRegistry.find(classFullName);
+    const metadata: EntityMetaData | undefined = iModel.classMetaDataRegistry.find(classFullName);
     if (metadata === undefined || metadata.ecclass === undefined)
       throw ClassRegistry.makeMetaDataNotFoundError();
 
@@ -124,7 +125,7 @@ export class ClassRegistry {
     // This recurses. I have to know that the super class is defined and registered before defining a derived class.
     // Therefore, I must await getRegisteredClass.
     if (metadata!.baseClasses && metadata.baseClasses.length !== 0) {
-      ClassRegistry.getClass(metadata.baseClasses[0], imodel);
+      ClassRegistry.getClass(metadata.baseClasses[0], iModel);
     }
 
     // Now we can generate the class from the classDef.
@@ -156,7 +157,7 @@ export class ClassRegistry {
   public static getClass(fullName: string, iModel: IModel): EntityCtor {
     const key = fullName.toLowerCase();
     if (!ClassRegistry.classMap.has(key)) {
-      return ClassRegistry.generateClass(fullName, iModel);
+      return ClassRegistry.generateClass(fullName, iModel as IModelDb); // WIP
     }
     const ctor = ClassRegistry.classMap.get(key);
     assert(!!ctor);

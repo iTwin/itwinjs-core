@@ -1,11 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
 import { assert } from "chai";
-import { BisCore } from "../BisCore";
-import { Element } from "../Element";
-import { EntityCtor } from "../Entity";
+import { BisCore } from "../backend/BisCore";
+import { Element } from "../backend/Element";
+import { EntityCtor } from "../backend/Entity";
 import { IModelDb } from "../backend/IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
 

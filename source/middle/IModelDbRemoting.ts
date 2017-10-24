@@ -4,15 +4,16 @@
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { MultiTierExecutionHost, RunsIn, Tier } from "@bentley/bentleyjs-core/lib/tiering";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { Element } from "../Element";
-import { EntityMetaData, EntityQueryParams } from "../Entity";
-import { IModelVersion } from "../IModelVersion";
-import { Logger } from "../Logger";
-import { Model } from "../Model";
+import { EntityQueryParams } from "../EntityProps";
 import { IModelError } from "../IModelError";
 import { IModelToken } from "../IModel";
+import { IModelVersion } from "../IModelVersion";
+import { Logger } from "../Logger";
+import { Element } from "../backend/Element";
+import { EntityMetaData } from "../backend/Entity";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { IModelDb } from "../backend/IModelDb";
+import { Model } from "../backend/Model";
 
 export type ConstructorType = new () => any;
 

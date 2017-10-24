@@ -9,3 +9,12 @@ export interface EntityProps {
   classFullName?: string;
   [propName: string]: any;
 }
+
+/** Interface for capturing input for query functions. */
+export interface EntityQueryParams {
+  from: string;
+  where?: string;
+  orderBy?: string;
+  limit: number;
+  offset: number;
+}

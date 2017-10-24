@@ -2,11 +2,11 @@
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { DefinitionElement } from "./Element";
-import { ElementProps } from "./ElementProps";
+import { ElementProps } from "../ElementProps";
 import { Appearance, SubCategoryOverride } from "./Category";
-import { ViewFlags, HiddenLine, ColorDef } from "./Render";
-import { Light, LightType } from "./Lighting";
-import { ClipVector } from "./ClipVector";
+import { ViewFlags, HiddenLine, ColorDef } from "../Render";
+import { Light, LightType } from "../Lighting";
+import { ClipVector } from "../ClipVector";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Vector3d, Vector2d, Point3d, Point2d, Range3d, RotMatrix, Transform, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { AxisOrder, Angle, Geometry } from "@bentley/geometry-core/lib/Geometry";

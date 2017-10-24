@@ -3,10 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Element } from "../Element";
-import { Model } from "../Model";
+import { Element } from "../backend/Element";
+import { Model } from "../backend/Model";
 import { IModelDb } from "../backend/IModelDb";
-import { SpatialCategory, DrawingCategory } from "../Category";
+import { SpatialCategory, DrawingCategory } from "../backend/Category";
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
 import { ConnectClient, Project, IModelHubClient, Briefcase} from "@bentley/imodeljs-clients";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";

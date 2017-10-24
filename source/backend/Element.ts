@@ -2,10 +2,11 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
-import { Code } from "./Code";
-import { GeometryStream, Placement3d, Placement2d } from "./ElementGeometry";
+import { Code } from "../Code";
+import { GeometryStream, Placement3d, Placement2d } from "../ElementGeometry";
+import { ElementProps, RelatedElement } from "../ElementProps";
 import { Entity, EntityMetaData } from "./Entity";
-import { ElementProps, RelatedElement } from "./ElementProps";
+import { IModelDb } from "./IModelDb";
 
 /** Parameters to specify what element to load. */
 export interface ElementLoadParams {
@@ -57,7 +58,7 @@ export class Element extends Entity implements ElementProps {
   }
 
   /** Get the class metadata for this element. */
-  public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
+  public getClassMetaData(): EntityMetaData | undefined { return (this.iModel as IModelDb).classMetaDataRegistry.find(this.classFullName); } // WIP
 
   private getAllUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
 
