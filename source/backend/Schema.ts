@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
-import { IModel } from "./IModel";
+import { IModel } from "../IModel";
 import { EntityCtor } from "./Entity";
 import { ClassRegistry } from "./ClassRegistry";
 
@@ -10,7 +10,7 @@ export class Schema {
 
   public get name(): string { return this.constructor.name; }
 
-  /** Get the ClassCtor for the specified class name
+  /** Get the EntityCtor for the specified class name
    * @param className The name of the Entity
    * @param imodel The IModel that contains the class definitions
    * @returns The corresponding ClassCtor

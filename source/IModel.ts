@@ -2,14 +2,13 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { MetaDataRegistry } from "./ClassRegistry";
 
 /** A token that identifies an instance of an iModel. */
 export class IModelToken {
   public pathname: string;
   public openMode?: OpenMode;
 
-  public imodelId?: string;
+  public iModelId?: string;
   public briefcaseId?: number;
   public userId?: string;
 
@@ -26,9 +25,9 @@ export class IModelToken {
     return token;
   }
 
-  public static fromBriefcase(imodelId: string, briefcaseId: number, pathname: string, userId: string): IModelToken {
+  public static fromBriefcase(iModelId: string, briefcaseId: number, pathname: string, userId: string): IModelToken {
     const token = new IModelToken();
-    token.imodelId = imodelId;
+    token.iModelId = iModelId;
     token.briefcaseId = briefcaseId;
     token.pathname = pathname;
     token.userId = userId;
@@ -42,14 +41,6 @@ export class IModel {
   protected _iModelToken: IModelToken;
   /** The token that can be used to find this iModel instance. */
   public get iModelToken(): IModelToken { return this._iModelToken; }
-
-  private _classMetaDataRegistry: MetaDataRegistry;
-  /** Get the ClassMetaDataRegistry for this iModel */
-  public get classMetaDataRegistry(): MetaDataRegistry {
-    if (!this._classMetaDataRegistry)
-      this._classMetaDataRegistry = new MetaDataRegistry();
-    return this._classMetaDataRegistry;
-  }
 
   /** @hidden */
   protected constructor(iModelToken: IModelToken) {

@@ -5,10 +5,6 @@
 import { assert } from "chai";
 import { ViewFlags, RenderMode, ColorDef, ColorRgb } from "../Render";
 import { Light, LightProps, Spot, LightType } from "../Lighting";
-import { BisCore } from "../BisCore";
-
-// First, register any domains that will be used in the tests.
-BisCore.registerSchema();
 
 describe("Render", () => {
   it("ColorDef should compare properly", () => {

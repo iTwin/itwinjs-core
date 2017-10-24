@@ -1,18 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Entity, EntityProps } from "./Entity";
-import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-
-export interface ModelProps extends EntityProps {
-  id: Id64 | string;
-  modeledElement: Id64;
-  parentModel?: Id64;
-  isPrivate?: boolean;
-  isTemplate?: boolean;
-  jsonProperties?: any;
-}
+import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
+import { Entity } from "./Entity";
+import { ModelProps } from "../ModelProps";
 
 /** A Model within an iModel */
 export class Model extends Entity implements ModelProps {
@@ -31,7 +23,8 @@ export class Model extends Entity implements ModelProps {
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
   }
-  /** Add all custom-handled properties to a json object. */
+
+  /** Add all custom-handled properties of a Model to a json object. */
   public toJSON(): any {
     const val = super.toJSON();
     if (this.id.isValid())
@@ -51,7 +44,6 @@ export class Model extends Entity implements ModelProps {
 
   /** Get the Id of the special dictionary model */
   public static getDictionaryId(): Id64 { return new Id64("0X10"); }
-
 }
 
 /** A geometric model */

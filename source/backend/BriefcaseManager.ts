@@ -5,7 +5,7 @@ import { AccessToken, Briefcase, IModelHubClient, ChangeSet } from "@bentley/imo
 import { BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { IModelError } from "../IModelError";
+import { BriefcaseStatus, IModelError } from "../IModelError";
 import { IModelVersion } from "../IModelVersion";
 import { IModelToken } from "../IModel";
 import { IModelDb } from "./IModelDb";
@@ -38,18 +38,6 @@ export class BriefcaseId {
   public getValue(): number { return this.value; }
 }
 
-/**
- * Error status from various briefcase operations
- * @todo: need to setup the error numbers in a consistent way
- */
-export const enum BriefcaseStatus {
-  CannotAcquire = 0x20000,
-  CannotDownload,
-  CannotCopy,
-  CannotDelete,
-  VersionNotFound,
-}
-
 /** Option to keep briefcase when the imodel is closed */
 export const enum KeepBriefcase {
   Yes,
@@ -65,8 +53,7 @@ export class ChangeSetToken {
 class BriefcaseCache {
   public readonly briefcases = new Map<string, IModelDb>(); // Indexed by local pathname of the briefcase
 
-  public setBriefcase(iModelToken: IModelToken, db: any): void {
-    const entry = new IModelDb(iModelToken, db);
+  public setBriefcase(iModelToken: IModelToken, entry: IModelDb): void {
     this.briefcases.set(iModelToken.pathname, entry);
   }
 
@@ -155,7 +142,7 @@ export class BriefcaseManager {
         iModelToken.isOpen = undefined;
         iModelToken.changeSetId = localBriefcase.parentChangeSetId;
         iModelToken.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, localIModelId, iModelToken.changeSetId!);
-        BriefcaseManager.cache.setBriefcase(iModelToken, undefined);
+        BriefcaseManager.cache.setBriefcase(iModelToken, new IModelDb(iModelToken, undefined));
       }
 
     }
@@ -186,9 +173,9 @@ export class BriefcaseManager {
       fs.unlinkSync(iModelToken.pathname!);
 
     // Delete from the hub
-    assert(!!iModelToken.imodelId);
+    assert(!!iModelToken.iModelId);
     assert(!!iModelToken.briefcaseId);
-    await BriefcaseManager.hubClient.deleteBriefcase(accessToken, iModelToken.imodelId!, iModelToken.briefcaseId!)
+    await BriefcaseManager.hubClient.deleteBriefcase(accessToken, iModelToken.iModelId!, iModelToken.briefcaseId!)
       .catch(() => {
         assert(false, "Could not delete the accquired briefcase");
         return Promise.reject(new IModelError(BriefcaseStatus.CannotDelete));
@@ -355,7 +342,7 @@ export class BriefcaseManager {
 
     const briefcases = new Array<IModelDb>();
     for (const entry of cache.briefcases.values()) {
-      if (entry.iModelToken.imodelId !== iModelId)
+      if (entry.iModelToken.iModelId !== iModelId)
         continue;
       if (entry.iModelToken.changeSetIndex! > requiredChangeSetIndex)
         continue;
@@ -426,7 +413,7 @@ export class BriefcaseManager {
     const toChangeSetId: string = !!changeSet ? changeSet.wsgId : "";
     const toChangeSetIndex: number = !!changeSet ? +changeSet.index : 0;
     const fromChangeSetId: string = iModelToken.changeSetId!;
-    const changeSetTokens = await BriefcaseManager.downloadChangeSets(accessToken, iModelToken.imodelId!, toChangeSetId, fromChangeSetId);
+    const changeSetTokens = await BriefcaseManager.downloadChangeSets(accessToken, iModelToken.iModelId!, toChangeSetId, fromChangeSetId);
 
     const nativeDb = new dgnDbNodeAddon.DgnDb();
     const res: BentleyReturn<DbResult, void> = await nativeDb.openBriefcaseSync(JSON.stringify(iModelToken), JSON.stringify(changeSetTokens));
@@ -440,9 +427,11 @@ export class BriefcaseManager {
     iModelToken.isOpen = true;
     iModelToken.changeSetId = toChangeSetId;
     iModelToken.changeSetIndex = toChangeSetIndex;
-    BriefcaseManager.cache!.setBriefcase(iModelToken, nativeDb);
 
-    return new IModelDb(iModelToken, nativeDb);
+    const iModelDb = new IModelDb(iModelToken, nativeDb);
+    BriefcaseManager.cache!.setBriefcase(iModelToken, iModelDb);
+
+    return iModelDb;
   }
 
   /** Purge closed briefcases */
@@ -483,33 +472,33 @@ export class BriefcaseManager {
     if (!BriefcaseManager.cache)
       BriefcaseManager.initialize();
 
-    const db = new dgnDbNodeAddon.DgnDb();
-    const res: BentleyReturn<DbResult, void> = await db.openDgnDb(fileName, openMode);
+    const nativeDb = new dgnDbNodeAddon.DgnDb();
+    const res: BentleyReturn<DbResult, void> = await nativeDb.openDgnDb(fileName, openMode);
     if (res.error)
       return Promise.reject(new IModelError(res.error.status));
 
     if (enableTransactions) {
-      const bid: number = db.getBriefcaseId();
+      const bid: number = nativeDb.getBriefcaseId();
       if (bid === BriefcaseId.Illegal || bid === BriefcaseId.Master)
-        db.setBriefcaseId(BriefcaseId.Standalone);
-      assert(db.getBriefcaseId() !== BriefcaseId.Illegal || db.getBriefcaseId() !== BriefcaseId.Master);
+        nativeDb.setBriefcaseId(BriefcaseId.Standalone);
+      assert(nativeDb.getBriefcaseId() !== BriefcaseId.Illegal || nativeDb.getBriefcaseId() !== BriefcaseId.Master);
     }
 
     const iModelToken = IModelToken.fromFile(fileName, openMode, true /*isOpen*/);
-    BriefcaseManager.cache!.setBriefcase(iModelToken, db);
+    BriefcaseManager.cache!.setBriefcase(iModelToken, new IModelDb(iModelToken, nativeDb));
 
-    return new IModelDb(iModelToken, db);
+    return new IModelDb(iModelToken, nativeDb);
   }
 
   public static async close(accessToken: AccessToken, iModelToken: IModelToken, keepBriefcase: KeepBriefcase): Promise<void> {
     if (keepBriefcase === KeepBriefcase.No)
       await BriefcaseManager.deleteBriefcase(accessToken, iModelToken);
     else
-      BriefcaseManager.cache!.setBriefcase(iModelToken, undefined);
+      BriefcaseManager.cache!.setBriefcase(iModelToken, new IModelDb(iModelToken, undefined));
   }
 
   public static closeStandalone(iModelToken: IModelToken) {
-    BriefcaseManager.cache!.setBriefcase(iModelToken, undefined);
+    BriefcaseManager.cache!.setBriefcase(iModelToken, new IModelDb(iModelToken, undefined));
   }
 
   public static getBriefcase(iModelToken: IModelToken): IModelDb | undefined {

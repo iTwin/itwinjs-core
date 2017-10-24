@@ -66,12 +66,22 @@ export class CodeSpecNames {
   public static ViewDefinition() { return CodeSpecNames.BIS_CODESPEC("ViewDefinition"); }
 }
 
-/** A CodeSpec object within a particular IModel */
+/**
+ * A CodeSpec supplies the Codes for a certain type of Entity in an IModel.
+ * A CodeSpec can identify an external system that maintains and/or assigns Codes.
+ */
 export class CodeSpec {
-  public imodel: IModel;
+  public iModel: IModel;
   public id: Id64;
   public name: string;
   public properties: any; // TODO: CodeSpec handlers and custom properties
+
+  public constructor(iModel: IModel, id: Id64, name: string, properties?: any) {
+    this.iModel = iModel;
+    this.id = id;
+    this.name = name;
+    this.properties = properties;
+  }
 
   public isValid(): boolean { return this.id.isValid(); }
 }

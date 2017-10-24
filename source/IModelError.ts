@@ -5,9 +5,9 @@
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { BriefcaseStatus } from "./backend/BriefcaseManager";
 
-export const enum IModelStatus {
+/** Status codes that are used in conjunction with [[IModelError]]. */
+export const enum IModelStatus { // NOTE: values must be kept in sync with DgnDbStatus and DbResult on the DgnPlatform C++ side
   IMODEL_ERROR_BASE = 0x10000,
   Success = 0,
   AlreadyLoaded = IMODEL_ERROR_BASE + 1,
@@ -76,10 +76,34 @@ export const enum IModelStatus {
   WrongModel = IMODEL_ERROR_BASE + 64,
 }
 
+/** Error status from various briefcase operations */
+export const enum BriefcaseStatus { // WIP: Need to setup the error numbers in a consistent way
+  CannotAcquire = 0x20000,
+  CannotDownload,
+  CannotCopy,
+  CannotDelete,
+  VersionNotFound,
+}
+
+/** Defines the *signature* for a function that returns meta-data related to an error.
+ * Declared as a function so that the expense of creating the meta-data is only paid when it is needed.
+ */
+export type GetMetaDataFunction = () => any;
+
+/** The error type thrown by this module. `IModelError` subclasses `Error` to add an `errorNumber` member. See [[IModelStatus]] for `errorNumber` values. */
 export class IModelError extends Error {
-  public constructor(public readonly errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus, message?: string) {
+  private readonly _getMetaData: GetMetaDataFunction |  undefined;
+
+  public constructor(public readonly errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus, message?: string, getMetaData?: GetMetaDataFunction) {
     super(message);
     assert(errorNumber as number !== IModelStatus.Success as number);
+    this._getMetaData = getMetaData;
+  }
+
+  public hasMetaData(): boolean { return this._getMetaData !== undefined; }
+
+  public getMetaData(): any {
+    return this.hasMetaData() ? this._getMetaData!() : undefined;
   }
 
   public toDebugString(): string {

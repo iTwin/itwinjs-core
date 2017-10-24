@@ -3,23 +3,25 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
+import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { Code } from "../Code";
 import { ColorDef } from "../Render";
-import { ElementProps, Element, GeometricElement3d, GeometricElementProps, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../Element";
-import { Entity, EntityCtor, EntityProps, EntityMetaData } from "../Entity";
-import { Model } from "../Model";
-import { Category, SubCategory } from "../Category";
-import { ClassRegistry } from "../ClassRegistry";
-import { ModelSelector } from "../ViewDefinition";
+import { Element, GeometricElement3d, GeometricElementProps, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../backend/Element";
+import { ElementProps } from "../ElementProps";
+import { Entity, EntityCtor, EntityMetaData } from "../backend/Entity";
+import { EntityProps } from "../EntityProps";
+import { Model } from "../backend/Model";
+import { Category, SubCategory } from "../backend/Category";
+import { ClassRegistry } from "../backend/ClassRegistry";
+import { ModelSelector } from "../backend/ViewDefinition";
 import { IModelError, IModelStatus } from "../IModelError";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { BisCore } from "../BisCore";
-import { SpatialViewDefinition, DisplayStyle3d } from "../ViewDefinition";
-import { GeometricElement2d } from "../Element";
+import { BisCore } from "../backend/BisCore";
+import { GeometricElement2d } from "../backend/Element";
+import { SpatialViewDefinition, DisplayStyle3d } from "../backend/ViewDefinition";
 import { ElementPropertyFormatter } from "../backend/ElementPropertyFormatter";
-import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelDb } from "../backend/IModelDb";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
 
@@ -30,8 +32,6 @@ describe("iModel", () => {
   let imodel4: IModelDb;
 
   before(async () => {
-    // First, register any schemas that will be used in the tests.
-    BisCore.registerSchema();
     imodel = await IModelTestUtils.openIModel("test.bim");
     imodel2 = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
     imodel3 = await IModelTestUtils.openIModel("GetSetAutoHandledStructProperties.bim");
@@ -64,8 +64,8 @@ describe("iModel", () => {
   it("should use schema to look up classes by name", () => {
     const elementClass = BisCore.getClass(Element.name, imodel);
     const categoryClass = BisCore.getClass(Category.name, imodel);
-    assert.isTrue(elementClass !== undefined);
-    assert.isTrue(categoryClass !== undefined);
+    assert.isDefined(elementClass);
+    assert.isDefined(categoryClass);
     assert.equal(elementClass!.name, "Element");
     assert.equal(categoryClass!.name, "Category");
   });
@@ -639,9 +639,9 @@ describe("iModel", () => {
     ASSERT_TRUE(m_defaultCategoryId.IsValid());
   */
 
-  it.only("ImodelJsTest.MeasureInsertPerformance)", async () => {
+  it.skip("ImodelJsTest.MeasureInsertPerformance", async () => {
 
-    const ifperfimodel = await IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", {copyFilename: "ImodelJsTest_MeasureInsertPerformance.bim", enableTransactions: true});
+    const ifperfimodel = await IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", { copyFilename: "ImodelJsTest_MeasureInsertPerformance.bim", enableTransactions: true });
 
     console.time("ImodelJsTest.MeasureInsertPerformance");
 
@@ -650,7 +650,7 @@ describe("iModel", () => {
     // const modelId: Id64 = ifperfimodel.models.querySubModelId(physicalPartitionCode);
     const modelId = new Id64("0X11");
 
-    const defaultCategoryId: Id64 = IModelTestUtils.getSpatiallCategoryIdByName(ifperfimodel, "DefaultCategory");
+    const defaultCategoryId: Id64 = IModelTestUtils.getSpatialCategoryIdByName(ifperfimodel, "DefaultCategory");
 
     const elementCount = 10000;
     for (let i = 0; i < elementCount; ++i) {

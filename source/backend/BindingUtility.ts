@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
-import { PrimitiveTypeCode } from "../Entity";
+import { PrimitiveTypeCode } from "./Entity";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 /** Value type  (Match this to ECN::ValueKind in ECObjects.h) */

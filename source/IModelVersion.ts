@@ -39,8 +39,15 @@ export class IModelVersion {
     return version;
   }
 
+  public static clone(unTypedObj: any): IModelVersion {
+    const version = new IModelVersion();
+    Object.assign(version, unTypedObj);
+    return version;
+  }
+
   public isFirst(): boolean { return !!this._first; }
   public isLatest(): boolean { return !!this._latest; }
   public getAfterChangeSetId(): string | undefined { return this._afterChangeSetId; }
   public getName(): string | undefined { return this._versionName; }
+
 }

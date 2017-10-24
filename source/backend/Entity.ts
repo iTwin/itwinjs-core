@@ -4,7 +4,9 @@
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
 import { ClassRegistry } from "./ClassRegistry";
-import { IModel } from "./IModel";
+import { EntityProps } from "../EntityProps";
+import { IModel } from "../IModel";
+import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 
 /** The primitive types of an Entity property. */
@@ -21,19 +23,13 @@ export const enum PrimitiveTypeCode {
   String = 0x901,
 }
 
-/** The properties to create an Entity. Every Entity must have an [[IModel]] and the full name of the class that defines it. */
-export interface EntityProps {
-  iModel: IModel;
-  classFullName?: string;
-  [propName: string]: any;
-}
-
 /** the constructor for an Entity. Must have a static member named schema and a ctor that accepts either an EntityProp or an Entity (for cloning). */
 export interface EntityCtor extends FunctionConstructor {
   schema: Schema;
   new(args: EntityProps | Entity): Entity;
 }
 
+/** a callback function to process properties of an Entity */
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
 /** Base class for all Entities. */
@@ -68,7 +64,7 @@ export class Entity implements EntityProps {
   }
 
   /** call a function for each property of this Entity. Function arguments are property name and property metadata. */
-  public forEachProperty(func: PropertyCallback, includeCustom: boolean = false) { EntityMetaData.forEach(this.iModel, this.classFullName, true, func, includeCustom); }
+  public forEachProperty(func: PropertyCallback, includeCustom: boolean = false) { EntityMetaData.forEach(this.iModel as IModelDb, this.classFullName, true, func, includeCustom); } // WIP
 
   /** STATIC method to get the full name of this class, in the form "schema.class"  */
   public static get sqlName() { return this.schema.name + "." + this.name; }
@@ -222,7 +218,7 @@ export class EntityMetaData {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true, include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    */
-  public static forEach(iModel: IModel, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean) {
+  public static forEach(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean) {
     const meta = iModel.classMetaDataRegistry.find(classFullName);
     if (meta === undefined) {
       throw ClassRegistry.makeMetaDataNotFoundError();
@@ -240,13 +236,4 @@ export class EntityMetaData {
       EntityMetaData.forEach(iModel, meta.baseClasses[0], true, func, includeCustom);
     }
   }
-}
-
-/** Interface for capturing input into query functions. */
-export interface EntityQueryParams {
-  from: string;
-  where?: string;
-  orderBy?: string;
-  limit: number;
-  offset: number;
 }
