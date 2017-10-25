@@ -26,15 +26,18 @@ const paths = require("../config/paths");
 const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 
 // Some additional options are required for CI builds
-const reporterOptions = (!isCI) ? [] : [
+const reporterOptions = (!isCI) ? [ "--inline-diffs" ] : [
   "--reporter", "mocha-junit-reporter",
   "--reporter-options", `mochaFile=${paths.appJUnitTestResults}`,
 ];
 
-const watchOptions = (process.argv[process.argv.length-1].toLowerCase() === "watch") ? ["--watch", "--inline-diffs"] : [];
+const watchOptions = (process.argv[process.argv.length-1].toLowerCase() === "watch") ? ["--watch"] : [];
+const debugOptions = (process.argv.indexOf("--debug") >= 0) ? ["--inspect-brk=41016"] : [];
 
 // Start the tests
 const args = [
+  ...debugOptions,
+  require.resolve("mocha-webpack/lib/cli"),
   "--webpack-config",  require.resolve("../config/webpack.config.test.js"),
   "--colors",
   "--require", require.resolve("./utils/testSetup"),
@@ -44,9 +47,9 @@ const args = [
   path.resolve(paths.appTest, "**/*.@(js|jsx|ts|tsx)"),
 ];
 
-// If we"re running coverage, we need to include the app source dir
+// If we're running coverage, we need to include the app source dir
 if (isCoverage)
   args.push(path.resolve(paths.appSrc, "**/*!(.d).@(js|jsx|ts|tsx)"));
 
-spawn(require.resolve(".bin/mocha-webpack"), args).then((code) =>  process.exit(code));
+spawn("node", args).then((code) =>  process.exit(code));
 handleInterrupts();
