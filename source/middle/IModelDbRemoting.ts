@@ -63,7 +63,7 @@ export class IModelDbRemoting {
     for (const modelId of modelIds) {
       const { error, result: modelJson } = await iModelDb.nativeDb.getModel(JSON.stringify({ id: modelId }));
       if (error)
-        return Logger.logWarningAndReject(new IModelError(error.status, error.message));
+        return Promise.reject(new IModelError(error.status, error.message, Logger.logWarning));
 
       models.push(modelJson);
     }
@@ -78,7 +78,7 @@ export class IModelDbRemoting {
     for (const elementId of elementIds) {
       const { error, result: elementJson } = await iModelDb.nativeDb.getElement(JSON.stringify({ id: elementId }));
       if (error)
-        return Logger.logWarningAndReject(new IModelError(error.status, error.message));
+        return Promise.reject(new IModelError(error.status, error.message, Logger.logWarning));
 
       elements.push(elementJson);
     }

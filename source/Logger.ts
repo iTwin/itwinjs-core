@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { GetMetaDataFunction, IModelError } from "./IModelError";
+import { GetMetaDataFunction } from "./IModelError";
 
 /** Defines the *signature* for a log function. */
 export type LogFunction = (message: string, metaData?: GetMetaDataFunction) => void;
@@ -25,34 +25,10 @@ export class Logger {
       Logger._logError(message, metaData);
   }
 
-  /** Log the error and then call Promise.reject passing the specified error. */
-  public static logErrorAndReject(error: IModelError): Promise<never> {
-    Logger.logError(error.toDebugString(), error.hasMetaData() ? error.getMetaData : undefined);
-    return Promise.reject(error);
-  }
-
-  /** Log the error before throwing it. */
-  public static logErrorAndThrow(error: IModelError): void {
-    Logger.logError(error.toDebugString(), error.hasMetaData() ? error.getMetaData : undefined);
-    throw error;
-  }
-
   /** Log the specified message to the **warning** stream. */
   public static logWarning(message: string, metaData?: GetMetaDataFunction): void {
     if (Logger._logWarning)
       Logger._logWarning(message, metaData);
-  }
-
-  /** Log the warning and then call Promise.reject passing the specified warning. */
-  public static logWarningAndReject(warning: IModelError): Promise<never> {
-    Logger.logWarning(warning.toDebugString(), warning.hasMetaData() ? warning.getMetaData : undefined);
-    return Promise.reject(warning);
-  }
-
-  /** Log the warning before throwing it. */
-  public static logWarningAndThrow(warning: IModelError): void {
-    Logger.logWarning(warning.toDebugString(), warning.hasMetaData() ? warning.getMetaData : undefined);
-    throw warning;
   }
 
   /** Log the specified message to the **info** stream. */

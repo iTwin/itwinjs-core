@@ -5,6 +5,7 @@
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { LogFunction } from "./Logger";
 
 /** Status codes that are used in conjunction with [[IModelError]]. */
 export const enum IModelStatus { // NOTE: values must be kept in sync with DgnDbStatus and DbResult on the DgnPlatform C++ side
@@ -93,11 +94,16 @@ export type GetMetaDataFunction = () => any;
 /** The error type thrown by this module. `IModelError` subclasses `Error` to add an `errorNumber` member. See [[IModelStatus]] for `errorNumber` values. */
 export class IModelError extends Error {
   private readonly _getMetaData: GetMetaDataFunction |  undefined;
+  public errorNumber: number;
 
-  public constructor(public readonly errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus, message?: string, getMetaData?: GetMetaDataFunction) {
+  public constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus, message?: string, log?: LogFunction, getMetaData?: GetMetaDataFunction) {
     super(message);
+    this.errorNumber = errorNumber;
     assert(errorNumber as number !== IModelStatus.Success as number);
     this._getMetaData = getMetaData;
+    this.name = this._initName();
+    if (log)
+      log(this.toString(), this._getMetaData);
   }
 
   public hasMetaData(): boolean { return this._getMetaData !== undefined; }
@@ -106,111 +112,111 @@ export class IModelError extends Error {
     return this.hasMetaData() ? this._getMetaData!() : undefined;
   }
 
-  public toDebugString(): string {
+  private _initName(): string {
     switch (this.errorNumber) {
       // IModelStatus cases
-      case IModelStatus.AlreadyLoaded: return this._appendMessage("IModelStatus.AlreadyLoaded");
-      case IModelStatus.AlreadyOpen: return this._appendMessage("IModelStatus.AlreadyOpen");
-      case IModelStatus.BadArg: return this._appendMessage("IModelStatus.BadArg");
-      case IModelStatus.BadElement: return this._appendMessage("IModelStatus.BadElement");
-      case IModelStatus.BadModel: return this._appendMessage("IModelStatus.BadModel");
-      case IModelStatus.BadRequest: return this._appendMessage("IModelStatus.BadRequest");
-      case IModelStatus.BadSchema: return this._appendMessage("IModelStatus.BadSchema");
-      case IModelStatus.CannotUndo: return this._appendMessage("IModelStatus.CannotUndo");
-      case IModelStatus.CodeNotReserved: return this._appendMessage("IModelStatus.CodeNotReserved");
-      case IModelStatus.DeletionProhibited: return this._appendMessage("IModelStatus.DeletionProhibited");
-      case IModelStatus.DuplicateCode: return this._appendMessage("IModelStatus.DuplicateCode");
-      case IModelStatus.DuplicateName: return this._appendMessage("IModelStatus.DuplicateName");
-      case IModelStatus.ElementBlockedChange: return this._appendMessage("IModelStatus.ElementBlockedChange");
-      case IModelStatus.FileAlreadyExists: return this._appendMessage("IModelStatus.FileAlreadyExists");
-      case IModelStatus.FileNotFound: return this._appendMessage("IModelStatus.FileNotFound");
-      case IModelStatus.FileNotLoaded: return this._appendMessage("IModelStatus.FileNotLoaded");
-      case IModelStatus.ForeignKeyConstraint: return this._appendMessage("IModelStatus.ForeignKeyConstraint");
-      case IModelStatus.IdExists: return this._appendMessage("IModelStatus.IdExists");
-      case IModelStatus.InDynamicTransaction: return this._appendMessage("IModelStatus.InDynamicTransaction");
-      case IModelStatus.InvalidCategory: return this._appendMessage("IModelStatus.InvalidCategory");
-      case IModelStatus.InvalidCode: return this._appendMessage("IModelStatus.InvalidCode");
-      case IModelStatus.InvalidCodeSpec: return this._appendMessage("IModelStatus.InvalidCodeSpec");
-      case IModelStatus.InvalidId: return this._appendMessage("IModelStatus.InvalidId");
-      case IModelStatus.InvalidName: return this._appendMessage("IModelStatus.InvalidName");
-      case IModelStatus.InvalidParent: return this._appendMessage("IModelStatus.InvalidParent");
-      case IModelStatus.InvalidProfileVersion: return this._appendMessage("IModelStatus.InvalidProfileVersion");
-      case IModelStatus.IsCreatingRevision: return this._appendMessage("IModelStatus.IsCreatingRevision");
-      case IModelStatus.LockNotHeld: return this._appendMessage("IModelStatus.LockNotHeld");
-      case IModelStatus.Mismatch2d3d: return this._appendMessage("IModelStatus.Mismatch2d3d");
-      case IModelStatus.MismatchGcs: return this._appendMessage("IModelStatus.MismatchGcs");
-      case IModelStatus.MissingDomain: return this._appendMessage("IModelStatus.MissingDomain");
-      case IModelStatus.MissingHandler: return this._appendMessage("IModelStatus.MissingHandler");
-      case IModelStatus.MissingId: return this._appendMessage("IModelStatus.MissingId");
-      case IModelStatus.NoGeometry: return this._appendMessage("IModelStatus.NoGeometry");
-      case IModelStatus.NoMultiTxnOperation: return this._appendMessage("IModelStatus.NoMultiTxnOperation");
-      case IModelStatus.NotDgnMarkupProject: return this._appendMessage("IModelStatus.NotDgnMarkupProject");
-      case IModelStatus.NotEnabled: return this._appendMessage("IModelStatus.NotEnabled");
-      case IModelStatus.NotFound: return this._appendMessage("IModelStatus.NotFound");
-      case IModelStatus.NotOpen: return this._appendMessage("IModelStatus.NotOpen");
-      case IModelStatus.NotOpenForWrite: return this._appendMessage("IModelStatus.NotOpenForWrite");
-      case IModelStatus.NotSameUnitBase: return this._appendMessage("IModelStatus.NotSameUnitBase");
-      case IModelStatus.NothingToRedo: return this._appendMessage("IModelStatus.NothingToRedo");
-      case IModelStatus.NothingToUndo: return this._appendMessage("IModelStatus.NothingToUndo");
-      case IModelStatus.ParentBlockedChange: return this._appendMessage("IModelStatus.ParentBlockedChange");
-      case IModelStatus.ReadError: return this._appendMessage("IModelStatus.ReadError");
-      case IModelStatus.ReadOnly: return this._appendMessage("IModelStatus.ReadOnly");
-      case IModelStatus.ReadOnlyDomain: return this._appendMessage("IModelStatus.ReadOnlyDomain");
-      case IModelStatus.RepositoryManagerError: return this._appendMessage("IModelStatus.RepositoryManagerError");
-      case IModelStatus.SQLiteError: return this._appendMessage("IModelStatus.SQLiteError");
-      case IModelStatus.TransactionActive: return this._appendMessage("IModelStatus.TransactionActive");
-      case IModelStatus.UnitsMissing: return this._appendMessage("IModelStatus.UnitsMissing");
-      case IModelStatus.UnknownFormat: return this._appendMessage("IModelStatus.UnknownFormat");
-      case IModelStatus.UpgradeFailed: return this._appendMessage("IModelStatus.UpgradeFailed");
-      case IModelStatus.ValidationFailed: return this._appendMessage("IModelStatus.ValidationFailed");
-      case IModelStatus.VersionTooNew: return this._appendMessage("IModelStatus.VersionTooNew");
-      case IModelStatus.VersionTooOld: return this._appendMessage("IModelStatus.VersionTooOld");
-      case IModelStatus.ViewNotFound: return this._appendMessage("IModelStatus.ViewNotFound");
-      case IModelStatus.WriteError: return this._appendMessage("IModelStatus.WriteError");
-      case IModelStatus.WrongClass: return this._appendMessage("IModelStatus.WrongClass");
-      case IModelStatus.WrongIModel: return this._appendMessage("IModelStatus.WrongIModel");
-      case IModelStatus.WrongDomain: return this._appendMessage("IModelStatus.WrongDomain");
-      case IModelStatus.WrongElement: return this._appendMessage("IModelStatus.WrongElement");
-      case IModelStatus.WrongHandler: return this._appendMessage("IModelStatus.WrongHandler");
-      case IModelStatus.WrongModel: return this._appendMessage("IModelStatus.WrongModel");
+      case IModelStatus.AlreadyLoaded: return "IModelStatus.AlreadyLoaded";
+      case IModelStatus.AlreadyOpen: return "IModelStatus.AlreadyOpen";
+      case IModelStatus.BadArg: return "IModelStatus.BadArg";
+      case IModelStatus.BadElement: return "IModelStatus.BadElement";
+      case IModelStatus.BadModel: return "IModelStatus.BadModel";
+      case IModelStatus.BadRequest: return "IModelStatus.BadRequest";
+      case IModelStatus.BadSchema: return "IModelStatus.BadSchema";
+      case IModelStatus.CannotUndo: return "IModelStatus.CannotUndo";
+      case IModelStatus.CodeNotReserved: return "IModelStatus.CodeNotReserved";
+      case IModelStatus.DeletionProhibited: return "IModelStatus.DeletionProhibited";
+      case IModelStatus.DuplicateCode: return "IModelStatus.DuplicateCode";
+      case IModelStatus.DuplicateName: return "IModelStatus.DuplicateName";
+      case IModelStatus.ElementBlockedChange: return "IModelStatus.ElementBlockedChange";
+      case IModelStatus.FileAlreadyExists: return "IModelStatus.FileAlreadyExists";
+      case IModelStatus.FileNotFound: return "IModelStatus.FileNotFound";
+      case IModelStatus.FileNotLoaded: return "IModelStatus.FileNotLoaded";
+      case IModelStatus.ForeignKeyConstraint: return "IModelStatus.ForeignKeyConstraint";
+      case IModelStatus.IdExists: return "IModelStatus.IdExists";
+      case IModelStatus.InDynamicTransaction: return "IModelStatus.InDynamicTransaction";
+      case IModelStatus.InvalidCategory: return "IModelStatus.InvalidCategory";
+      case IModelStatus.InvalidCode: return "IModelStatus.InvalidCode";
+      case IModelStatus.InvalidCodeSpec: return "IModelStatus.InvalidCodeSpec";
+      case IModelStatus.InvalidId: return "IModelStatus.InvalidId";
+      case IModelStatus.InvalidName: return "IModelStatus.InvalidName";
+      case IModelStatus.InvalidParent: return "IModelStatus.InvalidParent";
+      case IModelStatus.InvalidProfileVersion: return "IModelStatus.InvalidProfileVersion";
+      case IModelStatus.IsCreatingRevision: return "IModelStatus.IsCreatingRevision";
+      case IModelStatus.LockNotHeld: return "IModelStatus.LockNotHeld";
+      case IModelStatus.Mismatch2d3d: return "IModelStatus.Mismatch2d3d";
+      case IModelStatus.MismatchGcs: return "IModelStatus.MismatchGcs";
+      case IModelStatus.MissingDomain: return "IModelStatus.MissingDomain";
+      case IModelStatus.MissingHandler: return "IModelStatus.MissingHandler";
+      case IModelStatus.MissingId: return "IModelStatus.MissingId";
+      case IModelStatus.NoGeometry: return "IModelStatus.NoGeometry";
+      case IModelStatus.NoMultiTxnOperation: return "IModelStatus.NoMultiTxnOperation";
+      case IModelStatus.NotDgnMarkupProject: return "IModelStatus.NotDgnMarkupProject";
+      case IModelStatus.NotEnabled: return "IModelStatus.NotEnabled";
+      case IModelStatus.NotFound: return "IModelStatus.NotFound";
+      case IModelStatus.NotOpen: return "IModelStatus.NotOpen";
+      case IModelStatus.NotOpenForWrite: return "IModelStatus.NotOpenForWrite";
+      case IModelStatus.NotSameUnitBase: return "IModelStatus.NotSameUnitBase";
+      case IModelStatus.NothingToRedo: return "IModelStatus.NothingToRedo";
+      case IModelStatus.NothingToUndo: return "IModelStatus.NothingToUndo";
+      case IModelStatus.ParentBlockedChange: return "IModelStatus.ParentBlockedChange";
+      case IModelStatus.ReadError: return "IModelStatus.ReadError";
+      case IModelStatus.ReadOnly: return "IModelStatus.ReadOnly";
+      case IModelStatus.ReadOnlyDomain: return "IModelStatus.ReadOnlyDomain";
+      case IModelStatus.RepositoryManagerError: return "IModelStatus.RepositoryManagerError";
+      case IModelStatus.SQLiteError: return "IModelStatus.SQLiteError";
+      case IModelStatus.TransactionActive: return "IModelStatus.TransactionActive";
+      case IModelStatus.UnitsMissing: return "IModelStatus.UnitsMissing";
+      case IModelStatus.UnknownFormat: return "IModelStatus.UnknownFormat";
+      case IModelStatus.UpgradeFailed: return "IModelStatus.UpgradeFailed";
+      case IModelStatus.ValidationFailed: return "IModelStatus.ValidationFailed";
+      case IModelStatus.VersionTooNew: return "IModelStatus.VersionTooNew";
+      case IModelStatus.VersionTooOld: return "IModelStatus.VersionTooOld";
+      case IModelStatus.ViewNotFound: return "IModelStatus.ViewNotFound";
+      case IModelStatus.WriteError: return "IModelStatus.WriteError";
+      case IModelStatus.WrongClass: return "IModelStatus.WrongClass";
+      case IModelStatus.WrongIModel: return "IModelStatus.WrongIModel";
+      case IModelStatus.WrongDomain: return "IModelStatus.WrongDomain";
+      case IModelStatus.WrongElement: return "IModelStatus.WrongElement";
+      case IModelStatus.WrongHandler: return "IModelStatus.WrongHandler";
+      case IModelStatus.WrongModel: return "IModelStatus.WrongModel";
 
       // DbResult cases
-      case DbResult.BE_SQLITE_ERROR: return this._appendMessage("DbResult.BE_SQLITE_ERROR");
-      case DbResult.BE_SQLITE_INTERNAL: return this._appendMessage("DbResult.BE_SQLITE_INTERNAL");
-      case DbResult.BE_SQLITE_PERM: return this._appendMessage("DbResult.BE_SQLITE_PERM");
-      case DbResult.BE_SQLITE_ABORT: return this._appendMessage("DbResult.BE_SQLITE_ABORT");
-      case DbResult.BE_SQLITE_BUSY: return this._appendMessage("DbResult.BE_SQLITE_BUSY");
-      case DbResult.BE_SQLITE_LOCKED: return this._appendMessage("DbResult.BE_SQLITE_LOCKED");
-      case DbResult.BE_SQLITE_NOMEM: return this._appendMessage("DbResult.BE_SQLITE_NOMEM");
-      case DbResult.BE_SQLITE_READONLY: return this._appendMessage("DbResult.BE_SQLITE_READONLY");
-      case DbResult.BE_SQLITE_INTERRUPT: return this._appendMessage("DbResult.BE_SQLITE_INTERRUPT");
-      case DbResult.BE_SQLITE_IOERR: return this._appendMessage("DbResult.BE_SQLITE_IOERR");
-      case DbResult.BE_SQLITE_CORRUPT: return this._appendMessage("DbResult.BE_SQLITE_CORRUPT");
-      case DbResult.BE_SQLITE_NOTFOUND: return this._appendMessage("DbResult.BE_SQLITE_NOTFOUND");
-      case DbResult.BE_SQLITE_FULL: return this._appendMessage("DbResult.BE_SQLITE_FULL");
-      case DbResult.BE_SQLITE_CANTOPEN: return this._appendMessage("DbResult.BE_SQLITE_CANTOPEN");
-      case DbResult.BE_SQLITE_PROTOCOL: return this._appendMessage("DbResult.BE_SQLITE_PROTOCOL");
-      case DbResult.BE_SQLITE_EMPTY: return this._appendMessage("DbResult.BE_SQLITE_EMPTY");
-      case DbResult.BE_SQLITE_SCHEMA: return this._appendMessage("DbResult.BE_SQLITE_SCHEMA");
-      case DbResult.BE_SQLITE_TOOBIG: return this._appendMessage("DbResult.BE_SQLITE_TOOBIG");
-      case DbResult.BE_SQLITE_CONSTRAINT_BASE: return this._appendMessage("DbResult.BE_SQLITE_CONSTRAINT_BASE");
-      case DbResult.BE_SQLITE_MISMATCH: return this._appendMessage("DbResult.BE_SQLITE_MISMATCH");
-      case DbResult.BE_SQLITE_MISUSE: return this._appendMessage("DbResult.BE_SQLITE_MISUSE");
-      case DbResult.BE_SQLITE_NOLFS: return this._appendMessage("DbResult.BE_SQLITE_NOLFS");
-      case DbResult.BE_SQLITE_AUTH: return this._appendMessage("DbResult.BE_SQLITE_AUTH");
-      case DbResult.BE_SQLITE_FORMAT: return this._appendMessage("DbResult.BE_SQLITE_FORMAT");
-      case DbResult.BE_SQLITE_RANGE: return this._appendMessage("DbResult.BE_SQLITE_RANGE");
-      case DbResult.BE_SQLITE_NOTADB: return this._appendMessage("DbResult.BE_SQLITE_NOTADB");
+      case DbResult.BE_SQLITE_ERROR: return "DbResult.BE_SQLITE_ERROR";
+      case DbResult.BE_SQLITE_INTERNAL: return "DbResult.BE_SQLITE_INTERNAL";
+      case DbResult.BE_SQLITE_PERM: return "DbResult.BE_SQLITE_PERM";
+      case DbResult.BE_SQLITE_ABORT: return "DbResult.BE_SQLITE_ABORT";
+      case DbResult.BE_SQLITE_BUSY: return "DbResult.BE_SQLITE_BUSY";
+      case DbResult.BE_SQLITE_LOCKED: return "DbResult.BE_SQLITE_LOCKED";
+      case DbResult.BE_SQLITE_NOMEM: return "DbResult.BE_SQLITE_NOMEM";
+      case DbResult.BE_SQLITE_READONLY: return "DbResult.BE_SQLITE_READONLY";
+      case DbResult.BE_SQLITE_INTERRUPT: return "DbResult.BE_SQLITE_INTERRUPT";
+      case DbResult.BE_SQLITE_IOERR: return "DbResult.BE_SQLITE_IOERR";
+      case DbResult.BE_SQLITE_CORRUPT: return "DbResult.BE_SQLITE_CORRUPT";
+      case DbResult.BE_SQLITE_NOTFOUND: return "DbResult.BE_SQLITE_NOTFOUND";
+      case DbResult.BE_SQLITE_FULL: return "DbResult.BE_SQLITE_FULL";
+      case DbResult.BE_SQLITE_CANTOPEN: return "DbResult.BE_SQLITE_CANTOPEN";
+      case DbResult.BE_SQLITE_PROTOCOL: return "DbResult.BE_SQLITE_PROTOCOL";
+      case DbResult.BE_SQLITE_EMPTY: return "DbResult.BE_SQLITE_EMPTY";
+      case DbResult.BE_SQLITE_SCHEMA: return "DbResult.BE_SQLITE_SCHEMA";
+      case DbResult.BE_SQLITE_TOOBIG: return "DbResult.BE_SQLITE_TOOBIG";
+      case DbResult.BE_SQLITE_CONSTRAINT_BASE: return "DbResult.BE_SQLITE_CONSTRAINT_BASE";
+      case DbResult.BE_SQLITE_MISMATCH: return "DbResult.BE_SQLITE_MISMATCH";
+      case DbResult.BE_SQLITE_MISUSE: return "DbResult.BE_SQLITE_MISUSE";
+      case DbResult.BE_SQLITE_NOLFS: return "DbResult.BE_SQLITE_NOLFS";
+      case DbResult.BE_SQLITE_AUTH: return "DbResult.BE_SQLITE_AUTH";
+      case DbResult.BE_SQLITE_FORMAT: return "DbResult.BE_SQLITE_FORMAT";
+      case DbResult.BE_SQLITE_RANGE: return "DbResult.BE_SQLITE_RANGE";
+      case DbResult.BE_SQLITE_NOTADB: return "DbResult.BE_SQLITE_NOTADB";
 
       // BentleyStatus cases
-      case BentleyStatus.ERROR: return this._appendMessage("BentleyStatus.ERROR");
+      case BentleyStatus.ERROR: return "BentleyStatus.ERROR";
 
       // BriefcaseStatus
-      case BriefcaseStatus.CannotAcquire: return this._appendMessage("BriefcaseError.CannotAcquire");
-      case BriefcaseStatus.CannotDownload: return this._appendMessage("BriefcaseError.CannotDownload");
-      case BriefcaseStatus.CannotCopy: return this._appendMessage("BriefcaseError.CannotCopy");
-      case BriefcaseStatus.CannotDelete: return this._appendMessage("BriefcaseError.CannotDelete");
-      case BriefcaseStatus.VersionNotFound: return this._appendMessage("BriefcaseError.VersionNotFound");
+      case BriefcaseStatus.CannotAcquire: return "BriefcaseError.CannotAcquire";
+      case BriefcaseStatus.CannotDownload: return "BriefcaseError.CannotDownload";
+      case BriefcaseStatus.CannotCopy: return "BriefcaseError.CannotCopy";
+      case BriefcaseStatus.CannotDelete: return "BriefcaseError.CannotDelete";
+      case BriefcaseStatus.VersionNotFound: return "BriefcaseError.VersionNotFound";
 
       // Unexpected cases
       case IModelStatus.Success:
@@ -220,11 +226,7 @@ export class IModelError extends Error {
       case BentleyStatus.SUCCESS:
       default:
         assert(false); // Unknown error
-        return this._appendMessage("Error " + this.errorNumber.toString());
+        return "IModelError";
     }
-  }
-
-  private _appendMessage(e: string): string {
-    return this.message ? e + ": " + this.message : e;
   }
 }
