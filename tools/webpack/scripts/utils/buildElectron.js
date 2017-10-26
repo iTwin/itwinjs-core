@@ -10,7 +10,7 @@ function buildElectron(config) {
   try {
     compiler = webpack(config);
   } catch (err) {
-    console.log(chalk.red('Failed to compile electron/server-side backend.'));
+    console.log(chalk.red('Failed to compile backend.'));
     console.log();
     console.log(err.message || err);
     console.log();
@@ -26,9 +26,6 @@ function buildElectron(config) {
       // Reformat warnings and errors with react-dev-utils.
       const messages = formatWebpackMessages(stats.toJson({}, true));
       const isSuccessful = !messages.errors.length && !messages.warnings.length;
-      if (isSuccessful) {
-        console.log(chalk.green('Electron/server-side backend compiled successfully!'));
-      }
       
       // If errors exist, only show errors.
       if (messages.errors.length) {
@@ -37,14 +34,14 @@ function buildElectron(config) {
         if (messages.errors.length > 1) {
           messages.errors.length = 1;
         }
-        console.log(chalk.red('Failed to compile electron/server-side backend.\n'));
+        console.log(chalk.red('Failed to compile backend.\n'));
         console.log(messages.errors.join('\n\n'));
         return;
       }
       
       // Show warnings if no errors were found.
       if (messages.warnings.length) {
-        console.log(chalk.yellow('Compiled electron/server-side backend with warnings.\n'));
+        console.log(chalk.yellow('Compiled backend with warnings.\n'));
         console.log(messages.warnings.join('\n\n'));
       }
       

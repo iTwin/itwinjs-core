@@ -39,7 +39,7 @@ module.exports = {
   ],
   output: {
     // Next line is not used in dev but WebpackDevServer crashes without it:
-    path: paths.appBuild,
+    path: paths.appLib,
     // Add /* filename */ comments to generated require()s in the output.
     pathinfo: true,
     filename: 'main.js',

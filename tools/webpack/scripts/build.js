@@ -7,6 +7,14 @@
 process.env.BABEL_ENV = 'production';
 process.env.NODE_ENV = 'production';
 
+const buildTarget = getBuildTarget();
+if (!buildTarget) {
+  process.exit(1);
+}
+
+if ("electron" === buildTarget)
+  process.env.ELECTRON_ENV = 'production';
+
 // Makes the script crash on unhandled rejections instead of silently
 // ignoring them. In the future, promise rejections that are not handled will
 // terminate the Node.js process with a non-zero exit code.
@@ -28,27 +36,45 @@ const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages');
 const printHostingInstructions = require('react-dev-utils/printHostingInstructions');
 const FileSizeReporter = require('react-dev-utils/FileSizeReporter');
 
-const measureFileSizesBeforeBuild =
-  FileSizeReporter.measureFileSizesBeforeBuild;
+function getBuildTarget() {
+  if (process.argv.length < 4) {
+    console.log(chalk.red("Not enough arguments. Usage: \n"));
+    console.log(`    imodeljs-react-scripts build ${chalk.yellow("(")}${chalk.green("web")}${chalk.yellow("|")}${chalk.green("electron")}${chalk.yellow(")")}`);
+    console.log();
+    return false;
+  }
+
+  const target = process.argv[3].toLowerCase();
+  if (target === "web" || target === "electron")
+    return target;
+
+  console.log(chalk.red("Unknown target.\n"));
+  console.log(`Supported targets are: ${chalk.green("web")} or ${chalk.green("electron")}`);
+  return false;
+}
+
+
+const measureFileSizesBeforeBuild = FileSizeReporter.measureFileSizesBeforeBuild;
 const printFileSizesAfterBuild = FileSizeReporter.printFileSizesAfterBuild;
-const useYarn = fs.existsSync(paths.yarnLockFile);
 
 // These sizes are pretty large. We'll warn for bundles exceeding them.
 const WARN_AFTER_BUNDLE_GZIP_SIZE = 512 * 1024;
 const WARN_AFTER_CHUNK_GZIP_SIZE = 1024 * 1024;
 
 // Warn and crash if required files are missing
-if (!checkRequiredFiles([paths.appHtml, paths.appIndexJs])) {
+if (!checkRequiredFiles([paths.appHtml, paths.appIndexJs, paths.appMainJs])) {
   process.exit(1);
 }
 
+const frontendStartTime = Date.now();
+
 // First, read the current file sizes in build directory.
 // This lets us display how much they changed later.
-measureFileSizesBeforeBuild(paths.appBuild)
+measureFileSizesBeforeBuild(paths.appLib)
   .then(previousFileSizes => {
     // Remove all content but keep the directory so that
     // if you're in it, you don't end up in Trash
-    fs.emptyDirSync(paths.appBuild);
+    fs.emptyDirSync(paths.appLib);
     // Merge with the public folder
     copyPublicFolder();
     // Start the webpack build
@@ -77,23 +103,20 @@ measureFileSizesBeforeBuild(paths.appBuild)
       printFileSizesAfterBuild(
         stats,
         previousFileSizes,
-        paths.appBuild,
+        paths.appLib,
         WARN_AFTER_BUNDLE_GZIP_SIZE,
         WARN_AFTER_CHUNK_GZIP_SIZE
       );
       console.log();
 
-      const appPackage = require(paths.appPackageJson);
-      const publicUrl = paths.publicUrl;
-      const publicPath = config.output.publicPath;
-      const buildFolder = path.relative(process.cwd(), paths.appBuild);
-      printHostingInstructions(
-        appPackage,
-        publicUrl,
-        publicPath,
-        buildFolder,
-        useYarn
-      );
+      if (buildTarget === "web") {
+        console.log(`The project's web frontend was built assuming it is located at ${chalk.green(config.output.publicPath)}.`);
+        console.log(`This can be configured via the ${chalk.green("homepage")} field of your ${chalk.cyan("package.json")}.` + "\n");
+      }
+
+      const elapsed = Date.now() - frontendStartTime;
+      console.log(`${chalk.inverse(" FRONTEND ")} Build completed successfully in ${chalk.green(elapsed + "ms")}`);
+
     },
     err => {
       console.log(chalk.red('Failed to compile.\n'));
@@ -101,19 +124,33 @@ measureFileSizesBeforeBuild(paths.appBuild)
       process.exit(1);
     }
   )
-  .then(() => {
+  .then(async () => {
     console.log();
+    const backendStartTime = Date.now();
+    console.log(`${chalk.inverse(" BACKEND ")} Starting build...`);
     console.log();
-    console.log('Building the electron backend...');
-
+    
     const electronConfig = require('../config/webpack.config.backend');
     const buildElectron = require('./utils/buildElectron');
-    buildElectron(electronConfig);
+    await buildElectron(electronConfig);
+    
+    const elapsed = Date.now() - backendStartTime;
+    console.log();
+    console.log(`${chalk.inverse(" BACKEND ")} Build completed successfully in ${chalk.green(elapsed + "ms")}`);
+    console.log();
+
+    if (buildTarget === "web") {      
+      console.log(`The ${chalk.cyan("lib")} folder is ready to be deployed.`);
+    } else {
+      console.log(`The built electron app can now be run with ${chalk.cyan("electron lib/main.js")}.`);      
+    }
   });
 
 // Create the production build and print the deployment instructions.
 function build(previousFileSizes) {
-  console.log('Creating an optimized production build...');
+       
+  console.log(`${chalk.inverse(" FRONTEND ")} Starting build...`);
+  console.log(chalk.dim("\nCreating an optimized production build..."));
 
   let compiler = webpack(config);
   return new Promise((resolve, reject) => {
@@ -149,7 +186,7 @@ function build(previousFileSizes) {
 }
 
 function copyPublicFolder() {
-  fs.copySync(paths.appPublic, paths.appBuild, {
+  fs.copySync(paths.appPublic, paths.appLib, {
     dereference: true,
     filter: file => file !== paths.appHtml,
   });

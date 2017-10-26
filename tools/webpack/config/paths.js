@@ -13,6 +13,7 @@ const appDirectory = fs.realpathSync(process.cwd());
 const resolveApp = relativePath => path.resolve(appDirectory, relativePath);
 
 const envPublicUrl = process.env.PUBLIC_URL;
+const electronUrlProtocol = (process.env.ELECTRON_ENV === "production") ? "electron://" : null;
 
 function ensureSlash(path, needsSlash) {
   const hasSlash = path.endsWith('/');
@@ -26,7 +27,7 @@ function ensureSlash(path, needsSlash) {
 }
 
 const getPublicUrl = appPackageJson =>
-  envPublicUrl || require(appPackageJson).homepage;
+  envPublicUrl || electronUrlProtocol || require(appPackageJson).homepage;
 
 // We use `PUBLIC_URL` environment variable or "homepage" field to infer
 // "public path" at which the app is served.
@@ -44,22 +45,22 @@ function getServedPath(appPackageJson) {
 // config after eject: we're in ./config/
 module.exports = {
   dotenv: resolveApp('.env'),
-  appBuild: resolveApp('lib'),
+  appLib: resolveApp('lib'),
   appPublic: resolveApp('public'),
   appHtml: resolveApp('public/index.html'),
-  appIndexJs: resolveApp('src/index.tsx'),
+  appIndexJs: resolveApp('src/frontend/index.tsx'),
   appPackageJson: resolveApp('package.json'),
   appSrc: resolveApp('src'),
   appTest: resolveApp('test'),
   appSnapshots: resolveApp('.snapshots.js'),
-  appSrcElectron: resolveApp('src/electron'),
-  yarnLockFile: resolveApp('yarn.lock'),
+  appSrcElectron: resolveApp('src/backend/electron'),
+  yarnLockFile: resolveApp('yarn.lock'),        // STILL USED?
   testsSetup: resolveApp('src/setupTests.ts'),
   appNodeModules: resolveApp('node_modules'),
   appTsConfig: resolveApp('tsconfig.json'),
   publicUrl: getPublicUrl(resolveApp('package.json')),
   servedPath: getServedPath(resolveApp('package.json')),
-  appMainJs: resolveApp('src/main.ts'),
-  appBuiltMainJs: resolveApp('lib/main.js'),
+  appMainJs: resolveApp('src/backend/main.ts'),
+  appBuiltMainJs: resolveApp('lib/backend/main.js'),
   appJUnitTestResults: resolveApp('lib/junit_results.xml'),
 };

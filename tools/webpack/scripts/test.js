@@ -26,12 +26,12 @@ const paths = require("../config/paths");
 const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 
 // Some additional options are required for CI builds
-const reporterOptions = (!isCI) ? [ "--inline-diffs" ] : [
+const reporterOptions = (!isCI) ? [ "--inline-diffs",  "--colors" ] : [
   "--reporter", "mocha-junit-reporter",
   "--reporter-options", `mochaFile=${paths.appJUnitTestResults}`,
 ];
 
-const watchOptions = (process.argv[process.argv.length-1].toLowerCase() === "watch") ? ["--watch"] : [];
+const watchOptions = (process.argv.length > 2 && process.argv[3].toLowerCase() === "watch") ? ["--watch"] : [];
 const debugOptions = (process.argv.indexOf("--debug") >= 0) ? ["--inspect-brk=41016"] : [];
 
 // Start the tests
@@ -39,7 +39,6 @@ const args = [
   ...debugOptions,
   require.resolve("mocha-webpack/lib/cli"),
   "--webpack-config",  require.resolve("../config/webpack.config.test.js"),
-  "--colors",
   "--require", require.resolve("./utils/testSetup"),
   "--include", require.resolve("./utils/customAssertions"),
   ...watchOptions,  
