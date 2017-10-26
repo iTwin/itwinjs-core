@@ -7,15 +7,14 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Mocha Tests",
-      "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+      "name": "Mocha",
+      "program": "${workspaceFolder}/scripts/test.js",
+      "cwd": "${workspaceFolder}",
       "args": [
-        "--opts",
-        "${workspaceRoot}/test/mocha.opts",
-        "--colors"
+        "debug"
       ],
-      "protocol": "inspector",
-      "internalConsoleOptions": "openOnSessionStart"
+      "port": 9229,
+      "protocol": "inspector"
     }
   ]
 }

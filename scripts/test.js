@@ -8,6 +8,8 @@ process.env.NODE_ENV = "test";
 const isCoverage = (process.env.MOCHA_ENV === "coverage");
 const isCI = (process.env.TF_BUILD);
 
+const isDebug = (process.argv[process.argv.length-1].toLowerCase() === "debug");
+
 // Makes the script crash on unhandled rejections instead of silently
 // ignoring them. In the future, promise rejections that are not handled will
 // terminate the Node.js process with a non-zero exit code.
@@ -41,7 +43,15 @@ const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 // Needed for ts_node to honor the tsconfig at the root of the project
 process.env.TS_NODE_PROJECT = paths.appRoot;
 
+const debugOptions = (!isDebug) ? [] :
+[
+  "--inspect=9229",
+  "--debug-brk"
+]
+
 const args = [
+  ...debugOptions,
+  path.resolve(__dirname, "../node_modules/mocha/bin/_mocha"),
   ...watchOptions,
   ...reporterOptions,
   ...options,
@@ -49,7 +59,9 @@ const args = [
 ];
 
 if (isCoverage)
-  args.push(path.resolve(paths.appSrc, "**/*!(.d).ts)"));
+  args.push(path.resolve(paths.appSrc, "**/*!(.d).ts"));
 
-spawn(path.resolve(__dirname, "../node_modules/.bin/_mocha"), args).then((code) =>  process.exit(code));
+console.log(args);
+
+spawn("node", args).then((code) =>  process.exit(code));
 handleInterrupts();
