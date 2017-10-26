@@ -61,7 +61,5 @@ const args = [
 if (isCoverage)
   args.push(path.resolve(paths.appSrc, "**/*!(.d).ts"));
 
-console.log(args);
-
 spawn("node", args).then((code) =>  process.exit(code));
 handleInterrupts();
