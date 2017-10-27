@@ -155,12 +155,12 @@ export class IModelConnectionCodeSpecs {
    */
   public async getCodeSpecById(codeSpecId: Id64): Promise<CodeSpec> {
     if (!codeSpecId.isValid())
-      return Logger.logWarningAndReject(new IModelError(IModelStatus.InvalidId));
+      return Promise.reject(new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, () => ({ codeSpecId })));
 
     await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
     const found: CodeSpec | undefined = this._loaded.find((codeSpec: CodeSpec) => codeSpec.id === codeSpecId);
     if (!found)
-      return Logger.logWarningAndReject(new IModelError(IModelStatus.NotFound));
+      return Promise.reject(new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning));
 
     return found;
   }
@@ -174,7 +174,7 @@ export class IModelConnectionCodeSpecs {
     await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
     const found: CodeSpec | undefined = this._loaded.find((codeSpec: CodeSpec) => codeSpec.name === name);
     if (!found)
-      return Logger.logWarningAndReject(new IModelError(IModelStatus.NotFound));
+      return Promise.reject(new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning));
 
     return found;
   }
