@@ -639,7 +639,7 @@ describe("iModel", () => {
     ASSERT_TRUE(m_defaultCategoryId.IsValid());
   */
 
-  it.skip("ImodelJsTest.MeasureInsertPerformance", async () => {
+  it.only("ImodelJsTest.MeasureInsertPerformance", async () => {
 
     const ifperfimodel = await IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", { copyFilename: "ImodelJsTest_MeasureInsertPerformance.bim", enableTransactions: true });
 
@@ -671,8 +671,8 @@ describe("iModel", () => {
       element.pointProperty2 = pt;
       element.pointProperty3 = pt;
       element.pointProperty4 = pt;
-      const dtUtc: Date = new Date("2013-09-15 12:05:39Z");
-      element.dtUtc = dtUtc;
+      // const dtUtc: Date = new Date("2013-09-15 12:05:39Z");    // Dates are so expensive to parse in native code that this skews the performance results
+      // element.dtUtc = dtUtc;
 
       assert.isTrue((ifperfimodel.elements.insertElement(element)).isValid(), "insert worked");
       if (0 === (i % 100))
@@ -688,7 +688,7 @@ describe("iModel", () => {
       assert.equal(row.count, expectedCountAsHex);
     });
 
-  console.timeEnd("ImodelJsTest.MeasureInsertPerformance");
+    console.timeEnd("ImodelJsTest.MeasureInsertPerformance");
 
   });
 });
