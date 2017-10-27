@@ -642,7 +642,7 @@ describe("iModel", () => {
     ASSERT_TRUE(m_defaultCategoryId.IsValid());
   */
 
-  it.only("ImodelJsTest.MeasureInsertPerformance", async () => {
+  it.skip("ImodelJsTest.MeasureInsertPerformance", async () => {
 
     const ifperfimodel = await IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", { copyFilename: "ImodelJsTest_MeasureInsertPerformance.bim", enableTransactions: true });
 
