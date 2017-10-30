@@ -1,19 +1,19 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { DefinitionElement } from "./Element";
-import { ElementProps } from "../ElementProps";
-import { Appearance, SubCategoryOverride } from "./Category";
-import { ViewFlags, HiddenLine, ColorDef } from "../Render";
-import { Light, LightType } from "../Lighting";
-import { ClipVector } from "../ClipVector";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Vector3d, Vector2d, Point3d, Point2d, Range3d, RotMatrix, Transform, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { AxisOrder, Angle, Geometry } from "@bentley/geometry-core/lib/Geometry";
 import { Map4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
-import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { ClipVector } from "../common/ClipVector";
+import { ElementProps } from "../common/ElementProps";
+import { Light, LightType } from "../common/Lighting";
+import { ViewFlags, HiddenLine, ColorDef } from "../common/Render";
+import { Appearance, SubCategoryOverride } from "./Category";
+import { DefinitionElement } from "./Element";
 
 export class ViewController { }
 

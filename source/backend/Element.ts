@@ -2,9 +2,9 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
-import { Code } from "../Code";
-import { GeometryStream, Placement3d, Placement2d } from "../ElementGeometry";
-import { ElementProps, RelatedElement } from "../ElementProps";
+import { Code } from "../common/Code";
+import { GeometryStream, Placement3d, Placement2d } from "../common/ElementGeometry";
+import { ElementProps, RelatedElement } from "../common/ElementProps";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
 

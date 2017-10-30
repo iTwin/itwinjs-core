@@ -3,9 +3,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
+import { EntityProps } from "../common/EntityProps";
+import { IModel } from "../common/IModel";
 import { ClassRegistry } from "./ClassRegistry";
-import { EntityProps } from "../EntityProps";
-import { IModel } from "../IModel";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 

@@ -5,9 +5,9 @@ import { AccessToken, Briefcase, IModelHubClient, ChangeSet } from "@bentley/imo
 import { BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { BriefcaseStatus, IModelError } from "../IModelError";
-import { IModelVersion } from "../IModelVersion";
-import { IModelToken } from "../IModel";
+import { BriefcaseStatus, IModelError } from "../common/IModelError";
+import { IModelVersion } from "../common/IModelVersion";
+import { IModelToken } from "../common/IModel";
 import { IModelDb } from "./IModelDb";
 
 import * as fs from "fs";

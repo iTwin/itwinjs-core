@@ -1,10 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
 import { assert } from "chai";
-import { ViewFlags, RenderMode, ColorDef, ColorRgb } from "../Render";
-import { Light, LightProps, Spot, LightType } from "../Lighting";
+import { ViewFlags, RenderMode, ColorDef, ColorRgb } from "../common/Render";
+import { Light, LightProps, Spot, LightType } from "../common/Lighting";
 
 describe("Render", () => {
   it("ColorDef should compare properly", () => {

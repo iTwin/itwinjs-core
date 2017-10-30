@@ -1,21 +1,21 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "../frontend/IModelConnection";
+import * as fs from "fs";
+import * as path from "path";
+import { expect, assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { ChangeSet } from "@bentley/imodeljs-clients";
+import { CodeSpec, CodeSpecNames } from "../common/Code";
+import { ElementProps } from "../common/ElementProps";
+import { IModelVersion } from "../common/IModelVersion";
+import { ModelProps } from "../common/ModelProps";
 import { BriefcaseManager } from "../backend/BriefcaseManager";
-import { IModelTestUtils } from "./IModelTestUtils";
-import { expect, assert } from "chai";
 import { Category } from "../backend/Category";
-import { CodeSpec, CodeSpecNames } from "../Code";
-import { ElementProps } from "../ElementProps";
-import { IModelVersion } from "../IModelVersion";
-import { ModelProps } from "../ModelProps";
-import * as fs from "fs";
-import * as path from "path";
+import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "../frontend/IModelConnection";
+import { IModelTestUtils } from "./IModelTestUtils";
 
 declare const __dirname: string;
 

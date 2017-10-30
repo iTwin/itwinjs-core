@@ -2,11 +2,11 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { EntityProps } from "../EntityProps";
-import { IModel } from "../IModel";
+import { EntityProps } from "../common/EntityProps";
+import { IModel } from "../common/IModel";
+import { IModelError, IModelStatus } from "../common/IModelError";
 import { EntityCtor, Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
-import { IModelError, IModelStatus } from "../IModelError";
 import { Schema, Schemas } from "./Schema";
 
 /** The mapping between a class name (schema.class) and its constructor function  */

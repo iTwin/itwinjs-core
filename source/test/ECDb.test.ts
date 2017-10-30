@@ -9,7 +9,7 @@ import * as path from "path";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { ECJsonTypeMap, ECInstance } from "@bentley/bentleyjs-core/lib/ECJsonTypeMap";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { IModelError } from "../IModelError";
+import { IModelError } from "../common/IModelError";
 import { ECDb } from "../backend/ECDb";
 import { BindingValue } from "../backend/BindingUtility";
 

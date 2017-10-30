@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
+import { ModelProps } from "../common/ModelProps";
 import { Entity } from "./Entity";
-import { ModelProps } from "../ModelProps";
 
 /** A Model within an iModel */
 export class Model extends Entity implements ModelProps {

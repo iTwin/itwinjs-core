@@ -1,11 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
 import { assert } from "chai";
-import { Appearance, AppearanceProps, SubCategoryOverride } from "../backend/Category";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { ColorDef, ColorRgb } from "../Render";
+import { ColorDef, ColorRgb } from "../common/Render";
+import { Appearance, AppearanceProps, SubCategoryOverride } from "../backend/Category";
 
 describe("Category tests", () => {
 

@@ -1,29 +1,26 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
 import { assert } from "chai";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
-import { Code } from "../Code";
-import { ColorDef } from "../Render";
-import { Element, GeometricElement3d, GeometricElementProps, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../backend/Element";
-import { ElementProps } from "../ElementProps";
+import { Code } from "../common/Code";
+import { ElementProps } from "../common/ElementProps";
+import { EntityProps } from "../common/EntityProps";
+import { IModelError, IModelStatus } from "../common/IModelError";
+import { ColorDef } from "../common/Render";
 import { Entity, EntityCtor, EntityMetaData } from "../backend/Entity";
-import { EntityProps } from "../EntityProps";
 import { Model } from "../backend/Model";
 import { Category, SubCategory } from "../backend/Category";
 import { ClassRegistry } from "../backend/ClassRegistry";
-import { ModelSelector } from "../backend/ViewDefinition";
-import { IModelError, IModelStatus } from "../IModelError";
-import { IModelTestUtils } from "./IModelTestUtils";
 import { BisCore } from "../backend/BisCore";
-import { GeometricElement2d } from "../backend/Element";
-import { SpatialViewDefinition, DisplayStyle3d } from "../backend/ViewDefinition";
+import { ECSqlStatement } from "../backend/ECSqlStatement";
+import { Element, GeometricElement2d, GeometricElement3d, GeometricElementProps, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../backend/Element";
 import { ElementPropertyFormatter } from "../backend/ElementPropertyFormatter";
 import { IModelDb } from "../backend/IModelDb";
-import { ECSqlStatement } from "../backend/ECSqlStatement";
+import { DisplayStyle3d, ModelSelector, SpatialViewDefinition } from "../backend/ViewDefinition";
+import { IModelTestUtils } from "./IModelTestUtils";
 
 describe("iModel", () => {
   let imodel: IModelDb;
