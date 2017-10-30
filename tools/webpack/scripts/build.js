@@ -7,6 +7,7 @@
 process.env.BABEL_ENV = 'production';
 process.env.NODE_ENV = 'production';
 
+const chalk = require('chalk');
 const buildTarget = getBuildTarget();
 if (!buildTarget) {
   process.exit(1);
@@ -26,7 +27,6 @@ process.on('unhandledRejection', err => {
 require('../config/env');
 
 const path = require('path');
-const chalk = require('chalk');
 const fs = require('fs-extra');
 const webpack = require('webpack');
 const config = require('../config/webpack.config.prod');
