@@ -38,6 +38,7 @@ module.exports = {
     paths.appMainJs
   ],
   output: {
+    libraryTarget: "commonjs2",
     // Next line is not used in dev but WebpackDevServer crashes without it:
     path: paths.appLib,
     // Add /* filename */ comments to generated require()s in the output.
