@@ -41,7 +41,7 @@ export class Enumeration extends SchemaChild {
     super.fromJson(jsonObj);
 
     if (jsonObj.isStrict) {
-      if (typeof(jsonObj.isStrict) === "boolean")
+      if (typeof(jsonObj.isStrict) !== "boolean")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'isStrict' attribute. It should be of type 'boolean'.`);
       this.isStrict = jsonObj.isStrict;
     }

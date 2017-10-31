@@ -2,8 +2,9 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { assert, expect } from "chai";
 import { ECSchema } from "../../source/Metadata/Schema";
+import { SchemaContext } from "../../source/Context";
 import { ECObjectsError } from "../../source/Exception";
 
 describe("schema deserialization", () => {
@@ -16,7 +17,7 @@ describe("schema deserialization", () => {
       label: "This is a test label",
     });
 
-    const ecschema = ECSchema.fromObject(schemaString);
+    const ecschema = ECSchema.fromJson(schemaString);
     expect(ecschema.name).equal("TestSchema");
     expect(ecschema.readVersion).equal(1);
     expect(ecschema.writeVersion).equal(2);
@@ -34,7 +35,7 @@ describe("schema deserialization", () => {
       label: "This is a test label",
     };
 
-    const ecschema = ECSchema.fromObject(schemaJson);
+    const ecschema = ECSchema.fromJson(schemaJson);
     expect(ecschema.name).equal("TestSchema");
     expect(ecschema.readVersion).equal(1);
     expect(ecschema.writeVersion).equal(2);
@@ -50,7 +51,7 @@ describe("schema deserialization", () => {
       version: "1.100.0",
     };
 
-    expect(() => {ECSchema.fromObject(schemaJson); }).to.throw(ECObjectsError);
+    expect(() => {ECSchema.fromJson(schemaJson); }).to.throw(ECObjectsError);
   });
 
   it("should fail with invalid schema name", () => {
@@ -60,6 +61,42 @@ describe("schema deserialization", () => {
       version: "1.0.0",
     };
 
-    expect(() => {ECSchema.fromObject(schemaJson); }).to.throw(ECObjectsError);
+    expect(() => {ECSchema.fromJson(schemaJson); }).to.throw(ECObjectsError);
+  });
+
+  describe("with schema reference", () => {
+    const schemaJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+      name: "TestSchema",
+      version: "1.2.3",
+      references: [
+        {
+          name: "RefSchema",
+          version: "1.0.5",
+        },
+      ],
+    };
+
+    it("should succeed when referenced schema is already in the schema context", () => {
+      const refSchema = new ECSchema("RefSchema", 1, 0, 5);
+      const context = new SchemaContext();
+      context.addSchema(refSchema);
+
+      const schema = ECSchema.fromJson(schemaJson, context);
+      assert.exists(schema);
+
+      if (!schema.references)
+        return;
+
+      expect(schema.references.length).equal(1);
+      if (!schema.references[0])
+        assert.fail();
+      assert.isTrue(schema.references[0] === refSchema);
+    });
+
+    it("should throw if the referenced schema cannot be found", () => {
+      const context = new SchemaContext();
+      expect(() => {ECSchema.fromJson(schemaJson, context); }).to.throw(ECObjectsError);
+    });
   });
 });

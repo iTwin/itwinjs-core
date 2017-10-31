@@ -4,6 +4,8 @@
 
 import { SchemaInterface, SchemaChildInterface, ClassInterface } from "../Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { SchemaContext } from "../Context";
+import { ECVersion, SchemaKey } from "../ECObjects";
 
 /**
  * The purpose of this helper class is to properly order
@@ -13,15 +15,16 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
  * The goal of the class is to remove the implementer of a a deserializer from having to know
  * and/or worry about if they ordered something properly.
  */
-export default class DeserializationHelper {
-  // private _context?: DeserializableSchemaInterface;
-  // private _schemas: { [key: string]: DeserializableSchemaInterface; };
-  // private _thingToDeserialiaze: DeserializableSchemaInterface | DeserializableClassInterface;
+export default class SchemaReadHelper {
+  private static context: SchemaContext;
 
-  // constructor(context?: DeserializableSchemaInterface) {
-  //   this._context = context;
-  //   // this._schemas = {};
-  // }
+  constructor(context?: SchemaContext) {
+    if (context)
+      SchemaReadHelper.context = context;
+
+    if (!SchemaReadHelper.context)
+      SchemaReadHelper.context = new SchemaContext();
+  }
 
   /**
    * Populates the given schema object with the information presented in the schemaJson provided. If present, uses the provided context to resolve any references within the schema. Otherwise, those references will be unresovled.
@@ -30,18 +33,25 @@ export default class DeserializationHelper {
    * @param context TODO:
    */
   public static to<T extends SchemaInterface>(schema: T, schemaJson: object | string): T {
-    const helper = new DeserializationHelper();
+    const helper = new SchemaReadHelper();
+    return helper.readSchema(schema, schemaJson);
+  }
 
+  /**
+   *
+   * @param schema
+   * @param schemaJson
+   */
+  public readSchema<T extends SchemaInterface>(schema: T, schemaJson: object | string): T {
     const jsonObj = typeof schemaJson === "string" ? JSON.parse(schemaJson) : schemaJson;
 
     // Loads all of the properties on the SchemaInterface object
     schema.fromJson(jsonObj);
 
     // Load schema references first
-    // Need to figure out if other schemas are present. Need some sort of context? Or when there is a lack of context all references are in string form??
-    if (jsonObj.references) {
-      // TODO
-    }
+    // Need to figure out if other schemas are present.
+    if (jsonObj.references)
+      this.loadSchemaReferences(schema, jsonObj.references);
 
     // Load all schema children
     if (jsonObj.children) {
@@ -49,13 +59,40 @@ export default class DeserializationHelper {
         if (schema.getChild(childName) !== undefined)
           continue;
 
-        helper.loadSchemaChild(schema, jsonObj.children[childName], childName);
+        this.loadSchemaChild(schema, jsonObj.children[childName], childName);
       }
     }
 
     // TODO: Load CustomAttributes
 
     return schema;
+  }
+
+  private loadSchemaReferences(schema: SchemaInterface, referencesJson: any) {
+    if (!Array.isArray(referencesJson))
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The `);
+
+    referencesJson.forEach((ref) => {
+      if (!ref.name)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The`);
+
+      if (!ref.version)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+
+      const refVersion = new ECVersion();
+      refVersion.fromString(ref.version);
+
+      const schemaKey = new SchemaKey(ref.name);
+      schemaKey.readVersion = refVersion.read;
+      schemaKey.writeVersion = refVersion.write;
+      schemaKey.minorVersion = refVersion.minor;
+
+      const refSchema = SchemaReadHelper.context.locateSchema(schemaKey);
+      if (!refSchema)
+        throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the schema, ${ref.name}.${ref.version}`);
+
+      schema.addReference(refSchema);
+    });
   }
 
   /**
@@ -110,7 +147,6 @@ export default class DeserializationHelper {
         enumeration.fromJson(schemaChildJson);
         break;
     }
-
   }
 
   /**

@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
+import { SchemaKeyInterface } from "./Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 
 export const enum ECClassModifier {
@@ -129,7 +130,7 @@ export function containerTypeToString(type: CustomAttributeContainerType): strin
       str += "," + val;
   };
 
-  let containerType: string = "";
+  const containerType: string = "";
   if (testContainerTypeValue(CustomAttributeContainerType.Schema, type))
     setOrAppend(containerType, "Schema");
 
@@ -237,8 +238,16 @@ export class ECVersion {
    */
   public fromString(versionString: string): void {
     const [read, write, minor] = versionString.split(".");
+    if (!read)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The read version if missing from version string, ${versionString}`);
     this.read = +read;
+
+    if (!write)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The write version if missing from version string, ${versionString}`);
     this.write = +write;
+
+    if (!minor)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The minor version if missing from version string, ${versionString}`);
     this.minor = +minor;
   }
 }
@@ -257,4 +266,41 @@ export class ECName {
       throw new ECObjectsError(ECObjectsStatus.InvalidECName);
     this._name = name;
   }
+}
+
+/**
+ *
+ */
+export class SchemaKey implements SchemaKeyInterface {
+  private _name: ECName;
+  public version: ECVersion;
+
+  constructor(name?: string, readVersion?: number, writeVersion?: number, minorVersion?: number) {
+    if (name)
+      this.name = name;
+
+    this.version = new ECVersion(readVersion, writeVersion, minorVersion);
+  }
+
+  get name() { return this._name.name; }
+  set name(name: string) {
+    this._name = new ECName(name);
+  }
+
+  get readVersion() { return this.version.read; }
+  set readVersion(version: number) {
+    this.version.read = version;
+  }
+
+  get writeVersion() { return this.version.write; }
+  set writeVersion(version: number) {
+    this.version.write = version;
+  }
+
+  get minorVersion() { return this.version.minor; }
+  set minorVersion(version: number) {
+    this.version.minor = version;
+  }
+
+  public toString() { return `${this.name}.${this.readVersion}.${this.writeVersion}.${this.minorVersion}`; }
 }

@@ -1,13 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
-import { ECVersion, ECName, ECClassModifier } from "../ECObjects";
-import { SchemaInterface, SchemaChildInterface, SchemaKeyInterface } from "../Interfaces";
+import { ECVersion, SchemaKey, ECClassModifier } from "../ECObjects";
+import { SchemaInterface, SchemaChildInterface } from "../Interfaces";
 import { Class, MixinClass, EntityClass, StructClass, CustomAttributeClass } from "./Class";
 import { Enumeration } from "./Enumeration";
-import DeserializationHelper from "../Deserialization/Helper";
+import SchemaReadHelper from "../Deserialization/Helper";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { ICustomAttributeContainer, CustomAttributeSet } from "./CustomAttribute";
+import { SchemaContext } from "../Context";
 
 const SCHEMAURL3_1 = "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema";
 
@@ -21,6 +22,7 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
   public label?: string;
   public description?: string;
   public customAttributes?: CustomAttributeSet;
+  public references?: SchemaInterface[];
   private _children?: SchemaChildInterface[];
 
   constructor(name?: string, readVersion?: number, writeVersion?: number, minorVersion?: number) {
@@ -230,6 +232,17 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
 
   /**
    *
+   * @param refSchema
+   */
+  public addReference(refSchema: SchemaInterface): void {
+    // TODO validation of reference schema. For now just adding
+    if (!this.references)
+      this.references = [];
+    this.references.push(refSchema);
+  }
+
+  /**
+   *
    * @param jsonObj
    */
   public fromJson(jsonObj: any): void {
@@ -254,50 +267,15 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
   //// Static Methods /////
   /////////////////////////
 
-  public static fromString(jsonStr: string): ECSchema {
+  public static fromJson(jsonObj: object | string, context?: SchemaContext): ECSchema {
     let schema: ECSchema = new ECSchema();
-    schema = DeserializationHelper.to<ECSchema>(schema, jsonStr);
+
+    if (context) {
+      const reader = new SchemaReadHelper(context);
+      schema = reader.readSchema(schema, jsonObj);
+    } else
+      schema = SchemaReadHelper.to<ECSchema>(schema, jsonObj);
+
     return schema;
-  }
-
-  public static fromObject(jsonObj: any): ECSchema {
-    let schema: ECSchema = new ECSchema();
-    schema = DeserializationHelper.to<ECSchema>(schema, jsonObj);
-    return schema;
-  }
-}
-
-/**
- *
- */
-export class SchemaKey implements SchemaKeyInterface {
-  private _name: ECName;
-  public version: ECVersion;
-
-  constructor(name?: string, readVersion?: number, writeVersion?: number, minorVersion?: number) {
-    if (name)
-      this.name = name;
-    if (readVersion && writeVersion && minorVersion)
-      this.version = new ECVersion(readVersion, writeVersion, minorVersion);
-  }
-
-  get name() { return this._name.name; }
-  set name(name: string) {
-    this._name = new ECName(name);
-  }
-
-  get readVersion() { return this.version.read; }
-  set readVersion(version: number) {
-    this.version.read = version;
-  }
-
-  get writeVersion() { return this.version.write; }
-  set writeVersion(version: number) {
-    this.version.write = version;
-  }
-
-  get minorVersion() { return this.version.minor; }
-  set minorVersion(version: number) {
-    this.version.minor = version;
   }
 }

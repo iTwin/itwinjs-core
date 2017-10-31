@@ -24,7 +24,7 @@ describe("entity class", () => {
         },
       };
 
-      const ecschema = ECSchema.fromObject(schemaJson);
+      const ecschema = ECSchema.fromJson(schemaJson);
       const testClass = ecschema.getClass<Class>("testEntityClass");
       assert.isDefined(testClass);
 
@@ -58,7 +58,7 @@ describe("entity class", () => {
         },
       };
 
-      const ecschema = ECSchema.fromObject(schemaJson);
+      const ecschema = ECSchema.fromJson(schemaJson);
       assert.isDefined(ecschema);
 
       const testClass = ecschema.getClass("testClass");
@@ -99,7 +99,7 @@ describe("entity class", () => {
         },
       };
 
-      const ecschema = ECSchema.fromObject(schemaJson);
+      const ecschema = ECSchema.fromJson(schemaJson);
       assert.isDefined(ecschema);
     });
 
@@ -119,7 +119,7 @@ describe("entity class", () => {
         },
       };
 
-      const ecSchema = ECSchema.fromObject(schemaJson);
+      const ecSchema = ECSchema.fromJson(schemaJson);
       assert.isDefined(ecSchema);
 
       const testEntity = ecSchema.getClass<EntityClass>("testClass");

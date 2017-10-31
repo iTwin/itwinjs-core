@@ -99,8 +99,6 @@ export class MixinClass extends Class implements MixinInterface {
 
     if (!jsonObj.appliesTo)
       return;
-
-    
   }
 }
 

@@ -15,6 +15,8 @@ export const enum ECObjectsStatus {
   InvalidECJson = ECOBJECTS_ERROR_BASE + 6,
   InvalidContainerType = ECOBJECTS_ERROR_BASE + 7,
   InvalidEnumValue = ECOBJECTS_ERROR_BASE + 8,
+  DuplicateSchema = ECOBJECTS_ERROR_BASE + 9,
+  UnableToLocateSchema = ECOBJECTS_ERROR_BASE + 10,
 }
 
 export class ECObjectsError extends Error {
@@ -33,6 +35,8 @@ export class ECObjectsError extends Error {
       case ECObjectsStatus.InvalidECJson: return this._appendMessage("ECObjectsStatus.InvalidECJson");
       case ECObjectsStatus.InvalidContainerType: return this._appendMessage("ECObjectsStatus.InvalidContainerType");
       case ECObjectsStatus.InvalidEnumValue: return this._appendMessage("ECObjectsStatus.InvalidEnumValue");
+      case ECObjectsStatus.DuplicateSchema: return this._appendMessage("ECObjectsStatus.DuplicateSchema");
+      case ECObjectsStatus.UnableToLocateSchema: return this._appendMessage("ECObjectsStatus.UnableToLocateSchema");
       default:
         assert(false);
         return this._appendMessage("Error " + this.errorNumber.toString());

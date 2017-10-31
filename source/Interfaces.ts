@@ -9,17 +9,12 @@ export interface SchemaKeyInterface {
   version: ECVersion;
 }
 
-export interface ReferencesInterface {
-  name: string;
-  version: string;
-}
-
 export interface SchemaInterface {
   schemaKey: SchemaKeyInterface;
   alias: string;
   label?: string;
   description?: string;
-  references?: ReferencesInterface[];
+  references?: SchemaInterface[];
   children?: SchemaChildInterface[];
   getChild<T extends SchemaChildInterface>(name: string): T | undefined;
   createEntityClass(name: string): any;
@@ -29,6 +24,7 @@ export interface SchemaInterface {
   createKindOfQuantity(name: string): any;
   createEnumeration(name: string): any;
   createPropertyCategory(name: string): any;
+  addReference(refSchema: SchemaInterface): void;
   fromJson(obj: any): void;
 }
 

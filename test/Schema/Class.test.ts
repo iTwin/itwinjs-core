@@ -25,7 +25,7 @@ describe("class", () => {
         },
       };
 
-      const ecschema = ECSchema.fromObject(schemaJson);
+      const ecschema = ECSchema.fromJson(schemaJson);
       assert.isDefined(ecschema);
 
       let testClass = ecschema.getClass("testClass");
