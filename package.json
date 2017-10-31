@@ -22,7 +22,7 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bemetalsmith": "^1.7.13",
+    "@bentley/bemetalsmith": "^1.7.15",
     "@types/chai": "^4.0.4",
     "@types/fs-extra": "^4.0.3",
     "@types/mocha": "^2.2.44",
