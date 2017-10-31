@@ -4,5 +4,8 @@
   "files.exclude": {
     "node_modules": true,
     "lib": true
+  },
+  "workbench.colorCustomizations": {
+    "editor.background": "#79db8415"
   }
 }
