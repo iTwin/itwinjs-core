@@ -12,10 +12,7 @@ import { ClipVector } from "@bentley/geometry-core/lib/numerics/ClipVector";
 import { ElementProps } from "../common/ElementProps";
 import { Light, LightType } from "../common/Lighting";
 import { ViewFlags, HiddenLine, ColorDef } from "../common/Render";
-import { Appearance, SubCategoryOverride } from "./Category";
 import { DefinitionElement } from "./Element";
-
-export class ViewController { }
 
 /** The 8 corners of the NPC cube. */
 export const enum Npc {
@@ -146,11 +143,10 @@ export class Frustum {
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
 export class DisplayStyle extends DefinitionElement {
-  protected _subcategories: Map<string, Appearance>;
-  protected _subCategoryOvr: Map<string, SubCategoryOverride>;
-  public viewFlags: ViewFlags;
-
   constructor(props: ElementProps) { super(props); }
+
+  public getViewFlags(): ViewFlags { return ViewFlags.fromJSON(this.getstyle("viewflags")); }
+  public setViewFlags(flags: ViewFlags) { this.setStyle("viewflags", flags.toJSON()); }
 
   public getStyles(): any { const p = this.jsonProperties as any; if (!p.styles) p.styles = new Object(); return p.styles; }
   public getStyle(name: string): any {
@@ -247,22 +243,11 @@ export class DisplayStyle3d extends DisplayStyle {
  *  Changes are not saved unless someone calls Update on the modified copy.
  */
 export class ModelSelector extends DefinitionElement {
-  protected models: Set<string>;
-  constructor(props: ElementProps) { super(props); this.models = new Set<string>(); }
+  protected models: string[] = [];
+  constructor(props: ElementProps) { super(props); this.models = props.models; }
 
   /** Get the name of this ModelSelector */
   public getName(): string { return this.code.getValue(); }
-
-  /** Query if the specified DgnModelId is selected by this ModelSelector */
-  public containsModel(modelId: Id64): boolean { return this.models.has(modelId.toString()); }
-
-  /**  Add a model to this ModelSelector */
-  public addModel(id: Id64): void { this.models.add(id.toString()); }
-
-  /** Drop a model from this ModelSelector. Model will no longer be displayed by views that use this ModelSelector.
-   *  @returns true if the model was dropped, false if it was not previously in this ModelSelector
-   */
-  public dropModel(id: Id64): boolean { return this.models.delete(id.toString()); }
 }
 
 /** A list of Categories to be displayed in a view.
