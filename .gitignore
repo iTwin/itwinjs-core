@@ -1,2 +1,8 @@
 /node_modules
 /lib
+/source/backend/node_modules
+/source/backend/lib
+/source/frontend/node_modules
+/source/frontend/lib
+/source/test/node_modules
+/source/test/lib

@@ -1,7 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ClipPlaneSet, ClipPlaneContainment } from "@bentley/geometry-core/lib/numerics/ClipPlanes";
+import { ClipPlaneSet } from "@bentley/geometry-core/lib/numerics/ClipPlanes";
+import { ClipPlaneContainment } from "@bentley/geometry-core/lib/numerics/ClipPrimitives";
 import { Point2d, Point3d, Transform } from "@bentley/geometry-core/lib/PointVector";
 
 /** a clipping volume comprised of a ClipPlaneSet */
@@ -31,7 +32,7 @@ export class ClipPrimitive {
     if (typeof (json.planes) !== "undefined")
       return new ClipPrimitive(ClipPlaneSet.fromJSON(json.planes), !!json.planes.invisible);
 
-    return new ClipPrimitive(new ClipPlaneSet());
+    return new ClipPrimitive(ClipPlaneSet.createEmpty());
   }
 
   public classifyPointContainment(points: Point3d[], ignoreMasks: boolean): ClipPlaneContainment {
