@@ -11,4 +11,8 @@
     "source/test/node_modules": true,
     "source/test/lib": true
   }
+  // ,
+  // "workbench.colorCustomizations": {
+  //   "editor.background": "#79db8415"
+  // }
 }

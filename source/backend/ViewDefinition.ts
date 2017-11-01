@@ -8,7 +8,7 @@ import { Vector3d, Vector2d, Point3d, Point2d, Range3d, RotMatrix, Transform, Ya
 import { AxisOrder, Angle, Geometry } from "@bentley/geometry-core/lib/Geometry";
 import { Map4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
-import { ClipVector } from "../common/ClipVector";
+import { ClipVector } from "@bentley/geometry-core/lib/numerics/ClipVector";
 import { ElementProps } from "../common/ElementProps";
 import { Light, LightType } from "../common/Lighting";
 import { ViewFlags, HiddenLine, ColorDef } from "../common/Render";
