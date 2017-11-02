@@ -161,7 +161,7 @@ export class ElementState implements ElementProps {
     this.parent = RelatedElement.fromJSON(props.parent);
     this.federationGuid = Guid.fromJson(props.federationGuid);
     this.userLabel = props.userLabel;
-    this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
+    this.jsonProperties = !props.jsonProperties ? {} : JSON.parse(JSON.stringify(props.jsonProperties)); // make sure we have our own copy
   }
 
   public toJSON(): any {
@@ -355,7 +355,7 @@ export interface ModelSelectorProps extends ElementProps {
 
 /** A list of GeometricModels for a SpatialViewDefinition. */
 export class ModelSelectorState extends ElementState {
-  public readonly models: Set<string>;
+  public readonly models: Set<string> = new Set<string>();
   constructor(props: ModelSelectorProps) {
     super(props);
     props.models.forEach((model) => this.models.add(model));
@@ -371,6 +371,8 @@ export class ModelSelectorState extends ElementState {
     return val;
   }
 
+  public addModel(id: Id64) { this.models.add(id.toString()); }
+  public dropModel(id: Id64): boolean { return this.models.delete(id.toString()); }
   public containsModel(modelId: Id64): boolean { return this.models.has(modelId.toString()); }
 }
 
@@ -381,7 +383,7 @@ export interface CategorySelectorProps extends ElementProps {
 
 /** A list of Categories to be displayed in a view. */
 export class CategorySelectorState extends ElementState {
-  public categories: Set<string>;
+  public categories: Set<string> = new Set<string>();
   constructor(props: CategorySelectorProps) {
     super(props);
     props.categories.forEach((cat) => this.categories.add(cat));
@@ -654,7 +656,7 @@ export abstract class ViewState extends ElementState {
   /** Get the unit vector that points in the view X (left-to-right) direction. */
   public getXVector(): Vector3d { return this.getRotation().getRow(0); }
 
-  /**  Get the unit vector that points in the view Y (bottom-to-top) direction. */
+  /** Get the unit vector that points in the view Y (bottom-to-top) direction. */
   public getYVector(): Vector3d { return this.getRotation().getRow(1); }
 
   /** Get the unit vector that points in the view Z (front-to-back) direction. */
@@ -708,8 +710,8 @@ export abstract class ViewState extends ElementState {
    * @param worldVolume The new volume, in world-coordinates, for the view. The resulting view will show all of worldVolume, by fitting a
    * view-axis-aligned bounding box around it. For views that are not aligned with the world coordinate system, this will sometimes
    * result in a much larger volume than worldVolume.
-   * @param aspectRatio The X/Y aspect ratio of the view into which the result will be displayed. If the aspect ratio of the volume does not
-   * match aspectRatio, the shorter axis is lengthened and the volume is centered. If aspectRatio is undefined, no adjustment is made.
+   * @param aspect The X/Y aspect ratio of the view into which the result will be displayed. If the aspect ratio of the volume does not
+   * match aspect, the shorter axis is lengthened and the volume is centered. If aspect is undefined, no adjustment is made.
    * @param margin The amount of "white space" to leave around the view volume (which essentially increases the volume
    * of space shown in the view.) If undefined, no additional white space is added.
    * @note, for 2d views, only the X and Y values of volume are used.
@@ -720,9 +722,17 @@ export abstract class ViewState extends ElementState {
     return this.lookAtViewAlignedVolume(Range3d.createArray(rangeBox), aspect, margin);
   }
 
+  /**
+   * look at a volume of space defined by a range in view local coordinates, keeping its current rotation.
+   * @param volume The new volume, in view-coordinates, for the view. The resulting view will show all of volume.
+   * @param aspect The X/Y aspect ratio of the view into which the result will be displayed. If the aspect ratio of the volume does not
+   * match aspect, the shorter axis is lengthened and the volume is centered. If aspect is undefined, no adjustment is made.
+   * @param margin The amount of "white space" to leave around the view volume (which essentially increases the volume
+   * of space shown in the view.) If undefined, no additional white space is added.
+   * @see lookAtVolume
+   */
   public lookAtViewAlignedVolume(volume: Range3d, aspect?: number, margin?: MarginPercent) {
-    const viewRot = this.getRotation().clone();
-
+    const viewRot = this.getRotation();
     const newOrigin = volume.low.clone();
     let newDelta = Vector3d.createStartEnd(volume.high, volume.low);
 

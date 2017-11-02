@@ -14,6 +14,7 @@ export class RelatedElement {
   }
 }
 
+/** The properties that define an Element */
 export interface ElementProps extends EntityProps {
   model: Id64 | string;
   code: CodeProps;

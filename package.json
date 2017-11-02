@@ -27,11 +27,11 @@
   "dependencies": {
     "@bentley/bentleyjs-core": "^1.0.33",
     "@bentley/geometry-core": "^1.0.11",
-    "@bentley/imodeljs-clients": "^1.0.20",
+    "@bentley/imodeljs-clients": "^1.0.21",
     "js-base64": "^2.3.2"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "^1.0.44",
+    "@bentley/bentleyjs-tools": "^1.0.45",
     "@types/chai": "^4.0.4",
     "@types/fs-extra": "^4.0.3",
     "@types/js-base64": "^2.3.0",
@@ -53,6 +53,6 @@
     "semver": "^5.4.1",
     "string-width": "^2.1.1",
     "tslint": "^5.8.0",
-    "typescript": "^2.5.3"
+    "typescript": "^2.6.1"
   }
 }
