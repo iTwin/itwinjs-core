@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "es2017", /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', or 'ESNEXT'. */
+    "module": "commonjs", /* Specify module code generation: 'commonjs', 'amd', 'system', 'umd' or 'es2015'. */
+    "declaration": true, /* Generates corresponding '.d.ts' file. */
+    "strict": true, /* Enable all strict type-checking options. */
+    "noImplicitAny": true, /* Raise error on expressions and declarations with an implied 'any' type. */
+    "strictNullChecks": true, /* Enable strict null checks. */
+    "noImplicitThis": true, /* Raise error on 'this' expressions with an implied 'any' type. */
+    "alwaysStrict": true, /* Parse in strict mode and emit "use strict" for each source file. */
+    "noUnusedLocals": true, /* Report errors on unused locals. */
+    "noUnusedParameters": true, /* Report errors on unused parameters. */
+    "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
+    "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
+    "baseUrl": "./node_modules/", /* Base directory to resolve non-absolute module names. */
+    "paths": {
+      "*": [
+        "@types/*",
+        "*"
+      ]
+    },
+    "experimentalDecorators": true /* Enables experimental support for ES7 decorators. */
+  },
+  "include": [
+    "../common/*.ts",
+    "../backend/*.ts",
+    "../middle/*.ts",
+    "../frontend/*.ts",
+    "./*.ts"
+  ],
+  "exclude": [
+    "lib",
+    "node_modules"
+  ]
+}

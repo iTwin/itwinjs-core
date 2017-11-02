@@ -1,0 +1,29 @@
+{
+  "name": "@bentley/imodeljs-frontend",
+  "version": "0.0.1",
+  "description": "iModelJs frontend components",
+  "license": "UNLICENSED",
+  "scripts": {
+    "clean": "rimraf lib/*",
+    "compile": "tsc --outDir ./lib",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "dependencies": {
+    "@bentley/bentleyjs-core": "^1.0.33",
+    "@bentley/geometry-core": "^1.0.10",
+    "js-base64": "^2.3.2"
+  },
+  "devDependencies": {
+    "@types/js-base64": "^2.3.0",
+    "rimraf": "^2.6.2"
+  }
+}

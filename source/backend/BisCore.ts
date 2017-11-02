@@ -4,6 +4,8 @@
 import { Schema, Schemas } from "./Schema";
 import { ClassRegistry } from "./ClassRegistry";
 
+declare var require: any;
+
 /** Represents the BisCore schema.
  * ``` ts
  * [[include:BisCore1.sampleCode]]

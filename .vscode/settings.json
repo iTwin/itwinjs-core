@@ -3,7 +3,13 @@
   "editor.tabSize": 2,
   "files.exclude": {
     "node_modules": true,
-    "lib": true
+    "lib": true,
+    "source/backend/node_modules": true,
+    "source/backend/lib": true,
+    "source/frontend/node_modules": true,
+    "source/frontend/lib": true,
+    "source/test/node_modules": true,
+    "source/test/lib": true
   }
   // ,
   // "workbench.colorCustomizations": {
