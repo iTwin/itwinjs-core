@@ -1,20 +1,19 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
+import * as fs from "fs-extra";
 import { assert } from "chai";
+import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
+import { ConnectClient, Project, IModelHubClient, Briefcase } from "@bentley/imodeljs-clients";
+import { Code } from "../common/Code";
+import { IModelError, IModelStatus } from "../common/IModelError";
 import { Element } from "../backend/Element";
 import { Model } from "../backend/Model";
 import { IModelDb } from "../backend/IModelDb";
 import { SpatialCategory, DrawingCategory } from "../backend/Category";
-import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
-import { ConnectClient, Project, IModelHubClient, Briefcase} from "@bentley/imodeljs-clients";
-import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { Code } from "../Code";
-import { IModelError, IModelStatus } from "../IModelError";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
-import * as fs from "fs-extra";
 
 declare const __dirname: string;
 

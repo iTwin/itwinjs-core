@@ -28,7 +28,7 @@ export class ElementAlignedBox3d extends Range3d {
     return !this.isNull() && lo.x > -max && lo.y > -max && lo.z > -max && hi.x < max && hi.y < max && hi.z < max;
   }
   public static fromJSON(json?: any): ElementAlignedBox3d {
-    if (json === undefined)
+    if (!json)
       return new ElementAlignedBox3d();
     return new ElementAlignedBox3d(Point3d.fromJSON(json.low), Point3d.fromJSON(json.high));
   }
@@ -37,7 +37,7 @@ export class ElementAlignedBox3d extends Range3d {
 /** A bounding box aligned to the orientation of a 2d Element */
 export class ElementAlignedBox2d extends Range2d {
   public constructor(low?: Point2d, high?: Point2d) {
-    if (low === undefined || high === undefined)
+    if (!low || !high)
       super(); // defines an empty box
     else
       super(low.x, low.y, high.x, high.y);
@@ -49,7 +49,7 @@ export class ElementAlignedBox2d extends Range2d {
   public get width(): number { return this.xLength(); }
   public get depth(): number { return this.yLength(); }
   public static fromJSON(json?: any): ElementAlignedBox2d {
-    if (json === undefined)
+    if (!json)
       return new ElementAlignedBox2d();
     return new ElementAlignedBox2d(Point2d.fromJSON(json.low), Point2d.fromJSON(json.high));
   }

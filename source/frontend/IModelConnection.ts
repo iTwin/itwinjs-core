@@ -4,14 +4,14 @@
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { CodeSpec } from "../Code";
-import { ElementProps } from "../ElementProps";
-import { EntityQueryParams } from "../EntityProps";
-import { IModel, IModelToken } from "../IModel";
-import { IModelError, IModelStatus } from "../IModelError";
-import { IModelVersion } from "../IModelVersion";
-import { Logger } from "../Logger";
-import { ModelProps } from "../ModelProps";
+import { CodeSpec } from "../common/Code";
+import { ElementProps } from "../common/ElementProps";
+import { EntityQueryParams } from "../common/EntityProps";
+import { IModel, IModelToken } from "../common/IModel";
+import { IModelError, IModelStatus } from "../common/IModelError";
+import { IModelVersion } from "../common/IModelVersion";
+import { Logger } from "../common/Logger";
+import { ModelProps } from "../common/ModelProps";
 
 // Initialize the frontend side of remoting
 import { IModelDbRemoting } from "../middle/IModelDbRemoting";

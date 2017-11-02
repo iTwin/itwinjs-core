@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { Code } from "../Code";
+import { Code } from "../common/Code";
 import { EntityMetaData } from "../backend/Entity";
 import { IModelDb } from "../backend/IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";

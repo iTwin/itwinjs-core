@@ -14,7 +14,7 @@ gulp.task("grep", ["grepCommon", "grepFrontend", "grepMiddle", "grepBackend"], (
 });
 
 gulp.task("grepCommon", () => {
-  return gulp.src("source/*.ts").pipe(grepFail(["/frontend/", "/middle/", "/backend/"]));
+  return gulp.src("source/common/**/*.ts").pipe(grepFail(["/frontend/", "/middle/", "/backend/"]));
 });
 
 gulp.task("grepFrontend", () => {

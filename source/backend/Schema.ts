@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
-import { IModel } from "../IModel";
+import { IModel } from "../common/IModel";
 import { EntityCtor } from "./Entity";
 import { ClassRegistry } from "./ClassRegistry";
 

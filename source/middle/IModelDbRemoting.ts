@@ -4,11 +4,11 @@
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { MultiTierExecutionHost, RunsIn, Tier } from "@bentley/bentleyjs-core/lib/tiering";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { EntityQueryParams } from "../EntityProps";
-import { IModelError } from "../IModelError";
-import { IModelToken } from "../IModel";
-import { IModelVersion } from "../IModelVersion";
-import { Logger } from "../Logger";
+import { EntityQueryParams } from "../common/EntityProps";
+import { IModelError } from "../common/IModelError";
+import { IModelToken } from "../common/IModel";
+import { IModelVersion } from "../common/IModelVersion";
+import { Logger } from "../common/Logger";
 import { Element } from "../backend/Element";
 import { EntityMetaData } from "../backend/Entity";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
@@ -51,7 +51,7 @@ export class IModelDbRemoting {
   public static async executeQuery(iModelToken: IModelToken, sql: string, bindings?: any): Promise<any[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const rows: any[] = await iModelDb.executeQuery(sql, bindings);
-    Logger.logInfo("IModelDbRemoting.executeQuery", () => ({ sql, numNows: rows.length }));
+    Logger.logInfo("IModelDbRemoting.executeQuery", () => ({ sql, numRows: rows.length }));
     return rows;
   }
 

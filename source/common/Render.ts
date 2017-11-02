@@ -511,16 +511,30 @@ export const enum LinePixels {
 export namespace HiddenLine {
 
   export class Style {
-    constructor(public ovrColor: boolean, public color: ColorDef, public pattern: LinePixels, public width: number) { }
+    public ovrColor: boolean;
+    public color: ColorDef;
+    public pattern: LinePixels;
+    public width: number;
+    public constructor(json: any) {
+      this.ovrColor = JsonUtils.asBool(json.ovrColor);
+      this.color = ColorDef.fromJSON(json.color);
+      this.pattern = JsonUtils.asInt(json.pattern, LinePixels.Solid);
+      this.width = JsonUtils.asInt(json.width);
+    }
     public equals(rhs: Style): boolean {
       return this.ovrColor === rhs.ovrColor && this.color === rhs.color && this.pattern === rhs.pattern && this.width === rhs.width;
     }
   }
 
   export class Params {
-    public visible: Style = new Style(false, new ColorDef(), LinePixels.Solid, 1);
-    public hidden: Style = new Style(false, new ColorDef(), LinePixels.HiddenLine, 1);
+    public visible: Style;
+    public hidden: Style;
     public transparencyThreshold: number = 1.0;
     public equals(rhs: Params): boolean { return this.visible === rhs.visible && this.hidden === rhs.hidden && this.transparencyThreshold === rhs.transparencyThreshold; }
+    public constructor(json: any) {
+      this.visible = new HiddenLine.Style(json.visible);
+      this.hidden = new HiddenLine.Style(json.hidden);
+      this.transparencyThreshold = JsonUtils.asDouble(json.transparencyThreshold, 1.0);
+    }
   }
 }

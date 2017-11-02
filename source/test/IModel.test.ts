@@ -1,29 +1,26 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
 import { assert } from "chai";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
-import { Code } from "../Code";
-import { ColorDef } from "../Render";
-import { Element, GeometricElement3d, GeometricElementProps, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../backend/Element";
-import { ElementProps } from "../ElementProps";
+import { Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
+import { Code } from "../common/Code";
+import { EntityProps } from "../common/EntityProps";
+import { DisplayStyle3dState, ModelSelectorState, ModelSelectorProps } from "../common/ViewState";
+import { IModelError, IModelStatus } from "../common/IModelError";
+import { ColorDef } from "../common/Render";
 import { Entity, EntityCtor, EntityMetaData } from "../backend/Entity";
-import { EntityProps } from "../EntityProps";
 import { Model } from "../backend/Model";
 import { Category, SubCategory } from "../backend/Category";
 import { ClassRegistry } from "../backend/ClassRegistry";
-import { ModelSelector } from "../backend/ViewDefinition";
-import { IModelError, IModelStatus } from "../IModelError";
-import { IModelTestUtils } from "./IModelTestUtils";
 import { BisCore } from "../backend/BisCore";
-import { GeometricElement2d } from "../backend/Element";
-import { SpatialViewDefinition, DisplayStyle3d } from "../backend/ViewDefinition";
+import { ECSqlStatement } from "../backend/ECSqlStatement";
+import { Element, GeometricElement2d, GeometricElement3d, GeometricElementProps, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../backend/Element";
 import { ElementPropertyFormatter } from "../backend/ElementPropertyFormatter";
 import { IModelDb } from "../backend/IModelDb";
-import { ECSqlStatement } from "../backend/ECSqlStatement";
+import { DisplayStyle3d, ModelSelector, SpatialViewDefinition } from "../backend/ViewDefinition";
+import { IModelTestUtils } from "./IModelTestUtils";
 
 describe("iModel", () => {
   let imodel: IModelDb;
@@ -228,23 +225,27 @@ describe("iModel", () => {
   });
 
   it("Model Selectors should hold models", async () => {
-    const props: ElementProps = {
+    const props: ModelSelectorProps = {
       iModel: imodel,
       classFullName: BisCore.name + ":" + ModelSelector.name,
       model: new Id64([1, 1]),
       code: Code.createEmpty(),
       id: new Id64(),
+      models: ["0X001"],
     };
 
-    const entity = imodel.constructEntity(props);
-    assert.isTrue(entity instanceof ModelSelector);
-    const selector1 = entity as ModelSelector;
-    assert.exists(selector1);
-    if (selector1) {
-      selector1.addModel(new Id64([2, 1]));
-      selector1.addModel(new Id64([2, 1]));
-      selector1.addModel(new Id64([2, 3]));
-    }
+    const selector = new ModelSelectorState(props);
+    selector.addModel(new Id64([2, 1]));
+    selector.addModel(new Id64([2, 1]));
+    selector.addModel(new Id64([2, 3]));
+    assert.equal(selector.models.size, 3);
+    const out = selector.toJSON();
+    assert.isArray(out.models);
+    assert.equal(out.models.length, 3);
+    out.iModel = imodel;
+    const sel2 = imodel.constructEntity(out);
+    assert.instanceOf(sel2, ModelSelector);
+    assert.equal(sel2.models.length, 3);
   });
 
   it("should produce an array of rows", async () => {
@@ -282,23 +283,24 @@ describe("iModel", () => {
       if (!(view instanceof SpatialViewDefinition))
         continue;
       assert.isTrue(view.code.value === "A Views - View 1", "Code value is A Views - View 1");
-      assert.isTrue(view.getDisplayStyleId().getLow() === 0x36, "Display Style Id is 0x36");
-      assert.isTrue(view.getCategorySelectorId().getLow() === 0x37, "Category Id is 0x37");
+      assert.isTrue(view.displayStyleId.getLow() === 0x36, "Display Style Id is 0x36");
+      assert.isTrue(view.categorySelectorId.getLow() === 0x37, "Category Id is 0x37");
       assert.isFalse(view.cameraOn, "The camera is not turned on");
       assert.isTrue(view.extents.isAlmostEqual(new Vector3d(429.6229727570776, 232.24786876266097, 0.1017680889917761)), "View extents as expected");
       assert.isTrue(view.origin.isAlmostEqual(new Point3d(-87.73958171815832, -108.96514044887601, -0.0853709702222105)), "View origin as expected");
-      assert.isTrue(view.rotation.isAlmostEqual(RotMatrix.identity), "View rotation is identity");
+      assert.isTrue(view.angles.isAlmostEqual(new YawPitchRollAngles()), "View rotation is identity");
       assert.isTrue(view.jsonProperties.viewDetails.gridOrient === 0, "Grid orientation as expected");
       assert.isTrue(view.jsonProperties.viewDetails.gridSpaceX === 0.001, "GridSpaceX as expected");
 
       // get the display style element
-      const displayStyle = await imodel.elements.getElement(view.getDisplayStyleId());
+      const displayStyle = await imodel.elements.getElement(view.displayStyleId);
       assert.isTrue(displayStyle instanceof DisplayStyle3d, "The Display Style should be a DisplayStyle3d");
       if (!(displayStyle instanceof DisplayStyle3d))
         continue;
-      const bgColorDef: ColorDef = displayStyle.getBackgroundColor();
+      const state = new DisplayStyle3dState(displayStyle);
+      const bgColorDef: ColorDef = state.backgroundColor;
       assert.isTrue(bgColorDef.tbgr === 0, "The background as expected");
-      const sceneBrightness: number = displayStyle.getSceneBrightness();
+      const sceneBrightness: number = state.getSceneBrightness();
       assert.isTrue(sceneBrightness === 0);
     }
   });
