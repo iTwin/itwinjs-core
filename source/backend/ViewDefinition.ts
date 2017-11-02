@@ -6,7 +6,7 @@ import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Vector3d, Point3d, Point2d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { ElementProps } from "../common/ElementProps";
-import { Camera, ViewDefinitionProps, ViewDefinition3dProps, ViewDefinition2dProps, SpatialViewDefinitionProps, ModelSelectorProps } from "../common/ViewState";
+import { Camera, ViewDefinitionProps, ViewDefinition3dProps, ViewDefinition2dProps, SpatialViewDefinitionProps, ModelSelectorProps, CategorySelectorProps } from "../common/ViewState";
 import { DefinitionElement } from "./Element";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
@@ -27,13 +27,23 @@ export class DisplayStyle3d extends DisplayStyle {
 /** A list of GeometricModels for a SpatialViewDefinition. */
 export class ModelSelector extends DefinitionElement implements ModelSelectorProps {
   public models: string[];
-  constructor(props: ElementProps) { super(props); this.models = props.models; }
+  constructor(props: ModelSelectorProps) { super(props); this.models = props.models; }
+  public toJSON(): ModelSelectorProps {
+    const val = super.toJSON() as ModelSelectorProps;
+    val.models = this.models;
+    return val;
+  }
 }
 
 /** A list of Categories to be displayed in a view. */
-export class CategorySelector extends DefinitionElement {
-  protected categories: string[];
-  constructor(props: ElementProps) { super(props); this.categories = props.categories; }
+export class CategorySelector extends DefinitionElement implements CategorySelectorProps {
+  public categories: string[];
+  constructor(props: CategorySelectorProps) { super(props); this.categories = props.categories; }
+  public toJSON(): CategorySelectorProps {
+    const val = super.toJSON() as CategorySelectorProps;
+    val.categories = this.categories;
+    return val;
+  }
 }
 
 /**
@@ -48,10 +58,11 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
     this.categorySelectorId = new Id64(props.categorySelectorId);
     this.displayStyleId = new Id64(props.displayStyleId);
   }
-  public toJSON(): any {
-    const json = super.toJSON();
+  public toJSON(): ViewDefinitionProps {
+    const json = super.toJSON() as ViewDefinitionProps;
     json.categorySelectorId = this.categorySelectorId;
     json.displayStyleId = this.displayStyleId;
+    return json;
   }
 
   public isView3d(): this is ViewDefinition3d { return this instanceof ViewDefinition3d; }
@@ -76,7 +87,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
   }
 
   public toJSON(): ViewDefinition3dProps {
-    const val = super.toJSON();
+    const val = super.toJSON() as ViewDefinition3dProps;
     val.cameraOn = this.cameraOn;
     val.origin = this.origin;
     val.extents = this.extents;
@@ -93,9 +104,10 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
 export class SpatialViewDefinition extends ViewDefinition3d implements SpatialViewDefinitionProps {
   public modelSelectorId: Id64;
   constructor(props: SpatialViewDefinitionProps) { super(props); this.modelSelectorId = new Id64(props.modelSelectorId); }
-  public toJSON(): any {
-    const json = super.toJSON();
+  public toJSON(): SpatialViewDefinitionProps {
+    const json = super.toJSON() as SpatialViewDefinitionProps;
     json.modelSelectorId = this.modelSelectorId;
+    return json;
   }
 }
 
@@ -119,7 +131,7 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
     this.angle = Angle.fromJSON(props.angle);
   }
   public toJSON(): ViewDefinition2dProps {
-    const val = super.toJSON();
+    const val = super.toJSON() as ViewDefinition2dProps;
     val.baseModelId = this.baseModelId;
     val.origin = this.origin;
     val.delta = this.delta;

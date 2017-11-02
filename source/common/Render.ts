@@ -37,7 +37,7 @@ export class ViewFlags {
   public hLineMaterialColors: boolean = false;  // use material colors for hidden lines
   public edgeMask: number = 0;                  // 0=none, 1=generate mask, 2=use mask
 
-  public toJSON(): object {
+  public toJSON(): any {
     const out: any = {};
 
     if (!this.constructions) out.noConstruct = true;
@@ -104,8 +104,8 @@ export class ViewFlags {
   }
 }
 
-const scratchBytes: Uint8Array = new Uint8Array(4);
-const scratchUInt32: Uint32Array = new Uint32Array(scratchBytes.buffer);
+const scratchBytes = new Uint8Array(4);
+const scratchUInt32 = new Uint32Array(scratchBytes.buffer);
 
 // tslint:disable-next-line:variable-name
 export const ColorRgb: any = {

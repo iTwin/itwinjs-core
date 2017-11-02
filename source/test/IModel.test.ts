@@ -7,9 +7,8 @@ import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { Code } from "../common/Code";
 import { EntityProps } from "../common/EntityProps";
-import { DisplayStyle3dState, ModelSelectorState, ModelSelectorProps } from "../common/ViewState";
+import { DisplayStyle3dState, ModelSelectorState, ModelSelectorProps, SpatialViewState, CategorySelectorState } from "../common/ViewState";
 import { IModelError, IModelStatus } from "../common/IModelError";
-import { ColorDef } from "../common/Render";
 import { Entity, EntityCtor, EntityMetaData } from "../backend/Entity";
 import { Model } from "../backend/Model";
 import { Category, SubCategory } from "../backend/Category";
@@ -19,7 +18,7 @@ import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { Element, GeometricElement2d, GeometricElement3d, GeometricElementProps, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../backend/Element";
 import { ElementPropertyFormatter } from "../backend/ElementPropertyFormatter";
 import { IModelDb } from "../backend/IModelDb";
-import { DisplayStyle3d, ModelSelector, SpatialViewDefinition } from "../backend/ViewDefinition";
+import { DisplayStyle3d, ModelSelector, CategorySelector, SpatialViewDefinition } from "../backend/ViewDefinition";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 describe("iModel", () => {
@@ -271,17 +270,13 @@ describe("iModel", () => {
     // assert.isArray(item.properties);
   });
 
-  it("should be at least one view element", async () => {
+  it.only("should be at least one view element", async () => {
     const viewRows: any[] = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + SpatialViewDefinition.sqlName);
     assert.exists(viewRows, "Should find some views");
     for (const viewRow of viewRows!) {
       const viewId = new Id64(viewRow.elementId);
-      const view = await imodel.elements.getElement(viewId);
+      const view = await imodel.elements.getElement(viewId) as SpatialViewDefinition;
       assert.isTrue(view instanceof SpatialViewDefinition, "Should be instance of SpatialViewDefinition");
-      if (!view)
-        continue;
-      if (!(view instanceof SpatialViewDefinition))
-        continue;
       assert.isTrue(view.code.value === "A Views - View 1", "Code value is A Views - View 1");
       assert.isTrue(view.displayStyleId.getLow() === 0x36, "Display Style Id is 0x36");
       assert.isTrue(view.categorySelectorId.getLow() === 0x37, "Category Id is 0x37");
@@ -295,13 +290,17 @@ describe("iModel", () => {
       // get the display style element
       const displayStyle = await imodel.elements.getElement(view.displayStyleId);
       assert.isTrue(displayStyle instanceof DisplayStyle3d, "The Display Style should be a DisplayStyle3d");
-      if (!(displayStyle instanceof DisplayStyle3d))
-        continue;
-      const state = new DisplayStyle3dState(displayStyle);
-      const bgColorDef: ColorDef = state.backgroundColor;
+      const dispStyleState = new DisplayStyle3dState(displayStyle.toJSON());
+      const bgColorDef = dispStyleState.backgroundColor;
       assert.isTrue(bgColorDef.tbgr === 0, "The background as expected");
-      const sceneBrightness: number = state.getSceneBrightness();
-      assert.isTrue(sceneBrightness === 0);
+      const sceneBrightness: number = dispStyleState.getSceneBrightness();
+      assert.equal(sceneBrightness, 0);
+
+      const categories = await imodel.elements.getElement(view.categorySelectorId) as CategorySelector;
+      const modelSel = await imodel.elements.getElement(view.modelSelectorId) as ModelSelector;
+
+      const viewState = new SpatialViewState(view.toJSON(), new CategorySelectorState(categories.toJSON()), dispStyleState, new ModelSelectorState(modelSel.toJSON()));
+      assert.isDefined(viewState.displayStyle);
     }
   });
 

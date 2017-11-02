@@ -66,8 +66,8 @@ export class Appearance {
       this.transparency === other.transparency;
   }
 
-  public toJSON(): any {
-    const val: any = {};
+  public toJSON(): AppearanceProps {
+    const val = {} as AppearanceProps;
     if (this.invisible) val.invisible = true;
     if (this.dontPlot) val.dontPlot = true;
     if (this.dontSnap) val.dontSnap = true;
@@ -156,7 +156,7 @@ export class SubCategory extends DefinitionElement implements SubCategoryProps {
     this.appearance = new Appearance(props.appearance);
     this.description = JsonUtils.asString(props.description);
   }
-  public toJSON(): any {
+  public toJSON(): SubCategoryProps {
     const val = super.toJSON();
     val.appearance = this.appearance;
     if (this.description && this.description.length > 0)
@@ -171,7 +171,7 @@ export class SubCategory extends DefinitionElement implements SubCategoryProps {
 }
 
 /** the rank for a Category */
-export enum Rank {
+export const enum Rank {
   System = 0,       // This category is predefined by the system
   Domain = 1,       // This category is defined by a schema. Elements in this category may be unknown to system functionality.
   Application = 2,  // This category is defined by an application. Elements in this category may be unknown to system and schema functionality.
@@ -191,7 +191,7 @@ export class Category extends DefinitionElement implements CategoryProps {
     this.rank = JsonUtils.asInt(props.rank);
     this.description = JsonUtils.asString(props.description);
   }
-  public toJSON(): any {
+  public toJSON(): CategoryProps {
     const val = super.toJSON();
     val.rank = this.rank;
     if (this.description && this.description.length > 0)
@@ -206,13 +206,11 @@ export class Category extends DefinitionElement implements CategoryProps {
 /** Categorizes 2d graphical elements. */
 export class DrawingCategory extends Category {
   public constructor(opts: ElementProps) { super(opts); }
-
   public static getCodeSpecName(): string { return CodeSpecNames.DrawingCategory(); }
 }
 
 /** Categorizes SpatialElements. */
 export class SpatialCategory extends Category {
   public constructor(opts: ElementProps) { super(opts); }
-
   public static getCodeSpecName(): string { return CodeSpecNames.SpatialCategory(); }
 }

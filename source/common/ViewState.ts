@@ -164,7 +164,7 @@ export class ElementState implements ElementProps {
     this.jsonProperties = !props.jsonProperties ? {} : JSON.parse(JSON.stringify(props.jsonProperties)); // make sure we have our own copy
   }
 
-  public toJSON(): any {
+  public toJSON(): ElementProps {
     const val: any = {};
     val.classFullName = this.classFullName;
     if (this.id.isValid())
@@ -224,32 +224,23 @@ export class DisplayStyle2dState extends DisplayStyleState {
 
 /** A circle drawn at a Z elevation, whose diameter is the the XY diagonal of the project extents */
 export class GroundPlane {
-  public enabled: boolean = false;
+  public display: boolean = false;
   public elevation: number = 0.0;  // the Z height to draw the ground plane
   public aboveColor: ColorDef;     // the color to draw the ground plane if the view shows the ground from above
   public belowColor: ColorDef;     // the color to draw the ground plane if the view shows the ground from below
 
   public constructor(ground: any) {
     ground = ground ? ground : {};
-    this.enabled = JsonUtils.asBool(ground.display, false);
+    this.display = JsonUtils.asBool(ground.display, false);
     this.elevation = JsonUtils.asDouble(ground.elevation, -.01);
     this.aboveColor = ground.aboveColor ? ColorDef.fromJSON(ground.aboveColor) : new ColorDef(ColorRgb.darkGreen);
     this.belowColor = ground.belowColor ? ColorDef.fromJSON(ground.belowColor) : new ColorDef(ColorRgb.darkBrown);
-  }
-
-  public toJSON(): any {
-    const val: any = {};
-    val.display = this.enabled;
-    val.elevation = this.elevation;
-    val.aboveColor = this.aboveColor;
-    val.belowColor = this.belowColor;
-    return val;
   }
 }
 
 /** the SkyBox is a draws in the background of spatial views to provide context. */
 export class SkyBox {
-  public enabled: boolean = false;
+  public display: boolean = false;
   public twoColor: boolean = false;
   public jpegFile: string;              // the name of a jpeg file with a spherical skybox
   public zenithColor: ColorDef;         // if no jpeg file, the color of the zenith part of the sky gradient (shown when looking straight up.)
@@ -261,7 +252,7 @@ export class SkyBox {
 
   public constructor(sky: any) {
     sky = sky ? sky : {};
-    this.enabled = JsonUtils.asBool(sky.display, false);
+    this.display = JsonUtils.asBool(sky.display, false);
     this.twoColor = JsonUtils.asBool(sky.twoColor, false);
     this.jpegFile = JsonUtils.asString(sky.file);
     this.groundExponent = JsonUtils.asDouble(sky.groundExponent, 4.0);
@@ -274,7 +265,7 @@ export class SkyBox {
 
   public toJSON(): any {
     const val: any = {};
-    if (this.enabled)
+    if (this.display)
       val.display = true;
     if (this.twoColor)
       val.twoColor = true;
@@ -358,13 +349,14 @@ export class ModelSelectorState extends ElementState {
   public readonly models: Set<string> = new Set<string>();
   constructor(props: ModelSelectorProps) {
     super(props);
-    props.models.forEach((model) => this.models.add(model));
+    if (props.models)
+      props.models.forEach((model) => this.models.add(model));
   }
 
   /** Get the name of this ModelSelector */
   public getName(): string { return this.code.getValue(); }
 
-  public toJSON(): any {
+  public toJSON(): ModelSelectorProps {
     const val: any = super.toJSON();
     val.models = [];
     this.models.forEach((model) => val.models.push(model));
@@ -386,11 +378,12 @@ export class CategorySelectorState extends ElementState {
   public categories: Set<string> = new Set<string>();
   constructor(props: CategorySelectorProps) {
     super(props);
-    props.categories.forEach((cat) => this.categories.add(cat));
+    if (props.categories)
+      props.categories.forEach((cat) => this.categories.add(cat));
   }
 
-  public toJSON(): any {
-    const val: any = super.toJSON();
+  public toJSON(): CategorySelectorProps {
+    const val = super.toJSON() as CategorySelectorProps;
     val.categories = [];
     this.categories.forEach((cat) => val.categories.push(cat));
     return val;
@@ -459,10 +452,11 @@ export abstract class ViewState extends ElementState {
   protected constructor(props: ViewDefinitionProps, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
     super(props);
   }
-  public toJSON(): any {
-    const json = super.toJSON();
+  public toJSON(): ViewDefinitionProps {
+    const json = super.toJSON() as ViewDefinitionProps;
     json.categorySelectorId = this.categorySelector.id;
     json.displayStyleId = this.displayStyle.id;
+    return json;
   }
 
   public isView3d(): this is ViewState3d { return this instanceof ViewState3d; }
@@ -921,7 +915,7 @@ export abstract class ViewState3d extends ViewState {
   }
 
   public toJSON(): ViewDefinition3dProps {
-    const val = super.toJSON();
+    const val = super.toJSON() as ViewDefinition3dProps;
     val.cameraOn = this.cameraOn;
     val.origin = this.origin;
     val.extents = this.extents;
@@ -1331,7 +1325,7 @@ export class ViewState2d extends ViewState {
   }
 
   public toJSON(): ViewDefinition2dProps {
-    const val = super.toJSON();
+    const val = super.toJSON() as ViewDefinition2dProps;
     val.origin = this.origin;
     val.delta = this.delta;
     val.angle = this.angle;
