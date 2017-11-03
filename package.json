@@ -13,7 +13,15 @@
     "build-release": "gulp build --release",
     "clean": "gulp clean",
     "test": "gulp test",
-    "install": "node scripts/install-imodeljs-addon.js"
+    "install": "node scripts/install-imodeljs-addon.js",
+    "wip-install": "concurrently \"npm run wip-install-backend\" \"npm run wip-install-frontend\" \"npm run wip-install-test\"",
+    "wip-install-backend": "cd source/backend && npm install",
+    "wip-install-frontend": "cd source/frontend && npm install",
+    "wip-install-test": "cd source/test && npm install",
+    "wip-build": "concurrently \"npm run wip-build-backend\" \"npm run wip-build-frontend\" \"npm run wip-build-test\"",
+    "wip-build-backend": "cd source/backend && npm run compile",
+    "wip-build-frontend": "cd source/frontend && npm run compile",
+    "wip-build-test": "cd source/test && npm run compile"
   },
   "keywords": [
     "Bentley",
@@ -38,6 +46,7 @@
     "@types/mocha": "^2.2.44",
     "chai": "^4.1.2",
     "commander": "^2.11.0",
+    "concurrently": "^3.5.0",
     "debug-fabulous": "^0.1.2",
     "diff": "^3.3.1",
     "duplexify": "^3.5.1",
