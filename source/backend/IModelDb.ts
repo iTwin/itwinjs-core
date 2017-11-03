@@ -479,7 +479,8 @@ export class IModelDbElements {
     return el;
   }
 
-  /** Get an element by Id, FederationGuid, or Code
+  /**
+   * Get an element by Id, FederationGuid, or Code
    * @throws [[IModelError]] if the element is not found.
    */
   public getElement(elementId: Id64 | Guid | Code): Promise<Element> {

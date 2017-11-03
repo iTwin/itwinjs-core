@@ -25,8 +25,8 @@ export class Model extends Entity implements ModelProps {
   }
 
   /** Add all custom-handled properties of a Model to a json object. */
-  public toJSON(): any {
-    const val = super.toJSON();
+  public toJSON(): ModelProps {
+    const val = super.toJSON() as ModelProps;
     if (this.id.isValid())
       val.id = this.id;
     if (this.modeledElement.isValid())

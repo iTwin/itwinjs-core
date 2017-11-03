@@ -56,7 +56,7 @@ export class Entity implements EntityProps {
     this.forEachProperty((propName: string, meta: PropertyMetaData) => this[propName] = meta.createProperty(props[propName]));
   }
 
-  public toJSON() {
+  public toJSON(): EntityProps {
     const val: any = {};
     val.classFullName = this.classFullName;
     this.forEachProperty((propName: string) => val[propName] = this[propName]);

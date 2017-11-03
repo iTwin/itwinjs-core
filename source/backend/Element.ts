@@ -39,8 +39,8 @@ export class Element extends Entity implements ElementProps {
   }
 
   /** Add all custom-handled properties to a json object. */
-  public toJSON(): any {
-    const val = super.toJSON();
+  public toJSON(): ElementProps {
+    const val = super.toJSON() as ElementProps;
     if (this.id.isValid())
       val.id = this.id;
     if (this.code.spec.isValid())
@@ -74,7 +74,7 @@ export class Element extends Entity implements ElementProps {
 
 /** Properties of a GeometricElement */
 export interface GeometricElementProps extends ElementProps {
-  category?: Id64 | string;
+  category: Id64 | string;
   geom?: GeometryStream;
 }
 
@@ -89,8 +89,8 @@ export class GeometricElement extends Element implements GeometricElementProps {
   }
 
   /** convert this geometric element to a JSON object */
-  public toJSON(): any {
-    const val = super.toJSON();
+  public toJSON(): GeometricElementProps {
+    const val = super.toJSON() as GeometricElementProps;
     val.category = this.category;
     if (this.geom)
       val.geom = this.geom;
@@ -105,12 +105,12 @@ export class TypeDefinition extends RelatedElement {
 
 /** Properties that define a GeometricElement3d */
 export interface GeometricElement3dProps extends GeometricElementProps {
-  placement?: Placement3d;
+  placement: Placement3d;
   typeDefinition?: TypeDefinition;
 }
 
 /** A Geometric 3d element. */
-export class GeometricElement3d extends GeometricElement implements GeometricElement3d {
+export class GeometricElement3d extends GeometricElement implements GeometricElement3dProps {
   public placement: Placement3d;
   public typeDefinition?: TypeDefinition;
 
@@ -121,8 +121,8 @@ export class GeometricElement3d extends GeometricElement implements GeometricEle
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
   }
 
-  public toJSON(): any {
-    const val = super.toJSON();
+  public toJSON(): GeometricElement3dProps {
+    const val = super.toJSON() as GeometricElement3dProps;
     val.placement = this.placement;
     if (this.typeDefinition)
       val.typeDefinition = this.typeDefinition;
@@ -132,12 +132,12 @@ export class GeometricElement3d extends GeometricElement implements GeometricEle
 
 /** Properties that define a GeometricElement2d */
 export interface GeometricElement2dProps extends GeometricElementProps {
-  placement?: Placement2d;
+  placement: Placement2d;
   typeDefinition?: TypeDefinition;
 }
 
 /** A Geometric 2d element. */
-export class GeometricElement2d extends GeometricElement implements GeometricElement2d {
+export class GeometricElement2d extends GeometricElement implements GeometricElement2dProps {
   public placement: Placement2d;
   public typeDefinition?: TypeDefinition;
 
@@ -148,8 +148,8 @@ export class GeometricElement2d extends GeometricElement implements GeometricEle
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
   }
 
-  public toJSON(): any {
-    const val = super.toJSON();
+  public toJSON(): GeometricElement2dProps {
+    const val = super.toJSON() as GeometricElement2dProps;
     val.placement = this.placement;
     if (this.typeDefinition)
       val.typeDefinition = this.typeDefinition;
