@@ -32,8 +32,10 @@ function loadNodeAddon() {
     if (!addon)
         return undefined;
 
-    addon.setTickKicker(function() {});    
-
+    if (addon.setTickKicker) {
+        addon.setTickKicker(function() {});    
+    }
+    
     return addon;
 }
 exports.loadNodeAddon = loadNodeAddon;
