@@ -258,7 +258,9 @@ export class IModelDb extends IModel {
     this.statementCache.clearOnClose();
   }
 
-  /** Commit pending changes to this iModel */
+  /** Commit pending changes to this iModel
+   * @throws [[IModelError]] if there is a problem saving changes.
+   */
   public saveChanges() {
     if (!this.iModelToken || !this.nativeDb)
       throw this._newNotOpenError();
@@ -316,6 +318,7 @@ export class IModelDb extends IModel {
 
   /** Prepare an ECSql statement.
    * @param sql The ECSql statement to prepare
+   * @throws [[IModelError]] if there is a problem preparing the statement.
    */
   public prepareStatement(sql: string): ECSqlStatement {
     if (!this.iModelToken.isOpen)
@@ -328,6 +331,7 @@ export class IModelDb extends IModel {
 
   /** Construct an entity (element or model). This utility method knows how to fetch the required class metadata
    * if necessary in order to get the entity's class defined as a prerequisite.
+   * @throws [[IModelError]] if the entity cannot be constructed.
    */
   public constructEntity(props: any): Entity {
     let entity: Entity;
@@ -336,7 +340,7 @@ export class IModelDb extends IModel {
     } catch (err) {
       if (!ClassRegistry.isClassNotFoundError(err) && !ClassRegistry.isMetaDataNotFoundError(err)) {
         Logger.logError(err.toString());
-        throw (err);
+        throw err;
       }
 
       // Probably, we have not yet loaded the metadata for this class and/or its superclasses. Do that now, and retry the create.
