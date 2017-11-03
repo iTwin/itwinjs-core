@@ -12,10 +12,7 @@ import { IModelError, IModelStatus } from "../common/IModelError";
 import { IModelVersion } from "../common/IModelVersion";
 import { Logger } from "../common/Logger";
 import { ModelProps } from "../common/ModelProps";
-
-// Initialize the frontend side of remoting
-import { IModelDbRemoting } from "../middle/IModelDbRemoting";
-IModelDbRemoting;
+import { IModelGateway } from "../gateway/IModelGateway";
 
 /** A connection to an iModel database hosted on the backend. */
 export class IModelConnection extends IModel {
@@ -36,7 +33,7 @@ export class IModelConnection extends IModel {
     if (OpenMode.Readonly !== openMode)
       return Promise.reject(new IModelError(IModelStatus.NotEnabled, "IModelConnection does not support read/write access yet")); // WIP: waiting for decisions on how to manage read/write briefcases on the backend
 
-    const iModelToken = await IModelDbRemoting.open(accessToken, iModelId, openMode, version);
+    const iModelToken = await IModelGateway.getProxy().open(accessToken, iModelId, openMode, version);
     Logger.logInfo("IModelConnection.open", () => ({ iModelId, openMode, version }));
     return new IModelConnection(iModelToken);
   }
@@ -54,7 +51,7 @@ export class IModelConnection extends IModel {
   public async close(accessToken: AccessToken): Promise<void> { // WIP: remove AccessToken parameter
     if (!this.iModelToken)
       return;
-    await IModelDbRemoting.close(accessToken, this.iModelToken);
+    await IModelGateway.getProxy().close(accessToken, this.iModelToken);
   }
 
   /** Execute a query against the iModel.
@@ -65,7 +62,7 @@ export class IModelConnection extends IModel {
    */
   public async executeQuery(sql: string, bindings?: any): Promise<any[]> {
     Logger.logInfo("IModelConnection.executeQuery", () => ({ iModelId: this.iModelToken.iModelId, sql, bindings }));
-    return await IModelDbRemoting.executeQuery(this.iModelToken, sql, bindings);
+    return await IModelGateway.getProxy().executeQuery(this.iModelToken, sql, bindings);
   }
 }
 
@@ -81,7 +78,7 @@ export class IModelConnectionModels {
 
   /** Ask the backend for a batch of [[ModelProps]] given a list of model ids. */
   public async getModels(modelIds: Id64[]): Promise<ModelProps[]> {
-    const modelJsonArray = await IModelDbRemoting.getModels(this._iModel.iModelToken, modelIds.map((id: Id64) => id.toString()));
+    const modelJsonArray = await IModelGateway.getProxy().getModels(this._iModel.iModelToken, modelIds.map((id: Id64) => id.toString()));
     const models: ModelProps[] = [];
     for (const modelJson of modelJsonArray) {
       const modelProps = JSON.parse(modelJson) as ModelProps;
@@ -104,7 +101,7 @@ export class IModelConnectionElements {
 
   /** Ask the backend for a batch of [[ElementProps]] given a list of element ids. */
   public async getElements(elementIds: Id64[]): Promise<ElementProps[]> {
-    const elementJsonArray: any[] = await IModelDbRemoting.getElements(this._iModel.iModelToken, elementIds.map((id: Id64) => id.toString()));
+    const elementJsonArray: any[] = await IModelGateway.getProxy().getElements(this._iModel.iModelToken, elementIds.map((id: Id64) => id.toString()));
     const elements: ElementProps[] = [];
     for (const elementJson of elementJsonArray) {
       const elementProps = JSON.parse(elementJson) as ElementProps;
@@ -116,12 +113,12 @@ export class IModelConnectionElements {
 
   /** Ask the backend to format (for presentation) the specified list of element ids. */
   public async formatElements(elementIds: Id64[]): Promise<any[]> {
-    return await IModelDbRemoting.formatElements(this._iModel.iModelToken, elementIds.map((id: Id64) => id.toString()));
+    return await IModelGateway.getProxy().formatElements(this._iModel.iModelToken, elementIds.map((id: Id64) => id.toString()));
   }
 
   /** */
   public async queryElementIds(params: EntityQueryParams): Promise<Id64[]> {
-    const elementIds: string[] = await IModelDbRemoting.queryElementIds(this._iModel.iModelToken, params);
+    const elementIds: string[] = await IModelGateway.getProxy().queryElementIds(this._iModel.iModelToken, params);
     return elementIds.map((elementId: string) => new Id64(elementId));
   }
 }
@@ -142,7 +139,7 @@ export class IModelConnectionCodeSpecs {
       return;
 
     this._loaded = [];
-    const codeSpecArray: any[] = await IModelDbRemoting.getAllCodeSpecs(this._iModel.iModelToken);
+    const codeSpecArray: any[] = await IModelGateway.getProxy().getAllCodeSpecs(this._iModel.iModelToken);
     for (const codeSpec of codeSpecArray) {
       this._loaded.push(new CodeSpec(this._iModel, new Id64(codeSpec.id), codeSpec.name, codeSpec.jsonProperties));
     }

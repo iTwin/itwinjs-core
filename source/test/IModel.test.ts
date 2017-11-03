@@ -656,6 +656,8 @@ describe("iModel", () => {
 
     const ifperfimodel = await IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", { copyFilename: "ImodelJsTest_MeasureInsertPerformance.bim", enableTransactions: true });
 
+    console.time("ImodelJsTest.MeasureInsertPerformance");
+
     // TODO: Look up model by code (i.e., codevalue of a child of root subject, where child has a PhysicalPartition)
     // const physicalPartitionCode: Code = PhysicalPartition::CreateCode(*m_db->Elements().GetRootSubject(), "DefaultModel");
     // const modelId: Id64 = ifperfimodel.models.querySubModelId(physicalPartitionCode);
@@ -682,8 +684,8 @@ describe("iModel", () => {
       element.pointProperty2 = pt;
       element.pointProperty3 = pt;
       element.pointProperty4 = pt;
-      const dtUtc: Date = new Date("2013-09-15 12:05:39Z");
-      element.dtUtc = dtUtc;
+      // const dtUtc: Date = new Date("2013-09-15 12:05:39Z");    // Dates are so expensive to parse in native code that this skews the performance results
+      // element.dtUtc = dtUtc;
 
       assert.isTrue((ifperfimodel.elements.insertElement(element)).isValid(), "insert worked");
       if (0 === (i % 100))
@@ -698,5 +700,8 @@ describe("iModel", () => {
       const expectedCountAsHex = "0X" + elementCount.toString(16).toUpperCase();
       assert.equal(row.count, expectedCountAsHex);
     });
+
+    console.timeEnd("ImodelJsTest.MeasureInsertPerformance");
+
   });
 });

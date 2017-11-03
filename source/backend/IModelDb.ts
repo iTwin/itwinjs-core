@@ -25,10 +25,10 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BindingValue } from "./BindingUtility";
 import { CodeSpecs } from "./CodeSpecs";
 import { Entity, EntityMetaData } from "./Entity";
+import { IModelGatewayImpl } from "./IModelGatewayImpl";
 
-// Initialize the backend side of remoting
-import { IModelDbRemoting } from "../middle/IModelDbRemoting";
-IModelDbRemoting;
+// Register the backend implementation of IModelGateway
+IModelGatewayImpl.register();
 
 // Register the use of BisCore for the backend
 BisCore.registerSchema();
