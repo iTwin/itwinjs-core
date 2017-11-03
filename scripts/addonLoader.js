@@ -28,7 +28,13 @@ function loadNodeAddon() {
     if (typeof (process) === "undefined" || process.version === "")
         return undefined;
     // tslint:disable-next-line:no-var-requires
-    return require(computeAddonPackageName() + "/addon/imodeljs.node");
+    const addon = require(computeAddonPackageName() + "/addon/imodeljs.node");
+    if (!addon)
+        return undefined;
+
+    addon.setTickKicker(function() {});    
+
+    return addon;
 }
 exports.loadNodeAddon = loadNodeAddon;
 
