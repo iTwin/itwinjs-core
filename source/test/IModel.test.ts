@@ -4,12 +4,11 @@
 import { assert } from "chai";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { Code } from "../common/Code";
-import { ElementProps } from "../common/ElementProps";
 import { EntityProps } from "../common/EntityProps";
+import { DisplayStyle3dState, ModelSelectorState, ModelSelectorProps, SpatialViewState, CategorySelectorState } from "../common/ViewState";
 import { IModelError, IModelStatus } from "../common/IModelError";
-import { ColorDef } from "../common/Render";
 import { Entity, EntityCtor, EntityMetaData } from "../backend/Entity";
 import { Model } from "../backend/Model";
 import { Category, SubCategory } from "../backend/Category";
@@ -19,7 +18,7 @@ import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { Element, GeometricElement2d, GeometricElement3d, GeometricElementProps, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../backend/Element";
 import { ElementPropertyFormatter } from "../backend/ElementPropertyFormatter";
 import { IModelDb } from "../backend/IModelDb";
-import { DisplayStyle3d, ModelSelector, SpatialViewDefinition } from "../backend/ViewDefinition";
+import { DisplayStyle3d, ModelSelector, CategorySelector, SpatialViewDefinition } from "../backend/ViewDefinition";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 describe("iModel", () => {
@@ -80,8 +79,8 @@ describe("iModel", () => {
       await imodel.elements.getElement(badCode); // throws Error
       assert.fail(); // this line should be skipped
     } catch (error) {
-      assert.isTrue(error instanceof Error);
-      assert.isTrue(error instanceof IModelError);
+      assert.instanceOf(error, Error);
+      assert.instanceOf(error, IModelError);
       assert.equal(error.errorNumber, IModelStatus.NotFound);
       assert.equal(error.name, "IModelStatus.NotFound");
       assert.isTrue(error.toString().startsWith("IModelStatus.NotFound"));
@@ -96,7 +95,7 @@ describe("iModel", () => {
       assert.isTrue(subCat.id.getHigh() === 0);
       assert.isTrue(subCat.code.spec.getLow() === 30);
       assert.isTrue(subCat.code.spec.getHigh() === 0);
-      assert.isTrue(subCat.code.scope === "0X2D");
+      assert.isTrue(subCat.code.scope === "0x2d");
       assert.isTrue(subCat.code.value === "A-Z013-G-Legn");
       testCopyAndJson(subCat);
     }
@@ -225,23 +224,27 @@ describe("iModel", () => {
   });
 
   it("Model Selectors should hold models", async () => {
-    const props: ElementProps = {
+    const props: ModelSelectorProps = {
       iModel: imodel,
       classFullName: BisCore.name + ":" + ModelSelector.name,
       model: new Id64([1, 1]),
       code: Code.createEmpty(),
       id: new Id64(),
+      models: ["0X001"],
     };
 
-    const entity = imodel.constructEntity(props);
-    assert.isTrue(entity instanceof ModelSelector);
-    const selector1 = entity as ModelSelector;
-    assert.exists(selector1);
-    if (selector1) {
-      selector1.addModel(new Id64([2, 1]));
-      selector1.addModel(new Id64([2, 1]));
-      selector1.addModel(new Id64([2, 3]));
-    }
+    const selector = new ModelSelectorState(props);
+    selector.addModel(new Id64([2, 1]));
+    selector.addModel(new Id64([2, 1]));
+    selector.addModel(new Id64([2, 3]));
+    assert.equal(selector.models.size, 3);
+    const out = selector.toJSON();
+    assert.isArray(out.models);
+    assert.equal(out.models.length, 3);
+    out.iModel = imodel;
+    const sel2 = imodel.constructEntity(out);
+    assert.instanceOf(sel2, ModelSelector);
+    assert.equal(sel2.models.length, 3);
   });
 
   it("should produce an array of rows", async () => {
@@ -272,31 +275,41 @@ describe("iModel", () => {
     assert.exists(viewRows, "Should find some views");
     for (const viewRow of viewRows!) {
       const viewId = new Id64(viewRow.elementId);
-      const view = await imodel.elements.getElement(viewId);
+      const view = await imodel.elements.getElement(viewId) as SpatialViewDefinition;
       assert.isTrue(view instanceof SpatialViewDefinition, "Should be instance of SpatialViewDefinition");
-      if (!view)
-        continue;
-      if (!(view instanceof SpatialViewDefinition))
-        continue;
       assert.isTrue(view.code.value === "A Views - View 1", "Code value is A Views - View 1");
-      assert.isTrue(view.getDisplayStyleId().getLow() === 0x36, "Display Style Id is 0x36");
-      assert.isTrue(view.getCategorySelectorId().getLow() === 0x37, "Category Id is 0x37");
+      assert.isTrue(view.displayStyleId.value === "0x36", "Display Style Id is 0x36");
+      assert.isTrue(view.categorySelectorId.getLow() === 0x37, "Category Id is 0x37");
       assert.isFalse(view.cameraOn, "The camera is not turned on");
       assert.isTrue(view.extents.isAlmostEqual(new Vector3d(429.6229727570776, 232.24786876266097, 0.1017680889917761)), "View extents as expected");
       assert.isTrue(view.origin.isAlmostEqual(new Point3d(-87.73958171815832, -108.96514044887601, -0.0853709702222105)), "View origin as expected");
-      assert.isTrue(view.rotation.isAlmostEqual(RotMatrix.identity), "View rotation is identity");
+      assert.isTrue(view.angles.isAlmostEqual(new YawPitchRollAngles()), "View rotation is identity");
       assert.isTrue(view.jsonProperties.viewDetails.gridOrient === 0, "Grid orientation as expected");
       assert.isTrue(view.jsonProperties.viewDetails.gridSpaceX === 0.001, "GridSpaceX as expected");
 
       // get the display style element
-      const displayStyle = await imodel.elements.getElement(view.getDisplayStyleId());
+      const displayStyle = await imodel.elements.getElement(view.displayStyleId);
       assert.isTrue(displayStyle instanceof DisplayStyle3d, "The Display Style should be a DisplayStyle3d");
-      if (!(displayStyle instanceof DisplayStyle3d))
-        continue;
-      const bgColorDef: ColorDef = displayStyle.getBackgroundColor();
+      const dStyleState = new DisplayStyle3dState(displayStyle.toJSON());
+      const bgColorDef = dStyleState.backgroundColor;
       assert.isTrue(bgColorDef.tbgr === 0, "The background as expected");
-      const sceneBrightness: number = displayStyle.getSceneBrightness();
-      assert.isTrue(sceneBrightness === 0);
+      const sceneBrightness: number = dStyleState.getSceneBrightness();
+      assert.equal(sceneBrightness, 0);
+
+      const catSel = await imodel.elements.getElement(view.categorySelectorId) as CategorySelector;
+      assert.isDefined(catSel.categories);
+      assert.lengthOf(catSel.categories, 4);
+      const modelSel = await imodel.elements.getElement(view.modelSelectorId) as ModelSelector;
+      assert.isDefined(modelSel.models);
+      assert.lengthOf(modelSel.models, 5);
+
+      const viewState = new SpatialViewState(view.toJSON(), new CategorySelectorState(catSel.toJSON()), dStyleState, new ModelSelectorState(modelSel.toJSON()));
+      assert.isDefined(viewState.displayStyle);
+      assert.instanceOf(viewState.categorySelector, CategorySelectorState);
+      assert.equal(viewState.categorySelector.categories.size, 4);
+      assert.instanceOf(viewState.modelSelector, ModelSelectorState);
+      assert.equal(viewState.modelSelector.models.size, 5);
+      assert.isTrue(viewState.origin.isAlmostEqual(new Point3d(-87.73958171815832, -108.96514044887601, -0.0853709702222105)), "View origin as expected");
     }
   });
 
@@ -643,6 +656,8 @@ describe("iModel", () => {
 
     const ifperfimodel = await IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", { copyFilename: "ImodelJsTest_MeasureInsertPerformance.bim", enableTransactions: true });
 
+    console.time("ImodelJsTest.MeasureInsertPerformance");
+
     // TODO: Look up model by code (i.e., codevalue of a child of root subject, where child has a PhysicalPartition)
     // const physicalPartitionCode: Code = PhysicalPartition::CreateCode(*m_db->Elements().GetRootSubject(), "DefaultModel");
     // const modelId: Id64 = ifperfimodel.models.querySubModelId(physicalPartitionCode);
@@ -669,8 +684,8 @@ describe("iModel", () => {
       element.pointProperty2 = pt;
       element.pointProperty3 = pt;
       element.pointProperty4 = pt;
-      const dtUtc: Date = new Date("2013-09-15 12:05:39Z");
-      element.dtUtc = dtUtc;
+      // const dtUtc: Date = new Date("2013-09-15 12:05:39Z");    // Dates are so expensive to parse in native code that this skews the performance results
+      // element.dtUtc = dtUtc;
 
       assert.isTrue((ifperfimodel.elements.insertElement(element)).isValid(), "insert worked");
       if (0 === (i % 100))
@@ -685,5 +700,8 @@ describe("iModel", () => {
       const expectedCountAsHex = "0X" + elementCount.toString(16).toUpperCase();
       assert.equal(row.count, expectedCountAsHex);
     });
+
+    console.timeEnd("ImodelJsTest.MeasureInsertPerformance");
+
   });
 });

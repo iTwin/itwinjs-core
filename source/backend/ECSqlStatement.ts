@@ -13,8 +13,8 @@ let dgnDbNodeAddon: any | undefined;
 if (addonLoader !== undefined)
   dgnDbNodeAddon = addonLoader.loadNodeAddon(); // Note that evaluating this script has the side-effect of loading the addon
 
-/** An ECSql Statement. A statement must be prepared before it can be executed. See prepare. A statement may contain placeholders that must be filled  
- * in before use. See bindValues. A prepared statement can be stepped through all matching rows by calling step. ECSqlStatement is-a iterator, so that you 
+/** An ECSql Statement. A statement must be prepared before it can be executed. See prepare. A statement may contain placeholders that must be filled
+ * in before use. See bindValues. A prepared statement can be stepped through all matching rows by calling step. ECSqlStatement is-a iterator, so that you
  * can step through its results by using standard iteration syntax, such as "for in".
  */
 export class ECSqlStatement implements IterableIterator<any> {
@@ -78,7 +78,7 @@ export class ECSqlStatement implements IterableIterator<any> {
    * for named placeholders, where the properties of the object match the names of the placeholders in the statement.
    * @throws IModelError in case the binding fails. This will normally happen only if the type of a value does not match and cannot be converted to the type required for the corresponding property in the statement.
    */
-  public bindValues(bindings: BindingValue[]| Map<string, BindingValue>| any): void {
+  public bindValues(bindings: BindingValue[] | Map<string, BindingValue> | any): void {
     const { error, result: ecBindings } = BindingUtility.preProcessBindings(bindings);
     if (error)
       throw new IModelError(error.status, error.message);
@@ -98,7 +98,7 @@ export class ECSqlStatement implements IterableIterator<any> {
     return this._stmt.getRow();
   }
 
-  /** Calls step when called as an interator. */
+  /** Calls step when called as an iterator. */
   public next(): IteratorResult<any> {
     if (DbResult.BE_SQLITE_ROW === this.step()) {
       return {

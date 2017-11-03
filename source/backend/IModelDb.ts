@@ -258,7 +258,9 @@ export class IModelDb extends IModel {
     this.statementCache.clearOnClose();
   }
 
-  /** Commit pending changes to this iModel */
+  /** Commit pending changes to this iModel
+   * @throws [[IModelError]] if there is a problem saving changes.
+   */
   public saveChanges() {
     if (!this.iModelToken || !this.nativeDb)
       throw this._newNotOpenError();
@@ -307,7 +309,7 @@ export class IModelDb extends IModel {
     if (!this.iModelToken.isOpen)
       return Promise.reject(this._newNotOpenError());
 
-    const {error, result: json} = await this.nativeDb.getElementPropertiesForDisplay(elementId);
+    const { error, result: json } = await this.nativeDb.getElementPropertiesForDisplay(elementId);
     if (error)
       return Promise.reject(new IModelError(error.status, error.message, Logger.logError, () => ({ iModelId: this._iModelToken.iModelId, elementId })));
 
@@ -316,6 +318,7 @@ export class IModelDb extends IModel {
 
   /** Prepare an ECSql statement.
    * @param sql The ECSql statement to prepare
+   * @throws [[IModelError]] if there is a problem preparing the statement.
    */
   public prepareStatement(sql: string): ECSqlStatement {
     if (!this.iModelToken.isOpen)
@@ -328,6 +331,7 @@ export class IModelDb extends IModel {
 
   /** Construct an entity (element or model). This utility method knows how to fetch the required class metadata
    * if necessary in order to get the entity's class defined as a prerequisite.
+   * @throws [[IModelError]] if the entity cannot be constructed.
    */
   public constructEntity(props: any): Entity {
     let entity: Entity;
@@ -336,7 +340,7 @@ export class IModelDb extends IModel {
     } catch (err) {
       if (!ClassRegistry.isClassNotFoundError(err) && !ClassRegistry.isMetaDataNotFoundError(err)) {
         Logger.logError(err.toString());
-        throw(err);
+        throw err;
       }
 
       // Probably, we have not yet loaded the metadata for this class and/or its superclasses. Do that now, and retry the create.
@@ -402,7 +406,7 @@ export class IModelDbModels {
       return loaded;
 
     // Must go get the model from the iModel. Start by requesting the model's data.
-    const {error, result: json} = await this._iModel.nativeDb.getModel(JSON.stringify({ id: modelId }));
+    const { error, result: json } = await this._iModel.nativeDb.getModel(JSON.stringify({ id: modelId }));
     if (error)
       return Promise.reject(new IModelError(error.status, error.message, Logger.logWarning));
 
@@ -458,7 +462,7 @@ export class IModelDbElements {
     }
 
     // Must go get the element from the iModel. Start by requesting the element's data.
-    const {error, result: json} = await this._iModel.nativeDb.getElement(JSON.stringify(opts));
+    const { error, result: json } = await this._iModel.nativeDb.getElement(JSON.stringify(opts));
     if (error)
       return Promise.reject(new IModelError(error.status, error.message, Logger.logWarning));
 
@@ -475,7 +479,8 @@ export class IModelDbElements {
     return el;
   }
 
-  /** Get an element by Id, FederationGuid, or Code
+  /**
+   * Get an element by Id, FederationGuid, or Code
    * @throws [[IModelError]] if the element is not found.
    */
   public getElement(elementId: Id64 | Guid | Code): Promise<Element> {
@@ -513,7 +518,7 @@ export class IModelDbElements {
     // on the native code side. Nevertheless, we want the signature of this method to be
     // that of an asynchronous method, since it must run in the services tier and will be
     // asynchronous from a remote client's point of view in any case.
-    const {error, result: json} = this._iModel.nativeDb.insertElementSync(JSON.stringify(el));
+    const { error, result: json } = this._iModel.nativeDb.insertElementSync(JSON.stringify(el));
     if (error)
       throw new IModelError(error.status, "Problem inserting element", Logger.logWarning);
 
@@ -537,7 +542,7 @@ export class IModelDbElements {
     // on the native code side. Nevertheless, we want the signature of this method to be
     // that of an asynchronous method, since it must run in the services tier and will be
     // asynchronous from a remote client's point of view in any case.
-    const {error} = this._iModel.nativeDb.updateElementSync(JSON.stringify(el));
+    const { error } = this._iModel.nativeDb.updateElementSync(JSON.stringify(el));
     if (error)
       return Promise.reject(new IModelError(error.status, error.message, Logger.logWarning));
 
@@ -557,7 +562,7 @@ export class IModelDbElements {
     // on the native code side. Nevertheless, we want the signature of this method to be
     // that of an asynchronous method, since it must run in the services tier and will be
     // asynchronous from a remote client's point of view in any case.
-    const {error} = this._iModel.nativeDb.deleteElementSync(el.id.toString());
+    const { error } = this._iModel.nativeDb.deleteElementSync(el.id.toString());
     if (error)
       return Promise.reject(new IModelError(error.status, error.message, Logger.logWarning));
 
