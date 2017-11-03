@@ -270,7 +270,7 @@ describe("iModel", () => {
     // assert.isArray(item.properties);
   });
 
-  it.only("should be at least one view element", async () => {
+  it("should be at least one view element", async () => {
     const viewRows: any[] = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + SpatialViewDefinition.sqlName);
     assert.exists(viewRows, "Should find some views");
     for (const viewRow of viewRows!) {
