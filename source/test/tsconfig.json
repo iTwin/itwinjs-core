@@ -1,4 +1,5 @@
 {
+  "extends": "./node_modules/@bentley/bentleyjs-tools/tsconfig-base.json",
   "compilerOptions": {
     "target": "es2017", /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', or 'ESNEXT'. */
     "module": "commonjs", /* Specify module code generation: 'commonjs', 'amd', 'system', 'umd' or 'es2015'. */
@@ -18,15 +19,14 @@
         "@types/*",
         "*"
       ]
-    },
-    "experimentalDecorators": true /* Enables experimental support for ES7 decorators. */
+    }
   },
   "include": [
-    "../common/*.ts",
-    "../backend/*.ts",
-    "../middle/*.ts",
-    "../frontend/*.ts",
-    "./*.ts"
+    "../common/**/*.ts",
+    "../backend/**/*.ts",
+    "../gateway/**/*.ts",
+    "../frontend/**/*.ts",
+    "./**/*.ts"
   ],
   "exclude": [
     "lib",
