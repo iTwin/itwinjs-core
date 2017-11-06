@@ -6,19 +6,25 @@
     "language": "en",
     // words - list of words to be always considered correct
     "words": [
-        "Guid",
-        "Wireframe",
         "backend",
         "bentleyjs",
+        "ecclass",
+        "ecinstanceid",
+        "ecsql",
+        "endverbatim",
+        "Guid",
         "imodel",
         "imodeljs",
+        "mixins",
         "remotable",
         "remoting",
         "struct",
         "subtractive",
         "superclass",
         "superclasses",
-        "underbar"
+        "underbar",
+        "viewflags",
+        "Wireframe"
     ],
     // flagWords - list of words to be always considered incorrect
     // This is useful for offensive words and common spelling errors.

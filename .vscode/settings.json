@@ -10,7 +10,15 @@
     "source/frontend/lib": true,
     "source/test/node_modules": true,
     "source/test/lib": true
-  }
+  },
+  "cSpell.words": [
+    "ecclass",
+    "ecinstanceid",
+    "ecsql",
+    "endverbatim",
+    "mixins",
+    "viewflags"
+  ]
   // ,
   // "workbench.colorCustomizations": {
   //   "editor.background": "#79db8415"
