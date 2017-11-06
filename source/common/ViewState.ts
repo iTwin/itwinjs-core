@@ -12,7 +12,7 @@ import { ElementProps, RelatedElement } from "./ElementProps";
 import { Light, LightType } from "./Lighting";
 import { ViewFlags, HiddenLine, ColorDef, ColorRgb } from "./Render";
 import { Code } from "./Code";
-import { IModel } from "./IModel";
+import { IModel } from "../common/IModel";
 
 /** The 8 corners of the NPC cube. */
 export const enum Npc {
@@ -152,8 +152,8 @@ export class ElementState implements ElementProps {
   public readonly userLabel?: string;
   public readonly jsonProperties: any;
 
-  constructor(props: ElementProps) {
-    this.iModel = props.iModel;
+  constructor(props: ElementProps, iModel: IModel) {
+    this.iModel = iModel;
     this.id = new Id64(props.id);
     this.classFullName = props.classFullName;
     this.code = new Code(props.code);
@@ -189,8 +189,8 @@ export class DisplayStyleState extends ElementState {
   private _viewFlags: ViewFlags;
   private _background: ColorDef;
 
-  constructor(props: ElementProps) {
-    super(props);
+  constructor(props: ElementProps, iModel: IModel) {
+    super(props, iModel);
     this.viewFlags = ViewFlags.fromJSON(this.getStyle("viewflags"));
     this._background = ColorDef.fromJSON(this.getStyle("backgroundColor"));
   }
@@ -219,7 +219,7 @@ export class DisplayStyleState extends ElementState {
 
 /** A DisplayStyle for 2d views */
 export class DisplayStyle2dState extends DisplayStyleState {
-  constructor(props: ElementProps) { super(props); }
+  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
 }
 
 /** A circle drawn at a Z elevation, whose diameter is the the XY diagonal of the project extents */
@@ -296,7 +296,7 @@ export class Environment {
 
 /** A DisplayStyle for 3d views */
 export class DisplayStyle3dState extends DisplayStyleState {
-  public constructor(props: ElementProps) { super(props); }
+  public constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
   public getHiddenLineParams(): HiddenLine.Params { return new HiddenLine.Params(this.getStyle("hline")); }
   public setHiddenLineParams(params: HiddenLine.Params) { this.setStyle("hline", params); }
 
@@ -347,8 +347,8 @@ export interface ModelSelectorProps extends ElementProps {
 /** A list of GeometricModels for a SpatialViewDefinition. */
 export class ModelSelectorState extends ElementState {
   public readonly models: Set<string> = new Set<string>();
-  constructor(props: ModelSelectorProps) {
-    super(props);
+  constructor(props: ModelSelectorProps, iModel: IModel) {
+    super(props, iModel);
     if (props.models)
       props.models.forEach((model) => this.models.add(model));
   }
@@ -376,8 +376,8 @@ export interface CategorySelectorProps extends ElementProps {
 /** A list of Categories to be displayed in a view. */
 export class CategorySelectorState extends ElementState {
   public categories: Set<string> = new Set<string>();
-  constructor(props: CategorySelectorProps) {
-    super(props);
+  constructor(props: CategorySelectorProps, iModel: IModel) {
+    super(props, iModel);
     if (props.categories)
       props.categories.forEach((cat) => this.categories.add(cat));
   }
@@ -449,8 +449,8 @@ export class MarginPercent {
  * Subclasses of ViewDefinition determine which model(s) are viewed.
  */
 export abstract class ViewState extends ElementState {
-  protected constructor(props: ViewDefinitionProps, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
-    super(props);
+  protected constructor(props: ViewDefinitionProps, iModel: IModel, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
+    super(props, iModel);
   }
   public toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
@@ -905,8 +905,8 @@ export abstract class ViewState3d extends ViewState {
   public readonly rotation: RotMatrix;    // Rotation of the view frustum.
   public readonly camera: Camera;         // The camera used for this view.
 
-  public constructor(props: ViewDefinition3dProps, categories: CategorySelectorState, displayStyle: DisplayStyle3dState) {
-    super(props, categories, displayStyle);
+  public constructor(props: ViewDefinition3dProps, iModel: IModel, categories: CategorySelectorState, displayStyle: DisplayStyle3dState) {
+    super(props, iModel, categories, displayStyle);
     this.cameraOn = JsonUtils.asBool(props.cameraOn);
     this.origin = Point3d.fromJSON(props.origin);
     this.extents = Vector3d.fromJSON(props.extents);
@@ -1287,14 +1287,14 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
  * The list of viewed models is stored by the ModelSelector.
  */
 export class SpatialViewState extends ViewState3d {
-  constructor(props: SpatialViewDefinitionProps, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, public modelSelector: ModelSelectorState) { super(props, categories, displayStyle); }
+  constructor(props: SpatialViewDefinitionProps, iModel: IModel, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, public modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle); }
 
   public viewsModel(modelId: Id64): boolean { return this.modelSelector.containsModel(modelId); }
 }
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection. */
 export class OrthographicViewState extends SpatialViewState {
-  constructor(props: SpatialViewDefinitionProps, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, categories, displayStyle, modelSelector); }
+  constructor(props: SpatialViewDefinitionProps, iModel: IModel, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle, modelSelector); }
 
   // tslint:disable-next-line:no-empty
   public enableCamera(): void { }
@@ -1316,8 +1316,8 @@ export class ViewState2d extends ViewState {
   public readonly delta: Point2d;
   public readonly angle: Angle;
 
-  public constructor(props: ViewDefinition2dProps, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
-    super(props, categories, displayStyle);
+  public constructor(props: ViewDefinition2dProps, iModel: IModel, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
+    super(props, iModel, categories, displayStyle);
     this.baseModelId = new Id64(props.baseModelId);
     this.origin = Point2d.fromJSON(props.origin);
     this.delta = Point2d.fromJSON(props.delta);

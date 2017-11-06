@@ -15,27 +15,30 @@ import { Category, SubCategory } from "../backend/Category";
 import { ClassRegistry } from "../backend/ClassRegistry";
 import { BisCore } from "../backend/BisCore";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
-import { Element, GeometricElement2d, GeometricElement3d, GeometricElementProps, InformationPartitionElement, DefinitionPartition, LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject } from "../backend/Element";
+import {
+  Element, GeometricElement2d, GeometricElement3d, GeometricElementProps, InformationPartitionElement, DefinitionPartition,
+  LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject,
+} from "../backend/Element";
 import { ElementPropertyFormatter } from "../backend/ElementPropertyFormatter";
 import { IModelDb } from "../backend/IModelDb";
 import { DisplayStyle3d, ModelSelector, CategorySelector, SpatialViewDefinition } from "../backend/ViewDefinition";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 describe("iModel", () => {
-  let imodel: IModelDb;
+  let imodel1: IModelDb;
   let imodel2: IModelDb;
   let imodel3: IModelDb;
   let imodel4: IModelDb;
 
   before(async () => {
-    imodel = await IModelTestUtils.openIModel("test.bim");
+    imodel1 = await IModelTestUtils.openIModel("test.bim");
     imodel2 = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
     imodel3 = await IModelTestUtils.openIModel("GetSetAutoHandledStructProperties.bim");
     imodel4 = await IModelTestUtils.openIModel("GetSetAutoHandledArrayProperties.bim");
   });
 
   after(() => {
-    IModelTestUtils.closeIModel(imodel);
+    IModelTestUtils.closeIModel(imodel1);
     IModelTestUtils.closeIModel(imodel2);
     IModelTestUtils.closeIModel(imodel3);
     IModelTestUtils.closeIModel(imodel4);
@@ -51,15 +54,14 @@ describe("iModel", () => {
 
     // now round trip the entity through a json string and back to a new entity.
     const jsonObj = JSON.parse(JSON.stringify(entity)) as EntityProps;
-    jsonObj.iModel = entity.iModel; // this gets lost in the JSON string
-    const el2 = new (entity.constructor as EntityCtor)(jsonObj); // create a new entity from the json
+    const el2 = new (entity.constructor as EntityCtor)(jsonObj, entity.iModel); // create a new entity from the json
     el2.setPersistent(); // just to allow deepEqual to work
     assert.deepEqual(entity, el2, "json stringify worked");
   };
 
   it("should use schema to look up classes by name", () => {
-    const elementClass = BisCore.getClass(Element.name, imodel);
-    const categoryClass = BisCore.getClass(Category.name, imodel);
+    const elementClass = BisCore.getClass(Element.name, imodel1);
+    const categoryClass = BisCore.getClass(Category.name, imodel1);
     assert.isDefined(elementClass);
     assert.isDefined(categoryClass);
     assert.equal(elementClass!.name, "Element");
@@ -67,16 +69,16 @@ describe("iModel", () => {
   });
 
   it("should load a known element by Id from an existing iModel", async () => {
-    assert.exists(imodel.elements);
+    assert.exists(imodel1.elements);
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
-    const el = await imodel.elements.getElement(code1);
+    const el = await imodel1.elements.getElement(code1);
     assert.exists(el);
-    const el2 = await imodel.elements.getElement(new Id64("0x34"));
+    const el2 = await imodel1.elements.getElement(new Id64("0x34"));
     assert.exists(el2);
     const badCode = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
 
     try {
-      await imodel.elements.getElement(badCode); // throws Error
+      await imodel1.elements.getElement(badCode); // throws Error
       assert.fail(); // this line should be skipped
     } catch (error) {
       assert.instanceOf(error, Error);
@@ -86,7 +88,7 @@ describe("iModel", () => {
       assert.isTrue(error.toString().startsWith("IModelStatus.NotFound"));
     }
 
-    const subCat = await imodel.elements.getElement(new Id64("0x2e"));
+    const subCat = await imodel1.elements.getElement(new Id64("0x2e"));
     assert.isTrue(subCat instanceof SubCategory);
     if (subCat instanceof SubCategory) {
       assert.isTrue(subCat.appearance.color.tbgr === 16777215);
@@ -101,7 +103,7 @@ describe("iModel", () => {
     }
 
     /// Get the parent Category of the subcategory.
-    const cat = await imodel.elements.getElement((subCat as SubCategory).getCategoryId());
+    const cat = await imodel1.elements.getElement((subCat as SubCategory).getCategoryId());
     assert.isTrue(cat instanceof Category);
     if (cat instanceof Category) {
       assert.isTrue(cat.id.getLow() === 45);
@@ -113,7 +115,7 @@ describe("iModel", () => {
       testCopyAndJson(cat);
     }
 
-    const phys = await imodel.elements.getElement(new Id64("0x38"));
+    const phys = await imodel1.elements.getElement(new Id64("0x38"));
     assert.isTrue(phys instanceof GeometricElement3d);
 
     const a2 = await imodel2.elements.getElement(new Id64("0x1d"));
@@ -157,13 +159,13 @@ describe("iModel", () => {
   });
 
   it("should have a valid root subject element", async () => {
-    const rootSubject = await imodel.elements.getRootSubject();
+    const rootSubject = await imodel1.elements.getRootSubject();
     assert.exists(rootSubject);
     assert.isTrue(rootSubject instanceof Subject);
     assert.isAtLeast(rootSubject.code.getValue().length, 1);
 
     try {
-      await imodel.models.getSubModel(rootSubject.id); // throws error
+      await imodel1.models.getSubModel(rootSubject.id); // throws error
       assert.fail(); // this line should be skipped
     } catch (error) {
       assert.isTrue(error instanceof Error);
@@ -172,17 +174,17 @@ describe("iModel", () => {
       assert.equal(error.name, "IModelStatus.NotFound");
     }
 
-    const childIds: Id64[] = await imodel.elements.queryChildren(rootSubject.id);
+    const childIds: Id64[] = await imodel1.elements.queryChildren(rootSubject.id);
     assert.isAtLeast(childIds.length, 1);
     for (const childId of childIds) {
-      const childElement = await imodel.elements.getElement(childId);
+      const childElement = await imodel1.elements.getElement(childId);
       assert.exists(childElement);
       assert.isTrue(childElement instanceof Element);
 
       testCopyAndJson(childElement);
       assert.isTrue(childElement.parent!.id.getLow() === rootSubject.id.getLow());
       if (childElement instanceof InformationPartitionElement) {
-        const childSubModel: Model = await imodel.models.getSubModel(childElement.id);
+        const childSubModel: Model = await imodel1.models.getSubModel(childElement.id);
         assert.exists(childSubModel, "InformationPartitionElements should have a subModel");
 
         if ((childId.getLow() === 16) && (childId.getHigh() === 0)) {
@@ -207,17 +209,17 @@ describe("iModel", () => {
   });
 
   it("should load a known model by Id from an existing iModel", async () => {
-    assert.exists(imodel.models);
-    const model2 = await imodel.models.getModel(new Id64("0x1c"));
+    assert.exists(imodel1.models);
+    const model2 = await imodel1.models.getModel(new Id64("0x1c"));
     assert.exists(model2);
     testCopyAndJson(model2);
-    let model = await imodel.models.getModel(imodel.models.repositoryModelId);
+    let model = await imodel1.models.getModel(imodel1.models.repositoryModelId);
     assert.exists(model);
     testCopyAndJson(model!);
     const code1 = new Code({ spec: "0x1d", scope: "0x1d", value: "A" });
-    model = await imodel.models.getSubModel(code1);
+    model = await imodel1.models.getSubModel(code1);
     // By this point, we expect the submodel's class to be in the class registry *cache*
-    const geomModel = ClassRegistry.getClass("BisCore:PhysicalModel", imodel);
+    const geomModel = ClassRegistry.getClass("BisCore:PhysicalModel", imodel1);
     assert.exists(model);
     assert.isTrue(model instanceof geomModel!);
     testCopyAndJson(model!);
@@ -225,7 +227,6 @@ describe("iModel", () => {
 
   it("Model Selectors should hold models", async () => {
     const props: ModelSelectorProps = {
-      iModel: imodel,
       classFullName: BisCore.name + ":" + ModelSelector.name,
       model: new Id64([1, 1]),
       code: Code.createEmpty(),
@@ -233,7 +234,7 @@ describe("iModel", () => {
       models: ["0X001"],
     };
 
-    const selector = new ModelSelectorState(props);
+    const selector = new ModelSelectorState(props, imodel1);
     selector.addModel(new Id64([2, 1]));
     selector.addModel(new Id64([2, 1]));
     selector.addModel(new Id64([2, 3]));
@@ -241,14 +242,14 @@ describe("iModel", () => {
     const out = selector.toJSON();
     assert.isArray(out.models);
     assert.equal(out.models.length, 3);
-    out.iModel = imodel;
-    const sel2 = imodel.constructEntity(out);
+    out.iModel = imodel1;
+    const sel2 = imodel1.constructEntity(out);
     assert.instanceOf(sel2, ModelSelector);
     assert.equal(sel2.models.length, 3);
   });
 
   it("should produce an array of rows", async () => {
-    const rows: any[] = await imodel.executeQuery("SELECT * FROM " + Category.sqlName);
+    const rows: any[] = await imodel1.executeQuery("SELECT * FROM " + Category.sqlName);
     assert.exists(rows);
     assert.isArray(rows);
     assert.isAtLeast(rows.length, 1);
@@ -258,8 +259,8 @@ describe("iModel", () => {
 
   it("ElementPropertyFormatter should format", async () => {
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
-    const el = await imodel.elements.getElement(code1);
-    const formatter: ElementPropertyFormatter = new ElementPropertyFormatter(imodel);
+    const el = await imodel1.elements.getElement(code1);
+    const formatter: ElementPropertyFormatter = new ElementPropertyFormatter(imodel1);
     const props = await formatter.formatProperties(el);
     assert.exists(props);
     // WIP: format seems to have changed?
@@ -271,11 +272,11 @@ describe("iModel", () => {
   });
 
   it("should be at least one view element", async () => {
-    const viewRows: any[] = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + SpatialViewDefinition.sqlName);
+    const viewRows: any[] = await imodel1.executeQuery("SELECT EcInstanceId as elementId FROM " + SpatialViewDefinition.sqlName);
     assert.exists(viewRows, "Should find some views");
     for (const viewRow of viewRows!) {
       const viewId = new Id64(viewRow.elementId);
-      const view = await imodel.elements.getElement(viewId) as SpatialViewDefinition;
+      const view = await imodel1.elements.getElement(viewId) as SpatialViewDefinition;
       assert.isTrue(view instanceof SpatialViewDefinition, "Should be instance of SpatialViewDefinition");
       assert.isTrue(view.code.value === "A Views - View 1", "Code value is A Views - View 1");
       assert.isTrue(view.displayStyleId.value === "0x36", "Display Style Id is 0x36");
@@ -288,22 +289,25 @@ describe("iModel", () => {
       assert.isTrue(view.jsonProperties.viewDetails.gridSpaceX === 0.001, "GridSpaceX as expected");
 
       // get the display style element
-      const displayStyle = await imodel.elements.getElement(view.displayStyleId);
+      const displayStyle = await imodel1.elements.getElement(view.displayStyleId);
       assert.isTrue(displayStyle instanceof DisplayStyle3d, "The Display Style should be a DisplayStyle3d");
-      const dStyleState = new DisplayStyle3dState(displayStyle.toJSON());
+      const dStyleState = new DisplayStyle3dState(displayStyle.toJSON(), imodel1);
       const bgColorDef = dStyleState.backgroundColor;
       assert.isTrue(bgColorDef.tbgr === 0, "The background as expected");
       const sceneBrightness: number = dStyleState.getSceneBrightness();
       assert.equal(sceneBrightness, 0);
+      const styleProps = await imodel1.elements.getElementProps(view.displayStyleId);
+      const dStyleState2 = new DisplayStyle3dState(styleProps, imodel1);
+      assert.deepEqual(dStyleState, dStyleState2);
 
-      const catSel = await imodel.elements.getElement(view.categorySelectorId) as CategorySelector;
+      const catSel = await imodel1.elements.getElement(view.categorySelectorId) as CategorySelector;
       assert.isDefined(catSel.categories);
       assert.lengthOf(catSel.categories, 4);
-      const modelSel = await imodel.elements.getElement(view.modelSelectorId) as ModelSelector;
+      const modelSel = await imodel1.elements.getElement(view.modelSelectorId) as ModelSelector;
       assert.isDefined(modelSel.models);
       assert.lengthOf(modelSel.models, 5);
 
-      const viewState = new SpatialViewState(view.toJSON(), new CategorySelectorState(catSel.toJSON()), dStyleState, new ModelSelectorState(modelSel.toJSON()));
+      const viewState = new SpatialViewState(view.toJSON(), imodel1, new CategorySelectorState(catSel.toJSON(), imodel1), dStyleState, new ModelSelectorState(modelSel.toJSON(), imodel1));
       assert.isDefined(viewState.displayStyle);
       assert.instanceOf(viewState.categorySelector, CategorySelectorState);
       assert.equal(viewState.categorySelector.categories.size, 4);
@@ -314,11 +318,11 @@ describe("iModel", () => {
   });
 
   it("should be some categories", async () => {
-    const categoryRows: any[] = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + Category.sqlName);
+    const categoryRows: any[] = await imodel1.executeQuery("SELECT EcInstanceId as elementId FROM " + Category.sqlName);
     assert.exists(categoryRows, "Should have some Category ids");
     for (const categoryRow of categoryRows!) {
       const categoryId: Id64 = new Id64(categoryRow.elementId);
-      const category = await imodel.elements.getElement(categoryId);
+      const category = await imodel1.elements.getElement(categoryId);
       assert.isTrue(category instanceof Category, "Should be instance of Category");
       if (!category)
         continue;
@@ -327,7 +331,7 @@ describe("iModel", () => {
 
       // verify the default subcategory.
       const defaultSubCategoryId: Id64 = category.myDefaultSubCategoryId();
-      const defaultSubCategory = await imodel.elements.getElement(defaultSubCategoryId);
+      const defaultSubCategory = await imodel1.elements.getElement(defaultSubCategoryId);
       assert.isTrue(defaultSubCategory instanceof SubCategory, "defaultSubCategory should be instance of SubCategory");
       if (defaultSubCategory instanceof SubCategory) {
         assert.isTrue(defaultSubCategory.parent!.id.equals(categoryId), "defaultSubCategory id should be prescribed value");
@@ -337,11 +341,11 @@ describe("iModel", () => {
 
       // get the subcategories
       const queryString: string = "SELECT ECInstanceId as elementId FROM " + SubCategory.sqlName + " WHERE Parent.Id=?";
-      const subCategoryRows: any[] = await imodel.executeQuery(queryString, [categoryId]);
+      const subCategoryRows: any[] = await imodel1.executeQuery(queryString, [categoryId]);
       assert.exists(subCategoryRows, "Should have at least one SubCategory");
       for (const subCategoryRow of subCategoryRows) {
         const subCategoryId = new Id64(subCategoryRow.elementId);
-        const subCategory = await imodel.elements.getElement(subCategoryId);
+        const subCategory = await imodel1.elements.getElement(subCategoryId);
         assert.isTrue(subCategory instanceof SubCategory);
         if (subCategory instanceof SubCategory) {
           assert.isTrue(subCategory.parent!.id.equals(categoryId));
@@ -422,7 +426,7 @@ describe("iModel", () => {
   });
 
   it("should produce an array of rows with executeQuery", async () => {
-    const rows: any[] = await imodel.executeQuery("SELECT * FROM bis.Element");
+    const rows: any[] = await imodel1.executeQuery("SELECT * FROM bis.Element");
     assert.exists(rows);
     assert.isArray(rows);
     assert.notEqual(rows.length, 0);
@@ -529,7 +533,7 @@ describe("iModel", () => {
   }
 
   it("should get metadata for class", () => {
-    const metaData: EntityMetaData = imodel.getMetaData("BisCore:Element");
+    const metaData: EntityMetaData = imodel1.getMetaData("BisCore:Element");
     assert.exists(metaData);
     checkElementMetaData(metaData);
   });
@@ -541,13 +545,13 @@ describe("iModel", () => {
   }
 
   it("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
-    const metaData: EntityMetaData = imodel.getMetaData("BisCore:ClassHasHandler");
+    const metaData: EntityMetaData = imodel1.getMetaData("BisCore:ClassHasHandler");
     assert.exists(metaData);
     checkClassHasHandlerMetaData(metaData);
   });
 
   it("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
-    const metaData: EntityMetaData = imodel.getMetaData("BisCore:ClassHasHandler");
+    const metaData: EntityMetaData = imodel1.getMetaData("BisCore:ClassHasHandler");
     assert.exists(metaData);
     checkClassHasHandlerMetaData(metaData);
   });
@@ -656,6 +660,7 @@ describe("iModel", () => {
 
     const ifperfimodel = await IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", { copyFilename: "ImodelJsTest_MeasureInsertPerformance.bim", enableTransactions: true });
 
+    // tslint:disable-next-line:no-console
     console.time("ImodelJsTest.MeasureInsertPerformance");
 
     // TODO: Look up model by code (i.e., codevalue of a child of root subject, where child has a PhysicalPartition)
@@ -701,6 +706,7 @@ describe("iModel", () => {
       assert.equal(row.count, expectedCountAsHex);
     });
 
+    // tslint:disable-next-line:no-console
     console.timeEnd("ImodelJsTest.MeasureInsertPerformance");
 
   });

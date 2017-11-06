@@ -26,7 +26,7 @@ export const enum PrimitiveTypeCode {
 /** the constructor for an Entity. Must have a static member named schema and a ctor that accepts either an EntityProp or an Entity (for cloning). */
 export interface EntityCtor extends FunctionConstructor {
   schema: Schema;
-  new(args: EntityProps | Entity): Entity;
+  new(args: EntityProps | Entity, iModel: IModel): Entity;
 }
 
 /** a callback function to process properties of an Entity */
@@ -50,8 +50,8 @@ export class Entity implements EntityProps {
   /** The Id of this Entity. Valid only if persistent. */
   public id: Id64;
 
-  constructor(props: EntityProps) {
-    this.iModel = props.iModel;
+  constructor(props: EntityProps, iModel: IModel) {
+    this.iModel = iModel;
     // copy all auto-handled properties from input to the object being constructed
     this.forEachProperty((propName: string, meta: PropertyMetaData) => this[propName] = meta.createProperty(props[propName]));
   }
@@ -84,7 +84,7 @@ export class Entity implements EntityProps {
   public isPersistent() { return this.persistent; }
 
   /** make a copy of this Entity so that it may be be modified. */
-  public copyForEdit<T extends Entity>() { return new (this.constructor as EntityCtor)(this) as T; }
+  public copyForEdit<T extends Entity>() { return new (this.constructor as EntityCtor)(this, this.iModel) as T; }
 }
 
 /** A custom attribute instance */

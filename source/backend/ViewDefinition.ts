@@ -8,26 +8,27 @@ import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { ElementProps } from "../common/ElementProps";
 import { Camera, ViewDefinitionProps, ViewDefinition3dProps, ViewDefinition2dProps, SpatialViewDefinitionProps, ModelSelectorProps, CategorySelectorProps } from "../common/ViewState";
 import { DefinitionElement } from "./Element";
+import { IModel } from "../common/IModel";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
 export class DisplayStyle extends DefinitionElement {
-  public constructor(props: ElementProps) { super(props); }
+  public constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
 }
 
 /** A DisplayStyle for 2d views */
 export class DisplayStyle2d extends DisplayStyle {
-  public constructor(props: ElementProps) { super(props); }
+  public constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
 }
 
 /** A DisplayStyle for 3d views */
 export class DisplayStyle3d extends DisplayStyle {
-  public constructor(props: ElementProps) { super(props); }
+  public constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
 }
 
 /** A list of GeometricModels for a SpatialViewDefinition. */
 export class ModelSelector extends DefinitionElement implements ModelSelectorProps {
   public models: string[];
-  constructor(props: ModelSelectorProps) { super(props); this.models = props.models; }
+  constructor(props: ModelSelectorProps, iModel: IModel) { super(props, iModel); this.models = props.models; }
   public toJSON(): ModelSelectorProps {
     const val = super.toJSON() as ModelSelectorProps;
     val.models = this.models;
@@ -38,7 +39,7 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
 /** A list of Categories to be displayed in a view. */
 export class CategorySelector extends DefinitionElement implements CategorySelectorProps {
   public categories: string[];
-  constructor(props: CategorySelectorProps) { super(props); this.categories = props.categories; }
+  constructor(props: CategorySelectorProps, iModel: IModel) { super(props, iModel); this.categories = props.categories; }
   public toJSON(): CategorySelectorProps {
     const val = super.toJSON() as CategorySelectorProps;
     val.categories = this.categories;
@@ -53,8 +54,8 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
 export abstract class ViewDefinition extends DefinitionElement implements ViewDefinitionProps {
   public categorySelectorId: Id64;
   public displayStyleId: Id64;
-  protected constructor(props: ViewDefinitionProps) {
-    super(props);
+  protected constructor(props: ViewDefinitionProps, iModel: IModel) {
+    super(props, iModel);
     this.categorySelectorId = new Id64(props.categorySelectorId);
     this.displayStyleId = new Id64(props.displayStyleId);
   }
@@ -77,8 +78,8 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
   public angles: YawPitchRollAngles;   // Rotation of the view frustum.
   public camera: Camera;         // The camera used for this view.
 
-  public constructor(props: ViewDefinition3dProps) {
-    super(props);
+  public constructor(props: ViewDefinition3dProps, iModel: IModel) {
+    super(props, iModel);
     this.cameraOn = JsonUtils.asBool(props.cameraOn);
     this.origin = Point3d.fromJSON(props.origin);
     this.extents = Vector3d.fromJSON(props.extents);
@@ -103,7 +104,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
  */
 export class SpatialViewDefinition extends ViewDefinition3d implements SpatialViewDefinitionProps {
   public modelSelectorId: Id64;
-  constructor(props: SpatialViewDefinitionProps) { super(props); this.modelSelectorId = new Id64(props.modelSelectorId); }
+  constructor(props: SpatialViewDefinitionProps, iModel: IModel) { super(props, iModel); this.modelSelectorId = new Id64(props.modelSelectorId); }
   public toJSON(): SpatialViewDefinitionProps {
     const json = super.toJSON() as SpatialViewDefinitionProps;
     json.modelSelectorId = this.modelSelectorId;
@@ -113,7 +114,7 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection. */
 export class OrthographicViewDefinition extends SpatialViewDefinition {
-  constructor(props: SpatialViewDefinitionProps) { super(props); }
+  constructor(props: SpatialViewDefinitionProps, iModel: IModel) { super(props, iModel); }
 }
 
 /** Defines a view of a 2d model. */
@@ -123,8 +124,8 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
   public delta: Point2d;
   public angle: Angle;
 
-  public constructor(props: ViewDefinition2dProps) {
-    super(props);
+  public constructor(props: ViewDefinition2dProps, iModel: IModel) {
+    super(props, iModel);
     this.baseModelId = new Id64(props.baseModelId);
     this.origin = Point2d.fromJSON(props.origin);
     this.delta = Point2d.fromJSON(props.delta);

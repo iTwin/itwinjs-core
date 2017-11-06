@@ -5,6 +5,7 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { CodeSpecNames } from "../common/Code";
 import { DefinitionElement } from "./Element";
+import { IModel } from "../common/IModel";
 import { ElementProps } from "../common/ElementProps";
 import { ColorDef } from "../common/Render";
 
@@ -151,8 +152,8 @@ export interface SubCategoryProps extends ElementProps {
 export class SubCategory extends DefinitionElement implements SubCategoryProps {
   public appearance: Appearance;
   public description?: string;
-  public constructor(props: SubCategoryProps) {
-    super(props);
+  public constructor(props: SubCategoryProps, iModel: IModel) {
+    super(props, iModel);
     this.appearance = new Appearance(props.appearance);
     this.description = JsonUtils.asString(props.description);
   }
@@ -186,8 +187,8 @@ export interface CategoryProps extends ElementProps {
 /** a Category for a Geometric element */
 export class Category extends DefinitionElement implements CategoryProps {
   public rank: Rank = Rank.User;
-  public constructor(props: CategoryProps) {
-    super(props);
+  public constructor(props: CategoryProps, iModel: IModel) {
+    super(props, iModel);
     this.rank = JsonUtils.asInt(props.rank);
     this.description = JsonUtils.asString(props.description);
   }
@@ -205,12 +206,12 @@ export class Category extends DefinitionElement implements CategoryProps {
 
 /** Categorizes 2d graphical elements. */
 export class DrawingCategory extends Category {
-  public constructor(opts: ElementProps) { super(opts); }
+  public constructor(opts: ElementProps, iModel: IModel) { super(opts, iModel); }
   public static getCodeSpecName(): string { return CodeSpecNames.DrawingCategory(); }
 }
 
 /** Categorizes SpatialElements. */
 export class SpatialCategory extends Category {
-  public constructor(opts: ElementProps) { super(opts); }
+  public constructor(opts: ElementProps, iModel: IModel) { super(opts, iModel); }
   public static getCodeSpecName(): string { return CodeSpecNames.SpatialCategory(); }
 }

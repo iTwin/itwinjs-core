@@ -42,8 +42,8 @@ export class ClassRegistry {
    * @throws IModelError if the required constructor or class metadata is not in the cache.
    * @hidden
    */
-  public static createInstance(props: EntityProps): Entity {
-    if (!props.classFullName || !props.iModel)
+  public static createInstance(props: EntityProps, iModel: IModel): Entity {
+    if (!props.classFullName)
       throw new IModelError(IModelStatus.BadArg);
 
     let ctor = ClassRegistry.classMap.get(props.classFullName.toLowerCase());
@@ -53,7 +53,7 @@ export class ClassRegistry {
         throw ClassRegistry.makeClassNotFoundError();
     }
 
-    return new ctor(props);
+    return new ctor(props, iModel);
   }
 
   public static registerSchema(schema: Schema) { Schemas.registerSchema(schema); }

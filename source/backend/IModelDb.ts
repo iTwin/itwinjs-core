@@ -336,7 +336,7 @@ export class IModelDb extends IModel {
   public constructEntity(props: any): Entity {
     let entity: Entity;
     try {
-      entity = ClassRegistry.createInstance(props);
+      entity = ClassRegistry.createInstance(props, this);
     } catch (err) {
       if (!ClassRegistry.isClassNotFoundError(err) && !ClassRegistry.isMetaDataNotFoundError(err)) {
         Logger.logError(err.toString());
@@ -345,7 +345,7 @@ export class IModelDb extends IModel {
 
       // Probably, we have not yet loaded the metadata for this class and/or its superclasses. Do that now, and retry the create.
       this.loadMetaData(props.classFullName!);
-      entity = ClassRegistry.createInstance(props);
+      entity = ClassRegistry.createInstance(props, this);
     }
     return entity;
   }
@@ -449,17 +449,10 @@ export class IModelDbElements {
   /** @hidden */
   public constructor(iModel: IModelDb, maxElements: number = 2000) { this._iModel = iModel; this._loaded = new LRUMap<string, Element>(maxElements); }
 
-  /** Private implementation details of getElement */
-  private async _doGetElement(opts: ElementLoadParams): Promise<Element> {
+  /** Private implementation details of getElementProps */
+  private async _getElementProps(opts: ElementLoadParams): Promise<ElementProps> {
     if (!this._iModel.iModelToken.isOpen)
       return Promise.reject(this._iModel._newNotOpenError());
-
-    // first see if the element is already in the local cache.
-    if (opts.id) {
-      const loaded = this._loaded.get(opts.id.toString());
-      if (loaded)
-        return loaded;
-    }
 
     // Must go get the element from the iModel. Start by requesting the element's data.
     const { error, result: json } = await this._iModel.nativeDb.getElement(JSON.stringify(opts));
@@ -468,15 +461,36 @@ export class IModelDbElements {
 
     const props = JSON.parse(json) as ElementProps;
     props.iModel = this._iModel;
+    return props;
+  }
 
-    const entity = this._iModel.constructEntity(props);
-    const el = entity as Element;
-    assert(el instanceof Element);
+  /** Private implementation details of getElement */
+  private async _doGetElement(opts: ElementLoadParams): Promise<Element> {
+    // first see if the element is already in the local cache.
+    if (opts.id) {
+      const loaded = this._loaded.get(opts.id.toString());
+      if (loaded)
+        return loaded;
+    }
+
+    const props = await this._getElementProps(opts);
+    const el = this._iModel.constructEntity(props) as Element;
 
     // We have created the element. Cache it before we return it.
     el.setPersistent(); // elements in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
     this._loaded.set(el.id.toString(), el);
     return el;
+  }
+
+  /**
+   * Get properties of an Element by Id, FederationGuid, or Code
+   * @throws [[IModelError]] if the element is not found.
+   */
+  public getElementProps(elementId: Id64 | Guid | Code): Promise<ElementProps> {
+    if (elementId instanceof Id64) return this._getElementProps({ id: elementId });
+    if (elementId instanceof Guid) return this._getElementProps({ federationGuid: elementId.toString() });
+    if (elementId instanceof Code) return this._getElementProps({ code: elementId });
+    return Promise.reject(new IModelError(IModelStatus.BadArg, undefined, Logger.logError, () => ({ elementId })));
   }
 
   /**
