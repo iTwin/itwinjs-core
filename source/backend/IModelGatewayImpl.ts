@@ -3,22 +3,20 @@
  *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
+import { ElementProps } from "../common/ElementProps";
 import { EntityQueryParams } from "../common/EntityProps";
+import { Gateway } from "../common/Gateway";
 import { IModelError } from "../common/IModelError";
 import { IModelToken } from "../common/IModel";
 import { IModelVersion } from "../common/IModelVersion";
 import { Logger } from "../common/Logger";
-import { Element } from "../backend/Element";
+import { ModelProps } from "../common/ModelProps";
 import { EntityMetaData } from "../backend/Entity";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { IModelDb } from "../backend/IModelDb";
-import { Model } from "../backend/Model";
-import { Gateway } from "../common/Gateway";
 import { IModelGateway } from "../gateway/IModelGateway";
 
-/**
- * @hidden
- */
+/** @hidden */
 export class IModelGatewayImpl extends IModelGateway {
   public static register() {
     Gateway.registerImplementation(IModelGateway, IModelGatewayImpl);
@@ -42,30 +40,30 @@ export class IModelGatewayImpl extends IModelGateway {
     return rows;
   }
 
-  public async getModels(iModelToken: IModelToken, modelIds: string[]): Promise<any[]> {
+  public async getModelProps(iModelToken: IModelToken, modelIds: string[]): Promise<any[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    const models: Model[] = [];
+    const modelProps: ModelProps[] = [];
     for (const modelId of modelIds) {
       const { error, result: modelJson } = await iModelDb.nativeDb.getModel(JSON.stringify({ id: modelId }));
       if (error)
         return Promise.reject(new IModelError(error.status, error.message, Logger.logWarning));
 
-      models.push(modelJson);
+      modelProps.push(modelJson);
     }
-    return models;
+    return modelProps;
   }
 
-  public async getElements(iModelToken: IModelToken, elementIds: string[]): Promise<any[]> {
+  public async getElementProps(iModelToken: IModelToken, elementIds: string[]): Promise<any[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    const elements: Element[] = [];
+    const elementProps: ElementProps[] = [];
     for (const elementId of elementIds) {
       const { error, result: elementJson } = await iModelDb.nativeDb.getElement(JSON.stringify({ id: elementId }));
       if (error)
         return Promise.reject(new IModelError(error.status, error.message, Logger.logWarning));
 
-      elements.push(elementJson);
+      elementProps.push(elementJson);
     }
-    return elements;
+    return elementProps;
   }
 
   public async queryElementIds(iModelToken: IModelToken, params: EntityQueryParams): Promise<string[]> {

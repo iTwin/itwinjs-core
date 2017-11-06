@@ -77,8 +77,8 @@ export class IModelConnectionModels {
   public get repositoryModelId(): Id64 { return new Id64("0x1"); }
 
   /** Ask the backend for a batch of [[ModelProps]] given a list of model ids. */
-  public async getModels(modelIds: Id64[]): Promise<ModelProps[]> {
-    const modelJsonArray = await IModelGateway.getProxy().getModels(this._iModel.iModelToken, modelIds.map((id: Id64) => id.toString()));
+  public async getModelProps(modelIds: Id64[]): Promise<ModelProps[]> {
+    const modelJsonArray = await IModelGateway.getProxy().getModelProps(this._iModel.iModelToken, modelIds.map((id: Id64) => id.toString()));
     const models: ModelProps[] = [];
     for (const modelJson of modelJsonArray) {
       const modelProps = JSON.parse(modelJson) as ModelProps;
@@ -99,8 +99,8 @@ export class IModelConnectionElements {
   public get rootSubjectId(): Id64 { return new Id64("0x1"); }
 
   /** Ask the backend for a batch of [[ElementProps]] given a list of element ids. */
-  public async getElements(elementIds: Id64[]): Promise<ElementProps[]> {
-    const elementJsonArray: any[] = await IModelGateway.getProxy().getElements(this._iModel.iModelToken, elementIds.map((id: Id64) => id.toString()));
+  public async getElementProps(elementIds: Id64[]): Promise<ElementProps[]> {
+    const elementJsonArray: any[] = await IModelGateway.getProxy().getElementProps(this._iModel.iModelToken, elementIds.map((id: Id64) => id.toString()));
     const elements: ElementProps[] = [];
     for (const elementJson of elementJsonArray) {
       const elementProps = JSON.parse(elementJson) as ElementProps;
