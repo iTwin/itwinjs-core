@@ -9,7 +9,7 @@ import { IModelVersion } from "../common/IModelVersion";
 import { Gateway } from "../common/Gateway";
 
 export abstract class IModelGateway extends Gateway {
-  /** Returns the IModelGatewayProxy instance for the current environment. */
+  /** Returns the IModelGatewayProxy instance for the frontend. */
   public static getProxy(): IModelGateway {
     return Gateway.getProxyForGateway(IModelGateway);
   }

@@ -14,6 +14,11 @@ import { Model } from "../backend/Model";
 import { IModelDb } from "../backend/IModelDb";
 import { SpatialCategory, DrawingCategory } from "../backend/Category";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
+import { Gateway } from "../common/Gateway";
+import { IModelGateway } from "../gateway/IModelGateway";
+
+// Initialize the gateway classes used by tests
+Gateway.initialize(IModelGateway);
 
 declare const __dirname: string;
 
