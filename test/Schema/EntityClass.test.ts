@@ -83,18 +83,18 @@ describe("entity class", () => {
         children: {
           testMixin: {
             schemaChildType: "Mixin",
-            appliesTo: "testClass",
+            appliesTo: "TestSchema.testClass",
           },
           testClass: {
             schemaChildType: "EntityClass",
             mixin: [
-              "testMixin",
-              "anotherMixin",
+              "TestSchema.testMixin",
+              "TestSchema.anotherMixin",
             ],
           },
           anotherMixin: {
             schemaChildType: "Mixin",
-            appliesTo: "testClass",
+            appliesTo: "TestSchema.testClass",
           },
         },
       };
@@ -114,7 +114,7 @@ describe("entity class", () => {
           },
           testClass: {
             schemaChildType: "EntityClass",
-            baseClass: "baseClass",
+            baseClass: "TestSchema.baseClass",
           },
         },
       };

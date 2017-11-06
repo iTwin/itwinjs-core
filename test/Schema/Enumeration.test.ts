@@ -36,28 +36,28 @@ describe("enumeration", () => {
       expect(testEnum.isStrict).equal(true);
     });
 
-    // it("with enumerators", () => {
-    //   const testSchema = {
-    //     $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
-    //     name: "TestSchema",
-    //     version: "1.2.3",
-    //     children: {
-    //       testEnum: {
-    //         schemaChildType: "Enumeration",
-    //         backingTypeName: "integer",
-    //         enumerators: [
-    //           {
-    //             value: 0,
-    //             label: "None",
-    //           },
-    //         ],
-    //       },
-    //     },
-    //   };
+    it("with enumerators", () => {
+      const testSchema = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        children: {
+          testEnum: {
+            schemaChildType: "Enumeration",
+            backingTypeName: "integer",
+            enumerators: [
+              {
+                value: 0,
+                label: "None",
+              },
+            ],
+          },
+        },
+      };
 
-    //   const ecSchema = ECSchema.fromJson(testSchema);
-    //   const testEnum = ecSchema.getChild<Enumeration>("testEnum");
-    //   assert.isDefined(testEnum);
-    // });
+      const ecSchema = ECSchema.fromJson(testSchema);
+      const testEnum = ecSchema.getChild<Enumeration>("testEnum");
+      assert.isDefined(testEnum);
+    });
   });
 });

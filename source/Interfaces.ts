@@ -2,11 +2,16 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { ECVersion, ECClassModifier, CustomAttributeContainerType, PrimitiveType } from "./ECObjects";
+import { ECVersion, ECClassModifier, CustomAttributeContainerType, PrimitiveType, SchemaMatchType } from "./ECObjects";
 
 export interface SchemaKeyInterface {
   name: string;
   version: ECVersion;
+  readVersion: number;
+  writeVersion: number;
+  minorVersion: number;
+  checksum: number;
+  matches(rhs: SchemaKeyInterface, matchType: SchemaMatchType): boolean;
 }
 
 export interface SchemaInterface {

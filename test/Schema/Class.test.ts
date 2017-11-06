@@ -6,6 +6,7 @@ import { assert } from "chai";
 
 import { ECSchema } from "../../source/Metadata/Schema";
 import { Class } from "../../source/Metadata/Class";
+import { SchemaContext } from "../../source/Context";
 
 describe("class", () => {
   describe("deserialization", () => {
@@ -20,7 +21,7 @@ describe("class", () => {
           },
           testClass: {
             schemaChildType: "EntityClass",
-            baseClass: "testBaseClass",
+            baseClass: "TestSchema.testBaseClass",
           },
         },
       };
@@ -37,6 +38,41 @@ describe("class", () => {
       assert.isDefined(baseClass);
 
       assert.isTrue(baseClass === testClass.baseClass);
+    });
+
+    it("class with base class in reference schema", () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        references: [
+          {
+            name: "RefSchema",
+            version: "1.0.5",
+          },
+        ],
+        children: {
+          testClass: {
+            schemaChildType: "EntityClass",
+            baseClass: "RefSchema.BaseClassInRef",
+          },
+        },
+      };
+
+      const refSchema = new ECSchema("RefSchema", 1, 0, 5);
+      const refBaseClass = refSchema.createEntityClass("BaseClassInRef");
+
+      const context = new SchemaContext();
+      context.addSchema(refSchema);
+
+      const schema = ECSchema.fromJson(schemaJson, context);
+
+      const testClass = schema.getClass("testClass");
+
+      assert.isDefined(testClass);
+      assert.isDefined(testClass!.baseClass);
+      assert.isTrue(testClass!.baseClass === refBaseClass);
+
     });
   });
 });

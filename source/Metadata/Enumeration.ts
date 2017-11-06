@@ -46,7 +46,7 @@ export class Enumeration extends SchemaChild {
       this.isStrict = jsonObj.isStrict;
     }
 
-    if (jsonObj.backTypeName) {
+    if (jsonObj.backingTypeName) {
       if (/int/i.test(jsonObj.backingTypeName))
         this.type = PrimitiveType.Integer;
       else if (/string/i.test(jsonObj.backingTypeName))
@@ -58,9 +58,9 @@ export class Enumeration extends SchemaChild {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'enumerators' attribute. It should be of type 'array'.`);
 
       jsonObj.enumerators.forEach((enumerator: any) => {
-        if (!enumerator.value)
+        if (!enumerator.value && enumerator.value !== 0)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator that is missing the required attribute 'value'.`);
-        else if (typeof(enumerator.value) !== "string" || typeof(enumerator.value) !== "number")
+        else if (typeof(enumerator.value) !== "string" && typeof(enumerator.value) !== "number")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'value' attribute.
                                                                     The value attribute must be of type ${this.type === PrimitiveType.Integer ? "'number'" : "'string'"}.`);
         // Need to check if the Enumerator exists

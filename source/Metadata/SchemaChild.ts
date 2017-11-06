@@ -41,9 +41,12 @@ export default abstract class SchemaChild implements SchemaChildInterface {
    * @param fullName The full name to be parsed.
    */
   public static parseFullName(fullName: string): [string, string] {
-    const matches = fullName.match("^([a-zA-Z_.]+[a-zA-Z0-9_.]*)\.([a-zA-Z_.]+[a-zA-Z0-9_.]*)$");
-    if (matches === null) return ["", ""];
+    const matches = /^([a-zA-Z_.]+[a-zA-Z0-9_.]*)\.([a-zA-Z_.]+[a-zA-Z0-9_.]*)$/.exec(fullName);
 
-    return ["", ""];
+    // The first match will be the full string match, the second two will be the two groups
+    if (matches === null || matches.length !== 3)
+      return ["", ""];
+
+    return [matches[1], matches[2]];
   }
 }

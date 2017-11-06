@@ -44,6 +44,19 @@ export const enum CustomAttributeContainerType {
   Any = Schema | AnyClass | AnyProperty | AnyRelationshipConstraint,
 }
 
+export const enum SchemaMatchType {
+  // Find exact VersionRead, VersionWrite, VersionMinor match as well as Data
+  Identical,
+  // Find exact VersionRead, VersionWrite, VersionMinor match.
+  Exact,
+  // Find latest version with matching VersionRead and VersionWrite
+  LatestWriteCompatible,
+  // Find latest version.
+  Latest,
+  // Find latest version with matching VersionRead
+  LatestReadCompatible,
+}
+
 /**
  * Parses the provided string into an ECClassModifier if the string is a valid modifier.
  * @param modifier The modifier string to parse
@@ -252,6 +265,9 @@ export class ECVersion {
   }
 }
 
+/**
+ *
+ */
 export class ECName {
   private _name: string;
 
@@ -269,11 +285,13 @@ export class ECName {
 }
 
 /**
- *
+ * The SchemaKey object contains
  */
 export class SchemaKey implements SchemaKeyInterface {
   private _name: ECName;
   public version: ECVersion;
+  public checksum: number;
+  // TODO: need to add a hash
 
   constructor(name?: string, readVersion?: number, writeVersion?: number, minorVersion?: number) {
     if (name)
@@ -303,4 +321,49 @@ export class SchemaKey implements SchemaKeyInterface {
   }
 
   public toString() { return `${this.name}.${this.readVersion}.${this.writeVersion}.${this.minorVersion}`; }
+
+  /*
+   * Compares two schema names and returns whether or not they match. Comparison is case-sensitive.
+   */
+  public compareByName(rhs: SchemaKey | string): boolean {
+    if (typeof(rhs) === "string")
+      return rhs === this.name;
+    return rhs.name === this.name;
+  }
+
+  /**
+   *
+   * @param rhs The SchemaKey to compare with
+   * @param matchType The match type to use for comparison.
+   */
+  public matches(rhs: SchemaKeyInterface, matchType: SchemaMatchType = SchemaMatchType.Identical): boolean {
+    switch (matchType) {
+      case SchemaMatchType.Identical:
+        if (this.checksum && rhs.checksum)
+          return this.checksum === rhs.checksum;
+        return this.compareByName(rhs.name) && this.readVersion === rhs.readVersion &&
+            this.writeVersion === rhs.writeVersion && this.minorVersion === rhs.minorVersion;
+      case SchemaMatchType.Exact:
+        return this.compareByName(rhs.name) && this.readVersion === rhs.readVersion &&
+              this.writeVersion === rhs.writeVersion && this.minorVersion === rhs.minorVersion;
+      case SchemaMatchType.LatestReadCompatible:
+        if (!this.compareByName(rhs.name))
+          return false;
+
+        if (rhs.readVersion !== this.readVersion)
+          return false;
+
+        if (this.writeVersion === rhs.writeVersion)
+            return this.minorVersion >= rhs.minorVersion;
+
+        return this.writeVersion > rhs.writeVersion;
+      case SchemaMatchType.LatestWriteCompatible:
+        return this.compareByName (rhs.name) && this.readVersion === rhs.readVersion &&
+                this.writeVersion === rhs.writeVersion && this.minorVersion >= rhs.minorVersion;
+      case SchemaMatchType.Latest:
+          return this.compareByName(rhs.name);
+      default:
+          return false;
+    }
+  }
 }
