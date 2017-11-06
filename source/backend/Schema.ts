@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
-import { IModel } from "../common/IModel";
-import { EntityCtor } from "./Entity";
 import { ClassRegistry } from "./ClassRegistry";
+import { EntityCtor } from "./Entity";
+import { IModelDb } from "./IModelDb";
 
 /** Base class for all schema classes. */
 export class Schema {
@@ -12,11 +12,11 @@ export class Schema {
 
   /** Get the EntityCtor for the specified class name
    * @param className The name of the Entity
-   * @param imodel The IModel that contains the class definitions
+   * @param iModel The IModel that contains the class definitions
    * @returns The corresponding ClassCtor
    */
-  public static getClass(className: string, imodel: IModel): EntityCtor | undefined {
-    return ClassRegistry.getClass(this.name + ":" + className, imodel);
+  public static getClass(className: string, iModel: IModelDb): EntityCtor | undefined {
+    return ClassRegistry.getClass(this.name + ":" + className, iModel);
   }
 }
 

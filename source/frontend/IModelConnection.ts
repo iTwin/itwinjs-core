@@ -82,7 +82,6 @@ export class IModelConnectionModels {
     const models: ModelProps[] = [];
     for (const modelJson of modelJsonArray) {
       const modelProps = JSON.parse(modelJson) as ModelProps;
-      modelProps.iModel = this._iModel;
       models.push(modelProps);
     }
     return models;
@@ -105,7 +104,6 @@ export class IModelConnectionElements {
     const elements: ElementProps[] = [];
     for (const elementJson of elementJsonArray) {
       const elementProps = JSON.parse(elementJson) as ElementProps;
-      elementProps.iModel = this._iModel;
       elements.push(elementProps);
     }
     return elements;

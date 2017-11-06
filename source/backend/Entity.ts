@@ -44,13 +44,13 @@ export class Entity implements EntityProps {
   /** The schema that defines this class. */
   public static schema: Schema;
 
-  /** The IModel that contains this Entity */
-  public iModel: IModel;
+  /** The [[IModelDb]] that contains this Entity */
+  public iModel: IModelDb;
 
   /** The Id of this Entity. Valid only if persistent. */
   public id: Id64;
 
-  constructor(props: EntityProps, iModel: IModel) {
+  constructor(props: EntityProps, iModel: IModelDb) {
     this.iModel = iModel;
     // copy all auto-handled properties from input to the object being constructed
     this.forEachProperty((propName: string, meta: PropertyMetaData) => this[propName] = meta.createProperty(props[propName]));
@@ -64,7 +64,7 @@ export class Entity implements EntityProps {
   }
 
   /** call a function for each property of this Entity. Function arguments are property name and property metadata. */
-  public forEachProperty(func: PropertyCallback, includeCustom: boolean = false) { EntityMetaData.forEach(this.iModel as IModelDb, this.classFullName, true, func, includeCustom); } // WIP
+  public forEachProperty(func: PropertyCallback, includeCustom: boolean = false) { EntityMetaData.forEach(this.iModel, this.classFullName, true, func, includeCustom); }
 
   /** STATIC method to get the full name of this class, in the form "schema.class"  */
   public static get sqlName() { return this.schema.name + "." + this.name; }

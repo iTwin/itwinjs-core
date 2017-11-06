@@ -4,13 +4,13 @@
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { ElementAspectProps } from "../common/ElementAspectProps";
 import { Entity } from "./Entity";
-import { IModel } from "../common/IModel";
+import { IModelDb } from "./IModelDb";
 
 /** ElementAspect */
 export class ElementAspect extends Entity implements ElementAspectProps {
   public element: Id64;
 
-  constructor(props: ElementAspectProps, iModel: IModel) {
+  constructor(props: ElementAspectProps, iModel: IModelDb) {
     super(props, iModel);
     this.element = new Id64(props.element);
   }

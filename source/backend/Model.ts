@@ -4,8 +4,8 @@
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { ModelProps } from "../common/ModelProps";
-import { IModel } from "../common/IModel";
 import { Entity } from "./Entity";
+import { IModelDb } from "./IModelDb";
 
 /** A Model within an iModel */
 export class Model extends Entity implements ModelProps {
@@ -15,7 +15,7 @@ export class Model extends Entity implements ModelProps {
   public isPrivate: boolean;
   public isTemplate: boolean;
 
-  constructor(props: ModelProps, iModel: IModel) {
+  constructor(props: ModelProps, iModel: IModelDb) {
     super(props, iModel);
     this.id = new Id64(props.id);
     this.modeledElement = new Id64(props.modeledElement);
