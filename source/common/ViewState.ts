@@ -141,6 +141,11 @@ export class Frustum {
   }
 }
 
+/** the constructor for an ElementState (for cloning). */
+export interface ElementStateCtor extends FunctionConstructor {
+  new(args: ElementProps, iModel: IModel): ElementState;
+}
+
 export class ElementState implements ElementProps {
   public readonly iModel: IModel;
   public readonly id: Id64;
@@ -182,6 +187,9 @@ export class ElementState implements ElementProps {
       val.jsonProperties = this.jsonProperties;
     return val;
   }
+
+  /** make a complete, independent copy of this ElementState */
+  public clone<T extends this>() { return new (this.constructor as ElementStateCtor)(this.toJSON(), this.iModel) as T; }
 }
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
@@ -604,7 +612,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Get the name of this ViewDefinition */
-  public getName(): string { return this.code.getValue(); }
+  public get name(): string { return this.code.getValue(); }
 
   /** Get the current value of a view detail */
   public getDetail(name: string): any { const v = this.getDetails()[name]; return v ? v : {}; }

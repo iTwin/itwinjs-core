@@ -127,7 +127,7 @@ describe("iModel", () => {
     assert.isTrue(a2.id.equals(el3.id));
     testCopyAndJson(el3);
 
-    const newEl = el3.copyForEdit<Element>();
+    const newEl = el3.copyForEdit();
     newEl.federationGuid = undefined;
     const newId = imodel2.elements.insertElement(newEl);
     assert.isTrue(newId.isValid(), "insert worked");
@@ -453,7 +453,7 @@ describe("iModel", () => {
     assert.equal(testElem.classFullName, "DgnPlatformTest:TestElementWithNoHandler");
     assert.isUndefined(testElem.integerProperty1);
 
-    const newTestElem = testElem.copyForEdit<Element>();
+    const newTestElem = testElem.copyForEdit();
     assert.equal(newTestElem.classFullName, testElem.classFullName);
     newTestElem.integerProperty1 = 999;
     assert.isTrue(testElem.arrayOfPoint3d[0].isAlmostEqual(newTestElem.arrayOfPoint3d[0]));
@@ -485,7 +485,7 @@ describe("iModel", () => {
 
     // ----------- updates ----------------
     const wasp3d = newTestElemFetched.p3d;
-    const editElem = newTestElemFetched.copyForEdit() as Element;
+    const editElem = newTestElemFetched.copyForEdit();
     editElem.location = loc2;
     try {
       await imodel4.elements.updateElement(editElem);

@@ -263,6 +263,12 @@ export const ColorRgb: any = {
 export class ColorDef {
   private _tbgr: number;
 
+  private setFromValues(red: number, green: number, blue: number, transparency?: number): void {
+    scratchBytes[0] = red;
+    scratchBytes[1] = green;
+    scratchBytes[2] = blue;
+    scratchBytes[3] = transparency ? transparency : 0;
+  }
   public constructor(val?: number | ColorDef | string) {
     this._tbgr = 0;
     if (!val)
@@ -274,7 +280,7 @@ export class ColorDef {
     }
 
     if (typeof val === "number") { // when constructing from number, use RGB
-      this.fromRgb(val);
+      this.setFromRgb(val);
       return;
     }
     this.fromString(val);
@@ -283,45 +289,41 @@ export class ColorDef {
   /** convert this ColorDef to a 32 bit number representing the tbgr value */
   public toJSON(): any { return this._tbgr; }
 
+  public static fromTbgr(tbgr: number): ColorDef {
+    const color = new ColorDef();
+    color._tbgr = tbgr;
+    return color;
+  }
+
   /** set the value of this ColorDef from a 24 bit RGB value. */
-  public fromRgb(rgb: number) {
+  private setFromRgb(rgb: number): void {
     rgb = Math.floor(rgb);
-    return ColorDef.from((rgb >> 16 & 255), (rgb >> 8 & 255), (rgb & 255), 0, this);
+    this.setFromValues((rgb >> 16 & 255), (rgb >> 8 & 255), (rgb & 255), 0);
   }
   /** create a new ColorDef from a json object. If the json object is a number, it is assumed to be a TBGR value. */
   public static fromJSON(json?: any): ColorDef {
-    const out = new ColorDef();
-    if (typeof json === "number") { // when we save to json, we store tgbr values as numbers
-      out.tbgr = json;
-      return out;
-    }
-    if (json instanceof ColorDef) {
-      out.tbgr = json.tbgr;
-      return out;
-    }
-    out.fromString(json);
-    return out;
+    if (typeof json === "number")
+      return ColorDef.fromTbgr(json); // when we save to json, we store tgbr values as numbers
+
+    return (json instanceof ColorDef) ? json : new ColorDef(json);
   }
   /** initialize or create a ColorDef fromn R,G,B,T values. All values should be between 0-255 */
-  public static from(red: number, green: number, blue: number, transparency?: number, result?: ColorDef) {
-    result = result ? result : new ColorDef();
-    scratchBytes[0] = red;
-    scratchBytes[1] = green;
-    scratchBytes[2] = blue;
-    scratchBytes[3] = transparency ? transparency : 0;
-    result._tbgr = scratchUInt32[0];
-    return result;
+  private static from(red: number, green: number, blue: number, transparency?: number): ColorDef {
+    const color = new ColorDef();
+    color.setFromValues(red, green, blue, transparency);
+    return color;
   }
+
   /** get the r,g,b,t values from this ColorDef. Returned as an object with {r, g, b, t} members. Values will be integers between 0-255. */
   public getColors() { scratchUInt32[0] = this._tbgr; return { r: scratchBytes[0], g: scratchBytes[1], b: scratchBytes[2], t: scratchBytes[3] }; }
   public get tbgr(): number { return this._tbgr; }
-  public set tbgr(tbgr: number) { this._tbgr = tbgr | 0; }
+  // public set tbgr(tbgr: number) { this._tbgr = tbgr | 0; }
   /** get the RGB value of this ColorDef. Transparency is ignored. Value will be from 0 to 2^24 */
   public getRgb() { scratchUInt32[0] = this._tbgr; return (scratchBytes[0] << 16) + (scratchBytes[1] << 8) + scratchBytes[2]; }
   /** change the alpha value for this ColorDef.
    * @param alpha the new alpha value. Should be between 0-255.
    */
-  public setAlpha(alpha: number) { scratchUInt32[0] = this._tbgr; scratchBytes[3] = 255 - (alpha | 0); this._tbgr = scratchUInt32[0]; }
+  // public setAlpha(alpha: number) { scratchUInt32[0] = this._tbgr; scratchBytes[3] = 255 - (alpha | 0); this._tbgr = scratchUInt32[0]; }
   /** get the alpha value for this ColorDef. Will be between 0-255 */
   public getAlpha() { scratchUInt32[0] = this._tbgr; return 255 - scratchBytes[3]; }
   /** convert this ColorDef to a string in the form "#rrggbb" where values are hex digits of the respective colors */
@@ -338,9 +340,9 @@ export class ColorDef {
    * "red" (see values from ColorRgb)
    * @return this
    */
-  public fromString(val: string): ColorDef {
+  private fromString(val: string): void {
     if (typeof val !== "string")
-      return this;
+      return;
 
     val = val.toLowerCase();
     let m = /^((?:rgb|hsl)a?)\(\s*([^\)]*)\)/.exec(val);
@@ -355,20 +357,20 @@ export class ColorDef {
         case "rgba":
           color = /^(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(,\s*([0-9]*\.?[0-9]+)\s*)?$/.exec(components);
           if (color) { // rgb(255,0,0) rgba(255,0,0,0.5)
-            return ColorDef.from(
+            return this.setFromValues(
               Math.min(255, parseInt(color[1], 10)),
               Math.min(255, parseInt(color[2], 10)),
               Math.min(255, parseInt(color[3], 10)),
-              color[5] != null ? 255 - Math.min(255, parseInt(color[5], 10)) : 0, this);
+              color[5] != null ? 255 - Math.min(255, parseInt(color[5], 10)) : 0);
           }
 
           color = /^(\d+)\%\s*,\s*(\d+)\%\s*,\s*(\d+)\%\s*(,\s*([0-9]*\.?[0-9]+)\s*)?$/.exec(components);
           if (color) { // rgb(100%,0%,0%) rgba(100%,0%,0%,0.5)
-            return ColorDef.from(
+            return this.setFromValues(
               (Math.min(100, parseInt(color[1], 10)) / 100) * 255,
               (Math.min(100, parseInt(color[2], 10)) / 100) * 255,
               (Math.min(100, parseInt(color[3], 10)) / 100) * 255,
-              color[5] != null ? 255 - ((Math.min(100, parseInt(color[5], 10)) / 100) * 255) : 0, this);
+              color[5] != null ? 255 - ((Math.min(100, parseInt(color[5], 10)) / 100) * 255) : 0);
           }
 
           break;
@@ -391,25 +393,24 @@ export class ColorDef {
       const size = hex.length;
 
       if (size === 3) { // #ff0
-        return ColorDef.from(
+        return this.setFromValues(
           parseInt(hex.charAt(0) + hex.charAt(0), 16),
           parseInt(hex.charAt(1) + hex.charAt(1), 16),
-          parseInt(hex.charAt(2) + hex.charAt(2), 16), 0, this);
+          parseInt(hex.charAt(2) + hex.charAt(2), 16), 0);
       }
       if (size === 6) {  // #ff0000
-        return ColorDef.from(
+        return this.setFromValues(
           parseInt(hex.charAt(0) + hex.charAt(1), 16),
           parseInt(hex.charAt(2) + hex.charAt(3), 16),
-          parseInt(hex.charAt(4) + hex.charAt(5), 16), 0, this);
+          parseInt(hex.charAt(4) + hex.charAt(5), 16), 0);
       }
     }
 
     if (val && val.length > 0) {   // ColorRgb value
       const hex = ColorRgb[val];
       if (hex !== undefined)
-        this.fromRgb(hex);
+        this.setFromRgb(hex);
     }
-    return this;
   }
 
   public lerp(inCol: ColorDef, alpha: number) {
