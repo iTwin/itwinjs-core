@@ -6,6 +6,7 @@
   "scripts": {
     "clean": "rimraf lib/*",
     "compile": "tsc --outDir ./lib",
+    "postinstall": "node ../../scripts/install-imodeljs-addon.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

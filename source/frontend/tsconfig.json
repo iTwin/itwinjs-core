@@ -18,12 +18,12 @@
         "@types/*",
         "*"
       ]
-    },
-    "experimentalDecorators": true /* Enables experimental support for ES7 decorators. */
+    }
   },
   "include": [
-    "../common/*.ts",
-    "./*.ts"
+    "../common/**/*.ts",
+    "../gateway/**/*.ts",
+    "./**/*.ts"
   ],
   "exclude": [
     "lib",
