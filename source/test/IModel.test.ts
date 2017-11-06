@@ -182,7 +182,7 @@ describe("iModel", () => {
       assert.isTrue(childElement instanceof Element);
 
       testCopyAndJson(childElement);
-      assert.isTrue(childElement.parent!.id.getLow() === rootSubject.id.getLow());
+      assert.isTrue(rootSubject.id.equals(childElement.parent!.id));
       if (childElement instanceof InformationPartitionElement) {
         const childSubModel: Model = await imodel1.models.getSubModel(childElement.id);
         assert.exists(childSubModel, "InformationPartitionElements should have a subModel");

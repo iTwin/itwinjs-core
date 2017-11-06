@@ -7,14 +7,11 @@ import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 export class IModelToken {
   public pathname: string;
   public openMode?: OpenMode;
-
   public iModelId?: string;
   public briefcaseId?: number;
   public userId?: string;
-
   public changeSetId?: string;
   public changeSetIndex?: number;
-
   public isOpen?: boolean;
 
   public static fromFile(pathname: string, openMode: OpenMode, isOpen: boolean): IModelToken {
@@ -41,12 +38,8 @@ export class IModel {
   protected _iModelToken: IModelToken;
   /** The token that can be used to find this iModel instance. */
   public get iModelToken(): IModelToken { return this._iModelToken; }
-
   /** @hidden */
-  protected constructor(iModelToken: IModelToken) {
-    this._iModelToken = iModelToken;
-  }
-
+  protected constructor(iModelToken: IModelToken) { this._iModelToken = iModelToken; }
   /** @hidden */
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
 }

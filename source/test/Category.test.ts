@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { ColorDef, ColorRgb } from "../common/Render";
-import { Appearance, AppearanceProps, SubCategoryOverride } from "../backend/Category";
+import { Appearance, AppearanceProps, SubCategoryOverride } from "../common/SubCategoryAppearance";
 
 describe("Category tests", () => {
 
