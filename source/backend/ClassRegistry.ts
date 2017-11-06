@@ -3,7 +3,6 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { EntityProps } from "../common/EntityProps";
-import { IModel } from "../common/IModel";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { EntityCtor, Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -42,13 +41,13 @@ export class ClassRegistry {
    * @throws IModelError if the required constructor or class metadata is not in the cache.
    * @hidden
    */
-  public static createInstance(props: EntityProps, iModel: IModel): Entity {
+  public static createInstance(props: EntityProps, iModel: IModelDb): Entity {
     if (!props.classFullName)
       throw new IModelError(IModelStatus.BadArg);
 
     let ctor = ClassRegistry.classMap.get(props.classFullName.toLowerCase());
     if (!ctor) {
-      ctor = ClassRegistry.generateClass(props.classFullName, props.iModel as IModelDb); // WIP
+      ctor = ClassRegistry.generateClass(props.classFullName, iModel);
       if (!ctor)
         throw ClassRegistry.makeClassNotFoundError();
     }
@@ -154,10 +153,10 @@ export class ClassRegistry {
    * @returns A promise that resolves to an object containing a result property set to the Entity.
    * @throws [[IModelError]] if the class is not found.
    */
-  public static getClass(fullName: string, iModel: IModel): EntityCtor {
+  public static getClass(fullName: string, iModel: IModelDb): EntityCtor {
     const key = fullName.toLowerCase();
     if (!ClassRegistry.classMap.has(key)) {
-      return ClassRegistry.generateClass(fullName, iModel as IModelDb); // WIP
+      return ClassRegistry.generateClass(fullName, iModel);
     }
     const ctor = ClassRegistry.classMap.get(key);
     assert(!!ctor);

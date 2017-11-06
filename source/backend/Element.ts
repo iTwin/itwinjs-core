@@ -4,7 +4,6 @@
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 import { Code } from "../common/Code";
 import { GeometryStream, Placement3d, Placement2d } from "../common/ElementGeometry";
-import { IModel } from "../common/IModel";
 import { ElementProps, RelatedElement } from "../common/ElementProps";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -28,7 +27,7 @@ export class Element extends Entity implements ElementProps {
   public jsonProperties: any;
 
   /** constructor for Element. */
-  constructor(props: ElementProps, iModel: IModel) {
+  constructor(props: ElementProps, iModel: IModelDb) {
     super(props, iModel);
     this.id = new Id64(props.id);
     this.code = new Code(props.code);
@@ -59,7 +58,7 @@ export class Element extends Entity implements ElementProps {
   }
 
   /** Get the class metadata for this element. */
-  public getClassMetaData(): EntityMetaData | undefined { return (this.iModel as IModelDb).classMetaDataRegistry.find(this.classFullName); } // WIP
+  public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
 
   private getAllUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
 
@@ -83,7 +82,7 @@ export interface GeometricElementProps extends ElementProps {
 export class GeometricElement extends Element implements GeometricElementProps {
   public category: Id64;
   public geom?: GeometryStream;
-  public constructor(props: GeometricElementProps, iModel: IModel) {
+  public constructor(props: GeometricElementProps, iModel: IModelDb) {
     super(props, iModel);
     this.category = new Id64(props.category);
     this.geom = GeometryStream.fromJSON(props.geom);
@@ -115,7 +114,7 @@ export class GeometricElement3d extends GeometricElement implements GeometricEle
   public placement: Placement3d;
   public typeDefinition?: TypeDefinition;
 
-  public constructor(props: GeometricElement3dProps, iModel: IModel) {
+  public constructor(props: GeometricElement3dProps, iModel: IModelDb) {
     super(props, iModel);
     this.placement = Placement3d.fromJSON(props.placement);
     if (props.typeDefinition)
@@ -142,7 +141,7 @@ export class GeometricElement2d extends GeometricElement implements GeometricEle
   public placement: Placement2d;
   public typeDefinition?: TypeDefinition;
 
-  public constructor(props: GeometricElement2dProps, iModel: IModel) {
+  public constructor(props: GeometricElement2dProps, iModel: IModelDb) {
     super(props, iModel);
     this.placement = Placement2d.fromJSON(props.placement);
     if (props.typeDefinition)
@@ -159,44 +158,44 @@ export class GeometricElement2d extends GeometricElement implements GeometricEle
 }
 
 export class SpatialElement extends GeometricElement3d {
-  public constructor(props: GeometricElement3dProps, iModel: IModel) { super(props, iModel); }
+  public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 export class PhysicalElement extends SpatialElement {
-  public constructor(props: GeometricElement3dProps, iModel: IModel) { super(props, iModel); }
+  public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 export class PhysicalPortion extends PhysicalElement {
-  public constructor(props: GeometricElement3dProps, iModel: IModel) { super(props, iModel); }
+  public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** A SpatialElement that identifies a tracked real word 3-dimensional location but has no mass and cannot be touched.
  *  Examples include grid lines, parcel boundaries, and work areas.
  */
 export class SpatialLocationElement extends SpatialElement {
-  public constructor(props: GeometricElement3dProps, iModel: IModel) { super(props, iModel); }
+  public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** A SpatialLocationPortion represents an arbitrary portion of a larger SpatialLocationElement that will be broken down in
  *  more detail in a separate (sub) SpatialLocationModel.
  */
 export class SpatialLocationPortion extends SpatialLocationElement {
-  public constructor(props: GeometricElement3dProps, iModel: IModel) { super(props, iModel); }
+  public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** An InformationContentElement identifies and names information content.
  * @see InformationCarrierElement
  */
 export class InformationContentElement extends Element {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 export class InformationReferenceElement extends InformationContentElement {
-  public constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 export class Subject extends InformationReferenceElement {
-  public constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** A Document is an InformationContentElement that identifies the content of a document.
@@ -206,15 +205,15 @@ export class Subject extends InformationReferenceElement {
  * In this example, the Document only identifies, names, and tracks the content of the will.
  */
 export class Document extends InformationContentElement {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 export class Drawing extends Document {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 export class SectionDrawing extends Drawing {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** An InformationCarrierElement is a proxy for an information carrier in the physical world.
@@ -223,26 +222,26 @@ export class SectionDrawing extends Drawing {
  *  @see InformationContentElement
  */
 export class InformationCarrierElement extends Element {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** An information element whose main purpose is to hold an information record. */
 export class InformationRecordElement extends InformationContentElement {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** A DefinitionElement resides in (and only in) a DefinitionModel. */
 export class DefinitionElement extends InformationContentElement {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 export class TypeDefinitionElement extends DefinitionElement {
   public recipe?: RelatedElement;
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 export class RecipeDefinitionElement extends DefinitionElement {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** A PhysicalType typically corresponds to a @em type of physical object that can be ordered from a catalog.
@@ -250,77 +249,77 @@ export class RecipeDefinitionElement extends DefinitionElement {
  *  across all instances are stored with the PhysicalType versus being repeated per PhysicalElement instance.
  */
 export class PhysicalType extends TypeDefinitionElement {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** The SpatialLocationType system is a database normalization strategy because properties that are the same
  *  across all instances are stored with the SpatialLocationType versus being repeated per SpatialLocationElement instance.
  */
 export class SpatialLocationType extends TypeDefinitionElement {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 export class TemplateRecipe3d extends RecipeDefinitionElement {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 export class GraphicalType2d extends TypeDefinitionElement {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 export class TemplateRecipe2d extends RecipeDefinitionElement {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 export class InformationPartitionElement extends InformationContentElement {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** A DefinitionPartition provides a starting point for a DefinitionModel hierarchy
  *  @note DefinitionPartition elements only reside in the RepositoryModel
  */
 export class DefinitionPartition extends InformationPartitionElement {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** A DocumentPartition provides a starting point for a DocumentListModel hierarchy
  *  @note DocumentPartition elements only reside in the RepositoryModel
  */
 export class DocumentPartition extends InformationPartitionElement {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** A GroupInformationPartition provides a starting point for a GroupInformationModel hierarchy
  *  @note GroupInformationPartition elements only reside in the RepositoryModel
  */
 export class GroupInformationPartition extends InformationPartitionElement {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** An InformationRecordPartition provides a starting point for a InformationRecordModel hierarchy
  *  @note InformationRecordPartition elements only reside in the RepositoryModel
  */
 export class InformationRecordPartition extends InformationPartitionElement {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** A PhysicalPartition provides a starting point for a PhysicalModel hierarchy
  *  @note PhysicalPartition elements only reside in the RepositoryModel
  */
 export class PhysicalPartition extends InformationPartitionElement {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** A SpatialLocationPartition provides a starting point for a SpatialLocationModel hierarchy
  *  @note SpatialLocationPartition elements only reside in the RepositoryModel
  */
 export class SpatialLocationPartition extends InformationPartitionElement {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** A GroupInformationElement resides in (and only in) a GroupInformationModel. */
 export class GroupInformationElement extends InformationReferenceElement {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** Abstract base class for roles played by other (typically physical) elements.
@@ -329,10 +328,10 @@ export class GroupInformationElement extends InformationReferenceElement {
  *  - <i>Asset</i> and <i>safety hazard</i> are potential roles of a PhysicalElement
  */
 export class RoleElement extends Element {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** A LinkPartition provides a starting point for a LinkModel hierarchy */
 export class LinkPartition extends InformationPartitionElement {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
