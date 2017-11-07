@@ -141,6 +141,8 @@ export default class SchemaReadHelper {
       case "RelationshipClass":
         break;
       case "KindOfQuantity":
+        const koq: SchemaChildInterface = schema.createKindOfQuantity(childName);
+        koq.fromJson(schemaChildJson);
         break;
       case "PropertyCategory":
         const propCategory: SchemaChildInterface = schema.createPropertyCategory(childName);

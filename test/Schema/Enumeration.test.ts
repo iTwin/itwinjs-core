@@ -4,7 +4,7 @@
 
 import { assert, expect } from "chai";
 import { ECSchema } from "../../source/Metadata/Schema";
-import { Enumeration  } from "../../source/Metadata/Enumeration";
+import { Enumeration } from "../../source/Metadata/Enumeration";
 
 describe("enumeration", () => {
   describe("deserialization", () => {

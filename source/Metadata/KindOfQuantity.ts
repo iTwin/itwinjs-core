@@ -2,4 +2,36 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-// TODO
+import SchemaChild from "./SchemaChild";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+
+export class FormatUnitSpec {
+  public unit: string;
+  public format: string;
+}
+
+export default class KindOfQuantity extends SchemaChild {
+  public precision: number;
+  public presentationUnits: FormatUnitSpec[];
+  public persistenceUnit: FormatUnitSpec;
+
+  public get defaultPresentationUnit() {
+    return this.presentationUnits.length === 0 ? undefined : this.presentationUnits[0];
+  }
+
+  public fromJson(jsonObj: any) {
+    super.fromJson(jsonObj);
+
+    if (jsonObj.precision) {
+      if (typeof(jsonObj.precision) !== "number")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'precision' attribute. It should be of type 'number'.`);
+      this.precision = jsonObj.precision;
+    }
+
+    if (jsonObj.presentationUnits)
+      this.presentationUnits = jsonObj.presentationUnits as FormatUnitSpec[];
+
+    if (jsonObj.persistenceUnit)
+      this.persistenceUnit = jsonObj.persistenceUnit as FormatUnitSpec;
+  }
+}

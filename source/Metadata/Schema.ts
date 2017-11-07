@@ -5,6 +5,7 @@ import { ECVersion, SchemaKey, ECClassModifier } from "../ECObjects";
 import { SchemaInterface, SchemaChildInterface } from "../Interfaces";
 import { Class, MixinClass, EntityClass, StructClass, CustomAttributeClass } from "./Class";
 import { Enumeration } from "./Enumeration";
+import KindOfQuantity from "./KindOfQuantity";
 import SchemaReadHelper from "../Deserialization/Helper";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { ICustomAttributeContainer, CustomAttributeSet } from "./CustomAttribute";
@@ -169,9 +170,14 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
    * @param name
    */
   public createKindOfQuantity(name: string) {
-    if (name)
-      return;
-    // TODO;
+    const newKoQ = new KindOfQuantity(name);
+
+    if (!this._children)
+      this._children = [];
+    this._children.push(newKoQ);
+
+    newKoQ.schema = this;
+    return newKoQ;
   }
 
   /**

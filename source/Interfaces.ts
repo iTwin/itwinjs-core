@@ -77,7 +77,7 @@ export interface CustomAttributeInterface {
   containerType: CustomAttributeContainerType;
 }
 
-export interface ECEnumeration {
+export interface EnumerationInterface {
   isStrict: boolean;
   type: PrimitiveType.Integer | PrimitiveType.String;
 }

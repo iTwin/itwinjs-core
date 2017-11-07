@@ -4,9 +4,10 @@
 
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PrimitiveType } from "../ECObjects";
+import { EnumerationInterface } from "../Interfaces";
 import SchemaChild from "./SchemaChild";
 
-export class Enumeration extends SchemaChild {
+export class Enumeration extends SchemaChild implements EnumerationInterface {
   public type: PrimitiveType.Integer | PrimitiveType.String;
   public isStrict: boolean;
   public enumerators: Enumerator[];

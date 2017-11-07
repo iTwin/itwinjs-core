@@ -31,14 +31,10 @@ describe("entity class", () => {
       const testEntity = ecschema.getClass<EntityClass>("testEntityClass");
       assert.isDefined(testEntity);
 
-      // TODO: Fix this annoying workaround for tsLint
-      if (!testEntity)
-        return;
-
-      expect(testEntity.name).equal("testEntityClass");
-      expect(testEntity.label).equal("Test Entity Class");
-      expect(testEntity.description).equal("Used for testing");
-      expect(testEntity.modifier).equal(ECClassModifier.None);
+      expect(testEntity!.name).equal("testEntityClass");
+      expect(testEntity!.label).equal("Test Entity Class");
+      expect(testEntity!.description).equal("Used for testing");
+      expect(testEntity!.modifier).equal(ECClassModifier.None);
     });
 
     it("with mixin", () => {
