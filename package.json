@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/imodeljs-core"
   },
-  "version": "1.1.0",
+  "version": "1.1.1",
   "scripts": {
     "build": "gulp build",
     "build-release": "gulp build --release",
@@ -18,6 +18,10 @@
     "wip-install-backend": "cd source/backend && npm install",
     "wip-install-frontend": "cd source/frontend && npm install",
     "wip-install-test": "cd source/test && npm install",
+    "wip-clean": "concurrently \"npm run wip-clean-backend\" \"npm run wip-clean-frontend\" \"npm run wip-clean-test\"",
+    "wip-clean-backend": "cd source/backend && npm run clean",
+    "wip-clean-frontend": "cd source/frontend && npm run clean",
+    "wip-clean-test": "cd source/test && npm run clean",
     "wip-build": "concurrently \"npm run wip-build-backend\" \"npm run wip-build-frontend\" \"npm run wip-build-test\"",
     "wip-build-backend": "cd source/backend && npm run compile",
     "wip-build-frontend": "cd source/frontend && npm run compile",

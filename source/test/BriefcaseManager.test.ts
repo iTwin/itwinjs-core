@@ -118,10 +118,10 @@ describe("BriefcaseManager", () => {
     assert.isTrue(iModel.elements instanceof IModelConnectionElements);
 
     const elementIds: Id64[] = [iModel.elements.rootSubjectId];
-    const elements: ElementProps[] = await iModel.elements.getElements(elementIds);
-    assert.equal(elements.length, elementIds.length);
-    assert.isTrue(iModel.elements.rootSubjectId.equals(new Id64(elements[0].id)));
-    assert.isTrue(iModel.models.repositoryModelId.equals(new Id64(elements[0].model)));
+    const elementProps: ElementProps[] = await iModel.elements.getElementProps(elementIds);
+    assert.equal(elementProps.length, elementIds.length);
+    assert.isTrue(iModel.elements.rootSubjectId.equals(new Id64(elementProps[0].id)));
+    assert.isTrue(iModel.models.repositoryModelId.equals(new Id64(elementProps[0].model)));
 
     const queryElementIds: Id64[] = await iModel.elements.queryElementIds({ from: Category.sqlName, limit: 20, offset: 0 });
     assert.isAtLeast(queryElementIds.length, 1);
@@ -131,10 +131,10 @@ describe("BriefcaseManager", () => {
     assert.isAtLeast(formatObjs.length, 1);
 
     const modelIds: Id64[] = [iModel.models.repositoryModelId];
-    const models: ModelProps[] = await iModel.models.getModels(modelIds);
-    assert.exists(models);
-    assert.equal(models.length, modelIds.length);
-    assert.isTrue(iModel.models.repositoryModelId.equals(new Id64(models[0].id)));
+    const modelProps: ModelProps[] = await iModel.models.getModelProps(modelIds);
+    assert.exists(modelProps);
+    assert.equal(modelProps.length, modelIds.length);
+    assert.isTrue(iModel.models.repositoryModelId.equals(new Id64(modelProps[0].id)));
 
     const rows: any[] = await iModel.executeQuery("SELECT CodeValue AS code FROM BisCore.Category");
     assert.isAtLeast(rows.length, 1);

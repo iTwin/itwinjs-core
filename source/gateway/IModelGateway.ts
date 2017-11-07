@@ -9,7 +9,7 @@ import { IModelVersion } from "../common/IModelVersion";
 import { Gateway } from "../common/Gateway";
 
 export abstract class IModelGateway extends Gateway {
-  /** Returns the IModelGatewayProxy instance for the current environment. */
+  /** Returns the IModelGatewayProxy instance for the frontend. */
   public static getProxy(): IModelGateway {
     return Gateway.getProxyForGateway(IModelGateway);
   }
@@ -36,12 +36,12 @@ export abstract class IModelGateway extends Gateway {
   }
 
   /** Return an array of model JSON strings given an array of stringified model ids. */
-  public async getModels(_iModelToken: IModelToken, _modelIds: string[]): Promise<any[]> {
+  public async getModelProps(_iModelToken: IModelToken, _modelIds: string[]): Promise<any[]> {
     return this.forward.apply(this, arguments);
   }
 
   /** Return an array of element JSON strings given an array of stringified element ids. */
-  public async getElements(_iModelToken: IModelToken, _elementIds: string[]): Promise<any[]> {
+  public async getElementProps(_iModelToken: IModelToken, _elementIds: string[]): Promise<any[]> {
     return this.forward.apply(this, arguments);
   }
 
