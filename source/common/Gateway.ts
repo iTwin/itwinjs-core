@@ -6,13 +6,13 @@ import { Logger } from "./Logger";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 
 const INSTANCE = Symbol("instance");
-const registry: Map<GatewayDefinition<Gateway>, GatewayImplementation<Gateway>> = new Map();
+const registry: Map<GatewayDefinition, GatewayImplementation> = new Map();
 
 export interface GatewayConstructor<T extends Gateway> { new(): T; }
 
-export type GatewayImplementation<T extends Gateway> = GatewayConstructor<T>;
-export interface GatewayDefinition<T extends Gateway> { prototype: T; name: string; }
-export type GatewayConfigurationSupplier = () => { new(gateway: Gateway): Gateway.Configuration };
+export type GatewayImplementation<T extends Gateway = Gateway> = GatewayConstructor<T>;
+export interface GatewayDefinition<T extends Gateway = Gateway> { prototype: T; name: string; }
+export type GatewayConfigurationSupplier = () => { new(): Gateway.Configuration };
 
 /** A set of related asynchronous APIs that operate over configurable protocols across multiple platforms. */
 export abstract class Gateway {
@@ -78,6 +78,15 @@ export abstract class Gateway {
     gateway.prototype.applicationConfigurationSupplier = supplier;
   }
 
+  /** Iterates the operation function names of a gateway class. */
+  public static forEachOperation<T extends Gateway>(gateway: GatewayDefinition<T>, callback: (operation: string) => void) {
+    const operations = gateway.prototype;
+    Object.getOwnPropertyNames(operations).forEach((operation) => {
+      if (operation !== "constructor")
+        callback(operation);
+    });
+  }
+
   /** The configuration for the gateway. */
   public configuration = this.supplyConfiguration();
 
@@ -88,29 +97,28 @@ export abstract class Gateway {
   public applicationConfigurationSupplier: GatewayConfigurationSupplier | undefined;
 
   /** Invokes the backend implementation of a gateway operation by name. */
-  public async invoke<T>(operation: string, parameters: any[]): Promise<T> {
+  public async invoke<T>(operation: string, ...parameters: any[]): Promise<T> {
     const implementation = (this as any)[operation];
     if (!implementation || typeof (implementation) !== "function")
       throw new IModelError(BentleyStatus.ERROR, `Gateway class "${this.constructor.name}" does not implement operation "${operation}".`, Logger.logError);
 
-    return await implementation.apply(this, parameters);
+    return await implementation.call(this, ...parameters);
   }
 
   /** Returns the configuration for the gateway. */
   protected supplyConfiguration(): Gateway.Configuration {
     const supplier = this.applicationConfigurationSupplier || this.defaultConfigurationSupplier;
-    return new (supplier())(this);
+    return Gateway.Configuration.getInstance(supplier());
   }
 
   /** Obtains the implementation result for a gateway operation. */
   protected forward<T>(operation: string, ...parameters: any[]): Promise<T> {
-    return this.configuration.protocol.obtainGatewayImplementationResult<T>(operation, parameters);
+    return this.configuration.protocol.obtainGatewayImplementationResult<T>(this.constructor, operation, ...parameters);
   }
 
   /** Configures a gateway proxy. */
   protected setupProxyInstance() {
-    const operations = Object.getPrototypeOf(this);
-    Object.getOwnPropertyNames(operations).forEach((operation) => this.makeOperationForwarder(operation));
+    Gateway.forEachOperation(this.constructor, (operation) => this.makeOperationForwarder(operation));
   }
 
   /** Configures a gateway implementation. */
@@ -120,9 +128,6 @@ export abstract class Gateway {
 
   /** Creates a proxy forwarder for a gateway API operation. */
   protected makeOperationForwarder(operation: string) {
-    if (operation === "constructor")
-      return;
-
     const object = this as any;
     object[operation] = object[operation].bind(object, operation);
   }
@@ -147,90 +152,166 @@ Gateway.prototype.applicationConfigurationSupplier = undefined;
 export namespace Gateway {
   /** Operating parameters for a gateway. */
   export abstract class Configuration {
-    public gateway: Gateway;
-
-    constructor(gateway: Gateway) {
-      this.gateway = gateway;
-    }
-
-    /** The protocol for the gateway. */
+    /** The protocol of the configuration. */
     public abstract protocol: Gateway.Protocol;
+
+    /** The gateways managed by the configuration. */
+    public abstract gateways: () => GatewayDefinition[];
+
+    /** Returns the instance of a configuration class. */
+    public static getInstance<T extends Configuration>(constructor: { new(): T }): T {
+      let instance = (constructor as any)[INSTANCE] as T;
+      if (!instance)
+        instance = (constructor as any)[INSTANCE] = new constructor();
+
+      return instance;
+    }
   }
 
   /** An application protocol for a gateway. */
   export abstract class Protocol {
-    public gateway: Gateway;
+    /** The configuration for the protocol. */
+    protected configuration: Configuration;
 
-    constructor(gateway: Gateway) {
-      this.gateway = gateway;
+    /** Creates a protocol. */
+    public constructor(configuration: Configuration) {
+      this.configuration = configuration;
     }
 
     /** Obtains the implementation result for a gateway operation. */
-    public abstract obtainGatewayImplementationResult<T>(operation: string, parameters: any[]): Promise<T>;
+    public abstract obtainGatewayImplementationResult<T>(gateway: GatewayDefinition, operation: string, ...parameters: any[]): Promise<T>;
   }
 
   /** The HTTP application protocol. */
   export abstract class HttpProtocol extends Protocol {
-    public abstract openApiInfo: HttpProtocol.OpenApiInfo;
-    public openApiPaths: HttpProtocol.OpenApiPaths = {};
+    /** Associates the gateways for the protocol with unique names. */
+    protected gatewayRegistry: Map<string, GatewayDefinition> = new Map();
 
-    /** A Swagger / OpenAPI 3.0 description of the RESTful API that is exposed through this protocol. */
-    public generateOpenApiDescription(): HttpProtocol.OpenApiDocument {
+    /** The OpenAPI info object for the protocol. */
+    protected abstract openAPIInfo: () => HttpProtocol.OpenAPIInfo;
+
+    /** Parses a generated identifier for a gateway operation. */
+    protected abstract parseGatewayOperationIdentifier(identifier: string): HttpProtocol.GatewayOperationIdentifier;
+
+    /** Generates an OpenAPI path for a gateway operation. */
+    protected abstract generateOpenAPIPathForOperation(identifier: HttpProtocol.GatewayOperationIdentifier): string;
+
+    /** The OpenAPI paths object for the protocol. */
+    protected openAPIPaths = (): HttpProtocol.OpenAPIPaths => {
+      const paths: HttpProtocol.OpenAPIPaths = {};
+
+      this.configuration.gateways().forEach((gateway) => {
+        Gateway.forEachOperation(gateway, (operation) => {
+          const path = this.generateOpenAPIPathForOperation({ gateway: this.obtainGatewayName(gateway), operation });
+          paths[path] = this.generateOpenAPIDescriptionForOperation(gateway, operation);
+        });
+      });
+
+      return paths;
+    }
+
+    /** Constructs an http protocol. */
+    constructor(configuration: Configuration) {
+      super(configuration);
+      this.registerGateways();
+    }
+
+    /** Generates an OpenAPI 3.0 (Swagger) description of the RESTful API that is exposed through this protocol. */
+    public generateOpenAPIDescription(): HttpProtocol.OpenAPIDocument {
       return {
         openapi: "3.0.0",
-        info: this.openApiInfo,
-        paths: this.openApiPaths,
+        info: this.openAPIInfo(),
+        paths: this.openAPIPaths(),
+      };
+    }
+
+    /** Returns a name for a gateway that is unique within the scope of the protocol. */
+    protected obtainGatewayName<T extends Gateway>(gateway: GatewayDefinition<T>): string {
+      return gateway.name;
+    }
+
+    /** Registers the gateways for this protocol. */
+    protected registerGateways() {
+      this.configuration.gateways().forEach((gateway) => {
+        const name = this.obtainGatewayName(gateway);
+        if (this.gatewayRegistry.has(name))
+          throw new IModelError(BentleyStatus.ERROR, `Gateway "${name}" is already registered within this protocol.`);
+
+        this.gatewayRegistry.set(name, gateway);
+      });
+    }
+
+    /** Generates an OpenAPI description of a gateway operation. */
+    protected generateOpenAPIDescriptionForOperation<T extends Gateway>(_gateway: GatewayDefinition<T>, _operation: string): HttpProtocol.OpenAPIPathItem {
+      const requestContent: HttpProtocol.OpenAPIContentMap = { "application/json": { schema: { type: "array" } } };
+      const responseContent: HttpProtocol.OpenAPIContentMap = { "application/json": { schema: { type: "object" } } };
+
+      return {
+        post: {
+          requestBody: { content: requestContent, required: true },
+          responses: {
+            200: { description: "Success", content: responseContent },
+            default: { description: "Error", content: responseContent },
+          },
+        },
       };
     }
   }
 
   export namespace HttpProtocol {
+    /** Identifies a gateway and operation. */
+    export interface GatewayOperationIdentifier {
+      gateway: string;
+      operation: string;
+    }
+
     /** An OpenAPI 3.0 root document object. */
-    export interface OpenApiDocument {
+    export interface OpenAPIDocument {
       openapi: "3.0.0";
-      info: OpenApiInfo;
-      paths: OpenApiPaths;
+      info: OpenAPIInfo;
+      paths: OpenAPIPaths;
     }
 
     /** An OpenAPI 3.0 info object. */
-    export interface OpenApiInfo {
+    export interface OpenAPIInfo {
       title: string;
-      description?: string;
       version: string;
     }
 
     /** An OpenAPI 3.0 paths object. */
-    export interface OpenApiPaths {
-      [index: string]: OpenApiPathItem;
+    export interface OpenAPIPaths {
+      [index: string]: OpenAPIPathItem;
     }
 
     /** An OpenAPI 3.0 path item object. */
-    export interface OpenApiPathItem {
+    export interface OpenAPIPathItem {
       summary?: string;
-      description?: string;
-      get?: OpenApiOperation;
-      put?: OpenApiOperation;
-      post?: OpenApiOperation;
-      delete?: OpenApiOperation;
-      options?: OpenApiOperation;
-      head?: OpenApiOperation;
-      patch?: OpenApiOperation;
-      trace?: OpenApiOperation;
+      get?: OpenAPIOperation;
+      put?: OpenAPIOperation;
+      post?: OpenAPIOperation;
+      delete?: OpenAPIOperation;
+      options?: OpenAPIOperation;
+      head?: OpenAPIOperation;
+      patch?: OpenAPIOperation;
+      trace?: OpenAPIOperation;
     }
 
     /** An OpenAPI 3.0 operation object. */
-    export interface OpenApiOperation {
-      tags?: string[];
+    export interface OpenAPIOperation {
       summary?: string;
-      description?: string;
       operationId?: string;
-      parameters?: OpenApiParameter[];
-      requestBody?: OpenApiRequestBody;
-      responses: OpenApiResponses;
+      parameters?: OpenAPIParameter[];
+      requestBody?: OpenAPIRequestBody;
+      responses: OpenAPIResponses;
+    }
+
+    /** An OpenAPI 3.0 content map. */
+    export interface OpenAPIContentMap {
+      [index: string]: OpenAPIMediaType;
     }
 
     /** An OpenAPI 3.0 parameter object. */
-    export interface OpenApiParameter {
+    export interface OpenAPIParameter {
       name: string;
       in: "query" | "header" | "path" | "cookie";
       description?: string;
@@ -239,23 +320,24 @@ export namespace Gateway {
       style?: "matrix" | "label" | "form" | "simple" | "spaceDelimited" | "pipeDelimited" | "deepObject";
       explode?: boolean;
       allowReserved?: boolean;
-      content?: { [index: string]: OpenApiMediaType };
+      schema?: OpenAPISchema;
+      content?: OpenAPIContentMap;
     }
 
     /** An OpenAPI 3.0 media type object. */
-    export interface OpenApiMediaType {
-      schema?: OpenApiSchema;
+    export interface OpenAPIMediaType {
+      schema?: OpenAPISchema;
     }
 
     /** An OpenAPI 3.0 schema object. */
-    export interface OpenApiSchema {
+    export interface OpenAPISchema {
       type?: "boolean" | "object" | "array" | "number" | "string";
       nullable?: boolean;
       description?: string;
     }
 
     /** An OpenAPI 3.0 encoding object. */
-    export interface OpenApiEncoding {
+    export interface OpenAPIEncoding {
       contentType?: string;
       style?: string;
       explode?: boolean;
@@ -263,27 +345,27 @@ export namespace Gateway {
     }
 
     /** An OpenAPI 3.0 parameter object. */
-    export interface OpenApiRequestBody {
+    export interface OpenAPIRequestBody {
       description?: string;
-      content: { [index: string]: OpenApiMediaType };
+      content: OpenAPIContentMap;
       required?: boolean;
     }
 
     /** An OpenAPI 3.0 responses object. */
-    export interface OpenApiResponses {
-      default?: OpenApiResponse;
-      "200"?: OpenApiResponse;
-      "301"?: OpenApiResponse;
-      "302"?: OpenApiResponse;
-      "400"?: OpenApiResponse;
-      "404"?: OpenApiResponse;
-      "500"?: OpenApiResponse;
+    export interface OpenAPIResponses {
+      default?: OpenAPIResponse;
+      "200"?: OpenAPIResponse;
+      "301"?: OpenAPIResponse;
+      "302"?: OpenAPIResponse;
+      "400"?: OpenAPIResponse;
+      "404"?: OpenAPIResponse;
+      "500"?: OpenAPIResponse;
     }
 
     /** An OpenAPI 3.0 response object. */
-    export interface OpenApiResponse {
+    export interface OpenAPIResponse {
       description: string;
-      content?: { [index: string]: OpenApiMediaType };
+      content?: { [index: string]: OpenAPIMediaType };
     }
   }
 
@@ -294,11 +376,11 @@ export namespace Gateway {
 
   /** Direct function call protocol within a single JavaScript context (suitable for testing). */
   export class DirectProtocol extends Protocol {
-    public obtainGatewayImplementationResult<T>(operation: string, parameters: any[]): Promise<T> {
+    public obtainGatewayImplementationResult<T>(gateway: GatewayDefinition, operation: string, ...parameters: any[]): Promise<T> {
       return new Promise<T>(async (resolve, reject) => {
         try {
-          const impl = Gateway.getImplementationForGateway<Gateway>(this.gateway.constructor);
-          const result = await impl.invoke<T>(operation, parameters);
+          const impl = Gateway.getImplementationForGateway(gateway);
+          const result = await impl.invoke<T>(operation, ...parameters);
           resolve(result);
         } catch (e) {
           reject(e);
@@ -308,8 +390,10 @@ export namespace Gateway {
   }
 
   export namespace Configuration {
+    /** A default gateway configuration (suitable for testing). */
     export class Default extends Configuration {
-      public protocol = new DirectProtocol(this.gateway);
+      public gateways = () => [];
+      public protocol: Protocol = new DirectProtocol(this);
     }
   }
 }

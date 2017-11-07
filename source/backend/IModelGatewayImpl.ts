@@ -16,7 +16,9 @@ import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { IModelDb } from "../backend/IModelDb";
 import { IModelGateway } from "../gateway/IModelGateway";
 
-/** @hidden */
+/** The backend implementation of IModelGateway.
+ * @hidden
+ */
 export class IModelGatewayImpl extends IModelGateway {
   public static register() {
     Gateway.registerImplementation(IModelGateway, IModelGatewayImpl);
