@@ -185,13 +185,10 @@ export namespace Gateway {
   /** The HTTP application protocol. */
   export abstract class HttpProtocol extends Protocol {
     /** Associates the gateways for the protocol with unique names. */
-    protected gatewayRegistry: Map<string, GatewayDefinition> = new Map();
+    public gatewayRegistry: Map<string, GatewayDefinition> = new Map();
 
     /** The OpenAPI info object for the protocol. */
     protected abstract openAPIInfo: () => HttpProtocol.OpenAPIInfo;
-
-    /** Parses a generated identifier for a gateway operation. */
-    protected abstract parseGatewayOperationIdentifier(identifier: string): HttpProtocol.GatewayOperationIdentifier;
 
     /** Generates an OpenAPI path for a gateway operation. */
     protected abstract generateOpenAPIPathForOperation(identifier: HttpProtocol.GatewayOperationIdentifier): string;
