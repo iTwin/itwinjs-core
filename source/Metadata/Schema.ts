@@ -6,6 +6,7 @@ import { SchemaInterface, SchemaChildInterface } from "../Interfaces";
 import { Class, MixinClass, EntityClass, StructClass, CustomAttributeClass } from "./Class";
 import { Enumeration } from "./Enumeration";
 import KindOfQuantity from "./KindOfQuantity";
+import PropertyCategory from "./PropertyCategory";
 import SchemaReadHelper from "../Deserialization/Helper";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { ICustomAttributeContainer, CustomAttributeSet } from "./CustomAttribute";
@@ -185,9 +186,14 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
    * @param name
    */
   public createPropertyCategory(name: string) {
-    if (name)
-      return;
-    // TODO;
+    const newPropCat = new PropertyCategory(name);
+
+    if (!this._children)
+      this._children = [];
+    this._children.push(newPropCat);
+
+    newPropCat.schema = this;
+    return newPropCat;
   }
 
   /**

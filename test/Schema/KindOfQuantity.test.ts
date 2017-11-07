@@ -57,7 +57,7 @@ describe("KindOfQuantity", () => {
       assert.isTrue(testKoQ.presentationUnits[0] === testKoQ.defaultPresentationUnit);
     });
 
-    it("when precision is not a number throw an error", () => {
+    it("should throw when precision is not a number", () => {
       const testSchema = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",

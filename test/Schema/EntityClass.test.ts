@@ -124,10 +124,10 @@ describe("entity class", () => {
       const testBaseEntity = ecSchema.getClass<EntityClass>("baseClass");
       assert.isDefined(testBaseEntity);
 
-      // assert.isDefined(testEntity.baseClass);
-      // assert.isTrue(typeof(testEntity.baseClass) === "object");
+      assert.isDefined(testEntity!.baseClass);
+      assert.isTrue(typeof(testEntity!.baseClass) === "object");
 
-      // assert.isTrue(testEntity.baseClass === testBaseEntity);
+      assert.isTrue(testEntity!.baseClass === testBaseEntity);
     });
   });
 });
