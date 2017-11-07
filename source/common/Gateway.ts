@@ -193,6 +193,31 @@ export namespace Gateway {
     /** Generates an OpenAPI path for a gateway operation. */
     protected abstract generateOpenAPIPathForOperation(identifier: HttpProtocol.GatewayOperationIdentifier): string;
 
+    /** Obtains the implementation result for a gateway operation. */
+    public obtainGatewayImplementationResult<T>(gateway: GatewayDefinition, operation: string, ...parameters: any[]): Promise<T> {
+      return new Promise<T>(async (resolve, reject) => {
+        try {
+          const path = this.generateOpenAPIPathForOperation({ gateway: this.obtainGatewayName(gateway), operation });
+
+          const connection = new XMLHttpRequest();
+          connection.addEventListener("load", () => {
+            if (connection.status === 200)
+              resolve(JSON.parse(connection.responseText));
+            else
+              reject(new IModelError(BentleyStatus.ERROR, `Server error: ${connection.status.toString()}`));
+          });
+
+          connection.addEventListener("error", () => reject(new IModelError(BentleyStatus.ERROR, "Connection error.")));
+          connection.addEventListener("abort", () => reject(new IModelError(BentleyStatus.ERROR, "Connection aborted.")));
+
+          connection.open("POST", path, true);
+          connection.send(JSON.stringify(Array.from(parameters)));
+        } catch (e) {
+          reject(new IModelError(BentleyStatus.ERROR, e));
+        }
+      });
+    }
+
     /** The OpenAPI paths object for the protocol. */
     protected openAPIPaths = (): HttpProtocol.OpenAPIPaths => {
       const paths: HttpProtocol.OpenAPIPaths = {};
