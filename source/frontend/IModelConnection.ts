@@ -78,7 +78,7 @@ export class IModelConnectionModels {
 
   /** Ask the backend for a batch of [[ModelProps]] given a list of model ids. */
   public async getModelProps(modelIds: Id64[]): Promise<ModelProps[]> {
-    const modelJsonArray = await IModelGateway.getProxy().getModelProps(this._iModel.iModelToken, modelIds.map((id: Id64) => id.toString()));
+    const modelJsonArray = await IModelGateway.getProxy().getModelProps(this._iModel.iModelToken, modelIds.map((id: Id64) => id.value));
     const models: ModelProps[] = [];
     for (const modelJson of modelJsonArray) {
       const modelProps = JSON.parse(modelJson) as ModelProps;
@@ -100,7 +100,7 @@ export class IModelConnectionElements {
 
   /** Ask the backend for a batch of [[ElementProps]] given a list of element ids. */
   public async getElementProps(elementIds: Id64[]): Promise<ElementProps[]> {
-    const elementJsonArray: any[] = await IModelGateway.getProxy().getElementProps(this._iModel.iModelToken, elementIds.map((id: Id64) => id.toString()));
+    const elementJsonArray: any[] = await IModelGateway.getProxy().getElementProps(this._iModel.iModelToken, elementIds.map((id: Id64) => id.value));
     const elements: ElementProps[] = [];
     for (const elementJson of elementJsonArray) {
       const elementProps = JSON.parse(elementJson) as ElementProps;
@@ -111,7 +111,7 @@ export class IModelConnectionElements {
 
   /** Ask the backend to format (for presentation) the specified list of element ids. */
   public async formatElements(elementIds: Id64[]): Promise<any[]> {
-    return await IModelGateway.getProxy().formatElements(this._iModel.iModelToken, elementIds.map((id: Id64) => id.toString()));
+    return await IModelGateway.getProxy().formatElements(this._iModel.iModelToken, elementIds.map((id: Id64) => id.value));
   }
 
   /** */

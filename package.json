@@ -39,7 +39,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "^1.0.35",
+    "@bentley/bentleyjs-core": "^1.0.39",
     "@bentley/geometry-core": "^1.0.11",
     "@bentley/imodeljs-clients": "^1.0.26",
     "js-base64": "^2.3.2"

@@ -84,7 +84,7 @@ export class Entity implements EntityProps {
   public isPersistent() { return this.persistent; }
 
   /** make a copy of this Entity so that it may be be modified. */
-  public copyForEdit<T extends Entity>() { return new (this.constructor as EntityCtor)(this, this.iModel) as T; }
+  public copyForEdit<T extends this>() { return new (this.constructor as EntityCtor)(this, this.iModel) as T; }
 }
 
 /** A custom attribute instance */

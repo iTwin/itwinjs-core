@@ -141,6 +141,11 @@ export class Frustum {
   }
 }
 
+/** the constructor for an ElementState (for cloning). */
+export interface ElementStateCtor extends FunctionConstructor {
+  new(args: ElementProps, iModel: IModel, state?: ElementState): ElementState;
+}
+
 export class ElementState implements ElementProps {
   public readonly iModel: IModel;
   public readonly id: Id64;
@@ -159,7 +164,7 @@ export class ElementState implements ElementProps {
     this.code = new Code(props.code);
     this.model = new Id64(props.model);
     this.parent = RelatedElement.fromJSON(props.parent);
-    this.federationGuid = Guid.fromJson(props.federationGuid);
+    this.federationGuid = Guid.fromJSON(props.federationGuid);
     this.userLabel = props.userLabel;
     this.jsonProperties = !props.jsonProperties ? {} : JSON.parse(JSON.stringify(props.jsonProperties)); // make sure we have our own copy
   }
@@ -182,6 +187,9 @@ export class ElementState implements ElementProps {
       val.jsonProperties = this.jsonProperties;
     return val;
   }
+
+  /** make a complete, independent copy of this ElementState */
+  public clone<T extends this>() { return new (this.constructor as ElementStateCtor)(this.toJSON(), this.iModel, this) as T; }
 }
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
@@ -363,9 +371,9 @@ export class ModelSelectorState extends ElementState {
     return val;
   }
 
-  public addModel(id: Id64) { this.models.add(id.toString()); }
-  public dropModel(id: Id64): boolean { return this.models.delete(id.toString()); }
-  public containsModel(modelId: Id64): boolean { return this.models.has(modelId.toString()); }
+  public addModel(id: Id64) { this.models.add(id.value); }
+  public dropModel(id: Id64): boolean { return this.models.delete(id.value); }
+  public containsModel(modelId: Id64): boolean { return this.models.has(modelId.value); }
 }
 
 /** properties that define a CategorySelector */
@@ -393,13 +401,13 @@ export class CategorySelectorState extends ElementState {
   public getName(): string { return this.code.getValue(); }
 
   /** Determine whether this CategorySelector includes the specified category */
-  public isCategoryViewed(categoryId: Id64): boolean { return this.categories.has(categoryId.toString()); }
+  public isCategoryViewed(categoryId: Id64): boolean { return this.categories.has(categoryId.value); }
 
   /**  Add a category to this CategorySelector */
-  public addCategory(id: Id64): void { this.categories.add(id.toString()); }
+  public addCategory(id: Id64): void { this.categories.add(id.value); }
 
   /** Drop a category from this CategorySelector */
-  public dropCategory(id: Id64): boolean { return this.categories.delete(id.toString()); }
+  public dropCategory(id: Id64): boolean { return this.categories.delete(id.value); }
 
   /** Add or Drop a category to this CategorySelector */
   public changeCategoryDisplay(categoryId: Id64, add: boolean): void { if (add) this.addCategory(categoryId); else this.dropCategory(categoryId); }
@@ -451,7 +459,12 @@ export class MarginPercent {
 export abstract class ViewState extends ElementState {
   protected constructor(props: ViewDefinitionProps, iModel: IModel, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
     super(props, iModel);
+    if (categorySelector instanceof ViewState) { // from clone, 3rd argument is source ViewState
+      this.categorySelector = categorySelector.categorySelector;
+      this.displayStyle = categorySelector.displayStyle;
+    }
   }
+
   public toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
     json.categorySelectorId = this.categorySelector.id;
@@ -604,7 +617,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Get the name of this ViewDefinition */
-  public getName(): string { return this.code.getValue(); }
+  public get name(): string { return this.code.getValue(); }
 
   /** Get the current value of a view detail */
   public getDetail(name: string): any { const v = this.getDetails()[name]; return v ? v : {}; }
@@ -624,7 +637,7 @@ export abstract class ViewState extends ElementState {
   /** Set the AuxiliaryCoordinateSystem for this view. */
   public setAuxiliaryCoordinateSystem(acsId: Id64) {
     if (acsId.isValid())
-      this.setDetail("acs", acsId.toString());
+      this.setDetail("acs", acsId.value);
     else
       this.removeDetail("acs");
   }
@@ -748,7 +761,7 @@ export abstract class ViewState extends ElementState {
       const wPercent = margin.left + margin.right;
       const hPercent = margin.top + margin.bottom;
 
-      const marginHoriz = wPercent / (1 - wPercent) * newDelta.x;
+      const marginHorizontal = wPercent / (1 - wPercent) * newDelta.x;
       const marginVert = hPercent / (1 - hPercent) * newDelta.y;
 
       // compute left and bottom margins in root coordinates
@@ -758,7 +771,7 @@ export abstract class ViewState extends ElementState {
       // add the margins to the range
       newOrigin.x -= marginLeft;
       newOrigin.y -= marginBottom;
-      newDelta.x += marginHoriz;
+      newDelta.x += marginHorizontal;
       newDelta.y += marginVert;
 
       // don't fix the origin due to changes in delta here
@@ -1287,7 +1300,18 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
  * The list of viewed models is stored by the ModelSelector.
  */
 export class SpatialViewState extends ViewState3d {
-  constructor(props: SpatialViewDefinitionProps, iModel: IModel, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, public modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle); }
+  constructor(props: SpatialViewDefinitionProps, iModel: IModel, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, public modelSelector: ModelSelectorState) {
+    super(props, iModel, arg3, displayStyle);
+    if (arg3 instanceof SpatialViewState) { // from clone
+      this.modelSelector = arg3.modelSelector;
+    }
+  }
+
+  public toJSON(): SpatialViewDefinitionProps {
+    const val = super.toJSON() as SpatialViewDefinitionProps;
+    val.modelSelectorId = this.modelSelector.id;
+    return val;
+  }
 
   public viewsModel(modelId: Id64): boolean { return this.modelSelector.containsModel(modelId); }
 }
