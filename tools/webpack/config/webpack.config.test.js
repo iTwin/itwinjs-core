@@ -121,7 +121,7 @@ module.exports = {
       // WIP: This is a temporary (hack) workaround for the suppoting snapshots with mocha-webpack.
       {
         loader: require.resolve('imports-loader'),
-        query: "describe=>bedescribe",
+        query: "globalMochaHooks=>global.globalMochaHooks()",
         test: /.*\.test\.(jsx?|tsx?)$/,
         enforce: 'post',
       },
