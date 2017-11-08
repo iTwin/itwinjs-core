@@ -40,7 +40,7 @@
     "jsdom": "^11.3.0",
     "mocha": "^3.5.3",
     "mocha-junit-reporter": "^1.15.0",
-    "mocha-webpack": "^1.0.0-rc.1",
+    "mocha-webpack": "^1.0.1",
     "node-sass": "^4.5.3",
     "null-loader": "^0.1.1",
     "nyc": "^10.0.0",
