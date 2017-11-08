@@ -5,24 +5,29 @@
   "license": "UNLICENSED",
   "scripts": {
     "clean": "rimraf lib/*",
-    "compile": "tsc --outDir ./lib",
+    "compile": "tsc",
+    "copy-assets": "cpx ./assets/**/* ./lib/assets",
     "postinstall": "node ../../scripts/install-imodeljs-addon.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "pretest": "concurrently \"npm run compile\" \"npm run copy-assets\"",
+    "test": "node node_modules/@bentley/bentleyjs-tools/scripts/test.js --packageRoot=\".\" --testDir=\".\""
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "^1.0.33",
     "@bentley/geometry-core": "^1.0.10",
-    "@bentley/imodeljs-clients": "^1.0.18",
+    "@bentley/imodeljs-clients": "^1.0.26",
     "fs-extra": "latest",
     "js-base64": "^2.3.2"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "^1.0.48",
+    "@bentley/bentleyjs-tools": "^1.0.49",
     "@types/chai": "^4.0.4",
     "@types/fs-extra": "^4.0.3",
     "@types/js-base64": "^2.3.0",
     "@types/mocha": "^2.2.44",
     "chai": "^4.1.2",
-    "rimraf": "^2.6.2"
+    "concurrently": "^3.5.0",
+    "mocha": "^3.5.3",
+    "rimraf": "^2.6.2",
+    "ts-node": "^3.3.0"
   }
 }

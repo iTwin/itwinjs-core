@@ -19,7 +19,8 @@
         "@types/*",
         "*"
       ]
-    }
+    },
+    "outDir": "./lib" /* Redirect output structure to the directory. */
   },
   "include": [
     "../common/**/*.ts",

@@ -109,7 +109,7 @@ export class IModelTestUtils {
     iModel.closeStandalone();
   }
 
-  // TODO: This neeeds a home
+  // TODO: This needs a home
   public static queryCodeSpecId(imodel: IModelDb, name: string): Id64 | undefined {
     return imodel.withPreparedStatement("SELECT ecinstanceid FROM BisCore.CodeSpec WHERE Name=?", (stmt: ECSqlStatement) => {
       stmt.bindValues([name]);
