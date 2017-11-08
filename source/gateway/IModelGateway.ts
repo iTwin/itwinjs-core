@@ -8,6 +8,7 @@ import { IModelToken } from "../common/IModel";
 import { IModelVersion } from "../common/IModelVersion";
 import { Gateway } from "../common/Gateway";
 
+/** The iModel core gateway definition. */
 export abstract class IModelGateway extends Gateway {
   /** Returns the IModelGatewayProxy instance for the frontend. */
   public static getProxy(): IModelGateway {
