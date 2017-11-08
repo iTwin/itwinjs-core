@@ -51,6 +51,7 @@ module.exports = {
   appIndexJs: resolveApp('src/frontend/index.tsx'),
   appPackageJson: resolveApp('package.json'),
   appSrc: resolveApp('src'),
+  appSrcBackend: resolveApp('src/backend'),
   appTest: resolveApp('test'),
   appSnapshots: resolveApp('.snapshots.js'),
   appSrcElectron: resolveApp('src/backend/electron'),
