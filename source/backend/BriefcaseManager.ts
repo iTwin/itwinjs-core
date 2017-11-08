@@ -72,8 +72,10 @@ class BriefcaseCache {
 
 export class BriefcaseManager {
   private static hubClient = new IModelHubClient("QA");
-  public static rootPath = path.join(__dirname, "../assets/imodels");
   private static cache?: BriefcaseCache;
+
+  /** The path where the cache of briefcases are stored. */
+  public static cachePath = path.join(__dirname, "cache/imodels");
 
   /**
    * Get the local path of the root folder storing the imodel seed file, change sets and briefcases
@@ -87,7 +89,7 @@ export class BriefcaseManager {
    *        IModelName.bim (briefcase path name)
    */
   private static getIModelPath(iModelId: string): string {
-    return path.join(BriefcaseManager.rootPath, iModelId);
+    return path.join(BriefcaseManager.cachePath, iModelId);
   }
 
   private static getSeedPathname(iModelId: string, briefcase: Briefcase): string {
@@ -112,7 +114,7 @@ export class BriefcaseManager {
       return;
 
     const nativeDb = new dgnDbNodeAddon.DgnDb();
-    const res: BentleyReturn<DbResult, string> = nativeDb.getCachedBriefcaseInfosSync(BriefcaseManager.rootPath);
+    const res: BentleyReturn<DbResult, string> = nativeDb.getCachedBriefcaseInfosSync(BriefcaseManager.cachePath);
     if (res.error)
       Promise.reject(new IModelError(res.error.status));
 
