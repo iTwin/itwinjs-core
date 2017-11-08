@@ -33,7 +33,7 @@ export class Element extends Entity implements ElementProps {
     this.code = new Code(props.code);
     this.model = new Id64(props.model);
     this.parent = RelatedElement.fromJSON(props.parent);
-    this.federationGuid = Guid.fromJson(props.federationGuid);
+    this.federationGuid = Guid.fromJSON(props.federationGuid);
     this.userLabel = props.userLabel;
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
   }

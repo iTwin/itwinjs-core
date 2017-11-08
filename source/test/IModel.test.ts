@@ -7,7 +7,7 @@ import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { Code } from "../common/Code";
 import { EntityProps } from "../common/EntityProps";
-import { DisplayStyle3dState, ModelSelectorState, ModelSelectorProps, SpatialViewState, CategorySelectorState } from "../common/ViewState";
+import { DisplayStyle3dState, ModelSelectorState, ModelSelectorProps, SpatialViewState, CategorySelectorState, ViewportStatus } from "../common/ViewState";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { Entity, EntityCtor, EntityMetaData } from "../backend/Entity";
 import { Model } from "../backend/Model";
@@ -231,7 +231,7 @@ describe("iModel", () => {
       model: new Id64([1, 1]),
       code: Code.createEmpty(),
       id: new Id64(),
-      models: ["0X001"],
+      models: ["0x1"],
     };
 
     const selector = new ModelSelectorState(props, imodel1);
@@ -246,6 +246,8 @@ describe("iModel", () => {
     const sel2 = imodel1.constructEntity(out);
     assert.instanceOf(sel2, ModelSelector);
     assert.equal(sel2.models.length, 3);
+    const sel3 = selector.clone();
+    assert.deepEqual(sel3, selector, "clone worked");
   });
 
   it("should produce an array of rows", async () => {
@@ -299,6 +301,8 @@ describe("iModel", () => {
       const styleProps = await imodel1.elements.getElementProps(view.displayStyleId);
       const dStyleState2 = new DisplayStyle3dState(styleProps, imodel1);
       assert.deepEqual(dStyleState, dStyleState2);
+      const d3 = dStyleState.clone();
+      assert.deepEqual(dStyleState, d3);
 
       const catSel = await imodel1.elements.getElement(view.categorySelectorId) as CategorySelector;
       assert.isDefined(catSel.categories);
@@ -307,13 +311,32 @@ describe("iModel", () => {
       assert.isDefined(modelSel.models);
       assert.lengthOf(modelSel.models, 5);
 
-      const viewState = new SpatialViewState(view.toJSON(), imodel1, new CategorySelectorState(catSel.toJSON(), imodel1), dStyleState, new ModelSelectorState(modelSel.toJSON(), imodel1));
+      const catSelState = new CategorySelectorState(catSel.toJSON(), imodel1);
+      const c2 = catSelState.clone();
+      assert.deepEqual(catSelState, c2);
+
+      const modSelState = new ModelSelectorState(modelSel.toJSON(), imodel1);
+      const m2 = modSelState.clone();
+      assert.deepEqual(modSelState, m2);
+
+      const viewState = new SpatialViewState(view.toJSON(), imodel1, catSelState, dStyleState, modSelState);
       assert.isDefined(viewState.displayStyle);
       assert.instanceOf(viewState.categorySelector, CategorySelectorState);
       assert.equal(viewState.categorySelector.categories.size, 4);
       assert.instanceOf(viewState.modelSelector, ModelSelectorState);
       assert.equal(viewState.modelSelector.models.size, 5);
       assert.isTrue(viewState.origin.isAlmostEqual(new Point3d(-87.73958171815832, -108.96514044887601, -0.0853709702222105)), "View origin as expected");
+      const v2 = viewState.clone();
+      assert.deepEqual(viewState, v2);
+
+      assert.notEqual(v2.origin, viewState.origin); // make sure we're really looking at a copy
+      assert.notEqual(v2.extents, viewState.extents);
+      assert.notEqual(v2.camera, viewState.camera);
+      assert.notEqual(v2.jsonProperties, viewState.jsonProperties);
+      assert.notEqual(v2.rotation, viewState.rotation);
+      const stat = v2.lookAt(new Point3d(1, 2, 3), new Point3d(100, 100, 100), new Vector3d(0, 1, 0));
+      assert.equal(stat, ViewportStatus.Success);
+      assert.notDeepEqual(v2, viewState);
     }
   });
 

@@ -78,7 +78,7 @@ export class BindingUtility {
       return bindingValue;
 
     if (bindingValue instanceof Id64)
-      return { kind: ValueKind.Primitive, type: PrimitiveTypeCode.Long, value: (bindingValue as Id64).toString() };
+      return { kind: ValueKind.Primitive, type: PrimitiveTypeCode.Long, value: bindingValue.value };
 
     const primitiveType = BindingUtility.getPrimitiveType(bindingValue);
     if (primitiveType === PrimitiveTypeCode.Uninitialized)

@@ -12,11 +12,20 @@
     "source/test/lib": true
   },
   "cSpell.words": [
+    "aux",
+    "codespec",
+    "coord",
+    "d",
     "ecclass",
     "ecinstanceid",
     "ecsql",
     "endverbatim",
+    "frust",
+    "fstop",
+    "hline",
     "mixins",
+    "skybox",
+    "system",
     "viewflags"
   ]
   // ,
