@@ -24,19 +24,18 @@
       "type": "node",
       "request": "launch",
       "name": "WIP - Mocha Tests",
-      "program": "${workspaceRoot}/source/test/node_modules/mocha/bin/_mocha",
+      "program": "${workspaceFolder}/source/test/node_modules/@bentley/bentleyjs-tools/scripts/test.js",
+      "cwd": "${workspaceFolder}/source/test",
       "args": [
-        "-u",
-        "tdd",
-        "--timeout",
-        "999999",
-        "--colors",
-        "${workspaceRoot}/source/test/lib/**/*.test.js"
+        "--packageRoot=${workspaceFolder}/source/test",
+        "--testDir=${workspaceFolder}/source/test",
+        "debug"
       ],
+      "port": 9229,
       "protocol": "inspector",
-      "sourceMaps": true,
-      "outDir": "${workspaceRoot}/source/test/lib",
-      "internalConsoleOptions": "openOnSessionStart"
+      "env":{
+        "ADDON_PATH": "../source/test/node_modules/"
+      }
     },
     {
       "type": "node",

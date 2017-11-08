@@ -8,7 +8,6 @@
     "compile": "tsc",
     "copy-assets": "cpx ./assets/**/* ./lib/assets",
     "postinstall": "node ../../scripts/install-imodeljs-addon.js",
-    "pretest": "concurrently \"npm run compile\" \"npm run copy-assets\"",
     "test": "cross-env ADDON_PATH=\"../source/test/node_modules/\" node node_modules/@bentley/bentleyjs-tools/scripts/test.js --packageRoot=\".\" --testDir=\".\""
   },
   "dependencies": {
