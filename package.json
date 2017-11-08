@@ -12,6 +12,7 @@
     "build": "gulp build",
     "build-release": "gulp build --release",
     "clean": "gulp clean",
+    "lint": "node node_modules/@bentley/bentleyjs-tools/scripts/tslint.js",
     "test": "gulp test",
     "install": "node scripts/install-imodeljs-addon.js",
     "wip-install": "concurrently \"npm run wip-install-backend\" \"npm run wip-install-frontend\" \"npm run wip-install-test\"",
@@ -25,7 +26,8 @@
     "wip-build": "concurrently \"npm run wip-build-backend\" \"npm run wip-build-frontend\" \"npm run wip-build-test\"",
     "wip-build-backend": "cd source/backend && npm run compile",
     "wip-build-frontend": "cd source/frontend && npm run compile",
-    "wip-build-test": "cd source/test && npm run compile"
+    "wip-build-test": "cd source/test && npm run compile",
+    "wip-test": "cd source/test && npm run test"
   },
   "keywords": [
     "Bentley",
@@ -39,11 +41,11 @@
   "dependencies": {
     "@bentley/bentleyjs-core": "^1.0.39",
     "@bentley/geometry-core": "^1.0.11",
-    "@bentley/imodeljs-clients": "^1.0.25",
+    "@bentley/imodeljs-clients": "^1.0.26",
     "js-base64": "^2.3.2"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "^1.0.48",
+    "@bentley/bentleyjs-tools": "^1.0.49",
     "@types/chai": "^4.0.4",
     "@types/fs-extra": "^4.0.3",
     "@types/js-base64": "^2.3.0",

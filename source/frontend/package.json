@@ -5,8 +5,9 @@
   "license": "UNLICENSED",
   "scripts": {
     "clean": "rimraf lib/*",
-    "compile": "tsc --outDir ./lib",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "compile": "tsc",
+    "lint": "node node_modules/@bentley/bentleyjs-tools/scripts/tslint.js",
+    "test": "echo \"Error: run tests from the '../test' directory.\" && exit 1"
   },
   "keywords": [
     "Bentley",
@@ -20,11 +21,11 @@
   "dependencies": {
     "@bentley/bentleyjs-core": "^1.0.33",
     "@bentley/geometry-core": "^1.0.10",
-    "@bentley/imodeljs-clients": "^1.0.18",
+    "@bentley/imodeljs-clients": "^1.0.26",
     "js-base64": "^2.3.2"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "^1.0.48",
+    "@bentley/bentleyjs-tools": "^1.0.49",
     "@types/js-base64": "^2.3.0",
     "rimraf": "^2.6.2"
   }

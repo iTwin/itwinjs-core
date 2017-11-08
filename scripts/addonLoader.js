@@ -28,7 +28,7 @@ function loadNodeAddon() {
     if (typeof (process) === "undefined" || process.version === "")
         return undefined;
     // tslint:disable-next-line:no-var-requires
-    const addon = require(computeAddonPackageName() + "/addon/imodeljs.node");
+    const addon = (process.env.ADDON_PATH !== undefined) ? require(process.env.ADDON_PATH + computeAddonPackageName() + "/addon/imodeljs.node") : require(computeAddonPackageName() + "/addon/imodeljs.node");
     if (!addon)
         return undefined;
 
