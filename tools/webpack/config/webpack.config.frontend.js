@@ -191,6 +191,9 @@ const baseConfiguration = {
       {
         test: /\.scss$/,
         loader: require.resolve('sass-loader'),
+        options: {
+          includePaths: [paths.appNodeModules]
+        },
         enforce: 'pre',
       },
       // ** ADDING/UPDATING LOADERS **
