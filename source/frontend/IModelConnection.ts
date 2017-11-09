@@ -33,7 +33,7 @@ export class IModelConnection extends IModel {
     if (OpenMode.Readonly !== openMode)
       return Promise.reject(new IModelError(IModelStatus.NotEnabled, "IModelConnection does not support read/write access yet")); // WIP: waiting for decisions on how to manage read/write briefcases on the backend
 
-    const iModelToken = await IModelGateway.getProxy().open(accessToken, iModelId, openMode, version);
+    const iModelToken = await IModelGateway.getProxy().openForRead(accessToken, iModelId, version);
     Logger.logInfo("IModelConnection.open", () => ({ iModelId, openMode, version }));
     return new IModelConnection(iModelToken);
   }

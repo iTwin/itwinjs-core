@@ -1,27 +1,45 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { EntityQueryParams } from "../common/EntityProps";
 import { IModelToken } from "../common/IModel";
 import { IModelVersion } from "../common/IModelVersion";
 import { Gateway } from "../common/Gateway";
 
-/** The iModel core gateway definition. */
+/** Response from [[IModelGateway.getIModelInfo]]
+ * @hidden
+ */
+export interface GetIModelInfoResponse {
+  extents: any; // DRange3d
+}
+
+/** The iModel core gateway definition.
+ * @hidden
+ */
 export abstract class IModelGateway extends Gateway {
   /** Returns the IModelGatewayProxy instance for the frontend. */
   public static getProxy(): IModelGateway {
     return Gateway.getProxyForGateway(IModelGateway);
   }
 
-  /** Opens an IModel on the backend to service frontend requests. */
-  public async open(_accessToken: AccessToken, _iModelId: string, _openMode: OpenMode, _version: IModelVersion): Promise<IModelToken> {
+  /** Opens an IModel (read-only) on the backend to service frontend requests. */
+  public async openForRead(_accessToken: AccessToken, _iModelId: string, _version: IModelVersion): Promise<IModelToken> {
+    return this.forward.apply(this, arguments);
+  }
+
+  /** Opens an IModel (read/write) on the backend to service frontend requests. */
+  public async openForWrite(_accessToken: AccessToken, _iModelId: string, _version: IModelVersion): Promise<IModelToken> {
     return this.forward.apply(this, arguments);
   }
 
   /** Closes an IModel on the backend. */
   public async close(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<boolean> {
+    return this.forward.apply(this, arguments);
+  }
+
+  /** Get information about this IModel from the backend. */
+  public async getIModelInfo(_iModelToken: IModelToken): Promise<GetIModelInfoResponse> {
     return this.forward.apply(this, arguments);
   }
 
