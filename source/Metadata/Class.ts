@@ -45,22 +45,12 @@ export abstract class Class extends SchemaChild implements ICustomAttributeConta
       if (typeof(jsonObj.baseClass) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The base class of ${this.name} is not a string type.`);
 
-      const [schemaName, baseClassName] = SchemaChild.parseFullName(jsonObj.baseClass);
-      // Try to find the base class in the containing schema or within one of it's reference schemas
       if (this.schema && typeof(this.schema) !== "string") {
-        let baseClass;
-        if (this.schema.schemaKey.name.toLowerCase() === schemaName.toLowerCase())
-          baseClass = this.schema.getChild<EntityClass>(baseClassName);
-        else {
-          const refSchema = this.schema.getReference(schemaName);
-          if (!refSchema)
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The base class of ${this.name} is not in the schema or any referenced schemas.`);
+        const baseClass = this.schema.getChild<Class>(jsonObj.baseClass);
 
-          baseClass = refSchema.getChild<Class>(baseClassName);
-        }
-
-        if (baseClass)
-          this.baseClass = baseClass as Class;
+        if (!baseClass)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+        this.baseClass = baseClass;
       } else
         this.baseClass = jsonObj.baseClass;
     }
@@ -73,40 +63,25 @@ export abstract class Class extends SchemaChild implements ICustomAttributeConta
 export class EntityClass extends Class implements EntityInterface {
   public mixins?: MixinInterface[];
 
-  private loadMixin(mixinFullName: string): void {
-    const [schemaName, mixinName] = SchemaChild.parseFullName(mixinFullName);
+  public fromJson(jsonObj: any): void {
+    super.fromJson(jsonObj);
 
-    if (this.schema && typeof(this.schema) !== "string") {
-      let mixin;
-      if (this.schema.schemaKey.name.toLowerCase() === schemaName.toLowerCase())
-        mixin = this.schema.getChild<EntityClass>(mixinName);
-      else {
-        const refSchema = this.schema.getReference(schemaName);
-        if (!refSchema)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The base class of ${this.name} is not in the schema or any referenced schemas.`);
-
-        mixin = refSchema.getChild<Class>(mixinName);
-      }
-
-      if (!mixin)
+    const loadMixin = (mixinFullName: string) => {
+      const tempMixin = this.schema.getChild<MixinInterface>(mixinFullName);
+      if (!tempMixin)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
       if (!this.mixins)
         this.mixins = [];
-      this.mixins.push(mixin);
-    }
-    // TODO need to handle the case if the schema isn't here
-  }
-
-  public fromJson(jsonObj: any): void {
-    super.fromJson(jsonObj);
+      this.mixins.push(tempMixin);
+    };
 
     if (jsonObj.mixin) {
       if (typeof(jsonObj.mixin) === "string") {
-        this.loadMixin(jsonObj.mixin);
+        loadMixin(jsonObj.mixin);
       } else if (Array.isArray(jsonObj.mixin)) {
         jsonObj.mixin.forEach((mixinName: string) => {
-          this.loadMixin(mixinName);
+          loadMixin(mixinName);
         });
       } else
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Mixin on ECEntityClass ${this.name} is an invalid type. It must be of Json type string or an array of strings.`);
