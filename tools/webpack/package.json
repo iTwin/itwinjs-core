@@ -12,7 +12,7 @@
   },
   "version": "1.0.9",
   "engines": {
-    "node": "8.2.1"
+    "node": "8.2.9"
   },
   "bin": {
     "imodeljs-react-scripts": "./bin/imodeljs-react-scripts.js"
