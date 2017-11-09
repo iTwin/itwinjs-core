@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { ClassInterface, MixinInterface, EntityInterface, PropertyInterface, CustomAttributeInterface } from "../Interfaces";
+import { ClassInterface, MixinInterface, EntityClassInterface, PropertyInterface, CustomAttributeClassInterface } from "../Interfaces";
 import { ECClassModifier, CustomAttributeContainerType, parseCustomAttributeContainerType
 , parseClassModifier } from "../ECObjects";
 import { ICustomAttributeContainer, CustomAttributeSet } from "./CustomAttribute";
@@ -60,7 +60,7 @@ export abstract class Class extends SchemaChild implements ICustomAttributeConta
 /**
  *
  */
-export class EntityClass extends Class implements EntityInterface {
+export class EntityClass extends Class implements EntityClassInterface {
   public mixins?: MixinInterface[];
 
   public fromJson(jsonObj: any): void {
@@ -93,13 +93,13 @@ export class EntityClass extends Class implements EntityInterface {
  *
  */
 export class MixinClass extends Class implements MixinInterface {
-  public appliesTo: string | EntityInterface;
+  public appliesTo: string | EntityClassInterface;
 
   public fromJson(jsonObj: any): void {
     super.fromJson(jsonObj);
 
     if (jsonObj.appliesTo) {
-      const tmpClass = this.schema.getChild<EntityInterface>(jsonObj.appliesTo);
+      const tmpClass = this.schema.getChild<EntityClassInterface>(jsonObj.appliesTo);
       if (!tmpClass)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
@@ -116,7 +116,7 @@ export class StructClass extends Class implements ClassInterface { }
 /**
  *
  */
-export class CustomAttributeClass extends Class implements CustomAttributeInterface {
+export class CustomAttributeClass extends Class implements CustomAttributeClassInterface {
   public containerType: CustomAttributeContainerType;
 
   public fromJson(jsonObj: any): void {

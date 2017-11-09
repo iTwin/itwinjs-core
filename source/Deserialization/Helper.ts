@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaInterface, SchemaChildInterface, ClassInterface, EntityInterface, MixinInterface } from "../Interfaces";
+import { SchemaInterface, SchemaChildInterface, ClassInterface, EntityClassInterface, MixinInterface } from "../Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaContext } from "../Context";
 import { ECVersion, SchemaKey } from "../ECObjects";
@@ -127,7 +127,7 @@ export default class SchemaReadHelper {
 
     switch (schemaChildJson.schemaChildType) {
       case "EntityClass":
-        const entityClass: EntityInterface = schema.createEntityClass(childName);
+        const entityClass: EntityClassInterface = schema.createEntityClass(childName);
         this.loadEntityClass(entityClass, schemaChildJson, schema);
         break;
       case "StructClass":
@@ -193,7 +193,7 @@ export default class SchemaReadHelper {
     }
   }
 
-  private loadEntityClass(entity: EntityInterface, entityJson: any, schema?: SchemaInterface): void {
+  private loadEntityClass(entity: EntityClassInterface, entityJson: any, schema?: SchemaInterface): void {
     // Load Mixin classes first
     if (entityJson.mixin) {
       if (typeof(entityJson.mixin) === "string" && entity.schema && typeof(entity.schema) !== "string") {

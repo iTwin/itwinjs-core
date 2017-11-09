@@ -22,7 +22,7 @@ export interface SchemaInterface {
   references?: SchemaInterface[];
   children?: SchemaChildInterface[];
   getChild<T extends SchemaChildInterface>(name: string): T | undefined;
-  createEntityClass(name: string): EntityInterface;
+  createEntityClass(name: string): EntityClassInterface;
   createMixinClass(name: string): MixinInterface;
   createStructClass(name: string): ClassInterface;
   createCustomAttributeClass(name: string): ClassInterface;
@@ -50,15 +50,15 @@ export interface ClassInterface extends SchemaChildInterface {
   createProperty(name: string): any;
 }
 
-export interface EntityInterface extends ClassInterface {
+export interface EntityClassInterface extends ClassInterface {
   mixin?: string[] | MixinInterface[]; // string should be an ECFullName
 }
 
 export interface MixinInterface extends ClassInterface {
-  appliesTo?: string | EntityInterface; // string should be an ECFullName
+  appliesTo?: string | EntityClassInterface; // string should be an ECFullName
 }
 
-export interface RelationshipInterface extends ClassInterface {
+export interface RelationshipClassInterface extends ClassInterface {
   strength: string;
   strengthDirection: string;
   source: RelationshipConstraintInterface;
@@ -71,10 +71,10 @@ export interface RelationshipConstraintInterface {
   polymorphic: boolean;
   abstractConstraint: string; // string should be an ECFullName
   customAttributes: object[];  // TODO: Fix this
-  constraintClasses: EntityInterface[] | RelationshipInterface[];
+  constraintClasses: EntityClassInterface[] | RelationshipClassInterface[];
 }
 
-export interface CustomAttributeInterface {
+export interface CustomAttributeClassInterface {
   containerType: CustomAttributeContainerType;
 }
 
