@@ -263,6 +263,20 @@ export const ColorRgb: any = {
 export class ColorDef {
   private _tbgr: number;
 
+  /**
+   * Create a new ColorDef.
+   * @param val value to use.
+   * if val is a number, it is interpreted as an RGB value.
+   * if val is an ColorDef, copy value from it.
+   * if val is a string, must be in one of the following forms:
+   * "rgb(255,0,0)"
+   * "rgba(255,0,0,255)"
+   * "rgb(100%,0%,0%)"
+   * "hsl(120,50%,50%)"
+   * "#ff0000"
+   * "red" (see values from ColorRgb)
+   * @return this
+   */
   public constructor(val?: number | ColorDef | string) {
     this._tbgr = 0;
     if (!val)
@@ -328,17 +342,7 @@ export class ColorDef {
   public toHexString() { return "#" + ("000000" + this.getRgb().toString(16)).slice(-6); }
   /** convert this ColorDef to a string in the form "rgb(r,g,b)" where values are decimal digits of the respective colors */
   public toRgbString() { const c = this.getColors(); return "rgb(" + (c.r | 0) + "," + (c.g | 0) + "," + (c.b | 0) + ")"; }
-
-  /** initialize this ColorDef from a string in one of the following forms:
-   * "rgb(255,0,0)"
-   * "rgba(255,0,0,255)"
-   * "rgb(100%,0%,0%)"
-   * "hsl(120,50%,50%)"
-   * "#ff0000"
-   * "red" (see values from ColorRgb)
-   * @return this
-   */
-  public fromString(val: string): ColorDef {
+  private fromString(val: string): ColorDef {
     if (typeof val !== "string")
       return this;
 

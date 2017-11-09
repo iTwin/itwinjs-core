@@ -478,7 +478,7 @@ export class IModelDbElements {
 
     // We have created the element. Cache it before we return it.
     el.setPersistent(); // elements in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
-    this._loaded.set(el.id.toString(), el);
+    this._loaded.set(el.id.value, el);
     return el;
   }
 
@@ -488,7 +488,7 @@ export class IModelDbElements {
    */
   public getElementProps(elementId: Id64 | Guid | Code): Promise<ElementProps> {
     if (elementId instanceof Id64) return this._getElementProps({ id: elementId });
-    if (elementId instanceof Guid) return this._getElementProps({ federationGuid: elementId.toString() });
+    if (elementId instanceof Guid) return this._getElementProps({ federationGuid: elementId.value });
     if (elementId instanceof Code) return this._getElementProps({ code: elementId });
     return Promise.reject(new IModelError(IModelStatus.BadArg, undefined, Logger.logError, () => ({ elementId })));
   }
@@ -499,7 +499,7 @@ export class IModelDbElements {
    */
   public getElement(elementId: Id64 | Guid | Code): Promise<Element> {
     if (elementId instanceof Id64) return this._doGetElement({ id: elementId });
-    if (elementId instanceof Guid) return this._doGetElement({ federationGuid: elementId.toString() });
+    if (elementId instanceof Guid) return this._doGetElement({ federationGuid: elementId.value });
     if (elementId instanceof Code) return this._doGetElement({ code: elementId });
     return Promise.reject(new IModelError(IModelStatus.BadArg, undefined, Logger.logError, () => ({ elementId })));
   }
