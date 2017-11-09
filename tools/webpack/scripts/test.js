@@ -31,7 +31,7 @@ const reporterOptions = (!isCI) ? [ "--inline-diffs",  "--colors" ] : [
   "--reporter-options", `mochaFile=${paths.appJUnitTestResults}`,
 ];
 
-const watchOptions = (process.argv.length > 3 && process.argv[3].toLowerCase() === "watch") ? ["--watch"] : [];
+const watchOptions = (process.argv.length > 3 && process.argv[3].toLowerCase() === "watch") ? ["--watch", "--interactive"] : [];
 const debugOptions = (process.argv.indexOf("--debug") >= 0) ? ["--inspect-brk=41016"] : [];
 
 // Start the tests
