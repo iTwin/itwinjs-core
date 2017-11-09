@@ -4,7 +4,7 @@
 
 import { assert, expect } from "chai";
 import { ECSchema } from "../../source/Metadata/Schema";
-import { Class, EntityClass } from "../../source/Metadata/Class";
+import { Class, EntityClass, MixinClass } from "../../source/Metadata/Class";
 import { ECClassModifier } from "../../source/ECObjects";
 
 describe("entity class", () => {
@@ -45,11 +45,11 @@ describe("entity class", () => {
         children: {
           testMixin: {
             schemaChildType: "Mixin",
-            appliesTo: "testClass",
+            appliesTo: "TestSchema.testClass",
           },
           testClass: {
             schemaChildType: "EntityClass",
-            mixin: "testMixin",
+            mixin: "TestSchema.testMixin",
           },
         },
       };
@@ -60,15 +60,17 @@ describe("entity class", () => {
       const testClass = ecschema.getClass("testClass");
       assert.isDefined(testClass);
       assert.isTrue(testClass instanceof EntityClass);
+      const entityClass = testClass as EntityClass;
 
-      const mixinClass = ecschema.getClass("testMixin");
+      const mixinClass = ecschema.getClass<MixinClass>("testMixin");
       assert.isDefined(mixinClass);
 
-      const entityClass = testClass as EntityClass;
-      assert.isDefined(entityClass.mixin);
-      assert.isTrue(typeof(entityClass.mixin) === "object");
+      assert.isDefined(entityClass.mixins);
+      expect(entityClass.mixins!.length).equal(1);
+      assert.isTrue(entityClass.mixins![0] === mixinClass);
 
-      assert.isTrue(entityClass.mixin === mixinClass);
+      assert.isDefined(mixinClass!.appliesTo);
+      assert.isTrue(entityClass === mixinClass!.appliesTo);
     });
 
     it("with multiple mixins", () => {

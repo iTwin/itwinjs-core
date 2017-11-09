@@ -38,6 +38,7 @@ export default abstract class SchemaChild implements SchemaChildInterface {
 
   /**
    * Parses the given full name, {schemaName}.{schemaChildName}, into two separate strings.
+   * If the name is not a string with a '.' in it than the second string in the tuple will be the name provided.
    * @param fullName The full name to be parsed.
    */
   public static parseFullName(fullName: string): [string, string] {
@@ -45,7 +46,7 @@ export default abstract class SchemaChild implements SchemaChildInterface {
 
     // The first match will be the full string match, the second two will be the two groups
     if (matches === null || matches.length !== 3)
-      return ["", ""];
+      return ["", fullName];
 
     return [matches[1], matches[2]];
   }

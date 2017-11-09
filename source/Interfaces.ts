@@ -22,14 +22,15 @@ export interface SchemaInterface {
   references?: SchemaInterface[];
   children?: SchemaChildInterface[];
   getChild<T extends SchemaChildInterface>(name: string): T | undefined;
-  createEntityClass(name: string): any;
-  createMixinClass(name: string): any;
-  createStructClass(name: string): any;
-  createCustomAttributeClass(name: string): any;
-  createKindOfQuantity(name: string): any;
-  createEnumeration(name: string): any;
-  createPropertyCategory(name: string): any;
+  createEntityClass(name: string): EntityInterface;
+  createMixinClass(name: string): MixinInterface;
+  createStructClass(name: string): ClassInterface;
+  createCustomAttributeClass(name: string): ClassInterface;
+  createKindOfQuantity(name: string): SchemaChildInterface;
+  createEnumeration(name: string): SchemaChildInterface;
+  createPropertyCategory(name: string): SchemaChildInterface;
   addReference(refSchema: SchemaInterface): void;
+  getReference(refSchemaName: string): SchemaInterface | undefined;
   fromJson(obj: any): void;
 }
 
@@ -50,7 +51,7 @@ export interface ClassInterface extends SchemaChildInterface {
 }
 
 export interface EntityInterface extends ClassInterface {
-  mixin?: string | MixinInterface; // string should be an ECFullName
+  mixin?: string[] | MixinInterface[]; // string should be an ECFullName
 }
 
 export interface MixinInterface extends ClassInterface {

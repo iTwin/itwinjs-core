@@ -4,6 +4,7 @@
 import { ECVersion, SchemaKey, ECClassModifier } from "../ECObjects";
 import { SchemaInterface, SchemaChildInterface } from "../Interfaces";
 import { Class, MixinClass, EntityClass, StructClass, CustomAttributeClass } from "./Class";
+import SchemaChild from "./SchemaChild";
 import { Enumeration } from "./Enumeration";
 import KindOfQuantity from "./KindOfQuantity";
 import PropertyCategory from "./PropertyCategory";
@@ -197,16 +198,30 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
   }
 
   /**
-   * Searches the current schema for a schema child with a name matching, case-insensitive, the provided name.
-   * @param name
+   * Attempts to find a schema child with a name matching, case-insensitive, the provided name. It will look for the schema child in the context of this schema.
+   * If the name is a full name, it will search in the reference schema matching the name.
+   * @param name The name of the schema child to search for.
    */
   public getChild<T extends SchemaChildInterface>(name: string): T | undefined {
-    if (!this._children)
+    const [schemaName, childName] = SchemaChild.parseFullName(name);
+
+    let foundChild;
+    if (!schemaName || schemaName.toLowerCase() === this.name.toLowerCase()) {
+      if (!this._children)
       return undefined;
 
-    // Do case-insensitive search
-    const foundChild = this._children.find((child) => child.name.toLowerCase() === name.toLowerCase());
-    return foundChild as T;
+      // Do case-insensitive search
+      foundChild = this._children.find((child) => child.name.toLowerCase() === childName.toLowerCase());
+    } else {
+      const refSchema = this.getReference(schemaName);
+      if (!refSchema)
+        return undefined;
+
+      // Since we are only passing the childName to the reference schema it will not check its own referenced schemas.
+      foundChild = refSchema.getChild<T>(childName);
+    }
+
+    return foundChild ? foundChild as T : foundChild;
   }
 
   /**
@@ -251,6 +266,12 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
     if (!this.references)
       this.references = [];
     this.references.push(refSchema);
+  }
+
+  public getReference(refSchemaName: string): SchemaInterface | undefined {
+    if (!this.references)
+      return undefined;
+    return this.references.find((ref) => ref.schemaKey.name.toLowerCase() === refSchemaName.toLowerCase());
   }
 
   /**
