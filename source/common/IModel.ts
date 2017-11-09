@@ -5,14 +5,15 @@ import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 
 /** A token that identifies an instance of an iModel. */
 export class IModelToken {
-  public pathname: string;
-  public openMode?: OpenMode;
-  public iModelId?: string;
-  public briefcaseId?: number;
-  public userId?: string;
-  public changeSetId?: string;
-  public changeSetIndex?: number;
-  public isOpen?: boolean;
+  public pathname: string; // WIP: move to IModelDb
+  public openMode?: OpenMode; // WIP: should move to IModel
+  public iModelId?: string; // WIP: should remain in IModelToken and not be optional
+  public briefcaseId?: number; // WIP: move to IModelDb?
+  public userId?: string; // WIP: does not belong in IModelToken, store AccessToken in IModelConnection?
+  public changeSetId?: string; // WIP: should remain in IModelToken and not be optional
+  public changeSetIndex?: number; // WIP: should not remain in IModelToken
+  public isOpen?: boolean; // WIP: does not belong in IModelToken
+  // WIP: add Connected Context Id
 
   public static fromFile(pathname: string, openMode: OpenMode, isOpen: boolean): IModelToken {
     const token = new IModelToken();
