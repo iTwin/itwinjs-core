@@ -1,5 +1,5 @@
 /// <reference types="mocha" />
-/// <reference types="chai" />
+/// <reference path="./defaultImports.ts" />
 
 declare namespace Polymer {
   type Element = React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {class: string, children: any};
@@ -20,8 +20,6 @@ declare namespace JSX {
     store?: any;
   }
 }
-
-declare const expect: Chai.ExpectStatic;
 
 declare namespace Chai {
   interface Assertion {

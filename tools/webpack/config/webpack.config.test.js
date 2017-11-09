@@ -196,5 +196,13 @@ module.exports = {
     // makes the discovery automatic so you don't have to restart.
     // See https://github.com/facebookincubator/create-react-app/issues/186
     new WatchMissingNodeModulesPlugin(paths.appNodeModules),
+    // Automatically make React and sinon available
+    new webpack.ProvidePlugin({
+      React: "react",
+      sinon: "sinon",
+      expect: ["chai", "expect"],
+      shallow: ["enzyme", "shallow"],
+      mount: ["enzyme", "mount"],
+    })
   ],
 };

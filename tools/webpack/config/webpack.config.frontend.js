@@ -325,7 +325,11 @@ const commonPlugins = [
     // https://github.com/jmblog/how-to-optimize-momentjs-with-webpack
     // You can remove this if you don't use Moment.js:
     new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
-    new SpriteLoaderPlugin(),
+    new SpriteLoaderPlugin(),   
+    // Automatically make React available
+    new webpack.ProvidePlugin({
+      React: "react",
+    })
 ];
 
 //======================================================================================================================================
