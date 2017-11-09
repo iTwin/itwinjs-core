@@ -248,7 +248,11 @@ const baseConfiguration = {
       {
         test: /\.(ts|tsx)$/,
         include: paths.appSrc,
-        loader: require.resolve('ts-loader')
+        loader: require.resolve('ts-loader'),
+        options: {
+          onlyCompileBundledFiles: true,
+          logLevel: 'warn',
+        }
       },
       // The rule for importing CSS and SASS files is defined above in getCssRule
       getCssRule(),

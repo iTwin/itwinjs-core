@@ -95,7 +95,8 @@ module.exports = {
         include: paths.appSrc,
         loader: require.resolve('ts-loader'),
         options: {
-          logLevel: 'warn'
+          onlyCompileBundledFiles: true,
+          logLevel: 'warn',
         }
       },
     ],

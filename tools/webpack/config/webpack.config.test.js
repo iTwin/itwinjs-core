@@ -175,6 +175,7 @@ module.exports = {
         exclude: /(node_modules|bower_components)/,
         loader: require.resolve('ts-loader'),
         options: {
+          onlyCompileBundledFiles: true,
           logLevel: 'warn'
         },
       },
