@@ -204,7 +204,7 @@ export namespace Gateway {
             if (connection.status === 200)
               resolve(JSON.parse(connection.responseText));
             else
-              reject(new IModelError(BentleyStatus.ERROR, `Server error: ${connection.status.toString()}`));
+              reject(new IModelError(BentleyStatus.ERROR, `Server error: ${connection.status} ${connection.responseText}`));
           });
 
           connection.addEventListener("error", () => reject(new IModelError(BentleyStatus.ERROR, "Connection error.")));
