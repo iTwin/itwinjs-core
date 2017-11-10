@@ -15,8 +15,11 @@ export const enum ECObjectsStatus {
   InvalidECJson = ECOBJECTS_ERROR_BASE + 6,
   InvalidContainerType = ECOBJECTS_ERROR_BASE + 7,
   InvalidEnumValue = ECOBJECTS_ERROR_BASE + 8,
-  DuplicateSchema = ECOBJECTS_ERROR_BASE + 9,
-  UnableToLocateSchema = ECOBJECTS_ERROR_BASE + 10,
+  InvalidStrength = ECOBJECTS_ERROR_BASE + 9,
+  InvalidStrengthDirection = ECOBJECTS_ERROR_BASE + 10,
+  InvalidMultiplicity = ECOBJECTS_ERROR_BASE + 11,
+  DuplicateSchema = ECOBJECTS_ERROR_BASE + 12,
+  UnableToLocateSchema = ECOBJECTS_ERROR_BASE + 13,
 }
 
 export class ECObjectsError extends Error {

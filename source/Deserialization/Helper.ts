@@ -2,7 +2,8 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaInterface, SchemaChildInterface, ClassInterface, EntityClassInterface, MixinInterface } from "../Interfaces";
+import { SchemaInterface, SchemaChildInterface, ClassInterface, EntityClassInterface, MixinInterface,
+        RelationshipClassInterface, RelationshipConstraintInterface } from "../Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaContext } from "../Context";
 import { ECVersion, SchemaKey } from "../ECObjects";
@@ -143,6 +144,8 @@ export default class SchemaReadHelper {
         this.loadClass(caClass, schemaChildJson, schema);
         break;
       case "RelationshipClass":
+        const relClass: RelationshipClassInterface = schema.createRelationshipClass(childName);
+        this.loadRelationshipClass(relClass, schemaChildJson, schema);
         break;
       case "KindOfQuantity":
         const koq: SchemaChildInterface = schema.createKindOfQuantity(childName);
@@ -216,5 +219,35 @@ export default class SchemaReadHelper {
     }
 
     this.loadClass(mixin, mixinJson, schema);
+  }
+
+  private loadRelationshipClass(rel: RelationshipClassInterface, relJson: any, schema?: SchemaInterface): void {
+    if (!relJson.source)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${rel.name} is missing the required source constraint.`);
+    this.loadRelationshipConstraint(rel.source, relJson.source, schema);
+
+    if (!relJson.target)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${rel.name} is missing the required target constraint.`);
+    this.loadRelationshipConstraint(rel.target, relJson.target, schema);
+
+    this.loadClass(rel, relJson, schema);
+  }
+
+  private loadRelationshipConstraint(relConstraint: RelationshipConstraintInterface, relConstraintJson: any, schema?: SchemaInterface): void {
+    if (relConstraintJson.abstractConstraint) {
+      if (typeof(relConstraintJson.abstractConstraint) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+      this.findSchemaChild(relConstraintJson.abstractConstraint, schema);
+    }
+
+    if (relConstraintJson.constraintClasses) {
+      if (!Array.isArray(relConstraintJson.constraintClasses))
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+      relConstraintJson.constraintClasses.forEach((constraintClass: string) => {
+        this.findSchemaChild(constraintClass, schema);
+      });
+    }
+
+    relConstraint.fromJson(relConstraintJson);
   }
 }

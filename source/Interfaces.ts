@@ -2,7 +2,8 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { ECVersion, ECClassModifier, CustomAttributeContainerType, PrimitiveType, SchemaMatchType } from "./ECObjects";
+import { ECVersion, ECClassModifier, CustomAttributeContainerType, PrimitiveType, SchemaMatchType, 
+      RelationshipMultiplicity, StrengthType, StrengthDirection } from "./ECObjects";
 
 export interface SchemaKeyInterface {
   name: string;
@@ -26,6 +27,7 @@ export interface SchemaInterface {
   createMixinClass(name: string): MixinInterface;
   createStructClass(name: string): ClassInterface;
   createCustomAttributeClass(name: string): ClassInterface;
+  createRelationshipClass(name: string): RelationshipClassInterface;
   createKindOfQuantity(name: string): SchemaChildInterface;
   createEnumeration(name: string): SchemaChildInterface;
   createPropertyCategory(name: string): SchemaChildInterface;
@@ -59,19 +61,21 @@ export interface MixinInterface extends ClassInterface {
 }
 
 export interface RelationshipClassInterface extends ClassInterface {
-  strength: string;
-  strengthDirection: string;
+  strength: StrengthType;
+  strengthDirection: StrengthDirection;
   source: RelationshipConstraintInterface;
   target: RelationshipConstraintInterface;
 }
 
 export interface RelationshipConstraintInterface {
-  multiplicity: string;
+  relClass?: RelationshipClassInterface;
+  multiplicity: RelationshipMultiplicity;
   roleLabel: string;
   polymorphic: boolean;
-  abstractConstraint: string; // string should be an ECFullName
-  customAttributes: object[];  // TODO: Fix this
+  abstractConstraint: EntityClassInterface | RelationshipClassInterface;
+  // customAttributes: object[];  // TODO: Fix this
   constraintClasses: EntityClassInterface[] | RelationshipClassInterface[];
+  fromJson(obj: any): void;
 }
 
 export interface CustomAttributeClassInterface {

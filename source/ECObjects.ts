@@ -198,9 +198,31 @@ export const enum StrengthType {
   Embedding,
 }
 
+export function parseStrength(strength: string): StrengthType {
+  const lowerStrength = strength.toLowerCase();
+  if (/Referencing/i.test(lowerStrength))
+    return StrengthType.Referencing;
+  else if (/Holding/i.test(lowerStrength))
+    return StrengthType.Holding;
+  else if (/Embedding/i.test(lowerStrength))
+    return StrengthType.Embedding;
+
+  throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `${strength} is not a valid StrengthType`);
+}
+
 export const enum StrengthDirection {
   Forward = 1,
   Backward = 2,
+}
+
+export function parseStrengthDirection(direction: string): StrengthDirection {
+  const lowerDirection = direction.toLowerCase();
+  if (/Forward/i.test(lowerDirection))
+    return StrengthDirection.Forward;
+  else if (/Backward/i.test(lowerDirection))
+    return StrengthDirection.Backward;
+
+  throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `${direction} is not a valid StrengthDirection.`);
 }
 
 /**
@@ -365,5 +387,48 @@ export class SchemaKey implements SchemaKeyInterface {
       default:
           return false;
     }
+  }
+}
+
+const UINT_MAX = 4294967295;
+
+/**
+ *
+ */
+export class RelationshipMultiplicity {
+  public static readonly zeroOne = new RelationshipMultiplicity(0, 1);
+  public static readonly zeroMany = new RelationshipMultiplicity(0, UINT_MAX);
+  public static readonly oneOne = new RelationshipMultiplicity(1, 1);
+  public static readonly oneMany = new RelationshipMultiplicity(1, UINT_MAX);
+
+  public lowerLimit: number;
+  public upperLimit: number;
+
+  constructor(lowerLimit: number, upperLimit: number) {
+    this.lowerLimit = lowerLimit;
+    this.upperLimit = upperLimit;
+  }
+
+  public static fromString(str: string): RelationshipMultiplicity | undefined {
+    const matches = /^\(([0-9]*)\.\.([0-9]*|\*)\)$/.exec(str);
+    if (matches === null || matches.length !== 3)
+      return undefined;
+
+    const lowerLimit = parseInt(matches[1], undefined);
+    const upperLimit = matches[2] === "*" ? UINT_MAX : parseInt(matches[2], undefined);
+    if (0 === lowerLimit && 1 === upperLimit)
+      return RelationshipMultiplicity.zeroOne;
+    else if (0 === lowerLimit && UINT_MAX === upperLimit)
+      return RelationshipMultiplicity.zeroMany;
+    else if (1 === lowerLimit && 1 === upperLimit)
+      return RelationshipMultiplicity.oneOne;
+    else if (1 === lowerLimit && UINT_MAX === upperLimit)
+      return RelationshipMultiplicity.oneMany;
+
+    return new RelationshipMultiplicity(lowerLimit, upperLimit);
+  }
+
+  public equals(rhs: RelationshipMultiplicity): boolean {
+    return this.lowerLimit === rhs.lowerLimit && this.upperLimit === rhs.upperLimit;
   }
 }

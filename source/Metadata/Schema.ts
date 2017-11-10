@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ECVersion, SchemaKey, ECClassModifier } from "../ECObjects";
 import { SchemaInterface, SchemaChildInterface } from "../Interfaces";
-import { Class, MixinClass, EntityClass, StructClass, CustomAttributeClass } from "./Class";
+import { Class, MixinClass, EntityClass, StructClass, CustomAttributeClass, RelationshipClass } from "./Class";
 import SchemaChild from "./SchemaChild";
 import { Enumeration } from "./Enumeration";
 import KindOfQuantity from "./KindOfQuantity";
@@ -150,6 +150,24 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
     newCAClass.schema = this;
 
     return newCAClass;
+  }
+
+  /**
+   * 
+   */
+  public createRelationshipClass(name: string, modifier?: ECClassModifier): RelationshipClass {
+    const newRelClass = new RelationshipClass(name);
+
+    if (modifier)
+      newRelClass.modifier = modifier;
+
+    if (!this._children)
+      this._children = [];
+    this._children.push(newRelClass);
+
+    newRelClass.schema = this;
+
+    return newRelClass;
   }
 
   /**
