@@ -144,7 +144,7 @@ export class BriefcaseManager {
         iModelToken.isOpen = undefined;
         iModelToken.changeSetId = localBriefcase.parentChangeSetId;
         iModelToken.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, localIModelId, iModelToken.changeSetId!);
-        BriefcaseManager.cache.setBriefcase(iModelToken, new IModelDb(iModelToken, undefined));
+        BriefcaseManager.cache.setBriefcase(iModelToken, new IModelDb(iModelToken, undefined, "", "", {})); // WIP - should be cache entry
       }
 
     }
@@ -430,7 +430,7 @@ export class BriefcaseManager {
     iModelToken.changeSetId = toChangeSetId;
     iModelToken.changeSetIndex = toChangeSetIndex;
 
-    const iModelDb = new IModelDb(iModelToken, nativeDb);
+    const iModelDb = new IModelDb(iModelToken, nativeDb, iModelToken.pathname, "", {}); // WIP - properly set name, description, extents
     BriefcaseManager.cache!.setBriefcase(iModelToken, iModelDb);
 
     return iModelDb;
@@ -487,20 +487,20 @@ export class BriefcaseManager {
     }
 
     const iModelToken = IModelToken.fromFile(fileName, openMode, true /*isOpen*/);
-    BriefcaseManager.cache!.setBriefcase(iModelToken, new IModelDb(iModelToken, nativeDb));
+    BriefcaseManager.cache!.setBriefcase(iModelToken, new IModelDb(iModelToken, nativeDb, iModelToken.pathname, "", {})); // WIP - properly set name, description, extents
 
-    return new IModelDb(iModelToken, nativeDb);
+    return new IModelDb(iModelToken, nativeDb, fileName, "", {}); // WIP - property set name, description, extents
   }
 
   public static async close(accessToken: AccessToken, iModelToken: IModelToken, keepBriefcase: KeepBriefcase): Promise<void> {
     if (keepBriefcase === KeepBriefcase.No)
       await BriefcaseManager.deleteBriefcase(accessToken, iModelToken);
     else
-      BriefcaseManager.cache!.setBriefcase(iModelToken, new IModelDb(iModelToken, undefined));
+      BriefcaseManager.cache!.setBriefcase(iModelToken, new IModelDb(iModelToken, undefined, "", "", {})); // WIP - should be cache entry, not IModelDb
   }
 
   public static closeStandalone(iModelToken: IModelToken) {
-    BriefcaseManager.cache!.setBriefcase(iModelToken, new IModelDb(iModelToken, undefined));
+    BriefcaseManager.cache!.setBriefcase(iModelToken, new IModelDb(iModelToken, undefined, "", "", {})); // WIP - should be cache entry, not IModelDb
   }
 
   public static getBriefcase(iModelToken: IModelToken): IModelDb | undefined {
@@ -509,5 +509,4 @@ export class BriefcaseManager {
 
     return BriefcaseManager.cache.getBriefcase(iModelToken);
   }
-
 }

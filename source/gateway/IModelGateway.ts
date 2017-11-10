@@ -1,16 +1,20 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { EntityQueryParams } from "../common/EntityProps";
 import { IModelToken } from "../common/IModel";
 import { IModelVersion } from "../common/IModelVersion";
 import { Gateway } from "../common/Gateway";
 
-/** Response from [[IModelGateway.getIModelInfo]]
+/** Response from [[IModelGateway.openForRead]] and [[IModelGateway.openForWrite]]
  * @hidden
  */
-export interface GetIModelInfoResponse {
+export interface IModelGatewayOpenResponse {
+  token: any; // IModelToken
+  name: string;
+  description: string;
   extents: any; // DRange3d
 }
 
@@ -24,22 +28,22 @@ export abstract class IModelGateway extends Gateway {
   }
 
   /** Opens an IModel (read-only) on the backend to service frontend requests. */
-  public async openForRead(_accessToken: AccessToken, _iModelId: string, _version: IModelVersion): Promise<IModelToken> {
+  public async openForRead(_accessToken: AccessToken, _iModelId: string, _version: IModelVersion): Promise<IModelGatewayOpenResponse> {
     return this.forward.apply(this, arguments);
   }
 
   /** Opens an IModel (read/write) on the backend to service frontend requests. */
-  public async openForWrite(_accessToken: AccessToken, _iModelId: string, _version: IModelVersion): Promise<IModelToken> {
+  public async openForWrite(_accessToken: AccessToken, _iModelId: string, _version: IModelVersion): Promise<IModelGatewayOpenResponse> {
+    return this.forward.apply(this, arguments);
+  }
+
+  /** Ask the backend to open a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend. */
+  public async openStandalone(_fileName: string, _openMode: OpenMode): Promise<IModelGatewayOpenResponse> {
     return this.forward.apply(this, arguments);
   }
 
   /** Closes an IModel on the backend. */
   public async close(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<boolean> {
-    return this.forward.apply(this, arguments);
-  }
-
-  /** Get information about this IModel from the backend. */
-  public async getIModelInfo(_iModelToken: IModelToken): Promise<GetIModelInfoResponse> {
     return this.forward.apply(this, arguments);
   }
 

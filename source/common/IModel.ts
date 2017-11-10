@@ -35,12 +35,22 @@ export class IModelToken {
 
 /** An abstract class representing an instance of an iModel. */
 export class IModel {
+  public readonly name: string;
+  public readonly description: string;
+  public readonly extents: any;
+
   /** @hidden */
   protected _iModelToken: IModelToken;
   /** The token that can be used to find this iModel instance. */
   public get iModelToken(): IModelToken { return this._iModelToken; }
   /** @hidden */
-  protected constructor(iModelToken: IModelToken) { this._iModelToken = iModelToken; }
+  protected constructor(iModelToken: IModelToken, name: string, description: string, extents: any) {
+    this._iModelToken = iModelToken;
+    this.name = name;
+    this.description = description;
+    this.extents = extents;
+  }
+
   /** @hidden */
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
 }
