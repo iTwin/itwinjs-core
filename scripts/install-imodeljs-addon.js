@@ -12,6 +12,9 @@ function getPlatformDir() {
     if (process.platform === "win32") {
         return "win" + arch;
     }
+    else if (process.platform === "darwin") {
+        return "macos" + arch;
+    }
     return process.platform + arch;
 }
 
