@@ -5,13 +5,7 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelError } from "../common/IModelError";
 import { BindingUtility, BindingValue } from "./BindingUtility";
-
-declare function require(arg: string): any;
-// tslint:disable-next-line:no-var-requires
-const addonLoader = require("../../scripts/addonLoader");
-let dgnDbNodeAddon: any | undefined;
-if (addonLoader !== undefined)
-  dgnDbNodeAddon = addonLoader.loadNodeAddon(); // Note that evaluating this script has the side-effect of loading the addon
+import { NodeAddon } from "./NodeAddon";
 
 /** An ECSql Statement. A statement must be prepared before it can be executed. See prepare. A statement may contain placeholders that must be filled
  * in before use. See bindValues. A prepared statement can be stepped through all matching rows by calling step. ECSqlStatement is-a iterator, so that you
@@ -43,7 +37,7 @@ export class ECSqlStatement implements IterableIterator<any> {
   public prepare(db: any, statement: string): void {
     if (this.isPrepared())
       throw new Error("statement is already prepared");
-    this._stmt = new dgnDbNodeAddon.ECSqlStatement();
+    this._stmt = new (NodeAddon.getAddon()).ECSqlStatement();
     const error = this._stmt.prepare(db, statement);
     if (error !== undefined)
       throw new IModelError(error.status, error.message);

@@ -9,17 +9,12 @@ import { BriefcaseStatus, IModelError } from "../common/IModelError";
 import { IModelVersion } from "../common/IModelVersion";
 import { IModelToken } from "../common/IModel";
 import { IModelDb } from "./IModelDb";
+import { NodeAddon } from "./NodeAddon";
 
 import * as fs from "fs";
 import * as path from "path";
 
 declare const __dirname: string;
-declare function require(arg: string): any;
-// tslint:disable-next-line:no-var-requires
-const addonLoader = require("../../scripts/addonLoader");
-let dgnDbNodeAddon: any | undefined;
-if (addonLoader !== undefined)
-  dgnDbNodeAddon = addonLoader.loadNodeAddon(); // Note that evaluating this script has the side-effect of loading the addon
 
 /** The ID assigned to a briefcase by iModelHub, or one of the special values that identify special kinds of iModels */
 export class BriefcaseId {
@@ -113,7 +108,7 @@ export class BriefcaseManager {
     if (!accessToken)
       return;
 
-    const nativeDb = new dgnDbNodeAddon.DgnDb();
+    const nativeDb = new (NodeAddon.getAddon()).DgnDb();
     const res: BentleyReturn<DbResult, string> = nativeDb.getCachedBriefcaseInfosSync(BriefcaseManager.cachePath);
     if (res.error)
       Promise.reject(new IModelError(res.error.status));
@@ -417,7 +412,7 @@ export class BriefcaseManager {
     const fromChangeSetId: string = iModelToken.changeSetId!;
     const changeSetTokens = await BriefcaseManager.downloadChangeSets(accessToken, iModelToken.iModelId!, toChangeSetId, fromChangeSetId);
 
-    const nativeDb = new dgnDbNodeAddon.DgnDb();
+    const nativeDb = new (NodeAddon.getAddon()).DgnDb();
     const res: BentleyReturn<DbResult, void> = await nativeDb.openBriefcaseSync(JSON.stringify(iModelToken), JSON.stringify(changeSetTokens));
     if (res.error)
       throw new IModelError(res.error.status);
@@ -474,7 +469,7 @@ export class BriefcaseManager {
     if (!BriefcaseManager.cache)
       BriefcaseManager.initialize();
 
-    const nativeDb = new dgnDbNodeAddon.DgnDb();
+    const nativeDb = new (NodeAddon.getAddon()).DgnDb();
     const res: BentleyReturn<DbResult, void> = await nativeDb.openDgnDb(fileName, openMode);
     if (res.error)
       return Promise.reject(new IModelError(res.error.status));
