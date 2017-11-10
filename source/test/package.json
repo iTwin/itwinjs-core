@@ -6,7 +6,6 @@
   "scripts": {
     "clean": "rimraf lib/*",
     "compile": "tsc",
-    "copy-assets": "cpx ./assets/**/* ./lib/assets",
     "postinstall": "node ../../scripts/install-imodeljs-addon.js",
     "test": "cross-env ADDON_PATH=\"../source/test/node_modules/\" node node_modules/@bentley/bentleyjs-tools/scripts/test.js --packageRoot=\".\" --testDir=\".\""
   },
@@ -24,7 +23,6 @@
     "@types/js-base64": "^2.3.0",
     "@types/mocha": "^2.2.44",
     "chai": "^4.1.2",
-    "concurrently": "^3.5.0",
     "cross-env": "^5.1.1",
     "mocha": "^3.5.3",
     "rimraf": "^2.6.2",

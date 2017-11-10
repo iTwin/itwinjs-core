@@ -8,15 +8,37 @@ import { IModelToken } from "../common/IModel";
 import { IModelVersion } from "../common/IModelVersion";
 import { Gateway } from "../common/Gateway";
 
-/** The iModel core gateway definition. */
+/** Response from [[IModelGateway.openForRead]] and [[IModelGateway.openForWrite]]
+ * @hidden
+ */
+export interface IModelGatewayOpenResponse {
+  token: any; // IModelToken
+  name: string;
+  description: string;
+  extents: any; // DRange3d
+}
+
+/** The iModel core gateway definition.
+ * @hidden
+ */
 export abstract class IModelGateway extends Gateway {
   /** Returns the IModelGatewayProxy instance for the frontend. */
   public static getProxy(): IModelGateway {
     return Gateway.getProxyForGateway(IModelGateway);
   }
 
-  /** Opens an IModel on the backend to service frontend requests. */
-  public async open(_accessToken: AccessToken, _iModelId: string, _openMode: OpenMode, _version: IModelVersion): Promise<IModelToken> {
+  /** Opens an IModel (read-only) on the backend to service frontend requests. */
+  public async openForRead(_accessToken: AccessToken, _iModelId: string, _version: IModelVersion): Promise<IModelGatewayOpenResponse> {
+    return this.forward.apply(this, arguments);
+  }
+
+  /** Opens an IModel (read/write) on the backend to service frontend requests. */
+  public async openForWrite(_accessToken: AccessToken, _iModelId: string, _version: IModelVersion): Promise<IModelGatewayOpenResponse> {
+    return this.forward.apply(this, arguments);
+  }
+
+  /** Ask the backend to open a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend. */
+  public async openStandalone(_fileName: string, _openMode: OpenMode): Promise<IModelGatewayOpenResponse> {
     return this.forward.apply(this, arguments);
   }
 

@@ -12,7 +12,7 @@ import { IModelError, IModelStatus } from "../common/IModelError";
 import { IModelVersion } from "../common/IModelVersion";
 import { Logger } from "../common/Logger";
 import { ModelProps } from "../common/ModelProps";
-import { IModelGateway } from "../gateway/IModelGateway";
+import { IModelGateway, IModelGatewayOpenResponse } from "../gateway/IModelGateway";
 
 /** A connection to an iModel database hosted on the backend. */
 export class IModelConnection extends IModel {
@@ -21,8 +21,8 @@ export class IModelConnection extends IModel {
   public readonly elements: IModelConnectionElements;
   public readonly codeSpecs: IModelConnectionCodeSpecs;
 
-  private constructor(iModelToken: IModelToken) {
-    super(iModelToken);
+  private constructor(iModelToken: IModelToken, name: string, description: string, extents: any) {
+    super(iModelToken, name, description, extents);
     this.models = new IModelConnectionModels(this);
     this.elements = new IModelConnectionElements(this);
     this.codeSpecs = new IModelConnectionCodeSpecs(this);
@@ -33,18 +33,18 @@ export class IModelConnection extends IModel {
     if (OpenMode.Readonly !== openMode)
       return Promise.reject(new IModelError(IModelStatus.NotEnabled, "IModelConnection does not support read/write access yet")); // WIP: waiting for decisions on how to manage read/write briefcases on the backend
 
-    const iModelToken = await IModelGateway.getProxy().open(accessToken, iModelId, openMode, version);
+    const openResponse: IModelGatewayOpenResponse = await IModelGateway.getProxy().openForRead(accessToken, iModelId, version);
     Logger.logInfo("IModelConnection.open", () => ({ iModelId, openMode, version }));
-    return new IModelConnection(iModelToken);
+    return new IModelConnection(openResponse.token, openResponse.name, openResponse.description, openResponse.extents);
   }
 
-  /** Create an IModelConnection from the token of an IModel opened on the backend. This method is for specific scenarios.
-   * In most cases it is better to call [[IModelConnection.open]] instead.
+  /** Ask the backend to open a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend.
+   * This method is designed for desktop or mobile applications and typically should not be used for web applications.
    */
-  public static async create(iModelToken: IModelToken): Promise<IModelConnection> {
-    const iModelConnection = new IModelConnection(iModelToken);
-    Logger.logInfo("IModelConnection.create", () => ({ iModelId: iModelToken.iModelId }));
-    return iModelConnection;
+  public static async openStandalone(fileName: string, openMode = OpenMode.Readonly): Promise<IModelConnection> {
+    const openResponse: IModelGatewayOpenResponse = await IModelGateway.getProxy().openStandalone(fileName, openMode);
+    Logger.logInfo("IModelConnection.openStandalone", () => ({ fileName, openMode }));
+    return new IModelConnection(openResponse.token, openResponse.name, openResponse.description, openResponse.extents);
   }
 
   /** Close this iModel */
