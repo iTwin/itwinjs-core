@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-core",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "description": "iModel.js core components",
   "license": "UNLICENSED",
   "main": "./lib/main",
