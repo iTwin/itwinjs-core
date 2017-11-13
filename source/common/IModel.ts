@@ -13,7 +13,7 @@ export class IModelToken {
   public changeSetId?: string; // WIP: should remain in IModelToken and not be optional
   public changeSetIndex?: number; // WIP: should not remain in IModelToken
   public isOpen?: boolean; // WIP: does not belong in IModelToken
-  // WIP: add Connected Context Id
+  public contextId?: string; // Context ID - projectId or assetId
 
   public static fromFile(pathname: string, openMode: OpenMode, isOpen: boolean): IModelToken {
     const token = new IModelToken();
