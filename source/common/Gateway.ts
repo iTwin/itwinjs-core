@@ -166,6 +166,11 @@ export namespace Gateway {
 
       return instance;
     }
+
+    /** Initializes the gateways managed by the configuration. */
+    public initializeGateways() {
+      this.gateways().forEach((gateway) => Gateway.initialize(gateway));
+    }
   }
 
   /** An application protocol for a gateway. */
@@ -185,37 +190,88 @@ export namespace Gateway {
   /** The HTTP application protocol. */
   export abstract class HttpProtocol extends Protocol {
     /** Associates the gateways for the protocol with unique names. */
-    public gatewayRegistry: Map<string, GatewayDefinition> = new Map();
+    protected gatewayRegistry: Map<string, GatewayDefinition> = new Map();
+
+    /** Returns the registered backend implementation for a gateway operation. */
+    public lookupGatewayImplementation(operation: HttpProtocol.GatewayOperationIdentifier): Gateway {
+      const gateway = this.gatewayRegistry.get(operation.gateway) as GatewayDefinition;
+      return Gateway.getImplementationForGateway(gateway);
+    }
+
+    /** Returns the operation specified by an OpenAPI gateway path. */
+    public abstract getOperationFromOpenAPIPath(path: string): HttpProtocol.GatewayOperationIdentifier;
+
+    /** Returns deserialized gateway operation request parameters. */
+    public deserializeOperationRequestParameters(request: string, _path: string): any[] {
+      return JSON.parse(request);
+    }
+
+    /** Returns a serialized gateway operation result. */
+    public serializeOperationResult(result: any): string {
+      return JSON.stringify(result);
+    }
 
     /** The OpenAPI info object for the protocol. */
     protected abstract openAPIInfo: () => HttpProtocol.OpenAPIInfo;
 
     /** Generates an OpenAPI path for a gateway operation. */
-    protected abstract generateOpenAPIPathForOperation(identifier: HttpProtocol.GatewayOperationIdentifier): string;
+    protected abstract generateOpenAPIPathForOperation(operation: HttpProtocol.GatewayOperationIdentifier, request: HttpProtocol.OperationRequest | undefined): string;
+
+    /** Returns the HTTP verb for a gateway operation. */
+    protected supplyHttpVerbForOperation(_identifier: HttpProtocol.GatewayOperationIdentifier): "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace" {
+      return "post";
+    }
+
+    /** Returns the OpenAPI path parameters for a gateway operation. */
+    protected supplyOpenAPIPathParametersForOperation(_identifier: HttpProtocol.GatewayOperationIdentifier): HttpProtocol.OpenAPIParameter[] {
+      return [];
+    }
 
     /** Obtains the implementation result for a gateway operation. */
     public obtainGatewayImplementationResult<T>(gateway: GatewayDefinition, operation: string, ...parameters: any[]): Promise<T> {
       return new Promise<T>(async (resolve, reject) => {
         try {
-          const path = this.generateOpenAPIPathForOperation({ gateway: this.obtainGatewayName(gateway), operation });
+          const identifier: HttpProtocol.GatewayOperationIdentifier = { gateway: this.obtainGatewayName(gateway), operation };
+          const path = this.generateOpenAPIPathForOperation(identifier, new HttpProtocol.OperationRequest(...parameters));
 
-          const connection = new XMLHttpRequest();
+          const connection = this.generateConnectionForOperationRequest();
           connection.addEventListener("load", () => {
             if (connection.status === 200)
-              resolve(JSON.parse(connection.responseText));
+              resolve(this.deserializeOperationResult(connection.responseText));
             else
-              reject(new IModelError(BentleyStatus.ERROR, `Server error: ${connection.status.toString()}`));
+              reject(new IModelError(BentleyStatus.ERROR, `Server error: ${connection.status} ${connection.responseText}`));
           });
 
           connection.addEventListener("error", () => reject(new IModelError(BentleyStatus.ERROR, "Connection error.")));
           connection.addEventListener("abort", () => reject(new IModelError(BentleyStatus.ERROR, "Connection aborted.")));
 
-          connection.open("POST", path, true);
-          connection.send(JSON.stringify(Array.from(parameters)));
+          connection.open(this.supplyHttpVerbForOperation(identifier), path, true);
+          this.setOperationRequestHeaders(connection);
+          connection.send(this.serializeParametersForOperationRequest(identifier, ...parameters));
         } catch (e) {
           reject(new IModelError(BentleyStatus.ERROR, e));
         }
       });
+    }
+
+    /** Returns an XMLHttpRequest instance for a gateway operation request. */
+    protected generateConnectionForOperationRequest(): XMLHttpRequest {
+      return new XMLHttpRequest();
+    }
+
+    /** Sets application headers for a gateway operation request. */
+    protected setOperationRequestHeaders(_connection: XMLHttpRequest) {
+      // No default headers
+    }
+
+    /** Returns a string serialization of the parameters for a gateway operation request. */
+    protected serializeParametersForOperationRequest(_operation: HttpProtocol.GatewayOperationIdentifier, ...parameters: any[]): string {
+      return JSON.stringify(Array.from(parameters));
+    }
+
+    /** Returns a deserialized gateway operation result. */
+    protected deserializeOperationResult(response: string): any {
+      return JSON.parse(response);
     }
 
     /** The OpenAPI paths object for the protocol. */
@@ -224,8 +280,9 @@ export namespace Gateway {
 
       this.configuration.gateways().forEach((gateway) => {
         Gateway.forEachOperation(gateway, (operation) => {
-          const path = this.generateOpenAPIPathForOperation({ gateway: this.obtainGatewayName(gateway), operation });
-          paths[path] = this.generateOpenAPIDescriptionForOperation(gateway, operation);
+          const identifier = { gateway: this.obtainGatewayName(gateway), operation };
+          const path = this.generateOpenAPIPathForOperation(identifier, undefined);
+          paths[path] = this.generateOpenAPIDescriptionForOperation(identifier);
         });
       });
 
@@ -264,19 +321,25 @@ export namespace Gateway {
     }
 
     /** Generates an OpenAPI description of a gateway operation. */
-    protected generateOpenAPIDescriptionForOperation<T extends Gateway>(_gateway: GatewayDefinition<T>, _operation: string): HttpProtocol.OpenAPIPathItem {
+    protected generateOpenAPIDescriptionForOperation(operation: HttpProtocol.GatewayOperationIdentifier): HttpProtocol.OpenAPIPathItem {
       const requestContent: HttpProtocol.OpenAPIContentMap = { "application/json": { schema: { type: "array" } } };
       const responseContent: HttpProtocol.OpenAPIContentMap = { "application/json": { schema: { type: "object" } } };
 
-      return {
-        post: {
-          requestBody: { content: requestContent, required: true },
-          responses: {
-            200: { description: "Success", content: responseContent },
-            default: { description: "Error", content: responseContent },
-          },
+      const description: HttpProtocol.OpenAPIPathItem = {};
+
+      description[this.supplyHttpVerbForOperation(operation)] = {
+        requestBody: { content: requestContent, required: true },
+        responses: {
+          200: { description: "Success", content: responseContent },
+          default: { description: "Error", content: responseContent },
         },
       };
+
+      const parameters = this.supplyOpenAPIPathParametersForOperation(operation);
+      if (parameters.length)
+        description.parameters = parameters;
+
+      return description;
     }
   }
 
@@ -316,6 +379,7 @@ export namespace Gateway {
       head?: OpenAPIOperation;
       patch?: OpenAPIOperation;
       trace?: OpenAPIOperation;
+      parameters?: OpenAPIParameter[];
     }
 
     /** An OpenAPI 3.0 operation object. */
@@ -388,6 +452,27 @@ export namespace Gateway {
     export interface OpenAPIResponse {
       description: string;
       content?: { [index: string]: OpenAPIMediaType };
+    }
+
+    /** A gateway operation request. */
+    export class OperationRequest {
+      /** The parameters of the operation request. */
+      public parameters: any[];
+
+      /** Creates an operation request. */
+      constructor(...parameters: any[]) {
+        this.parameters = parameters;
+      }
+
+      /** Finds the first parameter of a given type if present. */
+      public findParameterOfType<T>(constructor: { new(): T }): T | undefined {
+        for (const param of this.parameters) {
+          if (param instanceof constructor)
+            return param;
+        }
+
+        return undefined;
+      }
     }
   }
 

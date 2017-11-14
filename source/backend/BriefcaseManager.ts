@@ -9,17 +9,12 @@ import { BriefcaseStatus, IModelError } from "../common/IModelError";
 import { IModelVersion } from "../common/IModelVersion";
 import { IModelToken } from "../common/IModel";
 import { IModelDb } from "./IModelDb";
+import { NodeAddon } from "./NodeAddon";
 
 import * as fs from "fs";
 import * as path from "path";
 
 declare const __dirname: string;
-declare function require(arg: string): any;
-// tslint:disable-next-line:no-var-requires
-const addonLoader = require("../../scripts/addonLoader");
-let dgnDbNodeAddon: any | undefined;
-if (addonLoader !== undefined)
-  dgnDbNodeAddon = addonLoader.loadNodeAddon(); // Note that evaluating this script has the side-effect of loading the addon
 
 /** The ID assigned to a briefcase by iModelHub, or one of the special values that identify special kinds of iModels */
 export class BriefcaseId {
@@ -72,8 +67,10 @@ class BriefcaseCache {
 
 export class BriefcaseManager {
   private static hubClient = new IModelHubClient("QA");
-  public static rootPath = path.join(__dirname, "../assets/imodels");
   private static cache?: BriefcaseCache;
+
+  /** The path where the cache of briefcases are stored. */
+  public static cachePath = path.join(__dirname, "cache/imodels");
 
   /**
    * Get the local path of the root folder storing the imodel seed file, change sets and briefcases
@@ -87,7 +84,7 @@ export class BriefcaseManager {
    *        IModelName.bim (briefcase path name)
    */
   private static getIModelPath(iModelId: string): string {
-    return path.join(BriefcaseManager.rootPath, iModelId);
+    return path.join(BriefcaseManager.cachePath, iModelId);
   }
 
   private static getSeedPathname(iModelId: string, briefcase: Briefcase): string {
@@ -111,8 +108,8 @@ export class BriefcaseManager {
     if (!accessToken)
       return;
 
-    const nativeDb = new dgnDbNodeAddon.DgnDb();
-    const res: BentleyReturn<DbResult, string> = nativeDb.getCachedBriefcaseInfosSync(BriefcaseManager.rootPath);
+    const nativeDb = new (NodeAddon.getAddon()).DgnDb();
+    const res: BentleyReturn<DbResult, string> = nativeDb.getCachedBriefcaseInfosSync(BriefcaseManager.cachePath);
     if (res.error)
       Promise.reject(new IModelError(res.error.status));
 
@@ -142,7 +139,7 @@ export class BriefcaseManager {
         iModelToken.isOpen = undefined;
         iModelToken.changeSetId = localBriefcase.parentChangeSetId;
         iModelToken.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, localIModelId, iModelToken.changeSetId!);
-        BriefcaseManager.cache.setBriefcase(iModelToken, new IModelDb(iModelToken, undefined));
+        BriefcaseManager.cache.setBriefcase(iModelToken, new IModelDb(iModelToken, undefined, "", "", {})); // WIP - should be cache entry
       }
 
     }
@@ -415,7 +412,7 @@ export class BriefcaseManager {
     const fromChangeSetId: string = iModelToken.changeSetId!;
     const changeSetTokens = await BriefcaseManager.downloadChangeSets(accessToken, iModelToken.iModelId!, toChangeSetId, fromChangeSetId);
 
-    const nativeDb = new dgnDbNodeAddon.DgnDb();
+    const nativeDb = new (NodeAddon.getAddon()).DgnDb();
     const res: BentleyReturn<DbResult, void> = await nativeDb.openBriefcaseSync(JSON.stringify(iModelToken), JSON.stringify(changeSetTokens));
     if (res.error)
       throw new IModelError(res.error.status);
@@ -428,7 +425,7 @@ export class BriefcaseManager {
     iModelToken.changeSetId = toChangeSetId;
     iModelToken.changeSetIndex = toChangeSetIndex;
 
-    const iModelDb = new IModelDb(iModelToken, nativeDb);
+    const iModelDb = new IModelDb(iModelToken, nativeDb, iModelToken.pathname, "", {}); // WIP - properly set name, description, extents
     BriefcaseManager.cache!.setBriefcase(iModelToken, iModelDb);
 
     return iModelDb;
@@ -472,7 +469,7 @@ export class BriefcaseManager {
     if (!BriefcaseManager.cache)
       BriefcaseManager.initialize();
 
-    const nativeDb = new dgnDbNodeAddon.DgnDb();
+    const nativeDb = new (NodeAddon.getAddon()).DgnDb();
     const res: BentleyReturn<DbResult, void> = await nativeDb.openDgnDb(fileName, openMode);
     if (res.error)
       return Promise.reject(new IModelError(res.error.status));
@@ -485,20 +482,20 @@ export class BriefcaseManager {
     }
 
     const iModelToken = IModelToken.fromFile(fileName, openMode, true /*isOpen*/);
-    BriefcaseManager.cache!.setBriefcase(iModelToken, new IModelDb(iModelToken, nativeDb));
+    BriefcaseManager.cache!.setBriefcase(iModelToken, new IModelDb(iModelToken, nativeDb, iModelToken.pathname, "", {})); // WIP - properly set name, description, extents
 
-    return new IModelDb(iModelToken, nativeDb);
+    return new IModelDb(iModelToken, nativeDb, fileName, "", {}); // WIP - property set name, description, extents
   }
 
   public static async close(accessToken: AccessToken, iModelToken: IModelToken, keepBriefcase: KeepBriefcase): Promise<void> {
     if (keepBriefcase === KeepBriefcase.No)
       await BriefcaseManager.deleteBriefcase(accessToken, iModelToken);
     else
-      BriefcaseManager.cache!.setBriefcase(iModelToken, new IModelDb(iModelToken, undefined));
+      BriefcaseManager.cache!.setBriefcase(iModelToken, new IModelDb(iModelToken, undefined, "", "", {})); // WIP - should be cache entry, not IModelDb
   }
 
   public static closeStandalone(iModelToken: IModelToken) {
-    BriefcaseManager.cache!.setBriefcase(iModelToken, new IModelDb(iModelToken, undefined));
+    BriefcaseManager.cache!.setBriefcase(iModelToken, new IModelDb(iModelToken, undefined, "", "", {})); // WIP - should be cache entry, not IModelDb
   }
 
   public static getBriefcase(iModelToken: IModelToken): IModelDb | undefined {
@@ -507,5 +504,4 @@ export class BriefcaseManager {
 
     return BriefcaseManager.cache.getBriefcase(iModelToken);
   }
-
 }

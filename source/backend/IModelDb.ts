@@ -130,8 +130,10 @@ export class IModelDb extends IModel {
   private _codeSpecs: CodeSpecs;
   private _classMetaDataRegistry: MetaDataRegistry;
 
-  public constructor(iModelToken: IModelToken, nativeDb: any) {
-    super(iModelToken);
+  // WIP: constructor should be private
+  /** @hidden */
+  public constructor(iModelToken: IModelToken, nativeDb: any, name: string, description: string, extents: any) {
+    super(iModelToken, name, description, extents);
     this.nativeDb = nativeDb;
     this.models = new IModelDbModels(this);
     this.elements = new IModelDbElements(this);

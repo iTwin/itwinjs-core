@@ -6,13 +6,7 @@ import { ECJsonTypeMap, ECInstance } from "@bentley/bentleyjs-core/lib/ECJsonTyp
 import { IModelError } from "../common/IModelError";
 import { BindingUtility, BindingValue } from "./BindingUtility";
 import { PrimitiveTypeCode } from "./Entity";
-
-declare function require(arg: string): any;
-// tslint:disable-next-line:no-var-requires
-const addonLoader = require("../../scripts/addonLoader");
-let dgnDbNodeAddon: any | undefined;
-if (addonLoader !== undefined)
-  dgnDbNodeAddon = addonLoader.loadNodeAddon(); // Note that evaluating this script has the side-effect of loading the addon
+import { NodeAddon } from "./NodeAddon";
 
 /** Value type  (Match this to ECN::ValueKind in ECObjects.h) */
 export const enum ValueKind {
@@ -72,7 +66,7 @@ export class ECDb {
    */
   public async createDb(pathname: string): Promise<void> {
     if (!this._ecdb)
-      this._ecdb = await new dgnDbNodeAddon.ECDb();
+      this._ecdb = await new (NodeAddon.getAddon()).ECDb();
     const { error } = await this._ecdb.createDb(pathname);
     if (error)
       return Promise.reject(new IModelError(error.status, error.message));
@@ -85,7 +79,7 @@ export class ECDb {
    */
   public async openDb(pathname: string, openMode: OpenMode = OpenMode.Readonly): Promise<void> {
     if (!this._ecdb)
-      this._ecdb = await new dgnDbNodeAddon.ECDb();
+      this._ecdb = await new (NodeAddon.getAddon()).ECDb();
     const { error } = await this._ecdb.openDb(pathname, openMode);
     if (error)
       return Promise.reject(new IModelError(error.status, error.message));

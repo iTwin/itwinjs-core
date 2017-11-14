@@ -17,8 +17,6 @@ import { Category } from "../backend/Category";
 import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "../frontend/IModelConnection";
 import { IModelTestUtils } from "./IModelTestUtils";
 
-declare const __dirname: string;
-
 describe("BriefcaseManager", () => {
   let accessToken: AccessToken;
   let testProjectId: string;
@@ -35,10 +33,10 @@ describe("BriefcaseManager", () => {
     testChangeSets = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
     expect(testChangeSets.length).greaterThan(2);
 
-    iModelLocalPath = path.join(__dirname, "../assets/imodels/", testIModelId);
+    iModelLocalPath = path.join(BriefcaseManager.cachePath, testIModelId);
 
     // Recreate briefcases if it's a TMR. todo: Figure a better way to prevent bleeding briefcase ids
-    shouldDeleteAllBriefcases = !fs.existsSync(BriefcaseManager.rootPath);
+    shouldDeleteAllBriefcases = !fs.existsSync(BriefcaseManager.cachePath);
     if (shouldDeleteAllBriefcases)
       await IModelTestUtils.deleteAllBriefcases(accessToken, testIModelId);
   });

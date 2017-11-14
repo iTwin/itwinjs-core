@@ -8,17 +8,21 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
 import { ConnectClient, Project, IModelHubClient, Briefcase } from "@bentley/imodeljs-clients";
 import { Code } from "../common/Code";
+import { Gateway } from "../common/Gateway";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { Element } from "../backend/Element";
 import { Model } from "../backend/Model";
 import { IModelDb } from "../backend/IModelDb";
 import { SpatialCategory, DrawingCategory } from "../backend/Category";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
-import { Gateway } from "../common/Gateway";
+import { NodeAddon } from "../backend/NodeAddon";
 import { IModelGateway } from "../gateway/IModelGateway";
 
 // Initialize the gateway classes used by tests
 Gateway.initialize(IModelGateway);
+
+// Initialize the Node addon used by tests
+NodeAddon.loadDefault("../../node_modules/");
 
 declare const __dirname: string;
 

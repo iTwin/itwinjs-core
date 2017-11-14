@@ -14,7 +14,7 @@ import { ModelProps } from "../common/ModelProps";
 import { EntityMetaData } from "../backend/Entity";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { IModelDb } from "../backend/IModelDb";
-import { IModelGateway } from "../gateway/IModelGateway";
+import { IModelGateway, IModelGatewayOpenResponse } from "../gateway/IModelGateway";
 
 /** The backend implementation of IModelGateway.
  * @hidden
@@ -24,9 +24,23 @@ export class IModelGatewayImpl extends IModelGateway {
     Gateway.registerImplementation(IModelGateway, IModelGatewayImpl);
   }
 
-  public async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode, version: IModelVersion): Promise<IModelToken> {
-    const iModelDb: IModelDb = await IModelDb.open(AccessToken.clone(accessToken), iModelId, openMode, IModelVersion.clone(version));
-    return iModelDb.iModelToken;
+  public async openForRead(accessToken: AccessToken, iModelId: string, version: IModelVersion): Promise<IModelGatewayOpenResponse> {
+    return this.open(accessToken, iModelId, version, OpenMode.Readonly);
+  }
+
+  public async openForWrite(accessToken: AccessToken, iModelId: string, version: IModelVersion): Promise<IModelGatewayOpenResponse> {
+    return this.open(accessToken, iModelId, version, OpenMode.ReadWrite);
+  }
+
+  private async open(accessToken: AccessToken, iModelId: string, version: IModelVersion, openMode: OpenMode): Promise<IModelGatewayOpenResponse> {
+    const iModelDb: IModelDb = await IModelDb.open(accessToken, iModelId, openMode, version);
+    return { token: iModelDb.iModelToken, name: iModelDb.name, description: iModelDb.description, extents: iModelDb.extents };
+  }
+
+  /** Ask the backend to open a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend. */
+  public async openStandalone(fileName: string, openMode: OpenMode): Promise<IModelGatewayOpenResponse> {
+    const iModelDb: IModelDb = await IModelDb.openStandalone(fileName, openMode);
+    return { token: iModelDb.iModelToken, name: iModelDb.name, description: iModelDb.description, extents: iModelDb.extents };
   }
 
   public async close(accessToken: AccessToken, iModelToken: IModelToken): Promise<boolean> {

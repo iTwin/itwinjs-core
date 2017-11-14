@@ -19,7 +19,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "^1.0.33",
+    "@bentley/bentleyjs-core": "^1.0.39",
     "@bentley/geometry-core": "^1.0.10",
     "@bentley/imodeljs-clients": "^1.0.26",
     "fs-extra": "latest",
