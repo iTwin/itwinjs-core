@@ -13,10 +13,13 @@ import { IModelError, IModelStatus } from "../common/IModelError";
 import { Element } from "../backend/Element";
 import { Model } from "../backend/Model";
 import { IModelDb } from "../backend/IModelDb";
+import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { SpatialCategory, DrawingCategory } from "../backend/Category";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { NodeAddon } from "../backend/NodeAddon";
 import { IModelGateway } from "../gateway/IModelGateway";
+
+import * as path from "path";
 
 // Initialize the gateway classes used by tests
 Gateway.initialize(IModelGateway);
@@ -25,6 +28,9 @@ Gateway.initialize(IModelGateway);
 NodeAddon.loadDefault("../../node_modules/");
 
 declare const __dirname: string;
+
+// Initialize the location where BriefcaseManager will create briefcases
+BriefcaseManager.cachePath = path.join(__dirname, "output/cache/imodels");
 
 export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;
