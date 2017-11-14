@@ -44,7 +44,7 @@ export class Model extends Entity implements ModelProps {
   }
 
   /** Get the Id of the special dictionary model */
-  public static getDictionaryId(): Id64 { return new Id64("0X10"); }
+  public static getDictionaryId(): Id64 { return new Id64("0x10"); }
 }
 
 /** A geometric model */

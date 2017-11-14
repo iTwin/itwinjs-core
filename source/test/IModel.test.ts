@@ -7,7 +7,7 @@ import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { Code } from "../common/Code";
 import { EntityProps } from "../common/EntityProps";
-import { DisplayStyle3dState, ModelSelectorState, ModelSelectorProps, SpatialViewState, CategorySelectorState, ViewportStatus } from "../common/ViewState";
+import { DisplayStyle3dState, ModelSelectorState, ModelSelectorProps, SpatialViewState, CategorySelectorState, ViewStatus } from "../common/ViewState";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { Entity, EntityCtor, EntityMetaData } from "../backend/Entity";
 import { Model } from "../backend/Model";
@@ -335,7 +335,7 @@ describe("iModel", () => {
       assert.notEqual(v2.jsonProperties, viewState.jsonProperties);
       assert.notEqual(v2.rotation, viewState.rotation);
       const stat = v2.lookAt(new Point3d(1, 2, 3), new Point3d(100, 100, 100), new Vector3d(0, 1, 0));
-      assert.equal(stat, ViewportStatus.Success);
+      assert.equal(stat, ViewStatus.Success);
       assert.notDeepEqual(v2, viewState);
     }
   });
