@@ -3,16 +3,19 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { Vector3d, Vector2d, Point3d, Point2d, Range3d, RotMatrix, Transform, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
+import { Vector3d, Vector2d, Point3d, Point2d, Range3d, Range2d, RotMatrix, Transform, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { AxisOrder, Angle, Geometry } from "@bentley/geometry-core/lib/Geometry";
 import { Map4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { ClipVector } from "@bentley/geometry-core/lib/numerics/ClipVector";
 import { ElementProps, RelatedElement } from "./ElementProps";
+import { EntityProps } from "./EntityProps";
+import { ModelProps, Model2dProps } from "./ModelProps";
 import { Light, LightType } from "./Lighting";
 import { ViewFlags, HiddenLine, ColorDef, ColorRgb } from "./Render";
 import { Code } from "./Code";
 import { IModel } from "../common/IModel";
+import { AxisAlignedBox3d } from "../common/ElementGeometry";
 
 /** The 8 corners of the NPC cube. */
 export const enum Npc {
@@ -36,6 +39,18 @@ export const enum Npc {
   CORNER_COUNT = 8,
 }
 
+// tslint:disable-next-line:variable-name
+export const NpcCorners = [
+  new Point3d(0.0, 0.0, 0.0),
+  new Point3d(1.0, 0.0, 0.0),
+  new Point3d(0.0, 1.0, 0.0),
+  new Point3d(1.0, 1.0, 0.0),
+  new Point3d(0.0, 0.0, 1.0),
+  new Point3d(1.0, 0.0, 1.0),
+  new Point3d(0.0, 1.0, 1.0),
+  new Point3d(1.0, 1.0, 1.0),
+];
+
 export const enum GridOrientationType {
   View = 0,
   WorldXY = 1, // Top
@@ -45,7 +60,7 @@ export const enum GridOrientationType {
   GeoCoord = 5,
 }
 
-export let standardView = {
+export const standardView = {
   Top: RotMatrix.identity,
   Bottom: RotMatrix.createRowValues(1, 0, 0, 0, -1, 0, 0, 0, -1),
   Left: RotMatrix.createRowValues(0, 0, -1, -1, 0, 0, 0, 1, 0),
@@ -62,7 +77,7 @@ export let standardView = {
     0, 0.81649658092772603, 0.57735026918962573),
 };
 
-export let standardViewMatrices = [
+export const standardViewMatrices = [
   standardView.Top, standardView.Bottom, standardView.Left, standardView.Right,
   standardView.Front, standardView.Back, standardView.Iso, standardView.RightIso,
 ];
@@ -77,12 +92,15 @@ function findNearbyStandardViewMatrix(rMatrix: RotMatrix): void {
   }
 }
 
-/** The region of physical (3d) space that appears in a view. It forms the field-of-view of a camera.
- *  It is stored as 8 points, in NpcCorner order, that must define a truncated pyramid.
+/**
+ * The region of physical (3d) space that appears in a view. It forms the field-of-view of a camera.
+ * It is stored as 8 points, in NpcCorner order, that must define a truncated pyramid.
  */
 export class Frustum {
   public readonly points: Point3d[];
-  public constructor() { for (let i = 0; i < 8; ++i) this.points[i] = new Point3d(); }
+  /** constructor for Frustum. Members initialized to the Npc cube. */
+  public constructor() { for (let i = 0; i < 8; ++i) this.points[i] = NpcCorners[i].clone(); }
+  public initNpc() { for (let i = 0; i < 8; ++i) Point3d.createFrom(NpcCorners[i], this.points[i]); return this; }
   public getCorner(i: number) { return this.points[i]; }
   public getCenter(): Point3d { return this.getCorner(Npc.RightTopFront).interpolate(0.5, this.getCorner(Npc.LeftBottomRear)); }
   public distance(corner1: number, corner2: number): number { return this.getCorner(corner1).distance(this.getCorner(corner2)); }
@@ -95,14 +113,14 @@ export class Frustum {
   public scaleAboutCenter(scale: number): void {
     const orig = this.clone();
     const f = 0.5 * (1.0 + scale);
-    orig.getCorner(Npc._111).interpolate(f, orig.getCorner(Npc._000), this.points[Npc._000]);
-    orig.getCorner(Npc._011).interpolate(f, orig.getCorner(Npc._100), this.points[Npc._100]);
-    orig.getCorner(Npc._101).interpolate(f, orig.getCorner(Npc._010), this.points[Npc._010]);
-    orig.getCorner(Npc._001).interpolate(f, orig.getCorner(Npc._110), this.points[Npc._110]);
-    orig.getCorner(Npc._110).interpolate(f, orig.getCorner(Npc._001), this.points[Npc._001]);
-    orig.getCorner(Npc._010).interpolate(f, orig.getCorner(Npc._101), this.points[Npc._101]);
-    orig.getCorner(Npc._100).interpolate(f, orig.getCorner(Npc._011), this.points[Npc._011]);
-    orig.getCorner(Npc._000).interpolate(f, orig.getCorner(Npc._111), this.points[Npc._111]);
+    orig.points[Npc._111].interpolate(f, orig.points[Npc._000], this.points[Npc._000]);
+    orig.points[Npc._011].interpolate(f, orig.points[Npc._100], this.points[Npc._100]);
+    orig.points[Npc._101].interpolate(f, orig.points[Npc._010], this.points[Npc._010]);
+    orig.points[Npc._001].interpolate(f, orig.points[Npc._110], this.points[Npc._110]);
+    orig.points[Npc._110].interpolate(f, orig.points[Npc._001], this.points[Npc._001]);
+    orig.points[Npc._010].interpolate(f, orig.points[Npc._101], this.points[Npc._101]);
+    orig.points[Npc._100].interpolate(f, orig.points[Npc._011], this.points[Npc._011]);
+    orig.points[Npc._000].interpolate(f, orig.points[Npc._111], this.points[Npc._111]);
   }
 
   public toDMap4d(): Map4d | undefined {
@@ -139,41 +157,121 @@ export class Frustum {
     frustum.initFromRange(range);
     return frustum;
   }
+
+  /** make sure the frustum point order does not include mirroring. If so, reverse the order. */
+  public fixPointOrder() {
+    const pts = this.points;
+    const u = pts[Npc._000].vectorTo(pts[Npc._001]);
+    const v = pts[Npc._000].vectorTo(pts[Npc._010]);
+    const w = pts[Npc._000].vectorTo(pts[Npc._100]);
+
+    if (u.tripleProduct(v, w) <= 0)
+      return;
+
+    // frustum has mirroring, reverse points
+    for (let i = 0; i < 8; i += 2) {
+      const tmpPoint = pts[i];
+      pts[i] = pts[i + 1];
+      pts[i + 1] = tmpPoint;
+    }
+  }
 }
 
-/** the constructor for an ElementState (for cloning). */
-export interface ElementStateCtor extends FunctionConstructor {
-  new(args: ElementProps, iModel: IModel, state?: ElementState): ElementState;
+/** the constructor for an EntityState (for cloning). */
+export interface EntityStateCtor extends FunctionConstructor {
+  new(args: EntityProps, iModel: IModel, state?: EntityState): EntityState;
 }
 
-export class ElementState implements ElementProps {
-  public readonly iModel: IModel;
+export class EntityState implements EntityProps {
   public readonly id: Id64;
+  public readonly iModel: IModel;
   public readonly classFullName: string;
+  public readonly jsonProperties: any;
+
+  constructor(props: EntityProps, iModel: IModel) {
+    this.classFullName = props.classFullName;
+    this.iModel = iModel;
+    this.id = new Id64(props.id);
+    this.jsonProperties = !props.jsonProperties ? {} : JSON.parse(JSON.stringify(props.jsonProperties)); // make sure we have our own copy
+  }
+
+  public toJSON(): EntityProps {
+    const val: any = {};
+    val.classFullName = this.classFullName;
+    if (this.id.isValid())
+      val.id = this.id;
+    if (Object.keys(this.jsonProperties).length > 0)
+      val.jsonProperties = this.jsonProperties;
+    return val;
+  }
+
+  public equals<T extends this>(other: T) { return JSON.stringify(this.toJSON()) === JSON.stringify(other.toJSON()); }
+
+  /** make a complete, independent copy of this EntityState */
+  public clone<T extends this>() { return new (this.constructor as EntityStateCtor)(this.toJSON(), this.iModel, this) as T; }
+}
+
+export class ModelState extends EntityState implements ModelProps {
+  public readonly modeledElement: Id64;
+  public readonly parentModel: Id64;
+  public readonly jsonProperties: any;
+  public readonly isPrivate: boolean;
+  public readonly isTemplate: boolean;
+
+  constructor(props: ModelProps, iModel: IModel) {
+    super(props, iModel);
+    this.modeledElement = new Id64(props.modeledElement);
+    this.parentModel = new Id64(props.parentModel);
+    this.isPrivate = JsonUtils.asBool(props.isPrivate);
+    this.isTemplate = JsonUtils.asBool(props.isTemplate);
+  }
+
+  /** Add all custom-handled properties of a Model to a json object. */
+  public toJSON(): ModelProps {
+    const val = super.toJSON() as ModelProps;
+    if (this.modeledElement.isValid())
+      val.modeledElement = this.modeledElement;
+    if (this.parentModel.isValid())
+      val.parentModel = this.parentModel;
+    if (this.isPrivate)
+      val.isPrivate = this.isPrivate;
+    if (this.isTemplate)
+      val.isTemplate = this.isTemplate;
+    return val;
+  }
+}
+
+export class Model2dState extends ModelState implements Model2dProps {
+  public readonly extents: Range2d;
+  constructor(props: Model2dProps, iModel: IModel) {
+    super(props, iModel);
+    this.extents = Range2d.fromJSON(props.extents);
+  }
+  public toJSON(): Model2dProps {
+    const val = super.toJSON() as Model2dProps;
+    val.extents = this.extents;
+    return val;
+  }
+}
+
+export class ElementState extends EntityState implements ElementProps {
   public readonly model: Id64;
   public readonly code: Code;
   public readonly parent?: RelatedElement;
   public readonly federationGuid?: Guid;
   public readonly userLabel?: string;
-  public readonly jsonProperties: any;
 
   constructor(props: ElementProps, iModel: IModel) {
-    this.iModel = iModel;
-    this.id = new Id64(props.id);
-    this.classFullName = props.classFullName;
+    super(props, iModel);
     this.code = new Code(props.code);
     this.model = new Id64(props.model);
     this.parent = RelatedElement.fromJSON(props.parent);
     this.federationGuid = Guid.fromJSON(props.federationGuid);
     this.userLabel = props.userLabel;
-    this.jsonProperties = !props.jsonProperties ? {} : JSON.parse(JSON.stringify(props.jsonProperties)); // make sure we have our own copy
   }
 
   public toJSON(): ElementProps {
-    const val: any = {};
-    val.classFullName = this.classFullName;
-    if (this.id.isValid())
-      val.id = this.id;
+    const val = super.toJSON() as ElementProps;
     if (this.code.spec.isValid())
       val.code = this.code;
     val.model = this.model;
@@ -183,13 +281,8 @@ export class ElementState implements ElementProps {
       val.federationGuid = this.federationGuid;
     if (this.userLabel)
       val.userLabel = this.userLabel;
-    if (Object.keys(this.jsonProperties).length > 0)
-      val.jsonProperties = this.jsonProperties;
     return val;
   }
-
-  /** make a complete, independent copy of this ElementState */
-  public clone<T extends this>() { return new (this.constructor as ElementStateCtor)(this.toJSON(), this.iModel, this) as T; }
 }
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
@@ -419,7 +512,7 @@ export interface ViewDefinitionProps extends ElementProps {
   displayStyleId: Id64 | string;
 }
 
-export const enum ViewportStatus {
+export const enum ViewStatus {
   Success = 0,
   ViewNotInitialized,
   AlreadyAttached,
@@ -472,8 +565,10 @@ export abstract class ViewState extends ElementState {
     return json;
   }
 
-  public isView3d(): this is ViewState3d { return this instanceof ViewState3d; }
+  public is3d(): this is ViewState3d { return this instanceof ViewState3d; }
   public isSpatialView(): this is SpatialViewState { return this instanceof SpatialViewState; }
+
+  public abstract getViewedExtents(): AxisAlignedBox3d;
 
   /** Determine whether this ViewDefinition views a given model */
   public abstract viewsModel(modelId: Id64): boolean;
@@ -511,7 +606,8 @@ export abstract class ViewState extends ElementState {
    * Initialize the origin, extents, and rotation of this ViewDefinition from an existing Frustum
    * @param frustum the input Frustum.
    */
-  public setupFromFrustum(frustum: Frustum): ViewportStatus {
+  public setupFromFrustum(frustum: Frustum): ViewStatus {
+    frustum.fixPointOrder();
     const frustPts = frustum.points;
     let viewOrg = frustPts[Npc.LeftBottomRear];
 
@@ -523,7 +619,7 @@ export abstract class ViewState extends ElementState {
 
     const frustMatrix = RotMatrix.createPerpendicularUnitColumns(frustumX, frustumY, AxisOrder.XYZ);
     if (!frustMatrix)
-      return ViewportStatus.InvalidWindow;
+      return ViewStatus.InvalidWindow;
 
     findNearbyStandardViewMatrix(frustMatrix);
 
@@ -534,12 +630,12 @@ export abstract class ViewState extends ElementState {
     // set up view Rotation matrix as rows of frustum matrix.
     const viewRot = frustMatrix.inverse();
     if (!viewRot)
-      return ViewportStatus.InvalidWindow;
+      return ViewStatus.InvalidWindow;
 
     // Left handed frustum?
     const zSize = zDir.dotProduct(frustumZ);
     if (zSize < 0.0)
-      return ViewportStatus.InvalidWindow;
+      return ViewStatus.InvalidWindow;
 
     const viewDiagRoot = new Vector3d();
     viewDiagRoot.plus2Scaled(xDir, xDir.dotProduct(frustumX), yDir, yDir.dotProduct(frustumY));  // vectors on the back plane
@@ -551,16 +647,16 @@ export abstract class ViewState extends ElementState {
     // delta is in view coordinates
     const viewDelta = viewRot.multiplyVector(viewDiagRoot);
     const validSize = this.validateViewDelta(viewDelta, false);
-    if (validSize !== ViewportStatus.Success)
+    if (validSize !== ViewStatus.Success)
       return validSize;
 
     this.setOrigin(viewOrg);
     this.setExtents(viewDelta);
     this.setRotation(viewRot);
-    return ViewportStatus.Success;
+    return ViewStatus.Success;
   }
 
-  protected getExtentLimits() { return { minExtent: Constant.oneMillimeter, maxExtent: 2.0 * Constant.diameterOfEarth }; }
+  public getExtentLimits() { return { minExtent: Constant.oneMillimeter, maxExtent: 2.0 * Constant.diameterOfEarth }; }
   public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
   public getDetails(): any { if (!this.jsonProperties.viewDetails) this.jsonProperties.viewDetails = new Object(); return this.jsonProperties.viewDetails; }
 
@@ -590,17 +686,17 @@ export abstract class ViewState extends ElementState {
     this.setExtents(extents);
   }
 
-  protected validateViewDelta(delta: Vector3d, messageNeeded?: boolean): ViewportStatus {
+  protected validateViewDelta(delta: Vector3d, messageNeeded?: boolean): ViewStatus {
     const limit = this.getExtentLimits();
-    let error = ViewportStatus.Success;
+    let error = ViewStatus.Success;
 
     const limitWindowSize = (v: number) => {
       if (v < limit.minExtent) {
         v = limit.minExtent;
-        error = ViewportStatus.MinWindow;
+        error = ViewStatus.MinWindow;
       } else if (v > limit.maxExtent) {
         v = limit.maxExtent;
-        error = ViewportStatus.MaxWindow;
+        error = ViewStatus.MaxWindow;
       }
       return v;
     };
@@ -609,7 +705,7 @@ export abstract class ViewState extends ElementState {
     delta.y = limitWindowSize(delta.y);
     delta.z = limitWindowSize(delta.z);
 
-    if (messageNeeded && error !== ViewportStatus.Success) {
+    if (messageNeeded && error !== ViewStatus.Success) {
       //      Viewport::OutputFrustumErrorMessage(error);
     }
 
@@ -685,7 +781,7 @@ export abstract class ViewState extends ElementState {
     switch (orientation) {
       case GridOrientationType.WorldYZ:
       case GridOrientationType.WorldXZ:
-        if (!this.isView3d())
+        if (!this.is3d())
           return;
         break;
 
@@ -751,7 +847,7 @@ export abstract class ViewState extends ElementState {
 
     let origNewDelta = newDelta.clone();
 
-    const isCameraOn: boolean = this.isView3d() && this.isCameraOn();
+    const isCameraOn: boolean = this.is3d() && this.isCameraOn();
     if (isCameraOn) {
       // If the camera is on, the only way to guarantee we can see the entire volume is to set delta at the front plane, not focus plane.
       // That generally causes the view to be too large (objects in it are too small), since we can't tell whether the objects are at
@@ -801,7 +897,7 @@ export abstract class ViewState extends ElementState {
 
     this.setOrigin(viewRot.multiplyInverseXYZAsPoint3d(newOrigin.x, newOrigin.y, newOrigin.z)!);
 
-    if (!this.isView3d())
+    if (!this.is3d())
       return;
 
     const cameraDef: Camera = this.camera;
@@ -889,6 +985,7 @@ export class Camera {
   public setEyePoint(pt: Point3d) { this.eye.setFrom(pt); }
   public isValid() { return this.isLensValid() && this.isFocusValid(); }
   public equals(other: Camera) { return this.lens === other.lens && this.focusDistance === other.focusDistance && this.eye.isExactEqual(other.eye); }
+  public clone() { return new Camera(this); }
   public copyFrom(rhs: Camera) {
     this.lens.setFrom(rhs.lens);
     this.focusDistance = rhs.focusDistance;
@@ -918,6 +1015,8 @@ export abstract class ViewState3d extends ViewState {
   public readonly rotation: RotMatrix;    // Rotation of the view frustum.
   public readonly camera: Camera;         // The camera used for this view.
 
+  public allow3dManipulations(): boolean { return true; }
+  public forceMinFrontDist() { return 0.0; } // minimum distance for front plane
   public constructor(props: ViewDefinition3dProps, iModel: IModel, categories: CategorySelectorState, displayStyle: DisplayStyle3dState) {
     super(props, iModel, categories, displayStyle);
     this.cameraOn = JsonUtils.asBool(props.cameraOn);
@@ -938,9 +1037,9 @@ export abstract class ViewState3d extends ViewState {
   }
 
   public isCameraOn(): boolean { return this.cameraOn; }
-  public setupFromFrustum(frustum: Frustum): ViewportStatus {
+  public setupFromFrustum(frustum: Frustum): ViewStatus {
     const stat = super.setupFromFrustum(frustum);
-    if (ViewportStatus.Success !== stat)
+    if (ViewStatus.Success !== stat)
       return stat;
 
     this.turnCameraOff();
@@ -952,12 +1051,12 @@ export abstract class ViewState3d extends ViewState {
 
     const sFlatViewFractionTolerance = 1.0e-6;
     if (xFront > xBack * (1.0 + sFlatViewFractionTolerance))
-      return ViewportStatus.InvalidWindow;
+      return ViewStatus.InvalidWindow;
 
     // see if the frustum is tapered, and if so, set up camera eyepoint and adjust viewOrg and delta.
     const compression = xFront / xBack;
     if (compression >= (1.0 - sFlatViewFractionTolerance))
-      return ViewportStatus.Success;
+      return ViewStatus.Success;
 
     let viewOrg = frustPts[Npc.LeftBottomRear];
     const viewDelta = this.getExtents().clone();
@@ -980,7 +1079,7 @@ export abstract class ViewState3d extends ViewState {
     this.setExtents(viewDelta);
     this.setLensAngle(this.calcLensAngle());
     this.enableCamera();
-    return ViewportStatus.Success;
+    return ViewStatus.Success;
   }
 
   protected static calculateMaxDepth(delta: Vector3d, zVec: Vector3d): number {
@@ -1043,23 +1142,23 @@ export abstract class ViewState3d extends ViewState {
    * @e If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
    * adjusted when the Viewport is synchronized from this view.
    */
-  public lookAt(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, newExtents?: Vector2d, frontDistance?: number, backDistance?: number): ViewportStatus {
+  public lookAt(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, newExtents?: Vector2d, frontDistance?: number, backDistance?: number): ViewStatus {
     const yVec = upVector.normalize();
     if (!yVec) // up vector zero length?
-      return ViewportStatus.InvalidUpVector;
+      return ViewStatus.InvalidUpVector;
 
     const zVec = this.getEyePoint().vectorTo(targetPoint); // z defined by direction from eye to target
     const focusDist = zVec.normalizeWithLength(zVec).mag; // set focus at target point
 
     if (focusDist <= ViewState3d.minimumFrontDistance()) // eye and target are too close together
-      return ViewportStatus.InvalidTargetPoint;
+      return ViewStatus.InvalidTargetPoint;
 
     const xVec = new Vector3d();
     if (yVec.crossProduct(zVec).normalizeWithLength(xVec).mag < Geometry.smallMetricDistance)
-      return ViewportStatus.InvalidUpVector;    // up is parallel to z
+      return ViewStatus.InvalidUpVector;    // up is parallel to z
 
     if (zVec.crossProduct(xVec).normalizeWithLength(yVec).mag < Geometry.smallMetricDistance)
-      return ViewportStatus.InvalidUpVector;
+      return ViewStatus.InvalidUpVector;
 
     // we now have rows of the rotation matrix
     const rotation = RotMatrix.createRows(xVec, yVec, zVec);
@@ -1086,11 +1185,11 @@ export abstract class ViewState3d extends ViewState {
 
     const frontDelta = delta.scale(frontDistance / focusDist);
     const stat = this.validateViewDelta(frontDelta, false); // validate window size on front (smallest) plane
-    if (ViewportStatus.Success !== stat)
+    if (ViewStatus.Success !== stat)
       return stat;
 
     if (delta.z > ViewState3d.calculateMaxDepth(delta, zVec)) // make sure we're not zoomed out too far
-      return ViewportStatus.MaxDisplayDepth;
+      return ViewStatus.MaxDisplayDepth;
 
     // The origin is defined as the lower left of the view rectangle on the focus plane, projected to the back plane.
     // Start at eye point, and move to center of back plane, then move left half of width. and down half of height
@@ -1103,7 +1202,7 @@ export abstract class ViewState3d extends ViewState {
     this.setExtents(delta);
     this.setLensAngle(this.calcLensAngle());
     this.enableCamera();
-    return ViewportStatus.Success;
+    return ViewStatus.Success;
   }
 
   /**
@@ -1117,13 +1216,13 @@ export abstract class ViewState3d extends ViewState {
    * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
    * @note The aspect ratio of the view remains unchanged.
    */
-  public lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number): ViewportStatus {
+  public lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number): ViewStatus {
     const focusDist = eyePoint.distance(targetPoint);
     if (focusDist <= Constant.oneMillimeter)       // eye and target are too close together
-      return ViewportStatus.InvalidTargetPoint;
+      return ViewStatus.InvalidTargetPoint;
 
     if (fov.radians < .0001 || fov.radians > Math.PI)
-      return ViewportStatus.InvalidLens;
+      return ViewStatus.InvalidLens;
 
     const extent = 2.0 * Math.tan(fov.radians / 2.0) * focusDist;
     const delta = Vector2d.create(this.getExtents().x, this.getExtents().y);
@@ -1138,7 +1237,7 @@ export abstract class ViewState3d extends ViewState {
    * @param distance to move camera. Length is in world units, direction relative to current camera orientation.
    * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
    */
-  public moveCameraLocal(distance: Vector3d): ViewportStatus {
+  public moveCameraLocal(distance: Vector3d): ViewStatus {
     const distWorld = this.getRotation().multiplyTransposeVector(distance);
     return this.moveCameraWorld(distWorld);
   }
@@ -1148,10 +1247,10 @@ export abstract class ViewState3d extends ViewState {
    * @param distance in world units.
    * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
    */
-  public moveCameraWorld(distance: Vector3d): ViewportStatus {
+  public moveCameraWorld(distance: Vector3d): ViewStatus {
     if (!this.cameraOn) {
       this.origin.plus(distance, this.origin);
-      return ViewportStatus.Success;
+      return ViewStatus.Success;
     }
 
     const newTarget = this.getTargetPoint().plus(distance);
@@ -1168,7 +1267,7 @@ export abstract class ViewState3d extends ViewState {
    * @note Even though the axis is relative to the current camera orientation, the aboutPt is in world coordinates, \b not relative to the camera.
    * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
    */
-  public rotateCameraLocal(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewportStatus {
+  public rotateCameraLocal(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus {
     const axisWorld = this.getRotation().multiplyTransposeVector(axis);
     return this.rotateCameraWorld(angle, axisWorld, aboutPt);
   }
@@ -1181,7 +1280,7 @@ export abstract class ViewState3d extends ViewState {
    *  (i.e. about the current eyePoint).
    * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
    */
-  public rotateCameraWorld(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewportStatus {
+  public rotateCameraWorld(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus {
     const about = aboutPt ? aboutPt : this.getEyePoint();
     const rotation = RotMatrix.createRotationAroundVector(axis, angle);
     const trans = Transform.createFixedPointAndMatrix(about, rotation!);
@@ -1306,6 +1405,7 @@ export class SpatialViewState extends ViewState3d {
       this.modelSelector = arg3.modelSelector;
     }
   }
+  public getViewedExtents(): AxisAlignedBox3d { return this.iModel.projectExtents; }
 
   public toJSON(): SpatialViewDefinitionProps {
     const val = super.toJSON() as SpatialViewDefinitionProps;
@@ -1335,17 +1435,17 @@ export interface ViewDefinition2dProps extends ViewDefinitionProps {
 
 /** Defines the state of a view of a single 2d model. */
 export class ViewState2d extends ViewState {
-  public readonly baseModelId: Id64;
   public readonly origin: Point2d;
   public readonly delta: Point2d;
   public readonly angle: Angle;
 
-  public constructor(props: ViewDefinition2dProps, iModel: IModel, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
+  public constructor(props: ViewDefinition2dProps, iModel: IModel, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, public readonly baseModel: Model2dState) {
     super(props, iModel, categories, displayStyle);
-    this.baseModelId = new Id64(props.baseModelId);
     this.origin = Point2d.fromJSON(props.origin);
     this.delta = Point2d.fromJSON(props.delta);
     this.angle = Angle.fromJSON(props.angle);
+    if (categories instanceof ViewState2d)
+      this.baseModel = categories.baseModel;
   }
 
   public toJSON(): ViewDefinition2dProps {
@@ -1353,16 +1453,18 @@ export class ViewState2d extends ViewState {
     val.origin = this.origin;
     val.delta = this.delta;
     val.angle = this.angle;
+    val.baseModelId = this.baseModel.id;
     return val;
   }
 
+  public getViewedExtents() { return AxisAlignedBox3d.fromRange2d(this.baseModel.extents); }
   public getOrigin() { return new Point3d(this.origin.x, this.origin.y); }
   public getExtents() { return new Vector3d(this.delta.x, this.delta.y); }
   public getRotation() { return RotMatrix.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
   public setExtents(delta: Vector3d) { this.delta.set(delta.x, delta.y); }
   public setOrigin(origin: Point3d) { this.origin.set(origin.x, origin.y); }
   public setRotation(rot: RotMatrix) { const xColumn = rot.getColumn(0); this.angle.setRadians(Math.atan2(xColumn.y, xColumn.x)); }
-  public viewsModel(modelId: Id64) { return this.baseModelId.equals(modelId); }
+  public viewsModel(modelId: Id64) { return this.baseModel.id.equals(modelId); }
 }
 
 /** a view of a DrawingModel */

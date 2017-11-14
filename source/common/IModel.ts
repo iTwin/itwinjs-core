@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { AxisAlignedBox3d } from "../common/ElementGeometry";
 
 /** A token that identifies an instance of an iModel. */
 export class IModelToken {
@@ -42,4 +43,6 @@ export class IModel {
   protected constructor(iModelToken: IModelToken) { this._iModelToken = iModelToken; }
   /** @hidden */
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
+
+  public get projectExtents(): AxisAlignedBox3d { return new AxisAlignedBox3d(); } // NEEDS_WORK
 }

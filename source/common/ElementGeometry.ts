@@ -6,6 +6,20 @@ import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Point3d, Vector3d, Range3d, YawPitchRollAngles, Point2d, Range2d, Transform, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 
+/**
+ * A Range3d that is aligned with the axes of a coordinate space.
+ */
+export class AxisAlignedBox3d extends Range3d {
+  constructor(low?: Point3d, high?: Point3d) {
+    if (low === undefined || high === undefined)
+      super(); // defines an empty box
+    else
+      super(low.x, low.y, low.z, high.x, high.y, high.z);
+  }
+  public static fromRange2d(r: Range2d) {const v = new AxisAlignedBox3d(); v.low.x = r.low.x; v.low.y = r.low.y; v.high.x = r.high.x; v.high.y = r.high.y; return v; }
+  public getCenter(): Point3d { return this.low.interpolate(.5, this.high); }
+}
+
 /** A bounding box aligned to the orientation of a 3d Element */
 export class ElementAlignedBox3d extends Range3d {
   public constructor(low?: Point3d, high?: Point3d) {
@@ -14,15 +28,16 @@ export class ElementAlignedBox3d extends Range3d {
     else
       super(low.x, low.y, low.z, high.x, high.y, high.z);
   }
-  public get left(): number { return this.low.x; }
-  public get bottom(): number { return this.low.y; }
-  public get front(): number { return this.low.z; }
-  public get right(): number { return this.high.x; }
-  public get top(): number { return this.high.y; }
-  public get back(): number { return this.high.z; }
-  public get width(): number { return this.xLength(); }
-  public get depth(): number { return this.yLength(); }
-  public get height(): number { return this.zLength(); }
+  public get left() { return this.low.x; }
+  public get bottom() { return this.low.y; }
+  public get front() { return this.low.z; }
+  public get right() { return this.high.x; }
+  public get top() { return this.high.y; }
+  public get back() { return this.high.z; }
+  public get width() { return this.xLength(); }
+  public get depth() { return this.yLength(); }
+  public get height() { return this.zLength(); }
+  public get volume() { return this.width * this.height * this.depth; }
   public isValid(): boolean {
     const max = Constant.circumferenceOfEarth; const lo = this.low; const hi = this.high;
     return !this.isNull() && lo.x > -max && lo.y > -max && lo.z > -max && hi.x < max && hi.y < max && hi.z < max;
@@ -42,12 +57,13 @@ export class ElementAlignedBox2d extends Range2d {
     else
       super(low.x, low.y, high.x, high.y);
   }
-  public get left(): number { return this.low.x; }
-  public get bottom(): number { return this.low.y; }
-  public get right(): number { return this.high.x; }
-  public get top(): number { return this.high.y; }
-  public get width(): number { return this.xLength(); }
-  public get depth(): number { return this.yLength(); }
+  public get left() { return this.low.x; }
+  public get bottom() { return this.low.y; }
+  public get right() { return this.high.x; }
+  public get top() { return this.high.y; }
+  public get width() { return this.xLength(); }
+  public get height() { return this.yLength(); }
+  public get area() { return this.width * this.height; }
   public static fromJSON(json?: any): ElementAlignedBox2d {
     if (!json)
       return new ElementAlignedBox2d();
