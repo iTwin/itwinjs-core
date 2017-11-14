@@ -4,8 +4,8 @@
   "description": "iModelJs frontend components",
   "license": "UNLICENSED",
   "scripts": {
+    "build": "tsc",
     "clean": "rimraf lib/*",
-    "compile": "tsc",
     "lint": "node node_modules/@bentley/bentleyjs-tools/scripts/tslint.js",
     "test": "echo \"Error: run tests from the '../test' directory.\" && exit 1"
   },
@@ -20,8 +20,8 @@
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "^1.0.39",
-    "@bentley/geometry-core": "^1.0.10",
-    "@bentley/imodeljs-clients": "^1.0.26",
+    "@bentley/geometry-core": "^1.0.21",
+    "@bentley/imodeljs-clients": "^1.0.31",
     "js-base64": "^2.3.2"
   },
   "devDependencies": {
