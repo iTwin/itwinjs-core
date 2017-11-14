@@ -20,6 +20,7 @@
     "clean:backend": "cd source/backend && npm run clean",
     "clean:frontend": "cd source/frontend && npm run clean",
     "clean:test": "cd source/test && npm run clean",
+    "findstr:bentley-dependencies": "findstr /c:\"\\\"@bentley\" package.json source\\backend\\package.json source\\frontend\\package.json source\\test\\package.json",
     "lint": "node node_modules/@bentley/bentleyjs-tools/scripts/tslint.js",
     "test": "gulp test",
     "wip-test": "cd source/test && npm run test",
