@@ -28,7 +28,9 @@
     "wip-install": "concurrently \"npm run install:backend\" \"npm run install:frontend\" \"npm run install:test\"",
     "install:backend": "cd source/backend && npm install",
     "install:frontend": "cd source/frontend && npm install",
-    "install:test": "cd source/test && npm install"
+    "install:test": "cd source/test && npm install",
+    "docs": "node node_modules/@bentley/bentleyjs-tools/scripts/docs.js --baseUrl=source/test/node_modules",
+    "extract": "node node_modules/@bentley/bentleyjs-tools/scripts/extract.js --testDir=source/test"
   },
   "keywords": [
     "Bentley",
@@ -46,7 +48,7 @@
     "js-base64": "^2.3.2"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "^1.0.50",
+    "@bentley/bentleyjs-tools": "^1.0.51",
     "@types/chai": "^4.0.4",
     "@types/fs-extra": "^4.0.5",
     "@types/js-base64": "^2.3.0",
