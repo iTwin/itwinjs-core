@@ -48,7 +48,7 @@ export class IModelTestUtils {
   public static hubClient = new IModelHubClient("QA");
 
   public static async getTestUserAccessToken(): Promise<AccessToken> {
-    const authToken: AuthorizationToken|undefined = await (new ImsActiveSecureTokenClient("QA")).getToken(IModelTestUtils.user.email, IModelTestUtils.user.password);
+    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient("QA")).getToken(IModelTestUtils.user.email, IModelTestUtils.user.password);
     assert(authToken);
 
     const accessToken = await (new ImsDelegationSecureTokenClient("QA")).getToken(authToken!);
@@ -58,7 +58,7 @@ export class IModelTestUtils {
   }
 
   public static async getTestProjectId(accessToken: AccessToken, projectName: string): Promise<string> {
-    const project: Project | undefined = await IModelTestUtils.connectClient.getProject(accessToken, {
+    const project: Project = await IModelTestUtils.connectClient.getProject(accessToken, {
       $select: "*",
       $filter: "Name+eq+'" + projectName + "'",
     });
@@ -90,7 +90,9 @@ export class IModelTestUtils {
     let stat: fs.Stats | undefined;
     try {
       stat = fs.statSync(name);
-    } catch (err) { stat = undefined; }
+    } catch (err) {
+      stat = undefined;
+    }
     return stat;
   }
 
