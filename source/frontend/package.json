@@ -18,15 +18,16 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
+  "//dependencies": [
+    "NOTE: these dependencies are specific to imodeljs-frontend",
+    "NOTE: dependencies that are in common with imodeljs-backend must have a consistent version"
+  ],
   "dependencies": {
     "@bentley/bentleyjs-core": "^1.0.39",
     "@bentley/geometry-core": "^1.0.22",
     "@bentley/imodeljs-clients": "^1.0.31",
     "js-base64": "^2.3.2"
   },
-  "devDependencies": {
-    "@bentley/bentleyjs-tools": "^1.0.50",
-    "@types/js-base64": "^2.3.0",
-    "rimraf": "^2.6.2"
-  }
+  "//devDependencies": "NOTE: all devDependencies should be recorded in the top-level package.json only",
+  "devDependencies": {}
 }

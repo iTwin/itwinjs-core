@@ -16,8 +16,9 @@
     "build:frontend": "cd source/frontend && npm run build",
     "build:test": "cd source/test && npm run build",
     "clean": "gulp clean",
-    "wip-clean": "concurrently \"npm run clean:backend\" \"npm run clean:frontend\" \"npm run clean:test\"",
+    "postclean": "concurrently \"npm run clean:backend\" \"npm run clean:frontend\" \"npm run clean:test\"",
     "clean:backend": "cd source/backend && npm run clean",
+    "clean:dependencies": "concurrently \"rimraf source/backend/node_modules/*\" \"rimraf source/frontend/node_modules/*\" \"rimraf source/test/node_modules/*\"",
     "clean:frontend": "cd source/frontend && npm run clean",
     "clean:test": "cd source/test && npm run clean",
     "findstr:bentley-dependencies": "findstr /c:\"\\\"@bentley\" package.json source\\backend\\package.json source\\frontend\\package.json source\\test\\package.json",
@@ -39,12 +40,14 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
+  "//dependencies": "NOTE: after the package split, dependencies will be empty here and specified in source/frontend and/or source/backend.",
   "dependencies": {
     "@bentley/bentleyjs-core": "^1.0.39",
     "@bentley/geometry-core": "^1.0.22",
     "@bentley/imodeljs-clients": "^1.0.31",
     "js-base64": "^2.3.2"
   },
+  "//devDependencies": "NOTE: These are the union of all devDependencies for source/frontend, source/backend, and source/test",
   "devDependencies": {
     "@bentley/bentleyjs-tools": "^1.0.50",
     "@types/chai": "^4.0.4",
@@ -55,6 +58,7 @@
     "chai": "^4.1.2",
     "commander": "^2.11.0",
     "concurrently": "^3.5.0",
+    "cpx": "^1.5.0",
     "debug-fabulous": "^0.1.2",
     "diff": "^3.3.1",
     "duplexify": "^3.5.1",
@@ -63,11 +67,14 @@
     "gulp-tslint": "^8.1.2",
     "gulp-typescript": "^3.2.3",
     "inherits": "^2.0.3",
+    "mocha": "^3.5.3",
     "object-assign": "^4.1.1",
     "once": "^1.4.0",
     "os-locale": "^2.1.0",
     "resolve": "^1.5.0",
+    "rimraf": "^2.6.2",
     "semver": "^5.4.1",
+    "source-map-support": "^0.5.0",
     "string-width": "^2.1.1",
     "tslint": "^5.8.0",
     "typescript": "^2.6.1"
