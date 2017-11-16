@@ -3,7 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 import { Code } from "../common/Code";
-import { GeometryStream, Placement3d, Placement2d } from "../common/ElementGeometry";
+import { Placement3d, Placement2d } from "../common/geometry/ElementGeometry";
+import { GeometryStream } from "../common/geometry/GeometryStream";
 import { ElementProps, RelatedElement } from "../common/ElementProps";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";

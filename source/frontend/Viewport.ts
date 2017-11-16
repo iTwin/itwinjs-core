@@ -6,7 +6,7 @@ import { Map4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { AxisOrder } from "@bentley/geometry-core/lib/Geometry";
 import { ViewState, Frustum, ViewStatus, Npc, NpcCorners } from "../common/ViewState";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
-import { ElementAlignedBox2d } from "../common/ElementGeometry";
+import { ElementAlignedBox2d } from "../common/geometry/ElementGeometry";
 
 export class ViewRect extends ElementAlignedBox2d {
   public get width() { return super.width + 1; }

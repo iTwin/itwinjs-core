@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "^1.0.39",
-    "@bentley/geometry-core": "^1.0.21",
+    "@bentley/geometry-core": "^1.0.22",
     "@bentley/imodeljs-clients": "^1.0.31",
     "fs-extra": "latest",
     "js-base64": "^2.3.2"
