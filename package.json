@@ -30,8 +30,8 @@
     "install:backend": "cd source/backend && npm install",
     "install:frontend": "cd source/frontend && npm install",
     "install:test": "cd source/test && npm install",
-    "docs": "node node_modules/@bentley/bentleyjs-tools/scripts/docs.js --baseUrl=source/test/node_modules",
-    "extract": "node node_modules/@bentley/bentleyjs-tools/scripts/extract.js --testDir=source/test"
+    "docs": "node node_modules/@bentley/bentleyjs-tools/scripts/docs.js --baseUrl=source/test/node_modules --includes=source/test/lib/extract --out=lib/docs --json=lib/docs/json/file.json",
+    "extract": "node node_modules/@bentley/bentleyjs-tools/scripts/extract.js --extractFrom=source/test --out=source/test/lib/extract"
   },
   "keywords": [
     "Bentley",
@@ -51,7 +51,7 @@
   },
   "//devDependencies": "NOTE: These are the union of all devDependencies for source/frontend, source/backend, and source/test",
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "^1.0.51",
+    "@bentley/bentleyjs-tools": "^1.0.52",
     "@types/chai": "^4.0.4",
     "@types/flatbuffers": "^1.6.5",
     "@types/fs-extra": "^4.0.5",
