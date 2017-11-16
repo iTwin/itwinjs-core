@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { ECVersion, ECClassModifier, CustomAttributeContainerType, PrimitiveType, SchemaMatchType, 
-      RelationshipMultiplicity, StrengthType, StrengthDirection } from "./ECObjects";
+import { ECVersion, ECClassModifier, CustomAttributeContainerType, PrimitiveType, SchemaMatchType,
+      RelationshipMultiplicity, StrengthType, RelatedInstanceDirection } from "./ECObjects";
 
 export interface SchemaKeyInterface {
   name: string;
@@ -28,16 +28,16 @@ export interface SchemaInterface {
   createStructClass(name: string): ClassInterface;
   createCustomAttributeClass(name: string): ClassInterface;
   createRelationshipClass(name: string): RelationshipClassInterface;
-  createKindOfQuantity(name: string): SchemaChildInterface;
-  createEnumeration(name: string): SchemaChildInterface;
-  createPropertyCategory(name: string): SchemaChildInterface;
+  createKindOfQuantity(name: string): SchemaChildInterface; // Should return a KindOfQuantityInterface
+  createEnumeration(name: string): SchemaChildInterface; // Should return a EnumerationInterface
+  createPropertyCategory(name: string): SchemaChildInterface; // Should return a PropertyCategoryInterface
   addReference(refSchema: SchemaInterface): void;
   getReference(refSchemaName: string): SchemaInterface | undefined;
   fromJson(obj: any): void;
 }
 
 export interface SchemaChildInterface {
-  schema?: string | SchemaInterface;
+  schema?: SchemaInterface;
   schemaVersion?: ECVersion;
   name: string;
   label?: string;
@@ -49,11 +49,16 @@ export interface ClassInterface extends SchemaChildInterface {
   modifier: ECClassModifier;
   baseClass?: string | ClassInterface; // string should be a ECFullName
   properties?: PropertyInterface[];
-  createProperty(name: string): any;
+  getProperty<T extends PropertyInterface>(name: string): T | undefined;
+  createPrimitiveProperty(name: string, type?: string | PrimitiveType): PrimitivePropertyInterface;
+  createPrimitiveArrayProperty(name: string, type?: string | PrimitiveType): PrimitiveArrayPropertyInteface;
+  createStructProperty(name: string, type?: string | SchemaChildInterface): StructPropertyInterface; // TODO: Need to make type only StructInterface
+  createStructArrayProperty(name: string, type?: string | SchemaChildInterface): StructArrayPropertyInterface; // TODO: Need to make type only StructInterface
 }
 
 export interface EntityClassInterface extends ClassInterface {
   mixin?: string[] | MixinInterface[]; // string should be an ECFullName
+  createNavigationProperty(name: string, relationship: string | RelationshipClassInterface, direction: string | RelatedInstanceDirection): NavigationPropertyInterface;
 }
 
 export interface MixinInterface extends ClassInterface {
@@ -62,9 +67,10 @@ export interface MixinInterface extends ClassInterface {
 
 export interface RelationshipClassInterface extends ClassInterface {
   strength: StrengthType;
-  strengthDirection: StrengthDirection;
+  strengthDirection: RelatedInstanceDirection;
   source: RelationshipConstraintInterface;
   target: RelationshipConstraintInterface;
+  createNavigationProperty(name: string, relationship: string | RelationshipClassInterface, direction: string | RelatedInstanceDirection): NavigationPropertyInterface;
 }
 
 export interface RelationshipConstraintInterface {
@@ -88,5 +94,38 @@ export interface EnumerationInterface {
 }
 
 export interface PropertyInterface {
+  name: string; // Probably should be an ECName
+  description?: string;
+  label?: string;
+  readOnly?: boolean;
+  priority?: number;
+  category?: SchemaChildInterface; // Should be a PropertyCategoryInterface
+  kindOfQuantity?: any; // Should be KindOfQuantity interface
+  fromJson(obj: any): void;
+}
 
+export interface PrimitivePropertyInterface extends PropertyInterface {
+  type: PrimitiveType | EnumerationInterface;
+  extendedTypeName?: string;
+  minValue?: number;
+  maxValue?: number;
+  minLength?: number;
+  maxLength?: number;
+}
+
+export interface StructPropertyInterface extends PropertyInterface {
+  type: SchemaChildInterface; // Should be a StructClassInterface
+}
+
+export interface ArrayPropertyInterface {
+  minOccurs?: number;
+  maxOccurs?: number;
+}
+
+export interface PrimitiveArrayPropertyInteface extends PrimitivePropertyInterface, ArrayPropertyInterface { }
+export interface StructArrayPropertyInterface extends StructPropertyInterface, ArrayPropertyInterface { }
+
+export interface NavigationPropertyInterface extends PropertyInterface {
+  relationship: RelationshipClassInterface;
+  direction: RelatedInstanceDirection;
 }
