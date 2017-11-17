@@ -50,6 +50,7 @@ Note that imodeljs-core/source/common/ is built into both the imodeljs-frontend 
 ## Other NPM Scripts
 
 1. Build TypeDoc documentation for frontend/backend/common: `npm run docs`
-2. Extract sample code from test directory: `npm run extract`
+2. Extract sample code from test directory (run automatically as a *pre* step by the TypeDoc build command above): `npm run extract`
+3. Run lint rules against entire source tree: `npm run lint`
 
 The full list of npm scripts can be found in the root package.json file.
