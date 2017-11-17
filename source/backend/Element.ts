@@ -2,9 +2,10 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
+import { Transform } from "@bentley/geometry-core/lib/PointVector";
 import { Code } from "../common/Code";
-import { Placement3d, Placement2d } from "../common/geometry/Primitives";
-import { GeometryStream } from "../common/geometry/GeometryStream";
+import { Placement3d, Placement2d, AxisAlignedBox3d } from "../common/geometry/Primitives";
+import { GeometryStream, GeometryBuilder } from "../common/geometry/GeometryStream";
 import { ElementProps, RelatedElement } from "../common/ElementProps";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -89,6 +90,17 @@ export abstract class GeometricElement extends Element implements GeometricEleme
     this.geom = GeometryStream.fromJSON(props.geom);
   }
 
+  public abstract calculateRange3d(): AxisAlignedBox3d;
+  public abstract getAsGeometricElement2d(): GeometricElement2d | undefined;  // Either this method or getAsGeometrySource3d must return non-null
+  public abstract getAsGeometricElement3d(): GeometricElement3d | undefined;  // Either this method or getAsGeometrySource2d must return non-null
+  public is3d(): boolean { return this.getAsGeometricElement3d() !== undefined; }
+  public is2d(): boolean { return this.getAsGeometricElement2d() !== undefined; }
+
+  public getPlacementTransform(): Transform {
+    const source3d = this.getAsGeometricElement3d();
+    return (source3d !== undefined) ? source3d.getPlacement().getTransform() : this.getAsGeometricElement2d()!.getPlacement().getTransform();
+  }
+
   /** convert this geometric element to a JSON object */
   public toJSON(): GeometricElementProps {
     const val = super.toJSON() as GeometricElementProps;
@@ -96,6 +108,51 @@ export abstract class GeometricElement extends Element implements GeometricEleme
     if (this.geom)
       val.geom = this.geom;
     return val;
+  }
+
+  public updateFromGeometryBuilder(builder: GeometryBuilder): boolean {
+    if (!builder.isPartCreate)
+      return false;   // Invalid builder for creating element geometry...
+
+    if (builder.currentSize === 0)
+      return false;
+
+    if (!builder.havePlacement)
+      return false;
+
+    if (!this.category.equals(builder.geometryParams.categoryId))
+      return false;
+
+    // const el = this.toElement();
+
+    // if (el === undefined || (el !== undefined && ))
+    //  return false;
+
+    if (builder.is3d) {
+      if (!builder.placement3d.isValid())
+        return false;
+
+      const source3d = this.getAsGeometricElement3d();
+      if (source3d === undefined)
+        return false;
+
+      source3d.setPlacement(builder.placement3d);
+    } else {
+      if (!builder.placement2d.isValid())
+        return false;
+
+      const source2d = this.getAsGeometricElement2d();
+      if (source2d === undefined)
+        return false;
+
+      source2d.setPlacement(builder.placement2d);
+    }
+
+    if (this.geom)
+      this.geom.saveRef(builder.getGeometryStreamCopy());
+    else
+      this.geom = new GeometryStream(builder.getGeometryStreamCopy());
+    return true;
   }
 }
 
@@ -121,6 +178,10 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
     if (props.typeDefinition)
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
   }
+
+  public getAsGeometricElement2d() { return undefined; }
+
+  public calculateRange3d(): AxisAlignedBox3d { return this.placement.calculateRange(); }
 
   public toJSON(): GeometricElement3dProps {
     const val = super.toJSON() as GeometricElement3dProps;
@@ -148,6 +209,10 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
     if (props.typeDefinition)
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
   }
+
+  public getAsGeometricElement3d() { return undefined; }
+
+  public calculateRange3d(): AxisAlignedBox3d { return this.placement.calculateRange(); }
 
   public toJSON(): GeometricElement2dProps {
     const val = super.toJSON() as GeometricElement2dProps;

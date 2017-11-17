@@ -1857,6 +1857,12 @@ export class GeometryBuilder {
     return new GeometryBuilder(/*imodel,*/ categoryId, is3d);
   }
 
+  public appendWorld(geom: GeometricPrimitive): boolean {
+    if (!this.convertToLocal(geom))
+      return false;
+    return this.appendLocal(geom);
+  }
+
   private convertToLocal(geom: GeometricPrimitive): boolean {
     if (this._isPartCreate)
       return false;   // Part geometry must be supplied in local coordinates...
@@ -2053,12 +2059,5 @@ export class GeometryBuilder {
 
     if (isSubGraphic && !this._isPartCreate)
       this._writer.dgnAppendRange3d(localRange);
-  }
-
-  /** ONLY PUBLIC TEMPORARILY TO AVOID ERRORS */
-  public appendWorld(geom: GeometricPrimitive): boolean {
-    if (!this.convertToLocal(geom))
-      return false;
-    return this.appendLocal(geom);
   }
 }
