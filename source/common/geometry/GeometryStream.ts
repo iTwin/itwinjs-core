@@ -14,7 +14,7 @@ import { LineSegment3d } from "@bentley/geometry-core/lib/curve/LineSegment3d";
 import { LineString3d } from "@bentley/geometry-core/lib/curve/LineString3d";
 import { BGFBBuilder, BGFBReader } from "@bentley/geometry-core/lib/serialization/BGFB";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { GeometricPrimitive, GeometryType } from "./ElementGeometry";
+import { GeometricPrimitive, GeometryType, Placement2d, Placement3d } from "./Primitives";
 import { GeometryParams } from "./GeometryProps";
 import { LineStyleInfo, LineStyleParams } from "./LineStyle";
 import { GradientSymb } from "./GradientPattern";
@@ -25,6 +25,7 @@ import { flatbuffers } from "flatbuffers";
 import { DgnFB } from "./ElementGraphicsSchema";
 import { Base64 } from "js-base64";
 
+// NOTE: IF ADDING A NEW OPCODE... BE SURE TO UPDATE ISGEOMETRYOP() FUNCTION IN THE OPERATION CLASS
 export enum OpCode {
   Invalid                 = 0,
   Header                  = 1,    // Required to be first opcode
@@ -63,6 +64,54 @@ export enum EntryType {
   ImageGraphic        = 9,  // ImageGraphic
 }
 
+/** Class for identifying a geometric primitive in a GeometryStream */
+export class GeometryStreamEntryId {
+  private _partId: Id64;      // Valid when index refers to a part
+  private _index: number;     // Index into top-level GeometryStream
+  private _partIndex: number; // Index into part GeometryStream
+
+  private constructor() {
+    this._partId = new Id64();
+    this._index = 0;
+    this._partIndex = 0;
+  }
+
+  public get index() { return this._index; }
+  public get partIndex() { return this._partIndex; }
+  public get geometryPartId() { return this._partId; }
+  public isValid() { return this._index !== 0; }
+  public increment() { if (this._partId.isValid()) this.incrementPartIndex(); else this.incrementIndex(); }
+  public incrementIndex() { if (65535 === this._index) return; this._index++; } // More than 65535 geometric entries in a single GeometryStream is questionable...
+  public incrementPartIndex() { if (65535 === this._partIndex) return; this._partIndex++; }
+  public setGeometryPartId(partId: Id64) { this._partId = partId; }
+  public setIndex(index: number) { this._index = index; }
+  public setPartIndex(partIndex: number) { this._index = partIndex; }
+  public setActive(enable: boolean) {
+    if (this._partId.isValid()) {
+      if (!enable) this._partId = new Id64();
+      return;
+    }
+    this._partId = new Id64();
+    this._index = 0;
+    this._partIndex = 0;
+  }
+  public setActiveGeometryPart(partId: Id64) {
+    this._partId = new Id64(partId);
+  }
+
+  public static createDefaults(): GeometryStreamEntryId {
+    return new GeometryStreamEntryId();
+  }
+
+  public clone(): GeometryStreamEntryId {
+    const retVal = new GeometryStreamEntryId();
+    retVal._partId = new Id64(this._partId);
+    retVal._index = this._index;
+    retVal._partIndex = this._partIndex;
+    return retVal;
+  }
+}
+
 /** Internal 64 bit header op code, used by the GSWriter. First index (32 bits) holds version, and indices 5, 6, 7, 8 holds the flags */
 class Header {
   public buffer: Uint32Array;
@@ -97,6 +146,27 @@ export class Operation {
   public static createNewItem(opCode: OpCode, data: Uint8Array, data1?: Uint8Array, data1Position?: number): Operation {
     return new Operation(opCode, data, data1, data1Position);
   }
+
+  public isGeometryOp(): boolean {
+    switch (this.opCode) {
+      case OpCode.PointPrimitive:
+      case OpCode.PointPrimitive2d:
+      case OpCode.ArcPrimitive:
+      case OpCode.CurveCollection:
+      case OpCode.Polyface:
+      case OpCode.CurvePrimitive:
+      case OpCode.SolidPrimitive:
+      case OpCode.BsplineSurface:
+      case OpCode.ParasolidBRep:
+      case OpCode.BRepPolyface:
+      case OpCode.BRepCurveVector:
+      case OpCode.TextString:
+      case OpCode.Image:
+        return true;
+      default:
+        return false;
+    }
+  }
 }
 
 class CurrentState {
@@ -109,8 +179,9 @@ class CurrentState {
   public geomStreamEntryId: any;
   public localRange: Range3d;
 
-  public constructor(imodel: IModel) {
-    this.imodel = imodel;
+  public constructor(imodel?: IModel) {
+    if (imodel)
+      this.imodel = imodel;
     this.sourceToWorld = Transform.createIdentity();
     this.geomToSource = Transform.createIdentity();
     this.geomToWorld = Transform.createIdentity();
@@ -132,6 +203,7 @@ export class Iterator {
   private constructor(data: ArrayBuffer, dataOffset: number) {
     this.data = new Uint8Array(data);
     this.dataOffset = dataOffset;
+    this.state = new CurrentState();
   }
 
   public static create(data: ArrayBuffer, dataOffset: number = 0): Iterator {
@@ -425,6 +497,39 @@ export class GeometryStream {
     }
     return undefined;
   }
+
+  /** Makes a reference to the given buffer and saves to this GeometryStream */
+  public saveRef(buffer: ArrayBuffer) {
+    this.geomStream = buffer;
+  }
+
+  /** Makes a deep copy of the given buffer and saves to this GeometryStream */
+  public saveCopy(buffer: ArrayBuffer) {
+    const byteLen = buffer.byteLength;
+    this.geomStream = new ArrayBuffer(byteLen);
+
+    if (byteLen % 4 === 0) {  // Copy 4 bytes at a time
+      const copyLen = byteLen / 4;
+      const viewOriginal = new Uint32Array(buffer);
+      const viewNew = new Uint32Array(this.geomStream);
+      for (let i = 0; i < copyLen; i++) {
+        viewNew[i] = viewOriginal[i];
+      }
+    } else if (byteLen % 2 === 0) {   // Copy 2 bytes at a time
+      const copyLen = byteLen / 2;
+      const viewOriginal = new Uint16Array(buffer);
+      const viewNew = new Uint16Array(this.geomStream);
+      for (let i = 0; i < copyLen; i++) {
+        viewNew[i] = viewOriginal[i];
+      }
+    } else {    // Least efficient.. copy 1 byte at a time
+      const viewOriginal = new Uint8Array(buffer);
+      const viewNew = new Uint8Array(this.geomStream);
+      for (let i = 0; i < byteLen; i++) {
+        viewNew[i] = viewOriginal[i];
+      }
+    }
+  }
 }
 
 /** Internal op code writer and temporary storage for the buffer */
@@ -432,15 +537,48 @@ export class GSWriter {
   public imodel: IModel;
   private buffer: ArrayBuffer;
 
+  /** Returns the current size (in bytes) of the buffer. */
+  public get size() { return this.buffer.byteLength; }
+
   public constructor(imodel?: IModel) {
     if (imodel)
       this.imodel = imodel;
     this.buffer = new ArrayBuffer(0);   // Start out empty
   }
 
-  /** Wraps the buffer in a GeometryStream object and returns */
-  public finish() {
-    return new GeometryStream(this.buffer);
+  /** Returns a reference to the current ArrayBuffer */
+  public outputReference(): ArrayBuffer {
+    return this.buffer;
+  }
+
+  /** Wraps a deep copy of the buffer in a GeometryStream object and returns it */
+  public outputCopy(): ArrayBuffer {
+    const byteLen = this.buffer.byteLength;
+    const arrBuffCopy = new ArrayBuffer(byteLen);
+
+    if (byteLen % 4 === 0) {  // Copy 4 bytes at a time
+      const copyLen = byteLen / 4;
+      const viewOriginal = new Uint32Array(this.buffer);
+      const viewNew = new Uint32Array(arrBuffCopy);
+      for (let i = 0; i < copyLen; i++) {
+        viewNew[i] = viewOriginal[i];
+      }
+    } else if (byteLen % 2 === 0) {   // Copy 2 bytes at a time
+      const copyLen = byteLen / 2;
+      const viewOriginal = new Uint16Array(this.buffer);
+      const viewNew = new Uint16Array(arrBuffCopy);
+      for (let i = 0; i < copyLen; i++) {
+        viewNew[i] = viewOriginal[i];
+      }
+    } else {    // Least efficient.. copy 1 byte at a time
+      const viewOriginal = new Uint8Array(this.buffer);
+      const viewNew = new Uint8Array(arrBuffCopy);
+      for (let i = 0; i < byteLen; i++) {
+        viewNew[i] = viewOriginal[i];
+      }
+    }
+
+    return arrBuffCopy;
   }
 
   public resize(numBytes: number) {
@@ -965,7 +1103,6 @@ export class GSWriter {
 /** Reader class that returns geometry based on given Operations (which hold their own buffer) */
 export class GSReader {
   public imodel: IModel;
-  public iterator: Iterator;    // Will be used to parse a GeometryStream, while the reader itself takes care of the data decoding
 
   public constructor(imodel?: IModel) {
     if (imodel)
@@ -1543,5 +1680,385 @@ export class GSReader {
         return false;
     }
     return changed;
+  }
+}
+
+// ==============================================================================================================================================
+// ==============================================================================================================================================
+
+// =======================================================================================
+// ! GeometryBuilder provides methods for setting up an element's GeometryStream and Placement2d or Placement3d.
+// ! The GeometryStream stores one or more GeometricPrimitive and optional GeometryParam for a GeometricElement.
+// ! An element's geometry should always be stored relative to its placement. As the placement defines the
+// ! element to world transform, an element can be moved/rotated by just updating it's placement.
+// !
+// ! GeometryBuilder supports several approaches to facilliate creating a placement relative GeometryStream.
+// ! Consider a 10m line from 5,5,0 to 15,5,0 where we want the placement origin to be the line's start point.
+// !
+// ! Approach 1: Construct a builder with the desired placement and then add the geometry in local coordinates.
+// ! \code
+// ! GeometryBuilderPtr builder = GeometryBuilder::Create(model, category, DPoint3d::From(5.0, 5.0, 0.0));
+// ! builder->Append(*ICurvePrimitive::CreateLine(DSegment3d::From(DPoint3d::FromZero(), DPoint3d::From(10.0, 0.0, 0.0))));
+// ! builder->Finish(source);
+// ! \endcode
+// !
+// ! Approach 2: Construct a builder with the desired placement and then add the geometry in world coordinates.
+// ! \code
+// ! GeometryBuilderPtr builder = GeometryBuilder::Create(model, category, DPoint3d::From(5.0, 5.0, 0.0));
+// ! builder->Append(*ICurvePrimitive::CreateLine(DSegment3d::From(DPoint3d::From(5.0, 5.0, 0.0), DPoint3d::From(15.0, 5.0, 0.0))), GeometryBuilder::CoordSystem::World);
+// ! builder->Finish(source);
+// ! \endcode
+// !
+// ! Approach 3: Construct a builder with identity placement, add the geometry in local coordinates, then update the element's placement.
+// ! \code
+// ! GeometryBuilderPtr builder = GeometryBuilder::Create(model, category, DPoint3d::FromZero());
+// ! builder->Append(*ICurvePrimitive::CreateLine(DSegment3d::From(DPoint3d::FromZero(), DPoint3d::From(10.0, 0.0, 0.0))));
+// ! builder->Finish(source);
+// ! Placement3d placement = source.ToGeometrySource3d()->GetPlacement(); // Finish updated placement's ElementAlignedBox3d
+// ! placement.GetOriginR() = DPoint3d::From(5.0, 5.0, 0.0);
+// ! source.ToGeometrySource3dP()->SetPlacement(placement);
+// ! \endcode
+// !
+// ! Approach 4: Construct a builder without specifying any placement, add the geometry in world coordinates, and let the builder choose a placement.
+// ! \code
+// ! GeometryBuilderPtr builder = GeometryBuilder::CreateWithAutoPlacement(model, category, DPoint3d::From(5.0, 5.0, 0.0));
+// ! builder->Append(*ICurvePrimitive::CreateLine(DSegment3d::From(DPoint3d::From(5.0, 5.0, 0.0), DPoint3d::From(15.0, 5.0, 0.0))), GeometryBuilder::CoordSystem::World);
+// ! builder->Finish(source);
+// ! \endcode
+// !
+// ! @note It is NEVER correct to construct a builder with an identity placement and then proceed to add geometry in world coordinates.
+// !       The resulting element won't have a meaningful placement.
+// !       To keep the example code snippets more compact it was assumed that all operations are successful. Be aware however
+// !       that trying to create a builder with invalid input (ex. 2d model and 3d placement) will return nullptr.
+// !       An append call may also return false for un-supported geometry (ex. trying to append a cone to 2d builder).
+// !
+// ! GeometryBuilder also provides a mechanism for sharing repeated geometry, both within a single element, as well as between elements.
+// ! GeometryBuilder can be used to define a DgnGeometryPart, and then instead of appending one or more GeometricPrimitive to a builder for a GeometricElement,
+// ! you can instead append the DgnGeometryPartId to reference the shared geometry and position it relative to the GeometricElement's placement.
+// !
+// ! A DgnGeometryPart is always defined in it's un-rotated orientation and positioned relative to 0,0,0. The GeometryStream for a DgnGeometryPart can
+// ! not include sub-category changes. A part may include specific symbology, otherwise it inherits the symbology established by the referencing GeometryStream.
+// ! As an example, let's instead create our 10m line from above as a DgnGeometryPart. We will then use this part to create a "+" symbol by appending 4 instances.
+// !
+// ! Construct a builder to create a new DgnGeometryPart having already checked that it doesn't already exist.
+// ! \code
+// ! GeometryBuilderPtr partBuilder = GeometryBuilder::CreateGeometryPart(imodel, is3d);
+// ! partBuilder->Append(*ICurvePrimitive::CreateLine(DSegment3d::From(DPoint3d::FromZero(), DPoint3d::From(10.0, 0.0, 0.0))));
+// ! DgnGeometryPartPtr geomPart = DgnGeometryPart::Create(imodel, partCode); // The DgnCode for the part is important for finding an existing part
+// ! if (SUCCESS == partBuilder->Finish(*geomPart)) imodel.Elements().Insert<DgnGeometryPart>(*geomPart); // Finish and Insert part
+// ! \endcode
+// !
+// ! Construct a builder to create a new GeometricElement using an existing DgnGeometryPart.
+// ! \code
+// ! GeometryBuilderPtr builder = GeometryBuilder::Create(model, category, DPoint3d::From(5.0, 5.0, 0.0));
+// ! DgnGeometryPartId partId = DgnGeometryPart::QueryGeometryPartId(partCode, imodel); // Find existing part by code, check partId.IsValid()
+// ! builder->Append(partId, DPoint3d::FromZero());
+// ! builder->Append(partId, DPoint3d::FromZero(), YawPitchRollAngles::FromDegrees(90.0, 0.0, 0.0));
+// ! builder->Append(partId, DPoint3d::FromZero(), YawPitchRollAngles::FromDegrees(180.0, 0.0, 0.0));
+// ! builder->Append(partId, DPoint3d::FromZero(), YawPitchRollAngles::FromDegrees(270.0, 0.0, 0.0));
+// ! builder->Finish(source);
+// ! \endcode
+// !
+// ! @note If performance/memory is the only consideration, it's not worth creating a DgnGeometryPart for very simple geometry such as a single line or cone.
+// !
+// ! @ingroup GROUP_Geometry
+// =======================================================================================
+export class GeometryBuilder {
+  private _appearanceChanged: boolean = false;
+  private _appearanceModified: boolean = false;
+  private _havePlacement: boolean = false;
+  private _isPartCreate: boolean = false;
+  private _is3d: boolean = false;
+  private _appendAsSubGraphics: boolean = false;
+  private _placement3d: Placement3d;
+  private _placement2d: Placement2d;
+  // private imodel: IModel;
+  private _elParams: GeometryParams;
+  private _elParamsModified: GeometryParams;
+  private _writer: GSWriter;
+
+  // public get imodel() { return this.imodel; }
+  public get havePlacement() { return this._havePlacement; }
+  public get isPartCreate() { return this._isPartCreate; }
+  /** Whether builder is creating a 2d or 3d GeometryStream */
+  public get is3d() { return this._is3d; }
+  /** Current Placement2d as of last call to Append when creating a 2d GeometryStream */
+  public get placement2d() { return this._placement2d; }
+  /** Current Placement3d as of last call to Append when creating a 3d GeometryStream */
+  public get placement3d() { return this._placement3d; }
+  /** Current GeometryParams as of last call to Append */
+  public get geometryParams() { return this._elParams; }
+  /** Current size (in bytes) of the GeometryStream being constructed */
+  public get currentSize() { return this._writer.size; }
+  /** Get a GeometryStream whose buffer's bytes are a direct reference to the current writer's */
+  public getGeometryStreamRef() { return this._writer.outputReference(); }
+  /** Get a GeometryStream whose buffer's bytes are a deep copy of the current writer's */
+  public getGeometryStreamCopy() { return this._writer.outputCopy(); }
+  /** Return the GeometryStream entry id for the GeometricPrimitive last added to the builder... used to identify a specific GeometricPrimitive in
+   *  the GeometryStream in places like HitDetail
+   */
+  public getGeometryStreamEntryId(): GeometryStreamEntryId {
+    const currentStream = new GeometryStream(this._writer.outputCopy());
+    const iterator = Iterator.create(currentStream.geomStream);
+    const entryId = GeometryStreamEntryId.createDefaults();
+
+    while (iterator.operation) {
+      const egOp = iterator.operation;
+      switch (egOp.opCode) {
+        case OpCode.GeometryPartInstance:
+        {
+          const buffer = new flatbuffers.ByteBuffer(egOp.data);
+          const ppfb = DgnFB.GeometryPart.getRootAsGeometryPart(buffer);
+          entryId.setGeometryPartId(new Id64([ppfb.geomPartId().low, ppfb.geomPartId().high]));
+          entryId.setIndex(entryId.index + 1);
+          break;
+        }
+        default:
+        {
+          if (!egOp.isGeometryOp())
+            break;
+
+          entryId.setGeometryPartId(new Id64());
+          entryId.setIndex(entryId.index + 1);
+          break;
+        }
+      }
+      iterator.nextOp();
+    }
+
+    return entryId;
+  }
+
+  private constructor(/* imodel: IModel, */ categoryId: Id64, is3d: boolean) {
+    // this.imodel = imodel;
+    this._isPartCreate = !categoryId.isValid();
+    this._is3d = is3d;
+    this._writer = new GSWriter(/*imodel*/);
+    this._elParams.setCategoryId(categoryId);
+  }
+
+  public static createPlacement2d(/*imodel: IModel,*/ categoryId: Id64, placement: Placement2d): GeometryBuilder {
+    const retVal = new GeometryBuilder(/*imodel,*/ categoryId, false);
+    retVal._placement2d = placement;
+    retVal._placement2d.bbox.setNull();  // Throw away pre-existing bounding box
+    retVal._havePlacement = true;
+    return retVal;
+  }
+
+  public static createPlacement3d(/*imodel: IModel,*/ categoryId: Id64, placement: Placement3d): GeometryBuilder {
+    const retVal = new GeometryBuilder(/*imodel,*/ categoryId, true);
+    retVal._placement3d = placement;
+    retVal._placement3d.bbox.setNull();  // Throw away pre-existing bounding box
+    retVal._havePlacement = true;
+    return retVal;
+  }
+
+  public static createWithoutPlacement(/*imodel: IModel,*/ categoryId: any, is3d: boolean): GeometryBuilder {
+    return new GeometryBuilder(/*imodel,*/ categoryId, is3d);
+  }
+
+  private convertToLocal(geom: GeometricPrimitive): boolean {
+    if (this._isPartCreate)
+      return false;   // Part geometry must be supplied in local coordinates...
+
+    let localToWorld = Transform.createIdentity();
+    const transformParams = !this._havePlacement;
+
+    if (transformParams) {
+      if (!geom.getLocalCoordinateFrame(localToWorld))
+        return false;
+
+      const origin = localToWorld.translation();
+      const rMatrix = localToWorld.matrixRef();
+      const angles = YawPitchRollAngles.createFromRotMatrix(rMatrix);
+      if (!angles)
+        return false;
+
+      if (this._is3d) {
+        this._placement3d.origin = origin;
+        this._placement3d.angles = angles;
+      } else {
+        if (origin.z !== 0.0)
+          return false;
+        if (0.0 !== angles.pitch.degrees || 0.0 !== angles.roll.degrees) {
+          const tmpAngles = YawPitchRollAngles.createDegrees(0.0, angles.pitch.degrees, angles.roll.degrees);
+          localToWorld.multiplyTransformTransform(Transform.createOriginAndMatrix(Point3d.create(), tmpAngles.toRotMatrix()), localToWorld);
+        }
+        this._placement2d.origin = Point2d.create();
+        this._placement3d.angles = angles;
+      }
+
+      this._havePlacement = true;
+    } else if (this._is3d) {
+      localToWorld = this._placement3d.getTransform();
+    } else {
+      localToWorld = this._placement2d.getTransform();
+    }
+
+    if (localToWorld.isIdentity())
+      return true;
+
+    const worldToLocal = localToWorld.inverse();
+    if (!worldToLocal)
+      return false;
+    // Note: Apply world-to-local to GeometryParams for auto-placement data supplied in world coords...
+    if (transformParams && this._elParams.isTransformable())
+      this._elParams.applyTransform(worldToLocal);
+
+    return geom.tryTransformInPlace(worldToLocal);
+  }
+
+  private appendLocal(geom: GeometricPrimitive): boolean {
+    if (!this._havePlacement) {
+      return false;   // Placement must already be defined...
+    }
+
+    const localRange = geom.getRange();
+    if (!localRange)
+      return false;
+
+    let opCode: OpCode;
+
+    switch (geom.type) {
+      case GeometryType.CurvePrimitive:
+        opCode = OpCode.CurvePrimitive;
+        break;
+      case GeometryType.CurveCollection:
+        opCode = geom.asCurveCollection.isAnyRegionType() ? OpCode.CurveCollection : OpCode.CurvePrimitive;
+        break;
+      case GeometryType.SolidPrimitive:
+        opCode = OpCode.SolidPrimitive;
+        break;
+      case GeometryType.BsplineSurface:
+        opCode = OpCode.BsplineSurface;
+        break;
+      case GeometryType.IndexedPolyface:
+        opCode = OpCode.Polyface;
+        break;
+      // case BRepEntity
+      // case TextString
+      // case Image
+      default:
+        opCode = OpCode.Invalid;
+        break;
+    }
+
+    this.onNewGeom(localRange, this._appendAsSubGraphics, opCode);
+    return this._writer.dgnAppendGeometricPrimitive(geom, this._is3d);
+  }
+  private onNewGeom(localRange: Range3d, isSubGraphic: boolean, opCode: OpCode) {
+    // NOTE: range to include line style width. Maybe this should be removed when/if we start doing locate from mesh tiles...
+    if (this._elParams.categoryId.isValid()) {
+      // this.elParams.resolve();
+
+      const lsInfo = this._elParams.lineStyle;
+
+      if (lsInfo !== undefined) {
+        const maxWidth = lsInfo.lStyleSymb.styleWidth;
+
+        localRange.low.x -= maxWidth;
+        localRange.low.y -= maxWidth;
+        localRange.high.x += maxWidth;
+        localRange.high.y += maxWidth;
+
+        if (this._is3d) {
+          localRange.low.z -= maxWidth;
+          localRange.high.z += maxWidth;
+        }
+      }
+    }
+
+    if (this._is3d) {
+      this._placement3d.bbox.extendRange(localRange);
+    } else {
+      this._placement2d.bbox.extendPoint(Point2d.create(localRange.low.x, localRange.low.y));
+      this._placement2d.bbox.extendPoint(Point2d.create(localRange.high.x, localRange.high.y));
+    }
+
+    let allowPatGradnt = false;
+    let allowSolidFill = false;
+    let allowLineStyle = false;
+    let allowMaterial = false;
+
+    switch (opCode) {
+      case OpCode.GeometryPartInstance:
+        allowSolidFill = allowPatGradnt = allowLineStyle = allowMaterial = true;    // Don't reject anything
+        break;
+      case OpCode.CurvePrimitive:
+        allowLineStyle = true;
+        break;
+      case OpCode.CurveCollection:
+        allowSolidFill = allowPatGradnt = allowLineStyle = allowMaterial = true;
+        break;
+      case OpCode.Polyface:
+        allowSolidFill = allowMaterial = true;
+        break;
+      case OpCode.SolidPrimitive:
+      case OpCode.BsplineSurface:
+      // case Parasolid:
+        allowMaterial = true;
+        break;
+      // case Image:
+    }
+
+    let hasInvalidPatGradnt = false;
+    let hasInvalidSolidFill = false;
+    let hasInvalidLineStyle = false;
+    let hasInvalidMaterial = false;
+
+    if (!allowPatGradnt || !allowSolidFill || !allowLineStyle || !allowMaterial) {
+      if (DgnFB.FillDisplay.None !== this._elParams.fillDisplay) {
+        if (this._elParams.gradient !== undefined) {
+          if (!allowPatGradnt)
+            hasInvalidPatGradnt = true;
+        } else {
+          if (!allowSolidFill)
+            hasInvalidSolidFill = true;
+        }
+      }
+
+      if (!allowPatGradnt && this._elParams.patternParams !== undefined)
+        hasInvalidPatGradnt = true;
+      if (!allowLineStyle && !this._elParams.isLineStyleFromSubCategoryAppearance() && this._elParams.hasStrokedLineStyle())
+        hasInvalidLineStyle = true;
+      if (!allowMaterial && !this._elParams.isMaterialFromSubCategoryAppearance() && this._elParams.materialId && this._elParams.materialId.isValid())
+        hasInvalidMaterial = true;
+    }
+
+    if (hasInvalidPatGradnt || hasInvalidSolidFill || hasInvalidLineStyle || hasInvalidMaterial) {
+      // NOTE: We won't change m_elParams in case some caller is doing something like appending a single symbology
+      //       that includes fill, and then adding a series of open and closed elements expecting the open elements
+      //       to ignore the fill.
+      const localParams = this._elParams.clone();
+
+      if (hasInvalidPatGradnt) {
+        localParams.setGradient(undefined);
+        localParams.setPatternParams(undefined);
+      }
+      if (hasInvalidSolidFill || hasInvalidPatGradnt)
+        localParams.setFillDisplay(DgnFB.FillDisplay.None);
+      if (hasInvalidLineStyle)
+        localParams.setLineStyle(undefined);
+      if (hasInvalidMaterial)
+        localParams.setMaterialId(new Id64());
+      if (!this._appearanceModified || !this._elParamsModified.isEqualTo(localParams)) {
+        this._elParamsModified = localParams;
+        this._writer.dgnAppendGeometryParams(this._elParamsModified, this._isPartCreate, this._is3d);
+        this._appearanceChanged = this._appearanceModified = true;
+      }
+    } else if (this._appearanceChanged) {
+      this._writer.dgnAppendGeometryParams(this._elParams, this._isPartCreate, this._is3d);
+      this._appearanceChanged = this._appearanceModified = false;
+    }
+
+    if (isSubGraphic && !this._isPartCreate)
+      this._writer.dgnAppendRange3d(localRange);
+  }
+
+  /** ONLY PUBLIC TEMPORARILY TO AVOID ERRORS */
+  public appendWorld(geom: GeometricPrimitive): boolean {
+    if (!this.convertToLocal(geom))
+      return false;
+    return this.appendLocal(geom);
   }
 }

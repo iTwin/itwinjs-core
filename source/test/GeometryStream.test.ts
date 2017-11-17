@@ -5,7 +5,7 @@
 /* tslint:disable: no-console */
 
 import { assert } from "chai";
-import { GSReader, GSWriter, Iterator } from "../common/geometry/GeometryStream";
+import { GSReader, GSWriter, Iterator, GeometryStream } from "../common/geometry/GeometryStream";
 import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
 import { IModelDb } from "../backend/IModelDb";
@@ -13,7 +13,7 @@ import { IModelTestUtils } from "./IModelTestUtils";
 import { GeometricElement3dProps } from "../backend/Element";
 import { Code } from "../common/Code";
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
-import { Placement3d, ElementAlignedBox3d } from "../common/geometry/ElementGeometry";
+import { Placement3d, ElementAlignedBox3d } from "../common/geometry/Primitives";
 
 describe("GeometryStream", () => {
   let imodel: IModelDb;
@@ -83,7 +83,7 @@ describe("GeometryStream", () => {
       gsWriter.dgnAppendArc3d(geom, 2);
     }
 
-    const geometryStream = gsWriter.finish();
+    const geometryStream = new GeometryStream(gsWriter.outputReference());
 
     // Set up element to be placed in iModel
     const seedElement = await imodel.elements.getElement(new Id64("0x1d"));
@@ -113,18 +113,18 @@ describe("GeometryStream", () => {
 
     if (value.geom) {
       const gsReader = new GSReader();
-      gsReader.iterator = Iterator.create(value.geom.geomStream);
+      const iterator = Iterator.create(value.geom.geomStream);
 
       const geomArrayOut: Arc3d[] = [];
       do {
         const geomOut = Arc3d.createXY(Point3d.create(0, 0, 0), 1);
-        gsReader.dgnGetArc3d(gsReader.iterator.operation, geomOut);
+        gsReader.dgnGetArc3d(iterator.operation, geomOut);
         if (geomOut) {
           assert.isTrue(geomOut instanceof Arc3d, "Expect Arc3d out");
           if (geomOut instanceof Arc3d)
             geomArrayOut.push(geomOut);
         }
-      } while (gsReader.iterator.nextOp());
+      } while (iterator.nextOp());
       assert.equal(geomArrayOut.length, geomArray.length, "All elements extracted from buffer");
 
       for (let i = 0; i < geomArrayOut.length; i++) {
