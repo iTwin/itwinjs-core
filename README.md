@@ -22,6 +22,7 @@ The source code is organized according to where it can run:
 2. Install dependencies: `npm install`
 3. Build source: `gulp build`
 4. Run tests: `gulp test`
+5. Clean output: `gulp clean`
 
 ## Current Build Output
 
@@ -34,6 +35,7 @@ The source code is organized according to where it can run:
 2. Install dependencies: `npm install`
 3. Build source: `npm run build`
 4. Run tests: `npm run test`
+5. Clean output: `npm run clean`
 
 ## Future Build Output
 

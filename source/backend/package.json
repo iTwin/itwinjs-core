@@ -5,7 +5,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "tsc",
-    "clean": "rimraf lib/*",
+    "clean": "rimraf lib",
     "lint": "node node_modules/@bentley/bentleyjs-tools/scripts/tslint.js",
     "test": "echo \"Error: run tests from the '../test' directory.\" && exit 1"
   },
