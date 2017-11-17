@@ -25,11 +25,6 @@ export enum GeometryType {
   Image = 8,
 }
 
-export enum CoordSystem {
-  Local = 0,  // <-- GeometricPrimitive being supplied in local coordinates. @note Builder must be created with a known placement for local coordinates to be meaningful.
-  World = 1,  // <-- GeometricPrimitive being supplied in world coordinates. @note Builder requires world coordinate geometry when placement isn't specified up front.
-}
-
 /**
  * A Range3d that is aligned with the axes of a coordinate space.
  */
@@ -322,6 +317,18 @@ export class GeometricPrimitive {
     // elseif instanceof ImageGraphic
     else
       return undefined;
+  }
+
+  public is3dGeometryType(): boolean {
+    switch (this._type) {
+      case GeometryType.SolidPrimitive:
+      case GeometryType.BsplineSurface:
+      case GeometryType.IndexedPolyface:
+      case GeometryType.BRepEntity:
+        return true;
+      default:
+        return false;
+    }
   }
 
   /** Return true if the geometry is or would be represented by a solid body. Accepted geometry includes BRep solids, capped SolidPrimitives, and closed Polyfaces */

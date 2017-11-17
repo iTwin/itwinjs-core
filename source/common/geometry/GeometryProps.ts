@@ -51,7 +51,7 @@ export class GeometryParams {
   private constructor() {
   }
 
-  public static createEmpty(): GeometryParams {
+  public static createDefaults(): GeometryParams {
     return new GeometryParams();
   }
 

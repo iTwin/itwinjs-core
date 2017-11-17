@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Range3d } from "@bentley/geometry-core/lib/PointVector";
-import { GeometryStream, GeometryBuilder, Iterator } from "../common/geometry/GeometryStream";
+import { GeometryStream, GeometryBuilder, GSCollection } from "../common/geometry/GeometryStream";
 import { ElementAlignedBox3d } from "../common/geometry/Primitives";
 import { DefinitionElement } from "./Element";
 import { ElementProps } from "../common/ElementProps";
@@ -51,7 +51,7 @@ export class GeometryPart extends DefinitionElement {
 
     // NOTE: GeometryBuilder.CreateGeometryPart doesn't supply range... need to compute it...
     if (!localRange.isValid()) {
-      const iterator = Iterator.create(this.geometry.geomStream);
+      const iterator = new GSCollection(this.geometry.geomStream);
 
       while (iterator.operation) {
         const geom = iterator.getGeometry();

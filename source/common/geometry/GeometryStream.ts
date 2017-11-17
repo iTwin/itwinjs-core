@@ -5,16 +5,16 @@
 import { Point2d, Point3d, Vector3d, Transform, Range3d, YawPitchRollAngles, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { CurveCollection, Loop } from "@bentley/geometry-core/lib/curve/CurveChain";
 import { BSplineSurface3d } from "@bentley/geometry-core/lib/bspline/BSplineSurface";
-import { CurvePrimitive } from "@bentley/geometry-core/lib/curve/CurvePrimitive";
+import { GeometryQuery, CurvePrimitive } from "@bentley/geometry-core/lib/curve/CurvePrimitive";
 import { SolidPrimitive } from "@bentley/geometry-core/lib/solid/SolidPrimitive";
 import { IndexedPolyface } from "@bentley/geometry-core/lib/polyface/Polyface";
-import { AngleSweep } from "@bentley/geometry-core/lib/Geometry";
+import { Angle, AngleSweep } from "@bentley/geometry-core/lib/Geometry";
 import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
 import { LineSegment3d } from "@bentley/geometry-core/lib/curve/LineSegment3d";
 import { LineString3d } from "@bentley/geometry-core/lib/curve/LineString3d";
 import { BGFBBuilder, BGFBReader } from "@bentley/geometry-core/lib/serialization/BGFB";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { GeometricPrimitive, GeometryType, Placement2d, Placement3d } from "./Primitives";
+import { GeometricPrimitive, GeometryType, Placement2d, Placement3d, ElementAlignedBox2d, ElementAlignedBox3d } from "./Primitives";
 import { GeometryParams } from "./GeometryProps";
 import { LineStyleInfo, LineStyleParams } from "./LineStyle";
 import { GradientSymb } from "./GradientPattern";
@@ -62,6 +62,11 @@ export enum EntryType {
   BRepEntity          = 7,  // BRepEntity
   TextString          = 8,  // TextString
   ImageGraphic        = 9,  // ImageGraphic
+}
+
+export enum CoordSystem {
+  Local = 0,  // <-- GeometricPrimitive being supplied in local coordinates. @note Builder must be created with a known placement for local coordinates to be meaningful.
+  World = 1,  // <-- GeometricPrimitive being supplied in world coordinates. @note Builder requires world coordinate geometry when placement isn't specified up front.
 }
 
 /** Class for identifying a geometric primitive in a GeometryStream */
@@ -192,7 +197,7 @@ class CurrentState {
 /** Iterator used by the reader in iterating over the operations contained within a buffer. Holds its own shallow copy of the entire buffer, but only allows access
  *  to the last operation found.
  */
-export class Iterator {
+export class GSCollection {
   private data: Uint8Array | undefined;   // Pointer to the Uint8Array in the writer
   private dataOffset: number; // Our current position in the data array (always points to the index of an opCode)
   private egOp: Operation;    // The data stored in the last block
@@ -200,16 +205,11 @@ export class Iterator {
 
   public get operation() { return this.egOp; }
 
-  private constructor(data: ArrayBuffer, dataOffset: number) {
+  public constructor(data: ArrayBuffer, dataOffset: number = 0) {
     this.data = new Uint8Array(data);
     this.dataOffset = dataOffset;
     this.state = new CurrentState();
-  }
-
-  public static create(data: ArrayBuffer, dataOffset: number = 0): Iterator {
-    const iter = new Iterator(data, dataOffset);
-    iter.toNext();
-    return iter;
+    this.toNext();
   }
 
   private toNext(): boolean | undefined {
@@ -252,7 +252,7 @@ export class Iterator {
     return undefined;
   }
 
-  public equalTo(itr: Iterator): boolean {
+  public equalTo(itr: GSCollection): boolean {
     return this.dataOffset === itr.dataOffset;
   }
 
@@ -941,6 +941,58 @@ export class GSWriter {
       fbb.finish(mLoc);
       this.dgnAppendOperation(Operation.createNewItem(OpCode.Material, fbb.asUint8Array()));
     }
+  }
+
+  public dgnAppendGeometryPartId(geomPart: Id64, geomToElem: Transform): boolean {
+    if (geomToElem.isIdentity()) {
+      const fbb = new flatbuffers.Builder();
+      const geomPartBuilder = DgnFB.GeometryPart;
+      geomPartBuilder.startGeometryPart(fbb);
+      geomPartBuilder.addScale(fbb, 1.0);   // Default value
+      geomPartBuilder.addRoll(fbb, 0);    // Default value
+      geomPartBuilder.addPitch(fbb, 0);   // Default value
+      geomPartBuilder.addYaw(fbb, 0);   // Default value
+      geomPartBuilder.addGeomPartId(fbb, flatbuffers.Long.create(geomPart.getLow(), geomPart.getHigh()));
+      const originOff = DgnFB.DPoint3d.createDPoint3d(fbb, 0, 0, 0);    // Default value
+      geomPartBuilder.addOrigin(fbb, originOff);
+      const mLoc = geomPartBuilder.endGeometryPart(fbb);
+      fbb.finish(mLoc);
+      this.dgnAppendOperation(Operation.createNewItem(OpCode.GeometryPartInstance, fbb.asUint8Array()));
+      return true;
+    }
+
+    let scale: number | undefined;
+    const origin = geomToElem.translation();
+    const rMatrix = geomToElem.matrixRef();
+    // !!!!! SCALE IS TEMPORARILY HARDCODED UNTIL GEOMETRY_CORE FUNCTIONALITY IS ADDED
+    // const deScaledMatrix = RotMatrix.createIdentity();
+    // scale = rMatrix.isRigidSignedScale(deScaledMatrix, scale);
+    scale = 1.0;
+
+    if (!scale)
+      scale = 1.0;
+
+    if (scale! > 0.0)
+      return false;   // Mirror not allowed...
+
+    const angles = YawPitchRollAngles.createFromRotMatrix(rMatrix);
+    if (!angles)
+      return false;
+
+    const fbbuilder = new flatbuffers.Builder();
+    const gpBuilder = DgnFB.GeometryPart;
+    gpBuilder.startGeometryPart(fbbuilder);
+    gpBuilder.addScale(fbbuilder, Math.abs(scale));
+    gpBuilder.addRoll(fbbuilder, angles.roll.degrees);
+    gpBuilder.addPitch(fbbuilder, angles.pitch.degrees);
+    gpBuilder.addYaw(fbbuilder, angles.yaw.degrees);
+    gpBuilder.addGeomPartId(fbbuilder, flatbuffers.Long.create(geomPart.getLow(), geomPart.getHigh()));
+    const originOffset = DgnFB.DPoint3d.createDPoint3d(fbbuilder, origin.x, origin.y, origin.z);
+    gpBuilder.addOrigin(fbbuilder, originOffset);
+    const mLocation = gpBuilder.endGeometryPart(fbbuilder);
+    fbbuilder.finish(mLocation);
+    this.dgnAppendOperation(Operation.createNewItem(OpCode.GeometryPartInstance, fbbuilder.asUint8Array()));
+    return true;
   }
 
   /** Packs an array of point2d into an array, with the boundary type, then wraps it in an operation and appends as a uInt8Array block */
@@ -1790,6 +1842,8 @@ export class GeometryBuilder {
   public get geometryParams() { return this._elParams; }
   /** Current size (in bytes) of the GeometryStream being constructed */
   public get currentSize() { return this._writer.size; }
+  /** Enable option so that subsequent calls to Append a GeometricPrimitive produce sub-graphics with local ranges to optimize picking/range testing. Not valid when creating a part */
+  public setAppendAsSubGraphics() { this._appendAsSubGraphics = !this._isPartCreate; }
   /** Get a GeometryStream whose buffer's bytes are a direct reference to the current writer's */
   public getGeometryStreamRef() { return this._writer.outputReference(); }
   /** Get a GeometryStream whose buffer's bytes are a deep copy of the current writer's */
@@ -1799,7 +1853,7 @@ export class GeometryBuilder {
    */
   public getGeometryStreamEntryId(): GeometryStreamEntryId {
     const currentStream = new GeometryStream(this._writer.outputCopy());
-    const iterator = Iterator.create(currentStream.geomStream);
+    const iterator = new GSCollection(currentStream.geomStream);
     const entryId = GeometryStreamEntryId.createDefaults();
 
     while (iterator.operation) {
@@ -1837,7 +1891,7 @@ export class GeometryBuilder {
     this._elParams.setCategoryId(categoryId);
   }
 
-  public static createPlacement2d(/*imodel: IModel,*/ categoryId: Id64, placement: Placement2d): GeometryBuilder {
+  private static createPlacement2d(/*imodel: IModel,*/ categoryId: Id64, placement: Placement2d): GeometryBuilder {
     const retVal = new GeometryBuilder(/*imodel,*/ categoryId, false);
     retVal._placement2d = placement;
     retVal._placement2d.bbox.setNull();  // Throw away pre-existing bounding box
@@ -1845,7 +1899,7 @@ export class GeometryBuilder {
     return retVal;
   }
 
-  public static createPlacement3d(/*imodel: IModel,*/ categoryId: Id64, placement: Placement3d): GeometryBuilder {
+  private static createPlacement3d(/*imodel: IModel,*/ categoryId: Id64, placement: Placement3d): GeometryBuilder {
     const retVal = new GeometryBuilder(/*imodel,*/ categoryId, true);
     retVal._placement3d = placement;
     retVal._placement3d.bbox.setNull();  // Throw away pre-existing bounding box
@@ -1853,11 +1907,162 @@ export class GeometryBuilder {
     return retVal;
   }
 
-  public static createWithoutPlacement(/*imodel: IModel,*/ categoryId: any, is3d: boolean): GeometryBuilder {
-    return new GeometryBuilder(/*imodel,*/ categoryId, is3d);
+  // !!!!!!!! THE FOLLOWING COMMENTED-OUT FUNCTIONS REQUIRE BACK-END FUNCTIONALITY
+
+  // private static createIdOnly(/*imodel: IModel,*/ categoryId: any, is3d: boolean): GeometryBuilder {
+  //  return new GeometryBuilder(/*imodel,*/ categoryId, is3d);
+  // }
+
+  /** Create builder using model, categoryId, and placement2d or placement3d of the supplied GeometricElementand an existing GeometricElement's GeometryStream */
+  // public static create()
+
+  /** Create builder using model, categoryId, and Placement2d or Placement3d of an existing GeometricElement.
+   *  NOTE: It is expected that either the GeometrySource has a valid non-identity placement already set, or that the caller will update the placement
+   *  after adding GeometricPrimitive in local coordinates. World coordinate geometry should never be added to a builder with an identity placement unless
+   *  the element is really located at the origin. The supplied GeometrySource is solely used to query information, it does not need to be the same GeometricPrimitive that
+   *  is updated through the use of its updateFromGeometricBuilder function.
+   */
+  // public static create()
+
+  /** Create builder from model and categoryId. A placement will be computed from the first appended GeometricPrimitive.
+   *  NOTE: Only CoordSystem.World is supported for append and it's not possible to append a GeometryPartId as it need to e positioned relative to a known coordinate
+   *  system. Generally it's best if the application specifies a more meaningful placement than just using the GeometricPrimitive's local coordinate frame, ex. line mid point vs start point
+   */
+  // public static createWithAutoPlacement(model: IModel, categoryId: Id64): GeometryBuilder | undefined {}
+
+  /** Create builder from model, categoryId, and placement as represented by a transform.
+   *  NOTE: Transform must satisfy requirements of YawPitchRollAngles.TryFromTransform; scale is not supported
+   */
+  // public static createTransform(/*imodel, */ categoryId: Id64, transform: Transform): GeometryBuilder | undefined {}
+
+  /** Create 3d builder from model, categoryId, origin, and optional YawPitchRollAngles */
+  public static createCategoryOriginYawPitchRoll(/* model, */ categoryId: Id64, origin: Point3d, angles: YawPitchRollAngles): GeometryBuilder | undefined {
+    if (!categoryId.isValid())
+      return undefined;
+
+    /*
+    auto geomModel = model.ToGeometricModel();
+    if (nullptr == geomModel || !geomModel->Is3d())
+        return nullptr;
+    */
+
+    const placement = new Placement3d(origin, angles, new ElementAlignedBox3d());
+    return GeometryBuilder.createPlacement3d(/* imodel, */ new Id64(categoryId), placement);
   }
 
-  public appendWorld(geom: GeometricPrimitive): boolean {
+  /** Create 3d builder from model, categoryId, origin, and optional rotation Angle */
+  public static createCategoryOriginAngle(/* model */ categoryId: Id64, origin: Point2d, angle: Angle): GeometryBuilder | undefined {
+    if (!categoryId.isValid())
+      return undefined;
+
+    /*
+    auto geomModel = model.ToGeometricModel();
+    if (nullptr == geomModel || geomModel->Is3d())
+        return nullptr;
+    */
+
+    const placement = new Placement2d(origin, angle, new ElementAlignedBox2d());
+    return GeometryBuilder.createPlacement2d(/* model */ new Id64(categoryId), placement);
+  }
+
+  /** Create a GeometryPart builder for defining a new part that will contain a group of either 2d or 3d GeometricPrimitive */
+  public static createForNewGeometryPart(/* imodel, */ is3d: boolean): GeometryBuilder {
+    // Note: Part geometry is always specified in local coords, i.e. has identity placement.
+    //       Category isn't needed when creating a part, invalid category will be used to set isPartCreate
+    if (is3d)
+      return GeometryBuilder.createPlacement3d(
+        /* imodel, */ new Id64(), new Placement3d(Point3d.create(), YawPitchRollAngles.createDegrees(0, 0, 0), new ElementAlignedBox3d()));
+
+    return GeometryBuilder.createPlacement2d(
+      /* imodel, */ new Id64(), new Placement2d(Point2d.create(), Angle.createDegrees(0), new ElementAlignedBox2d()));
+  }
+
+  public static createForExistingGeometryPart(stream: GeometryStream, /* db: IModel, */ ignoreSymbology: boolean, params: GeometryParams): GeometryBuilder | undefined {
+    const builder = GeometryBuilder.createPlacement3d(
+      /* iModel, */ new Id64(), new Placement3d(Point3d.create(), YawPitchRollAngles.createDegrees(0, 0, 0), new ElementAlignedBox3d()));
+    const iterator = new GSCollection(stream.geomStream);
+    const reader = new GSReader();
+    let basicSymbCount = 0;
+
+    while (iterator.operation) {
+      const egOp = iterator.operation;
+      switch (egOp.opCode) {
+        case OpCode.Header:
+          break;    // Already have header...
+        case OpCode.SubGraphicRange:
+          break;    // A part must produce a single graphic...
+        case OpCode.GeometryPartInstance:
+          return undefined;   // Nested parts aren't supported
+        case OpCode.BasicSymbology:
+        {
+          if (ignoreSymbology)
+            break;
+          basicSymbCount++;
+
+          if (basicSymbCount === 1) {
+            reader.dgnGetGeometryParams(egOp, params);
+            break;    // Initial symbology should not be baked into GeometryPart...
+          }
+
+          // Can't change sub-category in GeometryPart's GeometryStream, only preserve sub-category appearance overrides
+          const buffer = new flatbuffers.ByteBuffer(egOp.data);
+          const ppfb = DgnFB.BasicSymbology.getRootAsBasicSymbology(buffer);
+
+          const subCategoryId = new Id64([ppfb.subCategoryId().low, ppfb.subCategoryId().high]);
+          if (!subCategoryId.isValid()) {
+            builder._writer.dgnAppendOperation(egOp);   // No sub-category, ok to write as is...
+            break;
+          }
+
+          if (!(ppfb.useColor() || ppfb.useWeight() || ppfb.useStyle() || 0.0 !== ppfb.transparency() || 0 !== ppfb.displayPriority() || 0 !== ppfb.geomClass()))
+            break;
+
+          const fbb = new flatbuffers.Builder();
+          const basicSymbBuilder = DgnFB.BasicSymbology;
+          basicSymbBuilder.startBasicSymbology(fbb);
+          basicSymbBuilder.addTransparency(fbb, ppfb.transparency());
+          basicSymbBuilder.addLineStyleId(fbb, ppfb.lineStyleId());
+          basicSymbBuilder.addSubCategoryId(fbb, flatbuffers.Long.create(0, 0));
+          basicSymbBuilder.addDisplayPriority(fbb, ppfb.displayPriority());
+          basicSymbBuilder.addWeight(fbb, ppfb.weight());
+          basicSymbBuilder.addColor(fbb, ppfb.color());
+          basicSymbBuilder.addUseStyle(fbb, ppfb.useStyle());
+          basicSymbBuilder.addUseWeight(fbb, ppfb.useWeight());
+          basicSymbBuilder.addUseColor(fbb, ppfb.useColor());
+          basicSymbBuilder.addGeomClass(fbb, ppfb.geomClass());
+          const mLoc = basicSymbBuilder.endBasicSymbology(fbb);
+          fbb.finish(mLoc);
+          builder._writer.dgnAppendOperation(Operation.createNewItem(OpCode.BasicSymbology, fbb.asUint8Array()));
+          break;
+        }
+        case OpCode.LineStyleModifiers:
+        case OpCode.AreaFill:
+        case OpCode.Pattern:
+        case OpCode.Material:
+        {
+          if (ignoreSymbology)
+            break;
+
+          if (basicSymbCount === 1) {
+            reader.dgnGetGeometryParams(egOp, params);
+            break;    // Initial symbology should not be baked into GeometryPart...
+          }
+
+          builder._writer.dgnAppendOperation(egOp);
+          break;
+        }
+        default:
+          builder._writer.dgnAppendOperation(egOp);   // Append raw data so we don't lose BReps, etc. even when we don't need Parasolid available...
+          break;
+      }
+
+      iterator.nextOp();
+    }
+
+    return builder;
+  }
+
+  private appendWorld(geom: GeometricPrimitive): boolean {
     if (!this.convertToLocal(geom))
       return false;
     return this.appendLocal(geom);
@@ -2060,4 +2265,266 @@ export class GeometryBuilder {
     if (isSubGraphic && !this._isPartCreate)
       this._writer.dgnAppendRange3d(localRange);
   }
+
+  /** Set GeometryParams by SubCategoryId - Appearance. Any subsequent Append of a GeometricPrimitive will display using this symbology.
+   *  NOTE - If no symbology is specifically set in a GeometryStream, the GeometricPrimitive display uses the default SubCategoryId for the GeometricElement's CategoryId.
+   */
+  public appendSubCategoryId(subCategoryId: Id64): boolean {
+    const elParams = GeometryParams.createDefaults();
+    elParams.setCategoryId(new Id64(this._elParams.categoryId));  // Preserve current category...
+    elParams.setSubCategoryId(new Id64(subCategoryId));
+    return this.appendGeometryParams(elParams);
+  }
+
+  /** Set symbology by supplying a fully qualified GeometryParams. Any subsequent Append of a GeometricPrimitive will display using this symbology.
+   *  NOTE: If no symbology is specifically set in a GeometryStream, the GeometricPrimitive display uses the default SubCategoryId for the GeometricElement's
+   *  CategoryId. World vs. local affects PatternParams and LineStyleInfo that need to store an orientation and other "placement" relative info.
+   */
+  public appendGeometryParams(elParams: GeometryParams, coord: CoordSystem = CoordSystem.Local): boolean {
+    // NOTE: Allow explicit symbology in GeometryPart's GeometryStream, sub-category won't be persisted
+    if (!this._isPartCreate) {
+      if (!this._elParams.categoryId.isValid())
+        return false;
+      if (!elParams.categoryId.equals(this._elParams.categoryId))
+        return false;
+      /*
+        if (elParams.GetCategoryId() != DgnSubCategory::QueryCategoryId(m_dgnDb, elParams.GetSubCategoryId()))
+            return false;
+        }
+       */
+    }
+    if (elParams.isTransformable()) {
+      if (coord === CoordSystem.World) {
+        if (this._isPartCreate)
+          return false;   // Part GeoemtryParams must be supplied in local coordinates...
+
+        // Note: Must defer applying transform until placement is computed from first geometric primitive...
+        if (this._havePlacement) {
+          const localToWorld = (this._is3d ? this._placement3d.getTransform() : this._placement2d.getTransform());
+          const worldToLocal = localToWorld.inverse();
+          if (!worldToLocal)
+            return false;
+
+          if (!worldToLocal.isIdentity()) {
+            const localParams = elParams.clone();
+            localParams.applyTransform(worldToLocal);
+            return this.appendGeometryParams(localParams, CoordSystem.Local);
+          }
+        }
+      } else {
+        if (!this._havePlacement)
+          return false;   // Caller can't supply local coordinates if we don't know what local is yet...
+      }
+    }
+
+    if (this._elParams.isEqualTo(elParams))
+      return true;
+
+    this._elParams = elParams;
+    this._appearanceChanged = true;   // Defer append until we actually have some geometry...
+    return true;
+  }
+
+  /** Append a GeometryPartId with relative placement supplied as a Transform.
+   *  NOTE - Builder must be created with a known placement for relative location to be meaningful. Can't be called when creating a GeometryPart;
+   *  nested parts are not supported.
+   */
+  /*
+  public appendPartUsingTransform(geomPartId: Id64, geomToElement: Transform): boolean {
+  }
+  */
+
+  /** Append a GeometryPartId with relative placement supplied as a Transform, and a range representing the Part range rather than performing a query.
+   *  NOTE - Builder must be created with a known placement for relative location to be meaningful. Can't be called when creating a GeometryPart;
+   *  nested parts are not supported.
+   */
+  public appendPartUsingTransformRange(geomPartId: Id64, geomToElement: Transform, localRange: Range3d): boolean {
+    if (this._isPartCreate)
+      return false;   // Nested parts are not supported...
+
+    if (!this._havePlacement)
+      return false;   // geomToElement must be relative to an already defined placement (i.e. not computed placement from CreateWorld)...
+
+    const partRange = localRange.clone();
+
+    if (!geomToElement.isIdentity())
+      geomToElement.multiplyRange(partRange, partRange);
+
+    this.onNewGeom(partRange, false, OpCode.GeometryPartInstance);    // Parts are already handled as sub-graphics
+    return this._writer.dgnAppendGeometryPartId(geomPartId, geomToElement);
+  }
+
+  /**
+   * Append a GeometryPartId with relative placement supplied as a DPoint3d and optional YawPitchRollAngles.
+   * @note Builder must be created with a known placement for relative location to be meaningful.
+   * Can't be called when creating a DgnGeometryPart, nested parts are not supported.
+   */
+  /*
+  public appendPartUsingOriginYawPitchRollAngles(geomPartId: Id64, origin: Point3d, angles: YawPitchRollAngles): boolean {
+    const geomToElementRot = angles.toRotMatrix();
+    const geomToElement = Transform.createOriginAndMatrix(origin, geomToElementRot);
+    return this.appendPartUsingTransform(geomPartId, geomToElement);
+  }
+  */
+
+  /** Append a GeometryPartId with relative placement supplied as a Point2d and optional AngleInDegrees rotation.
+   * @note Builder must be created with a known placement for relative location to be meaningful.
+   * Can't be called when creating a DgnGeometryPart, nested parts are not supported.
+   */
+  /*
+  public appendPartUsingOriginAngle(geomPartId: Id64, origin: Point2d, angle: Angle): boolean {
+
+  }
+  */
+
+  /** Append GeometricPrimitive to the builder in either local or world coordinates. */
+  public appendGeometricPrimitive(geom: GeometricPrimitive, coord: CoordSystem = CoordSystem.Local): boolean {
+    if (!this._is3d && geom.is3dGeometryType())
+      return false;   // 3d only geometry
+
+    if (coord === CoordSystem.Local)
+      return this.appendLocal(geom);
+
+    /*
+    #if defined (BENTLEYCONFIG_PARASOLID)
+      GeometricPrimitivePtr clone;
+
+      // NOTE: Avoid un-necessary copy of BRep. We just need to change entity transform...
+      if (GeometricPrimitive::GeometryType::BRepEntity == geom.GetGeometryType())
+          clone = GeometricPrimitive::Create(PSolidUtil::InstanceEntity(*geom.GetAsIBRepEntity()));
+      else
+          clone = geom.Clone();
+    #else
+      GeometricPrimitivePtr clone = geom.Clone();
+    #endif
+    */
+
+    // Using non-parasolid path
+    const clone = geom.clone();
+
+    return this.appendWorld(clone);
+  }
+
+  /** Append a CurvePrimitive to builder in either local or world coordinates. */
+  public appendCurvePrimitive(geom: CurvePrimitive, coord: CoordSystem = CoordSystem.Local): boolean {
+    if (coord === CoordSystem.Local) {
+      const localRange = Range3d.createNull();
+      geom.extendRange(localRange);
+
+      if (localRange.isNull())
+        return false;
+
+      this.onNewGeom(localRange, this._appendAsSubGraphics, OpCode.CurvePrimitive);
+      return this._writer.dgnAppendCurvePrimitive(geom, false, this._is3d);
+    }
+
+    const wrappedGeom = GeometricPrimitive.createCurvePrimitiveClone(geom);
+    return this.appendWorld(wrappedGeom);
+  }
+
+  /** Append a CurveCollection to builder in either local or world coordinates. */
+  public appendCurveCollection(geom: CurveCollection, coord: CoordSystem = CoordSystem.Local): boolean {
+    if (coord === CoordSystem.Local) {
+      const localRange = Range3d.createNull();
+      geom.extendRange(localRange);
+
+      if (localRange.isNull())
+        return false;
+
+      this.onNewGeom(localRange, this._appendAsSubGraphics, geom.isAnyRegionType() ? OpCode.CurveCollection : OpCode.CurvePrimitive);
+      return this._writer.dgnAppendCurveCollection(geom, this._is3d);
+    }
+
+    const wrappedGeom = GeometricPrimitive.createCurveCollectionClone(geom);
+    return this.appendWorld(wrappedGeom);
+  }
+
+  /** Append a SolidPrimitive to builder in either local or world coordinates.
+   *  NOTE: Only valid with a 3d builder
+   */
+  public appendSolidPrimitive(geom: SolidPrimitive, coord: CoordSystem = CoordSystem.Local): boolean {
+    if (!this._is3d)
+      return false;   // 3d only geometry
+
+    if (coord === CoordSystem.Local) {
+      const localRange = Range3d.createNull();
+      geom.extendRange(localRange);
+
+      if (localRange.isNull())
+        return false;
+
+      this.onNewGeom(localRange, this._appendAsSubGraphics, OpCode.SolidPrimitive);
+      return this._writer.gcAppendSolidPrimitive(geom);
+    }
+
+    const wrappedGeom = GeometricPrimitive.createSolidPrimitiveClone(geom);
+    return this.appendWorld(wrappedGeom);
+  }
+
+  /** Append a BsplineSurface3d to builder in either local or world coordinates.
+   *  NOTE: Only valid with 3d builder
+   */
+  public appendBsplineSurface(geom: BSplineSurface3d, coord: CoordSystem = CoordSystem.Local): boolean {
+    if (!this._is3d)
+      return false;   // only 3d geometry
+
+    if (coord === CoordSystem.Local) {
+      const localRange = Range3d.createNull();
+      geom.extendRange(localRange);
+
+      if (localRange.isNull())
+        return false;
+
+      this.onNewGeom(localRange, this._appendAsSubGraphics, OpCode.BsplineSurface);
+      return this._writer.gcAppendBsplineSurface(geom);
+    }
+
+    const wrappedGeom = GeometricPrimitive.createBsplineSurfaceClone(geom);
+    return this.appendWorld(wrappedGeom);
+  }
+
+  /** Append an IndexedPolyface to builder in either local or world coordinates.
+   *  NOTE: Only valid with 3d builder
+   */
+  public appendPolyface(geom: IndexedPolyface, coord: CoordSystem = CoordSystem.Local): boolean {
+    if (!this._is3d)
+      return false;   // 3d only geometry
+
+    if (coord === CoordSystem.Local) {
+      const localRange = Range3d.createNull();
+      geom.extendRange(localRange);
+
+      if (localRange.isNull())
+        return false;
+
+      this.onNewGeom(localRange, this._appendAsSubGraphics, OpCode.Polyface);
+      return this._writer.gcAppendPolyface(geom);
+    }
+
+    const wrappedGeom = GeometricPrimitive.createIndexedPolyfaceClone(geom);
+    return this.appendWorld(wrappedGeom);
+  }
+
+  // public appendBRepEntity
+
+  /** Append a non-specific geometry, passed using the encompassing GeometryQuery abstract class. */
+  public appendGeometryQuery(geometry: GeometryQuery, coord: CoordSystem = CoordSystem.Local): boolean {
+    if (geometry instanceof CurvePrimitive)
+      return this.appendCurvePrimitive(geometry, coord);
+    if (geometry instanceof CurveCollection)
+      return this.appendCurveCollection(geometry, coord);
+    if (geometry instanceof IndexedPolyface)
+      return this.appendPolyface(geometry, coord);
+    if (geometry instanceof SolidPrimitive)
+      return this.appendSolidPrimitive(geometry, coord);
+    if (geometry instanceof BSplineSurface3d)
+      return this.appendBsplineSurface(geometry, coord);
+    return false;
+  }
+
+  // public appendTextString
+
+  // public appendTextAnnotation
+
+  // public appendImageGraphic
 }

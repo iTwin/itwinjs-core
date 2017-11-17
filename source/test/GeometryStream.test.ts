@@ -5,7 +5,7 @@
 /* tslint:disable: no-console */
 
 import { assert } from "chai";
-import { GSReader, GSWriter, Iterator, GeometryStream } from "../common/geometry/GeometryStream";
+import { GSReader, GSWriter, GSCollection, GeometryStream } from "../common/geometry/GeometryStream";
 import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
 import { IModelDb } from "../backend/IModelDb";
@@ -60,7 +60,7 @@ describe("GeometryStream", () => {
     for (let i = 0; i < arr32bit.length; i++)
       view[i] = arr32bit[i];
 
-    const iter = Iterator.create(buff);
+    const iter = new GSCollection(buff);
     const geometry: any[] = [];
     const gsReader = new GSReader();
     do {
@@ -113,7 +113,7 @@ describe("GeometryStream", () => {
 
     if (value.geom) {
       const gsReader = new GSReader();
-      const iterator = Iterator.create(value.geom.geomStream);
+      const iterator = new GSCollection(value.geom.geomStream);
 
       const geomArrayOut: Arc3d[] = [];
       do {
