@@ -53,7 +53,7 @@
   },
   "//devDependencies": "NOTE: These are the union of all devDependencies for source/frontend, source/backend, and source/test",
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "^1.0.52",
+    "@bentley/bentleyjs-tools": "^1.0.53",
     "@types/chai": "^4.0.4",
     "@types/flatbuffers": "^1.6.5",
     "@types/fs-extra": "^4.0.5",
