@@ -50,6 +50,9 @@ export const NpcCorners = [
   new Point3d(0.0, 1.0, 1.0),
   new Point3d(1.0, 1.0, 1.0),
 ];
+// tslint:disable-next-line:variable-name
+export const NpcCenter = new Point3d(.5, .5, .5);
+Object.freeze(NpcCenter);
 
 export const enum GridOrientationType {
   View = 0,
@@ -567,6 +570,7 @@ export abstract class ViewState extends ElementState {
 
   public is3d(): this is ViewState3d { return this instanceof ViewState3d; }
   public isSpatialView(): this is SpatialViewState { return this instanceof SpatialViewState; }
+  public abstract allow3dManipulations(): boolean;
 
   public abstract getViewedExtents(): AxisAlignedBox3d;
 
@@ -686,7 +690,7 @@ export abstract class ViewState extends ElementState {
     this.setExtents(extents);
   }
 
-  protected validateViewDelta(delta: Vector3d, messageNeeded?: boolean): ViewStatus {
+  public validateViewDelta(delta: Vector3d, messageNeeded?: boolean): ViewStatus {
     const limit = this.getExtentLimits();
     let error = ViewStatus.Success;
 
@@ -757,13 +761,13 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Get the unit vector that points in the view X (left-to-right) direction. */
-  public getXVector(): Vector3d { return this.getRotation().getRow(0); }
+  public getXVector(result?: Vector3d): Vector3d { return this.getRotation().getRow(0, result); }
 
   /** Get the unit vector that points in the view Y (bottom-to-top) direction. */
-  public getYVector(): Vector3d { return this.getRotation().getRow(1); }
+  public getYVector(result?: Vector3d): Vector3d { return this.getRotation().getRow(1, result); }
 
   /** Get the unit vector that points in the view Z (front-to-back) direction. */
-  public getZVector(): Vector3d { return this.getRotation().getRow(2); }
+  public getZVector(result?: Vector3d): Vector3d { return this.getRotation().getRow(2, result); }
 
   /** Set the clipping volume for this view. */
   public setViewClip(clip?: ClipVector) {
@@ -1457,6 +1461,7 @@ export class ViewState2d extends ViewState {
     return val;
   }
 
+  public allow3dManipulations(): boolean { return false; }
   public getViewedExtents() { return AxisAlignedBox3d.fromRange2d(this.baseModel.extents); }
   public getOrigin() { return new Point3d(this.origin.x, this.origin.y); }
   public getExtents() { return new Vector3d(this.delta.x, this.delta.y); }

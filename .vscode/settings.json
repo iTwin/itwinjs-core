@@ -13,21 +13,30 @@
   },
   "cSpell.words": [
     "Unexpanded",
+    "Viewport's",
     "aux",
+    "backplane",
+    "bbox",
     "codespec",
     "coord",
+    "crosshair",
     "d",
     "ecclass",
     "ecinstanceid",
     "ecsql",
     "endverbatim",
+    "frontplane",
     "frust",
     "fstop",
     "hline",
+    "keyin",
     "mixins",
+    "redoable",
     "skybox",
     "system",
-    "viewflags"
+    "undoable",
+    "viewflags",
+    "zbuffer"
   ]
   // ,
   // "workbench.colorCustomizations": {
