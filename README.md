@@ -46,3 +46,10 @@ The source code is organized according to where it can run:
 | imodeljs-core/source/test/lib/     | Not published     |
 
 Note that imodeljs-core/source/common/ is built into both the imodeljs-frontend and imodeljs-backend packages.
+
+## Other NPM Scripts
+
+1. Build TypeDoc documentation for frontend/backend/common: `npm run docs`
+2. Extract sample code from test directory: `npm run extract`
+
+The full list of npm scripts can be found in the root package.json file.
