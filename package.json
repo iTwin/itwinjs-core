@@ -26,12 +26,13 @@
     "test": "gulp test",
     "wip-test": "cd source/test && npm run test",
     "postinstall": "npm run install:imodeljs-addon",
-    "wip-install": "concurrently \"npm run install:backend\" \"npm run install:frontend\" \"npm run install:test\"",
+    "wip-install": "concurrently \"npm run install:backend\" \"npm run install:frontend\" \"npm run install:test\" \"npm run install:imodeljs-addon\"",
     "install:backend": "cd source/backend && npm install",
     "install:frontend": "cd source/frontend && npm install",
     "install:imodeljs-addon": "node scripts/install-imodeljs-addon.js",
     "install:test": "cd source/test && npm install",
-    "docs": "node node_modules/@bentley/bentleyjs-tools/scripts/docs.js --baseUrl=source/test/node_modules --includes=source/test/lib/extract --out=lib/docs --json=lib/docs/json/file.json",
+    "predocs": "npm run extract",
+    "docs": "node node_modules/@bentley/bentleyjs-tools/scripts/docs.js --baseUrl=source/test/node_modules --includes=source/test/lib/extract --out=source/test/lib/docs --json=source/test/lib/docs/json/file.json",
     "extract": "node node_modules/@bentley/bentleyjs-tools/scripts/extract.js --extractFrom=source/test --out=source/test/lib/extract"
   },
   "keywords": [
