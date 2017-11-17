@@ -7,7 +7,7 @@ import { Viewport } from "../Viewport";
 import { IdleTool } from "./IdleTool";
 import {
   InputEventModifiers, ButtonState, Button, GestureEvent, Tool, ButtonEvent, CoordSource, GestureInfo,
-  Cursor, PrimitiveTool, ViewTool, MouseWheelEvent, InputSource,
+  Cursor, PrimitiveTool, MouseWheelEvent, InputSource,
 } from "./Tool";
 
 export class CurrentInputState {

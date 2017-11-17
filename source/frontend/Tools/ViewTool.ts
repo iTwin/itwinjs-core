@@ -475,18 +475,19 @@ export class ViewManip extends ViewTool {
     // }
 
     let center = this.getSelectedElementCenter();
-    if (center && this.isPointVisible(viewport, center)) {
+    if (center && this.isPointVisible(center)) {
       this.setTargetCenterWorld(center, true);
       return;
     }
 
-    center = new Point3d();
+    center = this.viewport.viewCmdTargetCenter;
 
-    if (this.viewport.viewCmdTargetCenter && this.isPointVisible(this.viewCmdTargetCenter)) {
-      this.setTargetCenterWorld(this.viewCmdTargetCenter, true);
+    if (center && this.isPointVisible(center)) {
+      this.setTargetCenterWorld(center, true);
       return;
     }
 
+    center = scratchPoint3d;
     if (!this.viewport.view.allow3dManipulations()) {
       this.viewport.npcToWorld(NpcCenter, center);
       center.z = 0.0;
@@ -496,7 +497,6 @@ export class ViewManip extends ViewTool {
 
     this.setTargetCenterWorld(center, false);
   }
-
 
   public updateWorldUpVector(initialSetup: boolean) {
     if (!initialSetup)

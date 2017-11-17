@@ -12,8 +12,10 @@
     "source/test/lib": true
   },
   "cSpell.words": [
+    "Accu",
     "Unexpanded",
     "Viewport's",
+    "accudraw",
     "aux",
     "backplane",
     "bbox",
@@ -21,6 +23,7 @@
     "coord",
     "crosshair",
     "d",
+    "datapoint",
     "ecclass",
     "ecinstanceid",
     "ecsql",

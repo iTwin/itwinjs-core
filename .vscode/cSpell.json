@@ -6,6 +6,8 @@
     "language": "en",
     // words - list of words to be always considered correct
     "words": [
+        "Accu",
+        "accudraw",
         "aux",
         "backend",
         "backplane",
@@ -14,6 +16,7 @@
         "codespec",
         "coord",
         "crosshair",
+        "datapoint",
         "ecclass",
         "ecinstanceid",
         "ecsql",
