@@ -21,7 +21,6 @@ const env = getClientEnvironment(publicUrl);
 
 const modulesToIgnore = [
   /bwc-polymer/,
-  /node_modules[\/\\]ws/,
   /\.s?css$/,
   /\.svg$/,
   /\.d\.ts$/,
@@ -29,9 +28,6 @@ const modulesToIgnore = [
   paths.appIndexJs,
   paths.appSrcElectron,
 ]
-
-// WIP: This is needed for the imports-loader hack below.
-const nodeExternalsWhitelist = modulesToIgnore.concat([/@bentley/])
 
 const isCoverage = (process.env.MOCHA_ENV === "coverage");
 const coverageLoaders = (isCoverage) ? [
@@ -52,14 +48,6 @@ const fixCustomAssertionsRelPaths = (context, request, callback) => {
   callback();
 }
 
-// WIP: This is also needed for the imports-loader hack below.
-const fixAddonLoaderRelPaths = (context, request, callback) => {
-  if (/addonLoader/.test(request)){
-    return callback(null, 'commonjs ' + path.resolve(context, request));
-  }
-  callback();
-}
-
 // This is the test configuration.
 module.exports = {
   // Compile node compatible code
@@ -68,8 +56,7 @@ module.exports = {
   // Ignore all modules in node_modules folder
   externals: [
     fixCustomAssertionsRelPaths,
-    fixAddonLoaderRelPaths,
-    nodeExternals({whitelist: nodeExternalsWhitelist})],
+    nodeExternals({whitelist: modulesToIgnore})],
 
   // You may want 'eval' instead if you prefer to see the compiled output in DevTools.
   // See the discussion in https://github.com/facebookincubator/create-react-app/issues/343.
@@ -110,14 +97,6 @@ module.exports = {
     rules: [
       ...coverageLoaders,
 
-      // WIP: This is a temporary (hack) workaround for the tiering in bentleyjs-core
-      // thinking we're in a browser just because document is defined.
-      {
-        loader: require.resolve('imports-loader'),
-        query: "document=>{}",
-        test: /@bentley.*\.(jsx?|tsx?)$/,
-        enforce: 'post',
-      },
       // WIP: This is a temporary (hack) workaround for the suppoting snapshots with mocha-webpack.
       {
         loader: require.resolve('imports-loader'),
