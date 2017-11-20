@@ -13,7 +13,7 @@ import { NavigationProperty, PrimitiveProperty, PrimitiveArrayProperty, StructPr
 /**
  * A common abstract class for all of the EC class types.
  */
-export abstract class Class extends SchemaChild implements ICustomAttributeContainer, ClassInterface {
+export abstract class ECClass extends SchemaChild implements ICustomAttributeContainer, ClassInterface {
   public modifier: ECClassModifier;
   public baseClass?: ClassInterface;
   public properties?: PropertyInterface[];
@@ -155,7 +155,7 @@ export abstract class Class extends SchemaChild implements ICustomAttributeConta
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The base class of ${this.name} is not a string type.`);
 
       if (this.schema && typeof(this.schema) !== "string") {
-        const baseClass = this.schema.getChild<Class>(jsonObj.baseClass);
+        const baseClass = this.schema.getChild<ECClass>(jsonObj.baseClass);
 
         if (!baseClass)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
@@ -169,7 +169,7 @@ export abstract class Class extends SchemaChild implements ICustomAttributeConta
 /**
  *
  */
-export class EntityClass extends Class implements EntityClassInterface {
+export class EntityClass extends ECClass implements EntityClassInterface {
   public mixins?: MixinInterface[];
 
   /**
@@ -232,7 +232,7 @@ export class EntityClass extends Class implements EntityClassInterface {
 /**
  *
  */
-export class MixinClass extends Class implements MixinInterface {
+export class MixinClass extends ECClass implements MixinInterface {
   public appliesTo: string | EntityClassInterface;
 
   public fromJson(jsonObj: any): void {
@@ -251,12 +251,12 @@ export class MixinClass extends Class implements MixinInterface {
 /**
  *
  */
-export class StructClass extends Class implements ClassInterface { }
+export class StructClass extends ECClass implements ClassInterface { }
 
 /**
  *
  */
-export class CustomAttributeClass extends Class implements CustomAttributeClassInterface {
+export class CustomAttributeClass extends ECClass implements CustomAttributeClassInterface {
   public containerType: CustomAttributeContainerType;
 
   public fromJson(jsonObj: any): void {
@@ -274,7 +274,7 @@ export class CustomAttributeClass extends Class implements CustomAttributeClassI
 /**
  *
  */
-export class RelationshipClass extends Class implements RelationshipClassInterface {
+export class RelationshipClass extends ECClass implements RelationshipClassInterface {
   public strength: StrengthType;
   public strengthDirection: RelatedInstanceDirection;
   public readonly source: RelationshipConstraintInterface;
