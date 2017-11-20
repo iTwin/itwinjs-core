@@ -9,7 +9,7 @@
     "clean": "rimraf lib",
     "copy:assets": "cpx ./assets/**/* ./lib/test/assets",
     "pretest": "npm run copy:assets && npm run build",
-    "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test.js --packageRoot=\"../../\" --testDir=\"./lib/test\""
+    "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\""
   },
   "repository": {},
   "//dependencies": [

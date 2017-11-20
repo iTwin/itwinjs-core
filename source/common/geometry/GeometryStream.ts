@@ -353,7 +353,7 @@ export class GSCollection {
       case OpCode.CurveCollection:
       {
         const geom = this.getGeometry();
-        return (geom !== undefined && !geom.asCurveCollection.isAnyRegionType());   // Accept "none" boundary type
+        return (geom !== undefined && !geom.asCurveCollection!.isAnyRegionType());   // Accept "none" boundary type
       }
       default:
         return false;
@@ -385,17 +385,17 @@ export class GSCollection {
       case OpCode.CurveCollection:
       {
         const geom = this.getGeometry();
-        return (geom !== undefined && geom.asCurveCollection.isAnyRegionType());
+        return (geom !== undefined && geom.asCurveCollection!.isAnyRegionType());
       }
       case OpCode.SolidPrimitive:
       {
         const geom = this.getGeometry();
-        return (geom !== undefined && !geom.asSolidPrimitive.getCapped());
+        return (geom !== undefined && !geom.asSolidPrimitive!.getCapped());
       }
       case OpCode.Polyface:
       {
         const geom = this.getGeometry();
-        return (geom !== undefined && !geom.asIndexedPolyface.isClosedByEdgePairing());
+        return (geom !== undefined && !geom.asIndexedPolyface!.isClosedByEdgePairing());
       }
       case OpCode.BsplineSurface:
         return true;
@@ -433,12 +433,12 @@ export class GSCollection {
       case OpCode.SolidPrimitive:
       {
         const geom = this.getGeometry();
-        return (geom !== undefined && geom.asSolidPrimitive.getCapped());
+        return (geom !== undefined && geom.asSolidPrimitive!.getCapped());
       }
       case OpCode.Polyface:
       {
         const geom = this.getGeometry();
-        return (geom !== undefined && geom.asIndexedPolyface.isClosedByEdgePairing());
+        return (geom !== undefined && geom.asIndexedPolyface!.isClosedByEdgePairing());
       }
       /*
       #if defined (BENTLEYCONFIG_PARASOLID)
@@ -662,15 +662,15 @@ export class GSWriter {
   public dgnAppendGeometricPrimitive(gPrimitive: GeometricPrimitive, is3d: boolean): boolean {
     switch (gPrimitive.type) {
       case GeometryType.CurvePrimitive:
-        return this.dgnAppendCurvePrimitive(gPrimitive.asCurvePrimitive, false, is3d);
+        return this.dgnAppendCurvePrimitive(gPrimitive.asCurvePrimitive!, false, is3d);
       case GeometryType.CurveCollection:
-        return this.dgnAppendCurveCollection(gPrimitive.asCurveCollection, is3d);
+        return this.dgnAppendCurveCollection(gPrimitive.asCurveCollection!, is3d);
       case GeometryType.IndexedPolyface:
-        return this.gcAppendPolyface(gPrimitive.asIndexedPolyface);
+        return this.gcAppendPolyface(gPrimitive.asIndexedPolyface!);
       case GeometryType.SolidPrimitive:
-        return this.gcAppendSolidPrimitive(gPrimitive.asSolidPrimitive);
+        return this.gcAppendSolidPrimitive(gPrimitive.asSolidPrimitive!);
       case GeometryType.BsplineSurface:
-        return this.gcAppendBsplineSurface(gPrimitive.asBsplineSurface);
+        return this.gcAppendBsplineSurface(gPrimitive.asBsplineSurface!);
       // case GeometryType.BRepEntity:
       // case GeometryType.TextString:
       // case GeometryType.Image:
@@ -2135,7 +2135,7 @@ export class GeometryBuilder {
         opCode = OpCode.CurvePrimitive;
         break;
       case GeometryType.CurveCollection:
-        opCode = geom.asCurveCollection.isAnyRegionType() ? OpCode.CurveCollection : OpCode.CurvePrimitive;
+        opCode = geom.asCurveCollection!.isAnyRegionType() ? OpCode.CurveCollection : OpCode.CurvePrimitive;
         break;
       case GeometryType.SolidPrimitive:
         opCode = OpCode.SolidPrimitive;

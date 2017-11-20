@@ -253,11 +253,11 @@ export class GeometricPrimitive {
 
   public get type() { return this._type; }
   public get data() { return this._data; }
-  public get asCurvePrimitive() { return this._data as CurvePrimitive; }
-  public get asCurveCollection() { return this._data as CurveCollection; }
-  public get asSolidPrimitive() { return this._data as SolidPrimitive; }
-  public get asBsplineSurface() { return this._data as BSplineSurface3d; }
-  public get asIndexedPolyface() { return this._data as IndexedPolyface; }
+  public get asCurvePrimitive(): CurvePrimitive | undefined { return (this._type === GeometryType.CurvePrimitive) ? this._data as CurvePrimitive : undefined; }
+  public get asCurveCollection(): CurveCollection | undefined { return (this._type === GeometryType.CurveCollection) ? this._data as CurveCollection : undefined; }
+  public get asSolidPrimitive(): SolidPrimitive | undefined { return (this._type === GeometryType.SolidPrimitive) ? this._data as SolidPrimitive : undefined; }
+  public get asBsplineSurface(): BSplineSurface3d | undefined { return (this._type === GeometryType.BsplineSurface) ? this._data as BSplineSurface3d : undefined; }
+  public get asIndexedPolyface(): IndexedPolyface | undefined { return (this._type === GeometryType.IndexedPolyface) ? this._data as IndexedPolyface : undefined; }
   // public get asIBRepEntity() { return this._data as ; }
   // public get asTextString() { return this._data as ; }
   // public get asImage() { return this._data as ; }
@@ -335,9 +335,9 @@ export class GeometricPrimitive {
   public isSolid(): boolean {
     switch (this._type) {
       case GeometryType.SolidPrimitive:
-        return this.asSolidPrimitive.getCapped();
+        return this.asSolidPrimitive!.getCapped();
       case GeometryType.IndexedPolyface:
-        return this.asIndexedPolyface.isClosedByEdgePairing();
+        return this.asIndexedPolyface!.isClosedByEdgePairing();
       // case GeometryType.BRepEntity:
       //  return ...
       default:
@@ -349,13 +349,13 @@ export class GeometricPrimitive {
   public isSheet(): boolean {
     switch (this._type) {
       case GeometryType.CurveCollection:
-        return this.asCurveCollection.isAnyRegionType();
+        return this.asCurveCollection!.isAnyRegionType();
       case GeometryType.BsplineSurface:
         return true;
       case GeometryType.SolidPrimitive:
-        return !this.asSolidPrimitive.getCapped();
+        return !this.asSolidPrimitive!.getCapped();
       case GeometryType.IndexedPolyface:
-        return !this.asIndexedPolyface.isClosedByEdgePairing();
+        return !this.asIndexedPolyface!.isClosedByEdgePairing();
       // case GeometryType.BRepEntity:
       //  return ...
       default:
@@ -366,10 +366,11 @@ export class GeometricPrimitive {
   /** Return true if the geometry is or would be represented by a wire body. Accepted geometry includes BRep wires and CurveVectors */
   public isWire(): boolean {
     switch (this._type) {
-      // case GeometryType.CurvePrimitive:
+      case GeometryType.CurvePrimitive:
+        return true;
       //  return !(this._data instanceof PointString);
       case GeometryType.CurveCollection:
-        return this.asCurveCollection.isOpenPath();
+        return this.asCurveCollection!.isOpenPath();
       // case GeometryType.BRepEntity:
       //  return ...
       default:
@@ -389,8 +390,8 @@ export class GeometricPrimitive {
       case GeometryType.CurvePrimitive:
       {
         const curve = this.asCurvePrimitive;
-        if (!curve.fractionToFrenetFrame(0.0, localToWorld)) {
-          const point = curve.startPoint();
+        if (!curve!.fractionToFrenetFrame(0.0, localToWorld)) {
+          const point = curve!.startPoint();
           Transform.createTranslation(point, localToWorld);
           return true;
         }
@@ -400,7 +401,7 @@ export class GeometricPrimitive {
       case GeometryType.SolidPrimitive:
       {
         const solidPrim = this.asSolidPrimitive;
-        const tMap = solidPrim.getConstructiveFrame();
+        const tMap = solidPrim!.getConstructiveFrame();
         if (!tMap) {
           localToWorld.setIdentity();
           return false;
@@ -441,7 +442,7 @@ export class GeometricPrimitive {
           Transform.createRefs(centroid, axes);
           break;
         } else if ... */
-        if (surface.fractionToRigidFrame(0, 0, localToWorld)) {
+        if (surface!.fractionToRigidFrame(0, 0, localToWorld)) {
           break;
         }
         localToWorld.setIdentity();
@@ -527,14 +528,14 @@ export class GeometricPrimitive {
 
   // Expensive... clones all geometry
   public clone(): GeometricPrimitive {
-    const clonedObj = this._data.clone();
-    if (!clonedObj)
-      return new GeometricPrimitive(GeometryType.Undefined, undefined);
     if (this._data instanceof GeometryQuery) {
-      return new GeometricPrimitive(this._type, this._data.clone());
+      const clonedObj = this._data.clone();
+      if (!clonedObj)
+        return new GeometricPrimitive(GeometryType.Undefined, undefined);
+      return new GeometricPrimitive(this._type, clonedObj);
     }
 
     // Handle other cases....
-    return GeometricPrimitive.create(undefined, true);
+    return new GeometricPrimitive(GeometryType.Undefined, undefined);
   }
 }

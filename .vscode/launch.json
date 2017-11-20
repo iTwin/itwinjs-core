@@ -24,10 +24,10 @@
       "type": "node",
       "request": "launch",
       "name": "WIP - Mocha Tests",
-      "program": "${workspaceFolder}/source/test/node_modules/@bentley/bentleyjs-tools/scripts/test.js",
-      "cwd": "${workspaceFolder}/source/test",
+      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "cwd": "${workspaceFolder}",
       "args": [
-        "--packageRoot=${workspaceFolder}/source/test",
+        "--packageRoot=${workspaceFolder}",
         "--testDir=${workspaceFolder}/source/test/lib/test",
         "--debug"
       ],
@@ -41,7 +41,7 @@
       "type": "node",
       "request": "launch",
       "name": "WIP - Mocha Tests - ts-node",
-      "program": "${workspaceFolder}/source/test/node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode.js",
+      "program": "${workspaceFolder}/source/test/node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode",
       "cwd": "${workspaceFolder}/source/test",
       "args": [
         "--packageRoot=${workspaceFolder}/source/test",

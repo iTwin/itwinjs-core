@@ -9,6 +9,7 @@
     "lint": "node node_modules/@bentley/bentleyjs-tools/scripts/tslint.js",
     "test": "echo \"Error: run tests from the '../test' directory.\" && exit 1"
   },
+  "repository": {},
   "keywords": [
     "Bentley",
     "BIM",
