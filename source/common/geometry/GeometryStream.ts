@@ -204,6 +204,7 @@ export class GSCollection {
   private state: CurrentState;  // Current state of the data (not yet in use)
 
   public get operation() { return this.egOp; }
+  public get isValid() { return this.data !== undefined; }
 
   public constructor(data: ArrayBuffer, dataOffset: number = 0) {
     this.data = new Uint8Array(data);
@@ -964,12 +965,9 @@ export class GSWriter {
     let scale: number | undefined;
     const origin = geomToElem.translation();
     const rMatrix = geomToElem.matrixRef();
-    // !!!!! SCALE IS TEMPORARILY HARDCODED UNTIL GEOMETRY_CORE FUNCTIONALITY IS ADDED
-    // const deScaledMatrix = RotMatrix.createIdentity();
-    // scale = rMatrix.isRigidSignedScale(deScaledMatrix, scale);
-    scale = 1.0;
+    // scale = rMatrix.isRigidSignedScale();
 
-    if (!scale)
+    if (scale === undefined)
       scale = 1.0;
 
     if (scale! > 0.0)
@@ -1888,6 +1886,7 @@ export class GeometryBuilder {
     this._isPartCreate = !categoryId.isValid();
     this._is3d = is3d;
     this._writer = new GSWriter(/*imodel*/);
+    this._elParams = GeometryParams.createDefaults();
     this._elParams.setCategoryId(categoryId);
   }
 
@@ -1933,12 +1932,49 @@ export class GeometryBuilder {
   /** Create builder from model, categoryId, and placement as represented by a transform.
    *  NOTE: Transform must satisfy requirements of YawPitchRollAngles.TryFromTransform; scale is not supported
    */
-  // public static createTransform(/*imodel, */ categoryId: Id64, transform: Transform): GeometryBuilder | undefined {}
-
-  /** Create 3d builder from model, categoryId, origin, and optional YawPitchRollAngles */
-  public static createCategoryOriginYawPitchRoll(/* model, */ categoryId: Id64, origin: Point3d, angles: YawPitchRollAngles): GeometryBuilder | undefined {
+  public static createTransform(/*imodel, */is3d: boolean, categoryId: Id64, transform: Transform): GeometryBuilder | undefined {
     if (!categoryId.isValid())
       return undefined;
+
+    /*
+    auto geomModel = model.ToGeometricModel();
+    if (nullptr == geomModel)
+        return nullptr;
+    */
+
+    const origin = transform.translation();
+    const rMatrix = transform.matrixRef();
+    const angles = YawPitchRollAngles.createDegrees(0, 0, 0);
+    const retVal = YawPitchRollAngles.createFromRotMatrix(rMatrix, angles);
+
+    // NOTE: YawPitchRollAngles::TryFromRotMatrix compares against Angle::SmallAngle, which after
+    //       consulting with Earlin is too strict for our purposes and shouldn't be considered a failure.
+    if (!retVal) {
+      const resultMatrix = angles.toRotMatrix();
+
+      if (rMatrix.maxDiff(resultMatrix) > 1.0e-5)
+        return undefined;
+    }
+
+    if (is3d) {
+      const placement3d = new Placement3d(origin, angles, new ElementAlignedBox3d());
+      return GeometryBuilder.createPlacement3d(/* model */ new Id64(categoryId), placement3d);
+    }
+
+    if (origin.z !== 0 || angles.pitch.degrees !== 0 || angles.roll.degrees !== 0)
+      return undefined;
+
+    const placement2d = new Placement2d(Point2d.create(origin.x, origin.y), angles.yaw, new ElementAlignedBox2d());
+    return GeometryBuilder.createPlacement2d(/* model */ new Id64(categoryId), placement2d);
+  }
+
+  /** Create 3d builder from model, categoryId, origin, and optional YawPitchRollAngles */
+  public static createCategoryOrigin3d(/* model, */ categoryId: Id64, origin: Point3d, angles?: YawPitchRollAngles): GeometryBuilder | undefined {
+    if (!categoryId.isValid())
+      return undefined;
+
+    if (!angles)
+      angles = YawPitchRollAngles.createDegrees(0, 0, 0);
 
     /*
     auto geomModel = model.ToGeometricModel();
@@ -1951,9 +1987,12 @@ export class GeometryBuilder {
   }
 
   /** Create 3d builder from model, categoryId, origin, and optional rotation Angle */
-  public static createCategoryOriginAngle(/* model */ categoryId: Id64, origin: Point2d, angle: Angle): GeometryBuilder | undefined {
+  public static createCategoryOrigin2d(/* model */ categoryId: Id64, origin: Point2d, angle?: Angle): GeometryBuilder | undefined {
     if (!categoryId.isValid())
       return undefined;
+
+    if (!angle)
+      angle = Angle.createDegrees(0);
 
     /*
     auto geomModel = model.ToGeometricModel();
@@ -2252,7 +2291,7 @@ export class GeometryBuilder {
         localParams.setLineStyle(undefined);
       if (hasInvalidMaterial)
         localParams.setMaterialId(new Id64());
-      if (!this._appearanceModified || !this._elParamsModified.isEqualTo(localParams)) {
+      if (!this._appearanceModified || (this._elParamsModified && !this._elParamsModified.isEqualTo(localParams))) {
         this._elParamsModified = localParams;
         this._writer.dgnAppendGeometryParams(this._elParamsModified, this._isPartCreate, this._is3d);
         this._appearanceChanged = this._appearanceModified = true;
