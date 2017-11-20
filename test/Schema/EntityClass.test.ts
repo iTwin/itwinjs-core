@@ -4,7 +4,7 @@
 
 import { assert, expect } from "chai";
 import { ECSchema } from "../../source/Metadata/Schema";
-import { Class, EntityClass, MixinClass } from "../../source/Metadata/Class";
+import { ECClass, EntityClass, MixinClass } from "../../source/Metadata/Class";
 import { ECClassModifier } from "../../source/ECObjects";
 
 describe("entity class", () => {
@@ -25,7 +25,7 @@ describe("entity class", () => {
       };
 
       const ecschema = ECSchema.fromJson(schemaJson);
-      const testClass = ecschema.getClass<Class>("testEntityClass");
+      const testClass = ecschema.getClass<ECClass>("testEntityClass");
       assert.isDefined(testClass);
 
       const testEntity = ecschema.getClass<EntityClass>("testEntityClass");
