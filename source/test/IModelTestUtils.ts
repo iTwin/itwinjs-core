@@ -25,7 +25,7 @@ import * as path from "path";
 Gateway.initialize(IModelGateway);
 
 // Initialize the Node addon used by tests
-NodeAddon.loadDefault("../../node_modules/");
+NodeAddon.loadDefault("../../../../node_modules/");
 
 declare const __dirname: string;
 

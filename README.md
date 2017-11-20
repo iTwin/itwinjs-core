@@ -16,28 +16,27 @@ The source code is organized according to where it can run:
 | source/common/   | Design to run either in frontend or backend. Must adhere to frontend restrictions. |
 | source/test/     | Specific for unit tests. The test framework puts the frontend and backend together in a single executable. |
 
-## Current Build Instructions
+## Build Instructions
 
 1. Pull repository: `git pull`
 2. Install dependencies: `npm install`
-3. Build source: `gulp build`
-4. Run tests: `gulp test`
-5. Clean output: `gulp clean`
+3. Clean output: `npm run clean`
+4. Build source: `npm run build`
+5. Run tests: `npm run test`
 
-## Current Build Output
+Note that all build instructions are designed to run from the imodeljs-core root directory.
+The individual commands orchestrate separate frontend, backend, and test steps as required.
 
-* imodeljs-core/lib/
-* published as imodeljs-core
+## Migrating to New Build Instructions
 
-## Future Build Instructions
+| Build step           | New Command   | Old Command |
+|----------------------|---------------|-------------|
+| Install dependencies | npm install   | npm install |
+| Clean output         | npm run clean | gulp clean  |
+| Build source         | npm run build | gulp build  |
+| Run tests            | npm run test  | gulp test   |
 
-1. Pull repository: `git pull`
-2. Install dependencies: `npm install`
-3. Build source: `npm run build`
-4. Run tests: `npm run test`
-5. Clean output: `npm run clean`
-
-## Future Build Output
+## Build Output
 
 | Output Directory                   | Published As      |
 |------------------------------------|-------------------|
