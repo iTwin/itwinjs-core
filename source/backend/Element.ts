@@ -111,7 +111,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
   }
 
   public updateFromGeometryBuilder(builder: GeometryBuilder): boolean {
-    if (!builder.isPartCreate)
+    if (builder.isPartCreate)
       return false;   // Invalid builder for creating element geometry...
 
     if (builder.currentSize === 0)
@@ -132,20 +132,18 @@ export abstract class GeometricElement extends Element implements GeometricEleme
       if (!builder.placement3d.isValid())
         return false;
 
-      const source3d = this.getAsGeometricElement3d();
-      if (source3d === undefined)
+      if (!(this instanceof GeometricElement3d))
         return false;
 
-      source3d.setPlacement(builder.placement3d);
+      this.placement.setFrom(builder.placement3d);
     } else {
       if (!builder.placement2d.isValid())
         return false;
 
-      const source2d = this.getAsGeometricElement2d();
-      if (source2d === undefined)
+      if (!(this instanceof GeometricElement2d))
         return false;
 
-      source2d.setPlacement(builder.placement2d);
+      this.placement.setFrom(builder.placement2d);
     }
 
     if (this.geom)
@@ -179,8 +177,6 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
   }
 
-  public getAsGeometricElement2d() { return undefined; }
-
   public calculateRange3d(): AxisAlignedBox3d { return this.placement.calculateRange(); }
 
   public toJSON(): GeometricElement3dProps {
@@ -209,8 +205,6 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
     if (props.typeDefinition)
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
   }
-
-  public getAsGeometricElement3d() { return undefined; }
 
   public calculateRange3d(): AxisAlignedBox3d { return this.placement.calculateRange(); }
 

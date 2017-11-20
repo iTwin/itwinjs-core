@@ -122,6 +122,12 @@ export class Placement3d {
     return new Placement3d(Point3d.fromJSON(json.origin), YawPitchRollAngles.fromJSON(json.angles), ElementAlignedBox3d.fromJSON(json.bbox));
   }
 
+  public setFrom(other: Placement3d) {
+    this.origin.setFrom(other.origin);
+    this.angles.setFrom(other.angles);
+    this.bbox.setFrom(other.bbox);
+  }
+
   /** Determine whether this Placement3d is valid. */
   public isValid(): boolean { return this.bbox.isValid() && this.origin.maxAbs() < Constant.circumferenceOfEarth; }
 
@@ -150,6 +156,12 @@ export class Placement2d {
 
   /** Determine whether this Placement2d is valid. */
   public isValid(): boolean { return this.bbox.isValid() && this.origin.maxAbs() < Constant.circumferenceOfEarth; }
+
+  public setFrom(other: Placement2d) {
+    this.origin.setFrom(other.origin);
+    this.angle.setFrom(other.angle);
+    this.bbox.setFrom(other.bbox);
+  }
 
   public calculateRange(): AxisAlignedBox3d {
     const range = new AxisAlignedBox3d();
