@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 
 import { ECSchema } from "../../source/Metadata/Schema";
-import { Class, EntityClass, MixinClass, StructClass } from "../../source/Metadata/Class";
+import { ECClass, EntityClass, MixinClass, StructClass } from "../../source/Metadata/Class";
 import { ECObjectsError } from "../../source/Exception";
 import { SchemaKey, SchemaMatchType } from "../../source/ECObjects";
 
@@ -52,7 +52,7 @@ describe("class", () => {
     const testSchema = new ECSchema("TestSchema", 1, 1, 1);
     testSchema.createEntityClass("TestEntity");
 
-    expect(testSchema.getClass("TestEntity")).instanceof(Class);
+    expect(testSchema.getClass("TestEntity")).instanceof(ECClass);
     expect(testSchema.getClass<EntityClass>("TestEntity")).instanceof(EntityClass);
   });
 
@@ -60,7 +60,7 @@ describe("class", () => {
     const testSchema = new ECSchema("TestSchema", 1, 2, 3);
     testSchema.createMixinClass("TestMixin");
 
-    expect(testSchema.getClass("TestMixin")).instanceof(Class);
+    expect(testSchema.getClass("TestMixin")).instanceof(ECClass);
     expect(testSchema.getClass<MixinClass>("TestMixin")).instanceof(MixinClass);
   });
 
@@ -68,7 +68,7 @@ describe("class", () => {
     const testSchema = new ECSchema("TestSchema", 1, 2, 3);
     testSchema.createStructClass("TestStruct");
 
-    expect(testSchema.getClass("TestStruct")).instanceof(Class);
+    expect(testSchema.getClass("TestStruct")).instanceof(ECClass);
     expect(testSchema.getClass<StructClass>("TestStruct")).instanceof(StructClass);
   });
 

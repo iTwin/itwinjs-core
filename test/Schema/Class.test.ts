@@ -5,7 +5,7 @@
 import { assert } from "chai";
 
 import { ECSchema } from "../../source/Metadata/Schema";
-import { Class, EntityClass } from "../../source/Metadata/Class";
+import { ECClass, EntityClass } from "../../source/Metadata/Class";
 import { SchemaContext } from "../../source/Context";
 
 describe("class", () => {
@@ -31,7 +31,7 @@ describe("class", () => {
 
       let testClass = ecschema.getClass("testClass");
       assert.isDefined(testClass);
-      testClass = testClass as Class;
+      testClass = testClass as ECClass;
       assert.isDefined(testClass.baseClass);
 
       const baseClass = ecschema.getClass("testBaseClass");

@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ECVersion, SchemaKey, ECClassModifier } from "../ECObjects";
 import { SchemaInterface, SchemaChildInterface } from "../Interfaces";
-import { Class, MixinClass, EntityClass, StructClass, CustomAttributeClass, RelationshipClass } from "./Class";
+import { ECClass, MixinClass, EntityClass, StructClass, CustomAttributeClass, RelationshipClass } from "./Class";
 import SchemaChild from "./SchemaChild";
 import { Enumeration } from "./Enumeration";
 import KindOfQuantity from "./KindOfQuantity";
@@ -246,7 +246,7 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
    * Searches the current schema for a class with a name matching, case-insensitive, the provided name.
    * @param name The name of the class to return.
    */
-  public getClass<T extends Class>(name: string): T | undefined {
+  public getClass<T extends ECClass>(name: string): T | undefined {
     return this.getChild<T>(name);
   }
 
@@ -263,16 +263,16 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
   /**
    *
    */
-  public getClasses(): Class[] {
+  public getClasses(): ECClass[] {
     if (!this._children)
       return [];
 
-    const classList = this._children.filter((child) => child instanceof Class);
+    const classList = this._children.filter((child) => child instanceof ECClass);
 
     if (!classList)
       return [];
 
-    return classList as Class[];
+    return classList as ECClass[];
   }
 
   /**
