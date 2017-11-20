@@ -25,6 +25,63 @@ export const enum PrimitiveType {
   IGeometry = 0xa01,
 }
 
+export function parsePrimitiveType(type: string): PrimitiveType {
+  if (/binary/i.test(type))
+    return PrimitiveType.Binary;
+  else if (/bool/i.test(type))
+    return PrimitiveType.Boolean;
+  else if (/dateTime/i.test(type))
+    return PrimitiveType.DateTime;
+  else if (/Double/i.test(type))
+    return PrimitiveType.Double;
+  else if (/Integer/i.test(type))
+    return PrimitiveType.Integer;
+  else if (/Long/i.test(type))
+    return PrimitiveType.Long;
+  else if (/point2d/i.test(type))
+    return PrimitiveType.Point2d;
+  else if (/point3d/i.test(type))
+    return PrimitiveType.Point3d;
+  else if (/point3d/i.test(type))
+    return PrimitiveType.Point3d;
+  else if (/string/i.test(type))
+    return PrimitiveType.String;
+  else if (/Bentley.Geometry.Common.IGeometry/i.test(type))
+    return PrimitiveType.IGeometry;
+
+  throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, ``);
+}
+
+export const enum Type {
+  Struct                    = 0x02,
+  Struct_Array              = 0x02 | 0x04,
+  Navigation                = 0x08,
+  Binary                    = 0x101,
+  Binary_Array              = 0x101 | 0x04,
+  Boolean                   = 0x201,
+  Boolean_Array             = 0x201 | 0x04,
+  DateTime                  = 0x301,
+  DateTime_Array            = 0x301 | 0x04,
+  Double                    = 0x401,
+  Double_Array              = 0x401 | 0x04,
+  Integer                   = 0x501,
+  Integer_Array             = 0x501 | 0x04,
+  Integer_Enumeration       = 0x501 | 0x10,
+  Integer_Enumeration_Array = 0x501 | 0x10 | 0x04,
+  Long                      = 0x601,
+  Long_Array                = 0x601 | 0x04,
+  Point2d                   = 0x701,
+  Point2d_Array             = 0x701 | 0x04,
+  Point3d                   = 0x801,
+  Point3d_Array             = 0x801 | 0x04,
+  String                    = 0x901,
+  String_Array              = 0x901 | 0x04,
+  String_Enumeration        = 0x901 | 0x10,
+  String_Enumeration_Array  = 0x901 | 0x10 | 0x04,
+  IGeometry                 = 0xA01,
+  IGeometry_Array           = 0xA01 | 0x04,
+}
+
 export const enum CustomAttributeContainerType {
   Schema = (0x0001 << 0),
   EntityClass = (0x0001 << 1),
@@ -127,6 +184,10 @@ export function parseCustomAttributeContainerType(type: string): CustomAttribute
   return containerType as CustomAttributeContainerType;
 }
 
+/**
+ *
+ * @param type
+ */
 export function containerTypeToString(type: CustomAttributeContainerType): string {
 
   const testContainerTypeValue = (compareType: CustomAttributeContainerType, otherType: CustomAttributeContainerType) => {
@@ -187,6 +248,9 @@ export function containerTypeToString(type: CustomAttributeContainerType): strin
   return containerType;
 }
 
+/**
+ *
+ */
 export const enum RelationshipEnd {
   Source = 0,
   Target = 1,
@@ -198,29 +262,33 @@ export const enum StrengthType {
   Embedding,
 }
 
+/**
+ * Takes a string representing a StrengthType, will parse it and return the corresponding StrengthType.
+ * @throws ECObjectsStatus.InvalidStrength if the provided string that is not valid
+ * @param strength
+ */
 export function parseStrength(strength: string): StrengthType {
-  const lowerStrength = strength.toLowerCase();
-  if (/Referencing/i.test(lowerStrength))
+  if (/Referencing/i.test(strength))
     return StrengthType.Referencing;
-  else if (/Holding/i.test(lowerStrength))
+  else if (/Holding/i.test(strength))
     return StrengthType.Holding;
-  else if (/Embedding/i.test(lowerStrength))
+  else if (/Embedding/i.test(strength))
     return StrengthType.Embedding;
 
   throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `${strength} is not a valid StrengthType`);
 }
 
-export const enum StrengthDirection {
+export const enum RelatedInstanceDirection {
   Forward = 1,
   Backward = 2,
 }
 
-export function parseStrengthDirection(direction: string): StrengthDirection {
+export function parseStrengthDirection(direction: string): RelatedInstanceDirection {
   const lowerDirection = direction.toLowerCase();
   if (/Forward/i.test(lowerDirection))
-    return StrengthDirection.Forward;
+    return RelatedInstanceDirection.Forward;
   else if (/Backward/i.test(lowerDirection))
-    return StrengthDirection.Backward;
+    return RelatedInstanceDirection.Backward;
 
   throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `${direction} is not a valid StrengthDirection.`);
 }

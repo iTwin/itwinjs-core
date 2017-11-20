@@ -2,15 +2,16 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { ClassInterface, MixinInterface, EntityClassInterface, PropertyInterface, CustomAttributeClassInterface, RelationshipClassInterface, RelationshipConstraintInterface } from "../Interfaces";
-import { ECClassModifier, CustomAttributeContainerType, RelationshipMultiplicity, RelationshipEnd, StrengthDirection, StrengthType,
-  parseCustomAttributeContainerType, parseClassModifier, parseStrength, parseStrengthDirection } from "../ECObjects";
+import { ClassInterface, MixinInterface, EntityClassInterface, PropertyInterface, CustomAttributeClassInterface, RelationshipClassInterface, RelationshipConstraintInterface, NavigationPropertyInterface, PrimitivePropertyInterface, PrimitiveArrayPropertyInteface, SchemaChildInterface, StructPropertyInterface, StructArrayPropertyInterface } from "../Interfaces";
+import { ECClassModifier, CustomAttributeContainerType, RelationshipMultiplicity, RelationshipEnd, RelatedInstanceDirection, StrengthType,
+  parseCustomAttributeContainerType, parseClassModifier, parseStrength, parseStrengthDirection, PrimitiveType, parsePrimitiveType } from "../ECObjects";
 import { ICustomAttributeContainer, CustomAttributeSet } from "./CustomAttribute";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import SchemaChild from "./SchemaChild";
+import { NavigationProperty, PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty } from "./Property";
 
 /**
- *
+ * A common abstract class for all of the EC class types.
  */
 export abstract class Class extends SchemaChild implements ICustomAttributeContainer, ClassInterface {
   public modifier: ECClassModifier;
@@ -27,14 +28,122 @@ export abstract class Class extends SchemaChild implements ICustomAttributeConta
       this.modifier = ECClassModifier.None;
   }
 
-  public createProperty(name: string) {
-    // TODO
-    if (!name)
-      return;
-
-    return;
+  /**
+   * Searches for a local ECProperty matching the name passed in
+   * @param name
+   */
+  public getProperty<T extends PropertyInterface>(name: string): T | undefined {
+    if (!this.properties)
+      return undefined;
+    return this.properties.find((prop) => prop.name.toLowerCase() === name.toLowerCase()) as T;
   }
 
+  /**
+   *
+   * @param name
+   * @param type
+   */
+  public createPrimitiveProperty(name: string, type?: string | PrimitiveType): PrimitivePropertyInterface {
+    if (this.getProperty(name))
+      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
+
+    let correctType: PrimitiveType | undefined;
+    if (type && typeof(type) === "string")
+      correctType = parsePrimitiveType(type);
+    else
+      correctType = type as PrimitiveType | undefined;
+
+    const primProp = new PrimitiveProperty(name, correctType);
+
+    if (!this.properties)
+      this.properties = [];
+    this.properties.push(primProp);
+
+    return primProp;
+  }
+
+  /**
+   *
+   * @param name
+   * @param type
+   */
+  public createPrimitiveArrayProperty(name: string, type?: string | PrimitiveType): PrimitiveArrayPropertyInteface {
+    if (this.getProperty(name))
+      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
+
+    let correctType: PrimitiveType | undefined;
+    if (type && typeof(type) === "string")
+      correctType = parsePrimitiveType(type);
+    else
+      correctType = type as PrimitiveType | undefined;
+
+    const primArrProp = new PrimitiveArrayProperty(name, correctType);
+
+    if (!this.properties)
+      this.properties = [];
+    this.properties.push(primArrProp);
+
+    return primArrProp;
+  }
+
+  /**
+   *
+   * @param name
+   * @param type
+   */
+  public createStructProperty(name: string, type: string | SchemaChildInterface): StructPropertyInterface {
+    if (this.getProperty(name))
+      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
+
+    let correctType: StructClass | undefined;
+    if (typeof(type) === "string") {
+      correctType = this.schema.getChild<StructClass>(type);
+    } else
+      correctType = type as StructClass;
+
+    if (!correctType)
+      throw new ECObjectsError(ECObjectsStatus.ECOBJECTS_ERROR_BASE, ``);
+
+    const structProp = new StructProperty(name, correctType);
+
+    if (!this.properties)
+      this.properties = [];
+    this.properties.push(structProp);
+
+    return structProp;
+  }
+
+  /**
+   *
+   * @param name
+   * @param type
+   */
+  public createStructArrayProperty(name: string, type: string | SchemaChildInterface): StructArrayPropertyInterface {
+    if (this.getProperty(name))
+      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
+
+    let correctType: StructClass | undefined;
+    if (typeof(type) === "string") {
+      correctType = this.schema.getChild<StructClass>(type);
+    } else
+      correctType = type as StructClass;
+
+    if (!correctType)
+      throw new ECObjectsError(ECObjectsStatus.ECOBJECTS_ERROR_BASE, ``);
+
+    const structProp = new StructArrayProperty(name, correctType);
+
+    if (!this.properties)
+      this.properties = [];
+    this.properties.push(structProp);
+
+    return structProp;
+  }
+
+  /**
+   *
+   * @param jsonObj
+   */
   public fromJson(jsonObj: any): void {
     super.fromJson(jsonObj);
 
@@ -63,6 +172,37 @@ export abstract class Class extends SchemaChild implements ICustomAttributeConta
 export class EntityClass extends Class implements EntityClassInterface {
   public mixins?: MixinInterface[];
 
+  /**
+   *
+   * @param name
+   * @param relationship
+   * @param direction
+   */
+  public createNavigationProperty(name: string, relationship: string | RelationshipClassInterface, direction: string | RelatedInstanceDirection): NavigationPropertyInterface {
+    if (this.getProperty(name))
+      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
+
+    if (typeof(relationship) === "string") {
+      // Attempt to locate the relationship
+      throw new ECObjectsError(ECObjectsStatus.ECOBJECTS_ERROR_BASE, ``);
+    }
+
+    if (typeof(direction) === "string")
+      direction = parseStrengthDirection(direction);
+
+    const navProp = new NavigationProperty(name, relationship, direction);
+
+    if (!this.properties)
+      this.properties = [];
+    this.properties.push(navProp);
+
+    return navProp;
+  }
+
+  /**
+   *
+   * @param jsonObj
+   */
   public fromJson(jsonObj: any): void {
     super.fromJson(jsonObj);
 
@@ -136,20 +276,51 @@ export class CustomAttributeClass extends Class implements CustomAttributeClassI
  */
 export class RelationshipClass extends Class implements RelationshipClassInterface {
   public strength: StrengthType;
-  public strengthDirection: StrengthDirection;
+  public strengthDirection: RelatedInstanceDirection;
   public readonly source: RelationshipConstraintInterface;
   public readonly target: RelationshipConstraintInterface;
 
-  constructor(name: string, strength?: StrengthType, strengthDirection?: StrengthDirection, modifier?: ECClassModifier) {
+  constructor(name: string, strength?: StrengthType, strengthDirection?: RelatedInstanceDirection, modifier?: ECClassModifier) {
     super(name, modifier);
 
     if (strength) this.strength = strength; else this.strength = StrengthType.Referencing;
-    if (strengthDirection) this.strengthDirection = strengthDirection; else this.strengthDirection = StrengthDirection.Forward;
+    if (strengthDirection) this.strengthDirection = strengthDirection; else this.strengthDirection = RelatedInstanceDirection.Forward;
 
     this.source = new RelationshipConstraint(this, RelationshipEnd.Source);
     this.target = new RelationshipConstraint(this, RelationshipEnd.Target);
   }
 
+  /**
+   *
+   * @param name
+   * @param relationship
+   * @param direction
+   */
+  public createNavigationProperty(name: string, relationship: string | RelationshipClassInterface, direction: string | RelatedInstanceDirection): NavigationPropertyInterface {
+    if (this.getProperty(name))
+      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
+
+    if (typeof(relationship) === "string") {
+      // Attempt to locate the relationship
+      throw new ECObjectsError(ECObjectsStatus.ECOBJECTS_ERROR_BASE, ``);
+    }
+
+    if (typeof(direction) === "string")
+      direction = parseStrengthDirection(direction);
+
+    const navProp = new NavigationProperty(name, relationship, direction);
+
+    if (!this.properties)
+      this.properties = [];
+    this.properties.push(navProp);
+
+    return navProp;
+  }
+
+  /**
+   *
+   * @param jsonObj
+   */
   public fromJson(jsonObj: any): void {
     super.fromJson(jsonObj);
 
@@ -231,7 +402,9 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
         if (!tempAbstractConstraint)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
-        this.abstractConstraint = tempAbstractConstraint;
+        this.abstractConstraint = tempAbstractConstraint as EntityClassInterface === null ?
+                                tempAbstractConstraint as RelationshipClassInterface :
+                                tempAbstractConstraint as EntityClassInterface;
       }
     }
 
@@ -244,7 +417,9 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
           if (!tempConstraintClass)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
-          this.addClass(tempConstraintClass);
+          this.addClass(tempConstraintClass as EntityClassInterface === null ?
+                        tempConstraintClass as RelationshipClassInterface :
+                        tempConstraintClass as EntityClassInterface);
         }
       });
     }

@@ -6,7 +6,7 @@ import { SchemaInterface, SchemaChildInterface, ClassInterface, EntityClassInter
         RelationshipClassInterface, RelationshipConstraintInterface } from "../Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaContext } from "../Context";
-import { ECVersion, SchemaKey } from "../ECObjects";
+import { ECVersion, SchemaKey, parsePrimitiveType } from "../ECObjects";
 import SchemaChild from "../Metadata/SchemaChild";
 
 /**
@@ -126,6 +126,9 @@ export default class SchemaReadHelper {
     if (!childName)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson);
 
+    if (!schemaChildJson.schemaChildType)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+
     switch (schemaChildJson.schemaChildType) {
       case "EntityClass":
         const entityClass: EntityClassInterface = schema.createEntityClass(childName);
@@ -163,6 +166,120 @@ export default class SchemaReadHelper {
   }
 
   /**
+   * Helps find a SchemaChild by first checking if it exists within the provided schema. If it does not exist there it will use the ReadContext to locate 
+   * @param fullName
+   * @param schema
+   */
+  private findSchemaChild(fullName: string, schema?: SchemaInterface): void {
+    const [schemaName, childName] = SchemaChild.parseFullName(fullName);
+
+    if (schema && schema.schemaKey.name.toLowerCase() === schemaName.toLowerCase() && undefined === schema.getChild(childName)) {
+      this.loadSchemaChild(schema, this.itemToRead.children[childName], childName);
+    } else if (undefined === this.context.locateSchemaChild(fullName)) {
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaChild ${fullName}.`);
+    }
+  }
+
+  // private loadCustomAttributeClasses(customAttributesJson: any, schema?: SchemaInterface): void {
+  //   if (!customAttributesJson.customAttributes)
+  //     return;
+
+  //   if (!Array.isArray(customAttributesJson.customAttributes))
+  //     throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+
+  //   customAttributesJson.customAttributes.forEach((caJson: any) => {
+  //     if (caJson) {
+  //       if (!caJson.className)
+  //         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+
+  //       if (typeof(caJson.className) !== "string")
+  //         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+
+  //       this.findSchemaChild(caJson.className, schema);
+  //     }
+  //   });
+  // }
+
+  /**
+   *
+   */
+  private loadPropertyTypes(classObj: ClassInterface, propertyJson: any): void {
+    if (typeof(propertyJson.name) !== "string")
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+
+    const propName = propertyJson.name;
+
+    if (typeof(propertyJson.propertyType) !== "string")
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+
+    if (propertyJson.category) {
+      if (typeof(propertyJson.category) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+      this.findSchemaChild(propertyJson.category, classObj.schema);
+    }
+
+    if (propertyJson.kindOfQuantity) {
+      if (typeof(propertyJson.kindOfQuantity) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+      this.findSchemaChild(propertyJson.kindOfQuantity, classObj.schema);
+    }
+
+    const loadEnumForPrimitiveProp = () => {
+      if (propertyJson.typeName) {
+        if (typeof(propertyJson.typeName) !== "string")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+
+        try {
+          parsePrimitiveType(propertyJson.typeName);
+        } catch (err) {
+          this.findSchemaChild(propertyJson.typeName);
+        }
+        // TODO Load Enumeration
+      }
+    };
+
+    const loadStructForStructProp = () => {
+      if (propertyJson.typeName) {
+        if (typeof(propertyJson.typeName) !== "string")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+        this.findSchemaChild(propertyJson.typeName, classObj.schema);
+      }
+    };
+
+    switch (propertyJson.propertyType) {
+      case "PrimitiveProperty":
+        loadEnumForPrimitiveProp();
+
+        const primProp = classObj.createPrimitiveProperty(propName);
+        primProp.fromJson(propertyJson);
+        break;
+      case "StructProperty":
+        // Try and load struct class on property
+        loadStructForStructProp();
+
+        const structProp = classObj.createStructProperty(propName, propertyJson.typeName);
+        structProp.fromJson(propertyJson);
+        break;
+      case "PrimitiveArrayProperty":
+        loadEnumForPrimitiveProp();
+
+        const primArrProp = classObj.createPrimitiveArrayProperty(propName);
+        primArrProp.fromJson(propertyJson);
+        break;
+      case "StructArrayProperty":
+        loadStructForStructProp();
+
+        const structArrProp = classObj.createStructArrayProperty(propName, propertyJson.typeName);
+        structArrProp.fromJson(propertyJson);
+        break;
+      case "NavigationProperty":
+        break;
+    }
+
+    // TODO Load CustomAttributeClasses
+  }
+
+  /**
    *
    * @param schemaJson The original json object of the schema.
    * @param classJson The json object for this class
@@ -176,24 +293,20 @@ export default class SchemaReadHelper {
       this.findSchemaChild(classJson.baseClass, schema);
     }
 
+    if (classJson.properties) {
+      if (!Array.isArray(classJson.properties))
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+
+      classJson.properties.forEach((property: any) => {
+        if (typeof(property) !== "object")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+
+        this.loadPropertyTypes(classObj, property);
+      });
+    }
     // TODO Load all class that are used within properties
 
     classObj.fromJson(classJson);
-  }
-
-  /**
-   * Helps find a SchemaChild by first checking if it exists within the provided schema. If it does not exist there it will use the ReadContext to locate 
-   * @param fullName
-   * @param schema
-   */
-  private findSchemaChild(fullName: string, schema?: SchemaInterface): void {
-    const [schemaName, childName] = SchemaChild.parseFullName(fullName);
-
-    if (schema && schema.schemaKey.name.toLowerCase() === schemaName.toLowerCase() && undefined === schema.getChild(childName)) {
-      this.loadSchemaChild(schema, this.itemToRead.children[childName], childName);
-    } else if (undefined === this.context.locateSchemaChild(fullName)) {
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaChild ${fullName}.`);
-    }
   }
 
   private loadEntityClass(entity: EntityClassInterface, entityJson: any, schema?: SchemaInterface): void {

@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { ECSchema } from "../../source/Metadata/Schema";
 import { RelationshipClass, EntityClass } from "../../source/Metadata/Class";
-import { RelationshipMultiplicity, StrengthType, StrengthDirection } from "../../source/ECObjects";
+import { RelationshipMultiplicity, StrengthType, RelatedInstanceDirection } from "../../source/ECObjects";
 
 describe("relationship multiplicity", () => {
   it("check if standard multiplicities are truly static objects", () => {
@@ -66,7 +66,7 @@ describe("relationship", () => {
       const relClass = schema.getClass<RelationshipClass>("TestRelClass");
       assert.isDefined(relClass);
       expect(relClass!.strength).equal(StrengthType.Embedding);
-      expect(relClass!.strengthDirection).equal(StrengthDirection.Backward);
+      expect(relClass!.strengthDirection).equal(RelatedInstanceDirection.Backward);
 
       assert.isDefined(relClass!.source);
       expect(relClass!.source!.polymorphic).equal(true);
