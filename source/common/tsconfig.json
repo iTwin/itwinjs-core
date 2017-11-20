@@ -23,7 +23,8 @@
     "outDir": "./lib" /* Redirect output structure to the directory. */
   },
   "include": [
-    "./**/*.ts"
+    "./**/*.ts",
+    "../gateway/**/*.ts"
   ],
   "exclude": [
     "lib",

@@ -4,12 +4,14 @@
   "files.exclude": {
     "node_modules": true,
     "lib": true,
-    "source/backend/node_modules": true,
     "source/backend/lib": true,
-    "source/frontend/node_modules": true,
+    "source/backend/node_modules": true,
+    "source/common/lib": true,
+    "source/common/node_modules": true,
     "source/frontend/lib": true,
-    "source/test/node_modules": true,
-    "source/test/lib": true
+    "source/frontend/node_modules": true,
+    "source/test/lib": true,
+    "source/test/node_modules": true
   },
   "cSpell.words": [
     "Unexpanded",

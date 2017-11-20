@@ -44,25 +44,22 @@ The individual commands orchestrate separate frontend, backend, and test steps a
 
 | Output Directory                   | Published As      |
 |------------------------------------|-------------------|
+| imodeljs-core/source/common/lib/   | imodeljs-common   |
 | imodeljs-core/source/frontend/lib/ | imodeljs-frontend |
 | imodeljs-core/source/backend/lib/  | imodeljs-backend  |
 | imodeljs-core/source/test/lib/     | Not published     |
 
-Note that imodeljs-core/source/common/ is built into both the **imodeljs-frontend** and **imodeljs-backend** packages.
-
 ### Publishing
 
-Publishing is now a 2 step process as there are 2 separate packages.
-Generally, imodeljs-frontend and imodeljs-backend are published at the same time, but there could be cases of frontend-specific or backend-specific fixes.
-Note that any change to a "common" file is a change to both the **imodeljs-frontend** and **imodeljs-backend**.
+Publishing is now a 3 step process as there are 3 separate packages.
+Generally, imodeljs-common, imodeljs-frontend, and imodeljs-backend are published at the same time, but there could be cases of common-specific, frontend-specific, or backend-specific fixes.
 
-### Publish imodeljs-backend
+### Publish Steps
 
+1. Change to the common directory: `cd source/common`
+2. Publish: `npm publish`
 1. Change to the backend directory: `cd source/backend`
 2. Publish: `npm publish`
-
-### Publish imodeljs-frontend
-
 1. Change to the frontend directory: `cd source/frontend`
 2. Publish: `npm publish`
 
