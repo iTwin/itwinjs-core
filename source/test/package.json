@@ -1,5 +1,5 @@
 {
-  "name": "PRIVATE-imodeljs-core-tests",
+  "name": "imodeljs-core-tests",
   "version": "0.0.0",
   "//private": "NOTE: this is a private package that is never published",
   "private": true,
