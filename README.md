@@ -16,6 +16,10 @@ The source code is organized according to where it can run:
 | source/common/   | Design to run either in frontend or backend. Must adhere to frontend restrictions. |
 | source/test/     | Specific for unit tests. The test framework puts the frontend and backend together in a single executable. |
 
+## Prerequisites
+
+* **Node**: an installation of the latest security patch of Node 8.9.x downloaded from [nodejs.org](https://nodejs.org/en/).
+
 ## Build Instructions
 
 1. Pull repository: `git pull`
@@ -36,7 +40,7 @@ The individual commands orchestrate separate frontend, backend, and test steps a
 | Build source         | npm run build | gulp build  |
 | Run tests            | npm run test  | gulp test   |
 
-## Build Output
+## Build Output and Publishing
 
 | Output Directory                   | Published As      |
 |------------------------------------|-------------------|
@@ -44,7 +48,23 @@ The individual commands orchestrate separate frontend, backend, and test steps a
 | imodeljs-core/source/backend/lib/  | imodeljs-backend  |
 | imodeljs-core/source/test/lib/     | Not published     |
 
-Note that imodeljs-core/source/common/ is built into both the imodeljs-frontend and imodeljs-backend packages.
+Note that imodeljs-core/source/common/ is built into both the **imodeljs-frontend** and **imodeljs-backend** packages.
+
+### Publishing
+
+Publishing is now a 2 step process as there are 2 separate packages.
+Generally, imodeljs-frontend and imodeljs-backend are published at the same time, but there could be cases of frontend-specific or backend-specific fixes.
+Note that any change to a "common" file is a change to both the **imodeljs-frontend** and **imodeljs-backend**.
+
+### Publish imodeljs-backend
+
+1. Change to the backend directory: `cd source/backend`
+2. Publish: `npm publish`
+
+### Publish imodeljs-frontend
+
+1. Change to the frontend directory: `cd source/frontend`
+2. Publish: `npm publish`
 
 ## Other NPM Scripts
 

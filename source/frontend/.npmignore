@@ -1,2 +1,4 @@
 *.ts
+tsconfig.json
+tslint.json
 lib/**/*.map
