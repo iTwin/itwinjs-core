@@ -67,7 +67,7 @@ export class Entity implements EntityProps {
   public forEachProperty(func: PropertyCallback, includeCustom: boolean = false) { EntityMetaData.forEach(this.iModel, this.classFullName, true, func, includeCustom); }
 
   /** STATIC method to get the full name of this class, in the form "schema.class"  */
-  public static get sqlName() { return this.schema.name + "." + this.name; }
+  public static get sqlName(): string { return this.schema.name + "." + this.name; }
 
   /** get full class name of this Entity in the form "schema:class". */
   public get classFullName(): string { return this.schemaName + ":" + this.className; }
@@ -81,10 +81,10 @@ export class Entity implements EntityProps {
   /** Determine whether this Entity is in the persistent (unmodified) state from the database. Persistent Entities may
    * not be changed in any way. To modify an Entity, make a copy of it using [[copyForEdit]].
    */
-  public isPersistent() { return this.persistent; }
+  public isPersistent(): boolean { return this.persistent; }
 
   /** make a copy of this Entity so that it may be be modified. */
-  public copyForEdit<T extends Entity>() { return new (this.constructor as EntityCtor)(this, this.iModel) as T; }
+  public copyForEdit<T extends Entity>(): T { return new (this.constructor as EntityCtor)(this, this.iModel) as T; }
 }
 
 /** A custom attribute instance */

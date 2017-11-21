@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "iModelJs frontend components",
   "license": "UNLICENSED",
   "scripts": {
@@ -23,9 +23,9 @@
     "NOTE: dependencies that are in common with imodeljs-backend must have a consistent version"
   ],
   "dependencies": {
-    "@bentley/bentleyjs-core": "1.0.41",
-    "@bentley/geometry-core": "1.0.25",
-    "@bentley/imodeljs-clients": "1.0.31",
+    "@bentley/bentleyjs-core": "^1.0.41",
+    "@bentley/geometry-core": "^1.0.27",
+    "@bentley/imodeljs-clients": "^1.0.31",
     "js-base64": "^2.3.2"
   },
   "//devDependencies": "NOTE: all devDependencies should be recorded in the top-level package.json only",

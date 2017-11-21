@@ -494,9 +494,8 @@ export abstract class Viewport {
     return frustFraction;
   }
 
-  /** save the current ViewState in the view undo buffer, if it has changed since the last time this function was called. */
-  private saveViewUndo() {
-    const curr = this.view.clone();
+  private saveViewUndo(): void {
+    const curr = this.view.clone<ViewState>();
     if (!this.currentBaseline) {
       this.currentBaseline = curr;
       return;
@@ -515,7 +514,7 @@ export abstract class Viewport {
     this.currentBaseline = curr;
   }
 
-  public synchWithView(saveInUndo: boolean) {
+  public synchWithView(saveInUndo: boolean): void {
     this.setupFromView();
 
     if (saveInUndo)
@@ -535,6 +534,7 @@ export abstract class Viewport {
     Transform.initFromRange(corners.low, corners.high, scrToNpcTran, undefined);
     scrToNpcTran.multiplyPoint3dArrayInPlace(pts);
   }
+
   public viewToNpc(pt: Point3d, out?: Point3d) {
     const corners = this.getViewCorners();
     const scrToNpcTran = Transform.createIdentity();
