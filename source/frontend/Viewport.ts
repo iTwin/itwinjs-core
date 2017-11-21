@@ -87,7 +87,7 @@ export abstract class Viewport {
   private viewDelta: Vector3d;     // view delta, potentially expanded
   private viewOrgUnexpanded: Point3d;     // view origin (from ViewState, un-expanded)
   private viewDeltaUnexpanded: Vector3d;  // view delta (from ViewState, un-expanded)
-  private rotMatrix: RotMatrix;           // rotation matrix (from ViewState)
+  public rotMatrix: RotMatrix;           // rotation matrix (from ViewState)
   private rootToView: Map4d;
   private rootToNpc: Map4d;
   public view: ViewState;
@@ -127,7 +127,7 @@ export abstract class Viewport {
     const coffs = this.rotMatrix.coffs;
     pt.x = (coffs[0] * x + coffs[3] * y + coffs[6] * z);
     pt.y = (coffs[1] * x + coffs[4] * y + coffs[7] * z);
-    pt.z = (coffs[2] * x + coffs[4] * y + coffs[8] * z);
+    pt.z = (coffs[2] * x + coffs[5] * y + coffs[8] * z);
   }
 
   /** adjust the front and back planes to encompass the entire viewed volume */
@@ -557,13 +557,12 @@ export abstract class Viewport {
   public worldToView(input: Point3d, out?: Point3d) { return this.rootToView.transform0Ref().multiplyPoint3dQuietNormalize(input, out); }
   public viewToWorld(input: Point3d, out?: Point3d) { return this.rootToView.transform1Ref().multiplyPoint3dQuietNormalize(input, out); }
 
-  /** Converts inches to pixels based on screen DPI.Note that this information may not be accurate in some browsers.
-   * @param  inches the number of inches
+  /** Converts inches to pixels based on screen DPI.
+   * @Note this information may not be accurate in some browsers.
+   * @param inches the number of inches to convert
    * @returns the corresponding number of pixels
    */
-  public pixelsFromInches(inches: number) {
-    return inches * this.pixelsPerInch;
-  }
+  public pixelsFromInches(inches: number): number { return inches * this.pixelsPerInch; }
 
   /**
    * Get an 8-point frustum corresponding to the 8 corners of the Viewport in the specified coordinate system.
@@ -611,10 +610,13 @@ export abstract class Viewport {
     return box;
   }
 
-  public getWorldFrustum(box?: Frustum) { return this.getFrustum(CoordSystem.World, true, box); }
+  public getWorldFrustum(box?: Frustum): Frustum { return this.getFrustum(CoordSystem.World, true, box); }
 
-  /** scroll the view by a given number of pixels. */
-  public scroll(screenDist: Point2d) { // => distance to scroll in pixels
+  /**
+   * scroll the view by a given number of pixels.
+   * @param screenDist distance to scroll in pixels
+   */
+  public scroll(screenDist: Point2d): ViewStatus {
     const view = this.view;
     if (!view)
       return ViewStatus.InvalidViewport;
@@ -640,7 +642,7 @@ export abstract class Viewport {
   }
 
   /**
-   * Zoom the view by a scale factor, placing the new center at the projection of the given point (root coordinates)
+   * Zoom the view by a scale factor, placing the new center at the projection of the given point (world coordinates)
    * on the focal plane.
    * Updates ViewState and re-synchs Viewport.
    */
@@ -663,7 +665,6 @@ export abstract class Viewport {
       product.multiplyPoint3dArrayInPlace(frust.points);
 
       this.npcToWorldArray(frust.points);
-
       view.setupFromFrustum(frust);
       view.centerEyePoint();
       return this.setupFromView();

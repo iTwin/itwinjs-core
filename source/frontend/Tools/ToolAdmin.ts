@@ -6,7 +6,7 @@ import { NpcCenter } from "../../common/ViewState";
 import { Viewport } from "../Viewport";
 import { IdleTool } from "./IdleTool";
 import {
-  InputEventModifiers, ButtonState, Button, GestureEvent, Tool, ButtonEvent, CoordSource, GestureInfo,
+  ModifierKey, ButtonState, Button, GestureEvent, Tool, ButtonEvent, CoordSource, GestureInfo,
   Cursor, PrimitiveTool, WheelMouseEvent, InputSource, VirtualKey,
 } from "./Tool";
 import { ViewTool } from "./ViewTool";
@@ -15,7 +15,7 @@ export class CurrentInputState {
   private _rawPoint: Point3d = new Point3d();
   private _uorPoint: Point3d = new Point3d();
   private _viewPoint: Point3d = new Point3d();
-  public qualifiers: InputEventModifiers;
+  public qualifiers: ModifierKey;
   public motionTime: number;
   public viewport?: Viewport;
   public button: ButtonState[] = [new ButtonState(), new ButtonState(), new ButtonState()];
@@ -39,13 +39,13 @@ export class CurrentInputState {
   public set viewPoint(pt: Point3d) { this._viewPoint.setFrom(pt); }
   public get wasMotion() { return 0 !== this.motionTime; }
   public get wasTouchMotion() { return 0 !== this.touchMotionTime; }
-  public get isShiftDown() { return 0 !== (this.qualifiers & InputEventModifiers.Shift); }
-  public get isControlDown() { return 0 !== (this.qualifiers & InputEventModifiers.Control); }
-  public get isAltDown() { return 0 !== (this.qualifiers & InputEventModifiers.Alt); }
+  public get isShiftDown() { return 0 !== (this.qualifiers & ModifierKey.Shift); }
+  public get isControlDown() { return 0 !== (this.qualifiers & ModifierKey.Control); }
+  public get isAltDown() { return 0 !== (this.qualifiers & ModifierKey.Alt); }
   public isDragging(button: Button) { return this.button[button].isDragging; }
   public onStartDrag(button: Button) { this.button[button].isDragging = true; }
-  public setKeyQualifier(qual: InputEventModifiers, down: boolean) { this.qualifiers = down ? (this.qualifiers | qual) : (this.qualifiers & (~qual)); }
-  public clearKeyQualifiers() { this.qualifiers = InputEventModifiers.None; }
+  public setKeyQualifier(qual: ModifierKey, down: boolean) { this.qualifiers = down ? (this.qualifiers | qual) : (this.qualifiers & (~qual)); }
+  public clearKeyQualifiers() { this.qualifiers = ModifierKey.None; }
 
   private disableIgnoreTouchMotionTest() { this.wantIgnoreTest = false; }
 
@@ -266,7 +266,7 @@ export class ToolAdmin {
   // tentPoint: TentativePoint;
   // accuDraw: AccuDraw;
   private modifierKeyWentDown: boolean;
-  private modifierKey: InputEventModifiers;
+  private modifierKey: ModifierKey;
   private touchBridgeMode: boolean; // Flag indicating that touch events are being converted into mouse events for this tool
 
   protected filterViewport(_vp: Viewport) { return false; }
@@ -693,7 +693,7 @@ export class ToolAdmin {
   public onDoubleTap(vp: Viewport, gestureInfo: GestureInfo) { this.processGestureInfo(vp, gestureInfo, "onDoubleTap"); }
   public onLongPress(vp: Viewport, gestureInfo: GestureInfo) { this.processGestureInfo(vp, gestureInfo, "onLongPress"); }
 
-  public onModifierKeyTransition(wentDown: boolean, key: InputEventModifiers) {
+  public onModifierKeyTransition(wentDown: boolean, key: ModifierKey) {
     if (wentDown === this.modifierKeyWentDown && key === this.modifierKey)
       return;
 
@@ -714,13 +714,13 @@ export class ToolAdmin {
     }
   }
 
-  private static getModifierKeyFromVirtualKey(key: VirtualKey): InputEventModifiers {
+  private static getModifierKeyFromVirtualKey(key: VirtualKey): ModifierKey {
     switch (key) {
-      case VirtualKey.Alt: return InputEventModifiers.Alt;
-      case VirtualKey.Shift: return InputEventModifiers.Shift;
-      case VirtualKey.Control: return InputEventModifiers.Control;
+      case VirtualKey.Alt: return ModifierKey.Alt;
+      case VirtualKey.Shift: return ModifierKey.Shift;
+      case VirtualKey.Control: return ModifierKey.Control;
     }
-    return InputEventModifiers.None;
+    return ModifierKey.None;
   }
 
   public onKeyTransition(wentDown: boolean, key: VirtualKey): boolean {

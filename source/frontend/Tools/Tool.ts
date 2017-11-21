@@ -45,7 +45,7 @@ export const enum CoordSource {
   ElemSnap = 3,    // event was created by snapping to an element
 }
 
-export const enum InputEventModifiers {
+export const enum ModifierKey {
   None = 0,
   Control = 1 << 0,
   Shift = 1 << 2,
@@ -170,7 +170,7 @@ export class ButtonEvent {
   private _viewPoint: Point3d = new Point3d();
   public viewport?: Viewport;
   public coordsFrom: CoordSource;   // how were the coordinate values in point generated?
-  public keyModifiers: InputEventModifiers;
+  public keyModifiers: ModifierKey;
   public isDoubleClick: boolean;
   public isDown: boolean;
   public button: Button;
@@ -184,7 +184,7 @@ export class ButtonEvent {
   public get viewPoint() { return this._viewPoint; }
   public set viewPoint(pt: Point3d) { this._viewPoint.setFrom(pt); }
 
-  public initEvent(point: Point3d, rawPoint: Point3d, viewPt: Point3d, vp: Viewport, from: CoordSource, keyModifiers: InputEventModifiers, button = Button.Data, isDown = true, doubleClick = false, source = InputSource.Unknown) {
+  public initEvent(point: Point3d, rawPoint: Point3d, viewPt: Point3d, vp: Viewport, from: CoordSource, keyModifiers: ModifierKey, button = Button.Data, isDown = true, doubleClick = false, source = InputSource.Unknown) {
     this.point = point;
     this.rawPoint = rawPoint;
     this.viewPoint = viewPt;
@@ -199,9 +199,9 @@ export class ButtonEvent {
   }
 
   public getDisplayPoint(): Point2d { return new Point2d(this._viewPoint.x, this._viewPoint.y); }
-  public get isControlKey() { return 0 !== (this.keyModifiers & InputEventModifiers.Control); }
-  public get isShiftKey() { return 0 !== (this.keyModifiers & InputEventModifiers.Shift); }
-  public get isAltKey() { return 0 !== (this.keyModifiers & InputEventModifiers.Alt); }
+  public get isControlKey() { return 0 !== (this.keyModifiers & ModifierKey.Control); }
+  public get isShiftKey() { return 0 !== (this.keyModifiers & ModifierKey.Shift); }
+  public get isAltKey() { return 0 !== (this.keyModifiers & ModifierKey.Alt); }
   public reset() { this.viewport = undefined; }
 
   public copyFrom(src: ButtonEvent) {
@@ -349,7 +349,7 @@ export abstract class Tool {
    * @param key One of VirtualKey.Control, VirtualKey.Shift, or VirtualKey.Alt
    * @return true to refresh view decorations or update dynamics.
    */
-  public onModifierKeyTransition(_wentDown: boolean, _key: VirtualKey) { return false; }
+  public onModifierKeyTransition(_wentDown: boolean, _key: ModifierKey) { return false; }
 
   /** Called when  keys are pressed or released.
    * @param wentDown up or down key event

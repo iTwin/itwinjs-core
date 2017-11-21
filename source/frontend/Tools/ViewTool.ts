@@ -683,6 +683,37 @@ export class ViewManip extends ViewTool {
     vp.setupFromFrustum(frust);
     return true;
   }
+
+  public viewPtToSpherePt(viewPt: Point3d, invertY: boolean, result?: Point3d): Point3d | undefined {
+    const vp = this.viewport;
+    const ballRadius = this.ballRadius;
+    const targetCenterView = vp.worldToView(this.targetCenterWorld, scratchPoint3d1);
+
+    const ballMouse = scratchPoint3d2;
+    ballMouse.x = (viewPt.x - targetCenterView.x) / ballRadius;
+    ballMouse.y = (viewPt.y - targetCenterView.y) / ballRadius;
+
+    const mag = (ballMouse.x * ballMouse.x) + (ballMouse.y * ballMouse.y);
+    if (mag > 1.0 || !vp.view.allow3dManipulations()) {
+      // we're outside of the circle
+      if (mag <= 0.0)
+        return undefined;
+
+      const scale = 1.0 / Math.sqrt(mag);
+      ballMouse.x *= scale;
+      ballMouse.y *= scale;
+      ballMouse.z = 0.0;
+    } else {
+      ballMouse.z = vp.view.allow3dManipulations() ? Math.sqrt(1.0 - mag) : 0.0;
+    }
+
+    if (invertY)
+      ballMouse.y = -ballMouse.y;
+
+    result = result ? result : new Point3d();
+    result.setFrom(ballMouse);
+    return result;
+  }
 }
 
 /** ViewingToolHandle for performing the "pan view" operation */
@@ -844,17 +875,16 @@ class ViewRotate extends ViewingToolHandle {
       return false;
 
     const currPt = viewport.npcToView(ptNpc, scratchPoint3d2);
-    if (frustumChange) {
+    if (frustumChange)
       this.firstPtNpc.setFrom(ptNpc);
-    }
 
-    const radians = 0.0;
-    const worldAxis = new Cartesian3();
+    let radians: Angle;
+    let worldAxis: Vector3d;
     const worldPt = tool.targetCenterWorld;
-    if (this.viewTool.useSphere || !viewport.view.allow3dManipulations) {
+    if (!viewport.view.allow3dManipulations()) {
       const currBallPt = this.viewTool.viewPtToSpherePt(currPt, true);
 
-      const axisVector = new Cartesian3();
+      const axisVector = new Point3d();
       radians = this.viewTool.ballPointsToMatrix(undefined, axisVector, this.ballVector0, currBallPt);
 
       const viewMatrix = viewport.rotMatrix;
@@ -864,11 +894,11 @@ class ViewRotate extends ViewingToolHandle {
 
       worldAxis.sumOf3ScaledVectors(Cartesian3.ZERO, xVec, axisVector.x, yVec, axisVector.y, zVec, axisVector.z);
     } else {
-      const viewRect = viewport.getViewRect();
+      const viewRect = viewport.viewRect;
       const xExtent = viewRect.width;
       const yExtent = viewRect.height;
 
-      const currPt = viewport.npcToView(ptNpc);
+      viewport.npcToView(ptNpc, currPt);
       const firstPt = viewport.npcToView(this.firstPtNpc);
 
       const xDelta = (currPt.x - firstPt.x);
@@ -880,16 +910,12 @@ class ViewRotate extends ViewingToolHandle {
       // Movement in screen y == rotation about screen X...
       const yAxis = viewport.rotMatrix.getRow(0);
 
-      const xRMatrix = RotMatrix.createIdentity();
-      if (xDelta)
-        xRMatrix.initFromVectorAndRotationAngle(xAxis, Math.PI / (xExtent / xDelta));
-
-      const yRMatrix = RotMatrix.createIdentity();
-      if (yDelta)
-        yRMatrix.initFromVectorAndRotationAngle(yAxis, Math.PI / (yExtent / yDelta));
-
+      const xRMatrix = xDelta ? RotMatrix.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (xExtent / xDelta))) : RotMatrix.createIdentity();
+      const yRMatrix = yDelta ? RotMatrix.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta))) : RotMatrix.createIdentity();
       const worldRMatrix = yRMatrix.multiplyMatrixMatrix(xRMatrix);
-      radians = -worldRMatrix.getRotationAngleAndVector(worldAxis);
+      const result = worldRMatrix.getAxisAndAngleOfRotation();
+      radians = Angle.createRadians(-result.angle.radians);
+      worldAxis = result.axis;
     }
 
     this.rotateViewWorld(worldPt, worldAxis, radians);
