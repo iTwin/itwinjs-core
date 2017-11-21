@@ -525,8 +525,8 @@ export namespace HiddenLine {
       this.pattern = JsonUtils.asInt(json.pattern, LinePixels.Solid);
       this.width = JsonUtils.asInt(json.width);
     }
-    public equals(rhs: Style): boolean {
-      return this.ovrColor === rhs.ovrColor && this.color === rhs.color && this.pattern === rhs.pattern && this.width === rhs.width;
+    public equals(other: Style): boolean {
+      return this.ovrColor === other.ovrColor && this.color === other.color && this.pattern === other.pattern && this.width === other.width;
     }
   }
 
@@ -534,7 +534,7 @@ export namespace HiddenLine {
     public visible: Style;
     public hidden: Style;
     public transparencyThreshold: number = 1.0;
-    public equals(rhs: Params): boolean { return this.visible === rhs.visible && this.hidden === rhs.hidden && this.transparencyThreshold === rhs.transparencyThreshold; }
+    public equals(other: Params): boolean { return this.visible === other.visible && this.hidden === other.hidden && this.transparencyThreshold === other.transparencyThreshold; }
     public constructor(json: any) {
       this.visible = new HiddenLine.Style(json.visible);
       this.hidden = new HiddenLine.Style(json.hidden);

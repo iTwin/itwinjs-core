@@ -2,8 +2,10 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
+import { Transform } from "@bentley/geometry-core/lib/PointVector";
 import { Code } from "../common/Code";
-import { GeometryStream, Placement3d, Placement2d } from "../common/ElementGeometry";
+import { Placement3d, Placement2d, AxisAlignedBox3d } from "../common/geometry/Primitives";
+import { GeometryStream, GeometryBuilder } from "../common/geometry/GeometryStream";
 import { ElementProps, RelatedElement } from "../common/ElementProps";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -18,7 +20,7 @@ export interface ElementLoadParams {
 }
 
 /** An element within an iModel. */
-export class Element extends Entity implements ElementProps {
+export abstract class Element extends Entity implements ElementProps {
   public model: Id64;
   public code: Code;
   public parent?: RelatedElement;
@@ -79,13 +81,24 @@ export interface GeometricElementProps extends ElementProps {
 }
 
 /** A Geometric element. All geometry held by a GeometricElement is positioned relative to its placement. */
-export class GeometricElement extends Element implements GeometricElementProps {
+export abstract class GeometricElement extends Element implements GeometricElementProps {
   public category: Id64;
   public geom?: GeometryStream;
   public constructor(props: GeometricElementProps, iModel: IModelDb) {
     super(props, iModel);
     this.category = new Id64(props.category);
     this.geom = GeometryStream.fromJSON(props.geom);
+  }
+
+  public abstract calculateRange3d(): AxisAlignedBox3d;
+  public abstract getAsGeometricElement2d(): GeometricElement2d | undefined;  // Either this method or getAsGeometrySource3d must return non-null
+  public abstract getAsGeometricElement3d(): GeometricElement3d | undefined;  // Either this method or getAsGeometrySource2d must return non-null
+  public is3d(): boolean { return this.getAsGeometricElement3d() !== undefined; }
+  public is2d(): boolean { return this.getAsGeometricElement2d() !== undefined; }
+
+  public getPlacementTransform(): Transform {
+    const source3d = this.getAsGeometricElement3d();
+    return (source3d !== undefined) ? source3d.getPlacement().getTransform() : this.getAsGeometricElement2d()!.getPlacement().getTransform();
   }
 
   /** convert this geometric element to a JSON object */
@@ -95,6 +108,49 @@ export class GeometricElement extends Element implements GeometricElementProps {
     if (this.geom)
       val.geom = this.geom;
     return val;
+  }
+
+  public updateFromGeometryBuilder(builder: GeometryBuilder): boolean {
+    if (builder.isPartCreate)
+      return false;   // Invalid builder for creating element geometry...
+
+    if (builder.currentSize === 0)
+      return false;
+
+    if (!builder.havePlacement)
+      return false;
+
+    if (!this.category.equals(builder.geometryParams.categoryId))
+      return false;
+
+    // const el = this.toElement();
+
+    // if (el === undefined || (el !== undefined && ))
+    //  return false;
+
+    if (builder.is3d) {
+      if (!builder.placement3d.isValid())
+        return false;
+
+      if (!(this instanceof GeometricElement3d))
+        return false;
+
+      this.placement.setFrom(builder.placement3d);
+    } else {
+      if (!builder.placement2d.isValid())
+        return false;
+
+      if (!(this instanceof GeometricElement2d))
+        return false;
+
+      this.placement.setFrom(builder.placement2d);
+    }
+
+    if (this.geom)
+      this.geom.saveRef(builder.getGeometryStreamCopy());
+    else
+      this.geom = new GeometryStream(builder.getGeometryStreamCopy());
+    return true;
   }
 }
 
@@ -110,7 +166,7 @@ export interface GeometricElement3dProps extends GeometricElementProps {
 }
 
 /** A Geometric 3d element. */
-export class GeometricElement3d extends GeometricElement implements GeometricElement3dProps {
+export abstract class GeometricElement3d extends GeometricElement implements GeometricElement3dProps {
   public placement: Placement3d;
   public typeDefinition?: TypeDefinition;
 
@@ -120,6 +176,8 @@ export class GeometricElement3d extends GeometricElement implements GeometricEle
     if (props.typeDefinition)
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
   }
+
+  public calculateRange3d(): AxisAlignedBox3d { return this.placement.calculateRange(); }
 
   public toJSON(): GeometricElement3dProps {
     const val = super.toJSON() as GeometricElement3dProps;
@@ -137,7 +195,7 @@ export interface GeometricElement2dProps extends GeometricElementProps {
 }
 
 /** A Geometric 2d element. */
-export class GeometricElement2d extends GeometricElement implements GeometricElement2dProps {
+export abstract class GeometricElement2d extends GeometricElement implements GeometricElement2dProps {
   public placement: Placement2d;
   public typeDefinition?: TypeDefinition;
 
@@ -148,6 +206,8 @@ export class GeometricElement2d extends GeometricElement implements GeometricEle
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
   }
 
+  public calculateRange3d(): AxisAlignedBox3d { return this.placement.calculateRange(); }
+
   public toJSON(): GeometricElement2dProps {
     const val = super.toJSON() as GeometricElement2dProps;
     val.placement = this.placement;
@@ -157,40 +217,40 @@ export class GeometricElement2d extends GeometricElement implements GeometricEle
   }
 }
 
-export class SpatialElement extends GeometricElement3d {
+export abstract class SpatialElement extends GeometricElement3d {
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-export class PhysicalElement extends SpatialElement {
+export abstract class PhysicalElement extends SpatialElement {
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-export class PhysicalPortion extends PhysicalElement {
+export abstract class PhysicalPortion extends PhysicalElement {
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** A SpatialElement that identifies a tracked real word 3-dimensional location but has no mass and cannot be touched.
  *  Examples include grid lines, parcel boundaries, and work areas.
  */
-export class SpatialLocationElement extends SpatialElement {
+export abstract class SpatialLocationElement extends SpatialElement {
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** A SpatialLocationPortion represents an arbitrary portion of a larger SpatialLocationElement that will be broken down in
  *  more detail in a separate (sub) SpatialLocationModel.
  */
-export class SpatialLocationPortion extends SpatialLocationElement {
+export abstract class SpatialLocationPortion extends SpatialLocationElement {
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** An InformationContentElement identifies and names information content.
  * @see InformationCarrierElement
  */
-export class InformationContentElement extends Element {
+export abstract class InformationContentElement extends Element {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-export class InformationReferenceElement extends InformationContentElement {
+export abstract class InformationReferenceElement extends InformationContentElement {
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
@@ -204,7 +264,7 @@ export class Subject extends InformationReferenceElement {
  * The will printed onto paper is a PrintedDocumentCopy.
  * In this example, the Document only identifies, names, and tracks the content of the will.
  */
-export class Document extends InformationContentElement {
+export abstract class Document extends InformationContentElement {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
@@ -221,26 +281,26 @@ export class SectionDrawing extends Drawing {
  *  The content is tracked separately from the carrier.
  *  @see InformationContentElement
  */
-export class InformationCarrierElement extends Element {
+export abstract class InformationCarrierElement extends Element {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** An information element whose main purpose is to hold an information record. */
-export class InformationRecordElement extends InformationContentElement {
+export abstract class InformationRecordElement extends InformationContentElement {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** A DefinitionElement resides in (and only in) a DefinitionModel. */
-export class DefinitionElement extends InformationContentElement {
+export abstract class DefinitionElement extends InformationContentElement {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-export class TypeDefinitionElement extends DefinitionElement {
+export abstract class TypeDefinitionElement extends DefinitionElement {
   public recipe?: RelatedElement;
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-export class RecipeDefinitionElement extends DefinitionElement {
+export abstract class RecipeDefinitionElement extends DefinitionElement {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
@@ -248,14 +308,14 @@ export class RecipeDefinitionElement extends DefinitionElement {
  *  The PhysicalType system is also a database normalization strategy because properties that are the same
  *  across all instances are stored with the PhysicalType versus being repeated per PhysicalElement instance.
  */
-export class PhysicalType extends TypeDefinitionElement {
+export abstract class PhysicalType extends TypeDefinitionElement {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** The SpatialLocationType system is a database normalization strategy because properties that are the same
  *  across all instances are stored with the SpatialLocationType versus being repeated per SpatialLocationElement instance.
  */
-export class SpatialLocationType extends TypeDefinitionElement {
+export abstract class SpatialLocationType extends TypeDefinitionElement {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
@@ -263,7 +323,7 @@ export class TemplateRecipe3d extends RecipeDefinitionElement {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-export class GraphicalType2d extends TypeDefinitionElement {
+export abstract class GraphicalType2d extends TypeDefinitionElement {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
@@ -271,7 +331,7 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-export class InformationPartitionElement extends InformationContentElement {
+export abstract class InformationPartitionElement extends InformationContentElement {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
@@ -318,7 +378,7 @@ export class SpatialLocationPartition extends InformationPartitionElement {
 }
 
 /** A GroupInformationElement resides in (and only in) a GroupInformationModel. */
-export class GroupInformationElement extends InformationReferenceElement {
+export abstract class GroupInformationElement extends InformationReferenceElement {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
@@ -327,7 +387,7 @@ export class GroupInformationElement extends InformationReferenceElement {
  *  - <i>Lawyer</i> and <i>employee</i> are potential roles of a person
  *  - <i>Asset</i> and <i>safety hazard</i> are potential roles of a PhysicalElement
  */
-export class RoleElement extends Element {
+export abstract class RoleElement extends Element {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 

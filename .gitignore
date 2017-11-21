@@ -2,6 +2,8 @@
 /lib
 /source/backend/node_modules
 /source/backend/lib
+/source/common/node_modules
+/source/common/lib
 /source/frontend/node_modules
 /source/frontend/lib
 /source/test/node_modules

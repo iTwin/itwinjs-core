@@ -1,5 +1,5 @@
 {
-  "extends": "./node_modules/@bentley/bentleyjs-tools/tsconfig-base.json",
+  "extends": "../../node_modules/@bentley/bentleyjs-tools/tsconfig-base.json",
   "compilerOptions": {
     "target": "es2017", /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', or 'ESNEXT'. */
     "module": "commonjs", /* Specify module code generation: 'commonjs', 'amd', 'system', 'umd' or 'es2015'. */
@@ -23,13 +23,10 @@
     "outDir": "./lib" /* Redirect output structure to the directory. */
   },
   "include": [
-    "../common/**/*.ts",
-    "../gateway/**/*.ts",
     "./**/*.ts"
   ],
   "exclude": [
     "lib",
-    "node_modules",
-    "../backend"
+    "node_modules"
   ]
 }

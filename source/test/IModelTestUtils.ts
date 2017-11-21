@@ -13,18 +13,24 @@ import { IModelError, IModelStatus } from "../common/IModelError";
 import { Element } from "../backend/Element";
 import { Model } from "../backend/Model";
 import { IModelDb } from "../backend/IModelDb";
+import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { SpatialCategory, DrawingCategory } from "../backend/Category";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { NodeAddon } from "../backend/NodeAddon";
 import { IModelGateway } from "../gateway/IModelGateway";
 
+import * as path from "path";
+
 // Initialize the gateway classes used by tests
 Gateway.initialize(IModelGateway);
 
 // Initialize the Node addon used by tests
-NodeAddon.loadDefault("../../node_modules/");
+NodeAddon.loadDefault("../../../../node_modules/");
 
 declare const __dirname: string;
+
+// Initialize the location where BriefcaseManager will create briefcases
+BriefcaseManager.cachePath = path.join(__dirname, "output/cache/imodels");
 
 export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;
@@ -42,7 +48,7 @@ export class IModelTestUtils {
   public static hubClient = new IModelHubClient("QA");
 
   public static async getTestUserAccessToken(): Promise<AccessToken> {
-    const authToken: AuthorizationToken|undefined = await (new ImsActiveSecureTokenClient("QA")).getToken(IModelTestUtils.user.email, IModelTestUtils.user.password);
+    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient("QA")).getToken(IModelTestUtils.user.email, IModelTestUtils.user.password);
     assert(authToken);
 
     const accessToken = await (new ImsDelegationSecureTokenClient("QA")).getToken(authToken!);
@@ -52,7 +58,7 @@ export class IModelTestUtils {
   }
 
   public static async getTestProjectId(accessToken: AccessToken, projectName: string): Promise<string> {
-    const project: Project | undefined = await IModelTestUtils.connectClient.getProject(accessToken, {
+    const project: Project = await IModelTestUtils.connectClient.getProject(accessToken, {
       $select: "*",
       $filter: "Name+eq+'" + projectName + "'",
     });
@@ -84,7 +90,9 @@ export class IModelTestUtils {
     let stat: fs.Stats | undefined;
     try {
       stat = fs.statSync(name);
-    } catch (err) { stat = undefined; }
+    } catch (err) {
+      stat = undefined;
+    }
     return stat;
   }
 

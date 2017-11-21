@@ -1,2 +1,7 @@
 *.ts
-lib/**/*.map
+!*.d.ts
+*.map
+tsconfig.json
+tslint.json
+lib/common
+lib/gateway

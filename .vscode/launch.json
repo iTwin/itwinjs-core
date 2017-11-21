@@ -24,12 +24,29 @@
       "type": "node",
       "request": "launch",
       "name": "WIP - Mocha Tests",
-      "program": "${workspaceFolder}/source/test/node_modules/@bentley/bentleyjs-tools/scripts/test.js",
+      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "--packageRoot=${workspaceFolder}",
+        "--testDir=${workspaceFolder}/source/test/lib/test",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "env":{
+        "ADDON_PATH": "../source/test/node_modules/"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "WIP - Mocha Tests - ts-node",
+      "program": "${workspaceFolder}/source/test/node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode",
       "cwd": "${workspaceFolder}/source/test",
       "args": [
         "--packageRoot=${workspaceFolder}/source/test",
         "--testDir=${workspaceFolder}/source/test",
-        "debug"
+        "--debug"
       ],
       "port": 9229,
       "protocol": "inspector",

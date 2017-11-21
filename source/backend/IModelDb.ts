@@ -526,8 +526,8 @@ export class IModelDbElements {
       throw this._iModel._newNotOpenError();
 
     if (el.isPersistent()) {
-      assert(false); // you cannot insert a persistent element. call copyForEdit
-      return new Id64();
+      assert(false);
+      throw new IModelError(IModelStatus.WriteError, "Cannot insert an element marked as persistent. Call copyForEdit.", Logger.logError);
     }
 
     // Note that inserting an element is always done synchronously. That is because of constraints
@@ -550,8 +550,8 @@ export class IModelDbElements {
       return Promise.reject(this._iModel._newNotOpenError());
 
     if (el.isPersistent()) {
-      assert(false); // you cannot insert a persistent element. call copyForEdit
-      return;
+      assert(false);
+      return Promise.reject(new IModelError(IModelStatus.WriteError, "Cannot update an element marked as persistent. Call copyForEdit.", Logger.logError));
     }
 
     // Note that updating an element is always done synchronously. That is because of constraints

@@ -1,7 +1,7 @@
 {
-  "name": "@bentley/imodeljs-backend",
+  "name": "@bentley/imodeljs-common",
   "version": "0.0.4",
-  "description": "iModelJs backend components",
+  "description": "iModelJs common components",
   "license": "UNLICENSED",
   "scripts": {
     "build": "tsc",
@@ -19,14 +19,13 @@
     "url": "http://www.bentley.com"
   },
   "//dependencies": [
-    "NOTE: these dependencies are specific to imodeljs-backend",
-    "NOTE: dependencies that are in common with imodeljs-frontend must have a consistent version"
+    "NOTE: these dependencies are specific to imodeljs-common",
+    "NOTE: dependencies that are in common with imodeljs-frontend and imodeljs-backend must have a consistent version"
   ],
   "dependencies": {
     "@bentley/bentleyjs-core": "1.0.41",
     "@bentley/geometry-core": "1.0.25",
     "@bentley/imodeljs-clients": "1.0.31",
-    "fs-extra": "^4.0.2",
     "js-base64": "^2.3.2"
   },
   "//devDependencies": "NOTE: all devDependencies should be recorded in the top-level package.json only",

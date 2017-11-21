@@ -14,8 +14,8 @@ import { ModelProps, Model2dProps } from "./ModelProps";
 import { Light, LightType } from "./Lighting";
 import { ViewFlags, HiddenLine, ColorDef, ColorRgb } from "./Render";
 import { Code } from "./Code";
-import { IModel } from "../common/IModel";
-import { AxisAlignedBox3d } from "../common/ElementGeometry";
+import { IModel } from "./IModel";
+import { AxisAlignedBox3d } from "./geometry/Primitives";
 
 /** The 8 corners of the NPC cube. */
 export const enum Npc {
