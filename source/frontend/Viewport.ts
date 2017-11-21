@@ -3,10 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 import { Vector3d, XYZ, Point3d, Range3d, RotMatrix, Transform, Point2d } from "@bentley/geometry-core/lib/PointVector";
 import { Map4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
-import { AxisOrder } from "@bentley/geometry-core/lib/Geometry";
+import { AxisOrder, Angle } from "@bentley/geometry-core/lib/Geometry";
 import { ViewState, Frustum, ViewStatus, Npc, NpcCorners, NpcCenter } from "../common/ViewState";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { ElementAlignedBox2d } from "../common/ElementGeometry";
+import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core/lib/Time";
+
+// tslint:disable:no-empty
 
 export class ViewRect extends ElementAlignedBox2d {
   public get width() { return super.width + 1; }
@@ -23,21 +26,12 @@ export const enum CoordSystem {
   World = 3,   // Coordinates are relative to the world coordinate system for the physical elements in the DgnDb
 }
 
-export class Duration {
-  public constructor(public milliseconds: number = 0) { }
-  public get seconds() { return this.milliseconds / 1000; }
-  public isZero() { return this.milliseconds === 0; }
-  public isTowardsFuture() { return this.milliseconds > 0; }
-  public isTowardsPast() { return this.milliseconds < 0; }
-  public minus(other: Duration) { return new Duration(this.milliseconds - other.milliseconds); }
-}
-
 /** object to animate frustum transition of a viewport */
 class Animator {
   private currFrustum = new Frustum();
-  private startTime = 0;
+  private startTime?: BeTimePoint;
 
-  public constructor(public totalTime: Duration, public viewport: Viewport, public startFrustum: Frustum, public endFrustum: Frustum) { }
+  public constructor(public totalTime: BeDuration, public viewport: Viewport, public startFrustum: Frustum, public endFrustum: Frustum) { }
 
   public interpolateFrustum(fraction: number) {
     for (let i = 0; i < Npc.CORNER_COUNT; i++) {
@@ -53,20 +47,20 @@ class Animator {
 
   /** return true when finished */
   public animate(): boolean {
-    const currTime = Date.now();
+    const currTime = BeTimePoint.now();
     if (!this.startTime)
       this.startTime = currTime;
 
     const totalTime = this.totalTime;
-    const endTime = this.startTime + totalTime.milliseconds;
+    const endTime = this.startTime.milliseconds + totalTime.milliseconds;
 
-    if (endTime <= currTime) {
+    if (endTime <= currTime.milliseconds) {
       this.moveToTime(totalTime.milliseconds);
       return true;
     }
 
     let done = false;
-    let index = currTime - this.startTime;
+    let index = currTime.milliseconds - this.startTime.milliseconds;
     if (index > totalTime.milliseconds) {
       done = true;
       index = totalTime.milliseconds;
@@ -114,6 +108,8 @@ export abstract class Viewport {
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
 
+  public isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn(); }
+  public invalidateDecorations() { }
   private toView(pt: XYZ): void {
     const x = pt.x;
     const y = pt.y;
@@ -205,6 +201,81 @@ export abstract class Viewport {
 
     camera.setEyePoint(eyePoint);
     camera.setFocusDistance(focusDistance);
+  }
+
+  private fullRangeNpc = new Range3d(0, 1, 0, 1, 0, 1); // full range of view
+  public determineVisibleDepthNpc(npcRange?: Range3d): { minDepth: number, maxDepth: number } | undefined {
+    npcRange = npcRange ? npcRange : this.fullRangeNpc;
+
+    // // Determine screen rectangle in which to query visible depth min + max
+    // let viewOrigin = this.npcToView(npcRange.low);
+    // let viewExtents = this.npcToView(npcRange.high);
+    // viewExtents.minus(viewOrigin);
+
+    // return this.pickRange(viewOrigin, viewExtents);
+    return undefined;
+  }
+
+  private scratchDefaultRotatePointLow = new Point3d(.5, .5, .5);
+  private scratchDefaultRotatePointHigh = new Point3d(.5, .5, .5);
+  public determineDefaultRotatePoint(result: Point3d) {
+    result = result ? result : new Point3d();
+    const view = this.view;
+    const depth = this.determineVisibleDepthNpc();
+
+    // if there are no elements in the view and the camera is on, use the camera target point
+    if (!depth && view.is3d() && view.isCameraOn)
+      return view.getTargetPoint(result);
+
+    this.scratchDefaultRotatePointLow.z = depth ? depth.minDepth : 0;
+    this.scratchDefaultRotatePointHigh.z = depth ? depth.maxDepth : 1.0;
+    return this.scratchDefaultRotatePointLow.interpolate(.5, this.scratchDefaultRotatePointHigh, result);
+  }
+
+  public getFocusPlaneNpc() {
+    const cameraTarget = this.view.getTargetPoint();
+    let npcZ = this.worldToNpc(cameraTarget, cameraTarget).z;
+    if (npcZ < 0.0 || npcZ > 1.0) {
+      this.scratchDefaultRotatePointHigh.z = 1.0;
+      this.scratchDefaultRotatePointLow.z = 0.0;
+      const npcLow = this.npcToWorld(this.scratchDefaultRotatePointLow);
+      const npcHigh = this.npcToWorld(this.scratchDefaultRotatePointHigh);
+      const center = npcLow.interpolate(0.5, npcHigh);
+      npcZ = this.worldToNpc(center, center).z;
+    }
+
+    return npcZ;
+  }
+
+  public turnCameraOn(lensAngle: Angle) {
+    const view = this.view;
+    if (!view.is3d())
+      return ViewStatus.InvalidViewport;
+
+    if (view.isCameraOn())
+      return view.lookAtUsingLensAngle(view.getEyePoint(), view.getTargetPoint(), view.getYVector(), lensAngle);
+
+    // We need to figure out a new camera target. To do that, we need to know where the geometry is in the view.
+    // We use the depth of the center of the view for that.
+    const depthRange = this.determineVisibleDepthNpc();
+    const min = depthRange ? depthRange.minDepth : 0;
+    const max = depthRange ? depthRange.minDepth : 1.0;
+    const middle = min + ((max - min) / 2.0);
+
+    const corners = [
+      new Point3d(0.0, 0.0, middle), // lower left, at target depth
+      new Point3d(1.0, 1.0, middle), // upper right at target depth
+      new Point3d(0.0, 0.0, max), // lower left, at closest npc
+      new Point3d(1.0, 1.0, max), // upper right at closest
+    ];
+
+    this.npcToWorldArray(corners);
+
+    const eye = corners[2].interpolate(0.5, corners[3]); // middle of closest plane
+    const target = corners[0].interpolate(0.5, corners[1]); // middle of halfway plane
+    const backDist = eye.distance(target) * 2.0;
+    const frontDist = view.minimumFrontDistance();
+    return view.lookAtUsingLensAngle(eye, target, view.getYVector(), lensAngle, frontDist, backDist);
   }
 
   /* get the extents of this view, in ViewCoordinates, as a Range3d */
@@ -494,7 +565,6 @@ export abstract class Viewport {
     return inches * this.pixelsPerInch;
   }
 
-
   /**
    * Get an 8-point frustum corresponding to the 8 corners of the Viewport in the specified coordinate system.
    * There are two sets of corners that may be of interest.
@@ -653,10 +723,39 @@ export abstract class Viewport {
     // this.historyChanged.raiseEvent();
   }
 
+  public computeViewRange(): Range3d {
+    this.setupFromView();
+    const viewRange = new Range3d();
+    // // NB: This is the range of all models currently in the scene. Doesn't account for toggling display of categories.
+    // const geomRange = this.geometry.range;
+    // const geomMatrix = this.geometry.modelMatrix;
+    // geomMatrix.multiply(geomRange.low);
+    // geomMatrix.multiply(geomRange.high);
+    // const center = geomRange.getCenter();
+    // const high = geomRange.high;
+    // const delta = Cartesian3.fromDifferenceOf(high, center);
+
+    // //addDebugRange(this, center, delta);
+
+    // const geomScale = Matrix3.fromScaleFactors(delta.x, delta.y, delta.z);
+    // const modelMatrix = Matrix4.fromRotationTranslation(geomScale, center);
+
+    // const scaleFactor = 1.0;
+    // const range = new Range3(new Cartesian3(-scaleFactor, -scaleFactor, -scaleFactor), new Cartesian3(scaleFactor, scaleFactor, scaleFactor));
+    // modelMatrix.multiplyByPoint(range.low, range.low);
+    // modelMatrix.multiplyByPoint(range.high, range.high);
+
+    // const rangeBox = range.get8Corners();
+    // this.rotMatrix.multiplyArray(rangeBox);
+
+    // const viewRange = Range3.fromArray(rangeBox);
+    return viewRange;
+  }
+
   /**
    * Reverts the most recent change to the Viewport from the undo stack.
    */
-  public applyPrevious(animationTime: Duration) {
+  public applyPrevious(animationTime: BeDuration) {
     const size = this.backStack.length;
     if (0 === size)
       return;
@@ -672,7 +771,7 @@ export abstract class Viewport {
   /**
    * Reverts the most recently un-done change to the Viewport from the redo stack
    */
-  public applyNext(animationTime: Duration) {
+  public applyNext(animationTime: BeDuration) {
     const size = this.forwardStack.length;
     if (0 === size)
       return;
@@ -698,12 +797,12 @@ export abstract class Viewport {
     }
   }
 
-  public setAnimator(animator: Animator) {
+  private setAnimator(animator: Animator) {
     this.removeAnimator();
     this.animator = animator;
   }
 
-  private animateFrustumChange(start: Frustum, end: Frustum, animationTime: Duration) {
+  public animateFrustumChange(start: Frustum, end: Frustum, animationTime: BeDuration) {
     if (0.0 >= animationTime.milliseconds) {
       this.setupFromFrustum(end);
       return;
@@ -712,7 +811,7 @@ export abstract class Viewport {
     this.setAnimator(new Animator(animationTime, this, start, end));
   }
 
-  public applyViewState(val: ViewState, animationTime: Duration) {
+  public applyViewState(val: ViewState, animationTime: BeDuration) {
     const startFrust = this.getFrustum();
     this.view = val.clone();
     this.synchWithView(false);

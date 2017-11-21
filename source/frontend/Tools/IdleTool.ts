@@ -1,13 +1,18 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Tool, Button, ButtonEvent } from "./Tool";
+import { Tool, Button, ButtonEvent, GestureEvent, WheelMouseEvent, PrimitiveTool } from "./Tool";
 import { ToolAdmin } from "./ToolAdmin";
+import { ViewManip, ViewHandleType, FitViewTool } from "./ViewTool";
+import { ViewStatus } from "../../common/ViewState";
+
+const toolAdmin = ToolAdmin.instance;
+// tslint:disable:no-empty
 
 /**
  * The default "idle" tool. If no tool is active, or the active tool does not respond to a given
  * event, input events are forwarded to the idle tool. The default idle tool converts middle mouse button events
- * and constious touch gestures into view navigation operations like pan, zoom, rotate, and fit.
+ * and touch gestures into view navigation operations like pan, zoom, rotate, and fit.
  * Controls are as follows:
  *  Mouse/keyboard:
  *      mmb: pan
@@ -23,81 +28,117 @@ import { ToolAdmin } from "./ToolAdmin";
  */
 export class IdleTool extends Tool {
 
-  protected onMiddleButtonDown(ev: ButtonEvent) {
-    const toolAdmin = ToolAdmin.instance;
+  public get toolId() { return ""; }
+
+  public onMiddleButtonDown(ev: ButtonEvent): boolean {
+    const vp = ev.viewport;
+    if (!vp)
+      return true;
     const cur = toolAdmin.currentInputState;
     if (cur.isDragging(Button.Data) || cur.isDragging(Button.Reset))
       return false;
 
     let viewTool;
     if (ev.isDoubleClick) {
-      viewTool = new FitViewTool(this.viewport, true);
+      viewTool = new FitViewTool(vp, true);
     } else if (ev.isShiftKey) {
-      viewTool = new ViewManip(this.viewport, ViewHandleType.Rotate, true, false, true);
+      viewTool = new ViewManip(vp, ViewHandleType.Rotate, true, false, true);
     } else if (false) {
       /* ###TODO: Other view tools if needed... */
     } else {
       const currTool = toolAdmin.activeViewTool;
-      if (currTool instanceof ViewManip) {
+      if (currTool && currTool instanceof ViewManip) {
         if (!currTool.isDragging && currTool.viewHandles.hasHandle(ViewHandleType.ViewPan))
           currTool.forcedHandle = ViewHandleType.ViewPan;
 
         return true;
       }
 
-      viewTool = new ViewManip(this.viewport, ViewHandleType.ViewPan, true, false, true);
+      viewTool = new ViewManip(vp, ViewHandleType.ViewPan, true, false, true);
     }
 
-    return viewTool.installTool();
+    return ViewStatus.Success === viewTool.installTool();
   }
 
-  public onMiddleButtonUp(ev) {
-    this.viewport.toolAdmin.resetViewCursor();
-    if (ev.isDoubleClick || ev.isControlKey || ev.isShiftkey)
+  public onMiddleButtonUp(ev: ButtonEvent): boolean {
+    if (ev.isDoubleClick || ev.isControlKey || ev.isShiftKey)
       return false;
 
-    const currTool = dynamicCast(this.viewport.toolAdmin.activeTool, ViewManip);
-    if (Cesium.defined(currTool)) {
+    const currTool = toolAdmin.activeViewTool;
+    if (currTool && currTool instanceof ViewManip) {
       if (currTool.viewHandles.hasHandle(ViewHandleType.ViewPan))
-        currTool.forcedHandle = ViewHandleType.ViewNone; // Didn't get start drag, don't leave ViewPan active...
+        currTool.forcedHandle = ViewHandleType.None; // Didn't get start drag, don't leave ViewPan active...
 
       if (currTool.viewHandles.hasHandle(ViewHandleType.TargetCenter))
         currTool.invalidateTargetCenter();
     }
+    //     TentativePoint & tp = TentativePoint:: GetInstance();
+
+    //     tp.Process(ev);
+
+    //     if (tp.IsSnapped()) {
+    //       GetToolAdmin()._AdjustSnapPoint();
+    //     }
+    //     else {
+    //       if (AccuDraw:: GetInstance().IsActive())
+    //       {
+    //         DPoint3dR point = tp.GetTpPoint();
+    //         DgnViewportR vp = * ev.GetViewport();
+
+    //         if (vp.IsSnapAdjustmentRequired()) {
+    //           GetToolAdmin()._AdjustPointToACS(point, * ev.GetViewport(), false);
+
+    //           GeomDetail  geomDetail; geomDetail.Init(); geomDetail.SetClosestPoint(point);
+    //           HitDetail   hit(* ev.GetViewport(), nullptr, nullptr, point, HitSource:: TentativeSnap, geomDetail);
+    //           SnapDetailP snap = new SnapDetail(& hit);
+
+    //           snap -> AddRef();
+    //           tp.SetCurrSnap(snap);
+    //           GetToolAdmin()._AdjustSnapPoint();
+    //           tp.GetTpPoint() = * tp.GetPoint();
+    //           tp.SetCurrSnap(nullptr);
+    //           snap -> Release();
+    //         }
+    //         else {
+    //           AccuDraw:: GetInstance()._AdjustPoint(point, vp, false);
+
+    //           DPoint3d savePoint = point;
+    //           GetToolAdmin()._AdjustPointToGrid(point, vp);
+
+    //           if (!point.IsEqual(savePoint))
+    //             AccuDraw:: GetInstance()._AdjustPoint(point, vp, false);
+
+    //           tp.GetTpPoint() = point;
+    //         }
+    //       }
+    //         else
+    //             {
+    //   GetToolAdmin()._AdjustPoint(tp.GetTpPoint(), * ev.GetViewport());
+    //        }
+
+    //     AccuDraw:: GetInstance()._OnTentative();
+    //         }
+
+    // NOTE: Need to synch tool dynamics because of UpdateDynamics call in _ExitViewTool from OnMiddleButtonUp before point was adjusted. :(
+    if (currTool && currTool instanceof PrimitiveTool) {
+      const tmpEv = new ButtonEvent();
+      toolAdmin.fillEventFromCursorLocation(tmpEv);
+      currTool.updateDynamics(tmpEv);
+    }
 
     return true;
   }
 
-  public onMouseWheel(ev) {
-    return this.viewport.toolAdmin.processMouseWheelEvent(ev, true);
+  public onMouseWheel(ev: WheelMouseEvent) {
+    return toolAdmin.processMouseWheelEvent(ev, true);
   }
 
-  private installToolImplementation() { return true; };
-  private exitTool() { };
-  private onDataButtonDown(ev) { return false; };
-
-  private onMultiFingerMove(ev) {
-    const tool = new RotatePanZoomGestureTool(ev, true);
-    tool.installTool();
-    return true;
-  }
-
-  private onSingleFingerMove(ev) {
-    return this.onMultiFingerMove(ev);
-  }
-
-  private onSingleTap(ev) {
-    this.toolAdmin.convertGestureSingleTapToButtonDownAndUp(ev);
-    return true;
-  }
-
-  private onDoubleTap(ev) {
-    const tool = new FitViewTool(this.viewport, true);
-    tool.installTool();
-    return true;
-  };
-
-  private onTwoFingerTap(ev) {
-    this.toolAdmin.convertGestureToResetButtonDownAndUp(ev);
-  }
+  public installToolImplementation() { return ViewStatus.Success; }
+  public exitTool() { }
+  public onDataButtonDown(_ev: ButtonEvent) { return false; }
+  public onMultiFingerMove(ev: GestureEvent) { const tool = new RotatePanZoomGestureTool(ev, true); tool.installTool(); return true; }
+  public onSingleFingerMove(ev: GestureEvent) { return this.onMultiFingerMove(ev); }
+  public onSingleTap(ev: GestureEvent) { toolAdmin.convertGestureSingleTapToButtonDownAndUp(ev); return true; }
+  public onDoubleTap(ev: GestureEvent) { if (ev.viewport) { const tool = new FitViewTool(ev.viewport, true); tool.installTool(); } return true; }
+  public onTwoFingerTap(ev: GestureEvent) { toolAdmin.convertGestureToResetButtonDownAndUp(ev); return true; }
 }

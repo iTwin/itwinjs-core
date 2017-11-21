@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
 import { Viewport } from "../Viewport";
+import { ViewStatus } from "../../common/ViewState";
 
 export const enum Button {
   Data = 0,
@@ -48,6 +49,94 @@ export const enum InputEventModifiers {
   None = 0,
   Control = 1 << 0,
   Shift = 1 << 2,
+  Alt = 1 << 3,
+}
+
+export const enum VirtualKey {
+  Shift,
+  Control,
+  Alt,
+  Backspace,
+  Tab,
+  Return,
+  Escape,
+  Space,
+  PageUp,
+  PageDown,
+  End,
+  Home,
+  Left,
+  Up,
+  Right,
+  Down,
+  Insert,
+  Delete,
+  Key0,
+  Key1,
+  Key2,
+  Key3,
+  Key4,
+  Key5,
+  Key6,
+  Key7,
+  Key8,
+  Key9,
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
+  G,
+  H,
+  I,
+  J,
+  K,
+  L,
+  M,
+  N,
+  O,
+  P,
+  Q,
+  R,
+  S,
+  T,
+  U,
+  V,
+  W,
+  X,
+  Y,
+  Z,
+  NumKey0,
+  NumKey1,
+  NumKey2,
+  NumKey3,
+  NumKey4,
+  NumKey5,
+  NumKey6,
+  NumKey7,
+  NumKey8,
+  NumKey9,
+  Multiply,
+  Add,
+  Separator,
+  Subtract,
+  Decimal,
+  Divide,
+  Comma,
+  Period,
+  F1,
+  F2,
+  F3,
+  F4,
+  F5,
+  F6,
+  F7,
+  F8,
+  F9,
+  F10,
+  F11,
+  F12,
 }
 
 export class ButtonState {
@@ -112,7 +201,27 @@ export class ButtonEvent {
   public getDisplayPoint(): Point2d { return new Point2d(this._viewPoint.x, this._viewPoint.y); }
   public get isControlKey() { return 0 !== (this.keyModifiers & InputEventModifiers.Control); }
   public get isShiftKey() { return 0 !== (this.keyModifiers & InputEventModifiers.Shift); }
+  public get isAltKey() { return 0 !== (this.keyModifiers & InputEventModifiers.Alt); }
   public reset() { this.viewport = undefined; }
+
+  public copyFrom(src: ButtonEvent) {
+    this.point = src.point;
+    this.rawPoint = src.rawPoint;
+    this.viewPoint = src.viewPoint;
+    this.viewport = src.viewport;
+    this.coordsFrom = src.coordsFrom;
+    this.keyModifiers = src.keyModifiers;
+    this.isDoubleClick = src.isDoubleClick;
+    this.isDown = src.isDown;
+    this.button = src.button;
+    this.inputSource = src.inputSource;
+    this.actualInputSource = src.actualInputSource;
+  }
+  public clone(result?: ButtonEvent): ButtonEvent {
+    result = result ? result : new ButtonEvent();
+    result.copyFrom(this);
+    return result;
+  }
 }
 
 /** Describes a "gesture" input, typically originating from a touch-input device. */
@@ -175,25 +284,36 @@ export class GestureInfo {
 /** Specialization of ButtonEvent describing a gesture event, typically originating from touch input. */
 export class GestureEvent extends ButtonEvent {
   public gestureInfo?: GestureInfo;
-  public init(vp: Viewport, gestureInfo: GestureInfo) {
-    const current = s_toolAdmin.currentInputState;
-    current.fromGesture(vp, gestureInfo, true);
-    current.toEvent(this, false);
-    if (gestureInfo.isFromMouse)
-      this.actualInputSource = InputSource.Mouse;
+  public copyFrom(src: GestureEvent) {
+    super.copyFrom(src);
+    this.gestureInfo = src.gestureInfo;
+  }
+  public clone(result?: GestureEvent): GestureEvent {
+    result = result ? result : new GestureEvent();
+    result.copyFrom(this);
+    return result;
   }
 }
 
 /** Information about movement of the "wheel" on the mouse. */
 export class WheelMouseEvent extends ButtonEvent {
   public constructor(public wheelDelta: number = 0) { super(); }
+  public copyFrom(src: WheelMouseEvent) {
+    super.copyFrom(src);
+    this.wheelDelta = src.wheelDelta;
+  }
+  public clone(result?: WheelMouseEvent): WheelMouseEvent {
+    result = result ? result : new WheelMouseEvent();
+    result.copyFrom(this);
+    return result;
+  }
 }
 
 export abstract class Tool {
   // tslint:disable:no-empty
-  public constructor(public id: string) { }
-  public abstract installToolImplementation(): void;
-  public installTool() { return this.installToolImplementation(); }
+  public abstract get toolId(): string;
+  public abstract installToolImplementation(): ViewStatus;
+  public installTool(): ViewStatus { return this.installToolImplementation(); }
   public onPostInstall() { }  // Override to execute additional logic after tool becomes active
   public onInstall() { return true; } // Override to execute additional logic when tool is installed. Return false to prevent this tool from becoming active
   public abstract onDataButtonDown(ev: ButtonEvent): void;   // Implement to handle data-button-down events
@@ -207,7 +327,7 @@ export abstract class Tool {
   public onModelMotionStopped(_ev: ButtonEvent) { } // Invoked when the cursor was previously moving, and then stopped moving.
   public onModelStartDrag(_ev: ButtonEvent) { return false; }   // Invoked when the cursor begins moving while a button is depressed
   public onModelEndDrag(ev: ButtonEvent) { return this.onDataButtonDown(ev); } // Invoked when the cursor stops moving while a button is depressed
-  public onMouseWheel(_ev: WheelMouseEvent) { return false; } // Invoked when the mouse wheel is used. @param {MouseWheelEvent} ev
+  public onMouseWheel(_ev: WheelMouseEvent) { return false; } // Invoked when the mouse wheel is used.
   public abstract exitTool(): void;  // Implemented by direct subclasses to handle when the tool becomes no longer active. Generally not overridden by other subclasses
   public onCleanup() { } // Invoked when the tool becomes no longer active, to perform additional cleanup logic
   public onViewportResized() { }  // Invoked when the dimensions of the tool's viewport change
@@ -221,11 +341,26 @@ export abstract class Tool {
   public onSingleTap(_ev: GestureEvent) { return false; }
   public onDoubleTap(_ev: GestureEvent) { return false; }
   public onLongPress(_ev: GestureEvent) { return false; }
-
   public isValidLocation(_ev: ButtonEvent, _isButtonEvent: boolean) { return true; }
   public isCompatibleViewport(vp: Viewport, _isSelectedViewChange: boolean) { return !!vp; }
-}
 
+  /** Called when Control, Shift, or Alt qualifier keys are pressed or released.
+   * @param wentDown up or down key event
+   * @param key One of VirtualKey.Control, VirtualKey.Shift, or VirtualKey.Alt
+   * @return true to refresh view decorations or update dynamics.
+   */
+  public onModifierKeyTransition(_wentDown: boolean, _key: VirtualKey) { return false; }
+
+  /** Called when  keys are pressed or released.
+   * @param wentDown up or down key event
+   * @param key One of VirtualKey enum values
+   * @param shiftIsDown the shift key is down
+   * @param ctrlIsDown  the control key is down
+   * @return true to prevent further processing of this event
+   * @note In case of Shift, Control and Alt key, onModifierKeyTransition is used.
+   */
+  public onKeyTransition(_wentDown: boolean, _key: VirtualKey, _shiftIsDown: boolean, _ctrlIsDown: boolean) { return false; }
+}
 
 export abstract class PrimitiveTool extends Tool {
   public targetView?: Viewport;

@@ -7,8 +7,9 @@ import { Viewport } from "../Viewport";
 import { IdleTool } from "./IdleTool";
 import {
   InputEventModifiers, ButtonState, Button, GestureEvent, Tool, ButtonEvent, CoordSource, GestureInfo,
-  Cursor, PrimitiveTool, MouseWheelEvent, InputSource,
+  Cursor, PrimitiveTool, WheelMouseEvent, InputSource, VirtualKey,
 } from "./Tool";
+import { ViewTool } from "./ViewTool";
 
 export class CurrentInputState {
   private _rawPoint: Point3d = new Point3d();
@@ -40,6 +41,7 @@ export class CurrentInputState {
   public get wasTouchMotion() { return 0 !== this.touchMotionTime; }
   public get isShiftDown() { return 0 !== (this.qualifiers & InputEventModifiers.Shift); }
   public get isControlDown() { return 0 !== (this.qualifiers & InputEventModifiers.Control); }
+  public get isAltDown() { return 0 !== (this.qualifiers & InputEventModifiers.Alt); }
   public isDragging(button: Button) { return this.button[button].isDragging; }
   public onStartDrag(button: Button) { this.button[button].isDragging = true; }
   public setKeyQualifier(qual: InputEventModifiers, down: boolean) { this.qualifiers = down ? (this.qualifiers | qual) : (this.qualifiers & (~qual)); }
@@ -264,7 +266,7 @@ export class ToolAdmin {
   // tentPoint: TentativePoint;
   // accuDraw: AccuDraw;
   private modifierKeyWentDown: boolean;
-  private modifierKey: number;
+  private modifierKey: InputEventModifiers;
   private touchBridgeMode: boolean; // Flag indicating that touch events are being converted into mouse events for this tool
 
   protected filterViewport(_vp: Viewport) { return false; }
@@ -276,16 +278,24 @@ export class ToolAdmin {
     return this.viewTool ? this.viewTool : (this.inputCollector ? this.inputCollector : this.primitiveTool); // NOTE: Viewing tools suspend input collectors as well as primitives...
   }
 
+  public initGestureEvent(ev: GestureEvent, vp: Viewport, gestureInfo: GestureInfo) {
+    const current = this.currentInputState;
+    current.fromGesture(vp, gestureInfo, true);
+    current.toEvent(ev, false);
+    if (gestureInfo.isFromMouse)
+      ev.actualInputSource = InputSource.Mouse;
+  }
+
   public onWheel(vp: Viewport, wheelDelta: number, pt2d: Point2d) {
     vp.removeAnimator();
     this.currentInputState.fromButton(vp, pt2d, InputSource.Mouse, true);
-    const wheelEvent = new MouseWheelEvent();
+    const wheelEvent = new WheelMouseEvent();
     wheelEvent.wheelDelta = wheelDelta;
     this.currentInputState.toEvent(wheelEvent, true);
     this.onWheelEvent(wheelEvent);
   }
 
-  public onWheelEvent(wheelEvent: MouseWheelEvent) {
+  public onWheelEvent(wheelEvent: WheelMouseEvent) {
     const activeTool = this.activeTool;
     if (!activeTool || !activeTool.onMouseWheel(wheelEvent))
       this.idleTool.onMouseWheel(wheelEvent);
@@ -610,7 +620,7 @@ export class ToolAdmin {
     this.gesturePending = false;
 
     const ev = this.scratchGestureEvent;
-    ev.init(vp, gestureInfo);
+    this.initGestureEvent(ev, vp, gestureInfo);
 
     if (this.onGestureEvent(ev)) {
       const activeTool = this.activeTool;
@@ -632,7 +642,7 @@ export class ToolAdmin {
 
     vp.removeAnimator();
     const ev = this.scratchGestureEvent;
-    ev.init(vp, gestureInfo);
+    this.initGestureEvent(ev, vp, gestureInfo);
     if (this.onGestureEvent(ev)) {
       const activeTool = this.activeTool;
       if (!activeTool || !activeTool.onSingleFingerMove(ev))
@@ -652,7 +662,7 @@ export class ToolAdmin {
 
     vp.removeAnimator();
     const ev = this.scratchGestureEvent;
-    ev.init(vp, gestureInfo);
+    this.initGestureEvent(ev, vp, gestureInfo);
 
     if (this.onGestureEvent(ev)) {
       const activeTool = this.activeTool;
@@ -668,7 +678,7 @@ export class ToolAdmin {
     vp.removeAnimator();
     this.gesturePending = false;
     const ev = this.scratchGestureEvent;
-    ev.init(vp, info);
+    this.initGestureEvent(ev, vp, info);
     const activeTool = this.activeTool as any;
     const activeToolFunc = activeTool[funcName];
     if (!activeToolFunc || !activeToolFunc.call(activeTool, ev))
@@ -682,6 +692,50 @@ export class ToolAdmin {
   public onSingleTap(vp: Viewport, gestureInfo: GestureInfo) { this.processGestureInfo(vp, gestureInfo, "onSingleTap"); }
   public onDoubleTap(vp: Viewport, gestureInfo: GestureInfo) { this.processGestureInfo(vp, gestureInfo, "onDoubleTap"); }
   public onLongPress(vp: Viewport, gestureInfo: GestureInfo) { this.processGestureInfo(vp, gestureInfo, "onLongPress"); }
+
+  public onModifierKeyTransition(wentDown: boolean, key: InputEventModifiers) {
+    if (wentDown === this.modifierKeyWentDown && key === this.modifierKey)
+      return;
+
+    const activeTool = this.activeTool;
+    const changed = activeTool ? activeTool.onModifierKeyTransition(wentDown, key) : false;
+
+    this.modifierKey = key;
+    this.modifierKeyWentDown = wentDown;
+
+    if (!changed)
+      return;
+
+    // Give active tool a chance to update it's dynamics...
+    if (activeTool instanceof PrimitiveTool) {
+      const ev = this.scratchButtonEvent;
+      this.fillEventFromCursorLocation(ev);
+      activeTool.updateDynamics(ev);
+    }
+  }
+
+  private static getModifierKeyFromVirtualKey(key: VirtualKey): InputEventModifiers {
+    switch (key) {
+      case VirtualKey.Alt: return InputEventModifiers.Alt;
+      case VirtualKey.Shift: return InputEventModifiers.Shift;
+      case VirtualKey.Control: return InputEventModifiers.Control;
+    }
+    return InputEventModifiers.None;
+  }
+
+  public onKeyTransition(wentDown: boolean, key: VirtualKey): boolean {
+    const activeTool = this.activeTool;
+    if (!activeTool)
+      return false;
+
+    if (VirtualKey.Shift === key || VirtualKey.Control === key || VirtualKey.Alt === key) {
+      this.onModifierKeyTransition(wentDown, ToolAdmin.getModifierKeyFromVirtualKey(key));
+      return true;
+    }
+
+    const current = this.currentInputState;
+    return activeTool.onKeyTransition(wentDown, key, current.isShiftDown, current.isControlDown);
+  }
 
   public setPrimitiveTool(primitiveTool?: PrimitiveTool) {
     //    const prevActiveTool = this.activeTool;
@@ -783,9 +837,9 @@ export class ToolAdmin {
     // canvas.style.cursor = cursor;
   }
 
-  public fillEventFromCursorLocation(ev: GestureEvent) { this.currentInputState.toEvent(ev, true); }
-  public fillEventFromDataButton(ev: GestureEvent) { this.currentInputState.toEventFromLastDataPoint(ev); }
-  public fillEventFromLastDataButton(ev: GestureEvent) { this.currentInputState.toEventFromLastDataPoint(ev); }
+  public fillEventFromCursorLocation(ev: ButtonEvent) { this.currentInputState.toEvent(ev, true); }
+  public fillEventFromDataButton(ev: ButtonEvent) { this.currentInputState.toEventFromLastDataPoint(ev); }
+  public fillEventFromLastDataButton(ev: ButtonEvent) { this.currentInputState.toEventFromLastDataPoint(ev); }
   public setAdjustedDataPoint(ev: ButtonEvent) { this.currentInputState.adjustLastDataPoint(ev); }
 
   public convertGestureSingleTapToButtonDownAndUp(ev: GestureEvent) {
@@ -824,4 +878,3 @@ export class ToolAdmin {
 
   private invalidateLastWheelEvent() { wheelEventProcessor.invalidateLastEvent(); }
 }
-

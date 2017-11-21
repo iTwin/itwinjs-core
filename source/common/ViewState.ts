@@ -113,6 +113,7 @@ export class Frustum {
   public transformBy(trans: Transform, result?: Frustum): Frustum { result = result ? result : new Frustum(); trans.multiplyPoint3dArray(this.points, result.points); return result; }
   public toRange(range?: Range3d): Range3d { range = range ? range : new Range3d(); Range3d.createArray(this.points, range); return range; }
   public clone(result?: Frustum): Frustum { result = result ? result : new Frustum(); for (let i = 0; i < 8; ++i) Point3d.createFrom(this.points[i], result.points[i]); return result; }
+  public setFrom(other: Frustum) { other.clone(this); }
   public scaleAboutCenter(scale: number): void {
     const orig = this.clone();
     const f = 0.5 * (1.0 + scale);
@@ -598,12 +599,12 @@ export abstract class ViewState extends ElementState {
   public abstract setRotation(viewRot: RotMatrix): void;
 
   /**  Get the target point of the view. If there is no camera, center is returned. */
-  public getTargetPoint(): Point3d { return this.getCenter(); }
+  public getTargetPoint(result?: Point3d): Point3d { return this.getCenter(result); }
 
   /**  Get the point at the geometric center of the view. */
-  public getCenter(): Point3d {
+  public getCenter(result?: Point3d): Point3d {
     const delta = this.getRotation().transpose().multiplyVector(this.getExtents());
-    return this.getOrigin().plusScaled(delta, 0.5);
+    return this.getOrigin().plusScaled(delta, 0.5, result);
   }
 
   /**
@@ -1102,8 +1103,7 @@ export abstract class ViewState3d extends ViewState {
   public setRotation(rot: RotMatrix) { this.rotation.setFrom(rot); }
   protected enableCamera(): void { this.cameraOn = true; }
   public supportsCamera(): boolean { return true; }
-
-  private static minimumFrontDistance() { return 300 * Constant.oneMillimeter; }
+  public minimumFrontDistance() { return Math.max(15.2 * Constant.oneCentimeter, this.forceMinFrontDist()); }
   public isEyePointAbove(elevation: number): boolean { return !this.cameraOn ? (this.getZVector().z > 0) : (this.getEyePoint().z > elevation); }
 
   public getDisplayStyle3d() { return this.displayStyle as DisplayStyle3dState; }
@@ -1125,9 +1125,9 @@ export abstract class ViewState3d extends ViewState {
   }
 
   /** Get the target point of the view. If there is no camera, view center is returned. */
-  public getTargetPoint(): Point3d {
+  public getTargetPoint(result?: Point3d): Point3d {
     if (!this.cameraOn)
-      return super.getTargetPoint();
+      return super.getTargetPoint(result);
 
     const viewZ = this.getRotation().getRow(2);
     return this.getEyePoint().plusScaled(viewZ, -1.0 * this.getFocusDistance());
@@ -1153,8 +1153,9 @@ export abstract class ViewState3d extends ViewState {
 
     const zVec = this.getEyePoint().vectorTo(targetPoint); // z defined by direction from eye to target
     const focusDist = zVec.normalizeWithLength(zVec).mag; // set focus at target point
+    const minFrontDist = this.minimumFrontDistance();
 
-    if (focusDist <= ViewState3d.minimumFrontDistance()) // eye and target are too close together
+    if (focusDist <= minFrontDist) // eye and target are too close together
       return ViewStatus.InvalidTargetPoint;
 
     const xVec = new Vector3d();
@@ -1179,10 +1180,10 @@ export abstract class ViewState3d extends ViewState {
       backDistance = focusDist + Constant.oneMillimeter;
 
     if (frontDistance > focusDist)
-      frontDistance = focusDist - ViewState3d.minimumFrontDistance();
+      frontDistance = focusDist - minFrontDist;
 
-    if (frontDistance < ViewState3d.minimumFrontDistance())
-      frontDistance = ViewState3d.minimumFrontDistance();
+    if (frontDistance < minFrontDist)
+      frontDistance = minFrontDist;
 
     // BeAssert(backDistance > frontDistance);
     delta.z = (backDistance! - frontDistance);

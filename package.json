@@ -39,14 +39,14 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "^1.0.39",
-    "@bentley/geometry-core": "^1.0.21",
+    "@bentley/bentleyjs-core": "^1.0.41",
+    "@bentley/geometry-core": "^1.0.25",
     "@bentley/imodeljs-clients": "^1.0.31",
     "js-base64": "^2.3.2"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "^1.0.49",
-    "@types/chai": "^4.0.4",
+    "@bentley/bentleyjs-tools": "^1.0.53",
+    "@types/chai": "^4.0.5",
     "@types/fs-extra": "^4.0.5",
     "@types/js-base64": "^2.3.0",
     "@types/mocha": "^2.2.44",
