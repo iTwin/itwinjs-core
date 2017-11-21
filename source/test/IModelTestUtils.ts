@@ -24,10 +24,10 @@ import * as path from "path";
 // Initialize the gateway classes used by tests
 Gateway.initialize(IModelGateway);
 
-// Initialize the Node addon used by tests
-NodeAddon.loadDefault("../../../../node_modules/");
-
 declare const __dirname: string;
+
+// Initialize the Node addon used by tests
+NodeAddon.loadDefault(path.join(__dirname, "../../../../node_modules/"));
 
 // Initialize the location where BriefcaseManager will create briefcases
 BriefcaseManager.cachePath = path.join(__dirname, "output/cache/imodels");

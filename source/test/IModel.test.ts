@@ -121,15 +121,15 @@ describe("iModel", () => {
     const a2 = await imodel2.elements.getElement(new Id64("0x1d"));
     assert.exists(a2);
     assert.isTrue(a2.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
-    const el3 = await imodel2.elements.getElement(new Guid(a2.federationGuid!.value));
+    const el3: Element = await imodel2.elements.getElement(new Guid(a2.federationGuid!.value));
     assert.exists(el3);
     assert.notEqual(a2, el3);
     assert.isTrue(a2.id.equals(el3.id));
     testCopyAndJson(el3);
 
-    const newEl = el3.copyForEdit();
+    const newEl = el3.copyForEdit<Element>();
     newEl.federationGuid = undefined;
-    const newId = imodel2.elements.insertElement(newEl);
+    const newId: Id64 = imodel2.elements.insertElement(newEl);
     assert.isTrue(newId.isValid(), "insert worked");
   });
 
@@ -312,11 +312,11 @@ describe("iModel", () => {
       assert.lengthOf(modelSel.models, 5);
 
       const catSelState = new CategorySelectorState(catSel.toJSON(), imodel1);
-      const c2 = catSelState.clone();
+      const c2 = catSelState.clone<CategorySelectorState>();
       assert.deepEqual(catSelState, c2);
 
       const modSelState = new ModelSelectorState(modelSel.toJSON(), imodel1);
-      const m2 = modSelState.clone();
+      const m2 = modSelState.clone<ModelSelectorState>();
       assert.deepEqual(modSelState, m2);
 
       const viewState = new SpatialViewState(view.toJSON(), imodel1, catSelState, dStyleState, modSelState);
@@ -326,7 +326,7 @@ describe("iModel", () => {
       assert.instanceOf(viewState.modelSelector, ModelSelectorState);
       assert.equal(viewState.modelSelector.models.size, 5);
       assert.isTrue(viewState.origin.isAlmostEqual(new Point3d(-87.73958171815832, -108.96514044887601, -0.0853709702222105)), "View origin as expected");
-      const v2 = viewState.clone();
+      const v2 = viewState.clone<SpatialViewState>();
       assert.deepEqual(viewState, v2);
 
       assert.notEqual(v2.origin, viewState.origin); // make sure we're really looking at a copy
@@ -476,7 +476,7 @@ describe("iModel", () => {
     assert.equal(testElem.classFullName, "DgnPlatformTest:TestElementWithNoHandler");
     assert.isUndefined(testElem.integerProperty1);
 
-    const newTestElem = testElem.copyForEdit();
+    const newTestElem = testElem.copyForEdit<Element>();
     assert.equal(newTestElem.classFullName, testElem.classFullName);
     newTestElem.integerProperty1 = 999;
     assert.isTrue(testElem.arrayOfPoint3d[0].isAlmostEqual(newTestElem.arrayOfPoint3d[0]));
@@ -508,7 +508,7 @@ describe("iModel", () => {
 
     // ----------- updates ----------------
     const wasp3d = newTestElemFetched.p3d;
-    const editElem = newTestElemFetched.copyForEdit();
+    const editElem = newTestElemFetched.copyForEdit<Element>();
     editElem.location = loc2;
     try {
       await imodel4.elements.updateElement(editElem);

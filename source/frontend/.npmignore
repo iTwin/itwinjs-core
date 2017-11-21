@@ -3,5 +3,3 @@
 *.map
 tsconfig.json
 tslint.json
-lib/common
-lib/gateway

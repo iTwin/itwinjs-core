@@ -352,8 +352,8 @@ export class Viewport {
     return frustFraction;
   }
 
-  private saveViewUndo() {
-    const curr = this.view.clone();
+  private saveViewUndo(): void {
+    const curr = this.view.clone<ViewState>();
     if (!this.currentBaseline) {
       this.currentBaseline = curr;
       return;
@@ -372,30 +372,30 @@ export class Viewport {
     this.currentBaseline = curr;
   }
 
-  public synchWithView(saveInUndo: boolean) {
+  public synchWithView(saveInUndo: boolean): void {
     this.setupFromView();
 
     if (saveInUndo)
       this.saveViewUndo();
   }
 
-  public viewToNpc(pts: Point3d[]) {
+  public viewToNpc(pts: Point3d[]): void {
     const corners = this.getViewCorners();
     const scrToNpcTran = Transform.createIdentity();
     Transform.initFromRange(corners.low, corners.high, undefined, scrToNpcTran);
     scrToNpcTran.multiplyPoint3dArrayInPlace(pts);
   }
 
-  public npcToView(pts: Point3d[]) {
+  public npcToView(pts: Point3d[]): void {
     const corners = this.getViewCorners();
     const scrToNpcTran = Transform.createIdentity();
     Transform.initFromRange(corners.low, corners.high, scrToNpcTran, undefined);
     scrToNpcTran.multiplyPoint3dArrayInPlace(pts);
   }
-  public worldToNpc(pts: Point3d[]) { this.rootToNpc.transform0Ref().multiplyPoint3dArrayQuietNormalize(pts); }
-  public npcToWorld(pts: Point3d[]) { this.rootToNpc.transform1Ref().multiplyPoint3dArrayQuietNormalize(pts); }
-  public worldToView(pts: Point3d[]) { this.rootToView.transform0Ref().multiplyPoint3dArrayQuietNormalize(pts); }
-  public viewToWorld(pts: Point3d[]) { this.rootToView.transform1Ref().multiplyPoint3dArrayQuietNormalize(pts); }
+  public worldToNpc(pts: Point3d[]): void { this.rootToNpc.transform0Ref().multiplyPoint3dArrayQuietNormalize(pts); }
+  public npcToWorld(pts: Point3d[]): void { this.rootToNpc.transform1Ref().multiplyPoint3dArrayQuietNormalize(pts); }
+  public worldToView(pts: Point3d[]): void { this.rootToView.transform0Ref().multiplyPoint3dArrayQuietNormalize(pts); }
+  public viewToWorld(pts: Point3d[]): void { this.rootToView.transform1Ref().multiplyPoint3dArrayQuietNormalize(pts); }
 
   /**
    * Get an 8-point frustum corresponding to the 8 corners of the Viewport in the specified coordinate system.
@@ -442,5 +442,4 @@ export class Viewport {
     }
     return box;
   }
-
 }
