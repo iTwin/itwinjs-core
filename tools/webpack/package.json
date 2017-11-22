@@ -22,8 +22,8 @@
     "@types/enzyme": "^2.8.12",
     "@types/mocha": "^2.2.44",
     "@types/node": "^8.0.50",
-    "@types/react": "^16.0.21",
-    "@types/react-dom": "^16.0.2",
+    "@types/react": "^16.0.25",
+    "@types/react-dom": "^16.0.3",
     "@types/sinon": "^2.3.7",
     "app-root-path": "^2.0.1",
     "autoprefixer": "^7.1.5",
@@ -35,7 +35,7 @@
     "css-loader": "^0.28.7",
     "dotenv": "^4.0.0",
     "enzyme": "^3.1.0",
-    "enzyme-adapter-react-15": "^1.0.1",
+    "enzyme-adapter-react-16": "^1.1.0",
     "enzyme-to-json": "^3.1.2",
     "exports-loader": "^0.6.4",
     "extract-text-webpack-plugin": "^2.1.2",
@@ -77,8 +77,8 @@
     "whatwg-fetch": "2.0.3"
   },
   "peerDependencies": {
-    "react": "^15.6.2",
-    "react-dom": "^15.6.2",
-    "react-test-renderer": "^15.6.2"
+    "react": "^16.1.1",
+    "react-dom": "^16.1.1",
+    "react-test-renderer": "^16.1.1"
   }
 }
