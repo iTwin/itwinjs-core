@@ -72,6 +72,21 @@ The list below describes each of the packages:
   * Private, not published
   * Controls the test dependencies (but not devDependencies)
 
+### Installing dependencies and devDependencies
+
+The single `npm install` command run at the root of the repository installs devDependencies at the root and iterates into backend, frontend, and test to install dependencies.
+This is accomplished by taking advantage of a *postinstall* hook.
+After a successful install, you will notice multiple **node_modules** directories:
+
+| node_modules Directory        | Contents                |
+|-------------------------------|-------------------------|
+| node_modules/                 | Overall devDependencies |
+| source/backend/node_modules/  | Backend dependencies    |
+| source/frontend/node_modules/ | Frontend dependencies   |
+| source/test/node_modules/     | Test dependencies       |
+
+Note that there will also be a `package.json` and `package-lock.json` that corresponds with each node_modules directory.
+
 ### Updating devDependencies
 
 To update devDependencies run `npm update` in the root directory of the repository.
