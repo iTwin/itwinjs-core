@@ -157,7 +157,7 @@ export class ViewHandleArray {
     return nearestHitHandle !== undefined;
   }
 
-  public setFocus(index: number) {
+  public setFocus(index: number): void {
     if (this.focus === index && (this.focusDrag === this.viewTool.isDragging))
       return;
 
@@ -282,7 +282,7 @@ export class ViewManip extends ViewTool {
     return "";
   }
 
-  public onReinitialize() {
+  public onReinitialize(): void {
     toolAdmin.gesturePending = false;
     if (this.viewport) {
       this.viewport.synchWithView(true);
@@ -319,7 +319,7 @@ export class ViewManip extends ViewTool {
     return true;
   }
 
-  public onDataButtonUp(_ev: ButtonEvent) {
+  public onDataButtonUp(_ev: ButtonEvent): boolean {
     if (this.nPts <= 1 && this.isDragOperationRequired && !this.isDragOperation && this.isOneShot)
       this.exitTool();
 
@@ -327,7 +327,7 @@ export class ViewManip extends ViewTool {
   }
 
   // Just let the idle tool handle this...
-  public onMiddleButtonDown(_ev: ButtonEvent) { return false; }
+  public onMiddleButtonDown(_ev: ButtonEvent): boolean { return false; }
 
   public onMiddleButtonUp(_ev: ButtonEvent) {
     if (this.nPts <= 1 && !this.isDragOperation && this.isOneShot)
@@ -336,7 +336,7 @@ export class ViewManip extends ViewTool {
     return false;
   }
 
-  public onMouseWheel(inputEv: WheelMouseEvent) {
+  public onMouseWheel(inputEv: WheelMouseEvent): boolean {
     const ev = inputEv.clone();
 
     // If the rotate is active, the mouse wheel should work as if the cursor is at the target center
@@ -350,7 +350,7 @@ export class ViewManip extends ViewTool {
     return true;
   }
 
-  public onModelStartDrag(ev: ButtonEvent) {
+  public onModelStartDrag(ev: ButtonEvent): boolean {
     this.isDragOperation = true;
     this.stoppedOverHandle = false;
 
@@ -361,12 +361,12 @@ export class ViewManip extends ViewTool {
     return true;
   }
 
-  public onModelEndDrag(ev: ButtonEvent) {
+  public onModelEndDrag(ev: ButtonEvent): boolean {
     this.isDragOperation = false;
     return 0 === this.nPts || this.onDataButtonDown(ev);
   }
 
-  public onModelMotion(ev: ButtonEvent) {
+  public onModelMotion(ev: ButtonEvent): void {
     this.stoppedOverHandle = false;
     if (0 === this.nPts && this.viewHandles.testHit(ev.viewPoint))
       this.viewHandles.focusHitHandle();
@@ -377,7 +377,7 @@ export class ViewManip extends ViewTool {
     this.viewHandles.motion(ev);
   }
 
-  public onModelMotionStopped(ev: ButtonEvent) {
+  public onModelMotionStopped(ev: ButtonEvent): void {
     if (ev.viewport !== this.viewport)
       return;
 
@@ -401,7 +401,7 @@ export class ViewManip extends ViewTool {
       this.doUpdate(false);
   }
 
-  public onCleanup() {
+  public onCleanup(): void {
     let restorePrevious = false;
 
     if (this.inDynamicUpdate) {
@@ -685,7 +685,7 @@ export class ViewManip extends ViewTool {
   }
 
   public viewPtToSpherePt(viewPt: Point3d, invertY: boolean, result?: Point3d): Point3d | undefined {
-    const vp = this.viewport;
+    const vp = this.viewport!;
     const ballRadius = this.ballRadius;
     const targetCenterView = vp.worldToView(this.targetCenterWorld, scratchPoint3d1);
 
@@ -856,14 +856,14 @@ class ViewRotate extends ViewingToolHandle {
     return true;
   }
 
-  public doManipulation(ev: ButtonEvent, _inDynamics: boolean) {
+  public doManipulation(ev: ButtonEvent, _inDynamics: boolean): boolean {
     const tool = this.viewTool;
     const viewport = tool.viewport!;
     const ptNpc = viewport.worldToNpc(ev.point);
-    if (this.lastPtNpc.isAlmostEqual(ptNpc, 1.0e-10))
+    if (this.lastPtNpc.isAlmostEqual(ptNpc, 1.0e-10)) // no movement since last point
       return true;
 
-    if (this.firstPtNpc.isAlmostEqual(ptNpc, 1.0e-2))
+    if (this.firstPtNpc.isAlmostEqual(ptNpc, 1.0e-2)) // too close to anchor pt
       ptNpc.setFrom(this.firstPtNpc);
 
     this.lastPtNpc.setFrom(ptNpc);
@@ -910,8 +910,8 @@ class ViewRotate extends ViewingToolHandle {
       // Movement in screen y == rotation about screen X...
       const yAxis = viewport.rotMatrix.getRow(0);
 
-      const xRMatrix = xDelta ? RotMatrix.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (xExtent / xDelta))) : RotMatrix.createIdentity();
-      const yRMatrix = yDelta ? RotMatrix.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta))) : RotMatrix.createIdentity();
+      const xRMatrix = xDelta ? RotMatrix.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (xExtent / xDelta)))! : RotMatrix.createIdentity();
+      const yRMatrix = yDelta ? RotMatrix.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta)))! : RotMatrix.createIdentity();
       const worldRMatrix = yRMatrix.multiplyMatrixMatrix(xRMatrix);
       const result = worldRMatrix.getAxisAndAngleOfRotation();
       radians = Angle.createRadians(-result.angle.radians);
@@ -938,10 +938,9 @@ class ViewRotate extends ViewingToolHandle {
 export class FitViewTool extends ViewTool {
   constructor(public viewport: Viewport, public oneShot: boolean) { super(); }
   public get toolId() { return "View.Fit"; }
-
-  public onDataButtonDown(_ev: ButtonEvent) { return this.doFit(); }
+  public onDataButtonDown(_ev: ButtonEvent): boolean { return this.doFit(); }
   public onPostInstall() { super.onPostInstall(); this.doFit(); }
-  public doFit() {
+  public doFit(): boolean {
     ViewManip.fitView(this.viewport, true);
     if (this.oneShot)
       this.exitTool();
