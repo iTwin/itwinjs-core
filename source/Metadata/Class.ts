@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { ClassInterface, MixinInterface, EntityClassInterface, PropertyInterface, CustomAttributeClassInterface, RelationshipClassInterface, RelationshipConstraintInterface, NavigationPropertyInterface, PrimitivePropertyInterface, PrimitiveArrayPropertyInteface, SchemaChildInterface, StructPropertyInterface, StructArrayPropertyInterface } from "../Interfaces";
+import { ECClassInterface, MixinInterface, EntityClassInterface, PropertyInterface, CustomAttributeClassInterface, RelationshipClassInterface, RelationshipConstraintInterface, NavigationPropertyInterface, PrimitivePropertyInterface, PrimitiveArrayPropertyInteface, SchemaChildInterface, StructPropertyInterface, StructArrayPropertyInterface } from "../Interfaces";
 import { ECClassModifier, CustomAttributeContainerType, RelationshipMultiplicity, RelationshipEnd, RelatedInstanceDirection, StrengthType,
   parseCustomAttributeContainerType, parseClassModifier, parseStrength, parseStrengthDirection, PrimitiveType, parsePrimitiveType } from "../ECObjects";
 import { ICustomAttributeContainer, CustomAttributeSet } from "./CustomAttribute";
@@ -13,9 +13,9 @@ import { NavigationProperty, PrimitiveProperty, PrimitiveArrayProperty, StructPr
 /**
  * A common abstract class for all of the EC class types.
  */
-export abstract class ECClass extends SchemaChild implements ICustomAttributeContainer, ClassInterface {
+export abstract class ECClass extends SchemaChild implements ICustomAttributeContainer, ECClassInterface {
   public modifier: ECClassModifier;
-  public baseClass?: ClassInterface;
+  public baseClass?: ECClassInterface;
   public properties?: PropertyInterface[];
   public customAttributes?: CustomAttributeSet;
 
@@ -251,7 +251,7 @@ export class MixinClass extends ECClass implements MixinInterface {
 /**
  *
  */
-export class StructClass extends ECClass implements ClassInterface { }
+export class StructClass extends ECClass implements ECClassInterface { }
 
 /**
  *
@@ -398,7 +398,7 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
       if (this.relationshipClass.schema && typeof(this.relationshipClass.schema) !== "string") {
-        const tempAbstractConstraint = this.relationshipClass.schema.getChild<ClassInterface>(jsonObj.abstractConstraint);
+        const tempAbstractConstraint = this.relationshipClass.schema.getChild<ECClassInterface>(jsonObj.abstractConstraint);
         if (!tempAbstractConstraint)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
@@ -413,7 +413,7 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
       jsonObj.constraintClasses.forEach((constraintClass: string) => {
         if (this.relationshipClass.schema && typeof(this.relationshipClass.schema) !== "string") {
-          const tempConstraintClass = this.relationshipClass.schema.getChild<ClassInterface>(constraintClass);
+          const tempConstraintClass = this.relationshipClass.schema.getChild<ECClassInterface>(constraintClass);
           if (!tempConstraintClass)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 

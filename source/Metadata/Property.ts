@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { PropertyInterface, ClassInterface, RelationshipClassInterface, PrimitivePropertyInterface, StructPropertyInterface, NavigationPropertyInterface, PrimitiveArrayPropertyInteface, StructArrayPropertyInterface, SchemaChildInterface } from "Interfaces";
+import { PropertyInterface, ECClassInterface, RelationshipClassInterface, PrimitivePropertyInterface, StructPropertyInterface, NavigationPropertyInterface, PrimitiveArrayPropertyInteface, StructArrayPropertyInterface, SchemaChildInterface } from "Interfaces";
 import { ECName, PrimitiveType, RelatedInstanceDirection } from "../ECObjects";
 import PropertyCategory from "Metadata/PropertyCategory";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
@@ -12,7 +12,7 @@ import { StructClass } from "Metadata/Class";
 
 export class ECProperty implements PropertyInterface {
   private _name: ECName;
-  public class: ClassInterface;
+  public class: ECClassInterface;
   public description: string;
   public label: string;
   public isReadOnly: boolean;

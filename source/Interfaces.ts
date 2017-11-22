@@ -15,40 +15,49 @@ export interface SchemaKeyInterface {
   matches(rhs: SchemaKeyInterface, matchType: SchemaMatchType): boolean;
 }
 
-export interface SchemaInterface {
+export interface SchemaProps {
   schemaKey: SchemaKeyInterface;
   alias: string;
   label?: string;
   description?: string;
   references?: SchemaInterface[];
   children?: SchemaChildInterface[];
+}
+
+export interface SchemaInterface extends SchemaProps {
   getChild<T extends SchemaChildInterface>(name: string): T | undefined;
   createEntityClass(name: string): EntityClassInterface;
   createMixinClass(name: string): MixinInterface;
-  createStructClass(name: string): ClassInterface;
-  createCustomAttributeClass(name: string): ClassInterface;
+  createStructClass(name: string): StructClassInterface;
+  createCustomAttributeClass(name: string): CustomAttributeClassInterface;
   createRelationshipClass(name: string): RelationshipClassInterface;
-  createKindOfQuantity(name: string): SchemaChildInterface; // Should return a KindOfQuantityInterface
-  createEnumeration(name: string): SchemaChildInterface; // Should return a EnumerationInterface
-  createPropertyCategory(name: string): SchemaChildInterface; // Should return a PropertyCategoryInterface
+  createKindOfQuantity(name: string): KindOfQuantityInterface;
+  createEnumeration(name: string): EnumerationInterface;
+  createPropertyCategory(name: string): PropertyCategoryInterface;
   addReference(refSchema: SchemaInterface): void;
-  getReference(refSchemaName: string): SchemaInterface | undefined;
+  getReference<T extends SchemaInterface>(refSchemaName: string): T | undefined;
   fromJson(obj: any): void;
 }
 
-export interface SchemaChildInterface {
+export interface SchemaChildProps {
   schema?: SchemaInterface;
   schemaVersion?: ECVersion;
   name: string;
   label?: string;
   description?: string;
+}
+
+export interface SchemaChildInterface extends SchemaChildProps{
   fromJson(obj: any): void;
 }
 
-export interface ClassInterface extends SchemaChildInterface {
+export interface ECClassProps extends SchemaChildProps {
   modifier: ECClassModifier;
-  baseClass?: string | ClassInterface; // string should be a ECFullName
+  baseClass?: string | ECClassInterface; // string should be a ECFullName
   properties?: PropertyInterface[];
+}
+
+export interface ECClassInterface extends SchemaChildInterface, ECClassProps {
   getProperty<T extends PropertyInterface>(name: string): T | undefined;
   createPrimitiveProperty(name: string, type?: string | PrimitiveType): PrimitivePropertyInterface;
   createPrimitiveArrayProperty(name: string, type?: string | PrimitiveType): PrimitiveArrayPropertyInteface;
@@ -56,24 +65,36 @@ export interface ClassInterface extends SchemaChildInterface {
   createStructArrayProperty(name: string, type?: string | SchemaChildInterface): StructArrayPropertyInterface; // TODO: Need to make type only StructInterface
 }
 
-export interface EntityClassInterface extends ClassInterface {
+export interface EntityClassProps extends ECClassProps {
   mixin?: string[] | MixinInterface[]; // string should be an ECFullName
+}
+
+export interface EntityClassInterface extends ECClassInterface, EntityClassProps {
   createNavigationProperty(name: string, relationship: string | RelationshipClassInterface, direction: string | RelatedInstanceDirection): NavigationPropertyInterface;
 }
 
-export interface MixinInterface extends ClassInterface {
+export interface StructClassInterface extends ECClassInterface, ECClassProps { }
+
+export interface MixinProps extends EntityClassProps {
   appliesTo?: string | EntityClassInterface; // string should be an ECFullName
 }
 
-export interface RelationshipClassInterface extends ClassInterface {
+// Normally we don't want empty interfaces because they don't add anything, but it is being used here to define one interface
+// that contains the properties from MixinProps and the method signatures from ECClassInterface.
+export interface MixinInterface extends ECClassInterface, MixinProps { }
+
+export interface RelationshipClassProps extends ECClassProps {
   strength: StrengthType;
   strengthDirection: RelatedInstanceDirection;
   source: RelationshipConstraintInterface;
   target: RelationshipConstraintInterface;
+}
+
+export interface RelationshipClassInterface extends ECClassInterface, RelationshipClassProps {
   createNavigationProperty(name: string, relationship: string | RelationshipClassInterface, direction: string | RelatedInstanceDirection): NavigationPropertyInterface;
 }
 
-export interface RelationshipConstraintInterface {
+export interface RelationshipConstraintProps {
   relClass?: RelationshipClassInterface;
   multiplicity: RelationshipMultiplicity;
   roleLabel: string;
@@ -81,17 +102,49 @@ export interface RelationshipConstraintInterface {
   abstractConstraint: EntityClassInterface | RelationshipClassInterface;
   // customAttributes: object[];  // TODO: Fix this
   constraintClasses: EntityClassInterface[] | RelationshipClassInterface[];
+}
+
+export interface RelationshipConstraintInterface extends RelationshipConstraintProps {
   fromJson(obj: any): void;
 }
 
-export interface CustomAttributeClassInterface {
+export interface CustomAttributeClassProps extends ECClassProps {
   containerType: CustomAttributeContainerType;
 }
 
-export interface EnumerationInterface {
+export interface CustomAttributeClassInterface extends ECClassInterface, CustomAttributeClassProps { }
+
+export interface EnumerationProps extends SchemaChildProps {
   isStrict: boolean;
   type: PrimitiveType.Integer | PrimitiveType.String;
 }
+
+// Normally we don't want empty interfaces because they don't add anything, but it is being used here to define one interface
+// that contains the properties from EnumerationProps and method signatures from SchemaChildInterface.
+export interface EnumerationInterface extends SchemaChildInterface, EnumerationProps { }
+
+export interface FormatUnitSpecInterface {
+  unit: string;
+  format: string;
+}
+
+export interface KindOfQuantityProps extends SchemaChildProps {
+  persistenceUnit: FormatUnitSpecInterface;
+  presentationUnits: FormatUnitSpecInterface[];
+  precision: number;
+}
+
+// Normally we don't want empty interfaces because they don't add anything, but it is being used here to define one interface
+// that contains the properties from KindOfQuantityProps and method signatures from SchemaChildInterface.
+export interface KindOfQuantityInterface extends SchemaChildInterface, KindOfQuantityProps { }
+
+export interface PropertyCategoryProps extends SchemaChildProps {
+  priority: number;
+}
+
+// Normally we don't want empty interfaces because they don't add anything, but it is being used here to define one interface
+// that contains the properties from PropertyCategoryProps and method signatures from SchemaChildInterface.
+export interface PropertyCategoryInterface extends SchemaChildInterface, PropertyCategoryProps { }
 
 export interface PropertyInterface {
   name: string; // Probably should be an ECName

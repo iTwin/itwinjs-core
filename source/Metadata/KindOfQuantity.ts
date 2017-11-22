@@ -4,13 +4,14 @@
 
 import SchemaChild from "./SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { KindOfQuantityInterface, FormatUnitSpecInterface } from "Interfaces";
 
-export class FormatUnitSpec {
+export class FormatUnitSpec implements FormatUnitSpecInterface {
   public unit: string;
   public format: string;
 }
 
-export default class KindOfQuantity extends SchemaChild {
+export default class KindOfQuantity extends SchemaChild implements KindOfQuantityInterface {
   public precision: number;
   public presentationUnits: FormatUnitSpec[];
   public persistenceUnit: FormatUnitSpec;
