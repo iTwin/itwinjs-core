@@ -45,6 +45,7 @@ export const ViewToolSettings = {
   walkEnforceZUp: true,
   fitModes: 0,            // ALL
   mode3dInput: 0,         // WALK
+  viewBallRadius: 0.35,
   walkVelocity: 3.5,      // in m/sec
   walkCameraAngle: 75.6,  // in degrees
   animationTime: BeDuration.fromSeconds(260),
@@ -240,45 +241,23 @@ export class ViewManip extends ViewTool {
     this.forcedHandle = ViewHandleType.None;
     this.lastFrustum = new Frustum();
     this.viewHandles = new ViewHandleArray(this);
-
-    if (handleMask & ViewHandleType.ViewPan)
-      this.viewHandles.add(new ViewPan(this));
-
-    if (handleMask & ViewHandleType.Rotate) {
-      this.viewHandles.add(new ViewRotate(this));
-    }
-
-    if (handleMask & ViewHandleType.ViewWalk)
-      this.viewHandles.add(new ViewWalk(this));
+    if (handleMask & ViewHandleType.ViewPan) this.viewHandles.add(new ViewPan(this));
+    if (handleMask & ViewHandleType.Rotate) { this.synchViewBallInfo(true); this.viewHandles.add(new ViewRotate(this)); }
+    if (handleMask & ViewHandleType.ViewWalk) this.viewHandles.add(new ViewWalk(this));
 
     this.onReinitialize();
   }
 
   public get toolId(): string {
-    if (this.handleMask & (ViewHandleType.Rotate | ViewHandleType.TargetCenter))
-      return "View.Rotate";
-
-    if (this.handleMask & ViewHandleType.ViewPan)
-      return "View.Pan";
-
-    if (this.handleMask & ViewHandleType.ViewScroll)
-      return "View.Scroll";
-
-    if (this.handleMask & ViewHandleType.ViewZoom)
-      return "View.Zoom";
-
-    if (this.handleMask & ViewHandleType.ViewWalk)
-      return "View.Walk";
-
-    if (this.handleMask & ViewHandleType.ViewWalkMobile)
-      return "View.WalkMobile";
-
-    if (this.handleMask & ViewHandleType.ViewFly)
-      return "View.Fly";
-
-    if (this.handleMask & ViewHandleType.ViewLook)
-      return "View.Look";
-
+    const handleMask = this.handleMask;
+    if (handleMask & (ViewHandleType.Rotate | ViewHandleType.TargetCenter)) return "View.Rotate";
+    if (handleMask & ViewHandleType.ViewPan) return "View.Pan";
+    if (handleMask & ViewHandleType.ViewScroll) return "View.Scroll";
+    if (handleMask & ViewHandleType.ViewZoom) return "View.Zoom";
+    if (handleMask & ViewHandleType.ViewWalk) return "View.Walk";
+    if (handleMask & ViewHandleType.ViewWalkMobile) return "View.WalkMobile";
+    if (handleMask & ViewHandleType.ViewFly) return "View.Fly";
+    if (handleMask & ViewHandleType.ViewLook) return "View.Look";
     return "";
   }
 
@@ -684,7 +663,7 @@ export class ViewManip extends ViewTool {
     return true;
   }
 
-  public viewPtToSpherePt(viewPt: Point3d, invertY: boolean, result?: Point3d): Point3d | undefined {
+  public viewPtToSpherePt(viewPt: Point3d, invertY: boolean, result?: Vector3d): Vector3d | undefined {
     const vp = this.viewport!;
     const ballRadius = this.ballRadius;
     const targetCenterView = vp.worldToView(this.targetCenterWorld, scratchPoint3d1);
@@ -710,9 +689,32 @@ export class ViewManip extends ViewTool {
     if (invertY)
       ballMouse.y = -ballMouse.y;
 
-    result = result ? result : new Point3d();
+    result = result ? result : new Vector3d();
     result.setFrom(ballMouse);
     return result;
+  }
+
+  public ballPointsToMatrix(matrix: RotMatrix | undefined, axisVector: Vector3d | undefined, ballVector0: Vector3d, ballVector1: Vector3d): Angle {
+    const normal = ballVector1.crossProduct(ballVector0);
+    const theta = ballVector1.angleTo(ballVector0);
+    if (matrix)
+      RotMatrix.createRotationAroundVector(normal, theta, matrix);
+    if (axisVector)
+      axisVector.setFrom(normal);
+    return theta;
+  }
+
+  private synchViewBallInfo(initialSetup: boolean): void {
+    const frustum = this.viewport!.getFrustum(CoordSystem.Screen, false, scratchFrustum);
+    const screenRange = scratchPoint3d1;
+    screenRange.set(
+      frustum.points[Npc._000].distance(frustum.points[Npc._100]),
+      frustum.points[Npc._000].distance(frustum.points[Npc._010]),
+      frustum.points[Npc._000].distance(frustum.points[Npc._001]));
+
+    this.ballRadius = (((screenRange.x < screenRange.y) ? screenRange.x : screenRange.y) * ViewToolSettings.viewBallRadius);
+    this.updateTargetCenter();
+    this.updateWorldUpVector(initialSetup);
   }
 }
 
@@ -787,6 +789,7 @@ class ViewPan extends ViewingToolHandle {
 class ViewRotate extends ViewingToolHandle {
   private lastPtNpc = new Point3d();
   private firstPtNpc = new Point3d();
+  private ballVector0 = new Vector3d();
   private frustum = new Frustum();
   private activeFrustum = new Frustum();
   public get handleType() { return ViewHandleType.Rotate; }
@@ -846,6 +849,9 @@ class ViewRotate extends ViewingToolHandle {
 
     // accudraw.SetContext((AccuDrawFlags) flags, & activeOrg, (DVec3dP) & adrawMatrix);
 
+    const viewPt = vp.worldToView(pickPt);
+    tool.viewPtToSpherePt(viewPt, true, this.ballVector0);
+
     vp.worldToNpc(pickPt, this.firstPtNpc);
     this.lastPtNpc.setFrom(this.firstPtNpc);
 
@@ -875,24 +881,25 @@ class ViewRotate extends ViewingToolHandle {
       return false;
 
     const currPt = viewport.npcToView(ptNpc, scratchPoint3d2);
-    if (frustumChange)
+    if (frustumChange) {
       this.firstPtNpc.setFrom(ptNpc);
+      tool.viewPtToSpherePt(currPt, true, this.ballVector0);
+    }
 
     let radians: Angle;
     let worldAxis: Vector3d;
     const worldPt = tool.targetCenterWorld;
     if (!viewport.view.allow3dManipulations()) {
-      const currBallPt = this.viewTool.viewPtToSpherePt(currPt, true);
+      const currBallPt = this.viewTool.viewPtToSpherePt(currPt, true)!;
 
-      const axisVector = new Point3d();
-      radians = this.viewTool.ballPointsToMatrix(undefined, axisVector, this.ballVector0, currBallPt);
+      const axisVector = new Vector3d();
+      radians = tool.ballPointsToMatrix(undefined, axisVector, this.ballVector0, currBallPt);
 
       const viewMatrix = viewport.rotMatrix;
       const xVec = viewMatrix.getRow(0);
       const yVec = viewMatrix.getRow(1);
       const zVec = viewMatrix.getRow(2);
-
-      worldAxis.sumOf3ScaledVectors(Cartesian3.ZERO, xVec, axisVector.x, yVec, axisVector.y, zVec, axisVector.z);
+      worldAxis = Vector3d.add3Scaled(xVec, axisVector.x, yVec, axisVector.y, zVec, axisVector.z);
     } else {
       const viewRect = viewport.viewRect;
       const xExtent = viewRect.width;

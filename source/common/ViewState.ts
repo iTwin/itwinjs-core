@@ -917,7 +917,7 @@ export abstract class ViewState extends ElementState {
   }
 }
 
-/**
+/*
  * This is what the parameters to the camera methods, and the values stored by ViewDefinition3d mean.
  * @verbatim
  *                v-- {origin}
@@ -971,7 +971,9 @@ export abstract class ViewState extends ElementState {
  *            or "wide and shallow slices", etc.) are problematic and disallowed based on ratio limits.
  */
 
-/** The current position, lens angle, and focus distance of a camera. */
+/**
+ * The current position, lens angle, and focus distance of a camera. 
+ */
 export class Camera {
   public readonly lens: Angle;
   public focusDistance: number;

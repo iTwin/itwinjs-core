@@ -34,7 +34,7 @@ class Animator {
   public constructor(public totalTime: BeDuration, public viewport: Viewport, public startFrustum: Frustum, public endFrustum: Frustum) { }
 
   public interpolateFrustum(fraction: number) {
-    for (let i = 0; i < Npc.CORNER_COUNT; i++) {
+    for (let i = 0; i < Npc.CORNER_COUNT; ++i) {
       this.startFrustum.points[i].interpolate(fraction, this.endFrustum.points[i], this.currFrustum.points[i]);
     }
     this.viewport.setupFromFrustum(this.currFrustum);
@@ -218,13 +218,13 @@ export abstract class Viewport {
 
   private scratchDefaultRotatePointLow = new Point3d(.5, .5, .5);
   private scratchDefaultRotatePointHigh = new Point3d(.5, .5, .5);
-  public determineDefaultRotatePoint(result: Point3d) {
+  public determineDefaultRotatePoint(result?: Point3d): Point3d {
     result = result ? result : new Point3d();
     const view = this.view;
     const depth = this.determineVisibleDepthNpc();
 
     // if there are no elements in the view and the camera is on, use the camera target point
-    if (!depth && view.is3d() && view.isCameraOn)
+    if (!depth && view.is3d() && view.isCameraOn())
       return view.getTargetPoint(result);
 
     this.scratchDefaultRotatePointLow.z = depth ? depth.minDepth : 0;
@@ -820,4 +820,36 @@ export abstract class Viewport {
     this.animateFrustumChange(startFrust!, this.getFrustum()!, animationTime);
   }
 
+  /**
+   * Converts an {x,y} position in screen coordinates to world coordinates by picking against
+   * the depth buffer.
+   * @param  mousePos the position in screen coordinates
+   * @param result optional output point
+   * @param enforceGeometryPicks optional, if set to true picks that aren't on tileset geometry return undefined
+   * @return the corresponding position in world coordinates, or undefined if no value exists in the depth buffer for the specified point
+   */
+  public pickDepthBuffer(_mousePos: Point3d, _result?: Point3d, _enforceGeometryPicks?: boolean): Point3d | undefined {
+    // var depthIntersection;
+    // if (this.scene.pickPositionSupported) {
+    //   depthIntersection = this.scene.pickPosition(mousePos, scratchDepthBufferIntersection);
+    // }
+
+    // if (!Cesium.defined(depthIntersection))
+    //   return undefined;
+
+    // if (enforceGeometryPicks) {
+    //   let isTilesetGeometry = this.pickEntity(mousePos) instanceof Cesium.Cesium3DTileFeature
+    //   if (!isTilesetGeometry)
+    //     return undefined
+    // }
+
+    // var npcPt = this.worldToNpc(depthIntersection, scratchDepthNpcPt);
+    // var viewPt = this.npcToView(npcPt);
+    // viewPt.x = mousePos.x;
+    // viewPt.y = mousePos.y;
+    // this.viewToWorld(viewPt, depthIntersection);
+
+    // return depthIntersection;
+    return undefined;
+  }
 }

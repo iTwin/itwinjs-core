@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, Point2d, Transform } from "@bentley/geometry-core/lib/PointVector";
 import { NpcCenter } from "../../common/ViewState";
 import { Viewport } from "../Viewport";
 import { IdleTool } from "./IdleTool";
@@ -9,7 +9,9 @@ import {
   ModifierKey, ButtonState, Button, GestureEvent, Tool, ButtonEvent, CoordSource, GestureInfo,
   Cursor, PrimitiveTool, WheelMouseEvent, InputSource, VirtualKey,
 } from "./Tool";
-import { ViewTool } from "./ViewTool";
+import { ViewTool, ViewToolSettings } from "./ViewTool";
+import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
+import { Constant } from "@bentley/geometry-core/lib/Constant";
 
 export class CurrentInputState {
   private _rawPoint: Point3d = new Point3d();
@@ -876,5 +878,130 @@ export class ToolAdmin {
     this.touchBridgeMode = false;
   }
 
-  private invalidateLastWheelEvent() { wheelEventProcessor.invalidateLastEvent(); }
+  private wheelEventProcessor = new WheelEventProcessor();
+
+  /** Performs default handling of mouse wheel event (zoom in/out) */
+  public processMouseWheelEvent(ev, doUpdate): boolean {
+    this.wheelEventProcessor.ev = ev;
+    const result = this.wheelEventProcessor.process(doUpdate);
+    this.wheelEventProcessor.ev = undefined;
+    return result;
+  }
+
+  private invalidateLastWheelEvent() { this.wheelEventProcessor.invalidateLastEvent(); }
 }
+
+// tslint:disable-next-line:variable-name
+export const MouseWheelSettings = {
+  zoomRatio: 1.75,
+  navigateDistPct: 3.0,
+  navigateMouseDistPct: 10.0,
+};
+
+class WheelEventProcessor {
+  constructor(public ev?: WheelMouseEvent) { }
+  public process(_doUpdate: boolean): boolean { this.doZoom(false); return true; }
+
+  public doZoom(reCenter: boolean) {
+    const ev = this.ev!;
+    let zoomRatio = Math.max(1.0, MouseWheelSettings.zoomRatio);
+
+    const wheelDelta = ev.wheelDelta;
+    if (wheelDelta > 0)
+      zoomRatio = 1.0 / zoomRatio;
+
+    const target = ev.point.clone();
+    const vp = ev.viewport!;
+    const view = vp.view;
+    const startFrust = vp.getFrustum();
+
+    if (vp.pickEntity(ev.viewPoint) instanceof Cesium.Cesium3DTileFeature) {
+      scratch.zoomTarget = target.clone();
+    } else if (!scratch.zoomTarget.equals(new Cartesian3())) {
+      target = scratch.zoomTarget.clone();
+    } else {
+      vp.determineDefaultRotatePoint(target);
+      scratch.zoomTarget = target.clone();
+    }
+
+    const targetRoot = target.clone();
+    const lastEvent = this._lastWheelEvent;
+    const lastEventValid = lastEvent && lastEvent.viewPoint.distanceSquaredXY(ev.viewPoint) < Constants.mgds_fc_epsilon;
+
+    if (view.is3d() && view.isCameraOn()) {
+      vp.worldToNpc(targetRoot, targetRoot);
+      let defaultTarget: Point3d | undefined;
+
+      if (lastEventValid) {
+        defaultTarget = vp.worldToNpc(lastEvent.worldPoint);
+        targetRoot.z = defaultTarget.z;
+      } else {
+        defaultTarget = vp.pickDepthBuffer(ev.viewPoint, new Point3d(), true);
+        if (defaultTarget) {
+          vp.worldToNpc(defaultTarget, targetRoot);
+        } else {
+          defaultTarget = vp.determineDefaultRotatePoint();
+          vp.worldToNpc(defaultTarget, defaultTarget);
+          targetRoot.z = defaultTarget.z;
+        }
+      }
+
+      vp.npcToWorld(targetRoot, targetRoot);
+
+      const transform = Transform.createScaleAboutPoint(targetRoot, zoomRatio);
+      const oldCameraPos = view.getEyePoint().clone();
+      const newCameraPos = transform.multiplyPoint(oldCameraPos);
+      const offset = newCameraPos.minus(oldCameraPos);
+      if (offset.magnitude() < Constant.oneCentimeter) {
+        offset.scaleInPlace(Constant.oneMeter / 3.0);
+        targetRoot.plus(offset, targetRoot);
+      }
+
+      target.setFrom(view.getTargetPoint());
+      target.plus(offset, target);
+      oldCameraPos.plus(offset, newCameraPos);
+
+      // if (vp.pointIsBelowSurface(newCameraPos)) {
+      //   vp.movePointToSurface(newCameraPos);
+      //   offset = Cartesian3.fromDifferenceOf(newCameraPos, oldCameraPos);
+      //   target.copyFrom(view.targetPoint);
+      //   target.add(offset);
+      // }
+
+      const result = view.lookAt(newCameraPos, target, view.getYVector());
+      vp.synchWithView(true);
+      if (ViewToolSettings.animateZoom)
+        vp.animateFrustumChange(startFrust, vp.getFrustum(), BeDuration.fromMilliseconds(100));
+
+      return result;
+    }
+
+    if (lastEventValid)
+      targetRoot.setFrom(lastEvent.worldPoint);
+
+    const targetNpc = vp.worldToNpc(targetRoot);
+    const trans = Matrix4.fromFixedPointAndScaleFactors(targetNpc, zoomRatio, zoomRatio, 1.0);
+    const viewCenter = new Cartesian3(0.5, 0.5, 0.5);
+
+    if (reCenter) {
+      const shift = Cartesian3.fromDifferenceOf(targetNpc, viewCenter);
+      shift.z = 0.0;
+
+      const offset = Matrix4.fromMatrixAndTranslation(undefined, shift);
+      trans.initProduct(trans, offset);
+    }
+
+    trans.multiplyByPoint(viewCenter, viewCenter);
+    viewCenter = vp.npcToWorld(viewCenter, viewCenter);
+
+    if (!lastEventValid && false)
+      this._lastWheelEvent = { viewPoint: ev.viewPoint.clone(), worldPoint: viewCenter };
+
+    return vp.zoom(viewCenter, zoomRatio);
+  }
+
+  public invalidateLastEvent() { this._lastWheelEvent = undefined; }
+  public doWheelPan(upDown: boolean) { }
+  public doWheelSlide(upDown: boolean) { }
+  public doWheelNavigate(isWalk: boolean) { }
+
