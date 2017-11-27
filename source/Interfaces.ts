@@ -47,7 +47,7 @@ export interface SchemaChildProps {
   description?: string;
 }
 
-export interface SchemaChildInterface extends SchemaChildProps{
+export interface SchemaChildInterface extends SchemaChildProps {
   fromJson(obj: any): void;
 }
 

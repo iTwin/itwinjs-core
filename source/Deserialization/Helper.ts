@@ -166,7 +166,7 @@ export default class SchemaReadHelper {
   }
 
   /**
-   * Helps find a SchemaChild by first checking if it exists within the provided schema. If it does not exist there it will use the ReadContext to locate 
+   * Helps find a SchemaChild by first checking if it exists within the provided schema.
    * @param fullName
    * @param schema
    */

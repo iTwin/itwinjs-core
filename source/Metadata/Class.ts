@@ -365,7 +365,7 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
   get isSource() { return this.relationshipEnd === RelationshipEnd.Source; }
 
   public addClass(constraint: EntityClassInterface | RelationshipClassInterface): void {
-    const areEntityConstraints = undefined !== this.constraintClasses as EntityClassInterface[]
+    const areEntityConstraints = undefined !== this.constraintClasses as EntityClassInterface[];
 
     if (areEntityConstraints && (undefined === constraint as EntityClassInterface))
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);

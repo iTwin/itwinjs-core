@@ -3,4 +3,5 @@ test
 scripts
 lib/**/test
 lib/**/maps
+lib/**/docs
 .nyc_output

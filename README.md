@@ -12,11 +12,11 @@ WIP
 
 There are several different types of tests within this package:
 *  Validation suite of test data against the different Json Schemas defining the specs. The purpose of these test being to make the test data we are using is valid (or invalid), as well as to make sure the spec is accurate and up-to-date. (These should probably be run in a separate CI build, or put in their own package. However, for now live here)
-*  Unit tests 
+*  Unit tests
 
 #### Test data format
 
-Some types of test data has a specific format to allow dynamic tests. 
+Some types of test data has a specific format to allow dynamic tests.
 
 ```json
 {
@@ -26,4 +26,4 @@ Some types of test data has a specific format to allow dynamic tests.
     ...
   }
 }
-``` 
+```

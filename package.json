@@ -9,39 +9,32 @@
     "url": "http://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/ec-js"
   },
   "scripts": {
-    "build": "tsc",
-    "test": "node scripts/test.js",
-    "test:watch": "node scripts/test.js watch",
-    "docs": "node scripts/docs.js ",
-    "docs:dev": "npm run docs && bmsBuild --destination ./lib/docs/public",
     "clean": "rimraf lib .nyc_output",
-    "coverage": "node scripts/cover.js"
+    "lint": "node ./node_modules/@bentley/bentleyjs-tools/scripts/tslint.js",
+    "prebuild": "npm run lint & npm run clean",
+    "build": "tsc",
+    "test": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode.js --testDir=./test/",
+    "test:watch": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode.js --testDir=./test/ --watch",
+    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --onlyJson",
+    "docs:dev": "npm run docs && bmsBuild --destination ./lib/docs/public",
+    "coverage": "node scripts/cover.js",
+    "start": "npm run build && npm run test && npm run docs"
   },
   "author": {
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bemetalsmith": "^1.12.3",
-    "@bentley/bentleyjs-tools": "^1.0.50",
-    "@types/chai": "^4.0.4",
-    "@types/fs-extra": "^4.0.5",
+    "@bentley/bemetalsmith": "^1.13.1",
+    "@bentley/bentleyjs-tools": "^1.0.54",
+    "@types/chai": "^4.0.5",
     "@types/mocha": "^2.2.44",
-    "@types/node": "^8.0.52",
-    "ajv": "^5.3.0",
-    "chai": "^4.1.2",
-    "chalk": "^2.3.0",
-    "cross-spawn": "^5.1.0",
-    "fs-extra": "^4.0.2",
-    "mocha": "^3.5.3",
-    "mocha-junit-reporter": "^1.15.0",
     "nyc": "^11.3.0",
     "rimraf": "^2.6.2",
     "ts-node": "^3.3.0",
-    "typedoc": "^0.9.0",
     "typescript": "^2.6.1"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "^1.0.39"
+    "@bentley/bentleyjs-core": "^1.0.41"
   }
 }

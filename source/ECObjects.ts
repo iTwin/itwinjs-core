@@ -222,7 +222,7 @@ export function containerTypeToString(type: CustomAttributeContainerType): strin
   }
 
   if (testContainerTypeValue(CustomAttributeContainerType.AnyProperty, type))
-    setOrAppend(containerType, "AnyProperty")
+    setOrAppend(containerType, "AnyProperty");
   else {
     if (testContainerTypeValue(CustomAttributeContainerType.PrimitiveProperty, type))
       setOrAppend(containerType, "PrimitiveProperty");

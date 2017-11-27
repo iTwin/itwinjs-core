@@ -153,7 +153,7 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
   }
 
   /**
-   * 
+   *
    */
   public createRelationshipClass(name: string, modifier?: ECClassModifier): RelationshipClass {
     const newRelClass = new RelationshipClass(name);
