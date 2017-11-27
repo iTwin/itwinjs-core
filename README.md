@@ -90,13 +90,15 @@ Note that there will also be a `package.json` and `package-lock.json` that corre
 ### Updating devDependencies
 
 To update devDependencies run `npm update` in the root directory of the repository.
-This does not iterate into the backend, frontend, and test subdirectories.
+This is the command to run if you wanted to move up to the latest **bentleyjs-tools** or other devDependencies.
+This does not iterate into the backend, frontend, and test subdirectories as all devDependencies are specified at the root of **imodeljs-core**.
 
 ### Updating dependencies
 
-To update dependencies (for example, moving up to a new version of **@bentley/geometry-core** or **@bentley/bentleyjs-core**), run `npm run update:dependencies` in the root directory of the repository.
+To update dependencies (for example, moving up to a new version of **imodeljs-clients**, **@bentley/geometry-core**, or **@bentley/bentleyjs-core**), run `npm run update:dependencies` in the root directory of the repository.
 This iterates into the backend, frontend, and test subdirectories and runs `npm update` in each one.
-Unfortunately, `npm update` does not have a *postupdate* hook, so a separate command had to be introduced.
+Unfortunately, `npm update` does not have a *postupdate* hook, so there was no way to orchestrate updating devDependencies and dependencies in a single command.
+Therefore, a separate command had to be introduced.
 
 ## Build Output and Publishing
 
