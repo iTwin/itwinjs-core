@@ -4,18 +4,22 @@
 import { ToolAdmin } from "./ToolAdmin";
 import { Tool, ButtonEvent, Cursor, WheelMouseEvent, CoordSource } from "./Tool";
 import { Viewport, CoordSystem } from "../Viewport";
-import { Point3d, Vector3d, RotMatrix, Transform } from "@bentley/geometry-core/lib/PointVector";
-import { Frustum, NpcCenter, Npc, MarginPercent, ViewStatus } from "../../common/ViewState";
+import { Point3d, Vector3d, RotMatrix, Transform, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
+import { Frustum, NpcCenter, Npc, MarginPercent, ViewStatus, ViewState3d } from "../../common/ViewState";
 import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 
 const toolAdmin = ToolAdmin.instance;
 const scratchButtonEvent = new ButtonEvent();
 const scratchFrustum = new Frustum();
-const scratchTransform = Transform.createIdentity();
-const scratchRotMatrix = new RotMatrix();
+const scratchTransform1 = Transform.createIdentity();
+const scratchTransform2 = Transform.createIdentity();
+const scratchRotMatrix1 = new RotMatrix();
+const scratchRotMatrix2 = new RotMatrix();
 const scratchPoint3d1 = new Point3d();
 const scratchPoint3d2 = new Point3d();
+const scratchVector3d1 = new Vector3d();
+const scratchVector3d2 = new Vector3d();
 
 export const enum ViewHandleType {
   None = 0,
@@ -37,6 +41,18 @@ export const enum HitPriority {
   High = 1000,
 }
 
+const enum OrientationResult {
+  Success = 0,
+  NoEvent = 1,
+  Disabled = 2,
+  RejectedByController = 3,
+}
+const enum NavigateMode {
+  Pan = 0,
+  Look = 1,
+  Travel = 2,
+}
+
 // tslint:disable-next-line:variable-name
 export const ViewToolSettings = {
   dynamicRotationSphere: false,
@@ -47,7 +63,7 @@ export const ViewToolSettings = {
   mode3dInput: 0,         // WALK
   viewBallRadius: 0.35,
   walkVelocity: 3.5,      // in m/sec
-  walkCameraAngle: 75.6,  // in degrees
+  walkCameraAngle: Angle.createDegrees(75.6),  // in degrees
   animationTime: BeDuration.fromSeconds(260),
   animateZoom: false,
   minDistanceToSurface: 2,
@@ -556,9 +572,9 @@ export class ViewManip extends ViewTool {
     return inDynamics || (doUpdate && hitHandle.checkOneShot());
   }
 
-  public lensAngleMatches(angle: number, tolerance: number) {
+  public lensAngleMatches(angle: Angle, tolerance: number) {
     const cameraView = this.viewport!.view;
-    return !cameraView.is3d() ? false : Math.abs(cameraView.calcLensAngle().radians - angle) < tolerance;
+    return !cameraView.is3d() ? false : Math.abs(cameraView.calcLensAngle().radians - angle.radians) < tolerance;
   }
 
   public isZUp() {
@@ -652,11 +668,11 @@ export class ViewManip extends ViewTool {
 
     const view = vp.view;
     const viewY = view.getYVector();
-    const rotMatrix = RotMatrix.createRotationVectorToVector(viewY, Vector3d.unitZ(), scratchRotMatrix);
+    const rotMatrix = RotMatrix.createRotationVectorToVector(viewY, Vector3d.unitZ(), scratchRotMatrix1);
     if (!rotMatrix)
       return false;
 
-    const transform = Transform.createFixedPointAndMatrix(pivotPoint, rotMatrix, scratchTransform);
+    const transform = Transform.createFixedPointAndMatrix(pivotPoint, rotMatrix, scratchTransform1);
     const frust = vp.getWorldFrustum(scratchFrustum);
     frust.multiply(transform);
     vp.setupFromFrustum(frust);
@@ -938,6 +954,382 @@ class ViewRotate extends ViewingToolHandle {
     const frustum = this.frustum.clone();
     frustum.multiply(worldTransform);
     this.viewTool.viewport!.setupFromFrustum(frustum);
+  }
+}
+
+// class WalkDecoration {
+//   constructor(parentElement, origin, color) {
+//     this.parentElement = parentElement;
+
+//     const ruleColor = '1px solid ' + Cesium.defaultValue(color, 'white');
+//     const halfLen = 7;
+//     const fullLen = halfLen * 2 + 1;
+
+//     const hor = document.createElement('div');
+//     hor.className = 'bim-overlay-box-rule-horizontal';
+//     this.hor = hor;
+//     const style = hor.style;
+//     style.height = '0px';
+//     style.width = fullLen + 'px';
+//     style.top = origin.y + 'px';
+//     style.left = (origin.x - halfLen) + 'px';
+//     style.borderBottom = ruleColor;
+//     parentElement.appendChild(hor);
+
+//     const ver = document.createElement('div');
+//     ver.className = 'bim-overlay-box-rule-vertical';
+//     this.ver = ver;
+//     style = ver.style;
+//     style.width = '0px';
+//     style.height = fullLen + 'px';
+//     style.left = origin.x + 'px';
+//     style.top = (origin.y - halfLen) + 'px';
+//     style.borderLeft = ruleColor;
+//     parentElement.appendChild(ver);
+//   }
+//   public destroy() {
+//      if (!this.destroyed) {
+//        this.destroyed = true;
+//        this.parentElement.removeChild(this.hor);
+//        this.parentElement.removeChild(this.ver);
+//     }
+//   }
+// }
+
+class NavigateMotion {
+  public deltaTime = 0;
+  public transform = Transform.createIdentity();
+  constructor(public viewport: Viewport) { }
+
+  public init(elapsedMilliseconds: number) {
+    this.deltaTime = elapsedMilliseconds * 0.001;
+    this.transform.setIdentity();
+  }
+
+  public getViewUp(result?: Vector3d) { return this.viewport.rotMatrix.getRow(1, result); }
+
+  public getViewDirection(result?: Vector3d): Vector3d {
+    const forward = this.viewport.rotMatrix.getRow(2, result);
+    forward.scale(-1); // positive z is out of the screen, but we want direction into the screen
+    return forward;
+  }
+
+  public takeElevator(distance: number): void {
+    const trans = scratchPoint3d1;
+    trans.x = trans.y = 0;
+    trans.z = distance * this.deltaTime;
+    Transform.createTranslation(trans, this.transform);
+  }
+
+  public modifyPitchAngleToPreventInversion(pitchAngle: number): number {
+    const angleLimit = Angle.degreesToRadians(85);
+    const angleTolerance = Angle.degreesToRadians(0.01);
+
+    if (0.0 === pitchAngle)
+      return 0.0;
+
+    const viewUp = this.getViewUp(scratchVector3d1);
+    const viewDir = this.getViewDirection(scratchVector3d2);
+    const worldUp = Vector3d.unitZ();
+
+    let viewAngle = worldUp.angleTo(viewUp).radians;
+    if (viewDir.z < 0)
+      viewAngle *= -1;
+
+    let newAngle = pitchAngle + viewAngle;
+    if (Math.abs(newAngle) < angleLimit)
+      return pitchAngle;  // not close to the limit
+    if ((pitchAngle > 0) !== (viewAngle > 0) && (Math.abs(pitchAngle) < Math.PI / 2))
+      return pitchAngle;  // tilting away from the limit
+    if (Math.abs(viewAngle) >= (angleLimit - angleTolerance))
+      return 0.0;         // at the limit already
+
+    const difference = Math.abs(newAngle) - angleLimit;
+    newAngle = (pitchAngle > 0) ? pitchAngle - difference : pitchAngle + difference;
+    return newAngle;        // almost at the limit, but still can go a little bit closer
+  }
+
+  public getWorldUp(result?: Vector3d) {
+    const up = Vector3d.createFrom(Vector3d.unitZ(), result);
+    //    this.viewport.geometry.rootTransform.multiplyByPointAsVector(Cartesian3.UNIT_Z, up);
+    return up;
+  }
+
+  public generateRotationTransform(yawRate: number, pitchRate: number, result?: Transform): Transform {
+    const vp = this.viewport;
+    const view = vp.view as ViewState3d;
+    const yawAngle = Angle.createRadians(yawRate * this.deltaTime);
+    const pitchAngle = Angle.createRadians(this.modifyPitchAngleToPreventInversion(pitchRate * this.deltaTime));
+    const angles = new YawPitchRollAngles(yawAngle, pitchAngle);
+    const rMatrix = vp.rotMatrix.multiplyMatrixMatrix(angles.toRotMatrix(scratchRotMatrix1), scratchRotMatrix2);
+    return Transform.createFixedPointAndMatrix(view.getEyePoint(), rMatrix, result);
+  }
+
+  public generateTranslationTransform(velocity: Vector3d, isConstrainedToXY: boolean, result?: Transform) {
+    const rMatrix = this.viewport.rotMatrix;
+    const xDir = rMatrix.getRow(0);
+    const yDir = rMatrix.getRow(1);
+    const zDir = this.getViewDirection();
+
+    if (isConstrainedToXY) {
+      const up = this.getWorldUp();
+      const cross = up.crossProduct(zDir);
+      cross.crossProduct(up, zDir);
+      zDir.normalize();
+    }
+
+    xDir.scale(velocity.x * this.deltaTime, xDir);
+    yDir.scale(velocity.y * this.deltaTime, yDir);
+    zDir.scale(velocity.z * this.deltaTime, zDir);
+
+    xDir.plus(yDir, xDir).plus(zDir, xDir);
+    return Transform.createTranslation(xDir, result);
+  }
+
+  public moveAndLook(linearVelocity: Vector3d, angularVelocityX: number, angularVelocityY: number, isConstrainedToXY: boolean): void {
+    const rotateTrans = this.generateRotationTransform(angularVelocityX, angularVelocityY, scratchTransform1);
+    const dollyTrans = this.generateTranslationTransform(linearVelocity, isConstrainedToXY, scratchTransform2);
+    this.transform.setMultiplyTransformTransform(rotateTrans, dollyTrans);
+  }
+
+  public pan(horizontalVelocity: number, verticalVelocity: number): void {
+    const travel = new Vector3d(horizontalVelocity, verticalVelocity, 0);
+    this.moveAndLook(travel, 0, 0, false);
+  }
+
+  public travel(yawRate: number, pitchRate: number, forwardVelocity: number, isConstrainedToXY: boolean): void {
+    const travel = new Vector3d(0, 0, forwardVelocity);
+    this.moveAndLook(travel, yawRate, pitchRate, isConstrainedToXY);
+  }
+
+  public look(yawRate: number, pitchRate: number): void {
+    this.generateRotationTransform(yawRate, pitchRate, this.transform);
+  }
+
+  /** reset pitch of view to zero */
+  public resetToLevel(): void {
+    const view = this.viewport.view;
+    if (!view.is3d() || !view.isCameraOn())
+      return;
+    const angles = YawPitchRollAngles.createFromRotMatrix(this.viewport.rotMatrix)!;
+    angles.pitch.setRadians(0); // reset pitch to zero
+    Transform.createFixedPointAndMatrix(view.getEyePoint(), angles.toRotMatrix(scratchRotMatrix1), this.transform);
+  }
+}
+
+abstract class ViewNavigate extends ViewingToolHandle {
+  private anchorPtView = new Point3d();
+  private lastPtView = new Point3d();
+  private initialized = false;
+  private lastMotionTime = 0;
+  private orientationValid = false;
+  private orientationTime = 0;
+  private orientationZ = new Vector3d();
+  protected abstract getNavigateMotion(elapsedTime: number): NavigateMotion | undefined;
+
+  constructor(viewManip: ViewManip) { super(viewManip); }
+
+  private static angleLimit = 0.075;
+  private static timeLimit = 500;
+  private haveStaticOrientation(zVec: Vector3d, currentTime: number): boolean {
+    if (!this.orientationValid || zVec.angleTo(this.orientationZ).radians > ViewNavigate.angleLimit || this.orientationZ.isAlmostZero()) {
+      this.orientationValid = true;
+      this.orientationTime = currentTime;
+      this.orientationZ = zVec;
+      return false;
+    }
+    return (currentTime - this.orientationTime) > ViewNavigate.timeLimit;
+  }
+
+  private tryOrientationEvent(_forward: Vector3d, _ev: ButtonEvent): { eventsEnabled: boolean, result: OrientationResult } {
+    // ###TODO: support orientation events?
+    return { eventsEnabled: false, result: OrientationResult.NoEvent };
+  }
+
+  private getElapsedTime(currentTime: number): number {
+    let elapsedTime = currentTime - this.lastMotionTime;
+    if (0 === this.lastMotionTime || elapsedTime < 0 || elapsedTime > 1000)
+      elapsedTime = 100;
+    return elapsedTime;
+  }
+
+  public getMaxLinearVelocity() { return ViewToolSettings.walkVelocity; }
+  public getMaxAngularVelocity() { return Math.PI / 4; }
+  public testHandleForHit(_ptScreen: Point3d) { return { distance: 0.0, priority: HitPriority.Low }; }
+
+  public getInputVector(result?: Vector3d): Vector3d {
+    const inputDeadZone = 5.0;
+    const input = this.anchorPtView.vectorTo(this.lastPtView, result);
+    const viewRect = this.viewTool.viewport!.viewRect;
+
+    if (Math.abs(input.x) < inputDeadZone)
+      input.x = 0;
+    else
+      input.x = 2 * input.x / viewRect.width;
+
+    if (Math.abs(input.y) < inputDeadZone)
+      input.y = 0;
+    else
+      input.y = 2 * input.y / viewRect.height;
+
+    input.x = Math.min(input.x, 1);
+    input.y = Math.min(input.y, 1);
+    return input;
+  }
+
+  public getCenterPoint(result: Point3d): Point3d {
+    const center = result ? result : new Point3d();
+    center.setZero();
+
+    const rect = this.viewTool.viewport!.viewRect;
+    const width = rect.width;
+    const height = rect.height;
+
+    if (width > 0)
+      center.x = width / 2;
+
+    if (height > 0)
+      center.y = height / 2;
+
+    return center;
+  }
+
+  public getNavigateMode(): NavigateMode {
+    const state = toolAdmin.currentInputState;
+    if (state.isShiftDown || !this.viewTool.viewport!.isCameraOn())
+      return NavigateMode.Pan;
+    return state.isControlDown ? NavigateMode.Look : NavigateMode.Travel;
+  }
+
+  private static scratchForward = new Vector3d();
+  public doNavigate(ev: ButtonEvent): boolean {
+    const currentTime = Date.now();
+    const forward = ViewNavigate.scratchForward;
+    const orientationEvent = this.tryOrientationEvent(forward, ev);
+    const orientationResult = orientationEvent.result;
+    const elapsedTime = this.getElapsedTime(currentTime);
+    this.lastMotionTime = currentTime;
+
+    const vp = this.viewTool.viewport!;
+    const motion = this.getNavigateMotion(elapsedTime);
+    let haveNavigateEvent: boolean = !!motion;
+    if (haveNavigateEvent) {
+      const frust = vp.getWorldFrustum(scratchFrustum);
+      frust.multiply(motion!.transform);
+      vp.setupFromFrustum(frust);
+      haveNavigateEvent = false;
+      if (OrientationResult.NoEvent === orientationResult)
+        return false;
+    }
+
+    if (haveNavigateEvent)
+      return true;
+    if (OrientationResult.Success === orientationResult)
+      return !this.haveStaticOrientation(forward, currentTime);
+    return false;
+  }
+
+  public doManipulation(ev: ButtonEvent, inDynamics: boolean): boolean {
+    if (!inDynamics)
+      return true;
+
+    this.lastPtView.setFrom(ev.viewPoint);
+    return this.doNavigate(ev);
+  }
+
+  public noMotion(ev: ButtonEvent): boolean {
+    this.doNavigate(ev);
+    return false;
+  }
+
+  public onReinitialize(): void {
+    if (this.initialized)
+      return;
+
+    this.initialized = true;
+    const tool = this.viewTool;
+    const vp = tool.viewport!;
+    const view = vp.view;
+    if (!view.is3d() || !view.allow3dManipulations())
+      return;
+
+    const startFrust = vp.getWorldFrustum();
+    const walkAngle = ViewToolSettings.walkCameraAngle;
+    if (!tool.lensAngleMatches(walkAngle, Angle.degreesToRadians(10)) || !tool.isZUp()) {
+      //  This turns on the camera if its not already on. It also assures the camera is centered. Obviously this is required if
+      //  the camera is not on or the lens angle is not what we want. We also want to do it if Z will be
+      //  adjusted because EnforceZUp swivels the camera around what GetTargetPoint returns. If the FocusDistance is not set to something
+      //  reasonable the target point may be far beyond anything relevant.
+      tool.setCameraLensAngle(walkAngle, tool.lensAngleMatches(walkAngle, Angle.degreesToRadians(45.)));
+    }
+
+    if (ViewToolSettings.walkEnforceZUp)
+      this.viewTool.enforceZUp(view.getTargetPoint());
+
+    const endFrust = vp.getWorldFrustum();
+    if (!startFrust.equals(endFrust))
+      vp.animateFrustumChange(startFrust, endFrust, ViewToolSettings.animationTime);
+
+    this.getCenterPoint(this.anchorPtView);
+
+    // const that = this;
+    // this._removeEventListener = vp.cameraToggled.addEventListener(function () { if (!vp.isCameraOn) that.viewTool.exitTool(); });
+  }
+
+  public onCleanup(): void {
+    //   if (Cesium.defined(this._removeEventListener)) {
+    //     this._removeEventListener();
+    //     this._removeEventListener = undefined;
+    //   }
+  }
+
+  public firstPoint(ev: ButtonEvent): boolean {
+    // NB: In desktop apps we want to center the cursor in the view.
+    // The browser doesn't support that, and it's more useful to be able to place the anchor point freely anyway.
+    this.lastPtView.setFrom(ev.viewPoint);
+    this.anchorPtView.setFrom(this.lastPtView);
+
+    // this.decoration = new WalkDecoration(this.viewport.canvas.parentElement, this.anchorPtView, this.viewport.getContrastToBackgroundColor());
+    return true;
+  }
+
+  public getHandleCursor(): Cursor { return Cursor.CrossHair; }
+  public focusOut() {
+    // this.decoration = this.decoration && this.decoration.destroy();
+  }
+}
+
+class ViewWalk extends ViewNavigate {
+  private navigateMotion: NavigateMotion;
+
+  constructor(viewManip: ViewManip) {
+    super(viewManip);
+    this.navigateMotion = new NavigateMotion(this.viewTool.viewport!);
+  }
+  public get handleType(): ViewHandleType { return ViewHandleType.ViewWalk; }
+
+  protected getNavigateMotion(elapsedTime: number): NavigateMotion | undefined {
+    const input = this.getInputVector(scratchVector3d1);
+    if (0 === input.x && 0 === input.y)
+      return undefined;
+
+    const motion = this.navigateMotion;
+    motion.init(elapsedTime);
+    switch (this.getNavigateMode()) {
+      case NavigateMode.Pan:
+        input.scale(this.getMaxLinearVelocity());
+        motion.pan(input.x, input.y);
+        break;
+      case NavigateMode.Look:
+        input.scale(-this.getMaxAngularVelocity());
+        motion.look(input.x, input.y);
+        break;
+      case NavigateMode.Travel:
+        motion.travel(-input.x * this.getMaxAngularVelocity(), 0, -input.y * this.getMaxLinearVelocity(), true);
+        break;
+    }
+
+    return motion;
   }
 }
 

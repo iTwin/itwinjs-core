@@ -1056,13 +1056,13 @@ export abstract class ViewState3d extends ViewState {
     const xBack = frustPts[Npc.LeftBottomRear].distance(frustPts[Npc.RightBottomRear]);
     const xFront = frustPts[Npc.LeftBottomFront].distance(frustPts[Npc.RightBottomFront]);
 
-    const sFlatViewFractionTolerance = 1.0e-6;
-    if (xFront > xBack * (1.0 + sFlatViewFractionTolerance))
+    const flatViewFractionTolerance = 1.0e-6;
+    if (xFront > xBack * (1.0 + flatViewFractionTolerance))
       return ViewStatus.InvalidWindow;
 
     // see if the frustum is tapered, and if so, set up camera eyepoint and adjust viewOrg and delta.
     const compression = xFront / xBack;
-    if (compression >= (1.0 - sFlatViewFractionTolerance))
+    if (compression >= (1.0 - flatViewFractionTolerance))
       return ViewStatus.Success;
 
     let viewOrg = frustPts[Npc.LeftBottomRear];
