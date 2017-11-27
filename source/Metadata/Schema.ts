@@ -286,10 +286,10 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
     this.references.push(refSchema);
   }
 
-  public getReference(refSchemaName: string): SchemaInterface | undefined {
+  public getReference<T extends SchemaInterface>(refSchemaName: string): T | undefined {
     if (!this.references)
       return undefined;
-    return this.references.find((ref) => ref.schemaKey.name.toLowerCase() === refSchemaName.toLowerCase());
+    return this.references.find((ref) => ref.schemaKey.name.toLowerCase() === refSchemaName.toLowerCase()) as T;
   }
 
   /**

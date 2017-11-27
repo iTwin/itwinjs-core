@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaInterface, SchemaChildInterface, ClassInterface, EntityClassInterface, MixinInterface,
-        RelationshipClassInterface, RelationshipConstraintInterface } from "../Interfaces";
+import { SchemaInterface, SchemaChildInterface, ECClassInterface, EntityClassInterface, MixinInterface,
+        RelationshipClassInterface, RelationshipConstraintInterface, CustomAttributeClassInterface, KindOfQuantityInterface } from "../Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaContext } from "../Context";
 import { ECVersion, SchemaKey, parsePrimitiveType } from "../ECObjects";
@@ -135,7 +135,7 @@ export default class SchemaReadHelper {
         this.loadEntityClass(entityClass, schemaChildJson, schema);
         break;
       case "StructClass":
-        const structClass: ClassInterface = schema.createStructClass(childName);
+        const structClass: ECClassInterface = schema.createStructClass(childName);
         this.loadClass(structClass, schemaChildJson, schema);
         break;
       case "Mixin":
@@ -143,7 +143,7 @@ export default class SchemaReadHelper {
         this.loadMixin(mixin, schemaChildJson, schema);
         break;
       case "CustomAttributeClass":
-        const caClass: ClassInterface = schema.createCustomAttributeClass(childName);
+        const caClass: CustomAttributeClassInterface = schema.createCustomAttributeClass(childName);
         this.loadClass(caClass, schemaChildJson, schema);
         break;
       case "RelationshipClass":
@@ -151,7 +151,7 @@ export default class SchemaReadHelper {
         this.loadRelationshipClass(relClass, schemaChildJson, schema);
         break;
       case "KindOfQuantity":
-        const koq: SchemaChildInterface = schema.createKindOfQuantity(childName);
+        const koq: KindOfQuantityInterface = schema.createKindOfQuantity(childName);
         koq.fromJson(schemaChildJson);
         break;
       case "PropertyCategory":
@@ -203,7 +203,7 @@ export default class SchemaReadHelper {
   /**
    *
    */
-  private loadPropertyTypes(classObj: ClassInterface, propertyJson: any): void {
+  private loadPropertyTypes(classObj: ECClassInterface, propertyJson: any): void {
     if (typeof(propertyJson.name) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
@@ -285,7 +285,7 @@ export default class SchemaReadHelper {
    * @param classJson The json object for this class
    * @param schema The ECSchema this class exists in.
    */
-  private loadClass(classObj: ClassInterface, classJson: any, schema?: SchemaInterface): void {
+  private loadClass(classObj: ECClassInterface, classJson: any, schema?: SchemaInterface): void {
     // Load base class first
     if (classJson.baseClass) {
       if (typeof(classJson.baseClass) !== "string")
@@ -324,7 +324,7 @@ export default class SchemaReadHelper {
     this.loadClass(entity, entityJson, schema);
   }
 
-  private loadMixin(mixin: ClassInterface, mixinJson: any, schema?: SchemaInterface): void {
+  private loadMixin(mixin: ECClassInterface, mixinJson: any, schema?: SchemaInterface): void {
     if (mixinJson.appliesTo) {
       if (typeof(mixinJson.appliesTo) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, "");
