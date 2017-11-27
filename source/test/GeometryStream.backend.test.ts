@@ -5,8 +5,7 @@
 /* tslint:disable: no-console no-string-literal */
 
 import { assert } from "chai";
-import { Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
-import { BSplineSurface3d } from "@bentley/geometry-core/lib/bspline/BSplineSurface";
+import { Point2d, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { AngleSweep } from "@bentley/geometry-core/lib/Geometry";
 import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
 import { Cone } from "@bentley/geometry-core/lib/solid/Cone";
@@ -14,13 +13,48 @@ import { Sample } from "@bentley/geometry-core/lib/serialization/GeometrySamples
 import { PolyfaceBuilder } from "@bentley/geometry-core/lib/polyface/PolyfaceBuilder";
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelDb } from "../backend/IModelDb";
-import { GSReader, GSWriter, GSCollection, GeometryStream, GeometryBuilder } from "../common/geometry/GeometryStream";
+import { GSReader, GSWriter, GSCollection, GeometryBuilder/*, CoordSystem */ } from "../common/geometry/GeometryStream";
 import { GeometryParams } from "../common/geometry/GeometryProps";
+// import { PatternParams } from "../common/geometry/AreaPattern";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { GeometricElement3dProps } from "../backend/Element";
-import { Category } from "../backend/Category";
+import { Element, GeometricElement3dProps } from "../backend/Element";
+// import { Category } from "../backend/Category";
 import { Code } from "../common/Code";
 import { Placement3d, ElementAlignedBox3d } from "../common/geometry/Primitives";
+
+/** Given that the node addon test method exists...
+ *  - encodes the GeometryStream
+ *  - decodes and parses in native C++
+ *  - encodes in native C++
+ *  - decodes and parses in Javascript
+ */
+/*
+async function testAgainstNative(imodel: IModelDb, builder: GeometryBuilder) {
+  const json: any = {
+  };
+  json.geom = builder.getGeometryStreamRef().toJSON();
+
+  let returnString = (await imodel.elements.testGeom(json)).result;
+  returnString = returnString.slice(1, returnString.length - 1);    // Get rid of extra quotes
+  const returnGS = GeometryStream.fromJSON(returnString);
+  const retCollection = new GSCollection(returnGS!.geomStream);
+  const reader = new GSReader();
+  let item: any;
+  const elParams = GeometryParams.createDefaults();
+  while (retCollection.isValid) {
+    if (retCollection.operation.isGeometryOp()) {
+      item = reader.dgnGetGeometricPrimitive(retCollection.operation);
+      assert.isDefined(item, "Item extracted into GeometricPrimitive");
+    } else if (retCollection.operation.opCode === 1) {
+      item = 1;   // Header
+    } else {
+      item = reader.dgnGetGeometryParams(retCollection.operation, elParams);
+      assert.isTrue(item, "Item extracted into GeometryParams");
+    }
+    retCollection.nextOp();
+  }
+}
+*/
 
 describe("GeometryStream", () => {
   let imodel: IModelDb;
@@ -33,7 +67,7 @@ describe("GeometryStream", () => {
     IModelTestUtils.closeIModel(imodel);
   });
 
-  it("FromBytes", () => {
+  it("should be able to read in stream using byte buffer", () => {
     const arr32bit: number[] = [
       1, 8, 1, 0,
       4, 48, 28, 1310744,
@@ -77,7 +111,7 @@ describe("GeometryStream", () => {
     } while (iter.nextOp());
   });
 
-  it ("Base64Encoding", async () => {
+  it ("base64 encoding and decoding should parallel that of native code", async () => {
     const geomArray: Arc3d[] = [
       Arc3d.createXY(Point3d.create(0, 0), 5),
       Arc3d.createXY(Point3d.create(5, 5), 2),
@@ -90,7 +124,7 @@ describe("GeometryStream", () => {
       gsWriter.dgnAppendArc3d(geom, 2);
     }
 
-    const geometryStream = new GeometryStream(gsWriter.outputReference());
+    const geometryStream = gsWriter.outputGSRef();
 
     // Set up element to be placed in iModel
     const seedElement = await imodel.elements.getElement(new Id64("0x1d"));
@@ -142,21 +176,21 @@ describe("GeometryStream", () => {
 
 describe ("GeometryBuilder", () => {
   let imodel: IModelDb;
+  let seedElement: Element;
 
   before(async () => {
     imodel = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
+    // Used to get information of imodel container
+    seedElement = await imodel.elements.getElement(new Id64("0x1d"));
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
   });
 
   after(() => {
     IModelTestUtils.closeIModel(imodel);
   });
 
-  it ("CreateElement3d", async () => {
-
-    // Used to get information of imodel container
-    const seedElement = await imodel.elements.getElement(new Id64("0x1d"));
-    assert.exists(seedElement);
-    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+  it ("should be able to create GeometricElement3d from various geometry (preserved during round trip testing to native code)", async () => {
 
     // Create an element that will take in the GeometryStream and placement
     const elementProps: GeometricElement3dProps = {
@@ -190,25 +224,31 @@ describe ("GeometryBuilder", () => {
     assert.isTrue(builder.appendCurveCollection(curveCollection), "Successfully appended CurveCollection using builder");
 
     // SolidPrimitive
-    const cylinder = Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, 3.0), 1.5, 1.5, true);
+    const cylinder = Cone.createAxisPoints(Point3d.create(0, 0.34, 0), Point3d.create(0, 0, 1030.0), 1.5, 1.5, true);
     assert.isTrue(builder.appendSolidPrimitive(cylinder!), "Successfully appended SolidPrimitve using builder");
 
     // GeometryParams
+    /*
+    const pattern = PatternParams.createDefaults();
     const elemDisplayParams = GeometryParams.createDefaults();
     elemDisplayParams.setCategoryId(seedElement.category);
     elemDisplayParams.setWeight(2);
-    assert.isTrue(builder.appendGeometryParams(elemDisplayParams), "Successfully appended GeometryParams using builder");
+    elemDisplayParams.setPatternParams(pattern);
+    assert.isTrue(builder.appendGeometryParams(elemDisplayParams, CoordSystem.World), "Successfully appended GeometryParams using builder");
+    */
+
+    // BsplineSurface
+    const surface = Sample.createXYGridBsplineSurface(4, 6, 3, 4);
+    assert.isTrue(builder.appendBsplineSurface(surface!), "BsplineSurface successfully appended using builder");
 
     // SubCategory
+    /*
     const defaultCategoryId = IModelTestUtils.getSpatialCategoryIdByName(imodel, "DefaultCategory");
     const defaultSubCategoryId = Category.getDefaultSubCategoryId(defaultCategoryId);
     const testReturn = await imodel.elements.getElement(defaultSubCategoryId);
     assert.isTrue(testReturn.id.isValid(), "Element successfully received back");
     assert.isTrue(builder.appendSubCategoryId(defaultSubCategoryId), "SubCategory Id reference successfully appended using builder");
-
-    // BsplineSurface
-    const surface = BSplineSurface3d.createUniformKnots([Point3d.create(0, 0), Point3d.create(1, 1)], 1, 1, 1);
-    assert.isTrue(builder.appendBsplineSurface(surface!), "BsplineSurface successfully appended using builder");
+    */
 
     // Polyface
     const polyBuilder = PolyfaceBuilder.create();
@@ -224,26 +264,42 @@ describe ("GeometryBuilder", () => {
     const insert3d = imodel.elements.insertElement(geomElement);
     assert.isTrue(insert3d.isValid(), "Successfully inserted GeometricElement3d resulting from a GeometryBuilder's GeometryStream");
 
-    // Extract back out of iModel
+    // Extract back out of iModel and parse
     const returned3d = await imodel.elements.getElement(insert3d);
-    assert.isDefined(returned3d.geom, "Returned element has GeometryStream");
+    assert.isDefined(returned3d.geom, "Returned insertelemelement has GeometryStream");
 
     const collection = new GSCollection(returned3d.geom.geomStream);
     const reader = new GSReader();
-    const itemArr: any[] = [];
+    let item: any;
     const elParams = GeometryParams.createDefaults();
     while (collection.isValid) {
-      let item: any;
       if (collection.operation.isGeometryOp()) {
         item = reader.dgnGetGeometricPrimitive(collection.operation);
         assert.isDefined(item, "Item extracted into GeometricPrimitive");
-        itemArr.push(item);
       } else {
         item = reader.dgnGetGeometryParams(collection.operation, elParams);
         assert.isTrue(item, "Item extracted into GeometryParams");
-        itemArr.push(elParams);
       }
       collection.nextOp();
     }
+
+    // Test against native GeometryStream (provided proper methods are declared - see declaration above)
+    // testAgainstNative(imodel, builder);
+  });
+
+  it ("should be able to make appendages to GeometricElement2d, with an exception of 3d geometry", async () => {
+
+    const builder = GeometryBuilder.createCategoryOrigin2d(seedElement.category, Point2d.create());
+    assert.isDefined(builder, "Builder is successfully created");
+    if (!builder)
+      return;
+
+    // CurvePrimitive
+    const ellipse = Arc3d.create(Point3d.create(1, 2, 0), Vector3d.create(1, 0, 0), Vector3d.create(0, 1, 0), AngleSweep.createStartEndRadians(0, 2 * Math.PI));
+    assert.isTrue(builder.appendCurvePrimitive(ellipse!), "Successfully appended CurvePrimitive using builder");
+
+    // 3d should not be appended
+    const cylinder = Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, 3.0), 1.5, 1.5, true);
+    assert.isFalse(builder.appendSolidPrimitive(cylinder!), "3d SolidPrimitve is NOT appended using 2d builder");
   });
 });
