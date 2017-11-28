@@ -29,19 +29,45 @@ export abstract class ECClass extends SchemaChild implements ICustomAttributeCon
   }
 
   /**
-   * Searches for a local ECProperty matching the name passed in
+   * Searches, case-insensitive, for a local ECProperty with the name provided.
    * @param name
    */
-  public getProperty<T extends PropertyInterface>(name: string): T | undefined {
-    if (!this.properties)
-      return undefined;
-    return this.properties.find((prop) => prop.name.toLowerCase() === name.toLowerCase()) as T;
+  public getProperty<T extends PropertyInterface>(name: string, includeInherited: boolean = false): T | undefined {
+    let foundProp;
+
+    if (this.properties) {
+      foundProp = this.properties.find((prop) => prop.name.toLowerCase() === name.toLowerCase()) as T;
+      if (foundProp)
+        return foundProp;
+    }
+
+    if (includeInherited)
+      return this.getInheritedProperty(name);
+
+    return undefined;
   }
 
   /**
-   *
+   * Searches the base class, if one exists, for the property with the name provided.
    * @param name
-   * @param type
+   */
+  public getInheritedProperty<T extends PropertyInterface>(name: string): T | undefined {
+    let inheritedProperty;
+
+    if (this.baseClass) {
+      inheritedProperty = this.baseClass.getProperty(name);
+      if (!inheritedProperty)
+        return inheritedProperty;
+    }
+
+    return inheritedProperty;
+  }
+
+  /**
+   * Creates a PrimitiveECProperty with the given name and type
+   * @param name The name of property to create.
+   * @param type The type of the primitive property. If it is in string form it will be parsed as a PrimitiveType.
+   * @throws ECObjectsStatus DuplicateProperty: thrown if a property with the same name already exists in the class.
    */
   public createPrimitiveProperty(name: string, type?: string | PrimitiveType): PrimitivePropertyInterface {
     if (this.getProperty(name))
@@ -167,10 +193,27 @@ export abstract class ECClass extends SchemaChild implements ICustomAttributeCon
 }
 
 /**
- *
+ * A Typescript class representation of an ECEntityClass.
  */
 export class EntityClass extends ECClass implements EntityClassInterface {
   public mixins?: MixinInterface[];
+
+  /**
+   * Searches the base class, if one exists, first then any mixins that exist for the property with the name provided.
+   * @param name The name of the property to find.
+   */
+  public getInheritedProperty<T extends PropertyInterface>(name: string): T | undefined {
+    let inheritedProperty = super.getInheritedProperty(name);
+
+    if (!inheritedProperty && this.mixins) {
+      this.mixins.some((mixin) => {
+        inheritedProperty = mixin.getProperty(name);
+        return inheritedProperty !== undefined;
+      });
+    }
+
+    return inheritedProperty as T;
+  }
 
   /**
    *

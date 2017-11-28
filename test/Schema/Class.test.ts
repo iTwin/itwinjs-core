@@ -2,13 +2,55 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { assert, expect } from "chai";
 
 import { ECSchema } from "../../source/Metadata/Schema";
 import { ECClass, EntityClass } from "../../source/Metadata/Class";
 import { SchemaContext } from "../../source/Context";
 
 describe("class", () => {
+  describe("get properties", () => {
+    it("inherited properties from base class", () => {
+      const baseClass = new EntityClass("TestBase");
+      const basePrimProp = baseClass.createPrimitiveProperty("BasePrimProp");
+
+      const entityClass = new EntityClass("TestClass");
+      entityClass.createPrimitiveProperty("PrimProp");
+      entityClass.baseClass = baseClass;
+
+      expect(entityClass.getProperty("BasePrimProp")).to.be.undefined;
+      expect(entityClass.getProperty("BasePrimProp", false)).to.be.undefined;
+      expect(entityClass.getProperty("BasePrimProp", true)).equal(basePrimProp);
+      expect(entityClass.getInheritedProperty("BasePrimProp")).equal(basePrimProp);
+      expect(entityClass.getInheritedProperty("PrimProp")).to.be.undefined;
+    });
+
+    it("case-insentive search", () => {
+      const entityClass = new EntityClass("TestClass");
+      const primProp = entityClass.createPrimitiveProperty("TestProp");
+
+      expect(entityClass.getProperty("TESTPROP")).equal(primProp);
+      expect(entityClass.getProperty("testprop")).equal(primProp);
+      expect(entityClass.getProperty("tEsTpRoP")).equal(primProp);
+    });
+
+    it("case-insensitive inherited property search", () => {
+      const baseClass = new EntityClass("BaseClass");
+      const primProp = baseClass.createPrimitiveProperty("TestProp");
+
+      const entityClass = new EntityClass("TestClass");
+      entityClass.baseClass = baseClass;
+
+      expect(entityClass.getProperty("TESTPROP", true)).equal(primProp);
+      expect(entityClass.getProperty("testprop", true)).equal(primProp);
+      expect(entityClass.getProperty("tEsTpRoP", true)).equal(primProp);
+
+      expect(entityClass.getInheritedProperty("TESTPROP")).equal(primProp);
+      expect(entityClass.getInheritedProperty("testprop")).equal(primProp);
+      expect(entityClass.getInheritedProperty("tEsTpRoP")).equal(primProp);
+    });
+  });
+
   describe("deserialization", () => {
     it("class with base class", () => {
       const schemaJson = {
