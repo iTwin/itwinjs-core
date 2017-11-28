@@ -10,6 +10,7 @@ import { IModelVersion } from "../common/IModelVersion";
 import { IModelToken } from "../common/IModel";
 import { IModelDb } from "./IModelDb";
 import { NodeAddon } from "./NodeAddon";
+import { NodeAddonDgnDb } from "@bentley/types_imodeljsnodeaddon/iModelJsNodeAddon";
 
 import * as fs from "fs";
 import * as path from "path";
@@ -108,7 +109,7 @@ export class BriefcaseManager {
     if (!accessToken)
       return;
 
-    const nativeDb = new (NodeAddon.getAddon()).DgnDb();
+    const nativeDb: NodeAddonDgnDb = new (NodeAddon.getAddon()).NodeAddonDgnDb();
     const res: BentleyReturn<DbResult, string> = nativeDb.getCachedBriefcaseInfosSync(BriefcaseManager.cachePath);
     if (res.error)
       Promise.reject(new IModelError(res.error.status));
@@ -412,10 +413,10 @@ export class BriefcaseManager {
     const fromChangeSetId: string = iModelToken.changeSetId!;
     const changeSetTokens = await BriefcaseManager.downloadChangeSets(accessToken, iModelToken.iModelId!, toChangeSetId, fromChangeSetId);
 
-    const nativeDb = new (NodeAddon.getAddon()).DgnDb();
-    const res: BentleyReturn<DbResult, void> = await nativeDb.openBriefcaseSync(JSON.stringify(iModelToken), JSON.stringify(changeSetTokens));
-    if (res.error)
-      throw new IModelError(res.error.status);
+    const nativeDb: NodeAddonDgnDb  = new (NodeAddon.getAddon()).NodeAddonDgnDb();
+    const res: DbResult = await nativeDb.openBriefcaseSync(JSON.stringify(iModelToken), JSON.stringify(changeSetTokens));
+    if (DbResult.BE_SQLITE_OK !== res)
+      throw new IModelError(res);
 
     // Remove any old entry in the cache if an older briefcase may be repurposed.
     if (BriefcaseManager.cache!.hasBriefcase(iModelToken))
@@ -469,22 +470,30 @@ export class BriefcaseManager {
     if (!BriefcaseManager.cache)
       BriefcaseManager.initialize();
 
-    const nativeDb = new (NodeAddon.getAddon()).DgnDb();
-    const res: BentleyReturn<DbResult, void> = await nativeDb.openDgnDb(fileName, openMode);
-    if (res.error)
-      return Promise.reject(new IModelError(res.error.status));
+    const nativeDb: NodeAddonDgnDb  = new (NodeAddon.getAddon()).NodeAddonDgnDb();
 
-    if (enableTransactions) {
-      const bid: number = nativeDb.getBriefcaseId();
-      if (bid === BriefcaseId.Illegal || bid === BriefcaseId.Master)
-        nativeDb.setBriefcaseId(BriefcaseId.Standalone);
-      assert(nativeDb.getBriefcaseId() !== BriefcaseId.Illegal || nativeDb.getBriefcaseId() !== BriefcaseId.Master);
-    }
+    return new Promise<IModelDb>((resolve, reject) => {
 
-    const iModelToken = IModelToken.fromFile(fileName, openMode, true /*isOpen*/);
-    BriefcaseManager.cache!.setBriefcase(iModelToken, new IModelDb(iModelToken, nativeDb, iModelToken.pathname, "", {})); // WIP - properly set name, description, extents
+        nativeDb.openDgnDb(fileName, openMode, (error: DbResult | undefined) => {
 
-    return new IModelDb(iModelToken, nativeDb, fileName, "", {}); // WIP - property set name, description, extents
+          if (error) {
+            reject(new IModelError(error));
+            return;
+          }
+
+          if (enableTransactions) {
+            const bid: number = nativeDb.getBriefcaseId();
+            if (bid === BriefcaseId.Illegal || bid === BriefcaseId.Master)
+              nativeDb.setBriefcaseId(BriefcaseId.Standalone);
+            assert(nativeDb.getBriefcaseId() !== BriefcaseId.Illegal || nativeDb.getBriefcaseId() !== BriefcaseId.Master);
+          }
+
+          const iModelToken = IModelToken.fromFile(fileName, openMode, true /*isOpen*/);
+          BriefcaseManager.cache!.setBriefcase(iModelToken, new IModelDb(iModelToken, nativeDb, iModelToken.pathname, "", {})); // WIP - properly set name, description, extents
+
+          resolve (new IModelDb(iModelToken, nativeDb, fileName, "", {})); // WIP - property set name, description, extents
+          });
+      });
   }
 
   public static async close(accessToken: AccessToken, iModelToken: IModelToken, keepBriefcase: KeepBriefcase): Promise<void> {

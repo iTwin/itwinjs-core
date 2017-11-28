@@ -7,6 +7,7 @@ import { IModelError } from "../common/IModelError";
 import { BindingUtility, BindingValue } from "./BindingUtility";
 import { PrimitiveTypeCode } from "./Entity";
 import { NodeAddon } from "./NodeAddon";
+import { NodeAddonECDb } from "./NodeAddonECDb";
 
 /** Value type  (Match this to ECN::ValueKind in ECObjects.h) */
 export const enum ValueKind {
@@ -53,7 +54,7 @@ export function isPoint3dType(arg: any): arg is Point3dType {
 
 /** Allows performing CRUD operations in an ECDb */
 export class ECDb {
-  private _ecdb: any;
+  private _ecdb: NodeAddonECDb;
 
   /** Construct an invalid ECDb Error. */
   private _newInvalidDatabaseError(): IModelError {
