@@ -1,10 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Tool, Button, ButtonEvent, GestureEvent, WheelMouseEvent, PrimitiveTool } from "./Tool";
+import { Tool, Button, ButtonEvent, GestureEvent, WheelMouseEvent, PrimitiveToolBase } from "./Tool";
 import { ToolAdmin } from "./ToolAdmin";
-import { ViewManip, ViewHandleType, FitViewTool } from "./ViewTool";
+import { ViewManip, ViewHandleType, FitViewTool, RotatePanZoomGestureTool } from "./ViewTool";
 import { ViewStatus } from "../../common/ViewState";
+import { BentleyStatus } from "../../test/node_modules/@bentley/bentleyjs-core/lib/Bentley";
 
 const toolAdmin = ToolAdmin.instance;
 // tslint:disable:no-empty
@@ -57,7 +58,7 @@ export class IdleTool extends Tool {
       viewTool = new ViewManip(vp, ViewHandleType.ViewPan, true, false, true);
     }
 
-    return ViewStatus.Success === viewTool.installTool();
+    return BentleyStatus.SUCCESS === viewTool.installTool();
   }
 
   public onMiddleButtonUp(ev: ButtonEvent): boolean {
@@ -120,7 +121,7 @@ export class IdleTool extends Tool {
     //         }
 
     // NOTE: Need to synch tool dynamics because of UpdateDynamics call in _ExitViewTool from OnMiddleButtonUp before point was adjusted. :(
-    if (currTool && currTool instanceof PrimitiveTool) {
+    if (currTool && currTool instanceof PrimitiveToolBase) {
       const tmpEv = new ButtonEvent();
       toolAdmin.fillEventFromCursorLocation(tmpEv);
       currTool.updateDynamics(tmpEv);
@@ -133,7 +134,7 @@ export class IdleTool extends Tool {
     return toolAdmin.processMouseWheelEvent(ev, true);
   }
 
-  public installToolImplementation() { return ViewStatus.Success; }
+  public installToolImplementation() { return BentleyStatus.SUCCESS; }
   public exitTool() { }
   public onDataButtonDown(_ev: ButtonEvent) { return false; }
   public onMultiFingerMove(ev: GestureEvent) { const tool = new RotatePanZoomGestureTool(ev, true); tool.installTool(); return true; }

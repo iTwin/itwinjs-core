@@ -3,7 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
 import { Viewport } from "../Viewport";
-import { ViewStatus } from "../../common/ViewState";
+import { BentleyStatus } from "../../test/node_modules/@bentley/bentleyjs-core/lib/Bentley";
+import { IModel } from "../../common/IModel";
+import { Id64 } from "../../test/node_modules/@bentley/bentleyjs-core/lib/Id";
 
 export const enum Button {
   Data = 0,
@@ -312,8 +314,8 @@ export class WheelMouseEvent extends ButtonEvent {
 export abstract class Tool {
   // tslint:disable:no-empty
   public abstract get toolId(): string;
-  public abstract installToolImplementation(): ViewStatus;
-  public installTool(): ViewStatus { return this.installToolImplementation(); }
+  public abstract installToolImplementation(): BentleyStatus;
+  public installTool(): BentleyStatus { return this.installToolImplementation(); }
   public onPostInstall(): void { }  // Override to execute additional logic after tool becomes active
   public onInstall(): boolean { return true; } // Override to execute additional logic when tool is installed. Return false to prevent this tool from becoming active
   public abstract onDataButtonDown(ev: ButtonEvent): void;   // Implement to handle data-button-down events
@@ -362,9 +364,67 @@ export abstract class Tool {
   public onKeyTransition(_wentDown: boolean, _key: VirtualKey, _shiftIsDown: boolean, _ctrlIsDown: boolean): boolean { return false; }
 }
 
-export abstract class PrimitiveTool extends Tool {
+export abstract class PrimitiveToolBase extends Tool {
   public targetView?: Viewport;
-  public targetIsLocked: boolean; // If target model is known, set this to true in constructor and override getTargetModel.
+  public targetModelId = new Id64();
+  public targetIsLocked: boolean = false; // If target model is known, set this to true in constructor and override getTargetModel.
+  public toolStateId: string = "";  // Tool State Id can be used to determine prompts and control UI control state.
+
+  /**  Returns the prompt based on the tool's current state. */
+  public getPrompt(): string { return ""; }
+
+  /** Notifies the tool that a view tool is starting. */
+  public onStartViewTool(_tool: Tool) { }
+
+  /** Notifies the tool that a view tool is exiting. Return true if handled. */
+  public onExitViewTool(): void { }
+
+  /** Notifies the tool that an input collector is starting. */
+  public onStartInputCollector(_tool: Tool) { }
+
+  /** Notifies the tool that an input collector is exiting. */
+  public onExitInputCollector() { }
+
+  /** Called from isCompatibleViewport to check for a read only DgnDb, which is not a valid target for tools that create or modify elements. */
+  public requireWriteableTarget(): boolean { return true; }
+
+  /**
+   * Called when active view changes. Tool may choose to restart or exit based on current view type.
+   * @param current The new active view.
+   * @param previous The previously active view.
+   */
+  public onSelectedViewportChanged(current: Viewport, _previous: Viewport) {
+    if (this.isCompatibleViewport(current, true))
+      return;
+    this.onRestartTool();
+  }
+
+  /** Get the iModel the tool is operating against. */
+  public getIModel(): IModel { return this.targetView!.view.iModel; }
+
+  /**
+   * Called when an external event may invalidate the current tool's state.
+   * Examples are undo, which may invalidate any references to elements, or an incompatible active view change.
+   * The active tool is expected to call InstallTool with a new instance, or _ExitTool to start the default tool.
+   *  @note You *MUST* check the status of InstallTool and call _ExitTool if it fails!
+   * \code
+   * MyTool.oOnRestartTool() {
+   * const newTool = new MyTool();
+   * if (BentleyStatus.SUCCESS !== newTool.installTool())
+   *   this.exitTool(); // Tool exits to default tool if new tool instance could not be installed.
+   * }
+   * MyTool.onRestartTool() {
+   * _this.exitTool(); // Tool always exits to default tool.
+   * }
+   * \endcode
+   */
+  public abstract onRestartTool(): void;
+
+  /**
+   * Called to reset tool to initial state. This method is provided here for convenience; the only
+   * external caller is ElementSetTool. PrimitiveTool implements this method to call _OnRestartTool.
+   */
+  public onReinitialize(): void { this.onRestartTool(); }
 
   /** Called on data button down event in order to lock the tool to it's current target model. */
   public autoLockTarget(): void { if (!this.targetView) return; this.targetIsLocked = true; }

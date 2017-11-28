@@ -7,11 +7,23 @@ import { Viewport } from "../Viewport";
 import { IdleTool } from "./IdleTool";
 import {
   ModifierKey, ButtonState, Button, GestureEvent, Tool, ButtonEvent, CoordSource, GestureInfo,
-  Cursor, PrimitiveTool, WheelMouseEvent, InputSource, VirtualKey,
+  Cursor, PrimitiveToolBase, WheelMouseEvent, InputSource, VirtualKey,
 } from "./Tool";
 import { ViewTool, ViewToolSettings } from "./ViewTool";
 import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
+
+export const enum CoordinateLockOverrides {
+  OVERRIDE_COORDINATE_LOCK_None = 0,
+  OVERRIDE_COORDINATE_LOCK_ACS = (1 << 1),
+  OVERRIDE_COORDINATE_LOCK_Grid = (1 << 2),     // also overrides unit lock
+  OVERRIDE_COORDINATE_LOCK_All = 0xffff,
+}
+
+export class ToolState {
+  public coordLockOvr: CoordinateLockOverrides = CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_None;
+  public locateCircleOn: boolean = true;
+}
 
 export class CurrentInputState {
   private _rawPoint: Point3d = new Point3d();
@@ -254,12 +266,13 @@ export class CurrentInputState {
 export class ToolAdmin {
   public static instance = new ToolAdmin();
   public currentInputState = new CurrentInputState();
+  public toolState = new ToolState();
   private viewCursor?: Cursor;
   private viewTool?: ViewTool;
-  private primitiveTool?: PrimitiveTool;
+  private primitiveTool?: PrimitiveToolBase;
   private idleTool: IdleTool;
   private inputCollector?: Tool;
-  private defaultTool?: PrimitiveTool;
+  private defaultTool?: PrimitiveToolBase;
   private cursorInView: boolean;
   public gesturePending: boolean;
   // elementLocateManager: ElementLocateManager;
@@ -379,7 +392,7 @@ export class ToolAdmin {
     }
     // Don't use the old value of tool since _OnModelMotion may restart the tool using a new tool object.
     const primitiveTool = this.activeTool;
-    if (primitiveTool instanceof PrimitiveTool)
+    if (primitiveTool instanceof PrimitiveToolBase)
       primitiveTool.updateDynamics(ev);
 
     ev.reset();
@@ -407,7 +420,7 @@ export class ToolAdmin {
 
     // TentativePoint:: GetInstance().OnButtonEvent();
     // AccuDraw:: GetInstance()._OnPostDataButton(event);
-    if (!(tool instanceof PrimitiveTool))
+    if (!(tool instanceof PrimitiveToolBase))
       return;
 
     tool.autoLockTarget(); // lock tool to target model of this view...
@@ -709,7 +722,7 @@ export class ToolAdmin {
       return;
 
     // Give active tool a chance to update it's dynamics...
-    if (activeTool instanceof PrimitiveTool) {
+    if (activeTool instanceof PrimitiveToolBase) {
       const ev = this.scratchButtonEvent;
       this.fillEventFromCursorLocation(ev);
       activeTool.updateDynamics(ev);
@@ -739,7 +752,7 @@ export class ToolAdmin {
     return activeTool.onKeyTransition(wentDown, key, current.isShiftDown, current.isControlDown);
   }
 
-  public setPrimitiveTool(primitiveTool?: PrimitiveTool) {
+  public setPrimitiveTool(primitiveTool?: PrimitiveToolBase) {
     //    const prevActiveTool = this.activeTool;
     if (this.primitiveTool) {
       this.primitiveTool.onCleanup();
@@ -801,7 +814,7 @@ export class ToolAdmin {
     // we don't actually start the tool here...
   }
 
-  public startPrimitiveTool(newTool: PrimitiveTool) {
+  public startPrimitiveTool(newTool: PrimitiveToolBase) {
     this.exitViewTool();
     if (this.primitiveTool)
       this.setPrimitiveTool(undefined);
@@ -817,7 +830,7 @@ export class ToolAdmin {
   }
 
   /** establish the default tool */
-  public setDefaultTool(tool: PrimitiveTool) { this.defaultTool = tool; }
+  public setDefaultTool(tool: PrimitiveToolBase) { this.defaultTool = tool; }
   /**
    * Starts the default tool, if any. Generally invoked automatically when other tools exit, so
    * shouldn't be called directly.

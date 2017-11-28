@@ -8,6 +8,7 @@ import { Point3d, Vector3d, RotMatrix, Transform, YawPitchRollAngles, Range3d, P
 import { Frustum, NpcCenter, Npc, MarginPercent, ViewStatus, ViewState3d } from "../../common/ViewState";
 import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
+import { BentleyStatus } from "../../test/node_modules/@bentley/bentleyjs-core/lib/Bentley";
 
 const toolAdmin = ToolAdmin.instance;
 const scratchButtonEvent = new ButtonEvent();
@@ -77,15 +78,15 @@ export abstract class ViewTool extends Tool {
   public inDynamicUpdate = false;
   public beginDynamicUpdate() { this.inDynamicUpdate = true; }
   public endDynamicUpdate() { this.inDynamicUpdate = false; }
-  public installToolImplementation() {
+  public installToolImplementation(): BentleyStatus {
     if (!toolAdmin.onInstallTool(this))
-      return ViewStatus.InvalidViewport;
+      return BentleyStatus.ERROR;
 
     toolAdmin.setViewTool(undefined);
     toolAdmin.startViewTool();
     toolAdmin.setViewTool(this);
     toolAdmin.onPostInstallTool(this);
-    return ViewStatus.Success;
+    return BentleyStatus.SUCCESS;
   }
 
   public onResetButtonUp(_ev: ButtonEvent) { this.exitTool(); return true; }
@@ -1606,9 +1607,9 @@ export class ViewGestureTool extends ViewManip {
 
   public onStart(ev: GestureEvent) {
     this.clearTouchStopData();
-    this.startInfo.setFrom(ev.gestureInfo!);
+    this.startInfo.copyFrom(ev.gestureInfo!);
   }
-
+}
 
 export class RotatePanZoomGestureTool extends ViewGestureTool {
   private allowZoom: boolean = true;
@@ -1623,21 +1624,22 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
   private frustum = new Frustum();
   private is2dRotateGestureLimit = 350;   // millis
 
-  constructor(ev: GestureEvent, private allowRotate: boolean, private allow2dRotate: boolean) {
+  constructor(ev: GestureEvent, private allowRotate: boolean) {
     super(ev);
     this.onStart(ev);
     this.handleEvent(ev);
   }
 
   public is2dRotateGesture(ev: GestureEvent): boolean {
-    if (!this.allow2dRotate || !this.allowRotate || this.rotatePrevented)
+    if (!this.allowRotate || this.rotatePrevented)
       return false;
+
     if (this.doing2dRotation)
       return true;
 
-    const vp = this.viewport;
+    const vp = this.viewport!;
     const view = vp.view;
-    const info = ev.gestureInfo;
+    const info = ev.gestureInfo!;
     if (view.allow3dManipulations() || info.numberTouches !== 2) {
       this.rotatePrevented = false;
       return false;
@@ -1661,11 +1663,11 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
   }
 
   public is3dRotateGesture(ev: GestureEvent): boolean {
-    return this.allowRotate && (1 === ev.gestureInfo.numberTouches) && this.viewport.view.allow3dManipulations();
+    return this.allowRotate && (1 === ev.gestureInfo!.numberTouches) && this.viewport!.view.allow3dManipulations();
   }
 
   public compute2dRotationAxis(currPoint: Point3d): { start: Point3d, end: Point3d } {
-    const vp = this.viewport;
+    const vp = this.viewport!;
     const npcPoint = vp.worldToNpc(currPoint);
 
     const testPt = new Point3d(npcPoint.x, npcPoint.y, 0.4);
@@ -1695,7 +1697,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     else if (zoomRatio > 10.0)
       zoomRatio = 10.0;
 
-    if (info.numberTouches > 2 || (Math.abs(startDistance - newDistance) < this.viewport.pixelsFromInches(0.125)))
+    if (info.numberTouches > 2 || (Math.abs(startDistance - newDistance) < this.viewport!.pixelsFromInches(0.125)))
       zoomRatio = 1.0;
 
     return zoomRatio;
@@ -1710,7 +1712,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
   }
 
   public handle2dRotate(ev: GestureEvent): boolean {
-    const vp = this.viewport;
+    const vp = this.viewport!;
 
     //  All of the transforms and computation are relative to the original transform.
     if (!vp.setupFromFrustum(this.frustum))
@@ -1744,50 +1746,39 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     return true;
   }
 
-  public handle3dRotate(ev) {
-    if (this.lastPtView.isEqual(ev.viewPoint, 2.0))
+  public handle3dRotate(ev: GestureEvent) {
+    if (this.lastPtView.isAlmostEqual(ev.viewPoint, 2.0))
       return true;
 
-    const vp = this.viewport;
+    const vp = this.viewport!;
     const currPt = ev.viewPoint.clone();
-    if (this.startPtView.isEqual(currPt, 2.0))
+    if (this.startPtView.isAlmostEqual(currPt, 2.0))
       currPt.setFrom(this.startPtView);
 
-    this.lastPtViewsetFrom(currPt);
+    this.lastPtView.setFrom(currPt);
 
-    if (!vp.setupFromFrustm(this.frustum))
+    if (!vp.setupFromFrustum(this.frustum))
       return true;
 
-    const worldPt = this.startPtWorld;
+    const viewRect = vp.viewRect;
+    const xExtent = viewRect.width;
+    const yExtent = viewRect.height;
+    const xDelta = currPt.x - this.startPtView.x;
+    const yDelta = currPt.y - this.startPtView.y;
 
-    const worldAxis = new Cartesian3();
-    const radians = 0.0;
-    if (this.useSphere || !vp.allow3dManipulations) {
-      // ###TODO? this is always false...
-    } else {
-      const viewRect = vp.getViewRect();
-      const xExtent = viewRect.width;
-      const yExtent = viewRect.height;
-      const xDelta = currPt.x - this.startPtView.x;
-      const yDelta = currPt.y - this.startPtView.y;
+    const xAxis = ViewToolSettings.preserveWorldUp ? this.worldUpVector : vp.rotMatrix.getRow(1);
+    const yAxis = vp.rotMatrix.getRow(0);
 
-      const xAxis = ViewToolSettings.preserveWorldUp ? this.worldUpVector : vp.rotMatrix.getRow(1);
-      const yAxis = vp.rotMatrix.getRow(0);
-
-      const xRMatrix = (0.0 != xDelta) ? Matrix3.fromVectorAndRotationAngle(xAxis, Math.PI / (xExtent / xDelta)) : Matrix3.IDENTITY;
-      const yRMatrix = (0.0 != yDelta) ? Matrix3.fromVectorAndRotationAngle(yAxis, Math.PI / (yExtent / yDelta)) : Matrix3.IDENTITY;
-      const worldRMatrix = Matrix3.fromProduct(yRMatrix, xRMatrix);
-      radians = -worldRMatrix.getRotationAngleAndVector(worldAxis);
-    }
-
-    const worldMatrix = Matrix3.fromVectorAndRotationAngle(worldAxis, radians);
-    const worldTransform = Transform.fromMatrixAndFixedPoint(worldMatrix, worldPt);
+    const xRMatrix = (0.0 !== xDelta) ? RotMatrix.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (xExtent / xDelta)))! : RotMatrix.identity;
+    const yRMatrix = (0.0 !== yDelta) ? RotMatrix.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta)))! : RotMatrix.identity;
+    const worldRMatrix = yRMatrix.multiplyMatrixMatrix(xRMatrix);
+    const worldTransform = Transform.createFixedPointAndMatrix(this.startPtWorld, worldRMatrix);
     const frustum = this.frustum.transformBy(worldTransform);
 
     if (!vp.setupFromFrustum(frustum))
       return true;
 
-    this.saveTouchStopData(ev.gestureInfo);
+    this.saveTouchStopData(ev.gestureInfo!);
     this.doUpdate(true);
     return true;
   }
@@ -1795,7 +1786,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
   public onStart(ev: GestureEvent): void {
     super.onStart(ev);
 
-    const vp = this.viewport;
+    const vp = this.viewport!;
     vp.getWorldFrustum(this.frustum);
 
     this.doing2dRotation = this.rotatePrevented = false;
@@ -1828,8 +1819,8 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     if (this.is2dRotateGesture(ev))
       return this.handle2dRotate(ev);
 
-    const vp = this.viewport;
-    const info = ev.gestureInfo;
+    const vp = this.viewport!;
+    const info = ev.gestureInfo!;
 
     const zoomRatio = this.computeZoomRatio(info);
 
@@ -1886,7 +1877,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
   }
 
   public onMultiFingerMove(ev: GestureEvent): boolean {
-    const info = ev.gestureInfo;
+    const info = ev.gestureInfo!;
     if (info.numberTouches !== this.startInfo.numberTouches) {
       this.onStart(ev);
       return true;
@@ -1895,7 +1886,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
   }
 
   public onSingleFingerMove(ev: GestureEvent): boolean { return this.onMultiFingerMove(ev); }
-  public onEndGesture(ev: GestureEvent): boolean {
+  public onEndGesture(_ev: GestureEvent): boolean {
     this.clearTouchStopData();
     return this.endGesture();
   }
