@@ -972,7 +972,7 @@ export abstract class ViewState extends ElementState {
  */
 
 /**
- * The current position, lens angle, and focus distance of a camera. 
+ * The current position, lens angle, and focus distance of a camera.
  */
 export class Camera {
   public readonly lens: Angle;
@@ -1412,7 +1412,7 @@ export class SpatialViewState extends ViewState3d {
       this.modelSelector = arg3.modelSelector;
     }
   }
-  public getViewedExtents(): AxisAlignedBox3d { return this.iModel.projectExtents; }
+  public getViewedExtents(): AxisAlignedBox3d { return this.iModel.extents; }
 
   public toJSON(): SpatialViewDefinitionProps {
     const val = super.toJSON() as SpatialViewDefinitionProps;

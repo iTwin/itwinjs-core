@@ -840,6 +840,10 @@ export abstract class Viewport {
     this.animateFrustumChange(startFrust!, this.getFrustum()!, animationTime);
   }
 
+  public pickEntity(_mousePos: Point3d, radius: number, _result?: Point3d): Point3d | undefined {
+    return undefined;
+  }
+
   /**
    * Converts an {x,y} position in screen coordinates to world coordinates by picking against
    * the depth buffer.

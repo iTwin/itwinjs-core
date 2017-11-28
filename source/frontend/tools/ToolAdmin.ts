@@ -928,7 +928,7 @@ class WheelEventProcessor {
     const view = vp.view;
     const startFrust = vp.getFrustum();
 
-    if (vp.pickEntity(ev.viewPoint) instanceof Cesium.Cesium3DTileFeature) {
+    if (vp.pickEntity(ev.viewPoint, ViewToolSettings.pickSize) {
       scratch.zoomTarget = target.clone();
     } else if (!scratch.zoomTarget.equals(new Cartesian3())) {
       target = scratch.zoomTarget.clone();
@@ -1017,4 +1017,4 @@ class WheelEventProcessor {
   public doWheelPan(upDown: boolean) { }
   public doWheelSlide(upDown: boolean) { }
   public doWheelNavigate(isWalk: boolean) { }
-
+}

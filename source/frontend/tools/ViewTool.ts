@@ -1816,6 +1816,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
   public handleEvent(ev: GestureEvent): boolean {
     if (this.is3dRotateGesture(ev))
       return this.handle3dRotate(ev);
+
     if (this.is2dRotateGesture(ev))
       return this.handle2dRotate(ev);
 
