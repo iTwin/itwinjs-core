@@ -6,7 +6,7 @@ import { SchemaInterface, SchemaChildInterface } from "../Interfaces";
 import { ECVersion, ECName } from "../ECObjects";
 
 /**
- *
+ * An abstract class that supplies all of the common parts of a SchemaChild.
  */
 export default abstract class SchemaChild implements SchemaChildInterface {
   private _name: ECName;

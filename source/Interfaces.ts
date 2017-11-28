@@ -96,12 +96,12 @@ export interface RelationshipClassInterface extends ECClassInterface, Relationsh
 
 export interface RelationshipConstraintProps {
   relClass?: RelationshipClassInterface;
-  multiplicity: RelationshipMultiplicity;
-  roleLabel: string;
-  polymorphic: boolean;
-  abstractConstraint: EntityClassInterface | RelationshipClassInterface;
+  multiplicity?: RelationshipMultiplicity;
+  roleLabel?: string;
+  polymorphic?: boolean;
+  abstractConstraint?: EntityClassInterface | RelationshipClassInterface;
   // customAttributes: object[];  // TODO: Fix this
-  constraintClasses: EntityClassInterface[] | RelationshipClassInterface[];
+  constraintClasses?: EntityClassInterface[] | RelationshipClassInterface[];
 }
 
 export interface RelationshipConstraintInterface extends RelationshipConstraintProps {

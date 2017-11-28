@@ -2,7 +2,9 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { ECClassInterface, MixinInterface, EntityClassInterface, PropertyInterface, CustomAttributeClassInterface, RelationshipClassInterface, RelationshipConstraintInterface, NavigationPropertyInterface, PrimitivePropertyInterface, PrimitiveArrayPropertyInteface, SchemaChildInterface, StructPropertyInterface, StructArrayPropertyInterface } from "../Interfaces";
+import { ECClassInterface, MixinInterface, EntityClassInterface, PropertyInterface, CustomAttributeClassInterface, RelationshipClassInterface,
+  RelationshipConstraintInterface, NavigationPropertyInterface, PrimitivePropertyInterface, PrimitiveArrayPropertyInteface, SchemaChildInterface,
+  StructPropertyInterface, StructArrayPropertyInterface } from "../Interfaces";
 import { ECClassModifier, CustomAttributeContainerType, RelationshipMultiplicity, RelationshipEnd, RelatedInstanceDirection, StrengthType,
   parseCustomAttributeContainerType, parseClassModifier, parseStrength, parseStrengthDirection, PrimitiveType, parsePrimitiveType } from "../ECObjects";
 import { ICustomAttributeContainer, CustomAttributeSet } from "./CustomAttribute";
@@ -273,7 +275,7 @@ export class EntityClass extends ECClass implements EntityClassInterface {
 }
 
 /**
- *
+ * A Typescript class representation of a Mixin.
  */
 export class MixinClass extends ECClass implements MixinInterface {
   public appliesTo: string | EntityClassInterface;
@@ -292,12 +294,12 @@ export class MixinClass extends ECClass implements MixinInterface {
 }
 
 /**
- *
+ * A Typescript class representation of an ECStructClass.
  */
 export class StructClass extends ECClass implements ECClassInterface { }
 
 /**
- *
+ * A Typescript class representation of an ECCustomAttributeClass.
  */
 export class CustomAttributeClass extends ECClass implements CustomAttributeClassInterface {
   public containerType: CustomAttributeContainerType;
@@ -315,7 +317,7 @@ export class CustomAttributeClass extends ECClass implements CustomAttributeClas
 }
 
 /**
- *
+ * A Typescript class representation of a ECRelationshipClass.
  */
 export class RelationshipClass extends ECClass implements RelationshipClassInterface {
   public strength: StrengthType;
@@ -373,16 +375,16 @@ export class RelationshipClass extends ECClass implements RelationshipClassInter
 }
 
 /**
- *
+ * A Typescript class representation of a ECRelationshipConstraint.
  */
 export class RelationshipConstraint implements RelationshipConstraintInterface {
   private _abstractConstraint: EntityClassInterface | RelationshipClassInterface;
   public relationshipClass: RelationshipClassInterface;
   public relationshipEnd: RelationshipEnd;
-  public multiplicity: RelationshipMultiplicity;
-  public polymorphic: boolean;
-  public roleLabel: string;
-  public constraintClasses: EntityClassInterface[] | RelationshipClassInterface[];
+  public multiplicity?: RelationshipMultiplicity;
+  public polymorphic?: boolean;
+  public roleLabel?: string;
+  public constraintClasses?: EntityClassInterface[] | RelationshipClassInterface[];
 
   constructor(relClass: RelationshipClass, relEnd: RelationshipEnd) {
     this.relationshipEnd = relEnd;
@@ -405,8 +407,15 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
     this._abstractConstraint = abstractConstraint;
   }
 
-  get isSource() { return this.relationshipEnd === RelationshipEnd.Source; }
+  /**
+   * Returns true if this RelationshipConstraint is the Source relationship end.
+   */
+  get isSource(): boolean { return this.relationshipEnd === RelationshipEnd.Source; }
 
+  /**
+   * Adds the provided class as a constraint class to this constraint.
+   * @param constraint The class to add as a constraint class.
+   */
   public addClass(constraint: EntityClassInterface | RelationshipClassInterface): void {
     const areEntityConstraints = undefined !== this.constraintClasses as EntityClassInterface[];
 
@@ -425,6 +434,10 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
 
   }
 
+  /**
+   * Populates this object with the provided json object.
+   * @param jsonObj The json representation of an ECRelationshipConstraint using the ECSchemaJson format.
+   */
   public fromJson(jsonObj: any): void {
     if (jsonObj.roleLabel) this.roleLabel = jsonObj.roleLabel;
     if (jsonObj.polymorphic) this.polymorphic = jsonObj.polymorphic;

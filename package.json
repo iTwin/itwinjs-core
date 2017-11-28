@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/ecobjects",
+  "name": "@bentley/ecjs",
   "version": "0.0.1",
   "description": "ECObjects core concepts in typescript",
   "license": "UNLICENSED",
@@ -15,8 +15,8 @@
     "build": "tsc",
     "test": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode.js --testDir=./test/",
     "test:watch": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode.js --testDir=./test/ --watch",
-    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --onlyJson",
-    "docs:dev": "npm run docs && bmsBuild --destination ./lib/docs/public",
+    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --onlyJson --json=lib/docs/json/ec-js/file.json",
+    "docs:dev": "npm run docs && bmsWatch --source ./lib/docs --destination public/",
     "coverage": "node scripts/cover.js",
     "start": "npm run build && npm run test && npm run docs"
   },
@@ -25,7 +25,7 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bemetalsmith": "^1.13.1",
+    "@bentley/bemetalsmith": "^1.13.2-0",
     "@bentley/bentleyjs-tools": "^1.0.54",
     "@types/chai": "^4.0.5",
     "@types/mocha": "^2.2.44",

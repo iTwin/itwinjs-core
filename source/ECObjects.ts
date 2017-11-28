@@ -11,6 +11,9 @@ export const enum ECClassModifier {
   Sealed,
 }
 
+/**
+ * Enumeration of primitive data types for ECProperties
+ */
 export const enum PrimitiveType {
   Uninitialized = 0x00,
   Binary = 0x101,
@@ -25,6 +28,11 @@ export const enum PrimitiveType {
   IGeometry = 0xa01,
 }
 
+/**
+ * Parses the given string into one of the 11 primitive types.
+ * @param type The primitive type string to parse.
+ * @throws ECObjectsStatus InvalidPrimitiveType if the provided string is not a valid PrimitiveType.
+ */
 export function parsePrimitiveType(type: string): PrimitiveType {
   if (/binary/i.test(type))
     return PrimitiveType.Binary;
@@ -49,39 +57,47 @@ export function parsePrimitiveType(type: string): PrimitiveType {
   else if (/Bentley.Geometry.Common.IGeometry/i.test(type))
     return PrimitiveType.IGeometry;
 
-  throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, ``);
+  throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, `The string '${type}' is not one of the 11 supported primitive types.`);
 }
 
+/**
+ *
+ */
 export const enum Type {
-  Struct                    = 0x02,
-  Struct_Array              = 0x02 | 0x04,
-  Navigation                = 0x08,
-  Binary                    = 0x101,
-  Binary_Array              = 0x101 | 0x04,
-  Boolean                   = 0x201,
-  Boolean_Array             = 0x201 | 0x04,
-  DateTime                  = 0x301,
-  DateTime_Array            = 0x301 | 0x04,
-  Double                    = 0x401,
-  Double_Array              = 0x401 | 0x04,
-  Integer                   = 0x501,
-  Integer_Array             = 0x501 | 0x04,
-  Integer_Enumeration       = 0x501 | 0x10,
+  Struct = 0x02,
+  Struct_Array = 0x02 | 0x04,
+  Navigation = 0x08,
+  Binary = 0x101,
+  Binary_Array = 0x101 | 0x04,
+  Boolean = 0x201,
+  Boolean_Array = 0x201 | 0x04,
+  DateTime = 0x301,
+  DateTime_Array = 0x301 | 0x04,
+  Double = 0x401,
+  Double_Array = 0x401 | 0x04,
+  Integer = 0x501,
+  Integer_Array = 0x501 | 0x04,
+  Integer_Enumeration = 0x501 | 0x10,
   Integer_Enumeration_Array = 0x501 | 0x10 | 0x04,
-  Long                      = 0x601,
-  Long_Array                = 0x601 | 0x04,
-  Point2d                   = 0x701,
-  Point2d_Array             = 0x701 | 0x04,
-  Point3d                   = 0x801,
-  Point3d_Array             = 0x801 | 0x04,
-  String                    = 0x901,
-  String_Array              = 0x901 | 0x04,
-  String_Enumeration        = 0x901 | 0x10,
-  String_Enumeration_Array  = 0x901 | 0x10 | 0x04,
-  IGeometry                 = 0xA01,
-  IGeometry_Array           = 0xA01 | 0x04,
+  Long = 0x601,
+  Long_Array = 0x601 | 0x04,
+  Point2d = 0x701,
+  Point2d_Array = 0x701 | 0x04,
+  Point3d = 0x801,
+  Point3d_Array = 0x801 | 0x04,
+  String = 0x901,
+  String_Array = 0x901 | 0x04,
+  String_Enumeration = 0x901 | 0x10,
+  String_Enumeration_Array = 0x901 | 0x10 | 0x04,
+  IGeometry = 0xA01,
+  IGeometry_Array = 0xA01 | 0x04,
 }
 
+/**
+ * Defines the valid CustomAttribute container types.
+ *
+ * Matches the C++ enumeration values.
+ */
 export const enum CustomAttributeContainerType {
   Schema = (0x0001 << 0),
   EntityClass = (0x0001 << 1),
@@ -101,6 +117,9 @@ export const enum CustomAttributeContainerType {
   Any = Schema | AnyClass | AnyProperty | AnyRelationshipConstraint,
 }
 
+/**
+ * Defines what sort of match should be used when locating a schema.
+ */
 export const enum SchemaMatchType {
   // Find exact VersionRead, VersionWrite, VersionMinor match as well as Data
   Identical,
@@ -116,7 +135,8 @@ export const enum SchemaMatchType {
 
 /**
  * Parses the provided string into an ECClassModifier if the string is a valid modifier.
- * @param modifier The modifier string to parse
+ * @param modifier The modifier string to parse.
+ * @throws ECObjectsStatus.InvalidModifier if the p
  */
 export function parseClassModifier(modifier: string): ECClassModifier {
   const lowerModifier = modifier.toLowerCase();
@@ -127,7 +147,7 @@ export function parseClassModifier(modifier: string): ECClassModifier {
   else if (/Sealed/i.test(lowerModifier))
     return ECClassModifier.Sealed;
 
-  throw new ECObjectsError(ECObjectsStatus.InvalidModifier, `${modifier} is not a valid ECClassModifier.`);
+  throw new ECObjectsError(ECObjectsStatus.InvalidModifier, `The string '${modifier}' is not a valid ECClassModifier.`);
 }
 
 /**
