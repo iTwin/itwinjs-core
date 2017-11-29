@@ -33,6 +33,8 @@
         "is",
         "keyin",
         "mixins",
+        "monorepo",
+        "postupdate",
         "redoable",
         "remotable",
         "remoting",
@@ -49,6 +51,7 @@
         "Unexpanded",
         "viewflags",
         "Viewport's",
+        "viewports",
         "Wireframe",
         "zbuffer"
     ],

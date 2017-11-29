@@ -3,8 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 import { Viewport } from "./Viewport";
 import { Cursor } from "./tools/Tool";
+import { EventList, Event } from "@bentley/bentleyjs-core/lib/Event";
+import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
+import { ToolAdmin } from "./tools/ToolAdmin";
 
 export class ViewManager {
+  private _viewEvents = new EventList<(vp: Viewport) => void>();
   public static instance = new ViewManager();
   public viewports: Viewport[] = [];
   public active = false;
@@ -12,7 +16,85 @@ export class ViewManager {
   public cursor?: Cursor;
   private _selectedView?: Viewport;
 
+  /** Called after the selected view changes.
+   * @param old   Previously selected viewport.
+   * @param current    Currently selected viewport.
+   */
+  public get onSelectedViewportChanged(): Event<(old: Viewport | undefined, current: Viewport | undefined) => void> { return this._viewEvents.get("selected") as any; }
+
+  /** Called after a view is opened. This can happen when the iModel is first opened or when a user opens a closed view. */
+
+  public get onViewOpen() { return this._viewEvents.get("open"); }
+
+  /** Called after a view is closed. This can happen when the iModel is closed or when a user closes an open view. */
+  public get onViewClose() { return this._viewEvents.get("close"); }
+
+  /** Called after a view is suspended. This can happen when the application is minimized. */
+  public get onViewSuspend() { return this._viewEvents.get("suspend"); }
+
+  /** Called after a suspended view is resumed.This can happen when a minimized application is stored
+   * or, on a tablet, when the application is moved to the foreground.
+   */
+  public get onViewResume() { return this._viewEvents.get("resume"); }
+
   public get selectedView() { return this._selectedView; }
+  public setSelectedView(vp: Viewport | undefined): BentleyStatus {
+    if (!vp)
+      vp = this.getFirstOpenView();
+
+    if (vp === this._selectedView)
+      return BentleyStatus.SUCCESS;
+
+    if (!vp) {
+      this.clearSelectedView();
+      return BentleyStatus.ERROR;
+    }
+
+    const oldVp = this._selectedView;
+    this._selectedView = vp;
+
+    this.onSelectedViewportChanged.raiseEvent(oldVp, vp);
+    return BentleyStatus.SUCCESS;
+  }
+
+  public getFirstOpenView(): Viewport | undefined { return this.viewports.length > 0 ? this.viewports[0] : undefined; }
+
+  private clearSelectedView(): void {
+    const oldVp = this._selectedView;
+    this._selectedView = undefined;
+    this.onSelectedViewportChanged.raiseEvent(oldVp, undefined);
+  }
+
+  public addViewport(newVp: Viewport): void {
+    for (const vp of this.viewports) { if (vp === newVp) return; } // make sure its not already in view array
+    this.viewports.push(newVp);
+    this.onViewOpen.raiseEvent(newVp);
+  }
+
+  public dropViewport(vp: Viewport): BentleyStatus {
+    this.onViewClose.raiseEvent(vp);
+    ToolAdmin.instance.onViewportClosed(vp); // notify tools that this view is no longer valid
+
+    let didDrop = false;
+    const vpList = this.viewports;
+    for (let i = 0; i < vpList.length; ++i) {
+      if (vpList[i] === vp) {
+        vpList.slice(i, 1);
+        didDrop = true;
+        break;
+      }
+    }
+
+    if (!didDrop) {
+      return BentleyStatus.ERROR;
+    }
+
+    if (this.selectedView === vp)
+      this.setSelectedView(undefined);
+
+    return BentleyStatus.SUCCESS;
+  }
+}
 
   //   mutable Display:: InfoWindow * m_infoWindow = nullptr;
   //   EventHandlerList<ViewDecoration> m_decorators;
@@ -31,28 +113,13 @@ export class ViewManager {
   //   void _OnGraphicElementAdded(DgnDbR db, DgnElementId id) override { if (& db == GetDgnDb()) m_forDraw.insert(id); }
   // void _OnAppliedChanges(TxnManager & mgr) override { CheckDeletedModels(mgr); }
 
-  // virtual bool _ForceSoftwareRendering() { return false; }
-  // DGNVIEW_EXPORT virtual void _NotifySelectedViewportChanged(DgnViewportP, DgnViewportP);
-  // DGNVIEW_EXPORT virtual void _NotifyViewOpened(DgnViewportP vp);
-  // DGNVIEW_EXPORT virtual void _NotifyViewClosed(DgnViewportP vp);
-  // DGNVIEW_EXPORT virtual void _NotifyViewSuspended(DgnViewportP vp);
-  // DGNVIEW_EXPORT virtual void _NotifyViewResumed(DgnViewportP vp);
-  // DGNVIEW_EXPORT virtual void _NotifyFirstDrawCompleted(DgnViewportP vp);
-  // DGNVIEW_EXPORT virtual void _NotifyRenderSceneQueued(DgnViewportP vp);
   // DGNVIEW_EXPORT virtual void _SetViewCursor(Display:: Cursor * newCursor);
-  // DGNVIEW_EXPORT virtual BentleyStatus _SetSelectedView(DgnViewportP inVp);
   // DGNVIEW_EXPORT void CheckDeletedModels(TxnManager &);
 
   // void InitializeRender();
   // void CallDecorators(DecorateContext &);
   // DGNVIEW_EXPORT Display:: InfoWindow & GetInfoWindow() const ;
   // virtual Display:: SystemContext * _GetSystemContext() = 0;
-
-  // public:
-  // ViewManager() { }
-  // DGNVIEW_EXPORT virtual ~ViewManager();
-  // DGNVIEW_EXPORT void Startup();
-  // DGNVIEW_EXPORT DgnDbP GetDgnDb() const ;
 
   // void PickDecorators(PickContextR);
   // void RenderLoop();
@@ -68,12 +135,8 @@ export class ViewManager {
   // DGNVIEW_EXPORT bool ExchangeNewTilesReady(bool val);
   // DGNVIEW_EXPORT void ClearSelectedView();
 
-  // BentleyStatus SetSelectedView(DgnViewportP inVp) { return _SetSelectedView(inVp); }
   // DGNVIEW_EXPORT void InvalidateDecorationsAllViews();
 
-  // DGNVIEW_EXPORT DgnViewportP GetFirstOpenView();
-  // DGNVIEW_EXPORT void AddViewport(DgnViewportR vp);
-  // DGNVIEW_EXPORT StatusInt DropViewport(DgnViewportR);
   // DGNVIEW_EXPORT void SuspendForBackground();
 
   // DGNVIEW_EXPORT void AddInputDevice(IInputDevice &);
@@ -104,6 +167,3 @@ export class ViewManager {
   // //! @name DgnViewport Event Handlers
   // DGNVIEW_EXPORT void AddViewDecoration(ViewDecoration * decorator);
   // DGNVIEW_EXPORT void DropViewDecoration(ViewDecoration * decorator);
-  // DGNVIEW_EXPORT void AddViewMonitor(IViewMonitor *);
-  // DGNVIEW_EXPORT void DropViewMonitor(IViewMonitor * sourceToDrop);
-}

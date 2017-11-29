@@ -34,6 +34,7 @@ export abstract class PrimitiveTool extends PrimitiveToolBase {
     // deleted so installToolImplementation must not call any
     // methods on "this" after _OnPostInstall returns.
     toolAdmin.onPostInstallTool(this);
+
     return BentleyStatus.SUCCESS;
   }
 

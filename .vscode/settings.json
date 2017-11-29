@@ -39,6 +39,8 @@
     "is",
     "keyin",
     "mixins",
+    "monorepo",
+    "postupdate",
     "redoable",
     "skybox",
     "symb",
@@ -46,6 +48,7 @@
     "tileset",
     "undoable",
     "viewflags",
+    "viewports",
     "zbuffer"
   ]
   // ,

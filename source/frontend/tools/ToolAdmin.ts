@@ -5,13 +5,14 @@ import { Point3d, Point2d, Transform } from "@bentley/geometry-core/lib/PointVec
 import { NpcCenter } from "../../common/ViewState";
 import { Viewport } from "../Viewport";
 import { IdleTool } from "./IdleTool";
+import { ViewTool, ViewToolSettings } from "./ViewTool";
+import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
+import { Constant } from "@bentley/geometry-core/lib/Constant";
+import { EventList } from "@bentley/bentleyjs-core/lib/Event";
 import {
   ModifierKey, ButtonState, Button, GestureEvent, Tool, ButtonEvent, CoordSource, GestureInfo,
   Cursor, PrimitiveToolBase, WheelMouseEvent, InputSource, VirtualKey,
 } from "./Tool";
-import { ViewTool, ViewToolSettings } from "./ViewTool";
-import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
-import { Constant } from "@bentley/geometry-core/lib/Constant";
 
 export const enum CoordinateLockOverrides {
   OVERRIDE_COORDINATE_LOCK_None = 0,
@@ -60,7 +61,7 @@ export class CurrentInputState {
   public onStartDrag(button: Button) { this.button[button].isDragging = true; }
   public setKeyQualifier(qual: ModifierKey, down: boolean) { this.qualifiers = down ? (this.qualifiers | qual) : (this.qualifiers & (~qual)); }
   public clearKeyQualifiers() { this.qualifiers = ModifierKey.None; }
-
+  public clearViewport(vp: Viewport) { if (vp === this.viewport) this.viewport = undefined; }
   private disableIgnoreTouchMotionTest() { this.wantIgnoreTest = false; }
 
   public clearTouch() {
@@ -222,10 +223,10 @@ export class CurrentInputState {
       return false;
 
     const viewPt = this.viewport!.worldToView(state.downRawPt);
-    const deltax = Math.abs(this._viewPoint.x - viewPt.x);
-    const deltay = Math.abs(this._viewPoint.y - viewPt.y);
+    const deltaX = Math.abs(this._viewPoint.x - viewPt.x);
+    const deltaY = Math.abs(this._viewPoint.y - viewPt.y);
 
-    return ((deltax + deltay) > 15);
+    return ((deltaX + deltaY) > 15);
   }
 
   public ignoreTouchMotion(numberTouches: number, touches: Point2d[]) {
@@ -264,6 +265,7 @@ export class CurrentInputState {
   }
 }
 export class ToolAdmin {
+  private _toolEvents = new EventList();
   public static instance = new ToolAdmin();
   public currentInputState = new CurrentInputState();
   public toolState = new ToolState();
@@ -291,6 +293,14 @@ export class ToolAdmin {
   public get activeViewTool(): ViewTool | undefined { return this.viewTool; }
   public get activeTool(): Tool | undefined {
     return this.viewTool ? this.viewTool : (this.inputCollector ? this.inputCollector : this.primitiveTool); // NOTE: Viewing tools suspend input collectors as well as primitives...
+  }
+  /** the event that is sent whenever the active tool changes */
+  public get activeToolChanged() { return this._toolEvents.get("activeTool"); }
+  public onViewportClosed(vp: Viewport) {
+    //  Closing the viewport may also delete the QueryModel so we have to prevent
+    //  AccuSnap from trying to use it.
+    //    AccuSnap:: GetInstance().Clear();
+    this.currentInputState.clearViewport(vp);
   }
 
   public initGestureEvent(ev: GestureEvent, vp: Viewport, gestureInfo: GestureInfo) {
@@ -753,7 +763,7 @@ export class ToolAdmin {
   }
 
   public setPrimitiveTool(primitiveTool?: PrimitiveToolBase) {
-    //    const prevActiveTool = this.activeTool;
+    const prevActiveTool = this.activeTool;
     if (this.primitiveTool) {
       this.primitiveTool.onCleanup();
       //      t_viewHost -> GetViewManager().EndDynamicsMode();
@@ -762,9 +772,9 @@ export class ToolAdmin {
     this.invalidateLastWheelEvent();
     this.primitiveTool = primitiveTool;
 
-    // const newActiveTool = this.activeTool;
-    // if (newActiveTool !== prevActiveTool)
-    //   this.activeToolChanged.raiseEvent();
+    const newActiveTool = this.activeTool;
+    if (newActiveTool !== prevActiveTool)
+      this.activeToolChanged.raiseEvent();
   }
 
   /** Invoked by ViewTool.installToolImplementation */
@@ -780,7 +790,7 @@ export class ToolAdmin {
     // else if (!Cesium.defined(newTool)) {
     //   this.setViewCursor(Cesium.defined(primitiveTool) && Cesium.defined(primitiveTool.getCursor) ? primitiveTool.getCursor() : Cursor.Default);
     // }
-    // this.activeToolChanged.raiseEvent();
+    this.activeToolChanged.raiseEvent();
   }
 
   /** Invoked by ViewTool.exitTool */

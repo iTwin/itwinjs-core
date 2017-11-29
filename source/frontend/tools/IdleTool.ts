@@ -5,7 +5,7 @@ import { Tool, Button, ButtonEvent, GestureEvent, WheelMouseEvent, PrimitiveTool
 import { ToolAdmin } from "./ToolAdmin";
 import { ViewManip, ViewHandleType, FitViewTool, RotatePanZoomGestureTool } from "./ViewTool";
 import { ViewStatus } from "../../common/ViewState";
-import { BentleyStatus } from "../../test/node_modules/@bentley/bentleyjs-core/lib/Bentley";
+import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 
 const toolAdmin = ToolAdmin.instance;
 // tslint:disable:no-empty

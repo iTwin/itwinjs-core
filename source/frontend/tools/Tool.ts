@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
 import { Viewport } from "../Viewport";
-import { BentleyStatus } from "../../test/node_modules/@bentley/bentleyjs-core/lib/Bentley";
+import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { IModel } from "../../common/IModel";
-import { Id64 } from "../../test/node_modules/@bentley/bentleyjs-core/lib/Id";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 export const enum Button {
   Data = 0,
