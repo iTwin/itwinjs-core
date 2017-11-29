@@ -39,7 +39,7 @@ export class GeometryPart extends DefinitionElement {
     if (0 === builder.currentSize)
       return false;
 
-    this.geometry = new GeometryStream(builder.getGeometryStreamCopy());
+    this.geometry = builder.getGeometryStreamClone();
 
     let localRange: ElementAlignedBox3d;
     if (builder.is3d) {

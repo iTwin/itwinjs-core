@@ -43,7 +43,8 @@
     "docs": "node node_modules/@bentley/bentleyjs-tools/scripts/docs.js --baseUrl=source/test/node_modules --includes=source/test/lib/extract --out=source/test/lib/docs --json=source/test/lib/docs/json/file.json",
     "extract": "node node_modules/@bentley/bentleyjs-tools/scripts/extract.js --extractFrom=source/test --out=source/test/lib/extract",
     "test": "cd source/test && npm run test",
-    "testbed": "cd source/testbed && npm run test"
+    "test:tsnode": "node node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode --packageRoot \"./\" --testDir=\"./source/test\" --tscPaths",
+    "cover": "nyc npm run test:tsnode"
   },
   "keywords": [
     "Bentley",
@@ -58,14 +59,14 @@
   "dependencies": {},
   "//devDependencies": "NOTE: These are the union of all devDependencies for source/frontend, source/backend, and source/test",
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "^1.0.53",
-    "@types/chai": "^4.0.4",
+    "@bentley/bentleyjs-tools": "^1.0.55",
+    "@types/chai": "^4.0.6",
     "@types/flatbuffers": "^1.6.5",
     "@types/fs-extra": "^4.0.5",
     "@types/js-base64": "^2.3.0",
     "@types/mocha": "^2.2.44",
     "chai": "^4.1.2",
-    "commander": "^2.11.0",
+    "commander": "^2.12.2",
     "concurrently": "^3.5.0",
     "cpx": "^1.5.0",
     "debug-fabulous": "^0.1.2",
@@ -74,6 +75,7 @@
     "fs-extra": "latest",
     "inherits": "^2.0.3",
     "mocha": "^3.5.3",
+    "nyc": "^11.3.0",
     "object-assign": "^4.1.1",
     "once": "^1.4.0",
     "os-locale": "^2.1.0",
@@ -82,7 +84,30 @@
     "semver": "^5.4.1",
     "source-map-support": "^0.5.0",
     "string-width": "^2.1.1",
+    "ts-node": "^3.3.0",
+    "tsconfig-paths": "^2.4.0",
     "tslint": "^5.8.0",
-    "typescript": "^2.6.1"
+    "typescript": "^2.6.2"
+  },
+  "nyc": {
+    "include": [
+      "source/frontend/**/*.ts",
+      "source/backend/**/*.ts",
+      "source/common/**/*.ts"
+    ],
+    "exclude": [
+      "source/test/*"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text-summary",
+      "lcov"
+    ],
+    "report-dir": "./source/test/lib/coverage"
   }
 }

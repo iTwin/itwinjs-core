@@ -4,17 +4,17 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "type": "gulp",
-      "task": "buildtests",
-      "problemMatcher": []
-    },
-    {
-      "type": "typescript",
-      "tsconfig": "tsconfig.json",
+      "type": "npm",
+      "script": "build",
       "group": {
         "kind": "build",
         "isDefault": true
       }
+    },
+    {
+      "type": "npm",
+      "script": "test",
+      "problemMatcher": []
     }
   ]
 }
