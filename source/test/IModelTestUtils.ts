@@ -27,7 +27,7 @@ Gateway.initialize(IModelGateway);
 declare const __dirname: string;
 
 // Initialize the Node addon used by tests
-NodeAddon.loadDefault(path.join(__dirname, "../../../../node_modules/"));
+NodeAddon.loadDefault(path.join(__dirname, (process.env.TEST_ENV === "tsnode") ? "../../node_modules/" : "../../../../node_modules/"));
 
 // Initialize the location where BriefcaseManager will create briefcases
 BriefcaseManager.cachePath = path.join(__dirname, "output/cache/imodels");
