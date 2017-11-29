@@ -43,6 +43,7 @@
     "docs": "node node_modules/@bentley/bentleyjs-tools/scripts/docs.js --baseUrl=source/test/node_modules --includes=source/test/lib/extract --out=source/test/lib/docs --json=source/test/lib/docs/json/file.json",
     "extract": "node node_modules/@bentley/bentleyjs-tools/scripts/extract.js --extractFrom=source/test --out=source/test/lib/extract",
     "test": "cd source/test && npm run test",
+    "testbed": "cd source/testbed && npm run test",
     "test:tsnode": "node node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode --packageRoot \"./\" --testDir=\"./source/test\" --tscPaths",
     "cover": "nyc npm run test:tsnode"
   },
