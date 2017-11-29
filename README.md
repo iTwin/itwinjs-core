@@ -32,6 +32,8 @@ The source code is organized according to where it can run:
 4. Build source: `npm run build`
 5. Run tests: `npm test`
 
+If you want less verbose clean and build commands, please use the `-s` or `--silent` option.  For example: `npm run clean -s`
+
 Note that all build instructions are designed to run from the imodeljs-core root directory.
 The individual commands orchestrate separate backend, frontend, and test steps as required.
 
