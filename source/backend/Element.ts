@@ -178,6 +178,8 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
   }
 
   public calculateRange3d(): AxisAlignedBox3d { return this.placement.calculateRange(); }
+  public getAsGeometricElement2d(): GeometricElement2d | undefined { return undefined; }
+  public getAsGeometricElement3d(): GeometricElement3d | undefined { return this; }
 
   public toJSON(): GeometricElement3dProps {
     const val = super.toJSON() as GeometricElement3dProps;
@@ -207,6 +209,8 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
   }
 
   public calculateRange3d(): AxisAlignedBox3d { return this.placement.calculateRange(); }
+  public getAsGeometricElement2d(): GeometricElement2d | undefined { return this; }
+  public getAsGeometricElement3d(): GeometricElement3d | undefined { return undefined; }
 
   public toJSON(): GeometricElement2dProps {
     const val = super.toJSON() as GeometricElement2dProps;
