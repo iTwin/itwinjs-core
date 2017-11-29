@@ -8,3 +8,5 @@
 /source/frontend/lib
 /source/test/node_modules
 /source/test/lib
+.nyc_output
+/source/test/output
