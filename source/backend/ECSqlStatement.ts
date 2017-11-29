@@ -6,7 +6,7 @@ import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelError } from "../common/IModelError";
 import { BindingUtility, BindingValue } from "./BindingUtility";
 import { NodeAddon } from "./NodeAddon";
-import { NodeAddonECSqlStatement, NodeAddonDgnDb } from "@bentley/types_imodeljsnodeaddon/iModelJsNodeAddon";
+import { NodeAddonECSqlStatement, NodeAddonDgnDb } from "@bentley/imodeljsnodeaddonapi/iModelJsNodeAddon";
 
 /** An ECSql Statement. A statement must be prepared before it can be executed. See prepare. A statement may contain placeholders that must be filled
  * in before use. See bindValues. A prepared statement can be stepped through all matching rows by calling step. ECSqlStatement is-a iterator, so that you
