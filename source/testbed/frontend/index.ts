@@ -12,6 +12,7 @@ import { assert } from "chai";
 })();
 
 describe("Hello World", () => it("should be true", () => {
+  // tslint:disable-next-line:no-debugger
   debugger;
   assert(true);
 }));
