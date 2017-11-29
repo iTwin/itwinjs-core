@@ -10,3 +10,5 @@
 /source/test/lib
 .nyc_output
 /source/test/output
+/source/testbed/node_modules
+/source/testbed/lib
