@@ -235,6 +235,8 @@ export namespace Gateway {
           const path = this.generateOpenAPIPathForOperation(identifier, new HttpProtocol.OperationRequest(...parameters));
 
           const connection = this.generateConnectionForOperationRequest();
+          connection.open(this.supplyHttpVerbForOperation(identifier), path, true);
+
           connection.addEventListener("load", () => {
             if (connection.status === 200)
               resolve(this.deserializeOperationResult(connection.responseText));
@@ -245,7 +247,6 @@ export namespace Gateway {
           connection.addEventListener("error", () => reject(new IModelError(BentleyStatus.ERROR, "Connection error.")));
           connection.addEventListener("abort", () => reject(new IModelError(BentleyStatus.ERROR, "Connection aborted.")));
 
-          connection.open(this.supplyHttpVerbForOperation(identifier), path, true);
           this.setOperationRequestHeaders(connection);
           connection.send(this.serializeParametersForOperationRequest(identifier, ...parameters));
         } catch (e) {
