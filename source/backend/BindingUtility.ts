@@ -2,9 +2,9 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { PrimitiveTypeCode } from "./Entity";
+import { IModelError } from "../common/IModelError";
 
 /** Value type  (Match this to ECN::ValueKind in ECObjects.h) */
 export const enum ValueKind {
@@ -90,18 +90,19 @@ export class BindingUtility {
   /** Helper utility to pre-process bindings to standardize them into a fixed format containing ECValue-s
    * @param bindings Array or map of bindings
    * @returns Array or map of ECValue-s.
+   * @throws IModelError if a value cannot be converted to an ECValue.
    */
-  public static preProcessBindings(bindings: Map<string, BindingValue> | BindingValue[] | any): BentleyReturn<DbResult, ECValue[] | Map<string, ECValue>> {
+  public static preProcessBindings(bindings: Map<string, BindingValue> | BindingValue[] | any): ECValue[] | Map<string, ECValue> {
     if (bindings instanceof Array) {
       const ret = new Array<ECValue>();
       for (let ii = 0; ii < bindings.length; ii++) {
         const bindingValue = bindings[ii];
         const ecValue = BindingUtility.convertToECValue(bindingValue);
         if (!ecValue)
-          return { error: { status: DbResult.BE_SQLITE_ERROR, message: `Invalid binding [${ii}]=${bindingValue}` } };
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, `Invalid binding [${ii}]=${bindingValue}`);
         ret.push(ecValue);
       }
-      return { result: ret };
+      return ret;
     }
 
     // NB: We transform a Map into a vanilla object. That is so that can pass it to native code and/or across the wire via JSON. You can't stringify a Map.
@@ -111,10 +112,10 @@ export class BindingUtility {
         const bindingValue = bindings.get(key);
         const ecValue = BindingUtility.convertToECValue(bindingValue);
         if (!ecValue)
-          return { error: { status: DbResult.BE_SQLITE_ERROR, message: `Invalid binding [${key}]=${bindingValue}` } };
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, `Invalid binding [${key}]=${bindingValue}`);
         ret[key] = ecValue;
-      }
-      return { result: ret };
+        }
+      return ret;
     }
 
     const ret2: any = new Object();
@@ -125,7 +126,7 @@ export class BindingUtility {
         throw new Error(`Invalid binding [${key}]=${bindingValue}`);
       ret2[key] = ecValue;
     });
-    return { result: ret2 };
+    return ret2;
     // return { error: { status: DbResult.BE_SQLITE_ERROR, message: `Bindings must be specified as an array or a map` } };
   }
 }

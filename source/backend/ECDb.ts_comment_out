@@ -248,10 +248,13 @@ export class ECDb {
       return Promise.reject(this._newInvalidDatabaseError());
 
     let ecBindingsStr: string | undefined;
+    let ecBindings;
     if (bindings) {
-      const { error, result: ecBindings } = BindingUtility.preProcessBindings(bindings);
-      if (error)
+      try {
+        ecBindings = BindingUtility.preProcessBindings(bindings);
+      } catch (error) {
         return Promise.reject(new IModelError(error.status, error.message));
+      }
       ecBindingsStr = JSON.stringify(ecBindings);
     }
 
@@ -277,9 +280,11 @@ export class ECDb {
       return Promise.reject(this._newInvalidDatabaseError());
 
     let ecBindingsStr: string | undefined;
+    let ecBindings;
     if (bindings) {
-      const { error: bindingError, result: ecBindings } = BindingUtility.preProcessBindings(bindings);
-      if (bindingError)
+      try {
+        ecBindings  = BindingUtility.preProcessBindings(bindings);
+      } catch (bindingError) {
         return Promise.reject(new IModelError(bindingError.status, bindingError.message));
       ecBindingsStr = JSON.stringify(ecBindings);
     }

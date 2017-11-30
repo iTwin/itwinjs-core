@@ -76,9 +76,7 @@ export class ECSqlStatement implements IterableIterator<any> {
    * @throws IModelError in case the binding fails. This will normally happen only if the type of a value does not match and cannot be converted to the type required for the corresponding property in the statement.
    */
   public bindValues(bindings: BindingValue[] | Map<string, BindingValue> | any): void {
-    const { error, result: ecBindings } = BindingUtility.preProcessBindings(bindings);
-    if (error)
-      throw new IModelError(error.status, error.message);
+    const ecBindings = BindingUtility.preProcessBindings(bindings);
     const bindingsStr = JSON.stringify(ecBindings);
     const nativeError = this._stmt!.bindValues(bindingsStr);
     if (nativeError.status !== DbResult.BE_SQLITE_OK)

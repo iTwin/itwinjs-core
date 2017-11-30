@@ -27,7 +27,7 @@ import { CodeSpecs } from "./CodeSpecs";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelGatewayImpl } from "./IModelGatewayImpl";
 import { NodeAddonDgnDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
-import { BentleyError } from "@bentley/bentleyjs-core/lib/Bentley";
+import { StatusCodeWithMessage } from "@bentley/bentleyjs-core/lib/BentleyError";
 
 // Register the backend implementation of IModelGateway
 IModelGatewayImpl.register();
@@ -314,7 +314,7 @@ export class IModelDb extends IModel {
       return Promise.reject(this._newNotOpenError());
 
     return new Promise<string>((resolve, reject) => {
-      this.nativeDb!.getElementPropertiesForDisplay(elementId, (error: BentleyError</*IModelStatus*/number>, json: string) => {
+      this.nativeDb!.getElementPropertiesForDisplay(elementId, (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
       if (error)
         reject(new IModelError(error.status, error.message, Logger.logError, () => ({ iModelId: this._iModelToken.iModelId, elementId })));
       else
@@ -414,7 +414,7 @@ export class IModelDbModels {
 
     return new Promise<Model>((resolve, reject) => {
       // Must go get the model from the iModel. Start by requesting the model's data.
-      this._iModel.nativeDb!.getModel(JSON.stringify({ id: modelId }), (error: BentleyError</*IModelStatus*/number>, json: string) => {
+      this._iModel.nativeDb!.getModel(JSON.stringify({ id: modelId }), (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
         if (error) {
           reject(new IModelError(error.status, error.message, Logger.logWarning));
           return;
@@ -436,7 +436,7 @@ export class IModelDbModels {
 
   public async getModelJson(modelIdStr: string): Promise<string> {
     return new Promise<string>((resolve, reject) => {
-      this._iModel.nativeDb!.getModel(JSON.stringify({ id: modelIdStr }), (error: BentleyError</*IModelStatus*/number>, json: string) => {
+      this._iModel.nativeDb!.getModel(JSON.stringify({ id: modelIdStr }), (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
         if (error)
           reject(new IModelError(error.status, error.message, Logger.logWarning));
         else
@@ -479,7 +479,7 @@ export class IModelDbElements {
 
     return new Promise<ElementProps>((resolve, reject) => {
       // Must go get the element from the iModel. Start by requesting the element's data.
-      this._iModel.nativeDb!.getElement(JSON.stringify(opts), (error: BentleyError</*IModelStatus*/number>, json: string) => {
+      this._iModel.nativeDb!.getElement(JSON.stringify(opts), (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
         if (error)
           reject(new IModelError(error.status, error.message, Logger.logWarning));
         else {
@@ -493,7 +493,7 @@ export class IModelDbElements {
 
 public async getElementJson(elementIdStr: string): Promise<string> {
   return new Promise<string>((resolve, reject) => {
-    this._iModel.nativeDb!.getElement(JSON.stringify({ id: elementIdStr }), (error: BentleyError</*IModelStatus*/number>, json: string) => {
+    this._iModel.nativeDb!.getElement(JSON.stringify({ id: elementIdStr }), (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
       if (error)
         reject(new IModelError(error.status, error.message, Logger.logWarning));
       else

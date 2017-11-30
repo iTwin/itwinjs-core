@@ -23,10 +23,10 @@
     "NOTE: dependencies that are in common with imodeljs-frontend must have a consistent version"
   ],
   "dependencies": {
-    "@bentley/bentleyjs-core": "^1.0.44",
+    "@bentley/bentleyjs-core": "^1.0.46",
     "@bentley/geometry-core": "^1.0.29",
     "@bentley/imodeljs-clients": "^1.0.31",
-    "@bentley/imodeljs-nodeaddonapi": "^1.1.7",
+    "@bentley/imodeljs-nodeaddonapi": "^1.1.9",
     "fs-extra": "^4.0.2",
     "js-base64": "^2.4.0"
   },
