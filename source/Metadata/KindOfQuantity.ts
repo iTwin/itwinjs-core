@@ -11,6 +11,9 @@ export class FormatUnitSpec implements FormatUnitSpecInterface {
   public format: string;
 }
 
+/**
+ * A Typescript class representation of a KindOfQuantity.
+ */
 export default class KindOfQuantity extends SchemaChild implements KindOfQuantityInterface {
   public precision: number;
   public presentationUnits: FormatUnitSpec[];

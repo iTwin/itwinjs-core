@@ -13,7 +13,7 @@ import SchemaChild from "./SchemaChild";
 import { NavigationProperty, PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty } from "./Property";
 
 /**
- * A common abstract class for all of the EC class types.
+ * A common abstract class for all of the ECClass types.
  */
 export abstract class ECClass extends SchemaChild implements ICustomAttributeContainer, ECClassInterface {
   public modifier: ECClassModifier;

@@ -24,6 +24,9 @@ export interface SchemaProps {
   children?: SchemaChildInterface[];
 }
 
+/**
+ * Extends the properties that are defined on a Schema to add the methods that are available on any class that implements this interface.
+ */
 export interface SchemaInterface extends SchemaProps {
   getChild<T extends SchemaChildInterface>(name: string): T | undefined;
   createEntityClass(name: string): EntityClassInterface;
@@ -122,6 +125,12 @@ export interface EnumerationProps extends SchemaChildProps {
 // Normally we don't want empty interfaces because they don't add anything, but it is being used here to define one interface
 // that contains the properties from EnumerationProps and method signatures from SchemaChildInterface.
 export interface EnumerationInterface extends SchemaChildInterface, EnumerationProps { }
+
+export interface EnumeratorProps {
+  enumeration: EnumerationInterface;
+  value: number | string;
+  label?: string;
+}
 
 export interface FormatUnitSpecInterface {
   unit: string;
