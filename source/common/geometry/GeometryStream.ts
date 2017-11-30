@@ -175,18 +175,17 @@ export class Operation {
 }
 
 class CurrentState {
-  public imodel: IModel;
+  // public imodel: IModel;
   public geomParams: GeometryParams;
   public sourceToWorld: Transform;
   public geomToSource: Transform;
   public geomToWorld: Transform;
   public geometry: GeometricPrimitive;
-  public geomStreamEntryId: any;
+  public geomStreamEntryId: GeometryStreamEntryId;
   public localRange: Range3d;
 
-  public constructor(imodel?: IModel) {
-    if (imodel)
-      this.imodel = imodel;
+  public constructor(/*imodel: IModel*/) {
+    // this.imodel = imodel;
     this.sourceToWorld = Transform.createIdentity();
     this.geomToSource = Transform.createIdentity();
     this.geomToWorld = Transform.createIdentity();
@@ -257,7 +256,7 @@ export class GSCollection {
     return this.dataOffset === itr.dataOffset;
   }
 
-  public get imodel() { return this.state.imodel; }   // imodel used to create collector...
+  // public get imodel() { return this.state.imodel; }   // imodel used to create collector...
   public get geometryParams() { return this.state.geomParams; }   // Returns GeometryParams for current GeometricPrimitive...
   public get geometryPartId() { return this.state.geomStreamEntryId.geometryPartId; }   // Returns invalid id if not a DgnGeometryPart reference...
   public get geometryStreamEntryId() { return this.state.geomStreamEntryId; }   // Returns primitive id for current GeometricPrimitive...
@@ -271,14 +270,32 @@ export class GSCollection {
     return this.state.geomToWorld;
   }
   public getGeometry(): GeometricPrimitive | undefined {
-    const gsReader = new GSReader(this.state.imodel);
+    const gsReader = new GSReader(/*this.state.imodel */);
     const result = gsReader.dgnGetGeometricPrimitive(this.egOp);
     if (!result)
       return undefined;
     this.state.geometry = result;
     return this.state.geometry;
   }
-  public getEntryType() {   // check geometry type to avoid creating GeometricPrimitive for undesired types
+
+  /** Returns true if this offset is equal to the given iterator's offset */
+  public isEqualOffset(other: GSCollection): boolean {
+    return this.dataOffset === other.dataOffset;
+  }
+
+  /** Iterate a GeometryStream for a GeometryPart in the context of a parent GeometricElement iterator.
+   *  When iterating a GeometricElement that has GeometryPart id references, this allows iteration of the GeometryPart's
+   *  GeometryStream using the instance specific GeometryParams and part geometry to world transform as established by the parent GeometrySource.
+   */
+  public setNestedIteratorContext(collection: GSCollection) {
+    this.state.geomParams = collection.state.geomParams.clone();
+    this.state.geomStreamEntryId = collection.state.geomStreamEntryId.clone();
+    this.state.sourceToWorld = collection.state.sourceToWorld.clone();
+    this.state.geomToSource = collection.state.geomToSource.clone();
+  }
+
+  /** Check Geometry type to avoid creating GeometricPrimitive for undesired types */
+  public getEntryType() {
     switch (this.egOp.opCode) {
       case OpCode.GeometryPartInstance:
       {
@@ -1010,13 +1027,15 @@ export class GSWriter {
       return true;
     }
 
-    let scale: number | undefined;
     const origin = geomToElem.translation();
     const rMatrix = geomToElem.matrixRef();
-    // scale = rMatrix.isRigidSignedScale();
+    const scaleResult = rMatrix.factorRigidWithSignedScale();
+    let scale: number | undefined;
 
-    if (scale === undefined)
+    if (!scaleResult)
       scale = 1.0;
+    else
+      scale = scaleResult.scale;
 
     if (scale! > 0.0)
       return false;   // Mirror not allowed...

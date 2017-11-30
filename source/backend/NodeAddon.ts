@@ -35,6 +35,25 @@ export class NodeAddon {
     NodeAddon.load(moduleRootDir + NodeAddon.computePackageName() + "/addon/imodeljs.node");
   }
 
+  private static parseSemVer(str: string): number[] {
+    const c = str.split(".");
+    return [parseInt(c[0], 10), parseInt(c[1], 10), parseInt(c[2], 10)];
+  }
+
+  private static checkAddonVersion(): void {
+    const addonVer = NodeAddon._addon.version;
+    // tslint:disable-next-line:no-var-requires
+    const iuseVer = require("@bentley/imodeljs-nodeaddonapi/package.json").version;
+
+    const addonVerDigits = NodeAddon.parseSemVer(addonVer);
+    const iuseVerDigits = NodeAddon.parseSemVer(iuseVer);
+
+    if ((addonVerDigits[0] !== iuseVerDigits[0]) || (addonVerDigits[1] < iuseVerDigits[1])) {
+      NodeAddon._addon = undefined;
+      throw new IModelError(IModelStatus.BadRequest, "Addon version is (" + addonVer + "). Expected version (" + iuseVer + ")");
+    }
+  }
+
   /** Loads the addon using the specified path.
    * @param addonPath The full path to the addon library.
    * @throws [[IModeError]] if the addon cannot be found
@@ -48,8 +67,7 @@ export class NodeAddon {
     if (!NodeAddon._addon)
       throw new IModelError(IModelStatus.FileNotFound, "Node Addon library not found: " + addonPath);
 
-    if (NodeAddon._addon.setTickKicker)
-      NodeAddon._addon.setTickKicker(() => { return; });
+    NodeAddon.checkAddonVersion();
   }
 
   // Examples:

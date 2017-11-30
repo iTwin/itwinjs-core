@@ -10,7 +10,7 @@ import { EntityQueryParams } from "../common/EntityProps";
 import { IModel, IModelToken } from "../common/IModel";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { IModelVersion } from "../common/IModelVersion";
-import { Logger } from "../common/Logger";
+import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { ModelProps } from "../common/ModelProps";
 import { IModelGateway, IModelGatewayOpenResponse } from "../gateway/IModelGateway";
 

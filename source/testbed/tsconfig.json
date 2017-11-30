@@ -1,0 +1,17 @@
+{
+  "extends": "../../node_modules/@bentley/bentleyjs-tools/tsconfig-base.json",
+  "compilerOptions": {
+    "outDir": "./lib",
+    "sourceMap": false,
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "strictFunctionTypes": false //temporary...electron.d.ts@1.6.11 fails this check
+  },
+  "include": [
+    "./**/*.ts"
+  ],
+  "exclude": [
+    "lib",
+    "node_modules"
+  ]
+}

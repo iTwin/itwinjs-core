@@ -17,6 +17,20 @@
       ],
       "port": 9229,
       "protocol": "inspector"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run testbed",
+      "cwd": "${workspaceFolder}/source/testbed/",
+      "runtimeExecutable": "${workspaceFolder}/source/testbed/node_modules/.bin/electron",
+      "runtimeArgs": [
+        "${workspaceFolder}/source/testbed/node_modules/floss/electron",
+        "{\"debug\":true, \"path\":\"lib/frontend/index.js\"}",
+        "--debug-brk=5858"
+      ],
+      "protocol": "legacy",
+      "port": 5858
     }
   ]
 }

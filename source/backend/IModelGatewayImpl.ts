@@ -3,14 +3,11 @@
  *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { ElementProps } from "../common/ElementProps";
 import { EntityQueryParams } from "../common/EntityProps";
 import { Gateway } from "../common/Gateway";
-import { IModelError } from "../common/IModelError";
 import { IModelToken } from "../common/IModel";
 import { IModelVersion } from "../common/IModelVersion";
-import { Logger } from "../common/Logger";
-import { ModelProps } from "../common/ModelProps";
+import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { EntityMetaData } from "../backend/Entity";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { IModelDb } from "../backend/IModelDb";
@@ -49,35 +46,27 @@ export class IModelGatewayImpl extends IModelGateway {
     return true; // NEEDS_WORK: Promise<void> seems to crash the transport layer.
   }
 
-  public async executeQuery(iModelToken: IModelToken, sql: string, bindings?: any): Promise<any[]> {
+  public async executeQuery(iModelToken: IModelToken, sql: string, bindings?: any): Promise<string[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const rows: any[] = await iModelDb.executeQuery(sql, bindings);
     Logger.logInfo("IModelDbRemoting.executeQuery", () => ({ sql, numRows: rows.length }));
     return rows;
   }
 
-  public async getModelProps(iModelToken: IModelToken, modelIds: string[]): Promise<any[]> {
+  public async getModelProps(iModelToken: IModelToken, modelIds: string[]): Promise<string[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    const modelProps: ModelProps[] = [];
+    const modelJsonArray: string[] = [];
     for (const modelId of modelIds) {
-      const { error, result: modelJson } = await iModelDb.nativeDb.getModel(JSON.stringify({ id: modelId }));
-      if (error)
-        return Promise.reject(new IModelError(error.status, error.message, Logger.logWarning));
-
-      modelProps.push(modelJson);
+      modelJsonArray.push(await iModelDb.models.getModelJson(modelId));
     }
-    return modelProps;
+    return modelJsonArray;
   }
 
-  public async getElementProps(iModelToken: IModelToken, elementIds: string[]): Promise<any[]> {
+  public async getElementProps(iModelToken: IModelToken, elementIds: string[]): Promise<string[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    const elementProps: ElementProps[] = [];
+    const elementProps: string[] = [];
     for (const elementId of elementIds) {
-      const { error, result: elementJson } = await iModelDb.nativeDb.getElement(JSON.stringify({ id: elementId }));
-      if (error)
-        return Promise.reject(new IModelError(error.status, error.message, Logger.logWarning));
-
-      elementProps.push(elementJson);
+      elementProps.push(await iModelDb.elements.getElementJson(elementId));
     }
     return elementProps;
   }
