@@ -10,7 +10,7 @@ import { IModelVersion } from "../common/IModelVersion";
 import { IModelToken } from "../common/IModel";
 import { IModelDb } from "./IModelDb";
 import { NodeAddon } from "./NodeAddon";
-import { NodeAddonDgnDb } from "@bentley/imodeljsnodeaddonapi/iModelJsNodeAddon";
+import { NodeAddonDgnDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 
 import * as fs from "fs";
 import * as path from "path";
