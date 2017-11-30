@@ -8,7 +8,9 @@ import { Point3d, Vector3d, RotMatrix, Transform, YawPitchRollAngles, Range3d, P
 import { Frustum, NpcCenter, Npc, MarginPercent, ViewStatus, ViewState3d } from "../../common/ViewState";
 import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { BentleyStatus } from "../../test/node_modules/@bentley/bentleyjs-core/lib/Bentley";
+import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
+
+// tslint:disable:no-empty
 
 const toolAdmin = ToolAdmin.instance;
 const scratchButtonEvent = new ButtonEvent();
@@ -49,6 +51,7 @@ const enum OrientationResult {
   Disabled = 2,
   RejectedByController = 3,
 }
+
 const enum NavigateMode {
   Pan = 0,
   Look = 1,
@@ -57,23 +60,16 @@ const enum NavigateMode {
 
 // tslint:disable-next-line:variable-name
 export const ViewToolSettings = {
-  dynamicRotationSphere: false,
   preserveWorldUp: true,
-  fitExpandsClipping: true,
   walkEnforceZUp: true,
-  fitModes: 0,            // ALL
-  mode3dInput: 0,         // WALK
-  viewBallRadius: 0.35,
-  walkVelocity: 3.5,      // in m/sec
+  viewBallRadius: 0.35, // percent of screen width
+  walkVelocity: 3.5,      // in meters/second
   walkCameraAngle: Angle.createDegrees(75.6),  // in degrees
   animationTime: BeDuration.fromSeconds(260),
   animateZoom: false,
-  minDistanceToSurface: 2,
   pickSize: 13,
-  zoomToElement: false,
 };
 
-// tslint:disable:no-empty
 export abstract class ViewTool extends Tool {
   public inDynamicUpdate = false;
   public beginDynamicUpdate() { this.inDynamicUpdate = true; }
@@ -226,38 +222,30 @@ export class ViewHandleArray {
   }
 }
 
+/** Base class for tools that manipulate the viewing frustum of a Viewport */
 export class ViewManip extends ViewTool {
   public viewport?: Viewport;
   public viewHandles: ViewHandleArray;
-  public frustumValid: boolean;
-  public alwaysLeaveLastView: boolean;
-  public ballRadius: number;          // screen coords
-  public lastPtScreen: Point3d;
-  public targetCenterWorld: Point3d;
-  public worldUpVector: Vector3d;
-  public isDragging: boolean;
-  public isDragOperation: boolean;
-  public stoppedOverHandle: boolean;
-  public wantMotionStop: boolean;
-  public targetCenterValid: boolean;
-  public supportsOrientationEvents: boolean;
-  public nPts: number;
-  public forcedHandle: ViewHandleType;
-  public lastFrustum: Frustum;
+  public frustumValid = false;
+  public alwaysLeaveLastView = false;
+  public ballRadius: number = 0;          // screen coords
+  public lastPtScreen = new Point3d();
+  public targetCenterWorld = new Point3d();
+  public worldUpVector = new Vector3d();
+  public isDragging: boolean = false;
+  public isDragOperation: boolean = false;
+  public stoppedOverHandle: boolean = false;
+  public wantMotionStop: boolean = true;
+  public targetCenterValid: boolean = false;
+  public supportsOrientationEvents: boolean = true;
+  public nPts: number = 0;
+  public forcedHandle: ViewHandleType = ViewHandleType.None;
+  public lastFrustum: Frustum = new Frustum();
 
   constructor(viewport: Viewport, public handleMask: number, public isOneShot: boolean, public scrollOnNoMotion: boolean,
     public isDragOperationRequired: boolean = false) {
     super();
     this.viewport = viewport;
-    this.wantMotionStop = true;
-    this.isDragOperation = false;
-    this.targetCenterValid = false;
-    this.lastPtScreen = new Point3d();
-    this.targetCenterWorld = new Point3d();
-    this.ballRadius = 0.0;
-    this.worldUpVector = new Vector3d();
-    this.forcedHandle = ViewHandleType.None;
-    this.lastFrustum = new Frustum();
     this.viewHandles = new ViewHandleArray(this);
     if (handleMask & ViewHandleType.ViewPan) this.viewHandles.add(new ViewPan(this));
     if (handleMask & ViewHandleType.Rotate) { this.synchViewBallInfo(true); this.viewHandles.add(new ViewRotate(this)); }
@@ -423,7 +411,7 @@ export class ViewManip extends ViewTool {
     if (this.frustumValid && frust.equals(this.lastFrustum))
       return true;
 
-    frust.clone(this.lastFrustum);
+    this.lastFrustum.setFrom(frust);
     this.frustumValid = true;
     return false;
   }
@@ -733,6 +721,10 @@ export class ViewManip extends ViewTool {
     this.ballRadius = (((screenRange.x < screenRange.y) ? screenRange.x : screenRange.y) * ViewToolSettings.viewBallRadius);
     this.updateTargetCenter();
     this.updateWorldUpVector(initialSetup);
+  }
+
+  protected getZoomCenter(result?: Point3d): Point3d {
+    return new Point3d();
   }
 }
 
@@ -1060,11 +1052,15 @@ class NavigateMotion {
   public generateRotationTransform(yawRate: number, pitchRate: number, result?: Transform): Transform {
     const vp = this.viewport;
     const view = vp.view as ViewState3d;
-    const yawAngle = Angle.createRadians(yawRate * this.deltaTime);
+    const viewRot = vp.rotMatrix;
+    const invViewRot = viewRot.inverse(scratchRotMatrix1);
     const pitchAngle = Angle.createRadians(this.modifyPitchAngleToPreventInversion(pitchRate * this.deltaTime));
-    const angles = new YawPitchRollAngles(yawAngle, pitchAngle);
-    const rMatrix = vp.rotMatrix.multiplyMatrixMatrix(angles.toRotMatrix(scratchRotMatrix1), scratchRotMatrix2);
-    return Transform.createFixedPointAndMatrix(view.getEyePoint(), rMatrix, result);
+    const pitchMatrix = RotMatrix.createRotationAroundVector(Vector3d.unitX(), pitchAngle)!;
+    const pitchTimesView = pitchMatrix.multiplyMatrixMatrix(viewRot);
+    const inverseViewTimesPitchTimesView = invViewRot.multiplyMatrixMatrix(pitchTimesView);
+    const yawMatrix = RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createRadians(yawRate * this.deltaTime))!;
+    const yawTimesInverseViewTimesPitchTimesView = yawMatrix.multiplyMatrixMatrix(inverseViewTimesPitchTimesView);
+    return Transform.createFixedPointAndMatrix(view.getEyePoint(), yawTimesInverseViewTimesPitchTimesView);
   }
 
   public generateTranslationTransform(velocity: Vector3d, isConstrainedToXY: boolean, result?: Transform) {
@@ -1088,7 +1084,7 @@ class NavigateMotion {
     return Transform.createTranslation(xDir, result);
   }
 
-  public moveAndLook(linearVelocity: Vector3d, angularVelocityX: number, angularVelocityY: number, isConstrainedToXY: boolean): void {
+  protected moveAndLook(linearVelocity: Vector3d, angularVelocityX: number, angularVelocityY: number, isConstrainedToXY: boolean): void {
     const rotateTrans = this.generateRotationTransform(angularVelocityX, angularVelocityY, scratchTransform1);
     const dollyTrans = this.generateTranslationTransform(linearVelocity, isConstrainedToXY, scratchTransform2);
     this.transform.setMultiplyTransformTransform(rotateTrans, dollyTrans);
@@ -1421,7 +1417,7 @@ export class WindowAreaTool extends ViewTool {
     return super.onResetButtonUp(ev);
   }
 
-  public computeWindowCorners(): Point3d[] | undefined {
+  private computeWindowCorners(): Point3d[] | undefined {
     const vp = this.viewport;
     const corners = this.corners;
 
@@ -1458,7 +1454,7 @@ export class WindowAreaTool extends ViewTool {
     return corners;
   }
 
-  public doManipulation(ev: ButtonEvent, inDynamics: boolean): void {
+  private doManipulation(ev: ButtonEvent, inDynamics: boolean): void {
     this.secondPtWorld.setFrom(ev.point);
     if (inDynamics) {
       this.updateOverlay();
@@ -1622,7 +1618,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
   private startPtView = new Point3d();
   private startTime: number = 0;
   private frustum = new Frustum();
-  private is2dRotateGestureLimit = 350;   // millis
+  private is2dRotateGestureLimit = 350;   // milliseconds
 
   constructor(ev: GestureEvent, private allowRotate: boolean) {
     super(ev);
@@ -1630,7 +1626,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     this.handleEvent(ev);
   }
 
-  public is2dRotateGesture(ev: GestureEvent): boolean {
+  private is2dRotateGesture(ev: GestureEvent): boolean {
     if (!this.allowRotate || this.rotatePrevented)
       return false;
 
@@ -1662,11 +1658,11 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     return false;
   }
 
-  public is3dRotateGesture(ev: GestureEvent): boolean {
+  private is3dRotateGesture(ev: GestureEvent): boolean {
     return this.allowRotate && (1 === ev.gestureInfo!.numberTouches) && this.viewport!.view.allow3dManipulations();
   }
 
-  public compute2dRotationAxis(currPoint: Point3d): { start: Point3d, end: Point3d } {
+  private compute2dRotationAxis(currPoint: Point3d): { start: Point3d, end: Point3d } {
     const vp = this.viewport!;
     const npcPoint = vp.worldToNpc(currPoint);
 
@@ -1679,7 +1675,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     return { start: startPt, end: endPt };
   }
 
-  public computeZoomRatio(info: GestureInfo): number {
+  private computeZoomRatio(info: GestureInfo): number {
     if (!this.allowZoom)
       return 1.0;
 
@@ -1703,7 +1699,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     return zoomRatio;
   }
 
-  public getRotationFromStart(info: GestureInfo): Angle {
+  private getRotationFromStart(info: GestureInfo): Angle {
     const currentTouches = info.touches;
     const startTouches = this.startInfo.touches;
     const startVec = new Vector2d(startTouches[1].x - startTouches[0].x, startTouches[1].y - startTouches[0].y);
@@ -1711,7 +1707,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     return startVec.angleTo(currentVec);
   }
 
-  public handle2dRotate(ev: GestureEvent): boolean {
+  private handle2dRotate(ev: GestureEvent): boolean {
     const vp = this.viewport!;
 
     //  All of the transforms and computation are relative to the original transform.
@@ -1746,7 +1742,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     return true;
   }
 
-  public handle3dRotate(ev: GestureEvent) {
+  private handle3dRotate(ev: GestureEvent) {
     if (this.lastPtView.isAlmostEqual(ev.viewPoint, 2.0))
       return true;
 
@@ -1813,7 +1809,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     this.lastPtView.setFrom(this.startPtView);
   }
 
-  public handleEvent(ev: GestureEvent): boolean {
+  protected handleEvent(ev: GestureEvent): boolean {
     if (this.is3dRotateGesture(ev))
       return this.handle3dRotate(ev);
 
@@ -1840,7 +1836,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
       const preTrans = Transform.fromTranslation(targetWorld);
       const postTrans = Transform.fromTranslation(this.startPtWorld);
 
-      const transform = new Transform();
+      const transform = Transform.createIdentity();
       transform.scaleCompleteRows(preTrans, zoomRatio, zoomRatio, zoomRatio);
       transform.initProduct(postTrans, transform);
 
