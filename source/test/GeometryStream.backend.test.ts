@@ -302,4 +302,29 @@ describe ("GeometryBuilder", () => {
     const cylinder = Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, 3.0), 1.5, 1.5, true);
     assert.isFalse(builder.appendSolidPrimitive(cylinder!), "3d SolidPrimitve is NOT appended using 2d builder");
   });
+
+  it.only ("should be able to see builder appendages to imodel in newly created bim file with Gist", async () => {
+    const bisRepo = await IModelTestUtils.openIModel("testImodel.bim");
+    const builder = GeometryBuilder.createForNewGeometryPart(true);
+    const arc = Arc3d.create(Point3d.create(1, 2, 3), Vector3d.create(0, 0, 2), Vector3d.create(0, 3, 0), AngleSweep.createStartEndRadians(0, 2 * Math.PI));
+    assert.isTrue(builder.appendCurvePrimitive(arc!), "Successfully appended CurvePrimitive using builder");
+
+    const elemProps: GeometricElement3dProps = {
+      classFullName: "Generic:PhysicalObject",
+      code: Code.createEmpty(),
+      id: new Id64(),
+      imodel: bisRepo,
+      model: bisRepo.models.repositoryModelId,
+      category: "",
+      federationGuid: new Guid(true),
+      userLabel: "UserLabel-" + 1,
+      geom: undefined,
+      placement: new Placement3d(Point3d.create(), YawPitchRollAngles.createDegrees(0, 0, 0), new ElementAlignedBox3d(Point3d.create(0, 0, 0), Point3d.create(10, 10, 10))),
+    };
+
+    const geomElement = bisRepo.elements.createElement(elemProps);
+    const elemId = bisRepo.elements.insertElement(geomElement);
+    assert.isTrue(elemId.isValid(), "Successfully inserted new element to IModel");
+    bisRepo.saveChanges();
+  });
 });
