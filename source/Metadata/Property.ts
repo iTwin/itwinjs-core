@@ -10,7 +10,10 @@ import KindOfQuantity from "Metadata/KindOfQuantity";
 import { Enumeration } from "Metadata/Enumeration";
 import { StructClass } from "Metadata/Class";
 
-export class ECProperty implements PropertyInterface {
+/**
+ * A common abstract class for all ECProperty types.
+ */
+export abstract class ECProperty implements PropertyInterface {
   private _name: ECName;
   public class: ECClassInterface;
   public description: string;

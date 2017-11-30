@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/ecobjects",
+  "name": "@bentley/ecjs",
   "version": "0.0.1",
   "description": "ECObjects core concepts in typescript",
   "license": "UNLICENSED",
@@ -13,11 +13,11 @@
     "lint": "node ./node_modules/@bentley/bentleyjs-tools/scripts/tslint.js",
     "prebuild": "npm run lint & npm run clean",
     "build": "tsc",
-    "test": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode.js --testDir=./test/",
+    "test": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode.js --testDir=./test/ --tscPaths",
     "test:watch": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode.js --testDir=./test/ --watch",
-    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --onlyJson",
-    "docs:dev": "npm run docs && bmsBuild --destination ./lib/docs/public",
-    "coverage": "node scripts/cover.js",
+    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --onlyJson --json=lib/docs/json/ec-js/file.json",
+    "docs:dev": "npm run docs && bmsWatch --source ./lib/docs --destination public/",
+    "cover": "nyc npm run test",
     "start": "npm run build && npm run test && npm run docs"
   },
   "author": {
@@ -25,16 +25,32 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bemetalsmith": "^1.13.1",
-    "@bentley/bentleyjs-tools": "^1.0.54",
+    "@bentley/bemetalsmith": "^1.14.0",
+    "@bentley/bentleyjs-tools": "^1.0.55",
     "@types/chai": "^4.0.5",
     "@types/mocha": "^2.2.44",
-    "nyc": "^11.3.0",
+    "nyc": "^11.4.0",
     "rimraf": "^2.6.2",
     "ts-node": "^3.3.0",
     "typescript": "^2.6.1"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "^1.0.41"
+    "@bentley/bentleyjs-core": "^1.0.44"
+  },
+  "nyc": {
+    "include": [
+      "source/**/*.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text-summary",
+      "lcov"
+    ],
+    "report-dir": "./lib/test/coverage"
   }
 }

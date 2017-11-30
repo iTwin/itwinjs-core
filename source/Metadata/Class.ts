@@ -2,7 +2,9 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { ECClassInterface, MixinInterface, EntityClassInterface, PropertyInterface, CustomAttributeClassInterface, RelationshipClassInterface, RelationshipConstraintInterface, NavigationPropertyInterface, PrimitivePropertyInterface, PrimitiveArrayPropertyInteface, SchemaChildInterface, StructPropertyInterface, StructArrayPropertyInterface } from "../Interfaces";
+import { ECClassInterface, MixinInterface, EntityClassInterface, PropertyInterface, CustomAttributeClassInterface, RelationshipClassInterface,
+  RelationshipConstraintInterface, NavigationPropertyInterface, PrimitivePropertyInterface, PrimitiveArrayPropertyInteface, SchemaChildInterface,
+  StructPropertyInterface, StructArrayPropertyInterface } from "../Interfaces";
 import { ECClassModifier, CustomAttributeContainerType, RelationshipMultiplicity, RelationshipEnd, RelatedInstanceDirection, StrengthType,
   parseCustomAttributeContainerType, parseClassModifier, parseStrength, parseStrengthDirection, PrimitiveType, parsePrimitiveType } from "../ECObjects";
 import { ICustomAttributeContainer, CustomAttributeSet } from "./CustomAttribute";
@@ -11,7 +13,7 @@ import SchemaChild from "./SchemaChild";
 import { NavigationProperty, PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty } from "./Property";
 
 /**
- * A common abstract class for all of the EC class types.
+ * A common abstract class for all of the ECClass types.
  */
 export abstract class ECClass extends SchemaChild implements ICustomAttributeContainer, ECClassInterface {
   public modifier: ECClassModifier;
@@ -29,19 +31,45 @@ export abstract class ECClass extends SchemaChild implements ICustomAttributeCon
   }
 
   /**
-   * Searches for a local ECProperty matching the name passed in
+   * Searches, case-insensitive, for a local ECProperty with the name provided.
    * @param name
    */
-  public getProperty<T extends PropertyInterface>(name: string): T | undefined {
-    if (!this.properties)
-      return undefined;
-    return this.properties.find((prop) => prop.name.toLowerCase() === name.toLowerCase()) as T;
+  public getProperty<T extends PropertyInterface>(name: string, includeInherited: boolean = false): T | undefined {
+    let foundProp;
+
+    if (this.properties) {
+      foundProp = this.properties.find((prop) => prop.name.toLowerCase() === name.toLowerCase()) as T;
+      if (foundProp)
+        return foundProp;
+    }
+
+    if (includeInherited)
+      return this.getInheritedProperty(name);
+
+    return undefined;
   }
 
   /**
-   *
+   * Searches the base class, if one exists, for the property with the name provided.
    * @param name
-   * @param type
+   */
+  public getInheritedProperty<T extends PropertyInterface>(name: string): T | undefined {
+    let inheritedProperty;
+
+    if (this.baseClass) {
+      inheritedProperty = this.baseClass.getProperty(name);
+      if (!inheritedProperty)
+        return inheritedProperty;
+    }
+
+    return inheritedProperty;
+  }
+
+  /**
+   * Creates a PrimitiveECProperty with the given name and type
+   * @param name The name of property to create.
+   * @param type The type of the primitive property. If it is in string form it will be parsed as a PrimitiveType.
+   * @throws ECObjectsStatus DuplicateProperty: thrown if a property with the same name already exists in the class.
    */
   public createPrimitiveProperty(name: string, type?: string | PrimitiveType): PrimitivePropertyInterface {
     if (this.getProperty(name))
@@ -167,10 +195,27 @@ export abstract class ECClass extends SchemaChild implements ICustomAttributeCon
 }
 
 /**
- *
+ * A Typescript class representation of an ECEntityClass.
  */
 export class EntityClass extends ECClass implements EntityClassInterface {
   public mixins?: MixinInterface[];
+
+  /**
+   * Searches the base class, if one exists, first then any mixins that exist for the property with the name provided.
+   * @param name The name of the property to find.
+   */
+  public getInheritedProperty<T extends PropertyInterface>(name: string): T | undefined {
+    let inheritedProperty = super.getInheritedProperty(name);
+
+    if (!inheritedProperty && this.mixins) {
+      this.mixins.some((mixin) => {
+        inheritedProperty = mixin.getProperty(name);
+        return inheritedProperty !== undefined;
+      });
+    }
+
+    return inheritedProperty as T;
+  }
 
   /**
    *
@@ -230,7 +275,7 @@ export class EntityClass extends ECClass implements EntityClassInterface {
 }
 
 /**
- *
+ * A Typescript class representation of a Mixin.
  */
 export class MixinClass extends ECClass implements MixinInterface {
   public appliesTo: string | EntityClassInterface;
@@ -249,12 +294,12 @@ export class MixinClass extends ECClass implements MixinInterface {
 }
 
 /**
- *
+ * A Typescript class representation of an ECStructClass.
  */
 export class StructClass extends ECClass implements ECClassInterface { }
 
 /**
- *
+ * A Typescript class representation of an ECCustomAttributeClass.
  */
 export class CustomAttributeClass extends ECClass implements CustomAttributeClassInterface {
   public containerType: CustomAttributeContainerType;
@@ -272,7 +317,7 @@ export class CustomAttributeClass extends ECClass implements CustomAttributeClas
 }
 
 /**
- *
+ * A Typescript class representation of a ECRelationshipClass.
  */
 export class RelationshipClass extends ECClass implements RelationshipClassInterface {
   public strength: StrengthType;
@@ -330,16 +375,16 @@ export class RelationshipClass extends ECClass implements RelationshipClassInter
 }
 
 /**
- *
+ * A Typescript class representation of a ECRelationshipConstraint.
  */
 export class RelationshipConstraint implements RelationshipConstraintInterface {
   private _abstractConstraint: EntityClassInterface | RelationshipClassInterface;
   public relationshipClass: RelationshipClassInterface;
   public relationshipEnd: RelationshipEnd;
-  public multiplicity: RelationshipMultiplicity;
-  public polymorphic: boolean;
-  public roleLabel: string;
-  public constraintClasses: EntityClassInterface[] | RelationshipClassInterface[];
+  public multiplicity?: RelationshipMultiplicity;
+  public polymorphic?: boolean;
+  public roleLabel?: string;
+  public constraintClasses?: EntityClassInterface[] | RelationshipClassInterface[];
 
   constructor(relClass: RelationshipClass, relEnd: RelationshipEnd) {
     this.relationshipEnd = relEnd;
@@ -362,8 +407,15 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
     this._abstractConstraint = abstractConstraint;
   }
 
-  get isSource() { return this.relationshipEnd === RelationshipEnd.Source; }
+  /**
+   * Returns true if this RelationshipConstraint is the Source relationship end.
+   */
+  get isSource(): boolean { return this.relationshipEnd === RelationshipEnd.Source; }
 
+  /**
+   * Adds the provided class as a constraint class to this constraint.
+   * @param constraint The class to add as a constraint class.
+   */
   public addClass(constraint: EntityClassInterface | RelationshipClassInterface): void {
     const areEntityConstraints = undefined !== this.constraintClasses as EntityClassInterface[];
 
@@ -382,6 +434,10 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
 
   }
 
+  /**
+   * Populates this object with the provided json object.
+   * @param jsonObj The json representation of an ECRelationshipConstraint using the ECSchemaJson format.
+   */
   public fromJson(jsonObj: any): void {
     if (jsonObj.roleLabel) this.roleLabel = jsonObj.roleLabel;
     if (jsonObj.polymorphic) this.polymorphic = jsonObj.polymorphic;

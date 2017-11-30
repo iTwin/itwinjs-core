@@ -8,6 +8,31 @@ import { ECClass, EntityClass, MixinClass } from "../../source/Metadata/Class";
 import { ECClassModifier } from "../../source/ECObjects";
 
 describe("entity class", () => {
+  describe("get inherited properties", () => {
+    it("from mixins", () => {
+      const baseClass = new EntityClass("TestBase");
+      const basePrimProp = baseClass.createPrimitiveProperty("BasePrimProp");
+
+      const mixin = new MixinClass("TestMixin");
+      const mixinPrimProp = mixin.createPrimitiveProperty("MixinPrimProp");
+
+      const entityClass = new EntityClass("TestClass");
+      entityClass.createPrimitiveProperty("PrimProp");
+      entityClass.baseClass = baseClass;
+      entityClass.mixins = [mixin];
+
+      expect(entityClass.getProperty("MixinPrimProp")).to.be.undefined;
+      expect(entityClass.getProperty("MixinPrimProp", true)).equal(mixinPrimProp);
+      expect(entityClass.getInheritedProperty("MixinPrimProp")).equal(mixinPrimProp);
+
+      expect(entityClass.getProperty("BasePrimProp")).to.be.undefined;
+      expect(entityClass.getProperty("BasePrimProp", false)).to.be.undefined;
+      expect(entityClass.getProperty("BasePrimProp", true)).equal(basePrimProp);
+      expect(entityClass.getInheritedProperty("BasePrimProp")).equal(basePrimProp);
+      expect(entityClass.getInheritedProperty("PrimProp")).to.be.undefined;
+    });
+  });
+
   describe("deserialization", () => {
     it("succeed with fully defined", () => {
       const schemaJson = {

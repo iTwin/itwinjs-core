@@ -71,18 +71,18 @@ describe("relationship", () => {
       assert.isDefined(relClass!.source);
       expect(relClass!.source!.polymorphic).equal(true);
       expect(relClass!.source!.roleLabel).equal("Source RoleLabel");
-      assert.isTrue(relClass!.source!.multiplicity.equals(RelationshipMultiplicity.zeroMany));
+      assert.isTrue(relClass!.source!.multiplicity!.equals(RelationshipMultiplicity.zeroMany));
       assert.isDefined(relClass!.source!.constraintClasses);
-      expect(relClass!.source!.constraintClasses.length).equal(1);
-      assert.isTrue(relClass!.source!.constraintClasses[0] === sourceEntity);
+      expect(relClass!.source!.constraintClasses!.length).equal(1);
+      assert.isTrue(relClass!.source!.constraintClasses![0] === sourceEntity);
 
       assert.isDefined(relClass!.target);
       expect(relClass!.target!.polymorphic).equal(true);
       expect(relClass!.target!.roleLabel).equal("Target RoleLabel");
-      assert.isTrue(relClass!.target!.multiplicity.equals(RelationshipMultiplicity.zeroMany));
+      assert.isTrue(relClass!.target!.multiplicity!.equals(RelationshipMultiplicity.zeroMany));
       assert.isDefined(relClass!.target!.constraintClasses);
-      expect(relClass!.target!.constraintClasses.length).equal(1);
-      assert.isTrue(relClass!.target!.constraintClasses[0] === targetEntity);
+      expect(relClass!.target!.constraintClasses!.length).equal(1);
+      assert.isTrue(relClass!.target!.constraintClasses![0] === targetEntity);
     });
   });
 });

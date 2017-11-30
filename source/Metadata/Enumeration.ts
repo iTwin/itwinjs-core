@@ -4,9 +4,12 @@
 
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PrimitiveType } from "../ECObjects";
-import { EnumerationInterface } from "../Interfaces";
+import { EnumerationInterface, EnumeratorProps } from "../Interfaces";
 import SchemaChild from "./SchemaChild";
 
+/**
+ * A Typescript class representation of an ECEnumeration.
+ */
 export class Enumeration extends SchemaChild implements EnumerationInterface {
   public type: PrimitiveType.Integer | PrimitiveType.String;
   public isStrict: boolean;
@@ -19,10 +22,19 @@ export class Enumeration extends SchemaChild implements EnumerationInterface {
     this.enumerators = [];
   }
 
+  /**
+   * Returns an enumerator that matches the value provided.
+   * @param value The value of the Enumerator to find.
+   */
   public getEnumerator(value: string | number): Enumerator | undefined {
     return this.enumerators.find((item) => item.value === value);
   }
 
+  /**
+   * Creates an Enumerator with the provided value and label and adds it to the this Enumeration.
+   * @param value The value of the enumerator. The type of this value is dependent on the backing type of the this Enumeration.
+   * @param label The label to be used
+   */
   public createEnumerator(value: string | number, label?: string) {
     if ((typeof(value) === "string" && this.type !== PrimitiveType.String) ||
         (typeof(value) === "number" && this.type !== PrimitiveType.Integer))
@@ -31,7 +43,14 @@ export class Enumeration extends SchemaChild implements EnumerationInterface {
     this.enumerators.push(new Enumerator(value, label));
   }
 
+  /**
+   *
+   * @param enumerator The Enumerator to add to the this Enumeration
+   */
+  // Not sure if we want to keep this in the public api.
   public addEnumerator(enumerator: Enumerator): void {
+    // TODO: Need to validate that the enumerator has a unique value.
+
     this.enumerators.push(enumerator);
   }
 
@@ -81,7 +100,10 @@ export class Enumeration extends SchemaChild implements EnumerationInterface {
   }
 }
 
-export class Enumerator {
+/**
+ * A Typescript class representation of an ECEnumerator.
+ */
+export class Enumerator implements EnumeratorProps {
   public enumeration: Enumeration;
 
   constructor(public value: number | string, public label?: string) { }

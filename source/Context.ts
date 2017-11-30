@@ -34,8 +34,8 @@ export class SchemaCache {
 
   /**
    * Gets the schema which matches the provided SchemaKey.
-   * TODO: Add the ability to specify a matchType.
    * @param schemaKey The SchemaKey describing the schema to get from the cache.
+   * @param matchType The match type to use when locating the schema
    */
   public getSchema<T extends SchemaInterface>(schemaKey: SchemaKeyInterface, matchType: SchemaMatchType = SchemaMatchType.Latest): T | undefined {
     if (this.count === 0)
