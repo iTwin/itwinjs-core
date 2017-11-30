@@ -722,10 +722,6 @@ export class ViewManip extends ViewTool {
     this.updateTargetCenter();
     this.updateWorldUpVector(initialSetup);
   }
-
-  protected getZoomCenter(result?: Point3d): Point3d {
-    return new Point3d();
-  }
 }
 
 /** ViewingToolHandle for performing the "pan view" operation */
@@ -1473,7 +1469,6 @@ export class WindowAreaTool extends ViewTool {
     const viewRange = Range3d.createArray(corners);
     let delta: Vector3d;
     if (view.is3d() && view.isCameraOn()) {
-
       let npcZ: number;
 
       // Try to get nearest Z within rectangle directly from depth buffer
@@ -1662,19 +1657,6 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     return this.allowRotate && (1 === ev.gestureInfo!.numberTouches) && this.viewport!.view.allow3dManipulations();
   }
 
-  private compute2dRotationAxis(currPoint: Point3d): { start: Point3d, end: Point3d } {
-    const vp = this.viewport!;
-    const npcPoint = vp.worldToNpc(currPoint);
-
-    const testPt = new Point3d(npcPoint.x, npcPoint.y, 0.4);
-    const startPt = vp.npcToWorld(testPt);
-
-    testPt.z = 0.6;
-    const endPt = vp.npcToWorld(testPt);
-
-    return { start: startPt, end: endPt };
-  }
-
   private computeZoomRatio(info: GestureInfo): number {
     if (!this.allowZoom)
       return 1.0;
@@ -1714,6 +1696,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     if (!vp.setupFromFrustum(this.frustum))
       return true;
 
+    const view = vp.view;
     const info = ev.gestureInfo;
     const currentTouches = info.touches;
     const startTouches = this.startInfo.touches;
@@ -1722,16 +1705,16 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     const currPt0 = vp.viewToWorld(new Point3d(currentTouches[0].x, currentTouches[0].y, 0));
     const diffWorld = startPt0.minus(currPt0);
     const translateTransform = Transform.createTranslation(diffWorld);
-    const rotationAxes = this.compute2dRotationAxis(currPt0);
 
     const radians = this.getRotationFromStart(info);
-    const rotationTransform = Transform.fromLineAndRotationAngle(rotationAxes.start, rotationAxes.end, radians);
-    const transform = Transform.fromProduct(translateTransform, rotationTransform);
+    const matrix = RotMatrix.createRotationAroundVector(view.getZVector(), radians);
+    const rotationTransform = Transform.createFixedPointAndMatrix(currPt0, matrix);
+    let transform = translateTransform.multiplyTransformTransform(rotationTransform);
 
     const zoomRatio = this.computeZoomRatio(info);
-    const scaleTransform = Transform.fromFixedPointAndScaleFactors(startPt0, zoomRatio, zoomRatio, 0);
+    const scaleTransform = Transform.createScaleAboutPoint(startPt0, zoomRatio, scratchTransform1);
 
-    transform = Transform.fromProduct(scaleTransform, transform);
+    transform = scaleTransform.multiplyTransformTransform(transform, scratchTransform2);
     const frust = this.frustum.transformBy(transform);
 
     vp.setupFromFrustum(frust);
@@ -1764,12 +1747,11 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
 
     const xAxis = ViewToolSettings.preserveWorldUp ? this.worldUpVector : vp.rotMatrix.getRow(1);
     const yAxis = vp.rotMatrix.getRow(0);
-
     const xRMatrix = (0.0 !== xDelta) ? RotMatrix.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (xExtent / xDelta)))! : RotMatrix.identity;
     const yRMatrix = (0.0 !== yDelta) ? RotMatrix.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta)))! : RotMatrix.identity;
     const worldRMatrix = yRMatrix.multiplyMatrixMatrix(xRMatrix);
     const worldTransform = Transform.createFixedPointAndMatrix(this.startPtWorld, worldRMatrix);
-    const frustum = this.frustum.transformBy(worldTransform);
+    const frustum = this.frustum.transformBy(worldTransform, scratchFrustum);
 
     if (!vp.setupFromFrustum(frustum))
       return true;
