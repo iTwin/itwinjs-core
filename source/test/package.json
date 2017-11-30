@@ -1,6 +1,6 @@
 {
   "name": "imodeljs-core-tests",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "//private": "NOTE: this is a private package that is never published",
   "private": true,
   "license": "UNLICENSED",
