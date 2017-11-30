@@ -34,7 +34,6 @@ export default class SchemaReadHelper {
    * Populates the given schema object with the information presented in the schemaJson provided. If present, uses the provided context to resolve any references within the schema. Otherwise, those references will be unresovled.
    * @param schema The schema object to populate. Must be an extension of the DeserializableSchemaInterface.
    * @param schemaJson An object, or string representing that object, that follows the SchemaJson format.
-   * @param context TODO:
    */
   public static to<T extends SchemaInterface>(schema: T, schemaJson: object | string): T {
     const helper = new SchemaReadHelper();
