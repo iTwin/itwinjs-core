@@ -661,6 +661,10 @@ export abstract class Viewport {
     return this.setupFromView();
   }
 
+  public getZoomCenter(viewPoint: Point3d, result?: Point3d): Point3d {
+    return new Point3d();
+  }
+
   /**
    * Zoom the view by a scale factor, placing the new center at the projection of the given point (world coordinates)
    * on the focal plane.

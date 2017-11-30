@@ -1065,6 +1065,7 @@ export abstract class ViewState3d extends ViewState {
     if (compression >= (1.0 - flatViewFractionTolerance))
       return ViewStatus.Success;
 
+    // the frustum has perspective, turn camera on
     let viewOrg = frustPts[Npc.LeftBottomRear];
     const viewDelta = this.getExtents().clone();
     const zDir = this.getZVector();

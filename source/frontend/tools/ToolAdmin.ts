@@ -8,7 +8,7 @@ import { IdleTool } from "./IdleTool";
 import { ViewTool, ViewToolSettings } from "./ViewTool";
 import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
-import { EventList } from "@bentley/bentleyjs-core/lib/Event";
+import { EventList, Event } from "@bentley/bentleyjs-core/lib/Event";
 import {
   ModifierKey, ButtonState, Button, GestureEvent, Tool, ButtonEvent, CoordSource, GestureInfo,
   Cursor, PrimitiveToolBase, WheelMouseEvent, InputSource, VirtualKey,
@@ -294,16 +294,22 @@ export class ToolAdmin {
   public get activeTool(): Tool | undefined {
     return this.viewTool ? this.viewTool : (this.inputCollector ? this.inputCollector : this.primitiveTool); // NOTE: Viewing tools suspend input collectors as well as primitives...
   }
-  /** the event that is sent whenever the active tool changes */
-  public get activeToolChanged() { return this._toolEvents.get("activeTool"); }
-  public onViewportClosed(vp: Viewport) {
+
+  /**
+   * Event that is raised whenever the active tool changes. This includes both primitive and viewing tools.
+   * @param newTool The newly activated tool
+   */
+  public get activeToolChanged(): Event<(newTool: Tool) => void> { return this._toolEvents.get("activeTool"); }
+
+  /** called when a viewport is closed */
+  public onViewportClosed(vp: Viewport): void {
     //  Closing the viewport may also delete the QueryModel so we have to prevent
     //  AccuSnap from trying to use it.
     //    AccuSnap:: GetInstance().Clear();
     this.currentInputState.clearViewport(vp);
   }
 
-  public initGestureEvent(ev: GestureEvent, vp: Viewport, gestureInfo: GestureInfo) {
+  public initGestureEvent(ev: GestureEvent, vp: Viewport, gestureInfo: GestureInfo): void {
     const current = this.currentInputState;
     current.fromGesture(vp, gestureInfo, true);
     current.toEvent(ev, false);
@@ -311,7 +317,7 @@ export class ToolAdmin {
       ev.actualInputSource = InputSource.Mouse;
   }
 
-  public onWheel(vp: Viewport, wheelDelta: number, pt2d: Point2d) {
+  public onWheel(vp: Viewport, wheelDelta: number, pt2d: Point2d): void {
     vp.removeAnimator();
     this.currentInputState.fromButton(vp, pt2d, InputSource.Mouse, true);
     const wheelEvent = new WheelMouseEvent();
@@ -320,17 +326,18 @@ export class ToolAdmin {
     this.onWheelEvent(wheelEvent);
   }
 
-  public onWheelEvent(wheelEvent: WheelMouseEvent) {
+  public onWheelEvent(wheelEvent: WheelMouseEvent): void {
     const activeTool = this.activeTool;
     if (!activeTool || !activeTool.onMouseWheel(wheelEvent))
       this.idleTool.onMouseWheel(wheelEvent);
   }
 
-  private timerButtonEvent = new ButtonEvent();
+  private static scratchButtonEvent1 = new ButtonEvent();
+  private static scratchButtonEvent2 = new ButtonEvent();
   /**
    * This is invoked on each frame to update current input state and forward model motion events to tools.
    */
-  public onTimerEvent() {
+  public onTimerEvent(): boolean {
     const tool = this.activeTool;
 
     const current = this.currentInputState;
@@ -345,7 +352,7 @@ export class ToolAdmin {
       return true;
     }
 
-    const ev = this.timerButtonEvent;
+    const ev = ToolAdmin.scratchButtonEvent1;
     current.toEvent(ev, true);
 
     const wasMotion = current.wasMotion;
@@ -374,8 +381,7 @@ export class ToolAdmin {
     return !wasMotion;  // return value unused...
   }
 
-  private mouseMotionButtonEvent = new ButtonEvent();
-  public onMouseMotion(vp: Viewport, pt2d: Point2d, inputSource: InputSource) {
+  public onMouseMotion(vp: Viewport, pt2d: Point2d, inputSource: InputSource): void {
     const current = this.currentInputState;
     current.onMotion(pt2d);
 
@@ -383,7 +389,7 @@ export class ToolAdmin {
       return;
 
     const tool = this.activeTool;
-    const ev = this.mouseMotionButtonEvent;
+    const ev = ToolAdmin.scratchButtonEvent1;
     current.fromPoint(vp, pt2d, inputSource);
     current.toEvent(ev, false);
 
@@ -408,8 +414,7 @@ export class ToolAdmin {
     ev.reset();
   }
 
-  private scratchButtonEvent = new ButtonEvent();
-  public sendDataPoint(ev: ButtonEvent) {
+  public sendDataPoint(ev: ButtonEvent): void {
     const tool = this.activeTool;
     const current = this.currentInputState;
     if (!ev.isDown) {
@@ -436,8 +441,8 @@ export class ToolAdmin {
     tool.autoLockTarget(); // lock tool to target model of this view...
 
     // Don't use event, need to account for point location adjusted to hit point on element by tools...
-    const scratchEv = this.scratchButtonEvent;
-    current.toEventFromLastDataPoint(ev);
+    const scratchEv = ToolAdmin.scratchButtonEvent2;
+    current.toEventFromLastDataPoint(scratchEv);
     tool.updateDynamics(scratchEv);
   }
 
@@ -464,13 +469,12 @@ export class ToolAdmin {
     return (!tool ? true : tool.isValidLocation(ev, true));
   }
 
-  public onDataButtonDown(vp: Viewport, pt2d: Point2d, inputSource: InputSource) {
-
+  public onDataButtonDown(vp: Viewport, pt2d: Point2d, inputSource: InputSource): void {
     vp.removeAnimator();
     if (this.filterViewport(vp))
       return;
 
-    const ev = this.scratchButtonEvent;
+    const ev = ToolAdmin.scratchButtonEvent1;
     const current = this.currentInputState;
     current.fromButton(vp, pt2d, inputSource, true);
     current.onButtonDown(Button.Data);
@@ -480,14 +484,14 @@ export class ToolAdmin {
     ev.reset();
   }
 
-  public onDataButtonUp(vp: Viewport, pt2d: Point2d, inputSource: InputSource) {
+  public onDataButtonUp(vp: Viewport, pt2d: Point2d, inputSource: InputSource): void {
     if (this.filterViewport(vp))
       return;
 
     const current = this.currentInputState;
     const wasDragging = current.isDragging(Button.Data);
 
-    const ev = this.scratchButtonEvent;
+    const ev = ToolAdmin.scratchButtonEvent1;
     current.fromButton(vp, pt2d, inputSource, true);
     current.onButtonUp(Button.Data);
     current.toEvent(ev, true);
@@ -512,12 +516,12 @@ export class ToolAdmin {
     ev.reset();
   }
 
-  public onMiddleButtonDown(vp: Viewport, pt2d: Point2d) {
+  public onMiddleButtonDown(vp: Viewport, pt2d: Point2d): void {
     if (this.filterViewport(vp))
       return;
 
     vp.removeAnimator();
-    const ev = this.scratchButtonEvent;
+    const ev = ToolAdmin.scratchButtonEvent1;
     const current = this.currentInputState;
     current.fromButton(vp, pt2d, InputSource.Mouse, true);
     current.onButtonDown(Button.Middle);
@@ -542,14 +546,14 @@ export class ToolAdmin {
     ev.reset();
   }
 
-  public onMiddleButtonUp(vp: Viewport, pt2d: Point2d) {
+  public onMiddleButtonUp(vp: Viewport, pt2d: Point2d): void {
     if (this.filterViewport(vp))
       return;
 
     const current = this.currentInputState;
     const wasDragging = current.isDragging(Button.Middle);
 
-    const ev = this.scratchButtonEvent;
+    const ev = ToolAdmin.scratchButtonEvent1;
     current.fromButton(vp, pt2d, InputSource.Mouse, true);
     current.onButtonUp(Button.Middle);
     current.toEvent(ev, true);
@@ -578,12 +582,12 @@ export class ToolAdmin {
     ev.reset();
   }
 
-  public onResetButtonDown(vp: Viewport, pt2d: Point2d) {
+  public onResetButtonDown(vp: Viewport, pt2d: Point2d): void {
     if (this.filterViewport(vp))
       return;
 
     vp.removeAnimator();
-    const ev = this.scratchButtonEvent;
+    const ev = ToolAdmin.scratchButtonEvent1;
     const current = this.currentInputState;
     current.fromButton(vp, pt2d, InputSource.Mouse, true);
     current.onButtonDown(Button.Reset);
@@ -601,14 +605,14 @@ export class ToolAdmin {
     ev.reset();
   }
 
-  public onResetButtonUp(vp: Viewport, pt2d: Point2d) {
+  public onResetButtonUp(vp: Viewport, pt2d: Point2d): void {
     if (this.filterViewport(vp))
       return;
 
     const current = this.currentInputState;
     const wasDragging = current.isDragging(Button.Reset);
 
-    const ev = this.scratchButtonEvent;
+    const ev = ToolAdmin.scratchButtonEvent1;
     current.fromButton(vp, pt2d, InputSource.Mouse, true);
     current.onButtonUp(Button.Reset);
     current.toEvent(ev, true);
@@ -639,12 +643,12 @@ export class ToolAdmin {
   }
 
   private scratchGestureEvent = new GestureEvent();
-  private onGestureEvent(ev: GestureEvent) { return (!this.filterButtonEvent(ev)); }
-  public onEndGesture(vp: Viewport, gestureInfo: GestureInfo) {
+  private onGestureEvent(ev: GestureEvent): boolean { return (!this.filterButtonEvent(ev)); }
+  public onEndGesture(vp: Viewport, gestureInfo: GestureInfo): void {
     vp.removeAnimator();
     this.gesturePending = false;
 
-    const ev = this.scratchGestureEvent;
+    const ev = ToolAdmin.scratchButtonEvent1;
     this.initGestureEvent(ev, vp, gestureInfo);
 
     if (this.onGestureEvent(ev)) {
@@ -733,7 +737,7 @@ export class ToolAdmin {
 
     // Give active tool a chance to update it's dynamics...
     if (activeTool instanceof PrimitiveToolBase) {
-      const ev = this.scratchButtonEvent;
+      const ev = ToolAdmin.scratchButtonEvent1;
       this.fillEventFromCursorLocation(ev);
       activeTool.updateDynamics(ev);
     }
@@ -774,7 +778,7 @@ export class ToolAdmin {
 
     const newActiveTool = this.activeTool;
     if (newActiveTool !== prevActiveTool)
-      this.activeToolChanged.raiseEvent();
+      this.activeToolChanged.raiseEvent(newActiveTool);
   }
 
   /** Invoked by ViewTool.installToolImplementation */
@@ -790,7 +794,7 @@ export class ToolAdmin {
     // else if (!Cesium.defined(newTool)) {
     //   this.setViewCursor(Cesium.defined(primitiveTool) && Cesium.defined(primitiveTool.getCursor) ? primitiveTool.getCursor() : Cursor.Default);
     // }
-    this.activeToolChanged.raiseEvent();
+    this.activeToolChanged.raiseEvent(newTool);
   }
 
   /** Invoked by ViewTool.exitTool */
@@ -933,10 +937,11 @@ class WheelEventProcessor {
     if (wheelDelta > 0)
       zoomRatio = 1.0 / zoomRatio;
 
-    const target = ev.point.clone();
     const vp = ev.viewport!;
     const view = vp.view;
     const startFrust = vp.getFrustum();
+
+    const zoomCenter = vp.getZoomCenter(ev.viewport);
 
     if (vp.pickEntity(ev.viewPoint, ViewToolSettings.pickSize) {
       scratch.zoomTarget = target.clone();
@@ -992,7 +997,7 @@ class WheelEventProcessor {
       // }
 
       const result = view.lookAt(newCameraPos, target, view.getYVector());
-      vp.synchWithView(true);
+      vp.synchWithView(false);
       if (ViewToolSettings.animateZoom)
         vp.animateFrustumChange(startFrust, vp.getFrustum(), BeDuration.fromMilliseconds(100));
 
