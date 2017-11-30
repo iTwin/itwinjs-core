@@ -23,6 +23,7 @@
     "ecinstanceid",
     "ecsql",
     "endverbatim",
+    "findstr",
     "frontends",
     "frust",
     "fstop",
@@ -30,6 +31,7 @@
     "mixins",
     "skybox",
     "system",
+    "testbed",
     "viewflags"
   ]
   // ,
