@@ -1,7 +1,7 @@
 source
 test
-scripts
 lib/**/test
-lib/**/maps
+lib/**/*.map
 lib/**/docs
 .nyc_output
+.vscode
