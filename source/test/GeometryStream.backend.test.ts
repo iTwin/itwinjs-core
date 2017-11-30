@@ -303,7 +303,7 @@ describe ("GeometryBuilder", () => {
     assert.isFalse(builder.appendSolidPrimitive(cylinder!), "3d SolidPrimitve is NOT appended using 2d builder");
   });
 
-  it.only ("should be able to see builder appendages to imodel in newly created bim file with Gist", async () => {
+  it.skip ("should be able to see builder appendages to imodel in newly created bim file with Gist", async () => {
     const bisRepo = await IModelTestUtils.openIModel("testImodel.bim");
     const builder = GeometryBuilder.createForNewGeometryPart(true);
     const arc = Arc3d.create(Point3d.create(1, 2, 3), Vector3d.create(0, 0, 2), Vector3d.create(0, 3, 0), AngleSweep.createStartEndRadians(0, 2 * Math.PI));
