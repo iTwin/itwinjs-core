@@ -7,7 +7,7 @@ import { EntityQueryParams } from "../common/EntityProps";
 import { Gateway } from "../common/Gateway";
 import { IModelToken } from "../common/IModel";
 import { IModelVersion } from "../common/IModelVersion";
-import { Logger } from "../common/Logger";
+import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { EntityMetaData } from "../backend/Entity";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { IModelDb } from "../backend/IModelDb";

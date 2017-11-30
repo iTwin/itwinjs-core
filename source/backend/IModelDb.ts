@@ -10,7 +10,7 @@ import { ElementProps } from "../common/ElementProps";
 import { ElementAspectProps } from "../common/ElementAspectProps";
 import { IModel } from "../common/IModel";
 import { IModelVersion } from "../common/IModelVersion";
-import { Logger } from "../common/Logger";
+import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { ModelProps } from "../common/ModelProps";
 import { IModelToken } from "../common/IModel";
 import { IModelError, IModelStatus } from "../common/IModelError";

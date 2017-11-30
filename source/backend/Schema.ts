@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 import { IModelError, IModelStatus } from "../common/IModelError";
-import { Logger } from "../common/Logger";
+import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { ClassRegistry } from "./ClassRegistry";
 import { EntityCtor } from "./Entity";
 import { IModelDb } from "./IModelDb";
