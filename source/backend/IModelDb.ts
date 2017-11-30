@@ -26,7 +26,7 @@ import { BindingValue } from "./BindingUtility";
 import { CodeSpecs } from "./CodeSpecs";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelGatewayImpl } from "./IModelGatewayImpl";
-import { NodeAddonDgnDb } from "@bentley/types_imodeljsnodeaddon/iModelJsNodeAddon";
+import { NodeAddonDgnDb } from "@bentley/imodeljsnodeaddonapi/iModelJsNodeAddon";
 import { BentleyError } from "@bentley/bentleyjs-core/lib/Bentley";
 
 // Register the backend implementation of IModelGateway

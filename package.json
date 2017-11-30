@@ -9,35 +9,43 @@
     "url": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/imodeljs-core"
   },
   "scripts": {
-    "build": "concurrently \"npm run build:backend\" \"npm run build:frontend\" \"npm run build:test\"",
+    "build": "concurrently \"npm run build:backend\" \"npm run build:frontend\" \"npm run build:test\" \"npm run build:testbed\"",
     "build:backend": "cd source/backend && npm run build",
     "build:frontend": "cd source/frontend && npm run build",
     "build:test": "cd source/test && npm run build",
-    "clean": "concurrently \"npm run clean:backend\" \"npm run clean:frontend\" \"npm run clean:test\" \"npm run clean:legacy\"",
+    "build:testbed": "cd source/testbed && npm run build",
+    "clean": "concurrently \"npm run clean:backend\" \"npm run clean:frontend\" \"npm run clean:test\" \"npm run clean:legacy\" \"npm run clean:testbed\"",
     "clean:backend": "cd source/backend && npm run clean",
     "clean:dependencies": "concurrently \"rimraf source/backend/node_modules\" \"rimraf source/frontend/node_modules\" \"rimraf source/test/node_modules\"",
     "clean:frontend": "cd source/frontend && npm run clean",
     "clean:legacy": "concurrently \"rimraf lib\" \"rimraf source/common/lib\" \"rimraf source/common/node_modules\"",
     "clean:test": "cd source/test && npm run clean",
+    "clean:testbed": "cd source/testbed && npm run clean",
     "findstr:bentley-dependencies": "findstr /c:\"\\\"@bentley\" package.json source\\backend\\package.json source\\frontend\\package.json source\\test\\package.json",
     "lint": "node node_modules/@bentley/bentleyjs-tools/scripts/tslint.js",
-    "postinstall": "concurrently \"npm run install:backend\" \"npm run install:frontend\" \"npm run install:test\" \"npm run install:imodeljs-addon\"",
+    "postinstall": "concurrently \"npm run install:backend\" \"npm run install:frontend\" \"npm run install:test\" \"npm run install:testbed\" \"npm run install:imodeljs-addon\"",
     "install:backend": "cd source/backend && npm install",
     "install:frontend": "cd source/frontend && npm install",
     "install:imodeljs-addon": "node source/backend/scripts/install-imodeljs-addon.js",
     "install:test": "cd source/test && npm install",
-    "outdated:dependencies": "concurrently \"npm run outdated:backend\" \"npm run outdated:frontend\" \"npm run outdated:test\"",
+    "install:testbed": "cd source/testbed && npm install",
+    "outdated:dependencies": "concurrently \"npm run outdated:backend\" \"npm run outdated:frontend\" \"npm run outdated:test\" \"npm run outdated:testbed\"",
     "outdated:backend": "cd source/backend && npm outdated",
     "outdated:frontend": "cd source/frontend && npm outdated",
     "outdated:test": "cd source/test && npm outdated",
-    "update:dependencies": "concurrently \"npm run update:backend\" \"npm run update:frontend\" \"npm run update:test\"",
+    "outdated:testbed": "cd source/testbed && npm outdated",
+    "update:dependencies": "concurrently \"npm run update:backend\" \"npm run update:frontend\" \"npm run update:test\" \"npm run update:testbed\"",
     "update:backend": "cd source/backend && npm update",
     "update:frontend": "cd source/frontend && npm update",
     "update:test": "cd source/test && npm update",
+    "update:testbed": "cd source/testbed && npm update",
     "predocs": "npm run extract",
     "docs": "node node_modules/@bentley/bentleyjs-tools/scripts/docs.js --baseUrl=source/test/node_modules --includes=source/test/lib/extract --out=source/test/lib/docs --json=source/test/lib/docs/json/file.json",
     "extract": "node node_modules/@bentley/bentleyjs-tools/scripts/extract.js --extractFrom=source/test --out=source/test/lib/extract",
-    "test": "cd source/test && npm run test"
+    "test": "cd source/test && npm test",
+    "testbed": "cd source/testbed && npm test",
+    "test:tsnode": "node node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode --packageRoot \"./\" --testDir=\"./source/test\" --tscPaths",
+    "cover": "nyc npm run test:tsnode"
   },
   "keywords": [
     "Bentley",
@@ -52,7 +60,7 @@
   "dependencies": {},
   "//devDependencies": "NOTE: These are the union of all devDependencies for source/frontend, source/backend, and source/test",
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "^1.0.54",
+    "@bentley/bentleyjs-tools": "^1.0.55",
     "@types/chai": "^4.0.6",
     "@types/flatbuffers": "^1.6.5",
     "@types/fs-extra": "^4.0.5",
@@ -68,6 +76,7 @@
     "fs-extra": "latest",
     "inherits": "^2.0.3",
     "mocha": "^3.5.3",
+    "nyc": "^11.3.0",
     "object-assign": "^4.1.1",
     "once": "^1.4.0",
     "os-locale": "^2.1.0",
@@ -76,7 +85,30 @@
     "semver": "^5.4.1",
     "source-map-support": "^0.5.0",
     "string-width": "^2.1.1",
+    "ts-node": "^3.3.0",
+    "tsconfig-paths": "^2.4.0",
     "tslint": "^5.8.0",
     "typescript": "^2.6.2"
+  },
+  "nyc": {
+    "include": [
+      "source/frontend/**/*.ts",
+      "source/backend/**/*.ts",
+      "source/common/**/*.ts"
+    ],
+    "exclude": [
+      "source/test/*"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text-summary",
+      "lcov"
+    ],
+    "report-dir": "./source/test/lib/coverage"
   }
 }
