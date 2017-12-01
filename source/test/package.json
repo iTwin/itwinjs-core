@@ -1,6 +1,6 @@
 {
   "name": "imodeljs-core-tests",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "//private": "NOTE: this is a private package that is never published",
   "private": true,
   "license": "UNLICENSED",
@@ -17,12 +17,12 @@
     "NOTE: dependencies that are in common with imodeljs-frontend and imodeljs-backend must have a consistent version"
   ],
   "dependencies": {
-    "@bentley/bentleyjs-core": "^1.0.41",
-    "@bentley/geometry-core": "^1.0.28",
+    "@bentley/bentleyjs-core": "^1.0.46",
+    "@bentley/geometry-core": "^1.0.29",
     "@bentley/imodeljs-clients": "^1.0.31",
-    "@bentley/imodeljsnodeaddonapi": "^1.1.0",
+    "@bentley/imodeljs-nodeaddonapi": "^1.1.9",
     "fs-extra": "^4.0.2",
-    "js-base64": "^2.3.2"
+    "js-base64": "^2.4.0"
   },
   "//devDependencies": "NOTE: all devDependencies should be recorded in the top-level package.json only",
   "devDependencies": {}

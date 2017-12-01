@@ -2,7 +2,6 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { AccessToken, Briefcase, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
-import { BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BriefcaseStatus, IModelError } from "../common/IModelError";
@@ -10,7 +9,7 @@ import { IModelVersion } from "../common/IModelVersion";
 import { IModelToken } from "../common/IModel";
 import { IModelDb } from "./IModelDb";
 import { NodeAddon } from "./NodeAddon";
-import { NodeAddonDgnDb } from "@bentley/imodeljsnodeaddonapi/iModelJsNodeAddon";
+import { NodeAddonDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 
 import * as fs from "fs";
 import * as path from "path";
@@ -110,7 +109,7 @@ export class BriefcaseManager {
       return;
 
     const nativeDb: NodeAddonDgnDb = new (NodeAddon.getAddon()).NodeAddonDgnDb();
-    const res: BentleyReturn<DbResult, string> = nativeDb.getCachedBriefcaseInfosSync(BriefcaseManager.cachePath);
+    const res: ErrorStatusOrResult<DbResult, string> = nativeDb.getCachedBriefcaseInfosSync(BriefcaseManager.cachePath);
     if (res.error)
       Promise.reject(new IModelError(res.error.status));
 

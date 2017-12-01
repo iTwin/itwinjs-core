@@ -43,7 +43,7 @@ export class NodeAddon {
   private static checkAddonVersion(): void {
     const addonVer = NodeAddon._addon.version;
     // tslint:disable-next-line:no-var-requires
-    const iuseVer = require("@bentley/imodeljsnodeaddonapi/package.json").version;
+    const iuseVer = require("@bentley/imodeljs-nodeaddonapi/package.json").version;
 
     const addonVerDigits = NodeAddon.parseSemVer(addonVer);
     const iuseVerDigits = NodeAddon.parseSemVer(iuseVer);
