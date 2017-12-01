@@ -1,7 +1,9 @@
 {
   "name": "imodeljs-core",
-  "version": "0.0.2",
+  "//private": "NOTE: This 'root' package is private. It is never published",
   "private": true,
+  "//version": "NOTE: Since this is a private package, version should remain at 0.0.0",
+  "version": "0.0.0",
   "description": "iModelJs core components",
   "license": "UNLICENSED",
   "repository": {
