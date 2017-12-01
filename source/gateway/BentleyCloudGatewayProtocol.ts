@@ -44,7 +44,7 @@ export abstract class BentleyCloudGatewayProtocol extends Gateway.HttpProtocol {
   /** Returns the operation specified by an OpenAPI gateway path. */
   public getOperationFromOpenAPIPath(path: string): Gateway.HttpProtocol.GatewayOperationIdentifier {
     const components = path.split("/");
-    if (components.length !== 11)
+    if (components.length !== 12)
       throw new IModelError(BentleyStatus.ERROR, "Invalid path.");
 
     const [gateway, version, operation] = components.slice(-3);

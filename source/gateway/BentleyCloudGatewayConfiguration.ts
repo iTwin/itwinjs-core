@@ -3,7 +3,6 @@
  *--------------------------------------------------------------------------------------------*/
 import { Gateway, GatewayDefinition } from "../common/Gateway";
 import { BentleyCloudGatewayProtocol } from "./BentleyCloudGatewayProtocol";
-import { IModelGateway } from "./ImodelGateway";
 
 /** Initialization parameters for BentleyCloudGatewayConfiguration. */
 export interface BentleyCloudGatewayParams {
@@ -18,7 +17,7 @@ export abstract class BentleyCloudGatewayConfiguration extends Gateway.Configura
   public applicationAuthorizationKey = "Authorization";
 
   /** Performs gateway configuration for the application. */
-  public static initialize(params: BentleyCloudGatewayParams, gateways: GatewayDefinition[] = [IModelGateway]) {
+  public static initialize(params: BentleyCloudGatewayParams, gateways: GatewayDefinition[]) {
     const protocol = class extends BentleyCloudGatewayProtocol {
       public openAPIPathPrefix = () => (params.uriPrefix || "");
       public openAPIInfo = () => params.info;
@@ -32,6 +31,9 @@ export abstract class BentleyCloudGatewayConfiguration extends Gateway.Configura
     for (const gateway of gateways)
       Gateway.setConfiguration(gateway, () => config);
 
-    return Gateway.Configuration.getInstance(config);
+    const instance = Gateway.Configuration.getInstance(config);
+    instance.initializeGateways();
+
+    return instance;
   }
 }
