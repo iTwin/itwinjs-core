@@ -1,18 +1,15 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+// tslint:disable:no-var-requires
+import * as testbedConfig from "../config";
 
-(() => {
-  // tslint:disable:no-var-requires
-  const remote = require("electron").remote;
-  remote.getCurrentWindow().setTitle("imodeljs-core testbed");
-  remote.require("../../../lib/backend/index");
-  // tslint:enable:no-var-requires
-})();
+const remote = require("electron").remote;
+remote.getCurrentWindow().setTitle(testbedConfig.gatewayParams.info.title);
+remote.require("../../../lib/backend/index");
 
-describe("Hello World", () => it("should be true", () => {
-  // tslint:disable-next-line:no-debugger
-  debugger;
-  assert(true);
-}));
+const fs = remote.require("fs");
+for (const entry of fs.readdirSync(__dirname)) {
+  if (entry.indexOf(".test.js") !== -1)
+    require(`${__dirname}/${entry}`);
+}
