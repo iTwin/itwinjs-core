@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 // import { IModelGateway } from "$(frontend)/lib/gateway/IModelGateway";
 // import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-//import { assert } from "chai";
+// import { assert } from "chai";
 
 /*describe("IModelGateway", () => {
   it("should not open a blank filename", async () => {
