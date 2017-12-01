@@ -51,6 +51,7 @@ The individual commands orchestrate separate backend, frontend, and test steps a
 1. Build TypeDoc documentation: `npm run docs`
 2. Extract sample code from test directory (run automatically as a *pre* step by the TypeDoc build command above): `npm run extract`
 3. Run lint rules against entire source tree: `npm run lint`
+4. Run code coverage for the frontend, backend and common folders using the tests (coverage output to source/test/lib/coverage) : `npm run cover`
 
 The full list of npm scripts can be found in the root `package.json` file.
 
