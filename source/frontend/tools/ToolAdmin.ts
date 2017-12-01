@@ -943,7 +943,7 @@ class WheelEventProcessor {
 
     const zoomCenter = vp.getZoomCenter(ev.viewport);
 
-    if (vp.pickEntity(ev.viewPoint, ViewToolSettings.pickSize) {
+    if (vp.pickEntity(ev.viewPoint, ViewToolSettings.pickSize)) {
       scratch.zoomTarget = target.clone();
     } else if (!scratch.zoomTarget.equals(new Cartesian3())) {
       target = scratch.zoomTarget.clone();

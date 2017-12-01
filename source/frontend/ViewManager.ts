@@ -2,10 +2,10 @@
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Viewport } from "./Viewport";
-import { Cursor } from "./tools/Tool";
+// import { Cursor } from "./tools/Tool";
 import { EventList, Event } from "@bentley/bentleyjs-core/lib/Event";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
-import { ToolAdmin } from "./tools/ToolAdmin";
+// import { ToolAdmin } from "./tools/ToolAdmin";
 
 export class ViewManager {
   private _viewEvents = new EventList<(vp: Viewport) => void>();
@@ -13,7 +13,7 @@ export class ViewManager {
   public viewports: Viewport[] = [];
   public active = false;
   public inDynamicsMode = false;
-  public cursor?: Cursor;
+  // public cursor?: Cursor;
   private _selectedView?: Viewport;
 
   /** Called after the selected view changes.
@@ -73,7 +73,7 @@ export class ViewManager {
 
   public dropViewport(vp: Viewport): BentleyStatus {
     this.onViewClose.raiseEvent(vp);
-    ToolAdmin.instance.onViewportClosed(vp); // notify tools that this view is no longer valid
+    // ToolAdmin.instance.onViewportClosed(vp); // notify tools that this view is no longer valid
 
     let didDrop = false;
     const vpList = this.viewports;
