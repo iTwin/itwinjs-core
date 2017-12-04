@@ -8,9 +8,12 @@ import { ViewState, Frustum, ViewStatus, Npc, NpcCenter, NpcCorners } from "../c
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { ElementAlignedBox2d } from "../common/geometry/Primitives";
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core/lib/Time";
+import { Event } from "@bentley/bentleyjs-core/lib/Event";
+import { ButtonEvent } from "./tools/Tool";
 
 // tslint:disable:no-empty
 
+/** A rectangle in view coordinates. */
 export class ViewRect extends ElementAlignedBox2d {
   public get width() { return super.width + 1; }
   public get height() { return super.height + 1; }
@@ -26,6 +29,7 @@ export class ViewRect extends ElementAlignedBox2d {
   public initFromRange3d(input: Range3d): void { this.initFromPoint3ds(input.low, input.high); }
 }
 
+/** the minimum and maximum values for the "depth" of a rectangle of screen space. Values are in "npc" so they will be between 0 and 1.0 */
 export class DepthRangeNpc {
   public minimum: number = 0;
   public maximum: number = 1.0;
@@ -37,7 +41,7 @@ export const enum CoordSystem {
   Screen = 0,  // Coordinates are relative to the origin of the screen
   View = 1,    // Coordinates are relative to the origin of the view
   Npc = 2,     // Coordinates are relative to normalized plane coordinates.
-  World = 3,   // Coordinates are relative to the world coordinate system for the physical elements in the DgnDb
+  World = 3,   // Coordinates are relative to the world coordinate system for the physical elements in the iModel
 }
 
 /** object to animate frustum transition of a viewport */
@@ -59,7 +63,10 @@ class Animator {
     this.interpolateFrustum(fraction);
   }
 
-  /** return true when finished */
+  /**
+   * move to the appropriate frame, based on the current time, for the current animation.
+   * @return true when finished
+   */
   public animate(): boolean {
     const currTime = BeTimePoint.now();
     if (!this.startTime)
@@ -84,6 +91,7 @@ class Animator {
     return done;
   }
 
+  /** abort this animation, moving to the final frame. */
   public interrupt() {
     if (this.startTime) {
       // We've been interrupted after animation began. Skip to the final animation state
@@ -96,34 +104,38 @@ class Animator {
  * the viewing parameters.
  */
 export abstract class Viewport {
+  /** Called whenever this viewport is synchronized with its ViewState */
+  public readonly onViewChanged = new Event<(vp: Viewport) => void>();
+
   private zClipAdjusted = false;    // were the view z clip planes adjusted due to front/back clipping off?
-  public viewOrg: Point3d;       // view origin, potentially expanded
-  public viewDelta: Vector3d;     // view delta, potentially expanded
-  public viewOrgUnexpanded: Point3d;     // view origin (from ViewState, un-expanded)
-  public viewDeltaUnexpanded: Vector3d;  // view delta (from ViewState, un-expanded)
-  public rotMatrix: RotMatrix;           // rotation matrix (from ViewState)
-  private rootToView: Map4d;
-  private rootToNpc: Map4d;
-  public view: ViewState;
-  private viewRange: ViewRect = new ViewRect();
-  private viewCorners: Range3d = new Range3d();
+  public readonly viewOrg = new Point3d();       // view origin, potentially expanded
+  public readonly viewDelta = new Vector3d();     // view delta, potentially expanded
+  public readonly viewOrgUnexpanded = new Point3d();     // view origin (from ViewState, un-expanded)
+  public readonly viewDeltaUnexpanded = new Vector3d();  // view delta (from ViewState, un-expanded)
+  public readonly rotMatrix = new RotMatrix();           // rotation matrix (from ViewState)
+  private readonly rootToView = Map4d.createIdentity();
+  private readonly rootToNpc = Map4d.createIdentity();
+  private _view?: ViewState;
+  private readonly viewRange: ViewRect = new ViewRect();
+  private readonly viewCorners: Range3d = new Range3d();
   private animator?: Animator;
   private _viewCmdTargetCenter?: Point3d;
   public frustFraction: number = 1.0;
   public maxUndoSteps = 20;
-  private forwardStack: ViewState[] = [];
-  private backStack: ViewState[] = [];
+  private readonly forwardStack: ViewState[] = [];
+  private readonly backStack: ViewState[] = [];
   private currentBaseline?: ViewState;
   private static nearScale24 = 0.0003; // max ratio of frontplane to backplane distance for 24 bit zbuffer
+
   private static get2dFrustumDepth() { return Constant.oneMeter; }
   public abstract getViewSize(): Point2d;
+  public get view(): ViewState { return this._view!; }
   public get pixelsPerInch() { /* ###TODO: This is apparently unobtainable information in a browser... */ return 96; }
-
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
 
   public isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn(); }
-  public invalidateDecorations() { }
+  public invalidateDecorations(): void { }
   public toView(pt: XYZ): void {
     const x = pt.x;
     const y = pt.y;
@@ -215,6 +227,13 @@ export abstract class Viewport {
 
     camera.setEyePoint(eyePoint);
     camera.setFocusDistance(focusDistance);
+  }
+
+  public changeViewState(view: ViewState) {
+    this.clearUndo();
+    this._view = view;
+    this.setupFromView();
+    this.saveViewUndo();
   }
 
   private static fullRangeNpc = new Range3d(0, 1, 0, 1, 0, 1); // full range of view
@@ -373,9 +392,10 @@ export abstract class Viewport {
 
     const origin = view.getOrigin().clone();
     const delta = view.getExtents().clone();
-    this.viewOrg = origin;
-    this.viewDelta = delta;
-    this.rotMatrix = view.getRotation().clone();
+
+    this.viewOrg.setFrom(origin);
+    this.viewDelta.setFrom(delta);
+    this.rotMatrix.setFrom(view.getRotation());
 
     // first, make sure none of the deltas are negative
     delta.x = Math.abs(delta.x);
@@ -384,8 +404,8 @@ export abstract class Viewport {
 
     this.adjustAspectRatio();
 
-    this.viewOrgUnexpanded = origin.clone();
-    this.viewDeltaUnexpanded = delta.clone();
+    this.viewOrgUnexpanded.setFrom(origin);
+    this.viewDeltaUnexpanded.setFrom(delta);
     this.zClipAdjusted = false;
 
     if (view.is3d()) {
@@ -439,7 +459,9 @@ export abstract class Viewport {
       return ViewStatus.InvalidViewport;
 
     this.frustFraction = frustFraction;
-    this.rootToView = this.calcNpcToView().multiplyMapMap(this.rootToNpc);
+    this.rootToView.setFrom(this.calcNpcToView().multiplyMapMap(this.rootToNpc));
+
+    this.onViewChanged.raiseEvent(this);
     return ViewStatus.Success;
   }
 
@@ -630,6 +652,7 @@ export abstract class Viewport {
     return box;
   }
 
+  /** get a copy of the current (adjusted) frustum of this viewport, in world coordinates. */
   public getWorldFrustum(box?: Frustum): Frustum { return this.getFrustum(CoordSystem.World, true, box); }
 
   /**
@@ -661,14 +684,19 @@ export abstract class Viewport {
     return this.setupFromView();
   }
 
-  public getZoomCenter(viewPoint: Point3d, result?: Point3d): Point3d {
-    return new Point3d();
+  /**
+   * Get the anchor point for a Zoom operation, based on a button event.
+   * @return the center point for a zoom operation, in world coordinates
+   */
+  public getZoomCenter(ev: ButtonEvent, result?: Point3d): Point3d {
+    const vp = ev.viewport!;
+    return vp.viewToWorld(ev.viewPoint, result); // NEEDS_WORK
   }
 
   /**
    * Zoom the view by a scale factor, placing the new center at the projection of the given point (world coordinates)
    * on the focal plane.
-   * Updates ViewState and re-synchs Viewport.
+   * Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
    */
   public zoom(newCenter: Point3d | undefined, factor: number): ViewStatus {
     const view = this.view;
@@ -720,7 +748,6 @@ export abstract class Viewport {
     newOrg.y = center.y - delta.y / 2.0;
     this.fromView(newOrg);
     view.setOrigin(newOrg);
-
     return this.setupFromView();
   }
 
@@ -778,7 +805,7 @@ export abstract class Viewport {
   }
 
   /**
-   * Reverts the most recent change to the Viewport from the undo stack.
+   * Reverses the most recent change to the Viewport from the undo stack.
    */
   public applyPrevious(animationTime: BeDuration) {
     const size = this.backStack.length;
@@ -794,7 +821,7 @@ export abstract class Viewport {
   }
 
   /**
-   * Reverts the most recently un-done change to the Viewport from the redo stack
+   * Re-applies the most recently un-done change to the Viewport from the redo stack
    */
   public applyNext(animationTime: BeDuration) {
     const size = this.forwardStack.length;
@@ -838,7 +865,7 @@ export abstract class Viewport {
 
   public applyViewState(val: ViewState, animationTime: BeDuration) {
     const startFrust = this.getFrustum();
-    this.view = val.clone();
+    this._view = val.clone<ViewState>();
     this.synchWithView(false);
     //    this._changeFov = true;
     this.animateFrustumChange(startFrust!, this.getFrustum()!, animationTime);

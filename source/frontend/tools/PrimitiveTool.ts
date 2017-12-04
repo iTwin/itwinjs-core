@@ -45,7 +45,7 @@ export abstract class PrimitiveTool extends PrimitiveToolBase {
     const iModel = view.iModel;
     if (this.requireWriteableTarget()) {
       if (iModel.isReadonly())
-        return false; // Tool can't be used when DgnDb is read only.
+        return false; // Tool can't be used when iModel is read only.
 
       // IBriefcaseManager:: Request req;
       // req.Locks().Insert(db, LockLevel:: Shared);
@@ -56,7 +56,7 @@ export abstract class PrimitiveTool extends PrimitiveToolBase {
     if (!this.targetView)
       this.targetView = vp;
     else if (iModel !== this.getIModel())
-      return false; // Once a ViewController has been established, only accept views for the same DgnDb by default.
+      return false; // Once a ViewController has been established, only accept views for the same iModel by default.
 
     if (!this.targetIsLocked) {
       if (isSelectedViewChange)
@@ -68,12 +68,12 @@ export abstract class PrimitiveTool extends PrimitiveToolBase {
     if (this.targetModelId.isValid() && !view.viewsModel(this.targetModelId))
       return false; // Only allow view where target is being viewed.
 
-    // if (_RequireWriteableTarget()) {
-    //   IBriefcaseManager:: Request req;
-    //   req.Locks().Insert(* targetModel, LockLevel:: Shared);
-    //   if (!db.BriefcaseManager().AreResourcesAvailable(req, nullptr, IBriefcaseManager:: FastQuery:: Yes))
-    //     return false; // another briefcase has locked the model for editing
-    // }
+    if (this.requireWriteableTarget()) {
+      //   IBriefcaseManager:: Request req;
+      //   req.Locks().Insert(* targetModel, LockLevel:: Shared);
+      //   if (!db.BriefcaseManager().AreResourcesAvailable(req, nullptr, IBriefcaseManager:: FastQuery:: Yes))
+      //     return false; // another briefcase has locked the model for editing
+    }
 
     return true;
   }
@@ -118,10 +118,10 @@ export abstract class PrimitiveTool extends PrimitiveToolBase {
   public onUndoPreviousStep(): boolean { return false; }
 
   // Tools need to call SaveChanges to commit any elements they have added/changes they have made.
-  // This helper method supplies the tool name for the undo string to DgnDb::SaveChanges.
-  // BeSQLite:: DbResult SaveChanges() { return GetDgnDb().SaveChanges(GetLocalizedToolName().c_str()); }
+  // This helper method supplies the tool name for the undo string to iModel::SaveChanges.
+  // BeSQLite:: DbResult SaveChanges() { return GetiModel().SaveChanges(GetLocalizedToolName().c_str()); }
 
-  // //! Ensures that any locks and/or codes required for the operation are obtained from DgnDbServer before making any changes to the DgnDb.
+  // //! Ensures that any locks and/or codes required for the operation are obtained from iModelServer before making any changes to the iModel.
   // //! Default implementation invokes _PopulateRequest() and forwards request to server.
   // DGNVIEW_EXPORT virtual RepositoryStatus _AcquireLocks();
 
@@ -129,10 +129,10 @@ export abstract class PrimitiveTool extends PrimitiveToolBase {
   // virtual RepositoryStatus _PopulateRequest(IBriefcaseManager:: Request & request) { return RepositoryStatus:: Success; }
 
   // //! Query availability of locks, potentially notifying user of result
-  // DGNVIEW_EXPORT bool AreLocksAvailable(IBriefcaseManager:: Request & request, DgnDbR db, bool fastQuery = true);
+  // DGNVIEW_EXPORT bool AreLocksAvailable(IBriefcaseManager:: Request & request, iModelR db, bool fastQuery = true);
 
   // //! Acquire locks on this tools behalf, potentially notifying user of result
-  // DGNVIEW_EXPORT RepositoryStatus AcquireLocks(IBriefcaseManager:: Request & request, DgnDbR db);
+  // DGNVIEW_EXPORT RepositoryStatus AcquireLocks(IBriefcaseManager:: Request & request, iModelR db);
 
   // //! Acquire a shared lock on the specified model (e.g., for placement tools which create new elements)
   // DGNVIEW_EXPORT RepositoryStatus LockModelForPlacement(DgnModelR model);

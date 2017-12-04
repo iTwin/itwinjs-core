@@ -215,7 +215,7 @@ export class EntityState implements EntityProps {
   public clone<T extends EntityState>() { return new (this.constructor as EntityStateCtor)(this.toJSON(), this.iModel, this) as T; }
 }
 
-export class ModelState extends EntityState implements ModelProps {
+export abstract class ModelState extends EntityState implements ModelProps {
   public readonly modeledElement: Id64;
   public readonly parentModel: Id64;
   public readonly jsonProperties: any;
@@ -290,7 +290,7 @@ export class ElementState extends EntityState implements ElementProps {
 }
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
-export class DisplayStyleState extends ElementState {
+export abstract class DisplayStyleState extends ElementState {
   private _viewFlags: ViewFlags;
   private _background: ColorDef;
 
@@ -972,7 +972,7 @@ export abstract class ViewState extends ElementState {
  */
 
 /**
- * The current position, lens angle, and focus distance of a camera.
+ * The current position (eyepoint), lens angle, and focus distance of a camera.
  */
 export class Camera {
   public readonly lens: Angle;

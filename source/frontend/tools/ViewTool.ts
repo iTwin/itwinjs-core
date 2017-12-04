@@ -18,7 +18,6 @@ const scratchFrustum = new Frustum();
 const scratchTransform1 = Transform.createIdentity();
 const scratchTransform2 = Transform.createIdentity();
 const scratchRotMatrix1 = new RotMatrix();
-const scratchRotMatrix2 = new RotMatrix();
 const scratchPoint3d1 = new Point3d();
 const scratchPoint3d2 = new Point3d();
 const scratchVector3d1 = new Vector3d();
@@ -103,7 +102,7 @@ export abstract class ViewingToolHandle {
   public abstract firstPoint(ev: ButtonEvent): boolean;
   public abstract testHandleForHit(ptScreen: Point3d): { distance: number, priority: HitPriority } | undefined;
   public abstract get handleType(): ViewHandleType;
-  public focusIn() { toolAdmin.setViewCursor(this.getHandleCursor()); }
+  public focusIn() { toolAdmin.viewCursor = this.getHandleCursor(); }
 }
 
 export class ViewHandleArray {
@@ -270,7 +269,7 @@ export class ViewManip extends ViewTool {
   public onReinitialize(): void {
     toolAdmin.gesturePending = false;
     if (this.viewport) {
-      this.viewport.synchWithView(true);
+      this.viewport.synchWithView(true); // make sure we store any changes in view undo buffer.
       this.viewHandles.setFocus(-1);
     }
     this.nPts = 0;
@@ -770,7 +769,7 @@ class ViewPan extends ViewingToolHandle {
   public onReinitialize() {
     const vha = this.viewTool.viewHandles.hitHandle;
     if (vha === this)
-      toolAdmin.setViewCursor(this.getHandleCursor());
+      toolAdmin.viewCursor = this.getHandleCursor();
   }
 
   public testHandleForHit(_ptScreen: Point3d) { return { distance: 0.0, priority: HitPriority.Low }; }
@@ -1049,14 +1048,14 @@ class NavigateMotion {
     const vp = this.viewport;
     const view = vp.view as ViewState3d;
     const viewRot = vp.rotMatrix;
-    const invViewRot = viewRot.inverse(scratchRotMatrix1);
+    const invViewRot = viewRot.inverse(scratchRotMatrix1)!;
     const pitchAngle = Angle.createRadians(this.modifyPitchAngleToPreventInversion(pitchRate * this.deltaTime));
     const pitchMatrix = RotMatrix.createRotationAroundVector(Vector3d.unitX(), pitchAngle)!;
     const pitchTimesView = pitchMatrix.multiplyMatrixMatrix(viewRot);
     const inverseViewTimesPitchTimesView = invViewRot.multiplyMatrixMatrix(pitchTimesView);
     const yawMatrix = RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createRadians(yawRate * this.deltaTime))!;
     const yawTimesInverseViewTimesPitchTimesView = yawMatrix.multiplyMatrixMatrix(inverseViewTimesPitchTimesView);
-    return Transform.createFixedPointAndMatrix(view.getEyePoint(), yawTimesInverseViewTimesPitchTimesView);
+    return Transform.createFixedPointAndMatrix(view.getEyePoint(), yawTimesInverseViewTimesPitchTimesView, result);
   }
 
   public generateTranslationTransform(velocity: Vector3d, isConstrainedToXY: boolean, result?: Transform) {
@@ -1478,7 +1477,7 @@ export class WindowAreaTool extends ViewTool {
         npcZ = depthRange.minimum;
         // } else if (nullptr != (path = ViewManip:: GetTargetHitDetail(* m_viewport, DPoint3d:: FromInterpolate(corners[0], 0.5, corners[1]))))
         // {
-        //   // Obtain nearest Z from frontmost element at center of rectangle
+        //   // Obtain nearest Z from front most element at center of rectangle
         //   npcZ = m_viewport -> WorldToNpc(path -> GetHitPoint()).z;
         // }
       } else {
@@ -1697,7 +1696,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
       return true;
 
     const view = vp.view;
-    const info = ev.gestureInfo;
+    const info = ev.gestureInfo!;
     const currentTouches = info.touches;
     const startTouches = this.startInfo.touches;
 
@@ -1707,7 +1706,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     const translateTransform = Transform.createTranslation(diffWorld);
 
     const radians = this.getRotationFromStart(info);
-    const matrix = RotMatrix.createRotationAroundVector(view.getZVector(), radians);
+    const matrix = RotMatrix.createRotationAroundVector(view.getZVector(), radians)!;
     const rotationTransform = Transform.createFixedPointAndMatrix(currPt0, matrix);
     let transform = translateTransform.multiplyTransformTransform(rotationTransform);
 
@@ -1807,48 +1806,8 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     if (!vp.setupFromFrustum(this.frustum))
       return true;
 
-    const cameraView = vp.isCameraOn ? vp.view : undefined;
-    if (Cesium.defined(cameraView)) {
-      const targetView = ev.viewPoint.clone();
-      targetView.z = this.startPtView.z;
-
-      const targetWorld = vp.viewToWorld(targetView);
-      targetWorld.negate();
-
-      const preTrans = Transform.fromTranslation(targetWorld);
-      const postTrans = Transform.fromTranslation(this.startPtWorld);
-
-      const transform = Transform.createIdentity();
-      transform.scaleCompleteRows(preTrans, zoomRatio, zoomRatio, zoomRatio);
-      transform.initProduct(postTrans, transform);
-
-      const oldCameraPos = cameraView.eyePoint.clone();
-      const newCameraPos = new Cartesian3();
-      transform.multiply(oldCameraPos, newCameraPos);
-
-      const offset = Cartesian3.fromDifferenceOf(newCameraPos, oldCameraPos);
-      const offsetTrans = Transform.fromTranslation(offset);
-      const frustum = this.frustum.transformBy(offsetTrans);
-      vp.setupFromFrustum(frustum);
-    } else {
-      const targetNpc = vp.viewToNpc(ev.viewPoint);
-      targetNpc.z = 0.5;
-
-      const trans = Transform.fromFixedPointAndScaleFactors(targetNpc, zoomRatio, zoomRatio, 1.0);
-      const viewCenter = new Cartesian3(0.5, 0.5, 0.5);
-      const startPtNpc = vp.viewToNpc(this.startPtView);
-
-      const shift = Cartesian3.fromDifferenceOf(startPtNpc, targetNpc);
-      shift.z = 0.0;
-
-      const offset = Transform.fromTranslation(shift);
-      trans.initProduct(offset, trans);
-      trans.multiply(viewCenter);
-
-      vp.npcToWorld(viewCenter, viewCenter);
-      vp.zoom(viewCenter, zoomRatio);
-    }
-
+    const zoomCenter = vp.getZoomCenter(ev);
+    vp.zoom(zoomCenter, zoomRatio);
     this.saveTouchStopData(info);
     this.doUpdate(true);
 

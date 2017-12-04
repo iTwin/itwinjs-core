@@ -4,7 +4,6 @@
 import { Tool, Button, ButtonEvent, GestureEvent, WheelMouseEvent, PrimitiveToolBase } from "./Tool";
 import { ToolAdmin } from "./ToolAdmin";
 import { ViewManip, ViewHandleType, FitViewTool, RotatePanZoomGestureTool } from "./ViewTool";
-import { ViewStatus } from "../../common/ViewState";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 
 const toolAdmin = ToolAdmin.instance;

@@ -1,18 +1,19 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Point3d, Point2d, Transform } from "@bentley/geometry-core/lib/PointVector";
-import { NpcCenter } from "../../common/ViewState";
+import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
+import { NpcCenter, ViewStatus } from "../../common/ViewState";
 import { Viewport } from "../Viewport";
 import { IdleTool } from "./IdleTool";
 import { ViewTool, ViewToolSettings } from "./ViewTool";
 import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
-import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { EventList, Event } from "@bentley/bentleyjs-core/lib/Event";
 import {
   ModifierKey, ButtonState, Button, GestureEvent, Tool, ButtonEvent, CoordSource, GestureInfo,
   Cursor, PrimitiveToolBase, WheelMouseEvent, InputSource, VirtualKey,
 } from "./Tool";
+
+// tslint:disable:no-empty
 
 export const enum CoordinateLockOverrides {
   OVERRIDE_COORDINATE_LOCK_None = 0,
@@ -42,7 +43,7 @@ export class CurrentInputState {
   public touches: Point2d[] = [new Point2d(), new Point2d(), new Point2d()];
   public touchMotionTime: number = 0;
   public buttonDownTool?: Tool = undefined;
-  private lastMotion = new Point2d();
+  public lastMotion = new Point2d();
   private static doubleClickTimeout = 500;   // half-second
   private static doubleClickTolerance = 4.0;
 
@@ -269,13 +270,13 @@ export class ToolAdmin {
   public static instance = new ToolAdmin();
   public currentInputState = new CurrentInputState();
   public toolState = new ToolState();
-  private viewCursor?: Cursor;
+  private _viewCursor?: Cursor;
   private viewTool?: ViewTool;
   private primitiveTool?: PrimitiveToolBase;
   private idleTool: IdleTool;
   private inputCollector?: Tool;
   private defaultTool?: PrimitiveToolBase;
-  private cursorInView: boolean;
+  // private cursorInView: boolean;
   public gesturePending: boolean;
   // elementLocateManager: ElementLocateManager;
   // fenceManager: FenceManager;
@@ -440,22 +441,20 @@ export class ToolAdmin {
 
     tool.autoLockTarget(); // lock tool to target model of this view...
 
-    // Don't use event, need to account for point location adjusted to hit point on element by tools...
+    // Don't use input event, need to account for point location adjusted to hit point on element by tools...
     const scratchEv = ToolAdmin.scratchButtonEvent2;
     current.toEventFromLastDataPoint(scratchEv);
     tool.updateDynamics(scratchEv);
   }
 
+  /** return true to filter (ignore) the given button event */
   private filterButtonEvent(ev: ButtonEvent): boolean {
     const vp = ev.viewport;
     if (!vp)
       return false;
 
     const tool = this.activeTool;
-    if (!tool)
-      return false;
-
-    return !tool.isCompatibleViewport(vp, false);
+    return tool ? !tool.isCompatibleViewport(vp, false) : false;
   }
 
   private onButtonEvent(ev: ButtonEvent): boolean {
@@ -773,7 +772,6 @@ export class ToolAdmin {
       //      t_viewHost -> GetViewManager().EndDynamicsMode();
     }
 
-    this.invalidateLastWheelEvent();
     this.primitiveTool = primitiveTool;
 
     const newActiveTool = this.activeTool;
@@ -786,7 +784,6 @@ export class ToolAdmin {
     if (this.viewTool)
       this.viewTool.onCleanup();
 
-    this.invalidateLastWheelEvent();
     this.viewTool = newTool;
 
     // const primitiveTool = this.primitiveTool;
@@ -824,7 +821,7 @@ export class ToolAdmin {
 
     // AccuSnap:: GetInstance().OnStartTool();
 
-    this.setViewCursor(Cursor.CrossHair);
+    this.viewCursor = Cursor.CrossHair;
     // we don't actually start the tool here...
   }
 
@@ -838,7 +835,7 @@ export class ToolAdmin {
     // AccuDraw:: GetInstance()._OnPrimitiveToolInstall();
     // AccuSnap:: GetInstance().OnStartTool();
 
-    this.setViewCursor(newTool.getCursor());
+    this.viewCursor = newTool.getCursor();
 
     // we don't actually start the tool here...
   }
@@ -855,13 +852,13 @@ export class ToolAdmin {
     } else {
       this.setViewTool(undefined);
       this.setPrimitiveTool(undefined);
-      this.setViewCursor(Cursor.Default);
+      this.viewCursor = Cursor.Default;
     }
   }
 
-  public setViewCursor(cursor?: Cursor) {
-    cursor = cursor ? cursor : Cursor.Default;
-    this.viewCursor = cursor;
+  public get viewCursor() { return this._viewCursor; }
+  public set viewCursor(cursor: Cursor | undefined) {
+    this._viewCursor = cursor ? cursor : Cursor.Default;
     // const canvas = this.viewport.canvas;
     // canvas.style.cursor = cursor;
   }
@@ -908,18 +905,20 @@ export class ToolAdmin {
   private wheelEventProcessor = new WheelEventProcessor();
 
   /** Performs default handling of mouse wheel event (zoom in/out) */
-  public processMouseWheelEvent(ev, doUpdate): boolean {
+  public processMouseWheelEvent(ev: WheelMouseEvent, doUpdate: boolean): boolean {
     this.wheelEventProcessor.ev = ev;
     const result = this.wheelEventProcessor.process(doUpdate);
     this.wheelEventProcessor.ev = undefined;
+
+    if (this.primitiveTool)
+      this.primitiveTool.updateDynamics(ev);
+
     return result;
   }
-
-  private invalidateLastWheelEvent() { this.wheelEventProcessor.invalidateLastEvent(); }
 }
 
 // tslint:disable-next-line:variable-name
-export const MouseWheelSettings = {
+const MouseWheelSettings = {
   zoomRatio: 1.75,
   navigateDistPct: 3.0,
   navigateMouseDistPct: 10.0,
@@ -927,9 +926,27 @@ export const MouseWheelSettings = {
 
 class WheelEventProcessor {
   constructor(public ev?: WheelMouseEvent) { }
-  public process(_doUpdate: boolean): boolean { this.doZoom(false); return true; }
+  public process(doUpdate: boolean): boolean {
+    const vp = this.ev!.viewport;
+    if (!vp)
+      return true;
 
-  public doZoom(reCenter: boolean) {
+    this.doZoom();
+
+    if (doUpdate) {
+      const hasPendingWheelEvent = false; //  Display:: Kernel:: HasPendingMouseWheelEvent(); NEEDS_WORK
+
+      // don't put into undo buffer if we're about to get another wheel event.
+      if (!hasPendingWheelEvent)
+        vp.synchWithView(true);
+
+      // AccuSnap hit won't be invalidated without cursor motion (closes info window, etc.).
+      // AccuSnap:: GetInstance().Clear();
+    }
+    return true;
+  }
+
+  private doZoom(): ViewStatus {
     const ev = this.ev!;
     let zoomRatio = Math.max(1.0, MouseWheelSettings.zoomRatio);
 
@@ -938,98 +955,15 @@ class WheelEventProcessor {
       zoomRatio = 1.0 / zoomRatio;
 
     const vp = ev.viewport!;
-    const view = vp.view;
     const startFrust = vp.getFrustum();
 
-    const zoomCenter = vp.getZoomCenter(ev.viewport);
-
-    if (vp.pickEntity(ev.viewPoint, ViewToolSettings.pickSize) {
-      scratch.zoomTarget = target.clone();
-    } else if (!scratch.zoomTarget.equals(new Cartesian3())) {
-      target = scratch.zoomTarget.clone();
-    } else {
-      vp.determineDefaultRotatePoint(target);
-      scratch.zoomTarget = target.clone();
-    }
-
-    const targetRoot = target.clone();
-    const lastEvent = this._lastWheelEvent;
-    const lastEventValid = lastEvent && lastEvent.viewPoint.distanceSquaredXY(ev.viewPoint) < Constants.mgds_fc_epsilon;
-
-    if (view.is3d() && view.isCameraOn()) {
-      vp.worldToNpc(targetRoot, targetRoot);
-      let defaultTarget: Point3d | undefined;
-
-      if (lastEventValid) {
-        defaultTarget = vp.worldToNpc(lastEvent.worldPoint);
-        targetRoot.z = defaultTarget.z;
-      } else {
-        defaultTarget = vp.pickDepthBuffer(ev.viewPoint, new Point3d(), true);
-        if (defaultTarget) {
-          vp.worldToNpc(defaultTarget, targetRoot);
-        } else {
-          defaultTarget = vp.determineDefaultRotatePoint();
-          vp.worldToNpc(defaultTarget, defaultTarget);
-          targetRoot.z = defaultTarget.z;
-        }
-      }
-
-      vp.npcToWorld(targetRoot, targetRoot);
-
-      const transform = Transform.createScaleAboutPoint(targetRoot, zoomRatio);
-      const oldCameraPos = view.getEyePoint().clone();
-      const newCameraPos = transform.multiplyPoint(oldCameraPos);
-      const offset = newCameraPos.minus(oldCameraPos);
-      if (offset.magnitude() < Constant.oneCentimeter) {
-        offset.scaleInPlace(Constant.oneMeter / 3.0);
-        targetRoot.plus(offset, targetRoot);
-      }
-
-      target.setFrom(view.getTargetPoint());
-      target.plus(offset, target);
-      oldCameraPos.plus(offset, newCameraPos);
-
-      // if (vp.pointIsBelowSurface(newCameraPos)) {
-      //   vp.movePointToSurface(newCameraPos);
-      //   offset = Cartesian3.fromDifferenceOf(newCameraPos, oldCameraPos);
-      //   target.copyFrom(view.targetPoint);
-      //   target.add(offset);
-      // }
-
-      const result = view.lookAt(newCameraPos, target, view.getYVector());
-      vp.synchWithView(false);
+    const zoomCenter = vp.getZoomCenter(ev);
+    const result = vp.zoom(zoomCenter, zoomRatio);
+    if (ViewStatus.Success === result) {
       if (ViewToolSettings.animateZoom)
         vp.animateFrustumChange(startFrust, vp.getFrustum(), BeDuration.fromMilliseconds(100));
-
-      return result;
     }
 
-    if (lastEventValid)
-      targetRoot.setFrom(lastEvent.worldPoint);
-
-    const targetNpc = vp.worldToNpc(targetRoot);
-    const trans = Matrix4.fromFixedPointAndScaleFactors(targetNpc, zoomRatio, zoomRatio, 1.0);
-    const viewCenter = new Cartesian3(0.5, 0.5, 0.5);
-
-    if (reCenter) {
-      const shift = Cartesian3.fromDifferenceOf(targetNpc, viewCenter);
-      shift.z = 0.0;
-
-      const offset = Matrix4.fromMatrixAndTranslation(undefined, shift);
-      trans.initProduct(trans, offset);
-    }
-
-    trans.multiplyByPoint(viewCenter, viewCenter);
-    viewCenter = vp.npcToWorld(viewCenter, viewCenter);
-
-    if (!lastEventValid && false)
-      this._lastWheelEvent = { viewPoint: ev.viewPoint.clone(), worldPoint: viewCenter };
-
-    return vp.zoom(viewCenter, zoomRatio);
+    return result;
   }
-
-  public invalidateLastEvent() { this._lastWheelEvent = undefined; }
-  public doWheelPan(upDown: boolean) { }
-  public doWheelSlide(upDown: boolean) { }
-  public doWheelNavigate(isWalk: boolean) { }
 }
