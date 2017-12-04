@@ -34,30 +34,28 @@ export const enum PrimitiveType {
  * @throws ECObjectsStatus InvalidPrimitiveType if the provided string is not a valid PrimitiveType.
  */
 export function parsePrimitiveType(type: string): PrimitiveType {
-  if (/binary/i.test(type))
+  if (/^binary$/i.test(type))
     return PrimitiveType.Binary;
-  else if (/bool/i.test(type))
+  else if (/^bool$/i.test(type) || /boolean/i.test(type))
     return PrimitiveType.Boolean;
-  else if (/dateTime/i.test(type))
+  else if (/^dateTime$/i.test(type))
     return PrimitiveType.DateTime;
-  else if (/Double/i.test(type))
+  else if (/^double$/i.test(type))
     return PrimitiveType.Double;
-  else if (/Integer/i.test(type))
+  else if (/^int$/i.test(type))
     return PrimitiveType.Integer;
-  else if (/Long/i.test(type))
+  else if (/^long$/i.test(type))
     return PrimitiveType.Long;
-  else if (/point2d/i.test(type))
+  else if (/^point2d$/i.test(type))
     return PrimitiveType.Point2d;
-  else if (/point3d/i.test(type))
+  else if (/^point3d$/i.test(type))
     return PrimitiveType.Point3d;
-  else if (/point3d/i.test(type))
-    return PrimitiveType.Point3d;
-  else if (/string/i.test(type))
+  else if (/^string$/i.test(type))
     return PrimitiveType.String;
-  else if (/Bentley.Geometry.Common.IGeometry/i.test(type))
+  else if (/^Bentley\.Geometry\.Common\.IGeometry$/i.test(type))
     return PrimitiveType.IGeometry;
 
-  throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, `The string '${type}' is not one of the 11 supported primitive types.`);
+  throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, `The string '${type}' is not one of the 10 supported primitive types.`);
 }
 
 /**
