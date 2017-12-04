@@ -1,7 +1,9 @@
 {
   "name": "imodeljs-core",
-  "version": "0.0.2",
+  "//private": "NOTE: This 'root' package is private. It is never published",
   "private": true,
+  "//version": "NOTE: Since this is a private package, version should remain at 0.0.0",
+  "version": "0.0.0",
   "description": "iModelJs core components",
   "license": "UNLICENSED",
   "repository": {
@@ -9,7 +11,7 @@
     "url": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/imodeljs-core"
   },
   "scripts": {
-    "build": "concurrently \"npm run build:nodeaddon\" \"npm run build:backend\" \"npm run build:frontend\" \"npm run build:test\" \"npm run build:testbed\"",
+    "build": "concurrently \"npm run build:nodeaddon\" \"npm run build:backend\" \"npm run build:frontend\" \"npm run build:test\" && npm run build:testbed",
     "build:backend": "cd source/backend && npm run build",
     "build:frontend": "cd source/frontend && npm run build",
     "build:nodeaddon": "cd source/nodeaddon && npm run build",
@@ -46,9 +48,11 @@
     "predocs": "npm run extract",
     "docs": "node node_modules/@bentley/bentleyjs-tools/scripts/docs.js --baseUrl=source/test/node_modules --includes=source/test/lib/extract --out=source/test/lib/docs --json=source/test/lib/docs/json/file.json",
     "extract": "node node_modules/@bentley/bentleyjs-tools/scripts/extract.js --extractFrom=source/test --out=source/test/lib/extract",
-    "test": "cd source/test && npm test",
-    "testbed": "cd source/testbed && npm test",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd source/test && npm run test",
+    "test:frontend": "npm run build && cd source/testbed && npm run test",
     "test:tsnode": "node node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode --packageRoot \"./\" --testDir=\"./source/test\" --tscPaths",
+    "testbed": "cd source/testbed && npm run start",
     "cover": "nyc npm run test:tsnode"
   },
   "keywords": [

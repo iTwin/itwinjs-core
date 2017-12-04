@@ -5,7 +5,12 @@
     "sourceMap": false,
     "inlineSourceMap": true,
     "inlineSources": true,
-    "strictFunctionTypes": false //temporary...electron.d.ts@1.6.11 fails this check
+    "strictFunctionTypes": false, //temporary...electron.d.ts@1.6.11 fails this check
+    "baseUrl": "./node_modules/",
+    "paths": {
+      "$(backend)*": ["../../backend/*"],
+      "$(frontend)*": ["../../frontend/*"]
+    }
   },
   "include": [
     "./**/*.ts"

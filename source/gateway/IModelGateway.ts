@@ -22,6 +22,9 @@ export interface IModelGatewayOpenResponse {
  * @hidden
  */
 export abstract class IModelGateway extends Gateway {
+  /** The version of the gateway. */
+  public static version = "1.0.0";
+
   /** Returns the IModelGatewayProxy instance for the frontend. */
   public static getProxy(): IModelGateway {
     return Gateway.getProxyForGateway(IModelGateway);
