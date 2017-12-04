@@ -17,7 +17,7 @@
     "@bentley/bentleyjs-core": "^1.0.46",
     "@bentley/geometry-core": "^1.0.29",
     "@bentley/imodeljs-clients": "^1.0.31",
-    "@bentley/imodeljs-e_1_6_11-winx64": "^1.1.6",
+    "@bentley/imodeljs-e_1_6_11-win32-x64": "^1.1.13",
     "@bentley/imodeljs-nodeaddonapi": "^1.1.9",
     "body-parser": "^1.18.2",
     "electron": "^1.6.11",

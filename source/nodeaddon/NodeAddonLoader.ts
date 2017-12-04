@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IModelError, IModelStatus } from "../common/IModelError";
+import { NodeAddonPackageName } from "../backend/NodeAddonRegistry";
 
 declare function require(arg: string): any;
 
@@ -29,31 +30,13 @@ export class NodeAddonLoader {
    * @throws [[IModeError]] if the addon cannot be found
    */
   public static loadAddon(): any {
-    const addonPath = NodeAddonLoader.computePackageName() + "/addon/imodeljs.node";
+    const addonPath = NodeAddonPackageName.computeDefaultImodelNodeAddonName();
     // tslint:disable-next-line:no-var-requires
     NodeAddonLoader._addon = require(addonPath);
     if (!NodeAddonLoader._addon)
       throw new IModelError(IModelStatus.FileNotFound, "Node Addon library not found: " + addonPath);
 
     return NodeAddonLoader._addon;
-  }
-
-  // Examples:
-  // *** KEEP THIS CONSISTENT WITH iModelJsNodeAddon/MakePackages.py IN MERCURIAL ***
-  private static computePackageName(): string {
-
-    if (typeof (process) === "undefined" || process.version === "")
-      throw new IModelError(IModelStatus.BadRequest, "NodeAddonLoader could not determine process type");
-
-    let versionCode;
-    const electronVersion = (process.versions as any).electron;
-    if (typeof electronVersion !== "undefined") {
-      versionCode = "e_" + electronVersion.replace(/\./g, "_");
-    } else {
-      const nodeVersion = process.version.substring(1).split("."); // strip off the character 'v' from the start of the string
-      versionCode = "n_" + nodeVersion[0] + "_" + nodeVersion[1]; // use only major and minor version numbers
-    }
-    return "@bentley/imodeljs-" + versionCode + "-" + process.platform + "-" + process.arch;
   }
 
 }

@@ -7,12 +7,15 @@ import * as bodyParser from "body-parser";
 import { IModelDb } from "$(backend)/lib/backend/IModelDb";
 import { IModelGateway } from "$(backend)/lib/gateway/IModelGateway";
 import { BentleyCloudGatewayConfiguration } from "$(backend)/lib/gateway/BentleyCloudGatewayConfiguration";
-// import { NodeAddon } from "$(backend)/lib/backend/NodeAddon";
+import { NodeAddonRegistry, NodeAddonPackageName } from "$(backend)/lib/backend/NodeAddonRegistry";
 import * as testbedConfig from "../config";
 
 IModelDb; // Signal usage of IModelDb to tsc import logic
 const gatewaysConfig = BentleyCloudGatewayConfiguration.initialize(testbedConfig.gatewayParams, [IModelGateway]);
-// NodeAddon.loadDefault(path.join(__dirname, "../../node_modules/")); WIP
+
+// tslint:disable-next-line:no-var-requires
+const addon = require(NodeAddonPackageName.computeDefaultImodelNodeAddonName());
+NodeAddonRegistry.registerAddon(addon);
 
 const app = express();
 app.use(bodyParser.text());
