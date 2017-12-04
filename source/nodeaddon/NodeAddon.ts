@@ -1,9 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-// =============================================================================================
-// NOTE: NodeAddonLoader must be kept in sync with the "scripts/install-imodeljs-addon.js" installation script
-// =============================================================================================
 
 import { IModelError, IModelStatus } from "../common/IModelError";
 
@@ -25,14 +22,13 @@ export class NodeAddon {
   }
 
   /** Loads the default/base addon
-   * @param moduleRootDir The **node_modules** root directory
    * @throws [[IModeError]] if the addon cannot be found
    */
-  public static loadDefault(moduleRootDir: string): void {
+  public static loadDefault(): void {
     if (typeof (process) === "undefined" || process.version === "")
       throw new IModelError(IModelStatus.BadRequest, "NodeAddonLoader could not determine process type");
 
-    NodeAddon.load(moduleRootDir + NodeAddon.computePackageName() + "/addon/imodeljs.node");
+    NodeAddon.load(NodeAddon.computePackageName() + "/addon/imodeljs.node");
   }
 
   private static parseSemVer(str: string): number[] {
@@ -43,14 +39,14 @@ export class NodeAddon {
   private static checkAddonVersion(): void {
     const addonVer = NodeAddon._addon.version;
     // tslint:disable-next-line:no-var-requires
-    const iuseVer = require("@bentley/imodeljs-nodeaddonapi/package.json").version;
+    const iWasBuiltWithVer = require("@bentley/imodeljs-nodeaddonapi/package.json").version;
 
     const addonVerDigits = NodeAddon.parseSemVer(addonVer);
-    const iuseVerDigits = NodeAddon.parseSemVer(iuseVer);
+    const iWasBuiltWithVerDigits = NodeAddon.parseSemVer(iWasBuiltWithVer);
 
-    if ((addonVerDigits[0] !== iuseVerDigits[0]) || (addonVerDigits[1] < iuseVerDigits[1])) {
+    if ((addonVerDigits[0] !== iWasBuiltWithVerDigits[0]) || (addonVerDigits[1] < iWasBuiltWithVerDigits[1])) {
       NodeAddon._addon = undefined;
-      throw new IModelError(IModelStatus.BadRequest, "Addon version is (" + addonVer + "). Expected version (" + iuseVer + ")");
+      throw new IModelError(IModelStatus.BadRequest, "Addon version is (" + addonVer + "). imodeljs-core requires version (" + iWasBuiltWithVer + ")");
     }
   }
 
@@ -71,8 +67,9 @@ export class NodeAddon {
   }
 
   // Examples:
-  // @bentley/imodeljs-n_8_2-winx64 1.0.44
-  // @bentley/imodeljs-e_1_6_11-winx64 1.0.44
+  // @bentley/imodeljs-n_8_2-win32-x64 1.0.44
+  // @bentley/imodeljs-e_1_6_11-win32-x64 1.0.44
+  // *** KEEP THIS CONSISTENT WITH iModelJsNodeAddon/makepackages.py IN MERCURIAL ***
   private static computePackageName(): string {
     let versionCode;
     const electronVersion = (process.versions as any).electron;
@@ -82,14 +79,7 @@ export class NodeAddon {
       const nodeVersion = process.version.substring(1).split("."); // strip off the character 'v' from the start of the string
       versionCode = "n_" + nodeVersion[0] + "_" + nodeVersion[1]; // use only major and minor version numbers
     }
-    return "@bentley/imodeljs-" + versionCode + "-" + NodeAddon.getPlatformDir();
+    return "@bentley/imodeljs-" + versionCode + "-" + process.platform + "-" + process.arch;
   }
 
-  private static getPlatformDir(): string {
-    const arch = process.arch;
-    if (process.platform === "win32") {
-      return "win" + arch;
-    }
-    return process.platform + arch;
-  }
 }

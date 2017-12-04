@@ -8,7 +8,7 @@ import { BriefcaseStatus, IModelError } from "../common/IModelError";
 import { IModelVersion } from "../common/IModelVersion";
 import { IModelToken } from "../common/IModel";
 import { IModelDb } from "./IModelDb";
-import { NodeAddon } from "./NodeAddon";
+import { NodeAddon } from "../nodeaddon/NodeAddon";
 import { NodeAddonDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 
 import * as fs from "fs";

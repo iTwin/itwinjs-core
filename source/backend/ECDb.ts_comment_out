@@ -6,7 +6,7 @@ import { ECJsonTypeMap, ECInstance } from "@bentley/bentleyjs-core/lib/ECJsonTyp
 import { IModelError } from "../common/IModelError";
 import { BindingUtility, BindingValue } from "./BindingUtility";
 import { PrimitiveTypeCode } from "./Entity";
-import { NodeAddon } from "./NodeAddon";
+import { NodeAddon } from "../nodeaddon/NodeAddon";
 import { NodeAddonECDb } from "./NodeAddonECDb";
 
 /** Value type  (Match this to ECN::ValueKind in ECObjects.h) */

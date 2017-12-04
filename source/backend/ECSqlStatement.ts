@@ -5,7 +5,7 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelError } from "../common/IModelError";
 import { BindingUtility, BindingValue } from "./BindingUtility";
-import { NodeAddon } from "./NodeAddon";
+import { NodeAddon } from "../nodeaddon/NodeAddon";
 import { NodeAddonECSqlStatement, NodeAddonDgnDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 
 /** An ECSql Statement. A statement must be prepared before it can be executed. See prepare. A statement may contain placeholders that must be filled
