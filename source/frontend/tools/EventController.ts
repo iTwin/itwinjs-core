@@ -44,24 +44,6 @@ const enum TapEventType {
 
 const toolAdmin = ToolAdmin.instance;
 
-// /*---------------------------------------------------------------------------------**//**
-// * @private
-// * @bsimethod                                                    Paul.Connelly   11/16
-// +---------------+---------------+---------------+---------------+---------------+------*/
-// function reportStateTransition(newState, oldState) {
-//   if (TouchConstants.DEBUG_TRACE) {
-//     const stateName = 'UNRECOGNIZED';
-//     for (const name in TouchState) {
-//       if (TouchState[name] === newState) {
-//         stateName = name;
-//         break;
-//       }
-//     }
-
-//     console.log('TouchHandler new state: ' + stateName);
-//   }
-// };
-
 class TouchPoint extends Point2d {
   public initialX: number;
   public initialY: number;
