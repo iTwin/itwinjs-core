@@ -1,11 +1,21 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+const fs = require('fs');
+const path = require('path');
+const paths = require('../../config/paths');
 const webpack = require('webpack');
 const chalk = require('chalk');
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages');
 
-function buildElectron(config) {
+function buildBackend(config) {
+  
+  // Link the backend node_modules into the lib directory so electron can resolve imports
+  if (!fs.existsSync(paths.appLib))
+    fs.mkdirSync(paths.appLib)
+  if (!fs.existsSync(path.resolve(paths.appLib, "node_modules/")))
+    fs.symlinkSync(paths.appBackendNodeModules, path.resolve(paths.appLib, "node_modules/"), "dir");
+
   let compiler;
   try {
     compiler = webpack(config);
@@ -50,4 +60,4 @@ function buildElectron(config) {
   });
 }
 
-module.exports = buildElectron;
+module.exports = buildBackend;

@@ -1,21 +1,23 @@
-// This is all required to simulate a browser environment in React tests.
-const jsdom = require('jsdom');
-const document = new jsdom.JSDOM("");
-const window = document.window;
+const paths = require("../../config/paths");
 
-global.document = window.document
-global.window = window
-window.console = global.console
+const chaiJestSnapshot = require("chai-jest-snapshot");
+chaiJestSnapshot.addSerializer(require("enzyme-to-json/serializer"));
+require("chai").use(chaiJestSnapshot);
 
-Object.keys(window).forEach((property) => {
-  if (typeof global[property] === 'undefined') {
-    global[property] = window[property];
-  }
-});
+// WIP: Right now, we need to monkey patch describe in order to get snapshot testing to work in "watch" mode.
+// This should only be necessary until https://github.com/zinserjan/mocha-webpack/issues/166 is fixed.
+global.globalMochaHooks = function () {
 
-global.navigator = {
-  userAgent: 'node.js'
-};
+  before(function() {
+    chaiJestSnapshot.resetSnapshotRegistry();
+  });
+  
+  beforeEach(function() {
+    chaiJestSnapshot.configureUsingMochaContext(this);
+    chaiJestSnapshot.setFilename(paths.appSnapshots);
+  });
+  
+}
 
 const enzyme = require('enzyme');
 const Adapter = require('enzyme-adapter-react-16');

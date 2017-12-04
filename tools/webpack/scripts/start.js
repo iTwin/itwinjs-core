@@ -19,27 +19,25 @@ require('../config/env');
 
 const chalk = require('chalk');
 const config = require('../config/webpack.config.backend');
-const buildElectron = require('./utils/buildElectron');
+const buildBackend = require('./utils/buildBackend');
 const { spawn, handleInterrupts } = require('./utils/simpleSpawn');
 
-console.log();
-const backendStartTime = Date.now();
-console.log(`${chalk.inverse(" BACKEND ")} Starting development build...`);
-console.log();
-
-// Compile the electron/server-side backend.
-buildElectron(config).then(() => {
+(async () => {
+  // Compile the backend bundle first.
+  console.log();
+  const backendStartTime = Date.now();
+  console.log(`${chalk.inverse(" BACKEND ")} Starting development build...`);
+  await buildBackend(config);
   const elapsed = Date.now() - backendStartTime;
   console.log(`${chalk.inverse(" BACKEND ")} Build completed successfully in ${chalk.green(elapsed + "ms")}`);
+  
+  // Now start the devserver...
   console.log();
   console.log(`${chalk.inverse(" FRONTEND ")} Starting development build...`);
-  console.log();
-
-  // Now start the devserver...
   spawn('node', [require.resolve('../scripts/startDevServer.js')]);
   
   // ..and open the electron app.
   spawn('node_modules/.bin/electron', ['lib/main.js']);
-});
+})();
 
 handleInterrupts();

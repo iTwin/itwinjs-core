@@ -10,6 +10,7 @@ const WatchMissingNodeModulesPlugin = require('react-dev-utils/WatchMissingNodeM
 const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
 const nodeExternals = require('webpack-node-externals');
 const getClientEnvironment = require('./env');
+const plugins = require("../scripts/utils/webpackPlugins");
 const paths = require('./paths');
 
 // Webpack uses `publicPath` to determine where the app is being served from.
@@ -22,6 +23,8 @@ const publicUrl = '';
 // Get environment variables to inject into our app.
 const env = getClientEnvironment(publicUrl);
 
+const resolveIModeljsCommon = (str) => str.replace(paths.imodeljsCommonRegex, "@bentley/imodeljs-backend");
+
 // This is the development configuration.
 // It is focused on developer experience and fast rebuilds.
 // The production configuration is different and lives in a separate file.
@@ -29,8 +32,13 @@ module.exports = {
   // You may want 'eval' instead if you prefer to see the compiled output in DevTools.
   // See the discussion in https://github.com/facebookincubator/create-react-app/issues/343.
   devtool: 'cheap-module-source-map',
-  
-  externals: [nodeExternals()],
+  // The "externals" configuration option provides a way of excluding dependencies from the output bundles.
+  externals: [
+    // Don't include anything from src/backend/node_modules in the bundle
+    nodeExternals({modulesDir: paths.appBackendNodeModules}),
+    // We also need the following work around to keep $(iModelJs-Common) modules out of the bundle:
+    (ctx, req, cb) => (paths.imodeljsCommonRegex.test(req)) ? cb(null, 'commonjs ' + resolveIModeljsCommon(req)) : cb()
+  ],
   // These are the "entry points" to our application.
   // This means they will be the "root" imports that are included in JS bundle.
   // The first two entry points enable "hot" CSS and auto-refreshes for JS.
@@ -57,7 +65,7 @@ module.exports = {
     // We placed these paths second because we want `node_modules` to "win"
     // if there are any conflicts. This matches Node resolution mechanism.
     // https://github.com/facebookincubator/create-react-app/issues/253
-    modules: ['node_modules', paths.appNodeModules, paths.appSrc].concat(
+    modules: ['node_modules', paths.appNodeModules, paths.appBackendNodeModules, paths.appSrc].concat(
       // It is guaranteed to exist because we tweak it in `env.js`
       process.env.NODE_PATH.split(path.delimiter).filter(Boolean)
     ),
@@ -73,6 +81,8 @@ module.exports = {
       // please link the files into your node_modules/ and let module-resolution kick in.
       // Make sure your source files are compiled, as they will not be processed in any way.
       new ModuleScopePlugin(paths.appSrc),
+      // This is only for BACKEND code - frontend modules should be excluded from the bundle.
+      new plugins.BanFrontendImportsPlugin(),
     ],
   },
   module: {
@@ -85,16 +95,16 @@ module.exports = {
         enforce: 'pre',
         include: paths.appSrc,
       },
-      { 
-        test: /node_modules[\/\\]ws/, 
-        use: require.resolve('null-loader'),
-      },
       // Compile .ts
       {
         test: /\.ts$/,
         include: paths.appSrc,
         loader: require.resolve('ts-loader'),
         options: {
+          compilerOptions: { 
+            // Replace $(iModelJs-Common) with @bentley/imodeljs-backend when compiling typescript
+            paths: {"$(iModelJs-Common)/*": [ "backend/node_modules/@bentley/imodeljs-backend/*"] } 
+          },
           onlyCompileBundledFiles: true,
           logLevel: 'warn',
         }
@@ -126,5 +136,7 @@ module.exports = {
     // makes the discovery automatic so you don't have to restart.
     // See https://github.com/facebookincubator/create-react-app/issues/186
     new WatchMissingNodeModulesPlugin(paths.appNodeModules),
+    // Replace $(iModelJs-Common) with @bentley/imodeljs-backend when resolving modules
+    new webpack.NormalModuleReplacementPlugin(paths.imodeljsCommonRegex, (r) => r.request = resolveIModeljsCommon(r.request))
   ]
 };

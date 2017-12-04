@@ -70,11 +70,11 @@ const frontendStartTime = Date.now();
 
 // First, read the current file sizes in build directory.
 // This lets us display how much they changed later.
-measureFileSizesBeforeBuild(paths.appLib)
+measureFileSizesBeforeBuild(paths.appLibPublic)
   .then(previousFileSizes => {
     // Remove all content but keep the directory so that
     // if you're in it, you don't end up in Trash
-    fs.emptyDirSync(paths.appLib);
+    fs.emptyDirSync(paths.appLibPublic);
     // Merge with the public folder
     copyPublicFolder();
     // Start the webpack build
@@ -103,7 +103,7 @@ measureFileSizesBeforeBuild(paths.appLib)
       printFileSizesAfterBuild(
         stats,
         previousFileSizes,
-        paths.appLib,
+        paths.appLibPublic,
         WARN_AFTER_BUNDLE_GZIP_SIZE,
         WARN_AFTER_CHUNK_GZIP_SIZE
       );
@@ -131,8 +131,8 @@ measureFileSizesBeforeBuild(paths.appLib)
     console.log();
     
     const electronConfig = require('../config/webpack.config.backend');
-    const buildElectron = require('./utils/buildElectron');
-    await buildElectron(electronConfig);
+    const buildBackend = require('./utils/buildBackend');
+    await buildBackend(electronConfig);
     
     const elapsed = Date.now() - backendStartTime;
     console.log();
@@ -142,7 +142,7 @@ measureFileSizesBeforeBuild(paths.appLib)
     if (buildTarget === "web") {      
       console.log(`The ${chalk.cyan("lib")} folder is ready to be deployed.`);
     } else {
-      console.log(`The built electron app can now be run with ${chalk.cyan("electron lib/main.js")}.`);      
+      console.log(`The built electron app can now be run with ${chalk.cyan("npm run electron")}.`);      
     }
   });
 
@@ -186,7 +186,7 @@ function build(previousFileSizes) {
 }
 
 function copyPublicFolder() {
-  fs.copySync(paths.appPublic, paths.appLib, {
+  fs.copySync(paths.appPublic, paths.appLibPublic, {
     dereference: true,
     filter: file => file !== paths.appHtml,
   });

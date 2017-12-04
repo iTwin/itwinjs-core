@@ -16,6 +16,7 @@ const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
 const SpriteLoaderPlugin = require('svg-sprite-loader/plugin');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const getClientEnvironment = require('./env');
+const plugins = require("../scripts/utils/webpackPlugins");
 const paths = require('./paths');
 
 const PRODUCTION = (process.env.NODE_ENV === "production");
@@ -131,7 +132,7 @@ const baseConfiguration = {
     // We placed these paths second because we want `node_modules` to "win"
     // if there are any conflicts. This matches Node resolution mechanism.
     // https://github.com/facebookincubator/create-react-app/issues/253
-    modules: ['node_modules', paths.appNodeModules, paths.appSrc].concat(
+    modules: ['node_modules', paths.appNodeModules, paths.appFrontendNodeModules, paths.appSrc].concat(
       // It is guaranteed to exist because we tweak it in `env.js`
       process.env.NODE_PATH.split(path.delimiter).filter(Boolean)
     ),
@@ -164,6 +165,8 @@ const baseConfiguration = {
       // please link the files into your node_modules/ and let module-resolution kick in.
       // Make sure your source files are compiled, as they will not be processed in any way.
       new ModuleScopePlugin(paths.appSrc),
+      // This is only for FRONTEND code - backend modules should be excluded from the bundle.
+      new plugins.BanBackendImportsPlugin(),
     ],
   },
   module: {
@@ -186,6 +189,7 @@ const baseConfiguration = {
         loader: require.resolve('source-map-loader'),
         enforce: 'pre',
         include: paths.appSrc,
+        exclude: paths.appFrontendNodeModules, // NEEDSWORK: We're not delivering frontend source maps in library packages? Why not?
       },
       // "sass" loader compiles SASS into CSS.
       {
@@ -239,17 +243,16 @@ const baseConfiguration = {
           name: 'static/media/[name].[hash:8].[ext]',
         },
       },
-      // This is only for FRONTEND code - backend modules should be excluded from the bundle.
-      { 
-        test: [/lib[\/\\]backend/, paths.appSrcBackend],
-        use: require.resolve('null-loader'),
-      },
       // Compile .tsx?
       {
         test: /\.(ts|tsx)$/,
         include: paths.appSrc,
         loader: require.resolve('ts-loader'),
         options: {
+          compilerOptions: {
+            // Replace $(iModelJs-Common) with @bentley/imodeljs-frontend when compiling typescript
+            paths: {"$(iModelJs-Common)/*": [ "frontend/node_modules/@bentley/imodeljs-frontend/*"] } 
+          },
           onlyCompileBundledFiles: true,
           logLevel: 'warn',
         }
@@ -329,7 +332,11 @@ const commonPlugins = [
     // Automatically make React available
     new webpack.ProvidePlugin({
       React: "react",
-    })
+    }),    
+    // Replace $(iModelJs-Common) with @bentley/imodeljs-frontend when resolving modules
+    new webpack.NormalModuleReplacementPlugin(paths.imodeljsCommonRegex, (r) => {
+      r.request = r.request.replace(paths.imodeljsCommonRegex, "@bentley/imodeljs-frontend");
+    }),
 ];
 
 //======================================================================================================================================
@@ -347,7 +354,7 @@ if (PRODUCTION) {
     entry: [require.resolve('./polyfills'), paths.appIndexJs],
     output: {
       // The build folder.
-      path: paths.appLib,
+      path: paths.appLibPublic,
       // Generated JS file names (with nested folders).
       // There will be one main bundle, and one file per asynchronous chunk.
       // We don't currently advertise code splitting but Webpack supports it.
@@ -434,7 +441,7 @@ if (DEVELOPMENT) {
     ],
     output: {
       // Next line is not used in dev but WebpackDevServer crashes without it:
-      path: paths.appLib,
+      path: paths.appLibPublic,
       // Add /* filename */ comments to generated require()s in the output.
       pathinfo: true,
       // This does not produce a real file. It's just the virtual path that is

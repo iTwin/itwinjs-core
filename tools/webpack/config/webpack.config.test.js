@@ -26,7 +26,8 @@ const modulesToIgnore = [
   /\.d\.ts$/,
   paths.appMainJs,
   paths.appIndexJs,
-  paths.appSrcElectron,
+  paths.appSrcBackendElectron,
+  paths.appSrcBackendWeb,
 ]
 
 const isCoverage = (process.env.MOCHA_ENV === "coverage");
@@ -34,30 +35,44 @@ const coverageLoaders = (isCoverage) ? [
   {
     test: /\.(jsx?|tsx?)$/,
     include: paths.appSrc, // instrument only testing sources with Istanbul, after ts-loader runs
+    exclude: [paths.appBackendNodeModules, paths.appFrontendNodeModules].concat(modulesToIgnore),
     loader: require.resolve('istanbul-instrumenter-loader'),
     options: {esModules: true, debug: true},
     enforce: 'post',
   },
 ] : [];
 
-// WIP: This is needed to configure our custom chai assertions...
-const fixCustomAssertionsRelPaths = (context, request, callback) => {
-  if (/customAssertions\.js$/.test(request)){
-    return callback(null, 'commonjs ' + path.resolve(context, request));
-  }
+// WIP: This is a temporary workaround to fix module resolution in the test directory...
+const fixNodeModulesPaths = (context, request, callback) => {
+  if (/\.node$/.test(request))
+    console.log(request, context);
+  try {
+    const resolvedPath = require.resolve(request, {paths: [paths.appBackendNodeModules, paths.appFrontendNodeModules] });
+    
+    if (resolvedPath.startsWith(paths.appBackendNodeModules) || resolvedPath.startsWith(paths.appFrontendNodeModules)) {
+      return callback(null, 'commonjs ' + resolvedPath);
+    }
+  } catch(e) {}
+
   callback();
 }
+
+const resolveIModeljsCommon = (str) => str.replace(paths.imodeljsCommonRegex, path.resolve(paths.appBackendNodeModules, "@bentley/imodeljs-backend"));
 
 // This is the test configuration.
 module.exports = {
   // Compile node compatible code
   target: 'node',
   
-  // Ignore all modules in node_modules folder
+  // The "externals" configuration option provides a way of excluding dependencies from the output bundles.
   externals: [
-    fixCustomAssertionsRelPaths,
-    nodeExternals({whitelist: modulesToIgnore})],
-
+    fixNodeModulesPaths,
+    // Don't include anything from node_modules in the bundle
+    nodeExternals({whitelist: modulesToIgnore}),
+    // We also need the following work around to keep $(iModelJs-Common) modules out of the bundle:
+    (ctx, req, cb) => (paths.imodeljsCommonRegex.test(req)) ? cb(null, 'commonjs ' + resolveIModeljsCommon(req)) : cb()
+  ],
+  
   // You may want 'eval' instead if you prefer to see the compiled output in DevTools.
   // See the discussion in https://github.com/facebookincubator/create-react-app/issues/343.
   devtool: 'inline-cheap-module-source-map',
@@ -70,7 +85,7 @@ module.exports = {
     // We placed these paths second because we want `node_modules` to "win"
     // if there are any conflicts. This matches Node resolution mechanism.
     // https://github.com/facebookincubator/create-react-app/issues/253
-    modules: ['node_modules', paths.appNodeModules, paths.appSrc].concat(
+    modules: ['node_modules', paths.appNodeModules, paths.appBackendNodeModules, paths.appFrontendNodeModules, paths.appSrc].concat(
       // It is guaranteed to exist because we tweak it in `env.js`
       process.env.NODE_PATH.split(path.delimiter).filter(Boolean)
     ),
@@ -93,6 +108,9 @@ module.exports = {
     ],
   },
   module: {
+    // WIP: The fixNodeModulesPaths hack above introduced some "Critical dependency: the request of a dependency is an expression" webpack warning.
+    // This "noparse" avoids that warning. It's still a hack though - Webpack shouldn't even be trying to parse anything in imodeljs-react-scripts. 
+    noParse: path.resolve(__dirname),  
     strictExportPresence: true,
     rules: [
       ...coverageLoaders,
@@ -154,6 +172,10 @@ module.exports = {
         exclude: /(node_modules|bower_components)/,
         loader: require.resolve('ts-loader'),
         options: {
+          compilerOptions: { 
+            // Replace $(iModelJs-Common) with @bentley/imodeljs-backend when compiling typescript
+            paths: { "$(iModelJs-Common)/*": [ "backend/node_modules/@bentley/imodeljs-backend/*"] }
+          },
           onlyCompileBundledFiles: true,
           logLevel: 'warn'
         },
@@ -182,6 +204,8 @@ module.exports = {
       expect: ["chai", "expect"],
       shallow: ["enzyme", "shallow"],
       mount: ["enzyme", "mount"],
-    })
+    }),
+    // Replace $(iModelJs-Common) with @bentley/imodeljs-backend when resolving modules
+    new webpack.NormalModuleReplacementPlugin(paths.imodeljsCommonRegex, (r) => r.request = resolveIModeljsCommon(r.request)),
   ],
 };
