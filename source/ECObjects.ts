@@ -36,7 +36,7 @@ export const enum PrimitiveType {
 export function parsePrimitiveType(type: string): PrimitiveType {
   if (/^binary$/i.test(type))
     return PrimitiveType.Binary;
-  else if (/^bool$/i.test(type) || /boolean/i.test(type))
+  else if (/^bool$/i.test(type) || /^boolean$/i.test(type))
     return PrimitiveType.Boolean;
   else if (/^dateTime$/i.test(type))
     return PrimitiveType.DateTime;
