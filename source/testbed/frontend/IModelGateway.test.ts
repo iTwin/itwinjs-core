@@ -3,14 +3,15 @@
  *--------------------------------------------------------------------------------------------*/
 import { IModelGateway } from "$(frontend)/lib/gateway/IModelGateway";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-// import { assert } from "chai";
+import { assert } from "chai";
 
 describe("IModelGateway", () => {
-  it("should not open a blank filename", async () => {
-    debugger;
-    const opened = await IModelGateway.getProxy().openStandalone("", OpenMode.Readonly);
-    opened;
-    debugger;
+  it("openStandalone should handle a blank filename", async () => {
+    try {
+      await IModelGateway.getProxy().openStandalone("", OpenMode.Readonly);
+      assert(false);
+    } catch (e) {
+      assert(e.message.indexOf("DbResult.BE_SQLITE_NOTFOUND") !== -1);
+    }
   });
 });
-
