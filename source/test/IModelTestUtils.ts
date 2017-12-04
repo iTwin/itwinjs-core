@@ -16,7 +16,8 @@ import { IModelDb } from "../backend/IModelDb";
 import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { SpatialCategory, DrawingCategory } from "../backend/Category";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
-import { NodeAddon } from "../nodeaddon/NodeAddon";
+import { NodeAddonLoader } from "../nodeaddon/NodeAddonLoader";
+import { NodeAddonRegistry } from "../backend/NodeAddonRegistry";
 import { IModelGateway } from "../gateway/IModelGateway";
 
 import * as path from "path";
@@ -27,7 +28,7 @@ Gateway.initialize(IModelGateway);
 declare const __dirname: string;
 
 // Initialize the Node addon used by tests
-NodeAddon.loadDefault();
+NodeAddonRegistry.registerAddon(NodeAddonLoader.loadAddon());
 
 // Initialize the location where BriefcaseManager will create briefcases
 BriefcaseManager.cachePath = path.join(__dirname, "output/cache/imodels");

@@ -6,7 +6,7 @@ import { ECJsonTypeMap, ECInstance } from "@bentley/bentleyjs-core/lib/ECJsonTyp
 import { IModelError } from "../common/IModelError";
 import { BindingUtility, BindingValue } from "./BindingUtility";
 import { PrimitiveTypeCode } from "./Entity";
-import { NodeAddon } from "../nodeaddon/NodeAddon";
+import { NodeAddonRegistry } from "./NodeAddonRegistry";
 import { NodeAddonECDb } from "./NodeAddonECDb";
 
 /** Value type  (Match this to ECN::ValueKind in ECObjects.h) */
@@ -67,7 +67,7 @@ export class ECDb {
    */
   public async createDb(pathname: string): Promise<void> {
     if (!this._ecdb)
-      this._ecdb = await new (NodeAddon.getAddon()).ECDb();
+      this._ecdb = await new (NodeAddonRegistry.getAddon()).ECDb();
     const { error } = await this._ecdb.createDb(pathname);
     if (error)
       return Promise.reject(new IModelError(error.status, error.message));
@@ -80,7 +80,7 @@ export class ECDb {
    */
   public async openDb(pathname: string, openMode: OpenMode = OpenMode.Readonly): Promise<void> {
     if (!this._ecdb)
-      this._ecdb = await new (NodeAddon.getAddon()).ECDb();
+      this._ecdb = await new (NodeAddonRegistry.getAddon()).ECDb();
     const { error } = await this._ecdb.openDb(pathname, openMode);
     if (error)
       return Promise.reject(new IModelError(error.status, error.message));
