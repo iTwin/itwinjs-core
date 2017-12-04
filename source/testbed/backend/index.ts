@@ -3,7 +3,6 @@
  *--------------------------------------------------------------------------------------------*/
 import * as express from "express";
 import * as bodyParser from "body-parser";
-// import * as path from "path";
 import { IModelDb } from "$(backend)/lib/backend/IModelDb";
 import { IModelGateway } from "$(backend)/lib/gateway/IModelGateway";
 import { BentleyCloudGatewayConfiguration } from "$(backend)/lib/gateway/BentleyCloudGatewayConfiguration";
