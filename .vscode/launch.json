@@ -8,10 +8,12 @@
       "type": "node",
       "request": "launch",
       "name": "Mocha",
-      "program": "${workspaceFolder}/scripts/test.js",
+      "program": "${workspaceRoot}/node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode.js",
       "cwd": "${workspaceFolder}",
       "args": [
-        "debug"
+        "--debug",
+        "--testDir=${workspaceRoot}/test/",
+        "--tscPaths"
       ],
       "port": 9229,
       "protocol": "inspector"
