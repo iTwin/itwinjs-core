@@ -8,7 +8,7 @@ require("./utils/initialize")("development");
 
 const chalk = require('chalk');
 const config = require('../config/webpack.config.backend');
-const buildBackend = require('./utils/buildBackend');
+const { buildBackend }= require('./utils/buildBackend');
 const { spawn, handleInterrupts } = require('./utils/simpleSpawn');
 
 (async () => {
