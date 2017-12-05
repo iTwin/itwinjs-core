@@ -495,11 +495,11 @@ export class IModelDbModels {
    * @param model An editable copy of the model, containing the new/proposed data.
    * @throws [[IModelError]] if unable to update the model.
    */
-  public updateModel(model: Model): void {
+  public updateModel(model: ModelProps): void {
     if (!this._iModel.iModelToken.isOpen || !this._iModel.nativeDb)
       throw this._iModel._newNotOpenError();
 
-    if (model.isPersistent()) {
+    if ((model.isPersistent !== undefined) && model.isPersistent()) {
       assert(false);
       throw new IModelError(IModelStatus.WriteError, "Cannot update a model marked as persistent. Call copyForEdit.", Logger.logError);
     }
