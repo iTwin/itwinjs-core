@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "0.0.10",
+  "version": "0.1.2",
   "description": "iModelJs frontend components",
   "license": "UNLICENSED",
   "scripts": {
@@ -23,7 +23,7 @@
     "NOTE: dependencies that are in common with imodeljs-backend must have a consistent version"
   ],
   "dependencies": {
-    "@bentley/bentleyjs-core": "^1.0.46",
+    "@bentley/bentleyjs-core": "^1.0.47",
     "@bentley/geometry-core": "^1.0.29",
     "@bentley/imodeljs-clients": "^1.0.31",
     "js-base64": "^2.4.0"
