@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-nodeaddon",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "The native code addon",
   "license": "UNLICENSED",
   "scripts": {
@@ -36,9 +36,9 @@
     "NOTE: List only the addons that a nodejs app/service might need. Do not list Electron-specific addons."
   ],
   "optionalDependencies": {
-    "@bentley/imodeljs-n_8_9-win32-x64": "^1.1.12",
-    "@bentley/imodeljs-n_8_9-linux-x64": "^1.1.14",
-    "@bentley/imodeljs-n_8_9-darwin-x64": "^1.1.12"
+    "@bentley/imodeljs-n_8_9-win32-x64": "^1.2.0",
+    "@bentley/imodeljs-n_8_9-linux-x64": "^1.2.0",
+    "@bentley/imodeljs-n_8_9-darwin-x64": "^1.2.0"
   },
   "//devDependencies": "NOTE: all devDependencies should be recorded in the top-level package.json only",
   "devDependencies": {}

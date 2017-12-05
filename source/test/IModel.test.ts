@@ -15,6 +15,7 @@ import { Category, SubCategory } from "../backend/Category";
 import { ClassRegistry } from "../backend/ClassRegistry";
 import { BisCore } from "../backend/BisCore";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
+import { ElementProps } from "../common/ElementProps";
 import {
   Element, GeometricElement2d, GeometricElement3d, GeometricElementProps, InformationPartitionElement, DefinitionPartition,
   LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject,
@@ -668,6 +669,42 @@ describe("iModel", () => {
       assert.equal(count, 1);
     });
 
+  });
+
+  it("should do CRUD on models", async () => {
+
+    let modeledElementId: Id64;
+    let newModelId: Id64;
+    if (true) {
+      // Create and insert the modeled element
+      const modeledElementProps: ElementProps = {
+        classFullName: "BisCore:PhysicalPartition",
+        iModel: imodel2,
+        parent: {id: imodel2.elements.rootSubjectId, relClass: "BisCore:SubjectOwnsPartitionElements"},
+        model: imodel2.models.repositoryModelId,
+        id: new Id64(),
+        code: Code.createEmpty(),
+      };
+      const modeledElement: Element = imodel2.elements.createElement(modeledElementProps);
+      modeledElementId = imodel2.elements.insertElement(modeledElement);
+      assert.isTrue(modeledElementId.isValid());
+
+      // Create the model (in memory)
+      const newModel = imodel1.models.createModel({id: new Id64(), modeledElement: modeledElementId, classFullName: "BisCore:PhysicalModel", isPrivate: true});
+
+      // Insert the model into the BIM
+      newModelId = imodel2.models.insertModel(newModel);
+      assert.isTrue(newModelId.isValid());
+      assert.isTrue(newModel.id.isValid());
+      assert.deepEqual(newModelId, newModel.id);
+    }
+
+    const newModelPersist: Model = await imodel2.models.getModel(newModelId);
+
+    // Check that it has the properties that we set.
+    assert.equal(newModelPersist.classFullName, "BisCore:PhysicalModel");
+    assert.equal(newModelPersist.isPrivate, true);
+    assert.deepEqual(newModelPersist.modeledElement, modeledElementId);
   });
 
   /* TBD

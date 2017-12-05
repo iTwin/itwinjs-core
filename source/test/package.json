@@ -21,8 +21,9 @@
     "@bentley/bentleyjs-core": "^1.0.47",
     "@bentley/geometry-core": "^1.0.29",
     "@bentley/imodeljs-clients": "^1.0.36",
-    "@bentley/imodeljs-nodeaddon": "^1.0.0",
-    "fs-extra": "^4.0.2",
+    "@bentley/imodeljs-nodeaddon": "^1.2.0",
+    "@bentley/imodeljs-nodeaddonapi": "^1.2.0",
+    "fs-extra": "^4.0.3",
     "js-base64": "^2.4.0"
   },
   "//devDependencies": "NOTE: all devDependencies should be recorded in the top-level package.json only",
