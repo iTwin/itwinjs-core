@@ -11,7 +11,7 @@
     "url": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/imodeljs-core"
   },
   "scripts": {
-    "build": "concurrently \"npm run build:nodeaddon\" \"npm run build:backend\" \"npm run build:frontend\" \"npm run build:test\" && npm run build:testbed",
+    "build": "concurrently \"npm run build:backend\" \"npm run build:frontend\" \"npm run build:test\" && npm run build:testbed",
     "build:backend": "cd source/backend && npm run build",
     "build:frontend": "cd source/frontend && npm run build",
     "build:nodeaddon": "cd source/nodeaddon && npm run build",
