@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "./lib",
     "paths": {
-      "$(common)*": ["../../backend/*"]
+      "@build/imodeljs-core*": ["../../backend/*"]
     }
   },
   "include": [

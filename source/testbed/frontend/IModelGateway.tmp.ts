@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelGateway } from "$(common)/lib/gateway/IModelGateway";
+import { IModelGateway } from "@build/imodeljs-core/lib/gateway/IModelGateway";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { assert } from "chai";
 

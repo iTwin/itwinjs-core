@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { TestGateway, TestOp1Params } from "../common/TestGateway";
-import { Gateway } from "$(common)/lib/common/Gateway";
+import { Gateway } from "@build/imodeljs-core/lib/common/Gateway";
 
 export class TestGatewayImpl extends TestGateway {
   public static register() {

@@ -4,10 +4,10 @@
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { CodeSpec, CodeSpecNames } from "$(common)/lib/common/Code";
-import { ElementProps } from "$(common)/lib/common/ElementProps";
-import { ModelProps } from "$(common)/lib/common/ModelProps";
-import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "$(common)/lib/frontend/IModelConnection";
+import { CodeSpec, CodeSpecNames } from "@build/imodeljs-core/lib/common/Code";
+import { ElementProps } from "@build/imodeljs-core/lib/common/ElementProps";
+import { ModelProps } from "@build/imodeljs-core/lib/common/ModelProps";
+import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "@build/imodeljs-core/lib/frontend/IModelConnection";
 import { TestData } from "./TestData";
 
 describe("IModelConnection", () => {

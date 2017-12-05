@@ -3,10 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 import * as express from "express";
 import * as bodyParser from "body-parser";
-import { IModelDb } from "$(common)/lib/backend/IModelDb";
-import { IModelGateway } from "$(common)/lib/gateway/IModelGateway";
-import { BentleyCloudGatewayConfiguration } from "$(common)/lib/gateway/BentleyCloudGatewayConfiguration";
-import { NodeAddonRegistry, NodeAddonPackageName } from "$(common)/lib/backend/NodeAddonRegistry";
+import { IModelDb } from "@build/imodeljs-core/lib/backend/IModelDb";
+import { IModelGateway } from "@build/imodeljs-core/lib/gateway/IModelGateway";
+import { BentleyCloudGatewayConfiguration } from "@build/imodeljs-core/lib/gateway/BentleyCloudGatewayConfiguration";
+import { NodeAddonRegistry, NodeAddonPackageName } from "@build/imodeljs-core/lib/backend/NodeAddonRegistry";
 import { TestbedConfig } from "../common/TestbedConfig";
 import { TestGateway } from "../common/TestGateway";
 import { TestGatewayImpl } from "./TestGatewayImpl";

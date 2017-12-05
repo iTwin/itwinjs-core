@@ -6,7 +6,7 @@
     "inlineSourceMap": true,
     "inlineSources": true,
     "paths": {
-      "$(common)*": ["../../frontend/*"]
+      "@build/imodeljs-core*": ["../../frontend/*"]
     }
   },
   "include": [

@@ -4,7 +4,7 @@
     "strictFunctionTypes": false, //temporary...electron.d.ts@1.6.11 fails this check
     "baseUrl": "./node_modules/",
     "paths": {
-      "$(common)*": ["../../backend/*"]
+      "@build/imodeljs-core*": ["../../backend/*"]
     }
   },
   "exclude": [

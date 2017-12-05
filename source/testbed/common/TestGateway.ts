@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Gateway } from "$(common)/lib/common/Gateway";
+import { Gateway } from "@build/imodeljs-core/lib/common/Gateway";
 
 export class TestOp1Params {
   public a: number;

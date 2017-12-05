@@ -8,12 +8,12 @@
     "build": "concurrently \"npm run build:backend\" \"npm run build:frontend\"",
     "build:backend": "cd backend && tsc",
     "build:frontend": "cd frontend && tsc",
-    "postbuild": "concurrently \"npm run resolve-common-backend\" \"npm run resolve-common-frontend\"",
+    "postbuild": "concurrently \"npm run resolve-imports-backend\" \"npm run resolve-imports-frontend\"",
     "clean": "rimraf backend/lib && rimraf frontend/lib",
     "start": "floss --debug --path frontend/lib/frontend/index.js",
     "test": "floss --path frontend/lib/frontend/index.js",
-    "resolve-common-backend": "cd backend/lib && replace \"\\$\\(common\\)\" \"../../../../backend\" -r -q .",
-    "resolve-common-frontend": "cd frontend/lib && replace \"\\$\\(common\\)\" \"../../../../frontend\" -r -q ."
+    "resolve-imports-backend": "cd backend/lib && replace \"@build/imodeljs-core\" \"../../../../backend\" -r -q .",
+    "resolve-imports-frontend": "cd frontend/lib && replace \"@build/imodeljs-core\" \"../../../../frontend\" -r -q ."
   },
   "repository": {},
   "dependencies": {
