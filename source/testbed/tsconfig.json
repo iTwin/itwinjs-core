@@ -1,22 +1,15 @@
 {
   "extends": "../../node_modules/@bentley/bentleyjs-tools/tsconfig-base.json",
   "compilerOptions": {
-    "outDir": "./lib",
-    "sourceMap": false,
-    "inlineSourceMap": true,
-    "inlineSources": true,
     "strictFunctionTypes": false, //temporary...electron.d.ts@1.6.11 fails this check
     "baseUrl": "./node_modules/",
     "paths": {
-      "$(backend)*": ["../../backend/*"],
-      "$(frontend)*": ["../../frontend/*"]
+      "@build/imodeljs-core*": ["../../backend/*"]
     }
   },
-  "include": [
-    "./**/*.ts"
-  ],
   "exclude": [
-    "lib",
+    "frontend/lib",
+    "backend/lib",
     "node_modules"
   ]
 }

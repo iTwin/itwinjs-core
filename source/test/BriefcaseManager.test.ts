@@ -4,17 +4,12 @@
 import * as fs from "fs";
 import * as path from "path";
 import { expect, assert } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { ChangeSet } from "@bentley/imodeljs-clients";
-import { CodeSpec, CodeSpecNames } from "../common/Code";
-import { ElementProps } from "../common/ElementProps";
 import { IModelVersion } from "../common/IModelVersion";
-import { ModelProps } from "../common/ModelProps";
 import { BriefcaseManager } from "../backend/BriefcaseManager";
-import { Category } from "../backend/Category";
-import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "../frontend/IModelConnection";
+import { IModelConnection } from "../frontend/IModelConnection";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 describe("BriefcaseManager", () => {
@@ -104,47 +99,6 @@ describe("BriefcaseManager", () => {
 
     const iModelNoVer: IModelConnection = await IModelConnection.open(accessToken, iModelNoVerId, OpenMode.Readonly);
     assert.exists(iModelNoVer);
-  });
-
-  it("should be able to get elements and models from an IModelConnection", async () => {
-    const iModel: IModelConnection = await IModelConnection.open(accessToken, testIModelId);
-    assert.exists(iModel);
-    assert.isTrue(iModel instanceof IModelConnection);
-    assert.exists(iModel.models);
-    assert.isTrue(iModel.models instanceof IModelConnectionModels);
-    assert.exists(iModel.elements);
-    assert.isTrue(iModel.elements instanceof IModelConnectionElements);
-
-    const elementIds: Id64[] = [iModel.elements.rootSubjectId];
-    const elementProps: ElementProps[] = await iModel.elements.getElementProps(elementIds);
-    assert.equal(elementProps.length, elementIds.length);
-    assert.isTrue(iModel.elements.rootSubjectId.equals(new Id64(elementProps[0].id)));
-    assert.isTrue(iModel.models.repositoryModelId.equals(new Id64(elementProps[0].model)));
-
-    const queryElementIds: Id64[] = await iModel.elements.queryElementIds({ from: Category.sqlName, limit: 20, offset: 0 });
-    assert.isAtLeast(queryElementIds.length, 1);
-    assert.isTrue(queryElementIds[0] instanceof Id64);
-
-    const formatObjs: any[] = await iModel.elements.formatElements(queryElementIds);
-    assert.isAtLeast(formatObjs.length, 1);
-
-    const modelIds: Id64[] = [iModel.models.repositoryModelId];
-    const modelProps: ModelProps[] = await iModel.models.getModelProps(modelIds);
-    assert.exists(modelProps);
-    assert.equal(modelProps.length, modelIds.length);
-    assert.isTrue(iModel.models.repositoryModelId.equals(new Id64(modelProps[0].id)));
-
-    const rows: any[] = await iModel.executeQuery("SELECT CodeValue AS code FROM BisCore.Category");
-    assert.isAtLeast(rows.length, 1);
-    assert.exists(rows[0].code);
-    assert.equal(rows.length, queryElementIds.length);
-
-    const codeSpecByName: CodeSpec = await iModel.codeSpecs.getCodeSpecByName(CodeSpecNames.SpatialCategory());
-    assert.exists(codeSpecByName);
-    const codeSpecById: CodeSpec = await iModel.codeSpecs.getCodeSpecById(codeSpecByName.id);
-    assert.exists(codeSpecById);
-
-    await iModel.close(accessToken);
   });
 
   // readme cases should always use standalone briefcase

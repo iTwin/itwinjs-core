@@ -5,12 +5,15 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "tsc",
-    "postbuild": "npm run resolve-imports",
-    "clean": "rimraf lib",
-    "start": "floss --debug --path lib/frontend/index.js",
-    "test": "floss --path lib/frontend/index.js",
-    "resolve-imports": "cd lib && replace \"\\$\\((backend|frontend)\\)\" \"../../../$1\" -r -q --include=\"*.js\" ."
+    "build": "concurrently \"npm run build:backend\" \"npm run build:frontend\"",
+    "build:backend": "cd backend && tsc",
+    "build:frontend": "cd frontend && tsc",
+    "postbuild": "concurrently \"npm run resolve-imports-backend\" \"npm run resolve-imports-frontend\"",
+    "clean": "rimraf backend/lib && rimraf frontend/lib",
+    "start": "floss --debug --path frontend/lib/frontend/index.js",
+    "test": "floss --path frontend/lib/frontend/index.js",
+    "resolve-imports-backend": "cd backend/lib && replace \"@build/imodeljs-core\" \"../../../../backend\" -r -q .",
+    "resolve-imports-frontend": "cd frontend/lib && replace \"@build/imodeljs-core\" \"../../../../frontend\" -r -q ."
   },
   "repository": {},
   "dependencies": {

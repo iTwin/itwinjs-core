@@ -3,14 +3,17 @@
  *--------------------------------------------------------------------------------------------*/
 import * as express from "express";
 import * as bodyParser from "body-parser";
-import { IModelDb } from "$(backend)/lib/backend/IModelDb";
-import { IModelGateway } from "$(backend)/lib/gateway/IModelGateway";
-import { BentleyCloudGatewayConfiguration } from "$(backend)/lib/gateway/BentleyCloudGatewayConfiguration";
-import { NodeAddonRegistry, NodeAddonPackageName } from "$(backend)/lib/backend/NodeAddonRegistry";
-import * as testbedConfig from "../config";
+import { IModelDb } from "@build/imodeljs-core/lib/backend/IModelDb";
+import { IModelGateway } from "@build/imodeljs-core/lib/gateway/IModelGateway";
+import { BentleyCloudGatewayConfiguration } from "@build/imodeljs-core/lib/gateway/BentleyCloudGatewayConfiguration";
+import { NodeAddonRegistry, NodeAddonPackageName } from "@build/imodeljs-core/lib/backend/NodeAddonRegistry";
+import { TestbedConfig } from "../common/TestbedConfig";
+import { TestGateway } from "../common/TestGateway";
+import { TestGatewayImpl } from "./TestGatewayImpl";
 
 IModelDb; // Signal usage of IModelDb to tsc import logic
-const gatewaysConfig = BentleyCloudGatewayConfiguration.initialize(testbedConfig.gatewayParams, [IModelGateway]);
+TestGatewayImpl.register();
+const gatewaysConfig = BentleyCloudGatewayConfiguration.initialize(TestbedConfig.gatewayParams, [IModelGateway, TestGateway]);
 
 // tslint:disable-next-line:no-var-requires
 const addon = require(NodeAddonPackageName.computeDefaultImodelNodeAddonName());
@@ -18,6 +21,6 @@ NodeAddonRegistry.registerAddon(addon);
 
 const app = express();
 app.use(bodyParser.text());
-app.get(testbedConfig.swaggerURI, (req, res) => gatewaysConfig.protocol.handleOpenApiDescriptionRequest(req, res));
+app.get(TestbedConfig.swaggerURI, (req, res) => gatewaysConfig.protocol.handleOpenApiDescriptionRequest(req, res));
 app.post("*", async (req, res) => gatewaysConfig.protocol.handleOperationPostRequest(req, res));
-app.listen(testbedConfig.serverPort);
+app.listen(TestbedConfig.serverPort);
