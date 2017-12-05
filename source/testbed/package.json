@@ -14,7 +14,7 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "^1.0.46",
+    "@bentley/bentleyjs-core": "^1.0.47",
     "@bentley/geometry-core": "^1.0.29",
     "@bentley/imodeljs-clients": "^1.0.31",
     "@bentley/imodeljs-nodeaddonapi": "^1.1.9",
@@ -27,7 +27,7 @@
   },
   "//optionalDependencies": "imodeljs-e_1_6_11-win32-x64 is optional because it is not available for all platforms where we install, build, and test imodeljs-core",
   "optionalDependencies": {
-    "@bentley/imodeljs-e_1_6_11-win32-x64": "^1.1.13"    
+    "@bentley/imodeljs-e_1_6_11-win32-x64": "^1.1.13"
   },
   "devDependencies": {
     "@types/body-parser": "^1.16.8",

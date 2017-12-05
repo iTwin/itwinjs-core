@@ -29,28 +29,29 @@ The source code is organized according to where it can run:
 1. Pull repository: `git pull`
 2. Install dependencies: `npm install`
 3. Clean output: `npm run clean`
-4. Build source: `npm run build`
-5. Run tests: `npm test`
+4. Build source: `npm run build -s`
+5. Run tests: `npm test -s`
 
-If you want less verbose clean and build commands, please use the `-s` or `--silent` option.  For example: `npm run clean -s`
+The `-s` option is short for `--silent` which results in a less verbose command.
+That part of the command is optional depending on the desired verbosity level.
 
 Note that all build instructions are designed to run from the imodeljs-core root directory.
 The individual commands orchestrate separate backend, frontend, and test steps as required.
 
 ## Migrating to New Build Instructions
 
-| Build step           | New Command   | Old Command |
-|----------------------|---------------|-------------|
-| Install dependencies | npm install   | npm install |
-| Clean output         | npm run clean | gulp clean  |
-| Build source         | npm run build | gulp build  |
-| Run tests            | npm test      | gulp test   |
+| Build step           | New Command      | Old Command |
+|----------------------|------------------|-------------|
+| Install dependencies | npm install      | npm install |
+| Clean output         | npm run clean    | gulp clean  |
+| Build source         | npm run build -s | gulp build  |
+| Run tests            | npm test -s      | gulp test   |
 
 ## Other NPM Scripts
 
 1. Build TypeDoc documentation: `npm run docs`
 2. Extract sample code from test directory (run automatically as a *pre* step by the TypeDoc build command above): `npm run extract`
-3. Run lint rules against entire source tree: `npm run lint`
+3. Run lint rules against entire source tree: `npm run lint -s`
 4. Run code coverage for the frontend, backend and common folders using the tests (coverage output to source/test/lib/coverage) : `npm run cover`
 
 The full list of npm scripts can be found in the root `package.json` file.
