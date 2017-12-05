@@ -30,7 +30,7 @@ export class IModelGatewayImpl extends IModelGateway {
   }
 
   private async open(accessToken: AccessToken, iModelId: string, version: IModelVersion, openMode: OpenMode): Promise<IModelGatewayOpenResponse> {
-    const iModelDb: IModelDb = await IModelDb.open(accessToken, iModelId, openMode, version);
+    const iModelDb: IModelDb = await IModelDb.open(AccessToken.clone(accessToken), iModelId, openMode, IModelVersion.clone(version));
     return { token: iModelDb.iModelToken, name: iModelDb.name, description: iModelDb.description, extents: iModelDb.extents };
   }
 
