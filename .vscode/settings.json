@@ -4,6 +4,8 @@
   "files.exclude": {
     "node_modules": true,
     "lib": true,
+    "source/nodeaddon/lib": true,
+    "source/nodeaddon/node_modules": true,
     "source/backend/lib": true,
     "source/backend/node_modules": true,
     "source/common/lib": true,
