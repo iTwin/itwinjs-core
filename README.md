@@ -24,6 +24,14 @@ The source code is organized according to where it can run:
 * **Node**: an installation of the latest security patch of Node 8.9.x downloaded from [nodejs.org](https://nodejs.org/en/). The Node installation also includes the **npm** package manager.
 * **Visual Studio Code**: an optional dependency, but the repository structure is optimized for use with [Code](https://code.visualstudio.com/).
 
+## Authentication
+
+Configure npm and log in to the Bentley npm registry with the following commands:
+```
+npm config set @bentley:registry https://npm.bentley.com/npm/npm/
+npm login --scope=@bentley
+```
+
 ## Build Instructions
 
 1. Pull repository: `git pull`
