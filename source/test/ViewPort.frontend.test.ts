@@ -10,19 +10,19 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModel, IModelToken } from "../common/IModel";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { IModelConnection } from "../frontend/IModelConnection";
-import { Viewport, CoordSystem } from "../frontend/Viewport";
+import { Viewport, CoordSystem, ViewRect } from "../frontend/Viewport";
 import { IModelTestUtils } from "./IModelTestUtils";
 
-/** Class with scope limited to this file, used for creating a ViewPort directly using a pre-created ViewState */
+/** Class with scope limited to this file, used for creating a Viewport without a canvas */
 class TestViewport extends Viewport {
   public constructor(viewState: ViewState) {
-    super();
-    this._view = viewState;
+    super(undefined, viewState);
     this.setupFromView();
   }
 
-  /** Needed due to being a parent abstract method */
-  public getViewSize(): Point2d { return Point2d.create(1600, 1094); }
+  /** Needed since we don't have a canvas */
+  private clientRect = new ViewRect(Point2d.createZero(), Point2d.create(1600, 1094));
+  public getClientRect(): ClientRect { return this.clientRect; }
 }
 
 /** An abstract class representing an instance of an iModel. */
@@ -43,7 +43,7 @@ describe("ViewPort", () => {
   let modelSelectorState: ModelSelectorState;
   let viewState: SpatialViewState;
 
-  before (async () => {   // Create a ViewState to load into a ViewPort
+  before(async () => {   // Create a ViewState to load into a ViewPort
     accessToken = await IModelTestUtils.getTestUserAccessToken();
     testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
     testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "MyTestModel");
@@ -58,7 +58,7 @@ describe("ViewPort", () => {
           scope: "Hello World",
         },
         id: new Id64("0x67"),
-        classFullName: "CategorySelectoryState",
+        classFullName: "CategorySelector",
       }, imodel);
     displayStyleState = new DisplayStyle3dState(
       {
@@ -68,7 +68,7 @@ describe("ViewPort", () => {
           scope: "Hello World",
         },
         id: new Id64("0x112"),
-        classFullName: "DisplayStyle3dState",
+        classFullName: "DisplayStyle3d",
       }, imodel);
     modelSelectorState = new ModelSelectorState(
       {
@@ -79,7 +79,7 @@ describe("ViewPort", () => {
           scope: "Hello World",
         },
         id: new Id64("0x22"),
-        classFullName: "ModelSelectorState",
+        classFullName: "ModelSelector",
       }, imodel);
     viewState = new SpatialViewState({
       classFullName: "SpatialViewDefinition",
@@ -110,7 +110,7 @@ describe("ViewPort", () => {
     }, imodel, categorySelectorState, displayStyleState, modelSelectorState);
   });
 
-  it.skip ("should obtain equal viewport from round-trip setup using frustum", () => {
+  it.skip("should obtain equal viewport from round-trip setup using frustum", () => {
     const viewPort = new TestViewport(viewState);
     assert.isDefined(viewPort, "Could create testing equivalent of a ViewPort");
 

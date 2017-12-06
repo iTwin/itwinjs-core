@@ -2,7 +2,7 @@
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Viewport } from "./Viewport";
-import { Cursor } from "./tools/Tool";
+import { BeCursor } from "./tools/Tool";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { ToolAdmin } from "./tools/ToolAdmin";
@@ -13,7 +13,7 @@ export class ViewManager {
   public static readonly instance = new ViewManager();
   public readonly viewports: Viewport[] = [];
   public inDynamicsMode = false;
-  public cursor?: Cursor;
+  public cursor?: BeCursor;
   private _selectedView?: Viewport;
 
   /** Called after the selected view changes.

@@ -9,15 +9,13 @@ import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { ElementAlignedBox2d } from "../common/geometry/Primitives";
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core/lib/Time";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
-import { ButtonEvent } from "./tools/Tool";
+import { BeButtonEvent } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 
 // tslint:disable:no-empty
 
 /** A rectangle in view coordinates. */
 export class ViewRect extends ElementAlignedBox2d {
-  public get width() { return super.width + 1; }
-  public get height() { return super.height + 1; }
   public get aspect() { return this.width / this.height; }
   public get area() { return this.width * this.height; }
 
@@ -52,7 +50,7 @@ class Animator {
 
   public constructor(public totalTime: BeDuration, public viewport: Viewport, public startFrustum: Frustum, public endFrustum: Frustum) { }
 
-  public interpolateFrustum(fraction: number) {
+  public interpolateFrustum(fraction: number): void {
     for (let i = 0; i < Npc.CORNER_COUNT; ++i) {
       this.startFrustum.points[i].interpolate(fraction, this.endFrustum.points[i], this.currFrustum.points[i]);
     }
@@ -93,7 +91,7 @@ class Animator {
   }
 
   /** abort this animation, moving to the final frame. */
-  public interrupt() {
+  public interrupt(): void {
     if (this.startTime) {
       // We've been interrupted after animation began. Skip to the final animation state
       this.moveToTime(this.totalTime.milliseconds);
@@ -110,19 +108,17 @@ export class Viewport {
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
   private zClipAdjusted = false;    // were the view z clip planes adjusted due to front/back clipping off?
   /** view origin, potentially expanded */
-  public viewOrg = new Point3d();
+  public readonly viewOrg = new Point3d();
   /** view delta, potentially expanded */
-  public viewDelta = new Vector3d();
+  public readonly viewDelta = new Vector3d();
   /** view origin (from ViewState, un-expanded) */
-  public viewOrgUnexpanded = new Point3d();
+  public readonly viewOrgUnexpanded = new Point3d();
   /** view delta (from ViewState, un-expanded) */
-  public viewDeltaUnexpanded = new Vector3d();
+  public readonly viewDeltaUnexpanded = new Vector3d();
   /** View rotation matrix (copied from ViewState) */
-  public rotMatrix = new RotMatrix();
+  public readonly rotMatrix = new RotMatrix();
   private readonly rootToView = Map4d.createIdentity();
   private readonly rootToNpc = Map4d.createIdentity();
-  public _view?: ViewState;
-  private readonly viewRange: ViewRect = new ViewRect();
   private readonly viewCorners: Range3d = new Range3d();
   private animator?: Animator;
   private _viewCmdTargetCenter?: Point3d;
@@ -135,7 +131,7 @@ export class Viewport {
   private _evController?: EventController;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
 
-  constructor(public canvas?: HTMLCanvasElement) { }
+  constructor(public canvas?: HTMLCanvasElement, private _view?: ViewState) { }
 
   /** Get the ClientRect of the canvas for this Viewport. */
   public getClientRect(): ClientRect { return this.canvas!.getBoundingClientRect(); }
@@ -150,8 +146,8 @@ export class Viewport {
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
   public isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn(); }
   public invalidateDecorations() { }
-  public toView(pt: XYZ) { this.rotMatrix.multiply3dInPlace(pt); }   // Requires matrix as input for possiblity of cached matrix seperate from rotmatrix member
-  public fromView(pt: XYZ) { this.rotMatrix.multiplyTranspose3dInPlace(pt); }  // Requires matrix as input for possiblity of cached matrix seperate from rotmatrix member
+  public toView(pt: XYZ) { this.rotMatrix.multiply3dInPlace(pt); }
+  public fromView(pt: XYZ) { this.rotMatrix.multiplyTranspose3dInPlace(pt); }
 
   /** adjust the front and back planes to encompass the entire viewed volume */
   private adjustZPlanes(origin: Point3d, delta: Vector3d): void {
@@ -362,8 +358,9 @@ export class Viewport {
     r.transpose(this.rotMatrix);
   }
 
+  private readonly _viewRange: ViewRect = new ViewRect();
   /** get the rectangle of this Viewport in ViewCoordinates. */
-  public get viewRect(): ViewRect { const r = this.viewRange; const rect = this.getClientRect(); r.high.x = rect.width; r.high.y = rect.height; return r; }
+  public get viewRect(): ViewRect { const r = this._viewRange; const rect = this.getClientRect(); r.high.x = rect.width; r.high.y = rect.height; return r; }
 
   /** True if an undoable viewing operation exists on the stack */
   public get isUndoPossible() { return 0 < this.backStack.length; }
@@ -386,7 +383,7 @@ export class Viewport {
 
     const origin = view.getOrigin().clone();
     const delta = view.getExtents().clone();
-    this.rotMatrix = view.getRotation().clone();
+    this.rotMatrix.setFrom(view.getRotation());
 
     // first, make sure none of the deltas are negative
     delta.x = Math.abs(delta.x);
@@ -405,10 +402,10 @@ export class Viewport {
 
     this.adjustAspectRatio(origin, delta);
 
-    this.viewOrgUnexpanded = origin.clone();
-    this.viewDeltaUnexpanded = delta.clone();
-    this.viewOrg = origin.clone();
-    this.viewDelta = delta.clone();
+    this.viewOrgUnexpanded.setFrom(origin);
+    this.viewDeltaUnexpanded.setFrom(delta);
+    this.viewOrg.setFrom(origin);
+    this.viewDelta.setFrom(delta);
     this.zClipAdjusted = false;
 
     if (view.is3d()) {
@@ -459,8 +456,8 @@ export class Viewport {
       origin.z = -Viewport.get2dFrustumDepth();
     }
 
-    this.viewOrg = origin;
-    this.viewDelta = delta;
+    this.viewOrg.setFrom(origin);
+    this.viewDelta.setFrom(delta);
 
     const frustFraction = this.rootToNpcFromViewDef(this.rootToNpc, origin, delta);
     if (!frustFraction)
@@ -702,7 +699,7 @@ export class Viewport {
    * Get the anchor point for a Zoom operation, based on a button event.
    * @return the center point for a zoom operation, in world coordinates
    */
-  public getZoomCenter(ev: ButtonEvent, result?: Point3d): Point3d {
+  public getZoomCenter(ev: BeButtonEvent, result?: Point3d): Point3d {
     const vp = ev.viewport!;
     return vp.viewToWorld(ev.viewPoint, result); // NEEDS_WORK
   }

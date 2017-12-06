@@ -7,13 +7,13 @@ import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { IModel } from "../../common/IModel";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
-export const enum Button {
+export const enum BeButton {
   Data = 0,
   Reset = 1,
   Middle = 2,
 }
 
-export enum Cursor {
+export enum BeCursor {
   Default = "default",
   CrossHair = "crosshair",
   OpenHand = "grab",
@@ -47,14 +47,14 @@ export const enum CoordSource {
   ElemSnap = 3,    // event was created by snapping to an element
 }
 
-export const enum ModifierKey {
+export const enum BeModifierKey {
   None = 0,
   Control = 1 << 0,
   Shift = 1 << 2,
   Alt = 1 << 3,
 }
 
-export const enum VirtualKey {
+export const enum BeVirtualKey {
   Shift,
   Control,
   Alt,
@@ -141,7 +141,7 @@ export const enum VirtualKey {
   F12,
 }
 
-export class ButtonState {
+export class BeButtonState {
   private _downUorPt: Point3d = new Point3d();
   private _downRawPt: Point3d = new Point3d();
   public downTime: number = 0;
@@ -166,16 +166,16 @@ export class ButtonState {
   }
 }
 
-export class ButtonEvent {
+export class BeButtonEvent {
   private _point: Point3d = new Point3d();
   private _rawPoint: Point3d = new Point3d();
   private _viewPoint: Point3d = new Point3d();
   public viewport?: Viewport;
   public coordsFrom: CoordSource;   // how were the coordinate values in point generated?
-  public keyModifiers: ModifierKey;
+  public keyModifiers: BeModifierKey;
   public isDoubleClick: boolean;
   public isDown: boolean;
-  public button: Button;
+  public button: BeButton;
   public inputSource: InputSource;
   public actualInputSource: InputSource;
 
@@ -186,7 +186,7 @@ export class ButtonEvent {
   public get viewPoint() { return this._viewPoint; }
   public set viewPoint(pt: Point3d) { this._viewPoint.setFrom(pt); }
 
-  public initEvent(point: Point3d, rawPoint: Point3d, viewPt: Point3d, vp: Viewport, from: CoordSource, keyModifiers: ModifierKey, button = Button.Data, isDown = true, doubleClick = false, source = InputSource.Unknown) {
+  public initEvent(point: Point3d, rawPoint: Point3d, viewPt: Point3d, vp: Viewport, from: CoordSource, keyModifiers: BeModifierKey, button = BeButton.Data, isDown = true, doubleClick = false, source = InputSource.Unknown) {
     this.point = point;
     this.rawPoint = rawPoint;
     this.viewPoint = viewPt;
@@ -201,12 +201,12 @@ export class ButtonEvent {
   }
 
   public getDisplayPoint(): Point2d { return new Point2d(this._viewPoint.x, this._viewPoint.y); }
-  public get isControlKey() { return 0 !== (this.keyModifiers & ModifierKey.Control); }
-  public get isShiftKey() { return 0 !== (this.keyModifiers & ModifierKey.Shift); }
-  public get isAltKey() { return 0 !== (this.keyModifiers & ModifierKey.Alt); }
+  public get isControlKey() { return 0 !== (this.keyModifiers & BeModifierKey.Control); }
+  public get isShiftKey() { return 0 !== (this.keyModifiers & BeModifierKey.Shift); }
+  public get isAltKey() { return 0 !== (this.keyModifiers & BeModifierKey.Alt); }
   public reset() { this.viewport = undefined; }
 
-  public copyFrom(src: ButtonEvent) {
+  public copyFrom(src: BeButtonEvent) {
     this.point = src.point;
     this.rawPoint = src.rawPoint;
     this.viewPoint = src.viewPoint;
@@ -219,8 +219,8 @@ export class ButtonEvent {
     this.inputSource = src.inputSource;
     this.actualInputSource = src.actualInputSource;
   }
-  public clone(result?: ButtonEvent): ButtonEvent {
-    result = result ? result : new ButtonEvent();
+  public clone(result?: BeButtonEvent): BeButtonEvent {
+    result = result ? result : new BeButtonEvent();
     result.copyFrom(this);
     return result;
   }
@@ -284,28 +284,28 @@ export class GestureInfo {
 }
 
 /** Specialization of ButtonEvent describing a gesture event, typically originating from touch input. */
-export class GestureEvent extends ButtonEvent {
+export class BeGestureEvent extends BeButtonEvent {
   public gestureInfo?: GestureInfo;
-  public copyFrom(src: GestureEvent) {
+  public copyFrom(src: BeGestureEvent) {
     super.copyFrom(src);
     this.gestureInfo = src.gestureInfo;
   }
-  public clone(result?: GestureEvent): GestureEvent {
-    result = result ? result : new GestureEvent();
+  public clone(result?: BeGestureEvent): BeGestureEvent {
+    result = result ? result : new BeGestureEvent();
     result.copyFrom(this);
     return result;
   }
 }
 
 /** Information about movement of the "wheel" on the mouse. */
-export class WheelMouseEvent extends ButtonEvent {
+export class BeWheelEvent extends BeButtonEvent {
   public constructor(public wheelDelta: number = 0) { super(); }
-  public copyFrom(src: WheelMouseEvent): void {
+  public copyFrom(src: BeWheelEvent): void {
     super.copyFrom(src);
     this.wheelDelta = src.wheelDelta;
   }
-  public clone(result?: WheelMouseEvent): WheelMouseEvent {
-    result = result ? result : new WheelMouseEvent();
+  public clone(result?: BeWheelEvent): BeWheelEvent {
+    result = result ? result : new BeWheelEvent();
     result.copyFrom(this);
     return result;
   }
@@ -318,32 +318,32 @@ export abstract class Tool {
   public installTool(): BentleyStatus { return this.installToolImplementation(); }
   public onPostInstall(): void { }  // Override to execute additional logic after tool becomes active
   public onInstall(): boolean { return true; } // Override to execute additional logic when tool is installed. Return false to prevent this tool from becoming active
-  public abstract onDataButtonDown(ev: ButtonEvent): void;   // Implement to handle data-button-down events
-  public onDataButtonUp(_ev: ButtonEvent): boolean { return false; } // Invoked when the data button is released.
-  public onResetButtonDown(_ev: ButtonEvent): boolean { return false; }  // Invoked when the reset button is pressed.
-  public onResetButtonUp(_ev: ButtonEvent): boolean { return false; }    // Invoked when the reset button is released.
-  public onMiddleButtonDown(_ev: ButtonEvent): boolean { return false; } // Invoked when the middle mouse button is pressed.
-  public onMiddleButtonUp(_ev: ButtonEvent): boolean { return false; }   // Invoked when the middle mouse button is released.
-  public onModelMotion(_ev: ButtonEvent): void { }    // Invoked when the cursor is moving
-  public onModelNoMotion(_ev: ButtonEvent): void { }  // Invoked when the cursor is not moving
-  public onModelMotionStopped(_ev: ButtonEvent): void { } // Invoked when the cursor was previously moving, and then stopped moving.
-  public onModelStartDrag(_ev: ButtonEvent): boolean { return false; }   // Invoked when the cursor begins moving while a button is depressed
-  public onModelEndDrag(ev: ButtonEvent) { return this.onDataButtonDown(ev); } // Invoked when the cursor stops moving while a button is depressed
-  public onMouseWheel(_ev: WheelMouseEvent): boolean { return false; } // Invoked when the mouse wheel is used.
+  public abstract onDataButtonDown(ev: BeButtonEvent): void;   // Implement to handle data-button-down events
+  public onDataButtonUp(_ev: BeButtonEvent): boolean { return false; } // Invoked when the data button is released.
+  public onResetButtonDown(_ev: BeButtonEvent): boolean { return false; }  // Invoked when the reset button is pressed.
+  public onResetButtonUp(_ev: BeButtonEvent): boolean { return false; }    // Invoked when the reset button is released.
+  public onMiddleButtonDown(_ev: BeButtonEvent): boolean { return false; } // Invoked when the middle mouse button is pressed.
+  public onMiddleButtonUp(_ev: BeButtonEvent): boolean { return false; }   // Invoked when the middle mouse button is released.
+  public onModelMotion(_ev: BeButtonEvent): void { }    // Invoked when the cursor is moving
+  public onModelNoMotion(_ev: BeButtonEvent): void { }  // Invoked when the cursor is not moving
+  public onModelMotionStopped(_ev: BeButtonEvent): void { } // Invoked when the cursor was previously moving, and then stopped moving.
+  public onModelStartDrag(_ev: BeButtonEvent): boolean { return false; }   // Invoked when the cursor begins moving while a button is depressed
+  public onModelEndDrag(ev: BeButtonEvent) { return this.onDataButtonDown(ev); } // Invoked when the cursor stops moving while a button is depressed
+  public onMouseWheel(_ev: BeWheelEvent): boolean { return false; } // Invoked when the mouse wheel is used.
   public abstract exitTool(): void;  // Implemented by direct subclasses to handle when the tool becomes no longer active. Generally not overridden by other subclasses
   public onCleanup() { } // Invoked when the tool becomes no longer active, to perform additional cleanup logic
   public onViewportResized() { }  // Invoked when the dimensions of the tool's viewport change
-  public updateDynamics(_ev: ButtonEvent) { } // Invoked to allow a tool to update any view decorations it may have created
+  public updateDynamics(_ev: BeButtonEvent) { } // Invoked to allow a tool to update any view decorations it may have created
   public onTouchMotionPaused(): boolean { return false; }
-  public onEndGesture(_ev: GestureEvent): boolean { return false; }
-  public onSingleFingerMove(_ev: GestureEvent): boolean { return false; }
-  public onMultiFingerMove(_ev: GestureEvent): boolean { return false; }
-  public onTwoFingerTap(_ev: GestureEvent): boolean { return false; }
-  public onPressAndTap(_ev: GestureEvent): boolean { return false; }
-  public onSingleTap(_ev: GestureEvent): boolean { return false; }
-  public onDoubleTap(_ev: GestureEvent): boolean { return false; }
-  public onLongPress(_ev: GestureEvent): boolean { return false; }
-  public isValidLocation(_ev: ButtonEvent, _isButtonEvent: boolean): boolean { return true; }
+  public onEndGesture(_ev: BeGestureEvent): boolean { return false; }
+  public onSingleFingerMove(_ev: BeGestureEvent): boolean { return false; }
+  public onMultiFingerMove(_ev: BeGestureEvent): boolean { return false; }
+  public onTwoFingerTap(_ev: BeGestureEvent): boolean { return false; }
+  public onPressAndTap(_ev: BeGestureEvent): boolean { return false; }
+  public onSingleTap(_ev: BeGestureEvent): boolean { return false; }
+  public onDoubleTap(_ev: BeGestureEvent): boolean { return false; }
+  public onLongPress(_ev: BeGestureEvent): boolean { return false; }
+  public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
   public isCompatibleViewport(vp: Viewport, _isSelectedViewChange: boolean): boolean { return !!vp; }
 
   /** Called when Control, Shift, or Alt qualifier keys are pressed or released.
@@ -351,7 +351,7 @@ export abstract class Tool {
    * @param key One of VirtualKey.Control, VirtualKey.Shift, or VirtualKey.Alt
    * @return true to refresh view decorations or update dynamics.
    */
-  public onModifierKeyTransition(_wentDown: boolean, _key: ModifierKey): boolean { return false; }
+  public onModifierKeyTransition(_wentDown: boolean, _key: BeModifierKey): boolean { return false; }
 
   /** Called when  keys are pressed or released.
    * @param wentDown up or down key event
@@ -361,7 +361,7 @@ export abstract class Tool {
    * @return true to prevent further processing of this event
    * @note In case of Shift, Control and Alt key, onModifierKeyTransition is used.
    */
-  public onKeyTransition(_wentDown: boolean, _key: VirtualKey, _shiftIsDown: boolean, _ctrlIsDown: boolean): boolean { return false; }
+  public onKeyTransition(_wentDown: boolean, _key: BeVirtualKey, _shiftIsDown: boolean, _ctrlIsDown: boolean): boolean { return false; }
 }
 
 export abstract class PrimitiveToolBase extends Tool {
@@ -407,7 +407,7 @@ export abstract class PrimitiveToolBase extends Tool {
    * Examples are undo, which may invalidate any references to elements, or an incompatible active view change.
    * The active tool is expected to call InstallTool with a new instance, or _ExitTool to start the default tool.
    *  @note You *MUST* check the status of InstallTool and call _ExitTool if it fails!
-   * \code
+   * ``` ts
    * MyTool.oOnRestartTool() {
    * const newTool = new MyTool();
    * if (BentleyStatus.SUCCESS !== newTool.installTool())
@@ -416,7 +416,7 @@ export abstract class PrimitiveToolBase extends Tool {
    * MyTool.onRestartTool() {
    * _this.exitTool(); // Tool always exits to default tool.
    * }
-   * \endcode
+   * ```
    */
   public abstract onRestartTool(): void;
 
@@ -428,5 +428,5 @@ export abstract class PrimitiveToolBase extends Tool {
 
   /** Called on data button down event in order to lock the tool to it's current target model. */
   public autoLockTarget(): void { if (!this.targetView) return; this.targetIsLocked = true; }
-  public getCursor(): Cursor { return Cursor.Arrow; }
+  public getCursor(): BeCursor { return BeCursor.Arrow; }
 }

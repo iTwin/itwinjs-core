@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Tool, Button, ButtonEvent, GestureEvent, WheelMouseEvent, PrimitiveToolBase } from "./Tool";
+import { Tool, BeButton, BeButtonEvent, BeGestureEvent, BeWheelEvent, PrimitiveToolBase } from "./Tool";
 import { ToolAdmin } from "./ToolAdmin";
 import { ViewManip, ViewHandleType, FitViewTool, RotatePanZoomGestureTool } from "./ViewTool";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
@@ -31,12 +31,12 @@ const toolAdmin = ToolAdmin.instance;
 export class IdleTool extends Tool {
   public get toolId() { return ""; }
 
-  public onMiddleButtonDown(ev: ButtonEvent): boolean {
+  public onMiddleButtonDown(ev: BeButtonEvent): boolean {
     const vp = ev.viewport;
     if (!vp)
       return true;
     const cur = toolAdmin.currentInputState;
-    if (cur.isDragging(Button.Data) || cur.isDragging(Button.Reset))
+    if (cur.isDragging(BeButton.Data) || cur.isDragging(BeButton.Reset))
       return false;
 
     let viewTool;
@@ -61,7 +61,7 @@ export class IdleTool extends Tool {
     return BentleyStatus.SUCCESS === viewTool.installTool();
   }
 
-  public onMiddleButtonUp(ev: ButtonEvent): boolean {
+  public onMiddleButtonUp(ev: BeButtonEvent): boolean {
     if (ev.isDoubleClick || ev.isControlKey || ev.isShiftKey)
       return false;
 
@@ -122,7 +122,7 @@ export class IdleTool extends Tool {
 
     // NOTE: Need to synch tool dynamics because of UpdateDynamics call in _ExitViewTool from OnMiddleButtonUp before point was adjusted. :(
     if (currTool && currTool instanceof PrimitiveToolBase) {
-      const tmpEv = new ButtonEvent();
+      const tmpEv = new BeButtonEvent();
       toolAdmin.fillEventFromCursorLocation(tmpEv);
       currTool.updateDynamics(tmpEv);
     }
@@ -130,16 +130,16 @@ export class IdleTool extends Tool {
     return true;
   }
 
-  public onMouseWheel(ev: WheelMouseEvent) {
-    return toolAdmin.processMouseWheelEvent(ev, true);
+  public onMouseWheel(ev: BeWheelEvent) {
+    return toolAdmin.processWheelEvent(ev, true);
   }
 
   public installToolImplementation() { return BentleyStatus.SUCCESS; }
   public exitTool() { }
-  public onDataButtonDown(_ev: ButtonEvent) { return false; }
-  public onMultiFingerMove(ev: GestureEvent) { const tool = new RotatePanZoomGestureTool(ev, true); tool.installTool(); return true; }
-  public onSingleFingerMove(ev: GestureEvent) { return this.onMultiFingerMove(ev); }
-  public onSingleTap(ev: GestureEvent) { toolAdmin.convertGestureSingleTapToButtonDownAndUp(ev); return true; }
-  public onDoubleTap(ev: GestureEvent) { if (ev.viewport) { const tool = new FitViewTool(ev.viewport, true); tool.installTool(); } return true; }
-  public onTwoFingerTap(ev: GestureEvent) { toolAdmin.convertGestureToResetButtonDownAndUp(ev); return true; }
+  public onDataButtonDown(_ev: BeButtonEvent) { return false; }
+  public onMultiFingerMove(ev: BeGestureEvent) { const tool = new RotatePanZoomGestureTool(ev, true); tool.installTool(); return true; }
+  public onSingleFingerMove(ev: BeGestureEvent) { return this.onMultiFingerMove(ev); }
+  public onSingleTap(ev: BeGestureEvent) { toolAdmin.convertGestureSingleTapToButtonDownAndUp(ev); return true; }
+  public onDoubleTap(ev: BeGestureEvent) { if (ev.viewport) { const tool = new FitViewTool(ev.viewport, true); tool.installTool(); } return true; }
+  public onTwoFingerTap(ev: BeGestureEvent) { toolAdmin.convertGestureToResetButtonDownAndUp(ev); return true; }
 }

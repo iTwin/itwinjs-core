@@ -9,8 +9,8 @@ import { ViewTool, ViewToolSettings } from "./ViewTool";
 import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
 import { BeEvent, BeEventList } from "@bentley/bentleyjs-core/lib/BeEvent";
 import {
-  ModifierKey, ButtonState, Button, GestureEvent, Tool, ButtonEvent, CoordSource, GestureInfo,
-  Cursor, PrimitiveToolBase, WheelMouseEvent, InputSource, VirtualKey,
+  BeModifierKey, BeButtonState, BeButton, BeGestureEvent, Tool, BeButtonEvent, CoordSource, GestureInfo,
+  BeCursor, PrimitiveToolBase, BeWheelEvent, InputSource, BeVirtualKey,
 } from "./Tool";
 
 // tslint:disable:no-empty
@@ -31,11 +31,11 @@ export class CurrentInputState {
   private _rawPoint: Point3d = new Point3d();
   private _uorPoint: Point3d = new Point3d();
   private _viewPoint: Point3d = new Point3d();
-  public qualifiers: ModifierKey;
+  public qualifiers: BeModifierKey;
   public motionTime: number;
   public viewport?: Viewport;
-  public button: ButtonState[] = [new ButtonState(), new ButtonState(), new ButtonState()];
-  public lastButton: Button = Button.Data;
+  public button: BeButtonState[] = [new BeButtonState(), new BeButtonState(), new BeButtonState()];
+  public lastButton: BeButton = BeButton.Data;
   public inputSource: InputSource = InputSource.Unknown;
   public inputOffset: Point2d = new Point2d();
   public wantIgnoreTest: boolean = false;
@@ -55,13 +55,13 @@ export class CurrentInputState {
   public set viewPoint(pt: Point3d) { this._viewPoint.setFrom(pt); }
   public get wasMotion() { return 0 !== this.motionTime; }
   public get wasTouchMotion() { return 0 !== this.touchMotionTime; }
-  public get isShiftDown() { return 0 !== (this.qualifiers & ModifierKey.Shift); }
-  public get isControlDown() { return 0 !== (this.qualifiers & ModifierKey.Control); }
-  public get isAltDown() { return 0 !== (this.qualifiers & ModifierKey.Alt); }
-  public isDragging(button: Button) { return this.button[button].isDragging; }
-  public onStartDrag(button: Button) { this.button[button].isDragging = true; }
-  public setKeyQualifier(qual: ModifierKey, down: boolean) { this.qualifiers = down ? (this.qualifiers | qual) : (this.qualifiers & (~qual)); }
-  public clearKeyQualifiers() { this.qualifiers = ModifierKey.None; }
+  public get isShiftDown() { return 0 !== (this.qualifiers & BeModifierKey.Shift); }
+  public get isControlDown() { return 0 !== (this.qualifiers & BeModifierKey.Control); }
+  public get isAltDown() { return 0 !== (this.qualifiers & BeModifierKey.Alt); }
+  public isDragging(button: BeButton) { return this.button[button].isDragging; }
+  public onStartDrag(button: BeButton) { this.button[button].isDragging = true; }
+  public setKeyQualifier(qual: BeModifierKey, down: boolean) { this.qualifiers = down ? (this.qualifiers | qual) : (this.qualifiers & (~qual)); }
+  public clearKeyQualifiers() { this.qualifiers = BeModifierKey.None; }
   public clearViewport(vp: Viewport) { if (vp === this.viewport) this.viewport = undefined; }
   private disableIgnoreTouchMotionTest() { this.wantIgnoreTest = false; }
 
@@ -102,7 +102,7 @@ export class CurrentInputState {
     return { eventTimer: timer, stopped: isStopped };
   }
 
-  public changeButtonToDownPoint(ev: ButtonEvent) {
+  public changeButtonToDownPoint(ev: BeButtonEvent) {
     ev.point = this.button[ev.button].downUorPt;
     ev.rawPoint = this.button[ev.button].downRawPt;
 
@@ -110,11 +110,11 @@ export class CurrentInputState {
       ev.viewPoint = ev.viewport.worldToView(ev.rawPoint);
   }
 
-  public updateDownPoint(ev: ButtonEvent) {
+  public updateDownPoint(ev: BeButtonEvent) {
     this.button[ev.button].downUorPt = ev.point;
   }
 
-  public onButtonDown(button: Button) {
+  public onButtonDown(button: BeButton) {
     const viewPt = this.viewport!.worldToView(this.button[button].downRawPt);
     const center = this.viewport!.npcToView(NpcCenter);
     viewPt.z = center.z;
@@ -126,13 +126,13 @@ export class CurrentInputState {
     this.button[button].init(this.uorPoint, this.rawPoint, now, true, isDoubleClick, false, this.inputSource);
     this.lastButton = button;
   }
-  public onButtonUp(button: Button) {
+  public onButtonUp(button: BeButton) {
     this.button[button].isDown = false;
     this.button[button].isDragging = false;
     this.lastButton = button;
   }
 
-  public toEvent(ev: ButtonEvent, _useSnap: boolean) {
+  public toEvent(ev: BeButtonEvent, _useSnap: boolean) {
     const from = CoordSource.User;
     const uorPt = this.uorPoint.clone();
     const vp = this.viewport;
@@ -157,20 +157,20 @@ export class CurrentInputState {
     ev.initEvent(uorPt, this.rawPoint, this.viewPoint, vp!, from, this.qualifiers, this.lastButton, buttonState.isDown, buttonState.isDoubleClick, this.inputSource);
   }
 
-  public adjustLastDataPoint(ev: ButtonEvent) {
-    const state = this.button[Button.Data];
+  public adjustLastDataPoint(ev: BeButtonEvent) {
+    const state = this.button[BeButton.Data];
     state.downUorPt = ev.point;
     state.downRawPt = ev.point;
     this.viewport = ev.viewport;
   }
 
-  public toEventFromLastDataPoint(ev: ButtonEvent) {
-    const state = this.button[Button.Data];
+  public toEventFromLastDataPoint(ev: BeButtonEvent) {
+    const state = this.button[BeButton.Data];
     const uorPt = state.downUorPt;
     const rawPt = state.downRawPt;
     const viewPt = this.viewport!.worldToView(rawPt);
 
-    ev.initEvent(uorPt, rawPt, viewPt, this.viewport!, CoordSource.User, this.qualifiers, Button.Data, state.isDown, state.isDoubleClick, state.inputSource);
+    ev.initEvent(uorPt, rawPt, viewPt, this.viewport!, CoordSource.User, this.qualifiers, BeButton.Data, state.isDown, state.isDoubleClick, state.inputSource);
   }
 
   public fromPoint(vp: Viewport, pt: Point2d, source: InputSource) {
@@ -211,7 +211,7 @@ export class CurrentInputState {
     return false;
   }
 
-  public isStartDrag(button: Button): boolean {
+  public isStartDrag(button: BeButton): boolean {
     // First make sure we aren't already dragging any button...
     if (this.isAnyDragging())
       return false;
@@ -270,7 +270,7 @@ export class ToolAdmin {
   public static instance = new ToolAdmin();
   public currentInputState = new CurrentInputState();
   public toolState = new ToolState();
-  private _viewCursor?: Cursor;
+  private _viewCursor?: BeCursor;
   private viewTool?: ViewTool;
   private primitiveTool?: PrimitiveToolBase;
   private idleTool: IdleTool;
@@ -284,7 +284,7 @@ export class ToolAdmin {
   // tentPoint: TentativePoint;
   // accuDraw: AccuDraw;
   private modifierKeyWentDown: boolean;
-  private modifierKey: ModifierKey;
+  private modifierKey: BeModifierKey;
   private touchBridgeMode: boolean; // Flag indicating that touch events are being converted into mouse events for this tool
 
   protected filterViewport(_vp: Viewport) { return false; }
@@ -310,7 +310,7 @@ export class ToolAdmin {
     this.currentInputState.clearViewport(vp);
   }
 
-  public initGestureEvent(ev: GestureEvent, vp: Viewport, gestureInfo: GestureInfo): void {
+  public initGestureEvent(ev: BeGestureEvent, vp: Viewport, gestureInfo: GestureInfo): void {
     const current = this.currentInputState;
     current.fromGesture(vp, gestureInfo, true);
     current.toEvent(ev, false);
@@ -321,20 +321,20 @@ export class ToolAdmin {
   public onWheel(vp: Viewport, wheelDelta: number, pt2d: Point2d): void {
     vp.removeAnimator();
     this.currentInputState.fromButton(vp, pt2d, InputSource.Mouse, true);
-    const wheelEvent = new WheelMouseEvent();
+    const wheelEvent = new BeWheelEvent();
     wheelEvent.wheelDelta = wheelDelta;
     this.currentInputState.toEvent(wheelEvent, true);
     this.onWheelEvent(wheelEvent);
   }
 
-  public onWheelEvent(wheelEvent: WheelMouseEvent): void {
+  public onWheelEvent(wheelEvent: BeWheelEvent): void {
     const activeTool = this.activeTool;
     if (!activeTool || !activeTool.onMouseWheel(wheelEvent))
       this.idleTool.onMouseWheel(wheelEvent);
   }
 
-  private static scratchButtonEvent1 = new ButtonEvent();
-  private static scratchButtonEvent2 = new ButtonEvent();
+  private static scratchButtonEvent1 = new BeButtonEvent();
+  private static scratchButtonEvent2 = new BeButtonEvent();
   /**
    * This is invoked on each frame to update current input state and forward model motion events to tools.
    */
@@ -415,7 +415,7 @@ export class ToolAdmin {
     ev.reset();
   }
 
-  public sendDataPoint(ev: ButtonEvent): void {
+  public sendDataPoint(ev: BeButtonEvent): void {
     const tool = this.activeTool;
     const current = this.currentInputState;
     if (!ev.isDown) {
@@ -448,7 +448,7 @@ export class ToolAdmin {
   }
 
   /** return true to filter (ignore) the given button event */
-  private filterButtonEvent(ev: ButtonEvent): boolean {
+  private filterButtonEvent(ev: BeButtonEvent): boolean {
     const vp = ev.viewport;
     if (!vp)
       return false;
@@ -457,11 +457,11 @@ export class ToolAdmin {
     return tool ? !tool.isCompatibleViewport(vp, false) : false;
   }
 
-  private onButtonEvent(ev: ButtonEvent): boolean {
+  private onButtonEvent(ev: BeButtonEvent): boolean {
     if (this.filterButtonEvent(ev))
       return false;
 
-    if (Button.Data !== ev.button)
+    if (BeButton.Data !== ev.button)
       return true;
 
     const tool = this.activeTool;
@@ -476,7 +476,7 @@ export class ToolAdmin {
     const ev = ToolAdmin.scratchButtonEvent1;
     const current = this.currentInputState;
     current.fromButton(vp, pt2d, inputSource, true);
-    current.onButtonDown(Button.Data);
+    current.onButtonDown(BeButton.Data);
     current.toEvent(ev, false);
     current.updateDownPoint(ev);
     this.sendDataPoint(ev);
@@ -488,11 +488,11 @@ export class ToolAdmin {
       return;
 
     const current = this.currentInputState;
-    const wasDragging = current.isDragging(Button.Data);
+    const wasDragging = current.isDragging(BeButton.Data);
 
     const ev = ToolAdmin.scratchButtonEvent1;
     current.fromButton(vp, pt2d, inputSource, true);
-    current.onButtonUp(Button.Data);
+    current.onButtonUp(BeButton.Data);
     current.toEvent(ev, true);
 
     if (!this.onButtonEvent(ev))
@@ -523,7 +523,7 @@ export class ToolAdmin {
     const ev = ToolAdmin.scratchButtonEvent1;
     const current = this.currentInputState;
     current.fromButton(vp, pt2d, InputSource.Mouse, true);
-    current.onButtonDown(Button.Middle);
+    current.onButtonDown(BeButton.Middle);
     current.toEvent(ev, true);
     current.updateDownPoint(ev);
 
@@ -550,11 +550,11 @@ export class ToolAdmin {
       return;
 
     const current = this.currentInputState;
-    const wasDragging = current.isDragging(Button.Middle);
+    const wasDragging = current.isDragging(BeButton.Middle);
 
     const ev = ToolAdmin.scratchButtonEvent1;
     current.fromButton(vp, pt2d, InputSource.Mouse, true);
-    current.onButtonUp(Button.Middle);
+    current.onButtonUp(BeButton.Middle);
     current.toEvent(ev, true);
 
     if (!this.onButtonEvent(ev))
@@ -589,7 +589,7 @@ export class ToolAdmin {
     const ev = ToolAdmin.scratchButtonEvent1;
     const current = this.currentInputState;
     current.fromButton(vp, pt2d, InputSource.Mouse, true);
-    current.onButtonDown(Button.Reset);
+    current.onButtonDown(BeButton.Reset);
     current.toEvent(ev, true);
     current.updateDownPoint(ev);
 
@@ -609,11 +609,11 @@ export class ToolAdmin {
       return;
 
     const current = this.currentInputState;
-    const wasDragging = current.isDragging(Button.Reset);
+    const wasDragging = current.isDragging(BeButton.Reset);
 
     const ev = ToolAdmin.scratchButtonEvent1;
     current.fromButton(vp, pt2d, InputSource.Mouse, true);
-    current.onButtonUp(Button.Reset);
+    current.onButtonUp(BeButton.Reset);
     current.toEvent(ev, true);
 
     if (!this.onButtonEvent(ev))
@@ -641,8 +641,8 @@ export class ToolAdmin {
     //    TentativePoint:: GetInstance().OnButtonEvent();
   }
 
-  private scratchGestureEvent = new GestureEvent();
-  private onGestureEvent(ev: GestureEvent): boolean { return (!this.filterButtonEvent(ev)); }
+  private scratchGestureEvent = new BeGestureEvent();
+  private onGestureEvent(ev: BeGestureEvent): boolean { return (!this.filterButtonEvent(ev)); }
   public onEndGesture(vp: Viewport, gestureInfo: GestureInfo): void {
     vp.removeAnimator();
     this.gesturePending = false;
@@ -721,7 +721,7 @@ export class ToolAdmin {
   public onDoubleTap(vp: Viewport, gestureInfo: GestureInfo) { this.processGestureInfo(vp, gestureInfo, "onDoubleTap"); }
   public onLongPress(vp: Viewport, gestureInfo: GestureInfo) { this.processGestureInfo(vp, gestureInfo, "onLongPress"); }
 
-  public onModifierKeyTransition(wentDown: boolean, key: ModifierKey) {
+  public onModifierKeyTransition(wentDown: boolean, key: BeModifierKey) {
     if (wentDown === this.modifierKeyWentDown && key === this.modifierKey)
       return;
 
@@ -742,21 +742,21 @@ export class ToolAdmin {
     }
   }
 
-  private static getModifierKeyFromVirtualKey(key: VirtualKey): ModifierKey {
+  private static getModifierKeyFromVirtualKey(key: BeVirtualKey): BeModifierKey {
     switch (key) {
-      case VirtualKey.Alt: return ModifierKey.Alt;
-      case VirtualKey.Shift: return ModifierKey.Shift;
-      case VirtualKey.Control: return ModifierKey.Control;
+      case BeVirtualKey.Alt: return BeModifierKey.Alt;
+      case BeVirtualKey.Shift: return BeModifierKey.Shift;
+      case BeVirtualKey.Control: return BeModifierKey.Control;
     }
-    return ModifierKey.None;
+    return BeModifierKey.None;
   }
 
-  public onKeyTransition(wentDown: boolean, key: VirtualKey): boolean {
+  public onKeyTransition(wentDown: boolean, key: BeVirtualKey): boolean {
     const activeTool = this.activeTool;
     if (!activeTool)
       return false;
 
-    if (VirtualKey.Shift === key || VirtualKey.Control === key || VirtualKey.Alt === key) {
+    if (BeVirtualKey.Shift === key || BeVirtualKey.Control === key || BeVirtualKey.Alt === key) {
       this.onModifierKeyTransition(wentDown, ToolAdmin.getModifierKeyFromVirtualKey(key));
       return true;
     }
@@ -821,7 +821,7 @@ export class ToolAdmin {
 
     // AccuSnap:: GetInstance().OnStartTool();
 
-    this.viewCursor = Cursor.CrossHair;
+    this.viewCursor = BeCursor.CrossHair;
     // we don't actually start the tool here...
   }
 
@@ -852,23 +852,23 @@ export class ToolAdmin {
     } else {
       this.setViewTool(undefined);
       this.setPrimitiveTool(undefined);
-      this.viewCursor = Cursor.Default;
+      this.viewCursor = BeCursor.Default;
     }
   }
 
   public get viewCursor() { return this._viewCursor; }
-  public set viewCursor(cursor: Cursor | undefined) {
-    this._viewCursor = cursor ? cursor : Cursor.Default;
+  public set viewCursor(cursor: BeCursor | undefined) {
+    this._viewCursor = cursor ? cursor : BeCursor.Default;
     // const canvas = this.viewport.canvas;
     // canvas.style.cursor = cursor;
   }
 
-  public fillEventFromCursorLocation(ev: ButtonEvent) { this.currentInputState.toEvent(ev, true); }
-  public fillEventFromDataButton(ev: ButtonEvent) { this.currentInputState.toEventFromLastDataPoint(ev); }
-  public fillEventFromLastDataButton(ev: ButtonEvent) { this.currentInputState.toEventFromLastDataPoint(ev); }
-  public setAdjustedDataPoint(ev: ButtonEvent) { this.currentInputState.adjustLastDataPoint(ev); }
+  public fillEventFromCursorLocation(ev: BeButtonEvent) { this.currentInputState.toEvent(ev, true); }
+  public fillEventFromDataButton(ev: BeButtonEvent) { this.currentInputState.toEventFromLastDataPoint(ev); }
+  public fillEventFromLastDataButton(ev: BeButtonEvent) { this.currentInputState.toEventFromLastDataPoint(ev); }
+  public setAdjustedDataPoint(ev: BeButtonEvent) { this.currentInputState.adjustLastDataPoint(ev); }
 
-  public convertGestureSingleTapToButtonDownAndUp(ev: GestureEvent) {
+  public convertGestureSingleTapToButtonDownAndUp(ev: BeGestureEvent) {
     this.touchBridgeMode = true;
 
     const displayPoint = ev.getDisplayPoint();
@@ -878,7 +878,7 @@ export class ToolAdmin {
     this.touchBridgeMode = false;
   }
 
-  public convertGestureToResetButtonDownAndUp(ev: GestureEvent) {
+  public convertGestureToResetButtonDownAndUp(ev: BeGestureEvent) {
     this.touchBridgeMode = true;
 
     const displayPoint = ev.getDisplayPoint();
@@ -888,7 +888,7 @@ export class ToolAdmin {
     this.touchBridgeMode = false;
   }
 
-  public convertGestureMoveToButtonDownAndMotion(ev: GestureEvent) {
+  public convertGestureMoveToButtonDownAndMotion(ev: BeGestureEvent) {
     this.touchBridgeMode = true;
     const vp = ev.viewport!;
     if (0 === ev.gestureInfo!.previousNumberTouches)
@@ -897,7 +897,7 @@ export class ToolAdmin {
       this.onMouseMotion(vp, ev.getDisplayPoint(), InputSource.Touch);
   }
 
-  public convertGestureEndToButtonUp(ev: GestureEvent) {
+  public convertGestureEndToButtonUp(ev: BeGestureEvent) {
     this.onDataButtonUp(ev.viewport!, ev.getDisplayPoint(), InputSource.Touch);
     this.touchBridgeMode = false;
   }
@@ -905,7 +905,7 @@ export class ToolAdmin {
   private wheelEventProcessor = new WheelEventProcessor();
 
   /** Performs default handling of mouse wheel event (zoom in/out) */
-  public processMouseWheelEvent(ev: WheelMouseEvent, doUpdate: boolean): boolean {
+  public processWheelEvent(ev: BeWheelEvent, doUpdate: boolean): boolean {
     this.wheelEventProcessor.ev = ev;
     const result = this.wheelEventProcessor.process(doUpdate);
     this.wheelEventProcessor.ev = undefined;
@@ -918,14 +918,14 @@ export class ToolAdmin {
 }
 
 // tslint:disable-next-line:variable-name
-const MouseWheelSettings = {
+const WheelSettings = {
   zoomRatio: 1.75,
   navigateDistPct: 3.0,
   navigateMouseDistPct: 10.0,
 };
 
 class WheelEventProcessor {
-  constructor(public ev?: WheelMouseEvent) { }
+  constructor(public ev?: BeWheelEvent) { }
   public process(doUpdate: boolean): boolean {
     const vp = this.ev!.viewport;
     if (!vp)
@@ -948,7 +948,7 @@ class WheelEventProcessor {
 
   private doZoom(): ViewStatus {
     const ev = this.ev!;
-    let zoomRatio = Math.max(1.0, MouseWheelSettings.zoomRatio);
+    let zoomRatio = Math.max(1.0, WheelSettings.zoomRatio);
 
     const wheelDelta = ev.wheelDelta;
     if (wheelDelta > 0)

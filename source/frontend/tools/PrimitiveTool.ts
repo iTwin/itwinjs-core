@@ -2,7 +2,7 @@
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ToolAdmin, CoordinateLockOverrides } from "./ToolAdmin";
-import { PrimitiveToolBase, ButtonEvent } from "./Tool";
+import { PrimitiveToolBase, BeButtonEvent } from "./Tool";
 import { Viewport } from "../Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { ViewManager } from "../ViewManager";
@@ -84,7 +84,7 @@ export abstract class PrimitiveTool extends PrimitiveToolBase {
    * outside the project extents, but it will be sufficient to handle most cases and provide good feedback to the user.
    * @return true if ev is acceptable.
    */
-  public isValidLocation(ev: ButtonEvent, isButtonEvent: boolean) {
+  public isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean) {
     const vp = ev.viewport;
     if (!vp)
       return false;
@@ -119,7 +119,7 @@ export abstract class PrimitiveTool extends PrimitiveToolBase {
 
   // Tools need to call SaveChanges to commit any elements they have added/changes they have made.
   // This helper method supplies the tool name for the undo string to iModel::SaveChanges.
-  // BeSQLite:: DbResult SaveChanges() { return GetiModel().SaveChanges(GetLocalizedToolName().c_str()); }
+  // BeSQLite:: DbResult SaveChanges() { return GetIModel().SaveChanges(GetLocalizedToolName().c_str()); }
 
   // //! Ensures that any locks and/or codes required for the operation are obtained from iModelServer before making any changes to the iModel.
   // //! Default implementation invokes _PopulateRequest() and forwards request to server.
@@ -154,7 +154,7 @@ export abstract class PrimitiveTool extends PrimitiveToolBase {
   // DGNVIEW_EXPORT virtual void _EndDynamics();
 
   /** Called to display dynamic elements. */
-  public onDynamicFrame(_ev: ButtonEvent) { }
+  public onDynamicFrame(_ev: BeButtonEvent) { }
 
   public callOnRestartTool(): void { this.onRestartTool(); }
   public undoPreviousStep(): boolean {
@@ -163,13 +163,13 @@ export abstract class PrimitiveTool extends PrimitiveToolBase {
 
     // AccuDrawShortcuts:: ProcessPendingHints(); // Process any hints the active tool setup in _OnUndoPreviousStep now...
 
-    const ev = new ButtonEvent();
+    const ev = new BeButtonEvent();
     toolAdmin.fillEventFromCursorLocation(ev);
     this.updateDynamics(ev);
     return true;
   }
 
-  public updateDynamics(ev: ButtonEvent): void {
+  public updateDynamics(ev: BeButtonEvent): void {
     if (!ev.viewport || !viewManager.inDynamicsMode)
       return;
 

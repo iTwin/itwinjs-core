@@ -2,7 +2,7 @@
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Viewport } from "../Viewport";
-import { GestureId, GestureInfo, ModifierKey, InputSource } from "./Tool";
+import { GestureId, GestureInfo, BeModifierKey, InputSource } from "./Tool";
 import { ToolAdmin } from "./ToolAdmin";
 import { Point2d } from "@bentley/geometry-core/lib/PointVector";
 
@@ -169,8 +169,8 @@ export class EventController {
     this.registerListener("touchcancel", element, this.handleTouchCancel as EventListener);
   }
 
-  private recordShiftKey() { toolAdmin.currentInputState.setKeyQualifier(ModifierKey.Shift, true); }
-  private recordControlKey() { toolAdmin.currentInputState.setKeyQualifier(ModifierKey.Control, true); }
+  private recordShiftKey() { toolAdmin.currentInputState.setKeyQualifier(BeModifierKey.Shift, true); }
+  private recordControlKey() { toolAdmin.currentInputState.setKeyQualifier(BeModifierKey.Control, true); }
   private clearKeyboardModifiers() { toolAdmin.currentInputState.clearKeyQualifiers(); }
 
   private handleMiddleDown(pos: Point2d) { toolAdmin.onMiddleButtonDown(this.vp, pos); }
