@@ -315,10 +315,10 @@ export class IModelDb extends IModel {
 
     return new Promise<string>((resolve, reject) => {
       this.nativeDb!.getElementPropertiesForDisplay(elementId, (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
-      if (error)
-        reject(new IModelError(error.status, error.message, Logger.logError, () => ({ iModelId: this._iModelToken.iModelId, elementId })));
-      else
-        resolve(json);
+        if (error)
+          reject(new IModelError(error.status, error.message, Logger.logError, () => ({ iModelId: this._iModelToken.iModelId, elementId })));
+        else
+          resolve(json);
       });
     });
   }
@@ -460,10 +460,10 @@ export class IModelDbModels {
   /** The Id of the repository model. */
   public get repositoryModelId(): Id64 { return new Id64("0x1"); }
 
- /** Create a new model in memory.
-  * @param modelProps The properties to use when creating the model.
-  * @throws [[IModelError]] if there is a problem creating the model.
-  */
+  /** Create a new model in memory.
+   * @param modelProps The properties to use when creating the model.
+   * @throws [[IModelError]] if there is a problem creating the model.
+   */
   public createModel(modelProps: ModelProps): Model {
     const model: Model = this._iModel.constructEntity(modelProps) as Model;
     assert(model instanceof Model);
@@ -558,18 +558,18 @@ export class IModelDbElements {
         }
       });
     });
-}
+  }
 
-public async getElementJson(elementIdStr: string): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
-    this._iModel.nativeDb!.getElement(JSON.stringify({ id: elementIdStr }), (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
-      if (error)
-        reject(new IModelError(error.status, error.message, Logger.logWarning));
-      else
-        resolve(json);
+  public async getElementJson(elementIdStr: string): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      this._iModel.nativeDb!.getElement(JSON.stringify({ id: elementIdStr }), (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
+        if (error)
+          reject(new IModelError(error.status, error.message, Logger.logWarning));
+        else
+          resolve(json);
+      });
     });
-  });
-}
+  }
 
   /** Private implementation details of getElement */
   private async _doGetElement(opts: ElementLoadParams): Promise<Element> {
@@ -626,14 +626,9 @@ public async getElementJson(elementIdStr: string): Promise<string> {
    * @returns The newly inserted element's Id.
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public insertElement(el: Element): Id64 {
+  public insertElement(el: ElementProps): Id64 {
     if (!this._iModel.iModelToken.isOpen || !this._iModel.nativeDb)
       throw this._iModel._newNotOpenError();
-
-    if (el.isPersistent()) {
-      assert(false);
-      throw new IModelError(IModelStatus.WriteError, "Cannot insert an element marked as persistent. Call copyForEdit.", Logger.logError);
-    }
 
     const { error, result: json } = this._iModel.nativeDb.insertElementSync(JSON.stringify(el));
     if (error)
@@ -642,17 +637,13 @@ public async getElementJson(elementIdStr: string): Promise<string> {
     return new Id64(JSON.parse(json!).id);
   }
 
-  /** Update an existing element.
-   * @param el An editable copy of the element, containing the new/proposed data.
+  /** Update some properties of an existing element.
+   * @param el the properties of the element to update.
    * @throws [[IModelError]] if unable to update the element.
    */
-  public updateElement(el: Element): void {
+  public updateElement(el: ElementProps): void {
     if (!this._iModel.iModelToken.isOpen || !this._iModel.nativeDb)
       throw this._iModel._newNotOpenError();
-
-    if (el.isPersistent()) {
-      throw new IModelError(IModelStatus.WriteError, "Cannot update an element marked as persistent. Call copyForEdit.", Logger.logError);
-    }
 
     const error: IModelStatus = this._iModel.nativeDb.updateElementSync(JSON.stringify(el));
     if (error !== IModelStatus.Success)
@@ -663,19 +654,19 @@ public async getElementJson(elementIdStr: string): Promise<string> {
   }
 
   /** Delete an existing element.
-   * @param el The element to be deleted
+   * @param id The Id of the element to be deleted
    * @throws [[IModelError]]
    */
-  public deleteElement(el: Element): void {
+  public deleteElement(id: Id64): void {
     if (!this._iModel.iModelToken.isOpen || !this._iModel.nativeDb)
       throw this._iModel._newNotOpenError();
 
-    const error: IModelStatus = this._iModel.nativeDb.deleteElementSync(el.id.toString());
+    const error: IModelStatus = this._iModel.nativeDb.deleteElementSync(id.toString());
     if (error !== IModelStatus.Success)
       throw new IModelError(error, "", Logger.logWarning);
 
     // Discard from the cache
-    this._loaded.delete(el.id.toString());
+    this._loaded.delete(id.toString());
   }
 
   /** Query for the child elements of the specified element.

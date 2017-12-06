@@ -7,7 +7,7 @@ import { Viewport } from "../Viewport";
 import { IdleTool } from "./IdleTool";
 import { ViewTool, ViewToolSettings } from "./ViewTool";
 import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
-import { EventList, Event } from "@bentley/bentleyjs-core/lib/Event";
+import { BeEvent, BeEventList } from "@bentley/bentleyjs-core/lib/BeEvent";
 import {
   ModifierKey, ButtonState, Button, GestureEvent, Tool, ButtonEvent, CoordSource, GestureInfo,
   Cursor, PrimitiveToolBase, WheelMouseEvent, InputSource, VirtualKey,
@@ -266,7 +266,7 @@ export class CurrentInputState {
   }
 }
 export class ToolAdmin {
-  private _toolEvents = new EventList();
+  private _toolEvents = new BeEventList();
   public static instance = new ToolAdmin();
   public currentInputState = new CurrentInputState();
   public toolState = new ToolState();
@@ -300,7 +300,7 @@ export class ToolAdmin {
    * Event that is raised whenever the active tool changes. This includes both primitive and viewing tools.
    * @param newTool The newly activated tool
    */
-  public get activeToolChanged(): Event<(newTool: Tool) => void> { return this._toolEvents.get("activeTool"); }
+  public get activeToolChanged(): BeEvent<(newTool: Tool) => void> { return this._toolEvents.get("activeTool"); }
 
   /** called when a viewport is closed */
   public onViewportClosed(vp: Viewport): void {

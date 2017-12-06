@@ -153,8 +153,8 @@ export abstract class PrimitiveTool extends PrimitiveToolBase {
   // //! @see #_OnDynamicFrame
   // DGNVIEW_EXPORT virtual void _EndDynamics();
 
-  // //! Called to display dynamic elements.
-  // virtual void _OnDynamicFrame(DgnButtonEventCR, DynamicsContextR) { }
+  /** Called to display dynamic elements. */
+  public onDynamicFrame(_ev: ButtonEvent) { }
 
   public callOnRestartTool(): void { this.onRestartTool(); }
   public undoPreviousStep(): boolean {
@@ -174,6 +174,6 @@ export abstract class PrimitiveTool extends PrimitiveToolBase {
       return;
 
     // DynamicsContext context(* ev.GetViewport(), Render:: Task:: Priority:: Highest());
-    // _OnDynamicFrame(ev, context);
+    this.onDynamicFrame(ev);
   }
 }

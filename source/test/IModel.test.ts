@@ -524,7 +524,7 @@ describe("iModel", () => {
 
     // ------------ delete -----------------
     const elid = afterUpdateElemFetched.id;
-    await imodel4.elements.deleteElement(afterUpdateElemFetched);
+    await imodel4.elements.deleteElement(elid);
     try {
       await imodel4.elements.getElement(elid);
       assert.fail("should fail to load the element.");
@@ -683,7 +683,7 @@ describe("iModel", () => {
       const modeledElementProps: ElementProps = {
         classFullName: "BisCore:PhysicalPartition",
         iModel: testImodel,
-        parent: {id: testImodel.elements.rootSubjectId, relClass: "BisCore:SubjectOwnsPartitionElements"},
+        parent: { id: testImodel.elements.rootSubjectId, relClass: "BisCore:SubjectOwnsPartitionElements" },
         model: testImodel.models.repositoryModelId,
         id: new Id64(),
         code: Code.createEmpty(),
@@ -693,7 +693,7 @@ describe("iModel", () => {
       assert.isTrue(modeledElementId.isValid());
 
       // Create the model (in memory)
-      const newModel = testImodel.models.createModel({id: new Id64(), modeledElement: modeledElementId, classFullName: "BisCore:PhysicalModel", isPrivate: true});
+      const newModel = testImodel.models.createModel({ id: new Id64(), modeledElement: modeledElementId, classFullName: "BisCore:PhysicalModel", isPrivate: true });
 
       // Insert the model into the BIM
       newModelId = testImodel.models.insertModel(newModel);

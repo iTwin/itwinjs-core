@@ -3,12 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 import { Viewport } from "./Viewport";
 import { Cursor } from "./tools/Tool";
-import { Event } from "@bentley/bentleyjs-core/lib/Event";
+import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import { EventController } from "./tools/EventController";
 
-/** the ViewManager holds the list of opened views, plus the "selected view" */
+/** The ViewManager holds the list of opened views, plus the "selected view" */
 export class ViewManager {
   public static readonly instance = new ViewManager();
   public readonly viewports: Viewport[] = [];
@@ -17,26 +17,27 @@ export class ViewManager {
   private _selectedView?: Viewport;
 
   /** Called after the selected view changes.
-   * @param old   Previously selected viewport.
-   * @param current    Currently selected viewport.
+   * @param old Previously selected viewport.
+   * @param current Currently selected viewport.
    */
-  public readonly onSelectedViewportChanged = new Event<(old: Viewport | undefined, current: Viewport | undefined) => void>();
+  public readonly onSelectedViewportChanged = new BeEvent<(old: Viewport | undefined, current: Viewport | undefined) => void>();
 
   /** Called after a view is opened. This can happen when the iModel is first opened or when a user opens a closed view. */
-  public readonly onViewOpen = new Event<(vp: Viewport) => void>();
+  public readonly onViewOpen = new BeEvent<(vp: Viewport) => void>();
 
   /** Called after a view is closed. This can happen when the iModel is closed or when a user closes an open view. */
-  public readonly onViewClose = new Event<(vp: Viewport) => void>();
+  public readonly onViewClose = new BeEvent<(vp: Viewport) => void>();
 
   /** Called after a view is suspended. This can happen when the application is minimized. */
-  public readonly onViewSuspend = new Event<(vp: Viewport) => void>();
+  public readonly onViewSuspend = new BeEvent<(vp: Viewport) => void>();
 
-  /** Called after a suspended view is resumed.This can happen when a minimized application is stored
+  /**
+   * Called after a suspended view is resumed. This can happen when a minimized application is restored
    * or, on a tablet, when the application is moved to the foreground.
    */
-  public readonly onViewResume = new Event<(vp: Viewport) => void>();
+  public readonly onViewResume = new BeEvent<(vp: Viewport) => void>();
 
-  /** The "selected view" determines  */
+  /** The "selected view" is the default for certain operations.  */
   public get selectedView() { return this._selectedView; }
   public set selectedView(vp: Viewport | undefined) {
     if (!vp)
@@ -50,11 +51,14 @@ export class ViewManager {
     this.onSelectedViewportChanged.raiseEvent(oldVp, vp);
   }
 
-  /** get the first opened view. */
+  /** Get the first opened view. */
   public getFirstOpenView(): Viewport | undefined { return this.viewports.length > 0 ? this.viewports[0] : undefined; }
 
-  /** Add a new Viewport to the list of opened views. Does nothing if newVp is already present in the list.
+  /**
+   * Add a new Viewport to the list of opened views and create an EventController for it.
    * @param newVp the Viewport to add
+   * @note raises onViewOpen event with newVp.
+   * @note Does nothing if newVp is already present in the list.
    */
   public addViewport(newVp: Viewport): void {
     for (const vp of this.viewports) { if (vp === newVp) return; } // make sure its not already in view array
@@ -63,9 +67,11 @@ export class ViewManager {
     this.onViewOpen.raiseEvent(newVp);
   }
 
-  /** Remove a Viewport from the list of opened views.
+  /**
+   * Remove a Viewport from the list of opened views.
    * @param vp the Viewport to remove.
    * @return SUCCESS if vp was successfully removed, ERROR if it was not present.
+   * @note raises onViewClose event with vp.
    */
   public dropViewport(vp: Viewport): BentleyStatus {
     this.onViewClose.raiseEvent(vp);

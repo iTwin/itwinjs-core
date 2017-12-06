@@ -36,20 +36,13 @@ export class IModelToken {
 
 /** An abstract class representing an instance of an iModel. */
 export class IModel {
-  public readonly name: string;
-  public readonly description: string;
-  public readonly extents: AxisAlignedBox3d = new AxisAlignedBox3d();
-
   /** @hidden */
   protected _iModelToken: IModelToken;
   /** The token that can be used to find this iModel instance. */
   public get iModelToken(): IModelToken { return this._iModelToken; }
   /** @hidden */
-  protected constructor(iModelToken: IModelToken, name: string, description: string, extents: any) {
+  protected constructor(iModelToken: IModelToken, public readonly name: string, public readonly description: string, public readonly extents: AxisAlignedBox3d) {
     this._iModelToken = iModelToken;
-    this.name = name;
-    this.description = description;
-    this.extents = extents;
   }
 
   /** @hidden */

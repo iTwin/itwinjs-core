@@ -18,8 +18,8 @@
     "NOTE: dependencies that are in common with imodeljs-frontend and imodeljs-backend must have a consistent version"
   ],
   "dependencies": {
-    "@bentley/bentleyjs-core": "^1.0.47",
-    "@bentley/geometry-core": "^1.0.29",
+    "@bentley/bentleyjs-core": "^1.0.49",
+    "@bentley/geometry-core": "^1.0.30",
     "@bentley/imodeljs-clients": "^1.0.36",
     "@bentley/imodeljs-nodeaddon": "^1.2.0",
     "@bentley/imodeljs-nodeaddonapi": "^1.2.0",

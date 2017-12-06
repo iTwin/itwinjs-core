@@ -13,21 +13,22 @@ const toolAdmin = ToolAdmin.instance;
  * The default "idle" tool. If no tool is active, or the active tool does not respond to a given
  * event, input events are forwarded to the idle tool. The default idle tool converts middle mouse button events
  * and touch gestures into view navigation operations like pan, zoom, rotate, and fit.
- * Controls are as follows:
- *  Mouse/keyboard:
- *      mmb: pan
- *      shift-mmb: rotate
- *      wheel: zoom in/out
- *      double-mmb: fit view
- *  Touch:
- *      single-finger drag: rotate
- *      two-finger drag: pan
- *      pinch: zoom in/out
- *      double-tap: fit view
- *  Touch inputs can be combined e.g. drag two fingers while moving them closer together => pan + zoom in
  */
-export class IdleTool extends Tool {
 
+/* Controls are as follows:
+*  Mouse/keyboard:
+*      mmb: pan
+*      shift-mmb: rotate
+*      wheel: zoom in/out
+*      double-mmb: fit view
+*  Touch:
+*      single-finger drag: rotate
+*      two-finger drag: pan
+*      pinch: zoom in/out
+*      double-tap: fit view
+*  Touch inputs can be combined e.g. drag two fingers while moving them closer together => pan + zoom in
+*/
+export class IdleTool extends Tool {
   public get toolId() { return ""; }
 
   public onMiddleButtonDown(ev: ButtonEvent): boolean {

@@ -8,7 +8,7 @@ import { ViewState, Frustum, ViewStatus, Npc, NpcCenter, NpcCorners } from "../c
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { ElementAlignedBox2d } from "../common/geometry/Primitives";
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core/lib/Time";
-import { Event } from "@bentley/bentleyjs-core/lib/Event";
+import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { ButtonEvent } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 
@@ -107,7 +107,7 @@ class Animator {
  */
 export class Viewport {
   /** Called whenever this viewport is synchronized with its ViewState */
-  public readonly onViewChanged = new Event<(vp: Viewport) => void>();
+  public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
   private zClipAdjusted = false;    // were the view z clip planes adjusted due to front/back clipping off?
   /** view origin, potentially expanded */
   public readonly viewOrg = new Point3d();
