@@ -703,7 +703,7 @@ export class EventController {
 
   private processTouches(ev: TouchEvent, func: (id: number, num: number, x: number, y: number) => void) {
     const touches = ev.changedTouches;
-    const numFingers = ev.touches.length;
+    const numFingers = touches.length;
 
     // tslint:disable-next-line:prefer-for-of
     for (let i = 0; i < touches.length; ++i) {
