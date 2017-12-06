@@ -215,7 +215,7 @@ export class EntityState implements EntityProps {
   public clone<T extends EntityState>() { return new (this.constructor as EntityStateCtor)(this.toJSON(), this.iModel, this) as T; }
 }
 
-export class ModelState extends EntityState implements ModelProps {
+export abstract class ModelState extends EntityState implements ModelProps {
   public readonly modeledElement: Id64;
   public readonly parentModel: Id64;
   public readonly jsonProperties: any;
@@ -290,7 +290,7 @@ export class ElementState extends EntityState implements ElementProps {
 }
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
-export class DisplayStyleState extends ElementState {
+export abstract class DisplayStyleState extends ElementState {
   private _viewFlags: ViewFlags;
   private _background: ColorDef;
 
@@ -917,7 +917,7 @@ export abstract class ViewState extends ElementState {
   }
 }
 
-/**
+/*
  * This is what the parameters to the camera methods, and the values stored by ViewDefinition3d mean.
  * @verbatim
  *                v-- {origin}
@@ -971,7 +971,9 @@ export abstract class ViewState extends ElementState {
  *            or "wide and shallow slices", etc.) are problematic and disallowed based on ratio limits.
  */
 
-/** The current position, lens angle, and focus distance of a camera. */
+/**
+ * The current position (eyepoint), lens angle, and focus distance of a camera.
+ */
 export class Camera {
   public readonly lens: Angle;
   public focusDistance: number;
@@ -1054,15 +1056,16 @@ export abstract class ViewState3d extends ViewState {
     const xBack = frustPts[Npc.LeftBottomRear].distance(frustPts[Npc.RightBottomRear]);
     const xFront = frustPts[Npc.LeftBottomFront].distance(frustPts[Npc.RightBottomFront]);
 
-    const sFlatViewFractionTolerance = 1.0e-6;
-    if (xFront > xBack * (1.0 + sFlatViewFractionTolerance))
+    const flatViewFractionTolerance = 1.0e-6;
+    if (xFront > xBack * (1.0 + flatViewFractionTolerance))
       return ViewStatus.InvalidWindow;
 
     // see if the frustum is tapered, and if so, set up camera eyepoint and adjust viewOrg and delta.
     const compression = xFront / xBack;
-    if (compression >= (1.0 - sFlatViewFractionTolerance))
+    if (compression >= (1.0 - flatViewFractionTolerance))
       return ViewStatus.Success;
 
+    // the frustum has perspective, turn camera on
     let viewOrg = frustPts[Npc.LeftBottomRear];
     const viewDelta = this.getExtents().clone();
     const zDir = this.getZVector();
@@ -1410,7 +1413,7 @@ export class SpatialViewState extends ViewState3d {
       this.modelSelector = arg3.modelSelector;
     }
   }
-  public getViewedExtents(): AxisAlignedBox3d { return this.iModel.projectExtents; }
+  public getViewedExtents(): AxisAlignedBox3d { return this.iModel.extents; }
 
   public toJSON(): SpatialViewDefinitionProps {
     const val = super.toJSON() as SpatialViewDefinitionProps;

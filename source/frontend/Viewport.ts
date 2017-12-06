@@ -4,18 +4,37 @@
 import { Vector3d, XYZ, Point3d, Range3d, RotMatrix, Transform, Point2d } from "@bentley/geometry-core/lib/PointVector";
 import { Map4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { AxisOrder, Angle } from "@bentley/geometry-core/lib/Geometry";
-import { ViewState, Frustum, ViewStatus, Npc, NpcCorners, NpcCenter } from "../common/ViewState";
+import { ViewState, Frustum, ViewStatus, Npc, NpcCenter, NpcCorners } from "../common/ViewState";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { ElementAlignedBox2d } from "../common/geometry/Primitives";
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core/lib/Time";
+import { Event } from "@bentley/bentleyjs-core/lib/Event";
+import { ButtonEvent } from "./tools/Tool";
+import { EventController } from "./tools/EventController";
 
 // tslint:disable:no-empty
 
+/** A rectangle in view coordinates. */
 export class ViewRect extends ElementAlignedBox2d {
   public get width() { return super.width + 1; }
   public get height() { return super.height + 1; }
   public get aspect() { return this.width / this.height; }
   public get area() { return this.width * this.height; }
+
+  public initFromPoint3ds(low: Point3d, high: Point3d): void {
+    this.low.x = low.x;
+    this.low.y = low.y;
+    this.high.x = high.x;
+    this.high.y = high.y;
+  }
+  public initFromRange3d(input: Range3d): void { this.initFromPoint3ds(input.low, input.high); }
+}
+
+/** the minimum and maximum values for the "depth" of a rectangle of screen space. Values are in "npc" so they will be between 0 and 1.0 */
+export class DepthRangeNpc {
+  public minimum: number = 0;
+  public maximum: number = 1.0;
+  public middle(): number { return this.minimum + ((this.maximum - this.minimum) / 2.0); }
 }
 
 /** Enumeration of possible coordinate system types */
@@ -23,7 +42,7 @@ export const enum CoordSystem {
   Screen = 0,  // Coordinates are relative to the origin of the screen
   View = 1,    // Coordinates are relative to the origin of the view
   Npc = 2,     // Coordinates are relative to normalized plane coordinates.
-  World = 3,   // Coordinates are relative to the world coordinate system for the physical elements in the DgnDb
+  World = 3,   // Coordinates are relative to the world coordinate system for the physical elements in the iModel
 }
 
 /** object to animate frustum transition of a viewport */
@@ -34,7 +53,7 @@ class Animator {
   public constructor(public totalTime: BeDuration, public viewport: Viewport, public startFrustum: Frustum, public endFrustum: Frustum) { }
 
   public interpolateFrustum(fraction: number) {
-    for (let i = 0; i < Npc.CORNER_COUNT; i++) {
+    for (let i = 0; i < Npc.CORNER_COUNT; ++i) {
       this.startFrustum.points[i].interpolate(fraction, this.endFrustum.points[i], this.currFrustum.points[i]);
     }
     this.viewport.setupFromFrustum(this.currFrustum);
@@ -45,7 +64,10 @@ class Animator {
     this.interpolateFrustum(fraction);
   }
 
-  /** return true when finished */
+  /**
+   * move to the appropriate frame, based on the current time, for the current animation.
+   * @return true when finished
+   */
   public animate(): boolean {
     const currTime = BeTimePoint.now();
     if (!this.startTime)
@@ -70,6 +92,7 @@ class Animator {
     return done;
   }
 
+  /** abort this animation, moving to the final frame. */
   public interrupt() {
     if (this.startTime) {
       // We've been interrupted after animation began. Skip to the final animation state
@@ -77,40 +100,57 @@ class Animator {
     }
   }
 }
+
 /**
  * A Viewport maps a set of one or more Models to an output device. It holds a ViewState that defines
  * the viewing parameters.
  */
-export abstract class Viewport {
+export class Viewport {
+  /** Called whenever this viewport is synchronized with its ViewState */
+  public readonly onViewChanged = new Event<(vp: Viewport) => void>();
   private zClipAdjusted = false;    // were the view z clip planes adjusted due to front/back clipping off?
-  private viewOrg: Point3d;       // view origin, potentially expanded
-  private viewDelta: Vector3d;     // view delta, potentially expanded
-  private viewOrgUnexpanded: Point3d;     // view origin (from ViewState, un-expanded)
-  private viewDeltaUnexpanded: Vector3d;  // view delta (from ViewState, un-expanded)
-  public rotMatrix: RotMatrix;           // rotation matrix (from ViewState)
-  private rootToView: Map4d;
-  private rootToNpc: Map4d;
-  public view: ViewState;
-  private viewRange: ViewRect = new ViewRect();
-  private viewCorners: Range3d = new Range3d();
+  /** view origin, potentially expanded */
+  public readonly viewOrg = new Point3d();
+  /** view delta, potentially expanded */
+  public readonly viewDelta = new Vector3d();
+  /** view origin (from ViewState, un-expanded) */
+  public readonly viewOrgUnexpanded = new Point3d();
+  /** view delta (from ViewState, un-expanded) */
+  public readonly viewDeltaUnexpanded = new Vector3d();
+  /** View rotation matrix (copied from ViewState) */
+  public readonly rotMatrix = new RotMatrix();
+  private readonly rootToView = Map4d.createIdentity();
+  private readonly rootToNpc = Map4d.createIdentity();
+  private _view?: ViewState;
+  private readonly viewRange: ViewRect = new ViewRect();
+  private readonly viewCorners: Range3d = new Range3d();
   private animator?: Animator;
   private _viewCmdTargetCenter?: Point3d;
   public frustFraction: number = 1.0;
   public maxUndoSteps = 20;
-  private forwardStack: ViewState[] = [];
-  private backStack: ViewState[] = [];
+  private readonly forwardStack: ViewState[] = [];
+  private readonly backStack: ViewState[] = [];
   private currentBaseline?: ViewState;
   private static nearScale24 = 0.0003; // max ratio of frontplane to backplane distance for 24 bit zbuffer
+  private _evController?: EventController;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
-  public abstract getViewSize(): Point2d;
-  public get pixelsPerInch() { /* ###TODO: This is apparently unobtainable information in a browser... */ return 96; }
 
+  constructor(public canvas?: HTMLCanvasElement) { }
+
+  /** Get the ClientRect of the canvas for this Viewport. */
+  public getClientRect(): ClientRect { return this.canvas!.getBoundingClientRect(); }
+
+  /** Set the event controller for this Viewport. Destroys previous controller, if one was defined. */
+  public setEventController(controller: EventController | undefined) { if (this._evController) { this._evController.destroy(); } this._evController = controller; }
+
+  /** the current ViewState controlling this Viewport */
+  public get view(): ViewState { return this._view!; }
+  public get pixelsPerInch() { /* ###TODO: This is apparently unobtainable information in a browser... */ return 96; }
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
-
   public isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn(); }
-  public invalidateDecorations() { }
-  private toView(pt: XYZ): void {
+  public invalidateDecorations(): void { }
+  public toView(pt: XYZ): void {
     const x = pt.x;
     const y = pt.y;
     const z = pt.z;
@@ -120,7 +160,7 @@ export abstract class Viewport {
     pt.z = (coffs[6] * x + coffs[7] * y + coffs[8] * z);
   }
 
-  private fromView(pt: XYZ): void {
+  public fromView(pt: XYZ): void {
     const x = pt.x;
     const y = pt.y;
     const z = pt.z;
@@ -203,43 +243,57 @@ export abstract class Viewport {
     camera.setFocusDistance(focusDistance);
   }
 
-  private fullRangeNpc = new Range3d(0, 1, 0, 1, 0, 1); // full range of view
-  public determineVisibleDepthNpc(npcRange?: Range3d): { minDepth: number, maxDepth: number } | undefined {
-    npcRange = npcRange ? npcRange : this.fullRangeNpc;
+  public changeViewState(view: ViewState) {
+    this.clearUndo();
+    this._view = view;
+    this.setupFromView();
+    this.saveViewUndo();
+  }
 
-    // // Determine screen rectangle in which to query visible depth min + max
-    // let viewOrigin = this.npcToView(npcRange.low);
-    // let viewExtents = this.npcToView(npcRange.high);
-    // viewExtents.minus(viewOrigin);
+  private static fullRangeNpc = new Range3d(0, 1, 0, 1, 0, 1); // full range of view
+  private static depthRect = new ViewRect();
+  public determineVisibleDepthNpc(subRectNpc?: Range3d | undefined, result?: DepthRangeNpc): DepthRangeNpc | undefined {
+    subRectNpc = subRectNpc ? subRectNpc : Viewport.fullRangeNpc;
 
-    // return this.pickRange(viewOrigin, viewExtents);
+    // Determine screen rectangle in which to query visible depth min + max
+    const viewRect = Viewport.depthRect;
+    viewRect.initFromPoint3ds(this.npcToView(subRectNpc.low), this.npcToView(subRectNpc.high));
+    return this.pickRange(viewRect, result);
+  }
+
+  /** Computes the range of depth values for a region of the screen
+   * @param origin the top-left corner of the region in screen coordinates
+   * @param extents the width (x) and height (y) of the region in screen coordinates
+   * @returns the minimum and maximum depth values within the region, or undefined.
+   */
+  public pickRange(_rect: ViewRect, _result?: DepthRangeNpc): DepthRangeNpc | undefined {
     return undefined;
   }
 
-  private scratchDefaultRotatePointLow = new Point3d(.5, .5, .5);
-  private scratchDefaultRotatePointHigh = new Point3d(.5, .5, .5);
-  public determineDefaultRotatePoint(result: Point3d) {
+  private static scratchDefaultRotatePointLow = new Point3d(.5, .5, .5);
+  private static scratchDefaultRotatePointHigh = new Point3d(.5, .5, .5);
+  public determineDefaultRotatePoint(result?: Point3d): Point3d {
     result = result ? result : new Point3d();
     const view = this.view;
     const depth = this.determineVisibleDepthNpc();
 
     // if there are no elements in the view and the camera is on, use the camera target point
-    if (!depth && view.is3d() && view.isCameraOn)
+    if (!depth && view.is3d() && view.isCameraOn())
       return view.getTargetPoint(result);
 
-    this.scratchDefaultRotatePointLow.z = depth ? depth.minDepth : 0;
-    this.scratchDefaultRotatePointHigh.z = depth ? depth.maxDepth : 1.0;
-    return this.scratchDefaultRotatePointLow.interpolate(.5, this.scratchDefaultRotatePointHigh, result);
+    Viewport.scratchDefaultRotatePointLow.z = depth ? depth.minimum : 0;
+    Viewport.scratchDefaultRotatePointHigh.z = depth ? depth.maximum : 1.0;
+    return Viewport.scratchDefaultRotatePointLow.interpolate(.5, Viewport.scratchDefaultRotatePointHigh, result);
   }
 
-  public getFocusPlaneNpc() {
+  public getFocusPlaneNpc(): number {
     const cameraTarget = this.view.getTargetPoint();
     let npcZ = this.worldToNpc(cameraTarget, cameraTarget).z;
     if (npcZ < 0.0 || npcZ > 1.0) {
-      this.scratchDefaultRotatePointHigh.z = 1.0;
-      this.scratchDefaultRotatePointLow.z = 0.0;
-      const npcLow = this.npcToWorld(this.scratchDefaultRotatePointLow);
-      const npcHigh = this.npcToWorld(this.scratchDefaultRotatePointHigh);
+      Viewport.scratchDefaultRotatePointHigh.z = 1.0;
+      Viewport.scratchDefaultRotatePointLow.z = 0.0;
+      const npcLow = this.npcToWorld(Viewport.scratchDefaultRotatePointLow);
+      const npcHigh = this.npcToWorld(Viewport.scratchDefaultRotatePointHigh);
       const center = npcLow.interpolate(0.5, npcHigh);
       npcZ = this.worldToNpc(center, center).z;
     }
@@ -247,7 +301,7 @@ export abstract class Viewport {
     return npcZ;
   }
 
-  public turnCameraOn(lensAngle: Angle) {
+  public turnCameraOn(lensAngle: Angle): ViewStatus {
     const view = this.view;
     if (!view.is3d())
       return ViewStatus.InvalidViewport;
@@ -257,16 +311,15 @@ export abstract class Viewport {
 
     // We need to figure out a new camera target. To do that, we need to know where the geometry is in the view.
     // We use the depth of the center of the view for that.
-    const depthRange = this.determineVisibleDepthNpc();
-    const min = depthRange ? depthRange.minDepth : 0;
-    const max = depthRange ? depthRange.minDepth : 1.0;
-    const middle = min + ((max - min) / 2.0);
-
+    let depthRange = this.determineVisibleDepthNpc();
+    if (!depthRange)
+      depthRange = new DepthRangeNpc();
+    const middle = depthRange.middle();
     const corners = [
       new Point3d(0.0, 0.0, middle), // lower left, at target depth
       new Point3d(1.0, 1.0, middle), // upper right at target depth
-      new Point3d(0.0, 0.0, max), // lower left, at closest npc
-      new Point3d(1.0, 1.0, max), // upper right at closest
+      new Point3d(0.0, 0.0, depthRange.maximum), // lower left, at closest npc
+      new Point3d(1.0, 1.0, depthRange.maximum), // upper right at closest
     ];
 
     this.npcToWorldArray(corners);
@@ -330,7 +383,7 @@ export abstract class Viewport {
   }
 
   /** get the rectangle of this Viewport in ViewCoordinates. */
-  public get viewRect(): ViewRect { const r = this.viewRange; const size = this.getViewSize(); r.high.x = size.x; r.high.y = size.y; return r; }
+  public get viewRect(): ViewRect { const r = this.viewRange; const rect = this.getClientRect(); r.high.x = rect.width; r.high.y = rect.height; return r; }
 
   /** True if an undoable viewing operation exists on the stack */
   public get isUndoPossible() { return 0 < this.backStack.length; }
@@ -353,9 +406,10 @@ export abstract class Viewport {
 
     const origin = view.getOrigin().clone();
     const delta = view.getExtents().clone();
-    this.viewOrg = origin;
-    this.viewDelta = delta;
-    this.rotMatrix = view.getRotation().clone();
+
+    this.viewOrg.setFrom(origin);
+    this.viewDelta.setFrom(delta);
+    this.rotMatrix.setFrom(view.getRotation());
 
     // first, make sure none of the deltas are negative
     delta.x = Math.abs(delta.x);
@@ -364,8 +418,8 @@ export abstract class Viewport {
 
     this.adjustAspectRatio();
 
-    this.viewOrgUnexpanded = origin.clone();
-    this.viewDeltaUnexpanded = delta.clone();
+    this.viewOrgUnexpanded.setFrom(origin);
+    this.viewDeltaUnexpanded.setFrom(delta);
     this.zClipAdjusted = false;
 
     if (view.is3d()) {
@@ -419,7 +473,9 @@ export abstract class Viewport {
       return ViewStatus.InvalidViewport;
 
     this.frustFraction = frustFraction;
-    this.rootToView = this.calcNpcToView().multiplyMapMap(this.rootToNpc);
+    this.rootToView.setFrom(this.calcNpcToView().multiplyMapMap(this.rootToNpc));
+
+    this.onViewChanged.raiseEvent(this);
     return ViewStatus.Success;
   }
 
@@ -610,6 +666,7 @@ export abstract class Viewport {
     return box;
   }
 
+  /** get a copy of the current (adjusted) frustum of this viewport, in world coordinates. */
   public getWorldFrustum(box?: Frustum): Frustum { return this.getFrustum(CoordSystem.World, true, box); }
 
   /**
@@ -642,9 +699,18 @@ export abstract class Viewport {
   }
 
   /**
+   * Get the anchor point for a Zoom operation, based on a button event.
+   * @return the center point for a zoom operation, in world coordinates
+   */
+  public getZoomCenter(ev: ButtonEvent, result?: Point3d): Point3d {
+    const vp = ev.viewport!;
+    return vp.viewToWorld(ev.viewPoint, result); // NEEDS_WORK
+  }
+
+  /**
    * Zoom the view by a scale factor, placing the new center at the projection of the given point (world coordinates)
    * on the focal plane.
-   * Updates ViewState and re-synchs Viewport.
+   * Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
    */
   public zoom(newCenter: Point3d | undefined, factor: number): ViewStatus {
     const view = this.view;
@@ -696,7 +762,6 @@ export abstract class Viewport {
     newOrg.y = center.y - delta.y / 2.0;
     this.fromView(newOrg);
     view.setOrigin(newOrg);
-
     return this.setupFromView();
   }
 
@@ -754,7 +819,7 @@ export abstract class Viewport {
   }
 
   /**
-   * Reverts the most recent change to the Viewport from the undo stack.
+   * Reverses the most recent change to the Viewport from the undo stack.
    */
   public applyPrevious(animationTime: BeDuration) {
     const size = this.backStack.length;
@@ -770,7 +835,7 @@ export abstract class Viewport {
   }
 
   /**
-   * Reverts the most recently un-done change to the Viewport from the redo stack
+   * Re-applies the most recently un-done change to the Viewport from the redo stack
    */
   public applyNext(animationTime: BeDuration) {
     const size = this.forwardStack.length;
@@ -814,10 +879,46 @@ export abstract class Viewport {
 
   public applyViewState(val: ViewState, animationTime: BeDuration) {
     const startFrust = this.getFrustum();
-    this.view = val.clone();
+    this._view = val.clone<ViewState>();
     this.synchWithView(false);
     //    this._changeFov = true;
     this.animateFrustumChange(startFrust!, this.getFrustum()!, animationTime);
   }
 
+  public pickEntity(_mousePos: Point3d, _radius: number, _result?: Point3d): Point3d | undefined {
+    return undefined;
+  }
+
+  /**
+   * Converts an {x,y} position in screen coordinates to world coordinates by picking against
+   * the depth buffer.
+   * @param  mousePos the position in screen coordinates
+   * @param result optional output point
+   * @param enforceGeometryPicks optional, if set to true picks that aren't on tileset geometry return undefined
+   * @return the corresponding position in world coordinates, or undefined if no value exists in the depth buffer for the specified point
+   */
+  public pickDepthBuffer(_mousePos: Point3d, _result?: Point3d, _enforceGeometryPicks?: boolean): Point3d | undefined {
+    // var depthIntersection;
+    // if (this.scene.pickPositionSupported) {
+    //   depthIntersection = this.scene.pickPosition(mousePos, scratchDepthBufferIntersection);
+    // }
+
+    // if (!Cesium.defined(depthIntersection))
+    //   return undefined;
+
+    // if (enforceGeometryPicks) {
+    //   let isTilesetGeometry = this.pickEntity(mousePos) instanceof Cesium.Cesium3DTileFeature
+    //   if (!isTilesetGeometry)
+    //     return undefined
+    // }
+
+    // var npcPt = this.worldToNpc(depthIntersection, scratchDepthNpcPt);
+    // var viewPt = this.npcToView(npcPt);
+    // viewPt.x = mousePos.x;
+    // viewPt.y = mousePos.y;
+    // this.viewToWorld(viewPt, depthIntersection);
+
+    // return depthIntersection;
+    return undefined;
+  }
 }

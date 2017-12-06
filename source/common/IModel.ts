@@ -38,7 +38,7 @@ export class IModelToken {
 export class IModel {
   public readonly name: string;
   public readonly description: string;
-  public readonly extents: any;
+  public readonly extents: AxisAlignedBox3d = new AxisAlignedBox3d();
 
   /** @hidden */
   protected _iModelToken: IModelToken;
@@ -55,5 +55,5 @@ export class IModel {
   /** @hidden */
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
 
-  public get projectExtents(): AxisAlignedBox3d { return new AxisAlignedBox3d(); } // NEEDS_WORK
+  public isReadonly() { return this._iModelToken.openMode === OpenMode.Readonly; }
 }
