@@ -98,26 +98,5 @@
     "tsconfig-paths": "^2.4.0",
     "tslint": "^5.8.0",
     "typescript": "^2.6.2"
-  },
-  "nyc": {
-    "include": [
-      "source/frontend/**/*.ts",
-      "source/backend/**/*.ts",
-      "source/common/**/*.ts"
-    ],
-    "exclude": [
-      "source/test/*"
-    ],
-    "extension": [
-      ".ts"
-    ],
-    "require": [
-      "ts-node/register"
-    ],
-    "reporter": [
-      "text-summary",
-      "lcov"
-    ],
-    "report-dir": "./source/test/lib/coverage"
   }
 }

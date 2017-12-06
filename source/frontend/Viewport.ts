@@ -110,18 +110,18 @@ export class Viewport {
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
   private zClipAdjusted = false;    // were the view z clip planes adjusted due to front/back clipping off?
   /** view origin, potentially expanded */
-  public readonly viewOrg = new Point3d();
+  public viewOrg = new Point3d();
   /** view delta, potentially expanded */
-  public readonly viewDelta = new Vector3d();
+  public viewDelta = new Vector3d();
   /** view origin (from ViewState, un-expanded) */
-  public readonly viewOrgUnexpanded = new Point3d();
+  public viewOrgUnexpanded = new Point3d();
   /** view delta (from ViewState, un-expanded) */
-  public readonly viewDeltaUnexpanded = new Vector3d();
+  public viewDeltaUnexpanded = new Vector3d();
   /** View rotation matrix (copied from ViewState) */
-  public readonly rotMatrix = new RotMatrix();
+  public rotMatrix = new RotMatrix();
   private readonly rootToView = Map4d.createIdentity();
   private readonly rootToNpc = Map4d.createIdentity();
-  private _view?: ViewState;
+  public _view?: ViewState;
   private readonly viewRange: ViewRect = new ViewRect();
   private readonly viewCorners: Range3d = new Range3d();
   private animator?: Animator;
@@ -149,29 +149,12 @@ export class Viewport {
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
   public isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn(); }
-  public invalidateDecorations(): void { }
-  public toView(pt: XYZ): void {
-    const x = pt.x;
-    const y = pt.y;
-    const z = pt.z;
-    const coffs = this.rotMatrix.coffs;
-    pt.x = (coffs[0] * x + coffs[1] * y + coffs[2] * z);
-    pt.y = (coffs[3] * x + coffs[4] * y + coffs[5] * z);
-    pt.z = (coffs[6] * x + coffs[7] * y + coffs[8] * z);
-  }
-
-  public fromView(pt: XYZ): void {
-    const x = pt.x;
-    const y = pt.y;
-    const z = pt.z;
-    const coffs = this.rotMatrix.coffs;
-    pt.x = (coffs[0] * x + coffs[3] * y + coffs[6] * z);
-    pt.y = (coffs[1] * x + coffs[4] * y + coffs[7] * z);
-    pt.z = (coffs[2] * x + coffs[5] * y + coffs[8] * z);
-  }
+  public invalidateDecorations() { }
+  public toView(pt: XYZ) { this.rotMatrix.multiply3dInPlace(pt); }   // Requires matrix as input for possiblity of cached matrix seperate from rotmatrix member
+  public fromView(pt: XYZ) { this.rotMatrix.multiplyTranspose3dInPlace(pt); }  // Requires matrix as input for possiblity of cached matrix seperate from rotmatrix member
 
   /** adjust the front and back planes to encompass the entire viewed volume */
-  private adjustZPlanes(): void {
+  private adjustZPlanes(origin: Point3d, delta: Vector3d): void {
     const view = this.view;
     if (!view.is3d()) // only necessary for 3d views
       return;
@@ -180,12 +163,8 @@ export class Viewport {
     if (extents.isNull())
       return;
 
-    const origin = this.viewOrg;
-    const delta = this.viewDelta;
-    const rotMatrix = this.rotMatrix;
-
     // convert viewed extents in world coordinates to min/max in view aligned coordinates
-    const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), rotMatrix);
+    const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), this.rotMatrix);
     const extFrust = Frustum.fromRange(extents);
     extFrust.multiply(viewTransform);
     extents = extFrust.toRange();
@@ -236,8 +215,8 @@ export class Viewport {
 
     const eyePoint = new Point3d(vDelta.x / 2.0, vDelta.y / 2.0, (vDelta.z / 2.0) + focusDistance);
 
-    this.toView(eyePoint);
-    eyePoint.plus(view.getOrigin());
+    this.fromView(eyePoint);
+    eyePoint.plus(view.getOrigin(), eyePoint);
 
     camera.setEyePoint(eyePoint);
     camera.setFocusDistance(focusDistance);
@@ -349,10 +328,10 @@ export class Viewport {
     return Map4d.createBoxMap(NpcCorners[Npc._000], NpcCorners[Npc._111], corners.low, corners.high)!;
   }
 
-  /** adjust the aspect ratio of the view volume to match the aspect ratio of the window of this Viewport. */
-  private adjustAspectRatio() {
-    const origin = this.viewOrg;
-    const delta = this.viewDelta;
+  /** adjust the aspect ratio of the view volume to match the aspect ratio of the window of this Viewport.
+   *  modifies the point and vector given
+   */
+  private adjustAspectRatio(origin: Point3d, delta: Vector3d) {
     const windowAspect = this.viewRect.aspect * this.view.getAspectRatioSkew();
     const viewAspect = delta.x / delta.y;
 
@@ -365,10 +344,11 @@ export class Viewport {
     else
       delta.x = delta.y * windowAspect;
 
+    const newOrigin = Point3d.createFrom(this.rotMatrix.multiplyXYZ(origin.x, origin.y, origin.z));
     this.toView(origin);
-    origin.x += ((oldDelta.x - delta.x) / 2.0);
-    origin.y += ((oldDelta.y - delta.y) / 2.0);
-    this.fromView(origin);
+    newOrigin.x += ((oldDelta.x - delta.x) / 2.0);
+    newOrigin.y += ((oldDelta.y - delta.y) / 2.0);
+    origin.setFrom(this.rotMatrix.multiplyTransposeXYZ(newOrigin.x, newOrigin.y, newOrigin.z));
   }
 
   /** Ensure the rotation matrix for this view is aligns the root z with the view out (i.e. a "2d view"). */
@@ -378,7 +358,7 @@ export class Viewport {
       return;
     const r = this.rotMatrix.transpose();
     r.setColumn(2, zUp);
-    RotMatrix.createPerpendicularUnitColumnsFromRotMatrix(r, AxisOrder.XYZ, r);
+    RotMatrix.createPerpendicularUnitColumnsFromRotMatrix(r, AxisOrder.ZXY, r);
     r.transpose(this.rotMatrix);
   }
 
@@ -406,20 +386,29 @@ export class Viewport {
 
     const origin = view.getOrigin().clone();
     const delta = view.getExtents().clone();
-
-    this.viewOrg.setFrom(origin);
-    this.viewDelta.setFrom(delta);
-    this.rotMatrix.setFrom(view.getRotation());
+    this.rotMatrix = view.getRotation().clone();
 
     // first, make sure none of the deltas are negative
     delta.x = Math.abs(delta.x);
     delta.y = Math.abs(delta.y);
     delta.z = Math.abs(delta.z);
 
-    this.adjustAspectRatio();
+    const limitRange = (min: number, max: number, val: number): number => {
+      if (val < min) return min;
+      else if (val > max) return max;
+      else return val;
+    };
 
-    this.viewOrgUnexpanded.setFrom(origin);
-    this.viewDeltaUnexpanded.setFrom(delta);
+    const limits = this.view.getExtentLimits();
+    delta.x = limitRange(limits.minExtent, limits.maxExtent, delta.x);
+    delta.y = limitRange(limits.minExtent, limits.maxExtent, delta.y);
+
+    this.adjustAspectRatio(origin, delta);
+
+    this.viewOrgUnexpanded = origin.clone();
+    this.viewDeltaUnexpanded = delta.clone();
+    this.viewOrg = origin.clone();
+    this.viewDelta = delta.clone();
     this.zClipAdjusted = false;
 
     if (view.is3d()) {
@@ -438,8 +427,10 @@ export class Viewport {
         delta.z = 2.0 * zMax;
         origin.z = -zMax;
       } else {
-        this.validateCamera();
-        this.adjustZPlanes(); // make sure view volume includes entire volume of view
+        if (view.isCameraOn())
+          this.validateCamera();
+
+        this.adjustZPlanes(origin, delta); // make sure view volume includes entire volume of view
 
         // if the camera is on, don't allow front plane behind camera
         if (view.isCameraOn()) {
@@ -464,9 +455,12 @@ export class Viewport {
       }
     } else { // 2d viewport
       this.alignWithRootZ();
-      delta.z = 2. * Viewport.get2dFrustumDepth();
+      delta.z = 2 * Viewport.get2dFrustumDepth();
       origin.z = -Viewport.get2dFrustumDepth();
     }
+
+    this.viewOrg = origin;
+    this.viewDelta = delta;
 
     const frustFraction = this.rootToNpcFromViewDef(this.rootToNpc, origin, delta);
     if (!frustFraction)
@@ -486,17 +480,17 @@ export class Viewport {
     const xVector = viewRot.rowX();
     const yVector = viewRot.rowY();
     const zVector = viewRot.rowZ();
-    const origin = inOrigin.clone();
 
     let frustFraction = 1.0;
     let xExtent: Vector3d;
     let yExtent: Vector3d;
     let zExtent: Vector3d;
+    let origin: Point3d;
 
     // Compute root vectors along edges of view frustum.
     if (view.is3d() && view.isCameraOn()) {
       const camera = view.camera;
-      const eyeToOrigin = inOrigin.minus(camera.eye);      // vector from origin on backplane to eye
+      const eyeToOrigin = Vector3d.createStartEnd(camera.eye, inOrigin); // vector from origin on backplane to eye
       this.toView(eyeToOrigin);                            // align with view coordinates.
 
       const focusDistance = camera.focusDistance;
@@ -505,7 +499,7 @@ export class Viewport {
       let zFront = zBack + zDelta;            // Distance from eye to frontplane.
 
       if (zFront / zBack < Viewport.nearScale24) {
-        const maximumBackClip = 10000. * Constant.oneKilometer;
+        const maximumBackClip = 10000 * Constant.oneKilometer;
         if (-zBack > maximumBackClip) {
           zBack = -maximumBackClip;
           eyeToOrigin.z = zBack;
@@ -525,17 +519,21 @@ export class Viewport {
       yExtent = yVector.scale(delta.y * backFraction);   // yExtent at back == delta.y * backFraction.
 
       // Calculate the zExtent in the View coordinate system.
-      zExtent = new Vector3d(eyeToOrigin.x * (frontFraction - backFraction), // eyeToOrigin.x * frontFraction - eyeToOrigin.x * backFraction
+      zExtent = new Vector3d(
+        eyeToOrigin.x * (frontFraction - backFraction), // eyeToOrigin.x * frontFraction - eyeToOrigin.x * backFraction
         eyeToOrigin.y * (frontFraction - backFraction), // eyeToOrigin.y * frontFraction - eyeToOrigin.y * backFraction
         zDelta);
       this.fromView(zExtent);   // rotate back to root coordinates.
 
-      origin.x = eyeToOrigin.x * backFraction;      // Calculate origin in eye coordinates.
-      origin.y = eyeToOrigin.y * backFraction;
-      origin.z = eyeToOrigin.z;
+      origin = new Point3d(
+        eyeToOrigin.x * backFraction,   // Calculate origin in eye coordinates
+        eyeToOrigin.y * backFraction,
+        eyeToOrigin.z);
+
       this.fromView(origin);  // Rotate back to root coordinates
       origin.plus(camera.eye, origin); // Add the eye point.
     } else {
+      origin = inOrigin.clone();
       xExtent = xVector.scale(delta.x);
       yExtent = yVector.scale(delta.y);
       zExtent = zVector.scale(delta.z);
@@ -586,9 +584,9 @@ export class Viewport {
 
   public npcToViewArray(pts: Point3d[]) {
     const corners = this.getViewCorners();
-    const scrToNpcTran = Transform.createIdentity();
-    Transform.initFromRange(corners.low, corners.high, scrToNpcTran, undefined);
-    scrToNpcTran.multiplyPoint3dArrayInPlace(pts);
+    const npcToSrcTran = Transform.createIdentity();
+    Transform.initFromRange(corners.low, corners.high, npcToSrcTran, undefined);
+    npcToSrcTran.multiplyPoint3dArrayInPlace(pts);
   }
 
   public viewToNpc(pt: Point3d, out?: Point3d) {
@@ -662,6 +660,8 @@ export class Viewport {
       case CoordSystem.World:
         this.npcToWorldArray(box.points);
         break;
+
+      // case CoordSystem.Screen:
     }
     return box;
   }
