@@ -4,8 +4,6 @@
 import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
 import { Viewport } from "../Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
-import { IModel } from "../../common/IModel";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 export const enum BeButton {
   Data = 0,
@@ -226,13 +224,13 @@ export class BeButtonEvent {
   }
 }
 
-/** Describes a "gesture" input, typically originating from a touch-input device. */
+/** Describes a "gesture" input originating from a touch-input device. */
 export class GestureInfo {
   public gestureId: GestureId;
   public numberTouches: number;
   public previousNumberTouches: number;    // Only meaningful for GestureId::SingleFingerMove and GestureId::MultiFingerMove
   public touches: Point2d[] = [new Point2d(), new Point2d(), new Point2d()];
-  public ptsLocation: Point2d = new Point2d();              // Location of centroid
+  public ptsLocation: Point2d = new Point2d();    // Location of centroid
   public distance: number;                 // Only meaningful on motion with multiple touches
   public isEndGesture: boolean;
   public isFromMouse: boolean;
@@ -297,7 +295,7 @@ export class BeGestureEvent extends BeButtonEvent {
   }
 }
 
-/** Information about movement of the "wheel" on the mouse. */
+/** Information about movement of the "wheel". */
 export class BeWheelEvent extends BeButtonEvent {
   public constructor(public wheelDelta: number = 0) { super(); }
   public copyFrom(src: BeWheelEvent): void {
@@ -311,29 +309,51 @@ export class BeWheelEvent extends BeButtonEvent {
   }
 }
 
+/**
+ * Base Tool class for handling user input events from Viewports.
+ * Applications should create subclasses of ViewTool or PrimitiveTool and not Tool directly.
+ */
 export abstract class Tool {
   // tslint:disable:no-empty
   public abstract get toolId(): string;
   public abstract installToolImplementation(): BentleyStatus;
   public installTool(): BentleyStatus { return this.installToolImplementation(); }
-  public onPostInstall(): void { }  // Override to execute additional logic after tool becomes active
-  public onInstall(): boolean { return true; } // Override to execute additional logic when tool is installed. Return false to prevent this tool from becoming active
-  public abstract onDataButtonDown(ev: BeButtonEvent): void;   // Implement to handle data-button-down events
-  public onDataButtonUp(_ev: BeButtonEvent): boolean { return false; } // Invoked when the data button is released.
-  public onResetButtonDown(_ev: BeButtonEvent): boolean { return false; }  // Invoked when the reset button is pressed.
-  public onResetButtonUp(_ev: BeButtonEvent): boolean { return false; }    // Invoked when the reset button is released.
-  public onMiddleButtonDown(_ev: BeButtonEvent): boolean { return false; } // Invoked when the middle mouse button is pressed.
-  public onMiddleButtonUp(_ev: BeButtonEvent): boolean { return false; }   // Invoked when the middle mouse button is released.
-  public onModelMotion(_ev: BeButtonEvent): void { }    // Invoked when the cursor is moving
-  public onModelNoMotion(_ev: BeButtonEvent): void { }  // Invoked when the cursor is not moving
-  public onModelMotionStopped(_ev: BeButtonEvent): void { } // Invoked when the cursor was previously moving, and then stopped moving.
-  public onModelStartDrag(_ev: BeButtonEvent): boolean { return false; }   // Invoked when the cursor begins moving while a button is depressed
-  public onModelEndDrag(ev: BeButtonEvent) { return this.onDataButtonDown(ev); } // Invoked when the cursor stops moving while a button is depressed
-  public onMouseWheel(_ev: BeWheelEvent): boolean { return false; } // Invoked when the mouse wheel is used.
-  public abstract exitTool(): void;  // Implemented by direct subclasses to handle when the tool becomes no longer active. Generally not overridden by other subclasses
-  public onCleanup() { } // Invoked when the tool becomes no longer active, to perform additional cleanup logic
-  public onViewportResized() { }  // Invoked when the dimensions of the tool's viewport change
-  public updateDynamics(_ev: BeButtonEvent) { } // Invoked to allow a tool to update any view decorations it may have created
+  /** Override to execute additional logic after tool becomes active */
+  public onPostInstall(): void { }
+  /** Override to execute additional logic when tool is installed. Return false to prevent this tool from becoming active */
+  public onInstall(): boolean { return true; }
+  /** Implement to handle data-button-down events */
+  public abstract onDataButtonDown(ev: BeButtonEvent): void;
+  /** Invoked when the data button is released. */
+  public onDataButtonUp(_ev: BeButtonEvent): boolean { return false; }
+  /** Invoked when the reset button is pressed. */
+  public onResetButtonDown(_ev: BeButtonEvent): boolean { return false; }
+  /** Invoked when the reset button is released. */
+  public onResetButtonUp(_ev: BeButtonEvent): boolean { return false; }
+  /** Invoked when the middle mouse button is pressed. */
+  public onMiddleButtonDown(_ev: BeButtonEvent): boolean { return false; }
+  /** Invoked when the middle mouse button is released. */
+  public onMiddleButtonUp(_ev: BeButtonEvent): boolean { return false; }
+  /** Invoked when the cursor is moving */
+  public onModelMotion(_ev: BeButtonEvent): void { }
+  /** Invoked when the cursor is not moving */
+  public onModelNoMotion(_ev: BeButtonEvent): void { }
+  /** Invoked when the cursor was previously moving, and has stopped moving. */
+  public onModelMotionStopped(_ev: BeButtonEvent): void { }
+  /** Invoked when the cursor begins moving while a button is depressed */
+  public onModelStartDrag(_ev: BeButtonEvent): boolean { return false; }
+  /** Invoked when the cursor stops moving while a button is depressed */
+  public onModelEndDrag(ev: BeButtonEvent) { return this.onDataButtonDown(ev); }
+  /** Invoked when the mouse wheel moves. */
+  public onMouseWheel(_ev: BeWheelEvent): boolean { return false; }
+  /** Implemented by direct subclasses to handle when the tool becomes no longer active. Generally not overridden by other subclasses */
+  public abstract exitTool(): void;
+  /** Invoked when the tool becomes no longer active, to perform additional cleanup logic */
+  public onCleanup() { }
+  /** Invoked when the dimensions of the tool's viewport change */
+  public onViewportResized() { }
+  /** Invoked to allow a tool to update any view decorations it may have created */
+  public updateDynamics(_ev: BeButtonEvent) { }
   public onTouchMotionPaused(): boolean { return false; }
   public onEndGesture(_ev: BeGestureEvent): boolean { return false; }
   public onSingleFingerMove(_ev: BeGestureEvent): boolean { return false; }
@@ -347,8 +367,8 @@ export abstract class Tool {
   public isCompatibleViewport(vp: Viewport, _isSelectedViewChange: boolean): boolean { return !!vp; }
 
   /** Called when Control, Shift, or Alt qualifier keys are pressed or released.
-   * @param wentDown up or down key event
-   * @param key One of VirtualKey.Control, VirtualKey.Shift, or VirtualKey.Alt
+   * @param _wentDown up or down key event
+   * @param _key One of VirtualKey.Control, VirtualKey.Shift, or VirtualKey.Alt
    * @return true to refresh view decorations or update dynamics.
    */
   public onModifierKeyTransition(_wentDown: boolean, _key: BeModifierKey): boolean { return false; }
@@ -362,71 +382,4 @@ export abstract class Tool {
    * @note In case of Shift, Control and Alt key, onModifierKeyTransition is used.
    */
   public onKeyTransition(_wentDown: boolean, _key: BeVirtualKey, _shiftIsDown: boolean, _ctrlIsDown: boolean): boolean { return false; }
-}
-
-export abstract class PrimitiveToolBase extends Tool {
-  public targetView?: Viewport;
-  public targetModelId = new Id64();
-  public targetIsLocked: boolean = false; // If target model is known, set this to true in constructor and override getTargetModel.
-  public toolStateId: string = "";  // Tool State Id can be used to determine prompts and control UI control state.
-
-  /**  Returns the prompt based on the tool's current state. */
-  public getPrompt(): string { return ""; }
-
-  /** Notifies the tool that a view tool is starting. */
-  public onStartViewTool(_tool: Tool) { }
-
-  /** Notifies the tool that a view tool is exiting. Return true if handled. */
-  public onExitViewTool(): void { }
-
-  /** Notifies the tool that an input collector is starting. */
-  public onStartInputCollector(_tool: Tool) { }
-
-  /** Notifies the tool that an input collector is exiting. */
-  public onExitInputCollector() { }
-
-  /** Called from isCompatibleViewport to check for a read only iModel, which is not a valid target for tools that create or modify elements. */
-  public requireWriteableTarget(): boolean { return true; }
-
-  /**
-   * Called when active view changes. Tool may choose to restart or exit based on current view type.
-   * @param current The new active view.
-   * @param previous The previously active view.
-   */
-  public onSelectedViewportChanged(current: Viewport, _previous: Viewport) {
-    if (this.isCompatibleViewport(current, true))
-      return;
-    this.onRestartTool();
-  }
-
-  /** Get the iModel the tool is operating against. */
-  public getIModel(): IModel { return this.targetView!.view!.iModel; }
-
-  /**
-   * Called when an external event may invalidate the current tool's state.
-   * Examples are undo, which may invalidate any references to elements, or an incompatible active view change.
-   * The active tool is expected to call InstallTool with a new instance, or _ExitTool to start the default tool.
-   *  @note You *MUST* check the status of InstallTool and call _ExitTool if it fails!
-   * ``` ts
-   * MyTool.oOnRestartTool() {
-   * const newTool = new MyTool();
-   * if (BentleyStatus.SUCCESS !== newTool.installTool())
-   *   this.exitTool(); // Tool exits to default tool if new tool instance could not be installed.
-   * }
-   * MyTool.onRestartTool() {
-   * _this.exitTool(); // Tool always exits to default tool.
-   * }
-   * ```
-   */
-  public abstract onRestartTool(): void;
-
-  /**
-   * Called to reset tool to initial state. This method is provided here for convenience; the only
-   * external caller is ElementSetTool. PrimitiveTool implements this method to call _OnRestartTool.
-   */
-  public onReinitialize(): void { this.onRestartTool(); }
-
-  /** Called on data button down event in order to lock the tool to it's current target model. */
-  public autoLockTarget(): void { if (!this.targetView) return; this.targetIsLocked = true; }
-  public getCursor(): BeCursor { return BeCursor.Arrow; }
 }

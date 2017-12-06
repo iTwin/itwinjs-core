@@ -1,10 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Tool, BeButton, BeButtonEvent, BeGestureEvent, BeWheelEvent, PrimitiveToolBase } from "./Tool";
+import { Tool, BeButton, BeButtonEvent, BeGestureEvent, BeWheelEvent } from "./Tool";
 import { ToolAdmin } from "./ToolAdmin";
 import { ViewManip, ViewHandleType, FitViewTool, RotatePanZoomGestureTool } from "./ViewTool";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
+import { PrimitiveTool } from "./PrimitiveTool";
 
 const toolAdmin = ToolAdmin.instance;
 // tslint:disable:no-empty
@@ -121,7 +122,7 @@ export class IdleTool extends Tool {
     //         }
 
     // NOTE: Need to synch tool dynamics because of UpdateDynamics call in _ExitViewTool from OnMiddleButtonUp before point was adjusted. :(
-    if (currTool && currTool instanceof PrimitiveToolBase) {
+    if (currTool && currTool instanceof PrimitiveTool) {
       const tmpEv = new BeButtonEvent();
       toolAdmin.fillEventFromCursorLocation(tmpEv);
       currTool.updateDynamics(tmpEv);

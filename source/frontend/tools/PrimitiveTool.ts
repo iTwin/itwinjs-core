@@ -2,10 +2,12 @@
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ToolAdmin, CoordinateLockOverrides } from "./ToolAdmin";
-import { PrimitiveToolBase, BeButtonEvent } from "./Tool";
+import { Tool, BeButtonEvent, BeCursor } from "./Tool";
 import { Viewport } from "../Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { ViewManager } from "../ViewManager";
+import { IModel } from "../../common/IModel";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 // tslint:disable:no-empty
 
@@ -16,7 +18,71 @@ const viewManager = ViewManager.instance;
  * The PrimitiveTool class can be used to implement a primitive command. Placement
  * tools that don't need to locate or modify elements are good candidates for a PrimitiveTool.
  */
-export abstract class PrimitiveTool extends PrimitiveToolBase {
+export abstract class PrimitiveTool extends Tool {
+  public targetView?: Viewport;
+  public targetModelId = new Id64();
+  public targetIsLocked: boolean = false; // If target model is known, set this to true in constructor and override getTargetModel.
+  public toolStateId: string = "";  // Tool State Id can be used to determine prompts and control UI control state.
+
+  /**  Returns the prompt based on the tool's current state. */
+  public getPrompt(): string { return ""; }
+
+  /** Notifies the tool that a view tool is starting. */
+  public onStartViewTool(_tool: Tool) { }
+
+  /** Notifies the tool that a view tool is exiting. Return true if handled. */
+  public onExitViewTool(): void { }
+
+  /** Notifies the tool that an input collector is starting. */
+  public onStartInputCollector(_tool: Tool) { }
+
+  /** Notifies the tool that an input collector is exiting. */
+  public onExitInputCollector() { }
+
+  /** Called from isCompatibleViewport to check for a read only iModel, which is not a valid target for tools that create or modify elements. */
+  public requireWriteableTarget(): boolean { return true; }
+
+  /**
+   * Called when active view changes. Tool may choose to restart or exit based on current view type.
+   * @param current The new active view.
+   * @param previous The previously active view.
+   */
+  public onSelectedViewportChanged(current: Viewport, _previous: Viewport) {
+    if (this.isCompatibleViewport(current, true))
+      return;
+    this.onRestartTool();
+  }
+
+  /** Get the iModel the tool is operating against. */
+  public getIModel(): IModel { return this.targetView!.view!.iModel; }
+
+  /**
+   * Called when an external event may invalidate the current tool's state.
+   * Examples are undo, which may invalidate any references to elements, or an incompatible active view change.
+   * The active tool is expected to call installTool with a new instance, or exitTool to start the default tool.
+   *  @note You *MUST* check the status of installTool and call exitTool if it fails!
+   * ``` ts
+   * MyTool.oOnRestartTool() {
+   * const newTool = new MyTool();
+   * if (BentleyStatus.SUCCESS !== newTool.installTool())
+   *   this.exitTool(); // Tool exits to default tool if new tool instance could not be installed.
+   * }
+   * MyTool.onRestartTool() {
+   * _this.exitTool(); // Tool always exits to default tool.
+   * }
+   * ```
+   */
+  public abstract onRestartTool(): void;
+
+  /**
+   * Called to reset tool to initial state. This method is provided here for convenience; the only
+   * external caller is ElementSetTool. PrimitiveTool implements this method to call _OnRestartTool.
+   */
+  public onReinitialize(): void { this.onRestartTool(); }
+
+  /** Called on data button down event in order to lock the tool to it's current target model. */
+  public autoLockTarget(): void { if (!this.targetView) return; this.targetIsLocked = true; }
+  public getCursor(): BeCursor { return BeCursor.Arrow; }
 
   /** Called by InstallTool to setup tool instance as the current active primitive command.
    *  @return SUCCESS if new tool instance is now the active primitive command.
@@ -123,35 +189,35 @@ export abstract class PrimitiveTool extends PrimitiveToolBase {
 
   // //! Ensures that any locks and/or codes required for the operation are obtained from iModelServer before making any changes to the iModel.
   // //! Default implementation invokes _PopulateRequest() and forwards request to server.
-  // DGNVIEW_EXPORT virtual RepositoryStatus _AcquireLocks();
+  //  RepositoryStatus _AcquireLocks();
 
   // //! Called from _AcquireLocks() to identify any locks and/or codes required to perform the operation
   // virtual RepositoryStatus _PopulateRequest(IBriefcaseManager:: Request & request) { return RepositoryStatus:: Success; }
 
   // //! Query availability of locks, potentially notifying user of result
-  // DGNVIEW_EXPORT bool AreLocksAvailable(IBriefcaseManager:: Request & request, iModelR db, bool fastQuery = true);
+  //  bool AreLocksAvailable(IBriefcaseManager:: Request & request, iModelR db, bool fastQuery = true);
 
   // //! Acquire locks on this tools behalf, potentially notifying user of result
-  // DGNVIEW_EXPORT RepositoryStatus AcquireLocks(IBriefcaseManager:: Request & request, iModelR db);
+  //  RepositoryStatus AcquireLocks(IBriefcaseManager:: Request & request, iModelR db);
 
   // //! Acquire a shared lock on the specified model (e.g., for placement tools which create new elements)
-  // DGNVIEW_EXPORT RepositoryStatus LockModelForPlacement(DgnModelR model);
+  //  RepositoryStatus LockModelForPlacement(DgnModelR model);
 
   // //! Acquires any locks and/or codes required to perform the specified operation on the element
   // //! If your tool operates on more than one element it should batch all such requests rather than calling this convenience function repeatedly.
-  // DGNVIEW_EXPORT RepositoryStatus LockElementForOperation(DgnElementCR element, BeSQLite:: DbOpcode operation);
+  //  RepositoryStatus LockElementForOperation(DgnElementCR element, BeSQLite:: DbOpcode operation);
 
   // //! Call to find out of complex dynamics are currently active.
   // //! @return true if dynamics have been started.
-  // DGNVIEW_EXPORT bool GetDynamicsStarted();
+  //  bool GetDynamicsStarted();
 
   // //! Call to initialize complex dynamics.
   // //! @see #_OnDynamicFrame
-  // DGNVIEW_EXPORT virtual void _BeginDynamics();
+  //  virtual void _BeginDynamics();
 
   // //! Call to terminate complex dynamics.
   // //! @see #_OnDynamicFrame
-  // DGNVIEW_EXPORT virtual void _EndDynamics();
+  //  virtual void _EndDynamics();
 
   /** Called to display dynamic elements. */
   public onDynamicFrame(_ev: BeButtonEvent) { }

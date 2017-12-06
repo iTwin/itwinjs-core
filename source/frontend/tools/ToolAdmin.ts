@@ -10,8 +10,9 @@ import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
 import { BeEvent, BeEventList } from "@bentley/bentleyjs-core/lib/BeEvent";
 import {
   BeModifierKey, BeButtonState, BeButton, BeGestureEvent, Tool, BeButtonEvent, CoordSource, GestureInfo,
-  BeCursor, PrimitiveToolBase, BeWheelEvent, InputSource, BeVirtualKey,
+  BeCursor, BeWheelEvent, InputSource, BeVirtualKey,
 } from "./Tool";
+import { PrimitiveTool } from "./PrimitiveTool";
 
 // tslint:disable:no-empty
 
@@ -272,10 +273,10 @@ export class ToolAdmin {
   public toolState = new ToolState();
   private _viewCursor?: BeCursor;
   private viewTool?: ViewTool;
-  private primitiveTool?: PrimitiveToolBase;
+  private primitiveTool?: PrimitiveTool;
   private idleTool: IdleTool;
   private inputCollector?: Tool;
-  private defaultTool?: PrimitiveToolBase;
+  private defaultTool?: PrimitiveTool;
   // private cursorInView: boolean;
   public gesturePending: boolean;
   // elementLocateManager: ElementLocateManager;
@@ -409,7 +410,7 @@ export class ToolAdmin {
     }
     // Don't use the old value of tool since _OnModelMotion may restart the tool using a new tool object.
     const primitiveTool = this.activeTool;
-    if (primitiveTool instanceof PrimitiveToolBase)
+    if (primitiveTool instanceof PrimitiveTool)
       primitiveTool.updateDynamics(ev);
 
     ev.reset();
@@ -436,7 +437,7 @@ export class ToolAdmin {
 
     // TentativePoint:: GetInstance().OnButtonEvent();
     // AccuDraw:: GetInstance()._OnPostDataButton(event);
-    if (!(tool instanceof PrimitiveToolBase))
+    if (!(tool instanceof PrimitiveTool))
       return;
 
     tool.autoLockTarget(); // lock tool to target model of this view...
@@ -735,7 +736,7 @@ export class ToolAdmin {
       return;
 
     // Give active tool a chance to update it's dynamics...
-    if (activeTool instanceof PrimitiveToolBase) {
+    if (activeTool instanceof PrimitiveTool) {
       const ev = ToolAdmin.scratchButtonEvent1;
       this.fillEventFromCursorLocation(ev);
       activeTool.updateDynamics(ev);
@@ -765,7 +766,7 @@ export class ToolAdmin {
     return activeTool.onKeyTransition(wentDown, key, current.isShiftDown, current.isControlDown);
   }
 
-  public setPrimitiveTool(primitiveTool?: PrimitiveToolBase) {
+  public setPrimitiveTool(primitiveTool?: PrimitiveTool) {
     const prevActiveTool = this.activeTool;
     if (this.primitiveTool) {
       this.primitiveTool.onCleanup();
@@ -825,7 +826,7 @@ export class ToolAdmin {
     // we don't actually start the tool here...
   }
 
-  public startPrimitiveTool(newTool: PrimitiveToolBase) {
+  public startPrimitiveTool(newTool: PrimitiveTool) {
     this.exitViewTool();
     if (this.primitiveTool)
       this.setPrimitiveTool(undefined);
@@ -841,7 +842,7 @@ export class ToolAdmin {
   }
 
   /** establish the default tool */
-  public setDefaultTool(tool: PrimitiveToolBase) { this.defaultTool = tool; }
+  public setDefaultTool(tool: PrimitiveTool) { this.defaultTool = tool; }
   /**
    * Starts the default tool, if any. Generally invoked automatically when other tools exit, so
    * shouldn't be called directly.
