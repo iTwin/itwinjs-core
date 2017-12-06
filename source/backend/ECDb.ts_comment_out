@@ -6,7 +6,8 @@ import { ECJsonTypeMap, ECInstance } from "@bentley/bentleyjs-core/lib/ECJsonTyp
 import { IModelError } from "../common/IModelError";
 import { BindingUtility, BindingValue } from "./BindingUtility";
 import { PrimitiveTypeCode } from "./Entity";
-import { NodeAddon } from "./NodeAddon";
+import { NodeAddonRegistry } from "./NodeAddonRegistry";
+import { NodeAddonECDb } from "./NodeAddonECDb";
 
 /** Value type  (Match this to ECN::ValueKind in ECObjects.h) */
 export const enum ValueKind {
@@ -53,7 +54,7 @@ export function isPoint3dType(arg: any): arg is Point3dType {
 
 /** Allows performing CRUD operations in an ECDb */
 export class ECDb {
-  private _ecdb: any;
+  private _ecdb: NodeAddonECDb;
 
   /** Construct an invalid ECDb Error. */
   private _newInvalidDatabaseError(): IModelError {
@@ -66,7 +67,7 @@ export class ECDb {
    */
   public async createDb(pathname: string): Promise<void> {
     if (!this._ecdb)
-      this._ecdb = await new (NodeAddon.getAddon()).ECDb();
+      this._ecdb = await new (NodeAddonRegistry.getAddon()).ECDb();
     const { error } = await this._ecdb.createDb(pathname);
     if (error)
       return Promise.reject(new IModelError(error.status, error.message));
@@ -79,7 +80,7 @@ export class ECDb {
    */
   public async openDb(pathname: string, openMode: OpenMode = OpenMode.Readonly): Promise<void> {
     if (!this._ecdb)
-      this._ecdb = await new (NodeAddon.getAddon()).ECDb();
+      this._ecdb = await new (NodeAddonRegistry.getAddon()).ECDb();
     const { error } = await this._ecdb.openDb(pathname, openMode);
     if (error)
       return Promise.reject(new IModelError(error.status, error.message));
@@ -247,10 +248,13 @@ export class ECDb {
       return Promise.reject(this._newInvalidDatabaseError());
 
     let ecBindingsStr: string | undefined;
+    let ecBindings;
     if (bindings) {
-      const { error, result: ecBindings } = BindingUtility.preProcessBindings(bindings);
-      if (error)
+      try {
+        ecBindings = BindingUtility.preProcessBindings(bindings);
+      } catch (error) {
         return Promise.reject(new IModelError(error.status, error.message));
+      }
       ecBindingsStr = JSON.stringify(ecBindings);
     }
 
@@ -276,9 +280,11 @@ export class ECDb {
       return Promise.reject(this._newInvalidDatabaseError());
 
     let ecBindingsStr: string | undefined;
+    let ecBindings;
     if (bindings) {
-      const { error: bindingError, result: ecBindings } = BindingUtility.preProcessBindings(bindings);
-      if (bindingError)
+      try {
+        ecBindings  = BindingUtility.preProcessBindings(bindings);
+      } catch (bindingError) {
         return Promise.reject(new IModelError(bindingError.status, bindingError.message));
       ecBindingsStr = JSON.stringify(ecBindings);
     }

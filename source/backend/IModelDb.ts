@@ -10,7 +10,7 @@ import { ElementProps } from "../common/ElementProps";
 import { ElementAspectProps } from "../common/ElementAspectProps";
 import { IModel } from "../common/IModel";
 import { IModelVersion } from "../common/IModelVersion";
-import { Logger } from "../common/Logger";
+import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { ModelProps } from "../common/ModelProps";
 import { IModelToken } from "../common/IModel";
 import { IModelError, IModelStatus } from "../common/IModelError";
@@ -26,6 +26,8 @@ import { BindingValue } from "./BindingUtility";
 import { CodeSpecs } from "./CodeSpecs";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelGatewayImpl } from "./IModelGatewayImpl";
+import { NodeAddonDgnDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
+import { StatusCodeWithMessage } from "@bentley/bentleyjs-core/lib/BentleyError";
 
 // Register the backend implementation of IModelGateway
 IModelGatewayImpl.register();
@@ -126,13 +128,13 @@ export class IModelDb extends IModel {
   public elements: IModelDbElements;
   private statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private _maxStatementCacheCount = 20;
-  public nativeDb: any;
+  public nativeDb: NodeAddonDgnDb | undefined;
   private _codeSpecs: CodeSpecs;
   private _classMetaDataRegistry: MetaDataRegistry;
 
   // WIP: constructor should be private
   /** @hidden */
-  public constructor(iModelToken: IModelToken, nativeDb: any, name: string, description: string, extents: any) {
+  public constructor(iModelToken: IModelToken, nativeDb: NodeAddonDgnDb | undefined, name: string, description: string, extents: any) {
     super(iModelToken, name, description, extents);
     this.nativeDb = nativeDb;
     this.models = new IModelDbModels(this);
@@ -141,7 +143,7 @@ export class IModelDb extends IModel {
 
   /** Get the briefcase ID of this iModel */
   public getBriefcaseId(): BriefcaseId {
-    return new BriefcaseId(this.nativeDb.getBriefcaseId());
+    return new BriefcaseId(this.nativeDb!.getBriefcaseId());
   }
 
   /** Open the iModel from a local file
@@ -168,7 +170,7 @@ export class IModelDb extends IModel {
     if (!this.iModelToken)
       return;
 
-    this.nativeDb.closeDgnDb();
+    this.nativeDb!.closeDgnDb();
     this.iModelToken.isOpen = false;
 
     BriefcaseManager.closeStandalone(this.iModelToken);
@@ -180,7 +182,7 @@ export class IModelDb extends IModel {
     if (!this.iModelToken.isOpen)
       return;
 
-    this.nativeDb.closeDgnDb();
+    this.nativeDb!.closeDgnDb();
     this.iModelToken.isOpen = false;
 
     await BriefcaseManager.close(accessToken, this.iModelToken, keepBriefcase);
@@ -264,20 +266,20 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] if there is a problem saving changes.
    */
   public saveChanges() {
-    if (!this.iModelToken || !this.nativeDb)
+    if (!this.iModelToken || !this.nativeDb!)
       throw this._newNotOpenError();
 
-    const stat = this.nativeDb.saveChanges();
+    const stat = this.nativeDb!.saveChanges();
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, "Problem saving changes", Logger.logError);
   }
 
   /** Import an ECSchema. */
   public importSchema(schemaFileName: string) {
-    if (!this.iModelToken || !this.nativeDb)
+    if (!this.iModelToken || !this.nativeDb!)
       throw this._newNotOpenError();
 
-    const stat = this.nativeDb.importSchema(schemaFileName);
+    const stat = this.nativeDb!.importSchema(schemaFileName);
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, "Error importing schema", Logger.logError, () => ({ schemaFileName }));
   }
@@ -308,14 +310,17 @@ export class IModelDb extends IModel {
 
   /** @deprecated */
   public async getElementPropertiesForDisplay(elementId: string): Promise<string> {
-    if (!this.iModelToken.isOpen)
+    if (!this.iModelToken.isOpen || !this.nativeDb)
       return Promise.reject(this._newNotOpenError());
 
-    const { error, result: json } = await this.nativeDb.getElementPropertiesForDisplay(elementId);
-    if (error)
-      return Promise.reject(new IModelError(error.status, error.message, Logger.logError, () => ({ iModelId: this._iModelToken.iModelId, elementId })));
-
-    return json;
+    return new Promise<string>((resolve, reject) => {
+      this.nativeDb!.getElementPropertiesForDisplay(elementId, (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
+      if (error)
+        reject(new IModelError(error.status, error.message, Logger.logError, () => ({ iModelId: this._iModelToken.iModelId, elementId })));
+      else
+        resolve(json);
+      });
+    });
   }
 
   /** Prepare an ECSql statement.
@@ -327,7 +332,7 @@ export class IModelDb extends IModel {
       throw this._newNotOpenError();
 
     const stmt = new ECSqlStatement();
-    stmt.prepare(this.nativeDb, sql);
+    stmt.prepare(this.nativeDb!, sql);
     return stmt;
   }
 
@@ -352,7 +357,7 @@ export class IModelDb extends IModel {
     return entity;
   }
 
-  /** Get metadata for a class. This method will load the metadata from the DgnDb into the cache as a side-effect, if necessary.
+  /** Get metadata for a class. This method will load the metadata from the NodeAddonDgnDb into the cache as a side-effect, if necessary.
    * @throws [[IModelError]] if the metadata cannot be found nor loaded.
    */
   public getMetaData(classFullName: string): EntityMetaData {
@@ -374,11 +379,11 @@ export class IModelDb extends IModel {
     if (className.length !== 2)
       throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, () => ({ iModelId: this._iModelToken.iModelId, classFullName }));
 
-    const { error, result: metaDataJson } = this.nativeDb.getECClassMetaDataSync(className[0], className[1]);
+    const { error, result: metaDataJson } = this.nativeDb!.getECClassMetaDataSync(className[0], className[1]);
     if (error)
       throw new IModelError(error.status, undefined, Logger.logError, () => ({ iModelId: this._iModelToken.iModelId, classFullName }));
 
-    const metaData = new EntityMetaData(JSON.parse(metaDataJson));
+    const metaData = new EntityMetaData(JSON.parse(metaDataJson!));
     this.classMetaDataRegistry.add(classFullName, metaData);
     // Recursive, to make sure that base class is cached.
     if (metaData.baseClasses !== undefined && metaData.baseClasses.length > 0)
@@ -399,7 +404,7 @@ export class IModelDbModels {
    * @throws [[IModelError]]
    */
   public async getModel(modelId: Id64): Promise<Model> {
-    if (!this._iModel.iModelToken.isOpen)
+    if (!this._iModel.iModelToken.isOpen || !this._iModel.nativeDb)
       return Promise.reject(this._iModel._newNotOpenError());
 
     // first see if the model is already in the local cache.
@@ -407,21 +412,37 @@ export class IModelDbModels {
     if (loaded)
       return loaded;
 
-    // Must go get the model from the iModel. Start by requesting the model's data.
-    const { error, result: json } = await this._iModel.nativeDb.getModel(JSON.stringify({ id: modelId }));
-    if (error)
-      return Promise.reject(new IModelError(error.status, error.message, Logger.logWarning));
+    return new Promise<Model>((resolve, reject) => {
+      // Must go get the model from the iModel. Start by requesting the model's data.
+      this._iModel.nativeDb!.getModel(JSON.stringify({ id: modelId }), (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
+        if (error) {
+          reject(new IModelError(error.status, error.message, Logger.logWarning));
+          return;
+        }
 
-    const props = JSON.parse(json) as ModelProps;
-    props.iModel = this._iModel;
-    const entity = this._iModel.constructEntity(props);
-    assert(entity instanceof Model);
-    const model = entity as Model;
+        const props = JSON.parse(json) as ModelProps;
+        props.iModel = this._iModel;
+        const entity = this._iModel.constructEntity(props);
+        assert(entity instanceof Model);
+        const model = entity as Model;
 
-    // We have created the model. Cache it before we return it.
-    model.setPersistent(); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
-    this._loaded.set(model.id.toString(), model);
-    return model;
+        // We have created the model. Cache it before we return it.
+        model.setPersistent(); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
+        this._loaded.set(model.id.toString(), model);
+        resolve(model);
+      });
+    });
+  }
+
+  public async getModelJson(modelIdStr: string): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      this._iModel.nativeDb!.getModel(JSON.stringify({ id: modelIdStr }), (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
+        if (error)
+          reject(new IModelError(error.status, error.message, Logger.logWarning));
+        else
+          resolve(json);
+      });
+    });
   }
 
   /** Get the sub-model of the specified Element.
@@ -438,6 +459,75 @@ export class IModelDbModels {
 
   /** The Id of the repository model. */
   public get repositoryModelId(): Id64 { return new Id64("0x1"); }
+
+ /** Create a new model in memory.
+  * @param modelProps The properties to use when creating the model.
+  * @throws [[IModelError]] if there is a problem creating the model.
+  */
+  public createModel(modelProps: ModelProps): Model {
+    const model: Model = this._iModel.constructEntity(modelProps) as Model;
+    assert(model instanceof Model);
+    return model;
+  }
+
+  /** Insert a new model.
+   * @param model The data for the new model.
+   * @returns The newly inserted model's Id.
+   * @throws [[IModelError]] if unable to insert the model.
+   */
+  public insertModel(model: Model): Id64 {
+    if (!this._iModel.iModelToken.isOpen || !this._iModel.nativeDb)
+      throw this._iModel._newNotOpenError();
+
+    if (model.isPersistent()) {
+      assert(false);
+      throw new IModelError(IModelStatus.WriteError, "Cannot insert a model marked as persistent. Call copyForEdit.", Logger.logError);
+    }
+
+    const { error, result: json } = this._iModel.nativeDb.insertModelSync(JSON.stringify(model));
+    if (error)
+      throw new IModelError(error.status, "Problem inserting model", Logger.logWarning);
+
+    return model.id = new Id64(JSON.parse(json!).id);
+  }
+
+  /** Update an existing model.
+   * @param model An editable copy of the model, containing the new/proposed data.
+   * @throws [[IModelError]] if unable to update the model.
+   */
+  public updateModel(model: ModelProps): void {
+    if (!this._iModel.iModelToken.isOpen || !this._iModel.nativeDb)
+      throw this._iModel._newNotOpenError();
+
+    if ((model.isPersistent !== undefined) && model.isPersistent()) {
+      assert(false);
+      throw new IModelError(IModelStatus.WriteError, "Cannot update a model marked as persistent. Call copyForEdit.", Logger.logError);
+    }
+
+    const error: IModelStatus = this._iModel.nativeDb.updateModelSync(JSON.stringify(model));
+    if (error !== IModelStatus.Success)
+      throw new IModelError(error, "", Logger.logWarning);
+
+    // Discard from the cache, to make sure that the next fetch see the updated version.
+    this._loaded.delete(model.id.toString());
+  }
+
+  /** Delete an existing model.
+   * @param model The model to be deleted
+   * @throws [[IModelError]]
+   */
+  public deleteModel(model: Model): void {
+    if (!this._iModel.iModelToken.isOpen || !this._iModel.nativeDb)
+      throw this._iModel._newNotOpenError();
+
+    const error: IModelStatus = this._iModel.nativeDb.deleteModelSync(model.id.toString());
+    if (error !== IModelStatus.Success)
+      throw new IModelError(error, "", Logger.logWarning);
+
+    // Discard from the cache
+    this._loaded.delete(model.id.toString());
+  }
+
 }
 
 /** The collection of elements in an [[IModelDb]]. */
@@ -453,18 +543,33 @@ export class IModelDbElements {
 
   /** Private implementation details of getElementProps */
   private async _getElementProps(opts: ElementLoadParams): Promise<ElementProps> {
-    if (!this._iModel.iModelToken.isOpen)
+    if (!this._iModel.iModelToken.isOpen || !this._iModel.nativeDb)
       return Promise.reject(this._iModel._newNotOpenError());
 
-    // Must go get the element from the iModel. Start by requesting the element's data.
-    const { error, result: json } = await this._iModel.nativeDb.getElement(JSON.stringify(opts));
-    if (error)
-      return Promise.reject(new IModelError(error.status, error.message, Logger.logWarning));
+    return new Promise<ElementProps>((resolve, reject) => {
+      // Must go get the element from the iModel. Start by requesting the element's data.
+      this._iModel.nativeDb!.getElement(JSON.stringify(opts), (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
+        if (error)
+          reject(new IModelError(error.status, error.message, Logger.logWarning));
+        else {
+          const props = JSON.parse(json) as ElementProps;
+          props.iModel = this._iModel;
+          resolve(props);
+        }
+      });
+    });
+}
 
-    const props = JSON.parse(json) as ElementProps;
-    props.iModel = this._iModel;
-    return props;
-  }
+public async getElementJson(elementIdStr: string): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    this._iModel.nativeDb!.getElement(JSON.stringify({ id: elementIdStr }), (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
+      if (error)
+        reject(new IModelError(error.status, error.message, Logger.logWarning));
+      else
+        resolve(json);
+    });
+  });
+}
 
   /** Private implementation details of getElement */
   private async _doGetElement(opts: ElementLoadParams): Promise<Element> {
@@ -522,7 +627,7 @@ export class IModelDbElements {
    * @throws [[IModelError]] if unable to insert the element.
    */
   public insertElement(el: Element): Id64 {
-    if (!this._iModel.iModelToken.isOpen)
+    if (!this._iModel.iModelToken.isOpen || !this._iModel.nativeDb)
       throw this._iModel._newNotOpenError();
 
     if (el.isPersistent()) {
@@ -530,37 +635,28 @@ export class IModelDbElements {
       throw new IModelError(IModelStatus.WriteError, "Cannot insert an element marked as persistent. Call copyForEdit.", Logger.logError);
     }
 
-    // Note that inserting an element is always done synchronously. That is because of constraints
-    // on the native code side. Nevertheless, we want the signature of this method to be
-    // that of an asynchronous method, since it must run in the services tier and will be
-    // asynchronous from a remote client's point of view in any case.
     const { error, result: json } = this._iModel.nativeDb.insertElementSync(JSON.stringify(el));
     if (error)
       throw new IModelError(error.status, "Problem inserting element", Logger.logWarning);
 
-    return new Id64(JSON.parse(json).id);
+    return new Id64(JSON.parse(json!).id);
   }
 
   /** Update an existing element.
    * @param el An editable copy of the element, containing the new/proposed data.
    * @throws [[IModelError]] if unable to update the element.
    */
-  public async updateElement(el: Element): Promise<void> {
-    if (!this._iModel.iModelToken.isOpen)
-      return Promise.reject(this._iModel._newNotOpenError());
+  public updateElement(el: Element): void {
+    if (!this._iModel.iModelToken.isOpen || !this._iModel.nativeDb)
+      throw this._iModel._newNotOpenError();
 
     if (el.isPersistent()) {
-      assert(false);
-      return Promise.reject(new IModelError(IModelStatus.WriteError, "Cannot update an element marked as persistent. Call copyForEdit.", Logger.logError));
+      throw new IModelError(IModelStatus.WriteError, "Cannot update an element marked as persistent. Call copyForEdit.", Logger.logError);
     }
 
-    // Note that updating an element is always done synchronously. That is because of constraints
-    // on the native code side. Nevertheless, we want the signature of this method to be
-    // that of an asynchronous method, since it must run in the services tier and will be
-    // asynchronous from a remote client's point of view in any case.
-    const { error } = this._iModel.nativeDb.updateElementSync(JSON.stringify(el));
-    if (error)
-      return Promise.reject(new IModelError(error.status, error.message, Logger.logWarning));
+    const error: IModelStatus = this._iModel.nativeDb.updateElementSync(JSON.stringify(el));
+    if (error !== IModelStatus.Success)
+      throw new IModelError(error, "", Logger.logWarning);
 
     // Discard from the cache, to make sure that the next fetch see the updated version.
     this._loaded.delete(el.id.toString());
@@ -570,17 +666,13 @@ export class IModelDbElements {
    * @param el The element to be deleted
    * @throws [[IModelError]]
    */
-  public async deleteElement(el: Element): Promise<void> {
-    if (!this._iModel.iModelToken.isOpen)
-      return Promise.reject(this._iModel._newNotOpenError());
+  public deleteElement(el: Element): void {
+    if (!this._iModel.iModelToken.isOpen || !this._iModel.nativeDb)
+      throw this._iModel._newNotOpenError();
 
-    // Note that deleting an element is always done synchronously. That is because of constraints
-    // on the native code side. Nevertheless, we want the signature of this method to be
-    // that of an asynchronous method, since it must run in the services tier and will be
-    // asynchronous from a remote client's point of view in any case.
-    const { error } = this._iModel.nativeDb.deleteElementSync(el.id.toString());
-    if (error)
-      return Promise.reject(new IModelError(error.status, error.message, Logger.logWarning));
+    const error: IModelStatus = this._iModel.nativeDb.deleteElementSync(el.id.toString());
+    if (error !== IModelStatus.Success)
+      throw new IModelError(error, "", Logger.logWarning);
 
     // Discard from the cache
     this._loaded.delete(el.id.toString());

@@ -2,16 +2,16 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelError } from "./IModelError";
-import { Logger } from "./Logger";
+import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 
 const INSTANCE = Symbol("instance");
 const registry: Map<GatewayDefinition, GatewayImplementation> = new Map();
 
-export interface GatewayConstructor<T extends Gateway> { new(): T; }
+export interface GatewayConstructor<T extends Gateway> { new(): T; version: string; }
 
 export type GatewayImplementation<T extends Gateway = Gateway> = GatewayConstructor<T>;
-export interface GatewayDefinition<T extends Gateway = Gateway> { prototype: T; name: string; }
+export interface GatewayDefinition<T extends Gateway = Gateway> { prototype: T; name: string; version: string; }
 export type GatewayConfigurationSupplier = () => { new(): Gateway.Configuration };
 
 /** A set of related asynchronous APIs that operate over configurable protocols across multiple platforms. */
@@ -113,12 +113,12 @@ export abstract class Gateway {
 
   /** Obtains the implementation result for a gateway operation. */
   protected forward<T>(operation: string, ...parameters: any[]): Promise<T> {
-    return this.configuration.protocol.obtainGatewayImplementationResult<T>(this.constructor, operation, ...parameters);
+    return this.configuration.protocol.obtainGatewayImplementationResult<T>(this.constructor as GatewayConstructor<Gateway>, operation, ...parameters);
   }
 
   /** Configures a gateway proxy. */
   protected setupProxyInstance() {
-    Gateway.forEachOperation(this.constructor, (operation) => this.makeOperationForwarder(operation));
+    Gateway.forEachOperation(this.constructor as GatewayConstructor<Gateway>, (operation) => this.makeOperationForwarder(operation));
   }
 
   /** Configures a gateway implementation. */
@@ -157,6 +157,12 @@ export namespace Gateway {
 
     /** The gateways managed by the configuration. */
     public abstract gateways: () => GatewayDefinition[];
+
+    /** Reserved for an application authorization key. */
+    public applicationAuthorizationKey: string;
+
+    /** Reserved for an application authorization value. */
+    public applicationAuthorizationValue: string;
 
     /** Returns the instance of a configuration class. */
     public static getInstance<T extends Configuration>(constructor: { new(): T }): T {
@@ -231,10 +237,12 @@ export namespace Gateway {
     public obtainGatewayImplementationResult<T>(gateway: GatewayDefinition, operation: string, ...parameters: any[]): Promise<T> {
       return new Promise<T>(async (resolve, reject) => {
         try {
-          const identifier: HttpProtocol.GatewayOperationIdentifier = { gateway: this.obtainGatewayName(gateway), operation };
+          const identifier: HttpProtocol.GatewayOperationIdentifier = { gateway: this.obtainGatewayName(gateway), version: gateway.version, operation };
           const path = this.generateOpenAPIPathForOperation(identifier, new HttpProtocol.OperationRequest(...parameters));
 
           const connection = this.generateConnectionForOperationRequest();
+          connection.open(this.supplyHttpVerbForOperation(identifier), path, true);
+
           connection.addEventListener("load", () => {
             if (connection.status === 200)
               resolve(this.deserializeOperationResult(connection.responseText));
@@ -245,7 +253,6 @@ export namespace Gateway {
           connection.addEventListener("error", () => reject(new IModelError(BentleyStatus.ERROR, "Connection error.")));
           connection.addEventListener("abort", () => reject(new IModelError(BentleyStatus.ERROR, "Connection aborted.")));
 
-          connection.open(this.supplyHttpVerbForOperation(identifier), path, true);
           this.setOperationRequestHeaders(connection);
           connection.send(this.serializeParametersForOperationRequest(identifier, ...parameters));
         } catch (e) {
@@ -280,7 +287,7 @@ export namespace Gateway {
 
       this.configuration.gateways().forEach((gateway) => {
         Gateway.forEachOperation(gateway, (operation) => {
-          const identifier = { gateway: this.obtainGatewayName(gateway), operation };
+          const identifier = { gateway: this.obtainGatewayName(gateway), version: gateway.version, operation };
           const path = this.generateOpenAPIPathForOperation(identifier, undefined);
           paths[path] = this.generateOpenAPIDescriptionForOperation(identifier);
         });
@@ -347,6 +354,7 @@ export namespace Gateway {
     /** Identifies a gateway and operation. */
     export interface GatewayOperationIdentifier {
       gateway: string;
+      version: string;
       operation: string;
     }
 

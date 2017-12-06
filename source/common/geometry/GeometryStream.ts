@@ -175,18 +175,17 @@ export class Operation {
 }
 
 class CurrentState {
-  public imodel: IModel;
+  // public imodel: IModel;
   public geomParams: GeometryParams;
   public sourceToWorld: Transform;
   public geomToSource: Transform;
   public geomToWorld: Transform;
   public geometry: GeometricPrimitive;
-  public geomStreamEntryId: any;
+  public geomStreamEntryId: GeometryStreamEntryId;
   public localRange: Range3d;
 
-  public constructor(imodel?: IModel) {
-    if (imodel)
-      this.imodel = imodel;
+  public constructor(/*imodel: IModel*/) {
+    // this.imodel = imodel;
     this.sourceToWorld = Transform.createIdentity();
     this.geomToSource = Transform.createIdentity();
     this.geomToWorld = Transform.createIdentity();
@@ -257,7 +256,7 @@ export class GSCollection {
     return this.dataOffset === itr.dataOffset;
   }
 
-  public get imodel() { return this.state.imodel; }   // imodel used to create collector...
+  // public get imodel() { return this.state.imodel; }   // imodel used to create collector...
   public get geometryParams() { return this.state.geomParams; }   // Returns GeometryParams for current GeometricPrimitive...
   public get geometryPartId() { return this.state.geomStreamEntryId.geometryPartId; }   // Returns invalid id if not a DgnGeometryPart reference...
   public get geometryStreamEntryId() { return this.state.geomStreamEntryId; }   // Returns primitive id for current GeometricPrimitive...
@@ -271,14 +270,32 @@ export class GSCollection {
     return this.state.geomToWorld;
   }
   public getGeometry(): GeometricPrimitive | undefined {
-    const gsReader = new GSReader(this.state.imodel);
+    const gsReader = new GSReader(/*this.state.imodel */);
     const result = gsReader.dgnGetGeometricPrimitive(this.egOp);
     if (!result)
       return undefined;
     this.state.geometry = result;
     return this.state.geometry;
   }
-  public getEntryType() {   // check geometry type to avoid creating GeometricPrimitive for undesired types
+
+  /** Returns true if this offset is equal to the given iterator's offset */
+  public isEqualOffset(other: GSCollection): boolean {
+    return this.dataOffset === other.dataOffset;
+  }
+
+  /** Iterate a GeometryStream for a GeometryPart in the context of a parent GeometricElement iterator.
+   *  When iterating a GeometricElement that has GeometryPart id references, this allows iteration of the GeometryPart's
+   *  GeometryStream using the instance specific GeometryParams and part geometry to world transform as established by the parent GeometrySource.
+   */
+  public setNestedIteratorContext(collection: GSCollection) {
+    this.state.geomParams = collection.state.geomParams.clone();
+    this.state.geomStreamEntryId = collection.state.geomStreamEntryId.clone();
+    this.state.sourceToWorld = collection.state.sourceToWorld.clone();
+    this.state.geomToSource = collection.state.geomToSource.clone();
+  }
+
+  /** Check Geometry type to avoid creating GeometricPrimitive for undesired types */
+  public getEntryType() {
     switch (this.egOp.opCode) {
       case OpCode.GeometryPartInstance:
       {
@@ -471,12 +488,13 @@ export class GeometryStream {
   public geomStream: ArrayBuffer;
   public constructor(stream: ArrayBuffer) { this.geomStream = stream; }
 
-  public toJSON(): any {
+  public toJSON(): string {
     let tmpString = "";
-    const view = new Uint16Array(this.geomStream);
-    for (const c of view)
+    const view = new Uint8Array(this.geomStream);
+    for (const c of view) {
       tmpString += String.fromCharCode(c);
-    return Base64.encode(tmpString);
+    }
+    return Base64.btoa(tmpString);
   }
 
   /** return false if this GeometryStream is empty. */
@@ -486,11 +504,11 @@ export class GeometryStream {
     if (json) {
       if (json instanceof GeometryStream) {
         return new GeometryStream(json.geomStream);
-      } else {  // Should be given as an encoded string
-        const decodedString = Base64.decode(json);
-        const stringLen = decodedString.length;
-        const arrBuff = new ArrayBuffer(stringLen * 2);
-        const view = new Uint16Array(arrBuff);
+      } else {  // Should be Base64 encoded string
+        const decodedString = Base64.atob(json);
+        const stringLen = decodedString.length - (decodedString.length % 8);  // Accounts for extra allocated space on native side
+        const arrBuff = new ArrayBuffer(stringLen);
+        const view = new Uint8Array(arrBuff);
         for (let i = 0; i < stringLen; i++)
           view[i] = decodedString.charCodeAt(i);
         return new GeometryStream(arrBuff);
@@ -499,37 +517,70 @@ export class GeometryStream {
     return undefined;
   }
 
-  /** Makes a reference to the given buffer and saves to this GeometryStream */
-  public saveRef(buffer: ArrayBuffer) {
-    this.geomStream = buffer;
+  /** Returns a new GeometryStream whose buffer is a reference of this buffer */
+  public cloneRef(): GeometryStream {
+    return new GeometryStream(this.geomStream);
   }
 
-  /** Makes a deep copy of the given buffer and saves to this GeometryStream */
-  public saveCopy(buffer: ArrayBuffer) {
-    const byteLen = buffer.byteLength;
-    this.geomStream = new ArrayBuffer(byteLen);
+  /** Makes a deep copy of this GeometryStream */
+  public cloneDeep(): GeometryStream {
+    const byteLen = this.geomStream.byteLength;
+    const buffCopy = new ArrayBuffer(byteLen);
 
     if (byteLen % 4 === 0) {  // Copy 4 bytes at a time
       const copyLen = byteLen / 4;
-      const viewOriginal = new Uint32Array(buffer);
-      const viewNew = new Uint32Array(this.geomStream);
+      const viewOriginal = new Uint32Array(this.geomStream);
+      const viewNew = new Uint32Array(buffCopy);
       for (let i = 0; i < copyLen; i++) {
         viewNew[i] = viewOriginal[i];
       }
     } else if (byteLen % 2 === 0) {   // Copy 2 bytes at a time
       const copyLen = byteLen / 2;
-      const viewOriginal = new Uint16Array(buffer);
-      const viewNew = new Uint16Array(this.geomStream);
+      const viewOriginal = new Uint16Array(this.geomStream);
+      const viewNew = new Uint16Array(buffCopy);
       for (let i = 0; i < copyLen; i++) {
         viewNew[i] = viewOriginal[i];
       }
     } else {    // Least efficient.. copy 1 byte at a time
-      const viewOriginal = new Uint8Array(buffer);
-      const viewNew = new Uint8Array(this.geomStream);
+      const viewOriginal = new Uint8Array(this.geomStream);
+      const viewNew = new Uint8Array(buffCopy);
       for (let i = 0; i < byteLen; i++) {
         viewNew[i] = viewOriginal[i];
       }
     }
+
+    return new GeometryStream(buffCopy);
+  }
+
+  /** Sets this GeometryStream's buffer as a clone of the buffer or GeometryStream given */
+  public setFrom(stream: GeometryStream | ArrayBuffer) {
+    const toCopy = (stream instanceof GeometryStream) ? stream.geomStream : stream;
+    const byteLen = toCopy.byteLength;
+    const newBuff = new ArrayBuffer(byteLen);
+
+    if (byteLen % 4 === 0) {  // Copy 4 bytes at a time
+      const copyLen = byteLen / 4;
+      const viewOriginal = new Uint32Array(toCopy);
+      const viewNew = new Uint32Array(newBuff);
+      for (let i = 0; i < copyLen; i++) {
+        viewNew[i] = viewOriginal[i];
+      }
+    } else if (byteLen % 2 === 0) {   // Copy 2 bytes at a time
+      const copyLen = byteLen / 2;
+      const viewOriginal = new Uint16Array(toCopy);
+      const viewNew = new Uint16Array(newBuff);
+      for (let i = 0; i < copyLen; i++) {
+        viewNew[i] = viewOriginal[i];
+      }
+    } else {    // Least efficient.. copy 1 byte at a time
+      const viewOriginal = new Uint8Array(toCopy);
+      const viewNew = new Uint8Array(newBuff);
+      for (let i = 0; i < byteLen; i++) {
+        viewNew[i] = viewOriginal[i];
+      }
+    }
+
+    this.geomStream = newBuff;
   }
 }
 
@@ -540,6 +591,8 @@ export class GSWriter {
 
   /** Returns the current size (in bytes) of the buffer. */
   public get size() { return this.buffer.byteLength; }
+  /** Returns the data as a raw ArrayBuffer */
+  public get rawData() { return this.buffer; }
 
   public constructor(imodel?: IModel) {
     if (imodel)
@@ -547,13 +600,13 @@ export class GSWriter {
     this.buffer = new ArrayBuffer(0);   // Start out empty
   }
 
-  /** Returns a reference to the current ArrayBuffer */
-  public outputReference(): ArrayBuffer {
-    return this.buffer;
+  /** Returns a reference to the current ArrayBuffer wrapped in a GeometryStream object */
+  public outputGSRef(): GeometryStream {
+    return new GeometryStream(this.buffer);
   }
 
-  /** Wraps a deep copy of the buffer in a GeometryStream object and returns it */
-  public outputCopy(): ArrayBuffer {
+  /** Returns a deep copy of the current ArrayBuffer wrapped in a GeometryStream object */
+  public outputGSClone(): GeometryStream {
     const byteLen = this.buffer.byteLength;
     const arrBuffCopy = new ArrayBuffer(byteLen);
 
@@ -579,7 +632,7 @@ export class GSWriter {
       }
     }
 
-    return arrBuffCopy;
+    return new GeometryStream(arrBuffCopy);
   }
 
   public resize(numBytes: number) {
@@ -603,14 +656,18 @@ export class GSWriter {
 
   /** Allows for the possibility of 2-D curvature */
   public dgnAppendCurvePrimitive(cPrimitive: CurvePrimitive, isClosed: boolean, is3d: boolean): boolean {
-    if (!is3d)
-      return false;   // Should never not be 3d point..
-
     if (cPrimitive instanceof LineSegment3d) {
       /*
       if (hasDisconnectPoint(segment->point, 2))
         return false;
       */
+
+      if (!is3d) {
+        const localPoints2dBuf: Point2d[] = [Point2d.create(cPrimitive.point0Ref.x, cPrimitive.point0Ref.y), Point2d.create(cPrimitive.point1Ref.x, cPrimitive.point1Ref.y)];
+        this.dgnAppendPoint2dArray(localPoints2dBuf, DgnFB.BoundaryType.Open);
+        return true;
+      }
+
       const localPoints3dBuf: Point3d[] = [cPrimitive.point0Ref, cPrimitive.point1Ref];
       this.dgnAppendPoint3dArray(localPoints3dBuf, DgnFB.BoundaryType.Open);
       return true;
@@ -621,6 +678,14 @@ export class GSWriter {
       if (hasDisconnectPoint(&points->front(), points->size()))
         return false;
       */
+
+      if (!is3d) {
+        const localPoints2dBuf: Point2d[] = [];
+        for (const point of cPrimitive.points)
+          localPoints2dBuf.push(Point2d.create(point.x, point.y));
+        this.dgnAppendPoint2dArray(localPoints2dBuf, isClosed ? DgnFB.BoundaryType.Closed : DgnFB.BoundaryType.Open);
+        return true;
+      }
 
       const points: Point3d[] = cPrimitive.points;
 
@@ -722,7 +787,7 @@ export class GSWriter {
       const basicSymbBuilder = DgnFB.BasicSymbology;
 
       basicSymbBuilder.startBasicSymbology(fbb);
-      basicSymbBuilder.addTransparency(fbb, elParams.transparency!);
+      basicSymbBuilder.addTransparency(fbb, elParams.transparency ? elParams.transparency : 0);
       basicSymbBuilder.addLineStyleId(fbb, (useStyle && elParams.lineStyle) ? flatbuffers.Long.create(elParams.lineStyle.styleId.getLow(), elParams.lineStyle.styleId.getHigh()) : flatbuffers.Long.create(0, 0));
       basicSymbBuilder.addSubCategoryId(fbb, ignoreSubCategory ? flatbuffers.Long.create(0, 0) : flatbuffers.Long.create(elParams.categoryId.getLow(), elParams.categoryId.getHigh()));
       basicSymbBuilder.addDisplayPriority(fbb, priority ? priority : 0);
@@ -962,13 +1027,15 @@ export class GSWriter {
       return true;
     }
 
-    let scale: number | undefined;
     const origin = geomToElem.translation();
     const rMatrix = geomToElem.matrixRef();
-    // scale = rMatrix.isRigidSignedScale();
+    const scaleResult = rMatrix.factorRigidWithSignedScale();
+    let scale: number | undefined;
 
-    if (scale === undefined)
+    if (!scaleResult)
       scale = 1.0;
+    else
+      scale = scaleResult.scale;
 
     if (scale! > 0.0)
       return false;   // Mirror not allowed...
@@ -1842,15 +1909,17 @@ export class GeometryBuilder {
   public get currentSize() { return this._writer.size; }
   /** Enable option so that subsequent calls to Append a GeometricPrimitive produce sub-graphics with local ranges to optimize picking/range testing. Not valid when creating a part */
   public setAppendAsSubGraphics() { this._appendAsSubGraphics = !this._isPartCreate; }
+  /** Get the raw ArrayBuffer from the current  */
+  public getRawData(): ArrayBuffer { return this._writer.rawData; }
   /** Get a GeometryStream whose buffer's bytes are a direct reference to the current writer's */
-  public getGeometryStreamRef() { return this._writer.outputReference(); }
+  public getGeometryStreamRef(): GeometryStream { return this._writer.outputGSRef(); }
   /** Get a GeometryStream whose buffer's bytes are a deep copy of the current writer's */
-  public getGeometryStreamCopy() { return this._writer.outputCopy(); }
+  public getGeometryStreamClone(): GeometryStream { return this._writer.outputGSClone(); }
   /** Return the GeometryStream entry id for the GeometricPrimitive last added to the builder... used to identify a specific GeometricPrimitive in
    *  the GeometryStream in places like HitDetail
    */
   public getGeometryStreamEntryId(): GeometryStreamEntryId {
-    const currentStream = new GeometryStream(this._writer.outputCopy());
+    const currentStream = this._writer.outputGSClone();
     const iterator = new GSCollection(currentStream.geomStream);
     const entryId = GeometryStreamEntryId.createDefaults();
 
@@ -2359,7 +2428,7 @@ export class GeometryBuilder {
     if (this._elParams.isEqualTo(elParams))
       return true;
 
-    this._elParams = elParams;
+    this._elParams = elParams.clone();
     this._appearanceChanged = true;   // Defer append until we actually have some geometry...
     return true;
   }

@@ -17,7 +17,7 @@ import { IndexedPolyface } from "@bentley/geometry-core/lib/polyface/Polyface";
 import { GeometricPrimitive, GeometryType } from "../common/geometry/Primitives";
 
 describe ("GeometricPrimitive", () => {
-  it("Create", () => {
+  it("should be able to create GeometricPrimitives from various geometry", () => {
 
     // CurvePrimitive
     const arc = Arc3d.create(Point3d.create(1, 2, 3), Vector3d.create(0, 0, 2), Vector3d.create(0, 3, 0), AngleSweep.createStartEndRadians(0, 2 * Math.PI));

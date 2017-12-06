@@ -7,23 +7,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Mocha Tests",
-      "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "-u",
-        "tdd",
-        "--timeout",
-        "999999",
-        "--colors",
-        "${workspaceRoot}/lib/**/*.test.js"
-      ],
-      "protocol": "inspector",
-      "internalConsoleOptions": "openOnSessionStart"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "WIP - Mocha Tests",
+      "name": "Run Tests",
       "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}",
       "args": [
@@ -32,36 +16,21 @@
         "--debug"
       ],
       "port": 9229,
-      "protocol": "inspector",
-      "env":{
-        "ADDON_PATH": "../source/test/node_modules/"
-      }
+      "protocol": "inspector"
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "WIP - Mocha Tests - ts-node",
-      "program": "${workspaceFolder}/source/test/node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode",
-      "cwd": "${workspaceFolder}/source/test",
-      "args": [
-        "--packageRoot=${workspaceFolder}/source/test",
-        "--testDir=${workspaceFolder}/source/test",
-        "--debug"
+      "name": "Run testbed",
+      "cwd": "${workspaceFolder}/source/testbed/",
+      "runtimeExecutable": "${workspaceFolder}/source/testbed/node_modules/.bin/electron",
+      "runtimeArgs": [
+        "${workspaceFolder}/source/testbed/node_modules/floss/electron",
+        "{\"debug\":true, \"path\":\"frontend/lib/frontend/index.js\"}",
+        "--debug-brk=5858"
       ],
-      "port": 9229,
-      "protocol": "inspector",
-      "env":{
-        "ADDON_PATH": "../source/test/node_modules/"
-      }
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Launch Program",
-      "program": "${file}",
-      "outFiles": [
-        "${workspaceRoot}/out/**/*.js"
-      ]
+      "protocol": "legacy",
+      "port": 5858
     }
   ]
 }

@@ -1,0 +1,16 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./lib",
+    "sourceMap": false,
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "paths": {
+      "@build/imodeljs-core*": ["../../frontend/*"]
+    }
+  },
+  "include": [
+    "./**/*.ts",
+    "../common/**/*.ts"
+  ]
+}
