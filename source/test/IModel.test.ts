@@ -606,7 +606,7 @@ describe("iModel", () => {
 
   });
 
-  it("should import schemas", () => {
+  it.skip("should import schemas", () => {
     const schemaPathname = path.join(__dirname, "assets", "TestBim.ecschema.xml");
     imodel1.importSchema(schemaPathname); // will throw an exception in import fails
 
