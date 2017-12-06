@@ -11,8 +11,6 @@ import { ColorDef, ColorRgb } from "../Render";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Appearance } from "../SubCategoryAppearance";
 
-/* tslint:disable: no-string-literal */
-
 export const enum BackgroundFill {
   None = 0,     // single color fill uses the fill color and line color to draw either a solid or outline fill
   Solid = 1,    // single color fill uses the view's background color to draw a solid fill
@@ -98,7 +96,7 @@ export class GeometryParams {
   }
 
   /**
-   *  Like createDefaults... but preserves category and sub-category around the call to create. Is particularyl useful when a single element
+   *  Like createDefaults... but preserves category and sub-category around the call to create. Is particularly useful when a single element
    *  draws objects of different symbology, but its draw code does not have easy access to reset the category
    */
   public resetAppearance() {
@@ -136,7 +134,7 @@ export class GeometryParams {
     if (!this._fillOverride)
       this._fillColor = new ColorDef(appearance.color);
     else if (this._backgroundFill !== BackgroundFill.None)
-      this._fillColor = new ColorDef(ColorRgb["black"]);
+      this._fillColor = new ColorDef(ColorRgb.black);
 
     if (!this._weightOverride)
       this._weight = appearance.weight;
@@ -294,10 +292,10 @@ export class GeometryParams {
   public setMaterialToSubCategoryAppearance() { this._resolved = this._materialOverride = false; }
   public setFillColorToSubCategoryAppearance() { this._resolved = this._fillOverride = false; }
   public isLineColorFromSubCategoryAppearance(): boolean { return !this._colorOverride; }
-  public isWeightFromSubCategoryAppearance(): boolean  { return !this._weightOverride; }
-  public isLineStyleFromSubCategoryAppearance(): boolean  { return !this._styleOverride; }
-  public isMaterialFromSubCategoryAppearance(): boolean  { return !this._materialOverride; }
-  public isFillColorFromSubCategoryAppearance(): boolean  { return !this._fillOverride; }
+  public isWeightFromSubCategoryAppearance(): boolean { return !this._weightOverride; }
+  public isLineStyleFromSubCategoryAppearance(): boolean { return !this._styleOverride; }
+  public isMaterialFromSubCategoryAppearance(): boolean { return !this._materialOverride; }
+  public isFillColorFromSubCategoryAppearance(): boolean { return !this._fillOverride; }
   public isFillColorFromViewBackground(): boolean { return this._backgroundFill !== BackgroundFill.None; }
   public isBackgroundFillOfTypeOutline(): boolean { return this._backgroundFill === BackgroundFill.Outline; }
   public hasStrokedLineStyle(): boolean | undefined {

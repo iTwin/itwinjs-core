@@ -5,10 +5,10 @@ import { assert } from "chai";
 import * as path from "path";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { Code } from "../common/Code";
 import { EntityProps } from "../common/EntityProps";
-import { DisplayStyle3dState, ModelSelectorState, ModelSelectorProps, SpatialViewState, CategorySelectorState, ViewStatus } from "../common/ViewState";
+import { ModelSelectorState, ModelSelectorProps } from "../common/ViewState";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { Entity, EntityCtor, EntityMetaData, PrimitiveTypeCode } from "../backend/Entity";
 import { Model } from "../backend/Model";
@@ -23,7 +23,7 @@ import {
 } from "../backend/Element";
 import { ElementPropertyFormatter } from "../backend/ElementPropertyFormatter";
 import { IModelDb } from "../backend/IModelDb";
-import { DisplayStyle3d, ModelSelector, CategorySelector, SpatialViewDefinition } from "../backend/ViewDefinition";
+import { ModelSelector } from "../backend/ViewDefinition";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ModelProps } from "../common/ModelProps";
 
@@ -276,73 +276,6 @@ describe("iModel", () => {
     // assert.isArray(item.properties);
   });
 
-  it("should be at least one view element", async () => {
-    const viewRows: any[] = await imodel1.executeQuery("SELECT EcInstanceId as elementId FROM " + SpatialViewDefinition.sqlName);
-    assert.exists(viewRows, "Should find some views");
-    for (const viewRow of viewRows!) {
-      const viewId = new Id64(viewRow.elementId);
-      const view = await imodel1.elements.getElement(viewId) as SpatialViewDefinition;
-      assert.isTrue(view instanceof SpatialViewDefinition, "Should be instance of SpatialViewDefinition");
-      assert.isTrue(view.code.value === "A Views - View 1", "Code value is A Views - View 1");
-      assert.isTrue(view.displayStyleId.value === "0x36", "Display Style Id is 0x36");
-      assert.isTrue(view.categorySelectorId.getLow() === 0x37, "Category Id is 0x37");
-      assert.isFalse(view.cameraOn, "The camera is not turned on");
-      assert.isTrue(view.extents.isAlmostEqual(new Vector3d(429.6229727570776, 232.24786876266097, 0.1017680889917761)), "View extents as expected");
-      assert.isTrue(view.origin.isAlmostEqual(new Point3d(-87.73958171815832, -108.96514044887601, -0.0853709702222105)), "View origin as expected");
-      assert.isTrue(view.angles.isAlmostEqual(new YawPitchRollAngles()), "View rotation is identity");
-      assert.isTrue(view.jsonProperties.viewDetails.gridOrient === 0, "Grid orientation as expected");
-      assert.isTrue(view.jsonProperties.viewDetails.gridSpaceX === 0.001, "GridSpaceX as expected");
-
-      // get the display style element
-      const displayStyle = await imodel1.elements.getElement(view.displayStyleId);
-      assert.isTrue(displayStyle instanceof DisplayStyle3d, "The Display Style should be a DisplayStyle3d");
-      const dStyleState = new DisplayStyle3dState(displayStyle.toJSON(), imodel1);
-      const bgColorDef = dStyleState.backgroundColor;
-      assert.isTrue(bgColorDef.tbgr === 0, "The background as expected");
-      const sceneBrightness: number = dStyleState.getSceneBrightness();
-      assert.equal(sceneBrightness, 0);
-      const styleProps = await imodel1.elements.getElementProps(view.displayStyleId);
-      const dStyleState2 = new DisplayStyle3dState(styleProps, imodel1);
-      assert.deepEqual(dStyleState, dStyleState2);
-      const d3 = dStyleState.clone();
-      assert.deepEqual(dStyleState, d3);
-
-      const catSel = await imodel1.elements.getElement(view.categorySelectorId) as CategorySelector;
-      assert.isDefined(catSel.categories);
-      assert.lengthOf(catSel.categories, 4);
-      const modelSel = await imodel1.elements.getElement(view.modelSelectorId) as ModelSelector;
-      assert.isDefined(modelSel.models);
-      assert.lengthOf(modelSel.models, 5);
-
-      const catSelState = new CategorySelectorState(catSel.toJSON(), imodel1);
-      const c2 = catSelState.clone<CategorySelectorState>();
-      assert.deepEqual(catSelState, c2);
-
-      const modSelState = new ModelSelectorState(modelSel.toJSON(), imodel1);
-      const m2 = modSelState.clone<ModelSelectorState>();
-      assert.deepEqual(modSelState, m2);
-
-      const viewState = new SpatialViewState(view.toJSON(), imodel1, catSelState, dStyleState, modSelState);
-      assert.isDefined(viewState.displayStyle);
-      assert.instanceOf(viewState.categorySelector, CategorySelectorState);
-      assert.equal(viewState.categorySelector.categories.size, 4);
-      assert.instanceOf(viewState.modelSelector, ModelSelectorState);
-      assert.equal(viewState.modelSelector.models.size, 5);
-      assert.isTrue(viewState.origin.isAlmostEqual(new Point3d(-87.73958171815832, -108.96514044887601, -0.0853709702222105)), "View origin as expected");
-      const v2 = viewState.clone<SpatialViewState>();
-      assert.deepEqual(viewState, v2);
-
-      assert.notEqual(v2.origin, viewState.origin); // make sure we're really looking at a copy
-      assert.notEqual(v2.extents, viewState.extents);
-      assert.notEqual(v2.camera, viewState.camera);
-      assert.notEqual(v2.jsonProperties, viewState.jsonProperties);
-      assert.notEqual(v2.rotation, viewState.rotation);
-      const stat = v2.lookAt(new Point3d(1, 2, 3), new Point3d(100, 100, 100), new Vector3d(0, 1, 0));
-      assert.equal(stat, ViewStatus.Success);
-      assert.notDeepEqual(v2, viewState);
-    }
-  });
-
   it("should be some categories", async () => {
     const categoryRows: any[] = await imodel1.executeQuery("SELECT EcInstanceId as elementId FROM " + Category.sqlName);
     assert.exists(categoryRows, "Should have some Category ids");
@@ -525,7 +458,7 @@ describe("iModel", () => {
 
     // ------------ delete -----------------
     const elid = afterUpdateElemFetched.id;
-    await imodel4.elements.deleteElement(afterUpdateElemFetched);
+    await imodel4.elements.deleteElement(elid);
     try {
       await imodel4.elements.getElement(elid);
       assert.fail("should fail to load the element.");
@@ -693,7 +626,7 @@ describe("iModel", () => {
       const modeledElementProps: ElementProps = {
         classFullName: "BisCore:PhysicalPartition",
         iModel: testImodel,
-        parent: {id: testImodel.elements.rootSubjectId, relClass: "BisCore:SubjectOwnsPartitionElements"},
+        parent: { id: testImodel.elements.rootSubjectId, relClass: "BisCore:SubjectOwnsPartitionElements" },
         model: testImodel.models.repositoryModelId,
         id: new Id64(),
         code: Code.createEmpty(),
@@ -703,7 +636,7 @@ describe("iModel", () => {
       assert.isTrue(modeledElementId.isValid());
 
       // Create the model (in memory)
-      const newModel = testImodel.models.createModel({id: new Id64(), modeledElement: modeledElementId, classFullName: "BisCore:PhysicalModel", isPrivate: true});
+      const newModel = testImodel.models.createModel({ id: new Id64(), modeledElement: modeledElementId, classFullName: "BisCore:PhysicalModel", isPrivate: true });
 
       // Insert the model into the BIM
       newModelId = testImodel.models.insertModel(newModel);
