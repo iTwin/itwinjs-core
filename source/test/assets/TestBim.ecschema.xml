@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="TestBim" alias="testbim" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+  <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+
+  <ECEntityClass typeName="TestDocument">
+    <BaseClass>bis:Document</BaseClass>
+    <BaseClass>bis:ISubModeledElement</BaseClass>
+    <ECProperty propertyName="testDocumentProperty" typeName="int" displayLabel="test doc prop"/>
+  </ECEntityClass>
+
+  <ECEntityClass typeName="TestDefinitionModel">
+    <BaseClass>bis:DefinitionModel</BaseClass>
+  </ECEntityClass>
+
+  <ECEntityClass typeName="TestDefinitionElement">
+    <BaseClass>bis:DefinitionElement</BaseClass>
+    <ECProperty propertyName="testProperty" typeName="string"/>
+  </ECEntityClass>
+
+</ECSchema>

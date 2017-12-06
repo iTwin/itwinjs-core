@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
+import * as path from "path";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
@@ -9,7 +10,7 @@ import { Code } from "../common/Code";
 import { EntityProps } from "../common/EntityProps";
 import { DisplayStyle3dState, ModelSelectorState, ModelSelectorProps, SpatialViewState, CategorySelectorState, ViewStatus } from "../common/ViewState";
 import { IModelError, IModelStatus } from "../common/IModelError";
-import { Entity, EntityCtor, EntityMetaData } from "../backend/Entity";
+import { Entity, EntityCtor, EntityMetaData, PrimitiveTypeCode } from "../backend/Entity";
 import { Model } from "../backend/Model";
 import { Category, SubCategory } from "../backend/Category";
 import { ClassRegistry } from "../backend/ClassRegistry";
@@ -670,6 +671,15 @@ describe("iModel", () => {
       assert.equal(count, 1);
     });
 
+  });
+
+  it.only("should import schemas", () => {
+    const schemaPathname = path.join(__dirname, "assets", "TestBim.ecschema.xml");
+    imodel1.importSchema(schemaPathname); // will throw an exception in import fails
+
+    const classMetaData = imodel1.getMetaData("TestBim:TestDocument"); // will throw on failure
+    assert.isDefined(classMetaData.properties.testDocumentProperty);
+    assert.isTrue(classMetaData.properties.testDocumentProperty.primitiveType === PrimitiveTypeCode.Integer);
   });
 
   it("should do CRUD on models", async () => {
