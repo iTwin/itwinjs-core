@@ -10,6 +10,7 @@ import { ElementAlignedBox2d } from "../common/geometry/Primitives";
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core/lib/Time";
 import { Event } from "@bentley/bentleyjs-core/lib/Event";
 import { ButtonEvent } from "./tools/Tool";
+import { EventController } from "./tools/EventController";
 
 // tslint:disable:no-empty
 
@@ -99,20 +100,25 @@ class Animator {
     }
   }
 }
+
 /**
  * A Viewport maps a set of one or more Models to an output device. It holds a ViewState that defines
  * the viewing parameters.
  */
-export abstract class Viewport {
+export class Viewport {
   /** Called whenever this viewport is synchronized with its ViewState */
   public readonly onViewChanged = new Event<(vp: Viewport) => void>();
-
   private zClipAdjusted = false;    // were the view z clip planes adjusted due to front/back clipping off?
-  public readonly viewOrg = new Point3d();       // view origin, potentially expanded
-  public readonly viewDelta = new Vector3d();     // view delta, potentially expanded
-  public readonly viewOrgUnexpanded = new Point3d();     // view origin (from ViewState, un-expanded)
-  public readonly viewDeltaUnexpanded = new Vector3d();  // view delta (from ViewState, un-expanded)
-  public readonly rotMatrix = new RotMatrix();           // rotation matrix (from ViewState)
+  /** view origin, potentially expanded */
+  public readonly viewOrg = new Point3d();
+  /** view delta, potentially expanded */
+  public readonly viewDelta = new Vector3d();
+  /** view origin (from ViewState, un-expanded) */
+  public readonly viewOrgUnexpanded = new Point3d();
+  /** view delta (from ViewState, un-expanded) */
+  public readonly viewDeltaUnexpanded = new Vector3d();
+  /** View rotation matrix (copied from ViewState) */
+  public readonly rotMatrix = new RotMatrix();
   private readonly rootToView = Map4d.createIdentity();
   private readonly rootToNpc = Map4d.createIdentity();
   private _view?: ViewState;
@@ -126,14 +132,22 @@ export abstract class Viewport {
   private readonly backStack: ViewState[] = [];
   private currentBaseline?: ViewState;
   private static nearScale24 = 0.0003; // max ratio of frontplane to backplane distance for 24 bit zbuffer
-
+  private _evController?: EventController;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
-  public abstract getViewSize(): Point2d;
+
+  constructor(public canvas?: HTMLCanvasElement) { }
+
+  /** Get the ClientRect of the canvas for this Viewport. */
+  public getClientRect(): ClientRect { return this.canvas!.getBoundingClientRect(); }
+
+  /** Set the event controller for this Viewport. Destroys previous controller, if one was defined. */
+  public setEventController(controller: EventController | undefined) { if (this._evController) { this._evController.destroy(); } this._evController = controller; }
+
+  /** the current ViewState controlling this Viewport */
   public get view(): ViewState { return this._view!; }
   public get pixelsPerInch() { /* ###TODO: This is apparently unobtainable information in a browser... */ return 96; }
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
-
   public isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn(); }
   public invalidateDecorations(): void { }
   public toView(pt: XYZ): void {
@@ -369,7 +383,7 @@ export abstract class Viewport {
   }
 
   /** get the rectangle of this Viewport in ViewCoordinates. */
-  public get viewRect(): ViewRect { const r = this.viewRange; const size = this.getViewSize(); r.high.x = size.x; r.high.y = size.y; return r; }
+  public get viewRect(): ViewRect { const r = this.viewRange; const rect = this.getClientRect(); r.high.x = rect.width; r.high.y = rect.height; return r; }
 
   /** True if an undoable viewing operation exists on the stack */
   public get isUndoPossible() { return 0 < this.backStack.length; }

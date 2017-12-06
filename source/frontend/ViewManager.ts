@@ -6,6 +6,7 @@ import { Cursor } from "./tools/Tool";
 import { Event } from "@bentley/bentleyjs-core/lib/Event";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { ToolAdmin } from "./tools/ToolAdmin";
+import { EventController } from "./tools/EventController";
 
 /** the ViewManager holds the list of opened views, plus the "selected view" */
 export class ViewManager {
@@ -57,6 +58,7 @@ export class ViewManager {
    */
   public addViewport(newVp: Viewport): void {
     for (const vp of this.viewports) { if (vp === newVp) return; } // make sure its not already in view array
+    newVp.setEventController(new EventController(newVp)); // this will direct events to the viewport
     this.viewports.push(newVp);
     this.onViewOpen.raiseEvent(newVp);
   }
@@ -73,6 +75,7 @@ export class ViewManager {
     const vpList = this.viewports;
     for (let i = 0; i < vpList.length; ++i) {
       if (vpList[i] === vp) {
+        vp.setEventController(undefined);
         vpList.slice(i, 1);
         didDrop = true;
         break;
