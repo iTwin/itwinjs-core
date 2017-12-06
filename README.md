@@ -141,3 +141,11 @@ These instructions assume that you have already updated the version number in `s
 
 1. Change to the frontend directory: `cd source/frontend`
 2. Publish: `npm publish`
+
+## More Information
+
+- See [typescript-coding-guidelines.md](./node_modules/@bentley/bentleyjs-tools/docs/typescript-coding-guidelines.md) in `node_modules/@bentley/bentleyjs-tools/docs/`
+- See [markdown-guidelines.md](./node_modules/@bentley/bentleyjs-tools/docs/markdown-guidelines.md) in `node_modules/@bentley/bentleyjs-tools/docs/`
+- see [README.md](source/backend/node_modules/@bentley/imodeljs-nodeaddonapi/README.md) about the iModelJsNodeAddon in `source/backend/node_modules/@bentley/imodeljs-nodeaddonapi/`
+
+Note that the above links will only be valid after running `npm install`
