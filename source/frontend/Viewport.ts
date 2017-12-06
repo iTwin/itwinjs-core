@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Vector3d, XYZ, Point3d, Range3d, RotMatrix, Transform, Point2d } from "@bentley/geometry-core/lib/PointVector";
 import { Map4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
-import { AxisOrder, Angle } from "@bentley/geometry-core/lib/Geometry";
+import { AxisOrder, Angle, Geometry } from "@bentley/geometry-core/lib/Geometry";
 import { ViewState, Frustum, ViewStatus, Npc, NpcCenter, NpcCorners } from "../common/ViewState";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { ElementAlignedBox2d } from "../common/geometry/Primitives";
@@ -16,8 +16,12 @@ import { EventController } from "./tools/EventController";
 
 /** A rectangle in view coordinates. */
 export class ViewRect extends ElementAlignedBox2d {
-  public get aspect() { return this.width / this.height; }
+  public get aspect() { return Geometry.safeDivideFraction(this.width, this.height, 0); }
   public get area() { return this.width * this.height; }
+
+  public constructor(low?: Point2d, high?: Point2d) {
+    super(low, high);
+  }
 
   public initFromPoint3ds(low: Point3d, high: Point3d): void {
     this.low.x = low.x;
@@ -341,7 +345,7 @@ export class Viewport {
       delta.x = delta.y * windowAspect;
 
     const newOrigin = Point3d.createFrom(this.rotMatrix.multiplyXYZ(origin.x, origin.y, origin.z));
-    this.toView(origin);
+    this.toView(newOrigin);
     newOrigin.x += ((oldDelta.x - delta.x) / 2.0);
     newOrigin.y += ((oldDelta.y - delta.y) / 2.0);
     origin.setFrom(this.rotMatrix.multiplyTransposeXYZ(newOrigin.x, newOrigin.y, newOrigin.z));
@@ -358,7 +362,7 @@ export class Viewport {
     r.transpose(this.rotMatrix);
   }
 
-  private readonly _viewRange: ViewRect = new ViewRect();
+  private readonly _viewRange: ViewRect = new ViewRect(Point2d.create(0, 0), Point2d.create(-1.0e200, -1.0e200)); // Ensure lower bound is zero (constant for view), but start out empty
   /** get the rectangle of this Viewport in ViewCoordinates. */
   public get viewRect(): ViewRect { const r = this._viewRange; const rect = this.getClientRect(); r.high.x = rect.width; r.high.y = rect.height; return r; }
 

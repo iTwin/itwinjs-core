@@ -21,7 +21,7 @@ class TestViewport extends Viewport {
   }
 
   /** Needed since we don't have a canvas */
-  private clientRect = new ViewRect(Point2d.createZero(), Point2d.create(1600, 1094));
+  private clientRect = new ViewRect(Point2d.createZero(), Point2d.create(10, 10));
   public getClientRect(): ClientRect { return this.clientRect; }
 }
 
@@ -91,9 +91,9 @@ describe("ViewPort", () => {
         spec: new Id64("0x12"),
         scope: "Hello World",
       },
-      cameraOn: true,
-      origin: Point3d.create(0, -5, 0),
-      extents: Vector3d.create(0, 1, 0),
+      cameraOn: false,
+      origin: Point3d.create(0, 0, 0),
+      extents: Vector3d.create(1, 1, 1),
       angles: YawPitchRollAngles.createDegrees(0, 0, 0),
       camera: new Camera(
         {
@@ -101,8 +101,8 @@ describe("ViewPort", () => {
           focusDistance: 3,
           eye: {
             x: 0,
-            y: -5,
-            z: 0,
+            y: 0,
+            z: 50,
           },
         },
       ),
@@ -122,6 +122,8 @@ describe("ViewPort", () => {
     assert.isTrue(newViewState.origin.isAlmostEqual(viewState.origin), "ViewState created from old ViewState's frustum has same origin");
     assert.isTrue(newViewState.extents.isAlmostEqual(viewState.extents), "ViewState created from old ViewState's frustum has same extents");
     assert.isTrue(newViewState.rotation.isAlmostEqual(viewState.rotation), "ViewState created from old ViewState's frustum has same rotation");
-
+    assert.isTrue(newViewState.camera.lens.isAlmostEqualNoPeriodShift(viewState.camera.lens), "ViewState created from old ViewState's frustum has same lens");
+    assert.isTrue(newViewState.camera.eye.isAlmostEqual(viewState.camera.eye), "ViewState created from old ViewState's frustum has same eye");
+    assert.equal(newViewState.camera.focusDistance, viewState.camera.focusDistance, "ViewState created from old ViewState's frustum has same focus distance");
   });
 });

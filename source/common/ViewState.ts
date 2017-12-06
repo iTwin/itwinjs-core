@@ -66,18 +66,18 @@ export const enum GridOrientationType {
 export const standardView = {
   Top: RotMatrix.identity,
   Bottom: RotMatrix.createRowValues(1, 0, 0, 0, -1, 0, 0, 0, -1),
-  Left: RotMatrix.createRowValues(0, 0, -1, -1, 0, 0, 0, 1, 0),
-  Right: RotMatrix.createRowValues(0, 0, 1, 1, 0, 0, 0, 1, 0),
-  Front: RotMatrix.createRowValues(1, 0, 0, 0, 0, -1, 0, 1, 0),
+  Left: RotMatrix.createRowValues(0, -1, 0, 0, 0, 1, -1, 0, 0),
+  Right: RotMatrix.createRowValues(0, 1, 0, 0, 0, 1, 1, 0, 0),
+  Front: RotMatrix.createRowValues(1, 0, 0, 0, 0, 1, 0, -1, 0),
   Back: RotMatrix.createRowValues(-1, 0, 0, 0, 0, 1, 0, 1, 0),
   Iso: RotMatrix.createRowValues(
-    0.707106781186548, 0.408248290463863, -0.577350269189626,
-    -0.70710678118654757, 0.40824829046386302, -0.57735026918962573,
-    0, 0.81649658092772603, 0.57735026918962573),
+    0.707106781186548, -0.70710678118654757, 0.00000000000000000,
+    0.408248290463863, 0.40824829046386302, 0.81649658092772603,
+    -0.577350269189626, -0.57735026918962573, 0.57735026918962573),
   RightIso: RotMatrix.createRowValues(
-    0.707106781186548, -0.408248290463863, 0.577350269189626,
-    0.70710678118654757, 0.40824829046386302, -0.57735026918962573,
-    0, 0.81649658092772603, 0.57735026918962573),
+    0.707106781186548, 0.70710678118654757, 0.00000000000000000,
+    -0.408248290463863, 0.40824829046386302, 0.81649658092772603,
+    0.577350269189626, -0.57735026918962573, 0.57735026918962573),
 };
 
 export const standardViewMatrices = [
@@ -614,7 +614,7 @@ export abstract class ViewState extends ElementState {
   public setupFromFrustum(frustum: Frustum): ViewStatus {
     frustum.fixPointOrder();
     const frustPts = frustum.points;
-    let viewOrg = frustPts[Npc.LeftBottomRear];
+    const viewOrg = frustPts[Npc.LeftBottomRear];
 
     // frustumX, frustumY, frustumZ are vectors along edges of the frustum. They are NOT unit vectors.
     // X and Y should be perpendicular, and Z should be right handed.
@@ -647,7 +647,7 @@ export abstract class ViewState extends ElementState {
     viewDiagRoot.plusScaled(zDir, zSize, viewDiagRoot);       // add in z vector perpendicular to x,y
 
     // use center of frustum and view diagonal for origin. Original frustum may not have been orthogonal
-    viewOrg = frustum.getCenter().plusScaled(viewDiagRoot, -0.5);
+    frustum.getCenter().plusScaled(viewDiagRoot, -0.5, viewOrg);
 
     // delta is in view coordinates
     const viewDelta = viewRot.multiplyVector(viewDiagRoot);
