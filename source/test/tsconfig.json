@@ -16,10 +16,11 @@
     "../common/**/*.ts",
     "../backend/**/*.ts",
     "../gateway/**/*.ts",
-    "../frontend/**/*.ts",
+    "../frontend/*.ts",
     "./**/*.ts"
   ],
   "exclude": [
+    "tools",
     "lib",
     "node_modules"
   ]
