@@ -2,6 +2,8 @@
 /lib
 /source/backend/node_modules
 /source/backend/lib
+/source/nodeaddon/node_modules
+/source/nodeaddon/lib
 /source/common/node_modules
 /source/common/lib
 /source/frontend/node_modules
@@ -11,4 +13,5 @@
 .nyc_output
 /source/test/output
 /source/testbed/node_modules
-/source/testbed/lib
+/source/testbed/backend/lib
+/source/testbed/frontend/lib

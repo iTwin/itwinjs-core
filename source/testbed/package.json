@@ -5,15 +5,35 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "tsc",
-    "clean": "rimraf lib",
-    "test": "floss --debug --path lib/frontend/index.js"
+    "build": "concurrently \"npm run build:backend\" \"npm run build:frontend\"",
+    "build:backend": "cd backend && tsc",
+    "build:frontend": "cd frontend && tsc",
+    "postbuild": "concurrently \"npm run resolve-imports-backend\" \"npm run resolve-imports-frontend\"",
+    "clean": "rimraf backend/lib && rimraf frontend/lib",
+    "start": "floss --debug --path frontend/lib/frontend/index.js",
+    "test": "floss --path frontend/lib/frontend/index.js",
+    "resolve-imports-backend": "cd backend/lib && replace \"@build/imodeljs-core\" \"../../../../backend\" -r -q .",
+    "resolve-imports-frontend": "cd frontend/lib && replace \"@build/imodeljs-core\" \"../../../../frontend\" -r -q ."
   },
   "repository": {},
   "dependencies": {
-    "electron": "^1.8.1",
+    "@bentley/bentleyjs-core": "^1.0.47",
+    "@bentley/geometry-core": "^1.0.30",
+    "@bentley/imodeljs-clients": "^1.0.36",
+    "@bentley/imodeljs-nodeaddonapi": "^1.2.0",
+    "body-parser": "^1.18.2",
+    "electron": "^1.6.11",
+    "express": "^4.16.2",
     "floss": "^2.1.3",
-    "fs-extra": "^4.0.2"
+    "fs-extra": "^4.0.3",
+    "node-replace": "^0.3.3"
   },
-  "devDependencies": {}
+  "//optionalDependencies": "imodeljs-e_1_6_11-win32-x64 is optional because it is not available for all platforms where we install, build, and test imodeljs-core",
+  "optionalDependencies": {
+    "@bentley/imodeljs-e_1_6_11-win32-x64": "^1.2.0"
+  },
+  "devDependencies": {
+    "@types/body-parser": "^1.16.8",
+    "@types/express": "^4.0.39"
+  }
 }

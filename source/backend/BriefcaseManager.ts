@@ -2,15 +2,14 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { AccessToken, Briefcase, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
-import { BentleyReturn } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BriefcaseStatus, IModelError } from "../common/IModelError";
 import { IModelVersion } from "../common/IModelVersion";
 import { IModelToken } from "../common/IModel";
 import { IModelDb } from "./IModelDb";
-import { NodeAddon } from "./NodeAddon";
-import { NodeAddonDgnDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
+import { NodeAddonRegistry } from "./NodeAddonRegistry";
+import { NodeAddonDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 
 import * as fs from "fs";
 import * as path from "path";
@@ -109,8 +108,8 @@ export class BriefcaseManager {
     if (!accessToken)
       return;
 
-    const nativeDb: NodeAddonDgnDb = new (NodeAddon.getAddon()).NodeAddonDgnDb();
-    const res: BentleyReturn<DbResult, string> = nativeDb.getCachedBriefcaseInfosSync(BriefcaseManager.cachePath);
+    const nativeDb: NodeAddonDgnDb = new (NodeAddonRegistry.getAddon()).NodeAddonDgnDb();
+    const res: ErrorStatusOrResult<DbResult, string> = nativeDb.getCachedBriefcaseInfosSync(BriefcaseManager.cachePath);
     if (res.error)
       Promise.reject(new IModelError(res.error.status));
 
@@ -413,7 +412,7 @@ export class BriefcaseManager {
     const fromChangeSetId: string = iModelToken.changeSetId!;
     const changeSetTokens = await BriefcaseManager.downloadChangeSets(accessToken, iModelToken.iModelId!, toChangeSetId, fromChangeSetId);
 
-    const nativeDb: NodeAddonDgnDb  = new (NodeAddon.getAddon()).NodeAddonDgnDb();
+    const nativeDb: NodeAddonDgnDb  = new (NodeAddonRegistry.getAddon()).NodeAddonDgnDb();
     const res: DbResult = await nativeDb.openBriefcaseSync(JSON.stringify(iModelToken), JSON.stringify(changeSetTokens));
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res);
@@ -470,7 +469,7 @@ export class BriefcaseManager {
     if (!BriefcaseManager.cache)
       BriefcaseManager.initialize();
 
-    const nativeDb: NodeAddonDgnDb  = new (NodeAddon.getAddon()).NodeAddonDgnDb();
+    const nativeDb: NodeAddonDgnDb  = new (NodeAddonRegistry.getAddon()).NodeAddonDgnDb();
 
     return new Promise<IModelDb>((resolve, reject) => {
 

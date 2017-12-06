@@ -27,7 +27,7 @@ import { CodeSpecs } from "./CodeSpecs";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelGatewayImpl } from "./IModelGatewayImpl";
 import { NodeAddonDgnDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
-import { BentleyError } from "@bentley/bentleyjs-core/lib/Bentley";
+import { StatusCodeWithMessage } from "@bentley/bentleyjs-core/lib/BentleyError";
 
 // Register the backend implementation of IModelGateway
 IModelGatewayImpl.register();
@@ -314,7 +314,7 @@ export class IModelDb extends IModel {
       return Promise.reject(this._newNotOpenError());
 
     return new Promise<string>((resolve, reject) => {
-      this.nativeDb!.getElementPropertiesForDisplay(elementId, (error: BentleyError</*IModelStatus*/number>, json: string) => {
+      this.nativeDb!.getElementPropertiesForDisplay(elementId, (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
       if (error)
         reject(new IModelError(error.status, error.message, Logger.logError, () => ({ iModelId: this._iModelToken.iModelId, elementId })));
       else
@@ -414,7 +414,7 @@ export class IModelDbModels {
 
     return new Promise<Model>((resolve, reject) => {
       // Must go get the model from the iModel. Start by requesting the model's data.
-      this._iModel.nativeDb!.getModel(JSON.stringify({ id: modelId }), (error: BentleyError</*IModelStatus*/number>, json: string) => {
+      this._iModel.nativeDb!.getModel(JSON.stringify({ id: modelId }), (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
         if (error) {
           reject(new IModelError(error.status, error.message, Logger.logWarning));
           return;
@@ -436,7 +436,7 @@ export class IModelDbModels {
 
   public async getModelJson(modelIdStr: string): Promise<string> {
     return new Promise<string>((resolve, reject) => {
-      this._iModel.nativeDb!.getModel(JSON.stringify({ id: modelIdStr }), (error: BentleyError</*IModelStatus*/number>, json: string) => {
+      this._iModel.nativeDb!.getModel(JSON.stringify({ id: modelIdStr }), (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
         if (error)
           reject(new IModelError(error.status, error.message, Logger.logWarning));
         else
@@ -459,6 +459,75 @@ export class IModelDbModels {
 
   /** The Id of the repository model. */
   public get repositoryModelId(): Id64 { return new Id64("0x1"); }
+
+ /** Create a new model in memory.
+  * @param modelProps The properties to use when creating the model.
+  * @throws [[IModelError]] if there is a problem creating the model.
+  */
+  public createModel(modelProps: ModelProps): Model {
+    const model: Model = this._iModel.constructEntity(modelProps) as Model;
+    assert(model instanceof Model);
+    return model;
+  }
+
+  /** Insert a new model.
+   * @param model The data for the new model.
+   * @returns The newly inserted model's Id.
+   * @throws [[IModelError]] if unable to insert the model.
+   */
+  public insertModel(model: Model): Id64 {
+    if (!this._iModel.iModelToken.isOpen || !this._iModel.nativeDb)
+      throw this._iModel._newNotOpenError();
+
+    if (model.isPersistent()) {
+      assert(false);
+      throw new IModelError(IModelStatus.WriteError, "Cannot insert a model marked as persistent. Call copyForEdit.", Logger.logError);
+    }
+
+    const { error, result: json } = this._iModel.nativeDb.insertModelSync(JSON.stringify(model));
+    if (error)
+      throw new IModelError(error.status, "Problem inserting model", Logger.logWarning);
+
+    return model.id = new Id64(JSON.parse(json!).id);
+  }
+
+  /** Update an existing model.
+   * @param model An editable copy of the model, containing the new/proposed data.
+   * @throws [[IModelError]] if unable to update the model.
+   */
+  public updateModel(model: ModelProps): void {
+    if (!this._iModel.iModelToken.isOpen || !this._iModel.nativeDb)
+      throw this._iModel._newNotOpenError();
+
+    if ((model.isPersistent !== undefined) && model.isPersistent()) {
+      assert(false);
+      throw new IModelError(IModelStatus.WriteError, "Cannot update a model marked as persistent. Call copyForEdit.", Logger.logError);
+    }
+
+    const error: IModelStatus = this._iModel.nativeDb.updateModelSync(JSON.stringify(model));
+    if (error !== IModelStatus.Success)
+      throw new IModelError(error, "", Logger.logWarning);
+
+    // Discard from the cache, to make sure that the next fetch see the updated version.
+    this._loaded.delete(model.id.toString());
+  }
+
+  /** Delete an existing model.
+   * @param model The model to be deleted
+   * @throws [[IModelError]]
+   */
+  public deleteModel(model: Model): void {
+    if (!this._iModel.iModelToken.isOpen || !this._iModel.nativeDb)
+      throw this._iModel._newNotOpenError();
+
+    const error: IModelStatus = this._iModel.nativeDb.deleteModelSync(model.id.toString());
+    if (error !== IModelStatus.Success)
+      throw new IModelError(error, "", Logger.logWarning);
+
+    // Discard from the cache
+    this._loaded.delete(model.id.toString());
+  }
+
 }
 
 /** The collection of elements in an [[IModelDb]]. */
@@ -479,7 +548,7 @@ export class IModelDbElements {
 
     return new Promise<ElementProps>((resolve, reject) => {
       // Must go get the element from the iModel. Start by requesting the element's data.
-      this._iModel.nativeDb!.getElement(JSON.stringify(opts), (error: BentleyError</*IModelStatus*/number>, json: string) => {
+      this._iModel.nativeDb!.getElement(JSON.stringify(opts), (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
         if (error)
           reject(new IModelError(error.status, error.message, Logger.logWarning));
         else {
@@ -493,7 +562,7 @@ export class IModelDbElements {
 
 public async getElementJson(elementIdStr: string): Promise<string> {
   return new Promise<string>((resolve, reject) => {
-    this._iModel.nativeDb!.getElement(JSON.stringify({ id: elementIdStr }), (error: BentleyError</*IModelStatus*/number>, json: string) => {
+    this._iModel.nativeDb!.getElement(JSON.stringify({ id: elementIdStr }), (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
       if (error)
         reject(new IModelError(error.status, error.message, Logger.logWarning));
       else
@@ -566,10 +635,6 @@ public async getElementJson(elementIdStr: string): Promise<string> {
       throw new IModelError(IModelStatus.WriteError, "Cannot insert an element marked as persistent. Call copyForEdit.", Logger.logError);
     }
 
-    // Note that inserting an element is always done synchronously. That is because of constraints
-    // on the native code side. Nevertheless, we want the signature of this method to be
-    // that of an asynchronous method, since it must run in the services tier and will be
-    // asynchronous from a remote client's point of view in any case.
     const { error, result: json } = this._iModel.nativeDb.insertElementSync(JSON.stringify(el));
     if (error)
       throw new IModelError(error.status, "Problem inserting element", Logger.logWarning);
@@ -581,22 +646,17 @@ public async getElementJson(elementIdStr: string): Promise<string> {
    * @param el An editable copy of the element, containing the new/proposed data.
    * @throws [[IModelError]] if unable to update the element.
    */
-  public async updateElement(el: Element): Promise<void> {
+  public updateElement(el: Element): void {
     if (!this._iModel.iModelToken.isOpen || !this._iModel.nativeDb)
-      return Promise.reject(this._iModel._newNotOpenError());
+      throw this._iModel._newNotOpenError();
 
     if (el.isPersistent()) {
-      assert(false);
-      return Promise.reject(new IModelError(IModelStatus.WriteError, "Cannot update an element marked as persistent. Call copyForEdit.", Logger.logError));
+      throw new IModelError(IModelStatus.WriteError, "Cannot update an element marked as persistent. Call copyForEdit.", Logger.logError);
     }
 
-    // Note that updating an element is always done synchronously. That is because of constraints
-    // on the native code side. Nevertheless, we want the signature of this method to be
-    // that of an asynchronous method, since it must run in the services tier and will be
-    // asynchronous from a remote client's point of view in any case.
     const error: IModelStatus = this._iModel.nativeDb.updateElementSync(JSON.stringify(el));
     if (error !== IModelStatus.Success)
-      return Promise.reject(new IModelError(error, "", Logger.logWarning));
+      throw new IModelError(error, "", Logger.logWarning);
 
     // Discard from the cache, to make sure that the next fetch see the updated version.
     this._loaded.delete(el.id.toString());
@@ -606,17 +666,13 @@ public async getElementJson(elementIdStr: string): Promise<string> {
    * @param el The element to be deleted
    * @throws [[IModelError]]
    */
-  public async deleteElement(el: Element): Promise<void> {
+  public deleteElement(el: Element): void {
     if (!this._iModel.iModelToken.isOpen || !this._iModel.nativeDb)
-      return Promise.reject(this._iModel._newNotOpenError());
+      throw this._iModel._newNotOpenError();
 
-    // Note that deleting an element is always done synchronously. That is because of constraints
-    // on the native code side. Nevertheless, we want the signature of this method to be
-    // that of an asynchronous method, since it must run in the services tier and will be
-    // asynchronous from a remote client's point of view in any case.
     const error: IModelStatus = this._iModel.nativeDb.deleteElementSync(el.id.toString());
     if (error !== IModelStatus.Success)
-      return Promise.reject(new IModelError(error, "", Logger.logWarning));
+      throw new IModelError(error, "", Logger.logWarning);
 
     // Discard from the cache
     this._loaded.delete(el.id.toString());

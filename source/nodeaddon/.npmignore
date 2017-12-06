@@ -1,0 +1,5 @@
+*.ts
+!*.d.ts
+*.map
+tsconfig.json
+tslint.json

@@ -26,7 +26,7 @@
       "runtimeExecutable": "${workspaceFolder}/source/testbed/node_modules/.bin/electron",
       "runtimeArgs": [
         "${workspaceFolder}/source/testbed/node_modules/floss/electron",
-        "{\"debug\":true, \"path\":\"lib/frontend/index.js\"}",
+        "{\"debug\":true, \"path\":\"frontend/lib/frontend/index.js\"}",
         "--debug-brk=5858"
       ],
       "protocol": "legacy",

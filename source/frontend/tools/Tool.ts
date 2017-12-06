@@ -385,7 +385,7 @@ export abstract class PrimitiveToolBase extends Tool {
   /** Notifies the tool that an input collector is exiting. */
   public onExitInputCollector() { }
 
-  /** Called from isCompatibleViewport to check for a read only DgnDb, which is not a valid target for tools that create or modify elements. */
+  /** Called from isCompatibleViewport to check for a read only iModel, which is not a valid target for tools that create or modify elements. */
   public requireWriteableTarget(): boolean { return true; }
 
   /**
@@ -400,7 +400,7 @@ export abstract class PrimitiveToolBase extends Tool {
   }
 
   /** Get the iModel the tool is operating against. */
-  public getIModel(): IModel { return this.targetView!.view.iModel; }
+  public getIModel(): IModel { return this.targetView!.view!.iModel; }
 
   /**
    * Called when an external event may invalidate the current tool's state.

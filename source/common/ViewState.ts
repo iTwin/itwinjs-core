@@ -100,14 +100,14 @@ function findNearbyStandardViewMatrix(rMatrix: RotMatrix): void {
  * It is stored as 8 points, in NpcCorner order, that must define a truncated pyramid.
  */
 export class Frustum {
-  public readonly points: Point3d[];
+  public readonly points: Point3d[] = [];
   /** constructor for Frustum. Members initialized to the Npc cube. */
   public constructor() { for (let i = 0; i < 8; ++i) this.points[i] = NpcCorners[i].clone(); }
   public initNpc() { for (let i = 0; i < 8; ++i) Point3d.createFrom(NpcCorners[i], this.points[i]); return this; }
   public getCorner(i: number) { return this.points[i]; }
   public getCenter(): Point3d { return this.getCorner(Npc.RightTopFront).interpolate(0.5, this.getCorner(Npc.LeftBottomRear)); }
   public distance(corner1: number, corner2: number): number { return this.getCorner(corner1).distance(this.getCorner(corner2)); }
-  public getFraction(): number { return this.distance(Npc.LeftTopFront, Npc.RightBottomFront) / this.distance(Npc.LeftTopRear, Npc.RightBottomRear); }
+  public getFraction(): number { return Geometry.safeDivideFraction(this.distance(Npc.LeftTopFront, Npc.RightBottomFront), this.distance(Npc.LeftTopRear, Npc.RightBottomRear), 0); }
   public multiply(trans: Transform): void { trans.multiplyPoint3dArrayInPlace(this.points); }
   public translate(offset: Vector3d): void { for (const pt of this.points) pt.plus(offset); }
   public transformBy(trans: Transform, result?: Frustum): Frustum { result = result ? result : new Frustum(); trans.multiplyPoint3dArray(this.points, result.points); return result; }
@@ -215,7 +215,7 @@ export class EntityState implements EntityProps {
   public clone<T extends EntityState>() { return new (this.constructor as EntityStateCtor)(this.toJSON(), this.iModel, this) as T; }
 }
 
-export class ModelState extends EntityState implements ModelProps {
+export abstract class ModelState extends EntityState implements ModelProps {
   public readonly modeledElement: Id64;
   public readonly parentModel: Id64;
   public readonly jsonProperties: any;
@@ -290,7 +290,7 @@ export class ElementState extends EntityState implements ElementProps {
 }
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
-export class DisplayStyleState extends ElementState {
+export abstract class DisplayStyleState extends ElementState {
   private _viewFlags: ViewFlags;
   private _background: ColorDef;
 
@@ -618,9 +618,9 @@ export abstract class ViewState extends ElementState {
 
     // frustumX, frustumY, frustumZ are vectors along edges of the frustum. They are NOT unit vectors.
     // X and Y should be perpendicular, and Z should be right handed.
-    const frustumX = viewOrg.vectorTo(frustPts[Npc.RightBottomRear]);
-    const frustumY = viewOrg.vectorTo(frustPts[Npc.LeftTopRear]);
-    const frustumZ = viewOrg.vectorTo(frustPts[Npc.LeftBottomFront]);
+    const frustumX = Vector3d.createFrom(frustPts[Npc.RightBottomRear].minus(viewOrg));
+    const frustumY = Vector3d.createFrom(frustPts[Npc.LeftTopRear].minus(viewOrg));
+    const frustumZ = Vector3d.createFrom(frustPts[Npc.LeftBottomFront].minus(viewOrg));
 
     const frustMatrix = RotMatrix.createPerpendicularUnitColumns(frustumX, frustumY, AxisOrder.XYZ);
     if (!frustMatrix)
@@ -643,8 +643,8 @@ export abstract class ViewState extends ElementState {
       return ViewStatus.InvalidWindow;
 
     const viewDiagRoot = new Vector3d();
-    viewDiagRoot.plus2Scaled(xDir, xDir.dotProduct(frustumX), yDir, yDir.dotProduct(frustumY));  // vectors on the back plane
-    viewDiagRoot.plusScaled(zDir, zSize);       // add in z vector perpendicular to x,y
+    viewDiagRoot.plus2Scaled(xDir, xDir.dotProduct(frustumX), yDir, yDir.dotProduct(frustumY), viewDiagRoot);  // vectors on the back plane
+    viewDiagRoot.plusScaled(zDir, zSize, viewDiagRoot);       // add in z vector perpendicular to x,y
 
     // use center of frustum and view diagonal for origin. Original frustum may not have been orthogonal
     viewOrg = frustum.getCenter().plusScaled(viewDiagRoot, -0.5);
@@ -972,7 +972,7 @@ export abstract class ViewState extends ElementState {
  */
 
 /**
- * The current position, lens angle, and focus distance of a camera.
+ * The current position (eyepoint), lens angle, and focus distance of a camera.
  */
 export class Camera {
   public readonly lens: Angle;

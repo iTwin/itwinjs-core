@@ -5,7 +5,7 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelError } from "../common/IModelError";
 import { BindingUtility, BindingValue } from "./BindingUtility";
-import { NodeAddon } from "./NodeAddon";
+import { NodeAddonRegistry } from "./NodeAddonRegistry";
 import { NodeAddonECSqlStatement, NodeAddonDgnDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 
 /** An ECSql Statement. A statement must be prepared before it can be executed. See prepare. A statement may contain placeholders that must be filled
@@ -38,7 +38,7 @@ export class ECSqlStatement implements IterableIterator<any> {
   public prepare(db: NodeAddonDgnDb, statement: string): void {
     if (this.isPrepared())
       throw new Error("statement is already prepared");
-    this._stmt = new (NodeAddon.getAddon()).NodeAddonECSqlStatement();
+    this._stmt = new (NodeAddonRegistry.getAddon()).NodeAddonECSqlStatement();
     const error = this._stmt!.prepare(db, statement);
     if (error.status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(error.status, error.message);
@@ -76,9 +76,7 @@ export class ECSqlStatement implements IterableIterator<any> {
    * @throws IModelError in case the binding fails. This will normally happen only if the type of a value does not match and cannot be converted to the type required for the corresponding property in the statement.
    */
   public bindValues(bindings: BindingValue[] | Map<string, BindingValue> | any): void {
-    const { error, result: ecBindings } = BindingUtility.preProcessBindings(bindings);
-    if (error)
-      throw new IModelError(error.status, error.message);
+    const ecBindings = BindingUtility.preProcessBindings(bindings);
     const bindingsStr = JSON.stringify(ecBindings);
     const nativeError = this._stmt!.bindValues(bindingsStr);
     if (nativeError.status !== DbResult.BE_SQLITE_OK)

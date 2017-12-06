@@ -1,0 +1,127 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Point2d, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
+// import { Map4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
+import { DisplayStyle3dState, ModelSelectorState, SpatialViewState, CategorySelectorState, Camera, ViewState } from "../common/ViewState";
+import { AccessToken } from "@bentley/imodeljs-clients";
+import { IModel, IModelToken } from "../common/IModel";
+import { AxisAlignedBox3d } from "../common/geometry/Primitives";
+import { IModelConnection } from "../frontend/IModelConnection";
+import { Viewport, CoordSystem } from "../frontend/Viewport";
+import { IModelTestUtils } from "./IModelTestUtils";
+
+/** Class with scope limited to this file, used for creating a ViewPort directly using a pre-created ViewState */
+class TestViewport extends Viewport {
+  public constructor(viewState: ViewState) {
+    super();
+    this._view = viewState;
+    this.setupFromView();
+  }
+
+  /** Needed due to being a parent abstract method */
+  public getViewSize(): Point2d { return Point2d.create(1600, 1094); }
+}
+
+/** An abstract class representing an instance of an iModel. */
+export class TestIModel extends IModel {
+  public constructor(iModelToken: IModelToken, name: string, description: string, extents: any) {
+    super(iModelToken, name, description, extents);
+  }
+}
+
+describe("ViewPort", () => {
+  let accessToken: AccessToken;
+  let testProjectId: string;
+  let testIModelId: string;
+  let imodelConnection: IModelConnection;
+  let imodel: TestIModel;
+  let categorySelectorState: CategorySelectorState;
+  let displayStyleState: DisplayStyle3dState;
+  let modelSelectorState: ModelSelectorState;
+  let viewState: SpatialViewState;
+
+  before (async () => {   // Create a ViewState to load into a ViewPort
+    accessToken = await IModelTestUtils.getTestUserAccessToken();
+    testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
+    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "MyTestModel");
+    imodelConnection = await IModelConnection.open(accessToken, testIModelId);
+    imodel = new TestIModel(imodelConnection.iModelToken, "TestIModel", "TestIModel", new AxisAlignedBox3d(Point3d.create(-100, -100, -100), Point3d.create(100, 100, 100)));
+    categorySelectorState = new CategorySelectorState(
+      {
+        categories: ["test0"],
+        model: new Id64("0x64"),
+        code: {
+          spec: new Id64("0x12"),
+          scope: "Hello World",
+        },
+        id: new Id64("0x67"),
+        classFullName: "CategorySelectoryState",
+      }, imodel);
+    displayStyleState = new DisplayStyle3dState(
+      {
+        model: new Id64("0x64"),
+        code: {
+          spec: new Id64("0x12"),
+          scope: "Hello World",
+        },
+        id: new Id64("0x112"),
+        classFullName: "DisplayStyle3dState",
+      }, imodel);
+    modelSelectorState = new ModelSelectorState(
+      {
+        models: ["test0"],
+        model: new Id64("0x64"),
+        code: {
+          spec: new Id64("0x12"),
+          scope: "Hello World",
+        },
+        id: new Id64("0x22"),
+        classFullName: "ModelSelectorState",
+      }, imodel);
+    viewState = new SpatialViewState({
+      classFullName: "SpatialViewDefinition",
+      id: new Id64("0x88"),
+      modelSelectorId: new Id64("0x22"),
+      categorySelectorId: new Id64("0x67"),
+      model: new Id64("0x64"),
+      code: {
+        spec: new Id64("0x12"),
+        scope: "Hello World",
+      },
+      cameraOn: true,
+      origin: Point3d.create(0, -5, 0),
+      extents: Vector3d.create(0, 1, 0),
+      angles: YawPitchRollAngles.createDegrees(0, 0, 0),
+      camera: new Camera(
+        {
+          lens: 16.260204696416,
+          focusDistance: 3,
+          eye: {
+            x: 0,
+            y: -5,
+            z: 0,
+          },
+        },
+      ),
+      displayStyleId: new Id64("0x112"),
+    }, imodel, categorySelectorState, displayStyleState, modelSelectorState);
+  });
+
+  it.skip ("should obtain equal viewport from round-trip setup using frustum", () => {
+    const viewPort = new TestViewport(viewState);
+    assert.isDefined(viewPort, "Could create testing equivalent of a ViewPort");
+
+    const frustum = viewPort.getFrustum(CoordSystem.View, false);
+    const newViewState = viewState.clone<SpatialViewState>();
+
+    newViewState.setupFromFrustum(frustum);
+
+    assert.isTrue(newViewState.origin.isAlmostEqual(viewState.origin), "ViewState created from old ViewState's frustum has same origin");
+    assert.isTrue(newViewState.extents.isAlmostEqual(viewState.extents), "ViewState created from old ViewState's frustum has same extents");
+    assert.isTrue(newViewState.rotation.isAlmostEqual(viewState.rotation), "ViewState created from old ViewState's frustum has same rotation");
+
+  });
+});
