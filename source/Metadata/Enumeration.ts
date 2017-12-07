@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { PrimitiveType } from "../ECObjects";
+import { PrimitiveType, SchemaChildType } from "../ECObjects";
 import { EnumerationInterface, EnumeratorProps } from "../Interfaces";
 import SchemaChild from "./SchemaChild";
 
@@ -17,6 +17,9 @@ export class Enumeration extends SchemaChild implements EnumerationInterface {
 
   constructor(name: string) {
     super(name);
+
+    this.key.type = SchemaChildType.Enumeration;
+
     this.type = PrimitiveType.Integer;
     this.isStrict = true;
     this.enumerators = [];

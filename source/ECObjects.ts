@@ -2,13 +2,24 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaKeyInterface } from "./Interfaces";
+import { SchemaKeyInterface, SchemaChildKeyInterface } from "./Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 
 export const enum ECClassModifier {
   None,
   Abstract,
   Sealed,
+}
+
+export const enum SchemaChildType {
+  EntityClass,
+  MixinClass,
+  StructClass,
+  CustomAttributeClass,
+  RelationshipClass,
+  Enumeration,
+  KindOfQuantity,
+  PropertyCategory,
 }
 
 /**
@@ -473,6 +484,56 @@ export class SchemaKey implements SchemaKeyInterface {
       default:
           return false;
     }
+  }
+}
+
+/**
+ *
+ */
+export class SchemaChildKey implements SchemaChildKeyInterface {
+  private _name: ECName;
+  public type: SchemaChildType;
+  public schema: SchemaKeyInterface;
+  // TODO: Possibly add checksum
+
+  constructor(name?: string, type?: SchemaChildType, schema?: SchemaKeyInterface) {
+    if (name) this.name = name;
+    if (type) this.type = type;
+    if (schema) this.schema = schema;
+  }
+
+  get name() { return this._name.name; }
+  set name(name: string) {
+    this._name = new ECName(name);
+  }
+
+  get schemaName() { return this.schema.name; }
+
+  /*
+   * Compares two schema names and returns whether or not they match. Comparison is case-sensitive.
+   */
+  public compareByName(rhs: SchemaKey | string): boolean {
+    if (typeof(rhs) === "string")
+      return rhs === this.name;
+    return rhs.name === this.name;
+  }
+
+  /**
+   * Checks whether this SchemaChildKey matches the one provided.
+   * @param rhs The SchemaChildKey to compare to this.
+   */
+  // TODO: Possibly need to add a match type
+  public matches(rhs: SchemaChildKeyInterface): boolean {
+    if (rhs.name !== this.name)
+      return false;
+
+    if (rhs.type && this.type && rhs.type !== this.type)
+      return false;
+
+    if (rhs.schema && this.schema && !rhs.schema.matches(this.schema, SchemaMatchType.Latest))
+      return false;
+
+    return true;
   }
 }
 

@@ -5,6 +5,7 @@
 import SchemaChild from "./SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { KindOfQuantityInterface, FormatUnitSpecInterface } from "Interfaces";
+import { SchemaChildType } from "../ECObjects";
 
 export class FormatUnitSpec implements FormatUnitSpecInterface {
   public unit: string;
@@ -18,6 +19,12 @@ export default class KindOfQuantity extends SchemaChild implements KindOfQuantit
   public precision: number;
   public presentationUnits: FormatUnitSpec[];
   public persistenceUnit: FormatUnitSpec;
+
+  constructor(name: string) {
+    super(name);
+
+    this.key.type = SchemaChildType.KindOfQuantity;
+  }
 
   public get defaultPresentationUnit() {
     return this.presentationUnits.length === 0 ? undefined : this.presentationUnits[0];

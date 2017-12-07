@@ -91,7 +91,7 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
       this._children = [];
     this._children.push(newEntity);
 
-    newEntity.schema = this;
+    newEntity.setSchema(this);
 
     return newEntity;
   }
@@ -107,7 +107,7 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
       this._children = [];
     this._children.push(newMixin);
 
-    newMixin.schema = this;
+    newMixin.setSchema(this);
 
     return newMixin;
   }
@@ -127,7 +127,7 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
       this._children = [];
     this._children.push(newStruct);
 
-    newStruct.schema = this;
+    newStruct.setSchema(this);
 
     return newStruct;
   }
@@ -147,7 +147,7 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
       this._children = [];
     this._children.push(newCAClass);
 
-    newCAClass.schema = this;
+    newCAClass.setSchema(this);
 
     return newCAClass;
   }
@@ -165,7 +165,7 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
       this._children = [];
     this._children.push(newRelClass);
 
-    newRelClass.schema = this;
+    newRelClass.setSchema(this);
 
     return newRelClass;
   }
@@ -181,7 +181,7 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
       this._children = [];
     this._children.push(newEnum);
 
-    newEnum.schema = this;
+    newEnum.setSchema(this);
     return newEnum;
   }
 
@@ -196,7 +196,7 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
       this._children = [];
     this._children.push(newKoQ);
 
-    newKoQ.schema = this;
+    newKoQ.setSchema(this);
     return newKoQ;
   }
 
@@ -211,7 +211,7 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
       this._children = [];
     this._children.push(newPropCat);
 
-    newPropCat.schema = this;
+    newPropCat.setSchema(this);
     return newPropCat;
   }
 

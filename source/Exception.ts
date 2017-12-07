@@ -34,7 +34,7 @@ export class ECObjectsError extends Error {
   public toDebugString(): string {
     switch (this.errorNumber) {
       case ECObjectsStatus.DuplicateChild: return this._appendMessage("ECObjectsStatus.DuplicateChild");
-      case ECObjectsStatus.DuplicateProperty: return this._appendMessage("ECObjectsStatus.DuplicateSchema");
+      case ECObjectsStatus.DuplicateProperty: return this._appendMessage("ECObjectsStatus.DuplicateProperty");
       case ECObjectsStatus.DuplicateSchema: return this._appendMessage("ECObjectsStatus.DuplicateSchema");
       case ECObjectsStatus.ImmutableSchema: return this._appendMessage("ECObjectsStatus.ImmutableSchema");
       case ECObjectsStatus.InvalidContainerType: return this._appendMessage("ECObjectsStatus.InvalidContainerType");

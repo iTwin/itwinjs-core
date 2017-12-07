@@ -8,6 +8,7 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaContext } from "../Context";
 import { ECVersion, SchemaKey, parsePrimitiveType } from "../ECObjects";
 import SchemaChild from "../Metadata/SchemaChild";
+// import KindOfQuantity from "Metadata/KindOfQuantity";
 
 /**
  * The purpose of this helper class is to properly order
@@ -18,16 +19,20 @@ import SchemaChild from "../Metadata/SchemaChild";
  * and/or worry about if they ordered something properly.
  */
 export default class SchemaReadHelper {
-  private context: SchemaContext;
+  private _context: SchemaContext;
 
-  private itemToRead: any; // This will be the json object of the Schema or SchemaChild to deserialize. Not sure if this is the best option.. Going to leave it for now.
+  // This is a cache of the schema we are loading. It also exists within the _context but in order
+  // to not have to go back to the context every time if we don't have to this cache has been added.
+  private _schema?: SchemaInterface;
+
+  private _itemToRead: any; // This will be the json object of the Schema or SchemaChild to deserialize. Not sure if this is the best option.. Going to leave it for now.
 
   constructor(context?: SchemaContext) {
     if (context)
-      this.context = context;
+      this._context = context;
 
-    if (!this.context)
-      this.context = new SchemaContext();
+    if (!this._context)
+      this._context = new SchemaContext();
   }
 
   /**
@@ -46,28 +51,31 @@ export default class SchemaReadHelper {
    * @param schemaJson
    */
   public readSchema<T extends SchemaInterface>(schema: T, schemaJson: object | string): T {
-    this.itemToRead = typeof schemaJson === "string" ? JSON.parse(schemaJson) : schemaJson;
+    this._itemToRead = typeof schemaJson === "string" ? JSON.parse(schemaJson) : schemaJson;
 
     // Loads all of the properties on the SchemaInterface object
-    schema.fromJson(this.itemToRead);
+    schema.fromJson(this._itemToRead);
 
     // Need to add this schema to the context to be able to locate schemaChildren within the context.
     // TODO: It should be removed if it fails to deserialize... Although that may not happen since we throw errors now.
-    this.context.addSchema(schema);
+    this._schema = schema;
+    this._context.addSchema(schema);
 
     // Load schema references first
     // Need to figure out if other schemas are present.
-    if (this.itemToRead.references)
-      this.loadSchemaReferences(schema, this.itemToRead.references);
+    if (this._itemToRead.references)
+      this.loadSchemaReferences(schema, this._itemToRead.references);
 
     // Load all schema children
-    if (this.itemToRead.children) {
-      for (const childName in this.itemToRead.children) {
+    if (this._itemToRead.children) {
+      for (const childName in this._itemToRead.children) {
         // Make sure the child has not already been read.
+        // TODO: Possibly check the SchemaContext to make sure the SchemaChild has not already been previously loaded.
+        //       For now we will just double load a SchemaChild
         if (schema.getChild(childName) !== undefined)
           continue;
 
-        this.loadSchemaChild(schema, this.itemToRead.children[childName], childName);
+        this.loadSchemaChild(schema, this._itemToRead.children[childName], childName);
       }
     }
 
@@ -95,7 +103,7 @@ export default class SchemaReadHelper {
       schemaKey.writeVersion = refVersion.write;
       schemaKey.minorVersion = refVersion.minor;
 
-      const refSchema = this.context.locateSchema(schemaKey);
+      const refSchema = this._context.locateSchema(schemaKey);
       if (!refSchema)
         throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${schema.schemaKey.name}`);
 
@@ -131,23 +139,23 @@ export default class SchemaReadHelper {
     switch (schemaChildJson.schemaChildType) {
       case "EntityClass":
         const entityClass: EntityClassInterface = schema.createEntityClass(childName);
-        this.loadEntityClass(entityClass, schemaChildJson, schema);
+        this.loadEntityClass(entityClass, schemaChildJson);
         break;
       case "StructClass":
         const structClass: ECClassInterface = schema.createStructClass(childName);
-        this.loadClass(structClass, schemaChildJson, schema);
+        this.loadClass(structClass, schemaChildJson);
         break;
       case "Mixin":
         const mixin: MixinInterface = schema.createMixinClass(childName);
-        this.loadMixin(mixin, schemaChildJson, schema);
+        this.loadMixin(mixin, schemaChildJson);
         break;
       case "CustomAttributeClass":
         const caClass: CustomAttributeClassInterface = schema.createCustomAttributeClass(childName);
-        this.loadClass(caClass, schemaChildJson, schema);
+        this.loadClass(caClass, schemaChildJson);
         break;
       case "RelationshipClass":
         const relClass: RelationshipClassInterface = schema.createRelationshipClass(childName);
-        this.loadRelationshipClass(relClass, schemaChildJson, schema);
+        this.loadRelationshipClass(relClass, schemaChildJson);
         break;
       case "KindOfQuantity":
         const koq: KindOfQuantityInterface = schema.createKindOfQuantity(childName);
@@ -169,12 +177,12 @@ export default class SchemaReadHelper {
    * @param fullName
    * @param schema
    */
-  private findSchemaChild(fullName: string, schema?: SchemaInterface): void {
+  private findSchemaChild(fullName: string): void {
     const [schemaName, childName] = SchemaChild.parseFullName(fullName);
 
-    if (schema && schema.schemaKey.name.toLowerCase() === schemaName.toLowerCase() && undefined === schema.getChild(childName)) {
-      this.loadSchemaChild(schema, this.itemToRead.children[childName], childName);
-    } else if (undefined === this.context.locateSchemaChild(fullName)) {
+    if (this._schema && this._schema.schemaKey.name.toLowerCase() === schemaName.toLowerCase() && undefined === this._schema.getChild(childName)) {
+      this.loadSchemaChild(this._schema, this._itemToRead.children[childName], childName);
+    } else if (undefined === this._context.locateSchemaChild(fullName)) {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaChild ${fullName}.`);
     }
   }
@@ -214,13 +222,13 @@ export default class SchemaReadHelper {
     if (propertyJson.category) {
       if (typeof(propertyJson.category) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-      this.findSchemaChild(propertyJson.category, classObj.schema);
+      this.findSchemaChild(propertyJson.category);
     }
 
     if (propertyJson.kindOfQuantity) {
       if (typeof(propertyJson.kindOfQuantity) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-      this.findSchemaChild(propertyJson.kindOfQuantity, classObj.schema);
+      this.findSchemaChild(propertyJson.kindOfQuantity);
     }
 
     const loadEnumForPrimitiveProp = () => {
@@ -241,7 +249,7 @@ export default class SchemaReadHelper {
       if (propertyJson.typeName) {
         if (typeof(propertyJson.typeName) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-        this.findSchemaChild(propertyJson.typeName, classObj.schema);
+        this.findSchemaChild(propertyJson.typeName);
       }
     };
 
@@ -284,12 +292,12 @@ export default class SchemaReadHelper {
    * @param classJson The json object for this class
    * @param schema The ECSchema this class exists in.
    */
-  private loadClass(classObj: ECClassInterface, classJson: any, schema?: SchemaInterface): void {
+  private loadClass(classObj: ECClassInterface, classJson: any): void {
     // Load base class first
     if (classJson.baseClass) {
       if (typeof(classJson.baseClass) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-      this.findSchemaChild(classJson.baseClass, schema);
+      this.findSchemaChild(classJson.baseClass);
     }
 
     if (classJson.properties) {
@@ -308,55 +316,55 @@ export default class SchemaReadHelper {
     classObj.fromJson(classJson);
   }
 
-  private loadEntityClass(entity: EntityClassInterface, entityJson: any, schema?: SchemaInterface): void {
+  private loadEntityClass(entity: EntityClassInterface, entityJson: any): void {
     // Load Mixin classes first
     if (entityJson.mixin) {
-      if (typeof(entityJson.mixin) === "string" && entity.schema && typeof(entity.schema) !== "string") {
-        this.findSchemaChild(entityJson.mixin, schema);
+      if (typeof(entityJson.mixin) === "string") {
+        this.findSchemaChild(entityJson.mixin);
       } else if (Array.isArray(entityJson.mixin)) {
         entityJson.mixin.forEach((mixinName: string) => {
-          this.findSchemaChild(mixinName, schema);
+          this.findSchemaChild(mixinName);
         });
       }
     }
 
-    this.loadClass(entity, entityJson, schema);
+    this.loadClass(entity, entityJson);
   }
 
-  private loadMixin(mixin: ECClassInterface, mixinJson: any, schema?: SchemaInterface): void {
+  private loadMixin(mixin: ECClassInterface, mixinJson: any): void {
     if (mixinJson.appliesTo) {
       if (typeof(mixinJson.appliesTo) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, "");
-      this.findSchemaChild(mixinJson.appliesTo, schema);
+      this.findSchemaChild(mixinJson.appliesTo);
     }
 
-    this.loadClass(mixin, mixinJson, schema);
+    this.loadClass(mixin, mixinJson);
   }
 
-  private loadRelationshipClass(rel: RelationshipClassInterface, relJson: any, schema?: SchemaInterface): void {
+  private loadRelationshipClass(rel: RelationshipClassInterface, relJson: any): void {
     if (!relJson.source)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${rel.name} is missing the required source constraint.`);
-    this.loadRelationshipConstraint(rel.source, relJson.source, schema);
+    this.loadRelationshipConstraint(rel.source, relJson.source);
 
     if (!relJson.target)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${rel.name} is missing the required target constraint.`);
-    this.loadRelationshipConstraint(rel.target, relJson.target, schema);
+    this.loadRelationshipConstraint(rel.target, relJson.target);
 
-    this.loadClass(rel, relJson, schema);
+    this.loadClass(rel, relJson);
   }
 
-  private loadRelationshipConstraint(relConstraint: RelationshipConstraintInterface, relConstraintJson: any, schema?: SchemaInterface): void {
+  private loadRelationshipConstraint(relConstraint: RelationshipConstraintInterface, relConstraintJson: any): void {
     if (relConstraintJson.abstractConstraint) {
       if (typeof(relConstraintJson.abstractConstraint) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-      this.findSchemaChild(relConstraintJson.abstractConstraint, schema);
+      this.findSchemaChild(relConstraintJson.abstractConstraint);
     }
 
     if (relConstraintJson.constraintClasses) {
       if (!Array.isArray(relConstraintJson.constraintClasses))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
       relConstraintJson.constraintClasses.forEach((constraintClass: string) => {
-        this.findSchemaChild(constraintClass, schema);
+        this.findSchemaChild(constraintClass);
       });
     }
 

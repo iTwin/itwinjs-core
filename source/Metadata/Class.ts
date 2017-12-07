@@ -4,9 +4,9 @@
 
 import { ECClassInterface, MixinInterface, EntityClassInterface, PropertyInterface, CustomAttributeClassInterface, RelationshipClassInterface,
   RelationshipConstraintInterface, NavigationPropertyInterface, PrimitivePropertyInterface, PrimitiveArrayPropertyInteface, SchemaChildInterface,
-  StructPropertyInterface, StructArrayPropertyInterface } from "../Interfaces";
+  StructPropertyInterface, StructArrayPropertyInterface, SchemaInterface } from "../Interfaces";
 import { ECClassModifier, CustomAttributeContainerType, RelationshipMultiplicity, RelationshipEnd, RelatedInstanceDirection, StrengthType,
-  parseCustomAttributeContainerType, parseClassModifier, parseStrength, parseStrengthDirection, PrimitiveType, parsePrimitiveType } from "../ECObjects";
+  parseCustomAttributeContainerType, parseClassModifier, parseStrength, parseStrengthDirection, PrimitiveType, parsePrimitiveType, SchemaChildType } from "../ECObjects";
 import { ICustomAttributeContainer, CustomAttributeSet } from "./CustomAttribute";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import SchemaChild from "./SchemaChild";
@@ -124,7 +124,7 @@ export abstract class ECClass extends SchemaChild implements ICustomAttributeCon
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     let correctType: StructClass | undefined;
-    if (typeof(type) === "string") {
+    if (typeof(type) === "string" && this.schema) {
       correctType = this.schema.getChild<StructClass>(type);
     } else
       correctType = type as StructClass;
@@ -151,7 +151,7 @@ export abstract class ECClass extends SchemaChild implements ICustomAttributeCon
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     let correctType: StructClass | undefined;
-    if (typeof(type) === "string") {
+    if (typeof(type) === "string" && this.schema) {
       correctType = this.schema.getChild<StructClass>(type);
     } else
       correctType = type as StructClass;
@@ -198,7 +198,39 @@ export abstract class ECClass extends SchemaChild implements ICustomAttributeCon
  * A Typescript class representation of an ECEntityClass.
  */
 export class EntityClass extends ECClass implements EntityClassInterface {
-  public mixins?: MixinInterface[];
+  private _mixins?: MixinInterface[];
+
+  constructor(name: string, modifier?: ECClassModifier) {
+    super(name, modifier);
+
+    this.key.type = SchemaChildType.EntityClass;
+  }
+
+  set mixins(mixins: MixinInterface[]) {
+    this._mixins = mixins;
+  }
+  get mixins(): MixinInterface[] {
+    if (!this._mixins)
+      return [];
+    return this._mixins;
+  }
+
+  /**
+   *
+   * @param mixin
+   */
+  public addMixin(mixin: MixinInterface | MixinInterface[]) {
+    if (!this._mixins)
+      this._mixins = [];
+
+    if (Array.isArray(mixin)) {
+      this._mixins.concat(mixin);
+      return;
+    }
+
+    this._mixins.push(mixin);
+    return;
+  }
 
   /**
    * Searches the base class, if one exists, first then any mixins that exist for the property with the name provided.
@@ -207,8 +239,8 @@ export class EntityClass extends ECClass implements EntityClassInterface {
   public getInheritedProperty<T extends PropertyInterface>(name: string): T | undefined {
     let inheritedProperty = super.getInheritedProperty(name);
 
-    if (!inheritedProperty && this.mixins) {
-      this.mixins.some((mixin) => {
+    if (!inheritedProperty && this._mixins) {
+      this._mixins.some((mixin) => {
         inheritedProperty = mixin.getProperty(name);
         return inheritedProperty !== undefined;
       });
@@ -252,13 +284,17 @@ export class EntityClass extends ECClass implements EntityClassInterface {
     super.fromJson(jsonObj);
 
     const loadMixin = (mixinFullName: string) => {
+      // TODO: Fix
+      if (!this.schema)
+        throw new ECObjectsError(ECObjectsStatus.ECOBJECTS_ERROR_BASE, `TODO: Fix this message`);
+
       const tempMixin = this.schema.getChild<MixinInterface>(mixinFullName);
       if (!tempMixin)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `TODO: Fix this message`);
 
-      if (!this.mixins)
-        this.mixins = [];
-      this.mixins.push(tempMixin);
+      if (!this._mixins)
+        this._mixins = [];
+      this._mixins.push(tempMixin);
     };
 
     if (jsonObj.mixin) {
@@ -280,10 +316,19 @@ export class EntityClass extends ECClass implements EntityClassInterface {
 export class MixinClass extends ECClass implements MixinInterface {
   public appliesTo: string | EntityClassInterface;
 
+  constructor(name: string) {
+    super(name, ECClassModifier.Abstract);
+
+    this.key.type = SchemaChildType.MixinClass;
+  }
+
   public fromJson(jsonObj: any): void {
     super.fromJson(jsonObj);
 
     if (jsonObj.appliesTo) {
+      // TODO: Fix
+      if (!this.schema)
+        throw new ECObjectsError(ECObjectsStatus.ECOBJECTS_ERROR_BASE, `TODO: Fix this error`);
       const tmpClass = this.schema.getChild<EntityClassInterface>(jsonObj.appliesTo);
       if (!tmpClass)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
@@ -303,6 +348,12 @@ export class StructClass extends ECClass implements ECClassInterface { }
  */
 export class CustomAttributeClass extends ECClass implements CustomAttributeClassInterface {
   public containerType: CustomAttributeContainerType;
+
+  constructor(name: string, modifier?: ECClassModifier) {
+    super(name, modifier);
+
+    this.key.type = SchemaChildType.CustomAttributeClass;
+  }
 
   public fromJson(jsonObj: any): void {
     super.fromJson(jsonObj);
@@ -327,6 +378,8 @@ export class RelationshipClass extends ECClass implements RelationshipClassInter
 
   constructor(name: string, strength?: StrengthType, strengthDirection?: RelatedInstanceDirection, modifier?: ECClassModifier) {
     super(name, modifier);
+
+    this.key.type = SchemaChildType.RelationshipClass;
 
     if (strength) this.strength = strength; else this.strength = StrengthType.Referencing;
     if (strengthDirection) this.strengthDirection = strengthDirection; else this.strengthDirection = RelatedInstanceDirection.Forward;
@@ -449,12 +502,16 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
       this.multiplicity = multTmp;
     }
 
+    // Declare variable here
+    let relClassSchema: SchemaInterface | undefined;
+
     if (jsonObj.abstractConstraint) {
       if (typeof(jsonObj.abstractConstraint) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
-      if (this.relationshipClass.schema && typeof(this.relationshipClass.schema) !== "string") {
-        const tempAbstractConstraint = this.relationshipClass.schema.getChild<ECClassInterface>(jsonObj.abstractConstraint);
+      relClassSchema = this.relationshipClass.getSchema();
+      if (relClassSchema) {
+        const tempAbstractConstraint = relClassSchema.getChild<ECClassInterface>(jsonObj.abstractConstraint);
         if (!tempAbstractConstraint)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
@@ -467,9 +524,13 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
     if (jsonObj.constraintClasses) {
       if (!Array.isArray(jsonObj.constraintClasses))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+
+      if (!relClassSchema)
+        relClassSchema = this.relationshipClass.getSchema();
+
       jsonObj.constraintClasses.forEach((constraintClass: string) => {
-        if (this.relationshipClass.schema && typeof(this.relationshipClass.schema) !== "string") {
-          const tempConstraintClass = this.relationshipClass.schema.getChild<ECClassInterface>(constraintClass);
+        if (relClassSchema) {
+          const tempConstraintClass = relClassSchema.getChild<ECClassInterface>(constraintClass);
           if (!tempConstraintClass)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 

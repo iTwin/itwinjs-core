@@ -4,9 +4,16 @@
 
 import SchemaChild from "./SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { SchemaChildType } from "../ECObjects";
 
 export default class PropertyCategory extends SchemaChild {
   public priority: number;
+
+  constructor(name: string) {
+    super(name);
+
+    this.key.type = SchemaChildType.PropertyCategory;
+  }
 
   public fromJson(jsonObj: any) {
     super.fromJson(jsonObj);

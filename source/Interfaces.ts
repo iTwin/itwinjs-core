@@ -3,7 +3,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ECVersion, ECClassModifier, CustomAttributeContainerType, PrimitiveType, SchemaMatchType,
-      RelationshipMultiplicity, StrengthType, RelatedInstanceDirection } from "./ECObjects";
+      RelationshipMultiplicity, StrengthType, RelatedInstanceDirection, SchemaChildType } from "./ECObjects";
+import { SchemaContext } from "Context";
 
 export interface SchemaKeyInterface {
   name: string;
@@ -13,6 +14,23 @@ export interface SchemaKeyInterface {
   minorVersion: number;
   checksum: number;
   matches(rhs: SchemaKeyInterface, matchType: SchemaMatchType): boolean;
+}
+
+/**
+ * The properties that make up a SchemaChildKey.
+ */
+export interface SchemaChildKeyProps {
+  name: string;
+  type?: SchemaChildType;
+  schema?: SchemaKeyInterface;
+}
+
+/**
+ * The SchemaChildKey serves as a container of all the important information contained within a SchemaChild. It can be used as
+ * a way to identify and thus search for a specific SchemaChild.
+ */
+export interface SchemaChildKeyInterface extends SchemaChildKeyProps {
+  matches(rhs: SchemaChildKeyInterface): boolean;
 }
 
 export interface SchemaProps {
@@ -43,14 +61,14 @@ export interface SchemaInterface extends SchemaProps {
 }
 
 export interface SchemaChildProps {
-  schema?: SchemaInterface;
-  schemaVersion?: ECVersion;
+  key: SchemaChildKeyInterface;
   name: string;
   label?: string;
   description?: string;
 }
 
 export interface SchemaChildInterface extends SchemaChildProps {
+  getSchema(context?: SchemaContext): SchemaInterface | undefined;
   fromJson(obj: any): void;
 }
 
