@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "iModelJs backend components",
   "license": "UNLICENSED",
   "scripts": {
