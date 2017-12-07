@@ -141,8 +141,10 @@ export class Viewport {
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
   public isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn(); }
   public invalidateDecorations() { }
-  public toView(pt: XYZ) { this.rotMatrix.multiply3dInPlace(pt); }
-  public fromView(pt: XYZ) { this.rotMatrix.multiplyTranspose3dInPlace(pt); }
+
+  private static copyOutput = (from: XYZ, to?: XYZ) => { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; };
+  public toView(from: XYZ, to?: XYZ) { this.rotMatrix.multiply3dInPlace(Viewport.copyOutput(from, to)); }
+  public fromView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyTranspose3dInPlace(Viewport.copyOutput(from, to)); }
 
   /** adjust the front and back planes to encompass the entire viewed volume */
   private adjustZPlanes(origin: Point3d, delta: Vector3d): void {
@@ -335,11 +337,11 @@ export class Viewport {
     else
       delta.x = delta.y * windowAspect;
 
-    const newOrigin = Point3d.createFrom(this.rotMatrix.multiplyXYZ(origin.x, origin.y, origin.z));
+    const newOrigin = origin.clone();
     this.toView(newOrigin);
     newOrigin.x += ((oldDelta.x - delta.x) / 2.0);
     newOrigin.y += ((oldDelta.y - delta.y) / 2.0);
-    origin.setFrom(this.rotMatrix.multiplyTransposeXYZ(newOrigin.x, newOrigin.y, newOrigin.z));
+    this.fromView(newOrigin, origin);
   }
 
   /** Ensure the rotation matrix for this view is aligns the root z with the view out (i.e. a "2d view"). */
@@ -739,7 +741,7 @@ export class Viewport {
     if (ViewStatus.Success !== validSize)
       return validSize;
 
-    const center = newCenter ? newCenter : view.getCenter();
+    const center = newCenter ? newCenter.clone() : view.getCenter().clone();
 
     if (!view.allow3dManipulations())
       center.z = 0.0;

@@ -20,7 +20,6 @@
     "./**/*.ts"
   ],
   "exclude": [
-    "tools",
     "lib",
     "node_modules"
   ]

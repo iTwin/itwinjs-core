@@ -50,6 +50,8 @@ export const NpcCorners = [
   new Point3d(0.0, 1.0, 1.0),
   new Point3d(1.0, 1.0, 1.0),
 ];
+Object.freeze(NpcCorners);
+
 // tslint:disable-next-line:variable-name
 export const NpcCenter = new Point3d(.5, .5, .5);
 Object.freeze(NpcCenter);
@@ -79,11 +81,13 @@ export const standardView = {
     -0.408248290463863, 0.40824829046386302, 0.81649658092772603,
     0.577350269189626, -0.57735026918962573, 0.57735026918962573),
 };
+Object.freeze(standardView);
 
 export const standardViewMatrices = [
   standardView.Top, standardView.Bottom, standardView.Left, standardView.Right,
   standardView.Front, standardView.Back, standardView.Iso, standardView.RightIso,
 ];
+Object.freeze(standardViewMatrices);
 
 /** adjust to any nearby standard view */
 function findNearbyStandardViewMatrix(rMatrix: RotMatrix): void {
@@ -550,7 +554,7 @@ export class MarginPercent {
 }
 
 /**
- * The state of a ViewDefinition. ViewDefinitions specify the area/volume that is viewed, and points to a DisplayStyle and a CategorySelector.
+ * The state of a ViewDefinition element. ViewDefinitions specify the area/volume that is viewed, and points to a DisplayStyle and a CategorySelector.
  * Subclasses of ViewDefinition determine which model(s) are viewed.
  */
 export abstract class ViewState extends ElementState {
@@ -900,7 +904,8 @@ export abstract class ViewState extends ElementState {
     newOrigin.y -= (newDelta.y - origNewDelta.y) / 2.0;
     newOrigin.z -= (newDelta.z - origNewDelta.z) / 2.0;
 
-    this.setOrigin(viewRot.multiplyInverseXYZAsPoint3d(newOrigin.x, newOrigin.y, newOrigin.z)!);
+    viewRot.multiplyTranspose3dInPlace(newOrigin);
+    this.setOrigin(newOrigin);
 
     if (!this.is3d())
       return;
