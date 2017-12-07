@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Vector3d, XYZ, Point3d, Range3d, RotMatrix, Transform, Point2d } from "@bentley/geometry-core/lib/PointVector";
+import { Vector3d, XYZ, Point3d, Range3d, RotMatrix, Transform, Point2d, XAndY, LowAndHighXY } from "@bentley/geometry-core/lib/PointVector";
 import { Map4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
-import { AxisOrder, Angle, Geometry } from "@bentley/geometry-core/lib/Geometry";
+import { AxisOrder, Angle } from "@bentley/geometry-core/lib/Geometry";
 import { ViewState, Frustum, ViewStatus, Npc, NpcCenter, NpcCorners } from "../common/ViewState";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { ElementAlignedBox2d } from "../common/geometry/Primitives";
@@ -16,26 +16,17 @@ import { EventController } from "./tools/EventController";
 
 /** A rectangle in view coordinates. */
 export class ViewRect extends ElementAlignedBox2d {
-  public get aspect() { return Geometry.safeDivideFraction(this.width, this.height, 0); }
-  public get area() { return this.width * this.height; }
-
-  public constructor(low?: Point2d, high?: Point2d) {
-    super(low, high);
-  }
-
-  public initFromPoint3ds(low: Point3d, high: Point3d): void {
-    this.low.x = low.x;
-    this.low.y = low.y;
-    this.high.x = high.x;
-    this.high.y = high.y;
-  }
-  public initFromRange3d(input: Range3d): void { this.initFromPoint3ds(input.low, input.high); }
+  public constructor(left: number = 0, bottom: number = 0, right: number = 0, top: number = 0) { super(left, bottom, right, top); }
+  public get aspect() { return this.isNull() ? 1.0 : this.width / this.height; }
+  public get area() { return this.isNull() ? 0 : this.width * this.height; }
+  public init(left: number = 0, bottom: number = 0, right: number = 1, top: number = 1) { this.low.x = left, this.low.y = bottom, this.high.x = right, this.high.y = top; }
+  public initFromPoint(low: XAndY, high: XAndY): void { this.init(low.x, low.y, high.x, high.y); }
+  public initFromRange(input: LowAndHighXY): void { this.initFromPoint(input.low, input.high); }
 }
 
 /** the minimum and maximum values for the "depth" of a rectangle of screen space. Values are in "npc" so they will be between 0 and 1.0 */
 export class DepthRangeNpc {
-  public minimum: number = 0;
-  public maximum: number = 1.0;
+  constructor(public minimum: number = 0, public maximum: number = 1.0) { }
   public middle(): number { return this.minimum + ((this.maximum - this.minimum) / 2.0); }
 }
 
@@ -222,7 +213,7 @@ export class Viewport {
     camera.setFocusDistance(focusDistance);
   }
 
-  public changeViewState(view: ViewState) {
+  public changeViewState(view: ViewState): void {
     this.clearUndo();
     this._view = view;
     this.setupFromView();
@@ -236,7 +227,7 @@ export class Viewport {
 
     // Determine screen rectangle in which to query visible depth min + max
     const viewRect = Viewport.depthRect;
-    viewRect.initFromPoint3ds(this.npcToView(subRectNpc.low), this.npcToView(subRectNpc.high));
+    viewRect.initFromPoint(this.npcToView(subRectNpc.low), this.npcToView(subRectNpc.high));
     return this.pickRange(viewRect, result);
   }
 
@@ -362,18 +353,18 @@ export class Viewport {
     r.transpose(this.rotMatrix);
   }
 
-  private readonly _viewRange: ViewRect = new ViewRect(Point2d.create(0, 0), Point2d.create(-1.0e200, -1.0e200)); // Ensure lower bound is zero (constant for view), but start out empty
+  private readonly _viewRange: ViewRect = new ViewRect();
   /** get the rectangle of this Viewport in ViewCoordinates. */
   public get viewRect(): ViewRect { const r = this._viewRange; const rect = this.getClientRect(); r.high.x = rect.width; r.high.y = rect.height; return r; }
 
   /** True if an undoable viewing operation exists on the stack */
-  public get isUndoPossible() { return 0 < this.backStack.length; }
+  public get isUndoPossible(): boolean { return 0 < this.backStack.length; }
 
   /** True if an redoable viewing operation exists on the stack */
-  public get isRedoPossible() { return 0 < this.forwardStack.length; }
+  public get isRedoPossible(): boolean { return 0 < this.forwardStack.length; }
 
   /** clear the view-undo buffers of this Viewport */
-  public clearUndo() {
+  public clearUndo(): void {
     this.currentBaseline = undefined;
     this.forwardStack.length = 0;
     this.backStack.length = 0;
@@ -396,8 +387,8 @@ export class Viewport {
 
     const limitRange = (min: number, max: number, val: number): number => {
       if (val < min) return min;
-      else if (val > max) return max;
-      else return val;
+      if (val > max) return max;
+      return val;
     };
 
     const limits = this.view.getExtentLimits();
@@ -576,28 +567,28 @@ export class Viewport {
       this.saveViewUndo();
   }
 
-  public viewToNpcArray(pts: Point3d[]) {
+  public viewToNpcArray(pts: Point3d[]): void {
     const corners = this.getViewCorners();
     const scrToNpcTran = Transform.createIdentity();
     Transform.initFromRange(corners.low, corners.high, undefined, scrToNpcTran);
     scrToNpcTran.multiplyPoint3dArrayInPlace(pts);
   }
 
-  public npcToViewArray(pts: Point3d[]) {
+  public npcToViewArray(pts: Point3d[]): void {
     const corners = this.getViewCorners();
     const npcToSrcTran = Transform.createIdentity();
     Transform.initFromRange(corners.low, corners.high, npcToSrcTran, undefined);
     npcToSrcTran.multiplyPoint3dArrayInPlace(pts);
   }
 
-  public viewToNpc(pt: Point3d, out?: Point3d) {
+  public viewToNpc(pt: Point3d, out?: Point3d): Point3d {
     const corners = this.getViewCorners();
     const scrToNpcTran = Transform.createIdentity();
     Transform.initFromRange(corners.low, corners.high, undefined, scrToNpcTran);
     return scrToNpcTran.multiplyPoint(pt, out);
   }
 
-  public npcToView(pt: Point3d, out?: Point3d) {
+  public npcToView(pt: Point3d, out?: Point3d): Point3d {
     const corners = this.getViewCorners();
     const scrToNpcTran = Transform.createIdentity();
     Transform.initFromRange(corners.low, corners.high, scrToNpcTran, undefined);

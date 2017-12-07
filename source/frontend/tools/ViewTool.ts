@@ -87,22 +87,22 @@ export abstract class ViewTool extends Tool {
   public onResetButtonUp(_ev: BeButtonEvent) { this.exitTool(); return true; }
 
   /** Do not override. */
-  public exitTool() { toolAdmin.exitViewTool(); }
+  public exitTool(): void { toolAdmin.exitViewTool(); }
 }
 
 export abstract class ViewingToolHandle {
   constructor(public viewTool: ViewManip) { }
-  public onReinitialize() { }
-  public focusOut() { }
-  public noMotion(_ev: BeButtonEvent) { return false; }
-  public motion(_ev: BeButtonEvent) { return false; }
-  public checkOneShot() { return true; }
-  public getHandleCursor() { return BeCursor.Default; }
+  public onReinitialize(): void { }
+  public focusOut(): void { }
+  public noMotion(_ev: BeButtonEvent): boolean { return false; }
+  public motion(_ev: BeButtonEvent): boolean { return false; }
+  public checkOneShot(): boolean { return true; }
+  public getHandleCursor(): BeCursor { return BeCursor.Default; }
   public abstract doManipulation(ev: BeButtonEvent, inDynamics: boolean): boolean;
   public abstract firstPoint(ev: BeButtonEvent): boolean;
   public abstract testHandleForHit(ptScreen: Point3d): { distance: number, priority: HitPriority } | undefined;
   public abstract get handleType(): ViewHandleType;
-  public focusIn() { toolAdmin.viewCursor = this.getHandleCursor(); }
+  public focusIn(): void { toolAdmin.viewCursor = this.getHandleCursor(); }
 }
 
 export class ViewHandleArray {
@@ -124,12 +124,12 @@ export class ViewHandleArray {
     this.handles.length = 0;
   }
 
-  public get count() { return this.handles.length; }
+  public get count(): number { return this.handles.length; }
   public get hitHandle() { return this.getByIndex(this.hitHandleIndex); }
   public get focusHandle() { return this.getByIndex(this.focus); }
-  public add(handle: ViewingToolHandle) { this.handles.push(handle); }
+  public add(handle: ViewingToolHandle): void { this.handles.push(handle); }
   public getByIndex(index: number): ViewingToolHandle | undefined { return (index >= 0 && index < this.count) ? this.handles[index] : undefined; }
-  public focusHitHandle() { this.setFocus(this.hitHandleIndex); }
+  public focusHitHandle(): void { this.setFocus(this.hitHandleIndex); }
 
   public testHit(ptScreen: Point3d, forced = ViewHandleType.None): boolean {
     this.hitHandleIndex = -1;
@@ -192,10 +192,10 @@ export class ViewHandleArray {
     this.focusDrag = this.viewTool.isDragging;
   }
 
-  public onReinitialize() { this.handles.forEach((handle) => { if (handle) handle.onReinitialize(); }); }
+  public onReinitialize(): void { this.handles.forEach((handle) => { if (handle) handle.onReinitialize(); }); }
 
   /** determine whether a handle of a specific type exists */
-  public hasHandle(handleType: ViewHandleType) {
+  public hasHandle(handleType: ViewHandleType): boolean {
     for (let i = 0; i < this.count; ++i) {
       const handle = this.getByIndex(i);
       if (handle && handle.handleType === handleType)
@@ -279,7 +279,7 @@ export class ViewManip extends ViewTool {
     this.viewHandles.onReinitialize();
   }
 
-  public onDataButtonDown(ev: BeButtonEvent) {
+  public onDataButtonDown(ev: BeButtonEvent): boolean {
     if (0 === this.nPts && this.isDragOperationRequired && !this.isDragOperation)
       return false;
 
@@ -313,7 +313,7 @@ export class ViewManip extends ViewTool {
   // Just let the idle tool handle this...
   public onMiddleButtonDown(_ev: BeButtonEvent): boolean { return false; }
 
-  public onMiddleButtonUp(_ev: BeButtonEvent) {
+  public onMiddleButtonUp(_ev: BeButtonEvent): boolean {
     if (this.nPts <= 1 && !this.isDragOperation && this.isOneShot)
       this.exitTool();
 
@@ -376,7 +376,7 @@ export class ViewManip extends ViewTool {
     }
   }
 
-  public onModelNoMotion(ev: BeButtonEvent) {
+  public onModelNoMotion(ev: BeButtonEvent): void {
     if (0 === this.nPts || !ev.viewport)
       return;
 
@@ -405,7 +405,7 @@ export class ViewManip extends ViewTool {
     this.viewport = undefined;
   }
 
-  public isSameFrustum() {
+  public isSameFrustum(): boolean {
     const frust = this.viewport!.getWorldFrustum(scratchFrustum);
     if (this.frustumValid && frust.equals(this.lastFrustum))
       return true;
@@ -450,7 +450,7 @@ export class ViewManip extends ViewTool {
     return undefined;
   }
 
-  public updateTargetCenter() {
+  public updateTargetCenter(): void {
     const vp = this.viewport;
     if (!vp)
       return;
@@ -1471,7 +1471,7 @@ export class WindowAreaTool extends ViewTool {
       let npcZ: number;
 
       // Try to get nearest Z within rectangle directly from depth buffer
-      scratchViewRect.initFromRange3d(viewRange);
+      scratchViewRect.initFromRange(viewRange);
       const depthRange = vp.pickRange(scratchViewRect);
       if (depthRange) {
         npcZ = depthRange.minimum;
