@@ -4,8 +4,8 @@
 
 import { SchemaInterface, SchemaChildInterface, SchemaChildKeyInterface } from "../Interfaces";
 import { ECVersion, SchemaChildKey, SchemaKey } from "../ECObjects";
-import { SchemaContext } from "Context";
-import { ECObjectsError, ECObjectsStatus } from "Exception";
+import { SchemaContext } from "../Context";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
 
 /**
  * An abstract class that supplies all of the common parts of a SchemaChild.
