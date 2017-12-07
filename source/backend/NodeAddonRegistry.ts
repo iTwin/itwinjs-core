@@ -62,7 +62,7 @@ export class NodeAddonPackageName {
     // *** KEEP THIS CONSISTENT WITH iModelJsNodeAddon/MakePackages.py IN MERCURIAL ***
 
     if (typeof (process) === "undefined" || process.version === "")
-      throw new IModelError(IModelStatus.BadRequest, "NodeAddonLoader could not determine process type");
+      throw new IModelError(IModelStatus.BadRequest, "Could not determine process type");
 
     let versionCode;
     const electronVersion = (process.versions as any).electron;
