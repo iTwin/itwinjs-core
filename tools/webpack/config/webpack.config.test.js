@@ -109,13 +109,13 @@ module.exports = {
   },
   module: {
     // WIP: The fixNodeModulesPaths hack above introduced some "Critical dependency: the request of a dependency is an expression" webpack warning.
-    // This "noparse" avoids that warning. It's still a hack though - Webpack shouldn't even be trying to parse anything in imodeljs-react-scripts. 
+    // This "noParse" avoids that warning. It's still a hack though - Webpack shouldn't even be trying to parse anything in imodeljs-react-scripts. 
     noParse: path.resolve(__dirname),  
     strictExportPresence: true,
     rules: [
       ...coverageLoaders,
 
-      // WIP: This is a temporary (hack) workaround for the suppoting snapshots with mocha-webpack.
+      // WIP: This is a temporary (hack) workaround for the supporting snapshots with mocha-webpack.
       {
         loader: require.resolve('imports-loader'),
         query: "globalMochaHooks=>global.globalMochaHooks()",
