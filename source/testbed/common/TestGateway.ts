@@ -19,6 +19,7 @@ export class TestOp1Params {
 
 export abstract class TestGateway extends Gateway {
   public static version = "1.0.0";
+  public static types = () => [TestOp1Params];
 
   public static getProxy(): TestGateway {
     return Gateway.getProxyForGateway(TestGateway);

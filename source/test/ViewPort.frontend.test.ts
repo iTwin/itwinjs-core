@@ -3,8 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { Point2d, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
-// import { Map4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
+import { Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { DisplayStyle3dState, ModelSelectorState, SpatialViewState, CategorySelectorState, Camera, ViewState } from "../common/ViewState";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModel, IModelToken } from "../common/IModel";
@@ -21,7 +20,7 @@ class TestViewport extends Viewport {
   }
 
   /** Needed since we don't have a canvas */
-  private clientRect = new ViewRect(Point2d.createZero(), Point2d.create(10, 10));
+  private clientRect = new ViewRect(0, 0, 10, 10);
   public getClientRect(): ClientRect { return this.clientRect; }
 }
 

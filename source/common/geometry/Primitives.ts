@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { Point2d, Point3d, Vector3d, Range2d, Transform, Range3d, RotMatrix, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
+import { Point2d, Point3d, Vector3d, Range2d, Transform, Range3d, RotMatrix, YawPitchRollAngles, XYAndZ, XAndY } from "@bentley/geometry-core/lib/PointVector";
 import { CurveCollection } from "@bentley/geometry-core/lib/curve/CurveChain";
 import { BSplineSurface3d } from "@bentley/geometry-core/lib/bspline/BSplineSurface";
 import { GeometryQuery, CurvePrimitive } from "@bentley/geometry-core/lib/curve/CurvePrimitive";
@@ -35,7 +35,7 @@ export class AxisAlignedBox3d extends Range3d {
     else
       super(low.x, low.y, low.z, high.x, high.y, high.z);
   }
-  public static fromRange2d(r: Range2d) {const v = new AxisAlignedBox3d(); v.low.x = r.low.x; v.low.y = r.low.y; v.high.x = r.high.x; v.high.y = r.high.y; return v; }
+  public static fromRange2d(r: Range2d) { const v = new AxisAlignedBox3d(); v.low.x = r.low.x; v.low.y = r.low.y; v.high.x = r.high.x; v.high.y = r.high.y; return v; }
 
   public getCenter(): Point3d { return this.low.interpolate(.5, this.high); }
 
@@ -57,13 +57,7 @@ export class AxisAlignedBox3d extends Range3d {
 
 /** A bounding box aligned to the orientation of a 3d Element */
 export class ElementAlignedBox3d extends Range3d {
-  public constructor(low?: Point3d, high?: Point3d) {
-    if (low === undefined || high === undefined)
-      super(); // defines an empty box
-    else
-      super(low.x, low.y, low.z, high.x, high.y, high.z);
-  }
-
+  public static createFromPoints(low: XYAndZ, high: XYAndZ): ElementAlignedBox3d { return new ElementAlignedBox3d(low.x, low.y, low.z, high.x, high.y, high.z); }
   public get left(): number { return this.low.x; }
   public get bottom(): number { return this.low.y; }
   public get front(): number { return this.low.z; }
@@ -81,18 +75,13 @@ export class ElementAlignedBox3d extends Range3d {
   public static fromJSON(json?: any): ElementAlignedBox3d {
     if (!json)
       return new ElementAlignedBox3d();
-    return new ElementAlignedBox3d(Point3d.fromJSON(json.low), Point3d.fromJSON(json.high));
+    return ElementAlignedBox3d.createFromPoints(Point3d.fromJSON(json.low), Point3d.fromJSON(json.high));
   }
 }
 
 /** A bounding box aligned to the orientation of a 2d Element */
 export class ElementAlignedBox2d extends Range2d {
-  public constructor(low?: Point2d, high?: Point2d) {
-    if (!low || !high)
-      super(); // defines an empty box
-    else
-      super(low.x, low.y, high.x, high.y);
-  }
+  public static createFromPoints(low: XAndY, high: XAndY): ElementAlignedBox2d { return new ElementAlignedBox2d(low.x, low.y, high.x, high.y); }
   public get left(): number { return this.low.x; }
   public get bottom(): number { return this.low.y; }
   public get right(): number { return this.high.x; }
@@ -102,7 +91,7 @@ export class ElementAlignedBox2d extends Range2d {
   public static fromJSON(json?: any): ElementAlignedBox2d {
     if (!json)
       return new ElementAlignedBox2d();
-    return new ElementAlignedBox2d(Point2d.fromJSON(json.low), Point2d.fromJSON(json.high));
+    return ElementAlignedBox2d.createFromPoints(Point2d.fromJSON(json.low), Point2d.fromJSON(json.high));
   }
   public isValid(): boolean {
     const max = Constant.circumferenceOfEarth; const lo = this.low; const hi = this.high;
@@ -169,7 +158,7 @@ export class Placement2d {
     if (!this.isValid())
       return range;
 
-    this.getTransform().multiplyRange( Range3d.createRange2d(this.bbox, 0), range);
+    this.getTransform().multiplyRange(Range3d.createRange2d(this.bbox, 0), range);
 
     // low and high are not allowed to be equal
     range.fixRange();
@@ -323,74 +312,74 @@ export class GeometricPrimitive {
   public getLocalCoordinateFrame(localToWorld: Transform): boolean {
     switch (this._type) {
       case GeometryType.CurvePrimitive:
-      {
-        const curve = this.asCurvePrimitive;
-        if (!curve!.fractionToFrenetFrame(0.0, localToWorld)) {
-          const point = curve!.startPoint();
-          Transform.createTranslation(point, localToWorld);
-          return true;
+        {
+          const curve = this.asCurvePrimitive;
+          if (!curve!.fractionToFrenetFrame(0.0, localToWorld)) {
+            const point = curve!.startPoint();
+            Transform.createTranslation(point, localToWorld);
+            return true;
+          }
+          break;
         }
-        break;
-      }
       // case GeometryType.CurveVector:
       case GeometryType.SolidPrimitive:
-      {
-        const solidPrim = this.asSolidPrimitive;
-        const tMap = solidPrim!.getConstructiveFrame();
-        if (!tMap) {
-          localToWorld.setIdentity();
-          return false;
+        {
+          const solidPrim = this.asSolidPrimitive;
+          const tMap = solidPrim!.getConstructiveFrame();
+          if (!tMap) {
+            localToWorld.setIdentity();
+            return false;
+          }
+          const worldToLocal = tMap.transform1Ref();
+          localToWorld.setFrom(tMap.transform0Ref());
+          if (!worldToLocal) {
+            localToWorld.setIdentity();
+            return false;
+          }
+          break;
         }
-        const worldToLocal = tMap.transform1Ref();
-        localToWorld.setFrom(tMap.transform0Ref());
-        if (!worldToLocal) {
-          localToWorld.setIdentity();
-          return false;
-        }
-        break;
-      }
       case GeometryType.IndexedPolyface:
-      {
-        /*
-        const polyface = this.asIndexedPolyface;
-        let area = 0;
-        const centroid = Point3d.create();
-        const axes = RotMatrix.createIdentity();
-        const momentXYZ = Vector3d.create();
-        */
-        if (/*!polyface.computePrincipalAreaMoments(area, centroid, axes, momentXYZ)*/ true) {
+        {
+          /*
+          const polyface = this.asIndexedPolyface;
+          let area = 0;
+          const centroid = Point3d.create();
+          const axes = RotMatrix.createIdentity();
+          const momentXYZ = Vector3d.create();
+          */
+          if (/*!polyface.computePrincipalAreaMoments(area, centroid, axes, momentXYZ)*/ true) {
+            localToWorld.setIdentity();
+            return false;
+          }
+          // Transform.createRefs(centroid, axes);
+          // break;
+        }
+      case GeometryType.BsplineSurface:
+        {
+          const surface = this.asBsplineSurface;
+          /*
+          let area = 0;
+          const centroid = Vector3d.create();
+          const axes = RotMatrix.createIdentity();
+          const momentXYZ = Vector3d.create();
+          if (surface.computePrincipleAreaMoments(area, centroid, axes, momentXYZ)) {
+            Transform.createRefs(centroid, axes);
+            break;
+          } else if ... */
+          if (surface!.fractionToRigidFrame(0, 0, localToWorld)) {
+            break;
+          }
           localToWorld.setIdentity();
           return false;
         }
-        // Transform.createRefs(centroid, axes);
-        // break;
-      }
-      case GeometryType.BsplineSurface:
-      {
-        const surface = this.asBsplineSurface;
-        /*
-        let area = 0;
-        const centroid = Vector3d.create();
-        const axes = RotMatrix.createIdentity();
-        const momentXYZ = Vector3d.create();
-        if (surface.computePrincipleAreaMoments(area, centroid, axes, momentXYZ)) {
-          Transform.createRefs(centroid, axes);
-          break;
-        } else if ... */
-        if (surface!.fractionToRigidFrame(0, 0, localToWorld)) {
-          break;
-        }
-        localToWorld.setIdentity();
-        return false;
-      }
       // case GeometryType.BRepEntity:
       // case GeometryType.TextString:
       // case GeometryType.Image:
       default:
-      {
-        localToWorld.setIdentity();
-        return false;
-      }
+        {
+          localToWorld.setIdentity();
+          return false;
+        }
     }
 
     // NOTE: Ensure rotation is squared up and normalized (ComputePrincipalAreaMoments/GetEntityTransform is scaled)...

@@ -60,7 +60,7 @@ async function testAgainstNative(imodel: IModelDb, builder: GeometryBuilder) {
 }
 */
 
-describe ("GeometricPrimitive", () => {
+describe("GeometricPrimitive", () => {
   it("should be able to create GeometricPrimitives from various geometry", () => {
 
     // CurvePrimitive
@@ -204,7 +204,7 @@ describe("GeometryStream", () => {
     } while (iter.nextOp());
   });
 
-  it ("base64 encoding and decoding should parallel that of native code", async () => {
+  it("base64 encoding and decoding should parallel that of native code", async () => {
     const geomArray: Arc3d[] = [
       Arc3d.createXY(Point3d.create(0, 0), 5),
       Arc3d.createXY(Point3d.create(5, 5), 2),
@@ -234,7 +234,7 @@ describe("GeometryStream", () => {
       federationGuid: new Guid(true),
       userLabel: "UserLabel-" + 1,
       geom: geometryStream,
-      placement: new Placement3d(Point3d.create(), YawPitchRollAngles.createDegrees(0, 0, 0), new ElementAlignedBox3d(Point3d.create(0, 0, 0), Point3d.create(1, 1, 1))),
+      placement: new Placement3d(Point3d.create(), YawPitchRollAngles.createDegrees(0, 0, 0), new ElementAlignedBox3d(0, 0, 0, 1, 1, 1)),
     };
 
     const testElem = imodel.elements.createElement(elementProps);
@@ -267,7 +267,7 @@ describe("GeometryStream", () => {
   });
 });
 
-describe ("GeometryBuilder", () => {
+describe("GeometryBuilder", () => {
   let imodel: IModelDb;
   let seedElement: Element;
 
@@ -283,7 +283,7 @@ describe ("GeometryBuilder", () => {
     IModelTestUtils.closeIModel(imodel);
   });
 
-  it ("should be able to create GeometricElement3d from various geometry (preserved during round trip testing to native code)", async () => {
+  it("should be able to create GeometricElement3d from various geometry (preserved during round trip testing to native code)", async () => {
 
     // Create an element that will take in the GeometryStream and placement
     const elementProps: GeometricElement3dProps = {
@@ -296,7 +296,7 @@ describe ("GeometryBuilder", () => {
       federationGuid: new Guid(true),
       userLabel: "UserLabel-" + 1,
       geom: undefined,
-      placement: new Placement3d(Point3d.create(), YawPitchRollAngles.createDegrees(0, 0, 0), new ElementAlignedBox3d(Point3d.create(0, 0, 0), Point3d.create(1, 1, 1))),
+      placement: new Placement3d(Point3d.create(), YawPitchRollAngles.createDegrees(0, 0, 0), new ElementAlignedBox3d(0, 0, 0, 1, 1, 1)),
     };
 
     const geomElement = imodel.elements.createElement(elementProps);
@@ -359,7 +359,7 @@ describe ("GeometryBuilder", () => {
 
     // Extract back out of iModel and parse
     const returned3d = await imodel.elements.getElement(insert3d);
-    assert.isDefined(returned3d.geom, "Returned insertelemelement has GeometryStream");
+    assert.isDefined(returned3d.geom, "Returned element has GeometryStream");
 
     const collection = new GSCollection(returned3d.geom.geomStream);
     const reader = new GSReader();
@@ -380,7 +380,7 @@ describe ("GeometryBuilder", () => {
     // testAgainstNative(imodel, builder);
   });
 
-  it ("should be able to make appendages to GeometricElement2d, with an exception of 3d geometry", async () => {
+  it("should be able to make appendages to GeometricElement2d, with an exception of 3d geometry", async () => {
 
     const builder = GeometryBuilder.createCategoryOrigin2d(seedElement.category, Point2d.create());
     assert.isDefined(builder, "Builder is successfully created");

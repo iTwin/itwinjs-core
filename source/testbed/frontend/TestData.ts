@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
-import { ConnectClient, Project, IModelHubClient } from "@bentley/imodeljs-clients";
+import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@build/imodeljs-core/node_modules/@bentley/imodeljs-clients";
+import { ConnectClient, Project, IModelHubClient } from "@build/imodeljs-core/node_modules/@bentley/imodeljs-clients";
 
 export class TestData {
   public static user = {
@@ -13,6 +13,15 @@ export class TestData {
 
   public static connectClient = new ConnectClient("QA");
   public static hubClient = new IModelHubClient("QA");
+  public static accessToken: AccessToken;
+  public static testProjectId: string;
+  public static testIModelId: string;
+
+  public static async load() {
+    TestData.accessToken = await TestData.getTestUserAccessToken();
+    TestData.testProjectId = await TestData.getTestProjectId(TestData.accessToken, "NodeJsTestProject");
+    TestData.testIModelId = await TestData.getTestIModelId(TestData.accessToken, TestData.testProjectId, "MyTestModel");
+  }
 
   public static async getTestUserAccessToken(): Promise<AccessToken> {
     const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient("QA")).getToken(TestData.user.email, TestData.user.password);

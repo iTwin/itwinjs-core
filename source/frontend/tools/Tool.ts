@@ -251,7 +251,7 @@ export class GestureInfo {
     this.ptsLocation.y = Math.floor(centerY);
     this.distance = distance;
 
-    for (let i = 0; i < this.numberTouches; i++) {
+    for (let i = 0; i < this.numberTouches; ++i) {
       this.touches[i].x = Math.floor(touchPoints[i].x);
       this.touches[i].y = Math.floor(touchPoints[i].y);
     }
@@ -267,7 +267,7 @@ export class GestureInfo {
     this.ptsLocation.y = src.ptsLocation.y;
     this.distance = src.distance;
 
-    for (let i = 0; i < this.numberTouches; i++) {
+    for (let i = 0; i < this.numberTouches; ++i) {
       this.touches[i].x = src.touches[i].x;
       this.touches[i].y = src.touches[i].y;
     }

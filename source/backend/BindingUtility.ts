@@ -5,6 +5,7 @@ import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { PrimitiveTypeCode } from "./Entity";
 import { IModelError } from "../common/IModelError";
+import { XYAndZ, XAndY } from "@bentley/geometry-core/lib/PointVector";
 
 /** Value type  (Match this to ECN::ValueKind in ECObjects.h) */
 export const enum ValueKind {
@@ -28,9 +29,7 @@ export class ECValue {
 }
 
 /** Value types */
-export interface Point2dType { x: number; y: number; }
-export interface Point3dType { x: number; y: number; z: number; }
-export type PrimitiveType = string | number | boolean | Point2dType | Point3dType;
+export type PrimitiveType = string | number | boolean | XAndY | XYAndZ;
 export interface StructType {
   [index: string]: ECValue;
 }
@@ -40,12 +39,12 @@ export type ArrayType = ECValue[];
 export type BindingValue = null | PrimitiveType | ECValue | Id64;
 
 /** Custom type guard for Point2dType  */
-export function isPoint2dType(arg: any): arg is Point2dType {
+export function isPoint2dType(arg: any): arg is XAndY {
   return arg.x !== undefined && arg.y !== undefined && arg.z === undefined;
 }
 
 /** Custom type guard for Point3dType  */
-export function isPoint3dType(arg: any): arg is Point3dType {
+export function isPoint3dType(arg: any): arg is XYAndZ {
   return arg.x !== undefined && arg.y !== undefined && arg.z !== undefined;
 }
 
@@ -114,7 +113,7 @@ export class BindingUtility {
         if (!ecValue)
           throw new IModelError(DbResult.BE_SQLITE_ERROR, `Invalid binding [${key}]=${bindingValue}`);
         ret[key] = ecValue;
-        }
+      }
       return ret;
     }
 

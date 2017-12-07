@@ -136,7 +136,7 @@ export class IdleTool extends Tool {
   }
 
   public installToolImplementation() { return BentleyStatus.SUCCESS; }
-  public exitTool() { }
+  public exitTool(): void { }
   public onDataButtonDown(_ev: BeButtonEvent) { return false; }
   public onMultiFingerMove(ev: BeGestureEvent) { const tool = new RotatePanZoomGestureTool(ev, true); tool.installTool(); return true; }
   public onSingleFingerMove(ev: BeGestureEvent) { return this.onMultiFingerMove(ev); }
