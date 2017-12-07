@@ -7,6 +7,8 @@
 require("./utils/initialize")("test");
 const isCoverage = (process.env.MOCHA_ENV === "coverage");
 
+const argv = require('yargs').argv;
+const path = require("path");
 const path = require("path");
 const paths = require("../config/paths");
 const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
@@ -17,8 +19,8 @@ const reporterOptions = (!CONTINUOUS_INTEGRATION) ? [ "--inline-diffs",  "--colo
   "--reporter-options", `mochaFile=${paths.appJUnitTestResults}`,
 ];
 
-const watchOptions = (!CONTINUOUS_INTEGRATION && process.argv.length > 3 && process.argv[3].toLowerCase() === "--watch") ? ["--watch", "--interactive"] : [];
-const debugOptions = (process.argv.indexOf("--debug") >= 0) ? ["--inspect-brk=41016"] : [];
+const watchOptions = (!CONTINUOUS_INTEGRATION && argv.watch) ? ["--watch", "--interactive"] : [];
+const debugOptions = (argv.debug) ? ["--inspect-brk=" + argv.debug] : [];
 
 // Start the tests
 const args = [

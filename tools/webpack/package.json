@@ -74,7 +74,8 @@
     "webpack-dev-server": "^2.9.1",
     "webpack-manifest-plugin": "1.1.0",
     "webpack-node-externals": "^1.6.0",
-    "whatwg-fetch": "2.0.3"
+    "whatwg-fetch": "2.0.3",
+    "yargs": "^10.0.3"
   },
   "peerDependencies": {
     "react": "^16.1.1",
