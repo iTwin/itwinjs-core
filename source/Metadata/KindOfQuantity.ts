@@ -4,7 +4,7 @@
 
 import SchemaChild from "./SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { KindOfQuantityInterface, FormatUnitSpecInterface } from "Interfaces";
+import { KindOfQuantityInterface, FormatUnitSpecInterface } from "../Interfaces";
 import { SchemaChildType } from "../ECObjects";
 
 export class FormatUnitSpec implements FormatUnitSpecInterface {

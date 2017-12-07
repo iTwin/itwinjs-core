@@ -2,13 +2,14 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { PropertyInterface, ECClassInterface, RelationshipClassInterface, PrimitivePropertyInterface, StructPropertyInterface, NavigationPropertyInterface, PrimitiveArrayPropertyInteface, StructArrayPropertyInterface, SchemaChildInterface } from "Interfaces";
+import { PropertyInterface, ECClassInterface, RelationshipClassInterface, PrimitivePropertyInterface, StructPropertyInterface,
+  NavigationPropertyInterface, PrimitiveArrayPropertyInteface, StructArrayPropertyInterface, SchemaChildInterface } from "../Interfaces";
 import { ECName, PrimitiveType, RelatedInstanceDirection } from "../ECObjects";
-import PropertyCategory from "Metadata/PropertyCategory";
+import PropertyCategory from "./PropertyCategory";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import KindOfQuantity from "Metadata/KindOfQuantity";
-import { Enumeration } from "Metadata/Enumeration";
-import { StructClass } from "Metadata/Class";
+import KindOfQuantity from "./KindOfQuantity";
+import { Enumeration } from "./Enumeration";
+import { StructClass } from "./Class";
 
 /**
  * A common abstract class for all ECProperty types.

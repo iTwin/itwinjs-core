@@ -4,7 +4,7 @@
 
 import { ECVersion, ECClassModifier, CustomAttributeContainerType, PrimitiveType, SchemaMatchType,
       RelationshipMultiplicity, StrengthType, RelatedInstanceDirection, SchemaChildType } from "./ECObjects";
-import { SchemaContext } from "Context";
+import { SchemaContext } from "./Context";
 
 export interface SchemaKeyInterface {
   name: string;
