@@ -309,7 +309,8 @@ export namespace Gateway {
           connection.addEventListener("abort", () => reject(new IModelError(BentleyStatus.ERROR, "Connection aborted.")));
 
           this.setOperationRequestHeaders(connection);
-          connection.send(this.serializeParametersForOperationRequest(identifier, ...parameters));
+          const payload = this.serializeParametersForOperationRequest(identifier, ...parameters);
+          connection.send(payload);
         } catch (e) {
           reject(new IModelError(BentleyStatus.ERROR, e));
         }
