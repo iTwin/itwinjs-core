@@ -262,7 +262,7 @@ describe("iModel", () => {
     assert.notEqual(rows[0].id, "");
   });
 
-  it("ElementPropertyFormatter should format", async () => {
+  it.skip("ElementPropertyFormatter should format", async () => {
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
     const el = await imodel1.elements.getElement(code1);
     const formatter: ElementPropertyFormatter = new ElementPropertyFormatter(imodel1);
@@ -606,7 +606,7 @@ describe("iModel", () => {
 
   });
 
-  it.skip("should import schemas", () => {
+  it("should import schemas", () => {
     const schemaPathname = path.join(__dirname, "assets", "TestBim.ecschema.xml");
     imodel1.importSchema(schemaPathname); // will throw an exception in import fails
 

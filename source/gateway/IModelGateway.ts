@@ -25,6 +25,13 @@ export abstract class IModelGateway extends Gateway {
   /** The version of the gateway. */
   public static version = "1.0.0";
 
+  /** The types that can be marshaled by the gateway. */
+  public static types = () => [
+    AccessToken,
+    IModelVersion,
+    IModelToken,
+  ]
+
   /** Returns the IModelGatewayProxy instance for the frontend. */
   public static getProxy(): IModelGateway {
     return Gateway.getProxyForGateway(IModelGateway);
@@ -93,3 +100,4 @@ export abstract class IModelGateway extends Gateway {
     return this.forward.apply(this, arguments);
   }
 }
+

@@ -1,9 +1,0 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-/*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
-exports.gatewayParams = { info: { title: "imodeljs-core-testbed", version: "v1.0" } };
-exports.serverPort = process.env.PORT || 3000;
-exports.swaggerURI = "/v3/swagger.json";
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiY29uZmlnLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vY29uZmlnLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBQUE7O2dHQUVnRztBQUNuRixRQUFBLGFBQWEsR0FBRyxFQUFFLElBQUksRUFBRSxFQUFFLEtBQUssRUFBRSx1QkFBdUIsRUFBRSxPQUFPLEVBQUUsTUFBTSxFQUFFLEVBQUUsQ0FBQztBQUM5RSxRQUFBLFVBQVUsR0FBRyxPQUFPLENBQUMsR0FBRyxDQUFDLElBQUksSUFBSSxJQUFJLENBQUM7QUFDdEMsUUFBQSxVQUFVLEdBQUcsa0JBQWtCLENBQUMiLCJzb3VyY2VzQ29udGVudCI6WyIvKi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLVxyXG58ICAkQ29weXJpZ2h0OiAoYykgMjAxNyBCZW50bGV5IFN5c3RlbXMsIEluY29ycG9yYXRlZC4gQWxsIHJpZ2h0cyByZXNlcnZlZC4gJFxyXG4gKi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKi9cclxuZXhwb3J0IGNvbnN0IGdhdGV3YXlQYXJhbXMgPSB7IGluZm86IHsgdGl0bGU6IFwiaW1vZGVsanMtY29yZS10ZXN0YmVkXCIsIHZlcnNpb246IFwidjEuMFwiIH0gfTtcclxuZXhwb3J0IGNvbnN0IHNlcnZlclBvcnQgPSBwcm9jZXNzLmVudi5QT1JUIHx8IDMwMDA7XHJcbmV4cG9ydCBjb25zdCBzd2FnZ2VyVVJJID0gXCIvdjMvc3dhZ2dlci5qc29uXCI7XHJcbiJdfQ==
