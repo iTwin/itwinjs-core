@@ -129,7 +129,7 @@ describe("ViewPort", () => {
   });
 });
 
-describe.only("Cartographic tests", () => {
+describe("Cartographic tests", () => {
   it("Cartographic should convert properly", () => {
     const exton = Cartographic.fromDegrees(75, 40, 0);
     assert.equal(exton.toString(), "(1.3089969389957472, 0.6981317007977318, 0)", "exton toString");
