@@ -100,4 +100,3 @@ export abstract class IModelGateway extends Gateway {
     return this.forward.apply(this, arguments);
   }
 }
-
