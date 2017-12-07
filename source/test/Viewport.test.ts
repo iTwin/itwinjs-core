@@ -11,6 +11,8 @@ import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { IModelConnection } from "../frontend/IModelConnection";
 import { Viewport, CoordSystem, ViewRect } from "../frontend/Viewport";
 import { IModelTestUtils } from "./IModelTestUtils";
+import { Cartographic } from "../common/geometry/Cartographic";
+import { Angle } from "@bentley/geometry-core/lib/Geometry";
 
 /** Class with scope limited to this file, used for creating a Viewport without a canvas */
 class TestViewport extends Viewport {
@@ -124,5 +126,31 @@ describe("ViewPort", () => {
     assert.isTrue(newViewState.camera.lens.isAlmostEqualNoPeriodShift(viewState.camera.lens), "ViewState created from old ViewState's frustum has same lens");
     assert.isTrue(newViewState.camera.eye.isAlmostEqual(viewState.camera.eye), "ViewState created from old ViewState's frustum has same eye");
     assert.equal(newViewState.camera.focusDistance, viewState.camera.focusDistance, "ViewState created from old ViewState's frustum has same focus distance");
+  });
+});
+
+describe.only("Cartographic tests", () => {
+  it("Cartographic should convert properly", () => {
+    const exton = Cartographic.fromDegrees(75, 40, 0);
+    assert.equal(exton.toString(), "(1.3089969389957472, 0.6981317007977318, 0)", "exton toString");
+    assert.isTrue(exton.equals(exton.clone()));
+
+    const ecef1 = exton.toEcef();
+    assert.isTrue(ecef1.isAlmostEqual({ x: 1266325.9090166602, y: 4725992.6313910205, z: 4077985.5722003765 }), "toEcef should work");
+    const exton2 = Cartographic.fromEcef(ecef1);
+    assert.isTrue(exton.equalsEpsilon(exton2!, 0.01));
+
+    const paris = Cartographic.fromAngles(Angle.createDegrees(2.3522), Angle.createDegrees(48.8566), 67);
+    const ecefParis = paris.toEcef();
+    assert.isTrue(ecefParis.isAlmostEqual({ x: 4200958.840878805, y: 172561.58554401112, z: 4780131.797337915 }), "paris");
+    const paris2 = Cartographic.fromEcef(ecefParis);
+    assert.isTrue(paris.equalsEpsilon(paris2!, 0.01));
+
+    const newYork = new Cartographic(Angle.degreesToRadians(74.006), Angle.degreesToRadians(49.7128), -100);
+    const ecefNY = newYork.toEcef();
+    assert.isTrue(ecefNY.isAlmostEqual({ x: 1138577.8226437706, y: 3972262.6507547107, z: 4842118.181650281 }), "new york");
+    const ny2 = Cartographic.fromEcef(ecefNY);
+    assert.isTrue(newYork.equalsEpsilon(ny2!, 0.01));
+
   });
 });

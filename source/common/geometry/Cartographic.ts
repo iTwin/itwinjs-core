@@ -75,7 +75,7 @@ export class Cartographic {
     Cartographic.multiplyComponents(p, oneOverRadiiSquared, n);
     Cartographic.normalize(n, n);
 
-    const h = cartesian.vectorTo(p, Cartographic.cartesianToCartographicH);
+    const h = p.vectorTo(cartesian, Cartographic.cartesianToCartographicH);
     const longitude = Math.atan2(n.y, n.x);
     const latitude = Math.asin(n.z);
     const height = Math.sign(h.dotProduct(cartesian)) * h.magnitude();
