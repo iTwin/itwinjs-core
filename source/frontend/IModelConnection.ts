@@ -21,9 +21,8 @@ export class IModelConnection extends IModel {
   public readonly models: IModelConnectionModels;
   public readonly elements: IModelConnectionElements;
   public readonly codeSpecs: IModelConnectionCodeSpecs;
-  private extents: AxisAlignedBox3d;
 
-  private constructor(iModelToken: IModelToken, name: string, description: string, extents: AxisAlignedBox3d) {
+  private constructor(iModelToken: IModelToken, name: string, description: string, private readonly extents: AxisAlignedBox3d) {
     super(iModelToken, name, description);
     this.extents = extents;
     this.models = new IModelConnectionModels(this);
