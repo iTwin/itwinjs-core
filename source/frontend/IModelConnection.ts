@@ -4,6 +4,7 @@
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
+import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { CodeSpec } from "../common/Code";
 import { ElementProps } from "../common/ElementProps";
 import { EntityQueryParams } from "../common/EntityProps";
@@ -20,21 +21,26 @@ export class IModelConnection extends IModel {
   public readonly models: IModelConnectionModels;
   public readonly elements: IModelConnectionElements;
   public readonly codeSpecs: IModelConnectionCodeSpecs;
+  private extents: AxisAlignedBox3d;
 
-  private constructor(iModelToken: IModelToken, name: string, description: string, extents: any) {
-    super(iModelToken, name, description, extents);
+  private constructor(iModelToken: IModelToken, name: string, description: string, extents: AxisAlignedBox3d) {
+    super(iModelToken, name, description);
+    this.extents = extents;
     this.models = new IModelConnectionModels(this);
     this.elements = new IModelConnectionElements(this);
     this.codeSpecs = new IModelConnectionCodeSpecs(this);
   }
 
   /** Open an iModel from iModelHub */
-  public static async open(accessToken: AccessToken, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
+  public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
     if (OpenMode.Readonly !== openMode)
-      return Promise.reject(new IModelError(IModelStatus.NotEnabled, "IModelConnection does not support read/write access yet")); // WIP: waiting for decisions on how to manage read/write briefcases on the backend
+      return Promise.reject(new IModelError(IModelStatus.NotEnabled, "IModelConnection does not support read/write access yet"));
+       // WIP: waiting for decisions on how to manage read/write briefcases on the backend.
 
-    const openResponse: IModelGatewayOpenResponse = await IModelGateway.getProxy().openForRead(accessToken, iModelId, version);
+    const openResponse: IModelGatewayOpenResponse = await IModelGateway.getProxy().openForRead(accessToken, contextId, iModelId, version);
     Logger.logInfo("IModelConnection.open", () => ({ iModelId, openMode, version }));
+
+    // todo: Setup userId if it's a readWrite open - this is necessary to reopen the same exact briefcase at the backend
     return new IModelConnection(openResponse.token, openResponse.name, openResponse.description, openResponse.extents);
   }
 
@@ -52,6 +58,11 @@ export class IModelConnection extends IModel {
     if (!this.iModelToken)
       return;
     await IModelGateway.getProxy().close(accessToken, this.iModelToken);
+  }
+
+  /** Extents of the iModel */
+  public getExtents(): AxisAlignedBox3d {
+    return this.extents;
   }
 
   /** Execute a query against the iModel.

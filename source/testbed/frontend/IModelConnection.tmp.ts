@@ -22,7 +22,7 @@ describe("IModelConnection", () => {
   });
 
   it("should be able to get elements and models from an IModelConnection", async () => {
-    const iModel: IModelConnection = await IModelConnection.open(accessToken, testIModelId);
+    const iModel: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId);
     assert.exists(iModel);
     assert.isTrue(iModel instanceof IModelConnection);
     assert.exists(iModel.models);

@@ -15,7 +15,7 @@ export interface IModelGatewayOpenResponse {
   token: any; // IModelToken
   name: string;
   description: string;
-  extents: any; // DRange3d
+  extents: any; // AxisAlignedBox3d
 }
 
 /** The iModel core gateway definition.
@@ -31,12 +31,12 @@ export abstract class IModelGateway extends Gateway {
   }
 
   /** Opens an IModel (read-only) on the backend to service frontend requests. */
-  public async openForRead(_accessToken: AccessToken, _iModelId: string, _version: IModelVersion): Promise<IModelGatewayOpenResponse> {
+  public async openForRead(_accessToken: AccessToken, _contextId: string, _iModelId: string, _version: IModelVersion): Promise<IModelGatewayOpenResponse> {
     return this.forward.apply(this, arguments);
   }
 
   /** Opens an IModel (read/write) on the backend to service frontend requests. */
-  public async openForWrite(_accessToken: AccessToken, _iModelId: string, _version: IModelVersion): Promise<IModelGatewayOpenResponse> {
+  public async openForWrite(_accessToken: AccessToken, _contextId: string, _iModelId: string, _version: IModelVersion): Promise<IModelGatewayOpenResponse> {
     return this.forward.apply(this, arguments);
   }
 

@@ -39,9 +39,9 @@ export class IModelVersion {
     return version;
   }
 
-  public static clone(unTypedObj: any): IModelVersion {
+  public static fromJson(jsonObj: any): IModelVersion {
     const version = new IModelVersion();
-    Object.assign(version, unTypedObj);
+    Object.assign(version, jsonObj);
     return version;
   }
 
