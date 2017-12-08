@@ -91,10 +91,8 @@ export abstract class GeometricElement extends Element implements GeometricEleme
   }
 
   public abstract calculateRange3d(): AxisAlignedBox3d;
-  public abstract getAsGeometricElement2d(): GeometricElement2d | undefined;  // Either this method or getAsGeometrySource3d must return non-null
-  public abstract getAsGeometricElement3d(): GeometricElement3d | undefined;  // Either this method or getAsGeometrySource2d must return non-null
-  public is3d(): boolean { return this.getAsGeometricElement3d() !== undefined; }
-  public is2d(): boolean { return this.getAsGeometricElement2d() !== undefined; }
+  public is3d(): this is GeometricElement3d { return false; }
+  public is2d(): this is GeometricElement2d { return false; }
 
   public getPlacementTransform(): Transform {
     const source3d = this.getAsGeometricElement3d();
@@ -156,7 +154,6 @@ export abstract class GeometricElement extends Element implements GeometricEleme
 
 /** A RelatedElement that describes the type definition of an element. */
 export class TypeDefinition extends RelatedElement {
-  constructor(definitionId: Id64, relationshipClass?: string) { super(definitionId, relationshipClass); }
 }
 
 /** Properties that define a GeometricElement3d */
@@ -178,8 +175,7 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
   }
 
   public calculateRange3d(): AxisAlignedBox3d { return this.placement.calculateRange(); }
-  public getAsGeometricElement2d(): GeometricElement2d | undefined { return undefined; }
-  public getAsGeometricElement3d(): GeometricElement3d | undefined { return this; }
+  public is3d(): this is GeometricElement3d { return true; }
 
   public toJSON(): GeometricElement3dProps {
     const val = super.toJSON() as GeometricElement3dProps;
@@ -209,8 +205,7 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
   }
 
   public calculateRange3d(): AxisAlignedBox3d { return this.placement.calculateRange(); }
-  public getAsGeometricElement2d(): GeometricElement2d | undefined { return this; }
-  public getAsGeometricElement3d(): GeometricElement3d | undefined { return undefined; }
+  public is2d(): this is GeometricElement2d { return true; }
 
   public toJSON(): GeometricElement2dProps {
     const val = super.toJSON() as GeometricElement2dProps;

@@ -220,16 +220,16 @@ export class EntityState implements EntityProps {
 }
 
 export abstract class ModelState extends EntityState implements ModelProps {
-  public readonly modeledElement: Id64;
-  public readonly parentModel: Id64;
+  public readonly modeledElement: RelatedElement;
+  public readonly parentModel?: RelatedElement;
   public readonly jsonProperties: any;
   public readonly isPrivate: boolean;
   public readonly isTemplate: boolean;
 
   constructor(props: ModelProps, iModel: IModel) {
     super(props, iModel);
-    this.modeledElement = new Id64(props.modeledElement);
-    this.parentModel = new Id64(props.parentModel);
+    this.modeledElement = new RelatedElement(props.modeledElement);
+    this.parentModel = RelatedElement.fromJSON(props.parentModel);
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
   }
@@ -237,9 +237,9 @@ export abstract class ModelState extends EntityState implements ModelProps {
   /** Add all custom-handled properties of a Model to a json object. */
   public toJSON(): ModelProps {
     const val = super.toJSON() as ModelProps;
-    if (this.modeledElement.isValid())
+    if (this.modeledElement.id.isValid())
       val.modeledElement = this.modeledElement;
-    if (this.parentModel.isValid())
+    if (this.parentModel && this.parentModel.id.isValid())
       val.parentModel = this.parentModel;
     if (this.isPrivate)
       val.isPrivate = this.isPrivate;

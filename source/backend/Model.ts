@@ -6,11 +6,12 @@ import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { ModelProps } from "../common/ModelProps";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
+import { RelatedElement } from "../common/ElementProps";
 
 /** A Model within an iModel */
 export class Model extends Entity implements ModelProps {
-  public modeledElement: Id64;
-  public parentModel: Id64;
+  public modeledElement: RelatedElement;
+  public parentModel?: RelatedElement;
   public jsonProperties: any;
   public isPrivate: boolean;
   public isTemplate: boolean;
@@ -18,8 +19,8 @@ export class Model extends Entity implements ModelProps {
   constructor(props: ModelProps, iModel: IModelDb) {
     super(props, iModel);
     this.id = new Id64(props.id);
-    this.modeledElement = new Id64(props.modeledElement);
-    this.parentModel = new Id64(props.parentModel);
+    this.modeledElement = RelatedElement.fromJSON(props.modeledElement)!;
+    this.parentModel = RelatedElement.fromJSON(props.parentModel);
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
@@ -28,11 +29,9 @@ export class Model extends Entity implements ModelProps {
   /** Add all custom-handled properties of a Model to a json object. */
   public toJSON(): ModelProps {
     const val = super.toJSON() as ModelProps;
-    if (this.id.isValid())
-      val.id = this.id;
-    if (this.modeledElement.isValid())
-      val.modeledElement = this.modeledElement;
-    if (this.parentModel.isValid())
+    val.id = this.id;
+    val.modeledElement = this.modeledElement;
+    if (this.parentModel)
       val.parentModel = this.parentModel;
     if (this.isPrivate)
       val.isPrivate = this.isPrivate;

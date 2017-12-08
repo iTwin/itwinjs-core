@@ -1,14 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { EntityProps } from "./EntityProps";
 import { Range2d } from "@bentley/geometry-core/lib/PointVector";
+import { RelatedElementProps } from "./ElementProps";
 
 export interface ModelProps extends EntityProps {
-  id: Id64 | string;
-  modeledElement: Id64;
-  parentModel?: Id64;
+  modeledElement: RelatedElementProps;
+  parentModel?: RelatedElementProps;
   isPrivate?: boolean;
   isTemplate?: boolean;
   jsonProperties?: any;
