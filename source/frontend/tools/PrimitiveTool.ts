@@ -164,7 +164,7 @@ export abstract class PrimitiveTool extends Tool {
     if (0 !== (toolAdmin.toolState.coordLockOvr & CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_ACS))
       return true;
 
-    const extents = iModel.extents;
+    const extents = iModel.getExtents();
     if (extents.containsPoint(ev.point))
       return true;
 

@@ -16,7 +16,7 @@ import { IModelDb } from "../backend/IModelDb";
 import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { SpatialCategory, DrawingCategory } from "../backend/Category";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
-import { NodeAddonLoader } from "../nodeaddon/NodeAddonLoader";
+import { NodeAddonLoader } from "@bentley/imodeljs-nodeaddon/NodeAddonLoader";
 import { NodeAddonRegistry } from "../backend/NodeAddonRegistry";
 import { IModelGateway } from "../gateway/IModelGateway";
 

@@ -1,48 +1,51 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
+import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 
-/** A token that identifies an instance of an iModel. */
+/** A token that identifies a specific instance of an iModel to be operated on */
 export class IModelToken {
-  public pathname: string; // WIP: move to IModelDb
-  public openMode?: OpenMode; // WIP: should move to IModel
-  public iModelId?: string; // WIP: should remain in IModelToken and not be optional
-  public briefcaseId?: number; // WIP: move to IModelDb?
-  public userId?: string; // WIP: does not belong in IModelToken, store AccessToken in IModelConnection?
-  public changeSetId?: string; // WIP: should remain in IModelToken and not be optional
-  public changeSetIndex?: number; // WIP: should not remain in IModelToken
-  public isOpen?: boolean; // WIP: does not belong in IModelToken
-  public contextId?: string; // Context ID - projectId or assetId
+  /** Guid of the iModel */
+  public iModelId: string;
+  /** Id of the last ChangeSet that was applied to the iModel */
+  public changeSetId: string;
+  /** Mode used to open the iModel */
+  public openMode: OpenMode;
+  /** Id of the user that's currently editing or viewing the iModel. May not be defined *only* if it's a standalone iModel */
+  public userId?: string;
+  /** Context (Project or Asset) in which the iModel exists. May not be defined *only* if it's a standalone iModel */
+  public contextId?: string;
 
-  public static fromFile(pathname: string, openMode: OpenMode, isOpen: boolean): IModelToken {
+  /** Constructor */
+  public static create(iModelId: string, changeSetId: string, openMode: OpenMode, userId?: string, contextId?: string): IModelToken {
     const token = new IModelToken();
-    token.pathname = pathname;
-    token.openMode = openMode;
-    token.isOpen = isOpen;
-    return token;
-  }
-
-  public static fromBriefcase(iModelId: string, briefcaseId: number, pathname: string, userId: string): IModelToken {
-    const token = new IModelToken();
-    token.iModelId = iModelId;
-    token.briefcaseId = briefcaseId;
-    token.pathname = pathname;
-    token.userId = userId;
+    Object.assign(token, {iModelId, changeSetId, openMode, userId, contextId});
     return token;
   }
 }
 
 /** An abstract class representing an instance of an iModel. */
-export class IModel {
+export abstract class IModel {
+
+  /** Name of the iModel */
+  public readonly name: string;
+
+  /** Description of the iModel */
+  public readonly description: string;
+
+  /** Extents of the iModel */
+  public abstract getExtents(): AxisAlignedBox3d;
+
   /** @hidden */
   protected _iModelToken: IModelToken;
   /** The token that can be used to find this iModel instance. */
   public get iModelToken(): IModelToken { return this._iModelToken; }
   /** @hidden */
-  protected constructor(iModelToken: IModelToken, public readonly name: string, public readonly description: string, public readonly extents: AxisAlignedBox3d) {
+  protected constructor(iModelToken: IModelToken, name: string, description: string) {
     this._iModelToken = iModelToken;
+    this.name = name;
+    this.description = description;
   }
 
   /** @hidden */
