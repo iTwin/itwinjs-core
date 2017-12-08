@@ -511,6 +511,75 @@ export class IModelDbModels {
 
   /** The Id of the repository model. */
   public get repositoryModelId(): Id64 { return new Id64("0x1"); }
+
+  /** Create a new model in memory.
+   * @param modelProps The properties to use when creating the model.
+   * @throws [[IModelError]] if there is a problem creating the model.
+   */
+  public createModel(modelProps: ModelProps): Model {
+    const model: Model = this._iModel.constructEntity(modelProps) as Model;
+    assert(model instanceof Model);
+    return model;
+  }
+
+  /** Insert a new model.
+   * @param model The data for the new model.
+   * @returns The newly inserted model's Id.
+   * @throws [[IModelError]] if unable to insert the model.
+   */
+  public insertModel(model: Model): Id64 {
+    if (!this._iModel.briefcaseInfo)
+      throw this._iModel._newNotOpenError();
+
+    if (model.isPersistent()) {
+      assert(false);
+      throw new IModelError(IModelStatus.WriteError, "Cannot insert a model marked as persistent. Call copyForEdit.", Logger.logError);
+    }
+
+    const { error, result: json } = this._iModel.briefcaseInfo.nativeDb.insertModelSync(JSON.stringify(model));
+    if (error)
+      throw new IModelError(error.status, "Problem inserting model", Logger.logWarning);
+
+    return model.id = new Id64(JSON.parse(json!).id);
+  }
+
+  /** Update an existing model.
+   * @param model An editable copy of the model, containing the new/proposed data.
+   * @throws [[IModelError]] if unable to update the model.
+   */
+  public updateModel(model: ModelProps): void {
+    if (!this._iModel.briefcaseInfo)
+      throw this._iModel._newNotOpenError();
+
+    if ((model.isPersistent !== undefined) && model.isPersistent()) {
+      assert(false);
+      throw new IModelError(IModelStatus.WriteError, "Cannot update a model marked as persistent. Call copyForEdit.", Logger.logError);
+    }
+
+    const error: IModelStatus = this._iModel.briefcaseInfo.nativeDb.updateModelSync(JSON.stringify(model));
+    if (error !== IModelStatus.Success)
+      throw new IModelError(error, "", Logger.logWarning);
+
+    // Discard from the cache, to make sure that the next fetch see the updated version.
+    this._loaded.delete(model.id.toString());
+  }
+
+  /** Delete an existing model.
+   * @param model The model to be deleted
+   * @throws [[IModelError]]
+   */
+  public deleteModel(model: Model): void {
+    if (!this._iModel.briefcaseInfo)
+      throw this._iModel._newNotOpenError();
+
+    const error: IModelStatus = this._iModel.briefcaseInfo.nativeDb.deleteModelSync(model.id.toString());
+    if (error !== IModelStatus.Success)
+      throw new IModelError(error, "", Logger.logWarning);
+
+    // Discard from the cache
+    this._loaded.delete(model.id.toString());
+  }
+
 }
 
 /** The collection of elements in an [[IModelDb]]. */
@@ -612,19 +681,10 @@ public async getElementJson(elementIdStr: string): Promise<string> {
    * @returns The newly inserted element's Id.
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public insertElement(el: Element): Id64 {
+  public insertElement(el: ElementProps): Id64 {
     if (!this._iModel.briefcaseInfo)
       throw this._iModel._newNotOpenError();
 
-    if (el.isPersistent()) {
-      assert(false);
-      throw new IModelError(IModelStatus.WriteError, "Cannot insert an element marked as persistent. Call copyForEdit.", Logger.logError);
-    }
-
-    // Note that inserting an element is always done synchronously. That is because of constraints
-    // on the native code side. Nevertheless, we want the signature of this method to be
-    // that of an asynchronous method, since it must run in the services tier and will be
-    // asynchronous from a remote client's point of view in any case.
     const { error, result: json } = this._iModel.briefcaseInfo.nativeDb.insertElementSync(JSON.stringify(el));
     if (error)
       throw new IModelError(error.status, "Problem inserting element", Logger.logWarning);
@@ -632,49 +692,36 @@ public async getElementJson(elementIdStr: string): Promise<string> {
     return new Id64(JSON.parse(json!).id);
   }
 
-  /** Update an existing element.
-   * @param el An editable copy of the element, containing the new/proposed data.
+  /** Update some properties of an existing element.
+   * @param el the properties of the element to update.
    * @throws [[IModelError]] if unable to update the element.
    */
-  public async updateElement(el: Element): Promise<void> {
+  public updateElement(el: ElementProps): void {
     if (!this._iModel.briefcaseInfo)
-      return Promise.reject(this._iModel._newNotOpenError());
+      throw this._iModel._newNotOpenError();
 
-    if (el.isPersistent()) {
-      assert(false);
-      return Promise.reject(new IModelError(IModelStatus.WriteError, "Cannot update an element marked as persistent. Call copyForEdit.", Logger.logError));
-    }
-
-    // Note that updating an element is always done synchronously. That is because of constraints
-    // on the native code side. Nevertheless, we want the signature of this method to be
-    // that of an asynchronous method, since it must run in the services tier and will be
-    // asynchronous from a remote client's point of view in any case.
     const error: IModelStatus = this._iModel.briefcaseInfo.nativeDb.updateElementSync(JSON.stringify(el));
     if (error !== IModelStatus.Success)
-      return Promise.reject(new IModelError(error, "", Logger.logWarning));
+      throw new IModelError(error, "", Logger.logWarning);
 
     // Discard from the cache, to make sure that the next fetch see the updated version.
     this._loaded.delete(el.id.toString());
   }
 
   /** Delete an existing element.
-   * @param el The element to be deleted
+   * @param id The Id of the element to be deleted
    * @throws [[IModelError]]
    */
-  public async deleteElement(el: Element): Promise<void> {
+  public deleteElement(id: Id64): void {
     if (!this._iModel.briefcaseInfo)
-      return Promise.reject(this._iModel._newNotOpenError());
+      throw this._iModel._newNotOpenError();
 
-    // Note that deleting an element is always done synchronously. That is because of constraints
-    // on the native code side. Nevertheless, we want the signature of this method to be
-    // that of an asynchronous method, since it must run in the services tier and will be
-    // asynchronous from a remote client's point of view in any case.
-    const error: IModelStatus = this._iModel.briefcaseInfo.nativeDb.deleteElementSync(el.id.toString());
+    const error: IModelStatus = this._iModel.briefcaseInfo.nativeDb.deleteElementSync(id.toString());
     if (error !== IModelStatus.Success)
-      return Promise.reject(new IModelError(error, "", Logger.logWarning));
+      throw new IModelError(error, "", Logger.logWarning);
 
     // Discard from the cache
-    this._loaded.delete(el.id.toString());
+    this._loaded.delete(id.toString());
   }
 
   /** Query for the child elements of the specified element.

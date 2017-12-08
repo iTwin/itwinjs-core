@@ -5,6 +5,10 @@
 /* tslint:disable: no-console no-string-literal */
 
 import { assert } from "chai";
+import { Path } from "@bentley/geometry-core/lib/curve/CurveChain";
+import { BSplineSurface3d } from "@bentley/geometry-core/lib/bspline/BSplineSurface";
+import { IndexedPolyface } from "@bentley/geometry-core/lib/polyface/Polyface";
+import { GeometricPrimitive, GeometryType } from "../common/geometry/Primitives";
 import { Point2d, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { AngleSweep } from "@bentley/geometry-core/lib/Geometry";
 import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
@@ -55,6 +59,95 @@ async function testAgainstNative(imodel: IModelDb, builder: GeometryBuilder) {
   }
 }
 */
+
+describe("GeometricPrimitive", () => {
+  it("should be able to create GeometricPrimitives from various geometry", () => {
+
+    // CurvePrimitive
+    const arc = Arc3d.create(Point3d.create(1, 2, 3), Vector3d.create(0, 0, 2), Vector3d.create(0, 3, 0), AngleSweep.createStartEndRadians(0, 2 * Math.PI));
+    let elmGeom = GeometricPrimitive.createCurvePrimitiveClone(arc!);
+    assert.isTrue(GeometryType.CurvePrimitive === elmGeom.type, "Correctly stored CurvePrimitive in GeometricPrimitive");
+    assert.isTrue(elmGeom.isWire(), "CurvePrimitive is wire");
+    assert.isFalse(elmGeom.isSheet(), "CurvePrimitive is not sheet");
+    assert.isFalse(elmGeom.isSolid(), "CurvePrimitive is not solid");
+    // Clone CurvePrimitive
+    let elmGeomC = elmGeom.clone();
+    const getAsCurvePrimitive = elmGeomC.asCurvePrimitive;
+    assert.isTrue(getAsCurvePrimitive instanceof Arc3d, "GeometricPrimitive correctly returned CurvePrimitive data");
+    assert.isFalse(getAsCurvePrimitive === arc, "CurvePrimitive stored as deep copy in GeometricPrimitive");
+    assert.isTrue(elmGeomC.type === elmGeom.type, "GeometricPrimitive clone type matches");
+    assert.isTrue(getAsCurvePrimitive!.isAlmostEqual(arc!), "CurvePrimitive and its clone are equal");
+
+    // CurveCollection
+    const loops = Sample.createSimplePaths(true);
+    const curveCollection = loops[2];   // <-- Is a loop containing 4 LineSegments
+    elmGeom = GeometricPrimitive.createCurveCollectionClone(curveCollection);
+    assert.isTrue(elmGeom.type === GeometryType.CurveCollection, "Correctly stored CurveCollection in GeometricPrimitive");
+    assert.isTrue(elmGeom.isWire(), "CurveCollection is wire");
+    assert.isFalse(elmGeom.isSheet(), "CurveCollection is not sheet");
+    assert.isFalse(elmGeom.isSolid(), "CurveCollection is not solid");
+    // Clone CurveCollection
+    elmGeomC = elmGeom.clone();
+    const getAsCurveCollection = elmGeomC.asCurveCollection;
+    assert.isTrue(getAsCurveCollection instanceof Path, "GeometricPrimitive correctly returned CurveCollection data");
+    assert.isFalse(getAsCurveCollection === curveCollection, "CurveCollection stored as deep copy in GeometricPrimitive");
+    assert.isTrue(elmGeom.type === elmGeomC.type, "GeometricPrimitive clone type matches");
+    assert.isTrue(getAsCurveCollection!.isAlmostEqual(curveCollection!), "CurveCollection and its clone are equal");
+
+    // SolidPrimitive
+    const dz = 3.0;
+    const radius = 1.5;
+    const solidPrimitve = Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, dz), radius, radius, true);
+    elmGeom = GeometricPrimitive.createSolidPrimitiveClone(solidPrimitve!);
+    assert.isTrue(GeometryType.SolidPrimitive === elmGeom.type, "Correctly stored SolidPrimitve in GeometricPrimitive");
+    assert.isFalse(elmGeom.isWire(), "SolidPrimitive is not wire");
+    assert.isFalse(elmGeom.isSheet(), "SolidPrimitive is not sheet");
+    assert.isTrue(elmGeom.isSolid(), "SolidPrimitive is solid");
+    // Clone SolidPrimitive
+    elmGeomC = elmGeom.clone();
+    const getAsSolidPrimitive = elmGeomC.asSolidPrimitive;
+    assert.isTrue(getAsSolidPrimitive instanceof Cone, "GeometricPrimitive correctly returned SolidPrimitve data");
+    assert.isFalse(getAsSolidPrimitive === solidPrimitve, "SolidPrimitive stored as deep copy in GeometricPrimitive");
+    assert.isTrue(elmGeom.type === elmGeomC.type, "GeometricPrimitive clone type matches");
+    assert.isTrue(getAsSolidPrimitive!.isAlmostEqual(solidPrimitve!), "SolidPrimitive and its clone are equal");
+
+    // BsplineSurface
+    const surface = BSplineSurface3d.createUniformKnots([Point3d.create(0, 0), Point3d.create(1, 1)], 1, 1, 1);
+    elmGeom = GeometricPrimitive.createBsplineSurfaceClone(surface!);
+    assert.isTrue(GeometryType.BsplineSurface === elmGeom.type, "Correctly stored BsplineSurface in GeometricPrimitive");
+    assert.isFalse(elmGeom.isWire(), "BsplineSurface is not wire");
+    assert.isTrue(elmGeom.isSheet(), "BsplineSurface is sheet");
+    assert.isFalse(elmGeom.isSolid(), "BsplineSurface is not solid");
+    // Clone BsplineSurface
+    elmGeomC = elmGeom.clone();
+    const getAsBspline = elmGeomC.asBsplineSurface;
+    assert.isTrue(getAsBspline instanceof BSplineSurface3d, "GeometricPrimitive correctly returned BsplineSurface data");
+    assert.isFalse(getAsBspline === surface, "BsplineSurface stored as deep copy in GeometricPrimitive");
+    assert.isTrue(elmGeom.type === elmGeomC.type, "GeometricPrimitive clone type matches");
+    assert.isTrue(getAsBspline!.isAlmostEqual(surface!), "BsplineSurface and its clone are equal");
+
+    // Polyface
+    const builder = PolyfaceBuilder.create();
+    builder.addCone(solidPrimitve!);
+    const polyface = builder.claimPolyface();
+    elmGeom = GeometricPrimitive.createIndexedPolyfaceClone(polyface);
+    assert.isTrue(GeometryType.IndexedPolyface === elmGeom.type, "Correctly stored Polyface in GeometricPrimitive");
+    assert.isFalse(elmGeom.isWire(), "Polyface is not wire");
+    assert.isTrue(elmGeom.isSheet(), "Polyface is sheet");
+    assert.isFalse(elmGeom.isSolid(), "Polyface is not solid");
+    // Clone Polyface
+    elmGeomC = elmGeom.clone();
+    const getAsPolyface = elmGeomC.asIndexedPolyface;
+    assert.isTrue(getAsPolyface instanceof IndexedPolyface, "GeometricPrimitive correctly returned Polyface data");
+    assert.isFalse(getAsPolyface === polyface, "Polyface stored as deep copy in GeometricPrimitive");
+    assert.isTrue(elmGeom.type === elmGeomC.type, "GeometricPrimitive clone type matches");
+    assert.isTrue(getAsPolyface!.isAlmostEqual(polyface!), "Polyface and its clone are equal");
+
+    // BRepEntity...
+
+    // TextString...
+  });
+});
 
 describe("GeometryStream", () => {
   let imodel: IModelDb;
@@ -111,7 +204,7 @@ describe("GeometryStream", () => {
     } while (iter.nextOp());
   });
 
-  it ("base64 encoding and decoding should parallel that of native code", async () => {
+  it("base64 encoding and decoding should parallel that of native code", async () => {
     const geomArray: Arc3d[] = [
       Arc3d.createXY(Point3d.create(0, 0), 5),
       Arc3d.createXY(Point3d.create(5, 5), 2),
@@ -141,7 +234,7 @@ describe("GeometryStream", () => {
       federationGuid: new Guid(true),
       userLabel: "UserLabel-" + 1,
       geom: geometryStream,
-      placement: new Placement3d(Point3d.create(), YawPitchRollAngles.createDegrees(0, 0, 0), new ElementAlignedBox3d(Point3d.create(0, 0, 0), Point3d.create(1, 1, 1))),
+      placement: new Placement3d(Point3d.create(), YawPitchRollAngles.createDegrees(0, 0, 0), new ElementAlignedBox3d(0, 0, 0, 1, 1, 1)),
     };
 
     const testElem = imodel.elements.createElement(elementProps);
@@ -174,7 +267,7 @@ describe("GeometryStream", () => {
   });
 });
 
-describe ("GeometryBuilder", () => {
+describe("GeometryBuilder", () => {
   let imodel: IModelDb;
   let seedElement: Element;
 
@@ -190,7 +283,7 @@ describe ("GeometryBuilder", () => {
     IModelTestUtils.closeIModel(imodel);
   });
 
-  it ("should be able to create GeometricElement3d from various geometry (preserved during round trip testing to native code)", async () => {
+  it("should be able to create GeometricElement3d from various geometry (preserved during round trip testing to native code)", async () => {
 
     // Create an element that will take in the GeometryStream and placement
     const elementProps: GeometricElement3dProps = {
@@ -203,7 +296,7 @@ describe ("GeometryBuilder", () => {
       federationGuid: new Guid(true),
       userLabel: "UserLabel-" + 1,
       geom: undefined,
-      placement: new Placement3d(Point3d.create(), YawPitchRollAngles.createDegrees(0, 0, 0), new ElementAlignedBox3d(Point3d.create(0, 0, 0), Point3d.create(1, 1, 1))),
+      placement: new Placement3d(Point3d.create(), YawPitchRollAngles.createDegrees(0, 0, 0), new ElementAlignedBox3d(0, 0, 0, 1, 1, 1)),
     };
 
     const geomElement = imodel.elements.createElement(elementProps);
@@ -266,7 +359,7 @@ describe ("GeometryBuilder", () => {
 
     // Extract back out of iModel and parse
     const returned3d = await imodel.elements.getElement(insert3d);
-    assert.isDefined(returned3d.geom, "Returned insertelemelement has GeometryStream");
+    assert.isDefined(returned3d.geom, "Returned element has GeometryStream");
 
     const collection = new GSCollection(returned3d.geom.geomStream);
     const reader = new GSReader();
@@ -287,7 +380,7 @@ describe ("GeometryBuilder", () => {
     // testAgainstNative(imodel, builder);
   });
 
-  it ("should be able to make appendages to GeometricElement2d, with an exception of 3d geometry", async () => {
+  it("should be able to make appendages to GeometricElement2d, with an exception of 3d geometry", async () => {
 
     const builder = GeometryBuilder.createCategoryOrigin2d(seedElement.category, Point2d.create());
     assert.isDefined(builder, "Builder is successfully created");

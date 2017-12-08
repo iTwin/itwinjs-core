@@ -2,8 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { Id64 } from "@build/imodeljs-core/node_modules/@bentley/bentleyjs-core/lib/Id";
 import { CodeSpec, CodeSpecNames } from "@build/imodeljs-core/lib/common/Code";
 import { ElementProps } from "@build/imodeljs-core/lib/common/ElementProps";
 import { ModelProps } from "@build/imodeljs-core/lib/common/ModelProps";
@@ -11,18 +10,8 @@ import { IModelConnection, IModelConnectionElements, IModelConnectionModels } fr
 import { TestData } from "./TestData";
 
 describe("IModelConnection", () => {
-  let accessToken: AccessToken;
-  let testProjectId: string;
-  let testIModelId: string;
-
-  before(async () => {
-    accessToken = await TestData.getTestUserAccessToken();
-    testProjectId = await TestData.getTestProjectId(accessToken, "NodeJsTestProject");
-    testIModelId = await TestData.getTestIModelId(accessToken, testProjectId, "MyTestModel");
-  });
-
   it("should be able to get elements and models from an IModelConnection", async () => {
-    const iModel: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId);
+    const iModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
     assert.exists(iModel);
     assert.isTrue(iModel instanceof IModelConnection);
     assert.exists(iModel.models);
@@ -59,6 +48,6 @@ describe("IModelConnection", () => {
     const codeSpecById: CodeSpec = await iModel.codeSpecs.getCodeSpecById(codeSpecByName.id);
     assert.exists(codeSpecById);
 
-    await iModel.close(accessToken);
-  });
+    await iModel.close(TestData.accessToken);
+  }).timeout(99999);
 });

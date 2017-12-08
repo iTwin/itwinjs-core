@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
 import { EntityQueryParams } from "../common/EntityProps";
 import { IModelToken } from "../common/IModel";
 import { IModelVersion } from "../common/IModelVersion";
@@ -24,6 +24,13 @@ export interface IModelGatewayOpenResponse {
 export abstract class IModelGateway extends Gateway {
   /** The version of the gateway. */
   public static version = "1.0.0";
+
+  /** The types that can be marshaled by the gateway. */
+  public static types = () => [
+    AccessToken,
+    IModelVersion,
+    IModelToken,
+  ]
 
   /** Returns the IModelGatewayProxy instance for the frontend. */
   public static getProxy(): IModelGateway {

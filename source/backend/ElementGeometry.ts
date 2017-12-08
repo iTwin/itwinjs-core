@@ -1,7 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
 import { Range3d } from "@bentley/geometry-core/lib/PointVector";
 import { GeometryStream, GeometryBuilder, GSCollection } from "../common/geometry/GeometryStream";
 import { ElementAlignedBox3d } from "../common/geometry/Primitives";
@@ -46,7 +45,7 @@ export class GeometryPart extends DefinitionElement {
       localRange = builder.placement3d.bbox;
     } else {
       const convertedRange = Range3d.createRange2d(builder.placement2d.bbox, 0);
-      localRange = new ElementAlignedBox3d(convertedRange.low, convertedRange.high);
+      localRange = ElementAlignedBox3d.createFromPoints(convertedRange.low, convertedRange.high);
     }
 
     // NOTE: GeometryBuilder.CreateGeometryPart doesn't supply range... need to compute it...

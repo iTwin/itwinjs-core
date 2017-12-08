@@ -6,16 +6,24 @@ import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 
 const INSTANCE = Symbol("instance");
+const NAME = Symbol("name");
 const registry: Map<GatewayDefinition, GatewayImplementation> = new Map();
+// tslint:disable-next-line:ban-types
+const types: Map<string, Function> = new Map();
 
-export interface GatewayConstructor<T extends Gateway> { new(): T; version: string; }
+// tslint:disable-next-line:ban-types
+export interface GatewayConstructor<T extends Gateway> { new(): T; version: string; types: () => Function[]; }
 
 export type GatewayImplementation<T extends Gateway = Gateway> = GatewayConstructor<T>;
-export interface GatewayDefinition<T extends Gateway = Gateway> { prototype: T; name: string; version: string; }
+// tslint:disable-next-line:ban-types
+export interface GatewayDefinition<T extends Gateway = Gateway> { prototype: T; name: string; version: string; types: () => Function[]; }
 export type GatewayConfigurationSupplier = () => { new(): Gateway.Configuration };
 
 /** A set of related asynchronous APIs that operate over configurable protocols across multiple platforms. */
 export abstract class Gateway {
+  /** The name of the marshaling type identification property.  */
+  public static MARSHALING_NAME_PROPERTY = "__$__";
+
   /** Returns the gateway proxy instance for the frontend. */
   public static getProxyForGateway<T extends Gateway>(definition: GatewayDefinition<T>): T {
     const instance = Gateway.getInstance(definition);
@@ -53,6 +61,8 @@ export abstract class Gateway {
   public static initialize<T extends Gateway>(definition: GatewayDefinition<T>) {
     let directProtocol = false;
 
+    Gateway.initializeCommon(definition);
+
     const registeredImplementation = registry.get(definition) as GatewayImplementation<T>;
     if (registeredImplementation) {
       if (Gateway.getInstance(registeredImplementation))
@@ -85,6 +95,39 @@ export abstract class Gateway {
       if (operation !== "constructor")
         callback(operation);
     });
+  }
+
+  /** JSON.stringify replacer callback that marshals JavaScript class instances. */
+  public static marshal(_key: string, value: any) {
+    if (typeof (value) === "object" && value !== null && value.constructor !== Array && value.constructor !== Object) {
+      const name: string = value.constructor[NAME];
+      if (!name)
+        throw new IModelError(BentleyStatus.ERROR, `Class "${name}" is not registered for gateway type marshaling.`);
+
+      value[Gateway.MARSHALING_NAME_PROPERTY] = name;
+    }
+
+    return value;
+  }
+
+  /** JSON.parse reviver callback that unmarshals JavaScript class instances. */
+  public static unmarshal(_key: string, value: any) {
+    if (typeof (value) === "object" && value !== null && value[Gateway.MARSHALING_NAME_PROPERTY]) {
+      const name = value[Gateway.MARSHALING_NAME_PROPERTY];
+      delete value[Gateway.MARSHALING_NAME_PROPERTY];
+      const type = types.get(name);
+      if (!type)
+        throw new IModelError(BentleyStatus.ERROR, `Class "${name}" is not registered for gateway type marshaling.`);
+
+      const descriptors: { [index: string]: PropertyDescriptor } = {};
+      const props = Object.keys(value);
+      for (const prop of props)
+        descriptors[prop] = Object.getOwnPropertyDescriptor(value, prop) as PropertyDescriptor;
+
+      return Object.create(type.prototype, descriptors);
+    }
+
+    return value;
   }
 
   /** The configuration for the gateway. */
@@ -143,6 +186,18 @@ export abstract class Gateway {
   /** Creates and returns the instance of a gateway class. */
   private static makeInstance<T extends Gateway>(constructor: GatewayConstructor<T>) {
     return (constructor as any)[INSTANCE] = new constructor();
+  }
+
+  /** Common configuration. */
+  private static initializeCommon<T extends Gateway>(definition: GatewayDefinition<T>) {
+    definition.types().forEach((type) => {
+      const name = `${definition.name}_${type.name}`;
+      if (types.has(name))
+        throw new IModelError(BentleyStatus.ERROR, `Class "${name}" is already registered for gateway type marshaling.`);
+
+      types.set(name, type);
+      (type as any)[NAME] = name;
+    });
   }
 }
 
@@ -209,12 +264,12 @@ export namespace Gateway {
 
     /** Returns deserialized gateway operation request parameters. */
     public deserializeOperationRequestParameters(request: string, _path: string): any[] {
-      return JSON.parse(request);
+      return JSON.parse(request, Gateway.unmarshal);
     }
 
     /** Returns a serialized gateway operation result. */
     public serializeOperationResult(result: any): string {
-      return JSON.stringify(result);
+      return JSON.stringify(result, Gateway.marshal);
     }
 
     /** The OpenAPI info object for the protocol. */
@@ -254,7 +309,8 @@ export namespace Gateway {
           connection.addEventListener("abort", () => reject(new IModelError(BentleyStatus.ERROR, "Connection aborted.")));
 
           this.setOperationRequestHeaders(connection);
-          connection.send(this.serializeParametersForOperationRequest(identifier, ...parameters));
+          const payload = this.serializeParametersForOperationRequest(identifier, ...parameters);
+          connection.send(payload);
         } catch (e) {
           reject(new IModelError(BentleyStatus.ERROR, e));
         }
@@ -273,12 +329,12 @@ export namespace Gateway {
 
     /** Returns a string serialization of the parameters for a gateway operation request. */
     protected serializeParametersForOperationRequest(_operation: HttpProtocol.GatewayOperationIdentifier, ...parameters: any[]): string {
-      return JSON.stringify(Array.from(parameters));
+      return JSON.stringify(Array.from(parameters), Gateway.marshal);
     }
 
     /** Returns a deserialized gateway operation result. */
     protected deserializeOperationResult(response: string): any {
-      return JSON.parse(response);
+      return JSON.parse(response, Gateway.unmarshal);
     }
 
     /** The OpenAPI paths object for the protocol. */

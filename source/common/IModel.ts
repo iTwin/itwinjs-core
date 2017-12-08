@@ -51,5 +51,5 @@ export abstract class IModel {
   /** @hidden */
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
 
-  public get projectExtents(): AxisAlignedBox3d { return new AxisAlignedBox3d(); } // NEEDS_WORK
+  public isReadonly() { return this._iModelToken.openMode === OpenMode.Readonly; }
 }

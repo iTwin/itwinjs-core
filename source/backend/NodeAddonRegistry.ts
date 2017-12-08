@@ -62,7 +62,7 @@ export class NodeAddonPackageName {
     // *** KEEP THIS CONSISTENT WITH iModelJsNodeAddon/MakePackages.py IN MERCURIAL ***
 
     if (typeof (process) === "undefined" || process.version === "")
-      throw new IModelError(IModelStatus.BadRequest, "NodeAddonLoader could not determine process type");
+      throw new IModelError(IModelStatus.BadRequest, "Could not determine process type");
 
     let versionCode;
     const electronVersion = (process.versions as any).electron;
@@ -75,7 +75,7 @@ export class NodeAddonPackageName {
     return "@bentley/imodeljs-" + versionCode + "-" + process.platform + "-" + process.arch;
   }
 
-  /** Compute the name of default addonthat should be used for this environment. This method uses the same naming formula that is usee by
+  /** Compute the name of default addonthat should be used for this environment. This method uses the same naming formula that is used by
    * the bb part that generates and publishes the default addon packages (iModelJsNodeAddon:MakePackages).
    */
   public static computeDefaultImodelNodeAddonName(): string {
