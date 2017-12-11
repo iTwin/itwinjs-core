@@ -30,6 +30,12 @@ export class IModelConnection extends IModel {
     this.codeSpecs = new IModelConnectionCodeSpecs(this);
   }
 
+  private static create({token, name, description, extents}: IModelGatewayOpenResponse): IModelConnection {
+    const extentsObj = new AxisAlignedBox3d();
+    extentsObj.setFromJSON(extents);
+    return new IModelConnection(token as IModelToken, name, description, extentsObj);
+  }
+
   /** Open an iModel from iModelHub */
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
     if (OpenMode.Readonly !== openMode)
@@ -40,7 +46,7 @@ export class IModelConnection extends IModel {
     Logger.logInfo("IModelConnection.open", () => ({ iModelId, openMode, version }));
 
     // todo: Setup userId if it's a readWrite open - this is necessary to reopen the same exact briefcase at the backend
-    return new IModelConnection(openResponse.token, openResponse.name, openResponse.description, openResponse.extents);
+    return IModelConnection.create(openResponse);
   }
 
   /** Ask the backend to open a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend.
@@ -49,7 +55,7 @@ export class IModelConnection extends IModel {
   public static async openStandalone(fileName: string, openMode = OpenMode.Readonly): Promise<IModelConnection> {
     const openResponse: IModelGatewayOpenResponse = await IModelGateway.getProxy().openStandalone(fileName, openMode);
     Logger.logInfo("IModelConnection.openStandalone", () => ({ fileName, openMode }));
-    return new IModelConnection(openResponse.token, openResponse.name, openResponse.description, openResponse.extents);
+    return IModelConnection.create(openResponse);
   }
 
   /** Close this iModel */
