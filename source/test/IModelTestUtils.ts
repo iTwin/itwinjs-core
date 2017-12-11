@@ -49,6 +49,7 @@ export class IModelTestUtils {
   public static hubClient = new IModelHubClient("QA");
 
   public static async getTestUserAccessToken(): Promise<AccessToken> {
+    console.log('placeholder')
     const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient("QA")).getToken(IModelTestUtils.user.email, IModelTestUtils.user.password);
     assert(authToken);
 

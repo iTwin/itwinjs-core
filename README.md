@@ -146,6 +146,7 @@ These instructions assume that you have already updated the version number in `s
 
 - See [typescript-coding-guidelines.md](./node_modules/@bentley/bentleyjs-tools/docs/typescript-coding-guidelines.md) in `node_modules/@bentley/bentleyjs-tools/docs/`
 - See [markdown-guidelines.md](./node_modules/@bentley/bentleyjs-tools/docs/markdown-guidelines.md) in `node_modules/@bentley/bentleyjs-tools/docs/`
-- see [README.md](source/backend/node_modules/@bentley/imodeljs-nodeaddonapi/README.md) about the iModelJsNodeAddon in `source/backend/node_modules/@bentley/imodeljs-nodeaddonapi/`
+- See [imodeljs-nodeaddon](https://npm.bentley.com/feeds/npm/@bentley/imodeljs-nodeaddon/1.2.4) for how an app can deliver the default imodeljs node addon.
+- see [README.md](source/backend/node_modules/@bentley/imodeljs-nodeaddonapi/README.md) for detailed information about how to build and publish the default  iModelJsNodeAddon in `source/backend/node_modules/@bentley/imodeljs-nodeaddonapi/`
 
 Note that the above links will only be valid after running `npm install`
