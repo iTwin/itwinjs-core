@@ -68,6 +68,9 @@ export class CodeSpecNames {
 }
 
 /**
+ * A "Code Specification" captures the rules for encoding and decoding significant business information into
+ * and from a Code (string). This specification is used to generate and validate Codes.
+ *
  * A CodeSpec supplies the Codes for a certain type of Entity in an IModel.
  * A CodeSpec can identify an external system that maintains and/or assigns Codes.
  */

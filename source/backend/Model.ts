@@ -6,12 +6,12 @@ import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { ModelProps } from "../common/ModelProps";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
-import { RelatedElement } from "../common/ElementProps";
 
-/** A Model within an iModel */
+/**
+ * A Model is a container for persisting a collection of related elements within an iModel.
+ */
 export class Model extends Entity implements ModelProps {
-  public modeledElement: RelatedElement;
-  public parentModel?: RelatedElement;
+  public modeledElement: Id64;
   public jsonProperties: any;
   public isPrivate: boolean;
   public isTemplate: boolean;
@@ -19,8 +19,7 @@ export class Model extends Entity implements ModelProps {
   constructor(props: ModelProps, iModel: IModelDb) {
     super(props, iModel);
     this.id = Id64.fromJSON(props.id);
-    this.modeledElement = RelatedElement.fromJSON(props.modeledElement)!;
-    this.parentModel = RelatedElement.fromJSON(props.parentModel);
+    this.modeledElement = Id64.fromJSON(props.modeledElement)!;
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
@@ -46,6 +45,11 @@ export class Model extends Entity implements ModelProps {
   public static getDictionaryId(): Id64 { return new Id64("0x10"); }
 }
 
-/** A geometric model */
+/**
+ * A container for persisting geometric elements.
+ */
 export class GeometricModel extends Model {
+  constructor(props: ModelProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
 }

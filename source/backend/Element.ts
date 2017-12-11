@@ -6,20 +6,17 @@ import { Transform } from "@bentley/geometry-core/lib/PointVector";
 import { Code } from "../common/Code";
 import { Placement3d, Placement2d, AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { GeometryStream, GeometryBuilder } from "../common/geometry/GeometryStream";
-import { ElementProps, RelatedElement } from "../common/ElementProps";
+import { ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps } from "../common/ElementProps";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
 
-/** Parameters to specify what element to load. */
-export interface ElementLoadParams {
-  id?: Id64 | string;
-  code?: Code;
-  federationGuid?: string;
-  /** if true, do not load the geometry of the element */
-  noGeometry?: boolean;
-}
-
-/** An element within an iModel. */
+/**
+ * Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.
+ * Each element represents an entity in the real world. Sets of Elements (contained in Models) are used to model
+ * other Elements that represent larger scale real world entities. Using this recursive modeling strategy,
+ * Elements can represent entities at any scale. Elements can represent physical things or abstract concepts
+ * or simply be information records.
+ */
 export abstract class Element extends Entity implements ElementProps {
   public model: Id64;
   public code: Code;
@@ -40,7 +37,7 @@ export abstract class Element extends Entity implements ElementProps {
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
   }
 
-  /** Add all custom-handled properties to a json object. */
+  /** Add this Element's properties to an object for serializing to JSON. */
   public toJSON(): ElementProps {
     const val = super.toJSON() as ElementProps;
     if (this.id.isValid())
@@ -72,12 +69,6 @@ export abstract class Element extends Entity implements ElementProps {
 
   /** remove a set of JSON user properties, specified by namespace, from this Element */
   public removeUserProperties(nameSpace: string) { delete this.getAllUserProperties()[nameSpace]; }
-}
-
-/** Properties of a GeometricElement */
-export interface GeometricElementProps extends ElementProps {
-  category: Id64 | string;
-  geom?: GeometryStream;
 }
 
 /** A Geometric element. All geometry held by a GeometricElement is positioned relative to its placement. */
@@ -152,16 +143,6 @@ export abstract class GeometricElement extends Element implements GeometricEleme
   }
 }
 
-/** A RelatedElement that describes the type definition of an element. */
-export class TypeDefinition extends RelatedElement {
-}
-
-/** Properties that define a GeometricElement3d */
-export interface GeometricElement3dProps extends GeometricElementProps {
-  placement: Placement3d;
-  typeDefinition?: TypeDefinition;
-}
-
 /** A Geometric 3d element. */
 export abstract class GeometricElement3d extends GeometricElement implements GeometricElement3dProps {
   public placement: Placement3d;
@@ -184,12 +165,6 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
       val.typeDefinition = this.typeDefinition;
     return val;
   }
-}
-
-/** Properties that define a GeometricElement2d */
-export interface GeometricElement2dProps extends GeometricElementProps {
-  placement: Placement2d;
-  typeDefinition?: TypeDefinition;
 }
 
 /** A Geometric 2d element. */

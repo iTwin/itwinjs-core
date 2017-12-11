@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { Vector3d, Vector2d, Point3d, Point2d, Range3d, Range2d, RotMatrix, Transform, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
+import { Vector3d, Vector2d, Point3d, Point2d, Range3d, Range2d, RotMatrix, Transform, YawPitchRollAngles, LowAndHighXYZ, LowAndHighXY, XYAndZ } from "@bentley/geometry-core/lib/PointVector";
 import { AxisOrder, Angle, Geometry } from "@bentley/geometry-core/lib/Geometry";
 import { Map4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
@@ -99,6 +99,7 @@ function findNearbyStandardViewMatrix(rMatrix: RotMatrix): void {
   }
 }
 
+const hasZ = (arg: any): arg is XYAndZ => arg.z !== undefined;
 /**
  * The region of physical (3d) space that appears in a view. It forms the field-of-view of a camera.
  * It is stored as 8 points, in NpcCorner order, that must define a truncated pyramid.
@@ -149,18 +150,18 @@ export class Frustum {
   }
 
   /** Initialize this Frustum from a Range3d */
-  public initFromRange(range: Range3d): void {
+  public initFromRange(range: LowAndHighXYZ | LowAndHighXY): void {
     const pts = this.points;
     pts[0].x = pts[3].x = pts[4].x = pts[7].x = range.low.x;
     pts[1].x = pts[2].x = pts[5].x = pts[6].x = range.high.x;
     pts[0].y = pts[1].y = pts[4].y = pts[5].y = range.low.y;
     pts[2].y = pts[3].y = pts[6].y = pts[7].y = range.high.y;
-    pts[0].z = pts[1].z = pts[2].z = pts[3].z = range.low.z;
-    pts[4].z = pts[5].z = pts[6].z = pts[7].z = range.high.z;
+    pts[0].z = pts[1].z = pts[2].z = pts[3].z = hasZ(range.low) ? range.low.z : 0;
+    pts[4].z = pts[5].z = pts[6].z = pts[7].z = hasZ(range.high) ? range.high.z : 0;
   }
 
   /** Create a new Frustum from a Range3d */
-  public static fromRange(range: Range3d): Frustum {
+  public static fromRange(range: LowAndHighXYZ | LowAndHighXY): Frustum {
     const frustum = new Frustum();
     frustum.initFromRange(range);
     return frustum;
@@ -220,16 +221,14 @@ export class EntityState implements EntityProps {
 }
 
 export abstract class ModelState extends EntityState implements ModelProps {
-  public readonly modeledElement: RelatedElement;
-  public readonly parentModel?: RelatedElement;
+  public readonly modeledElement: Id64;
   public readonly jsonProperties: any;
   public readonly isPrivate: boolean;
   public readonly isTemplate: boolean;
 
   constructor(props: ModelProps, iModel: IModel) {
     super(props, iModel);
-    this.modeledElement = new RelatedElement(props.modeledElement);
-    this.parentModel = RelatedElement.fromJSON(props.parentModel);
+    this.modeledElement = Id64.fromJSON(props.modeledElement);
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
   }
@@ -237,10 +236,7 @@ export abstract class ModelState extends EntityState implements ModelProps {
   /** Add all custom-handled properties of a Model to a json object. */
   public toJSON(): ModelProps {
     const val = super.toJSON() as ModelProps;
-    if (this.modeledElement.id.isValid())
-      val.modeledElement = this.modeledElement;
-    if (this.parentModel && this.parentModel.id.isValid())
-      val.parentModel = this.parentModel;
+    val.modeledElement = this.modeledElement;
     if (this.isPrivate)
       val.isPrivate = this.isPrivate;
     if (this.isTemplate)
@@ -844,6 +840,9 @@ export abstract class ViewState extends ElementState {
    * @see lookAtVolume
    */
   public lookAtViewAlignedVolume(volume: Range3d, aspect?: number, margin?: MarginPercent) {
+    if (volume.isNull()) // make sure volume is valid
+      return;
+
     const viewRot = this.getRotation();
     const newOrigin = volume.low.clone();
     let newDelta = Vector3d.createStartEnd(volume.high, volume.low);

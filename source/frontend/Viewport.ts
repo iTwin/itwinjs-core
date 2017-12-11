@@ -4,9 +4,9 @@
 import { Vector3d, XYZ, Point3d, Range3d, RotMatrix, Transform, Point2d, XAndY, LowAndHighXY } from "@bentley/geometry-core/lib/PointVector";
 import { Map4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { AxisOrder, Angle } from "@bentley/geometry-core/lib/Geometry";
-import { ViewState, Frustum, ViewStatus, Npc, NpcCenter, NpcCorners } from "../common/ViewState";
+import { ViewState, Frustum, ViewStatus, Npc, NpcCenter, NpcCorners, MarginPercent } from "../common/ViewState";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
-import { ElementAlignedBox2d } from "../common/geometry/Primitives";
+import { ElementAlignedBox2d, Placement3dProps, Placement2dProps, Placement2d, Placement3d } from "../common/geometry/Primitives";
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core/lib/Time";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { BeButtonEvent } from "./tools/Tool";
@@ -758,6 +758,39 @@ export class Viewport {
     view.setOrigin(newOrg);
     return this.setupFromView();
   }
+
+  /**
+   * Zoom the view to a show the tightest box around a set of elements. Does not change view rotation.
+   * @param placements element placement(s). Will zoom to the union of the placements, in view coordinates.
+   * @param margin the amount of white space to leave around elements
+   * @note Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
+   */
+  public zoomToElements(placements: Placement3dProps[] | Placement2dProps[] | Placement2dProps | Placement3dProps, margin?: MarginPercent) {
+    const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), this.rotMatrix);
+    const elemRange = Array.isArray(placements) ? placements : [placements];
+    const hasAngle = (arg: any): arg is Placement2dProps => arg.angle !== undefined;
+
+    const viewRange = new Range3d();
+    for (const elRange of elemRange) {
+      const placement = hasAngle(elRange) ? Placement2d.fromJSON(elRange) : Placement3d.fromJSON(elRange);
+      const frust = Frustum.fromRange(placement.bbox);
+      viewRange.extendArray(frust.points, viewTransform);
+    }
+
+    this.view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, margin);
+    this.setupFromView();
+  }
+
+  // /**
+  //  * Zoom the view to a volume of space in world coordinates.
+  //  * @param
+  //  * @param margin the amount of white space to leave around elements
+  //  * @note Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
+  //  */
+  // public zoomToVolume(input: LowAndHighXYZ | LowAndHighXY, margin?: MarginPercent) {
+  //   this.view.lookAtVolume(input, this.viewRect.aspect, margin);
+  //   this.setupFromView();
+  // }
 
   /**
    * Set up this Viewport's viewing parameters based on a Frustum

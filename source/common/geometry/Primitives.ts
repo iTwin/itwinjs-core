@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { Point2d, Point3d, Vector3d, Range2d, Transform, Range3d, RotMatrix, YawPitchRollAngles, XYAndZ, XAndY } from "@bentley/geometry-core/lib/PointVector";
+import { Point2d, Point3d, Vector3d, Range2d, Transform, Range3d, RotMatrix, YawPitchRollAngles, XYAndZ, XAndY, LowAndHighXYZ, LowAndHighXY } from "@bentley/geometry-core/lib/PointVector";
 import { CurveCollection } from "@bentley/geometry-core/lib/curve/CurveChain";
 import { BSplineSurface3d } from "@bentley/geometry-core/lib/bspline/BSplineSurface";
 import { GeometryQuery, CurvePrimitive } from "@bentley/geometry-core/lib/curve/CurvePrimitive";
@@ -10,8 +10,6 @@ import { SolidPrimitive } from "@bentley/geometry-core/lib/solid/SolidPrimitive"
 import { IndexedPolyface } from "@bentley/geometry-core/lib/polyface/Polyface";
 import { AxisOrder, Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
-
-// import { IModel } from "../IModel";
 
 export enum GeometryType {
   Undefined = 0,
@@ -79,7 +77,8 @@ export class ElementAlignedBox3d extends Range3d {
 
   public static fromJSON(json?: any): ElementAlignedBox3d {
     const val = new ElementAlignedBox3d();
-    val.setFromJSON(json);
+    if (json)
+      val.setFromJSON(json);
     return val;
   }
 }
@@ -95,7 +94,8 @@ export class ElementAlignedBox2d extends Range2d {
   public get height(): number { return this.yLength(); }
   public static fromJSON(json?: any): ElementAlignedBox2d {
     const val = new ElementAlignedBox2d();
-    val.setFromJSON(json);
+    if (json)
+      val.setFromJSON(json);
     return val;
   }
   public isValid(): boolean {
@@ -104,11 +104,17 @@ export class ElementAlignedBox2d extends Range2d {
   }
 }
 
+export interface Placement3dProps {
+  origin: XYAndZ;
+  angles: YawPitchRollAngles | object;
+  bbox: LowAndHighXYZ;
+}
+
 /**
  * The placement of a GeometricElement3d. This includes the origin, orientation, and size (bounding box) of the element.
  * All geometry of a GeometricElement are relative to its placement.
  */
-export class Placement3d {
+export class Placement3d implements Placement3dProps {
   public constructor(public origin: Point3d, public angles: YawPitchRollAngles, public bbox: ElementAlignedBox3d) { }
   public getTransform() { return Transform.createOriginAndMatrix(this.origin, this.angles.toRotMatrix()); }
   public static fromJSON(json?: any): Placement3d {
@@ -139,8 +145,14 @@ export class Placement3d {
   }
 }
 
+export interface Placement2dProps {
+  origin: XAndY;
+  angle: Angle | number | object;
+  bbox: LowAndHighXY;
+}
+
 /** The placement of a GeometricElement2d. This includes the origin, rotation, and size (bounding box) of the element. */
-export class Placement2d {
+export class Placement2d implements Placement2dProps {
   public constructor(public origin: Point2d, public angle: Angle, public bbox: ElementAlignedBox2d) { }
   public getTransform() { return Transform.createOriginAndMatrix(Point3d.createFrom(this.origin), RotMatrix.createRotationAroundVector(Vector3d.unitZ(), this.angle)!); }
   public static fromJSON(json?: any): Placement2d {

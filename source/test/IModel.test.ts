@@ -16,9 +16,9 @@ import { Category, SubCategory } from "../backend/Category";
 import { ClassRegistry } from "../backend/ClassRegistry";
 import { BisCore } from "../backend/BisCore";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
-import { ElementProps } from "../common/ElementProps";
+import { ElementProps, GeometricElementProps } from "../common/ElementProps";
 import {
-  Element, GeometricElement2d, GeometricElement3d, GeometricElementProps, InformationPartitionElement, DefinitionPartition,
+  Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
   LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject,
 } from "../backend/Element";
 import { ElementPropertyFormatter } from "../backend/ElementPropertyFormatter";
@@ -646,7 +646,7 @@ describe("iModel", () => {
       assert.isTrue(modeledElementId.isValid());
 
       // Create the model (in memory)
-      const newModel = testImodel.models.createModel({ id: new Id64(), modeledElement: { id: modeledElementId }, classFullName: "BisCore:PhysicalModel", isPrivate: true });
+      const newModel = testImodel.models.createModel({ id: new Id64(), modeledElement: modeledElementId, classFullName: "BisCore:PhysicalModel", isPrivate: true });
 
       // Insert the model into the BIM
       newModelId = testImodel.models.insertModel(newModel);
@@ -660,7 +660,7 @@ describe("iModel", () => {
     // Check that it has the properties that we set.
     assert.equal(newModelPersist.classFullName, "BisCore:PhysicalModel");
     assert.isTrue(newModelPersist.isPrivate);
-    assert.deepEqual(newModelPersist.modeledElement.id, modeledElementId);
+    assert.deepEqual(newModelPersist.modeledElement, modeledElementId);
 
     // Update the model
     const changedModelProps: ModelProps = Object.assign({}, newModelPersist);

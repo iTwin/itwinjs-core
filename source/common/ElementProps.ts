@@ -2,8 +2,10 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
-import { CodeProps } from "./Code";
+import { CodeProps, Code } from "./Code";
 import { EntityProps } from "./EntityProps";
+import { GeometryStream } from "./geometry/GeometryStream";
+import { Placement3dProps, Placement2d } from "./geometry/Primitives";
 
 export interface RelatedElementProps {
   id: Id64 | string;
@@ -28,4 +30,40 @@ export class RelatedElement implements RelatedElementProps {
   public static fromJSON(json?: any): RelatedElement | undefined {
     return json ? new RelatedElement(json) : undefined;
   }
+}
+/** A RelatedElement that describes the type definition of an element. */
+export class TypeDefinition extends RelatedElement {
+}
+
+/** Properties of a GeometricElement */
+export interface GeometricElementProps extends ElementProps {
+  category: Id64 | string;
+  geom?: GeometryStream;
+}
+
+/** Properties that define a GeometricElement3d */
+export interface GeometricElement3dProps extends GeometricElementProps {
+  placement: Placement3dProps;
+  typeDefinition?: RelatedElementProps;
+}
+
+/** Properties that define a GeometricElement2d */
+export interface GeometricElement2dProps extends GeometricElementProps {
+  placement: Placement2d;
+  typeDefinition?: TypeDefinition;
+}
+
+/** Parameters to specify what element to load. */
+export interface ElementLoadParams {
+  id?: Id64 | string;
+  code?: Code;
+  federationGuid?: string;
+  /** if true, do not load the geometry of the element */
+  noGeometry?: boolean;
+}
+
+/** ElementAspectProps */
+export interface ElementAspectProps extends EntityProps {
+  id: Id64 | string;
+  element: Id64 | string;
 }

@@ -40,7 +40,7 @@ export class TestIModel extends IModel {
   }
 }
 
-describe("ViewPort", () => {
+describe("Viewport", () => {
   let accessToken: AccessToken;
   let testProjectId: string;
   let testIModelId: string;

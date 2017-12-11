@@ -21,10 +21,11 @@ import { GSReader, GSWriter, GSCollection, GeometryBuilder/*, CoordSystem */ } f
 import { GeometryParams } from "../common/geometry/GeometryProps";
 // import { PatternParams } from "../common/geometry/AreaPattern";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { Element, GeometricElement3dProps } from "../backend/Element";
+import { Element } from "../backend/Element";
 // import { Category } from "../backend/Category";
 import { Code } from "../common/Code";
 import { Placement3d, ElementAlignedBox3d } from "../common/geometry/Primitives";
+import { GeometricElement3dProps } from "../common/ElementProps";
 
 /** Given that the node addon test method exists...
  *  - encodes the GeometryStream
@@ -97,19 +98,19 @@ describe("GeometricPrimitive", () => {
     // SolidPrimitive
     const dz = 3.0;
     const radius = 1.5;
-    const solidPrimitve = Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, dz), radius, radius, true);
-    elmGeom = GeometricPrimitive.createSolidPrimitiveClone(solidPrimitve!);
-    assert.isTrue(GeometryType.SolidPrimitive === elmGeom.type, "Correctly stored SolidPrimitve in GeometricPrimitive");
+    const solidPrimitive = Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, dz), radius, radius, true);
+    elmGeom = GeometricPrimitive.createSolidPrimitiveClone(solidPrimitive!);
+    assert.isTrue(GeometryType.SolidPrimitive === elmGeom.type, "Correctly stored SolidPrimitive in GeometricPrimitive");
     assert.isFalse(elmGeom.isWire(), "SolidPrimitive is not wire");
     assert.isFalse(elmGeom.isSheet(), "SolidPrimitive is not sheet");
     assert.isTrue(elmGeom.isSolid(), "SolidPrimitive is solid");
     // Clone SolidPrimitive
     elmGeomC = elmGeom.clone();
     const getAsSolidPrimitive = elmGeomC.asSolidPrimitive;
-    assert.isTrue(getAsSolidPrimitive instanceof Cone, "GeometricPrimitive correctly returned SolidPrimitve data");
-    assert.isFalse(getAsSolidPrimitive === solidPrimitve, "SolidPrimitive stored as deep copy in GeometricPrimitive");
+    assert.isTrue(getAsSolidPrimitive instanceof Cone, "GeometricPrimitive correctly returned SolidPrimitive data");
+    assert.isFalse(getAsSolidPrimitive === solidPrimitive, "SolidPrimitive stored as deep copy in GeometricPrimitive");
     assert.isTrue(elmGeom.type === elmGeomC.type, "GeometricPrimitive clone type matches");
-    assert.isTrue(getAsSolidPrimitive!.isAlmostEqual(solidPrimitve!), "SolidPrimitive and its clone are equal");
+    assert.isTrue(getAsSolidPrimitive!.isAlmostEqual(solidPrimitive!), "SolidPrimitive and its clone are equal");
 
     // BsplineSurface
     const surface = BSplineSurface3d.createUniformKnots([Point3d.create(0, 0), Point3d.create(1, 1)], 1, 1, 1);
@@ -128,7 +129,7 @@ describe("GeometricPrimitive", () => {
 
     // Polyface
     const builder = PolyfaceBuilder.create();
-    builder.addCone(solidPrimitve!);
+    builder.addCone(solidPrimitive!);
     const polyface = builder.claimPolyface();
     elmGeom = GeometricPrimitive.createIndexedPolyfaceClone(polyface);
     assert.isTrue(GeometryType.IndexedPolyface === elmGeom.type, "Correctly stored Polyface in GeometricPrimitive");
@@ -318,7 +319,7 @@ describe("GeometryBuilder", () => {
 
     // SolidPrimitive
     const cylinder = Cone.createAxisPoints(Point3d.create(0, 0.34, 0), Point3d.create(0, 0, 1030.0), 1.5, 1.5, true);
-    assert.isTrue(builder.appendSolidPrimitive(cylinder!), "Successfully appended SolidPrimitve using builder");
+    assert.isTrue(builder.appendSolidPrimitive(cylinder!), "Successfully appended SolidPrimitive using builder");
 
     // GeometryParams
     /*
@@ -393,6 +394,6 @@ describe("GeometryBuilder", () => {
 
     // 3d should not be appended
     const cylinder = Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, 3.0), 1.5, 1.5, true);
-    assert.isFalse(builder.appendSolidPrimitive(cylinder!), "3d SolidPrimitve is NOT appended using 2d builder");
+    assert.isFalse(builder.appendSolidPrimitive(cylinder!), "3d SolidPrimitive is NOT appended using 2d builder");
   });
 });

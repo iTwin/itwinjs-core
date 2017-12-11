@@ -5,7 +5,7 @@ import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { PrimitiveTypeCode } from "./Entity";
 import { IModelError } from "../common/IModelError";
-import { XYAndZ, XAndY } from "@bentley/geometry-core/lib/PointVector";
+import { XYAndZ, XAndY, XYZ } from "@bentley/geometry-core/lib/PointVector";
 
 /** Value type  (Match this to ECN::ValueKind in ECObjects.h) */
 export const enum ValueKind {
@@ -38,16 +38,6 @@ export type ArrayType = ECValue[];
 /** Types that can be used for binding paramter values */
 export type BindingValue = null | PrimitiveType | ECValue | Id64;
 
-/** Custom type guard for Point2dType  */
-export function isPoint2dType(arg: any): arg is XAndY {
-  return arg.x !== undefined && arg.y !== undefined && arg.z === undefined;
-}
-
-/** Custom type guard for Point3dType  */
-export function isPoint3dType(arg: any): arg is XYAndZ {
-  return arg.x !== undefined && arg.y !== undefined && arg.z !== undefined;
-}
-
 /** Allows performing CRUD operations in an ECDb */
 export class BindingUtility {
 
@@ -58,10 +48,10 @@ export class BindingUtility {
       return PrimitiveTypeCode.Double;
     if (typeof bindingValue === "boolean")
       return PrimitiveTypeCode.Boolean;
-    if (isPoint2dType(bindingValue))
-      return PrimitiveTypeCode.Point2d;
-    if (isPoint3dType(bindingValue))
+    if (XYZ.isXYAndZ(bindingValue))
       return PrimitiveTypeCode.Point3d;
+    if (XYZ.isXAndY(bindingValue))
+      return PrimitiveTypeCode.Point2d;
 
     return PrimitiveTypeCode.Uninitialized;
   }
