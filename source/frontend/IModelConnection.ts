@@ -24,13 +24,12 @@ export class IModelConnection extends IModel {
 
   private constructor(iModelToken: IModelToken, name: string, description: string, private readonly extents: AxisAlignedBox3d) {
     super(iModelToken, name, description);
-    this.extents = extents;
     this.models = new IModelConnectionModels(this);
     this.elements = new IModelConnectionElements(this);
     this.codeSpecs = new IModelConnectionCodeSpecs(this);
   }
 
-  private static create({token, name, description, extents}: IModelGatewayOpenResponse): IModelConnection {
+  private static create({ token, name, description, extents }: IModelGatewayOpenResponse): IModelConnection {
     const extentsObj = new AxisAlignedBox3d();
     extentsObj.setFromJSON(extents);
     return new IModelConnection(token as IModelToken, name, description, extentsObj);
