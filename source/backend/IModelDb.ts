@@ -145,8 +145,8 @@ export class IModelDb extends IModel {
     this.elements = new IModelDbElements(this);
   }
 
-  private static create(briefcaseInfo: BriefcaseInfo, projectId?: string): IModelDb {
-    const iModelToken = IModelToken.create(briefcaseInfo.iModelId, briefcaseInfo.changeSetId, briefcaseInfo.openMode, briefcaseInfo.userId, projectId);
+  private static create(briefcaseInfo: BriefcaseInfo, contextId?: string): IModelDb {
+    const iModelToken = IModelToken.create(briefcaseInfo.iModelId, briefcaseInfo.changeSetId, briefcaseInfo.openMode, briefcaseInfo.userId, contextId);
 
     const rootSubjectInfoStr = briefcaseInfo.nativeDb.getRootSubjectInfo();
     const rootSubjectInfo = JSON.parse(rootSubjectInfoStr);
@@ -169,10 +169,10 @@ export class IModelDb extends IModel {
   }
 
   /** Open an iModel from the iModelHub */
-  public static async open(accessToken: AccessToken, projectId: string, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
-    const briefcaseInfo: BriefcaseInfo = await BriefcaseManager.open(accessToken, projectId, iModelId, openMode, version);
+  public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
+    const briefcaseInfo: BriefcaseInfo = await BriefcaseManager.open(accessToken, contextId, iModelId, openMode, version);
     Logger.logInfo("IModelDb.open", () => ({ iModelId, openMode }));
-    return IModelDb.create(briefcaseInfo, projectId);
+    return IModelDb.create(briefcaseInfo, contextId);
   }
 
   /** Close this iModel, if it is currently open */
