@@ -21,28 +21,34 @@ export class IModelGatewayImpl extends IModelGateway {
     Gateway.registerImplementation(IModelGateway, IModelGatewayImpl);
   }
 
-  public async openForRead(accessToken: AccessToken, iModelId: string, version: IModelVersion): Promise<IModelGatewayOpenResponse> {
-    return this.open(accessToken, iModelId, version, OpenMode.Readonly);
+  public async openForRead(accessToken: any, contextId: string, iModelId: string, version: any): Promise<IModelGatewayOpenResponse> {
+    return this.open(accessToken, contextId, iModelId, version, OpenMode.Readonly);
   }
 
-  public async openForWrite(accessToken: AccessToken, iModelId: string, version: IModelVersion): Promise<IModelGatewayOpenResponse> {
-    return this.open(accessToken, iModelId, version, OpenMode.ReadWrite);
+  public async openForWrite(accessToken: any, contextId: string, iModelId: string, version: any): Promise<IModelGatewayOpenResponse> {
+    return this.open(accessToken, contextId, iModelId, version, OpenMode.ReadWrite);
   }
 
-  private async open(accessToken: AccessToken, iModelId: string, version: IModelVersion, openMode: OpenMode): Promise<IModelGatewayOpenResponse> {
-    const iModelDb: IModelDb = await IModelDb.open(AccessToken.clone(accessToken), iModelId, openMode, IModelVersion.clone(version));
-    return { token: iModelDb.iModelToken, name: iModelDb.name, description: iModelDb.description, extents: iModelDb.extents };
+  private async open(accessToken: any, contextId: string, iModelId: string, version: any, openMode: OpenMode): Promise<IModelGatewayOpenResponse> {
+    const iModelDb: IModelDb = await IModelDb.open(AccessToken.fromJson(accessToken)!, contextId, iModelId, openMode, IModelVersion.fromJson(version));
+    return { token: iModelDb.iModelToken, name: iModelDb.name, description: iModelDb.description, extents: iModelDb.getExtents()};
   }
 
   /** Ask the backend to open a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend. */
   public async openStandalone(fileName: string, openMode: OpenMode): Promise<IModelGatewayOpenResponse> {
     const iModelDb: IModelDb = await IModelDb.openStandalone(fileName, openMode);
-    return { token: iModelDb.iModelToken, name: iModelDb.name, description: iModelDb.description, extents: iModelDb.extents };
+    return { token: iModelDb.iModelToken, name: iModelDb.name, description: iModelDb.description, extents: iModelDb.getExtents()};
   }
 
-  public async close(accessToken: AccessToken, iModelToken: IModelToken): Promise<boolean> {
+  public async close(accessToken: any, iModelToken: IModelToken): Promise<boolean> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    await iModelDb.close(AccessToken.clone(accessToken));
+    await iModelDb.close(AccessToken.fromJson(accessToken)!);
+    return true; // NEEDS_WORK: Promise<void> seems to crash the transport layer.
+  }
+
+  public async closeStandalone(iModelToken: IModelToken): Promise<boolean> {
+    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    iModelDb.closeStandalone();
     return true; // NEEDS_WORK: Promise<void> seems to crash the transport layer.
   }
 

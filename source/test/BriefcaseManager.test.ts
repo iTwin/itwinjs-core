@@ -9,6 +9,7 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import { ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "../common/IModelVersion";
 import { BriefcaseManager } from "../backend/BriefcaseManager";
+import { IModelDb } from "../backend/IModelDb";
 import { IModelConnection } from "../frontend/IModelConnection";
 import { IModelTestUtils } from "./IModelTestUtils";
 
@@ -17,7 +18,9 @@ describe("BriefcaseManager", () => {
   let testProjectId: string;
   let testIModelId: string;
   let testChangeSets: ChangeSet[];
-  let iModelLocalPath: string;
+  let iModelLocalReadonlyPath: string;
+  let iModelLocalReadWritePath: string;
+
   let shouldDeleteAllBriefcases: boolean = false;
 
   before(async () => {
@@ -28,7 +31,8 @@ describe("BriefcaseManager", () => {
     testChangeSets = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
     expect(testChangeSets.length).greaterThan(2);
 
-    iModelLocalPath = path.join(BriefcaseManager.cachePath, testIModelId);
+    iModelLocalReadonlyPath = path.join(BriefcaseManager.cachePath, testIModelId, "readOnly");
+    iModelLocalReadWritePath = path.join(BriefcaseManager.cachePath, testIModelId, "readWrite");
 
     // Recreate briefcases if it's a TMR. todo: Figure a better way to prevent bleeding briefcase ids
     shouldDeleteAllBriefcases = !fs.existsSync(BriefcaseManager.cachePath);
@@ -36,58 +40,70 @@ describe("BriefcaseManager", () => {
       await IModelTestUtils.deleteAllBriefcases(accessToken, testIModelId);
   });
 
-  it("should be able to open an IModel from the Hub", async () => {
-    const iModel: IModelConnection = await IModelConnection.open(accessToken, testIModelId);
+  it("should be able to open an IModel from the Hub in Readonly mode", async () => {
+    const iModel: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
     assert.exists(iModel);
+    assert(iModel.iModelToken.openMode === OpenMode.Readonly);
 
-    expect(fs.existsSync(iModelLocalPath));
-    const files = fs.readdirSync(iModelLocalPath);
+    expect(fs.existsSync(iModelLocalReadonlyPath));
+    const files = fs.readdirSync(iModelLocalReadonlyPath);
     expect(files.length).greaterThan(0);
 
     await iModel.close(accessToken);
   });
 
-  it("should reuse closed briefcases in ReadWrite mode", async () => {
-    const files = fs.readdirSync(iModelLocalPath);
-
-    const iModel: IModelConnection = await IModelConnection.open(accessToken, testIModelId);
+  it("should be able to open an IModel from the Hub in ReadWrite mode", async () => {
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite); // Note: No frontend support for ReadWrite open yet
     assert.exists(iModel);
-    await iModel.close(accessToken);
+    assert(iModel.iModelToken.openMode === OpenMode.ReadWrite);
 
-    const files2 = fs.readdirSync(iModelLocalPath);
-    expect(files2.length).equals(files.length);
-    const diff = files2.filter((item) => files.indexOf(item) < 0);
-    expect(diff.length).equals(0);
+    expect(fs.existsSync(iModelLocalReadWritePath));
+    const files = fs.readdirSync(iModelLocalReadWritePath);
+    expect(files.length).greaterThan(0);
+
+    await iModel.close(accessToken);
   });
 
   it("should reuse open briefcases in Readonly mode", async () => {
-    const briefcases = fs.readdirSync(iModelLocalPath);
+    const briefcases = fs.readdirSync(iModelLocalReadonlyPath);
     expect(briefcases.length).greaterThan(0);
 
     const iModels = new Array<IModelConnection>();
     for (let ii = 0; ii < 5; ii++) {
-      const iModel: IModelConnection = await IModelConnection.open(accessToken, testIModelId, OpenMode.Readonly);
+      const iModel: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
       assert.exists(iModel);
       iModels.push(iModel);
     }
 
-    const briefcases2 = fs.readdirSync(iModelLocalPath);
+    const briefcases2 = fs.readdirSync(iModelLocalReadonlyPath);
     expect(briefcases2.length).equals(briefcases.length);
     const diff = briefcases2.filter((item) => briefcases.indexOf(item) < 0);
     expect(diff.length).equals(0);
+  });
+
+  it("should reuse closed briefcases in ReadWrite mode", async () => {
+    const files = fs.readdirSync(iModelLocalReadWritePath);
+
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite); // Note: No frontend support for ReadWrite open yet
+    assert.exists(iModel);
+
+    const files2 = fs.readdirSync(iModelLocalReadWritePath);
+    expect(files2.length).equals(files.length);
+    const diff = files2.filter((item) => files.indexOf(item) < 0);
+    expect(diff.length).equals(0);
+
+    await iModel.close(accessToken);
   });
 
   it("should open briefcases of specific versions in Readonly mode", async () => {
     const versionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
 
     for (const [changeSetIndex, versionName] of versionNames.entries()) {
-      const iModelFromVersion: IModelConnection = await IModelConnection.open(accessToken, testIModelId, OpenMode.Readonly, IModelVersion.afterChangeSet(testChangeSets[changeSetIndex].wsgId));
+      const iModelFromVersion: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.afterChangeSet(testChangeSets[changeSetIndex].wsgId));
       assert.exists(iModelFromVersion);
 
-      const iModelFromChangeSet: IModelConnection = await IModelConnection.open(accessToken, testIModelId, OpenMode.Readonly, IModelVersion.withName(versionName));
+      const iModelFromChangeSet: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.withName(versionName));
       assert.exists(iModelFromChangeSet);
-
-      expect(iModelFromVersion.iModelToken.pathname).equals(iModelFromChangeSet.iModelToken.pathname);
     }
   });
 
@@ -97,11 +113,13 @@ describe("BriefcaseManager", () => {
     if (shouldDeleteAllBriefcases)
       await IModelTestUtils.deleteAllBriefcases(accessToken, iModelNoVerId);
 
-    const iModelNoVer: IModelConnection = await IModelConnection.open(accessToken, iModelNoVerId, OpenMode.Readonly);
+    const iModelNoVer: IModelConnection = await IModelConnection.open(accessToken, testProjectId, iModelNoVerId, OpenMode.Readonly);
     assert.exists(iModelNoVer);
   });
 
-  // readme cases should always use standalone briefcase
+  // should not be able to open the same iModel both Readonly and ReadWrite
+  // should not be able to open two copies of the iModel in ReadWrite mode
+  // Readme briefcases should always be standalone.
   // should keep previously downloaded seed files and change sets
   // should not reuse open briefcases in ReadWrite mode
   // should not reuse open briefcases for different versions in Readonly mode

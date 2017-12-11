@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import * as path from "path";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
@@ -26,6 +26,7 @@ import { IModelDb } from "../backend/IModelDb";
 import { ModelSelector } from "../backend/ViewDefinition";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ModelProps } from "../common/ModelProps";
+import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 
 describe("iModel", () => {
   let imodel1: IModelDb;
@@ -61,6 +62,15 @@ describe("iModel", () => {
     el2.setPersistent(); // just to allow deepEqual to work
     assert.deepEqual(entity, el2, "json stringify worked");
   };
+
+  it("should be able to get the name of the IModel", async () => {
+    expect(imodel1.name).equals("TBD"); // That's the name of the root subject!
+  });
+
+  it("should be able to get extents of the IModel", () => {
+    const extents: AxisAlignedBox3d = imodel1.getExtents();
+    assert(!extents.isNull());
+  });
 
   it("should use schema to look up classes by name", () => {
     const elementClass = BisCore.getClass(Element.name, imodel1);

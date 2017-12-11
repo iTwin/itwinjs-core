@@ -1418,7 +1418,7 @@ export class SpatialViewState extends ViewState3d {
       this.modelSelector = arg3.modelSelector;
     }
   }
-  public getViewedExtents(): AxisAlignedBox3d { return this.iModel.extents; }
+  public getViewedExtents(): AxisAlignedBox3d { return this.iModel.getExtents(); }
 
   public toJSON(): SpatialViewDefinitionProps {
     const val = super.toJSON() as SpatialViewDefinitionProps;

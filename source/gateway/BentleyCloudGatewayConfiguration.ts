@@ -18,7 +18,7 @@ export abstract class BentleyCloudGatewayConfiguration extends Gateway.Configura
 
   /** Performs gateway configuration for the application. */
   public static initialize(params: BentleyCloudGatewayParams, gateways: GatewayDefinition[]) {
-    const protocol = class extends BentleyCloudGatewayProtocol {
+    const protocol = class extends (params.protocol || BentleyCloudGatewayProtocol) {
       public openAPIPathPrefix = () => (params.uriPrefix || "");
       public openAPIInfo = () => params.info;
     };

@@ -28,8 +28,15 @@ class TestViewport extends Viewport {
 
 /** An abstract class representing an instance of an iModel. */
 export class TestIModel extends IModel {
+  private extents: AxisAlignedBox3d;
+
   public constructor(iModelToken: IModelToken, name: string, description: string, extents: any) {
-    super(iModelToken, name, description, extents);
+    super(iModelToken, name, description);
+    this.extents = extents;
+  }
+
+  public getExtents(): AxisAlignedBox3d {
+    return this.extents;
   }
 }
 
@@ -48,7 +55,7 @@ describe("ViewPort", () => {
     accessToken = await IModelTestUtils.getTestUserAccessToken();
     testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
     testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "MyTestModel");
-    imodelConnection = await IModelConnection.open(accessToken, testIModelId);
+    imodelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId);
     imodel = new TestIModel(imodelConnection.iModelToken, "TestIModel", "TestIModel", new AxisAlignedBox3d(Point3d.create(-100, -100, -100), Point3d.create(100, 100, 100)));
     categorySelectorState = new CategorySelectorState(
       {

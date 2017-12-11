@@ -1,13 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-// tslint:disable:no-var-requires
+// tslint:disable:no-var-requires no-console
 import { IModelGateway } from "@build/imodeljs-core/lib/gateway/IModelGateway";
 import { BentleyCloudGatewayConfiguration } from "@build/imodeljs-core/lib/gateway/BentleyCloudGatewayConfiguration";
 import { TestbedConfig } from "../common/TestbedConfig";
 import { assert } from "chai";
 import { TestData } from "./TestData";
 import { TestGateway } from "../common/TestGateway";
+import * as webpack from "webpack";
 
 const gatewaysConfig = BentleyCloudGatewayConfiguration.initialize(TestbedConfig.gatewayParams, [IModelGateway, TestGateway]);
 gatewaysConfig.protocol.openAPIPathPrefix = () => `http://localhost:${TestbedConfig.serverPort}`;
@@ -39,6 +40,31 @@ describe("Testbed", () => {
 
 const fs = remote.require("fs");
 for (const entry of fs.readdirSync(__dirname)) {
-  if (entry.indexOf(".test.js") !== -1)
-    require(`${__dirname}/${entry}`);
+  if (entry.indexOf(".test.js") !== -1) {
+    const entryPath = `${__dirname}/${entry}`;
+
+    describe(entry, () => {
+      it("should be compatible with webpack", (done) => {
+        const compiler = webpack({ entry: entryPath });
+        compiler.plugin("should-emit", () => false);
+        compiler.run((err: Error, stats: webpack.Stats) => {
+          if (err)
+            console.error(err.stack || err);
+
+          if (stats.hasErrors() || stats.hasWarnings()) {
+            const info = stats.toJson();
+            console.error(...info.errors);
+            console.warn(...info.warnings);
+          }
+
+          assert.isNull(err);
+          assert.isFalse(stats.hasErrors());
+          assert.isFalse(stats.hasWarnings());
+          done();
+        });
+      });
+    });
+
+    require(entryPath);
+  }
 }
