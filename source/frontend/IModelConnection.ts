@@ -21,9 +21,8 @@ export class IModelConnection extends IModel {
   public readonly models: IModelConnectionModels;
   public readonly elements: IModelConnectionElements;
   public readonly codeSpecs: IModelConnectionCodeSpecs;
-  private extents: AxisAlignedBox3d;
 
-  private constructor(iModelToken: IModelToken, name: string, description: string, extents: AxisAlignedBox3d) {
+  private constructor(iModelToken: IModelToken, name: string, description: string, private readonly extents: AxisAlignedBox3d) {
     super(iModelToken, name, description);
     this.extents = extents;
     this.models = new IModelConnectionModels(this);
@@ -35,7 +34,7 @@ export class IModelConnection extends IModel {
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
     if (OpenMode.Readonly !== openMode)
       return Promise.reject(new IModelError(IModelStatus.NotEnabled, "IModelConnection does not support read/write access yet"));
-       // WIP: waiting for decisions on how to manage read/write briefcases on the backend.
+    // WIP: waiting for decisions on how to manage read/write briefcases on the backend.
 
     const openResponse: IModelGatewayOpenResponse = await IModelGateway.getProxy().openForRead(accessToken, contextId, iModelId, version);
     Logger.logInfo("IModelConnection.open", () => ({ iModelId, openMode, version }));
