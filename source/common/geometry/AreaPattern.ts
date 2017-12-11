@@ -7,7 +7,7 @@ import { Geometry } from "@bentley/geometry-core/lib/Geometry";
 import { ColorDef } from "../Render";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
-/** Explicit declaration, seperate from generated "schema", for easily changing and reassigning values */
+/** Explicit declaration, separate from generated "schema", for easily changing and reassigning values */
 export class DwgHatchDefLine {
   public angle: number;
   public through: Point2d;
@@ -30,7 +30,7 @@ export class PatternParams {
   private _scale: number;                  // Pattern scale
   private _invisibleBoundary: boolean;     // Whether pattern boundary should not display (ignored when also filled)...
   private _snappable: boolean;             // Whether pattern geometry can be snapped to
-  private _useColor: boolean;              // WHether to use pattern color instead of inheriting current color
+  private _useColor: boolean;              // WWhether to use pattern color instead of inheriting current color
   private _useWeight: boolean;             // Whether to use pattern weight instead of inheriting current weight
   private _color?: ColorDef;                // The pattern / hatch color
   private _weight: number;                 // The pattern / hatch weight
@@ -95,9 +95,8 @@ export class PatternParams {
     retVal._snappable = this._snappable;
     retVal._useColor = this._useColor;
     retVal._useWeight = this._useWeight;
-    // retval.useColor = ...
     retVal._weight = this._weight;
-    retVal._symbolId = this._symbolId ? new Id64(this._symbolId) : undefined;
+    retVal._symbolId = this._symbolId;
     for (const i of this._hatchLines) {
       retVal._hatchLines.push(i);
     }

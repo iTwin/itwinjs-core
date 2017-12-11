@@ -26,6 +26,7 @@ export class Code implements CodeProps {
 
   /** Create an empty, non-unique code with no special meaning. */
   public static createEmpty(): Code { const id: Id64 = new Id64([1, 0]); return new Code({ spec: id, scope: id.value }); }
+  public static fromJSON(json?: any): Code { return json ? new Code(json) : Code.createEmpty(); }
   public getValue(): string { return this.value ? this.value : ""; }
   public equals(other: Code): boolean { return this.spec.equals(other.spec) && this.scope === other.scope && this.value === other.value; }
 }

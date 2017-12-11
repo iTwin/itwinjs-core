@@ -18,7 +18,7 @@ export class Model extends Entity implements ModelProps {
 
   constructor(props: ModelProps, iModel: IModelDb) {
     super(props, iModel);
-    this.id = new Id64(props.id);
+    this.id = Id64.fromJSON(props.id);
     this.modeledElement = RelatedElement.fromJSON(props.modeledElement)!;
     this.parentModel = RelatedElement.fromJSON(props.parentModel);
     this.isPrivate = JsonUtils.asBool(props.isPrivate);

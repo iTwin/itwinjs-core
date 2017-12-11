@@ -176,7 +176,7 @@ export class PropertyMetaData {
       }
     }
     if (null != this.direction) // the presence of this means it's a navigation property
-      return new Id64(jsonObj);
+      return Id64.fromJSON(jsonObj);
 
     return jsonObj;
   }

@@ -30,9 +30,7 @@ export class IModelConnection extends IModel {
   }
 
   private static create({ token, name, description, extents }: IModelGatewayOpenResponse): IModelConnection {
-    const extentsObj = new AxisAlignedBox3d();
-    extentsObj.setFromJSON(extents);
-    return new IModelConnection(token as IModelToken, name, description, extentsObj);
+    return new IModelConnection(token as IModelToken, name, description, AxisAlignedBox3d.fromJSON(extents));
   }
 
   /** Open an iModel from iModelHub */
@@ -95,10 +93,8 @@ export class IModelConnectionModels {
   public async getModelProps(modelIds: Id64[]): Promise<ModelProps[]> {
     const modelJsonArray = await IModelGateway.getProxy().getModelProps(this._iModel.iModelToken, modelIds.map((id: Id64) => id.value));
     const models: ModelProps[] = [];
-    for (const modelJson of modelJsonArray) {
-      const modelProps = JSON.parse(modelJson) as ModelProps;
-      models.push(modelProps);
-    }
+    for (const modelJson of modelJsonArray)
+      models.push(JSON.parse(modelJson) as ModelProps);
     return models;
   }
 }
@@ -117,10 +113,8 @@ export class IModelConnectionElements {
   public async getElementProps(elementIds: Id64[]): Promise<ElementProps[]> {
     const elementJsonArray: any[] = await IModelGateway.getProxy().getElementProps(this._iModel.iModelToken, elementIds.map((id: Id64) => id.value));
     const elements: ElementProps[] = [];
-    for (const elementJson of elementJsonArray) {
-      const elementProps = JSON.parse(elementJson) as ElementProps;
-      elements.push(elementProps);
-    }
+    for (const elementJson of elementJsonArray)
+      elements.push(JSON.parse(elementJson) as ElementProps);
     return elements;
   }
 

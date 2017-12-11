@@ -43,10 +43,10 @@ export class Appearance {
     this.color = ColorDef.fromJSON(props.color);
     this.weight = JsonUtils.asInt(props.weight);
     if (props.style)
-      this.styleId = new Id64(props.style);
+      this.styleId = Id64.fromJSON(props.style);
     this.priority = JsonUtils.asInt(props.priority);
     if (props.material)
-      this.materialId = new Id64(props.material);
+      this.materialId = Id64.fromJSON(props.material);
     this.transparency = JsonUtils.asInt(props.transp);
   }
 
@@ -130,8 +130,8 @@ export class SubCategoryOverride {
     if (json.invisible) val.setInvisible(JsonUtils.asBool(json.invisible));
     if (json.color) val.setColor(ColorDef.fromJSON(json.color));
     if (json.weight) val.setWeight(JsonUtils.asInt(json.weight));
-    if (json.style) val.setStyle(new Id64(json.style));
-    if (json.material) val.setMaterial(new Id64(json.material));
+    if (json.style) val.setStyle(Id64.fromJSON(json.style));
+    if (json.material) val.setMaterial(Id64.fromJSON(json.material));
     if (json.priority) val.setDisplayPriority(JsonUtils.asInt(json.priority));
     if (json.transp) val.setTransparency(JsonUtils.asDouble(json.transp));
     return val;

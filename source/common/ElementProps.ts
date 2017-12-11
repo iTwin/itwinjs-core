@@ -24,7 +24,7 @@ export interface ElementProps extends EntityProps {
 export class RelatedElement implements RelatedElementProps {
   public readonly id: Id64;
   public readonly relClass?: string;
-  constructor(props: RelatedElementProps) { this.id = (props.id instanceof Id64 ? props.id : new Id64(props.id)); this.relClass = props.relClass; }
+  constructor(props: RelatedElementProps) { this.id = Id64.fromJSON(props.id); this.relClass = props.relClass; }
   public static fromJSON(json?: any): RelatedElement | undefined {
     return json ? new RelatedElement(json) : undefined;
   }

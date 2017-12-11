@@ -74,9 +74,9 @@ export class GeometryParams {
     retVal._materialOverride = this._materialOverride;
     retVal._fillOverride = this._fillOverride;
     retVal._resolved = this._resolved;
-    retVal._categoryId = new Id64(this._categoryId);
-    retVal._subCategoryId = new Id64(this._subCategoryId);
-    retVal._materialId = new Id64(this._materialId);
+    retVal._categoryId = this._categoryId;
+    retVal._subCategoryId = this._subCategoryId;
+    retVal._materialId = this._materialId;
     retVal._elmPriority = this._elmPriority;
     retVal._netPriority = this._netPriority;
     retVal._weight = this._weight;
@@ -139,9 +139,9 @@ export class GeometryParams {
     if (!this._weightOverride)
       this._weight = appearance.weight;
     if (!this._styleOverride)
-      this._styleInfo = LineStyleInfo.create(new Id64(appearance.styleId), undefined);  // No LineStyleParams held in appearance
+      this._styleInfo = LineStyleInfo.create(Id64.fromJSON(appearance.styleId), undefined);  // No LineStyleParams held in appearance
     if (!this._materialOverride)
-      this._materialId = new Id64(appearance.materialId);
+      this._materialId = Id64.fromJSON(appearance.materialId);
 
     // SubCategory transparency is combined with element transparency to compute net transparency
     if (appearance.transparency !== 0.0) {

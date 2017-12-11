@@ -31,9 +31,9 @@ export abstract class Element extends Entity implements ElementProps {
   /** constructor for Element. */
   constructor(props: ElementProps, iModel: IModelDb) {
     super(props, iModel);
-    this.id = new Id64(props.id);
-    this.code = new Code(props.code);
-    this.model = new Id64(props.model);
+    this.id = Id64.fromJSON(props.id);
+    this.code = Code.fromJSON(props.code);
+    this.model = Id64.fromJSON(props.model);
     this.parent = RelatedElement.fromJSON(props.parent);
     this.federationGuid = Guid.fromJSON(props.federationGuid);
     this.userLabel = props.userLabel;
@@ -86,7 +86,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
   public geom?: GeometryStream;
   public constructor(props: GeometricElementProps, iModel: IModelDb) {
     super(props, iModel);
-    this.category = new Id64(props.category);
+    this.category = Id64.fromJSON(props.category);
     this.geom = GeometryStream.fromJSON(props.geom);
   }
 

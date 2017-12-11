@@ -199,7 +199,7 @@ export class EntityState implements EntityProps {
   constructor(props: EntityProps, iModel: IModel) {
     this.classFullName = props.classFullName;
     this.iModel = iModel;
-    this.id = new Id64(props.id);
+    this.id = Id64.fromJSON(props.id);
     this.jsonProperties = !props.jsonProperties ? {} : JSON.parse(JSON.stringify(props.jsonProperties)); // make sure we have our own copy
   }
 
@@ -271,8 +271,8 @@ export class ElementState extends EntityState implements ElementProps {
 
   constructor(props: ElementProps, iModel: IModel) {
     super(props, iModel);
-    this.code = new Code(props.code);
-    this.model = new Id64(props.model);
+    this.code = Code.fromJSON(props.code);
+    this.model = Id64.fromJSON(props.model);
     this.parent = RelatedElement.fromJSON(props.parent);
     this.federationGuid = Guid.fromJSON(props.federationGuid);
     this.userLabel = props.userLabel;
@@ -737,7 +737,7 @@ export abstract class ViewState extends ElementState {
   public setCategorySelector(categories: CategorySelectorState) { this.categorySelector = categories; }
 
   /** Get the AuxiliaryCoordinateSystem for this ViewDefinition */
-  public getAuxiliaryCoordinateSystemId(): Id64 { return new Id64(this.getDetail("acs")); }
+  public getAuxiliaryCoordinateSystemId(): Id64 { return Id64.fromJSON(this.getDetail("acs")); }
 
   /** Set the AuxiliaryCoordinateSystem for this view. */
   public setAuxiliaryCoordinateSystem(acsId: Id64) {
