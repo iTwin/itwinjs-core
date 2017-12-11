@@ -56,8 +56,8 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
   public displayStyleId: Id64;
   protected constructor(props: ViewDefinitionProps, iModel: IModelDb) {
     super(props, iModel);
-    this.categorySelectorId = new Id64(props.categorySelectorId);
-    this.displayStyleId = new Id64(props.displayStyleId);
+    this.categorySelectorId = Id64.fromJSON(props.categorySelectorId);
+    this.displayStyleId = Id64.fromJSON(props.displayStyleId);
   }
   public toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
@@ -104,7 +104,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
  */
 export class SpatialViewDefinition extends ViewDefinition3d implements SpatialViewDefinitionProps {
   public modelSelectorId: Id64;
-  constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) { super(props, iModel); this.modelSelectorId = new Id64(props.modelSelectorId); }
+  constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) { super(props, iModel); this.modelSelectorId = Id64.fromJSON(props.modelSelectorId); }
   public toJSON(): SpatialViewDefinitionProps {
     const json = super.toJSON() as SpatialViewDefinitionProps;
     json.modelSelectorId = this.modelSelectorId;
@@ -126,7 +126,7 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
-    this.baseModelId = new Id64(props.baseModelId);
+    this.baseModelId = Id64.fromJSON(props.baseModelId);
     this.origin = Point2d.fromJSON(props.origin);
     this.delta = Point2d.fromJSON(props.delta);
     this.angle = Angle.fromJSON(props.angle);

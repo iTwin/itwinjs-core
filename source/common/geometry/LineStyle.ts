@@ -85,15 +85,15 @@ export class LineStyleParams {
     if (0 === other.modifiers && 0 === this.modifiers)
       return true;    // No need to compare further if both inactive...
 
-    if (other.reserved   !== this.reserved   ||
-        other.scale      !== this.scale      ||
-        other.dashScale  !== this.dashScale  ||
-        other.gapScale   !== this.gapScale   ||
-        other.startWidth !== this.startWidth ||
-        other.endWidth   !== this.endWidth   ||
-        other.distPhase  !== this.distPhase  ||
-        other.fractPhase !== this.fractPhase)
-        return false;
+    if (other.reserved !== this.reserved ||
+      other.scale !== this.scale ||
+      other.dashScale !== this.dashScale ||
+      other.gapScale !== this.gapScale ||
+      other.startWidth !== this.startWidth ||
+      other.endWidth !== this.endWidth ||
+      other.distPhase !== this.distPhase ||
+      other.fractPhase !== this.fractPhase)
+      return false;
 
     if (!other.normal.isExactEqual(this.normal))
       return false;
@@ -274,46 +274,46 @@ export class LineStyleSymb {
     }
 
     if (other._nIterate !== this._nIterate)
-        return false;
+      return false;
 
     if (other._scale !== this._scale)
-        return false;
+      return false;
 
     if (other._dashScale !== this._dashScale)
-        return false;
+      return false;
 
     if (other._gapScale !== this._gapScale)
-        return false;
+      return false;
 
     if (other._orgWidth !== this._orgWidth)
-        return false;
+      return false;
 
     if (other._endWidth !== this._endWidth)
-        return false;
+      return false;
 
     if (other._phaseShift !== this._phaseShift)
-        return false;
+      return false;
 
     if (other._autoPhase !== this._autoPhase)
-        return false;
+      return false;
 
     if (other._maxCompress !== this._maxCompress)
-        return false;
+      return false;
 
     if (other._totalLength !== this._totalLength)
-        return false;
+      return false;
 
     if (other._xElemPhase !== this._xElemPhase)
-        return false;
+      return false;
 
     if (!other._startTangent.isExactEqual(this._startTangent))
-        return false;
+      return false;
 
     if (!other._endTangent.isExactEqual(this._endTangent))
-        return false;
+      return false;
 
     if (!other._planeByRows.isExactEqual(this._planeByRows))
-        return false;
+      return false;
 
     return true;
   }
@@ -384,7 +384,7 @@ export class LineStyleInfo {
 
   /** Returns a deep copy of this object. */
   public clone(): LineStyleInfo {
-    const retVal = new LineStyleInfo(new Id64(this._styleId), this._styleParams.clone());
+    const retVal = new LineStyleInfo(this._styleId, this._styleParams.clone());
     retVal._lStyleSymb = this._lStyleSymb.clone();
     return retVal;
   }

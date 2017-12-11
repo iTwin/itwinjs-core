@@ -24,23 +24,20 @@ export class IModelConnection extends IModel {
 
   private constructor(iModelToken: IModelToken, name: string, description: string, private readonly extents: AxisAlignedBox3d) {
     super(iModelToken, name, description);
-    this.extents = extents;
     this.models = new IModelConnectionModels(this);
     this.elements = new IModelConnectionElements(this);
     this.codeSpecs = new IModelConnectionCodeSpecs(this);
   }
 
-  private static create({token, name, description, extents}: IModelGatewayOpenResponse): IModelConnection {
-    const extentsObj = new AxisAlignedBox3d();
-    extentsObj.setFromJSON(extents);
-    return new IModelConnection(token as IModelToken, name, description, extentsObj);
+  private static create({ token, name, description, extents }: IModelGatewayOpenResponse): IModelConnection {
+    return new IModelConnection(token as IModelToken, name, description, AxisAlignedBox3d.fromJSON(extents));
   }
 
   /** Open an iModel from iModelHub */
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
     if (OpenMode.Readonly !== openMode)
       return Promise.reject(new IModelError(IModelStatus.NotEnabled, "IModelConnection does not support read/write access yet"));
-       // WIP: waiting for decisions on how to manage read/write briefcases on the backend.
+    // WIP: waiting for decisions on how to manage read/write briefcases on the backend.
 
     const openResponse: IModelGatewayOpenResponse = await IModelGateway.getProxy().openForRead(accessToken, contextId, iModelId, version);
     Logger.logInfo("IModelConnection.open", () => ({ iModelId, openMode, version }));
@@ -96,10 +93,8 @@ export class IModelConnectionModels {
   public async getModelProps(modelIds: Id64[]): Promise<ModelProps[]> {
     const modelJsonArray = await IModelGateway.getProxy().getModelProps(this._iModel.iModelToken, modelIds.map((id: Id64) => id.value));
     const models: ModelProps[] = [];
-    for (const modelJson of modelJsonArray) {
-      const modelProps = JSON.parse(modelJson) as ModelProps;
-      models.push(modelProps);
-    }
+    for (const modelJson of modelJsonArray)
+      models.push(JSON.parse(modelJson) as ModelProps);
     return models;
   }
 }
@@ -118,10 +113,8 @@ export class IModelConnectionElements {
   public async getElementProps(elementIds: Id64[]): Promise<ElementProps[]> {
     const elementJsonArray: any[] = await IModelGateway.getProxy().getElementProps(this._iModel.iModelToken, elementIds.map((id: Id64) => id.value));
     const elements: ElementProps[] = [];
-    for (const elementJson of elementJsonArray) {
-      const elementProps = JSON.parse(elementJson) as ElementProps;
-      elements.push(elementProps);
-    }
+    for (const elementJson of elementJsonArray)
+      elements.push(JSON.parse(elementJson) as ElementProps);
     return elements;
   }
 

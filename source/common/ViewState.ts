@@ -199,7 +199,7 @@ export class EntityState implements EntityProps {
   constructor(props: EntityProps, iModel: IModel) {
     this.classFullName = props.classFullName;
     this.iModel = iModel;
-    this.id = new Id64(props.id);
+    this.id = Id64.fromJSON(props.id);
     this.jsonProperties = !props.jsonProperties ? {} : JSON.parse(JSON.stringify(props.jsonProperties)); // make sure we have our own copy
   }
 
@@ -220,16 +220,16 @@ export class EntityState implements EntityProps {
 }
 
 export abstract class ModelState extends EntityState implements ModelProps {
-  public readonly modeledElement: Id64;
-  public readonly parentModel: Id64;
+  public readonly modeledElement: RelatedElement;
+  public readonly parentModel?: RelatedElement;
   public readonly jsonProperties: any;
   public readonly isPrivate: boolean;
   public readonly isTemplate: boolean;
 
   constructor(props: ModelProps, iModel: IModel) {
     super(props, iModel);
-    this.modeledElement = new Id64(props.modeledElement);
-    this.parentModel = new Id64(props.parentModel);
+    this.modeledElement = new RelatedElement(props.modeledElement);
+    this.parentModel = RelatedElement.fromJSON(props.parentModel);
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
   }
@@ -237,9 +237,9 @@ export abstract class ModelState extends EntityState implements ModelProps {
   /** Add all custom-handled properties of a Model to a json object. */
   public toJSON(): ModelProps {
     const val = super.toJSON() as ModelProps;
-    if (this.modeledElement.isValid())
+    if (this.modeledElement.id.isValid())
       val.modeledElement = this.modeledElement;
-    if (this.parentModel.isValid())
+    if (this.parentModel && this.parentModel.id.isValid())
       val.parentModel = this.parentModel;
     if (this.isPrivate)
       val.isPrivate = this.isPrivate;
@@ -271,8 +271,8 @@ export class ElementState extends EntityState implements ElementProps {
 
   constructor(props: ElementProps, iModel: IModel) {
     super(props, iModel);
-    this.code = new Code(props.code);
-    this.model = new Id64(props.model);
+    this.code = Code.fromJSON(props.code);
+    this.model = Id64.fromJSON(props.model);
     this.parent = RelatedElement.fromJSON(props.parent);
     this.federationGuid = Guid.fromJSON(props.federationGuid);
     this.userLabel = props.userLabel;
@@ -737,7 +737,7 @@ export abstract class ViewState extends ElementState {
   public setCategorySelector(categories: CategorySelectorState) { this.categorySelector = categories; }
 
   /** Get the AuxiliaryCoordinateSystem for this ViewDefinition */
-  public getAuxiliaryCoordinateSystemId(): Id64 { return new Id64(this.getDetail("acs")); }
+  public getAuxiliaryCoordinateSystemId(): Id64 { return Id64.fromJSON(this.getDetail("acs")); }
 
   /** Set the AuxiliaryCoordinateSystem for this view. */
   public setAuxiliaryCoordinateSystem(acsId: Id64) {

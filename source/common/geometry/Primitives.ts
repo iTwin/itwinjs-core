@@ -53,6 +53,11 @@ export class AxisAlignedBox3d extends Range3d {
       this.high.z += .0005;
     }
   }
+  public static fromJSON(json: any): AxisAlignedBox3d {
+    const val = new AxisAlignedBox3d();
+    val.setFromJSON(json);
+    return val;
+  }
 }
 
 /** A bounding box aligned to the orientation of a 3d Element */
@@ -73,9 +78,9 @@ export class ElementAlignedBox3d extends Range3d {
   }
 
   public static fromJSON(json?: any): ElementAlignedBox3d {
-    if (!json)
-      return new ElementAlignedBox3d();
-    return ElementAlignedBox3d.createFromPoints(Point3d.fromJSON(json.low), Point3d.fromJSON(json.high));
+    const val = new ElementAlignedBox3d();
+    val.setFromJSON(json);
+    return val;
   }
 }
 
@@ -89,9 +94,9 @@ export class ElementAlignedBox2d extends Range2d {
   public get width(): number { return this.xLength(); }
   public get height(): number { return this.yLength(); }
   public static fromJSON(json?: any): ElementAlignedBox2d {
-    if (!json)
-      return new ElementAlignedBox2d();
-    return ElementAlignedBox2d.createFromPoints(Point2d.fromJSON(json.low), Point2d.fromJSON(json.high));
+    const val = new ElementAlignedBox2d();
+    val.setFromJSON(json);
+    return val;
   }
   public isValid(): boolean {
     const max = Constant.circumferenceOfEarth; const lo = this.low; const hi = this.high;

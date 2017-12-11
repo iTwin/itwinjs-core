@@ -12,7 +12,7 @@ export class ElementAspect extends Entity implements ElementAspectProps {
 
   constructor(props: ElementAspectProps, iModel: IModelDb) {
     super(props, iModel);
-    this.element = new Id64(props.element);
+    this.element = Id64.fromJSON(props.element);
   }
 }
 
