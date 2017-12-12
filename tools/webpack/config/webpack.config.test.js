@@ -64,6 +64,8 @@ module.exports = {
   // Compile node compatible code
   target: 'node',
   
+  context: paths.appTest,
+
   // The "externals" configuration option provides a way of excluding dependencies from the output bundles.
   externals: [
     fixNodeModulesPaths,
@@ -118,7 +120,7 @@ module.exports = {
       // WIP: This is a temporary (hack) workaround for the supporting snapshots with mocha-webpack.
       {
         loader: require.resolve('imports-loader'),
-        query: "globalMochaHooks=>global.globalMochaHooks()",
+        query: "describe=>global.globalMochaHooks(__filename)",
         test: /.*\.test\.(jsx?|tsx?)$/,
         enforce: 'post',
       },
@@ -208,4 +210,7 @@ module.exports = {
     // Replace $(iModelJs-Common) with @bentley/imodeljs-backend when resolving modules
     new webpack.NormalModuleReplacementPlugin(paths.imodeljsCommonRegex, (r) => r.request = resolveIModeljsCommon(r.request)),
   ],
+  node: {
+    __filename: true,
+  }
 };

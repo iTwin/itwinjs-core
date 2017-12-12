@@ -1,3 +1,4 @@
+const path = require("path");
 const paths = require("../../config/paths");
 
 const chaiJestSnapshot = require("chai-jest-snapshot");
@@ -6,7 +7,7 @@ require("chai").use(chaiJestSnapshot);
 
 // WIP: Right now, we need to monkey patch describe in order to get snapshot testing to work in "watch" mode.
 // This should only be necessary until https://github.com/zinserjan/mocha-webpack/issues/166 is fixed.
-global.globalMochaHooks = function () {
+global.globalMochaHooks = function (filename) {
 
   before(function() {
     chaiJestSnapshot.resetSnapshotRegistry();
@@ -14,9 +15,21 @@ global.globalMochaHooks = function () {
   
   beforeEach(function() {
     chaiJestSnapshot.configureUsingMochaContext(this);
-    chaiJestSnapshot.setFilename(paths.appSnapshots);
+    chaiJestSnapshot.setFilename(this.currentTest.parent.snapshotFilename);
   });
-  
+
+  const wrap = (method) => function(name, callback) {
+    return method(name, function(arg) {
+      this.snapshotFilename = path.resolve(paths.appSnapshots, filename).replace(/\.(test\.)?tsx?$/, ".snap");
+      callback.call(this, arg);
+    });
+  };
+
+  const newDescribe = wrap(describe);
+  newDescribe.skip = wrap(describe.skip);
+  newDescribe.only = wrap(describe.only);
+  newDescribe.timeout = describe.timeout;
+  return newDescribe;  
 }
 
 const enzyme = require('enzyme');

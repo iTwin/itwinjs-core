@@ -57,7 +57,7 @@ module.exports = {
   appSrcBackendWeb: resolveApp('src/backend/web'),
   appSrcFrontend: resolveApp('src/frontend'),
   appTest: resolveApp('test'),
-  appSnapshots: resolveApp('.snapshots.js'),
+  appSnapshots: resolveApp('.snapshots'),
   appLcovReport: resolveApp('coverage/lcov-report/index.html'),
   appCoberturaReport: resolveApp('coverage/cobertura-coverage.xml'),
   yarnLockFile: resolveApp('yarn.lock'),        // STILL USED?
