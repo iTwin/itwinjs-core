@@ -2,8 +2,6 @@
   "name": "imodeljs-core",
   "//private": "NOTE: This 'root' package is private. It is never published",
   "private": true,
-  "//version": "NOTE: Since this is a private package, version should remain at 0.0.0",
-  "version": "0.0.2",
   "description": "iModelJs core components",
   "license": "UNLICENSED",
   "repository": {
@@ -18,7 +16,7 @@
     "build:testbed": "cd source/testbed && npm run build",
     "clean": "concurrently \"npm run clean:backend\" \"npm run clean:frontend\" \"npm run clean:test\" \"npm run clean:legacy\" \"npm run clean:testbed\"",
     "clean:backend": "cd source/backend && npm run clean",
-    "clean:dependencies": "concurrently \"rimraf source/backend/node_modules\" \"rimraf source/frontend/node_modules\" \"rimraf source/test/node_modules\"",
+    "clean:dependencies": "concurrently \"rimraf source/backend/node_modules\" \"rimraf source/frontend/node_modules\" \"rimraf source/test/node_modules\" \"rimraf source/testbed/node_modules\"",
     "clean:frontend": "cd source/frontend && npm run clean",
     "clean:legacy": "concurrently \"rimraf lib\" \"rimraf source/common/lib\" \"rimraf source/common/node_modules\"",
     "clean:test": "cd source/test && npm run clean",

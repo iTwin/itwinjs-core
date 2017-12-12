@@ -2,8 +2,6 @@
   "name": "imodeljs-core-tests",
   "//private": "NOTE: This is a private package that is never published",
   "private": true,
-  "//version": "NOTE: Since this is a private package, version should remain at 0.0.0",
-  "version": "0.0.0",
   "license": "UNLICENSED",
   "scripts": {
     "build": "tsc",
