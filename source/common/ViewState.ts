@@ -3,14 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { Vector3d, Vector2d, Point3d, Point2d, Range3d, Range2d, RotMatrix, Transform, YawPitchRollAngles, LowAndHighXYZ, LowAndHighXY, XYAndZ } from "@bentley/geometry-core/lib/PointVector";
+import { Vector3d, Vector2d, Point3d, Point2d, Range3d, RotMatrix, Transform, YawPitchRollAngles, LowAndHighXYZ, LowAndHighXY, XYAndZ, Range2d } from "@bentley/geometry-core/lib/PointVector";
 import { AxisOrder, Angle, Geometry } from "@bentley/geometry-core/lib/Geometry";
 import { Map4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { ClipVector } from "@bentley/geometry-core/lib/numerics/ClipVector";
 import { ElementProps, RelatedElement } from "./ElementProps";
 import { EntityProps } from "./EntityProps";
-import { ModelProps, Model2dProps } from "./ModelProps";
+import { ModelProps, GeometricModel2dProps } from "./ModelProps";
 import { Light, LightType } from "./Lighting";
 import { ViewFlags, HiddenLine, ColorDef, ColorRgb } from "./Render";
 import { Code } from "./Code";
@@ -245,15 +245,13 @@ export abstract class ModelState extends EntityState implements ModelProps {
   }
 }
 
-export class Model2dState extends ModelState implements Model2dProps {
+export class Model2dState extends ModelState implements GeometricModel2dProps {
   public readonly extents: Range2d;
-  constructor(props: Model2dProps, iModel: IModel) {
+  constructor(props: GeometricModel2dProps, iModel: IModel) {
     super(props, iModel);
-    this.extents = Range2d.fromJSON(props.extents);
   }
-  public toJSON(): Model2dProps {
-    const val = super.toJSON() as Model2dProps;
-    val.extents = this.extents;
+  public toJSON(): GeometricModel2dProps {
+    const val = super.toJSON() as GeometricModel2dProps;
     return val;
   }
 }

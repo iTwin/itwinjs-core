@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { ModelProps } from "../common/ModelProps";
+import { ModelProps, GeometricModel2dProps } from "../common/ModelProps";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 
@@ -49,6 +49,173 @@ export class Model extends Entity implements ModelProps {
  * A container for persisting geometric elements.
  */
 export class GeometricModel extends Model {
+  constructor(props: ModelProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+}
+
+/**
+ * A container for persisting 3D geometric elements.
+ */
+export abstract class GeometricModel3d extends GeometricModel {
+  constructor(props: ModelProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+}
+
+/**
+ * A container for persisting 2D geometric elements.
+ */
+export abstract class GeometricModel2d extends GeometricModel implements GeometricModel2dProps {
+  constructor(props: GeometricModel2dProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+}
+/**
+ * A container for persisting 2D graphical elements.
+ */
+export abstract class GraphicalModel2d extends GeometricModel2d {
+  constructor(props: GeometricModel2dProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+}
+
+/**
+ * A container for persisting 3D geometric elements that are spatially located.
+ */
+export abstract class SpatialModel extends GeometricModel3d {
+  constructor(props: ModelProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+}
+
+/**
+ * A container for persisting physical elements that model physical space.
+ */
+export class PhysicalModel extends SpatialModel {
+  constructor(props: ModelProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+}
+
+/**
+ * A container for persisting spatial location elements.
+ */
+export class SpatialLocationModel extends SpatialModel {
+  constructor(props: ModelProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+}
+
+/**
+ * A container for persisting drawing graphics.
+ */
+export class DrawingModel extends GraphicalModel2d {
+  constructor(props: GeometricModel2dProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+}
+
+/**
+ * A container for persisting section drawing graphics.
+ */
+export class SectionDrawingModel extends DrawingModel {
+  constructor(props: GeometricModel2dProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+}
+
+/**
+ * A container for persisting sheet views and graphics.
+ */
+export class SheetModel extends GraphicalModel2d {
+  constructor(props: GeometricModel2dProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+}
+
+/**
+ * A container for persisting role elements.
+ */
+export class RoleModel extends Model {
+  constructor(props: ModelProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+}
+
+/**
+ * A container for persisting information elements.
+ */
+export abstract class InformationModel extends Model {
+  constructor(props: ModelProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+}
+
+/**
+ * A container for persisting group information elements.
+ */
+export abstract class GroupInformationModel extends InformationModel {
+  constructor(props: ModelProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+}
+
+/**
+ * A container for persisting Information Record Elements
+ */
+export class InformationRecordModel extends InformationModel {
+  constructor(props: ModelProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+}
+
+/**
+ * A container for persisting definition elements.
+ */
+export class DefinitionModel extends InformationModel {
+  constructor(props: ModelProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+}
+
+/**
+ * The singleton container of repository-related information elements.
+ */
+export class RepositoryModel extends DefinitionModel {
+  constructor(props: ModelProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+}
+
+/**
+ * Contains a list of document elements.
+ */
+export class DocumentListModel extends InformationModel {
+  constructor(props: ModelProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+}
+
+/**
+ * A container for persisting link elements.
+ */
+export class LinkModel extends InformationModel {
+  constructor(props: ModelProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+}
+
+/**
+ * The singleton container for repository-specific definition elements.
+ */
+export class DictionaryModel extends DefinitionModel {
+  constructor(props: ModelProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+}
+
+export class WebMercatorModel extends SpatialModel {
   constructor(props: ModelProps, iModel: IModelDb) {
     super(props, iModel);
   }
