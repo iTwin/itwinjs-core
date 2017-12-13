@@ -18,7 +18,6 @@ describe("BriefcaseManager", () => {
   let testProjectId: string;
   let testIModelId: string;
   let testChangeSets: ChangeSet[];
-  let testLatestChangeSet: ChangeSet;
   let iModelLocalReadonlyPath: string;
   let iModelLocalReadWritePath: string;
 
@@ -31,7 +30,6 @@ describe("BriefcaseManager", () => {
 
     testChangeSets = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
     expect(testChangeSets.length).greaterThan(2);
-    testLatestChangeSet = testChangeSets[testChangeSets.length - 1];
 
     iModelLocalReadonlyPath = path.join(BriefcaseManager.cachePath, testIModelId, "readOnly");
     iModelLocalReadWritePath = path.join(BriefcaseManager.cachePath, testIModelId, "readWrite");
@@ -43,7 +41,7 @@ describe("BriefcaseManager", () => {
   });
 
   it("should be able to open an IModel from the Hub in Readonly mode", async () => {
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
+    const iModel: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId);
     assert.exists(iModel);
     assert(iModel.iModelToken.openMode === OpenMode.Readonly);
 
@@ -55,7 +53,7 @@ describe("BriefcaseManager", () => {
   });
 
   it("should be able to open an IModel from the Hub in ReadWrite mode", async () => {
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite); // Note: No frontend support for ReadWrite open yet
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest()); // Note: No frontend support for ReadWrite open yet
     assert.exists(iModel);
     assert(iModel.iModelToken.openMode === OpenMode.ReadWrite);
 
@@ -67,7 +65,7 @@ describe("BriefcaseManager", () => {
   });
 
   it("should reuse open briefcases in Readonly mode", async () => {
-    const iModel0: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
+    const iModel0: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId);
     assert.exists(iModel0);
 
     const briefcases = fs.readdirSync(iModelLocalReadonlyPath);
@@ -75,7 +73,7 @@ describe("BriefcaseManager", () => {
 
     const iModels = new Array<IModelConnection>();
     for (let ii = 0; ii < 5; ii++) {
-      const iModel: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId, testLatestChangeSet.wsgId, OpenMode.Readonly);
+      const iModel: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId);
       assert.exists(iModel);
       iModels.push(iModel);
     }
@@ -104,10 +102,10 @@ describe("BriefcaseManager", () => {
     const versionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
 
     for (const [changeSetIndex, versionName] of versionNames.entries()) {
-      const iModelFromVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.afterChangeSet(testChangeSets[changeSetIndex].wsgId));
+      const iModelFromVersion: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.asOfChangeSet(testChangeSets[changeSetIndex].wsgId));
       assert.exists(iModelFromVersion);
 
-      const iModelFromChangeSet: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.withName(versionName));
+      const iModelFromChangeSet: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.named(versionName));
       assert.exists(iModelFromChangeSet);
     }
   });

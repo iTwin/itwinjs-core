@@ -42,7 +42,10 @@ for (const entry of fs.readdirSync(__dirname)) {
 
     describe(entry, () => {
       it("should be compatible with webpack", (done) => {
-        const compiler = webpack({ entry: entryPath });
+        const compiler = webpack({
+          entry: entryPath, node: {
+          fs: "empty",
+        }});
         compiler.plugin("should-emit", () => false);
         compiler.run((err: Error, stats: webpack.Stats) => {
           if (err)

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@build/imodeljs-core/node_modules/@bentley/imodeljs-clients";
-import { ConnectClient, Project, IModelHubClient, ChangeSet } from "@build/imodeljs-core/node_modules/@bentley/imodeljs-clients";
+import { ConnectClient, Project, IModelHubClient } from "@build/imodeljs-core/node_modules/@bentley/imodeljs-clients";
 
 export class TestData {
   public static user = {
@@ -22,7 +22,6 @@ export class TestData {
     TestData.accessToken = await TestData.getTestUserAccessToken();
     TestData.testProjectId = await TestData.getTestProjectId(TestData.accessToken, "NodeJsTestProject");
     TestData.testIModelId = await TestData.getTestIModelId(TestData.accessToken, TestData.testProjectId, "MyTestModel");
-    TestData.testChangeSetId = await TestData.getTestLastestChangeSetId(TestData.accessToken, TestData.testIModelId);
   }
 
   public static async getTestUserAccessToken(): Promise<AccessToken> {
@@ -55,8 +54,4 @@ export class TestData {
     return iModels[0].wsgId;
   }
 
-  public static async getTestLastestChangeSetId(accessToken: AccessToken, iModelId: string): Promise<string> {
-    const testChangeSets: ChangeSet[] = await TestData.hubClient.getChangeSets(accessToken, iModelId, false);
-    return testChangeSets[testChangeSets.length - 1].wsgId;
-  }
 }

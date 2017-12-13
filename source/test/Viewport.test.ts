@@ -56,10 +56,7 @@ describe("Viewport", () => {
     testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
     testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "MyTestModel");
 
-    const testChangeSets = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
-    const testLatestChangeSet = testChangeSets[testChangeSets.length - 1];
-
-    imodelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId, testLatestChangeSet.wsgId);
+    imodelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId);
     imodel = new TestIModel(imodelConnection.iModelToken, "TestIModel", "TestIModel", new AxisAlignedBox3d(Point3d.create(-100, -100, -100), Point3d.create(100, 100, 100)));
     categorySelectorState = new CategorySelectorState(
       {

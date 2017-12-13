@@ -283,8 +283,17 @@ export class BriefcaseManager {
     if (!BriefcaseManager.cache)
       await BriefcaseManager.initialize(accessToken);
 
-    const changeSet: ChangeSet | null = await BriefcaseManager.getChangeSetFromVersion(accessToken, iModelId, version);
-    const changeSetIndex: number = changeSet ? +changeSet.index : 0;
+    const changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId);
+    let changeSet: ChangeSet | null;
+    let changeSetIndex: number;
+    if (!changeSetId) {
+      // First version
+      changeSet = null;
+      changeSetIndex = 0;
+    } else {
+      changeSet = await BriefcaseManager.getChangeSetFromId(accessToken, iModelId, changeSetId);
+      changeSetIndex = changeSet ? +changeSet.index : 0;
+    }
 
     let briefcase = await BriefcaseManager.findCachedBriefcase(accessToken, iModelId, openMode, changeSetIndex);
     if (briefcase && briefcase.isOpen) {
@@ -299,33 +308,6 @@ export class BriefcaseManager {
     return briefcase;
   }
 
-  /** Gets the last change set that needs to be applied from the specified named version */
-  private static async getChangeSetFromVersion(accessToken: AccessToken, iModelId: string, version: IModelVersion): Promise<ChangeSet | null> {
-    if (version.isFirst())
-      return null;
-
-    if (version.isLatest())
-      return await BriefcaseManager.getLatestChangeSet(accessToken, iModelId);
-
-    const afterChangeSetId: string | undefined = version.getAfterChangeSetId();
-    if (afterChangeSetId)
-      return await BriefcaseManager.getChangeSetFromId(accessToken, iModelId, afterChangeSetId);
-
-    const versionName: string | undefined = version.getName();
-    if (versionName)
-      return await BriefcaseManager.getChangeSetFromNamedVersion(accessToken, iModelId, versionName);
-
-    return Promise.reject(new IModelError(BriefcaseStatus.VersionNotFound));
-  }
-
-  /** Gets the last change set that was applied to the imodel */
-  private static async getLatestChangeSet(accessToken: AccessToken, iModelId: string): Promise<ChangeSet | null> {
-    const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.getChangeSets(accessToken, iModelId, false /*=includeDownloadLink*/);
-    // todo: pass the last known highest change set id to improve efficiency, and cache the results also.
-
-    return (changeSets.length === 0) ? null : changeSets[changeSets.length - 1];
-  }
-
   /** Get the change set from the specified id */
   private static async getChangeSetFromId(accessToken: AccessToken, iModelId: string, changeSetId: string): Promise<ChangeSet> {
     const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.getChangeSets(accessToken, iModelId, false /*=includeDownloadLink*/);
@@ -338,18 +320,6 @@ export class BriefcaseManager {
 
     return Promise.reject(new IModelError(BriefcaseStatus.VersionNotFound));
   }
-
-  /** Get the change set from the specified named version */
-  private static async getChangeSetFromNamedVersion(accessToken: AccessToken, iModelId: string, versionName: string): Promise<ChangeSet | null> {
-    const version = await BriefcaseManager.hubClient.getVersion(accessToken, iModelId, {
-      $select: "*",
-      $filter: `Name+eq+'${versionName}'`,
-    });
-
-    assert(!!version.changeSetId);
-    return BriefcaseManager.getChangeSetFromId(accessToken, iModelId, version.changeSetId);
-  }
-
   /** Finds any existing briefcase for the specified parameters. Pass null for the requiredChangeSet if the first version is to be retrieved */
   private static async findCachedBriefcase(accessToken: AccessToken, iModelId: string, openMode: OpenMode, requiredChangeSetIndex: number): Promise<BriefcaseInfo | undefined> {
 
