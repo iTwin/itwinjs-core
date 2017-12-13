@@ -60,7 +60,7 @@
     "viewports",
     "zbuffer"
   ],
-  "typescript.autoImportSuggestions.enabled": true
+  "typescript.autoImportSuggestions.enabled": false
   // ,
   // "workbench.colorCustomizations": {
   //   "editor.background": "#79db8415"
