@@ -3,7 +3,8 @@
   "compilerOptions": {
     "outDir": "./lib",
     "paths": {
-      "@build/imodeljs-core*": ["../../backend/*"]
+      "@build/imodeljs-core*": ["../../backend/*"],
+      "@bentley/bentleyjs-core*": ["../../backend/node_modules/@bentley/bentleyjs-core*"] //for imodeljs-nodeaddonapi.d.ts from local addon build edge case
     }
   },
   "include": [

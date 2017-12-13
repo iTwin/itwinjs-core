@@ -6,7 +6,8 @@
     "inlineSourceMap": true,
     "inlineSources": true,
     "paths": {
-      "@build/imodeljs-core*": ["../../frontend/*"]
+      "@build/imodeljs-core*": ["../../frontend/*"],
+      "@bentley/bentleyjs-core*": ["../../frontend/node_modules/@bentley/bentleyjs-core*"] //for imodeljs-nodeaddonapi.d.ts from local addon build edge case 
     }
   },
   "include": [
