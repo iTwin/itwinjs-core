@@ -21,16 +21,16 @@ export class IModelGatewayImpl extends IModelGateway {
     Gateway.registerImplementation(IModelGateway, IModelGatewayImpl);
   }
 
-  public async openForRead(accessToken: any, contextId: string, iModelId: string, version: any): Promise<IModelGatewayOpenResponse> {
-    return this.open(accessToken, contextId, iModelId, version, OpenMode.Readonly);
+  public async openForRead(accessToken: any, iModelToken: any): Promise<IModelGatewayOpenResponse> {
+    return this.open(accessToken, iModelToken);
   }
 
-  public async openForWrite(accessToken: any, contextId: string, iModelId: string, version: any): Promise<IModelGatewayOpenResponse> {
-    return this.open(accessToken, contextId, iModelId, version, OpenMode.ReadWrite);
+  public async openForWrite(accessToken: any, iModelToken: any): Promise<IModelGatewayOpenResponse> {
+    return this.open(accessToken, iModelToken);
   }
 
-  private async open(accessToken: any, contextId: string, iModelId: string, version: any, openMode: OpenMode): Promise<IModelGatewayOpenResponse> {
-    const iModelDb: IModelDb = await IModelDb.open(AccessToken.fromJson(accessToken)!, contextId, iModelId, openMode, IModelVersion.fromJson(version));
+  public async open(accessToken: any, iModelToken: any): Promise<IModelGatewayOpenResponse> {
+    const iModelDb: IModelDb = await IModelDb.open(AccessToken.fromJson(accessToken)!, iModelToken.contextId, iModelToken.iModelId, iModelToken.openMode, IModelVersion.afterChangeSet(iModelToken.changeSetId));
     return { token: iModelDb.iModelToken, name: iModelDb.name, description: iModelDb.description, extents: iModelDb.getExtents()};
   }
 

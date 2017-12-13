@@ -10,7 +10,6 @@ import { ElementProps } from "../common/ElementProps";
 import { EntityQueryParams } from "../common/EntityProps";
 import { IModel, IModelToken } from "../common/IModel";
 import { IModelError, IModelStatus } from "../common/IModelError";
-import { IModelVersion } from "../common/IModelVersion";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { ModelProps } from "../common/ModelProps";
 import { IModelGateway, IModelGatewayOpenResponse } from "../gateway/IModelGateway";
@@ -34,13 +33,15 @@ export class IModelConnection extends IModel {
   }
 
   /** Open an iModel from iModelHub */
-  public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
+  public static async open(accessToken: AccessToken, contextId: string, iModelId: string, versionId: string, openMode: OpenMode = OpenMode.Readonly): Promise<IModelConnection> {
+
     if (OpenMode.Readonly !== openMode)
       return Promise.reject(new IModelError(IModelStatus.NotEnabled, "IModelConnection does not support read/write access yet"));
     // WIP: waiting for decisions on how to manage read/write briefcases on the backend.
 
-    const openResponse: IModelGatewayOpenResponse = await IModelGateway.getProxy().openForRead(accessToken, contextId, iModelId, version);
-    Logger.logInfo("IModelConnection.open", () => ({ iModelId, openMode, version }));
+    const iModelToken = IModelToken.create(iModelId, versionId, openMode, accessToken.getUserProfile().userId, contextId);
+    const openResponse: IModelGatewayOpenResponse = await IModelGateway.getProxy().openForRead(accessToken, iModelToken);
+    Logger.logInfo("IModelConnection.open", () => ({ iModelId, openMode, versionId }));
 
     // todo: Setup userId if it's a readWrite open - this is necessary to reopen the same exact briefcase at the backend
     return IModelConnection.create(openResponse);

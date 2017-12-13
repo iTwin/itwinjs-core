@@ -25,7 +25,9 @@ export class IModelVersion {
     return version;
   }
 
-  /** Acquire a version of the iModel after applying Change Sets up to (and including) the specified Change Set */
+  /** Acquire a version of the iModel after applying Change Sets up to (and including) the specified Change Set
+   * For specifying the first change set, pass an empty string or the string "0"
+   */
   public static afterChangeSet(changeSetId: string): IModelVersion {
     const version = new IModelVersion();
     version._afterChangeSetId = changeSetId;

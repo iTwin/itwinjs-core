@@ -17,7 +17,11 @@ describe("IModelConnection", () => {
     testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
     testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "MyTestModel");
 
-    iModel = await IModelConnection.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
+    const testChangeSets = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
+    expect(testChangeSets.length).greaterThan(2);
+    const testLatestChangeSet = testChangeSets[testChangeSets.length - 1];
+
+    iModel = await IModelConnection.open(accessToken, testProjectId, testIModelId, testLatestChangeSet.wsgId, OpenMode.Readonly);
   });
 
   it("should be able to get the name of the IModel", async () => {
