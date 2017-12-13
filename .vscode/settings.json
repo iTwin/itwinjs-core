@@ -59,7 +59,8 @@
     "viewflags",
     "viewports",
     "zbuffer"
-  ]
+  ],
+  "typescript.autoImportSuggestions.enabled": true
   // ,
   // "workbench.colorCustomizations": {
   //   "editor.background": "#79db8415"
