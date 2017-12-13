@@ -14,6 +14,8 @@ import { IModelDb } from "./IModelDb";
 import * as fs from "fs";
 import * as path from "path";
 
+export { NodeAddonIBriefcaseManagerRequest as BriefcaseManagerRequest } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
+
 declare const __dirname: string;
 
 /** The ID assigned to a briefcase by iModelHub, or one of the special values that identify special kinds of iModels */

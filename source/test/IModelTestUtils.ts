@@ -19,6 +19,7 @@ import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { NodeAddonLoader } from "@bentley/imodeljs-nodeaddon/NodeAddonLoader";
 import { NodeAddonRegistry } from "../backend/NodeAddonRegistry";
 import { IModelGateway } from "../gateway/IModelGateway";
+import { ElementProps, GeometricElementProps } from "../common/ElementProps";
 
 import * as path from "path";
 
@@ -183,4 +184,53 @@ export class IModelTestUtils {
     return id;
   }
 
+  //
+  // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
+  //
+  public static insertPhysicalModel(testImodel: IModelDb, newModelCode: Code, privateModel: boolean = false): Id64[] {
+    let modeledElementId: Id64;
+    let newModelId: Id64;
+
+    const modeledElementProps: ElementProps = {
+      classFullName: "BisCore:PhysicalPartition",
+      iModel: testImodel,
+      parent: { id: testImodel.elements.rootSubjectId, relClass: "BisCore:SubjectOwnsPartitionElements" },
+      model: testImodel.models.repositoryModelId,
+      id: new Id64(),
+      code: newModelCode,
+    };
+    const modeledElement: Element = testImodel.elements.createElement(modeledElementProps);
+    testImodel.elements.acquireLocks({newElements: [modeledElement]}); // acquire the resources needed to insert this element: acquire a shared lock on the DgnDb and the repositoryModel and reserve the element's code
+    modeledElementId = testImodel.elements.insertElement(modeledElement);
+    assert.isTrue(modeledElementId.isValid());
+
+    // Create the model (in memory)
+    const newModel = testImodel.models.createModel({ id: new Id64(), modeledElement: modeledElementId, classFullName: "BisCore:PhysicalModel", isPrivate: privateModel });
+
+    testImodel.models.acquireLocks({newModels: [newModel]}); // acquire the resources needed to insert this model: acquire a shared lock on the DgnDb itself
+
+    // Insert the model into the BIM
+    newModelId = testImodel.models.insertModel(newModel);
+    assert.isTrue(newModelId.isValid());
+    assert.isTrue(newModel.id.isValid());
+    assert.deepEqual(newModelId, newModel.id);
+
+    return [modeledElementId, newModelId];
+  }
+
+  //
+  // Create and insert a PhysicalObject
+  //
+  public static createPhysicalObject(testImodel: IModelDb, modelId: Id64, categoryId: Id64, elemCode?: Code): Element {
+    const elementProps: GeometricElementProps = {
+      classFullName: "Generic:PhysicalObject",
+      iModel: testImodel,
+      model: modelId,
+      category: categoryId,
+      id: new Id64(),
+      code: elemCode ? elemCode : Code.createEmpty(),
+    };
+
+    return testImodel.elements.createElement(elementProps);
+  }
 }

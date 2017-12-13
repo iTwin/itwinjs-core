@@ -16,7 +16,7 @@ import { Category, SubCategory } from "../backend/Category";
 import { ClassRegistry } from "../backend/ClassRegistry";
 import { BisCore } from "../backend/BisCore";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
-import { ElementProps, GeometricElementProps } from "../common/ElementProps";
+import { GeometricElementProps } from "../common/ElementProps";
 import {
   Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
   LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject,
@@ -163,7 +163,7 @@ describe("iModel", () => {
         userLabel: "UserLabel-" + i,
       };
 
-      const element: Element = await imodel2.elements.createElement(elementProps);
+      const element: Element = imodel2.elements.createElement(elementProps);
       element.setUserProperties("performanceTest", { s: "String-" + i, n: i });
 
       const elementId: Id64 = imodel2.elements.insertElement(element);
@@ -631,29 +631,7 @@ describe("iModel", () => {
 
     let modeledElementId: Id64;
     let newModelId: Id64;
-    if (true) {
-      // Create and insert the modeled element
-      const modeledElementProps: ElementProps = {
-        classFullName: "BisCore:PhysicalPartition",
-        iModel: testImodel,
-        parent: { id: testImodel.elements.rootSubjectId, relClass: "BisCore:SubjectOwnsPartitionElements" },
-        model: testImodel.models.repositoryModelId,
-        id: new Id64(),
-        code: Code.createEmpty(),
-      };
-      const modeledElement: Element = testImodel.elements.createElement(modeledElementProps);
-      modeledElementId = testImodel.elements.insertElement(modeledElement);
-      assert.isTrue(modeledElementId.isValid());
-
-      // Create the model (in memory)
-      const newModel = testImodel.models.createModel({ id: new Id64(), modeledElement: modeledElementId, classFullName: "BisCore:PhysicalModel", isPrivate: true });
-
-      // Insert the model into the BIM
-      newModelId = testImodel.models.insertModel(newModel);
-      assert.isTrue(newModelId.isValid());
-      assert.isTrue(newModel.id.isValid());
-      assert.deepEqual(newModelId, newModel.id);
-    }
+    [modeledElementId, newModelId] = IModelTestUtils.insertPhysicalModel(testImodel, Code.createEmpty(), true);
 
     const newModelPersist: Model = await testImodel.models.getModel(newModelId);
 

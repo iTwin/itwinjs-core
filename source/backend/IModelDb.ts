@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
-import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { OpenMode, DbResult, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { Code } from "../common/Code";
 import { ElementProps, ElementAspectProps, ElementLoadParams } from "../common/ElementProps";
@@ -18,7 +18,7 @@ import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { Model } from "./Model";
-import { BriefcaseInfo, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./BriefcaseManager";
+import { BriefcaseInfo, BriefcaseManager, KeepBriefcase, BriefcaseId, BriefcaseManagerRequest } from "./BriefcaseManager";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BindingValue } from "./BindingUtility";
@@ -201,6 +201,23 @@ export class IModelDb extends IModel {
     return new BriefcaseId(this.briefcaseInfo.briefcaseId);
   }
 
+  /** Populate a request to acquire resources from iModelHub that are needed to carry out the specified request on the specified model */
+  public populateRequestForModel(req: BriefcaseManagerRequest, model: Model, opcode: DbOpcode): void {
+    if (!this.briefcaseInfo)
+      throw new IModelError(IModelStatus.BadRequest);
+    this.briefcaseInfo.nativeDb.populateBriefcaseManagerRequestForModel(req, JSON.stringify(model.id.toJSON()), opcode);
+  }
+
+  /** Populate a request to acquire resources from iModelHub that are needed to carry out the specified request on the specified element */
+  public populateRequestForElement(req: BriefcaseManagerRequest, element: Element, opcode: DbOpcode): void {
+    if (!this.briefcaseInfo)
+      throw new IModelError(IModelStatus.BadRequest);
+    if (element.id === undefined)
+      this.briefcaseInfo.nativeDb.populateBriefcaseManagerRequestForModel(req, JSON.stringify({modelid: element.model.toJSON(), code: element.code.toJSON()}), opcode);
+    else
+      this.briefcaseInfo.nativeDb.populateBriefcaseManagerRequestForModel(req, JSON.stringify(model.id.toJSON()), opcode);
+  }
+  
   /** Returns a new IModelError with errorNumber, message, and meta-data set properly for a *not open* error.
    * @hidden
    */
@@ -434,6 +451,30 @@ export class IModelDb extends IModel {
     if (metaData.baseClasses !== undefined && metaData.baseClasses.length > 0)
       this.loadMetaData(metaData.baseClasses[0]);
   }
+}
+
+/**
+ * Models to be locked.
+ */
+export interface ModelsToLock {
+  /** The models to be inserted */
+  newModels?: Model[];
+  /** The models to be updated */
+  modelsToUpdate?: Model[];
+  /** The models to be deleted */
+  modelsToDelete?: Model[];
+}
+
+/**
+ * Elements to be locked.
+ */
+export interface ElementsToLock {
+  /** The Elements to be inserted */
+  newElements?: Element[];
+  /** The Elements to be updated */
+  ElementsToUpdate?: Element[];
+  /** The Elements to be deleted */
+  ElementsToDelete?: Element[];
 }
 
 /** The collection of models in an [[IModelDb]]. */
@@ -787,4 +828,5 @@ export class IModelDbElements {
     const aspects: ElementAspect[] = await this._queryAspects(elementId, aspectClassName);
     return aspects;
   }
+
 }

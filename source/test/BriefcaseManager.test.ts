@@ -12,6 +12,9 @@ import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { IModelDb } from "../backend/IModelDb";
 import { IModelConnection } from "../frontend/IModelConnection";
 import { IModelTestUtils } from "./IModelTestUtils";
+import { Code } from "../common/Code";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Element } from "../backend/Element";
 
 describe("BriefcaseManager", () => {
   let accessToken: AccessToken;
@@ -120,6 +123,30 @@ describe("BriefcaseManager", () => {
 
     const iModelNoVer: IModelDb = await IModelDb.open(accessToken, testProjectId, iModelNoVerId, OpenMode.Readonly);
     assert.exists(iModelNoVer);
+  });
+
+  it.only("should make revisions", async () => {
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite); // Note: No frontend support for ReadWrite open yet
+    assert.exists(iModel);
+
+    let newModelId: Id64;
+    [, newModelId] = IModelTestUtils.insertPhysicalModel(iModel, Code.createEmpty(), true);
+
+    const spatialCategoryId: Id64 = IModelTestUtils.getSpatialCategoryIdByName(iModel, "SpatialCategory1");
+
+    const elements: Element[] = [
+      IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId),
+      IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId),
+    ];
+
+    iModel.elements.acquireLocks({newElements: elements}); // acquire the resources needed to insert this element: acquire a shared lock on its model and reserve its code.
+
+    for (const el of elements)
+        iModel.elements.insertElement(el);
+
+    iModel.saveChanges("inserted one generic object");
+
+    await iModel.close(accessToken);
   });
 
   // should not be able to open the same iModel both Readonly and ReadWrite
