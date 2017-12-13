@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Vector3d, XYZ, Point3d, Range3d, RotMatrix, Transform, Point2d, XAndY, LowAndHighXY } from "@bentley/geometry-core/lib/PointVector";
+import { Vector3d, XYZ, Point3d, Range3d, RotMatrix, Transform, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ } from "@bentley/geometry-core/lib/PointVector";
 import { Map4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { AxisOrder, Angle } from "@bentley/geometry-core/lib/Geometry";
 import { ViewState, Frustum, ViewStatus, Npc, NpcCenter, NpcCorners, MarginPercent } from "../common/ViewState";
@@ -9,7 +9,7 @@ import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { ElementAlignedBox2d, Placement3dProps, Placement2dProps, Placement2d, Placement3d } from "../common/geometry/Primitives";
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core/lib/Time";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
-import { BeButtonEvent } from "./tools/Tool";
+import { BeButtonEvent, BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 
 // tslint:disable:no-empty
@@ -126,7 +126,7 @@ export class Viewport {
   private _evController?: EventController;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
 
-  constructor(public canvas?: HTMLCanvasElement, private _view?: ViewState) { }
+  constructor(public canvas?: HTMLCanvasElement, private _view?: ViewState) { this.setCursor(); }
 
   /** Get the ClientRect of the canvas for this Viewport. */
   public getClientRect(): ClientRect { return this.canvas!.getBoundingClientRect(); }
@@ -141,6 +141,9 @@ export class Viewport {
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
   public isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn(); }
   public invalidateDecorations() { }
+
+  /** change the cursor for this Viewport */
+  public setCursor(cursor: BeCursor = BeCursor.Default) { if (this.canvas) this.canvas.style.cursor = cursor; }
 
   private static copyOutput = (from: XYZ, to?: XYZ) => { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; };
   public toView(from: XYZ, to?: XYZ) { this.rotMatrix.multiply3dInPlace(Viewport.copyOutput(from, to)); }
@@ -760,8 +763,8 @@ export class Viewport {
   }
 
   /**
-   * Zoom the view to a show the tightest box around a set of elements. Does not change view rotation.
-   * @param placements element placement(s). Will zoom to the union of the placements, in view coordinates.
+   * Zoom the view to a show the tightest box around a given set of elements. Does not change view rotation.
+   * @param placements element placement(s). Will zoom to the union of the placements.
    * @param margin the amount of white space to leave around elements
    * @note Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
    */
@@ -781,16 +784,17 @@ export class Viewport {
     this.setupFromView();
   }
 
-  // /**
-  //  * Zoom the view to a volume of space in world coordinates.
-  //  * @param
-  //  * @param margin the amount of white space to leave around elements
-  //  * @note Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
-  //  */
-  // public zoomToVolume(input: LowAndHighXYZ | LowAndHighXY, margin?: MarginPercent) {
-  //   this.view.lookAtVolume(input, this.viewRect.aspect, margin);
-  //   this.setupFromView();
-  // }
+  /**
+   * Zoom the view to a volume of space, in world coordinates.
+   * @param volume The low and high corners, in world coordinates.
+   * @param margin the amount of white space to leave around elements
+   * @note Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
+   */
+  public zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, margin?: MarginPercent) {
+    const range = Range3d.fromJSON(volume);
+    this.view.lookAtVolume(range, this.viewRect.aspect, margin);
+    this.setupFromView();
+  }
 
   /**
    * Set up this Viewport's viewing parameters based on a Frustum

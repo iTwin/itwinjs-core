@@ -187,7 +187,9 @@ export class Placement2d implements Placement2dProps {
   }
 }
 
-/** Class for multiple RefCounted geometry types: CurvePrimitive, CurveVector, SolidPrimitive, BsplineSurface, PolyfaceHeader, BRepEntity */
+/**
+ * Class for multiple RefCounted geometry types: CurvePrimitive, CurveVector, SolidPrimitive, BsplineSurface, PolyfaceHeader, BRepEntity
+ */
 export class GeometricPrimitive {
   protected _type: GeometryType;
   protected _data: any;

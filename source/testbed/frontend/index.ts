@@ -2,16 +2,13 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 // tslint:disable:no-var-requires no-console
-import { IModelGateway } from "@build/imodeljs-core/lib/gateway/IModelGateway";
-import { BentleyCloudGatewayConfiguration } from "@build/imodeljs-core/lib/gateway/BentleyCloudGatewayConfiguration";
 import { TestbedConfig } from "../common/TestbedConfig";
 import { assert } from "chai";
 import { TestData } from "./TestData";
-import { TestGateway } from "../common/TestGateway";
 import * as webpack from "webpack";
 
-const gatewaysConfig = BentleyCloudGatewayConfiguration.initialize(TestbedConfig.gatewayParams, [IModelGateway, TestGateway]);
-gatewaysConfig.protocol.openAPIPathPrefix = () => `http://localhost:${TestbedConfig.serverPort}`;
+TestbedConfig.initializeGatewayConfig();
+TestbedConfig.gatewayConfig.protocol.openAPIPathPrefix = () => `http://localhost:${TestbedConfig.serverPort}`;
 
 const remote = require("electron").remote;
 remote.getCurrentWindow().setTitle(TestbedConfig.gatewayParams.info.title);

@@ -18,6 +18,9 @@ export enum BeCursor {
   ClosedHand = "grabbing",
   Rotate = "move",
   Arrow = "default",
+  NotAllowed = "not-allowed",
+  Text = "text",
+  Busy = "wait",
 }
 
 export const enum GestureId {

@@ -7,7 +7,7 @@ import { PrimitiveTypeCode } from "./Entity";
 import { IModelError } from "../common/IModelError";
 import { XYAndZ, XAndY, XYZ } from "@bentley/geometry-core/lib/PointVector";
 
-/** Value type  (Match this to ECN::ValueKind in ECObjects.h) */
+/** Value type (Match this to ECN::ValueKind in ECObjects.h) */
 export const enum ValueKind {
   /** The ECValue has not be initialized yet */
   Uninitialized = 0x00,
@@ -21,14 +21,16 @@ export const enum ValueKind {
   Navigation = 0x08,
 }
 
-/** ECValue invariant */
+/**
+ * ECValue invariant.
+ */
 export class ECValue {
   public kind: ValueKind;
   public type: PrimitiveTypeCode;
   public value: null | PrimitiveType | StructType | ArrayType;
 }
 
-/** Value types */
+/** Value types. */
 export type PrimitiveType = string | number | boolean | XAndY | XYAndZ;
 export interface StructType {
   [index: string]: ECValue;
@@ -76,7 +78,8 @@ export class BindingUtility {
     return { kind: ValueKind.Primitive, type: primitiveType, value: bindingValue };
   }
 
-  /** Helper utility to pre-process bindings to standardize them into a fixed format containing ECValue-s
+  /**
+   * Helper utility to pre-process bindings to standardize them into a fixed format containing ECValue-s
    * @param bindings Array or map of bindings
    * @returns Array or map of ECValue-s.
    * @throws IModelError if a value cannot be converted to an ECValue.
@@ -115,6 +118,7 @@ export class BindingUtility {
         throw new Error(`Invalid binding [${key}]=${bindingValue}`);
       ret2[key] = ecValue;
     });
+
     return ret2;
     // return { error: { status: DbResult.BE_SQLITE_ERROR, message: `Bindings must be specified as an array or a map` } };
   }

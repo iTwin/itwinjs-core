@@ -8,27 +8,21 @@ import { DefinitionElement } from "./Element";
 import { ElementProps } from "../common/ElementProps";
 import { IModelDb } from "./IModelDb";
 
-/** Resulting part from a geometry stream that can be appended to an Element. */
+/**
+ * A Definition Element that specifies a collection of geometry that is meant to be reused across Geometric
+ * Element instances. Leveraging Geometry Parts can help reduce file size and improve display performance.
+ */
 export class GeometryPart extends DefinitionElement {
   public geometry: GeometryStream;
   public bbox: ElementAlignedBox3d;
-  // private graphics;
   public multiChunkGeomStream: boolean = false;
-
-  public constructor(params: ElementProps, iModel: IModelDb) {
-    super(params, iModel);
-  }
+  public constructor(params: ElementProps, iModel: IModelDb) { super(params, iModel); }
 
   public toJSON(): any {
     const val = super.toJSON() as GeometryPart;
     val.GeometryStream = this.geometry;
     val.bbox = this.bbox;
   }
-
-  /*
-  public static fromJSON(json: any): GeometryPart | undefined {
-  }
-  */
 
   /** Saves contents of builder to GeometryStream of this GeometryPart and updates the bounding box */
   public updateFromGeometryBuilder(builder: GeometryBuilder): boolean {

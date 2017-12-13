@@ -16,6 +16,9 @@ export abstract class BentleyCloudGatewayConfiguration extends Gateway.Configura
   /** Bentley user authorization header. */
   public applicationAuthorizationKey = "Authorization";
 
+  /** The protocol of the configuration. */
+  public abstract protocol: BentleyCloudGatewayProtocol;
+
   /** Performs gateway configuration for the application. */
   public static initialize(params: BentleyCloudGatewayParams, gateways: GatewayDefinition[]) {
     const protocol = class extends (params.protocol || BentleyCloudGatewayProtocol) {
