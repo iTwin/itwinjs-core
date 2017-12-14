@@ -4,19 +4,9 @@
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
 import { EntityQueryParams } from "../common/EntityProps";
-import { IModelToken } from "../common/IModel";
+import { IModel, IModelToken } from "../common/IModel";
 import { IModelVersion } from "../common/IModelVersion";
 import { Gateway } from "../common/Gateway";
-
-/** Response from [[IModelGateway.openForRead]] and [[IModelGateway.openForWrite]]
- * @hidden
- */
-export interface IModelGatewayOpenResponse {
-  token: any; // IModelToken
-  name: string;
-  description: string;
-  extents: any; // AxisAlignedBox3d
-}
 
 /** The iModel core gateway definition.
  * @hidden
@@ -38,17 +28,17 @@ export abstract class IModelGateway extends Gateway {
   }
 
   /** Opens an IModel (read-only) on the backend to service frontend requests. */
-  public async openForRead(_accessToken: AccessToken, _contextId: string, _iModelId: string, _version: IModelVersion): Promise<IModelGatewayOpenResponse> {
+  public async openForRead(_accessToken: AccessToken, _contextId: string, _iModelId: string, _version: IModelVersion): Promise<IModel> {
     return this.forward.apply(this, arguments);
   }
 
   /** Opens an IModel (read/write) on the backend to service frontend requests. */
-  public async openForWrite(_accessToken: AccessToken, _contextId: string, _iModelId: string, _version: IModelVersion): Promise<IModelGatewayOpenResponse> {
+  public async openForWrite(_accessToken: AccessToken, _contextId: string, _iModelId: string, _version: IModelVersion): Promise<IModel> {
     return this.forward.apply(this, arguments);
   }
 
   /** Ask the backend to open a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend. */
-  public async openStandalone(_fileName: string, _openMode: OpenMode): Promise<IModelGatewayOpenResponse> {
+  public async openStandalone(_fileName: string, _openMode: OpenMode): Promise<IModel> {
     return this.forward.apply(this, arguments);
   }
 

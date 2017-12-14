@@ -6,7 +6,7 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { DisplayStyle3dState, ModelSelectorState, SpatialViewState, CategorySelectorState, Camera, ViewState } from "../common/ViewState";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { IModel, IModelToken } from "../common/IModel";
+import { IModel, IModelToken, IModelProps } from "../common/IModel";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { IModelConnection } from "../frontend/IModelConnection";
 import { Viewport, CoordSystem, ViewRect } from "../frontend/Viewport";
@@ -30,9 +30,8 @@ class TestViewport extends Viewport {
 export class TestIModel extends IModel {
   private extents: AxisAlignedBox3d;
 
-  public constructor(iModelToken: IModelToken, name: string, description: string, extents: any) {
-    super(iModelToken, name, description);
-    this.extents = extents;
+  public constructor(iModelToken: IModelToken, name: string, props: IModelProps) {
+    super(iModelToken, name, props);
   }
 
   public getExtents(): AxisAlignedBox3d {
@@ -56,7 +55,12 @@ describe("Viewport", () => {
     testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
     testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "MyTestModel");
     imodelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId);
-    imodel = new TestIModel(imodelConnection.iModelToken, "TestIModel", "TestIModel", new AxisAlignedBox3d(Point3d.create(-100, -100, -100), Point3d.create(100, 100, 100)));
+    imodel = new TestIModel(imodelConnection.iModelToken, "TestIModel",
+      {
+        rootSubject: { name: "test" },
+        projectExtents: new AxisAlignedBox3d(Point3d.create(-100, -100, -100), Point3d.create(100, 100, 100)),
+        globalOrigin: { x: 0, y: 0, z: 0 },
+      });
     categorySelectorState = new CategorySelectorState(
       {
         categories: ["test0"],

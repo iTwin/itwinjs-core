@@ -5,13 +5,13 @@ import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { EntityQueryParams } from "../common/EntityProps";
 import { Gateway } from "../common/Gateway";
-import { IModelToken } from "../common/IModel";
+import { IModelToken, IModel } from "../common/IModel";
 import { IModelVersion } from "../common/IModelVersion";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { EntityMetaData } from "../backend/Entity";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { IModelDb } from "../backend/IModelDb";
-import { IModelGateway, IModelGatewayOpenResponse } from "../gateway/IModelGateway";
+import { IModelGateway } from "../gateway/IModelGateway";
 
 /** The backend implementation of IModelGateway.
  * @hidden
@@ -21,23 +21,21 @@ export class IModelGatewayImpl extends IModelGateway {
     Gateway.registerImplementation(IModelGateway, IModelGatewayImpl);
   }
 
-  public async openForRead(accessToken: any, contextId: string, iModelId: string, version: any): Promise<IModelGatewayOpenResponse> {
+  public async openForRead(accessToken: any, contextId: string, iModelId: string, version: any): Promise<IModel> {
     return this.open(accessToken, contextId, iModelId, version, OpenMode.Readonly);
   }
 
-  public async openForWrite(accessToken: any, contextId: string, iModelId: string, version: any): Promise<IModelGatewayOpenResponse> {
+  public async openForWrite(accessToken: any, contextId: string, iModelId: string, version: any): Promise<IModel> {
     return this.open(accessToken, contextId, iModelId, version, OpenMode.ReadWrite);
   }
 
-  private async open(accessToken: any, contextId: string, iModelId: string, version: any, openMode: OpenMode): Promise<IModelGatewayOpenResponse> {
-    const iModelDb: IModelDb = await IModelDb.open(AccessToken.fromJson(accessToken)!, contextId, iModelId, openMode, IModelVersion.fromJson(version));
-    return { token: iModelDb.iModelToken, name: iModelDb.name, description: iModelDb.description, extents: iModelDb.getExtents()};
+  private async open(accessToken: any, contextId: string, iModelId: string, version: any, openMode: OpenMode): Promise<IModel> {
+    return await IModelDb.open(AccessToken.fromJson(accessToken)!, contextId, iModelId, openMode, IModelVersion.fromJson(version));
   }
 
   /** Ask the backend to open a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend. */
-  public async openStandalone(fileName: string, openMode: OpenMode): Promise<IModelGatewayOpenResponse> {
-    const iModelDb: IModelDb = await IModelDb.openStandalone(fileName, openMode);
-    return { token: iModelDb.iModelToken, name: iModelDb.name, description: iModelDb.description, extents: iModelDb.getExtents()};
+  public async openStandalone(fileName: string, openMode: OpenMode): Promise<IModel> {
+    return await IModelDb.openStandalone(fileName, openMode);
   }
 
   public async close(accessToken: any, iModelToken: IModelToken): Promise<boolean> {

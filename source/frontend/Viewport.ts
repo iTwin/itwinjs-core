@@ -618,10 +618,10 @@ export class Viewport {
   /**
    * Get an 8-point frustum corresponding to the 8 corners of the Viewport in the specified coordinate system.
    * There are two sets of corners that may be of interest.
-   * The "adjusted" box is the one that is computed by examining the "project extents" and moving
+   * The "adjusted" box is the one that is computed by examining the "viewed extents" and moving
    * the front and back planes to enclose everything in the view [N.B. this is the way that views implement
-   * the concept of "no front/back clipping", since there always must be a view frustum]. The "unadjusted" box is
-   * the one that is stored in the ViewState.
+   * the concept of "no front/back clipping", since there always must be a view frustum].
+   * The "unadjusted" box is the one that is stored in the ViewState.
    * @param[in] sys Coordinate system for \c points
    * @param[in] adjustedBox If true, retrieve the adjusted box. Otherwise retrieve the box that came from the view definition.
    * @return the view frustum

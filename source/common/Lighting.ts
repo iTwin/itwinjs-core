@@ -33,7 +33,7 @@ export interface LightProps {
   lumens?: number;
 }
 
-/** a light to illuminate the contents of a scene */
+/** A light to illuminate the contents of a scene. */
 export class Light {
   public lightType: LightType;
   public intensity: number;
@@ -70,7 +70,7 @@ export interface SpotProps extends LightProps {
   outer?: Angle;
 }
 
-/** a light from a single location  */
+/** A light from a single location. */
 export class Spot extends Light {
   public inner: Angle;
   public outer: Angle;

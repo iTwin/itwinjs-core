@@ -7,7 +7,7 @@ import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { Code } from "../common/Code";
 import { ElementProps, ElementAspectProps, ElementLoadParams } from "../common/ElementProps";
-import { IModel } from "../common/IModel";
+import { IModel, IModelProps } from "../common/IModel";
 import { IModelVersion } from "../common/IModelVersion";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { ModelProps } from "../common/ModelProps";
@@ -27,7 +27,6 @@ import { Entity, EntityMetaData } from "./Entity";
 import { IModelGatewayImpl } from "./IModelGatewayImpl";
 import { StatusCodeWithMessage } from "@bentley/bentleyjs-core/lib/BentleyError";
 import * as path from "path";
-import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 
 // Register the backend implementation of IModelGateway
 IModelGatewayImpl.register();
@@ -137,8 +136,8 @@ export class IModelDb extends IModel {
   /** Get the mode used to open this iModel */
   public get openMode(): OpenMode | undefined { return this.briefcaseInfo ? this.briefcaseInfo.openMode : undefined; }
 
-  private constructor(briefcaseInfo: BriefcaseInfo, iModelToken: IModelToken, name: string, description: string) {
-    super(iModelToken, name, description);
+  private constructor(briefcaseInfo: BriefcaseInfo, iModelToken: IModelToken, name: string, props: IModelProps) {
+    super(iModelToken, name, props);
     this.briefcaseInfo = briefcaseInfo;
     this.models = new IModelDbModels(this);
     this.elements = new IModelDbElements(this);
@@ -146,13 +145,9 @@ export class IModelDb extends IModel {
 
   private static create(briefcaseInfo: BriefcaseInfo, contextId?: string): IModelDb {
     const iModelToken = IModelToken.create(briefcaseInfo.iModelId, briefcaseInfo.changeSetId, briefcaseInfo.openMode, briefcaseInfo.userId, contextId);
-
-    const rootSubjectInfoStr = briefcaseInfo.nativeDb.getRootSubjectInfo();
-    const rootSubjectInfo = JSON.parse(rootSubjectInfoStr);
-    const name = rootSubjectInfo.name || path.basename(briefcaseInfo.pathname);
-    const description = rootSubjectInfo.description;
-
-    briefcaseInfo.iModelDb = new IModelDb(briefcaseInfo, iModelToken, name, description);
+    const props = JSON.parse(briefcaseInfo.nativeDb.getIModelProps()) as IModelProps;
+    const name = props.rootSubject ? props.rootSubject.name : path.basename(briefcaseInfo.pathname);
+    briefcaseInfo.iModelDb = new IModelDb(briefcaseInfo, iModelToken, name, props);
     return briefcaseInfo.iModelDb;
   }
 
@@ -291,24 +286,16 @@ export class IModelDb extends IModel {
     return this.briefcaseInfo.nativeDb.setDbGuid(guidStr);
   }
 
-  /** Get the extents of this iModel */
-  public getExtents(): AxisAlignedBox3d {
-    if (!this.briefcaseInfo)
-      throw this._newNotOpenError();
-    const extentsStr = this.briefcaseInfo.nativeDb.getExtents();
-    return AxisAlignedBox3d.fromJSON(JSON.parse(extentsStr));
-  }
-
   /**
    * Commit pending changes to this iModel
    * @param _description Optional description of the changes
    * @throws [[IModelError]] if there is a problem saving changes.
    */
-  public saveChanges(_description?: string) {
+  public saveChanges(description?: string) {
     if (!this.briefcaseInfo)
       throw this._newNotOpenError();
 
-    const stat = this.briefcaseInfo.nativeDb.saveChanges();
+    const stat = this.briefcaseInfo.nativeDb.saveChanges(description);
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, "Problem saving changes", Logger.logError);
   }
@@ -358,7 +345,7 @@ export class IModelDb extends IModel {
 
       this.briefcaseInfo.nativeDb.getElementPropertiesForDisplay(elementId, (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
         if (error)
-          reject(new IModelError(error.status, error.message, Logger.logError, () => ({ iModelId: this._iModelToken.iModelId, elementId })));
+          reject(new IModelError(error.status, error.message, Logger.logError, () => ({ iModelId: this.token.iModelId, elementId })));
         else
           resolve(json);
       });
@@ -422,11 +409,11 @@ export class IModelDb extends IModel {
       return;
     const className = classFullName.split(":");
     if (className.length !== 2)
-      throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, () => ({ iModelId: this._iModelToken.iModelId, classFullName }));
+      throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, () => ({ iModelId: this.token.iModelId, classFullName }));
 
     const { error, result: metaDataJson } = this.briefcaseInfo.nativeDb.getECClassMetaDataSync(className[0], className[1]);
     if (error)
-      throw new IModelError(error.status, undefined, Logger.logError, () => ({ iModelId: this._iModelToken.iModelId, classFullName }));
+      throw new IModelError(error.status, undefined, Logger.logError, () => ({ iModelId: this.token.iModelId, classFullName }));
 
     const metaData = new EntityMetaData(JSON.parse(metaDataJson!));
     this.classMetaDataRegistry.add(classFullName, metaData);

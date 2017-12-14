@@ -55,7 +55,7 @@ export interface GeometricElement2dProps extends GeometricElementProps {
 }
 
 export interface ViewAttachmentProps extends GeometricElement2dProps {
-  view?: RelatedElementProps;
+  view?: Id64 | string;
 }
 
 export interface SubjectProps extends ElementProps {
@@ -70,14 +70,14 @@ export interface SheetBorderTemplateProps extends ElementProps {
 export interface SheetTemplateProps extends ElementProps {
   height?: number;
   width?: number;
-  border?: RelatedElementProps;
+  border?: Id64 | string;
 }
 
 export interface SheetProps extends ElementProps {
   scale?: number;
   height?: number;
   width?: number;
-  sheetTemplate?: RelatedElementProps;
+  sheetTemplate?: Id64 | string;
 }
 
 export interface TypeDefinitionElementProps extends ElementProps {

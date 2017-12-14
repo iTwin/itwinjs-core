@@ -88,14 +88,10 @@ export abstract class GeometricElement extends Element implements GeometricEleme
     this.geom = GeometryStream.fromJSON(props.geom);
   }
 
-  public abstract calculateRange3d(): AxisAlignedBox3d;
-  public is3d(): this is GeometricElement3d { return false; }
-  public is2d(): this is GeometricElement2d { return false; }
-
-  public getPlacementTransform(): Transform {
-    const source3d = this.getAsGeometricElement3d();
-    return (source3d !== undefined) ? source3d.getPlacement().getTransform() : this.getAsGeometricElement2d()!.getPlacement().getTransform();
-  }
+  public is3d(): this is GeometricElement3d { return this instanceof GeometricElement3d; }
+  public is2d(): this is GeometricElement2d { return this instanceof GeometricElement2d; }
+  public getPlacementTransform(): Transform { return this.placement.getTransform(); }
+  public calculateRange3d(): AxisAlignedBox3d { return this.placement.calculateRange(); }
 
   /** convert this geometric element to a JSON object */
   public toJSON(): GeometricElementProps {
@@ -119,16 +115,11 @@ export abstract class GeometricElement extends Element implements GeometricEleme
     if (!this.category.equals(builder.geometryParams.categoryId))
       return false;
 
-    // const el = this.toElement();
-
-    // if (el === undefined || (el !== undefined && ))
-    //  return false;
-
     if (builder.is3d) {
       if (!builder.placement3d.isValid())
         return false;
 
-      if (!(this instanceof GeometricElement3d))
+      if (!this.is3d())
         return false;
 
       this.placement.setFrom(builder.placement3d);
@@ -136,7 +127,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
       if (!builder.placement2d.isValid())
         return false;
 
-      if (!(this instanceof GeometricElement2d))
+      if (!this.is2d())
         return false;
 
       this.placement.setFrom(builder.placement2d);
@@ -165,9 +156,6 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
   }
 
-  public calculateRange3d(): AxisAlignedBox3d { return this.placement.calculateRange(); }
-  public is3d(): this is GeometricElement3d { return true; }
-
   public toJSON(): GeometricElement3dProps {
     const val = super.toJSON() as GeometricElement3dProps;
     val.placement = this.placement;
@@ -195,9 +183,6 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
     if (props.typeDefinition)
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
   }
-
-  public calculateRange3d(): AxisAlignedBox3d { return this.placement.calculateRange(); }
-  public is2d(): this is GeometricElement2d { return true; }
 
   public toJSON(): GeometricElement2dProps {
     const val = super.toJSON() as GeometricElement2dProps;
@@ -239,7 +224,7 @@ export class TextAnnotation3d extends GraphicalElement3d {
 }
 
 export class ViewAttachment extends GraphicalElement2d implements ViewAttachmentProps {
-  public view: RelatedElement;
+  public view: Id64;
   public constructor(props: ViewAttachmentProps, iModel: IModelDb) { super(props, iModel); }
 }
 
@@ -321,7 +306,8 @@ export class Subject extends InformationReferenceElement implements SubjectProps
   public constructor(props: SubjectProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/** A Document is an InformationContentElement that identifies the content of a document.
+/**
+ * A Document is an InformationContentElement that identifies the content of a document.
  * The realized form of a document is called a DocumentCarrier (different class than Document).
  * For example, a will is a legal document. The will published into a PDF file is an ElectronicDocumentCopy.
  * The will printed onto paper is a PrintedDocumentCopy.
@@ -348,7 +334,7 @@ export class SheetBorderTemplate extends Document implements SheetBorderTemplate
 export class SheetTemplate extends Document implements SheetTemplateProps {
   public height?: number;
   public width?: number;
-  public border?: RelatedElement;
+  public border?: Id64;
   constructor(props: SheetTemplateProps, iModel: IModelDb) { super(props, iModel); }
 }
 
@@ -356,7 +342,7 @@ export class Sheet extends Document implements SheetProps {
   public scale?: number;
   public height?: number;
   public width?: number;
-  public sheetTemplate?: RelatedElement;
+  public sheetTemplate?: Id64;
   constructor(props: SheetProps, iModel: IModelDb) { super(props, iModel); }
 }
 

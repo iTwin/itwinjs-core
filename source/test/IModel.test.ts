@@ -68,7 +68,7 @@ describe("iModel", () => {
   });
 
   it("should be able to get extents of the IModel", () => {
-    const extents: AxisAlignedBox3d = imodel1.getExtents();
+    const extents: AxisAlignedBox3d = imodel1.projectExtents;
     assert(!extents.isNull());
   });
 

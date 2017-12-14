@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { Vector3d, Vector2d, Point3d, Point2d, Range3d, RotMatrix, Transform, YawPitchRollAngles, LowAndHighXYZ, LowAndHighXY, XYAndZ, Range2d } from "@bentley/geometry-core/lib/PointVector";
+import { Vector3d, Vector2d, Point3d, Point2d, Range3d, RotMatrix, Transform, YawPitchRollAngles, LowAndHighXYZ, LowAndHighXY, Range2d } from "@bentley/geometry-core/lib/PointVector";
 import { AxisOrder, Angle, Geometry } from "@bentley/geometry-core/lib/Geometry";
 import { Map4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
@@ -99,14 +99,13 @@ function findNearbyStandardViewMatrix(rMatrix: RotMatrix): void {
   }
 }
 
-const hasZ = (arg: any): arg is XYAndZ => arg.z !== undefined;
 /**
  * The region of physical (3d) space that appears in a view. It forms the field-of-view of a camera.
  * It is stored as 8 points, in NpcCorner order, that must define a truncated pyramid.
  */
 export class Frustum {
   public readonly points: Point3d[] = [];
-  /** constructor for Frustum. Members initialized to the Npc cube. */
+  /** constructor for Frustum. Members are initialized to the Npc cube. */
   public constructor() { for (let i = 0; i < 8; ++i) this.points[i] = NpcCorners[i].clone(); }
   public initNpc() { for (let i = 0; i < 8; ++i) Point3d.createFrom(NpcCorners[i], this.points[i]); return this; }
   public getCorner(i: number) { return this.points[i]; }
@@ -151,13 +150,14 @@ export class Frustum {
 
   /** Initialize this Frustum from a Range3d */
   public initFromRange(range: LowAndHighXYZ | LowAndHighXY): void {
+    const getZ = (arg: any): number => arg.z !== undefined ? arg.z : 0;
     const pts = this.points;
     pts[0].x = pts[3].x = pts[4].x = pts[7].x = range.low.x;
     pts[1].x = pts[2].x = pts[5].x = pts[6].x = range.high.x;
     pts[0].y = pts[1].y = pts[4].y = pts[5].y = range.low.y;
     pts[2].y = pts[3].y = pts[6].y = pts[7].y = range.high.y;
-    pts[0].z = pts[1].z = pts[2].z = pts[3].z = hasZ(range.low) ? range.low.z : 0;
-    pts[4].z = pts[5].z = pts[6].z = pts[7].z = hasZ(range.high) ? range.high.z : 0;
+    pts[0].z = pts[1].z = pts[2].z = pts[3].z = getZ(range.low);
+    pts[4].z = pts[5].z = pts[6].z = pts[7].z = getZ(range.high);
   }
 
   /** Create a new Frustum from a Range3d */
@@ -214,12 +214,13 @@ export class EntityState implements EntityProps {
     return val;
   }
 
-  public equals<T extends EntityState>(other: T) { return JSON.stringify(this.toJSON()) === JSON.stringify(other.toJSON()); }
+  public equals<T extends EntityState>(other: T): boolean { return JSON.stringify(this.toJSON()) === JSON.stringify(other.toJSON()); }
 
-  /** make a complete, independent copy of this EntityState */
+  /** Make an independent copy of this EntityState */
   public clone<T extends EntityState>() { return new (this.constructor as EntityStateCtor)(this.toJSON(), this.iModel, this) as T; }
 }
 
+/** the state of a Model */
 export abstract class ModelState extends EntityState implements ModelProps {
   public readonly modeledElement: Id64;
   public readonly jsonProperties: any;
@@ -245,6 +246,7 @@ export abstract class ModelState extends EntityState implements ModelProps {
   }
 }
 
+/** the state of a 2d Model */
 export class Model2dState extends ModelState implements GeometricModel2dProps {
   public readonly extents: Range2d;
   constructor(props: GeometricModel2dProps, iModel: IModel) {
@@ -403,6 +405,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
   public getHiddenLineParams(): HiddenLine.Params { return new HiddenLine.Params(this.getStyle("hline")); }
   public setHiddenLineParams(params: HiddenLine.Params) { this.setStyle("hline", params); }
 
+  /** change one of the scene light specifications (Ambient, Flash, or Portrait) for this display style */
   public setSceneLight(light: Light) {
     if (!light.isValid())
       return;
@@ -424,6 +427,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
     this.setStyle("sceneLights", sceneLights);
   }
 
+  /** change the light specification and direction of the solar light for this display style */
   public setSolarLight(light: Light, direction: Vector3d) {
     const sceneLights = this.getStyle("sceneLights");
     if (light.lightType !== LightType.Solar || !light.isValid()) {
@@ -438,7 +442,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
   public getEnvironment() { return new Environment(this.getStyle("environment")); }
   public setEnvironment(env: Environment) { this.setStyle("environment", env); }
 
-  public setSceneBrightness(fstop: number): void { Math.max(-3.0, Math.min(fstop, 3.0)); this.getStyle("sceneLights").fstop = fstop; }
+  public setSceneBrightness(fstop: number): void { fstop = Math.max(-3.0, Math.min(fstop, 3.0)); this.getStyle("sceneLights").fstop = fstop; }
   public getSceneBrightness(): number { return JsonUtils.asDouble(this.getStyle("sceneLights").fstop, 0.0); }
 }
 
@@ -1415,7 +1419,7 @@ export class SpatialViewState extends ViewState3d {
       this.modelSelector = arg3.modelSelector;
     }
   }
-  public getViewedExtents(): AxisAlignedBox3d { return this.iModel.getExtents(); }
+  public getViewedExtents(): AxisAlignedBox3d { return this.iModel.projectExtents; }
 
   public toJSON(): SpatialViewDefinitionProps {
     const val = super.toJSON() as SpatialViewDefinitionProps;

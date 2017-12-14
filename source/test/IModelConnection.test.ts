@@ -25,7 +25,7 @@ describe("IModelConnection", () => {
   });
 
   it("should be able to get extents of the IModel", async () => {
-    const extents: AxisAlignedBox3d = iModel.getExtents();
+    const extents: AxisAlignedBox3d = iModel.projectExtents;
     assert(!extents.isNull());
   });
 

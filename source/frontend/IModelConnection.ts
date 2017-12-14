@@ -4,16 +4,15 @@
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { CodeSpec } from "../common/Code";
 import { ElementProps } from "../common/ElementProps";
 import { EntityQueryParams } from "../common/EntityProps";
-import { IModel, IModelToken } from "../common/IModel";
+import { IModel, IModelToken, IModelProps } from "../common/IModel";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { IModelVersion } from "../common/IModelVersion";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { ModelProps } from "../common/ModelProps";
-import { IModelGateway, IModelGatewayOpenResponse } from "../gateway/IModelGateway";
+import { IModelGateway } from "../gateway/IModelGateway";
 
 /** A connection to an iModel database hosted on the backend. */
 export class IModelConnection extends IModel {
@@ -22,15 +21,15 @@ export class IModelConnection extends IModel {
   public readonly elements: IModelConnectionElements;
   public readonly codeSpecs: IModelConnectionCodeSpecs;
 
-  private constructor(iModelToken: IModelToken, name: string, description: string, private readonly extents: AxisAlignedBox3d) {
-    super(iModelToken, name, description);
+  private constructor(iModelToken: IModelToken, name: string, props: IModelProps) {
+    super(iModelToken, name, props);
     this.models = new IModelConnectionModels(this);
     this.elements = new IModelConnectionElements(this);
     this.codeSpecs = new IModelConnectionCodeSpecs(this);
   }
 
-  private static create({ token, name, description, extents }: IModelGatewayOpenResponse): IModelConnection {
-    return new IModelConnection(token as IModelToken, name, description, AxisAlignedBox3d.fromJSON(extents));
+  private static create(iModel: IModel): IModelConnection {
+    return new IModelConnection(iModel.iModelToken, iModel.name, iModel);
   }
 
   /** Open an iModel from iModelHub */
@@ -39,7 +38,7 @@ export class IModelConnection extends IModel {
       return Promise.reject(new IModelError(IModelStatus.NotEnabled, "IModelConnection does not support read/write access yet"));
     // WIP: waiting for decisions on how to manage read/write briefcases on the backend.
 
-    const openResponse: IModelGatewayOpenResponse = await IModelGateway.getProxy().openForRead(accessToken, contextId, iModelId, version);
+    const openResponse: IModel = await IModelGateway.getProxy().openForRead(accessToken, contextId, iModelId, version);
     Logger.logInfo("IModelConnection.open", () => ({ iModelId, openMode, version }));
 
     // todo: Setup userId if it's a readWrite open - this is necessary to reopen the same exact briefcase at the backend
@@ -50,7 +49,7 @@ export class IModelConnection extends IModel {
    * This method is designed for desktop or mobile applications and typically should not be used for web applications.
    */
   public static async openStandalone(fileName: string, openMode = OpenMode.Readonly): Promise<IModelConnection> {
-    const openResponse: IModelGatewayOpenResponse = await IModelGateway.getProxy().openStandalone(fileName, openMode);
+    const openResponse: IModel = await IModelGateway.getProxy().openStandalone(fileName, openMode);
     Logger.logInfo("IModelConnection.openStandalone", () => ({ fileName, openMode }));
     return IModelConnection.create(openResponse);
   }
@@ -60,11 +59,6 @@ export class IModelConnection extends IModel {
     if (!this.iModelToken)
       return;
     await IModelGateway.getProxy().close(accessToken, this.iModelToken);
-  }
-
-  /** Extents of the iModel */
-  public getExtents(): AxisAlignedBox3d {
-    return this.extents;
   }
 
   /** Execute a query against the iModel.
