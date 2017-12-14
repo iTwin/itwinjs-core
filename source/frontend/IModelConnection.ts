@@ -39,7 +39,9 @@ export class IModelConnection extends IModel {
       return Promise.reject(new IModelError(IModelStatus.NotEnabled, "IModelConnection does not support read/write access yet"));
     // WIP: waiting for decisions on how to manage read/write briefcases on the backend.
 
-    const changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId);
+    let changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId);
+    if (!changeSetId)
+      changeSetId = "0"; // The first version is arbitrarily setup to have changeSetId = "0" since it's required by the gateway API.
     const iModelToken = IModelToken.create(iModelId, changeSetId, openMode, accessToken.getUserProfile().userId, contextId);
     const openResponse: IModelGatewayOpenResponse = await IModelGateway.getProxy().openForRead(accessToken, iModelToken);
     Logger.logInfo("IModelConnection.open", () => ({ iModelId, openMode, changeSetId }));
@@ -58,7 +60,7 @@ export class IModelConnection extends IModel {
   }
 
   /** Close this iModel */
-  public async close(accessToken: AccessToken): Promise<void> { // WIP: remove AccessToken parameter
+  public async close(accessToken: AccessToken): Promise<void> {
     if (!this.iModelToken)
       return;
     await IModelGateway.getProxy().close(accessToken, this.iModelToken);

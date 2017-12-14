@@ -57,7 +57,7 @@ export abstract class BentleyCloudGatewayProtocol extends Gateway.HttpProtocol {
     const info = this.openAPIInfo();
 
     const token = request ? request.findParameterOfType(IModelToken) : undefined;
-    const contextId = (token && token.contextId) ? encodeURIComponent(token.contextId) : "0";
+    const contextId = (token && token.contextId) ? encodeURIComponent(token.contextId) : "{contextId}";
     const iModelId = (token && token.iModelId) ? encodeURIComponent(token.iModelId) : "{iModelId}";
     const versionId = (token && token.changeSetId) ? encodeURIComponent(token.changeSetId) : "{versionId}";
 
