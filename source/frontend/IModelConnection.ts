@@ -173,7 +173,7 @@ export class IModelConnectionCodeSpecs {
       return Promise.reject(new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, () => ({ codeSpecId })));
 
     await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
-    const found: CodeSpec | undefined = this._loaded.find((codeSpec: CodeSpec) => codeSpec.id === codeSpecId);
+    const found: CodeSpec | undefined = this._loaded.find((codeSpec: CodeSpec) => codeSpec.id.equals(codeSpecId));
     if (!found)
       return Promise.reject(new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning));
 
