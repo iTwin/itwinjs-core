@@ -467,8 +467,12 @@ export class BriefcaseManager {
     if (fs.existsSync(briefcase.pathname))
       fs.unlinkSync(briefcase.pathname);
     const dirName = path.dirname(briefcase.pathname);
-    if (fs.existsSync(dirName))
-      fs.unlinkSync(dirName);
+    try {
+      if (fs.existsSync(dirName))
+        fs.unlinkSync(dirName);
+    } catch (err) {
+        return; // todo: This seems to fail sometimes for no reason
+    }
   }
 
   /** Deletes a briefcase from the hub */
