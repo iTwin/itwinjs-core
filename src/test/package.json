@@ -1,0 +1,18 @@
+{
+  "name": "ecpresentation-test",
+  "version": "0.0.0",
+  "description": "ECPresentation tests",
+  "license": "UNLICENSED",
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf lib",
+    "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\""
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

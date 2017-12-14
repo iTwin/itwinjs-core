@@ -1,0 +1,57 @@
+{
+  "name": "@bentley/ecpresentation",
+  "version": "0.0.1",
+  "description": "EC presentation library",
+  "keywords": [
+    "Bentley",
+    "EC",
+    "Presentation",
+    "iModelJS"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/ecpresentation"
+  },
+  "scripts": {
+    "build": "concurrently \"npm run build:backend\" \"npm run build:frontend\" \"npm run build:test\"",
+    "build:backend": "cd src/backend && npm run build",
+    "build:frontend": "cd src/frontend && npm run build",
+    "build:test": "cd src/test && npm run build",
+    "clean": "concurrently \"npm run clean:backend\" \"npm run clean:frontend\" \"npm run clean:test\"",
+    "clean:backend": "cd src/backend && npm run clean",
+    "clean:dependencies": "concurrently \"rimraf src/backend/node_modules\" \"rimraf src/frontend/node_modules\" \"rimraf src/test/node_modules\"",
+    "clean:frontend": "cd src/frontend && npm run clean",
+    "clean:test": "cd src/test && npm run clean",
+    "postinstall": "concurrently \"npm run install:backend\" \"npm run install:frontend\" \"npm run install:test\"",
+    "install:backend": "cd src/backend && npm install",
+    "install:frontend": "cd src/frontend && npm install",
+    "install:test": "cd src/test && npm install",
+    "update:dependencies": "concurrently \"npm run update:backend\" \"npm run update:frontend\" \"npm run update:test\"",
+    "update:backend": "cd src/backend && npm update",
+    "update:frontend": "cd src/frontend && npm update",
+    "update:test": "cd src/test && npm update",
+    "test": "cd src/test && npm run test",
+    "test:tsnode": "node node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode --packageRoot \"./\" --testDir=\"./src/test\" --tscPaths",
+    "lint": "node node_modules/@bentley/bentleyjs-tools/scripts/tslint.js",
+    "cover": "nyc npm run test:tsnode"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@bentley/bentleyjs-tools": "latest",
+    "@types/chai": "^4.0.10",
+    "@types/mocha": "^2.2.44",
+    "chai": "^4.1.2",
+    "concurrently": "^3.5.0",
+    "mocha": "^4.0.1",
+    "node-replace": "^0.3.3",
+    "nyc": "^11.4.1",
+    "rimraf": "^2.6.2",
+    "typescript": "^2.6.2"
+  }
+}

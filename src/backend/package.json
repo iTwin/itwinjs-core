@@ -1,0 +1,28 @@
+{
+  "name": "@bentley/ecpresentation-backend",
+  "version": "0.0.1",
+  "description": "Backend of ECPresentation library",
+  "keywords": [
+    "Bentley",
+    "EC",
+    "Presentation",
+    "iModelJS"
+  ],
+  "license": "UNLICENSED",
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf lib",
+    "postbuild": "npm run resolve-imports",
+    "resolve-imports": "cd lib && replace \"@build/imodeljs-core\" \"@bentley/imodeljs-backend\" -r -q ."
+  },
+  "dependencies": {
+    "@bentley/bentleyjs-core": "^1.2.2",
+    "@bentley/imodeljs-backend": "0.9.1",
+    "@bentley/imodeljs-nodeaddonapi": "file:D:/Graphite/bim0200/Tip/out-3/Winx64/packages/imodeljs-nodeaddonapi"
+  },
+  "devDependencies": {}
+}

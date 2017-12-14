@@ -1,0 +1,23 @@
+{
+  "include": [
+    "src/common/**/*.ts",
+    "src/gateway/**/*.ts",
+    "src/frontend/**/*.ts",
+    "src/backend/**/*.ts"
+  ],
+  "exclude": [
+    "src/test/*",
+    "src/backend/lib/*",
+    "src/frontend/lib/*"
+  ],
+  "extension": [
+    ".ts"
+  ],
+  "reporter": [
+    "text-summary",
+    "lcov"
+  ],
+  "report-dir": "./coverage",
+  "temp-directory": "./coverage/.nyc_output",
+  "all": true
+}
