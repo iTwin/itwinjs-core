@@ -196,6 +196,13 @@ export class IModelDb extends IModel {
     this.briefcaseInfo = undefined;
   }
 
+  /** Get the in-memory handle of the native Db */
+  public get nativeDb(): any {
+    if (!this.briefcaseInfo)
+      return undefined;
+    return this.briefcaseInfo.nativeDb;
+  }
+
   /** Get the briefcase ID of this iModel */
   public getBriefcaseId(): BriefcaseId {
     if (!this.briefcaseInfo)

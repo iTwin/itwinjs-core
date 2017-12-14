@@ -62,7 +62,7 @@ for (const entry of fs.readdirSync(__dirname)) {
           assert.isFalse(stats.hasWarnings());
           done();
         });
-      });
+      }).timeout(99999);
     });
 
     require(entryPath);
