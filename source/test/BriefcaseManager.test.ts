@@ -8,7 +8,7 @@ import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "../common/IModelVersion";
-import { BriefcaseManager } from "../backend/BriefcaseManager";
+import { BriefcaseManager, BriefcaseManagerResourcesRequest } from "../backend/BriefcaseManager";
 import { IModelDb } from "../backend/IModelDb";
 import { IModelConnection } from "../frontend/IModelConnection";
 import { IModelTestUtils } from "./IModelTestUtils";
@@ -123,26 +123,32 @@ describe("BriefcaseManager", () => {
     assert.exists(iModelNoVer);
   });
 
-  it.only("should make revisions", async () => {
+  it.skip("should make revisions", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite); // Note: No frontend support for ReadWrite open yet
     assert.exists(iModel);
 
     let newModelId: Id64;
-    [, newModelId] = IModelTestUtils.insertPhysicalModel(iModel, Code.createEmpty(), true);
+    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, Code.createEmpty(), true);
 
     const spatialCategoryId: Id64 = IModelTestUtils.getSpatialCategoryIdByName(iModel, "SpatialCategory1");
 
+    // Insert a few elements
     const elements: Element[] = [
       IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId),
       IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId),
     ];
 
-    iModel.elements.acquireLocks({newElements: elements}); // acquire the resources needed to insert this element: acquire a shared lock on its model and reserve its code.
+    const req: BriefcaseManagerResourcesRequest = BriefcaseManager.createResourcesRequest();
+    for (const el of elements) {
+      el.buildResourcesRequest(req);    // make a list of the resources that will be needed to insert this element (e.g., a shared lock on the model and a code)
+    }
+
+    iModel.requestResources(req);
 
     for (const el of elements)
         iModel.elements.insertElement(el);
 
-    iModel.saveChanges("inserted one generic object");
+    iModel.saveChanges("inserted generic objects");
 
     await iModel.close(accessToken);
   });

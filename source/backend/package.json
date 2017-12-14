@@ -24,7 +24,7 @@
     "NOTE: must use ~ range to depend on the addon api -- that is, must lock onto a minor version."
   ],
   "dependencies": {
-    "@bentley/bentleyjs-core": "^1.2.0",
+    "@bentley/bentleyjs-core": "^1.2.3",
     "@bentley/geometry-core": "^1.2.0",
     "@bentley/imodeljs-clients": "^1.0.36",
     "@bentley/imodeljs-nodeaddonapi": "~1.2.5",

@@ -14,9 +14,12 @@ import { IModelDb } from "./IModelDb";
 import * as fs from "fs";
 import * as path from "path";
 
-export { NodeAddonIBriefcaseManagerRequest as BriefcaseManagerRequest } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
-
 declare const __dirname: string;
+
+// This is a stand-in for NodeAddonBriefcaseManagerResourcesRequest. We cannot (re-)export that for technical reasons.
+export class BriefcaseManagerResourcesRequest {
+  private constructor() {}
+}
 
 /** The ID assigned to a briefcase by iModelHub, or one of the special values that identify special kinds of iModels */
 export class BriefcaseId {
@@ -628,4 +631,10 @@ export class BriefcaseManager {
       return undefined;
     return BriefcaseManager.cache.findBriefcase(iModelToken);
   }
+
+  /** Create a new empty resources request. @See Entity.buildResourcesRequest, IModelDb.requestResources */
+  public static createResourcesRequest(): BriefcaseManagerResourcesRequest {
+    return new (NodeAddonRegistry.getAddon()).NodeAddonBriefcaseManagerResourcesRequest();
+  }
+
 }

@@ -8,6 +8,8 @@ import { IModel } from "../common/IModel";
 import { ClassRegistry } from "./ClassRegistry";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
+import { BriefcaseManagerResourcesRequest } from "./BriefcaseManager";
+import { DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 
 /** The primitive types of an Entity property. */
 export const enum PrimitiveTypeCode {
@@ -61,6 +63,15 @@ export class Entity implements EntityProps {
     val.classFullName = this.classFullName;
     this.forEachProperty((propName: string) => val[propName] = this[propName]);
     return val;
+  }
+
+ /**
+  * Add the lock, code, and other resource requests that would be needed in order to carry out the specified operation.
+  * @param _req The request object, which accumulates requests.
+  * @param _opcode The operation that will be performed on the element.
+  */
+  public buildResourcesRequest(_req: BriefcaseManagerResourcesRequest, _opcode?: DbOpcode): void {
+    // subclasses must override this method to build a request for the resources they know that they need.
   }
 
   /** call a function for each property of this Entity. Function arguments are property name and property metadata. */

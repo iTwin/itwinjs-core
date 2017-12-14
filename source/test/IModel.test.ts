@@ -631,7 +631,7 @@ describe("iModel", () => {
 
     let modeledElementId: Id64;
     let newModelId: Id64;
-    [modeledElementId, newModelId] = IModelTestUtils.insertPhysicalModel(testImodel, Code.createEmpty(), true);
+    [modeledElementId, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(testImodel, Code.createEmpty(), true);
 
     const newModelPersist: Model = await testImodel.models.getModel(newModelId);
 

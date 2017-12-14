@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs-extra";
 import { assert } from "chai";
-import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { DbResult, OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
 import { ConnectClient, Project, IModelHubClient, Briefcase } from "@bentley/imodeljs-clients";
@@ -13,7 +13,7 @@ import { IModelError, IModelStatus } from "../common/IModelError";
 import { Element } from "../backend/Element";
 import { Model } from "../backend/Model";
 import { IModelDb } from "../backend/IModelDb";
-import { BriefcaseManager } from "../backend/BriefcaseManager";
+import { BriefcaseManager, BriefcaseManagerResourcesRequest } from "../backend/BriefcaseManager";
 import { SpatialCategory, DrawingCategory } from "../backend/Category";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { NodeAddonLoader } from "@bentley/imodeljs-nodeaddon/NodeAddonLoader";
@@ -22,6 +22,7 @@ import { IModelGateway } from "../gateway/IModelGateway";
 import { ElementProps, GeometricElementProps } from "../common/ElementProps";
 
 import * as path from "path";
+import { Entity } from "../backend/Entity";
 
 // Initialize the gateway classes used by tests
 Gateway.initialize(IModelGateway);
@@ -187,10 +188,11 @@ export class IModelTestUtils {
   //
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
   //
-  public static insertPhysicalModel(testImodel: IModelDb, newModelCode: Code, privateModel: boolean = false): Id64[] {
+  public static createAndInsertPhysicalModel(testImodel: IModelDb, newModelCode: Code, privateModel: boolean = false): Id64[] {
     let modeledElementId: Id64;
     let newModelId: Id64;
 
+    //  The modeled element
     const modeledElementProps: ElementProps = {
       classFullName: "BisCore:PhysicalPartition",
       iModel: testImodel,
@@ -200,22 +202,32 @@ export class IModelTestUtils {
       code: newModelCode,
     };
     const modeledElement: Element = testImodel.elements.createElement(modeledElementProps);
-    testImodel.elements.acquireLocks({newElements: [modeledElement]}); // acquire the resources needed to insert this element: acquire a shared lock on the DgnDb and the repositoryModel and reserve the element's code
+    IModelTestUtils.requestResources(modeledElement, DbOpcode.Insert);
     modeledElementId = testImodel.elements.insertElement(modeledElement);
+
     assert.isTrue(modeledElementId.isValid());
 
-    // Create the model (in memory)
+    // The model
     const newModel = testImodel.models.createModel({ id: new Id64(), modeledElement: modeledElementId, classFullName: "BisCore:PhysicalModel", isPrivate: privateModel });
-
-    testImodel.models.acquireLocks({newModels: [newModel]}); // acquire the resources needed to insert this model: acquire a shared lock on the DgnDb itself
-
-    // Insert the model into the BIM
+    IModelTestUtils.requestResources(newModel, DbOpcode.Insert);
     newModelId = testImodel.models.insertModel(newModel);
+
     assert.isTrue(newModelId.isValid());
     assert.isTrue(newModel.id.isValid());
     assert.deepEqual(newModelId, newModel.id);
 
     return [modeledElementId, newModelId];
+  }
+
+  //
+  // Acquire the resources needed to carry out the specified operation on the specified entity
+  // *** NB: This just for test code! It is very inefficient to acquire resources for entities one by one!
+  // *** NB: A real app must accumulate many requests and then make a single call on iModelHub!
+  //
+  public static requestResources(entity: Entity, opcode: DbOpcode) {
+    const req: BriefcaseManagerResourcesRequest = BriefcaseManager.createResourcesRequest();
+    entity.buildResourcesRequest(req, opcode);
+    entity.iModel.requestResources(req);
   }
 
   //
