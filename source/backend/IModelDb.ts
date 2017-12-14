@@ -257,7 +257,7 @@ export class IModelDb extends IModel {
   public requestResources(_req: BriefcaseManagerResourcesRequest) {
     if (!this.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
-    throw new Error("TBD");
+    // throw new Error("TBD");
   }
 
   /**
@@ -268,7 +268,8 @@ export class IModelDb extends IModel {
   public areResourcesAvailable(_req: BriefcaseManagerResourcesRequest): boolean {
     if (!this.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
-    throw new Error("TBD");
+    // throw new Error("TBD");
+    return false; // *** TBD
     }
 
   /** Returns a new IModelError with errorNumber, message, and meta-data set properly for a *not open* error.
