@@ -34,7 +34,7 @@ npm login --scope=@bentley
 
 ## Build Instructions
 
-1. Pull repository: `git pull`
+1. Clone repository (first time) with `git clone` or pull updates to the repository (subsequent times) with `git pull`
 2. Install dependencies: `npm install`
 3. Clean output: `npm run clean`
 4. Build source: `npm run build -s`
@@ -45,6 +45,8 @@ That part of the command is optional depending on the desired verbosity level.
 
 Note that all build instructions are designed to run from the imodeljs-core root directory.
 The individual commands orchestrate separate backend, frontend, and test steps as required.
+
+Note that it is a good idea to `npm install` after each `git pull` as dependencies may have changed.
 
 ## Migrating to New Build Instructions
 
