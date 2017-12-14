@@ -8,7 +8,7 @@ import { BriefcaseStatus, IModelError } from "../common/IModelError";
 import { IModelVersion } from "../common/IModelVersion";
 import { IModelToken } from "../common/IModel";
 import { NodeAddonRegistry } from "./NodeAddonRegistry";
-import { NodeAddonDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
+import { NodeAddonDgnDb, ErrorStatusOrResult, NodeAddonBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { IModelDb } from "./IModelDb";
 
 import * as fs from "fs";
@@ -637,4 +637,8 @@ export class BriefcaseManager {
     return new (NodeAddonRegistry.getAddon()).NodeAddonBriefcaseManagerResourcesRequest();
   }
 
+  /** Convert the request to any */
+  public static getResourcesRequestAsAny(req: BriefcaseManagerResourcesRequest): any {
+    return JSON.parse((req as NodeAddonBriefcaseManagerResourcesRequest).toJSON());
+  }
 }

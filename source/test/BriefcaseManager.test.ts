@@ -4,7 +4,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { expect, assert } from "chai";
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "../common/IModelVersion";
@@ -121,6 +121,22 @@ describe("BriefcaseManager", () => {
 
     const iModelNoVer: IModelDb = await IModelDb.open(accessToken, testProjectId, iModelNoVerId, OpenMode.Readonly);
     assert.exists(iModelNoVer);
+  });
+
+  it("should build resource request", async () => {
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite); // Note: No frontend support for ReadWrite open yet
+
+    const el: Element = await iModel.elements.getRootSubject();
+    const req: BriefcaseManagerResourcesRequest = BriefcaseManager.createResourcesRequest();
+    el.buildResourcesRequest(req, DbOpcode.Update);    // make a list of the resources that will be needed to update this element (e.g., a shared lock on the model and a code)
+    const reqAsAny: any = BriefcaseManager.getResourcesRequestAsAny(req);
+    assert.isDefined(reqAsAny);
+    assert.isArray(reqAsAny.Locks);
+    assert.equal(reqAsAny.Locks.length, 3);
+    assert.isArray(reqAsAny.Codes);
+    assert.equal(reqAsAny.Codes.length, 0);
+
+    await iModel.close(accessToken);
   });
 
   it.skip("should make revisions", async () => {
