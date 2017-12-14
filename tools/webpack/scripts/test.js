@@ -35,16 +35,8 @@ const args = [
 
 // If we're running coverage, we need to include the app source dir
 if (isCoverage) {
-  // Not sure if there's a simpler way to do this, but we *really* don't want to include 
-  // paths.appBackendNodeModules or paths.appFrontendNodeModules here...
-  args.push(path.resolve(paths.appSrc, "@(frontend|backend)/!(node_modules)/**/*!(.d).@(js|jsx|ts|tsx)"));
-  args.push(path.resolve(paths.appSrc, "@(frontend|backend)/*!(.d).@(js|jsx|ts|tsx)"));
-  args.push(path.resolve(paths.appSrc, "!(frontend|backend)/**/*!(.d).@(js|jsx|ts|tsx)"));
-  args.push(path.resolve(paths.appSrc, "*!(.d).@(js|jsx|ts|tsx)"));
+  args.push(path.resolve(paths.appSrc, "**/*!(.d).@(js|jsx|ts|tsx)"));
 }
-
-// WIP: We need to make sure paths.appBackendNodeModules is in the NODE_PATH so addons can be resolved.
-process.NODE_PATH = ((process.NODE_PATH && process.NODE_PATH.split(path.delimiter)) || []).concat([paths.appBackendNodeModules]).join(path.delimiter).replace(/\\/g, '/');
 
 spawn("node", args).then((code) =>  process.exit(code));
 handleInterrupts();

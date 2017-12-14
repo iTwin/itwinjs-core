@@ -35,29 +35,14 @@ const coverageLoaders = (isCoverage) ? [
   {
     test: /\.(jsx?|tsx?)$/,
     include: paths.appSrc, // instrument only testing sources with Istanbul, after ts-loader runs
-    exclude: [paths.appBackendNodeModules, paths.appFrontendNodeModules].concat(modulesToIgnore),
+    exclude: modulesToIgnore,
     loader: require.resolve('istanbul-instrumenter-loader'),
     options: {esModules: true, debug: true},
     enforce: 'post',
   },
 ] : [];
 
-// WIP: This is a temporary workaround to fix module resolution in the test directory...
-const fixNodeModulesPaths = (context, request, callback) => {
-  if (/\.node$/.test(request))
-    console.log(request, context);
-  try {
-    const resolvedPath = require.resolve(request, {paths: [paths.appBackendNodeModules, paths.appFrontendNodeModules] });
-    
-    if (resolvedPath.startsWith(paths.appBackendNodeModules) || resolvedPath.startsWith(paths.appFrontendNodeModules)) {
-      return callback(null, 'commonjs ' + resolvedPath);
-    }
-  } catch(e) {}
-
-  callback();
-}
-
-const resolveIModeljsCommon = (str) => str.replace(paths.imodeljsCommonRegex, path.resolve(paths.appBackendNodeModules, "@bentley/imodeljs-backend"));
+const resolveIModeljsCommon = (str) => str.replace(paths.imodeljsCommonRegex, "@bentley/imodeljs-backend");
 
 // This is the test configuration.
 module.exports = {
@@ -68,7 +53,6 @@ module.exports = {
 
   // The "externals" configuration option provides a way of excluding dependencies from the output bundles.
   externals: [
-    fixNodeModulesPaths,
     // Don't include anything from node_modules in the bundle
     nodeExternals({whitelist: modulesToIgnore}),
     // We also need the following work around to keep $(iModelJs-Common) modules out of the bundle:
@@ -87,7 +71,7 @@ module.exports = {
     // We placed these paths second because we want `node_modules` to "win"
     // if there are any conflicts. This matches Node resolution mechanism.
     // https://github.com/facebookincubator/create-react-app/issues/253
-    modules: ['node_modules', paths.appNodeModules, paths.appBackendNodeModules, paths.appFrontendNodeModules, paths.appSrc].concat(
+    modules: ['node_modules', paths.appNodeModules, paths.appSrc].concat(
       // It is guaranteed to exist because we tweak it in `env.js`
       process.env.NODE_PATH.split(path.delimiter).filter(Boolean)
     ),
@@ -176,7 +160,7 @@ module.exports = {
         options: {
           compilerOptions: { 
             // Replace $(iModelJs-Common) with @bentley/imodeljs-backend when compiling typescript
-            paths: { "$(iModelJs-Common)/*": [ "backend/node_modules/@bentley/imodeljs-backend/*"] }
+            paths: { "$(iModelJs-Common)/*": [ "@bentley/imodeljs-backend/*"] }
           },
           onlyCompileBundledFiles: true,
           logLevel: 'warn'

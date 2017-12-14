@@ -34,10 +34,8 @@ module.exports = {
   devtool: 'cheap-module-source-map',
   // The "externals" configuration option provides a way of excluding dependencies from the output bundles.
   externals: [
-    // Don't include anything from src/backend/node_modules in the bundle
-    nodeExternals({modulesDir: paths.appBackendNodeModules}),
-    // We also need the following work around to keep $(iModelJs-Common) modules out of the bundle:
-    (ctx, req, cb) => (paths.imodeljsCommonRegex.test(req)) ? cb(null, 'commonjs ' + resolveIModeljsCommon(req)) : cb()
+    // We need the following work around to keep the native addon loader out of the bundle:
+    /@bentley\/imodeljs-nodeaddon/,
   ],
   // These are the "entry points" to our application.
   // This means they will be the "root" imports that are included in JS bundle.
@@ -65,7 +63,7 @@ module.exports = {
     // We placed these paths second because we want `node_modules` to "win"
     // if there are any conflicts. This matches Node resolution mechanism.
     // https://github.com/facebookincubator/create-react-app/issues/253
-    modules: ['node_modules', paths.appNodeModules, paths.appBackendNodeModules, paths.appSrc].concat(
+    modules: ['node_modules', paths.appNodeModules, paths.appSrc].concat(
       // It is guaranteed to exist because we tweak it in `env.js`
       process.env.NODE_PATH.split(path.delimiter).filter(Boolean)
     ),
@@ -103,7 +101,7 @@ module.exports = {
         options: {
           compilerOptions: { 
             // Replace $(iModelJs-Common) with @bentley/imodeljs-backend when compiling typescript
-            paths: {"$(iModelJs-Common)/*": [ "backend/node_modules/@bentley/imodeljs-backend/*"] } 
+            paths: {"$(iModelJs-Common)/*": [ "@bentley/imodeljs-backend/*"] } 
           },
           onlyCompileBundledFiles: true,
           logLevel: 'warn',
@@ -122,11 +120,13 @@ module.exports = {
     setImmediate: false
   },
   plugins: [
+    new plugins.CopyNativeAddonsPlugin(),
     // Add module names to factory functions so they appear in browser profiler.
     new webpack.NamedModulesPlugin(),
     // Makes some environment variables available to the JS code, for example:
     // if (process.env.NODE_ENV === 'development') { ... }. See `./env.js`.
     new webpack.DefinePlugin(env.stringified),
+    new webpack.DefinePlugin({ "global.GENTLY": false }),
     // Watcher doesn't work well if you mistype casing in a path so we use
     // a plugin that prints an error when you attempt to do this.
     // See https://github.com/facebookincubator/create-react-app/issues/240

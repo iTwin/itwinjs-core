@@ -56,12 +56,6 @@ async function runWebpackBuild(config, name) {
 }
 
 function buildBackend(config) {
-  // Link the backend node_modules into the lib directory so electron can resolve imports
-  if (!fs.existsSync(paths.appLib))
-    fs.mkdirSync(paths.appLib)
-  if (!fs.existsSync(path.resolve(paths.appLib, "node_modules/")))
-    fs.symlinkSync(paths.appBackendNodeModules, path.resolve(paths.appLib, "node_modules/"), "dir");
-
   return runWebpackBuild(config, "BACKEND");
 }
 

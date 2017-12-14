@@ -132,7 +132,7 @@ const baseConfiguration = {
     // We placed these paths second because we want `node_modules` to "win"
     // if there are any conflicts. This matches Node resolution mechanism.
     // https://github.com/facebookincubator/create-react-app/issues/253
-    modules: ['node_modules', paths.appNodeModules, paths.appFrontendNodeModules, paths.appSrc].concat(
+    modules: ['node_modules', paths.appNodeModules, paths.appSrc].concat(
       // It is guaranteed to exist because we tweak it in `env.js`
       process.env.NODE_PATH.split(path.delimiter).filter(Boolean)
     ),
@@ -189,7 +189,6 @@ const baseConfiguration = {
         loader: require.resolve('source-map-loader'),
         enforce: 'pre',
         include: paths.appSrc,
-        exclude: paths.appFrontendNodeModules, // NEEDSWORK: We're not delivering frontend source maps in library packages? Why not?
       },
       // "sass" loader compiles SASS into CSS.
       {

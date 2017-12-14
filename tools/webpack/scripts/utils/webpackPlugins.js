@@ -3,6 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 const chalk = require('chalk');
 const path = require('path');
+const fs = require('fs-extra');
+const glob = require('glob');
 const paths = require('../../config/paths');
 
 class BanImportsPlugin {
@@ -31,6 +33,32 @@ class BanImportsPlugin {
   }
 }
 
+function pathToPackageName(p) {
+  const parts = p.replace(/^.*node_modules[\\\/]/, "").split(/[\\\/]/);
+  return (parts[0].startsWith("@")) ? parts[0] + "/" + parts[1] : parts[0];
+}
+
+class CopyNativeAddonsPlugin {
+  constructor(options) {}
+
+  apply(compiler) {
+    compiler.plugin('environment', () => {
+      const packageLock = require(paths.appPackageLockJson);
+      const dir = path.resolve(paths.appNodeModules, "**/*.node");
+      const matches = glob.sync(dir)
+
+      matches.push("@bentley/imodeljs-nodeaddon");
+
+      for (const match of matches) {
+        const nativeDependency = pathToPackageName(match);
+
+        if (!packageLock.dependencies[nativeDependency] || !packageLock.dependencies[nativeDependency].dev)
+          fs.copySync(path.resolve(paths.appNodeModules, nativeDependency), path.resolve(paths.appLib, "node_modules", nativeDependency));
+      }
+    });
+  }
+}
+
 class BanFrontendImportsPlugin extends BanImportsPlugin {
   constructor() {
     super("BACKEND", "FRONTEND", paths.appSrcFrontend, /imodeljs-frontend/);
@@ -46,4 +74,5 @@ class BanBackendImportsPlugin extends BanImportsPlugin {
 module.exports = {
   BanFrontendImportsPlugin,
   BanBackendImportsPlugin,
+  CopyNativeAddonsPlugin,
 };

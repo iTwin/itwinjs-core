@@ -51,6 +51,7 @@ module.exports = {
   appHtml: resolveApp('public/index.html'),
   appIndexJs: resolveApp('src/frontend/index.tsx'),
   appPackageJson: resolveApp('package.json'),
+  appPackageLockJson: resolveApp('package-lock.json'),
   appSrc: resolveApp('src'),
   appSrcBackend: resolveApp('src/backend'),
   appSrcBackendElectron: resolveApp('src/backend/electron'),
@@ -63,8 +64,6 @@ module.exports = {
   yarnLockFile: resolveApp('yarn.lock'),        // STILL USED?
   testsSetup: resolveApp('src/setupTests.ts'),
   appNodeModules: resolveApp('node_modules'),
-  appBackendNodeModules: resolveApp('src/backend/node_modules'),
-  appFrontendNodeModules: resolveApp('src/frontend/node_modules'),
   appTsConfig: resolveApp('tsconfig.json'),
   publicUrl: getPublicUrl(resolveApp('package.json')),
   servedPath: getServedPath(resolveApp('package.json')),
