@@ -7,7 +7,6 @@ import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes
 import { PageOptions, ECPresentationManager as ECPInterface } from "../common/ECPresentationManager";
 import ECPresentationGateway from "../gateway/ECPresentationGateway";
 import { IModelToken } from "@bentley/imodeljs-frontend/lib/common/IModel";
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 
 class ECPresentationManager implements ECPInterface {
   public async getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<NavNode[]> {
@@ -17,7 +16,7 @@ class ECPresentationManager implements ECPInterface {
     return [];
   }
 
-  public async getRootNodesCount(token: IModelToken, options: object): Promise<number> {
+  public async getRootNodesCount(token: IModelToken, _options: object): Promise<number> {
     return ECPresentationGateway.getProxy().getRootNodesCount(token);
   }
 

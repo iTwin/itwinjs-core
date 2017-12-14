@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecpresentation-backend",
-  "version": "0.0.1",
+  "version": "0.0.5",
   "description": "Backend of ECPresentation library",
   "keywords": [
     "Bentley",
@@ -20,9 +20,9 @@
     "resolve-imports": "cd lib && replace \"@build/imodeljs-core\" \"@bentley/imodeljs-backend\" -r -q ."
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "^1.2.2",
-    "@bentley/imodeljs-backend": "0.9.1",
-    "@bentley/imodeljs-nodeaddonapi": "file:D:/Graphite/bim0200/Tip/out-3/Winx64/packages/imodeljs-nodeaddonapi"
+    "@bentley/bentleyjs-core": "^1.2.4",
+    "@bentley/imodeljs-backend": "^0.1.3",
+    "@bentley/imodeljs-nodeaddonapi": "^1.2.7"
   },
   "devDependencies": {}
 }

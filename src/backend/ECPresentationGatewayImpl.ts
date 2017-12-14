@@ -6,7 +6,12 @@ import { IModelToken } from "@bentley/imodeljs-backend/lib/common/IModel";
 import ECPresentationManager from "./ECPresentationManager";
 import ECPresentationGateway from "../gateway/ECPresentationGateway";
 
-const _manager: ECPresentationManager = new ECPresentationManager();
+let _manager: ECPresentationManager | null = null;
+const getManager = (): ECPresentationManager => {
+  if (!_manager)
+    _manager = new ECPresentationManager();
+  return _manager;
+};
 
 /** The backend implementation of ECPresentationGateway.
  * @hidden
@@ -17,6 +22,6 @@ export default class ECPresentationGatewayImpl extends ECPresentationGateway {
   }
 
   public async getRootNodesCount(token: IModelToken): Promise<number> {
-    return await _manager.getRootNodesCount(token, {});
+    return await getManager().getRootNodesCount(token, {});
   }
 }

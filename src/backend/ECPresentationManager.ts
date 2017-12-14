@@ -8,8 +8,8 @@ import * as content from "../common/Content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes";
 import { PageOptions, ECPresentationManager as ECPInterface } from "../common/ECPresentationManager";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
-import { NodeAddonRegistry } from "@bentley/imodeljs-backend/lib/backend/NodeAddonRegistry";
-import { NodeAddonECPresentationManager } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
+// import { NodeAddonRegistry } from "@bentley/imodeljs-backend/lib/backend/NodeAddonRegistry";
+// import { NodeAddonECPresentationManager } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { IModelToken } from "@bentley/imodeljs-backend/lib/common/IModel";
 import { IModelError, IModelStatus } from "@bentley/imodeljs-backend/lib/common/IModelError";
 import { IModelDb } from "@bentley/imodeljs-backend/lib/backend/IModelDb";
@@ -19,10 +19,10 @@ import ECPresentationGatewayImpl from "./ECPresentationGatewayImpl";
 ECPresentationGatewayImpl.register();
 
 export default class ECPresentationManager implements ECPInterface {
-  private _manager: NodeAddonECPresentationManager;
+  // private _manager: NodeAddonECPresentationManager;
 
   constructor() {
-    this._manager = new (NodeAddonRegistry.getAddon()).NodeAddonECPresentationManager();
+    // this._manager = new (NodeAddonRegistry.getAddon()).NodeAddonECPresentationManager();
   }
 
   public async getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<NavNode[]> {
@@ -33,11 +33,12 @@ export default class ECPresentationManager implements ECPInterface {
     return this.request(token, params);
   }
 
-  public async getRootNodesCount(token: IModelToken, options: object): Promise<number> {
-    const params = this.createRequestParams("GetRootNodesCount", {
+  public async getRootNodesCount(_token: IModelToken, _options: object): Promise<number> {
+    /*const params = this.createRequestParams("GetRootNodesCount", {
       options,
     });
-    return this.request(token, params);
+    return this.request(token, params);*/
+    return 789789;
   }
 
   public async getChildren(token: IModelToken, parent: NavNode, pageOptions: PageOptions, options: object): Promise<NavNode[]> {
@@ -99,12 +100,12 @@ export default class ECPresentationManager implements ECPInterface {
     return [];
   }
 
-  private request(token: IModelToken, params: string, responseHandler?: (response: any) => any) {
+  private request(token: IModelToken, _params: string, responseHandler?: (response: any) => any) {
     const imodel = IModelDb.find(token);
     if (!imodel || !imodel.nativeDb)
       throw new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, () => ({ iModelId: token.iModelId }));
 
-    const serializedResponse = this._manager.handleRequest(imodel.nativeDb, params);
+    const serializedResponse = "{}"; // this._manager.handleRequest(imodel.nativeDb, params);
     const response = JSON.parse(serializedResponse);
     if (responseHandler)
       return responseHandler(response);
