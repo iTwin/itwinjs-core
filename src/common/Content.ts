@@ -161,17 +161,17 @@ export abstract class TypeDescription {
     this._valueFormat = valueFormat;
     this._typeName = typeName;
   }
-  public get ValueFormat(): PropertyValueFormat { return this._valueFormat; }
-  public get TypeName(): string { return this._typeName; }
+  public get valueFormat(): PropertyValueFormat { return this._valueFormat; }
+  public get typeName(): string { return this._typeName; }
 
   public asPrimitiveDescription(): PrimitiveTypeDescription | null { return null; }
-  public get IsPrimitiveDescription(): boolean { return null != this.asPrimitiveDescription(); }
+  public get isPrimitiveDescription(): boolean { return null != this.asPrimitiveDescription(); }
 
   public asArrayDescription(): ArrayTypeDescription | null { return null; }
-  public get IsArrayDescription(): boolean { return null != this.asArrayDescription(); }
+  public get isArrayDescription(): boolean { return null != this.asArrayDescription(); }
 
   public asStructDescription(): StructTypeDescription | null { return null; }
-  public get IsStructDescription(): boolean { return null != this.asStructDescription(); }
+  public get isStructDescription(): boolean { return null != this.asStructDescription(); }
 }
 
 /** Type description for primitive properties */
@@ -190,14 +190,14 @@ export class ArrayTypeDescription extends TypeDescription {
     this._memberType = memberType;
   }
   public asArrayDescription(): ArrayTypeDescription { return this; }
-  public get MemberType(): TypeDescription { return this._memberType; }
+  public get memberType(): TypeDescription { return this._memberType; }
 }
 
 /** An interface for struct member type description. */
 export interface StructFieldMemberDescription {
-  Name: string;
-  Label: string;
-  Type: TypeDescription;
+  name: string;
+  label: string;
+  type: TypeDescription;
 }
 
 /** Type description for struct properties. */
@@ -208,7 +208,7 @@ export class StructTypeDescription extends TypeDescription {
     this._members = new Array<StructFieldMemberDescription>();
   }
   public asStructDescription(): StructTypeDescription { return this; }
-  public get Members(): StructFieldMemberDescription[] { return this._members; }
+  public get members(): StructFieldMemberDescription[] { return this._members; }
 }
 
 /** A class which describes editor used for a content field. */
@@ -252,7 +252,7 @@ export class Field {
   private _category: CategoryDescription;
   private _name: string;
   private _label: string;
-  private _type: TypeDescription;
+  private _description: TypeDescription;
   private _editor: EditorDescription | null;
   private _isReadOnly: boolean;
   private _priority: number;
@@ -262,19 +262,19 @@ export class Field {
    * @param[in] category The category of this field.
    * @param[in] name The per-descriptor unique name of this field.
    * @param[in] label The label of this field.
-   * @param[in] type The type description of this field.
+   * @param[in] description The type description of this field.
    * @param[in] isReadOnly Are the values in this field read-only.
    * @param[in] priority Priority of this field.
    * @param[in] editor Custom editor of this field.
    * @param[in] parentField Parent field (in case this field is nested)
    */
-  constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription,
+  constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription,
     isReadOnly: boolean, priority: number, editor: EditorDescription | null,
     parentField: NestedContentField | null) {
     this._category = category;
     this._name = name;
     this._label = label;
-    this._type = type;
+    this._description = description;
     this._isReadOnly = isReadOnly;
     this._priority = priority;
     this._editor = editor;
@@ -301,7 +301,7 @@ export class Field {
   public get label(): string { return this._label; }
 
   /** Get the type description of this field. */
-  public get type(): TypeDescription { return this._type; }
+  public get description(): TypeDescription { return this._description; }
 
   /** Get the editor name for this field. */
   public get editor(): EditorDescription | null { return this._editor; }
@@ -506,7 +506,7 @@ export class Descriptor {
       const originalField = this._originalFields[originalFieldIndex];
       let contains = false;
       for (const actualField of this._actualFields) {
-        if (actualField.name === originalField.name && actualField.type === originalField.type) {
+        if (actualField.name === originalField.name && actualField.description === originalField.description) {
           contains = true;
           break;
         }
@@ -535,9 +535,9 @@ export class PropertyValueKeys {
 }
 
 interface NestedContent {
-  PrimaryKeys: ECInstanceKey[];
-  Values: any;
-  DisplayValues: any;
+  primaryKeys: ECInstanceKey[];
+  values: any;
+  displayValues: any;
 }
 
 export interface FieldPropertyValueKeys {
@@ -553,7 +553,7 @@ export class ContentSetItem {
   private _primaryKeys: ECInstanceKey[];
   private _displayLabel: string;
   private _imageId: string;
-  private _classInfo: ECClassInfo;
+  private _classInfo: ECClassInfo | null;
   private _values: ValuesDictionary;
   private _displayValues: ValuesDictionary;
   private _mergedFieldNames: string[];
@@ -569,7 +569,7 @@ export class ContentSetItem {
    * @param[in] mergedFieldNames Names of fields whose values are merged in this record.
    * @param[in] fieldPropertyValueKeys ECInstanceKeys of related instances for each field in this record.
    */
-  constructor(primaryKeys: ECInstanceKey[], displayLabel: string, imageId: string, classInfo: ECClassInfo,
+  constructor(primaryKeys: ECInstanceKey[], displayLabel: string, imageId: string, classInfo: ECClassInfo | null,
     values: ValuesDictionary, displayValues: ValuesDictionary, mergedFieldNames: string[],
     fieldPropertyValueKeys: FieldPropertyValueKeys) {
     this._primaryKeys = primaryKeys;
@@ -583,7 +583,7 @@ export class ContentSetItem {
   }
 
   /** The information about the ECClass of this item. */
-  public get classInfo(): ECClassInfo { return this._classInfo; }
+  public get classInfo(): ECClassInfo | null { return this._classInfo; }
 
   /** Array of keys which describe whose values this item contains. */
   public get primaryKeys(): ECInstanceKey[] { return this._primaryKeys; }
@@ -623,9 +623,9 @@ export class ContentSetItem {
       else if (Array.isArray(values))
         values = values[0];
       const nestedValues: NestedContent = values;
-      values = nestedValues.Values;
+      values = nestedValues.values;
       if (i === accessor.length - 2)
-        return nestedValues.PrimaryKeys;
+        return nestedValues.primaryKeys;
     }
     return [];
   }
@@ -647,8 +647,8 @@ export class Content {
   }
 
   /** The descriptor used to create this content. */
-  public get Descriptor(): Descriptor { return this._descriptor; }
+  public get descriptor(): Descriptor { return this._descriptor; }
 
   /** The actual content. */
-  public get ContentSet(): ContentSetItem[] { return this._contentSet; }
+  public get contentSet(): ContentSetItem[] { return this._contentSet; }
 }
