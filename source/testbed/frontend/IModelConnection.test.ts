@@ -10,7 +10,7 @@ import { IModelConnection, IModelConnectionElements, IModelConnectionModels } fr
 import { TestData } from "./TestData";
 
 describe("IModelConnection", () => {
-  it.only("should be able to get elements and models from an IModelConnection", async () => {
+  it("should be able to get elements and models from an IModelConnection", async () => {
     const iModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
     assert.exists(iModel);
     assert.isTrue(iModel instanceof IModelConnection);
