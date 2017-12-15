@@ -4,14 +4,17 @@
 import * as fs from "fs";
 import * as path from "path";
 import { expect, assert } from "chai";
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "../common/IModelVersion";
-import { BriefcaseManager } from "../backend/BriefcaseManager";
+import { BriefcaseManager, BriefcaseManagerResourcesRequest } from "../backend/BriefcaseManager";
 import { IModelDb } from "../backend/IModelDb";
 import { IModelConnection } from "../frontend/IModelConnection";
 import { IModelTestUtils } from "./IModelTestUtils";
+import { Code } from "../common/Code";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Element } from "../backend/Element";
 
 describe("BriefcaseManager", () => {
   let accessToken: AccessToken;
@@ -41,7 +44,7 @@ describe("BriefcaseManager", () => {
   });
 
   it("should be able to open an IModel from the Hub in Readonly mode", async () => {
-    const iModel: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
+    const iModel: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId);
     assert.exists(iModel);
     assert(iModel.iModelToken.openMode === OpenMode.Readonly);
 
@@ -53,7 +56,7 @@ describe("BriefcaseManager", () => {
   });
 
   it("should be able to open an IModel from the Hub in ReadWrite mode", async () => {
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite); // Note: No frontend support for ReadWrite open yet
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest()); // Note: No frontend support for ReadWrite open yet
     assert.exists(iModel);
     assert(iModel.iModelToken.openMode === OpenMode.ReadWrite);
 
@@ -65,12 +68,15 @@ describe("BriefcaseManager", () => {
   });
 
   it("should reuse open briefcases in Readonly mode", async () => {
+    const iModel0: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId);
+    assert.exists(iModel0);
+
     const briefcases = fs.readdirSync(iModelLocalReadonlyPath);
     expect(briefcases.length).greaterThan(0);
 
     const iModels = new Array<IModelConnection>();
     for (let ii = 0; ii < 5; ii++) {
-      const iModel: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
+      const iModel: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId);
       assert.exists(iModel);
       iModels.push(iModel);
     }
@@ -99,10 +105,10 @@ describe("BriefcaseManager", () => {
     const versionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
 
     for (const [changeSetIndex, versionName] of versionNames.entries()) {
-      const iModelFromVersion: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.afterChangeSet(testChangeSets[changeSetIndex].wsgId));
+      const iModelFromVersion: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.asOfChangeSet(testChangeSets[changeSetIndex].wsgId));
       assert.exists(iModelFromVersion);
 
-      const iModelFromChangeSet: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.withName(versionName));
+      const iModelFromChangeSet: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.named(versionName));
       assert.exists(iModelFromChangeSet);
     }
   });
@@ -113,8 +119,54 @@ describe("BriefcaseManager", () => {
     if (shouldDeleteAllBriefcases)
       await IModelTestUtils.deleteAllBriefcases(accessToken, iModelNoVerId);
 
-    const iModelNoVer: IModelConnection = await IModelConnection.open(accessToken, testProjectId, iModelNoVerId, OpenMode.Readonly);
+    const iModelNoVer: IModelDb = await IModelDb.open(accessToken, testProjectId, iModelNoVerId, OpenMode.Readonly);
     assert.exists(iModelNoVer);
+  });
+
+  it("should build resource request", async () => {
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite); // Note: No frontend support for ReadWrite open yet
+
+    const el: Element = await iModel.elements.getRootSubject();
+    const req: BriefcaseManagerResourcesRequest = BriefcaseManager.createResourcesRequest();
+    el.buildResourcesRequest(req, DbOpcode.Update);    // make a list of the resources that will be needed to update this element (e.g., a shared lock on the model and a code)
+    const reqAsAny: any = BriefcaseManager.getResourcesRequestAsAny(req);
+    assert.isDefined(reqAsAny);
+    assert.isArray(reqAsAny.Locks);
+    assert.equal(reqAsAny.Locks.length, 3);
+    assert.isArray(reqAsAny.Codes);
+    assert.equal(reqAsAny.Codes.length, 0);
+
+    await iModel.close(accessToken);
+  });
+
+  it.skip("should make revisions", async () => {
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite); // Note: No frontend support for ReadWrite open yet
+    assert.exists(iModel);
+
+    let newModelId: Id64;
+    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, Code.createEmpty(), true);
+
+    const spatialCategoryId: Id64 = IModelTestUtils.getSpatialCategoryIdByName(iModel, "SpatialCategory1");
+
+    // Insert a few elements
+    const elements: Element[] = [
+      IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId),
+      IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId),
+    ];
+
+    const req: BriefcaseManagerResourcesRequest = BriefcaseManager.createResourcesRequest();
+    for (const el of elements) {
+      el.buildResourcesRequest(req);    // make a list of the resources that will be needed to insert this element (e.g., a shared lock on the model and a code)
+    }
+
+    iModel.requestResources(req);
+
+    for (const el of elements)
+        iModel.elements.insertElement(el);
+
+    iModel.saveChanges("inserted generic objects");
+
+    await iModel.close(accessToken);
   });
 
   // should not be able to open the same iModel both Readonly and ReadWrite

@@ -9,10 +9,10 @@ import { ElementProps } from "../common/ElementProps";
 import { EntityQueryParams } from "../common/EntityProps";
 import { IModel, IModelToken, IModelProps } from "../common/IModel";
 import { IModelError, IModelStatus } from "../common/IModelError";
-import { IModelVersion } from "../common/IModelVersion";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { ModelProps } from "../common/ModelProps";
 import { IModelGateway } from "../gateway/IModelGateway";
+import { IModelVersion } from "../common/IModelVersion";
 
 /** A connection to an iModel database hosted on the backend. */
 export class IModelConnection extends IModel {
@@ -38,11 +38,22 @@ export class IModelConnection extends IModel {
       return Promise.reject(new IModelError(IModelStatus.NotEnabled, "IModelConnection does not support read/write access yet"));
     // WIP: waiting for decisions on how to manage read/write briefcases on the backend.
 
-    const openResponse: IModel = await IModelGateway.getProxy().openForRead(accessToken, contextId, iModelId, version);
-    Logger.logInfo("IModelConnection.open", () => ({ iModelId, openMode, version }));
+    let changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId);
+    if (!changeSetId)
+      changeSetId = "0"; // The first version is arbitrarily setup to have changeSetId = "0" since it's required by the gateway API.
+    const iModelToken = IModelToken.create(iModelId, changeSetId, openMode, accessToken.getUserProfile().userId, contextId);
+    const openResponse: IModel = await IModelGateway.getProxy().openForRead(accessToken, iModelToken);
+    Logger.logInfo("IModelConnection.open", () => ({ iModelId, openMode, changeSetId }));
 
     // todo: Setup userId if it's a readWrite open - this is necessary to reopen the same exact briefcase at the backend
     return IModelConnection.create(openResponse);
+  }
+
+  /** Close this iModel */
+  public async close(accessToken: AccessToken): Promise<void> {
+    if (!this.iModelToken)
+      return;
+    await IModelGateway.getProxy().close(accessToken, this.iModelToken);
   }
 
   /** Ask the backend to open a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend.
@@ -54,11 +65,11 @@ export class IModelConnection extends IModel {
     return IModelConnection.create(openResponse);
   }
 
-  /** Close this iModel */
-  public async close(accessToken: AccessToken): Promise<void> { // WIP: remove AccessToken parameter
+  /** Close this standalone iModel */
+  public async closeStandalone(): Promise<void> {
     if (!this.iModelToken)
       return;
-    await IModelGateway.getProxy().close(accessToken, this.iModelToken);
+    await IModelGateway.getProxy().closeStandalone(this.iModelToken);
   }
 
   /** Execute a query against the iModel.
@@ -156,7 +167,7 @@ export class IModelConnectionCodeSpecs {
       return Promise.reject(new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, () => ({ codeSpecId })));
 
     await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
-    const found: CodeSpec | undefined = this._loaded.find((codeSpec: CodeSpec) => codeSpec.id === codeSpecId);
+    const found: CodeSpec | undefined = this._loaded.find((codeSpec: CodeSpec) => codeSpec.id.equals(codeSpecId));
     if (!found)
       return Promise.reject(new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning));
 

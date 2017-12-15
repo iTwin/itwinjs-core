@@ -54,6 +54,7 @@ describe("Viewport", () => {
     accessToken = await IModelTestUtils.getTestUserAccessToken();
     testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
     testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "MyTestModel");
+
     imodelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId);
     imodel = new TestIModel(imodelConnection.iModelToken, "TestIModel",
       {

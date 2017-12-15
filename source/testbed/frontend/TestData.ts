@@ -16,6 +16,7 @@ export class TestData {
   public static accessToken: AccessToken;
   public static testProjectId: string;
   public static testIModelId: string;
+  public static testChangeSetId: string;
 
   public static async load() {
     TestData.accessToken = await TestData.getTestUserAccessToken();
@@ -52,4 +53,5 @@ export class TestData {
 
     return iModels[0].wsgId;
   }
+
 }

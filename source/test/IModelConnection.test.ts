@@ -1,6 +1,7 @@
 import { assert, expect } from "chai";
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { AccessToken } from "@bentley/imodeljs-clients";
+import { CodeSpec, CodeSpecNames } from "../common/Code";
 import { IModelConnection } from "../frontend/IModelConnection";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
@@ -16,8 +17,7 @@ describe("IModelConnection", () => {
     accessToken = await IModelTestUtils.getTestUserAccessToken();
     testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
     testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "MyTestModel");
-
-    iModel = await IModelConnection.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
+    iModel = await IModelConnection.open(accessToken, testProjectId, testIModelId);
   });
 
   it("should be able to get the name of the IModel", async () => {
@@ -29,4 +29,12 @@ describe("IModelConnection", () => {
     assert(!extents.isNull());
   });
 
+  it("should be able to get CodeSpecs from IModelConnection", async () => {
+    const codeSpecByName: CodeSpec = await iModel.codeSpecs.getCodeSpecByName(CodeSpecNames.SpatialCategory());
+    assert.exists(codeSpecByName);
+    const codeSpecById: CodeSpec = await iModel.codeSpecs.getCodeSpecById(codeSpecByName.id);
+    assert.exists(codeSpecById);
+    const codeSpecByNewId: CodeSpec = await iModel.codeSpecs.getCodeSpecById(new Id64(codeSpecByName.id));
+    assert.exists(codeSpecByNewId);
+  });
 });

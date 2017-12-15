@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, Point2d, XAndY } from "@bentley/geometry-core/lib/PointVector";
 import { Viewport } from "../Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 
@@ -243,7 +243,7 @@ export class GestureInfo {
     return new Point3d(this.ptsLocation.x - screenRect.low.x, this.ptsLocation.y - screenRect.low.y, 0.0);
   }
 
-  public init(gestureId: GestureId, centerX: number, centerY: number, distance: number, touchPoints: Point2d[], isEnding: boolean, isFromMouse: boolean, prevNumTouches: number) {
+  public init(gestureId: GestureId, centerX: number, centerY: number, distance: number, touchPoints: XAndY[], isEnding: boolean, isFromMouse: boolean, prevNumTouches: number) {
     this.gestureId = gestureId;
     this.numberTouches = Math.min(touchPoints.length, 3);
     this.previousNumberTouches = prevNumTouches;

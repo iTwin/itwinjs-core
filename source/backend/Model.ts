@@ -6,6 +6,8 @@ import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { ModelProps, GeometricModel2dProps } from "../common/ModelProps";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
+import { DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { BriefcaseManagerResourcesRequest } from "./BriefcaseManager";
 
 /**
  * A Model is a container for persisting a collection of related elements within an iModel.
@@ -43,6 +45,15 @@ export class Model extends Entity implements ModelProps {
 
   /** Get the Id of the special dictionary model */
   public static getDictionaryId(): Id64 { return new Id64("0x10"); }
+
+ /**
+  * Add the lock, code, and other resource requests that would be needed in order to carry out the specified operation.
+  * @param req The request object, which accumulates requests.
+  * @param opcode The operation that will be performed on the element.
+  */
+  public buildResourcesRequest(req: BriefcaseManagerResourcesRequest, opcode: DbOpcode): void {
+    this.iModel.buildResourcesRequestForModel(req, this, opcode);
+  }
 }
 
 /**
@@ -55,7 +66,7 @@ export class GeometricModel extends Model {
 }
 
 /**
- * A container for persisting 3D geometric elements.
+ * A container for persisting 3d geometric elements.
  */
 export abstract class GeometricModel3d extends GeometricModel {
   constructor(props: ModelProps, iModel: IModelDb) {
@@ -64,7 +75,7 @@ export abstract class GeometricModel3d extends GeometricModel {
 }
 
 /**
- * A container for persisting 2D geometric elements.
+ * A container for persisting 2d geometric elements.
  */
 export abstract class GeometricModel2d extends GeometricModel implements GeometricModel2dProps {
   constructor(props: GeometricModel2dProps, iModel: IModelDb) {
@@ -72,7 +83,7 @@ export abstract class GeometricModel2d extends GeometricModel implements Geometr
   }
 }
 /**
- * A container for persisting 2D graphical elements.
+ * A container for persisting 2d graphical elements.
  */
 export abstract class GraphicalModel2d extends GeometricModel2d {
   constructor(props: GeometricModel2dProps, iModel: IModelDb) {
@@ -81,7 +92,7 @@ export abstract class GraphicalModel2d extends GeometricModel2d {
 }
 
 /**
- * A container for persisting 3D geometric elements that are spatially located.
+ * A container for persisting 3d geometric elements that are spatially located.
  */
 export abstract class SpatialModel extends GeometricModel3d {
   constructor(props: ModelProps, iModel: IModelDb) {

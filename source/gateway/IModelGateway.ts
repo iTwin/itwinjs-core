@@ -28,12 +28,12 @@ export abstract class IModelGateway extends Gateway {
   }
 
   /** Opens an IModel (read-only) on the backend to service frontend requests. */
-  public async openForRead(_accessToken: AccessToken, _contextId: string, _iModelId: string, _version: IModelVersion): Promise<IModel> {
+  public async openForRead(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<IModel> {
     return this.forward.apply(this, arguments);
   }
 
   /** Opens an IModel (read/write) on the backend to service frontend requests. */
-  public async openForWrite(_accessToken: AccessToken, _contextId: string, _iModelId: string, _version: IModelVersion): Promise<IModel> {
+  public async openForWrite(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<IModel> {
     return this.forward.apply(this, arguments);
   }
 
@@ -44,6 +44,11 @@ export abstract class IModelGateway extends Gateway {
 
   /** Closes an IModel on the backend. */
   public async close(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<boolean> {
+    return this.forward.apply(this, arguments);
+  }
+
+  /** Closes a standalone IModel on the backend. */
+  public async closeStandalone(_iModelToken: IModelToken): Promise<boolean> {
     return this.forward.apply(this, arguments);
   }
 

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, Point2d, XAndY } from "@bentley/geometry-core/lib/PointVector";
 import { NpcCenter, ViewStatus } from "../../common/ViewState";
 import { Viewport } from "../Viewport";
 import { IdleTool } from "./IdleTool";
@@ -45,6 +45,7 @@ export class CurrentInputState {
   public touchMotionTime: number = 0;
   public buttonDownTool?: Tool = undefined;
   public lastMotion = new Point2d();
+
   private static doubleClickTimeout = 500;   // half-second
   private static doubleClickTolerance = 4.0;
 
@@ -72,7 +73,7 @@ export class CurrentInputState {
     this.wantIgnoreTest = false;
   }
 
-  public onMotion(pt2d: Point2d) {
+  public onMotion(pt2d: XAndY) {
     this.motionTime = Date.now();
     this.lastMotion.x = pt2d.x;
     this.lastMotion.y = pt2d.y;
@@ -174,7 +175,7 @@ export class CurrentInputState {
     ev.initEvent(uorPt, rawPt, viewPt, this.viewport!, CoordSource.User, this.qualifiers, BeButton.Data, state.isDown, state.isDoubleClick, state.inputSource);
   }
 
-  public fromPoint(vp: Viewport, pt: Point2d, source: InputSource) {
+  public fromPoint(vp: Viewport, pt: XAndY, source: InputSource) {
     this.viewport = vp;
     this._viewPoint.x = pt.x + this.inputOffset.x;
     this._viewPoint.y = pt.y + this.inputOffset.y;
@@ -184,7 +185,7 @@ export class CurrentInputState {
     this.inputSource = source;
   }
 
-  public fromButton(vp: Viewport, pt: Point2d, source: InputSource, _applyLocks: boolean) {
+  public fromButton(vp: Viewport, pt: XAndY, source: InputSource, _applyLocks: boolean) {
     this.fromPoint(vp, pt, source);
 
     // // NOTE: Using the hit point on the element is preferable to ignoring a snap that is not "hot" completely...
@@ -231,7 +232,7 @@ export class CurrentInputState {
     return ((deltaX + deltaY) > 15);
   }
 
-  public ignoreTouchMotion(numberTouches: number, touches: Point2d[]) {
+  public ignoreTouchMotion(numberTouches: number, touches: XAndY[]) {
     if (!this.wantIgnoreTest)
       return false;
 
@@ -251,7 +252,7 @@ export class CurrentInputState {
     return true;
   }
 
-  public onTouchMotionChange(numberTouches: number, touches: Point2d[]) {
+  public onTouchMotionChange(numberTouches: number, touches: XAndY[]) {
     if (0 === numberTouches) {
       this.clearTouch();
       return;
@@ -277,16 +278,20 @@ export class ToolAdmin {
   private idleTool: IdleTool;
   private inputCollector?: Tool;
   private defaultTool?: PrimitiveTool;
-  // private cursorInView: boolean;
   public gesturePending: boolean;
-  // elementLocateManager: ElementLocateManager;
-  // fenceManager: FenceManager;
-  // accuSnap: AccuSnap;
-  // tentPoint: TentativePoint;
-  // accuDraw: AccuDraw;
   private modifierKeyWentDown: boolean;
   private modifierKey: BeModifierKey;
   private touchBridgeMode: boolean; // Flag indicating that touch events are being converted into mouse events for this tool
+
+  /** Apply operation such as transform, copy or delete to all members of an assembly. */
+  public assemblyLock = false;
+  /** If Grid Lock is on, project data points to grid. */
+  public gridLock = false;
+  /** If ACS Snap Lock is on, project snap points to the ACS plane. */
+  public acsPlaneSnapLock = false;
+  /** If ACS Plane Lock is on, standard view rotations are relative to the ACS instead of global. */
+  public acsContextLock = false;
+
 
   protected filterViewport(_vp: Viewport) { return false; }
   public onInstallTool(tool: Tool) { this.currentInputState.clearKeyQualifiers(); return tool.onInstall(); }
@@ -319,7 +324,7 @@ export class ToolAdmin {
       ev.actualInputSource = InputSource.Mouse;
   }
 
-  public onWheel(vp: Viewport, wheelDelta: number, pt2d: Point2d): void {
+  public onWheel(vp: Viewport, wheelDelta: number, pt2d: XAndY): void {
     vp.removeAnimator();
     this.currentInputState.fromButton(vp, pt2d, InputSource.Mouse, true);
     const wheelEvent = new BeWheelEvent();
@@ -383,7 +388,7 @@ export class ToolAdmin {
     return !wasMotion;  // return value unused...
   }
 
-  public onMouseMotion(vp: Viewport, pt2d: Point2d, inputSource: InputSource): void {
+  public onMouseMotion(vp: Viewport, pt2d: XAndY, inputSource: InputSource): void {
     const current = this.currentInputState;
     current.onMotion(pt2d);
 
@@ -469,7 +474,7 @@ export class ToolAdmin {
     return (!tool ? true : tool.isValidLocation(ev, true));
   }
 
-  public onDataButtonDown(vp: Viewport, pt2d: Point2d, inputSource: InputSource): void {
+  public onDataButtonDown(vp: Viewport, pt2d: XAndY, inputSource: InputSource): void {
     vp.removeAnimator();
     if (this.filterViewport(vp))
       return;
@@ -484,7 +489,7 @@ export class ToolAdmin {
     ev.reset();
   }
 
-  public onDataButtonUp(vp: Viewport, pt2d: Point2d, inputSource: InputSource): void {
+  public onDataButtonUp(vp: Viewport, pt2d: XAndY, inputSource: InputSource): void {
     if (this.filterViewport(vp))
       return;
 
@@ -516,7 +521,7 @@ export class ToolAdmin {
     ev.reset();
   }
 
-  public onMiddleButtonDown(vp: Viewport, pt2d: Point2d): void {
+  public onMiddleButtonDown(vp: Viewport, pt2d: XAndY): void {
     if (this.filterViewport(vp))
       return;
 
@@ -546,7 +551,7 @@ export class ToolAdmin {
     ev.reset();
   }
 
-  public onMiddleButtonUp(vp: Viewport, pt2d: Point2d): void {
+  public onMiddleButtonUp(vp: Viewport, pt2d: XAndY): void {
     if (this.filterViewport(vp))
       return;
 
@@ -582,7 +587,7 @@ export class ToolAdmin {
     ev.reset();
   }
 
-  public onResetButtonDown(vp: Viewport, pt2d: Point2d): void {
+  public onResetButtonDown(vp: Viewport, pt2d: XAndY): void {
     if (this.filterViewport(vp))
       return;
 
@@ -605,7 +610,7 @@ export class ToolAdmin {
     ev.reset();
   }
 
-  public onResetButtonUp(vp: Viewport, pt2d: Point2d): void {
+  public onResetButtonUp(vp: Viewport, pt2d: XAndY): void {
     if (this.filterViewport(vp))
       return;
 

@@ -11,6 +11,9 @@ import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core/lib/Time";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { BeButtonEvent, BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
+import { ToolAdmin } from "./tools/ToolAdmin";
+
+const toolAdmin = ToolAdmin.instance;
 
 // tslint:disable:no-empty
 
@@ -125,6 +128,10 @@ export class Viewport {
   private static nearScale24 = 0.0003; // max ratio of frontplane to backplane distance for 24 bit zbuffer
   private _evController?: EventController;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
+
+  public isPointAdjustmentRequired(): boolean { return this.view.is3d(); }
+  public isSnapAdjustmentRequired(): boolean { return toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
+  public isContextRotationRequired(): boolean { return toolAdmin.acsContextLock; }
 
   constructor(public canvas?: HTMLCanvasElement, private _view?: ViewState) { this.setCursor(); }
 
@@ -953,3 +960,4 @@ export class Viewport {
     return undefined;
   }
 }
+

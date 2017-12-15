@@ -10,7 +10,7 @@ import { IModelConnection, IModelConnectionElements, IModelConnectionModels } fr
 import { TestData } from "./TestData";
 
 describe("IModelConnection", () => {
-  it("should be able to get elements and models from an IModelConnection", async () => {
+  it.only("should be able to get elements and models from an IModelConnection", async () => {
     const iModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
     assert.exists(iModel);
     assert.isTrue(iModel instanceof IModelConnection);
@@ -47,6 +47,8 @@ describe("IModelConnection", () => {
     assert.exists(codeSpecByName);
     const codeSpecById: CodeSpec = await iModel.codeSpecs.getCodeSpecById(codeSpecByName.id);
     assert.exists(codeSpecById);
+    const codeSpecByNewId: CodeSpec = await iModel.codeSpecs.getCodeSpecById(new Id64(codeSpecByName.id));
+    assert.exists(codeSpecByNewId);
 
     await iModel.close(TestData.accessToken);
   }).timeout(99999);

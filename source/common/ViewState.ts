@@ -65,6 +65,18 @@ export const enum GridOrientationType {
   GeoCoord = 5,
 }
 
+export const enum StandardViewId {
+  NotStandard = -1,
+  Top = 1,
+  Bottom = 2,
+  Left = 3,
+  Right = 4,
+  Front = 5,
+  Back = 6,
+  Iso = 7,
+  RightIso = 8,
+}
+
 export const standardView = {
   Top: RotMatrix.identity,
   Bottom: RotMatrix.createRowValues(1, 0, 0, 0, -1, 0, 0, 0, -1),
