@@ -55,7 +55,7 @@ export class GeometricModel extends Model {
 }
 
 /**
- * A container for persisting 3D geometric elements.
+ * A container for persisting 3d geometric elements.
  */
 export abstract class GeometricModel3d extends GeometricModel {
   constructor(props: ModelProps, iModel: IModelDb) {
@@ -64,7 +64,7 @@ export abstract class GeometricModel3d extends GeometricModel {
 }
 
 /**
- * A container for persisting 2D geometric elements.
+ * A container for persisting 2d geometric elements.
  */
 export abstract class GeometricModel2d extends GeometricModel implements GeometricModel2dProps {
   constructor(props: GeometricModel2dProps, iModel: IModelDb) {
@@ -72,7 +72,7 @@ export abstract class GeometricModel2d extends GeometricModel implements Geometr
   }
 }
 /**
- * A container for persisting 2D graphical elements.
+ * A container for persisting 2d graphical elements.
  */
 export abstract class GraphicalModel2d extends GeometricModel2d {
   constructor(props: GeometricModel2dProps, iModel: IModelDb) {
@@ -81,7 +81,7 @@ export abstract class GraphicalModel2d extends GeometricModel2d {
 }
 
 /**
- * A container for persisting 3D geometric elements that are spatially located.
+ * A container for persisting 3d geometric elements that are spatially located.
  */
 export abstract class SpatialModel extends GeometricModel3d {
   constructor(props: ModelProps, iModel: IModelDb) {

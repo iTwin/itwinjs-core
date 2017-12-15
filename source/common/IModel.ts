@@ -20,7 +20,7 @@ export class IModelToken {
   /** Constructor */
   public static create(iModelId: string, changeSetId: string, openMode: OpenMode, userId?: string, contextId?: string): IModelToken {
     const token = new IModelToken();
-    Object.assign(token, {iModelId, changeSetId, openMode, userId, contextId});
+    Object.assign(token, { iModelId, changeSetId, openMode, userId, contextId });
     return token;
   }
 }
@@ -39,8 +39,10 @@ export abstract class IModel {
 
   /** @hidden */
   protected _iModelToken: IModelToken;
+
   /** The token that can be used to find this iModel instance. */
   public get iModelToken(): IModelToken { return this._iModelToken; }
+
   /** @hidden */
   protected constructor(iModelToken: IModelToken, name: string, description: string) {
     this._iModelToken = iModelToken;
