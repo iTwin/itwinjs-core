@@ -47,6 +47,8 @@ describe("IModelConnection", () => {
     assert.exists(codeSpecByName);
     const codeSpecById: CodeSpec = await iModel.codeSpecs.getCodeSpecById(codeSpecByName.id);
     assert.exists(codeSpecById);
+    const codeSpecByNewId: CodeSpec = await iModel.codeSpecs.getCodeSpecById(new Id64(codeSpecByName.id));
+    assert.exists(codeSpecByNewId);
 
     await iModel.close(TestData.accessToken);
   }).timeout(99999);

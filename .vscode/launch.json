@@ -30,7 +30,12 @@
         "--debug-brk=5858"
       ],
       "protocol": "legacy",
-      "port": 5858
+      "port": 5858,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/source/testbed/backend/lib/**/*.js",
+        "${workspaceRoot}/source/backend/lib/**/*.js"
+      ]
     }
   ]
 }
