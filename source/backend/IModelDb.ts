@@ -18,7 +18,7 @@ import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { Model } from "./Model";
-import { BriefcaseInfo, BriefcaseManager, KeepBriefcase, BriefcaseId, BriefcaseManagerResourcesRequest } from "./BriefcaseManager";
+import { BriefcaseInfo, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./BriefcaseManager";
 import { NodeAddonBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
@@ -26,10 +26,9 @@ import { BindingValue } from "./BindingUtility";
 import { CodeSpecs } from "./CodeSpecs";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelGatewayImpl } from "./IModelGatewayImpl";
-import { StatusCodeWithMessage } from "@bentley/bentleyjs-core/lib/BentleyError";
+import { StatusCodeWithMessage, RepositoryStatus } from "@bentley/bentleyjs-core/lib/BentleyError";
 import * as path from "path";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
-import { RepositoryStatus } from "@bentley/bentleyjs-core/lib/BentleyError";
 
 // Register the backend implementation of IModelGateway
 IModelGatewayImpl.register();
@@ -217,7 +216,7 @@ export class IModelDb extends IModel {
   * @param opcode The operation that will be performed on the model.
   * @see BriefcaseManager.createResourcesRequest
   */
-  public buildResourcesRequestForModel(req: BriefcaseManagerResourcesRequest, model: Model, opcode: DbOpcode): void {
+  public buildResourcesRequestForModel(req: BriefcaseManager.ResourcesRequest, model: Model, opcode: DbOpcode): void {
     if (!this.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
     const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForModel(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(model.id), opcode);
@@ -232,7 +231,7 @@ export class IModelDb extends IModel {
   * @param opcode The operation that will be performed on the element.
   * @see BriefcaseManager.createResourcesRequest
   */
-  public buildResourcesRequestForElement(req: BriefcaseManagerResourcesRequest, element: Element, opcode: DbOpcode): void {
+  public buildResourcesRequestForElement(req: BriefcaseManager.ResourcesRequest, element: Element, opcode: DbOpcode): void {
     if (!this.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
     let rc: RepositoryStatus;
@@ -254,7 +253,7 @@ export class IModelDb extends IModel {
    * requests that could not be fulfilled.
    * @return BentleyStatus.SUCCESS if all resources were acquired or non-zero if some could not be acquired.
    */
-  public requestResources(_req: BriefcaseManagerResourcesRequest) {
+  public requestResources(_req: BriefcaseManager.ResourcesRequest) {
     if (!this.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
     // throw new Error("TBD");
@@ -265,12 +264,66 @@ export class IModelDb extends IModel {
    * @param req the list of resource requests to be fulfilled.
    * @return true if all resources could be acquired or false if any could not be acquired.
    */
-  public areResourcesAvailable(_req: BriefcaseManagerResourcesRequest): boolean {
+  public areResourcesAvailable(_req: BriefcaseManager.ResourcesRequest): boolean {
     if (!this.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
     // throw new Error("TBD");
     return false; // *** TBD
     }
+
+  /** Set the concurrency control policy.
+   * Before changing from optimistic to pessimistic, all local changes must be saved and uploaded to iModelHub.
+   * Before changing the locking policy of the pessimistic concurrency policy, all local changes must be saved to the local briefcase.
+   * @param policy The policy to used
+   * @throws IModelError if the policy cannot be set.
+   */
+  public setConcurrencyControlPolicy(policy: BriefcaseManager.PessimisticConcurrencyControlPolicy | BriefcaseManager.OptimisticConcurrencyControlPolicy): void {
+    if (!this.briefcaseInfo)
+      throw new IModelError(IModelStatus.BadRequest);
+    let rc: RepositoryStatus = RepositoryStatus.Success;
+    if (policy as BriefcaseManager.OptimisticConcurrencyControlPolicy) {
+      const oc: BriefcaseManager.OptimisticConcurrencyControlPolicy = policy as BriefcaseManager.OptimisticConcurrencyControlPolicy;
+      rc = this.briefcaseInfo.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(oc.conflictResolution);
+    } else {
+      rc = this.briefcaseInfo.nativeDb.setBriefcaseManagerPessimisticConcurrencyControlPolicy();
+    }
+    if (RepositoryStatus.Success !== rc) {
+      throw new IModelError(rc);
+    }
+  }
+
+  /**
+   * Start a bulk update operation. This allows apps to write entities and codes to the local briefcase without first acquiring locks.
+   * The transaction manager then attempts to acquire all needed locks and codes before saving the changes to the local briefcase.
+   * The transaction manager will roll back all pending changes if any lock or code cannot be acquired at save time. Lock and code acquisition will fail if another user
+   * has push changes to the same entities or used the same codes as the local transaction.
+   * This policy does prevent conflicts and is the easiest way to implement the pessimistic locking policy efficiently.
+   * It however carries the risk that local changes could be rolled back, and so it can only be used safely in special cases, where
+   * contention for locks and codes is not a risk. Normally, that is only possible when writing to a model that is exclusively locked and where codes
+   * are scoped to that model.
+   * See saveChanges and endBulkUpdateMode.
+   */
+  public startBulkUpdateMode(): void {
+    if (!this.briefcaseInfo)
+      throw new IModelError(IModelStatus.BadRequest);
+    const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.briefcaseManagerStartBulkOperation();
+    if (RepositoryStatus.Success !== rc)
+      throw new IModelError(rc);
+  }
+
+  /**
+   * Call this if you want to acquire locks and codes *before* the end of the transaction.
+   * Note that saveChanges automatically calls this function to end the bulk operation and acquire locks and codes.
+   * If successful, this terminates the bulk operation.
+   * If not successful, the caller should abandon all changes.
+   */
+  public endBulkUpdateMode(): void {
+    if (!this.briefcaseInfo)
+      throw new IModelError(IModelStatus.BadRequest);
+    const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.briefcaseManagerEndBulkOperation();
+    if (RepositoryStatus.Success !== rc)
+      throw new IModelError(rc);
+  }
 
   /** Returns a new IModelError with errorNumber, message, and meta-data set properly for a *not open* error.
    * @hidden

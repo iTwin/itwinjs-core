@@ -16,11 +16,6 @@ import * as path from "path";
 
 declare const __dirname: string;
 
-// This is a stand-in for NodeAddonBriefcaseManagerResourcesRequest. We cannot (re-)export that for technical reasons.
-export class BriefcaseManagerResourcesRequest {
-  private constructor() {}
-}
-
 /** The ID assigned to a briefcase by iModelHub, or one of the special values that identify special kinds of iModels */
 export class BriefcaseId {
   private value: number;
@@ -636,13 +631,84 @@ export class BriefcaseManager {
     return BriefcaseManager.cache.findBriefcase(iModelToken);
   }
 
-  /** Create a new empty resources request. @See Entity.buildResourcesRequest, IModelDb.requestResources */
-  public static createResourcesRequest(): BriefcaseManagerResourcesRequest {
-    return new (NodeAddonRegistry.getAddon()).NodeAddonBriefcaseManagerResourcesRequest();
+}
+
+/** Types that are relative to BriefcaseManager. Typescript declaration merging will make these types appear to be properties of the BriefcaseManager class. */
+export namespace BriefcaseManager {
+
+  /** This is a stand-in for NodeAddonBriefcaseManagerResourcesRequest. We cannot (re-)export that for technical reasons. */
+  export class ResourcesRequest {
+    private constructor() {}
+
+    /** Create an empty ResourcesRequest */
+    public static create(): ResourcesRequest {
+      return new (NodeAddonRegistry.getAddon()).NodeAddonBriefcaseManagerResourcesRequest();
+    }
+
+    /** Convert the request to any */
+    public static toAny(req: ResourcesRequest): any {
+      return JSON.parse((req as NodeAddonBriefcaseManagerResourcesRequest).toJSON());
+    }
+
   }
 
-  /** Convert the request to any */
-  public static getResourcesRequestAsAny(req: BriefcaseManagerResourcesRequest): any {
-    return JSON.parse((req as NodeAddonBriefcaseManagerResourcesRequest).toJSON());
+  /** How to handle a conflict */
+  export const enum ConflictResolution {
+    /** Reject the incoming change */
+    Reject = 0,
+    /** Accept the incoming change */
+    Take = 1,
+  }
+
+  /** The options for how conflicts are to be handled during change-merging in an OptimisticConcurrencyControlPolicy.
+   * The scenario is that the caller has made some changes to the *local* briefcase. Now, the caller is attempting to
+   * merge in changes from iModelHub. The properties of this policy specify how to handle the *incoming* changes from iModelHub.
+   */
+  export interface ConflictResolutionPolicy {
+    /** What to do with the incoming change in the case where the same entity was updated locally and also would be updated by the incoming change. */
+    updateVsUpdate: ConflictResolution;
+    /** What to do with the incoming change in the case where an entity was updated locally and would be deleted by the incoming change. */
+    updateVsDelete: ConflictResolution;
+    /** What to do with the incoming change in the case where an entity was deleted locally and would be updated by the incoming change. */
+    deleteVsUpdate: ConflictResolution;
+    }
+
+  /** Specifies an optimistic concurrency policy.
+   * Optimistic concurrency allows entities to be modified in the local briefcase without first acquiring locks. Allows codes to be used in the local briefcase without first acquiring them.
+   * This creates the possibility that other apps may have uploaded changesets to iModelHub that overlap with local changes.
+   * In that case, overlapping changes are merged when changesets are downloaded from iModelHub.
+   * A ConflictResolutionPolicy is then applied in cases where an overlapping change conflict with a local change.
+   */
+  export class OptimisticConcurrencyControlPolicy {
+    public conflictResolution: ConflictResolutionPolicy;
+    constructor(p: ConflictResolutionPolicy) { this.conflictResolution = p; }
+  }
+
+  /** The options for when to acquire locks and codes in the course of a local transaction in a PessimisticConcurrencyControlPolicy */
+  export const enum PessimisticLockingPolicy {
+    /** Requires that the app must acquire locks for entities *before* modifying them in the local briefcase. Likewise, the app must acquire codes *before* using them in entities that a written to the local briefcase.
+     * This policy prevents conflicts or the possibility that local changes would have to be rolled back. Implementing this policy requires the most effort for the app developer, and it requires
+     * careful design and implementation to implement it efficiently.
+     */
+    Immediate = 0,
+
+    /** Allows apps to write entities and codes to the local briefcase without first acquiring locks.
+     * The transaction manager then attempts to acquire all needed locks and codes before saving the changes to the local briefcase.
+     * The transaction manager will roll back all pending changes if any lock or code cannot be acquired at save time. Lock and code acquisition will fail if another user
+     * has push changes to the same entities or used the same codes as the local transaction.
+     * This policy does prevent conflicts and is the easiest way to implement the pessimistic locking policy efficiently.
+     * It however carries the risk that local changes could be rolled back, and so it can only be used safely in special cases, where
+     * contention for locks and codes is not a risk. Normally, that is only possible when writing to a model that is exclusively locked and where codes
+     * are scoped to that model.
+     */
+    Deferred = 1,
+  }
+
+  /** Specifies a pessimistic concurrency policy.
+   * Pessimistic concurrency means that entities must be locked and codes must be acquired before a local changes can be pushed to iModelHub.
+   * There is more than one strategy for when to acquire locks. See briefcaseManagerStartBulkOperation.
+   * A pessimistic concurrency policy with respect to iModelHub does not preclude using an optimistic concurrency strategy with respect to members of a workgroup.
+   */
+  export class PessimisticConcurrencyControlPolicy {
   }
 }

@@ -13,7 +13,7 @@ import { IModelError, IModelStatus } from "../common/IModelError";
 import { Element } from "../backend/Element";
 import { Model } from "../backend/Model";
 import { IModelDb } from "../backend/IModelDb";
-import { BriefcaseManager, BriefcaseManagerResourcesRequest } from "../backend/BriefcaseManager";
+import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { SpatialCategory, DrawingCategory } from "../backend/Category";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { NodeAddonLoader } from "@bentley/imodeljs-nodeaddon/NodeAddonLoader";
@@ -169,9 +169,11 @@ export class IModelTestUtils {
    * @param codeValue The name of the category
    * @return a Promise if the category's Code
    */
-  public static createSpatialCategoryCode(imodel: IModelDb, definitionModelId: Id64, codeValue: string): Code {
+  public static createSpatialCategoryCode(imodel: IModelDb, definitionModelId: Id64, codeValue: string, scopeId?: Id64): Code {
+    if (undefined === scopeId)
+      scopeId = definitionModelId;
     const codeSpec = imodel.codeSpecs.getCodeSpecByName(SpatialCategory.getCodeSpecName());
-    return new Code({ spec: codeSpec.id, scope: definitionModelId.toString(), value: codeValue });
+    return new Code({ spec: codeSpec.id, scope: scopeId.toString(), value: codeValue });
   }
 
   // TODO: This needs a home
@@ -183,6 +185,18 @@ export class IModelTestUtils {
     if (id === undefined)
       throw new IModelError(DbResult.BE_SQLITE_NOTFOUND);
     return id;
+  }
+
+  public static createSpatialCategory(imodel: IModelDb, categoryName: string, modelId: Id64, scopeId?: Id64): Id64 {
+    const newCat = imodel.elements.createElement({
+      iModel: imodel,
+      id: new Id64(),
+      classFullName: "BisCore:SpatialCategory",
+      model: modelId,
+      code: IModelTestUtils.createSpatialCategoryCode(imodel, modelId, categoryName, scopeId),
+      });
+    IModelTestUtils.requestResources(newCat, DbOpcode.Insert);
+    return imodel.elements.insertElement(newCat);
   }
 
   //
@@ -225,7 +239,7 @@ export class IModelTestUtils {
   // *** NB: A real app must accumulate many requests and then make a single call on iModelHub!
   //
   public static requestResources(entity: Entity, opcode: DbOpcode) {
-    const req: BriefcaseManagerResourcesRequest = BriefcaseManager.createResourcesRequest();
+    const req: BriefcaseManager.ResourcesRequest = BriefcaseManager.ResourcesRequest.create();
     entity.buildResourcesRequest(req, opcode);
     entity.iModel.requestResources(req);
   }
