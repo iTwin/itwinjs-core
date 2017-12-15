@@ -21,7 +21,21 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Run testbed",
+      "name": "Run testbed (NodeJs)",
+      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "--packageRoot=${workspaceFolder}",
+        "--testDir=${workspaceFolder}/source/testbed/frontend/lib/frontend",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run testbed (electron)",
       "cwd": "${workspaceFolder}/source/testbed/",
       "runtimeExecutable": "${workspaceFolder}/source/testbed/node_modules/.bin/electron",
       "runtimeArgs": [
