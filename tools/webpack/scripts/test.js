@@ -12,6 +12,10 @@ const path = require("path");
 const paths = require("../config/paths");
 const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 
+// Support jest-style args for updating all snapshots
+if (argv.updateSnapshot || argv.u)
+  process.env.CHAI_JEST_SNAPSHOT_UPDATE_ALL = "true";
+
 // Some additional options are required for CI builds
 const reporterOptions = (!CONTINUOUS_INTEGRATION) ? [ "--inline-diffs",  "--colors" ] : [
   "--reporter", "mocha-junit-reporter",
