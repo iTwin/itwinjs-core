@@ -8,13 +8,18 @@ import { BriefcaseStatus, IModelError } from "../common/IModelError";
 import { IModelVersion } from "../common/IModelVersion";
 import { IModelToken } from "../common/IModel";
 import { NodeAddonRegistry } from "./NodeAddonRegistry";
-import { NodeAddonDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
+import { NodeAddonDgnDb, ErrorStatusOrResult, NodeAddonBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { IModelDb } from "./IModelDb";
 
 import * as fs from "fs";
 import * as path from "path";
 
 declare const __dirname: string;
+
+// This is a stand-in for NodeAddonBriefcaseManagerResourcesRequest. We cannot (re-)export that for technical reasons.
+export class BriefcaseManagerResourcesRequest {
+  private constructor() {}
+}
 
 /** The ID assigned to a briefcase by iModelHub, or one of the special values that identify special kinds of iModels */
 export class BriefcaseId {
@@ -629,5 +634,15 @@ export class BriefcaseManager {
     if (!BriefcaseManager.cache)
       return undefined;
     return BriefcaseManager.cache.findBriefcase(iModelToken);
+  }
+
+  /** Create a new empty resources request. @See Entity.buildResourcesRequest, IModelDb.requestResources */
+  public static createResourcesRequest(): BriefcaseManagerResourcesRequest {
+    return new (NodeAddonRegistry.getAddon()).NodeAddonBriefcaseManagerResourcesRequest();
+  }
+
+  /** Convert the request to any */
+  public static getResourcesRequestAsAny(req: BriefcaseManagerResourcesRequest): any {
+    return JSON.parse((req as NodeAddonBriefcaseManagerResourcesRequest).toJSON());
   }
 }

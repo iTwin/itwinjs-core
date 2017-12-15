@@ -50,6 +50,13 @@ export class IModelConnection extends IModel {
     return IModelConnection.create(openResponse);
   }
 
+  /** Close this iModel */
+  public async close(accessToken: AccessToken): Promise<void> {
+    if (!this.iModelToken)
+      return;
+    await IModelGateway.getProxy().close(accessToken, this.iModelToken);
+  }
+
   /** Ask the backend to open a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend.
    * This method is designed for desktop or mobile applications and typically should not be used for web applications.
    */
@@ -59,11 +66,11 @@ export class IModelConnection extends IModel {
     return IModelConnection.create(openResponse);
   }
 
-  /** Close this iModel */
-  public async close(accessToken: AccessToken): Promise<void> {
+  /** Close this standalone iModel */
+  public async closeStandalone(): Promise<void> {
     if (!this.iModelToken)
       return;
-    await IModelGateway.getProxy().close(accessToken, this.iModelToken);
+    await IModelGateway.getProxy().closeStandalone(this.iModelToken);
   }
 
   /** Extents of the iModel */
@@ -166,7 +173,7 @@ export class IModelConnectionCodeSpecs {
       return Promise.reject(new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, () => ({ codeSpecId })));
 
     await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
-    const found: CodeSpec | undefined = this._loaded.find((codeSpec: CodeSpec) => codeSpec.id === codeSpecId);
+    const found: CodeSpec | undefined = this._loaded.find((codeSpec: CodeSpec) => codeSpec.id.equals(codeSpecId));
     if (!found)
       return Promise.reject(new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning));
 

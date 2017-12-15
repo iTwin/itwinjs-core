@@ -57,6 +57,11 @@ export abstract class IModelGateway extends Gateway {
     return this.forward.apply(this, arguments);
   }
 
+  /** Closes a standalone IModel on the backend. */
+  public async closeStandalone(_iModelToken: IModelToken): Promise<boolean> {
+    return this.forward.apply(this, arguments);
+  }
+
   /** Execute a query against the iModel.
    * @param iModelToken The token which identifies the iModel.
    * @param sql The ECSql to execute
