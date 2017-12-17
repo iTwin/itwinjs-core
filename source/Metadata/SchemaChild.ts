@@ -36,7 +36,7 @@ export default abstract class SchemaChild implements SchemaChildInterface {
       return this._schema;
 
     if (context && this.key.schema)
-      return context.locateSchema(this.key.schema as SchemaKey);
+      return context.locateSchemaSync(this.key.schema as SchemaKey);
 
     return this._schema;
   }
@@ -50,6 +50,8 @@ export default abstract class SchemaChild implements SchemaChildInterface {
   }
 
   get schema() { return this._schema; }
+
+  get fullName() { return this.key.schema ? `${this.key.schema}.${this.name}` : this.name; }
 
   public fromJson(jsonObj: any): void {
     if (jsonObj.name) this.name = jsonObj.name;

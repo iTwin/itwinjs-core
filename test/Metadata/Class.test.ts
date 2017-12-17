@@ -105,7 +105,7 @@ describe("class", () => {
       const refBaseClass = refSchema.createEntityClass("BaseClassInRef");
 
       const context = new SchemaContext();
-      context.addSchema(refSchema);
+      context.addSchemaSync(refSchema);
 
       const schema = ECSchema.fromJson(schemaJson, context);
 

@@ -8,7 +8,6 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaContext } from "../Context";
 import { ECVersion, SchemaKey, parsePrimitiveType } from "../ECObjects";
 import SchemaChild from "../Metadata/SchemaChild";
-// import KindOfQuantity from "Metadata/KindOfQuantity";
 
 /**
  * The purpose of this helper class is to properly order
@@ -59,7 +58,7 @@ export default class SchemaReadHelper {
     // Need to add this schema to the context to be able to locate schemaChildren within the context.
     // TODO: It should be removed if it fails to deserialize... Although that may not happen since we throw errors now.
     this._schema = schema;
-    this._context.addSchema(schema);
+    this._context.addSchemaSync(schema);
 
     // Load schema references first
     // Need to figure out if other schemas are present.
@@ -103,7 +102,7 @@ export default class SchemaReadHelper {
       schemaKey.writeVersion = refVersion.write;
       schemaKey.minorVersion = refVersion.minor;
 
-      const refSchema = this._context.locateSchema(schemaKey);
+      const refSchema = this._context.locateSchemaSync(schemaKey);
       if (!refSchema)
         throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${schema.schemaKey.name}`);
 
@@ -182,7 +181,7 @@ export default class SchemaReadHelper {
 
     if (this._schema && this._schema.schemaKey.name.toLowerCase() === schemaName.toLowerCase() && undefined === this._schema.getChild(childName)) {
       this.loadSchemaChild(this._schema, this._itemToRead.children[childName], childName);
-    } else if (undefined === this._context.locateSchemaChild(fullName)) {
+    } else if (undefined === this._context.locateSchemaChildSync(fullName)) {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaChild ${fullName}.`);
     }
   }

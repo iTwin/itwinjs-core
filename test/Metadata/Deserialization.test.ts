@@ -80,7 +80,7 @@ describe("schema deserialization", () => {
     it("should succeed when referenced schema is already in the schema context", () => {
       const refSchema = new ECSchema("RefSchema", 1, 0, 5);
       const context = new SchemaContext();
-      context.addSchema(refSchema);
+      context.addSchemaSync(refSchema);
 
       const schema = ECSchema.fromJson(schemaJson, context);
       assert.exists(schema);
