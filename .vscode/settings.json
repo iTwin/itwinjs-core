@@ -1,0 +1,17 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+  "editor.insertSpaces": true,
+  "editor.tabSize": 2,
+  "editor.trimAutoWhitespace": true,
+  "files.exclude": {
+    "coverage": true,
+    "node_modules": true,
+    "lib": true,
+    "src/backend/lib": true,
+    "src/backend/node_modules": true,
+    "src/frontend/lib": true,
+    "src/frontend/node_modules": true,
+    "src/test/lib": true,
+    "src/test/node_modules": true
+  }
+}
