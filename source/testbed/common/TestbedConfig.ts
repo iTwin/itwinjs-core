@@ -10,8 +10,18 @@ export class TestbedConfig {
   public static serverPort = process.env.PORT || 3000;
   public static swaggerURI = "/v3/swagger.json";
   public static gatewayConfig: BentleyCloudGatewayConfiguration;
+  public static ipc: any;
 
   public static initializeGatewayConfig() {
     TestbedConfig.gatewayConfig = BentleyCloudGatewayConfiguration.initialize(TestbedConfig.gatewayParams, [IModelGateway, TestGateway]);
   }
+
+  public static sendToMainSync(msg: TestbedIpcMessage) {
+    return TestbedConfig.ipc.sendSync("testbed", msg);
+  }
+}
+
+export interface TestbedIpcMessage {
+  name: "pendingResponseQuota";
+  value: any;
 }

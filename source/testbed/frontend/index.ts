@@ -10,7 +10,8 @@ import * as webpack from "webpack";
 TestbedConfig.initializeGatewayConfig();
 TestbedConfig.gatewayConfig.protocol.openAPIPathPrefix = () => `http://localhost:${TestbedConfig.serverPort}`;
 
-const remote = require("electron").remote;
+const { ipcRenderer, remote } = require("electron");
+TestbedConfig.ipc = ipcRenderer;
 remote.getCurrentWindow().setTitle(TestbedConfig.gatewayParams.info.title);
 remote.require("../../../backend/lib/backend/index");
 
