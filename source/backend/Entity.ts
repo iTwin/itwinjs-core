@@ -65,11 +65,11 @@ export class Entity implements EntityProps {
     return val;
   }
 
- /**
-  * Add the lock, code, and other resource requests that would be needed in order to carry out the specified operation.
-  * @param _req The request object, which accumulates requests.
-  * @param _opcode The operation that will be performed on the element.
-  */
+  /**
+   * Add the lock, code, and other resource requests that would be needed in order to carry out the specified operation.
+   * @param _req The request object, which accumulates requests.
+   * @param _opcode The operation that will be performed on the element.
+   */
   public buildResourcesRequest(_req: BriefcaseManagerResourcesRequest, _opcode?: DbOpcode): void {
     // subclasses must override this method to build a request for the resources they know that they need.
   }

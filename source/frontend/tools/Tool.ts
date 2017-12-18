@@ -1,9 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Point3d, Point2d, XAndY } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, Point2d, XAndY, XYAndZ } from "@bentley/geometry-core/lib/PointVector";
 import { Viewport } from "../Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
+import { PrimitiveTool } from "./PrimitiveTool";
+import { ViewTool } from "./ViewTool";
+import { DecorateContext } from "../RenderContext";
 
 export const enum BeButton {
   Data = 0,
@@ -143,8 +146,8 @@ export const enum BeVirtualKey {
 }
 
 export class BeButtonState {
-  private _downUorPt: Point3d = new Point3d();
-  private _downRawPt: Point3d = new Point3d();
+  private readonly _downUorPt: Point3d = new Point3d();
+  private readonly _downRawPt: Point3d = new Point3d();
   public downTime: number = 0;
   public isDown: boolean = false;
   public isDoubleClick: boolean = false;
@@ -168,9 +171,9 @@ export class BeButtonState {
 }
 
 export class BeButtonEvent {
-  private _point: Point3d = new Point3d();
-  private _rawPoint: Point3d = new Point3d();
-  private _viewPoint: Point3d = new Point3d();
+  private readonly _point: Point3d = new Point3d();
+  private readonly _rawPoint: Point3d = new Point3d();
+  private readonly _viewPoint: Point3d = new Point3d();
   public viewport?: Viewport;
   public coordsFrom: CoordSource;   // how were the coordinate values in point generated?
   public keyModifiers: BeModifierKey;
@@ -318,7 +321,7 @@ export class BeWheelEvent extends BeButtonEvent {
  */
 export abstract class Tool {
   // tslint:disable:no-empty
-  public abstract get toolId(): string;
+  public static get toolId(): string { return ""; }
   public abstract installToolImplementation(): BentleyStatus;
   public installTool(): BentleyStatus { return this.installToolImplementation(); }
   /** Override to execute additional logic after tool becomes active */
@@ -385,4 +388,20 @@ export abstract class Tool {
    * @note In case of Shift, Control and Alt key, onModifierKeyTransition is used.
    */
   public onKeyTransition(_wentDown: boolean, _key: BeVirtualKey, _shiftIsDown: boolean, _ctrlIsDown: boolean): boolean { return false; }
+
+  /**
+   * Called to allow an active tool to display non-element decorations in overlay mode.
+   * This method is NOT called while the tool is suspended by a viewing tool or input collector.
+   */
+  public decorate(context: DecorateContext) { }
+
+  /**
+   * Called to allow a suspended tool to display non-element decorations in overlay mode.
+   * This method is ONLY called when the tool is suspended by a viewing tool or input collector.
+   * @note Applies only to PrimitiveTool and InputCollector, a ViewTool can't be suspended.
+   */
+  public decorateSuspended(context: DecorateContext) { }
+
+  public isPrimitive(): this is PrimitiveTool { return this instanceof PrimitiveTool; }
+  public isView(): this is ViewTool { return this instanceof ViewTool; }
 }

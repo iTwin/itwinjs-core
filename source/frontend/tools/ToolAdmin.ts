@@ -13,6 +13,7 @@ import {
   BeCursor, BeWheelEvent, InputSource, BeVirtualKey,
 } from "./Tool";
 import { PrimitiveTool } from "./PrimitiveTool";
+import { DecorateContext } from "../RenderContext";
 
 // tslint:disable:no-empty
 
@@ -272,6 +273,7 @@ export class ToolAdmin {
   public static instance = new ToolAdmin();
   public currentInputState = new CurrentInputState();
   public toolState = new ToolState();
+  public cursorInView = false;
   private _viewCursor?: BeCursor;
   private viewTool?: ViewTool;
   private primitiveTool?: PrimitiveTool;
@@ -291,7 +293,6 @@ export class ToolAdmin {
   public acsPlaneSnapLock = false;
   /** If ACS Plane Lock is on, standard view rotations are relative to the ACS instead of global. */
   public acsContextLock = false;
-
 
   protected filterViewport(_vp: Viewport) { return false; }
   public onInstallTool(tool: Tool) { this.currentInputState.clearKeyQualifiers(); return tool.onInstall(); }
@@ -867,6 +868,47 @@ export class ToolAdmin {
     this._viewCursor = cursor ? cursor : BeCursor.Default;
     // const canvas = this.viewport.canvas;
     // canvas.style.cursor = cursor;
+  }
+
+  public decorate(context: DecorateContext): void {
+    const tool = this.activeTool;
+    if (tool) {
+      tool.decorate(context);
+
+      if (this.viewTool && tool != this.viewTool)
+        this.viewTool.decorateSuspended(context); // NOTE: A DgnViewTool currently can't be suspended...
+
+      if (this.inputCollector && tool != this.inputCollector)
+        this.inputCollector.decorateSuspended(context);
+
+      if (this.primitiveTool && tool != this.primitiveTool)
+        this.primitiveTool.decorateSuspended(context);
+    }
+
+    if (!this.cursorInView)
+      return;
+
+    // DgnViewportR viewport = * context.GetViewport();
+    // DgnButtonEvent ev;
+
+    // _FillEventFromCursorLocation(ev);
+
+    // if (ev.GetViewport() != & viewport)
+    //   return;
+
+    // HitDetailCP hit = AccuDraw:: GetInstance().IsActive() ? nullptr : AccuSnap:: GetInstance().CurrHit(); // NOTE: Show surface normal until AccuDraw becomes active...
+    // viewport.GetViewControllerR()._DrawLocateCursor(context, * ev.GetPoint(), viewport.PixelsFromInches(ElementLocateManager:: GetManager().GetApertureInches()), _IsLocateCircleOn(), hit);
+  }
+
+  public beginDynamics(): void {
+    // accuDraw.onBeginDynamics();
+    // viewManager.beginDynamicsMode();
+    // this.setLocateCursor(false);
+  }
+
+  public endDynamics(): void {
+    // // accudraw.onEndDynamics();
+    // viewManager.endDynamicsMode();
   }
 
   public fillEventFromCursorLocation(ev: BeButtonEvent) { this.currentInputState.toEvent(ev, true); }
