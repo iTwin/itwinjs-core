@@ -11,11 +11,11 @@ import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes
 import { PageOptions } from "../common/ECPresentationManager";
 import { ECInstanceKeysList } from "../common/EC";
 
-let _manager: ECPresentationManager | null = null;
+let manager: ECPresentationManager | null = null;
 const getManager = (): ECPresentationManager => {
-  if (!_manager)
-    _manager = new ECPresentationManager();
-  return _manager;
+  if (!manager)
+    manager = new ECPresentationManager();
+  return manager;
 };
 
 /** The backend implementation of ECPresentationGateway.

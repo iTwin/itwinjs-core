@@ -436,10 +436,10 @@ class RangeSelectionContainer {
   constructor(isSelection: boolean) {
     this._isSelection = isSelection;
   }
-  public get IsSelection(): boolean { return this._isSelection; }
-  public get IsSubSelection(): boolean { return this._isSubSelection; }
-  public set IsSubSelection(value: boolean) { this._isSubSelection = value; }
-  public get Items(): SelectedItem[] { return this._items; }
+  public get isSelection(): boolean { return this._isSelection; }
+  public get isSubSelection(): boolean { return this._isSubSelection; }
+  public set isSubSelection(value: boolean) { this._isSubSelection = value; }
+  public get items(): SelectedItem[] { return this._items; }
 }
 
 /** A selection handler implementation which can handle range selections.
@@ -476,17 +476,17 @@ export abstract class RangeSelectionHandler extends SelectionHandler {
       return;
     }
 
-    if (this._rangeSelectionContainer.Items.length > 0) {
-      if (this._rangeSelectionContainer.IsSelection) {
+    if (this._rangeSelectionContainer.items.length > 0) {
+      if (this._rangeSelectionContainer.isSelection) {
         if (this.isInSelectionChange)
-          super.replaceSelection(this._rangeSelectionContainer.IsSubSelection, this._rangeSelectionContainer.Items);
+          super.replaceSelection(this._rangeSelectionContainer.isSubSelection, this._rangeSelectionContainer.items);
         else
-          super.addToSelection(this._rangeSelectionContainer.IsSubSelection, this._rangeSelectionContainer.Items);
+          super.addToSelection(this._rangeSelectionContainer.isSubSelection, this._rangeSelectionContainer.items);
       } else {
-        super.removeFromSelection(this._rangeSelectionContainer.IsSubSelection, this._rangeSelectionContainer.Items);
+        super.removeFromSelection(this._rangeSelectionContainer.isSubSelection, this._rangeSelectionContainer.items);
       }
     } else {
-      this.clearSelection(this._rangeSelectionContainer.IsSubSelection);
+      this.clearSelection(this._rangeSelectionContainer.isSubSelection);
     }
     this._rangeSelectionContainer = null;
     this.isInSelectionChange = false;
@@ -504,8 +504,8 @@ export abstract class RangeSelectionHandler extends SelectionHandler {
   public addToSelection(isSubSelection: boolean, items: SelectedItem[]): void {
     if (null != this._rangeSelectionContainer) {
       for (const key of items)
-        this._rangeSelectionContainer.Items.push(key);
-      this._rangeSelectionContainer.IsSubSelection = isSubSelection;
+        this._rangeSelectionContainer.items.push(key);
+      this._rangeSelectionContainer.isSubSelection = isSubSelection;
       return;
     }
 
@@ -520,8 +520,8 @@ export abstract class RangeSelectionHandler extends SelectionHandler {
   public removeFromSelection(isSubSelection: boolean, items: SelectedItem[]): void {
     if (null != this._rangeSelectionContainer) {
       for (const key of items)
-        this._rangeSelectionContainer.Items.push(key);
-      this._rangeSelectionContainer.IsSubSelection = isSubSelection;
+        this._rangeSelectionContainer.items.push(key);
+      this._rangeSelectionContainer.isSubSelection = isSubSelection;
       return;
     }
     return super.removeFromSelection(isSubSelection, items);

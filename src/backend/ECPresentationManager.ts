@@ -121,6 +121,7 @@ export default class ECPresentationManager implements ECPInterface {
     return JSON.stringify(request);
   }
 
+  // tslint:disable-next-line:naming-convention
   private createNodesList = (r: any[]): NavNode[] => {
     const nodes = new Array<NavNode>();
     for (const rNode of r) {
@@ -148,6 +149,7 @@ export default class ECPresentationManager implements ECPInterface {
     return nodes;
   }
 
+  // tslint:disable-next-line:naming-convention
   private createNavNodeKey = (r: any): NavNodeKey => {
     /* todo:
     switch (r.Type) {
@@ -156,6 +158,7 @@ export default class ECPresentationManager implements ECPInterface {
     return {type: r.Type};
   }
 
+  // tslint:disable-next-line:naming-convention
   private createContent = (r: any): content.Content | null => {
     const descriptor = this.createContentDescriptor(r.Descriptor);
     if (!descriptor)
@@ -181,6 +184,7 @@ export default class ECPresentationManager implements ECPInterface {
     return cont;
   }
 
+  // tslint:disable-next-line:naming-convention
   private createItemValueKeys = (descriptor: content.Descriptor, fieldValueKeysResp: { [fieldName: string]: any[] }): content.FieldPropertyValueKeys => {
     const result: content.FieldPropertyValueKeys = {};
     for (const field of descriptor.fields) {
@@ -209,6 +213,7 @@ export default class ECPresentationManager implements ECPInterface {
     return result;
   }
 
+  // tslint:disable-next-line:naming-convention
   private createContentDescriptor = (r: any): content.Descriptor | null => {
     if (!r)
       return null;
@@ -234,6 +239,7 @@ export default class ECPresentationManager implements ECPInterface {
     return descriptor;
   }
 
+  // tslint:disable-next-line:naming-convention
   private createFieldType = (r: any): content.TypeDescription => {
     switch (r.ValueFormat) {
       case "Primitive":
@@ -255,6 +261,7 @@ export default class ECPresentationManager implements ECPInterface {
     return new content.PrimitiveTypeDescription("string");
   }
 
+  // tslint:disable-next-line:naming-convention
   private createSelectClassInfo = (r: any): content.SelectClassInfo => {
     const classInfo = {
       id: r.SelectClassInfo.Id,
@@ -268,6 +275,7 @@ export default class ECPresentationManager implements ECPInterface {
     return info;
   }
 
+  // tslint:disable-next-line:naming-convention
   private createFieldEditor = (_r: any): content.EditorDescription | null => {
     return null;
     /* todo:
@@ -319,6 +327,7 @@ export default class ECPresentationManager implements ECPInterface {
     return editor;*/
   }
 
+  // tslint:disable-next-line:naming-convention
   private createCategory = (r: any, categories: { [name: string]: content.CategoryDescription }): content.CategoryDescription => {
     if (categories.hasOwnProperty(r.Name))
       return categories[r.Name];
@@ -328,6 +337,7 @@ export default class ECPresentationManager implements ECPInterface {
     return category;
   }
 
+  // tslint:disable-next-line:naming-convention
   private createECPropertyInfo = (r: any): content.ECPropertyInfo => {
     const propertyInfo: content.ECPropertyInfo = {
       classInfo: {
@@ -350,6 +360,7 @@ export default class ECPresentationManager implements ECPInterface {
     return propertyInfo;
   }
 
+  // tslint:disable-next-line:naming-convention
   private createRelatedClassInfo = (r: any): content.RelatedClassInfo => {
     return {
       sourceClassInfo: {
@@ -371,6 +382,7 @@ export default class ECPresentationManager implements ECPInterface {
     };
   }
 
+  // tslint:disable-next-line:naming-convention
   private createRelationshipPath = (r: any[]): content.RelationshipPathInfo => {
     const path = new Array<content.RelatedClassInfo>();
     for (const pr of r)
@@ -378,6 +390,7 @@ export default class ECPresentationManager implements ECPInterface {
     return path;
   }
 
+  // tslint:disable-next-line:naming-convention
   private createFieldProperty = (r: any): content.Property => {
     const propertyInfo = this.createECPropertyInfo(r.Property);
     const property = new content.Property(propertyInfo);
@@ -386,6 +399,7 @@ export default class ECPresentationManager implements ECPInterface {
     return property;
   }
 
+  // tslint:disable-next-line:naming-convention
   private createField = (r: any, categories: { [name: string]: content.CategoryDescription }, parent: content.NestedContentField | null): content.Field => {
     const type = this.createFieldType(r.Type);
     const editor = this.createFieldEditor(r.Editor);
