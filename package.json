@@ -45,6 +45,7 @@
   "devDependencies": {
     "@bentley/bentleyjs-tools": "latest",
     "@types/chai": "^4.0.10",
+    "@types/flatbuffers": "^1.6.5",
     "@types/mocha": "^2.2.44",
     "chai": "^4.1.2",
     "concurrently": "^3.5.0",
