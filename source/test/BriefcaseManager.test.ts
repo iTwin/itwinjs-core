@@ -15,6 +15,9 @@ import { IModelTestUtils } from "./IModelTestUtils";
 import { Code } from "../common/Code";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Element } from "../backend/Element";
+import { DictionaryModel, Model } from "../backend/Model";
+import { SpatialCategory } from "../backend/Category";
+import { Appearance } from "../common/SubCategoryAppearance";
 
 describe("BriefcaseManager", () => {
   let accessToken: AccessToken;
@@ -139,7 +142,7 @@ describe("BriefcaseManager", () => {
     await iModel.close(accessToken);
   });
 
-  it.only("should write to briefcase with optimistic concurrency", async () => {
+  it.skip("should write to briefcase with optimistic concurrency", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
 
     /* TBD - test
@@ -154,6 +157,8 @@ describe("BriefcaseManager", () => {
       deleteVsUpdate: BriefcaseManager.ConflictResolution.Reject,
     }));
 
+    const dictionary: DictionaryModel = await iModel.models.getModel(Model.getDictionaryId()) as DictionaryModel;
+
     // The following ops that modify insert models and elements should succeed, even though we don't acquire locks and codes.
 
     const rootEl: Element = (await iModel.elements.getRootSubject()).copyForEdit<Element>();
@@ -164,7 +169,7 @@ describe("BriefcaseManager", () => {
     let newModelId: Id64;
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, Code.createEmpty(), true);
 
-    const spatialCategoryId: Id64 = IModelTestUtils.createSpatialCategory(iModel, "Cat1", newModelId);
+    const spatialCategoryId: Id64 = SpatialCategory.create(dictionary, "Cat1").insert(new Appearance());
     
     iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
     iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
@@ -178,10 +183,12 @@ describe("BriefcaseManager", () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
     assert.exists(iModel);
 
+    const dictionary: DictionaryModel = await iModel.models.getModel(Model.getDictionaryId()) as DictionaryModel;
+    
     let newModelId: Id64;
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, Code.createEmpty(), true);
 
-    const spatialCategoryId: Id64 = IModelTestUtils.createSpatialCategory(iModel, "Cat1", newModelId);
+    const spatialCategoryId: Id64 = SpatialCategory.create(dictionary, "Cat1").insert(new Appearance())
 
     // Insert a few elements
     const elements: Element[] = [

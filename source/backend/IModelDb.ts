@@ -811,6 +811,23 @@ export class IModelDbElements {
     return Promise.reject(new IModelError(IModelStatus.BadArg, undefined, Logger.logError, () => ({ elementId })));
   }
 
+  // Query for the DgnElementId of the element that has the specified code
+  public queryElementIdByCode(code: Code): Id64 {
+    if (!code.spec.isValid()) {
+      throw new IModelError(IModelStatus.InvalidCodeSpec);
+    }
+    if (code.value === undefined) {
+      throw new IModelError(IModelStatus.InvalidCode);
+    }
+    return this._iModel.withPreparedStatement("SELECT ecinstanceid as id FROM " + Element.sqlName + " WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?", (stmt: ECSqlStatement) => {
+      stmt.bindValues([code.spec, new Id64(code.scope), code.value!]);
+      if (DbResult.BE_SQLITE_ROW !== stmt.step())
+        throw new IModelError(IModelStatus.NotFound);
+      const id = new Id64(stmt.getRow().id);
+      return id;
+    });
+  }
+
   /**
    * Create a new instance of an element.
    * @param elProps The properties of the new element.

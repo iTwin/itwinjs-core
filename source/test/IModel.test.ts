@@ -11,8 +11,8 @@ import { EntityProps } from "../common/EntityProps";
 import { ModelSelectorState, ModelSelectorProps } from "../common/ViewState";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { Entity, EntityCtor, EntityMetaData, PrimitiveTypeCode } from "../backend/Entity";
-import { Model } from "../backend/Model";
-import { Category, SubCategory } from "../backend/Category";
+import { Model, DictionaryModel } from "../backend/Model";
+import { Category, SubCategory, SpatialCategory } from "../backend/Category";
 import { ClassRegistry } from "../backend/ClassRegistry";
 import { BisCore } from "../backend/BisCore";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
@@ -670,6 +670,8 @@ describe("iModel", () => {
 
     const ifperfimodel = await IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", { copyFilename: "ImodelJsTest_MeasureInsertPerformance.bim", enableTransactions: true });
 
+    const dictionary: DictionaryModel = await ifperfimodel.models.getModel(Model.getDictionaryId()) as DictionaryModel;
+    
     // tslint:disable-next-line:no-console
     console.time("ImodelJsTest.MeasureInsertPerformance");
 
@@ -678,7 +680,7 @@ describe("iModel", () => {
     // const modelId: Id64 = ifperfimodel.models.querySubModelId(physicalPartitionCode);
     const modelId = new Id64("0X11");
 
-    const defaultCategoryId: Id64 = IModelTestUtils.getSpatialCategoryIdByName(ifperfimodel, "DefaultCategory");
+    const defaultCategoryId: Id64 = SpatialCategory.queryCategoryIdByName(dictionary, "DefaultCategory");
 
     const elementCount = 10000;
     for (let i = 0; i < elementCount; ++i) {

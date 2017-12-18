@@ -3,19 +3,15 @@
  *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs-extra";
 import { assert } from "chai";
-import { DbResult, OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
 import { ConnectClient, Project, IModelHubClient, Briefcase } from "@bentley/imodeljs-clients";
 import { Code } from "../common/Code";
 import { Gateway } from "../common/Gateway";
-import { IModelError, IModelStatus } from "../common/IModelError";
 import { Element } from "../backend/Element";
-import { Model } from "../backend/Model";
 import { IModelDb } from "../backend/IModelDb";
 import { BriefcaseManager } from "../backend/BriefcaseManager";
-import { SpatialCategory, DrawingCategory } from "../backend/Category";
-import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { NodeAddonLoader } from "@bentley/imodeljs-nodeaddon/NodeAddonLoader";
 import { NodeAddonRegistry } from "../backend/NodeAddonRegistry";
 import { IModelGateway } from "../gateway/IModelGateway";
@@ -124,81 +120,6 @@ export class IModelTestUtils {
     iModel.closeStandalone();
   }
 
-  // TODO: This needs a home
-  public static queryCodeSpecId(imodel: IModelDb, name: string): Id64 | undefined {
-    return imodel.withPreparedStatement("SELECT ecinstanceid FROM BisCore.CodeSpec WHERE Name=?", (stmt: ECSqlStatement) => {
-      stmt.bindValues([name]);
-      if (DbResult.BE_SQLITE_ROW !== stmt.step()) {
-        return;
-      }
-      return new Id64(stmt.getRow().ecinstanceid);
-    });
-  }
-
-  // TODO: This needs a home
-  public static queryElementIdByCode(imodel: IModelDb, code: Code): Id64 {
-    if (!code.spec.isValid()) {
-      throw new IModelError(IModelStatus.InvalidCodeSpec);
-    }
-    if (code.value === undefined) {
-      throw new IModelError(IModelStatus.InvalidCode);
-    }
-    return imodel.withPreparedStatement("SELECT ecinstanceid as id FROM " + Element.sqlName + " WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?", (stmt: ECSqlStatement) => {
-      stmt.bindValues([code.spec, new Id64(code.scope), code.value!]);
-      if (DbResult.BE_SQLITE_ROW !== stmt.step())
-        throw new IModelError(IModelStatus.NotFound);
-      const id = new Id64(stmt.getRow().id);
-      return id;
-    });
-  }
-
-  /** Create a Code for a DrawingCategory given a name that is meant to be unique within the scope of the specified DefinitionModel
-   * @param imodel  The IModel
-   * @param parentModelId The scope of the category -- *** TODO: should be DefinitionModel
-   * @param codeValue The name of the category
-   * @return a Promise if the category's Code
-   */
-  public static createDrawingCategoryCode(imodel: IModelDb, definitionModelId: Id64, codeValue: string): Code {
-    const codeSpec = imodel.codeSpecs.getCodeSpecByName(DrawingCategory.getCodeSpecName());
-    return new Code({ spec: codeSpec.id, scope: definitionModelId.toString(), value: codeValue });
-  }
-
-  /** Create a Code for a SpatialCategory given a name that is meant to be unique within the scope of the specified DefinitionModelr hyy   t
-   * @param imodel  The IModel
-   * @param parentModelId The scope of the category -- *** TODO: should be DefinitionModel
-   * @param codeValue The name of the category
-   * @return a Promise if the category's Code
-   */
-  public static createSpatialCategoryCode(imodel: IModelDb, definitionModelId: Id64, codeValue: string, scopeId?: Id64): Code {
-    if (undefined === scopeId)
-      scopeId = definitionModelId;
-    const codeSpec = imodel.codeSpecs.getCodeSpecByName(SpatialCategory.getCodeSpecName());
-    return new Code({ spec: codeSpec.id, scope: scopeId.toString(), value: codeValue });
-  }
-
-  // TODO: This needs a home
-  public static getSpatialCategoryIdByName(imodel: IModelDb, categoryName: string, scopeId?: Id64): Id64 {
-    if (scopeId === undefined)
-      scopeId = Model.getDictionaryId();
-    const code: Code = IModelTestUtils.createSpatialCategoryCode(imodel, scopeId, categoryName);
-    const id: Id64 | undefined = IModelTestUtils.queryElementIdByCode(imodel, code);
-    if (id === undefined)
-      throw new IModelError(DbResult.BE_SQLITE_NOTFOUND);
-    return id;
-  }
-
-  public static createSpatialCategory(imodel: IModelDb, categoryName: string, modelId: Id64, scopeId?: Id64): Id64 {
-    const newCat = imodel.elements.createElement({
-      iModel: imodel,
-      id: new Id64(),
-      classFullName: "BisCore:SpatialCategory",
-      model: modelId,
-      code: IModelTestUtils.createSpatialCategoryCode(imodel, modelId, categoryName, scopeId),
-      });
-    IModelTestUtils.requestResources(newCat, DbOpcode.Insert);
-    return imodel.elements.insertElement(newCat);
-  }
-
   //
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
   //
@@ -259,4 +180,5 @@ export class IModelTestUtils {
 
     return testImodel.elements.createElement(elementProps);
   }
+
 }
