@@ -228,7 +228,7 @@ export class SchemaContext {
   // }
 
   /**
-   * 
+   *
    * @param fullName
    */
   public locateSchemaChildSync<T extends SchemaChildInterface>(fullName: string): T | undefined {
