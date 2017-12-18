@@ -77,4 +77,9 @@ export abstract class BentleyCloudGatewayProtocol extends Gateway.HttpProtocol {
   protected setOperationRequestHeaders(connection: XMLHttpRequest) {
     connection.setRequestHeader(this.configuration.applicationAuthorizationKey, this.configuration.applicationAuthorizationValue);
   }
+
+  /** Whether a pending gateway operation request remains pending with the current response. */
+  protected isPendingRequestPending(_request: Gateway.HttpProtocol.PendingOperationRequest, responseStatus: number) {
+    return responseStatus === 202;
+  }
 }

@@ -219,6 +219,9 @@ export namespace Gateway {
     /** Reserved for an application authorization value. */
     public applicationAuthorizationValue: string;
 
+    /** The target interval (in milliseconds) between connection attempts for pending gateway operation requests. */
+    public pendingOperationRetryInterval = 10000;
+
     /** Returns the instance of a configuration class. */
     public static getInstance<T extends Configuration>(constructor: { new(): T }): T {
       let instance = (constructor as any)[INSTANCE] as T;
@@ -250,6 +253,12 @@ export namespace Gateway {
 
   /** The HTTP application protocol. */
   export abstract class HttpProtocol extends Protocol {
+    private _pending: HttpProtocol.PendingOperationRequest[] = [];
+    protected _pendingInterval: any = undefined;
+
+    /** Listeners for status information regarding pending gateway operation requests. */
+    public pendingOperationRequestListeners: HttpProtocol.PendingOperationRequestListener[] = [];
+
     /** Associates the gateways for the protocol with unique names. */
     protected gatewayRegistry: Map<string, GatewayDefinition> = new Map();
 
@@ -290,36 +299,95 @@ export namespace Gateway {
 
     /** Obtains the implementation result for a gateway operation. */
     public obtainGatewayImplementationResult<T>(gateway: GatewayDefinition, operation: string, ...parameters: any[]): Promise<T> {
-      return new Promise<T>(async (resolve, reject) => {
-        try {
-          const identifier: HttpProtocol.GatewayOperationIdentifier = { gateway: this.obtainGatewayName(gateway), version: gateway.version, operation };
-          const path = this.generateOpenAPIPathForOperation(identifier, new HttpProtocol.OperationRequest(...parameters));
+      return new Promise<T>((resolve, reject) => {
+        const request = new HttpProtocol.PendingOperationRequest(gateway, operation, parameters, resolve, reject, this.requestCleanupHandler);
+        request.retryInterval = this.configuration.pendingOperationRetryInterval;
 
-          const connection = this.generateConnectionForOperationRequest();
-          connection.open(this.supplyHttpVerbForOperation(identifier), path, true);
+        this.reportPendingRequestStatus(request);
 
-          connection.addEventListener("load", () => {
-            if (connection.status === 200)
-              resolve(this.deserializeOperationResult(connection.responseText));
-            else
-              reject(new IModelError(BentleyStatus.ERROR, `Server error: ${connection.status} ${connection.responseText}`));
-          });
-
-          connection.addEventListener("error", () => reject(new IModelError(BentleyStatus.ERROR, "Connection error.")));
-          connection.addEventListener("abort", () => reject(new IModelError(BentleyStatus.ERROR, "Connection aborted.")));
-
-          this.setOperationRequestHeaders(connection);
-          const payload = this.serializeParametersForOperationRequest(identifier, ...parameters);
-          connection.send(payload);
-        } catch (e) {
-          reject(new IModelError(BentleyStatus.ERROR, e));
+        if (request.active) {
+          request.lastAttempted = new Date().getTime();
+          this.performGatewayOperationRequest(request);
         }
       });
+    }
+
+    /** Performs a request for a gateway operation. */
+    protected performGatewayOperationRequest(request: HttpProtocol.PendingOperationRequest) {
+      try {
+        const identifier = {
+          gateway: this.obtainGatewayName(request.gateway),
+          version: request.gateway.version,
+          operation: request.operation,
+        };
+
+        const path = this.generateOpenAPIPathForOperation(identifier, new HttpProtocol.OperationRequest(...request.parameters));
+        const connection = this.generateConnectionForOperationRequest();
+        connection.open(this.supplyHttpVerbForOperation(identifier), path, true);
+
+        connection.addEventListener("load", () => {
+          if (!request.active)
+            return;
+
+          if (this.canResolvePendingRequest(request, connection.status)) {
+            const result = this.deserializeOperationResult(connection.responseText);
+            request.resolve(result);
+          } else if (this.isPendingRequestPending(request, connection.status)) {
+            this.registerPendingRequest(request);
+            request.currentStatus = connection.responseText;
+            this.reportPendingRequestStatus(request);
+          } else if (this.shouldRejectPendingRequest(request, connection.status)) {
+            const error = new IModelError(BentleyStatus.ERROR, `Server error: ${connection.status} ${connection.responseText}`);
+            request.reject(error);
+          } else {
+            throw new IModelError(BentleyStatus.ERROR, "Unhandled response.");
+          }
+        });
+
+        connection.addEventListener("error", () => {
+          if (!request.active)
+            return;
+
+          request.reject(new IModelError(BentleyStatus.ERROR, "Connection error."));
+        });
+
+        connection.addEventListener("abort", () => {
+          if (!request.active)
+            return;
+
+          request.reject(new IModelError(BentleyStatus.ERROR, "Connection aborted."));
+        });
+
+        this.setOperationRequestHeaders(connection);
+
+        const payload = this.serializeParametersForOperationRequest(identifier, ...request.parameters);
+        connection.send(payload);
+      } catch (e) {
+        if (!request.active)
+          return;
+
+        request.reject(new IModelError(BentleyStatus.ERROR, e));
+      }
     }
 
     /** Returns an XMLHttpRequest instance for a gateway operation request. */
     protected generateConnectionForOperationRequest(): XMLHttpRequest {
       return new XMLHttpRequest();
+    }
+
+    /** Whether a pending gateway operation request can be resolved with the current response. */
+    protected canResolvePendingRequest(_request: HttpProtocol.PendingOperationRequest, responseStatus: number) {
+      return responseStatus === 200;
+    }
+
+    /** Whether a pending gateway operation request remains pending with the current response. */
+    protected isPendingRequestPending(_request: HttpProtocol.PendingOperationRequest, _responseStatus: number) {
+      return false;
+    }
+
+    /** Whether a pending gateway operation request should be rejected with the current response. */
+    protected shouldRejectPendingRequest(request: HttpProtocol.PendingOperationRequest, responseStatus: number) {
+      return !this.canResolvePendingRequest(request, responseStatus) && !this.isPendingRequestPending(request, responseStatus);
     }
 
     /** Sets application headers for a gateway operation request. */
@@ -336,6 +404,66 @@ export namespace Gateway {
     protected deserializeOperationResult(response: string): any {
       return JSON.parse(response, Gateway.unmarshal);
     }
+
+    /** Registers a pending gateway operation request. */
+    protected registerPendingRequest(request: HttpProtocol.PendingOperationRequest) {
+      if (this._pending.indexOf(request) !== -1)
+        return;
+
+      this._pending.push(request);
+
+      if (!this._pendingInterval)
+        this.setPendingInterval();
+    }
+
+    /** Registers pendingIntervalHandler. */
+    protected setPendingInterval() {
+      this._pendingInterval = setInterval(this.pendingIntervalHandler, 0);
+    }
+
+    /** Clears pendingIntervalHandler. */
+    protected clearPendingInterval() {
+      clearInterval(this._pendingInterval);
+      this._pendingInterval = undefined;
+    }
+
+    /** Reports the status of a pending gateway operation request. */
+    protected reportPendingRequestStatus(request: HttpProtocol.PendingOperationRequest) {
+      for (const listener of this.pendingOperationRequestListeners) {
+        if (!request.active)
+          break;
+
+        listener(request);
+      }
+    }
+
+    /** Cleanup handler for PendingOperationRequest. */
+    protected requestCleanupHandler = function(this: HttpProtocol, request: HttpProtocol.PendingOperationRequest) {
+      for (; ;) {
+        const i = this._pending.indexOf(request);
+        if (i === -1)
+          break;
+
+        this._pending.splice(i, 1);
+      }
+
+      if (!this._pending.length)
+        this.clearPendingInterval();
+    }.bind(this);
+
+    /** Pending gateway operation request interval handler. */
+    protected pendingIntervalHandler = function(this: HttpProtocol) {
+      const now = new Date().getTime();
+
+      for (let i = 0; i !== this._pending.length; ++i) {
+        const pending = this._pending[i];
+        if ((pending.lastAttempted + pending.retryInterval) > now)
+          continue;
+
+        pending.lastAttempted = now;
+        this.performGatewayOperationRequest(pending);
+      }
+    }.bind(this);
 
     /** The OpenAPI paths object for the protocol. */
     protected openAPIPaths = (): HttpProtocol.OpenAPIPaths => {
@@ -413,6 +541,78 @@ export namespace Gateway {
       version: string;
       operation: string;
     }
+
+    /** A pending gateway operation request. */
+    export class PendingOperationRequest {
+      private _resolve: (value?: any | PromiseLike<any> | undefined) => void;
+      private _reject: (reason?: any) => void;
+      private _cleanup: (request: PendingOperationRequest) => void;
+      private _active = true;
+
+      /** The gateway for this request. */
+      public gateway: GatewayDefinition;
+
+      /** The operation for this request. */
+      public operation: string;
+
+      /** The parameters for this request. */
+      public parameters: any[];
+
+      /** Extended status information for this request (if available). */
+      public currentStatus = "";
+
+      /** The last connection attempt time for this request. */
+      public lastAttempted = 0;
+
+      /** The target interval (in milliseconds) between connection attempts for this request. */
+      public retryInterval = 0;
+
+      /** Reserved for application data associated with this request. */
+      public applicationData?: any;
+
+      /** Whether this request is active. */
+      public get active() {
+        return this._active;
+      }
+
+      /** Creates a pending request object. */
+      constructor(gateway: GatewayDefinition, operation: string, parameters: any[], resolve: (value?: any | PromiseLike<any> | undefined) => void, reject: (reason?: any) => void, cleanup: (request: PendingOperationRequest) => void) {
+        this.gateway = gateway;
+        this.operation = operation;
+        this.parameters = parameters;
+        this._resolve = resolve;
+        this._reject = reject;
+        this._cleanup = cleanup;
+      }
+
+      /** Cancels further connection attempts for this request and rejects the underlying operation promise. */
+      public cancel() {
+        this.reject(new IModelError(BentleyStatus.ERROR, "Cancelled by application."));
+      }
+
+      /** Resolves this request. */
+      public resolve(value: any) {
+        if (!this._active)
+          throw new IModelError(BentleyStatus.ERROR, "Request is not active.");
+
+        this._active = false;
+        this._cleanup(this);
+        this._resolve(value);
+      }
+
+      /** Rejects this request. */
+      public reject(reason: any) {
+        if (!this._active)
+          throw new IModelError(BentleyStatus.ERROR, "Request is not active.");
+
+        this._active = false;
+        this._cleanup(this);
+        this._reject(reason);
+      }
+    }
+
+    /** Receives status information regarding pending gateway operation requests. */
+    export type PendingOperationRequestListener = (request: HttpProtocol.PendingOperationRequest) => void;
 
     /** An OpenAPI 3.0 root document object. */
     export interface OpenAPIDocument {

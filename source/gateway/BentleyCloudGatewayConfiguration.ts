@@ -9,6 +9,7 @@ export interface BentleyCloudGatewayParams {
   info: Gateway.HttpProtocol.OpenAPIInfo;
   protocol?: typeof BentleyCloudGatewayProtocol;
   uriPrefix?: string;
+  pendingRequestListener?: Gateway.HttpProtocol.PendingOperationRequestListener;
 }
 
 /** Operating parameters for Bentley cloud gateway deployments. */
@@ -35,6 +36,9 @@ export abstract class BentleyCloudGatewayConfiguration extends Gateway.Configura
       Gateway.setConfiguration(gateway, () => config);
 
     const instance = Gateway.Configuration.getInstance(config);
+    if (params.pendingRequestListener)
+      instance.protocol.pendingOperationRequestListeners.push(params.pendingRequestListener);
+
     instance.initializeGateways();
 
     return instance;

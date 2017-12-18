@@ -35,15 +35,17 @@ export class IModelConnection extends IModel {
 
   /** Open an iModel from iModelHub */
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
-    if (OpenMode.Readonly !== openMode)
-      return Promise.reject(new IModelError(IModelStatus.NotEnabled, "IModelConnection does not support read/write access yet"));
-    // WIP: waiting for decisions on how to manage read/write briefcases on the backend.
-
     let changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId);
     if (!changeSetId)
       changeSetId = "0"; // The first version is arbitrarily setup to have changeSetId = "0" since it's required by the gateway API.
+
     const iModelToken = IModelToken.create(iModelId, changeSetId, openMode, accessToken.getUserProfile().userId, contextId);
-    const openResponse: IModelGatewayOpenResponse = await IModelGateway.getProxy().openForRead(accessToken, iModelToken);
+    let openResponse: IModelGatewayOpenResponse;
+    if (openMode === OpenMode.ReadWrite)
+      openResponse = await IModelGateway.getProxy().openForWrite(accessToken, iModelToken);
+    else
+      openResponse = await IModelGateway.getProxy().openForRead(accessToken, iModelToken);
+
     Logger.logInfo("IModelConnection.open", () => ({ iModelId, openMode, changeSetId }));
 
     // todo: Setup userId if it's a readWrite open - this is necessary to reopen the same exact briefcase at the backend
