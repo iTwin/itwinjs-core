@@ -5,7 +5,7 @@ import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { OpenMode, DbResult, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { Code } from "../common/Code";
+import { Code, CodeSpec } from "../common/Code";
 import { ElementProps, ElementAspectProps, ElementLoadParams } from "../common/ElementProps";
 import { IModel } from "../common/IModel";
 import { IModelVersion } from "../common/IModelVersion";
@@ -470,6 +470,18 @@ export class IModelDb extends IModel {
     if (this._codeSpecs === undefined)
       this._codeSpecs = new CodeSpecs(this);
     return this._codeSpecs;
+  }
+
+  /** @private */
+  public insertCodeSpec(codeSpec: CodeSpec): Id64 {
+    if (!this.briefcaseInfo)
+      throw this._newNotOpenError();
+
+    const { error, result: idHexStr } = this.briefcaseInfo.nativeDb.insertCodeSpecSync(codeSpec.name, codeSpec.specScopeType, codeSpec.scopeReq);
+    if (error)
+      throw new IModelError(error.status, "Problem inserting CodeSpec", Logger.logWarning);
+
+    return new Id64(idHexStr);
   }
 
   /** @deprecated */

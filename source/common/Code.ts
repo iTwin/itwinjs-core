@@ -67,6 +67,20 @@ export class CodeSpecNames {
   public static ViewDefinition() { return CodeSpecNames.BIS_CODESPEC("ViewDefinition"); }
 }
 
+export namespace CodeSpecScope {
+  export const enum Type {
+      Repository = 1,     /** The Code value must be unique within (at least) the DgnDb repository */
+      Model = 2,          /** The Code value must be unique within the scope of the DgnModel */
+      ParentElement = 3,  /** The Code value must be unique among other children of the same parent element */
+      RelatedElement = 4, /** The Code value must be unique among other elements also scoped by the same element */
+  }
+
+  export const enum ScopeRequirement {
+      ElementId = 1,      /** The DgnCode is required to have a valid DgnElementId as its scope */
+      FederationGuid = 2, /** The DgnCode is required to have a valid FederationGuid as its scope */
+  }
+}
+
 /**
  * A "Code Specification" captures the rules for encoding and decoding significant business information into
  * and from a Code (string). This specification is used to generate and validate Codes.
@@ -78,12 +92,16 @@ export class CodeSpec {
   public iModel: IModel;
   public id: Id64;
   public name: string;
+  public specScopeType: CodeSpecScope.Type;
+  public scopeReq: CodeSpecScope.ScopeRequirement;
   public properties: any; // TODO: CodeSpec handlers and custom properties
 
-  public constructor(iModel: IModel, id: Id64, name: string, properties?: any) {
+  public constructor(iModel: IModel, id: Id64, name: string, specScopeType: CodeSpecScope.Type, scopeReq?: CodeSpecScope.ScopeRequirement, properties?: any) {
     this.iModel = iModel;
     this.id = id;
     this.name = name;
+    this.specScopeType = specScopeType;
+    this.scopeReq = (undefined !== scopeReq) ? scopeReq : CodeSpecScope.ScopeRequirement.ElementId;
     this.properties = properties;
   }
 
