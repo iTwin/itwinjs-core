@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "description": "iModelJs backend components",
   "license": "UNLICENSED",
   "scripts": {
@@ -28,6 +28,7 @@
     "@bentley/geometry-core": "^1.2.1",
     "@bentley/imodeljs-clients": "^1.0.36",
     "@bentley/imodeljs-nodeaddonapi": "~1.4.0",
+    "@bentley/imodeljs-nodeaddon": "~1.4.0",
     "fs-extra": "^4.0.3",
     "js-base64": "^2.4.0"
   },
