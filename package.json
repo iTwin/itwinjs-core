@@ -36,7 +36,7 @@
     "publish:backend": "cd source/backend && npm publish",
     "publish:frontend": "cd source/frontend && npm publish",
     "predocs": "npm run extract",
-    "docs": "node node_modules/@bentley/bentleyjs-tools/scripts/docs.js --baseUrl=source/test/node_modules --includes=source/test/lib/extract --out=source/test/lib/docs --json=source/test/lib/docs/json/file.json",
+    "docs": "node node_modules/@bentley/bentleyjs-tools/scripts/docs.js --baseUrl=source/test/node_modules --includes=source/test/lib/extract --excludes=testbed,assets --out=source/test/lib/docs --json=source/test/lib/docs/json/file.json",
     "extract": "node node_modules/@bentley/bentleyjs-tools/scripts/extract.js --extractFrom=source/test --out=source/test/lib/extract",
     "test": "npm run test:backend && npm run test:frontend",
     "test:backend": "cd source/test && npm run test",
@@ -58,7 +58,7 @@
   "dependencies": {},
   "//devDependencies": "NOTE: These are the union of all devDependencies for source/frontend, source/backend, and source/test",
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "^1.0.56",
+    "@bentley/bentleyjs-tools": "^1.0.58",
     "@types/chai": "^4.0.8",
     "@types/flatbuffers": "^1.6.5",
     "@types/fs-extra": "^4.0.5",
