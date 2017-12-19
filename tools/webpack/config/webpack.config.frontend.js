@@ -250,7 +250,7 @@ const baseConfiguration = {
         options: {
           compilerOptions: {
             // Replace $(iModelJs-Common) with @bentley/imodeljs-frontend when compiling typescript
-            paths: {"$(iModelJs-Common)/*": [ "frontend/node_modules/@bentley/imodeljs-frontend/*"] } 
+            paths: {"$(iModelJs-Common)/*": [ "../node_modules/@bentley/imodeljs-frontend/*"] } 
           },
           onlyCompileBundledFiles: true,
           logLevel: 'warn',
