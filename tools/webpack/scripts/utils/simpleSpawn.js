@@ -4,14 +4,14 @@
 const spawn = require('react-dev-utils/crossSpawn');
 const chalk = require('chalk');
 
-function simpleSpawn(cmd, args, cwd) {
+function simpleSpawn(cmd, args, cwd, env) {
   if (!cwd)
     cwd = process.cwd();
 
   return new Promise((resolve, reject) => {
     const child = spawn(cmd, args, {
       cwd: cwd,
-      env: Object.assign({FORCE_COLOR: "1"}, process.env),
+      env: Object.assign({FORCE_COLOR: "1"}, env || {}, process.env),
       stdio: 'pipe'
     });
 

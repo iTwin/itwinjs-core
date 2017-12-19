@@ -25,6 +25,9 @@ const electronRemoteDebugOptions = (argv.electronRemoteDebug) ? ["--remote-debug
   const elapsed = Date.now() - backendStartTime;
   console.log(`${chalk.inverse(" BACKEND ")} Build completed successfully in ${chalk.green(elapsed + "ms")}`);
   
+  // Start the CORS proxy server before starting the frontend
+  spawn('node', [require.resolve('@bentley/dev-cors-proxy-server/server.js')], undefined, {PORT: process.env.CORS_PROXY_PORT});
+  
   // Now start the devserver...
   console.log();
   console.log(`${chalk.inverse(" FRONTEND ")} Starting development build...`);
