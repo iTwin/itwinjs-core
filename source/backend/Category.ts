@@ -68,7 +68,7 @@ export class Category extends DefinitionElement implements CategoryProps {
   /** Set the default appearance of this category */
   public async setDefaultAppearance(app: Appearance) {
     const subcat: SubCategory = await this.iModel.elements.getElement(this.id) as SubCategory;
-    let subcatR: SubCategory = subcat.copyForEdit() as SubCategory;
+    const subcatR: SubCategory = subcat.copyForEdit() as SubCategory;
     subcatR.appearance = app;
     this.iModel.elements.updateElement(subcatR);
   }
@@ -135,11 +135,11 @@ export class SpatialCategory extends Category {
       }) as SpatialCategory;
   }
 
-/** Inserts this SpatialCategory into the DgnDb and initializes its default sub-category with the specified appearance.
-  * @param[in] appearance The appearance associated with the default sub-category
-  * @return The persistent SpatialCategory.
-  * @throws IModelError if insert failed.
-  */
+  /** Inserts this SpatialCategory into the DgnDb and initializes its default sub-category with the specified appearance.
+   * @param[in] appearance The appearance associated with the default sub-category
+   * @return The persistent SpatialCategory.
+   * @throws IModelError if insert failed.
+   */
   public insert(appearance: Appearance): Id64 {
     const catId: Id64 = this.iModel.elements.insertElement(this);
     this.setDefaultAppearance(appearance);
