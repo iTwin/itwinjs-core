@@ -25,6 +25,15 @@ const env = getClientEnvironment(publicUrl);
 
 const resolveIModeljsCommon = (str) => str.replace(paths.imodeljsCommonRegex, "@bentley/imodeljs-backend");
 
+const prodLoaders = (process.env.NODE_ENV !== "production") ? [] : [
+  // Exclude web backend source in an electron build; electron backend source in a web build
+  {
+    test: /\.(t|j)sx?$/,
+    loader: require.resolve('null-loader'),
+    include: (process.env.ELECTRON_ENV === "production") ? paths.appSrcBackendWeb : paths.appSrcBackendElectron,
+  },
+]
+
 // This is the development configuration.
 // It is focused on developer experience and fast rebuilds.
 // The production configuration is different and lives in a separate file.
@@ -93,6 +102,7 @@ module.exports = {
         enforce: 'pre',
         include: paths.appSrc,
       },
+      ...prodLoaders,
       // Compile .ts
       {
         test: /\.ts$/,
