@@ -10,7 +10,8 @@ import { ViewManager } from "./ViewManager";
 import { ToolAdmin, CoordinateLockOverrides } from "./tools/ToolAdmin";
 import { ColorDef, ColorRgb } from "../common/Render";
 import { BeButtonEvent, CoordSource, BeModifierKey } from "./tools/Tool";
-import { HitDetail, TentativeOrAccuSnap } from "./AccuSnap";
+import { HitDetail, TentativeOrAccuSnap, TentativePoint } from "./AccuSnap";
+import { AuxCoordSystemState } from "../common/AuxCoordSys";
 
 // tslint:disable:no-empty
 const enum AccuDrawFlags {
@@ -279,7 +280,7 @@ class AccuDraw {
 
     const view = vp.view;
     const rMatrix = view.getRotation();
-    DPoint3d acsOrigin = viewController.GetAuxCoordinateSystem().GetOrigin();
+    const acsOrigin = vp.getAuxCoordOrigin();
     rMatrix.multiply3dInPlace(acsOrigin);
 
     const origin = view.getCenter();
@@ -307,17 +308,16 @@ class AccuDraw {
         return;
 
       case RotationMode.Front:
-        const temp = rot[1].clone()
+        const temp = rot[1].clone();
         rot[1] = rot[2];
         temp.scale(-1.0, rot[2]);
         return;
 
       case RotationMode.Side:
-        const temp0 = rot[0].clone()
+        const temp0 = rot[0].clone();
         rot[0] = rot[1];
         rot[1] = rot[2];
         rot[2] = temp0;
-        return
     }
   }
 
@@ -368,15 +368,12 @@ class AccuDraw {
   }
 
   public clearTentative(): boolean {
-    // if (!TentativePoint:: GetInstance().IsActive())
-    // return false;
+    if (!tentativePoint.m_isActive)
+      return false;
 
-    // bool   wasSnapped = TentativePoint:: GetInstance().IsSnapped();
-
-    // TentativePoint:: GetInstance().Clear(true);
-
-    // return wasSnapped;
-    return false;
+    const wasSnapped = tentativePoint.isSnapped();
+    tentativePoint.clear(true);
+    return wasSnapped;
   }
 
   public doAutoPoint(index: ItemField, mode: CompassMode): void {
@@ -717,6 +714,7 @@ class AccuDraw {
     this.setKeyinStatus(index, KeyinStatus.Dynamic);
   }
 
+  private static const tempRot = new RotMatrix();
   private static getStandardRotation(nStandard: StandardViewId, vp?: Viewport, useACS: boolean): RotMatrix | undefined {
     if (nStandard < StandardViewId.Top || nStandard > StandardViewId.RightIso)
       return undefined;
@@ -729,7 +727,7 @@ class AccuDraw {
     if (!useVp)
       return undefined;
 
-    // NEEDS_WORK_ACS rMatrix.multiplyMatrixMatrix(useVp.view.getAuxiliaryCoordinateSystemId().GetRotation(), rMatrix);
+    rMatrix.multiplyMatrixMatrix(useVp.getAuxCoordRotation(AccuDraw.tempRot), rMatrix);
     return rMatrix;
   }
 
@@ -741,9 +739,8 @@ class AccuDraw {
     if (!useVp)
       return RotMatrix.createIdentity(rMatrix);
 
-    // NEEDS_WORK_ACS
-    // if (checkACS && useVp.isContextRotationRequired())
-    //   return useVp.view.getAuxCoordinateSystem().getRotation();
+    if (checkACS && useVp.isContextRotationRequired())
+      return useVp.getAuxCoordRotation(rMatrix);
 
     return useVp.rotMatrix;
   }
@@ -756,19 +753,16 @@ class AccuDraw {
     return false;
   }
 
-  public static updateAuxCoordinateSystem(acs: AuxCoordSystem, vp: Viewport, allViews: boolean): void {
-    //   // When modeling with multiple spatial views open, you'd typically want the same ACS in all views...
-    //   if (allViews && vp.GetViewController().IsSpatialView()) {
-    //     for (auto & otherVp : ViewManager:: GetManager().GetViewports())
-    //     {
-    //       if (otherVp.get() === & vp || !otherVp -> GetViewController().IsSpatialView())
-    //         continue;
+  public static updateAuxCoordinateSystem(acs: AuxCoordSystemState, vp: Viewport, allViews: boolean): void {
+    // When modeling with multiple spatial views open, you'd typically want the same ACS in all views...
+    if (allViews && vp.view.isSpatialView()) {
+      for (const otherVp of viewManager.viewports) {
+        if (otherVp !== vp && otherVp.view.isSpatialView())
+          otherVp.auxCoordSystem = acs;
+      }
+    }
 
-    //       otherVp -> GetViewControllerR().SetAuxCoordinateSystem(acs);
-    //     }
-    //   }
-
-    //   vp.view.setAuxCoordinateSystem(acs);
+    vp.auxCoordSystem = acs;
 
     // NOTE: Change AccuDraw's base rotation to ACS.
     accuDraw.setContext(AccuDrawFlags.OrientACS);
@@ -995,44 +989,44 @@ class AccuDraw {
 
     if (perpendicular) {
       if (AccuDraw.useACSContextRotation(vp, true)) { // Project along ACS axis to AccuDraw plane...
-        //   const rMatrix = vp.view.getAuxCoordinateSystem().GetRotation();
-        //   DVec3d    vecs[3];
+        const rMatrix = vp.getAuxCoordRotation(AccuDraw.tempRot);
+        DVec3d    vecs[3];
 
-        //   rMatrix.getRows(vecs[0], vecs[1], vecs[2]);
-        //   this.accountForAuxRotationPlane(vecs, (RotationMode) this.flags.m_auxRotationPlane);
-        //   LegacyMath:: Vec:: LinePlaneIntersect(outPtP, inPtP, & vecs[2], pointOnPlaneP, normalVectorP, false);
-        // } else {
-        //   const projectionVector = inPtP.vectorTo(pointOnPlaneP);
-        //   const distance = projectionVector.dotProduct(normalVectorP);
-        //   inPtP.plusScaled(normalVectorP, distance, outPtP);
-        // }
+        rMatrix.getRows(vecs[0], vecs[1], vecs[2]);
+        this.accountForAuxRotationPlane(vecs, this.flags.auxRotationPlane);
+        LegacyMath:: Vec:: LinePlaneIntersect(outPtP, inPtP, & vecs[2], pointOnPlaneP, normalVectorP, false);
       } else {
-        const isCamera = vp.isCameraOn();
-        if (vp.view.is3d() && isCamera) {
-          const cameraPos = vp.view.getEyePoint();
-          fromPtP = cameraPos;
-          fromPtP.vectorTo(inPtP, projectionVector).normalizeInPlace();
-        } else {
-          const rMatrix = vp.rotMatrix;
-          fromPtP = inPtP;
-          rMatrix.getRow(2, projectionVector);
-        }
-
-        dotProduct = projectionVector.dotProduct(normalVectorP);
-
-        if (Math.abs(dotProduct) < Constants.SMALL_DELTA)
-          return BentleyStatus.ERROR; // PARALLEL;
-
-        distance = (normalVectorP.dotProduct(pointOnPlaneP) - normalVectorP.dotProduct(fromPtP)) / dotProduct;
-
-        if (isCamera && distance < Constants.SMALL_DELTA)
-          return BentleyStatus.ERROR; // BEHIND_EYE_POINT;
-
-        fromPtP.plusScaled(projectionVector, distance, outPtP);
+        const projectionVector = inPtP.vectorTo(pointOnPlaneP);
+        const distance = projectionVector.dotProduct(normalVectorP);
+        inPtP.plusScaled(normalVectorP, distance, outPtP);
+      }
+    } else {
+      const isCamera = vp.isCameraOn();
+      if (vp.view.is3d() && isCamera) {
+        const cameraPos = vp.view.getEyePoint();
+        fromPtP = cameraPos;
+        fromPtP.vectorTo(inPtP, projectionVector).normalizeInPlace();
+      } else {
+        const rMatrix = vp.rotMatrix;
+        fromPtP = inPtP;
+        rMatrix.getRow(2, projectionVector);
       }
 
-      return BentleyStatus.SUCCESS;
+      dotProduct = projectionVector.dotProduct(normalVectorP);
+
+      if (Math.abs(dotProduct) < Constants.SMALL_DELTA)
+        return BentleyStatus.ERROR; // PARALLEL;
+
+      distance = (normalVectorP.dotProduct(pointOnPlaneP) - normalVectorP.dotProduct(fromPtP)) / dotProduct;
+
+      if (isCamera && distance < Constants.SMALL_DELTA)
+        return BentleyStatus.ERROR; // BEHIND_EYE_POINT;
+
+      fromPtP.plusScaled(projectionVector, distance, outPtP);
     }
+
+    return BentleyStatus.SUCCESS;
+  }
 
 
   private softConstructionPlane(outPtP: Point3d, inPtP: Point3d, pointOnPlaneP: Point3d, normalVectorP: Vector3d, vp: Viewport, isSnap: boolean): boolean {
@@ -1650,3 +1644,4 @@ class AccuDraw {
 const viewManager = ViewManager.instance;
 const accuDraw = AccuDraw.instance;
 const toolAdmin = ToolAdmin.instance;
+const tentativePoint = TentativePoint.instance;

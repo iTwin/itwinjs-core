@@ -5,6 +5,44 @@ import { Point3d, Vector3d, Point2d } from "@bentley/geometry-core/lib/PointVect
 import { CurvePrimitive } from "@bentley/geometry-core/lib/curve/CurvePrimitive";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Viewport } from "./Viewport";
+import { ViewManager } from "./ViewManager";
+import { BeButtonEvent } from "./tools/Tool";
+import { TentativePoint } from "./TentativePoint";
+
+// tslint:disable:variable-name
+
+class AccuSnapToolState {
+  public m_enabled: boolean;
+  public m_locate: boolean;
+  public m_suspended: number;
+  public m_subSelectionMode: number;
+}
+
+class SnapElemIgnore {
+  public text: boolean;
+  public curves: boolean;
+  public dimensions: boolean;
+  public meshes: boolean;
+  public fillInterior: boolean;
+}
+
+class AccuSnapSettings {
+  public hotDistanceFactor: number;
+  public stickyFactor: number;
+  public searchDistance: number;
+  public enableForFenceCreate: boolean;
+  public showIcon: boolean;
+  public showHint: boolean;
+  public fixedPtPerpTan: boolean;
+  public playSound: boolean;
+  public coordUpdate: boolean;
+  public hiliteColdHits: boolean;
+  public popupInfo: boolean;
+  public popupMode: boolean;
+  public enableFlag: boolean;
+  public readonly ignore = new SnapElemIgnore();
+  public popupDelay: number; // delay before info balloon pops up - in 10th of a second
+}
 
 export const enum SnapMode {
   Invalid = -1,
@@ -25,7 +63,7 @@ export const enum SnapMode {
   Multi3 = 1 << 12,
   PointOn = 1 << 13,
   Multi1 = 1 << 14,
-  Multi2 = 1 << 15,      // For compilation with VS2010, we can't use the | construct. Put back when we compile everything with VS2012 or later.
+  Multi2 = 1 << 15,
   MultiSnaps = (Multi1 | Multi2 | Multi3),
   AllOrdinary = (Nearest | NearestKeypoint | MidPoint | Center | Origin | Bisector | Intersection | MultiSnaps),
   AllConstraint = (Tangency | TangentPoint | Perpendicular | PerpendicularPoint | Parallel | PointOn),
@@ -37,7 +75,7 @@ export const enum SnapHeat {
   SNAP_HEAT_None = 0,
   SNAP_HEAT_NotInRange = 1,   // "of interest", but out of range
   SNAP_HEAT_InRange = 2,
-};
+}
 
 export const enum KeypointType {
   KEYPOINT_TYPE_Nearest = 0,
@@ -128,11 +166,11 @@ export const enum HitDetailSource {
 }
 
 export interface ElemTopology {
-  //! Create a deep copy of this object.
+  /** Create a deep copy of this object. */
   clone(): ElemTopology;
 
-  //! Compare objects and return true if they should be considered the same.
-  isEqual(_other: ElemTopology): boolean;
+  /** Compare objects and return true if they should be considered the same. */
+  isEqual(other: ElemTopology): boolean;
 
   //   //! Return GeometrySource to handle requests related to transient geometry (like locate) where we don't have an DgnElement.
   //   toGeometrySource(): GeometrySource;
@@ -142,16 +180,16 @@ export interface ElemTopology {
 }
 
 export class GeomDetail {
-  public m_primitive: CurvePrimitive;     // curve primitve for hit (world coordinates).
-  public readonly m_normal = new Vector3d();                    // surface hit normal (world coordinates).
+  public m_primitive: CurvePrimitive;         // curve primitive for hit (world coordinates).
+  public readonly m_normal = new Vector3d();  // surface hit normal (world coordinates).
   public m_parentType: HitParentGeomType;     // type of parent geometry.
   public m_geomType: HitGeomType;             // type of hit geometry (edge or interior).
   public m_detailSource: HitDetailSource;     // mask of HitDetailSource values.
   public m_hitPriority: HitPriority;          // Relative priority of hit.
-  public m_nonSnappable: boolean;                // non-snappable detail, ex. pattern or line style.
+  public m_nonSnappable: boolean;             // non-snappable detail, ex. pattern or line style.
   public m_viewDist: number;                  // xy distance to hit (view coordinates).
   public m_viewZ: number;                     // z distance to hit (view coordinates).
-  public m_geomId: Id64;     // id of geometric primitive that generated this hit
+  public m_geomId: Id64;                      // id of geometric primitive that generated this hit
 }
 
 export const enum HitDetailType {
@@ -170,17 +208,31 @@ export class HitDetail {
   public m_hitDescription?: string;
   public m_subSelectionMode: SubSelectionMode; // segment hilite/flash mode.
   public isSnapDetail(): this is SnapDetail { return false; }
+  public getHitType(): HitDetailType { return HitDetailType.Hit; }
+
+  public isSameHit(otherHit?: HitDetail): boolean {
+    if (!otherHit || this.m_elementId.equals(otherHit.m_elementId))
+      return false;
+
+    if (!this.m_elemTopo && !otherHit.m_elemTopo)
+      return true;
+
+    if (this.m_elemTopo && !otherHit.m_elemTopo)
+      return false;
+
+    return this.m_elemTopo!.isEqual(otherHit.m_elemTopo!);
+  }
 }
 
 export class SnapDetail extends HitDetail {
   public m_heat: SnapHeat;
   public readonly m_screenPt = new Point2d();
   public m_divisor: number;
-  public m_snapMode: SnapMode;         // snap mode currently associated with this snap
-  public m_originalSnapMode: SnapMode; // snap mode used when snap was created, before constraint override was applied
-  public m_minScreenDist: number;    // minimum distance to element in screen coordinates.
-  public readonly m_snapPoint = new Point3d();        // hitpoint adjusted by snap
-  public readonly m_adjustedPt = new Point3d();       // sometimes accusnap adjusts the point after the snap.
+  public m_snapMode: SnapMode;                   // snap mode currently associated with this snap
+  public m_originalSnapMode: SnapMode;           // snap mode used when snap was created, before constraint override was applied
+  public m_minScreenDist: number;                // minimum distance to element in screen coordinates.
+  public readonly m_snapPoint = new Point3d();   // hitpoint adjusted by snap
+  public readonly m_adjustedPt = new Point3d();  // sometimes accusnap adjusts the point after the snap.
   public m_customKeypointSize: number;
   public m_customKeypointData?: any;
   public m_allowAssociations: boolean;
@@ -188,6 +240,7 @@ export class SnapDetail extends HitDetail {
   public isSnapDetail(): this is SnapDetail { return true; }
   public getAdjustedPoint() { return this.m_adjustedPt; }
   public isHot(): boolean { return this.m_heat !== SnapHeat.SNAP_HEAT_None; }
+  public getHitType(): HitDetailType { return HitDetailType.Snap; }
 }
 
 /**
@@ -197,59 +250,153 @@ export class SnapDetail extends HitDetail {
 export class HitList {
   public hits: HitDetail[];
   public m_currHit: number;
-}
 
-export class TentativePoint {
-  public static instance = new TentativePoint();
-  public m_isActive: boolean;
-  public m_qualifierMask: number;        // button qualifiers
-  public m_candidateSnapMode: SnapMode;    // during snap creation: the snap to try
-  public m_currSnap?: SnapDetail;
-  public m_tpHits?: HitList;
-  public readonly m_snapPaths: HitList;
-  public m_hotDistanceInches: number;
-  public readonly m_rawPoint = new Point3d();     // world coordinates
-  public readonly m_point = new Point3d();        // world coords (adjusted for locks)
-  public readonly m_viewPt = new Point3d();       // view coordinate system
-  public m_viewport?: Viewport;
-
-  //! @return true if the tentative point is currently active and snapped to an element.
-  public isSnapped(): boolean { return !!this.m_currSnap; }
-
-  public getPoint(): Point3d {
-    const snapPath = this.m_currSnap;
-    return !snapPath ? this.m_point : snapPath.getAdjustedPoint();
+  public clear(): void { this.hits.length = 0; }
+  public empty(): void {
+    this.clear();
+    this.m_currHit = -1; // we don't have a current hit.
   }
-
 }
 
 export class AccuSnap {
   public static instance = new AccuSnap();
-  public m_currHit?: HitDetail;          // currently active hit
-  // HitListP            m_aSnapHits;        // current list of hits.
-  // HitList             m_retestList;
-  // ViewManagerP        m_flashedViews;
+  public m_currHit?: HitDetail;                  // currently active hit
+  public m_aSnapHits?: HitList;                  // current list of hits.
+  public readonly m_retestList = new HitList();
+  public readonly m_needFlash = new Set<Viewport>();    // views that need to be flashed
+  public readonly m_areFlashed = new Set<Viewport>();   // views that are already flashed
   // LocateFailureValue  m_errorReason;      // reason code for last error
   // Utf8String          m_explanation;      // why last error was generated.
   // SnapMode            m_candidateSnapMode;// during snap creation: the snap to try
   // int                 m_suppressed;       // number of times "suppress" has been called -- unlike m_suspend this is not automatically cleared by tools
   // bool                m_wasAborted;       // was the search for elements from last motion event aborted?
-  // bool                m_waitingForTimeout;
+  private m_waitingForTimeout = false;
   // bool                m_changedCurrentHit;
-  // int                 m_noMotionCount;    // number of times "noMotion" has been called since last motion
-  // DPoint3d            m_infoPt;           // anchor point for infoWindow. window is cleared when cursor moves away from this point.
+  private m_noMotionCount = 0;   // number of times "noMotion" has been called since last motion
+  private readonly m_infoPt = new Point3d();           // anchor point for infoWindow. window is cleared when cursor moves away from this point.
   // Point2d             m_lastCursorPos;    // Location of cursor when we last checked for motion
   // int                 m_totalMotionSq;    // Accumulated distance (squared) the mouse has moved since we started checking for motion
   // int                 m_motionToleranceSq;// How much mouse movement constitutes a "move" (squared)
-  // AccuSnapToolState   m_toolstate;
-  // AccuSnapSettings    m_defaultSettings;
-  // AccuSnapSettings * m_settings;
+  private readonly m_toolstate = new AccuSnapToolState();
+  private readonly m_defaultSettings = new AccuSnapSettings();
+  private m_settings = this.m_defaultSettings;
+
+  private wantShowIcon() { return this.m_settings.showIcon; }
+  private wantShowHint() { return this.m_settings.showHint; }
+  private wantInfoBalloon() { return this.m_settings.popupInfo; }
+  private wantAutoInfoBalloon() { return this.m_settings.popupInfo && !this.m_settings.popupMode; }
+  private wantHiliteColdHits() { return this.m_settings.hiliteColdHits; }
+  private wantIgnoreText() { return !this.m_settings.ignore.text; }          // 0 means ignore
+  private wantIgnoreDimensions() { return !this.m_settings.ignore.dimensions; }    // 0 means ignore
+  private wantIgnoreCurves() { return !this.m_settings.ignore.curves; }        // 0 means ignore
+  private wantIgnoreMeshes() { return this.m_settings.ignore.meshes; }         // 1 means ignore
+  private wantIgnoreFill() { return this.m_settings.ignore.fillInterior; }   // 1 means ignore
+  private getStickyFactor() { return this.m_settings.stickyFactor; }
+  private doLocateTesting() { return this.isLocateEnabled(); }
+  private getSearchDistance() { return this.doLocateTesting() ? 1.0 : this.m_settings.searchDistance; }
+  private getPopupDelay() { return this.m_settings.popupDelay; }
+  private getHotDistanceInches() { return ElementLocateManager:: GetManager().GetApertureInches() * this.m_settings.hotDistanceFactor; }
+  public isLocateEnabled() { return this.m_toolstate.m_locate; }
 
   private static toSnapDetail(hit?: HitDetail): SnapDetail | undefined { return (hit && hit.isSnapDetail()) ? hit : undefined; }
   public getCurrSnapDetail(): SnapDetail | undefined { return AccuSnap.toSnapDetail(this.m_currHit); }
   public isHot(): boolean {
     const currSnap = this.getCurrSnapDetail(); return !currSnap ? false : currSnap.isHot();
   }
+  public destroy(): void {
+    this.m_currHit = undefined;
+    this.m_aSnapHits = undefined;
+    this.m_retestList.empty();
+  }
+
+  /** clear any AccuSnap info on the screen and release any hit path references */
+  public clear(): void { this.setCurrHit(undefined); }
+
+  public setCurrHit(newHit?: HitDetail): void {
+    const newSnap = AccuSnap.toSnapDetail(newHit);
+    const currSnap = this.getCurrSnapDetail();
+    const sameElem = (newHit && newHit.isSameHit(this.m_currHit));
+    const sameHit = (sameElem && !newSnap);
+    const sameSnap = (sameElem && newSnap && currSnap);
+    const samePt = (sameHit || (sameSnap && newSnap!.m_screenPt.isExactEqual(currSnap!.m_screenPt)));
+    const sameHot = (sameHit || (sameSnap && (this.isHot() === newSnap!.isHot())));
+    const sameBaseSnapMode = (!newSnap || !currSnap || newSnap.m_originalSnapMode === currSnap.m_originalSnapMode);
+    const sameType = (sameHot && (!currSnap || (currSnap.getHitType() === newHit!.getHitType())));
+
+    // NOTE: When snapping and not also locating, flash component instead of cursor index 
+    //       Component mode when locating is handled by FilterHit.
+    //       For intersect snap, always show only the segments that intersect.
+    if (newSnap) {
+      if (HitDetailType.Intersection === newSnap.getHitType() || !this.doLocateTesting())
+        newSnap.m_subSelectionMode = SubSelectionMode.Segment;
+    }
+
+    // see if it's the same point on the same element, the hot flags are the same multiple snaps, and the snap modes are the same
+    if (samePt && sameType && sameBaseSnapMode) {
+      // we know that nothing about the screen could change, just save the new hit and return to avoid screen flash
+      this.m_currHit = newHit;
+      return;
+    }
+
+    this.erase();
+
+    // if we hit the same element with the same "hotness" as last time, we don't need to erase it
+    //  multiple snaps: but only if the old and new snap modes are the same
+    if (!sameHot || !sameBaseSnapMode) {
+      this.unFlashViews();
+      this.setFlashHit(newHit);
+    }
+
+    // we already have a hit. Release our reference to it (leave element hilited though).
+    this.m_currHit = undefined;
+
+    // if we didn't get a new hit, we're done
+    if (!newHit)
+      return;
+
+    // draw sprites for this hit
+    this.showSnapSprite();
+  }
+
+  public erase(): void {
+    this.clearInfoBalloon(undefined); // make sure there's no info balloon up.
+    this.clearSprites(); // remove all sprites from the screen
+  }
+
+  public clearInfoBalloon(ev?: BeButtonEvent): void {
+    this.m_noMotionCount = 0;
+    this.m_waitingForTimeout = false;     // necessary in case we exit the view
+
+    if (!viewManager.isInfoWindowUp())
+      return;
+
+    if (ev && (5 > ev.viewPoint.distanceXY(this.m_infoPt)))
+      return;
+
+    // if (nullptr != t_viewHost -> GetViewManager().GetInfoWindowOwner())
+    //   return;
+    // // notify any event handlers
+    // m_eventHandlers.CallAllHandlers(RemoveInfoCaller());
+    // viewManager.clearInfoWindow();
+  }
+
+  private clearSprites() {
+    // erase both sprites from the screen
+    // m_errorIcon.deactivate();
+    // m_cross.deactivate();
+    // m_icon.deactivate();
+  }
+
+  private unFlashViews() {
+    this.m_needFlash.clear();
+
+    for (const vp of this.m_areFlashed) {
+      // m_eventHandlers.CallAllHandlers(UnFlashCaller(vp.get()));
+      vp.setFlashed(undefined, 0.0);
+    }
+    this.m_areFlashed.clear();
+  }
+
 }
 
 export class TentativeOrAccuSnap {
@@ -284,3 +431,4 @@ export class TentativeOrAccuSnap {
 
 const accuSnap = AccuSnap.instance;
 const tentativePoint = TentativePoint.instance;
+const viewManager = ViewManager.instance;

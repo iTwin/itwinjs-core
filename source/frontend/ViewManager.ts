@@ -8,6 +8,8 @@ import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import { EventController } from "./tools/EventController";
 
+// tslint:disable:no-empty
+
 /** The ViewManager holds the list of opened views, plus the "selected view" */
 export class ViewManager {
   public static readonly instance = new ViewManager();
@@ -36,6 +38,9 @@ export class ViewManager {
    * or, on a tablet, when the application is moved to the foreground.
    */
   public readonly onViewResume = new BeEvent<(vp: Viewport) => void>();
+
+  public isInfoWindowUp(): boolean { return false; } // NEEDS_WORK
+  public clearInfoWindow(): void { }
 
   /** The "selected view" is the default for certain operations.  */
   public get selectedView() { return this._selectedView; }

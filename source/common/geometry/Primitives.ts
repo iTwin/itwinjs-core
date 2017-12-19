@@ -105,9 +105,9 @@ export class ElementAlignedBox2d extends Range2d {
 }
 
 export interface Placement3dProps {
-  origin: XYAndZ;
+  origin: Point3d | object;
   angles: YawPitchRollAngles | object;
-  bbox: LowAndHighXYZ;
+  bbox: LowAndHighXYZ | object;
 }
 
 /**
@@ -146,9 +146,9 @@ export class Placement3d implements Placement3dProps {
 }
 
 export interface Placement2dProps {
-  origin: XAndY;
+  origin: XAndY | object;
   angle: Angle | number | object;
-  bbox: LowAndHighXY;
+  bbox: LowAndHighXY | object;
 }
 
 /** The placement of a GeometricElement2d. This includes the origin, rotation, and size (bounding box) of the element. */

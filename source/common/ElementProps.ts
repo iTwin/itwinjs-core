@@ -93,16 +93,24 @@ export interface AuxCoordSystemProps extends ElementProps {
   description?: string;
 }
 
+/**
+ * Properties of AuxCoordSystem2d
+ * @note angle is stored in degrees
+ */
 export interface AuxCoordSystem2dProps extends AuxCoordSystemProps {
-  origin?: XAndY | string;
-  angle?: number;
+  origin?: object;
+  angle?: number; // in degrees
 }
 
+/**
+ * Properties of AuxCoordSystem3d
+ * @note All angles are stored in degrees
+ */
 export interface AuxCoordSystem3dProps extends AuxCoordSystemProps {
-  origin?: XYAndZ | string;
-  yaw?: number;
-  pitch?: number;
-  roll?: number;
+  origin?: object;
+  yaw?: number;  // in degrees
+  pitch?: number; // in degrees
+  roll?: number; // in degrees
 }
 
 export interface LightLocationProps extends GeometricElement3dProps {

@@ -12,6 +12,10 @@ import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { BeButtonEvent, BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { ToolAdmin } from "./tools/ToolAdmin";
+import { AuxCoordSystemState } from "../common/AuxCoordSys";
+import { IModelConnection } from "./IModelConnection";
+import { IModelError, IModelStatus } from "../common/IModelError";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 const toolAdmin = ToolAdmin.instance;
 
@@ -102,6 +106,7 @@ class Animator {
  * the viewing parameters.
  */
 export class Viewport {
+  private iModel?: IModelConnection;
   /** Called whenever this viewport is synchronized with its ViewState */
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
   private zClipAdjusted = false;    // were the view z clip planes adjusted due to front/back clipping off?
@@ -122,6 +127,7 @@ export class Viewport {
   private _viewCmdTargetCenter?: Point3d;
   public frustFraction: number = 1.0;
   public maxUndoSteps = 20;
+  public _auxCoordSystem?: AuxCoordSystemState;
   private readonly forwardStack: ViewState[] = [];
   private readonly backStack: ViewState[] = [];
   private currentBaseline?: ViewState;
@@ -129,6 +135,10 @@ export class Viewport {
   private _evController?: EventController;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
 
+  public get auxCoordSystem(): AuxCoordSystemState | undefined { return this._auxCoordSystem; }
+  public set auxCoordSystem(val: AuxCoordSystemState | undefined) { this._auxCoordSystem = val; this.view.setAuxiliaryCoordinateSystemId(Id64.fromJSON(val)); }
+  public getAuxCoordRotation(result?: RotMatrix) { return this.auxCoordSystem ? this.auxCoordSystem.getRotation(result) : RotMatrix.createIdentity(result); }
+  public getAuxCoordOrigin(result?: Point3d) { return this.auxCoordSystem ? this.auxCoordSystem.getOrigin(result) : Point3d.createZero(result); }
   public isPointAdjustmentRequired(): boolean { return this.view.is3d(); }
   public isSnapAdjustmentRequired(): boolean { return toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
   public isContextRotationRequired(): boolean { return toolAdmin.acsContextLock; }
@@ -225,11 +235,20 @@ export class Viewport {
     camera.setFocusDistance(focusDistance);
   }
 
-  public changeViewState(view: ViewState): void {
+  public async changeView(view: ViewState) {
     this.clearUndo();
     this._view = view;
+    if (!(view.iModel instanceof IModelConnection))
+      throw new IModelError(IModelStatus.WrongIModel);
+    this.iModel = view.iModel;
     this.setupFromView();
     this.saveViewUndo();
+
+    const auxCoordSysId = view.getAuxiliaryCoordinateSystemId();
+    if (auxCoordSysId.isValid()) {
+      const props = await this.iModel.elements.getElementProps([auxCoordSysId]);
+      this.auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
+    }
   }
 
   private static fullRangeNpc = new Range3d(0, 1, 0, 1, 0, 1); // full range of view

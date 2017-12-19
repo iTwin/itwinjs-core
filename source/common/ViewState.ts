@@ -750,7 +750,7 @@ export abstract class ViewState extends ElementState {
   public getAuxiliaryCoordinateSystemId(): Id64 { return Id64.fromJSON(this.getDetail("acs")); }
 
   /** Set the AuxiliaryCoordinateSystem for this view. */
-  public setAuxiliaryCoordinateSystem(acsId: Id64) {
+  public setAuxiliaryCoordinateSystemId(acsId: Id64) {
     if (acsId.isValid())
       this.setDetail("acs", acsId.value);
     else
