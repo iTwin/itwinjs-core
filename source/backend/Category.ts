@@ -132,13 +132,11 @@ export class SpatialCategory extends Category {
   }
 
   /** Inserts this SpatialCategory into the DgnDb and initializes its default sub-category with the specified appearance.
-   * @param[in] appearance The appearance associated with the default sub-category
    * @return The persistent SpatialCategory.
    * @throws IModelError if insert failed.
+   * @see setDefaultAppearance
    */
-  public insert(appearance: Appearance): Id64 {
-    const catId: Id64 = this.iModel.elements.insertElement(this);
-    this.setDefaultAppearance(appearance);
-    return catId;
+  public insert(): Id64 {
+    return this.iModel.elements.insertElement(this);
   }
 }

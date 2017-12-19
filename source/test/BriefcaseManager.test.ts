@@ -165,13 +165,16 @@ describe("BriefcaseManager", () => {
     let newModelId: Id64;
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, Code.createEmpty(), true);
 
-    // Create a new SpatialCategory
+    // Find or create a new SpatialCategory
     const dictionary: DictionaryModel = await iModel.models.getModel(Model.getDictionaryId()) as DictionaryModel;
-    const appearance: Appearance = new Appearance();
-    appearance.color = new ColorDef("rgb(255,0,0)");
-    let spatialCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "Cat1");
+    let spatialCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
     if (undefined === spatialCategoryId) {
-      spatialCategoryId = SpatialCategory.create(dictionary, "Cat1").insert(appearance);
+      const cat: SpatialCategory = SpatialCategory.create(dictionary, "MySpatialCategory");
+      spatialCategoryId = cat.insert();
+      cat.id = spatialCategoryId;
+      const appearance: Appearance = new Appearance();
+      appearance.color = new ColorDef("rgb(255,0,0)");
+      await cat.setDefaultAppearance(appearance);
     }
 
     // Create a couple of physical elements.
@@ -195,7 +198,7 @@ describe("BriefcaseManager", () => {
     let newModelId: Id64;
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, Code.createEmpty(), true);
 
-    const spatialCategoryId: Id64 = SpatialCategory.create(dictionary, "Cat1").insert(new Appearance());
+    const spatialCategoryId: Id64 = SpatialCategory.create(dictionary, "Cat1").insert();
 
     // Insert a few elements
     const elements: Element[] = [
