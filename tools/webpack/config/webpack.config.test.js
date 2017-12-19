@@ -160,7 +160,7 @@ module.exports = {
         options: {
           compilerOptions: { 
             // Replace $(iModelJs-Common) with @bentley/imodeljs-backend when compiling typescript
-            paths: { "$(iModelJs-Common)/*": [ "@bentley/imodeljs-backend/*"] }
+            paths: { "$(iModelJs-Common)/*": [ "../node_modules/@bentley/imodeljs-backend/*"] }
           },
           onlyCompileBundledFiles: true,
           logLevel: 'warn'
