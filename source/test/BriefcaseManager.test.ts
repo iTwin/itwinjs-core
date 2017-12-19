@@ -170,7 +170,7 @@ describe("BriefcaseManager", () => {
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, Code.createEmpty(), true);
 
     const spatialCategoryId: Id64 = SpatialCategory.create(dictionary, "Cat1").insert(new Appearance());
-    
+
     iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
     iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
 
@@ -184,11 +184,11 @@ describe("BriefcaseManager", () => {
     assert.exists(iModel);
 
     const dictionary: DictionaryModel = await iModel.models.getModel(Model.getDictionaryId()) as DictionaryModel;
-    
+
     let newModelId: Id64;
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, Code.createEmpty(), true);
 
-    const spatialCategoryId: Id64 = SpatialCategory.create(dictionary, "Cat1").insert(new Appearance())
+    const spatialCategoryId: Id64 = SpatialCategory.create(dictionary, "Cat1").insert(new Appearance());
 
     // Insert a few elements
     const elements: Element[] = [
