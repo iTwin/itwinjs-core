@@ -4,6 +4,7 @@
 import { AccessToken, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelError } from "./IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
+import { Configuration } from "./IModel";
 
 /** Option to specify the version of the iModel to be acquired and used */
 export class IModelVersion {
@@ -80,7 +81,7 @@ export class IModelVersion {
     if (this._first)
       return Promise.resolve("");
 
-    const hubClient = new IModelHubClient( "QA"); // todo: need this supplied by some config
+    const hubClient = new IModelHubClient(Configuration.IModelHubDeploymentEnv); // todo: need this supplied by some config
 
     if (this._afterChangeSetId) {
       return Promise.resolve(this._afterChangeSetId);

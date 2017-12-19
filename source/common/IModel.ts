@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { DeploymentEnv } from "@bentley/imodeljs-clients";
 
 /** A token that identifies a specific instance of an iModel to be operated on */
 export class IModelToken {
@@ -52,4 +53,28 @@ export abstract class IModel {
   protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
 
   public isReadonly() { return this._iModelToken.openMode === OpenMode.Readonly; }
+}
+
+/** Common configuration for various API */
+export abstract class Configuration {
+
+  private static _iModelHubDeploymentEnv?: DeploymentEnv;
+
+  /** Deployment of Connect and IModelHub used to find projects and iModels */
+  public static get IModelHubDeploymentEnv(): DeploymentEnv {
+    if (Configuration._iModelHubDeploymentEnv)
+      return Configuration._iModelHubDeploymentEnv;
+
+    const env = process.env.IModelHubDeployment;
+    if (env === "QA" || env === "DEV" || env === "PROD")
+      Configuration._iModelHubDeploymentEnv = env;
+    else
+      Configuration._iModelHubDeploymentEnv = "QA";
+
+    return Configuration._iModelHubDeploymentEnv;
+  }
+
+  public static set IModelHubDeploymentEnv(deploymentEnv: DeploymentEnv) {
+    Configuration._iModelHubDeploymentEnv = deploymentEnv;
+  }
 }

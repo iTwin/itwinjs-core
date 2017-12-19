@@ -6,7 +6,7 @@ import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BriefcaseStatus, IModelError } from "../common/IModelError";
 import { IModelVersion } from "../common/IModelVersion";
-import { IModelToken } from "../common/IModel";
+import { IModelToken, Configuration } from "../common/IModel";
 import { NodeAddonRegistry } from "./NodeAddonRegistry";
 import { NodeAddonDgnDb, ErrorStatusOrResult, NodeAddonBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { IModelDb } from "./IModelDb";
@@ -170,7 +170,7 @@ class BriefcaseCache {
  *      ...
  */
 export class BriefcaseManager {
-  private static hubClient = new IModelHubClient("QA");
+  private static hubClient = new IModelHubClient(Configuration.IModelHubDeploymentEnv);
   private static cache?: BriefcaseCache;
 
   /** The path where the cache of briefcases are stored. */
