@@ -823,8 +823,13 @@ export class IModelDbElements {
     return Promise.reject(new IModelError(IModelStatus.BadArg, undefined, Logger.logError, () => ({ elementId })));
   }
 
-  // Query for the DgnElementId of the element that has the specified code
-  public queryElementIdByCode(code: Code): Id64 {
+  /** 
+   * Query for the DgnElementId of the element that has the specified code
+   * @param code The code to look for
+   * @return The element that uses the code or undefined if the code is not used.
+   * @throws IModelError if the code is invalid
+   */
+  public queryElementIdByCode(code: Code): Id64 | undefined {
     if (!code.spec.isValid()) {
       throw new IModelError(IModelStatus.InvalidCodeSpec);
     }
@@ -834,9 +839,8 @@ export class IModelDbElements {
     return this._iModel.withPreparedStatement("SELECT ecinstanceid as id FROM " + Element.sqlName + " WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?", (stmt: ECSqlStatement) => {
       stmt.bindValues([code.spec, new Id64(code.scope), code.value!]);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
-        throw new IModelError(IModelStatus.NotFound);
-      const id = new Id64(stmt.getRow().id);
-      return id;
+        return undefined;
+      return new Id64(stmt.getRow().id);
     });
   }
 

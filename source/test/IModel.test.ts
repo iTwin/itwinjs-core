@@ -696,7 +696,8 @@ describe("iModel", () => {
     // const modelId: Id64 = ifperfimodel.models.querySubModelId(physicalPartitionCode);
     const modelId = new Id64("0X11");
 
-    const defaultCategoryId: Id64 = SpatialCategory.queryCategoryIdByName(dictionary, "DefaultCategory");
+    const defaultCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "DefaultCategory");
+    assert.isFalse(undefined === defaultCategoryId);
 
     const elementCount = 10000;
     for (let i = 0; i < elementCount; ++i) {

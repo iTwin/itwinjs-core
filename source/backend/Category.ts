@@ -9,7 +9,6 @@ import { Appearance, Rank } from "../common/SubCategoryAppearance";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel } from "./Model";
-import { IModelError, DbResult } from "../common/IModelError";
 
 /** Parameters to create a SubCategory element */
 export interface SubCategoryProps extends ElementProps {
@@ -97,12 +96,9 @@ export class SpatialCategory extends Category {
   public static getCodeSpecName(): string { return CodeSpecNames.SpatialCategory(); }
 
   /** Looks up the DgnCategoryId of a SpatialCategory by model and name */
-  public static queryCategoryIdByName(parentModel: DefinitionModel, categoryName: string): Id64 {
+  public static queryCategoryIdByName(parentModel: DefinitionModel, categoryName: string): Id64 | undefined {
     const code: Code = SpatialCategory.createCode(parentModel, categoryName);
-    const id: Id64 | undefined = parentModel.iModel.elements.queryElementIdByCode(code);
-    if (id === undefined)
-      throw new IModelError(DbResult.BE_SQLITE_NOTFOUND);
-    return id;
+    return parentModel.iModel.elements.queryElementIdByCode(code);
   }
 
   /** Create a Code for a SpatialCategory given a name that is meant to be unique within the scope of the specified DefinitionModel.

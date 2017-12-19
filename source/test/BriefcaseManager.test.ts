@@ -18,6 +18,7 @@ import { Element } from "../backend/Element";
 import { DictionaryModel, Model } from "../backend/Model";
 import { SpatialCategory } from "../backend/Category";
 import { Appearance } from "../common/SubCategoryAppearance";
+import { ColorDef } from "../common/Render";
 
 describe("BriefcaseManager", () => {
   let accessToken: AccessToken;
@@ -142,39 +143,45 @@ describe("BriefcaseManager", () => {
     await iModel.close(accessToken);
   });
 
-  it.skip("should write to briefcase with optimistic concurrency", async () => {
+  it.only("should write to briefcase with optimistic concurrency", async () => {
+
+    // Acquire a briefcase from iModelHub
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
 
-    /* TBD - test
-    iModel.setConcurrencyControlPolicy(new BriefcaseManager.PessimisticConcurrencyControlPolicy());
-    iModel.startBulkUpdateMode();
-    iModel.endBulkUpdateMode();
-    */
-
+    // Turn on optimistic concurrency control. This allows the app to modify elements, models, etc. without first acquiring locks.
+    // (Later, when the app downloads and merges changesets from the Hub into the briefcase, BriefcaseManager will merge changes and handle conflicts.)
     iModel.setConcurrencyControlPolicy(new BriefcaseManager.OptimisticConcurrencyControlPolicy({
       updateVsUpdate: BriefcaseManager.ConflictResolution.Reject,
       updateVsDelete: BriefcaseManager.ConflictResolution.Take,
       deleteVsUpdate: BriefcaseManager.ConflictResolution.Reject,
     }));
 
-    const dictionary: DictionaryModel = await iModel.models.getModel(Model.getDictionaryId()) as DictionaryModel;
-
-    // The following ops that modify insert models and elements should succeed, even though we don't acquire locks and codes.
-
+    // Show that we can modify the properties of an element. In this case, we modify the root element itself.
     const rootEl: Element = (await iModel.elements.getRootSubject()).copyForEdit<Element>();
-    assert.notEqual(rootEl.userLabel, "root label changed");
-    rootEl.userLabel = "root label changed";
+    rootEl.userLabel = rootEl.userLabel + "changed";
     iModel.elements.updateElement(rootEl);
 
+    // Create a new physical model
     let newModelId: Id64;
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, Code.createEmpty(), true);
 
-    const spatialCategoryId: Id64 = SpatialCategory.create(dictionary, "Cat1").insert(new Appearance());
+    // Create a new SpatialCategory
+    const dictionary: DictionaryModel = await iModel.models.getModel(Model.getDictionaryId()) as DictionaryModel;
+    const appearance: Appearance = new Appearance();
+    appearance.color = new ColorDef("rgb(255,0,0)");
+    let spatialCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "Cat1");
+    if (undefined === spatialCategoryId) {
+      spatialCategoryId = SpatialCategory.create(dictionary, "Cat1").insert(appearance);
+    }
 
+    // Create a couple of physical elements.
     iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
     iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
 
+    // Commit the local changes to a local transaction in the briefcase.
     iModel.saveChanges("inserted generic objects");
+
+    // TBD: Sync with iModelHub and  then upload the local changes as a changeset to iModelHub
 
     await iModel.close(accessToken);
   });
