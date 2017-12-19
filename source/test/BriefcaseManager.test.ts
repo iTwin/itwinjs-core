@@ -143,7 +143,7 @@ describe("BriefcaseManager", () => {
     await iModel.close(accessToken);
   });
 
-  it.only("should write to briefcase with optimistic concurrency", async () => {
+  it("should write to briefcase with optimistic concurrency", async () => {
 
     // Acquire a briefcase from iModelHub
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
@@ -165,16 +165,11 @@ describe("BriefcaseManager", () => {
     let newModelId: Id64;
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, Code.createEmpty(), true);
 
-    // Find or create a new SpatialCategory
+    // Find or create a SpatialCategory
     const dictionary: DictionaryModel = await iModel.models.getModel(Model.getDictionaryId()) as DictionaryModel;
     let spatialCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
     if (undefined === spatialCategoryId) {
-      const cat: SpatialCategory = SpatialCategory.create(dictionary, "MySpatialCategory");
-      spatialCategoryId = cat.insert();
-      cat.id = spatialCategoryId;
-      const appearance: Appearance = new Appearance();
-      appearance.color = new ColorDef("rgb(255,0,0)");
-      await cat.setDefaultAppearance(appearance);
+      spatialCategoryId = await IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({color: new ColorDef("rgb(255,0,0)")}));
     }
 
     // Create a couple of physical elements.

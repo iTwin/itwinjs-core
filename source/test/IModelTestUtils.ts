@@ -19,6 +19,9 @@ import { ElementProps, GeometricElementProps } from "../common/ElementProps";
 
 import * as path from "path";
 import { Entity } from "../backend/Entity";
+import { DefinitionModel } from "../backend/Model";
+import { SpatialCategory } from "../backend/Category";
+import { Appearance } from "../common/SubCategoryAppearance";
 
 // Initialize the gateway classes used by tests
 Gateway.initialize(IModelGateway);
@@ -165,9 +168,15 @@ export class IModelTestUtils {
     entity.iModel.requestResources(req);
   }
 
-  //
-  // Create and insert a PhysicalObject
-  //
+  // Create a SpatialCategory, insert it, and set its default appearance
+  public static async createAndInsertSpatialCategory(definitionModel: DefinitionModel, categoryName: string, appearance: Appearance): Promise<Id64> {
+    const cat: SpatialCategory = SpatialCategory.create(definitionModel, categoryName);
+    cat.id = cat.insert();
+    await cat.setDefaultAppearance(appearance);
+    return cat.id;
+  }
+
+  // Create a PhysicalObject. (Does not insert it.)
   public static createPhysicalObject(testImodel: IModelDb, modelId: Id64, categoryId: Id64, elemCode?: Code): Element {
     const elementProps: GeometricElementProps = {
       classFullName: "Generic:PhysicalObject",

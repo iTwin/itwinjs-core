@@ -823,7 +823,7 @@ export class IModelDbElements {
     return Promise.reject(new IModelError(IModelStatus.BadArg, undefined, Logger.logError, () => ({ elementId })));
   }
 
-  /** 
+  /**
    * Query for the DgnElementId of the element that has the specified code
    * @param code The code to look for
    * @return The element that uses the code or undefined if the code is not used.
