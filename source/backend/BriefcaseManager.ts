@@ -228,7 +228,7 @@ export class BriefcaseManager {
     if (BriefcaseManager.cache)
       return;
 
-    BriefcaseManager.hubClient = new IModelHubClient(Configuration.IModelHubDeploymentEnv);
+    BriefcaseManager.hubClient = new IModelHubClient(Configuration.iModelHubDeployConfig);
     BriefcaseManager.cache = new BriefcaseCache();
     if (!accessToken)
       return;

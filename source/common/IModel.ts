@@ -58,19 +58,19 @@ export abstract class IModel {
 /** Common configuration for various API */
 export abstract class Configuration {
 
-  private static _iModelHubDeploymentEnv?: DeploymentEnv;
+  private static _iModelHubDeployConfig?: DeploymentEnv;
 
-  /** Deployment of Connect and IModelHub used to find projects and iModels */
-  public static get IModelHubDeploymentEnv(): DeploymentEnv {
-    if (Configuration._iModelHubDeploymentEnv)
-      return Configuration._iModelHubDeploymentEnv;
+  /** Get the deployment configuration of Connect and IModelHub services - these are used to find Projects and iModels
+   */
+  public static get iModelHubDeployConfig(): DeploymentEnv {
+    return Configuration._iModelHubDeployConfig ? Configuration._iModelHubDeployConfig : "QA";
+  }
 
-    const env = process.env.IModelHubDeployment;
-    if (env === "QA" || env === "DEV" || env === "PROD")
-      Configuration._iModelHubDeploymentEnv = env;
-    else
-      Configuration._iModelHubDeploymentEnv = "QA";
-
-    return Configuration._iModelHubDeploymentEnv;
+  /**
+   * Set the deployment configuration of Connect and IModelHub services - these are used to find Projects and iModels
+   * @remarks This needs to be setup just once before any imodels are opened, and cannot be switched thereafter.
+   */
+  public static set iModelHubDeployConfig(deploymentEnv: DeploymentEnv) {
+    Configuration._iModelHubDeployConfig = deploymentEnv;
   }
 }

@@ -87,7 +87,7 @@ export class IModelVersion {
       return Promise.resolve(this._afterChangeSetId);
     }
 
-    const hubClient = new IModelHubClient(Configuration.IModelHubDeploymentEnv); // todo: need this supplied by some config
+    const hubClient = new IModelHubClient(Configuration.iModelHubDeployConfig);
 
     if (this._latest) {
       return IModelVersion.getLatestChangeSetId(hubClient, accessToken, iModelId);
