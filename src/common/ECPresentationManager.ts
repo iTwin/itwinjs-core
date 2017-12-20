@@ -71,7 +71,7 @@ export interface ECPresentationManager {
    * @param[in] options  An options object that depends on the used presentation manager implementation.
    * @return A promise object that returns either a @ref Descriptor on success or an error string on error.
    */
-  getDescriptor(token: IModelToken, displayType: string, keys: ECInstanceKeysList, selection: SelectionInfo | null, options: object): Promise<Descriptor | null>;
+  getContentDescriptor(token: IModelToken, displayType: string, keys: ECInstanceKeysList, selection: SelectionInfo | null, options: object): Promise<Descriptor | null>;
 
   /** Retrieves the content set size based on the supplied content descriptor override.
    * @param[in] token Token of imodel to pull data from
@@ -92,7 +92,7 @@ export interface ECPresentationManager {
    * @param[in] options              An options object that depends on the used presentation manager implementation.
    * @return A promise object that returns either @ref Content on success or an error string on error.
    */
-  getContent(token: IModelToken, descriptor: Descriptor, keys: ECInstanceKeysList, pageOptions: PageOptions, options: object): Promise<Content | null>;
+  getContent(token: IModelToken, descriptor: Descriptor, keys: ECInstanceKeysList, pageOptions: PageOptions, options: object): Promise<Content>;
 
   /** Send message to WorkThread to get specified column distinct values.
    * @param[in] token Token of imodel to pull data from

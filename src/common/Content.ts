@@ -18,19 +18,16 @@ export type PropertyAccessorPath = PropertyAccessor[];
  */
 export class DefaultContentDisplayTypes {
   /** Unknown content type. */
-  public static undefined = "Undefined";
+  public static readonly UNDEFINED = "Undefined";
 
   /** Grid or table view content type. By default adds @ref ShowLabels flag. */
-  public static grid = "Grid";
+  public static readonly GRID = "Grid";
 
   /** Property pane content type. By default adds @ref MergeResults flag. */
-  public static propertyPane = "PropertyPane";
+  public static readonly PROPERTY_PANE = "PropertyPane";
 
   /** List content type. By default adds @ref NoFields @ref ShowLabels flags */
-  public static list = "List";
-
-  /** Property comparison pane content type. */
-  public static propertyComparisonPane = "PropertyComparisonPane";
+  public static readonly LIST = "List";
 }
 
 /** A struct that describes a @ref Field category. */
@@ -84,6 +81,11 @@ export interface ECClassInfo {
   displayLabel: string;
 }
 
+export interface ECEnumerationChoice {
+  label: string;
+  value: any;
+}
+
 /** Information about an ECProperty. */
 export interface ECPropertyInfo {
   /** Get information about ECClass that the ECProperty belongs to. */
@@ -95,8 +97,8 @@ export interface ECPropertyInfo {
   /** Get the type name of the ECProperty. */
   type: string;
 
-  /** In case this is an enumeration property, get choices of enumeration property. TODO: */
-  // Choices?: ui.EnumerationChoices;
+  /** In case this is an enumeration property, get choices of enumeration property. */
+  choices?: ECEnumerationChoice[];
 
   /** In case this is an enumeration property, get flag whether enumeration is strict or not. */
   isStrict?: boolean;
@@ -423,7 +425,7 @@ export class Descriptor {
   private _sortingField: Field | null;
   private _sortDirection: SortDirection;
   private _contentFlags: number;
-  private _filterExpression: string;
+  private _filterExpression: string | null;
 
   /** Constructor.
    * @param[in] preferredDisplayType The display type to create the descriptor for.
@@ -464,9 +466,9 @@ export class Descriptor {
   public set sortDirection(value: SortDirection) { this._sortDirection = value; }
 
   /** Get filtering ECExpression. */
-  public get filterExpression(): string { return this._filterExpression; }
+  public get filterExpression(): string | null { return this._filterExpression; }
   /** Set filtering ECExpression. */
-  public set filterExpression(filter: string) { this._filterExpression = filter; }
+  public set filterExpression(filter: string | null) { this._filterExpression = filter; }
 
   /** Get the content flags.
    * @see ContentFlags
@@ -544,8 +546,9 @@ export interface FieldPropertyValueKeys {
   [fieldName: string]: PropertyValueKeys[];
 }
 
-export interface ValuesDictionary {
-  key: any;
+export interface ValuesDictionary<T> {
+  key: T;
+  [key: string]: T;
 }
 
 /** A struct that represents a single content record. */
@@ -554,8 +557,8 @@ export class ContentSetItem {
   private _displayLabel: string;
   private _imageId: string;
   private _classInfo: ECClassInfo | null;
-  private _values: ValuesDictionary;
-  private _displayValues: ValuesDictionary;
+  private _values: ValuesDictionary<any>;
+  private _displayValues: ValuesDictionary<string | null>;
   private _mergedFieldNames: string[];
   private _fieldPropertyValueKeys: FieldPropertyValueKeys;
 
@@ -570,7 +573,7 @@ export class ContentSetItem {
    * @param[in] fieldPropertyValueKeys ECInstanceKeys of related instances for each field in this record.
    */
   constructor(primaryKeys: ECInstanceKey[], displayLabel: string, imageId: string, classInfo: ECClassInfo | null,
-    values: ValuesDictionary, displayValues: ValuesDictionary, mergedFieldNames: string[],
+    values: ValuesDictionary<any>, displayValues: ValuesDictionary<string | null>, mergedFieldNames: string[],
     fieldPropertyValueKeys: FieldPropertyValueKeys) {
     this._primaryKeys = primaryKeys;
     this._displayLabel = displayLabel;
@@ -595,10 +598,10 @@ export class ContentSetItem {
   public get imageId(): string { return this._imageId; }
 
   /** The values map. */
-  public get values(): ValuesDictionary { return this._values; }
+  public get values(): ValuesDictionary<any> { return this._values; }
 
   /** The display values map. */
-  public get displayValues(): ValuesDictionary { return this._displayValues; }
+  public get displayValues(): ValuesDictionary<string | null> { return this._displayValues; }
 
   /** Is value of field with the specified name merged in this record. */
   public isMerged(fieldName: string): boolean { return -1 !== this._mergedFieldNames.indexOf(fieldName); }

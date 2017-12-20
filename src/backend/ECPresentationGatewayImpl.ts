@@ -50,15 +50,15 @@ export default class ECPresentationGatewayImpl extends ECPresentationGateway {
     return await getManager().getFilteredNodesPaths(token, filterText, options);
   }
 
-  public async getDescriptor(token: IModelToken, displayType: string, keys: ECInstanceKeysList, selection: SelectionInfo | null, options: object): Promise<Descriptor | null> {
-    return await getManager().getDescriptor(token, displayType, keys, selection, options);
+  public async getContentDescriptor(token: IModelToken, displayType: string, keys: ECInstanceKeysList, selection: SelectionInfo | null, options: object): Promise<Descriptor | null> {
+    return await getManager().getContentDescriptor(token, displayType, keys, selection, options);
   }
 
   public async getContentSetSize(token: IModelToken, descriptor: Descriptor, keys: ECInstanceKeysList, options: object): Promise<number> {
     return await getManager().getContentSetSize(token, descriptor, keys, options);
   }
 
-  public async getContent(token: IModelToken, descriptor: Descriptor, keys: ECInstanceKeysList, pageOptions: PageOptions, options: object): Promise<Content | null> {
+  public async getContent(token: IModelToken, descriptor: Descriptor, keys: ECInstanceKeysList, pageOptions: PageOptions, options: object): Promise<Content> {
     return await getManager().getContent(token, descriptor, keys, pageOptions, options);
   }
 

@@ -34,15 +34,15 @@ class ECPresentationManager implements ECPInterface {
     return ECPresentationGateway.getProxy().getFilteredNodesPaths(token, filterText, options);
   }
 
-  public async getDescriptor(token: IModelToken, displayType: string, keys: ECInstanceKeysList, selection: SelectionInfo | null, options: object): Promise<Descriptor | null> {
-    return ECPresentationGateway.getProxy().getDescriptor(token, displayType, keys, selection, options);
+  public async getContentDescriptor(token: IModelToken, displayType: string, keys: ECInstanceKeysList, selection: SelectionInfo | null, options: object): Promise<Descriptor | null> {
+    return ECPresentationGateway.getProxy().getContentDescriptor(token, displayType, keys, selection, options);
   }
 
   public async getContentSetSize(token: IModelToken, descriptor: Descriptor, keys: ECInstanceKeysList, options: object): Promise<number> {
     return ECPresentationGateway.getProxy().getContentSetSize(token, descriptor, keys, options);
   }
 
-  public async getContent(token: IModelToken, descriptor: Descriptor, keys: ECInstanceKeysList, pageOptions: PageOptions, options: object): Promise<Content | null> {
+  public async getContent(token: IModelToken, descriptor: Descriptor, keys: ECInstanceKeysList, pageOptions: PageOptions, options: object): Promise<Content> {
     return ECPresentationGateway.getProxy().getContent(token, descriptor, keys, pageOptions, options);
   }
 

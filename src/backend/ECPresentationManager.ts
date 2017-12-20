@@ -65,7 +65,7 @@ export default class ECPresentationManager implements ECPInterface {
     return [];
   }
 
-  public async getDescriptor(token: IModelToken, displayType: string, keys: ECInstanceKeysList, selection: content.SelectionInfo | null, options: object): Promise<content.Descriptor | null> {
+  public async getContentDescriptor(token: IModelToken, displayType: string, keys: ECInstanceKeysList, selection: content.SelectionInfo | null, options: object): Promise<content.Descriptor | null> {
     const params = this.createRequestParams("GetContentDescriptor", {
       displayType,
       keys,
@@ -83,7 +83,7 @@ export default class ECPresentationManager implements ECPInterface {
     return this.request(token, params);
   }
 
-  public async getContent(token: IModelToken, _descriptor: content.Descriptor, keys: ECInstanceKeysList, pageOptions: PageOptions, options: object): Promise<content.Content | null> {
+  public async getContent(token: IModelToken, _descriptor: content.Descriptor, keys: ECInstanceKeysList, pageOptions: PageOptions, options: object): Promise<content.Content> {
     const params = this.createRequestParams("GetContent", {
       keys,
       pageOptions,
@@ -160,6 +160,9 @@ export default class ECPresentationManager implements ECPInterface {
 
   // tslint:disable-next-line:naming-convention
   private createContent = (r: any): content.Content | null => {
+    if (!r)
+      return null;
+
     const descriptor = this.createContentDescriptor(r.Descriptor);
     if (!descriptor)
       return null;
@@ -206,7 +209,7 @@ export default class ECPresentationManager implements ECPInterface {
           assert(false);
           continue;
         }
-        itemValueKeys.push(new content.PropertyValueKeys(field, fieldProperty, propertyKeys.keys));
+        itemValueKeys.push(new content.PropertyValueKeys(field, fieldProperty, propertyKeys.Keys));
       }
       result[field.name] = itemValueKeys;
     }
@@ -338,6 +341,14 @@ export default class ECPresentationManager implements ECPInterface {
   }
 
   // tslint:disable-next-line:naming-convention
+  private createChoices = (r: any): content.ECEnumerationChoice[] => {
+    const choices = new Array<content.ECEnumerationChoice>();
+    for (const choice of r)
+      choices.push({ label: choice.Label, value: choice.Value });
+    return choices;
+  }
+
+  // tslint:disable-next-line:naming-convention
   private createECPropertyInfo = (r: any): content.ECPropertyInfo => {
     const propertyInfo: content.ECPropertyInfo = {
       classInfo: {
@@ -348,11 +359,10 @@ export default class ECPresentationManager implements ECPInterface {
       name: r.Name,
       type: r.Type,
     };
-    /* todo:
     if (r.Choices) {
-      propertyInfo.Choices = r.Choices;
-      propertyInfo.IsStrict = r.IsStrict;
-    }*/
+      propertyInfo.choices = this.createChoices(r.Choices),
+      propertyInfo.isStrict = r.IsStrict;
+    }
     /* todo:
     if (r.KindOfQuantity)
       propertyInfo.KindOfQuantity = CreateECKindOfQuantityInfo(r.KindOfQuantity);*/

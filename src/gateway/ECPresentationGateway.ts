@@ -4,7 +4,7 @@
 import { Gateway } from "@build/imodeljs-core/lib/common/Gateway";
 import { IModelToken } from "@build/imodeljs-core/lib/common/IModel";
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "../common/Hierarchy";
-import { SelectionInfo, Descriptor, Content } from "../common/Content";
+import * as content from "../common/Content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes";
 import { PageOptions, ECPresentationManager as ECPInterface } from "../common/ECPresentationManager";
 import { ECInstanceKeysList } from "../common/EC";
@@ -16,6 +16,22 @@ export default class ECPresentationGateway extends Gateway implements ECPInterfa
   /** The types that can be marshaled by the gateway. */
   public static types = () => [
     IModelToken,
+    content.CategoryDescription,
+    content.SelectClassInfo,
+    content.TypeDescription,
+    content.PrimitiveTypeDescription,
+    content.ArrayTypeDescription,
+    content.StructTypeDescription,
+    content.EditorDescription,
+    content.Property,
+    content.Field,
+    content.PropertiesField,
+    content.NestedContentField,
+    content.SelectionInfo,
+    content.Descriptor,
+    content.PropertyValueKeys,
+    content.ContentSetItem,
+    content.Content,
   ]
 
   /** Returns the ECPresentationGateway instance for the frontend. */
@@ -47,15 +63,15 @@ export default class ECPresentationGateway extends Gateway implements ECPInterfa
     return this.forward.apply(this, arguments);
   }
 
-  public async getDescriptor(_token: IModelToken, _displayType: string, _keys: ECInstanceKeysList, _selection: SelectionInfo | null, _options: object): Promise<Descriptor | null> {
+  public async getContentDescriptor(_token: IModelToken, _displayType: string, _keys: ECInstanceKeysList, _selection: content.SelectionInfo | null, _options: object): Promise<content.Descriptor | null> {
     return this.forward.apply(this, arguments);
   }
 
-  public async getContentSetSize(_token: IModelToken, _descriptor: Descriptor, _keys: ECInstanceKeysList, _options: object): Promise<number> {
+  public async getContentSetSize(_token: IModelToken, _descriptor: content.Descriptor, _keys: ECInstanceKeysList, _options: object): Promise<number> {
     return this.forward.apply(this, arguments);
   }
 
-  public async getContent(_token: IModelToken, _descriptor: Descriptor, _keys: ECInstanceKeysList, _pageOptions: PageOptions, _options: object): Promise<Content | null> {
+  public async getContent(_token: IModelToken, _descriptor: content.Descriptor, _keys: ECInstanceKeysList, _pageOptions: PageOptions, _options: object): Promise<content.Content> {
     return this.forward.apply(this, arguments);
   }
 

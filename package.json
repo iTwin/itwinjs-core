@@ -43,7 +43,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "latest",
+    "@bentley/bentleyjs-tools": "^1.0.58",
     "@types/chai": "^4.0.10",
     "@types/flatbuffers": "^1.6.5",
     "@types/mocha": "^2.2.44",
