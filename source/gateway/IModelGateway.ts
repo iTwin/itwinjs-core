@@ -104,4 +104,9 @@ export abstract class IModelGateway extends Gateway {
   public async getAllCodeSpecs(_iModelToken: IModelToken): Promise<any[]> {
     return this.forward.apply(this, arguments);
   }
+
+  // !!! TESTING METHOD
+  public executeTestById(_iModelToken: IModelToken, _id: number, _params: any): any {
+    return this.forward.apply(this, arguments);
+  }
 }

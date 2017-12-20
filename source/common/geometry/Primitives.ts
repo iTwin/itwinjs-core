@@ -229,7 +229,7 @@ export class GeometricPrimitive {
   // public static createImageGraphicRef();
 
   /** Create, checking for proper instance, using either a reference or a clone. */
-  public static create(source: any, useRef: boolean): any {
+  public static create(source: any, useRef: boolean): GeometricPrimitive | undefined {
     if (source instanceof CurvePrimitive)
       if (useRef)
         return GeometricPrimitive.createCurvePrimitiveRef(source);
@@ -340,7 +340,10 @@ export class GeometricPrimitive {
           }
           break;
         }
-      // case GeometryType.CurveVector:
+      case GeometryType.CurveCollection:
+        {
+          break;
+        }
       case GeometryType.SolidPrimitive:
         {
           const solidPrim = this.asSolidPrimitive;

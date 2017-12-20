@@ -5,7 +5,8 @@
 /* tslint:disable: no-console no-string-literal */
 
 import { assert } from "chai";
-import { Path } from "@bentley/geometry-core/lib/curve/CurveChain";
+import { SolidPrimitive } from "@bentley/geometry-core/lib/solid/SolidPrimitive";
+import { Path, ParityRegion } from "@bentley/geometry-core/lib/curve/CurveChain";
 import { BSplineSurface3d } from "@bentley/geometry-core/lib/bspline/BSplineSurface";
 import { IndexedPolyface } from "@bentley/geometry-core/lib/polyface/Polyface";
 import { GeometricPrimitive, GeometryType } from "../common/geometry/Primitives";
@@ -14,52 +15,17 @@ import { AngleSweep } from "@bentley/geometry-core/lib/Geometry";
 import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
 import { Cone } from "@bentley/geometry-core/lib/solid/Cone";
 import { Sample } from "@bentley/geometry-core/lib/serialization/GeometrySamples";
+import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
 import { PolyfaceBuilder } from "@bentley/geometry-core/lib/polyface/PolyfaceBuilder";
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelDb } from "../backend/IModelDb";
-import { GSReader, GSWriter, GSCollection, GeometryBuilder/*, CoordSystem */ } from "../common/geometry/GeometryStream";
+import { GSReader, GSWriter, GSCollection, GeometryBuilder, GeometryStream, OpCode } from "../common/geometry/GeometryStream";
 import { GeometryParams } from "../common/geometry/GeometryProps";
-// import { PatternParams } from "../common/geometry/AreaPattern";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Element } from "../backend/Element";
-// import { Category } from "../backend/Category";
 import { Code } from "../common/Code";
 import { Placement3d, ElementAlignedBox3d } from "../common/geometry/Primitives";
 import { GeometricElement3dProps } from "../common/ElementProps";
-
-/** Given that the node addon test method exists...
- *  - encodes the GeometryStream
- *  - decodes and parses in native C++
- *  - encodes in native C++
- *  - decodes and parses in Javascript
- */
-/*
-async function testAgainstNative(imodel: IModelDb, builder: GeometryBuilder) {
-  const json: any = {
-  };
-  json.geom = builder.getGeometryStreamRef().toJSON();
-
-  let returnString = (await imodel.elements.testGeom(json)).result;
-  returnString = returnString.slice(1, returnString.length - 1);    // Get rid of extra quotes
-  const returnGS = GeometryStream.fromJSON(returnString);
-  const retCollection = new GSCollection(returnGS!.geomStream);
-  const reader = new GSReader();
-  let item: any;
-  const elParams = GeometryParams.createDefaults();
-  while (retCollection.isValid) {
-    if (retCollection.operation.isGeometryOp()) {
-      item = reader.dgnGetGeometricPrimitive(retCollection.operation);
-      assert.isDefined(item, "Item extracted into GeometricPrimitive");
-    } else if (retCollection.operation.opCode === 1) {
-      item = 1;   // Header
-    } else {
-      item = reader.dgnGetGeometryParams(retCollection.operation, elParams);
-      assert.isTrue(item, "Item extracted into GeometryParams");
-    }
-    retCollection.nextOp();
-  }
-}
-*/
 
 describe("GeometricPrimitive", () => {
   it("should be able to create GeometricPrimitives from various geometry", () => {
@@ -271,6 +237,11 @@ describe("GeometryStream", () => {
 describe("GeometryBuilder", () => {
   let imodel: IModelDb;
   let seedElement: Element;
+  let ellipse: Arc3d;
+  let curveCollection: ParityRegion;
+  let cylinder: SolidPrimitive;
+  let surface: BSplineSurface3d;
+  let polyface: IndexedPolyface;
 
   before(async () => {
     imodel = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
@@ -278,6 +249,13 @@ describe("GeometryBuilder", () => {
     seedElement = await imodel.elements.getElement(new Id64("0x1d"));
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    ellipse =  Arc3d.create(Point3d.create(1, 2, 3), Vector3d.create(0, 0, 2), Vector3d.create(0, 3, 0), AngleSweep.createStartEndRadians(0, 2 * Math.PI))!;
+    curveCollection = Sample.createSimpleParityRegions()[0];
+    cylinder = Cone.createAxisPoints(Point3d.create(0, 0.34, 0), Point3d.create(0, 0, 1030.0), 1.5, 1.5, true)!;
+    surface = Sample.createXYGridBsplineSurface(4, 6, 3, 4)!;
+    const polyBuilder = PolyfaceBuilder.create();
+    polyBuilder.addCone(cylinder as Cone);
+    polyface = polyBuilder.claimPolyface();
   });
 
   after(() => {
@@ -302,58 +280,20 @@ describe("GeometryBuilder", () => {
 
     const geomElement = imodel.elements.createElement(elementProps);
 
-    // Set up builder and make appendages
-
+    // Set up builder
     const builder = GeometryBuilder.createCategoryOrigin3d(seedElement.category, Point3d.create(0, 0, 0));
     assert.isDefined(builder, "Builder is successfully created");
     if (!builder)
       return;
 
-    // CurvePrimitive
-    const ellipse = Arc3d.create(Point3d.create(1, 2, 3), Vector3d.create(0, 0, 2), Vector3d.create(0, 3, 0), AngleSweep.createStartEndRadians(0, 2 * Math.PI));
-    assert.isTrue(builder.appendCurvePrimitive(ellipse!), "Successfully appended CurvePrimitive using builder");
-
-    // CurveCollection
-    const curveCollection = Sample.createSimpleParityRegions()[0];
+    // Make appendages
+    assert.isTrue(builder.appendCurvePrimitive(ellipse), "Successfully appended CurvePrimitive using builder");
     assert.isTrue(builder.appendCurveCollection(curveCollection), "Successfully appended CurveCollection using builder");
-
-    // SolidPrimitive
-    const cylinder = Cone.createAxisPoints(Point3d.create(0, 0.34, 0), Point3d.create(0, 0, 1030.0), 1.5, 1.5, true);
-    assert.isTrue(builder.appendSolidPrimitive(cylinder!), "Successfully appended SolidPrimitive using builder");
-
-    // GeometryParams
-    /*
-    const pattern = PatternParams.createDefaults();
-    const elemDisplayParams = GeometryParams.createDefaults();
-    elemDisplayParams.setCategoryId(seedElement.category);
-    elemDisplayParams.setWeight(2);
-    elemDisplayParams.setPatternParams(pattern);
-    assert.isTrue(builder.appendGeometryParams(elemDisplayParams, CoordSystem.World), "Successfully appended GeometryParams using builder");
-    */
-
-    // BsplineSurface
-    const surface = Sample.createXYGridBsplineSurface(4, 6, 3, 4);
-    assert.isTrue(builder.appendBsplineSurface(surface!), "BsplineSurface successfully appended using builder");
-
-    // SubCategory
-    /*
-    const defaultCategoryId = IModelTestUtils.getSpatialCategoryIdByName(imodel, "DefaultCategory");
-    const defaultSubCategoryId = Category.getDefaultSubCategoryId(defaultCategoryId);
-    const testReturn = await imodel.elements.getElement(defaultSubCategoryId);
-    assert.isTrue(testReturn.id.isValid(), "Element successfully received back");
-    assert.isTrue(builder.appendSubCategoryId(defaultSubCategoryId), "SubCategory Id reference successfully appended using builder");
-    */
-
-    // Polyface
-    const polyBuilder = PolyfaceBuilder.create();
-    polyBuilder.addCone(cylinder!);
-    const polyface = polyBuilder.claimPolyface();
+    assert.isTrue(builder.appendSolidPrimitive(cylinder), "Successfully appended SolidPrimitive using builder");
+    assert.isTrue(builder.appendBsplineSurface(surface), "BsplineSurface successfully appended using builder");
     assert.isTrue(builder.appendPolyface(polyface), "Successfully appended polyface using builder");
 
-    // BRepEntity
-
-    // TextString
-
+    // Update the element
     assert.isTrue(geomElement.updateFromGeometryBuilder(builder), "Successfully updated element given a builder");
     const insert3d = imodel.elements.insertElement(geomElement);
     assert.isTrue(insert3d.isValid(), "Successfully inserted GeometricElement3d resulting from a GeometryBuilder's GeometryStream");
@@ -376,9 +316,6 @@ describe("GeometryBuilder", () => {
       }
       collection.nextOp();
     }
-
-    // Test against native GeometryStream (provided proper methods are declared - see declaration above)
-    // testAgainstNative(imodel, builder);
   });
 
   it("should be able to make appendages to GeometricElement2d, with an exception of 3d geometry", async () => {
@@ -389,11 +326,90 @@ describe("GeometryBuilder", () => {
       return;
 
     // CurvePrimitive
-    const ellipse = Arc3d.create(Point3d.create(1, 2, 0), Vector3d.create(1, 0, 0), Vector3d.create(0, 1, 0), AngleSweep.createStartEndRadians(0, 2 * Math.PI));
-    assert.isTrue(builder.appendCurvePrimitive(ellipse!), "Successfully appended CurvePrimitive using builder");
+    const ellipse2d = Arc3d.create(Point3d.create(1, 2, 0), Vector3d.create(1, 0, 0), Vector3d.create(0, 1, 0), AngleSweep.createStartEndRadians(0, 2 * Math.PI));
+    assert.isTrue(builder.appendCurvePrimitive(ellipse2d!), "Successfully appended CurvePrimitive using builder");
 
     // 3d should not be appended
-    const cylinder = Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, 3.0), 1.5, 1.5, true);
-    assert.isFalse(builder.appendSolidPrimitive(cylinder!), "3d SolidPrimitive is NOT appended using 2d builder");
+    const cylinder3d = Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, 3.0), 1.5, 1.5, true);
+    assert.isFalse(builder.appendSolidPrimitive(cylinder3d!), "3d SolidPrimitive is NOT appended using 2d builder");
+  });
+
+  it ("geometry stream built in JS should be deserialized properly in C++", () => {
+    const builder = GeometryBuilder.createCategoryOrigin3d(seedElement.category, Point3d.create(0, 0, 0));
+    assert.isDefined(builder, "Builder is successfully created");
+    if (!builder)
+      return;
+    assert.isTrue(builder.appendCurvePrimitive(ellipse), "Successfully appended CurvePrimitive using builder");
+    assert.isTrue(builder.appendCurveCollection(curveCollection), "Successfully appended CurveCollection using builder");
+    assert.isTrue(builder.appendSolidPrimitive(cylinder), "Successfully appended SolidPrimitive using builder");
+    assert.isTrue(builder.appendBsplineSurface(surface), "BsplineSurface successfully appended using builder");
+    assert.isTrue(builder.appendPolyface(polyface), "Successfully appended polyface using builder");
+
+    // Prepare arguments for C++
+    const pts = surface.copyPoints();
+    const json: any = {
+      geom: builder.getGeometryStreamRef().toJSON(),
+      bsurfacePts: pts,
+      numSurfacePts: pts.length,
+    };
+
+    const cppResult = imodel.elements.executeTestById(4, json);
+    const jsonCompare = new DeepCompare();
+    assert.isTrue(jsonCompare.compare({returnValue : true}, cppResult));
+  });
+
+  it ("geometry stream built in C++ should be deserialized properly in TS", () => {
+    const pts = surface.copyPoints();
+    const json: any = {
+      bsurfacePts: pts,
+      numSurfacePts: pts.length,
+    };
+    const cppResult = imodel.elements.executeTestById(5, json);
+    assert.isTrue(cppResult.hasOwnProperty("geom"), "Successfully obtained geometry stream back from C++");
+    const stream = GeometryStream.fromJSON(cppResult.geom);
+    assert.isDefined(stream, "Geometry stream is defined");
+    const collection = new GSCollection(stream!.geomStream);
+    while (collection.isValid) {
+      const geomType = collection.operation.opCode;
+      if (!collection.operation.isGeometryOp()) {
+        collection.nextOp();
+        continue;
+      }
+      const geomPrim = collection.getGeometry();
+      assert.isDefined(geomPrim, "Successfully extracted a geometric primitive");
+      switch (geomType) {
+        case OpCode.ArcPrimitive: {
+          const cppCurve = geomPrim!.asCurvePrimitive!;
+          assert.isTrue(ellipse.isAlmostEqual(cppCurve));
+          break;
+        }
+        case OpCode.CurveCollection: {
+          const cppCurveVec = geomPrim!.asCurveCollection!;
+          assert.isTrue(curveCollection.isAlmostEqual(cppCurveVec));
+          break;
+        }
+        case OpCode.SolidPrimitive: {
+          const cppSolid = geomPrim!.asSolidPrimitive!;
+          assert.isTrue(cylinder.isAlmostEqual(cppSolid));
+          break;
+        }
+        case OpCode.BsplineSurface: {
+          const cppSurface = geomPrim!.asBsplineSurface!;
+          assert.isTrue(surface.isAlmostEqual(cppSurface));
+          break;
+        }
+        case OpCode.Polyface: {
+          /*
+          const cppPolyface = geomPrim!.asIndexedPolyface!;
+          assert.isTrue(polyface.isAlmostEqual(cppPolyface));
+          */
+          break;
+        }
+        default: {
+          assert.isTrue(false, "Unexpected opcode to test");
+        }
+      }
+      collection.nextOp();
+    }
   });
 });

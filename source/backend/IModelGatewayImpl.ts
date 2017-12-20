@@ -132,4 +132,10 @@ export class IModelGatewayImpl extends IModelGateway {
     Logger.logInfo("IModelDbRemoting.getAllCodeSpecs", () => ({ numCodeSpecs: codeSpecs.length }));
     return codeSpecs;
   }
+
+  // !!! TESTING METHOD
+  public executeTestById(iModelToken: IModelToken, id: number, params: any): any {
+    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    return iModelDb.elements.executeTestById(id, params);
+  }
 }

@@ -18,7 +18,7 @@
   "dependencies": {
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
-    "electron": "1.6.11",
+    "electron": "^1.8.1",
     "express": "^4.16.2",
     "floss": "^2.1.3",
     "fs-extra": "^4.0.3",

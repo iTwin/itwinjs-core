@@ -872,9 +872,8 @@ export class IModelDbElements {
     return new Id64(JSON.parse(json!).id);
   }
 
-  /**
-   * Update the properties of an existing element in the iModel.
-   * @param props the properties of the element to update. Any properties that are not present will be left unchanged.
+  /** Update some properties of an existing element.
+   * @param el the properties of the element to update.
    * @throws [[IModelError]] if unable to update the element.
    */
   public updateElement(props: ElementProps): void {
@@ -969,4 +968,19 @@ export class IModelDbElements {
     return aspects;
   }
 
+  // !!! TEST FUNCTION
+  /**
+   * Execute a test known to exist using the id recognized by the addon's test execution handler
+   * @param id The id of the test you wish to execute
+   * @param params A JSON string that should all of the data/parameters the test needs to function correctly
+   */
+  public executeTestById(testId: number, params: any): any {
+    if (!this._iModel.briefcaseInfo)
+      return this._iModel._newNotOpenError();
+
+    const retVal: string = this._iModel.briefcaseInfo!.nativeDb.executeTestById(testId, JSON.stringify(params));
+    if (retVal.length === 0)
+      return {};
+    return JSON.parse(retVal);
+  }
 }
