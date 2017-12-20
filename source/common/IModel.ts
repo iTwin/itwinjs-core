@@ -73,8 +73,4 @@ export abstract class Configuration {
 
     return Configuration._iModelHubDeploymentEnv;
   }
-
-  public static set IModelHubDeploymentEnv(deploymentEnv: DeploymentEnv) {
-    Configuration._iModelHubDeploymentEnv = deploymentEnv;
-  }
 }

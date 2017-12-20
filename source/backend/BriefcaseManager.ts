@@ -170,7 +170,7 @@ class BriefcaseCache {
  *      ...
  */
 export class BriefcaseManager {
-  private static hubClient = new IModelHubClient(Configuration.IModelHubDeploymentEnv);
+  private static hubClient?: IModelHubClient;
   private static cache?: BriefcaseCache;
 
   /** The path where the cache of briefcases are stored. */
@@ -228,6 +228,7 @@ export class BriefcaseManager {
     if (BriefcaseManager.cache)
       return;
 
+    BriefcaseManager.hubClient = new IModelHubClient(Configuration.IModelHubDeploymentEnv);
     BriefcaseManager.cache = new BriefcaseCache();
     if (!accessToken)
       return;
@@ -270,7 +271,7 @@ export class BriefcaseManager {
     if (changeSetId === "")
       return 0; // the first version
     try {
-      const changeSet: ChangeSet = await BriefcaseManager.hubClient.getChangeSet(accessToken, iModelId, false, changeSetId);
+      const changeSet: ChangeSet = await BriefcaseManager.hubClient!.getChangeSet(accessToken, iModelId, false, changeSetId);
       return +changeSet.index;
     } catch (err) {
       assert(false, "Could not determine index of change set");
@@ -282,6 +283,7 @@ export class BriefcaseManager {
   public static async open(accessToken: AccessToken, projectId: string, iModelId: string, openMode: OpenMode, version: IModelVersion): Promise<BriefcaseInfo> {
     if (!BriefcaseManager.cache)
       await BriefcaseManager.initialize(accessToken);
+    assert (!!BriefcaseManager.hubClient);
 
     const changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId);
     let changeSet: ChangeSet | null;
@@ -310,7 +312,7 @@ export class BriefcaseManager {
 
   /** Get the change set from the specified id */
   private static async getChangeSetFromId(accessToken: AccessToken, iModelId: string, changeSetId: string): Promise<ChangeSet> {
-    const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.getChangeSets(accessToken, iModelId, false /*=includeDownloadLink*/);
+    const changeSets: ChangeSet[] = await BriefcaseManager.hubClient!.getChangeSets(accessToken, iModelId, false /*=includeDownloadLink*/);
     // todo: pass the last known highest change set id to improve efficiency, and cache the results also.
 
     for (const changeSet of changeSets) {
@@ -380,12 +382,12 @@ export class BriefcaseManager {
 
   /** Create a briefcase */
   private static async createBriefcase(accessToken: AccessToken, projectId: string, iModelId: string, openMode: OpenMode): Promise<BriefcaseInfo> {
-    const iModel: ConnectIModel = await BriefcaseManager.hubClient.getIModel(accessToken, projectId, {
+    const iModel: ConnectIModel = await BriefcaseManager.hubClient!.getIModel(accessToken, projectId, {
       $select: "Name",
       $filter: "$id+eq+'" + iModelId + "'",
     });
 
-    const seedFile = await BriefcaseManager.hubClient.getSeedFile(accessToken, iModelId, true);
+    const seedFile = await BriefcaseManager.hubClient!.getSeedFile(accessToken, iModelId, true);
     const downloadUrl = seedFile.downloadUrl!;
 
     const briefcase = new BriefcaseInfo();
@@ -415,13 +417,13 @@ export class BriefcaseManager {
 
   /** Acquire a briefcase */
   private static async acquireBriefcase(accessToken: AccessToken, iModelId: string): Promise<HubBriefcase> {
-    const briefcaseId: number = await BriefcaseManager.hubClient.acquireBriefcase(accessToken, iModelId);
+    const briefcaseId: number = await BriefcaseManager.hubClient!.acquireBriefcase(accessToken, iModelId);
     if (!briefcaseId)
       return Promise.reject(new IModelError(BriefcaseStatus.CannotAcquire));
 
-    const briefcase: HubBriefcase = await BriefcaseManager.hubClient.getBriefcase(accessToken, iModelId, briefcaseId, true /*=getDownloadUrl*/);
+    const briefcase: HubBriefcase = await BriefcaseManager.hubClient!.getBriefcase(accessToken, iModelId, briefcaseId, true /*=getDownloadUrl*/);
     if (!briefcase) {
-      await BriefcaseManager.hubClient.deleteBriefcase(accessToken, iModelId, briefcaseId)
+      await BriefcaseManager.hubClient!.deleteBriefcase(accessToken, iModelId, briefcaseId)
         .catch(() => {
           assert(false, "Could not delete acquired briefcase");
           return Promise.reject(new IModelError(BriefcaseStatus.CannotDelete));
@@ -437,7 +439,7 @@ export class BriefcaseManager {
       return;
 
     BriefcaseManager.makeDirectoryRecursive(path.dirname(seedPathname)); // todo: move this to IModel Hub Client
-    await BriefcaseManager.hubClient.downloadFile(seedUrl, seedPathname)
+    await BriefcaseManager.hubClient!.downloadFile(seedUrl, seedPathname)
       .catch(() => {
         assert(false, "Could not download seed file");
         if (fs.existsSync(seedPathname))
@@ -479,7 +481,7 @@ export class BriefcaseManager {
   private static async deleteBriefcaseFromHub(accessToken: AccessToken, briefcase: BriefcaseInfo): Promise<void> {
     assert(!!briefcase.iModelId);
     if (briefcase.userId) {
-      await BriefcaseManager.hubClient.deleteBriefcase(accessToken, briefcase.iModelId, briefcase.briefcaseId)
+      await BriefcaseManager.hubClient!.deleteBriefcase(accessToken, briefcase.iModelId, briefcase.briefcaseId)
       .catch(() => {
         assert(false, "Could not delete the accquired briefcase");
         return Promise.reject(new IModelError(BriefcaseStatus.CannotDelete));
@@ -499,7 +501,7 @@ export class BriefcaseManager {
     if (toChangeSetId === "" || fromChangeSetId === toChangeSetId)
       return new Array<ChangeSet>(); // first version
 
-    const allChangeSets: ChangeSet[] = await BriefcaseManager.hubClient.getChangeSets(accessToken, iModelId, includeDownloadLink, fromChangeSetId);
+    const allChangeSets: ChangeSet[] = await BriefcaseManager.hubClient!.getChangeSets(accessToken, iModelId, includeDownloadLink, fromChangeSetId);
 
     const changeSets = new Array<ChangeSet>();
     for (const changeSet of allChangeSets) {
@@ -548,7 +550,7 @@ export class BriefcaseManager {
     // download
     if (changeSetsToDownload.length > 0) {
       BriefcaseManager.makeDirectoryRecursive(changeSetsPath); // todo: move this to IModel Hub Client
-      await BriefcaseManager.hubClient.downloadChangeSets(changeSetsToDownload, changeSetsPath)
+      await BriefcaseManager.hubClient!.downloadChangeSets(changeSetsToDownload, changeSetsPath)
         .catch(() => {
           assert(false, "Could not download ChangeSets");
           fs.unlinkSync(changeSetsPath); // Just in case there was a partial download, delete the entire folder
