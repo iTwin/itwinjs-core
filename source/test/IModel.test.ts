@@ -27,6 +27,9 @@ import { ModelSelector } from "../backend/ViewDefinition";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ModelProps } from "../common/ModelProps";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
+import { ElementGroupsMembers } from "../backend/LinkTableRelationship";
+import { Appearance } from "../common/SubCategoryAppearance";
+import { ColorDef } from "../common/Render";
 
 describe("iModel", () => {
   let imodel1: IModelDb;
@@ -620,6 +623,7 @@ describe("iModel", () => {
     const testImodel = imodel2;
 
     const codeSpec: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec1", CodeSpecScope.Type.Model);
+    // TODO: codeSpec.buildResourcesRequest + tesetImodel.requestResources
     const codeSpecId: Id64 = testImodel.codeSpecs.insert(codeSpec); // throws in case of error
     assert.deepEqual(codeSpecId, codeSpec.id);
 
@@ -680,6 +684,63 @@ describe("iModel", () => {
     } catch (err) {
       // this is expected
     }
+  });
+
+  it("should create link table relationship instances", async () => {
+
+    const testImodel: IModelDb = imodel1;
+
+    // Create a new physical model
+    let newModelId: Id64;
+    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(testImodel, Code.createEmpty(), true);
+
+    // Find or create a SpatialCategory
+    const dictionary: DictionaryModel = await testImodel.models.getModel(Model.getDictionaryId()) as DictionaryModel;
+    let spatialCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
+    if (undefined === spatialCategoryId) {
+      spatialCategoryId = await IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({color: new ColorDef("rgb(255,0,0)")}));
+    }
+
+    // Create a couple of physical elements.
+    const id0: Id64 = testImodel.elements.insertElement(IModelTestUtils.createPhysicalObject(testImodel, newModelId, spatialCategoryId));
+    const id1: Id64 = testImodel.elements.insertElement(IModelTestUtils.createPhysicalObject(testImodel, newModelId, spatialCategoryId));
+    const id2: Id64 = testImodel.elements.insertElement(IModelTestUtils.createPhysicalObject(testImodel, newModelId, spatialCategoryId));
+
+    // Create grouping relationships from 0 to 1 and from 0 to 2
+    const r1: ElementGroupsMembers = ElementGroupsMembers.create(testImodel, id0, id1);
+    testImodel. linkTableRelationships.insertInstance(r1);
+    const r2: ElementGroupsMembers = ElementGroupsMembers.create(testImodel, id0, id2);
+    testImodel.linkTableRelationships.insertInstance(r2);
+
+    // Look up by id
+    const g1: ElementGroupsMembers = await testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.sqlName, r1.id) as ElementGroupsMembers;
+    const g2: ElementGroupsMembers = await testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.sqlName, r2.id) as ElementGroupsMembers;
+
+    assert.deepEqual(g1.id, r1.id);
+    assert.equal(g1.classFullName, "BisCore:ElementGroupsMembers");
+    assert.deepEqual(g2.id, r2.id);
+    assert.equal(g2.classFullName, "BisCore:ElementGroupsMembers");
+
+    // Look up by source and target
+    const g1byst: ElementGroupsMembers = await testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.sqlName, {sourceId: r1.sourceId, targetId: r1.targetId}) as ElementGroupsMembers;
+    assert.deepEqual(g1byst, g1);
+
+    // TODO: Do an ECSql query to verify that 0->1 and 0->2 relatoinships can be found
+
+    // Update relationship instance property
+    r1.memberPriority = 1;
+    testImodel.linkTableRelationships.updateInstance(r1);
+
+    const g11: ElementGroupsMembers = await testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.sqlName, r1.id) as ElementGroupsMembers;
+    assert.equal(g11.memberPriority, 1);
+
+    // Delete relationship instance property
+    testImodel.linkTableRelationships.deleteInstance(r1);
+
+    // TODO: Do an ECSql query to verify that 0->1 is gone but 0->2 is still there.
+
+    testImodel.saveChanges("");
+
   });
 
   it.skip("ImodelJsTest.MeasureInsertPerformance", async () => {

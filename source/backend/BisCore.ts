@@ -28,5 +28,6 @@ export class BisCore extends Schema {
     ClassRegistry.registerModuleClasses(require("./Model"), this);
     ClassRegistry.registerModuleClasses(require("./Category"), this);
     ClassRegistry.registerModuleClasses(require("./ViewDefinition"), this);
+    ClassRegistry.registerModuleClasses(require("./LinkTableRelationship"), this);
   }
 }

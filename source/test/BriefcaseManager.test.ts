@@ -203,7 +203,7 @@ describe("BriefcaseManager", () => {
 
     const req: BriefcaseManager.ResourcesRequest = BriefcaseManager.ResourcesRequest.create();
     for (const el of elements) {
-      el.buildResourcesRequest(req);    // make a list of the resources that will be needed to insert this element (e.g., a shared lock on the model and a code)
+      el.buildResourcesRequest(req, DbOpcode.Insert);    // make a list of the resources that will be needed to insert this element (e.g., a shared lock on the model and a code)
     }
 
     iModel.requestResources(req);

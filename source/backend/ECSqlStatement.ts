@@ -37,7 +37,7 @@ export class ECSqlStatement implements IterableIterator<any> {
    */
   public prepare(db: NodeAddonDgnDb, statement: string): void {
     if (this.isPrepared())
-      throw new Error("statement is already prepared");
+      throw new Error("statement is already prepared"); 
     this._stmt = new (NodeAddonRegistry.getAddon()).NodeAddonECSqlStatement();
     const error = this._stmt!.prepare(db, statement);
     if (error.status !== DbResult.BE_SQLITE_OK)
