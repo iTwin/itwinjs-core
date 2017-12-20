@@ -6,10 +6,10 @@ import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 
 const INSTANCE = Symbol("instance");
-const NAME = Symbol("name");
 const registry: Map<GatewayDefinition, GatewayImplementation> = new Map();
 // tslint:disable-next-line:ban-types
 const types: Map<string, Function> = new Map();
+let marshalingScope = "";
 
 // tslint:disable-next-line:ban-types
 export interface GatewayConstructor<T extends Gateway> { new(): T; version: string; types: () => Function[]; }
@@ -100,8 +100,8 @@ export abstract class Gateway {
   /** JSON.stringify replacer callback that marshals JavaScript class instances. */
   public static marshal(_key: string, value: any) {
     if (typeof (value) === "object" && value !== null && value.constructor !== Array && value.constructor !== Object) {
-      const name: string = value.constructor[NAME];
-      if (!name)
+      const name = `${marshalingScope}_${value.constructor.name}`;
+      if (!types.has(name))
         throw new IModelError(BentleyStatus.ERROR, `Class "${name}" is not registered for gateway type marshaling.`);
 
       value[Gateway.MARSHALING_NAME_PROPERTY] = name;
@@ -196,7 +196,6 @@ export abstract class Gateway {
         throw new IModelError(BentleyStatus.ERROR, `Class "${name}" is already registered for gateway type marshaling.`);
 
       types.set(name, type);
-      (type as any)[NAME] = name;
     });
   }
 }
@@ -277,7 +276,8 @@ export namespace Gateway {
     }
 
     /** Returns a serialized gateway operation result. */
-    public serializeOperationResult(result: any): string {
+    public serializeOperationResult(operation: HttpProtocol.GatewayOperationIdentifier, result: any): string {
+      marshalingScope = operation.gateway;
       return JSON.stringify(result, Gateway.marshal);
     }
 
@@ -396,7 +396,8 @@ export namespace Gateway {
     }
 
     /** Returns a string serialization of the parameters for a gateway operation request. */
-    protected serializeParametersForOperationRequest(_operation: HttpProtocol.GatewayOperationIdentifier, ...parameters: any[]): string {
+    protected serializeParametersForOperationRequest(operation: HttpProtocol.GatewayOperationIdentifier, ...parameters: any[]): string {
+      marshalingScope = operation.gateway;
       return JSON.stringify(Array.from(parameters), Gateway.marshal);
     }
 

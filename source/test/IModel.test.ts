@@ -6,13 +6,13 @@ import * as path from "path";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { Code } from "../common/Code";
+import { Code, CodeSpec, CodeSpecScope } from "../common/Code";
 import { EntityProps } from "../common/EntityProps";
 import { ModelSelectorState, ModelSelectorProps } from "../common/ViewState";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { Entity, EntityCtor, EntityMetaData, PrimitiveTypeCode } from "../backend/Entity";
-import { Model } from "../backend/Model";
-import { Category, SubCategory } from "../backend/Category";
+import { Model, DictionaryModel } from "../backend/Model";
+import { Category, SubCategory, SpatialCategory } from "../backend/Category";
 import { ClassRegistry } from "../backend/ClassRegistry";
 import { BisCore } from "../backend/BisCore";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
@@ -616,6 +616,31 @@ describe("iModel", () => {
 
   });
 
+  it("should create and insert CodeSpecs", async () => {
+    const testImodel = imodel2;
+
+    const codeSpec: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec1", CodeSpecScope.Type.Model);
+    const codeSpecId: Id64 = testImodel.codeSpecs.insert(codeSpec); // throws in case of error
+    assert.deepEqual(codeSpecId, codeSpec.id);
+
+    // Should not be able to insert a duplicate.
+    try {
+      const codeSpecDup: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec1", CodeSpecScope.Type.Model);
+      testImodel.codeSpecs.insert(codeSpecDup); // throws in case of error
+      assert.fail();
+    } catch (err) {
+      // We expect this to fail.
+    }
+
+    // We should be able to insert another CodeSpec with a different name.
+    const codeSpec2: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec2", CodeSpecScope.Type.Model, CodeSpecScope.ScopeRequirement.FederationGuid);
+    const codeSpec2Id: Id64 = testImodel.codeSpecs.insert(codeSpec2); // throws in case of error
+    assert.deepEqual(codeSpec2Id, codeSpec2.id);
+
+    assert.notDeepEqual(codeSpec2Id, codeSpecId);
+
+  });
+
   it("should import schemas", () => {
     const schemaPathname = path.join(__dirname, "assets", "TestBim.ecschema.xml");
     imodel1.importSchema(schemaPathname); // will throw an exception in import fails
@@ -657,18 +682,11 @@ describe("iModel", () => {
     }
   });
 
-  /* TBD
-      DgnCode physicalPartitionCode = PhysicalPartition::CreateCode(*m_db->Elements().GetRootSubject(), s_seedFileInfo.physicalPartitionName);
-    m_defaultModelId = m_db->Models().QuerySubModelId(physicalPartitionCode);
-    ASSERT_TRUE(m_defaultModelId.IsValid());
-
-    m_defaultCategoryId = SpatialCategory::QueryCategoryId(GetDgnDb().GetDictionaryModel(), s_seedFileInfo.categoryName);
-    ASSERT_TRUE(m_defaultCategoryId.IsValid());
-  */
-
   it.skip("ImodelJsTest.MeasureInsertPerformance", async () => {
 
     const ifperfimodel = await IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", { copyFilename: "ImodelJsTest_MeasureInsertPerformance.bim", enableTransactions: true });
+
+    const dictionary: DictionaryModel = await ifperfimodel.models.getModel(Model.getDictionaryId()) as DictionaryModel;
 
     // tslint:disable-next-line:no-console
     console.time("ImodelJsTest.MeasureInsertPerformance");
@@ -678,7 +696,8 @@ describe("iModel", () => {
     // const modelId: Id64 = ifperfimodel.models.querySubModelId(physicalPartitionCode);
     const modelId = new Id64("0X11");
 
-    const defaultCategoryId: Id64 = IModelTestUtils.getSpatialCategoryIdByName(ifperfimodel, "DefaultCategory");
+    const defaultCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "DefaultCategory");
+    assert.isFalse(undefined === defaultCategoryId);
 
     const elementCount = 10000;
     for (let i = 0; i < elementCount; ++i) {

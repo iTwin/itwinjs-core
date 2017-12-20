@@ -29,7 +29,7 @@ export abstract class BentleyCloudGatewayProtocol extends Gateway.HttpProtocol {
       const operationIdentifier = this.getOperationFromOpenAPIPath(req.path);
       const operationParameters = this.deserializeOperationRequestParameters(req.body, req.path);
       const operationResult = await this.lookupGatewayImplementation(operationIdentifier).invoke(operationIdentifier.operation, ...operationParameters);
-      res.send(this.serializeOperationResult(operationResult));
+      res.send(this.serializeOperationResult(operationIdentifier, operationResult));
     } catch (e) {
       res.status(500).send(e.toString());
     }

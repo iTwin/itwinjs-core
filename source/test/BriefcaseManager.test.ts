@@ -8,13 +8,17 @@ import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "../common/IModelVersion";
-import { BriefcaseManager, BriefcaseManagerResourcesRequest } from "../backend/BriefcaseManager";
+import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { IModelDb } from "../backend/IModelDb";
 import { IModelConnection } from "../frontend/IModelConnection";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Code } from "../common/Code";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Element } from "../backend/Element";
+import { DictionaryModel, Model } from "../backend/Model";
+import { SpatialCategory } from "../backend/Category";
+import { Appearance } from "../common/SubCategoryAppearance";
+import { ColorDef } from "../common/Render";
 
 describe("BriefcaseManager", () => {
   let accessToken: AccessToken;
@@ -124,12 +128,12 @@ describe("BriefcaseManager", () => {
   });
 
   it("should build resource request", async () => {
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite); // Note: No frontend support for ReadWrite open yet
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
 
     const el: Element = await iModel.elements.getRootSubject();
-    const req: BriefcaseManagerResourcesRequest = BriefcaseManager.createResourcesRequest();
+    const req: BriefcaseManager.ResourcesRequest = BriefcaseManager.ResourcesRequest.create();
     el.buildResourcesRequest(req, DbOpcode.Update);    // make a list of the resources that will be needed to update this element (e.g., a shared lock on the model and a code)
-    const reqAsAny: any = BriefcaseManager.getResourcesRequestAsAny(req);
+    const reqAsAny: any = BriefcaseManager.ResourcesRequest.toAny(req);
     assert.isDefined(reqAsAny);
     assert.isArray(reqAsAny.Locks);
     assert.equal(reqAsAny.Locks.length, 3);
@@ -139,14 +143,57 @@ describe("BriefcaseManager", () => {
     await iModel.close(accessToken);
   });
 
+  it("should write to briefcase with optimistic concurrency", async () => {
+
+    // Acquire a briefcase from iModelHub
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
+
+    // Turn on optimistic concurrency control. This allows the app to modify elements, models, etc. without first acquiring locks.
+    // (Later, when the app downloads and merges changesets from the Hub into the briefcase, BriefcaseManager will merge changes and handle conflicts.)
+    iModel.setConcurrencyControlPolicy(new BriefcaseManager.OptimisticConcurrencyControlPolicy({
+      updateVsUpdate: BriefcaseManager.ConflictResolution.Reject,
+      updateVsDelete: BriefcaseManager.ConflictResolution.Take,
+      deleteVsUpdate: BriefcaseManager.ConflictResolution.Reject,
+    }));
+
+    // Show that we can modify the properties of an element. In this case, we modify the root element itself.
+    const rootEl: Element = (await iModel.elements.getRootSubject()).copyForEdit<Element>();
+    rootEl.userLabel = rootEl.userLabel + "changed";
+    iModel.elements.updateElement(rootEl);
+
+    // Create a new physical model
+    let newModelId: Id64;
+    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, Code.createEmpty(), true);
+
+    // Find or create a SpatialCategory
+    const dictionary: DictionaryModel = await iModel.models.getModel(Model.getDictionaryId()) as DictionaryModel;
+    let spatialCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
+    if (undefined === spatialCategoryId) {
+      spatialCategoryId = await IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({color: new ColorDef("rgb(255,0,0)")}));
+    }
+
+    // Create a couple of physical elements.
+    iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
+    iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
+
+    // Commit the local changes to a local transaction in the briefcase.
+    iModel.saveChanges("inserted generic objects");
+
+    // TBD: Sync with iModelHub and  then upload the local changes as a changeset to iModelHub
+
+    await iModel.close(accessToken);
+  });
+
   it.skip("should make revisions", async () => {
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite); // Note: No frontend support for ReadWrite open yet
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
     assert.exists(iModel);
+
+    const dictionary: DictionaryModel = await iModel.models.getModel(Model.getDictionaryId()) as DictionaryModel;
 
     let newModelId: Id64;
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, Code.createEmpty(), true);
 
-    const spatialCategoryId: Id64 = IModelTestUtils.getSpatialCategoryIdByName(iModel, "SpatialCategory1");
+    const spatialCategoryId: Id64 = SpatialCategory.create(dictionary, "Cat1").insert();
 
     // Insert a few elements
     const elements: Element[] = [
@@ -154,7 +201,7 @@ describe("BriefcaseManager", () => {
       IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId),
     ];
 
-    const req: BriefcaseManagerResourcesRequest = BriefcaseManager.createResourcesRequest();
+    const req: BriefcaseManager.ResourcesRequest = BriefcaseManager.ResourcesRequest.create();
     for (const el of elements) {
       el.buildResourcesRequest(req);    // make a list of the resources that will be needed to insert this element (e.g., a shared lock on the model and a code)
     }

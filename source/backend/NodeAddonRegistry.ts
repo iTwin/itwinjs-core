@@ -42,7 +42,7 @@ export class NodeAddonRegistry {
 
     if ((addonVerDigits[0] !== iWasBuiltWithVerDigits[0]) || (addonVerDigits[1] < iWasBuiltWithVerDigits[1])) {
       NodeAddonRegistry._addon = undefined;
-      throw new IModelError(IModelStatus.BadRequest, "Addon version is (" + addonVer + "). imodeljs-core requires version (" + iWasBuiltWithVer + ")");
+      throw new IModelError(IModelStatus.BadRequest, "Addon version is (" + addonVer + "). imodeljs-backend requires version (" + iWasBuiltWithVer + ")");
     }
   }
 

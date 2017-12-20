@@ -6,7 +6,7 @@ import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BriefcaseStatus, IModelError } from "../common/IModelError";
 import { IModelVersion } from "../common/IModelVersion";
-import { IModelToken } from "../common/IModel";
+import { IModelToken, Configuration } from "../common/IModel";
 import { NodeAddonRegistry } from "./NodeAddonRegistry";
 import { NodeAddonDgnDb, ErrorStatusOrResult, NodeAddonBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { IModelDb } from "./IModelDb";
@@ -15,11 +15,6 @@ import * as fs from "fs";
 import * as path from "path";
 
 declare const __dirname: string;
-
-// This is a stand-in for NodeAddonBriefcaseManagerResourcesRequest. We cannot (re-)export that for technical reasons.
-export class BriefcaseManagerResourcesRequest {
-  private constructor() {}
-}
 
 /** The ID assigned to a briefcase by iModelHub, or one of the special values that identify special kinds of iModels */
 export class BriefcaseId {
@@ -175,7 +170,7 @@ class BriefcaseCache {
  *      ...
  */
 export class BriefcaseManager {
-  private static hubClient = new IModelHubClient("QA");
+  private static hubClient?: IModelHubClient;
   private static cache?: BriefcaseCache;
 
   /** The path where the cache of briefcases are stored. */
@@ -233,6 +228,7 @@ export class BriefcaseManager {
     if (BriefcaseManager.cache)
       return;
 
+    BriefcaseManager.hubClient = new IModelHubClient(Configuration.IModelHubDeploymentEnv);
     BriefcaseManager.cache = new BriefcaseCache();
     if (!accessToken)
       return;
@@ -275,7 +271,7 @@ export class BriefcaseManager {
     if (changeSetId === "")
       return 0; // the first version
     try {
-      const changeSet: ChangeSet = await BriefcaseManager.hubClient.getChangeSet(accessToken, iModelId, false, changeSetId);
+      const changeSet: ChangeSet = await BriefcaseManager.hubClient!.getChangeSet(accessToken, iModelId, false, changeSetId);
       return +changeSet.index;
     } catch (err) {
       assert(false, "Could not determine index of change set");
@@ -287,6 +283,7 @@ export class BriefcaseManager {
   public static async open(accessToken: AccessToken, projectId: string, iModelId: string, openMode: OpenMode, version: IModelVersion): Promise<BriefcaseInfo> {
     if (!BriefcaseManager.cache)
       await BriefcaseManager.initialize(accessToken);
+    assert (!!BriefcaseManager.hubClient);
 
     const changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId);
     let changeSet: ChangeSet | null;
@@ -315,7 +312,7 @@ export class BriefcaseManager {
 
   /** Get the change set from the specified id */
   private static async getChangeSetFromId(accessToken: AccessToken, iModelId: string, changeSetId: string): Promise<ChangeSet> {
-    const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.getChangeSets(accessToken, iModelId, false /*=includeDownloadLink*/);
+    const changeSets: ChangeSet[] = await BriefcaseManager.hubClient!.getChangeSets(accessToken, iModelId, false /*=includeDownloadLink*/);
     // todo: pass the last known highest change set id to improve efficiency, and cache the results also.
 
     for (const changeSet of changeSets) {
@@ -385,12 +382,12 @@ export class BriefcaseManager {
 
   /** Create a briefcase */
   private static async createBriefcase(accessToken: AccessToken, projectId: string, iModelId: string, openMode: OpenMode): Promise<BriefcaseInfo> {
-    const iModel: ConnectIModel = await BriefcaseManager.hubClient.getIModel(accessToken, projectId, {
+    const iModel: ConnectIModel = await BriefcaseManager.hubClient!.getIModel(accessToken, projectId, {
       $select: "Name",
       $filter: "$id+eq+'" + iModelId + "'",
     });
 
-    const seedFile = await BriefcaseManager.hubClient.getSeedFile(accessToken, iModelId, true);
+    const seedFile = await BriefcaseManager.hubClient!.getSeedFile(accessToken, iModelId, true);
     const downloadUrl = seedFile.downloadUrl!;
 
     const briefcase = new BriefcaseInfo();
@@ -420,13 +417,13 @@ export class BriefcaseManager {
 
   /** Acquire a briefcase */
   private static async acquireBriefcase(accessToken: AccessToken, iModelId: string): Promise<HubBriefcase> {
-    const briefcaseId: number = await BriefcaseManager.hubClient.acquireBriefcase(accessToken, iModelId);
+    const briefcaseId: number = await BriefcaseManager.hubClient!.acquireBriefcase(accessToken, iModelId);
     if (!briefcaseId)
       return Promise.reject(new IModelError(BriefcaseStatus.CannotAcquire));
 
-    const briefcase: HubBriefcase = await BriefcaseManager.hubClient.getBriefcase(accessToken, iModelId, briefcaseId, true /*=getDownloadUrl*/);
+    const briefcase: HubBriefcase = await BriefcaseManager.hubClient!.getBriefcase(accessToken, iModelId, briefcaseId, true /*=getDownloadUrl*/);
     if (!briefcase) {
-      await BriefcaseManager.hubClient.deleteBriefcase(accessToken, iModelId, briefcaseId)
+      await BriefcaseManager.hubClient!.deleteBriefcase(accessToken, iModelId, briefcaseId)
         .catch(() => {
           assert(false, "Could not delete acquired briefcase");
           return Promise.reject(new IModelError(BriefcaseStatus.CannotDelete));
@@ -442,7 +439,7 @@ export class BriefcaseManager {
       return;
 
     BriefcaseManager.makeDirectoryRecursive(path.dirname(seedPathname)); // todo: move this to IModel Hub Client
-    await BriefcaseManager.hubClient.downloadFile(seedUrl, seedPathname)
+    await BriefcaseManager.hubClient!.downloadFile(seedUrl, seedPathname)
       .catch(() => {
         assert(false, "Could not download seed file");
         if (fs.existsSync(seedPathname))
@@ -484,7 +481,7 @@ export class BriefcaseManager {
   private static async deleteBriefcaseFromHub(accessToken: AccessToken, briefcase: BriefcaseInfo): Promise<void> {
     assert(!!briefcase.iModelId);
     if (briefcase.userId) {
-      await BriefcaseManager.hubClient.deleteBriefcase(accessToken, briefcase.iModelId, briefcase.briefcaseId)
+      await BriefcaseManager.hubClient!.deleteBriefcase(accessToken, briefcase.iModelId, briefcase.briefcaseId)
       .catch(() => {
         assert(false, "Could not delete the accquired briefcase");
         return Promise.reject(new IModelError(BriefcaseStatus.CannotDelete));
@@ -504,7 +501,7 @@ export class BriefcaseManager {
     if (toChangeSetId === "" || fromChangeSetId === toChangeSetId)
       return new Array<ChangeSet>(); // first version
 
-    const allChangeSets: ChangeSet[] = await BriefcaseManager.hubClient.getChangeSets(accessToken, iModelId, includeDownloadLink, fromChangeSetId);
+    const allChangeSets: ChangeSet[] = await BriefcaseManager.hubClient!.getChangeSets(accessToken, iModelId, includeDownloadLink, fromChangeSetId);
 
     const changeSets = new Array<ChangeSet>();
     for (const changeSet of allChangeSets) {
@@ -553,7 +550,7 @@ export class BriefcaseManager {
     // download
     if (changeSetsToDownload.length > 0) {
       BriefcaseManager.makeDirectoryRecursive(changeSetsPath); // todo: move this to IModel Hub Client
-      await BriefcaseManager.hubClient.downloadChangeSets(changeSetsToDownload, changeSetsPath)
+      await BriefcaseManager.hubClient!.downloadChangeSets(changeSetsToDownload, changeSetsPath)
         .catch(() => {
           assert(false, "Could not download ChangeSets");
           fs.unlinkSync(changeSetsPath); // Just in case there was a partial download, delete the entire folder
@@ -636,13 +633,84 @@ export class BriefcaseManager {
     return BriefcaseManager.cache.findBriefcase(iModelToken);
   }
 
-  /** Create a new empty resources request. @See Entity.buildResourcesRequest, IModelDb.requestResources */
-  public static createResourcesRequest(): BriefcaseManagerResourcesRequest {
-    return new (NodeAddonRegistry.getAddon()).NodeAddonBriefcaseManagerResourcesRequest();
+}
+
+/** Types that are relative to BriefcaseManager. Typescript declaration merging will make these types appear to be properties of the BriefcaseManager class. */
+export namespace BriefcaseManager {
+
+  /** This is a stand-in for NodeAddonBriefcaseManagerResourcesRequest. We cannot (re-)export that for technical reasons. */
+  export class ResourcesRequest {
+    private constructor() {}
+
+    /** Create an empty ResourcesRequest */
+    public static create(): ResourcesRequest {
+      return new (NodeAddonRegistry.getAddon()).NodeAddonBriefcaseManagerResourcesRequest();
+    }
+
+    /** Convert the request to any */
+    public static toAny(req: ResourcesRequest): any {
+      return JSON.parse((req as NodeAddonBriefcaseManagerResourcesRequest).toJSON());
+    }
+
   }
 
-  /** Convert the request to any */
-  public static getResourcesRequestAsAny(req: BriefcaseManagerResourcesRequest): any {
-    return JSON.parse((req as NodeAddonBriefcaseManagerResourcesRequest).toJSON());
+  /** How to handle a conflict */
+  export const enum ConflictResolution {
+    /** Reject the incoming change */
+    Reject = 0,
+    /** Accept the incoming change */
+    Take = 1,
+  }
+
+  /** The options for how conflicts are to be handled during change-merging in an OptimisticConcurrencyControlPolicy.
+   * The scenario is that the caller has made some changes to the *local* briefcase. Now, the caller is attempting to
+   * merge in changes from iModelHub. The properties of this policy specify how to handle the *incoming* changes from iModelHub.
+   */
+  export interface ConflictResolutionPolicy {
+    /** What to do with the incoming change in the case where the same entity was updated locally and also would be updated by the incoming change. */
+    updateVsUpdate: ConflictResolution;
+    /** What to do with the incoming change in the case where an entity was updated locally and would be deleted by the incoming change. */
+    updateVsDelete: ConflictResolution;
+    /** What to do with the incoming change in the case where an entity was deleted locally and would be updated by the incoming change. */
+    deleteVsUpdate: ConflictResolution;
+    }
+
+  /** Specifies an optimistic concurrency policy.
+   * Optimistic concurrency allows entities to be modified in the local briefcase without first acquiring locks. Allows codes to be used in the local briefcase without first acquiring them.
+   * This creates the possibility that other apps may have uploaded changesets to iModelHub that overlap with local changes.
+   * In that case, overlapping changes are merged when changesets are downloaded from iModelHub.
+   * A ConflictResolutionPolicy is then applied in cases where an overlapping change conflict with a local change.
+   */
+  export class OptimisticConcurrencyControlPolicy {
+    public conflictResolution: ConflictResolutionPolicy;
+    constructor(p: ConflictResolutionPolicy) { this.conflictResolution = p; }
+  }
+
+  /** The options for when to acquire locks and codes in the course of a local transaction in a PessimisticConcurrencyControlPolicy */
+  export const enum PessimisticLockingPolicy {
+    /** Requires that the app must acquire locks for entities *before* modifying them in the local briefcase. Likewise, the app must acquire codes *before* using them in entities that a written to the local briefcase.
+     * This policy prevents conflicts or the possibility that local changes would have to be rolled back. Implementing this policy requires the most effort for the app developer, and it requires
+     * careful design and implementation to implement it efficiently.
+     */
+    Immediate = 0,
+
+    /** Allows apps to write entities and codes to the local briefcase without first acquiring locks.
+     * The transaction manager then attempts to acquire all needed locks and codes before saving the changes to the local briefcase.
+     * The transaction manager will roll back all pending changes if any lock or code cannot be acquired at save time. Lock and code acquisition will fail if another user
+     * has push changes to the same entities or used the same codes as the local transaction.
+     * This policy does prevent conflicts and is the easiest way to implement the pessimistic locking policy efficiently.
+     * It however carries the risk that local changes could be rolled back, and so it can only be used safely in special cases, where
+     * contention for locks and codes is not a risk. Normally, that is only possible when writing to a model that is exclusively locked and where codes
+     * are scoped to that model.
+     */
+    Deferred = 1,
+  }
+
+  /** Specifies a pessimistic concurrency policy.
+   * Pessimistic concurrency means that entities must be locked and codes must be acquired before a local changes can be pushed to iModelHub.
+   * There is more than one strategy for when to acquire locks. See briefcaseManagerStartBulkOperation.
+   * A pessimistic concurrency policy with respect to iModelHub does not preclude using an optimistic concurrency strategy with respect to members of a workgroup.
+   */
+  export class PessimisticConcurrencyControlPolicy {
   }
 }

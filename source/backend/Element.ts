@@ -9,7 +9,7 @@ import { GeometryStream, GeometryBuilder } from "../common/geometry/GeometryStre
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { BriefcaseManagerResourcesRequest } from "./BriefcaseManager";
+import { BriefcaseManager } from "./BriefcaseManager";
 import {
   ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
   ViewAttachmentProps, SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,
@@ -81,7 +81,7 @@ export abstract class Element extends Entity implements ElementProps {
   * @param req The request object, which accumulates requests.
   * @param opcode The operation that will be performed on the element.
   */
-  public buildResourcesRequest(req: BriefcaseManagerResourcesRequest, opcode?: DbOpcode): void {
+  public buildResourcesRequest(req: BriefcaseManager.ResourcesRequest, opcode?: DbOpcode): void {
     if (opcode === undefined) {
       if (this.id === undefined)
         opcode = DbOpcode.Insert;

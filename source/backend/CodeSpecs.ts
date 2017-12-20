@@ -69,12 +69,14 @@ export class CodeSpecs {
 
   /** Add a new CodeSpec to the table.
    * @param  codeSpec The new entry to add.
-   * @return The result of the insert operation.
+   * @return The id of the persistent CodeSpec.
    * @remarks If successful, this method will assign a valid CodeSpecId to the supplied CodeSpec
+   * @throws IModelError if the insertion fails
    */
-  public insert(_codeSpec: CodeSpec): Id64 {
-    /* this must be done in native code, as it needs to do locking and then run an ECSql INSERT statement. */
-    throw new Error("TODO");
+  public insert(codeSpec: CodeSpec): Id64 {
+    const id: Id64 = this._imodel.insertCodeSpec(codeSpec);
+    codeSpec.id = id;
+    return id;
   }
 
   /** Load a CodeSpec from IModel
