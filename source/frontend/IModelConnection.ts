@@ -90,6 +90,18 @@ export class IModelConnection extends IModel {
     Logger.logInfo("IModelConnection.executeQuery", () => ({ iModelId: this.iModelToken.iModelId, sql, bindings }));
     return await IModelGateway.getProxy().executeQuery(this.iModelToken, sql, bindings);
   }
+
+  // !!! TESTING METHOD
+  /**
+   * Execute a test known to exist using the id recognized by the addon's test execution handler
+   * @param id The id of the test you wish to execute
+   * @param params A JSON string that should all of the data/parameters the test needs to function correctly
+   */
+  public executeTestById(id: number, params: any): any {
+    if (!this._iModelToken)
+      return undefined;
+    return IModelGateway.getProxy().executeTestById(this._iModelToken, id, params);
+  }
 }
 
 /** The collection of models for an [[IModelConnection]]. */

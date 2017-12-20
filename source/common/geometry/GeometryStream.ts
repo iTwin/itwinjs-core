@@ -64,7 +64,7 @@ export enum EntryType {
   ImageGraphic = 9,  // ImageGraphic
 }
 
-export enum CoordSystem {
+export enum GeomCoordSystem {
   Local = 0,  // <-- GeometricPrimitive being supplied in local coordinates. @note Builder must be created with a known placement for local coordinates to be meaningful.
   World = 1,  // <-- GeometricPrimitive being supplied in world coordinates. @note Builder requires world coordinate geometry when placement isn't specified up front.
 }
@@ -2388,7 +2388,7 @@ export class GeometryBuilder {
    *  NOTE: If no symbology is specifically set in a GeometryStream, the GeometricPrimitive display uses the default SubCategoryId for the GeometricElement's
    *  CategoryId. World vs. local affects PatternParams and LineStyleInfo that need to store an orientation and other "placement" relative info.
    */
-  public appendGeometryParams(elParams: GeometryParams, coord: CoordSystem = CoordSystem.Local): boolean {
+  public appendGeometryParams(elParams: GeometryParams, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
     // NOTE: Allow explicit symbology in GeometryPart's GeometryStream, sub-category won't be persisted
     if (!this._isPartCreate) {
       if (!this._elParams.categoryId.isValid())
@@ -2402,7 +2402,7 @@ export class GeometryBuilder {
        */
     }
     if (elParams.isTransformable()) {
-      if (coord === CoordSystem.World) {
+      if (coord === GeomCoordSystem.World) {
         if (this._isPartCreate)
           return false;   // Part GeoemtryParams must be supplied in local coordinates...
 
@@ -2416,7 +2416,7 @@ export class GeometryBuilder {
           if (!worldToLocal.isIdentity()) {
             const localParams = elParams.clone();
             localParams.applyTransform(worldToLocal);
-            return this.appendGeometryParams(localParams, CoordSystem.Local);
+            return this.appendGeometryParams(localParams, GeomCoordSystem.Local);
           }
         }
       } else {
@@ -2486,11 +2486,11 @@ export class GeometryBuilder {
   */
 
   /** Append GeometricPrimitive to the builder in either local or world coordinates. */
-  public appendGeometricPrimitive(geom: GeometricPrimitive, coord: CoordSystem = CoordSystem.Local): boolean {
+  public appendGeometricPrimitive(geom: GeometricPrimitive, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
     if (!this._is3d && geom.is3dGeometryType())
       return false;   // 3d only geometry
 
-    if (coord === CoordSystem.Local)
+    if (coord === GeomCoordSystem.Local)
       return this.appendLocal(geom);
 
     /*
@@ -2514,8 +2514,8 @@ export class GeometryBuilder {
   }
 
   /** Append a CurvePrimitive to builder in either local or world coordinates. */
-  public appendCurvePrimitive(geom: CurvePrimitive, coord: CoordSystem = CoordSystem.Local): boolean {
-    if (coord === CoordSystem.Local) {
+  public appendCurvePrimitive(geom: CurvePrimitive, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
+    if (coord === GeomCoordSystem.Local) {
       const localRange = Range3d.createNull();
       geom.extendRange(localRange);
 
@@ -2531,8 +2531,8 @@ export class GeometryBuilder {
   }
 
   /** Append a CurveCollection to builder in either local or world coordinates. */
-  public appendCurveCollection(geom: CurveCollection, coord: CoordSystem = CoordSystem.Local): boolean {
-    if (coord === CoordSystem.Local) {
+  public appendCurveCollection(geom: CurveCollection, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
+    if (coord === GeomCoordSystem.Local) {
       const localRange = Range3d.createNull();
       geom.extendRange(localRange);
 
@@ -2550,11 +2550,11 @@ export class GeometryBuilder {
   /** Append a SolidPrimitive to builder in either local or world coordinates.
    *  NOTE: Only valid with a 3d builder
    */
-  public appendSolidPrimitive(geom: SolidPrimitive, coord: CoordSystem = CoordSystem.Local): boolean {
+  public appendSolidPrimitive(geom: SolidPrimitive, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
     if (!this._is3d)
       return false;   // 3d only geometry
 
-    if (coord === CoordSystem.Local) {
+    if (coord === GeomCoordSystem.Local) {
       const localRange = Range3d.createNull();
       geom.extendRange(localRange);
 
@@ -2572,11 +2572,11 @@ export class GeometryBuilder {
   /** Append a BsplineSurface3d to builder in either local or world coordinates.
    *  NOTE: Only valid with 3d builder
    */
-  public appendBsplineSurface(geom: BSplineSurface3d, coord: CoordSystem = CoordSystem.Local): boolean {
+  public appendBsplineSurface(geom: BSplineSurface3d, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
     if (!this._is3d)
       return false;   // only 3d geometry
 
-    if (coord === CoordSystem.Local) {
+    if (coord === GeomCoordSystem.Local) {
       const localRange = Range3d.createNull();
       geom.extendRange(localRange);
 
@@ -2594,11 +2594,11 @@ export class GeometryBuilder {
   /** Append an IndexedPolyface to builder in either local or world coordinates.
    *  NOTE: Only valid with 3d builder
    */
-  public appendPolyface(geom: IndexedPolyface, coord: CoordSystem = CoordSystem.Local): boolean {
+  public appendPolyface(geom: IndexedPolyface, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
     if (!this._is3d)
       return false;   // 3d only geometry
 
-    if (coord === CoordSystem.Local) {
+    if (coord === GeomCoordSystem.Local) {
       const localRange = Range3d.createNull();
       geom.extendRange(localRange);
 
@@ -2616,7 +2616,7 @@ export class GeometryBuilder {
   // public appendBRepEntity
 
   /** Append a non-specific geometry, passed using the encompassing GeometryQuery abstract class. */
-  public appendGeometryQuery(geometry: GeometryQuery, coord: CoordSystem = CoordSystem.Local): boolean {
+  public appendGeometryQuery(geometry: GeometryQuery, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
     if (geometry instanceof CurvePrimitive)
       return this.appendCurvePrimitive(geometry, coord);
     if (geometry instanceof CurveCollection)

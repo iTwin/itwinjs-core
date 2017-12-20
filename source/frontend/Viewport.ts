@@ -165,24 +165,24 @@ export class Viewport {
     extFrust.multiply(viewTransform);
     extents = extFrust.toRange();
 
-    this.toView(origin);       // put origin in view coordinates
+    this.rotMatrix.multiply3dInPlace(origin);       // put origin in view coordinates
     origin.z = extents.low.z;           // set origin to back of viewed extents
     delta.z = extents.high.z - origin.z; // and delta to front of viewed extents
-    this.fromView(origin);
+    this.rotMatrix.multiplyTranspose3dInPlace(origin);
 
     if (!view.isCameraOn())
       return;
 
     // if the camera is on, we need to make sure that the viewed volume is not behind the eye
     const eyeOrg = view.camera.getEyePoint().minus(origin);
-    this.toView(eyeOrg);
+    this.rotMatrix.multiply3dInPlace(eyeOrg);
 
     // if the distance from the eye to origin in less than 1 meter, move the origin away from the eye. Usually, this means
     // that the camera is outside the viewed extents and pointed away from it. There's nothing to see anyway.
     if (eyeOrg.z < 1.0) {
-      this.toView(origin);
+      this.rotMatrix.multiply3dInPlace(origin);
       origin.z -= (2.0 - eyeOrg.z);
-      this.fromView(origin);
+      this.rotMatrix.multiplyTranspose3dInPlace(origin);
       delta.z = 1.0;
       return;
     }
@@ -542,6 +542,7 @@ export class Viewport {
       return undefined;
 
     rootToNpc.setFrom(newRootToNpc);  // Don't screw this up if we are returning ERROR (TR# 251771).
+    this.frustFraction = frustFraction;
     return frustFraction;
   }
 
@@ -645,7 +646,8 @@ export class Viewport {
       ueRootToNpc.transform1Ref().multiplyPoint3dArrayQuietNormalize(ueRootBox.points);
 
       // and convert them to npc coordinates of the expanded view
-      this.worldToNpcArray(box.points);
+      this.worldToNpcArray(ueRootBox.points);
+      box.setPoints(ueRootBox.points);
     }
 
     // now convert from NPC space to the specified coordinate system.

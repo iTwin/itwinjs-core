@@ -119,6 +119,14 @@ export class Frustum {
   public toRange(range?: Range3d): Range3d { range = range ? range : new Range3d(); Range3d.createArray(this.points, range); return range; }
   public clone(result?: Frustum): Frustum { result = result ? result : new Frustum(); for (let i = 0; i < 8; ++i) Point3d.createFrom(this.points[i], result.points[i]); return result; }
   public setFrom(other: Frustum) { other.clone(this); }
+  public setPoints(points: Point3d[]) {
+    if (points.length < 8)
+      return;
+
+    for (let i = 0; i < 8; i++) {
+      this.points[i] = points[i].clone();
+    }
+  }
   public scaleAboutCenter(scale: number): void {
     const orig = this.clone();
     const f = 0.5 * (1.0 + scale);
@@ -843,7 +851,7 @@ export abstract class ViewState extends ElementState {
 
     const viewRot = this.getRotation();
     const newOrigin = volume.low.clone();
-    let newDelta = Vector3d.createStartEnd(volume.high, volume.low);
+    let newDelta = Vector3d.createStartEnd(volume.low, volume.high);
 
     const minimumDepth = Constant.oneMillimeter;
     if (newDelta.z < minimumDepth) {
@@ -879,7 +887,7 @@ export abstract class ViewState extends ElementState {
       // don't fix the origin due to changes in delta here
       origNewDelta = newDelta.clone();
     } else {
-      newDelta.scale(1.04); // default "dilation"
+      newDelta.scale(1.04, newDelta); // default "dilation"
     }
 
     if (isCameraOn) {
@@ -1002,18 +1010,18 @@ export class Camera {
   }
   public constructor(json: any) {
     this.lens = Angle.fromJSON(json.lens);
-    this.focusDistance = JsonUtils.asDouble(json.focusDistance);
+    this.focusDistance = JsonUtils.asDouble(json.focusDist);
     this.eye = Point3d.fromJSON(json.eye);
   }
 }
 
 /** Parameters to construct a ViewDefinition3d */
 export interface ViewDefinition3dProps extends ViewDefinitionProps {
-  cameraOn: any;  // if true, m_camera is valid.
-  origin: any;    // The lower left back corner of the view frustum.
-  extents: any;   // The extent of the view frustum.
-  angles: any;    // Rotation of the view frustum.
-  camera: any;    // The camera used for this view.
+  cameraOn: boolean;  // if true, m_camera is valid.
+  origin: Point3d;    // The lower left back corner of the view frustum.
+  extents: Vector3d;   // The extent of the view frustum.
+  angles: YawPitchRollAngles | undefined;    // Rotation of the view frustum (could be undefined if going RotMatrix -> YawPitchRoll).
+  camera: Camera;    // The camera used for this view.
 }
 
 /** Defines the state of a view of 3d models. */
@@ -1156,7 +1164,7 @@ export abstract class ViewState3d extends ViewState {
     if (!yVec) // up vector zero length?
       return ViewStatus.InvalidUpVector;
 
-    const zVec = this.getEyePoint().vectorTo(targetPoint); // z defined by direction from eye to target
+    const zVec = targetPoint.vectorTo(eyePoint); // z defined by direction from eye to target
     const focusDist = zVec.normalizeWithLength(zVec).mag; // set focus at target point
     const minFrontDist = this.minimumFrontDistance();
 
@@ -1176,7 +1184,7 @@ export abstract class ViewState3d extends ViewState {
     backDistance = backDistance ? backDistance : this.getBackDistance();
     frontDistance = frontDistance ? frontDistance : this.getFrontDistance();
 
-    const delta = newExtents ? new Vector3d(Math.abs(newExtents.x), Math.abs(newExtents.y), this.extents.z) : this.extents;
+    const delta = newExtents ? new Vector3d(Math.abs(newExtents.x), Math.abs(newExtents.y), this.extents.z) : this.extents.clone();
 
     frontDistance = Math.max(frontDistance!, (.5 * Constant.oneMeter));
     backDistance = Math.max(backDistance!, focusDist + (.5 * Constant.oneMeter));
@@ -1227,7 +1235,9 @@ export abstract class ViewState3d extends ViewState {
    * @note The aspect ratio of the view remains unchanged.
    */
   public lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number): ViewStatus {
-    const focusDist = eyePoint.distance(targetPoint);
+    const zVec = Vector3d.createStartEnd(targetPoint, eyePoint);
+    const focusDist = zVec.magnitude();   // Set focus at target point
+
     if (focusDist <= Constant.oneMillimeter)       // eye and target are too close together
       return ViewStatus.InvalidTargetPoint;
 
@@ -1293,7 +1303,9 @@ export abstract class ViewState3d extends ViewState {
   public rotateCameraWorld(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus {
     const about = aboutPt ? aboutPt : this.getEyePoint();
     const rotation = RotMatrix.createRotationAroundVector(axis, angle);
-    const trans = Transform.createFixedPointAndMatrix(about, rotation!);
+    if (!rotation)
+      return ViewStatus.InvalidUpVector;    // Invalid axis given
+    const trans = Transform.createFixedPointAndMatrix(about, rotation);
     const newTarget = trans.multiplyPoint(this.getTargetPoint());
     const upVec = rotation!.multiplyVector(this.getYVector());
     return this.lookAt(this.getEyePoint(), newTarget, upVec);
@@ -1438,9 +1450,9 @@ export class OrthographicViewState extends SpatialViewState {
 /** Parameters used to construct a ViewDefinition2d */
 export interface ViewDefinition2dProps extends ViewDefinitionProps {
   baseModelId: Id64 | string;
-  origin: any;
-  delta: any;
-  angle: any;
+  origin: Point2d;
+  delta: Point2d;
+  angle: Angle;
 }
 
 /** Defines the state of a view of a single 2d model. */
