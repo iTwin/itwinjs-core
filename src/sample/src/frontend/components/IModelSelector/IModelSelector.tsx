@@ -1,15 +1,15 @@
 import * as React from "react";
-import { IModelToken } from "@bentley/imodeljs-frontend/lib/common/IModel";
+import { IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend/IModelConnection";
 import { MyAppFrontend } from "../../api/MyAppFrontend";
 
 import "./IModelSelector.css";
 
 export interface Props {
-  onIModelSelected: (imodelToken?: IModelToken) => void;
+  onIModelSelected: (imodel?: IModelConnection) => void;
 }
 
 export interface State {
-  imodelToken?: IModelToken;
+  imodel?: IModelConnection;
   error?: any;
 }
 
@@ -30,13 +30,13 @@ export default class IModelSelector extends React.Component<Props, State> {
     try {
       await MyAppFrontend.openIModel(imodelId);
       if (MyAppFrontend.iModel)
-        this.setState({ error: undefined, imodelToken: MyAppFrontend.iModel.iModelToken });
+        this.setState({ error: undefined, imodel: MyAppFrontend.iModel });
       else
-        this.setState({ error: undefined, imodelToken: undefined });
+        this.setState({ error: undefined, imodel: undefined });
     } catch (e) {
-      this.setState({ imodelToken: undefined, error: e });
+      this.setState({ imodel: undefined, error: e });
     } finally {
-      this.props.onIModelSelected(MyAppFrontend.iModel ? MyAppFrontend.iModel.iModelToken : undefined);
+      this.props.onIModelSelected(MyAppFrontend.iModel);
     }
   }
 
