@@ -1,0 +1,48 @@
+.PropertiesWidget {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  border: 1px solid black;
+  padding: 5px;
+}
+
+.PropertiesWidget h3 {
+  margin: 0;
+}
+
+.PropertiesWidget .Description {
+  margin-bottom: 0;
+}
+
+.PropertiesWidget .InputFields {
+  margin-bottom: 20px;
+}
+
+.PropertiesWidget .InputFields p {
+  display: inline-block;
+  margin-top: 0;
+  margin-bottom: 0;
+  width: 100px;
+}
+
+.PropertiesWidget .ContentContainer {
+  overflow-y: auto;
+}
+
+.PropertiesWidget .ContentContainer table  {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.PropertiesWidget .ContentContainer td.PropertyLabel {
+  font-weight: bold;
+  text-align: right;
+  width: 50%;
+  overflow: hidden;
+}
+
+.PropertiesWidget .ContentContainer td.PropertyValue {
+  text-align: left;
+  width: 50%;
+  overflow: hidden;
+}

@@ -163,7 +163,7 @@ export default class StyleHelper {
   }
 
   private static getColorFromRGB(name: string): number {
-    name = name.substring(name.indexOf("(") + 1, name.indexOf(")"))
+    name = name.substring(name.indexOf("(") + 1, name.indexOf(")"));
     const splitedString = name.split(",");
     const r: number = Number(splitedString[0]);
     const g: number = Number(splitedString[1]);

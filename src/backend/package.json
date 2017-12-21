@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecpresentation-backend",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "description": "Backend of ECPresentation library",
   "keywords": [
     "Bentley",
@@ -22,7 +22,7 @@
   "dependencies": {
     "@bentley/bentleyjs-core": "^1.2.4",
     "@bentley/imodeljs-backend": "^0.12.0",
-    "@bentley/imodeljs-nodeaddonapi": "^1.3.0"
+    "@bentley/imodeljs-nodeaddonapi": "~1.3.0"
   },
   "devDependencies": {}
 }

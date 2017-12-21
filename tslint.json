@@ -11,8 +11,9 @@
       {"type": "parameter", "modifiers": "unused", "leadingUnderscore": "allow"},
       // require leading underscores for private properties and methods, all other rules still apply
       {"type": "property", "modifiers": "private", "leadingUnderscore": "require"},
-      // enforce UPPER_CASE for all public static readonly(!) properties
-      {"type": "property", "modifiers": ["public", "static", "const"], "format": "UPPER_CASE"},
+      // enforce UPPER_CASE for all static readonly properties
+      {"type": "property", "modifiers": ["private", "static", "const"], "leadingUnderscore": "forbid", "format": "UPPER_CASE"},
+      {"type": "property", "modifiers": ["public", "static", "const"], "leadingUnderscore": "forbid", "format": "UPPER_CASE"},
       // require all global constants to be camelCase or UPPER_CASE
       // all other variables and functions still need to be camelCase
       {"type": "variable", "modifiers": ["global", "const"], "format": ["camelCase","UPPER_CASE"]},
