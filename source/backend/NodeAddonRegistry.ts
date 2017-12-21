@@ -46,6 +46,25 @@ export class NodeAddonRegistry {
     }
   }
 
+  /** Get the module that can load the standard addon. */
+  public static getStandardAddonLoaderModule(): any | undefined {
+    if (process === undefined)
+      return undefined;
+    if ("electron" in process.versions) {
+      return require("@bentley/imodeljs-electronaddon");
+    }
+    return require("@bentley/imodeljs-nodeaddon");
+  }
+
+  /** Load and register the standard addon. */
+  public static loadAndRegisterStandardAddon() {
+    const loaderModule = NodeAddonRegistry.getStandardAddonLoaderModule();
+    if (loaderModule === undefined) {
+      throw new IModelError(IModelStatus.NotFound);
+    }
+    NodeAddonRegistry.registerAddon(loaderModule.NodeAddonLoader.loadAddon());
+  }
+
 }
 
 /** Utility class to help apps compute the name of the default addon package that should be used in the current environment.
