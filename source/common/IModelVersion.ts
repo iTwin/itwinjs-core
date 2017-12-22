@@ -5,6 +5,7 @@ import { AccessToken, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clien
 import { IModelError } from "./IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { Configuration } from "./IModel";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 /** Option to specify the version of the iModel to be acquired and used */
 export class IModelVersion {
@@ -35,6 +36,7 @@ export class IModelVersion {
    * needs to be applied.
    */
   public static asOfChangeSet(changeSetId: string): IModelVersion {
+    assert(!!changeSetId || changeSetId === "0", "Use first to specify the first version");
     const version = new IModelVersion();
     version._afterChangeSetId = changeSetId;
     return version;
@@ -81,11 +83,11 @@ export class IModelVersion {
     if (this._first)
       return Promise.resolve("");
 
-    const hubClient = new IModelHubClient(Configuration.IModelHubDeploymentEnv); // todo: need this supplied by some config
-
     if (this._afterChangeSetId) {
       return Promise.resolve(this._afterChangeSetId);
     }
+
+    const hubClient = new IModelHubClient(Configuration.iModelHubDeployConfig);
 
     if (this._latest) {
       return IModelVersion.getLatestChangeSetId(hubClient, accessToken, iModelId);
@@ -95,7 +97,7 @@ export class IModelVersion {
       return IModelVersion.getChangeSetFromNamedVersion(hubClient, accessToken, iModelId, this._versionName);
     }
 
-    return Promise.reject(new IModelError(BentleyStatus.ERROR));
+    return Promise.reject(new IModelError(BentleyStatus.ERROR, "Invalid version"));
   }
 
   /** Gets the last change set that was applied to the imodel */
