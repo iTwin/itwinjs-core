@@ -6,20 +6,21 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Viewport } from "./Viewport";
 import { ViewManager } from "./ViewManager";
 import { BeButtonEvent } from "./tools/Tool";
-import { SnapMode, HitList, SnapDetail, AccuSnap, HitDetail } from "./AccuSnap";
+import { SnapMode, HitList, SnapDetail, AccuSnap, SnapHeat, HitDetail, SubSelectionMode, HitSource } from "./AccuSnap";
 import { DecorateContext } from "./ViewContext";
+import { ElementLocateManager, SnapType, SnapStatus } from "./ElementLocateManager";
 
 // tslint:disable:variable-name
 
 export class TentativePoint {
   public static instance = new TentativePoint();
-  public m_isActive: boolean;
-  public m_qualifierMask: number;        // button qualifiers
-  public m_candidateSnapMode: SnapMode;    // during snap creation: the snap to try
+  public m_isActive = false;
+  public m_qualifierMask = 0;        // button qualifiers
+  public m_candidateSnapMode = SnapMode.First;    // during snap creation: the snap to try
   public m_currSnap?: SnapDetail;
   public m_tpHits?: HitList;
   public readonly m_snapPaths: HitList;
-  public m_hotDistanceInches: number;
+  public m_hotDistanceInches = 0.21;
   public readonly m_rawPoint = new Point3d();     // world coordinates
   public readonly m_point = new Point3d();        // world coords (adjusted for locks)
   public readonly m_viewPt = new Point3d();       // view coordinate system
@@ -39,7 +40,7 @@ export class TentativePoint {
   public clear(doErase: boolean): void {
     if (doErase) {
       this.removeTentative();
-      // ElementLocateManager:: GetManager()._SynchSnapMode();
+      elementLocateManager.synchSnapMode();
     }
     accuSnap.destroy();
     this.m_isActive = false;
@@ -54,26 +55,20 @@ export class TentativePoint {
 
     accuSnap.erase();
 
-    if (this.getCurrSnap()) {
+    if (this.getCurrSnap())
       viewManager.invalidateDecorationsAllViews();
-    } else
+    else
       this.m_viewport!.invalidateDecorations();
 
     this.m_isActive = false;
-  }
-
-  public constructor() {
-    this.m_hotDistanceInches = 0.21;
-    this.m_isActive = false;
-    this.m_candidateSnapMode = SnapMode.First;
   }
 
   public getTPSnapMode(): SnapMode { return (SnapMode.Intersection === this.activeSnapMode()) ? SnapMode.Nearest : this.activeSnapMode(); }
   public activeSnapMode(): SnapMode { return (this.m_candidateSnapMode !== SnapMode.First) ? this.m_candidateSnapMode : SnapMode.Nearest; }
   public setCurrSnap(newSnap?: SnapDetail): void {
     if (newSnap) {
-      newSnap.setSubSelectionMode(SubSelectionMode.Segment);
-      newSnap.setHeat(SnapHeat.SNAP_HEAT_InRange);
+      newSnap.m_subSelectionMode = SubSelectionMode.Segment;
+      newSnap.m_heat = SnapHeat.SNAP_HEAT_InRange;
     }
     this.m_currSnap = newSnap;
   }
@@ -81,24 +76,24 @@ export class TentativePoint {
   public showTentative(): void {
     if (this.isSnapped()) {
       viewManager.invalidateDecorationsAllViews();
-      accuSnap.displayInfoBalloon(this.m_viewPt, this.m_viewport, undefined);
+      accuSnap.displayInfoBalloon(this.m_viewPt, this.m_viewport!, undefined);
     } else {
       this.m_viewport!.invalidateDecorations();
     }
     this.m_isActive = true;
   }
 
+  public clearElementFromHitList(element: Id64): void {
+    if (element.isValid())
+      this.m_snapPaths.removeHitsFrom(element);
+  }
+
   public onButtonEvent(): void {
     this.removeTentative();
-    // ElementLocateManager:: GetManager()._SynchSnapMode();
+    elementLocateManager.synchSnapMode();
     this.m_snapPaths.empty();
     this.setCurrSnap(undefined);
     this.m_tpHits = undefined;
-  }
-
-  public clearElemRefFromHitList(element: Id64): void {
-    if (element.isValid())
-      this.m_snapPaths.removeHitsFrom(element);
   }
 
   public isView3D(): boolean { return this.m_viewport!.view.is3d(); }
@@ -160,8 +155,8 @@ export class TentativePoint {
 
   public getNextSnap(): SnapDetail | undefined {
     const snap = this.m_snapPaths.getNextHit();
-    // if (snap)   // Report which of the multiple active modes we are using
-    //   ElementLocateManager:: GetManager()._SetChosenSnapMode(SnapType:: Points, snap -> GetSnapMode());
+    if (snap)   // Report which of the multiple active modes we are using
+      elementLocateManager.setChosenSnapMode(SnapType.Points, snap.getSnapMode());
     return snap;
   }
 
@@ -364,7 +359,7 @@ export class TentativePoint {
 
     const lastPtView = this.m_viewPt;
 
-    this.m_viewport = ev.viewport;
+    this.m_viewport = ev.viewport!;
     this.m_point.setFrom(ev.point);
     this.m_rawPoint.setFrom(ev.rawPoint);
     this.m_viewPt.setFrom(ev.viewPoint);
@@ -386,14 +381,13 @@ export class TentativePoint {
         snap = isectSnap;
     }
 
-    if (snap && ElementLocateManager:: GetManager()._IsConstraintSnapActive()) {
+    if (snap && elementLocateManager.isConstraintSnapActive()) {
       //  Does the user actually want to create a constraint?
       //  (Note you can't construct a constraint on top of a partially defined intersection)
-      if (SnapMode.IntersectionCandidate !== snap.getSnapMode()) {
+      if (SnapMode.IntersectionCandidate !== snap.m_snapMode) {
         //  Construct constraint on top of TP
-        snap.setHeat(SnapHeat.SNAP_HEAT_InRange);  // If we got here, the snap is "in range". Tell xSnap_convertToConstraint.
-        if (SnapStatus:: Success != ElementLocateManager:: GetManager()._PerformConstraintSnap(snap, m_viewport -> PixelsFromInches(ElementLocateManager:: GetManager().GetApertureInches()), HitSource:: TentativeSnap))
-        {
+        snap.m_heat = SnapHeat.SNAP_HEAT_InRange;  // If we got here, the snap is "in range". Tell xSnap_convertToConstraint.
+        if (SnapStatus.Success != elementLocateManager.performConstraintSnap(snap, this.m_viewport.pixelsFromInches(elementLocateManager.getApertureInches()), HitSource.TentativeSnap)) {
           snap = undefined;
         }
       }
@@ -406,7 +400,7 @@ export class TentativePoint {
     accuSnap.clear();
 
     if (this.isSnapped())
-      this.m_point.setFrom(this.getCurrSnap().getSnapPoint());
+      this.m_point.setFrom(this.m_currSnap!.m_snapPoint);
 
     // show the TP cross
     this.showTentative();
@@ -415,3 +409,4 @@ export class TentativePoint {
 
 const accuSnap = AccuSnap.instance;
 const viewManager = ViewManager.instance;
+const elementLocateManager = ElementLocateManager.instance;

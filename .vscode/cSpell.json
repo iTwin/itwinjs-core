@@ -32,6 +32,7 @@
         "geometry",
         "Guid",
         "hilite",
+        "hilited",
         "hline",
         "imodel",
         "imodeljs",

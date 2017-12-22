@@ -62,6 +62,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
   public abstract getRotation(result?: RotMatrix): RotMatrix;
   public abstract setRotation(val: RotMatrix): void;
   public is3d(): boolean { return this instanceof AuxCoordSystem3dState; }
+
 }
 
 export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoordSystem2dProps {

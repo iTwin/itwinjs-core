@@ -7,6 +7,7 @@ import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import { EventController } from "./tools/EventController";
+import { Point3d } from "@bentley/geometry-core/lib/PointVector";
 
 // tslint:disable:no-empty
 
@@ -39,8 +40,14 @@ export class ViewManager {
    */
   public readonly onViewResume = new BeEvent<(vp: Viewport) => void>();
 
+  public doesHostHaveFocus(): boolean { return true; } // NEEDS_WORK
   public isInfoWindowUp(): boolean { return false; } // NEEDS_WORK
   public clearInfoWindow(): void { }
+
+  public showInfoWindow(viewPt: Point3d, vp: Viewport, msg: string) {
+    // if (this.doesHostHaveFocus()) 
+    //   this.getInfoWindow().show(viewPt, vp, msg);
+  }
 
   /** The "selected view" is the default for certain operations.  */
   public get selectedView() { return this._selectedView; }
@@ -101,4 +108,6 @@ export class ViewManager {
 
     return BentleyStatus.SUCCESS;
   }
+
+  public invalidateDecorationsAllViews(): void { this.viewports.forEach((vp) => vp.invalidateDecorations()); }
 }

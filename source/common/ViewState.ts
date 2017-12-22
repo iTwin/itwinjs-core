@@ -818,15 +818,12 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Get the grid settings for this view */
-  public getGridSettings() {
-    const out: any = {};
-    out.orientation = JsonUtils.asInt(this.getDetail("gridOrient"), GridOrientationType.WorldXY);
-    out.gridsPerRef = JsonUtils.asInt(this.getDetail("gridPerRef"), 10);
-    out.spacing.x = JsonUtils.asInt(this.getDetail("gridSpaceX"), 1.0);
-    out.spacing.y = JsonUtils.asInt(this.getDetail("gridSpaceY"), out.spacing.x);
-    return out;
+  public getGridOrientation(): GridOrientationType { return JsonUtils.asInt(this.getDetail("gridOrient"), GridOrientationType.WorldXY); }
+  public getGridsPerRef(): number { return JsonUtils.asInt(this.getDetail("gridPerRef"), 10); }
+  public getGridSpacing(pt: Point2d) {
+    pt.x = JsonUtils.asInt(this.getDetail("gridSpaceX"), 1.0);
+    pt.y = JsonUtils.asInt(this.getDetail("gridSpaceY"), pt.x);
   }
-
   /**
    * Change the volume that this view displays, keeping its current rotation.
    * @param worldVolume The new volume, in world-coordinates, for the view. The resulting view will show all of worldVolume, by fitting a

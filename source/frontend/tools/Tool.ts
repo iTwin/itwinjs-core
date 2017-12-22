@@ -1,12 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Point3d, Point2d, XAndY, XYAndZ } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, Point2d, XAndY } from "@bentley/geometry-core/lib/PointVector";
 import { Viewport } from "../Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { ViewTool } from "./ViewTool";
-import { DecorateContext } from "../RenderContext";
+import { DecorateContext } from "../ViewContext";
+import { HitDetail } from "../AccuSnap";
 
 export const enum BeButton {
   Data = 0,
@@ -401,6 +402,16 @@ export abstract class Tool {
    * @note Applies only to PrimitiveTool and InputCollector, a ViewTool can't be suspended.
    */
   public decorateSuspended(context: DecorateContext) { }
+
+  /** 
+   * Invoked just before the locate tooltip is displayed to retrieve the info text. Allows the tool to override the default description.
+   * @param hit The HitDetail whose info is needed.
+   * @param _delimiter Put this string to break lines of the description.
+   * @return the string to describe the hit. 
+   * @note If you override this method, you may decide whether to call your superclass' implementation or not (it is not required).
+   * The default implementation shows hit description
+   */
+  public getInfoString(hit: HitDetail, _delimiter: string): string { return hit.m_hitDescription; }
 
   public isPrimitive(): this is PrimitiveTool { return this instanceof PrimitiveTool; }
   public isView(): this is ViewTool { return this instanceof ViewTool; }
