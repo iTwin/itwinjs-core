@@ -4,7 +4,7 @@
 import * as express from "express";
 import * as bodyParser from "body-parser";
 import { IModelDb } from "@build/imodeljs-core/lib/backend/IModelDb";
-import { NodeAddonRegistry, NodeAddonPackageName } from "@build/imodeljs-core/lib/backend/NodeAddonRegistry";
+import { NodeAddonRegistry } from "@build/imodeljs-core/lib/backend/NodeAddonRegistry";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
 import { TestGatewayImpl } from "./TestGatewayImpl";
 
@@ -27,8 +27,7 @@ TestGatewayImpl.register();
 TestbedConfig.initializeGatewayConfig();
 
 // tslint:disable-next-line:no-var-requires
-const addon = require(NodeAddonPackageName.computeDefaultImodelNodeAddonName());
-NodeAddonRegistry.registerAddon(addon);
+NodeAddonRegistry.loadAndRegisterStandardAddon();
 
 const app = express();
 app.use(bodyParser.text());
