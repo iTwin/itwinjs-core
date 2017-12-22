@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecpresentation-backend",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "description": "Backend of ECPresentation library",
   "keywords": [
     "Bentley",
