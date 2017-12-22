@@ -7,7 +7,7 @@ import { IModelError } from "../common/IModelError";
 import { BindingUtility, BindingValue } from "./BindingUtility";
 import { NodeAddonRegistry } from "./NodeAddonRegistry";
 import { NodeAddonECSqlStatement, NodeAddonDgnDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
-import { NodeAddonECDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
+
 /** An ECSql Statement. A statement must be prepared before it can be executed. See prepare. A statement may contain placeholders that must be filled
  * in before use. See bindValues. A prepared statement can be stepped through all matching rows by calling step. ECSqlStatement is-a iterator, so that you
  * can step through its results by using standard iteration syntax, such as "for in".
@@ -35,7 +35,7 @@ export class ECSqlStatement implements IterableIterator<any> {
   /** Prepare this statement prior to first use.
    * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSql syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
    */
-  public prepare(db: NodeAddonDgnDb|NodeAddonECDb, statement: string): void {
+  public prepare(db: NodeAddonDgnDb, statement: string): void {
     if (this.isPrepared())
       throw new Error("statement is already prepared");
     this._stmt = new (NodeAddonRegistry.getAddon()).NodeAddonECSqlStatement();
