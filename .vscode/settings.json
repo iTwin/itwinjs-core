@@ -14,5 +14,8 @@
     "src/frontend/node_modules": true,
     "src/test/lib": true,
     "src/test/node_modules": true
-  }
+  },
+  "cSpell.words": [
+    "ruleset"
+  ]
 }
