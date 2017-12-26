@@ -37,6 +37,17 @@ export class ViewFlags {
   public hLineMaterialColors: boolean = false;  // use material colors for hidden lines
   public edgeMask: number = 0;                  // 0=none, 1=generate mask, 2=use mask
 
+  public hiddenEdgesVisible(): boolean {
+    switch (this.renderMode) {
+      case RenderMode.SolidFill:
+      case RenderMode.HiddenLine:
+        return this.hiddenEdges;
+      case RenderMode.SmoothShade:
+        return this.visibleEdges && this.hiddenEdges;
+    }
+    return true;
+  }
+
   public toJSON(): any {
     const out: any = {};
 

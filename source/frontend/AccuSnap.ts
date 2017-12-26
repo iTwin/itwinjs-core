@@ -1,19 +1,27 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Point3d, Vector3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, Vector3d, Point2d, XAndY } from "@bentley/geometry-core/lib/PointVector";
 import { CurvePrimitive } from "@bentley/geometry-core/lib/curve/CurvePrimitive";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Viewport } from "./Viewport";
 import { ViewManager } from "./ViewManager";
 import { BeButtonEvent } from "./tools/Tool";
 import { TentativePoint } from "./TentativePoint";
-import { ElementLocateManager, LocateFailureValue } from "./ElementLocateManager";
+import { ElementLocateManager, LocateFailureValue, SnapStatus, LocateAction, LocateResponse } from "./ElementLocateManager";
 import { SpriteLocation, Sprite } from "./Sprites";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import { DecorateContext } from "./ViewContext";
+import { RenderMode } from "../common/Render";
+import { Geometry } from "@bentley/geometry-core/lib/Geometry";
+import { Point4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 
 // tslint:disable:variable-name
+// tslint:disable:no-conditional-assignment
+const s_unfocused: any = {};
+const s_focused: any = {};
+const s_notSnappable: any = {};
+const s_appFiltered: any = {};
 
 class AccuSnapToolState {
   public m_enabled: boolean;
@@ -136,7 +144,7 @@ export const enum HitSource {
 }
 
 /**
- * What was being tested to generate this hit. This is not the element or 
+ * What was being tested to generate this hit. This is not the element or
  * GeometricPrimitive that generated the Hit, it's an indication of whether it's an
  * edge or interior hit.
  */
@@ -263,7 +271,7 @@ export class SnapDetail extends HitDetail {
   public constructor(from: HitDetail) {
     super(from.m_viewport, from.m_sheetViewport, from.m_elementId, from.m_testPoint, from.m_locateSource, from.m_geomDetail);
     this.m_snapPoint = this.m_geomDetail.m_closePoint.clone();
-    this.m_adjustedPt = this.m_snapPoint.clone();;
+    this.m_adjustedPt = this.m_snapPoint.clone();
     this.m_snapMode = this.m_originalSnapMode = SnapMode.First;
 
     if (from.isSnapDetail()) {
@@ -286,15 +294,25 @@ export class SnapDetail extends HitDetail {
  *  are somehow "better" than those later on.
  */
 export class HitList {
-  public hits: HitDetail[];
-  public m_currHit: number;
+  public readonly hits: HitDetail[];
+  private m_currHit: number;
 
   public size(): number { return this.hits.length; }
   public clear(): void { this.hits.length = 0; }
-  public empty(): void {
-    this.clear();
-    this.m_currHit = -1; // we don't have a current hit.
+  public empty(): void { this.clear(); this.resetCurrentHit(); }
+  public resetCurrentHit(): void { this.m_currHit = -1; }
+
+  /**
+   * get a hit from a particular index into a HitList
+   * return       the requested hit from the HitList or undefined
+   */
+  public getHit(hitNum: number): HitDetail | undefined {
+    if (hitNum < 0) hitNum = this.size() - 1;
+    return (hitNum >= this.size()) ? undefined : this.hits[hitNum];
   }
+
+  public getCurrentHit(): HitDetail | undefined { return -1 === this.m_currHit ? undefined : this.getHit(this.m_currHit); }
+  public getNextHit(): HitDetail | undefined { this.m_currHit++; return this.getCurrentHit(); }
 
   /** remove a hit in the list. */
   public removeHit(hitNum: number) {
@@ -323,6 +341,148 @@ export class HitList {
     }
     return removedOne;
   }
+
+  private static s_tooCloseTolerance = 1.0e-10;
+  private static doZCompareOfSurfaceAndEdge(oHitSurf: HitDetail, oHitEdge: HitDetail): number {
+    const origin = oHitSurf.m_geomDetail.m_closePoint;
+    const normal = oHitSurf.m_geomDetail.m_normal;
+    const homogeneousPlane = Point4d.createFromPointAndWeight(normal, -normal.dotProduct(origin));
+    const worldToViewMap = oHitSurf.m_viewport.rootToView;
+    const eyePointWorld = worldToViewMap.transform1Ref().columnZ();
+    const testPointWorld = oHitEdge.m_geomDetail.m_closePoint;
+    const a0 = homogeneousPlane.dotProduct(eyePointWorld);
+    const a1 = homogeneousPlane.dotProductXYZW(testPointWorld.x, testPointWorld.y, testPointWorld.z, 1.0);
+    const tol = HitList.s_tooCloseTolerance * (1.0 + Math.abs(a0) + Math.abs(a1) + Math.abs(homogeneousPlane.w));
+    return (Math.abs(a1) < tol) ? 0 : ((a0 * a1 > 0) ? 1 : -1);
+  }
+
+  private static doZCompare(oHit1: HitDetail, oHit2: HitDetail): number {
+    const z1 = oHit1.m_geomDetail.m_viewZ;
+    const z2 = oHit2.m_geomDetail.m_viewZ;
+
+    // For 2d hits z reflects display priority which should be checked before locate priority, etc. when a fill/surface hit is involved...
+    if (!oHit1.m_viewport.view.is3d()) {
+      // screen z values are sorted descending
+      if (z2 < z1) return -1;
+      if (z2 > z1) return 1;
+      return 0;
+    }
+
+    // Point clouds already output only a single best z for a screen location...only compare using screen distance, not z...
+    if (HitDetailSource.PointCloud === oHit1.m_geomDetail.m_detailSource && HitDetailSource.PointCloud === oHit2.m_geomDetail.m_detailSource)
+      return 0;
+
+    // Always prioritize sprites (ex. HUD markers) over surface hits...
+    if (HitDetailSource.Sprite === oHit1.m_geomDetail.m_detailSource || HitDetailSource.Sprite === oHit2.m_geomDetail.m_detailSource)
+      return 0;
+
+    const normal1 = oHit1.m_geomDetail.m_normal;
+    const normal2 = oHit2.m_geomDetail.m_normal;
+
+    // NOTE: Only surfaces display hidden edges...NEEDSWORK: Nothing is hidden by transparent display style (RenderMode::SmoothShade)...
+    const flags1 = oHit1.m_viewport.view.displayStyle.viewFlags;
+    const flags2 = oHit2.m_viewport.view.displayStyle.viewFlags;
+    const hiddenEdgesVisible = flags1.hiddenEdgesVisible();
+    const isObscurableWireHit1 = (RenderMode.Wireframe !== flags1.renderMode && HitParentGeomType.Wire === oHit1.m_geomDetail.m_parentType);
+    const isObscurableWireHit2 = (RenderMode.Wireframe !== flags2.renderMode && HitParentGeomType.Wire === oHit2.m_geomDetail.m_parentType);
+
+    const mag1 = normal1.magnitude();
+    const mag2 = normal2.magnitude();
+    if (0.0 !== mag1 && 0.0 !== mag2) {
+      // Both surface hits...if close let other criteria determine order...
+      if (Geometry.isDistanceWithinTol(z1 - z2, HitList.s_tooCloseTolerance))
+        return 0;
+    } else if (0.0 !== mag1) {
+      // 1st is surface hit...project 2nd hit into plane defined by surface normal...
+      const compareResult = (hiddenEdgesVisible && !isObscurableWireHit2) ? 1 : HitList.doZCompareOfSurfaceAndEdge(oHit1, oHit2);
+      return (0 === compareResult ? 0 : compareResult);
+    }
+    if (0.0 !== mag2) {
+      // 2nd is surface hit...project 1st hit into plane defined by surface normal...
+      const compareResult = (hiddenEdgesVisible && !isObscurableWireHit1) ? 1 : HitList.doZCompareOfSurfaceAndEdge(oHit2, oHit1);
+      return (0 === compareResult ? 0 : -compareResult);
+    }
+    // else {
+    //   // NOTE: I don't believe this case currently exists...silhouette hits are only created for cones/spheres and always have a curve primitive...
+    //   bool isSilhouetteHit1 = (HitGeomType:: Surface == oHit1.GetGeomDetail().GetGeomType() && NULL == oHit1.GetGeomDetail().GetCurvePrimitive());
+    //   bool isSilhouetteHit2 = (HitGeomType:: Surface == oHit2.GetGeomDetail().GetGeomType() && NULL == oHit2.GetGeomDetail().GetCurvePrimitive());
+
+    //   // NOTE: Likely silhouette hit, make sure it always loses to a real edge hit...
+    //   if (isSilhouetteHit1 && !isSilhouetteHit2)
+    //     return 1;
+    //   if (isSilhouetteHit2 && !isSilhouetteHit1)
+    //     return -1;
+    //   if (DoubleOps:: WithinTolerance(z1, z2, s_tooCloseTolerance))
+    //   return 0; // Both silhouette or real edge hits...if close let other criteria determine order...
+    // }
+
+    // screen z values are sorted descending
+    return (z2 < z1) ? -1 : (z2 > z1) ? 1 : 0;
+  }
+
+  private static tenthOfPixel(inValue: number): number { return Math.floor((inValue * 10.0) + 0.5) / 10.0; }
+  /**
+   * compare two hits for insertion into list. Hits are compared by calling getLocatePriority() and then getLocateDistance() on each.
+   */
+  public compare(oHit1: HitDetail | undefined, oHit2: HitDetail | undefined, comparePriority: boolean, compareZ: boolean): number {
+    if (!oHit1 || !oHit2)
+      return 0;
+
+    if (compareZ) {
+      const zCompareValue = HitList.doZCompare(oHit1, oHit2);
+      if (0 !== zCompareValue)
+        return zCompareValue;
+    }
+
+    if (comparePriority) {
+      const p1 = oHit1.m_geomDetail.m_hitPriority;
+      const p2 = oHit2.m_geomDetail.m_hitPriority;
+      if (p2 < p1) return -1;
+      if (p2 > p1) return 1;
+    }
+
+    const dist1 = HitList.tenthOfPixel(oHit1.m_geomDetail.m_viewDist);
+    const dist2 = HitList.tenthOfPixel(oHit2.m_geomDetail.m_viewDist);
+    if (dist2 < dist1) return -1;
+    if (dist2 > dist1) return 1;
+
+    // Linestyle/pattern/thickness hits have lower priority...
+    const source1 = oHit1.m_geomDetail.m_detailSource;
+    const source2 = oHit2.m_geomDetail.m_detailSource;
+    return (source2 < source1) ? -1 : (source2 > source1) ? 1 : 0;
+  }
+
+  /**
+   * Add a new hit to the list. Hits are sorted according to their priority and distance.
+   */
+  public addHit(newHit: HitDetail, _allowDuplicates: boolean, comparePriority: boolean): number {
+    if (this.size() === 0) {
+      this.hits.push(newHit);
+      return 0;
+    }
+
+    // NOTE: Starting from the end ensures that all edge hits will get compared against surface hits to properly
+    //       determine their visibility. With a forward iterator, an edge hit could end up being chosen that is obscured
+    //       if it is closer to the eye than an un-obscured edge hit.
+    let index = this.size() - 1;
+    for (; index >= 0; --index) {
+      const comparison = this.compare(this.hits[index], newHit, comparePriority, true);
+      if (comparison >= 0)
+        continue;
+      break;
+    }
+
+    this.hits.splice(index, 0, newHit);
+    return index;
+  }
+
+  public setCurrentHit(hit: HitDetail): void {
+    this.resetCurrentHit();
+    for (let thisHit; undefined !== (thisHit = this.getNextHit());) {
+      if (thisHit === hit)
+        return;
+    }
+  }
 }
 
 export class AccuSnap {
@@ -337,7 +497,7 @@ export class AccuSnap {
   public readonly m_errorIcon = new SpriteLocation();        // the icon that indicates an error
   public m_errorReason: LocateFailureValue;      // reason code for last error
   public m_explanation?: string;     // why last error was generated.
-  // SnapMode            m_candidateSnapMode;// during snap creation: the snap to try
+  private m_candidateSnapMode = SnapMode.First; // during snap creation: the snap to try
   private m_suppressed = 0;       // number of times "suppress" has been called -- unlike m_suspend this is not automatically cleared by tools
   // bool                m_wasAborted;       // was the search for elements from last motion event aborted?
   private m_waitingForTimeout = false;
@@ -356,11 +516,6 @@ export class AccuSnap {
   private wantInfoBalloon() { return this.m_settings.popupInfo; }
   private wantAutoInfoBalloon() { return this.m_settings.popupInfo && !this.m_settings.popupMode; }
   private wantHiliteColdHits() { return this.m_settings.hiliteColdHits; }
-  private wantIgnoreText() { return !this.m_settings.ignore.text; }          // 0 means ignore
-  private wantIgnoreDimensions() { return !this.m_settings.ignore.dimensions; }    // 0 means ignore
-  private wantIgnoreCurves() { return !this.m_settings.ignore.curves; }        // 0 means ignore
-  private wantIgnoreMeshes() { return this.m_settings.ignore.meshes; }         // 1 means ignore
-  private wantIgnoreFill() { return this.m_settings.ignore.fillInterior; }   // 1 means ignore
   private getStickyFactor() { return this.m_settings.stickyFactor; }
   private doLocateTesting() { return this.isLocateEnabled(); }
   private getSearchDistance() { return this.doLocateTesting() ? 1.0 : this.m_settings.searchDistance; }
@@ -387,6 +542,26 @@ export class AccuSnap {
   }
   private doSnapping(): boolean { return this.isSnapEnabled() && this.userWantsSnaps() && !this.isSnapSuspended(); }
   private isSnapSuspended(): boolean { return (0 !== this.m_suppressed || 0 !== this.m_toolstate.m_suspended); }
+  public getSnapMode(): SnapMode { return this.m_candidateSnapMode !== SnapMode.First ? this.m_candidateSnapMode : SnapMode.Nearest; }
+  public setSubSelectionMode(newMode: SubSelectionMode) { this.m_toolstate.m_subSelectionMode = newMode; }
+
+  private isActivePointSnap(snapModeToFind: SnapMode): boolean {
+    const snaps = elementLocateManager.getPreferredPointSnapModes(HitSource.AccuSnap);
+    for (const snap of snaps) { if (snap === snapModeToFind) return true; }
+    return false;
+  }
+
+  /**
+   * Check to see whether its appropriate to generate an AccuSnap point, given the current user
+   * and command settings, and whether a tentative point is currently active.
+   */
+  public isActive(): boolean {
+    // Unless we're snapping in intersect mode (to find extended intersections), skip if tentative point active...
+    if (tentativePoint.m_isActive)
+      return this.isActivePointSnap(SnapMode.Intersection) && this.doSnapping();
+
+    return this.doSnapping() || this.doLocateTesting();
+  }
 
   /** clear any AccuSnap info on the screen and release any hit path references */
   public clear(): void { this.setCurrHit(undefined); }
@@ -401,7 +576,7 @@ export class AccuSnap {
     const sameBaseSnapMode = (!newSnap || !currSnap || newSnap.m_originalSnapMode === currSnap.m_originalSnapMode);
     const sameType = (sameHot && (!currSnap || (currSnap.getHitType() === newHit!.getHitType())));
 
-    // NOTE: When snapping and not also locating, flash component instead of cursor index 
+    // NOTE: When snapping and not also locating, flash component instead of cursor index
     //       Component mode when locating is handled by FilterHit.
     //       For intersect snap, always show only the segments that intersect.
     if (newSnap) {
@@ -448,7 +623,7 @@ export class AccuSnap {
     // {
     hit.draw(context);
     viewport.setFlashed(hit.m_elementId, 0.25);
-    //}
+    // }
     this.setIsFlashed(viewport);
   }
 
@@ -558,7 +733,7 @@ export class AccuSnap {
     }
 
     // if we don't have an explanation yet, translate the error code.
-    if (0 == this.m_errorReason)
+    if (0 === this.m_errorReason)
       return;
 
     this.m_explanation = elementLocateManager.getLocateError(this.m_errorReason);
@@ -574,7 +749,7 @@ export class AccuSnap {
       return;
     }
 
-    const msgStr = this.m_explanation + "\n" + theHit.m_hitDescription
+    const msgStr = this.m_explanation + "\n" + theHit.m_hitDescription;
     this.showLocateMessage(viewPt, vp, msgStr);
   }
 
@@ -619,6 +794,50 @@ export class AccuSnap {
       this.m_icon.activate(snapSprite, viewport, crossPt, 0);
   }
 
+  private static adjustIconLocation(vp: Viewport, input: Point3d, iconSize: XAndY): Point3d {
+    const out = vp.worldToView(input);
+    out.x += (iconSize.x / 3.0);
+    out.y -= (iconSize.y * 1.3);
+    return vp.viewToWorld(out, out);
+  }
+
+  /** try to indicate what's wrong with the current point (why we're not snapping). */
+  private showSnapError(status: SnapStatus, ev: BeButtonEvent) {
+    this.m_errorIcon.deactivate();
+
+    let errorSprite: Sprite | undefined;
+    switch (status) {
+      case SnapStatus.FilteredByUser:
+      case SnapStatus.FilteredByApp:
+        errorSprite = s_appFiltered;
+        break;
+
+      case SnapStatus.FilteredByAppQuietly:
+        this.m_errorReason = LocateFailureValue.LOCATE_FAILURE_None;
+        break;
+
+      case SnapStatus.NotSnappable:
+        errorSprite = s_notSnappable;
+        this.m_errorReason = LocateFailureValue.LOCATE_FAILURE_NotSnappable;
+        break;
+
+      case SnapStatus.ModelNotSnappable:
+        errorSprite = s_notSnappable;
+        this.m_errorReason = LocateFailureValue.LOCATE_FAILURE_ModelNotAllowed;
+        break;
+    }
+
+    if (!errorSprite)
+      return;
+
+    const vp = ev.viewport!;
+    const spriteSize = errorSprite.getSize();
+    const pt = AccuSnap.adjustIconLocation(vp, ev.rawPoint, spriteSize);
+
+    if (this.wantShowIcon())
+      this.m_errorIcon.activate(errorSprite, vp, pt, 0);
+  }
+
   private clearSprites() {
     this.m_errorIcon.deactivate();
     this.m_cross.deactivate();
@@ -647,7 +866,7 @@ export class AccuSnap {
   }
 
   private onEnabledStateChange(isEnabled: boolean, wasEnabled: boolean) {
-    if (isEnabled == wasEnabled) {
+    if (isEnabled === wasEnabled) {
       toolAdmin.onAccuSnapSyncUI(); // still need to sync accusnap global setting even if we are not changing the actual state for the current tool.
       return;
     }
@@ -660,11 +879,81 @@ export class AccuSnap {
 
   private initCmdState() { this.m_toolstate.m_suspended = 0; }
 
+  public suspend(doSuspend: boolean) {
+    const previousDoSnapping = this.doSnapping();
+    if (doSuspend)
+      this.m_toolstate.m_suspended++;
+    else if (this.m_toolstate.m_suspended > 0)
+      this.m_toolstate.m_suspended--;
+
+    this.onEnabledStateChange(this.doSnapping(), previousDoSnapping);
+  }
+
+  public suppress(doSuppress: boolean): number {
+    const previousDoSnapping = this.doSnapping();
+    if (doSuppress)
+      this.m_suppressed++;
+    else if (this.m_suppressed > 0)
+      this.m_suppressed--;
+
+    this.onEnabledStateChange(this.doSnapping(), previousDoSnapping);
+    return this.m_suppressed;
+  }
+
   private enableSnap(yesNo: boolean) {
     const previousDoSnapping = this.doSnapping();
     this.m_toolstate.m_enabled = yesNo;
     if (!yesNo) this.clear();
     this.onEnabledStateChange(this.doSnapping(), previousDoSnapping);
+  }
+
+  private getNextAccuSnappable(hitList: HitList): HitDetail | undefined {
+    const thisPath = hitList.getNextHit();
+    if (!!thisPath)
+      this.m_explanation = "";
+    return thisPath;
+  }
+
+  private hitToSnap(hit: HitDetail): SnapDetail | undefined {
+    // NEEDS_WORK
+    // return m_snapContext.SnapToPath(snap, hit, GetSnapMode(), ElementLocateManager:: GetManager().GetKeypointDivisor(), hit -> GetViewport().PixelsFromInches(GetHotDistanceInches()));
+    return undefined;
+  }
+
+  private getAccuSnapDetail(hitList: HitList, out?: LocateResponse): SnapDetail | undefined {
+    let bestDist = 1e200;
+    let bestSnap: SnapDetail | undefined;
+    let bestHit: HitDetail | undefined;
+
+    for (let thisHit; undefined !== (thisHit = this.getNextAccuSnappable(hitList)); out = undefined) {
+      // if there are multiple hits at the same dist, then find the best snap from all of them. Otherwise, the snap
+      // from the first one is the one we want.
+      if (bestHit && 0 !== hitList.compare(thisHit, bestHit, true, true))
+        break;
+
+      const thisSnap = this.hitToSnap(thisHit);
+      if (!thisSnap)
+        continue;
+
+      // Pass the snap path instead of the hit path in case a filter modifies the path contents.
+      let filtered = false;
+      if (this.doLocateTesting())
+        filtered = elementLocateManager.filterHit(thisSnap, this.m_toolstate.m_subSelectionMode, LocateAction.AutoLocate, out);
+
+      const thisDist = thisSnap.m_geomDetail.m_viewDist;
+      if (!filtered && !(bestSnap && (thisDist >= bestDist))) {
+        bestHit = thisHit;
+        bestSnap = thisSnap;
+        bestDist = thisDist;
+      }
+    }
+
+    if (bestHit) {
+      hitList.setCurrentHit(bestHit);
+      return bestSnap;
+    }
+
+    return undefined;
   }
 
   private enableLocate(yesNo: boolean) {

@@ -295,6 +295,7 @@ export class ToolAdmin {
   public acsContextLock = false;
 
   protected filterViewport(_vp: Viewport) { return false; }
+  public isCurrentInputSourceMouse() { return this.currentInputState.inputSource === InputSource.Mouse; }
   public onInstallTool(tool: Tool) { this.currentInputState.clearKeyQualifiers(); return tool.onInstall(); }
   public onPostInstallTool(tool: Tool) { tool.onPostInstall(); }
 
@@ -436,7 +437,7 @@ export class ToolAdmin {
 
   private adjustPointToACS(pointActive: Point3d, vp: Viewport, perpendicular: boolean): void {
     // The "I don't want ACS lock" flag can be set by tools to override the default behavior...
-    if (0 != (this.toolState.coordLockOvr & CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_ACS))
+    if (0 !== (this.toolState.coordLockOvr & CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_ACS))
       return;
 
     let viewZRoot: Vector3d;
@@ -465,7 +466,7 @@ export class ToolAdmin {
 
   private adjustPointToGrid(pointActive: Point3d, vp: Viewport) {
     // The "I don't want grid lock" flag can be set by tools to override the default behavior...
-    if (0 != (this.toolState.coordLockOvr & CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_Grid))
+    if (0 !== (this.toolState.coordLockOvr & CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_Grid))
       return;
 
     if (!this.gridLock)
@@ -979,13 +980,13 @@ export class ToolAdmin {
     if (tool) {
       tool.decorate(context);
 
-      if (this.viewTool && tool != this.viewTool)
+      if (this.viewTool && tool !== this.viewTool)
         this.viewTool.decorateSuspended(context); // NOTE: A DgnViewTool currently can't be suspended...
 
-      if (this.inputCollector && tool != this.inputCollector)
+      if (this.inputCollector && tool !== this.inputCollector)
         this.inputCollector.decorateSuspended(context);
 
-      if (this.primitiveTool && tool != this.primitiveTool)
+      if (this.primitiveTool && tool !== this.primitiveTool)
         this.primitiveTool.decorateSuspended(context);
     }
 

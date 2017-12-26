@@ -5,7 +5,7 @@ import { Point2d, Point3d, Vector3d, XYAndZ } from "@bentley/geometry-core/lib/P
 import { Viewport } from "./Viewport";
 import { DecorateContext } from "./ViewContext";
 
-/** 
+/**
  * Sprites are (typically) small raster images that are drawn "on top" of Viewports by a ViewDecoration.
  * Their purpose is to draw the user's attention to something of importance.
  * <p>
@@ -22,7 +22,7 @@ import { DecorateContext } from "./ViewContext";
  * Sprites can be of varying sizes and color depths and can have both opaque and transparent pixels.
  * <p>
  * Element Manipulator handles and the AccuSnap indicators are examples of  use of Sprites.
- * @note It is also possible to draw an ISprite onto a Viewport directly 
+ * @note It is also possible to draw a Sprite onto a Viewport directly
  * without ever using a SpritLocation. SpriteLocations are merely provided as a convenience.
  */
 export abstract class Sprite {

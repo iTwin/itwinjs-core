@@ -15,7 +15,7 @@ import { AuxCoordSystemState } from "../common/AuxCoordSys";
 import { TentativePoint } from "./TentativePoint";
 
 // tslint:disable:no-empty
-const enum AccuDrawFlags {
+export const enum AccuDrawFlags {
   SetModePolar = 1,
   SetModeRect = 1 << 1,
   SetOrigin = (1 << 2),
@@ -40,12 +40,12 @@ const enum AccuDrawFlags {
   SmartRotation = (1 << 24),
 }
 
-const enum CompassMode {
+export const enum CompassMode {
   Polar = 0,
   Rectangular = 1,
 }
 
-const enum RotationMode {
+export const enum RotationMode {
   Top = 1,
   Front = 2,
   Side = 3,
@@ -81,7 +81,7 @@ const enum ContextMode {
   None = 15,
 }
 
-const enum ItemField {
+export const enum ItemField {
   DIST_Item = 0,
   ANGLE_Item = 1,
   X_Item = 2,
@@ -89,7 +89,7 @@ const enum ItemField {
   Z_Item = 4,
 }
 
-enum KeyinStatus {
+export enum KeyinStatus {
   Dynamic = 0,
   Partial = 1,
   DontUpdate = 2,
@@ -163,7 +163,7 @@ class ThreeAxes {
     this.y.setFrom(other.y);
     this.z.setFrom(other.z);
   }
-  static fromRotMatrix(rMatrix: RotMatrix): ThreeAxes {
+  public static fromRotMatrix(rMatrix: RotMatrix): ThreeAxes {
     const val = new ThreeAxes();
     rMatrix.getRow(0, val.x);
     rMatrix.getRow(1, val.y);
@@ -176,15 +176,15 @@ class ThreeAxes {
 /**
  * Accudraw is an aide for entering coordinate data
  */
-class AccuDraw {
+export class AccuDraw {
   public static readonly instance = new AccuDraw();
   private currentState: CurrentState;     // Compass state
   private currentMode: CompassMode;      // Compass mode
   private rotationMode: RotationMode;     // Compass rotation
   private currentView?: Viewport;      // will be nullptr if view not yet defined
   private published: AccudrawData;        // Staging area for hints
-  private readonly origin = new Point3d();           // origin point...not on compass plane when z != 0.0
-  private readonly axes = new ThreeAxes();    // X, Y and Z vecs (3d rotation matrix)
+  public readonly origin = new Point3d();    // origin point...not on compass plane when z != 0.0
+  private readonly axes = new ThreeAxes();    // X, Y and Z vectors (3d rotation matrix)
   private readonly delta = new Vector3d();         // dialog items (x, y & z)
   private distance: number;         // current distance
   private angle: number;            // current angle
@@ -215,6 +215,7 @@ class AccuDraw {
   private yIsExplicit: boolean;      // Sign of delta.y established from user input input, don't allow +/- side flip.
   private dontMoveFocus: boolean;    // Disable automatic focus change when user is entering input.
   private newFocus: ItemField;         // Item to move focus to (X_Item or Y_Item) for automatic focus change.
+  private rMatrix = new RotMatrix();
 
   // Compass Display Preferences...
   protected compassSizeInches = 0.44;
@@ -237,7 +238,7 @@ class AccuDraw {
   protected autoPointPlacement = false;
 
   private getCompassViewport(): Viewport | undefined { return this.currentView; }
-  private getRotation(rMatrix?: RotMatrix): RotMatrix { RotMatrix.createRows(this.axes.x, this.axes.y, this.axes.z, rMatrix); return rMatrix!; }
+  public getRotation(rMatrix?: RotMatrix): RotMatrix { if (!rMatrix) rMatrix = this.rMatrix; RotMatrix.createRows(this.axes.x, this.axes.y, this.axes.z, rMatrix); return rMatrix; }
 
   public getCompassMode() { return this.currentMode; }
   public isActive(): boolean { return CurrentState.Active === this.currentState; }
@@ -611,7 +612,6 @@ class AccuDraw {
     return BentleyStatus.SUCCESS;
   }
 
-
   private updateFieldValue(index: ItemField, input: string, out: { isBearing: boolean }): BentleyStatus {
     if (input.length === 0)
       return BentleyStatus.ERROR;
@@ -864,8 +864,7 @@ class AccuDraw {
     this.setKeyinStatus(index, KeyinStatus.Dynamic);
   }
 
-  private static const tempRot = new RotMatrix();
-  private static getStandardRotation(nStandard: StandardViewId, vp?: Viewport, useACS: boolean): RotMatrix | undefined {
+  private static getStandardRotation(nStandard: StandardViewId, vp: Viewport | undefined, useACS: boolean): RotMatrix | undefined {
     if (nStandard < StandardViewId.Top || nStandard > StandardViewId.RightIso)
       return undefined;
 
@@ -1036,7 +1035,7 @@ class AccuDraw {
 
     if (RotationMode.Context === mode) {
       // See if it's better to stay with the current base rotation (only care about z)...
-      if (RotationMode.Context != this.flags.baseRotation) {
+      if (RotationMode.Context !== this.flags.baseRotation) {
         const baseRMatrix = this.getBaseRotation();
         const baseZ = baseRMatrix.getRow(2);
 
@@ -1054,19 +1053,20 @@ class AccuDraw {
   private getBaseRotation(): RotMatrix {
     const vp = this.currentView;
     let baseRMatrix: RotMatrix | undefined;
+    const useAcs = vp ? vp.isContextRotationRequired() : false;
     switch (this.flags.baseRotation) {
       case RotationMode.Top: {
-        baseRMatrix = AccuDraw.getStandardRotation(StandardViewId.Top, vp, vp ? vp.isContextRotationRequired() : false)!;
+        baseRMatrix = AccuDraw.getStandardRotation(StandardViewId.Top, vp, useAcs)!;
         break;
       }
 
       case RotationMode.Front: {
-        baseRMatrix = AccuDraw.getStandardRotation(StandardViewId.Front, vp, vp ? vp.isContextRotationRequired() : false)!;
+        baseRMatrix = AccuDraw.getStandardRotation(StandardViewId.Front, vp, useAcs)!;
         break;
       }
 
       case RotationMode.Side: {
-        baseRMatrix = AccuDraw.getStandardRotation(StandardViewId.Right, vp, vp ? vp.isContextRotationRequired() : false)!;
+        baseRMatrix = AccuDraw.getStandardRotation(StandardViewId.Right, vp, useAcs)!;
         break;
       }
 
@@ -1074,7 +1074,7 @@ class AccuDraw {
         baseRMatrix = vp ? vp.getAuxCoordRotation() : RotMatrix.createIdentity();
         const axes = ThreeAxes.fromRotMatrix(baseRMatrix);
         this.accountForAuxRotationPlane(axes, this.flags.auxRotationPlane);
-        axes.toRotMatrix(baseRMatrix)
+        axes.toRotMatrix(baseRMatrix);
         break;
       }
 
@@ -1224,7 +1224,7 @@ class AccuDraw {
     let fromPtP: Point3d;
     let dotProduct: number;
     let distance: number;
-    const projectionVector = new Vector3d();
+    let projectionVector = new Vector3d();
 
     if (perpendicular) {
       if (AccuDraw.useACSContextRotation(vp, true)) { // Project along ACS axis to AccuDraw plane...
@@ -1233,8 +1233,8 @@ class AccuDraw {
         this.accountForAuxRotationPlane(axes, this.flags.auxRotationPlane);
         // LegacyMath:: Vec:: LinePlaneIntersect(outPtP, inPtP, axes.z, pointOnPlaneP, normalVectorP, false);
       } else {
-        const projectionVector = inPtP.vectorTo(pointOnPlaneP);
-        const distance = projectionVector.dotProduct(normalVectorP);
+        projectionVector = inPtP.vectorTo(pointOnPlaneP);
+        distance = projectionVector.dotProduct(normalVectorP);
         inPtP.plusScaled(normalVectorP, distance, outPtP);
       }
     } else {
@@ -1264,7 +1264,6 @@ class AccuDraw {
 
     return BentleyStatus.SUCCESS;
   }
-
 
   private softConstructionPlane(outPtP: Point3d, inPtP: Point3d, pointOnPlaneP: Point3d, normalVectorP: Vector3d, vp: Viewport, isSnap: boolean): boolean {
     if (!vp.isPointAdjustmentRequired()) {
@@ -1301,7 +1300,6 @@ class AccuDraw {
 
     return true;
   }
-
 
   private static allowAxisIndexing(pointIsOnPlane: boolean): boolean {
     // NOTE: Normally we don't want indexing overriding a hot snap location. The
@@ -1428,7 +1426,7 @@ class AccuDraw {
         this.indexed |= LockedStates.Y_BM; // indexed in Y
         xyCorrection.y -= rotVec.y;
 
-        if (TentativeOrAccuSnap.sHot())
+        if (TentativeOrAccuSnap.isHot())
           xyCorrection.z -= delta.dotProduct(this.axes.z);
 
         rotVec.y = 0.0;
@@ -1448,7 +1446,7 @@ class AccuDraw {
     }
 
     // constrain distance
-    let oldMag = mag;
+    const oldMag = mag;
 
     if (this.locked & LockedStates.DIST_BM) { // distance locked
       mag = this.distance;
@@ -1513,9 +1511,9 @@ class AccuDraw {
     this.indexed = 0;
 
     if (zLocked) {
-      if (!(this.flags.pointIsOnPlane = (this.delta.z < Constants.SMALL_ANGLE && this.delta.z > -Constants.SMALL_ANGLE)))
+      this.flags.pointIsOnPlane = (this.delta.z < Constants.SMALL_ANGLE && this.delta.z > -Constants.SMALL_ANGLE);
+      if (!this.flags.pointIsOnPlane)
         this.planePt.addScaledInPlace(this.axes.z, this.delta.z);
-
       this.hardConstructionPlane(this.rawPointOnPlane, this.rawPoint, this.planePt, this.axes.z, vp, TentativeOrAccuSnap.isHot());
     } else {
       this.flags.pointIsOnPlane = this.softConstructionPlane(this.rawPointOnPlane, this.rawPoint, this.origin, this.axes.z, vp, TentativeOrAccuSnap.isHot());
@@ -1533,8 +1531,7 @@ class AccuDraw {
 
     if (AccuDraw.allowAxisIndexing(this.flags.pointIsOnPlane)) {
       if (!(this.locked & LockedStates.X_BM)) { // not locked in x
-        if (this.distRndoff.active) // round x
-        {
+        if (this.distRndoff.active) { // round x
           xyCorrection.x = this.distRndoff.units * Math.floor((this.rawDelta.x / this.distRndoff.units) + 0.5) - this.rawDelta.x;
           this.rawDelta.x = this.distRndoff.units * Math.floor((this.rawDelta.x / this.distRndoff.units) + 0.5);
         }
@@ -1626,16 +1623,16 @@ class AccuDraw {
     const lock = this.locked & LockedStates.XY_BM;
     const index = this.indexed & LockedStates.XY_BM;
 
-    if (lock == LockedStates.Y_BM && index != LockedStates.X_BM) {
-      if (this.keyinStatus[ItemField.Y_Item] != KeyinStatus.Dynamic) {
+    if (lock === LockedStates.Y_BM && index !== LockedStates.X_BM) {
+      if (this.keyinStatus[ItemField.Y_Item] !== KeyinStatus.Dynamic) {
         if (Math.abs(this.rawDelta.x) < this.threshold)
           return;
       }
 
       this.newFocus = ItemField.X_Item;
       this.dontMoveFocus = false;
-    } else if (lock == LockedStates.X_BM && index != LockedStates.Y_BM) {
-      if (this.keyinStatus[ItemField.X_Item] != KeyinStatus.Dynamic) {
+    } else if (lock === LockedStates.X_BM && index !== LockedStates.Y_BM) {
+      if (this.keyinStatus[ItemField.X_Item] !== KeyinStatus.Dynamic) {
         if (Math.abs(this.rawDelta.y) < this.threshold)
           return;
       }
@@ -1733,6 +1730,8 @@ class AccuDraw {
       return false;
 
     const vp = this.currentView;
+    if (!vp)
+      return false;
 
     // NOTE: If ACS Plane lock setup initial and base rotation to ACS...
     if (vp && AccuDraw.useACSContextRotation(vp, false)) {

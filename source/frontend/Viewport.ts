@@ -101,7 +101,7 @@ class Animator {
   }
 }
 
-export const enum RemoveMe { Yes, No };
+export const enum RemoveMe { Yes, No }
 
 /**
  * An interface for an object that animates a viewport.
@@ -148,16 +148,16 @@ export class DecorationAnimator implements ViewportAnimator {
    */
   public animateDecorations(_viewport: Viewport, _durationPercent: number): RemoveMe { return RemoveMe.No; }
 
-  animate(vp: Viewport): RemoveMe {
+  public animate(vp: Viewport): RemoveMe {
     vp.invalidateDecorations();
     const total = this.stop.milliseconds - this.start.milliseconds;
     const elapsed = BeTimePoint.now().milliseconds - this.start.milliseconds;
     const ratio = Math.min(elapsed / total, 1.0);
     const removeMe = this.animateDecorations(vp, ratio);
-    return (RemoveMe.Yes === removeMe || ratio == 1.0) ? RemoveMe.Yes : RemoveMe.No;
+    return (RemoveMe.Yes === removeMe || ratio === 1.0) ? RemoveMe.Yes : RemoveMe.No;
   }
 
-  onInterrupted(vp: Viewport): void {
+  public onInterrupted(vp: Viewport): void {
     vp.invalidateDecorations();
     this.animateDecorations(vp, 1.0);
   }
@@ -182,8 +182,8 @@ export class Viewport {
   public readonly viewDeltaUnexpanded = new Vector3d();
   /** View rotation matrix (copied from ViewState) */
   public readonly rotMatrix = new RotMatrix();
-  private readonly rootToView = Map4d.createIdentity();
-  private readonly rootToNpc = Map4d.createIdentity();
+  public readonly rootToView = Map4d.createIdentity();
+  public readonly rootToNpc = Map4d.createIdentity();
   private readonly viewCorners: Range3d = new Range3d();
   private animator?: Animator;
   private flashUpdateTime: BeTimePoint;  // time the current flash started
@@ -328,7 +328,7 @@ export class Viewport {
       this.auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
     }
     this.gridOrientation = view.getGridOrientation();
-    this.gridsPerRef = view.getGridsPerRef()
+    this.gridsPerRef = view.getGridsPerRef();
     view.getGridSpacing(this.gridSpacing);
   }
 
@@ -1075,7 +1075,7 @@ export class Viewport {
     switch (this.gridOrientation) {
       case GridOrientationType.View: {
         const center = this.view.getCenter();
-        this.toView(center)
+        this.toView(center);
         this.toView(origin);
         origin.z = center.z;
         this.fromView(origin);
@@ -1097,8 +1097,8 @@ export class Viewport {
     }
   }
 
-  private pointToStandardGrid(point: Point3d, rMatrix: RotMatrix, origin: Point3d): void {
-    const planeNormal = rMatrix.getRow(2);
+  private pointToStandardGrid(_point: Point3d, _rMatrix: RotMatrix, _origin: Point3d): void {
+    // const planeNormal = rMatrix.getRow(2);
 
     // if (this.isCameraOn())
     //   eyeVec.NormalizedDifference(point, vp.GetCamera().GetEyePoint());
@@ -1148,6 +1148,4 @@ export class Viewport {
     this.getGridOrientation(origin, rMatrix);
     this.pointToStandardGrid(point, rMatrix, origin);
   }
-
 }
-

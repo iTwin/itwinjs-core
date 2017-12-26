@@ -8,6 +8,7 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { ViewTool } from "./ViewTool";
 import { DecorateContext } from "../ViewContext";
 import { HitDetail } from "../AccuSnap";
+import { LocateResponse } from "../ElementLocateManager";
 
 export const enum BeButton {
   Data = 0,
@@ -351,6 +352,10 @@ export abstract class Tool {
   public onModelStartDrag(_ev: BeButtonEvent): boolean { return false; }
   /** Invoked when the cursor stops moving while a button is depressed */
   public onModelEndDrag(ev: BeButtonEvent) { return this.onDataButtonDown(ev); }
+  /** Invoked to allow tools to filter which elements can be located.
+   * return true to reject hit (fill out response with reason, if it is defined)
+   */
+  public onPostLocate(_hit: HitDetail, _out?: LocateResponse) { return false; }
   /** Invoked when the mouse wheel moves. */
   public onMouseWheel(_ev: BeWheelEvent): boolean { return false; }
   /** Implemented by direct subclasses to handle when the tool becomes no longer active. Generally not overridden by other subclasses */
@@ -394,20 +399,20 @@ export abstract class Tool {
    * Called to allow an active tool to display non-element decorations in overlay mode.
    * This method is NOT called while the tool is suspended by a viewing tool or input collector.
    */
-  public decorate(context: DecorateContext) { }
+  public decorate(_context: DecorateContext) { }
 
   /**
    * Called to allow a suspended tool to display non-element decorations in overlay mode.
    * This method is ONLY called when the tool is suspended by a viewing tool or input collector.
    * @note Applies only to PrimitiveTool and InputCollector, a ViewTool can't be suspended.
    */
-  public decorateSuspended(context: DecorateContext) { }
+  public decorateSuspended(_context: DecorateContext) { }
 
-  /** 
+  /**
    * Invoked just before the locate tooltip is displayed to retrieve the info text. Allows the tool to override the default description.
    * @param hit The HitDetail whose info is needed.
    * @param _delimiter Put this string to break lines of the description.
-   * @return the string to describe the hit. 
+   * @return the string to describe the hit.
    * @note If you override this method, you may decide whether to call your superclass' implementation or not (it is not required).
    * The default implementation shows hit description
    */

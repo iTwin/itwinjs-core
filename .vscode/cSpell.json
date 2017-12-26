@@ -38,6 +38,8 @@
         "imodeljs",
         "is",
         "keyin",
+        "Keypoint",
+        "Linestyle",
         "mixins",
         "monorepo",
         "nullptr",
