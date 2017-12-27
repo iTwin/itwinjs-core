@@ -40,12 +40,29 @@ export class ViewManager {
    */
   public readonly onViewResume = new BeEvent<(vp: Viewport) => void>();
 
+  public endDynamicsMode(): void {
+    if (!this.inDynamicsMode)
+      return;
+
+    let priority = 0;
+    this.inDynamicsMode = false;
+
+    const cursorVp = ToolAdmin.instance.getCursorView();
+    if (cursorVp)
+      cursorVp.changeDynamics(undefined, priority);
+
+    for (const vp of this.viewports) {
+      if (vp !== cursorVp)
+        vp.changeDynamics(undefined, ++priority);
+    }
+  }
+  public beginDynamicsMode() { this.inDynamicsMode = true; }
   public doesHostHaveFocus(): boolean { return true; } // NEEDS_WORK
   public isInfoWindowUp(): boolean { return false; } // NEEDS_WORK
   public clearInfoWindow(): void { }
 
   public showInfoWindow(viewPt: Point3d, vp: Viewport, msg: string) {
-    // if (this.doesHostHaveFocus()) 
+    // if (this.doesHostHaveFocus())
     //   this.getInfoWindow().show(viewPt, vp, msg);
   }
 

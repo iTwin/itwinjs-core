@@ -14,10 +14,11 @@ import {
 } from "./Tool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { DecorateContext } from "../ViewContext";
-import { HitDetail, AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
+import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
 import { TentativePoint } from "../TentativePoint";
 import { ViewManager } from "../ViewManager";
 import { AccuDraw } from "../AccuDraw";
+import { HitDetail } from "../HitDetail";
 
 // tslint:disable:no-empty
 
@@ -150,10 +151,10 @@ export class CurrentInputState {
         from = snap.isHot() ? CoordSource.ElemSnap : CoordSource.User;
         uorPt = snap.getAdjustedPoint(); // NOTE: Updated by AdjustSnapPoint even when not hot...
         vp = snap.m_viewport;
-      } else if (tentativePoint.m_isActive) {
+      } else if (tentativePoint.isActive) {
         from = CoordSource.TentativePoint;
-        uorPt = tentativePoint.m_point;
-        vp = tentativePoint.m_viewport;
+        uorPt = tentativePoint.point;
+        vp = tentativePoint.viewport;
       }
     }
 
@@ -318,6 +319,7 @@ export class ToolAdmin {
    */
   public get activeToolChanged(): BeEvent<(newTool: Tool) => void> { return this._toolEvents.get("activeTool"); }
 
+  public getCursorView(): Viewport | undefined { return this.currentInputState.viewport; }
   public onAccuSnapEnabled() { }
   public onAccuSnapDisabled() { }
   public onAccuSnapSyncUI() { }
@@ -382,8 +384,8 @@ export class ToolAdmin {
         tool.onModelNoMotion(ev);
 
       if (InputSource.Mouse === current.inputSource) {
-        // AccuSnap:: GetInstance().OnNoMotion(event);
-        // AccuDraw:: GetInstance()._OnNoMotion(event);
+        accuSnap.onNoMotion(ev);
+        accuDraw.onNoMotion(ev);
       }
     }
 
@@ -391,7 +393,7 @@ export class ToolAdmin {
       if (tool)
         tool.onModelMotionStopped(ev);
       if (InputSource.Mouse === current.inputSource) {
-        //   AccuSnap:: GetInstance().OnMotionStopped(event);
+        accuSnap.onMotionStopped(ev);
       }
     }
 
@@ -481,7 +483,7 @@ export class ToolAdmin {
 
     let handled = false;
 
-    if (applyLocks && !(tentativePoint.m_isActive || accuSnap.isHot()))
+    if (applyLocks && !(tentativePoint.isActive || accuSnap.isHot()))
       handled = AccuDraw.adjustPoint(pointActive, vp, false);
 
     // NOTE: We don't need to support axis lock, it's worthless if you have AccuDraw...
@@ -881,7 +883,7 @@ export class ToolAdmin {
     const prevActiveTool = this.activeTool;
     if (this.primitiveTool) {
       this.primitiveTool.onCleanup();
-      //      t_viewHost -> GetViewManager().EndDynamicsMode();
+      viewManager.endDynamicsMode();
     }
 
     this.primitiveTool = primitiveTool;
@@ -1006,13 +1008,13 @@ export class ToolAdmin {
   }
 
   public beginDynamics(): void {
-    // accuDraw.onBeginDynamics();
-    // viewManager.beginDynamicsMode();
-    // this.setLocateCursor(false);
+    accuDraw.onBeginDynamics();
+    viewManager.beginDynamicsMode();
+    this.setLocateCursor(false);
   }
 
   public endDynamics(): void {
-    accudraw.onEndDynamics();
+    accuDraw.onEndDynamics();
     viewManager.endDynamicsMode();
   }
 

@@ -7,7 +7,7 @@ import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { ViewTool } from "./ViewTool";
 import { DecorateContext } from "../ViewContext";
-import { HitDetail } from "../AccuSnap";
+import { HitDetail } from "../HitDetail";
 import { LocateResponse } from "../ElementLocateManager";
 
 export const enum BeButton {

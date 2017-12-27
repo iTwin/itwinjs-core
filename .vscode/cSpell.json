@@ -43,6 +43,7 @@
         "mixins",
         "monorepo",
         "nullptr",
+        "Obscurable",
         "PARASOLID",
         "Polyface",
         "Polyfaces",

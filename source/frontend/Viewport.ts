@@ -16,6 +16,7 @@ import { AuxCoordSystemState } from "../common/AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { DecorationList } from "../common/Render";
 
 const toolAdmin = ToolAdmin.instance;
 
@@ -228,6 +229,11 @@ export class Viewport {
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
   public isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn(); }
   public invalidateDecorations() { }
+
+  public changeDynamics(_list: DecorationList | undefined, _priority: number): void {
+    //    RenderQueue().AddTask(* new ChangeDynamicsTask(* GetRenderTarget(), priority, list));
+    this.invalidateDecorations();
+  }
 
   /** change the cursor for this Viewport */
   public setCursor(cursor: BeCursor = BeCursor.Default) { if (this.canvas) this.canvas.style.cursor = cursor; }

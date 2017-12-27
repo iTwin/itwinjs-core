@@ -11,6 +11,9 @@ export const enum RenderMode {
   SmoothShade = 6,
 }
 
+export class DecorationList {
+}
+
 /** Flags for view display style */
 export class ViewFlags {
   public renderMode: RenderMode = RenderMode.Wireframe;

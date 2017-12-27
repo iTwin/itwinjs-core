@@ -389,7 +389,7 @@ export class AccuDraw {
   }
 
   public clearTentative(): boolean {
-    if (!tentativePoint.m_isActive)
+    if (!tentativePoint.isActive)
       return false;
 
     const wasSnapped = tentativePoint.isSnapped();
@@ -1838,7 +1838,7 @@ export class AccuDraw {
   }
 
   private oResetButtonUp(ev: BeButtonEvent): boolean {
-    if (tentativePoint.m_isActive && this.isActive()) {
+    if (tentativePoint.isActive && this.isActive()) {
       tentativePoint.clear(true);
       return true;
     }
