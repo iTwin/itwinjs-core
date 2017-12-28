@@ -12,8 +12,14 @@
     "src/backend/node_modules": true,
     "src/frontend/lib": true,
     "src/frontend/node_modules": true,
+    "src/sample/lib": true,
+    "src/sample/node_modules": true,
     "src/test/lib": true,
-    "src/test/node_modules": true
+    "src/test/node_modules": true,
+    "common/temp": true,
+    "**/*.build.log": true,
+    "**/*.build.error.log": true,
+    "**/package-deps.json": true,
   },
   "cSpell.words": [
     "imodel",

@@ -1,5 +1,5 @@
 {
-  "name": "ecpresentation-test",
+  "name": "@bentley/ecpresentation-tests",
   "version": "0.0.0",
   "description": "ECPresentation tests",
   "license": "UNLICENSED",
@@ -11,8 +11,17 @@
   "scripts": {
     "build": "tsc",
     "clean": "rimraf lib",
-    "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\""
+    "test": "node node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode --packageRoot \"./\" --testDir=\"./src/test\" --tscPaths",
+    "cover": "nyc npm run test"
   },
   "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {
+    "@bentley/bentleyjs-tools": "^1.0.58",
+    "@types/chai": "^4.0.10",
+    "@types/mocha": "^2.2.44",
+    "chai": "^4.1.2",
+    "mocha": "^4.0.1",
+    "nyc": "^11.4.1",
+    "rimraf": "^2.6.2"
+  }
 }

@@ -45,4 +45,25 @@ The primary dependencies required by ecpresentation packages are the imodeljs-co
 TODO: See sample app.
 
 # Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+
+The library uses [@microsoft/rush](https://github.com/Microsoft/web-build-tools/wiki/Rush) for managing multiple packages in the repository. It's a requirement to have this package installed globally:
+```
+$ npm install -g @microsoft/rush
+```
+After that the steps to build are simple:
+```
+$ rush install
+$ rush rebuild
+```
+
+## Test
+In the repository root location:
+```
+$ npm test
+```
+
+## Run Sample Application
+In the repository root location:
+```
+npm start
+```

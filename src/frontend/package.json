@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecpresentation-frontend",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "Frontend of ECPresentation library",
   "keywords": [
     "Bentley",
@@ -14,14 +14,16 @@
     "url": "http://www.bentley.com"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run resolve-imports",
     "clean": "rimraf lib",
-    "postbuild": "npm run resolve-imports",
     "resolve-imports": "cd lib && replace \"@build/imodeljs-core\" \"@bentley/imodeljs-frontend\" -r -q ."
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "^1.2.4",
     "@bentley/imodeljs-frontend": "^0.10.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "node-replace": "^0.3.3",
+    "rimraf": "^2.6.2"
+  }
 }

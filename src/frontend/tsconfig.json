@@ -7,10 +7,6 @@
     "paths": {
       "@build/imodeljs-core/*": [
         "@bentley/imodeljs-frontend/*"
-      ],
-      "*": [
-        "@types/*",
-        "*"
       ]
     },
     "outDir": "./lib"

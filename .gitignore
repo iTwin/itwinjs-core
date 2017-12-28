@@ -15,6 +15,12 @@
 /src/sample/lib
 /src/test/lib
 
+# rush-specific
+/common/temp
+package-deps.json
+*.build.log
+*.build.error.log
+
 # misc
 .DS_Store
 .env.local

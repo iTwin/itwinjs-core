@@ -5,15 +5,13 @@
     "module": "commonjs",
     "baseUrl": "./node_modules",
     "paths": {
-      "@build/imodeljs-core/*": [
-        "@bentley/imodeljs-backend/*"
+      "*": [
+        "@types/*",
+        "*"
       ]
-    },
-    "outDir": "./lib"
+    }
   },
   "include": [
-    "../common/**/*.ts",
-    "../gateway/**/*.ts",
     "./**/*.ts"
   ],
   "exclude": [
