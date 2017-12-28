@@ -51,6 +51,7 @@
         "redoable",
         "remotable",
         "remoting",
+        "Renormalize",
         "skybox",
         "snappable",
         "struct",
@@ -67,6 +68,7 @@
         "Viewport's",
         "viewports",
         "Wireframe",
+        "XYZW",
         "zbuffer"
     ],
     // flagWords - list of words to be always considered incorrect

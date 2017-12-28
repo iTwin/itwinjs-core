@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { ColorDef } from "./Render";
+import { ColorDef } from "./ColorDef";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 
 /** The type of a Light */

@@ -4,7 +4,7 @@
 import { Viewport } from "./Viewport";
 import { Sprite } from "./Sprites";
 import { Point3d, Vector3d } from "@bentley/geometry-core/lib/PointVector";
-import { HitDetail, SnapMode, SnapDetail } from "./AccuSnap";
+import { HitDetail, SnapMode, SnapDetail } from "./HitDetail";
 
 // tslint:disable:no-empty
 

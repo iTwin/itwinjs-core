@@ -12,7 +12,8 @@ import { ElementProps, RelatedElement } from "./ElementProps";
 import { EntityProps } from "./EntityProps";
 import { ModelProps, GeometricModel2dProps } from "./ModelProps";
 import { Light, LightType } from "./Lighting";
-import { ViewFlags, HiddenLine, ColorDef, ColorRgb } from "./Render";
+import { ViewFlags, HiddenLine } from "./Render";
+import { ColorDef, ColorRgb } from "./ColorDef";
 import { Code } from "./Code";
 import { IModel } from "./IModel";
 import { AxisAlignedBox3d } from "./geometry/Primitives";
@@ -582,6 +583,8 @@ export abstract class ViewState extends ElementState {
     json.displayStyleId = this.displayStyle.id;
     return json;
   }
+
+  public get backgroundColor(): ColorDef { return this.displayStyle.backgroundColor; }
 
   public is3d(): this is ViewState3d { return this instanceof ViewState3d; }
   public isSpatialView(): this is SpatialViewState { return this instanceof SpatialViewState; }

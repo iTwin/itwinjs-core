@@ -2,7 +2,7 @@
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Vector3d, XYZ, Point3d, Range3d, RotMatrix, Transform, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ } from "@bentley/geometry-core/lib/PointVector";
-import { Map4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
+import { Map4d, Point4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { AxisOrder, Angle } from "@bentley/geometry-core/lib/Geometry";
 import { ViewState, Frustum, ViewStatus, Npc, NpcCenter, NpcCorners, MarginPercent, GridOrientationType } from "../common/ViewState";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
@@ -712,14 +712,18 @@ export class Viewport {
     Transform.initFromRange(corners.low, corners.high, scrToNpcTran, undefined);
     return scrToNpcTran.multiplyPoint(pt, out);
   }
-  public worldToNpcArray(pts: Point3d[]) { this.rootToNpc.transform0Ref().multiplyPoint3dArrayQuietNormalize(pts); }
-  public npcToWorldArray(pts: Point3d[]) { this.rootToNpc.transform1Ref().multiplyPoint3dArrayQuietNormalize(pts); }
-  public worldToViewArray(pts: Point3d[]) { this.rootToView.transform0Ref().multiplyPoint3dArrayQuietNormalize(pts); }
+  public worldToNpcArray(pts: Point3d[]): void { this.rootToNpc.transform0Ref().multiplyPoint3dArrayQuietNormalize(pts); }
+  public npcToWorldArray(pts: Point3d[]): void { this.rootToNpc.transform1Ref().multiplyPoint3dArrayQuietNormalize(pts); }
+  public worldToViewArray(pts: Point3d[]): void { this.rootToView.transform0Ref().multiplyPoint3dArrayQuietNormalize(pts); }
+  public worldToView4dArray(worldPts: Point3d[], viewPts: Point4d[]): void { this.rootToView.transform0Ref().multiplyPoint3dArray(worldPts, viewPts); }
   public viewToWorldArray(pts: Point3d[]) { this.rootToView.transform1Ref().multiplyPoint3dArrayQuietNormalize(pts); }
-  public worldToNpc(pt: Point3d, out?: Point3d) { return this.rootToNpc.transform0Ref().multiplyPoint3dQuietNormalize(pt, out); }
-  public npcToWorld(pt: Point3d, out?: Point3d) { return this.rootToNpc.transform1Ref().multiplyPoint3dQuietNormalize(pt, out); }
-  public worldToView(input: Point3d, out?: Point3d) { return this.rootToView.transform0Ref().multiplyPoint3dQuietNormalize(input, out); }
-  public viewToWorld(input: Point3d, out?: Point3d) { return this.rootToView.transform1Ref().multiplyPoint3dQuietNormalize(input, out); }
+  public view4dToWorldArray(viewPts: Point4d[], worldPts: Point3d[]): void { this.rootToView.transform1Ref().multiplyPoint4dArrayQuietRenormalize(viewPts, worldPts); }
+  public worldToNpc(pt: Point3d, out?: Point3d): Point3d { return this.rootToNpc.transform0Ref().multiplyPoint3dQuietNormalize(pt, out); }
+  public npcToWorld(pt: Point3d, out?: Point3d): Point3d { return this.rootToNpc.transform1Ref().multiplyPoint3dQuietNormalize(pt, out); }
+  public worldToView(input: Point3d, out?: Point3d): Point3d { return this.rootToView.transform0Ref().multiplyPoint3dQuietNormalize(input, out); }
+  public worldToView4d(input: Point3d, out?: Point4d): Point4d { return this.rootToView.transform0Ref().multiplyPoint3d(input, 1.0, out); }
+  public viewToWorld(input: Point3d, out?: Point3d): Point3d { return this.rootToView.transform1Ref().multiplyPoint3dQuietNormalize(input, out); }
+  public view4dToWorld(input: Point4d, out?: Point3d): Point3d { return this.rootToView.transform1Ref().multiplyXYZWQuietRenormalize(input.x, input.y, input.z, input.w, out); }
 
   /** Converts inches to pixels based on screen DPI.
    * @Note this information may not be accurate in some browsers.
@@ -1153,5 +1157,36 @@ export class Viewport {
     const rMatrix = RotMatrix.createIdentity();
     this.getGridOrientation(origin, rMatrix);
     this.pointToStandardGrid(point, rMatrix, origin);
+  }
+
+  public getPixelSizeAtPoint(point?: Point3d, coordSys: CoordSystem = CoordSystem.World): number {
+    if (!point) {
+      point = NpcCenter.clone(); // if undefined, use center of view
+      this.npcToWorld(point, point);
+    }
+
+    const worldPts: Point3d[] = [];
+    const viewPts: Point4d[] = [];
+    viewPts[0] = this.worldToView4d(point);
+    viewPts[1] = viewPts[0].clone();
+    viewPts[1].x += viewPts[1].w; // form a vector one pixel wide in x direction.
+    this.view4dToWorldArray(viewPts, worldPts);
+
+    switch (coordSys) {
+      case CoordSystem.Screen:
+      case CoordSystem.View:
+        this.worldToViewArray(worldPts);
+        break;
+
+      case CoordSystem.Npc:
+        this.worldToNpcArray(worldPts);
+        break;
+
+      case CoordSystem.World:
+      default:
+        break;
+    }
+
+    return worldPts[0].distance(worldPts[1]);
   }
 }

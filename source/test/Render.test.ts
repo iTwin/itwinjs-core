@@ -2,7 +2,8 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ViewFlags, RenderMode, ColorDef, ColorRgb } from "../common/Render";
+import { ViewFlags, RenderMode } from "../common/Render";
+import { ColorDef, ColorRgb } from "../common/ColorDef";
 import { Light, LightProps, Spot, LightType } from "../common/Lighting";
 
 describe("Render", () => {
@@ -44,8 +45,8 @@ describe("Render", () => {
     assert.isTrue(yellow.equals(yellow4));
     yellow4 = new ColorDef(str2);
     assert.isTrue(yellow.equals(yellow4));
-    const hsl = yellow.getHSL({});
-    yellow4 = ColorDef.fromHSL(hsl.h, hsl.s, hsl.l);
+    const hsl = yellow.toHSL();
+    yellow4 = hsl.toColorDef();
     assert.isTrue(yellow.equals(yellow4));
   });
 

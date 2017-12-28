@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { ColorDef } from "../Render";
+import { ColorDef } from "../ColorDef";
 import { DgnFB } from "./ElementGraphicsSchema";
 
 export const enum GradientSymbFlags {
