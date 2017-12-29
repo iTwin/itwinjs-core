@@ -35,7 +35,7 @@ export class SubCategory extends DefinitionElement implements SubCategoryProps {
   public getSubCategoryName(): string { return this.code.getValue(); }
   public getSubCategoryId(): Id64 { return this.id; }
   public getCategoryId(): Id64 { return this.parent ? this.parent.id : new Id64(); }
-  public isDefaultSubCategory(): boolean { return Category.getDefaultSubCategoryId(this.getCategoryId()).equals(this.getSubCategoryId()); }
+  public isDefaultSubCategory(): boolean { return IModelDb.getDefaultSubCategoryId(this.getCategoryId()).equals(this.getSubCategoryId()); }
 }
 
 /** Parameters to create a Category element */
@@ -60,8 +60,7 @@ export class Category extends DefinitionElement implements CategoryProps {
     return val;
   }
 
-  public static getDefaultSubCategoryId(id: Id64): Id64 { return id.isValid() ? new Id64([id.getLow() + 1, id.getHigh()]) : new Id64(); }
-  public myDefaultSubCategoryId(): Id64 { return Category.getDefaultSubCategoryId(this.id); }
+  public myDefaultSubCategoryId(): Id64 { return IModelDb.getDefaultSubCategoryId(this.id); }
 }
 
 /** Categorizes 2d graphical elements. */

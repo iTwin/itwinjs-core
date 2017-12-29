@@ -21,6 +21,7 @@
     "Linestyle",
     "Obscurable",
     "PARASOLID",
+    "Pickable",
     "Polyface",
     "Polyfaces",
     "Renormalize",

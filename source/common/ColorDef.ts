@@ -246,8 +246,11 @@ export class ColorDef {
     this.fromString(val);
   }
 
-  // make a copy of this ColorDef
+  /** make a copy of this ColorDef */
   public clone(): ColorDef { return new ColorDef(this); }
+
+  /** set the color of this ColorDef from another ColorDef */
+  public setFrom(other: ColorDef) { this._tbgr = other._tbgr; }
 
   /** convert this ColorDef to a 32 bit number representing the tbgr value */
   public toJSON(): any { return this._tbgr; }

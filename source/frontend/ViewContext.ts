@@ -16,6 +16,10 @@ export class NullContext extends ViewContext {
 }
 
 export class SnapContext extends ViewContext {
+  public snapDetail?: SnapDetail; // result of the snap
+  public snapAperture: number;
+  public snapMode: SnapMode;
+  public snapDivisor: number;
 
   public async snapToPath(_thisPath: HitDetail, _snapMode: SnapMode, _snapDivisor: number, _hotAperture: number): Promise<SnapDetail | undefined> {
     //   if (!ElementLocateManager.instance.isSnappableModel(thisPath.getModel())   {
@@ -86,4 +90,34 @@ export class DecorateContext extends RenderContext {
     const sheetVp = hit.m_sheetViewport;
     return (sheetVp && hit.m_viewport === this.viewport) ? this.drawSheetHit(hit) : this.drawNormalHit(hit);
   }
+  DGNPLATFORM_EXPORT void AddNormal(Render:: Graphic graphic);
+
+  //! Display world coordinate graphic with smooth shading, default lighting, and z testing enabled.
+  DGNPLATFORM_EXPORT void AddWorldDecoration(Render:: GraphicR graphic, Render:: OvrGraphicParamsCP ovr = nullptr);
+
+  //! Display world coordinate graphic with smooth shading, default lighting, and z testing disabled.
+  DGNPLATFORM_EXPORT void AddWorldOverlay(Render:: GraphicR graphic, Render:: OvrGraphicParamsCP ovr = nullptr);
+
+  //! Display view coordinate graphic with smooth shading, default lighting, and z testing disabled.
+  DGNPLATFORM_EXPORT void AddViewOverlay(Render:: GraphicR graphic, Render:: OvrGraphicParamsCP ovr = nullptr);
+
+  //! Display sprite as view overlay graphic.
+  DGNPLATFORM_EXPORT void AddSprite(Render:: ISprite & sprite, DPoint3dCR location, DPoint3dCR xVec, int transparency);
+
+  //! @private
+  DGNPLATFORM_EXPORT void DrawStandardGrid(DPoint3dR gridOrigin, RotMatrixR rMatrix, DPoint2d spacing, uint32_t gridsPerRef, bool isoGrid = false, Point2dCP fixedRepetitions = nullptr);
+
+  //! @private
+  DGNPLATFORM_EXPORT BentleyStatus DrawHit(HitDetailCR hit);
+
+  //! Display view coordinate graphic as background with smooth shading, default lighting, and z testing disabled. e.g., a sky box.
+  DGNPLATFORM_EXPORT void SetViewBackground(Render:: GraphicR graphic);
+
+  Render:: OvrGraphicParams& GetOvrGraphicParams() { return m_ovrParams; }
+
+Render:: GraphicBuilderPtr CreateViewBackground(TransformCR tf = Transform:: FromIdentity()) { return CreateGraphic(tf, Render:: GraphicType:: ViewBackground); }
+Render:: GraphicBuilderPtr CreateWorldDecoration(TransformCR tf = Transform:: FromIdentity()) { return CreateGraphic(tf, Render:: GraphicType:: WorldDecoration); }
+Render:: GraphicBuilderPtr CreateWorldOverlay(TransformCR tf = Transform:: FromIdentity()) { return CreateGraphic(tf, Render:: GraphicType:: WorldOverlay); }
+Render:: GraphicBuilderPtr CreateViewOverlay(TransformCR tf = Transform:: FromIdentity()) { return CreateGraphic(tf, Render:: GraphicType:: ViewOverlay); }
+
 }

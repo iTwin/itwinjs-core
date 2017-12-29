@@ -4,6 +4,7 @@
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { LowAndHighXYZ, XYAndZ, Transform, Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { AxisAlignedBox3d } from "./geometry/Primitives";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 /** A token that identifies a specific instance of an iModel to be operated on */
 export class IModelToken {
@@ -70,4 +71,5 @@ export abstract class IModel implements IModelProps {
   }
 
   public isReadonly() { return this.token.openMode === OpenMode.Readonly; }
+  public static getDefaultSubCategoryId(id: Id64): Id64 { return id.isValid() ? new Id64([id.getLow() + 1, id.getHigh()]) : new Id64(); }
 }

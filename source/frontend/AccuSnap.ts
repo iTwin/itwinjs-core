@@ -23,36 +23,36 @@ const s_notSnappable: any = {};
 const s_appFiltered: any = {};
 
 class AccuSnapToolState {
-  public m_enabled: boolean;
-  public m_locate: boolean;
-  public m_suspended: number;
-  public m_subSelectionMode: number;
+  public m_enabled = false;
+  public m_locate = false;
+  public m_suspended = 0;
+  public m_subSelectionMode = 0;
 }
 
 class SnapElemIgnore {
-  public text: boolean;
-  public curves: boolean;
-  public dimensions: boolean;
-  public meshes: boolean;
-  public fillInterior: boolean;
+  public text = true;
+  public curve = true;
+  public dimensions = true;
+  public meshes = false;
+  public fillInterior = false;
 }
 
 class AccuSnapSettings {
-  public hotDistanceFactor: number;
-  public stickyFactor: number;
-  public searchDistance: number;
-  public enableForFenceCreate: boolean;
-  public showIcon: boolean;
-  public showHint: boolean;
-  public fixedPtPerpTan: boolean;
-  public playSound: boolean;
-  public coordUpdate: boolean;
-  public hiliteColdHits: boolean;
-  public popupInfo: boolean;
-  public popupMode: boolean;
-  public enableFlag: boolean;
+  public hotDistanceFactor = 1.2;
+  public stickyFactor = 1.0;
+  public searchDistance = 2.0;
+  public enableForFenceCreate = false;
+  public showIcon = true;
+  public showHint = true;
+  public fixedPtPerpTan = true;
+  public playSound = false;
+  public coordUpdate = false;
+  public hiliteColdHits = true;
+  public popupInfo = true;
+  public popupMode = false;
+  public enableFlag = true;
   public readonly ignore = new SnapElemIgnore();
-  public popupDelay: number; // delay before info balloon pops up - in 10th of a second
+  public popupDelay = 5; // delay before info balloon pops up - in 10th of a second
 }
 
 export class AccuSnap {
@@ -103,7 +103,7 @@ export class AccuSnap {
   public getCurrSnapDetail(): SnapDetail | undefined { return AccuSnap.toSnapDetail(this.currHit); }
   public isHot(): boolean { const currSnap = this.getCurrSnapDetail(); return !currSnap ? false : currSnap.isHot(); }
 
-  public destroy(): void {
+  private destroy(): void {
     this.currHit = undefined;
     this.aSnapHits = undefined;
     this.retestList.empty();
@@ -218,7 +218,7 @@ export class AccuSnap {
   }
 
   /** flash a hit in its view. */
-  public setFlashHit(hit?: HitDetail): void {
+  private setFlashHit(hit?: HitDetail): void {
     if (!hit || !this.hitShouldBeHilited(hit))
       return;
     this.setNeedsFlashView(hit.m_viewport!);
@@ -227,7 +227,7 @@ export class AccuSnap {
       elementLocateManager.onFlashHit(snap);
   }
 
-  public erase(): void {
+  private erase(): void {
     this.clearInfoBalloon(undefined); // make sure there's no info balloon up.
     this.clearSprites(); // remove all sprites from the screen
   }
@@ -237,23 +237,12 @@ export class AccuSnap {
       this.showLocateMessage(viewPt, vp, toolAdmin.getInfoString(hit, "\n"));
   }
 
-  public showLocateMessage(viewPt: Point3d, vp: Viewport, msg: string) {
-    if (!viewManager.doesHostHaveFocus())
-      return;
-
-    // AccuSnapHandler:: AsnapStatus status = AccuSnapHandler:: Ok;
-
-    // Utf8String msg(msgIn);
-    // msg.Trim();
-
-    // // if any event handlers say "don't show" then popup won't appear, but call them all regardless.
-    // m_eventHandlers.CallAllHandlers(ShowInfoCaller(& viewPt, & vp, msg.c_str(), & status));
-    // if (status != AccuSnapHandler:: DontShow)
-
-    viewManager.showInfoWindow(viewPt, vp, msg);
+  private showLocateMessage(viewPt: Point3d, vp: Viewport, msg: string) {
+    if (viewManager.doesHostHaveFocus())
+      viewManager.showInfoWindow(viewPt, vp, msg);
   }
 
-  public displayInfoBalloon(viewPt: Point3d, vp: Viewport, uorPt?: Point3d): void {
+  private displayInfoBalloon(viewPt: Point3d, vp: Viewport, uorPt?: Point3d): void {
     // if the info balloon is already displayed, or if he doesn't want it, quit.
     if (viewManager.isInfoWindowUp() || !this.wantInfoBalloon())
       return;
@@ -345,7 +334,7 @@ export class AccuSnap {
   }
 
   /** For a given snap path, display the sprites to indicate its position on the screen and what snap mode it represents. */
-  public showSnapSprite(): void {
+  private showSnapSprite(): void {
     const snap = this.getCurrSnapDetail();
     if (!snap)
       return;
@@ -498,7 +487,7 @@ export class AccuSnap {
 
   private getNextAccuSnappable(hitList: HitList): HitDetail | undefined {
     const thisPath = hitList.getNextHit();
-    if (!!thisPath)
+    if (thisPath)
       this.explanation = "";
     return thisPath;
   }

@@ -11,16 +11,17 @@ import { ToolAdmin, CoordinateLockOverrides } from "./tools/ToolAdmin";
 import { ColorDef, ColorRgb } from "../common/ColorDef";
 import { BeButtonEvent, CoordSource, BeModifierKey } from "./tools/Tool";
 import { HitDetail, SnapDetail, SnapMode } from "./HitDetail";
-import { TentativeOrAccuSnap } from "./AccuSnap";
+import { TentativeOrAccuSnap, AccuSnap } from "./AccuSnap";
 import { AuxCoordSystemState } from "../common/AuxCoordSys";
 import { TentativePoint } from "./TentativePoint";
-import { LinePixels } from "../common/Render";
+import { LinePixels, GraphicBuilder } from "../common/Render";
 import { DecorateContext, SnapContext } from "./ViewContext";
 import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
 
 // tslint:disable:one-variable-per-declaration
 // tslint:disable:no-conditional-assignment
 // tslint:disable:no-empty
+// tslint:disable:no-switch-case-fall-through
 
 export const enum AccuDrawFlags {
   SetModePolar = 1,
@@ -116,6 +117,7 @@ class AccudrawData {
   public readonly vector = new Vector3d();     // if ACCUDRAW_SetXAxis, etc.
   public distance = 0;   // if ACCUDRAW_SetDistance
   public angle = 0;      // if ACCUDRAW_SetAngle
+  public zero() { this.flags = this.distance = this.angle = 0; this.origin.setZero(); this.delta.setZero(); this.vector.setZero(); this.rMatrix.setIdentity(); }
 }
 
 class Flags {
@@ -154,6 +156,7 @@ class SavedState {
   public contextRotMode = 0;
   public fixedOrg = false;
   public ignoreDataButton = false; // Allow data point that terminates an input collector to be ignored...
+  public init(): void { this.state = CurrentState.NotEnabled; this.view = undefined; this.mode = CompassMode.Polar; this.rotationMode = RotationMode.View; }
 }
 
 class SavedCoords {
@@ -171,15 +174,19 @@ class ThreeAxes {
     this.y.setFrom(other.y);
     this.z.setFrom(other.z);
   }
-  public static fromRotMatrix(rMatrix: RotMatrix): ThreeAxes {
-    const val = new ThreeAxes();
-    rMatrix.getRow(0, val.x);
-    rMatrix.getRow(1, val.y);
-    rMatrix.getRow(2, val.z);
-    return val;
+  public fromRotMatrix(rMatrix: RotMatrix): void {
+    rMatrix.getRow(0, this.x);
+    rMatrix.getRow(1, this.y);
+    rMatrix.getRow(2, this.z);
+  }
+  public static createFromRotMatrix(rMatrix: RotMatrix, result?: ThreeAxes): ThreeAxes {
+    result = result ? result : new ThreeAxes();
+    result.fromRotMatrix(rMatrix);
+    return result;
   }
   public toRotMatrix(out?: RotMatrix) { return RotMatrix.createRows(this.x, this.y, this.z, out); }
   public clone(): ThreeAxes { const out = new ThreeAxes(); out.setFrom(this); return out; }
+  public equals(other: ThreeAxes): boolean { return this.x.isExactEqual(other.x) && this.y.isExactEqual(other.y) && this.z.isExactEqual(other.z); }
 }
 
 /**
@@ -248,7 +255,6 @@ export class AccuDraw {
   protected autoPointPlacement = false;
 
   private static tempRot = new RotMatrix();
-  private getCompassViewport(): Viewport | undefined { return this.currentView; }
   public getRotation(rMatrix?: RotMatrix): RotMatrix { if (!rMatrix) rMatrix = this.rMatrix; RotMatrix.createRows(this.axes.x, this.axes.y, this.axes.z, rMatrix); return rMatrix; }
 
   public getCompassMode() { return this.currentMode; }
@@ -257,6 +263,7 @@ export class AccuDraw {
   public isInactive(): boolean { return (CurrentState.Inactive === this.currentState); }
   public isDeactivated(): boolean { return (CurrentState.Deactivated === this.currentState); }
   public animateCompassChanges() { return true; }
+  protected setNewFocus(index: ItemField) { this.newFocus = index; }
   protected grabInputFocus() { }
 
   public activate(): void {
@@ -306,6 +313,132 @@ export class AccuDraw {
 
     if (KeyinStatus.Partial === status)
       this.threshold = Math.abs(ItemField.X_Item === index ? this.rawDelta.y : this.rawDelta.x) + this.tolerance;
+  }
+
+  private needsRefresh(vp: Viewport): boolean {
+    if (!this.isEnabled() || this.isDeactivated())
+      return false;
+
+    // Get snap point from AccuSnap/Tentative or use raw point...
+    let distance = 0.0;
+    let snapPt = this.rawPoint;
+    const ptP = this.point;
+    const snap = TentativeOrAccuSnap.getCurrentSnap();
+
+    if (snap) {
+      snapPt = snap.m_snapPoint;
+      distance = ptP.distance(snapPt);
+    }
+
+    const isRectMode = (CompassMode.Rectangular === this.getCompassMode());
+    const offsetSnap = ((TentativeOrAccuSnap.isHot() || TentativePoint.instance.isActive) && ((this.locked) || (distance > 0.0)));
+
+    // XY Offset:
+    if (offsetSnap) {
+      if (isRectMode) {
+        let xIsOffset = false, yIsOffset = false;
+        let xOffset = 0.0, yOffset = 0.0;
+
+        const vec = ptP.vectorTo(this.rawPointOnPlane);
+
+        xIsOffset = (Math.abs(xOffset = vec.dotProduct(this.axes.x)) > 1.0);
+        yIsOffset = (Math.abs(yOffset = vec.dotProduct(this.axes.y)) > 1.0);
+
+        if (xIsOffset || yIsOffset)
+          return true;
+      }
+    }
+
+    const isOnCompassPlane = (!vp.view.is3d() || this.flags.pointIsOnPlane || this.isZLocked(vp));
+
+    // Z Offset:
+    if (offsetSnap) {
+      if (isOnCompassPlane) {
+        const zOffset = snapPt.distance(this.rawPointOnPlane);
+        if (zOffset > Geometry.smallAngleRadians || zOffset < -Geometry.smallAngleRadians)
+          return true;
+      }
+    }
+
+    // Fat Point:
+    if (offsetSnap)
+      return true;
+
+    let axisIsIndexed = false;
+
+    // Axis Indexing:
+    if (isRectMode) {
+      if ((this.indexed & LockedStates.XY_BM) && (this.flags.pointIsOnPlane || this.fieldLocked[ItemField.Z_Item]))
+        axisIsIndexed = true;
+    } else {
+      if ((this.indexed & LockedStates.ANGLE_BM || this.locked & LockedStates.ANGLE_BM) && (this.flags.pointIsOnPlane || this.fieldLocked[ItemField.Z_Item]))
+        axisIsIndexed = true;
+    }
+
+    if (axisIsIndexed)
+      return true;
+
+    // Distance Indexing:
+    if (this.indexed & LockedStates.DIST_BM)
+      return true;
+
+    // XY Lock:
+    if (isRectMode && !axisIsIndexed) {
+      const locked = this.locked & LockedStates.XY_BM;
+
+      if ((0 !== locked) && isOnCompassPlane) {
+        switch (locked) {
+          case LockedStates.X_BM:
+          case LockedStates.Y_BM:
+          case LockedStates.XY_BM:
+            return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  public adjustPoint(pointActive: Point3d, vp: Viewport, fromSnap: boolean): boolean {
+    if (!this.isEnabled())
+      return false;
+
+    const lastWasIndexed = (0 !== this.indexed);
+    let pointChanged = false, handled = false;
+
+    if (0.0 !== pointActive.z && !vp.isPointAdjustmentRequired())
+      pointActive.z = 0.0;
+
+    if (this.isInactive()) {
+      this.point.setFrom(pointActive);
+      this.currentView = vp;
+
+      this.fixPoint(pointActive, vp);
+
+      if (!fromSnap && AccuSnap.instance.currHit)
+        this.flags.redrawCompass = true;
+    } else if (this.isActive()) {
+      const lastPt = this.point.clone();
+      this.fixPoint(pointActive, vp);
+      pointChanged = !lastPt.isExactEqual(this.point);
+      if (this.published.flags)
+        this.processHints();
+      handled = true;
+    } else {
+      this.currentView = vp; // Keep view up to date...
+    }
+
+    // If redraw of compass isn't required (yet!) check if needed...
+    if (!this.flags.redrawCompass && this.isActive()) {
+      // Redraw required to erase/draw old/new indexing geometry...
+      if (pointChanged && (lastWasIndexed || this.needsRefresh(vp)))
+        this.flags.redrawCompass = true;
+    }
+    // Redraw is necessary, force decorators to be called...
+    if (this.flags.redrawCompass)
+      vp.invalidateDecorations();
+
+    return handled;
   }
 
   private setDefaultOrigin(vp?: Viewport): void {
@@ -411,7 +544,7 @@ export class AccuDraw {
 
       case RotationMode.ACS:
         rMatrix = vp ? vp.getAuxCoordRotation() : RotMatrix.createIdentity();
-        myAxes = ThreeAxes.fromRotMatrix(rMatrix);
+        myAxes = ThreeAxes.createFromRotMatrix(rMatrix);
         this.accountForAuxRotationPlane(myAxes, this.flags.auxRotationPlane);
         switch (whichVec) {
           case 0: vecP.setFrom(myAxes.x); break;
@@ -509,6 +642,112 @@ export class AccuDraw {
         }
         break;
     }
+  }
+
+  private updateRotation(animate: boolean = false, newRotationIn?: RotMatrix): void {
+    let clearLocks = true;
+    const oldRotation = this.axes.clone();
+    let rMatrix: RotMatrix;
+    let newRotation: ThreeAxes;
+
+    if (!newRotationIn)
+      newRotation = this.axes.clone(); // for axis based
+    else
+      newRotation = ThreeAxes.createFromRotMatrix(newRotationIn); // for animating context rotation change...
+
+    const vp = this.currentView;
+    const useACS = vp ? vp.isContextRotationRequired() : false;
+
+    switch (this.rotationMode) {
+      case RotationMode.Top:
+        // Get standard rotation relative to ACS when ACS context lock is enabled...
+        newRotation.fromRotMatrix(AccuDraw.getStandardRotation(StandardViewId.Top, vp, useACS));
+        this.flags.lockedRotation = true;
+        break;
+
+      case RotationMode.Front:
+        // Get standard rotation relative to ACS when ACS context lock is enabled...
+        newRotation.fromRotMatrix(AccuDraw.getStandardRotation(StandardViewId.Front, vp, useACS));
+        this.flags.lockedRotation = true;
+        break;
+
+      case RotationMode.Side:
+        // Get standard rotation relative to ACS when ACS context lock is enabled...
+        newRotation.fromRotMatrix(AccuDraw.getStandardRotation(StandardViewId.Right, vp, useACS));
+        this.flags.lockedRotation = true;
+        break;
+
+      case RotationMode.ACS:
+        rMatrix = vp ? vp.getAuxCoordRotation() : RotMatrix.createIdentity();
+        newRotation.fromRotMatrix(rMatrix);
+        this.accountForAuxRotationPlane(newRotation, this.flags.auxRotationPlane);
+        this.flags.lockedRotation = true;
+        break;
+
+      case RotationMode.View:
+        rMatrix = vp ? vp.rotMatrix : RotMatrix.createIdentity();
+        newRotation.fromRotMatrix(rMatrix);
+        this.flags.lockedRotation = false;
+        break;
+
+      case RotationMode.Restore:
+        newRotation = this.savedState.axes.clone();
+        this.flags.contextRotMode = this.savedState.contextRotMode;
+        this.rotationMode = RotationMode.Context;
+
+        if (ContextMode.Locked === this.flags.contextRotMode)
+          break;
+      // otherwise, fall thru for context rotation handling
+
+      case RotationMode.Context:
+        switch (this.flags.contextRotMode) {
+          case ContextMode.XAxis:
+            this.getRotationFromVector(newRotation, 0);
+            clearLocks = (LockedStates.Y_BM !== this.locked || !oldRotation.x.isExactEqual(newRotation.x)); // Try to keep locked axis when tool being unsuspended...
+            break;
+
+          case ContextMode.XAxis2:
+            if (vp)
+              this.getBestViewedRotationFromXVector(newRotation, vp); // Use base rotation axis that results in compass being most closely aligned to view direction....
+            else
+              this.getRotationFromVector(newRotation, 0);
+            clearLocks = (LockedStates.Y_BM !== this.locked || !oldRotation.x.isExactEqual(newRotation.x)); // Try to keep locked axis when tool being unsuspended...
+            break;
+
+          case ContextMode.YAxis:
+            this.getRotationFromVector(newRotation, 1);
+            clearLocks = (LockedStates.X_BM !== this.locked || !oldRotation.y.isExactEqual(newRotation.y)); // Try to keep locked axis when tool being unsuspended...
+            break;
+
+          case ContextMode.ZAxis:
+            this.getRotationFromVector(newRotation, 2);
+            break;
+
+          case ContextMode.Locked:
+            break;
+        }
+        break;
+    }
+
+    const isChanged = !oldRotation.equals(newRotation);
+
+    // unlock stuff if rotation has changed
+    if (isChanged && clearLocks && (CompassMode.Rectangular === this.getCompassMode() || !this.fieldLocked[ItemField.DIST_Item] || animate)) {
+      this.locked = this.indexed = LockedStates.NONE_LOCKED;
+      this.unlockAllFields();
+    }
+
+    this.axes.setFrom(newRotation);
+    this.lastAxes.setFrom(newRotation);
+    this.flags.redrawCompass = true;
+
+    // If animate frame preference is set...
+    if (!animate || !this.animateCompassChanges || !vp)
+      return;
+
+    // AccuDrawAnimatorPtr animator = AccuDrawAnimator:: Create();
+    // viewport -> SetAnimator(* animator);
+    // animator -> ChangeOfRotation(RotMatrix:: FromColumnVectors(oldRotation[0], oldRotation[1], oldRotation[2]));
   }
 
   public enableForSession(): void { if (CurrentState.NotEnabled === this.currentState) this.currentState = CurrentState.Inactive; }
@@ -1013,23 +1252,20 @@ export class AccuDraw {
     this.setKeyinStatus(index, KeyinStatus.Dynamic);
   }
 
-  private static getStandardRotation(nStandard: StandardViewId, vp: Viewport | undefined, useACS: boolean): RotMatrix | undefined {
+  private static getStandardRotation(nStandard: StandardViewId, vp: Viewport | undefined, useACS: boolean): RotMatrix {
     if (nStandard < StandardViewId.Top || nStandard > StandardViewId.RightIso)
-      return undefined;
+      nStandard = StandardViewId.Top;
 
     const rMatrix = standardViewMatrices[nStandard].clone();
-    if (!useACS)
-      return rMatrix;
-
     const useVp = vp ? vp : viewManager.selectedView;
-    if (!useVp)
-      return undefined;
+    if (!useACS || !useVp)
+      return rMatrix;
 
     rMatrix.multiplyMatrixMatrix(useVp.getAuxCoordRotation(AccuDraw.tempRot), rMatrix);
     return rMatrix;
   }
 
-  private static getCurrentOrientation(vp: Viewport, checkAccuDraw: boolean, checkACS: boolean, rMatrix?: RotMatrix): RotMatrix | undefined {
+  public static getCurrentOrientation(vp: Viewport, checkAccuDraw: boolean, checkACS: boolean, rMatrix?: RotMatrix): RotMatrix | undefined {
     if (checkAccuDraw && accuDraw.isActive())
       return accuDraw.getRotation(rMatrix);
 
@@ -1158,7 +1394,7 @@ export class AccuDraw {
       this.lastDistance = value;
   }
 
-  private changeCompassMode(animate: boolean): void {
+  private changeCompassMode(animate: boolean = false): void {
     this.setCompassMode(CompassMode.Polar === this.getCompassMode() ? CompassMode.Rectangular : CompassMode.Polar);
 
     const viewport = this.currentView;
@@ -1169,14 +1405,6 @@ export class AccuDraw {
     // viewport.setAnimator(* animator);
     // animator -> ChangeOfMode();
   }
-
-  private changeRotationMode(mode: RotationMode): void {
-    this.changeBaseRotationMode(mode);
-    this.setRotationMode(mode);
-    this.updateRotation();
-  }
-
-  private changeBaseMode(mode: CompassMode) { this.flags.baseMode = mode; }
 
   private changeBaseRotationMode(mode: RotationMode): void {
     if (mode > RotationMode.Context)
@@ -1201,7 +1429,7 @@ export class AccuDraw {
 
   private getBaseRotation(): RotMatrix {
     const vp = this.currentView;
-    let baseRMatrix: RotMatrix | undefined;
+    let baseRMatrix: RotMatrix;
     const useAcs = vp ? vp.isContextRotationRequired() : false;
     switch (this.flags.baseRotation) {
       case RotationMode.Top: {
@@ -1221,7 +1449,7 @@ export class AccuDraw {
 
       case RotationMode.ACS: {
         baseRMatrix = vp ? vp.getAuxCoordRotation() : RotMatrix.createIdentity();
-        const axes = ThreeAxes.fromRotMatrix(baseRMatrix);
+        const axes = ThreeAxes.createFromRotMatrix(baseRMatrix);
         this.accountForAuxRotationPlane(axes, this.flags.auxRotationPlane);
         axes.toRotMatrix(baseRMatrix);
         break;
@@ -1287,14 +1515,14 @@ export class AccuDraw {
         this.published.delta.scaleInPlace(transP.matrixRef().columnX().magnitude());
     }
 
-    if (!!distanceP) {
+    if (typeof distanceP === "number") {
       this.published.distance = distanceP;
 
       if (transP)
         this.published.distance *= transP.matrixRef().columnX().magnitude();
     }
 
-    if (!!angleP)
+    if (typeof angleP === "number")
       this.published.angle = angleP;
 
     if (orientationP) {
@@ -1820,77 +2048,6 @@ export class AccuDraw {
     }
   }
 
-  private getSavedValue(index: ItemField, next: boolean): void {
-    let i = 0;
-    let status = BentleyStatus.ERROR;
-    const isAngle = (ItemField.ANGLE_Item === index);
-    let value = 0.0;
-    const currValue = this.getValueByIndex(index);
-
-    for (; ;) {
-      value = this.savedCoords.savedValues[this.savedCoords.nSaveValues];
-      if (value > Constants.SMALL_ANGLE && this.savedCoords.savedValIsAngle[this.savedCoords.nSaveValues] === isAngle && value !== currValue)
-        status = BentleyStatus.SUCCESS;
-
-      if (next) {
-        this.savedCoords.nSaveValues++;
-
-        if (this.savedCoords.nSaveValues >= Constants.MAX_SAVED_VALUES)
-          this.savedCoords.nSaveValues = 0;
-      } else {
-        this.savedCoords.nSaveValues--;
-
-        if (this.savedCoords.nSaveValues < 0)
-          this.savedCoords.nSaveValues = Constants.MAX_SAVED_VALUES - 1;
-      }
-
-      if (BentleyStatus.SUCCESS === status)
-        break;
-
-      if (i++ >= Constants.MAX_SAVED_VALUES)
-        return; // went full circle unsuccessfully
-    }
-
-    this.lastDistance = value;
-
-    if (currValue < 0.0)
-      value = -value;
-
-    this.setValueByIndex(index, value);
-
-    switch (index) {
-      case ItemField.X_Item:
-        this.setFieldLock(ItemField.X_Item, true);
-        this.onFieldValueChange(ItemField.X_Item);
-        this.locked |= LockedStates.X_BM;
-        break;
-
-      case ItemField.Y_Item:
-        this.setFieldLock(ItemField.Y_Item, true);
-        this.onFieldValueChange(ItemField.Y_Item);
-        this.locked |= LockedStates.Y_BM;
-        break;
-
-      case ItemField.Z_Item:
-        this.setFieldLock(ItemField.Z_Item, true);
-        this.onFieldValueChange(ItemField.Z_Item);
-        break;
-
-      case ItemField.DIST_Item:
-        this.distanceLock(true, false);
-        break;
-
-      case ItemField.ANGLE_Item:
-        this.locked &= ~LockedStates.XY_BM;
-        this.updateVector(this.angle);
-        this.angleLock();
-        break;
-    }
-  }
-
-  private choosePreviousValue(index: ItemField): void { this.getSavedValue(index, false); }
-  private chooseNextValue(index: ItemField): void { this.getSavedValue(index, true); }
-
   protected onCompassModeChange(): void { }
   protected onRotationModeChange(): void { }
   protected onFieldLockChange(_index: ItemField) { }
@@ -1913,7 +2070,7 @@ export class AccuDraw {
     if (perpendicular) {
       if (AccuDraw.useACSContextRotation(vp, true)) { // Project along ACS axis to AccuDraw plane...
         const rMatrix = vp.getAuxCoordRotation(AccuDraw.tempRot);
-        const axes = ThreeAxes.fromRotMatrix(rMatrix);
+        const axes = ThreeAxes.createFromRotMatrix(rMatrix);
         this.accountForAuxRotationPlane(axes, this.flags.auxRotationPlane);
         // LegacyMath:: Vec:: LinePlaneIntersect(outPtP, inPtP, axes.z, pointOnPlaneP, normalVectorP, false);
       } else {
@@ -2328,7 +2485,7 @@ export class AccuDraw {
     }
   }
 
-  private fixPoint(pointActive: Point3d, vp: Viewport, fromSnap: boolean): void {
+  private fixPoint(pointActive: Point3d, vp: Viewport): void {
     if (this.isActive() && ((vp !== this.currentView) || this.flags.rotationNeedsUpdate)) {
       this.currentView = vp;
 
@@ -2425,8 +2582,7 @@ export class AccuDraw {
     }
 
     if (this.published.flags & AccuDrawFlags.SmartRotation) {
-      const hitDetail = TentativeOrAccuSnap.getCurrentSnap(false);
-
+      // const hitDetail = TentativeOrAccuSnap.getCurrentSnap(false);
       // NEEDS_WORK
       //   if (!hitDetail)
       //     hitDetail = ElementLocateManager:: GetManager().GetCurrHit();
@@ -2496,7 +2652,7 @@ export class AccuDraw {
       this.flags.ignoreDataButton = false;
     } else if (!this.flags.fixedOrg && this.currentState >= CurrentState.Inactive) {
       /* set origin to last point placed unless its being set elsewhere */
-      if (((!this.getContextSensitive() &&
+      if (((!this.contextSensitive &&
         !(this.published.flags & (AccuDrawFlags.AlwaysSetOrigin ^ AccuDrawFlags.SetOrigin))) ||
         !(this.published.flags & AccuDrawFlags.SetOrigin))) {
         this.published.flags |= AccuDrawFlags.SetOrigin;
@@ -2521,7 +2677,7 @@ export class AccuDraw {
     return false;
   }
 
-  public oResetButtonUp(ev: BeButtonEvent): boolean {
+  public oResetButtonUp(_ev: BeButtonEvent): boolean {
     if (tentativePoint.isActive && this.isActive()) {
       tentativePoint.clear(true);
       return true;
@@ -2541,11 +2697,11 @@ export class AccuDraw {
     return false;
   }
   public onSnap(context: SnapContext): boolean {
-    // If accudraw is locked, adjust near snap point to be the nearest point on this element, CONSTRAINED by the accudraw lock.
-    if (!this.isActive || !this.locked)
-      return false;
+    const snap = context.snapDetail;
 
-    const snap: SnapDetail = context.getSnapDetail();
+    // If accudraw is locked, adjust near snap point to be the nearest point on this element, CONSTRAINED by the accudraw lock.
+    if (!this.isActive || !this.locked || !snap)
+      return false;
 
     if (SnapMode.Nearest !== snap.m_snapMode)
       return false;
@@ -2576,8 +2732,165 @@ export class AccuDraw {
 
     return false;
   }
-}
 
+  public onSelectedViewportChanged(previous: Viewport, current: Viewport): void {
+    // In case previous is closing, always update AccuDraw to current view...
+    if (this.currentView && this.currentView === previous)
+      this.currentView = current;
+
+    // Reset AccuDraw when iModel or view type changes...
+    if (current && previous && (current.view.classFullName === previous.view.classFullName) && (current.view.iModel === previous.view.iModel))
+      return;
+
+    this.currentView = undefined;
+    this.flags.redrawCompass = false;
+    this.flags.baseRotation = RotationMode.View;
+    this.flags.auxRotationPlane = RotationMode.Top;
+    this.flags.rotationNeedsUpdate = true;
+    this.flags.haveValidOrigin = false;
+    this.flags.indexLocked = false;
+    this.flags.bearingFixToPlane2D = false;
+    this.savedState.init();
+    this.setRotationMode(RotationMode.View);
+    this.updateRotation();
+  }
+
+  private doProcessHints(): void {
+
+    if (!this.floatingOrigin) {
+      if (this.published.flags & AccuDrawFlags.SetOrigin)
+        this.unlockAllFields();
+      return;
+    }
+
+    // Set Context Origin
+    if (this.published.flags & AccuDrawFlags.SetOrigin) {
+      if (this.floatingOrigin) {
+        this.origin.setFrom(this.published.origin);
+        this.point.setFrom(this.origin);
+        this.planePt.setFrom(this.origin);
+      }
+      this.flags.haveValidOrigin = true;
+      this.setLastPoint(this.origin);
+      this.unlockAllFields();
+      this.updateRotation();
+    }
+
+    if (!this.contextSensitive)
+      return;
+
+    // Mode -- Polar or Rectangular
+    if (this.published.flags & (AccuDrawFlags.SetModePolar | AccuDrawFlags.SetModeRect)) {
+      if (this.getCompassMode() !== ((this.published.flags & AccuDrawFlags.SetModePolar) ? CompassMode.Polar : CompassMode.Rectangular))
+        this.changeCompassMode();
+    }
+
+    // Fixed Origin
+    if (this.published.flags & AccuDrawFlags.FixedOrigin)
+      this.flags.fixedOrg = true;
+
+    // Save Distance
+    if (this.published.flags & (AccuDrawFlags.SetDistance | AccuDrawFlags.LockDistance))
+      this.saveCoordinate(ItemField.DIST_Item, this.published.distance);
+
+    const vp = this.currentView;
+    // Do Context Rotation
+    if (this.published.flags & AccuDrawFlags.SetRMatrix) {
+      this.axes.fromRotMatrix(this.published.rMatrix);
+      this.flags.lockedRotation = true;
+      this.flags.contextRotMode = ContextMode.Locked;
+      this.setRotationMode(RotationMode.Context);
+      this.updateRotation();
+    } else if (this.published.flags & AccuDrawFlags.SetXAxis) {
+      this.axes.x.setFrom(this.published.vector);
+      this.flags.contextRotMode = ContextMode.XAxis;
+      this.setRotationMode(RotationMode.Context);
+      this.updateRotation();
+    } else if (this.published.flags & AccuDrawFlags.SetXAxis2) {
+      this.axes.x.setFrom(this.published.vector);
+      this.flags.contextRotMode = ContextMode.XAxis2;
+      this.setRotationMode(RotationMode.Context);
+      this.updateRotation();
+    } else if (this.published.flags & AccuDrawFlags.SetNormal) {
+      if (vp && vp.view.is3d()) {
+        this.axes.z.setFrom(this.published.vector);
+        this.flags.contextRotMode = ContextMode.ZAxis;
+        this.setRotationMode(RotationMode.Context);
+        this.updateRotation();
+      }
+    } else if (this.published.flags & AccuDrawFlags.OrientACS) {
+      this.flags.lockedRotation = true;
+      this.flags.baseRotation = RotationMode.ACS;
+      this.setRotationMode(RotationMode.ACS);
+      this.updateRotation();
+    } else if (this.isInactive() || (this.published.flags & AccuDrawFlags.OrientDefault)) {
+      this.setRotationMode(this.flags.baseRotation);
+      this.updateRotation();
+    }
+
+    if (this.published.flags & (AccuDrawFlags.SetRMatrix | AccuDrawFlags.SetXAxis | AccuDrawFlags.SetXAxis2 | AccuDrawFlags.SetNormal | AccuDrawFlags.OrientACS)) {
+      this.savedState.axes.setFrom(this.axes);
+      this.savedState.contextRotMode = this.flags.contextRotMode;
+    }
+
+    // Lock Items
+    switch (this.getCompassMode()) {
+      case CompassMode.Polar:
+        if (this.published.flags & AccuDrawFlags.LockDistance) {
+          this.distance = this.published.distance;
+          this.distanceLock(true, true);
+        }
+
+        if (this.published.flags & AccuDrawFlags.LockAngle) {
+          this.updateVector(this.published.angle);
+          this.indexed = LockedStates.NONE_LOCKED;
+          this.angleLock();
+          this.saveCoordinate(ItemField.ANGLE_Item, this.published.angle);
+        }
+        break;
+
+      case CompassMode.Rectangular:
+        if ((this.published.flags & AccuDrawFlags.Lock_X)) {
+          this.locked |= LockedStates.X_BM;
+          this.delta.x = this.published.delta.x;
+          this.setFieldLock(ItemField.X_Item, true);
+          this.saveCoordinate(ItemField.X_Item, this.published.delta.x);
+        }
+
+        if ((this.published.flags & AccuDrawFlags.Lock_Y)) {
+          this.locked |= LockedStates.Y_BM;
+          this.delta.y = this.published.delta.y;
+          this.setFieldLock(ItemField.Y_Item, true);
+          this.saveCoordinate(ItemField.Y_Item, this.published.delta.y);
+        }
+
+        if ((this.published.flags & AccuDrawFlags.Lock_Z)) {
+          if (vp && vp.view.is3d()) {
+            this.delta.z = this.published.delta.z;
+            this.setFieldLock(ItemField.Z_Item, true);
+            this.saveCoordinate(ItemField.Z_Item, this.published.delta.z);
+          }
+        }
+        break;
+    }
+  }
+
+  private processHints(): void {
+    if (!this.published.flags || !this.isEnabled())
+      return;
+
+    if (this.published.flags & AccuDrawFlags.Disable) {
+      this.published.flags = 0;
+      this.currentState = CurrentState.Deactivated;
+      return;
+    }
+    const setFocus: boolean = !!(this.published.flags & AccuDrawFlags.SetFocus);
+    this.doProcessHints();
+    this.published.zero();
+    if (this.isEnabled() || setFocus)
+      this.grabInputFocus();
+  }
+}
 
 const viewManager = ViewManager.instance;
 const accuDraw = AccuDraw.instance;

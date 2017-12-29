@@ -45,6 +45,7 @@
         "nullptr",
         "Obscurable",
         "PARASOLID",
+        "Pickable",
         "Polyface",
         "Polyfaces",
         "postupdate",
