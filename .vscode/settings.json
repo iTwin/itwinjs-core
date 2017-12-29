@@ -64,6 +64,7 @@
     "system",
     "tileset",
     "undoable",
+    "unsuspended",
     "viewflags",
     "viewports",
     "zbuffer"

@@ -1,8 +1,10 @@
 {
-  "extends": "./node_modules/@bentley/bentleyjs-tools/tsconfig-base.json",  
+  "extends": "./node_modules/@bentley/bentleyjs-tools/tsconfig-base.json",
   "compilerOptions": {
     "target": "es2017",
-    "rootDirs": ["source"],
+    "rootDirs": [
+      "source"
+    ],
     "baseUrl": "./source/test/node_modules",
     "types": [
       "mocha",

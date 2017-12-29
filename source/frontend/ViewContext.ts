@@ -3,8 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import { Viewport } from "./Viewport";
 import { Sprite } from "./Sprites";
-import { Point3d, Vector3d } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, Vector3d, RotMatrix, Point2d, Transform } from "@bentley/geometry-core/lib/PointVector";
 import { HitDetail, SnapMode, SnapDetail } from "./HitDetail";
+import { DecorationList, GraphicList, Decorations, Graphic, GraphicType, GraphicBuilder } from "../common/Render";
 
 // tslint:disable:no-empty
 
@@ -80,44 +81,65 @@ export class SnapContext extends ViewContext {
 }
 
 export class RenderContext extends ViewContext {
+  public createGraphic(_tf: Transform, _type: GraphicType): GraphicBuilder | undefined { return undefined; }
 }
 
 export class DecorateContext extends RenderContext {
-  public addSprite(_sprite: Sprite, _location: Point3d, _xVec: Vector3d, _transparency: number) { }
+  private readonly decorations = new Decorations();
+
   public drawSheetHit(_hit: HitDetail): void { }
   public drawNormalHit(_hit: HitDetail): void { }
   public drawHit(hit: HitDetail): void {
     const sheetVp = hit.m_sheetViewport;
     return (sheetVp && hit.m_viewport === this.viewport) ? this.drawSheetHit(hit) : this.drawNormalHit(hit);
   }
-  DGNPLATFORM_EXPORT void AddNormal(Render:: Graphic graphic);
+  public addNormal(graphic: Graphic) {
+    // if (nullptr != m_viewlet) {
+    //   m_viewlet -> Add(graphic);
+    //   return;
+    // }
 
-  //! Display world coordinate graphic with smooth shading, default lighting, and z testing enabled.
-  DGNPLATFORM_EXPORT void AddWorldDecoration(Render:: GraphicR graphic, Render:: OvrGraphicParamsCP ovr = nullptr);
+    if (!this.decorations.normal)
+      this.decorations.normal = new GraphicList();
 
-  //! Display world coordinate graphic with smooth shading, default lighting, and z testing disabled.
-  DGNPLATFORM_EXPORT void AddWorldOverlay(Render:: GraphicR graphic, Render:: OvrGraphicParamsCP ovr = nullptr);
+    this.decorations.normal.add(graphic);
+  }
 
-  //! Display view coordinate graphic with smooth shading, default lighting, and z testing disabled.
-  DGNPLATFORM_EXPORT void AddViewOverlay(Render:: GraphicR graphic, Render:: OvrGraphicParamsCP ovr = nullptr);
+  /** Display world coordinate graphic with smooth shading, default lighting, and z testing enabled. */
+  public addWorldDecoration(graphic: Graphic, _ovr?: any) {
+    if (!this.decorations.world)
+      this.decorations.world = new DecorationList();
+    this.decorations.world.add(graphic); // , ovrParams);
+  }
 
-  //! Display sprite as view overlay graphic.
-  DGNPLATFORM_EXPORT void AddSprite(Render:: ISprite & sprite, DPoint3dCR location, DPoint3dCR xVec, int transparency);
+  /** Display world coordinate graphic with smooth shading, default lighting, and z testing disabled. */
+  public addWorldOverlay(graphic: Graphic, _ovr?: any) {
+    if (!this.decorations.worldOverlay)
+      this.decorations.worldOverlay = new DecorationList();
+    this.decorations.worldOverlay.add(graphic); // , ovrParams);
+  }
 
-  //! @private
-  DGNPLATFORM_EXPORT void DrawStandardGrid(DPoint3dR gridOrigin, RotMatrixR rMatrix, DPoint2d spacing, uint32_t gridsPerRef, bool isoGrid = false, Point2dCP fixedRepetitions = nullptr);
+  /** Display view coordinate graphic with smooth shading, default lighting, and z testing disabled. */
+  public addViewOverlay(graphic: Graphic, _ovr?: any) {
+    if (!this.decorations.viewOverlay)
+      this.decorations.viewOverlay = new DecorationList();
+    this.decorations.viewOverlay.add(graphic); // , ovrParams);
+  }
 
-  //! @private
-  DGNPLATFORM_EXPORT BentleyStatus DrawHit(HitDetailCR hit);
+  /** Display sprite as view overlay graphic. */
+  public addSprite(_sprite: Sprite, _location: Point3d, _xVec: Vector3d, _transparency: number) {
+    //  this.addViewOverlay(* m_target.CreateSprite(sprite, location, xVec, transparency, GetDgnDb()), nullptr);
+  }
 
-  //! Display view coordinate graphic as background with smooth shading, default lighting, and z testing disabled. e.g., a sky box.
-  DGNPLATFORM_EXPORT void SetViewBackground(Render:: GraphicR graphic);
+  /** @private */
+  public drawStandardGrid(_gridOrigin: Point3d, _rMatrix: RotMatrix, _spacing: Point2d, _gridsPerRef: number, _isoGrid = false, _fixedRepetitions?: Point2d) { }
 
-  Render:: OvrGraphicParams& GetOvrGraphicParams() { return m_ovrParams; }
+  /** Display view coordinate graphic as background with smooth shading, default lighting, and z testing disabled. e.g., a sky box. */
+  public setViewBackground(graphic: Graphic) { this.decorations.viewBackground = graphic; }
 
-Render:: GraphicBuilderPtr CreateViewBackground(TransformCR tf = Transform:: FromIdentity()) { return CreateGraphic(tf, Render:: GraphicType:: ViewBackground); }
-Render:: GraphicBuilderPtr CreateWorldDecoration(TransformCR tf = Transform:: FromIdentity()) { return CreateGraphic(tf, Render:: GraphicType:: WorldDecoration); }
-Render:: GraphicBuilderPtr CreateWorldOverlay(TransformCR tf = Transform:: FromIdentity()) { return CreateGraphic(tf, Render:: GraphicType:: WorldOverlay); }
-Render:: GraphicBuilderPtr CreateViewOverlay(TransformCR tf = Transform:: FromIdentity()) { return CreateGraphic(tf, Render:: GraphicType:: ViewOverlay); }
+  public createViewBackground(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphic(tf, GraphicType.ViewBackground)!; }
+  public createWorldDecoration(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphic(tf, GraphicType.WorldDecoration)!; }
+  public createWorldOverlay(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphic(tf, GraphicType.WorldOverlay)!; }
+  public createViewOverlay(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphic(tf, GraphicType.ViewOverlay)!; }
 
 }

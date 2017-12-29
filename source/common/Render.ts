@@ -9,7 +9,7 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { DgnFB } from "./geometry/ElementGraphicsSchema";
 import { IModel } from "./IModel";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { Transform, Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
+import { Transform, Point3d, Point2d, Range3d, Range2d } from "@bentley/geometry-core/lib/PointVector";
 import { PatternParams } from "./geometry/AreaPattern";
 import { LineStyleInfo } from "./geometry/LineStyle";
 import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
@@ -23,9 +23,6 @@ export const enum RenderMode {
   HiddenLine = 3,
   SolidFill = 4,
   SmoothShade = 6,
-}
-
-export class DecorationList {
 }
 
 /** Flags for view display style */
@@ -838,42 +835,41 @@ export abstract class GraphicBuilder {
   // void AddTorus(DPoint3dCR center, DVec3dCR vectorX, DVec3dCR vectorY, double majorRadius, double minorRadius, double sweepAngle, bool capped) { AddSolidPrimitive(* ISolidPrimitive:: CreateDgnTorusPipe(DgnTorusPipeDetail(center, vectorX, vectorY, majorRadius, minorRadius, sweepAngle, capped))); }
   // void AddBox(DVec3dCR primary, DVec3dCR secondary, DPoint3dCR basePoint, DPoint3dCR topPoint, double baseWidth, double baseLength, double topWidth, double topLength, bool capped) { AddSolidPrimitive(* ISolidPrimitive:: CreateDgnBox(DgnBoxDetail:: InitFromCenters(basePoint, topPoint, primary, secondary, baseWidth, baseLength, topWidth, topLength, capped))); }
 
-  // //! Add DRange3d edges
-  // void AddRangeBox(DRange3dCR range)
-  // {
-  //   DPoint3d p[8], tmpPts[9];
+  /** Add DRange3d edges */
+  public addRangeBox(range: Range3d) {
+    const p: Point3d[] = [];
+    for (let i = 0; i < 8; ++i)
+      p[i] = new Point3d();
 
-  //   p[0].x = p[3].x = p[4].x = p[5].x = range.low.x;
-  //   p[1].x = p[2].x = p[6].x = p[7].x = range.high.x;
-  //   p[0].y = p[1].y = p[4].y = p[7].y = range.low.y;
-  //   p[2].y = p[3].y = p[5].y = p[6].y = range.high.y;
-  //   p[0].z = p[1].z = p[2].z = p[3].z = range.low.z;
-  //   p[4].z = p[5].z = p[6].z = p[7].z = range.high.z;
+    p[0].x = p[3].x = p[4].x = p[5].x = range.low.x;
+    p[1].x = p[2].x = p[6].x = p[7].x = range.high.x;
+    p[0].y = p[1].y = p[4].y = p[7].y = range.low.y;
+    p[2].y = p[3].y = p[5].y = p[6].y = range.high.y;
+    p[0].z = p[1].z = p[2].z = p[3].z = range.low.z;
+    p[4].z = p[5].z = p[6].z = p[7].z = range.high.z;
 
-  //   tmpPts[0] = p[0]; tmpPts[1] = p[1]; tmpPts[2] = p[2];
-  //   tmpPts[3] = p[3]; tmpPts[4] = p[5]; tmpPts[5] = p[6];
-  //   tmpPts[6] = p[7]; tmpPts[7] = p[4]; tmpPts[8] = p[0];
+    const tmpPts: Point3d[] = [];
+    tmpPts[0] = p[0]; tmpPts[1] = p[1]; tmpPts[2] = p[2];
+    tmpPts[3] = p[3]; tmpPts[4] = p[5]; tmpPts[5] = p[6];
+    tmpPts[6] = p[7]; tmpPts[7] = p[4]; tmpPts[8] = p[0];
 
-  //   AddLineString(9, tmpPts);
-  //   AddLineString(2, DSegment3d:: From(p[0], p[3]).point);
-  //   AddLineString(2, DSegment3d:: From(p[4], p[5]).point);
-  //   AddLineString(2, DSegment3d:: From(p[1], p[7]).point);
-  //   AddLineString(2, DSegment3d:: From(p[2], p[6]).point);
-  // }
+    this.addLineString(9, tmpPts);
+    this.addLineString(2, [p[0], p[3]]);
+    this.addLineString(2, [p[4], p[5]]);
+    this.addLineString(2, [p[1], p[7]]);
+    this.addLineString(2, [p[2], p[6]]);
+  }
 
-  // //! Add DRange2d edges
-  // void AddRangeBox2d(DRange2dCR range, double zDepth)
-  // {
-  //   DPoint2d tmpPts[5];
-
-  //   tmpPts[0] = DPoint2d:: From(range.low.x, range.low.y);
-  //   tmpPts[1] = DPoint2d:: From(range.high.x, range.low.y);
-  //   tmpPts[2] = DPoint2d:: From(range.high.x, range.high.y);
-  //   tmpPts[3] = DPoint2d:: From(range.low.x, range.high.y);
-  //   tmpPts[4] = tmpPts[0];
-
-  //   AddLineString2d(5, tmpPts, zDepth);
-  // }
+  /** Add DRange2d edges */
+  public addRangeBox2d(range: Range2d, zDepth: number) {
+    const tmpPts: Point2d[] = [];
+    tmpPts[0] = new Point2d(range.low.x, range.low.y);
+    tmpPts[1] = new Point2d(range.high.x, range.low.y);
+    tmpPts[2] = new Point2d(range.high.x, range.high.y);
+    tmpPts[3] = new Point2d(range.low.x, range.high.y);
+    tmpPts[4] = tmpPts[0];
+    this.addLineString2d(5, tmpPts, zDepth);
+  }
 
   /**
    * Set symbology for decorations that are only used for display purposes. Pickable decorations require a category, must initialize
@@ -897,15 +893,17 @@ export abstract class GraphicBuilder {
  *  - The individual Graphics within the DecorationList are rendered in the order in which they appear in the list.
  */
 export const enum GraphicType {
-  /**  Renders behind all other graphics. Coordinates: view. RenderMode: smooth. Lighting: none. Z-testing: disabled. */
+  /** Renders behind all other graphics. Coordinates: view. RenderMode: smooth. Lighting: none. Z-testing: disabled. */
   ViewBackground,
-  /**  Renders as if it were part of the scene. Coordinates: world. RenderMode: from view. Lighting: from view. Z-testing: enabled. */
-  /**  Used for the scene itself, dynamics, and 'normal' decorations. */
+  /** Renders as if it were part of the scene. Coordinates: world. RenderMode: from view. Lighting: from view. Z-testing: enabled. */
+  /** Used for the scene itself, dynamics, and 'normal' decorations. */
   Scene,
-  /**  Renders within the scene. Coordinates: world. RenderMode: smooth. Lighting: default. Z-testing: enabled */
+  /** Renders within the scene. Coordinates: world. RenderMode: smooth. Lighting: default. Z-testing: enabled */
   WorldDecoration,
-  /**  Renders atop the scene. Coordinates: world. RenderMode: smooth. Lighting: none. Z-testing: disabled */
-  /**  Used for things like the ACS triad and the grid. */
+  /**
+   * Renders atop the scene. Coordinates: world. RenderMode: smooth. Lighting: none. Z-testing: disabled
+   * Used for things like the ACS triad and the grid.
+   */
   WorldOverlay,
   /**
    * Renders atop the scene. Coordinates: view. RenderMode: smooth. Lighting: none. Z-testing: disabled
@@ -920,4 +918,19 @@ export class GraphicList {
   public clear() { this.list.length = 0; }
   public add(graphic: Graphic) { this.list.push(graphic); }
   public getCount(): number { return this.list.length; }
+}
+
+export class DecorationList extends GraphicList {
+}
+
+/**
+ * A set of GraphicLists of various types of Graphics that are "decorated" into the Render::Target,
+ * in addition to the Scene.
+ */
+export class Decorations {
+  public viewBackground?: Graphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
+  public normal?: GraphicList;       // drawn with zbuffer, with scene lighting
+  public world: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
+  public worldOverlay: DecorationList; // drawn in overlay mode, world units
+  public viewOverlay: DecorationList;  // drawn in overlay mode, view units
 }
