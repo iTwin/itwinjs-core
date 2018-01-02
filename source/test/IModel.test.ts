@@ -643,10 +643,10 @@ describe("iModel", () => {
 
     assert.notDeepEqual(codeSpec2Id, codeSpecId);
 
-    // We should be able to insert another CodeSpec with the same name and a different scope spec.
-    const codeSpec2r: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec2", CodeScopeSpec.Type.Repository, CodeScopeSpec.ScopeRequirement.FederationGuid);
-    const codeSpec2rId: Id64 = testImodel.codeSpecs.insert(codeSpec2r); // throws in case of error
-    assert.notDeepEqual(codeSpec2Id, codeSpec2rId);
+    // make sure CodeScopeSpec.Type.Repository works
+    const codeSpec3: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec3", CodeScopeSpec.Type.Repository, CodeScopeSpec.ScopeRequirement.FederationGuid);
+    const codeSpec3Id: Id64 = testImodel.codeSpecs.insert(codeSpec3); // throws in case of error
+    assert.notDeepEqual(codeSpec2Id, codeSpec3Id);
 
   });
 
