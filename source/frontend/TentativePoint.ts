@@ -1,16 +1,18 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Viewport } from "./Viewport";
 import { ViewManager } from "./ViewManager";
 import { BeButtonEvent } from "./tools/Tool";
 import { SnapMode, HitList, SnapDetail, SnapHeat, HitDetail, SubSelectionMode, HitSource, HitDetailType } from "./HitDetail";
-import { SnapContext } from "./ViewContext";
+import { SnapContext, DecorateContext } from "./ViewContext";
 import { ElementLocateManager, SnapType, SnapStatus, HitListHolder } from "./ElementLocateManager";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { AccuSnap } from "./AccuSnap";
+import { GraphicBuilder, LinePixels } from "../common/Render";
+import { ColorDef } from "../common/ColorDef";
 
 // tslint:disable:variable-name
 // tslint:disable:no-conditional-assignment
@@ -114,59 +116,51 @@ export class TentativePoint {
   public isView3d(): boolean { return this.viewport!.view.is3d(); }
 
   /** draw the cross as 4 lines rather than 2, so that there's no hole in the middle when drawn in dashed symbology */
-  // private drawTpCross(graphic: GraphicBuilder, tpSize: number, x: number, y: number): void {
-  // DPoint2d    tpCross[2];
-  // tpCross[0].x = x;
-  // tpCross[0].y = y;
+  private drawTpCross(graphic: GraphicBuilder, tpSize: number, x: number, y: number): void {
+    const tpCross: Point2d[] = [new Point2d(x, y), new Point2d(x + tpSize, y)];
+    graphic.addLineString2d(2, tpCross, 0.0);
 
-  // tpCross[1] = tpCross[0];
-  // tpCross[1].x += tpSize;
-  // graphic.AddLineString2d(2, tpCross, 0.0);
+    tpCross[1].x = x - tpSize;
+    graphic.addLineString2d(2, tpCross, 0.0);
 
-  // tpCross[1].x = x - tpSize;
-  // graphic.AddLineString2d(2, tpCross, 0.0);
+    tpCross[1].x = x;
+    tpCross[1].y = y + tpSize;
+    graphic.addLineString2d(2, tpCross, 0.0);
 
-  // tpCross[1].x = x;
-  // tpCross[1].y = y + tpSize;
-  // graphic.AddLineString2d(2, tpCross, 0.0);
+    tpCross[1].y = y - tpSize;
+    graphic.addLineString2d(2, tpCross, 0.0);
+  }
 
-  // tpCross[1].y = y - tpSize;
-  // graphic.AddLineString2d(2, tpCross, 0.0);
-  // }
+  public displayTP(context: DecorateContext): void {
+    const viewport = context.viewport;
+    if (!this.isActive || !viewport)
+      return;
 
-  // private displayTP(context: DecorateContext): void {
-  // const viewport = context.viewport;
+    const tpSize = viewport.pixelsPerInch / 2.0;  // about a 1/2 inch
+    const center = viewport.worldToView(this.point);
 
-  // if (!this.isActive || !viewport)
-  //   return;
+    // draw a "background shadow" line: wide, black, mostly transparent
+    const graphic = context.createViewOverlay();
+    const color = ColorDef.from(0, 0, 0, 225);
+    graphic.setSymbology(color, color, 7);
+    this.drawTpCross(graphic, tpSize + 2, center.x + 1, center.y + 1);
 
-  // DVec2d dpiScale = viewport -> GetRenderTarget() -> GetDevice() -> _GetDpiScale();
-  // int tpSize = (int)(40 * (dpiScale.x + dpiScale.y) / 2);
+    // draw a background line: narrow, black, slightly transparent (this is in case we're not snapped and showing a dotted line)
+    ColorDef.from(0, 0, 0, 10, color);
+    graphic.setSymbology(color, color, 3);
+    this.drawTpCross(graphic, tpSize + 1, center.x, center.y);
 
-  // DPoint3d center = viewport -> WorldToView(m_point);
+    // off-white (don't want white/black reversal), slightly transparent
+    ColorDef.from(0xfe, 0xff, 0xff, 10, color);
+    graphic.setSymbology(color, color, 1, this.isSnapped ? LinePixels.Solid : LinePixels.Code2);
 
-  // // draw a "background shadow" line: wide, black, mostly transparent
-  // const graphic = context.createViewOverlay();
-  // ColorDef color(0, 0, 0, 225);
-  // graphic -> SetSymbology(color, color, 7);
-  // drawTpCross(* graphic, tpSize + 2, center.x + 1, center.y + 1);
+    this.drawTpCross(graphic, tpSize, center.x, center.y);
+    context.addViewOverlay(graphic.finish()!);
 
-  // // draw a background line: narrow, black, slightly transparent (this is in case we're not snapped and showing a dotted line)
-  // color = ColorDef(0, 0, 0, 10);
-  // graphic -> SetSymbology(color, color, 3);
-  // drawTpCross(* graphic, tpSize + 1, center.x, center.y);
-
-  // // off-white (don't want white/black reversal), slightly transparent
-  // color = ColorDef(0xfe, 0xff, 0xff, 10);
-  // graphic -> SetSymbology(color, color, 1, IsSnapped() ? LinePixels :: Solid : LinePixels:: Code2);
-
-  // drawTpCross(* graphic, tpSize, center.x, center.y);
-  // context.AddViewOverlay(* graphic -> Finish());
-
-  // // Draw snapped segment...
-  // if (nullptr != m_currSnap)
-  //   m_currSnap -> Draw(context);
-  // }
+    // Draw snapped segment...
+    if (this.currSnap)
+      this.currSnap.draw(context);
+  }
 
   public getNextSnap(): SnapDetail | undefined {
     const snap = this.snapPaths.getNextHit() as SnapDetail;

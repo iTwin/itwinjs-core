@@ -62,8 +62,8 @@ export class ViewManager {
   public clearInfoWindow(): void { }
 
   public showInfoWindow(_viewPt: Point3d, _vp: Viewport, _msg: string) {
-    // if (this.doesHostHaveFocus())
-    //   this.getInfoWindow().show(viewPt, vp, msg);
+    //   if (this.doesHostHaveFocus())
+    //     this.getInfoWindow().show(viewPt, vp, msg);
   }
 
   /** The "selected view" is the default for certain operations.  */

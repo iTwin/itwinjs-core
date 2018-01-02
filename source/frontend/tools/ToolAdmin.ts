@@ -326,9 +326,8 @@ export class ToolAdmin {
 
   /** called when a viewport is closed */
   public onViewportClosed(vp: Viewport): void {
-    //  Closing the viewport may also delete the QueryModel so we have to prevent
-    //  AccuSnap from trying to use it.
-    //    AccuSnap:: GetInstance().Clear();
+    //  Closing the viewport may also delete the QueryModel so we have to prevent AccuSnap from trying to use it.
+    accuSnap.clear();
     this.currentInputState.clearViewport(vp);
   }
 
@@ -481,10 +480,10 @@ export class ToolAdmin {
     if (Math.abs(pointActive.z) < 1.0e-7)
       pointActive.z = 0.0; // remove Z fuzz introduced by active depth when near 0...
 
-    const handled = false;
+    let handled = false;
 
-    // if (applyLocks && !(tentativePoint.isActive || accuSnap.isHot()))
-    //   handled = AccuDraw.adjustPoint(pointActive, vp, false);
+    if (applyLocks && !(tentativePoint.isActive || accuSnap.isHot()))
+      handled = AccuDraw.instance.adjustPoint(pointActive, vp, false);
 
     // NOTE: We don't need to support axis lock, it's worthless if you have AccuDraw...
     if (!handled && vp.isPointAdjustmentRequired()) {
@@ -543,13 +542,13 @@ export class ToolAdmin {
     }
 
     current.buttonDownTool = tool;
-    //    AccuDraw:: GetInstance()._OnPreDataButton(event);
+    AccuDraw.instance.onPreDataButton(ev);
 
     if (tool)
       tool.onDataButtonDown(ev);
 
-    // TentativePoint:: GetInstance().OnButtonEvent();
-    // AccuDraw:: GetInstance()._OnPostDataButton(event);
+    TentativePoint.instance.onButtonEvent();
+    AccuDraw.instance.onPostDataButton(ev);
     if (!(tool instanceof PrimitiveTool))
       return;
 
@@ -750,9 +749,8 @@ export class ToolAdmin {
     current.changeButtonToDownPoint(ev);
     if (tool)
       tool.onResetButtonUp(ev);
-
     ev.reset();
-    //    TentativePoint:: GetInstance().OnButtonEvent();
+    TentativePoint.instance.onButtonEvent();
   }
 
   private scratchGestureEvent = new BeGestureEvent();
@@ -772,7 +770,7 @@ export class ToolAdmin {
       this.currentInputState.clearTouch();
     }
     ev.reset();
-    //    AccuSnap:: GetInstance().Clear();
+    accuSnap.clear();
   }
 
   public onSingleFingerMove(vp: Viewport, gestureInfo: GestureInfo) {
@@ -946,8 +944,8 @@ export class ToolAdmin {
 
     // this.exitInputCollector();
     // this.setIncompatibleViewportCursor(true); // Don't restore this...
-    // AccuDraw:: GetInstance()._OnPrimitiveToolInstall();
-    // AccuSnap:: GetInstance().OnStartTool();
+    AccuDraw.instance.onPrimitiveToolInstall();
+    accuSnap.onStartTool();
 
     this.viewCursor = newTool.getCursor();
 
@@ -995,7 +993,7 @@ export class ToolAdmin {
     if (!this.cursorInView)
       return;
 
-    // DgnViewportR viewport = * context.GetViewport();
+    // const viewport = context.viewport;
     // DgnButtonEvent ev;
 
     // _FillEventFromCursorLocation(ev);
@@ -1003,8 +1001,8 @@ export class ToolAdmin {
     // if (ev.GetViewport() != & viewport)
     //   return;
 
-    // HitDetailCP hit = AccuDraw:: GetInstance().IsActive() ? nullptr : AccuSnap:: GetInstance().CurrHit(); // NOTE: Show surface normal until AccuDraw becomes active...
-    // viewport.GetViewControllerR()._DrawLocateCursor(context, * ev.GetPoint(), viewport.PixelsFromInches(ElementLocateManager:: GetManager().GetApertureInches()), _IsLocateCircleOn(), hit);
+    // const hit = AccuDraw.instance.isActive ? undefined : accuSnap.currHit; // NOTE: Show surface normal until AccuDraw becomes active...
+    // viewport.view.drawLocateCursor(context, * ev.GetPoint(), viewport.PixelsFromInches(ElementLocateManager:: GetManager().GetApertureInches()), _IsLocateCircleOn(), hit);
   }
 
   public beginDynamics(): void {

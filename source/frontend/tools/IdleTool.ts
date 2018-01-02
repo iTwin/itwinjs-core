@@ -6,9 +6,10 @@ import { ToolAdmin } from "./ToolAdmin";
 import { ViewManip, ViewHandleType, FitViewTool, RotatePanZoomGestureTool } from "./ViewTool";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { PrimitiveTool } from "./PrimitiveTool";
+import { TentativePoint } from "../TentativePoint";
+import { AccuDraw } from "../AccuDraw";
 
 const toolAdmin = ToolAdmin.instance;
-// tslint:disable:no-empty
 
 /**
  * The default "idle" tool. If no tool is active, or the active tool does not respond to a given
@@ -74,52 +75,47 @@ export class IdleTool extends Tool {
       if (currTool.viewHandles.hasHandle(ViewHandleType.TargetCenter))
         currTool.invalidateTargetCenter();
     }
-    //     TentativePoint & tp = TentativePoint:: GetInstance();
 
-    //     tp.Process(ev);
+    const tp = TentativePoint.instance;
+    tp.process(ev);
 
-    //     if (tp.IsSnapped()) {
-    //       GetToolAdmin()._AdjustSnapPoint();
-    //     }
-    //     else {
-    //       if (AccuDraw:: GetInstance().IsActive())
-    //       {
-    //         DPoint3dR point = tp.GetTpPoint();
-    //         DgnViewportR vp = * ev.GetViewport();
+    if (tp.isSnapped) {
+      toolAdmin.adjustSnapPoint();
+    } else {
+      if (AccuDraw.instance.isActive) {
+        //         DPoint3dR point = tp.GetTpPoint();
+        //         DgnViewportR vp = * ev.GetViewport();
 
-    //         if (vp.IsSnapAdjustmentRequired()) {
-    //           GetToolAdmin()._AdjustPointToACS(point, * ev.GetViewport(), false);
+        //         if (vp.IsSnapAdjustmentRequired()) {
+        //           GetToolAdmin()._AdjustPointToACS(point, * ev.GetViewport(), false);
 
-    //           GeomDetail  geomDetail; geomDetail.Init(); geomDetail.SetClosestPoint(point);
-    //           HitDetail   hit(* ev.GetViewport(), nullptr, nullptr, point, HitSource:: TentativeSnap, geomDetail);
-    //           SnapDetailP snap = new SnapDetail(& hit);
+        //           GeomDetail  geomDetail; geomDetail.Init(); geomDetail.SetClosestPoint(point);
+        //           HitDetail   hit(* ev.GetViewport(), nullptr, nullptr, point, HitSource:: TentativeSnap, geomDetail);
+        //           SnapDetailP snap = new SnapDetail(& hit);
 
-    //           snap -> AddRef();
-    //           tp.SetCurrSnap(snap);
-    //           GetToolAdmin()._AdjustSnapPoint();
-    //           tp.GetTpPoint() = * tp.GetPoint();
-    //           tp.SetCurrSnap(nullptr);
-    //           snap -> Release();
-    //         }
-    //         else {
-    //           AccuDraw:: GetInstance()._AdjustPoint(point, vp, false);
+        //           snap -> AddRef();
+        //           tp.SetCurrSnap(snap);
+        //           GetToolAdmin()._AdjustSnapPoint();
+        //           tp.GetTpPoint() = * tp.GetPoint();
+        //           tp.SetCurrSnap(nullptr);
+        //           snap -> Release();
+        //         } else {
+        //           AccuDraw:: GetInstance()._AdjustPoint(point, vp, false);
 
-    //           DPoint3d savePoint = point;
-    //           GetToolAdmin()._AdjustPointToGrid(point, vp);
+        //           DPoint3d savePoint = point;
+        //           GetToolAdmin()._AdjustPointToGrid(point, vp);
 
-    //           if (!point.IsEqual(savePoint))
-    //             AccuDraw:: GetInstance()._AdjustPoint(point, vp, false);
+        //           if (!point.IsEqual(savePoint))
+        //             AccuDraw:: GetInstance()._AdjustPoint(point, vp, false);
 
-    //           tp.GetTpPoint() = point;
-    //         }
-    //       }
-    //         else
-    //             {
-    //   GetToolAdmin()._AdjustPoint(tp.GetTpPoint(), * ev.GetViewport());
-    //        }
+        //           tp.GetTpPoint() = point;
+        // }
+      } else {
+        toolAdmin.adjustPoint(tp.point, ev.viewport!);
+      }
 
-    //     AccuDraw:: GetInstance()._OnTentative();
-    //         }
+      AccuDraw.instance.onTentative();
+    }
 
     // NOTE: Need to synch tool dynamics because of UpdateDynamics call in _ExitViewTool from OnMiddleButtonUp before point was adjusted. :(
     if (currTool && currTool instanceof PrimitiveTool) {
