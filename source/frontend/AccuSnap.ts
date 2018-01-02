@@ -103,7 +103,7 @@ export class AccuSnap {
   public getCurrSnapDetail(): SnapDetail | undefined { return AccuSnap.toSnapDetail(this.currHit); }
   public isHot(): boolean { const currSnap = this.getCurrSnapDetail(); return !currSnap ? false : currSnap.isHot(); }
 
-  private destroy(): void {
+  public destroy(): void {
     this.currHit = undefined;
     this.aSnapHits = undefined;
     this.retestList.empty();
@@ -137,7 +137,7 @@ export class AccuSnap {
     this.motionToleranceSq = toolAdmin.isCurrentInputSourceMouse() ? 1 : 20;
   }
 
-  private checkStopLocate(): boolean {
+  public checkStopLocate(): boolean {
     const curPos = toolAdmin.currentInputState.lastMotion; //  Get the current cursor pos and compute the distance moved since last check.
     const dx = curPos.x - this.lastCursorPos.x;
     const dy = curPos.y - this.lastCursorPos.y;
@@ -227,7 +227,7 @@ export class AccuSnap {
       elementLocateManager.onFlashHit(snap);
   }
 
-  private erase(): void {
+  public erase(): void {
     this.clearInfoBalloon(undefined); // make sure there's no info balloon up.
     this.clearSprites(); // remove all sprites from the screen
   }
@@ -242,7 +242,7 @@ export class AccuSnap {
       viewManager.showInfoWindow(viewPt, vp, msg);
   }
 
-  private displayInfoBalloon(viewPt: Point3d, vp: Viewport, uorPt?: Point3d): void {
+  public displayInfoBalloon(viewPt: Point3d, vp: Viewport, uorPt?: Point3d): void {
     // if the info balloon is already displayed, or if he doesn't want it, quit.
     if (viewManager.isInfoWindowUp() || !this.wantInfoBalloon())
       return;
@@ -689,8 +689,8 @@ export class AccuSnap {
     return out.snapStatus;
   }
 
-  private doIntersectSnap(ev: BeButtonEvent, _usingMultipleSnaps: boolean, _out: LocateResponse): SnapDetail | undefined {
-    // const hitList = this.aSnapHits;
+  private doIntersectSnap(_ev: BeButtonEvent, _usingMultipleSnaps: boolean, _out: LocateResponse): SnapDetail | undefined {
+    // const hitList = thevis.aSnapHits;
     // const testHits: HitDetail[] = [];
     // const testPoint = this.isLocateEnabled() ? ev.point : ev.rawPoint;
     // let count = 0;

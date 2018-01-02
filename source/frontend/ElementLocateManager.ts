@@ -160,7 +160,7 @@ export class ElementPicker {
    * test a (previously generated) hit against a new datapoint (presumes same view)
    * @return true if the point is on the element
    */
-  public testHit(_hit: HitDetail, hitList: HitList | undefined, vp: Viewport, pickPointWorld: Point3d, pickApertureScreen: number, options: LocateOptions): TestHitStatus {
+  public testHit(_hit: HitDetail, hitList: HitList | undefined, _vp: Viewport, _pickPointWorld: Point3d, _pickApertureScreen: number, _options: LocateOptions): TestHitStatus {
     // if they didn't supply a hit list, and we don't have one, create one.
     if (!hitList && !this.hitList)
       this.empty();

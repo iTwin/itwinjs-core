@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Point3d, Point2d, XAndY, Vector3d } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, Point2d, XAndY } from "@bentley/geometry-core/lib/PointVector";
 import { NpcCenter, ViewStatus } from "../../common/ViewState";
 import { Viewport } from "../Viewport";
 import { IdleTool } from "./IdleTool";
@@ -385,7 +385,7 @@ export class ToolAdmin {
 
       if (InputSource.Mouse === current.inputSource) {
         accuSnap.onNoMotion(ev);
-        accuDraw.onNoMotion(ev);
+        // accuDraw.onNoMotion(ev);
       }
     }
 
@@ -437,22 +437,22 @@ export class ToolAdmin {
     ev.reset();
   }
 
-  private adjustPointToACS(pointActive: Point3d, vp: Viewport, perpendicular: boolean): void {
+  private adjustPointToACS(_pointActive: Point3d, _vp: Viewport, _perpendicular: boolean): void {
     // The "I don't want ACS lock" flag can be set by tools to override the default behavior...
     if (0 !== (this.toolState.coordLockOvr & CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_ACS))
       return;
 
-    let viewZRoot: Vector3d;
+    // let viewZRoot: Vector3d;
 
-    // Lock to the construction plane
-    if (vp.view.is3d() && vp.view.isCameraOn())
-      viewZRoot = vp.view.camera.eye.vectorTo(pointActive);
-    else
-      viewZRoot = vp.rotMatrix.getRow(2);
+    // // Lock to the construction plane
+    // if (vp.view.is3d() && vp.view.isCameraOn())
+    //   viewZRoot = vp.view.camera.eye.vectorTo(pointActive);
+    // else
+    //   viewZRoot = vp.rotMatrix.getRow(2);
 
-    const auxOriginRoot = vp.getAuxCoordOrigin();
-    const auxRMatrixRoot = vp.getAuxCoordRotation();
-    const auxNormalRoot = auxRMatrixRoot.getRow(2);
+    // const auxOriginRoot = vp.getAuxCoordOrigin();
+    // const auxRMatrixRoot = vp.getAuxCoordRotation();
+    // const auxNormalRoot = auxRMatrixRoot.getRow(2);
 
     // // If ACS xy plane is perpendicular to view and not snapping, project to closest xz or yz plane instead...
     // if (auxNormalRoot.isPerpendicularTo(viewZRoot) && !TentativeOrAccuSnap.isHot()) {
@@ -481,10 +481,10 @@ export class ToolAdmin {
     if (Math.abs(pointActive.z) < 1.0e-7)
       pointActive.z = 0.0; // remove Z fuzz introduced by active depth when near 0...
 
-    let handled = false;
+    const handled = false;
 
-    if (applyLocks && !(tentativePoint.isActive || accuSnap.isHot()))
-      handled = AccuDraw.adjustPoint(pointActive, vp, false);
+    // if (applyLocks && !(tentativePoint.isActive || accuSnap.isHot()))
+    //   handled = AccuDraw.adjustPoint(pointActive, vp, false);
 
     // NOTE: We don't need to support axis lock, it's worthless if you have AccuDraw...
     if (!handled && vp.isPointAdjustmentRequired()) {
@@ -1010,7 +1010,7 @@ export class ToolAdmin {
   public beginDynamics(): void {
     accuDraw.onBeginDynamics();
     viewManager.beginDynamicsMode();
-    this.setLocateCursor(false);
+    // this.setLocateCursor(false);
   }
 
   public endDynamics(): void {

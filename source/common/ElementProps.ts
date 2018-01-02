@@ -6,7 +6,6 @@ import { CodeProps, Code } from "./Code";
 import { EntityProps } from "./EntityProps";
 import { GeometryStream } from "./geometry/GeometryStream";
 import { Placement3dProps, Placement2d } from "./geometry/Primitives";
-import { XAndY, XYAndZ } from "@bentley/geometry-core/lib/PointVector";
 
 export interface RelatedElementProps {
   id: Id64 | string;

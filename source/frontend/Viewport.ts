@@ -187,11 +187,11 @@ export class Viewport {
   public readonly rootToNpc = Map4d.createIdentity();
   private readonly viewCorners: Range3d = new Range3d();
   private animator?: Animator;
-  private flashUpdateTime: BeTimePoint;  // time the current flash started
-  private flashIntensity: number;        // current flash intensity from [0..1]
-  private flashDuration: number;         // the length of time that the flash intensity will increase (in seconds)
+  public flashUpdateTime: BeTimePoint;  // time the current flash started
+  public flashIntensity: number;        // current flash intensity from [0..1]
+  public flashDuration: number;         // the length of time that the flash intensity will increase (in seconds)
   private flashedElem?: Id64;
-  private lastFlashedElem?: Id64;
+  public lastFlashedElem?: Id64;
   private _viewCmdTargetCenter?: Point3d;
   public frustFraction: number = 1.0;
   public maxUndoSteps = 20;

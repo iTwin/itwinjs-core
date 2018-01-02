@@ -9,7 +9,6 @@ import { Frustum, NpcCenter, Npc, MarginPercent, ViewStatus, ViewState3d } from 
 import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
-import { AccuDraw } from "../AccuDraw";
 
 // tslint:disable:no-empty
 
@@ -1827,5 +1826,3 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     return this.endGesture();
   }
 }
-
-const accudraw = AccuDraw.instance;

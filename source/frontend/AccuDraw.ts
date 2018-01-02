@@ -355,7 +355,7 @@ export class AccuDraw {
     if (offsetSnap) {
       if (isOnCompassPlane) {
         const zOffset = snapPt.distance(this.rawPointOnPlane);
-        if (zOffset > Geometry.smallAngleRadians || zOffset < -Geometry.smallAngleRadians)
+        if (zOffset > Constants.SMALL_ANGLE || zOffset < -Constants.SMALL_ANGLE)
           return true;
       }
     }
@@ -658,6 +658,12 @@ export class AccuDraw {
     const vp = this.currentView;
     const useACS = vp ? vp.isContextRotationRequired() : false;
 
+    if (this.rotationMode === RotationMode.Restore) {
+      newRotation = this.savedState.axes.clone();
+      this.flags.contextRotMode = this.savedState.contextRotMode;
+      this.rotationMode = RotationMode.Context;
+    }
+
     switch (this.rotationMode) {
       case RotationMode.Top:
         // Get standard rotation relative to ACS when ACS context lock is enabled...
@@ -689,15 +695,6 @@ export class AccuDraw {
         newRotation.fromRotMatrix(rMatrix);
         this.flags.lockedRotation = false;
         break;
-
-      case RotationMode.Restore:
-        newRotation = this.savedState.axes.clone();
-        this.flags.contextRotMode = this.savedState.contextRotMode;
-        this.rotationMode = RotationMode.Context;
-
-        if (ContextMode.Locked === this.flags.contextRotMode)
-          break;
-      // otherwise, fall thru for context rotation handling
 
       case RotationMode.Context:
         switch (this.flags.contextRotMode) {
@@ -871,7 +868,7 @@ export class AccuDraw {
     rMatrix.multiplyTransposeVector(this.vector);
   }
 
-  private stringToUORs(uors: number[], str: string): BentleyStatus {
+  private stringToUORs(_uors: number[], _str: string): BentleyStatus {
     // DistanceParserPtr parser = DistanceParser:: Create();
     // DgnViewportP   vp = GetCompassViewport();
 
@@ -886,7 +883,7 @@ export class AccuDraw {
     return BentleyStatus.SUCCESS;
   }
 
-  private stringToAngle(angle: number[], out: { isBearing: boolean }, inString: string, restrict: boolean): BentleyStatus {
+  private stringToAngle(_angle: number[], _out: { isBearing: boolean }, _inString: string, _restrict: boolean): BentleyStatus {
     // WString     buffer(inString, BentleyCharEncoding:: Utf8);
     // WChar * p1, * p2, * string;
     // int         north = 0, east = 0;
@@ -1641,7 +1638,7 @@ export class AccuDraw {
   private getCompassPlanePoint(point: Point3d, vp: Viewport): boolean {
     point.setFrom(this.origin); // Isn't this just m_planePt?!? Maybe at display time it's not setup yet?!?
     if (this.fieldLocked[ItemField.Z_Item] && vp.view.is3d()) {
-      if (0.0 !== this.delta.z && !(this.delta.z < Geometry.smallAngleRadians && this.delta.z > -Geometry.smallAngleRadians)) {
+      if (0.0 !== this.delta.z && !(this.delta.z < Constants.SMALL_ANGLE && this.delta.z > -Constants.SMALL_ANGLE)) {
         point.addScaledInPlace(this.axes.z, this.delta.z);
         return true;
       }
@@ -1662,8 +1659,8 @@ export class AccuDraw {
     const origin = new Point3d(); // Compass origin is adjusted by active z-lock...
     this.getCompassPlanePoint(origin, vp);
     this.tolerance = vp.pixelsFromInches(this.indexToleranceInches) * vp.getPixelSizeAtPoint(origin);
-    if (Geometry.smallAngleRadians > this.tolerance)
-      this.tolerance = Geometry.smallAngleRadians;
+    if (Constants.SMALL_ANGLE > this.tolerance)
+      this.tolerance = Constants.SMALL_ANGLE;
   }
 
   private displayAlignments(graphic: GraphicBuilder, vp: Viewport): void {
@@ -1738,7 +1735,7 @@ export class AccuDraw {
         if (isRectMode) {
           const zOffset = snapPt.distance(this.rawPointOnPlane);
 
-          if (zOffset > Geometry.smallAngleRadians || zOffset < -Geometry.smallAngleRadians) {
+          if (zOffset > Constants.SMALL_ANGLE || zOffset < -Constants.SMALL_ANGLE) {
             pts[2] = this.rawPoint;
             graphic.setSymbology(colorIndex, colorIndex, 2, LinePixels.Code5);
             graphic.addLineString(2, [pts[1], pts[2]]);
@@ -2045,7 +2042,6 @@ export class AccuDraw {
   protected onFieldLockChange(_index: ItemField) { }
   protected onFieldValueChange(_index: ItemField) { }
   protected hasInputFocus() { return true; }
-  protected gGrabInputFocus() { }
   protected setFocusItem(_index: ItemField) { }
 
   private static getMinPolarMag(origin: Point3d): number {
@@ -2108,11 +2104,11 @@ export class AccuDraw {
       outPtP.setFrom(inPtP);
       const delta = pointOnPlaneP.vectorTo(outPtP);
       return (Math.abs(normalVectorP.dotProduct(delta)) < Constants.SMALL_DELTA);
-    } else if (BentleyStatus.SUCCESS !== this.constructionPlane(outPtP, inPtP, pointOnPlaneP, normalVectorP, vp, false)) {
+    }
+    if (BentleyStatus.SUCCESS !== this.constructionPlane(outPtP, inPtP, pointOnPlaneP, normalVectorP, vp, false)) {
       const viewNormal = vp.rotMatrix.getRow(2);
       this.constructionPlane(outPtP, inPtP, pointOnPlaneP, viewNormal, vp, false);
       this.constructionPlane(outPtP, outPtP, pointOnPlaneP, normalVectorP, vp, true);
-
       return false;
     }
     return true;
@@ -2144,11 +2140,8 @@ export class AccuDraw {
     if (!pointIsOnPlane)
       return false;
 
-    // SnapDetailCP snapDetail = AccuSnap:: GetInstance().GetCurrSnapDetail();
-    // if (nullptr == snapDetail || SnapMode:: Nearest != snapDetail -> GetSnapMode())
-    // return false;
-
-    return true;
+    const snapDetail = AccuSnap.instance.getCurrSnapDetail();
+    return (!!snapDetail && (SnapMode.Nearest === snapDetail.m_snapMode));
   }
 
   public fixPointPolar(vp: Viewport): void {
@@ -2700,25 +2693,25 @@ export class AccuDraw {
     if (!snap.m_geomDetail.m_primitive)
       return false;
 
-    let refPt: Point3d;
+    // const refPt: Point3d;
     switch (this.locked) {
-      case LockedStates.VEC_BM:
-        this.intersectLine(context, this.origin, this.vector);
-        break;
+      // case LockedStates.VEC_BM:
+      //   this.intersectLine(context, this.origin, this.vector);
+      //   break;
 
-      case LockedStates.X_BM:
-        refPt = (CompassMode.Rectangular === this.getCompassMode()) ? this.planePt.plusScaled(this.axes.x, this.delta.x) : this.origin;
-        this.intersectLine(context, refPt, this.axes.y);
-        break;
+      // case LockedStates.X_BM:
+      //   refPt = (CompassMode.Rectangular === this.getCompassMode()) ? this.planePt.plusScaled(this.axes.x, this.delta.x) : this.origin;
+      //   this.intersectLine(context, refPt, this.axes.y);
+      //   break;
 
-      case LockedStates.Y_BM:
-        refPt = (CompassMode.Rectangular === this.getCompassMode()) ? this.planePt.plusScaled(this.axes.y, this.delta.y) : this.origin;
-        this.intersectLine(context, refPt, this.axes.x);
-        break;
+      // case LockedStates.Y_BM:
+      //   refPt = (CompassMode.Rectangular === this.getCompassMode()) ? this.planePt.plusScaled(this.axes.y, this.delta.y) : this.origin;
+      //   this.intersectLine(context, refPt, this.axes.x);
+      //   break;
 
-      case LockedStates.DIST_BM:
-        this.intersectCircle(context, this.origin, this.axes.z, this.distance);
-        break;
+      // case LockedStates.DIST_BM:
+      //   this.intersectCircle(context, this.origin, this.axes.z, this.distance);
+      //   break;
     }
 
     return false;

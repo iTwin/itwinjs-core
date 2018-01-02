@@ -61,7 +61,7 @@ export class ViewManager {
   public isInfoWindowUp(): boolean { return false; } // NEEDS_WORK
   public clearInfoWindow(): void { }
 
-  public showInfoWindow(viewPt: Point3d, vp: Viewport, msg: string) {
+  public showInfoWindow(_viewPt: Point3d, _vp: Viewport, _msg: string) {
     // if (this.doesHostHaveFocus())
     //   this.getInfoWindow().show(viewPt, vp, msg);
   }
