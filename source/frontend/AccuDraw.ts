@@ -18,10 +18,7 @@ import { LinePixels, GraphicBuilder } from "../common/Render";
 import { DecorateContext, SnapContext } from "./ViewContext";
 import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
 
-// tslint:disable:one-variable-per-declaration
 // tslint:disable:no-conditional-assignment
-// tslint:disable:no-empty
-// tslint:disable:no-switch-case-fall-through
 
 export const enum AccuDrawFlags {
   SetModePolar = 1,
