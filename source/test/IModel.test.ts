@@ -6,7 +6,7 @@ import * as path from "path";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { Code, CodeSpec, CodeSpecScope } from "../common/Code";
+import { Code, CodeSpec, CodeScopeSpec } from "../common/Code";
 import { EntityProps } from "../common/EntityProps";
 import { ModelSelectorState, ModelSelectorProps } from "../common/ViewState";
 import { IModelError, IModelStatus } from "../common/IModelError";
@@ -622,14 +622,14 @@ describe("iModel", () => {
   it("should create and insert CodeSpecs", async () => {
     const testImodel = imodel2;
 
-    const codeSpec: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec1", CodeSpecScope.Type.Model);
+    const codeSpec: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec1", CodeScopeSpec.Type.Model);
     // TODO: codeSpec.buildResourcesRequest + tesetImodel.requestResources
     const codeSpecId: Id64 = testImodel.codeSpecs.insert(codeSpec); // throws in case of error
     assert.deepEqual(codeSpecId, codeSpec.id);
 
     // Should not be able to insert a duplicate.
     try {
-      const codeSpecDup: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec1", CodeSpecScope.Type.Model);
+      const codeSpecDup: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec1", CodeScopeSpec.Type.Model);
       testImodel.codeSpecs.insert(codeSpecDup); // throws in case of error
       assert.fail();
     } catch (err) {
@@ -637,11 +637,16 @@ describe("iModel", () => {
     }
 
     // We should be able to insert another CodeSpec with a different name.
-    const codeSpec2: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec2", CodeSpecScope.Type.Model, CodeSpecScope.ScopeRequirement.FederationGuid);
+    const codeSpec2: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec2", CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
     const codeSpec2Id: Id64 = testImodel.codeSpecs.insert(codeSpec2); // throws in case of error
     assert.deepEqual(codeSpec2Id, codeSpec2.id);
 
     assert.notDeepEqual(codeSpec2Id, codeSpecId);
+
+    // We should be able to insert another CodeSpec with the same name and a different scope spec.
+    const codeSpec2r: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec2", CodeScopeSpec.Type.Repository, CodeScopeSpec.ScopeRequirement.FederationGuid);
+    const codeSpec2rId: Id64 = testImodel.codeSpecs.insert(codeSpec2r); // throws in case of error
+    assert.notDeepEqual(codeSpec2Id, codeSpec2rId);
 
   });
 

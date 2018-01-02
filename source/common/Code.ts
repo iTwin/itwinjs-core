@@ -67,7 +67,7 @@ export class CodeSpecNames {
   public static ViewDefinition() { return CodeSpecNames.BIS_CODESPEC("ViewDefinition"); }
 }
 
-export namespace CodeSpecScope {
+export namespace CodeScopeSpec {
   export const enum Type {
       Repository = 1,     /** The Code value must be unique within (at least) the DgnDb repository */
       Model = 2,          /** The Code value must be unique within the scope of the DgnModel */
@@ -92,16 +92,16 @@ export class CodeSpec {
   public iModel: IModel;
   public id: Id64;
   public name: string;
-  public specScopeType: CodeSpecScope.Type;
-  public scopeReq: CodeSpecScope.ScopeRequirement;
+  public specScopeType: CodeScopeSpec.Type;
+  public scopeReq: CodeScopeSpec.ScopeRequirement;
   public properties: any; // TODO: CodeSpec handlers and custom properties
 
-  public constructor(iModel: IModel, id: Id64, name: string, specScopeType: CodeSpecScope.Type, scopeReq?: CodeSpecScope.ScopeRequirement, properties?: any) {
+  public constructor(iModel: IModel, id: Id64, name: string, specScopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement, properties?: any) {
     this.iModel = iModel;
     this.id = id;
     this.name = name;
     this.specScopeType = specScopeType;
-    this.scopeReq = (undefined !== scopeReq) ? scopeReq : CodeSpecScope.ScopeRequirement.ElementId;
+    this.scopeReq = (undefined !== scopeReq) ? scopeReq : CodeScopeSpec.ScopeRequirement.ElementId;
     this.properties = properties;
   }
 
