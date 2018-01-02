@@ -16,6 +16,8 @@
   },
   "repository": {},
   "dependencies": {
+    "@bentley/imodeljs-electronaddon": "~1.6.1",
+    "@bentley/imodeljs-nodeaddonapi": "~1.6.0",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
     "electron": "1.6.11",
@@ -24,11 +26,6 @@
     "fs-extra": "^4.0.3",
     "node-replace": "^0.3.3",
     "webpack": "^3.10.0"
-  },
-  "//optionalDependencies": "imodeljs-e_1_6_11-win32-x64 is optional because it is not available for all platforms where we install, build, and test imodeljs-core",
-  "optionalDependencies": {
-    "@bentley/imodeljs-nodeaddonapi": "~1.4.3",
-    "@bentley/imodeljs-electronaddonapi": "~1.4.3"
   },
   "devDependencies": {
     "@types/body-parser": "^1.16.8",

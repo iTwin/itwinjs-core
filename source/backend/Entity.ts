@@ -70,7 +70,7 @@ export class Entity implements EntityProps {
   * @param _req The request object, which accumulates requests.
   * @param _opcode The operation that will be performed on the element.
   */
-  public buildResourcesRequest(_req: BriefcaseManager.ResourcesRequest, _opcode?: DbOpcode): void {
+  public buildResourcesRequest(_req: BriefcaseManager.ResourcesRequest, _opcode: DbOpcode): void {
     // subclasses must override this method to build a request for the resources they know that they need.
   }
 

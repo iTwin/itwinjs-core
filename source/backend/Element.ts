@@ -81,13 +81,7 @@ export abstract class Element extends Entity implements ElementProps {
   * @param req The request object, which accumulates requests.
   * @param opcode The operation that will be performed on the element.
   */
-  public buildResourcesRequest(req: BriefcaseManager.ResourcesRequest, opcode?: DbOpcode): void {
-    if (opcode === undefined) {
-      if (this.id === undefined)
-        opcode = DbOpcode.Insert;
-      else
-        opcode = DbOpcode.Delete;
-    }
+  public buildResourcesRequest(req: BriefcaseManager.ResourcesRequest, opcode: DbOpcode): void {
     this.iModel.buildResourcesRequestForElement(req, this, opcode);
   }
 }

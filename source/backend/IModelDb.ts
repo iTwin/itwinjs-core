@@ -28,6 +28,7 @@ import { Entity, EntityMetaData } from "./Entity";
 import { IModelGatewayImpl } from "./IModelGatewayImpl";
 import { StatusCodeWithMessage, RepositoryStatus } from "@bentley/bentleyjs-core/lib/BentleyError";
 import * as path from "path";
+import { IModelDbLinkTableRelationships, LinkTableRelationship } from "./LinkTableRelationship";
 
 // Register the backend implementation of IModelGateway
 IModelGatewayImpl.register();
@@ -126,6 +127,7 @@ class ECSqlStatementCache {
 export class IModelDb extends IModel {
   public readonly models: IModelDbModels;
   public readonly elements: IModelDbElements;
+  public readonly linkTableRelationships: IModelDbLinkTableRelationships;
   private readonly statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private _maxStatementCacheCount = 20;
   private _codeSpecs: CodeSpecs;
@@ -142,6 +144,7 @@ export class IModelDb extends IModel {
     this.briefcaseInfo = briefcaseInfo;
     this.models = new IModelDbModels(this);
     this.elements = new IModelDbElements(this);
+    this.linkTableRelationships = new IModelDbLinkTableRelationships(this);
   }
 
   private static create(briefcaseInfo: BriefcaseInfo, contextId?: string): IModelDb {
@@ -204,13 +207,7 @@ export class IModelDb extends IModel {
     return new BriefcaseId(this.briefcaseInfo.briefcaseId);
   }
 
- /**
-  * Add the lock, code, and other resource requests that would be needed in order to carry out the specified operation.
-  * @param req The request object, which accumulates requests.
-  * @param modelProps The IDs of the models
-  * @param opcode The operation that will be performed on the model.
-  * @see BriefcaseManager.createResourcesRequest
-  */
+  /** See Model.buildResourcesRequest */
   public buildResourcesRequestForModel(req: BriefcaseManager.ResourcesRequest, model: Model, opcode: DbOpcode): void {
     if (!this.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
@@ -219,13 +216,7 @@ export class IModelDb extends IModel {
       throw new IModelError(rc);
   }
 
- /**
-  * Add the lock, code, and other resource requests that would be needed in order to carry out the specified operation.
-  * @param req The request object, which accumulates requests.
-  * @param elemProps The IDs of the elements
-  * @param opcode The operation that will be performed on the element.
-  * @see BriefcaseManager.createResourcesRequest
-  */
+  /** See Element.buildResourcesRequest */
   public buildResourcesRequestForElement(req: BriefcaseManager.ResourcesRequest, element: Element, opcode: DbOpcode): void {
     if (!this.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
@@ -237,6 +228,24 @@ export class IModelDb extends IModel {
     if (rc !== RepositoryStatus.Success)
       throw new IModelError(rc);
   }
+
+  /** See LinkTableRelationship.buildResourcesRequest */
+  public buildResourcesRequestForLinkTableRelationship(req: BriefcaseManager.ResourcesRequest, instance: LinkTableRelationship, opcode: DbOpcode): void {
+    if (!this.briefcaseInfo)
+      throw new IModelError(IModelStatus.BadRequest);
+    const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForLinkTableRelationship(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(instance), opcode);
+    if (rc !== RepositoryStatus.Success)
+        throw new IModelError(rc);
+    }
+
+  /** See CodeSpec.buildResourcesRequest */
+  public buildResourcesRequestForCodeSpec(req: BriefcaseManager.ResourcesRequest, instance: CodeSpec, opcode: DbOpcode): void {
+    if (!this.briefcaseInfo)
+      throw new IModelError(IModelStatus.BadRequest);
+    const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForCodeSpec(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(instance.id), opcode);
+    if (rc !== RepositoryStatus.Success)
+        throw new IModelError(rc);
+    }
 
   /**
    * Try to acquire the requested resources from iModelHub.
