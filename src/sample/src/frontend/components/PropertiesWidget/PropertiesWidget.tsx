@@ -218,12 +218,14 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
       return (<div className="NoProperties">No Properties</div>);
     return (
       <table>
-        {this.state.records.map((record: PropertyDisplayInfo) => (
-          <tr>
-            <td className="PropertyLabel">{record.label}</td>
-            <td className="PropertyValue">{record.value}</td>
-          </tr>
-        ))}
+        <tbody>
+          {this.state.records.map((record: PropertyDisplayInfo, index: number) => (
+            <tr key={index}>
+              <td className="PropertyLabel">{record.label}</td>
+              <td className="PropertyValue">{record.value}</td>
+            </tr>
+          ))}
+        </tbody>
       </table>
     );
   }
