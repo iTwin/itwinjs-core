@@ -29,8 +29,7 @@
       "cwd": "${workspaceFolder}/src/sample",
       "args": [
         "--noElectron",
-        "--debug=41016",
-        "--preserve-symlinks"
+        "--debug=41016"
       ],
       "runtimeArgs": [
         "--preserve-symlinks"
