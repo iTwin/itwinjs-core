@@ -4,4 +4,3 @@
 .npmignore
 tsconfig.json
 tslint.json
-ECDb.ts_comment_out

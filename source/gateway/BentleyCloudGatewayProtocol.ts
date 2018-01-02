@@ -5,6 +5,7 @@ import { IModelError } from "../common/IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { Gateway } from "../common/Gateway";
 import { IModelToken } from "../common/IModel";
+import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 
 /** An http server request object. */
 export interface HttpServerRequest {
@@ -25,13 +26,22 @@ export abstract class BentleyCloudGatewayProtocol extends Gateway.HttpProtocol {
 
   /** Handles a gateway operation post request for an http server. */
   public async handleOperationPostRequest(req: HttpServerRequest, res: HttpServerResponse) {
+    const method = "post";
+    const path = req.path;
+
     try {
-      const operationIdentifier = this.getOperationFromOpenAPIPath(req.path);
-      const operationParameters = this.deserializeOperationRequestParameters(req.body, req.path);
+      Logger.logInfo("BentleyCloudGatewayProtocol.backend.request", () => ({ method, path }));
+      const operationIdentifier = this.getOperationFromOpenAPIPath(path);
+      const operationParameters = this.deserializeOperationRequestParameters(req.body, path);
       const operationResult = await this.lookupGatewayImplementation(operationIdentifier).invoke(operationIdentifier.operation, ...operationParameters);
-      res.send(this.serializeOperationResult(operationIdentifier, operationResult));
+      const operationResponse = this.serializeOperationResult(operationIdentifier, operationResult);
+      const status = 200;
+      Logger.logInfo("BentleyCloudGatewayProtocol.backend.response", () => ({ method, path, status }));
+      res.status(status).send(operationResponse);
     } catch (e) {
-      res.status(500).send(e.toString());
+      const status = 500;
+      Logger.logInfo("BentleyCloudGatewayProtocol.backend.error", () => ({ method, path, status }));
+      res.status(status).send(e.toString());
     }
   }
 
