@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { DeploymentEnv } from "@bentley/imodeljs-clients";
+import { LowAndHighXYZ, XYAndZ, Transform, Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { AxisAlignedBox3d } from "./geometry/Primitives";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 /** A token that identifies a specific instance of an iModel to be operated on */
 export class IModelToken {
@@ -21,38 +23,56 @@ export class IModelToken {
   /** Constructor */
   public static create(iModelId: string, changeSetId: string, openMode: OpenMode, userId?: string, contextId?: string): IModelToken {
     const token = new IModelToken();
-    Object.assign(token, {iModelId, changeSetId, openMode, userId, contextId});
+    Object.assign(token, { iModelId, changeSetId, openMode, userId, contextId });
     return token;
   }
 }
 
-/** An abstract class representing an instance of an iModel. */
-export abstract class IModel {
+export interface IModelProps {
+  rootSubject?: { name: string, description?: string };
+  projectExtents?: LowAndHighXYZ | object;
+  globalOrigin?: XYAndZ | object;
+  ecefTrans?: Transform | object;
+}
 
+/** An abstract class representing an instance of an iModel. */
+export abstract class IModel implements IModelProps {
   /** Name of the iModel */
   public readonly name: string;
+  public readonly rootSubject?: { name: string, description?: string };
+  public readonly projectExtents: AxisAlignedBox3d;
+  public readonly globalOrigin: Point3d;
+  public readonly ecefTrans?: Transform;
 
-  /** Description of the iModel */
-  public readonly description: string;
-
-  /** Extents of the iModel */
-  public abstract getExtents(): AxisAlignedBox3d;
-
-  /** @hidden */
-  protected _iModelToken: IModelToken;
-  /** The token that can be used to find this iModel instance. */
-  public get iModelToken(): IModelToken { return this._iModelToken; }
-  /** @hidden */
-  protected constructor(iModelToken: IModelToken, name: string, description: string) {
-    this._iModelToken = iModelToken;
-    this.name = name;
-    this.description = description;
+  public toJSON(): any {
+    const out: any = {};
+    out.name = this.name;
+    out.rootSubject = this.rootSubject;
+    out.projectExtents = this.projectExtents;
+    out.globalOrigin = this.globalOrigin;
+    out.ecefTrans = this.ecefTrans;
+    return out;
   }
 
   /** @hidden */
-  protected toJSON(): any { return undefined; } // we don't have any members that are relevant to JSON
+  protected token: IModelToken;
 
-  public isReadonly() { return this._iModelToken.openMode === OpenMode.Readonly; }
+  /** The token that can be used to find this iModel instance. */
+  public get iModelToken(): IModelToken { return this.token; }
+
+  /** @hidden */
+  protected constructor(iModelToken: IModelToken, name: string, props: IModelProps) {
+    this.token = iModelToken;
+    this.name = name;
+    this.rootSubject = props.rootSubject;
+    this.projectExtents = AxisAlignedBox3d.fromJSON(props.projectExtents);
+    this.globalOrigin = Point3d.fromJSON(props.globalOrigin);
+    if (props.ecefTrans)
+      this.ecefTrans = Transform.fromJSON(props.ecefTrans);
+  }
+
+  public isReadonly() { return this.token.openMode === OpenMode.Readonly; }
+  public static getDefaultSubCategoryId(id: Id64): Id64 { return id.isValid() ? new Id64([id.getLow() + 1, id.getHigh()]) : new Id64(); }
 }
 
 /** Common configuration for various API */

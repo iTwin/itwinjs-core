@@ -19,7 +19,7 @@ import { GeometryParams } from "./GeometryProps";
 import { LineStyleInfo, LineStyleParams } from "./LineStyle";
 import { GradientSymb } from "./GradientPattern";
 import { PatternParams, DwgHatchDefLine } from "./AreaPattern";
-import { ColorDef } from "../Render";
+import { ColorDef } from "../ColorDef";
 import { IModel } from "../IModel";
 import { flatbuffers } from "flatbuffers";
 import { DgnFB } from "./ElementGraphicsSchema";

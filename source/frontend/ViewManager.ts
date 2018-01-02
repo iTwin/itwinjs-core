@@ -7,6 +7,9 @@ import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import { EventController } from "./tools/EventController";
+import { Point3d } from "@bentley/geometry-core/lib/PointVector";
+
+// tslint:disable:no-empty
 
 /** The ViewManager holds the list of opened views, plus the "selected view" */
 export class ViewManager {
@@ -36,6 +39,32 @@ export class ViewManager {
    * or, on a tablet, when the application is moved to the foreground.
    */
   public readonly onViewResume = new BeEvent<(vp: Viewport) => void>();
+
+  public endDynamicsMode(): void {
+    if (!this.inDynamicsMode)
+      return;
+
+    let priority = 0;
+    this.inDynamicsMode = false;
+
+    const cursorVp = ToolAdmin.instance.getCursorView();
+    if (cursorVp)
+      cursorVp.changeDynamics(undefined, priority);
+
+    for (const vp of this.viewports) {
+      if (vp !== cursorVp)
+        vp.changeDynamics(undefined, ++priority);
+    }
+  }
+  public beginDynamicsMode() { this.inDynamicsMode = true; }
+  public doesHostHaveFocus(): boolean { return true; } // NEEDS_WORK
+  public isInfoWindowUp(): boolean { return false; } // NEEDS_WORK
+  public clearInfoWindow(): void { }
+
+  public showInfoWindow(_viewPt: Point3d, _vp: Viewport, _msg: string) {
+    // if (this.doesHostHaveFocus())
+    //   this.getInfoWindow().show(viewPt, vp, msg);
+  }
 
   /** The "selected view" is the default for certain operations.  */
   public get selectedView() { return this._selectedView; }
@@ -96,4 +125,6 @@ export class ViewManager {
 
     return BentleyStatus.SUCCESS;
   }
+
+  public invalidateDecorationsAllViews(): void { this.viewports.forEach((vp) => vp.invalidateDecorations()); }
 }

@@ -31,7 +31,7 @@ export class BriefcaseId {
   public isMaster(): boolean { return this.value !== BriefcaseId.Master; }
   public isStandaloneId(): boolean { return this.value !== BriefcaseId.Standalone; }
   public getValue(): number { return this.value; }
-  public toString(): string {return this.value.toString(); }
+  public toString(): string { return this.value.toString(); }
 }
 
 /** Option to keep briefcase when the imodel is closed */
@@ -84,7 +84,7 @@ class BriefcaseCache {
 
   /** Add a briefcase to the cache */
   public addBriefcase(briefcase: BriefcaseInfo) {
-    const existingBriefcase = this.findBriefcase({iModelId: briefcase.iModelId, changeSetId: briefcase.changeSetId, userId: briefcase.userId, openMode: briefcase.openMode});
+    const existingBriefcase = this.findBriefcase({ iModelId: briefcase.iModelId, changeSetId: briefcase.changeSetId, userId: briefcase.userId, openMode: briefcase.openMode });
     if (!!existingBriefcase)
       assert(false, `Briefcase for iModel with iModelId=${briefcase.iModelId}, changeSetId=${briefcase.changeSetId} and userId=${briefcase.userId} already exists in the cache. Please close it before opening a new one`);
 
@@ -97,7 +97,7 @@ class BriefcaseCache {
   }
 
   /** Get all briefcases for an imodel */
-  public getIModelBriefcases(iModelId: string): BriefcaseInfo[]|undefined {
+  public getIModelBriefcases(iModelId: string): BriefcaseInfo[] | undefined {
     return this.briefcases.get(iModelId);
   }
 
@@ -111,12 +111,12 @@ class BriefcaseCache {
   }
 
   /** Find a briefcase in the cache by token */
-  public findBriefcase({iModelId, changeSetId, userId, openMode}: IModelToken): BriefcaseInfo|undefined {
+  public findBriefcase({ iModelId, changeSetId, userId, openMode }: IModelToken): BriefcaseInfo | undefined {
     const iModelBriefcases = this.briefcases.get(iModelId);
     if (!iModelBriefcases)
       return undefined;
 
-    const foundBriefcase: BriefcaseInfo|undefined = iModelBriefcases.find((briefcase: BriefcaseInfo) => {
+    const foundBriefcase: BriefcaseInfo | undefined = iModelBriefcases.find((briefcase: BriefcaseInfo) => {
       if (openMode === OpenMode.Readonly) {
         return briefcase.changeSetId === changeSetId;
       }
@@ -124,7 +124,7 @@ class BriefcaseCache {
     });
 
     if (!!foundBriefcase)
-      assert (foundBriefcase.openMode === openMode, "Error locating the briefcase with the correct mode");
+      assert(foundBriefcase.openMode === openMode, "Error locating the briefcase with the correct mode");
 
     return foundBriefcase;
   }
@@ -309,7 +309,7 @@ export class BriefcaseManager {
 
     let briefcase = await BriefcaseManager.findCachedBriefcase(accessToken, iModelId, openMode, changeSetIndex);
     if (briefcase && briefcase.isOpen) {
-      assert (briefcase.changeSetIndex === changeSetIndex);
+      assert(briefcase.changeSetIndex === changeSetIndex);
       return briefcase;
     }
 
@@ -336,7 +336,7 @@ export class BriefcaseManager {
   private static async findCachedBriefcase(accessToken: AccessToken, iModelId: string, openMode: OpenMode, requiredChangeSetIndex: number): Promise<BriefcaseInfo | undefined> {
 
     // Narrow the cache down to the entries for the specified imodel and openMode
-    let briefcases: BriefcaseInfo[]|undefined = BriefcaseManager.cache!.getIModelBriefcases(iModelId);
+    let briefcases: BriefcaseInfo[] | undefined = BriefcaseManager.cache!.getIModelBriefcases(iModelId);
     if (briefcases)
       briefcases = briefcases.filter((entry: BriefcaseInfo) => entry.openMode === openMode);
     if (!briefcases || briefcases.length === 0)
@@ -523,7 +523,7 @@ export class BriefcaseManager {
     const fromChangeSetId: string = briefcase.changeSetId!;
     const changeSetTokens = await BriefcaseManager.downloadChangeSets(accessToken, briefcase.iModelId, toChangeSetId, fromChangeSetId);
 
-    const nativeDb: NodeAddonDgnDb  = new (NodeAddonRegistry.getAddon()).NodeAddonDgnDb();
+    const nativeDb: NodeAddonDgnDb = new (NodeAddonRegistry.getAddon()).NodeAddonDgnDb();
     const res: DbResult = await nativeDb.openBriefcaseSync(JSON.stringify(briefcase), JSON.stringify(changeSetTokens));
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res);
@@ -596,7 +596,7 @@ export class BriefcaseManager {
         briefcase.pathname = pathname;
         briefcase.nativeDb = nativeDb;
 
-        const existingBriefcase = this.findBriefcase({iModelId: briefcase.iModelId, changeSetId: briefcase.changeSetId, userId: briefcase.userId, openMode: briefcase.openMode});
+        const existingBriefcase = this.findBriefcase({ iModelId: briefcase.iModelId, changeSetId: briefcase.changeSetId, userId: briefcase.userId, openMode: briefcase.openMode });
         if (existingBriefcase) {
           reject(new IModelError(DbResult.BE_SQLITE_CANTOPEN,
             `Cannot open ${briefcase.pathname} since it shares it's DbGuid with ${existingBriefcase.pathname} that was opened earlier`));

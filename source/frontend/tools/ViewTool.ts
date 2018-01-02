@@ -815,44 +815,41 @@ class ViewRotate extends ViewingToolHandle {
     const vp = tool.viewport!;
 
     const pickPt = ev.rawPoint; // Use raw point when AccuDraw is not active, don't want tentative location...
-    // if (accudraw.IsActive()) {
-    // DPoint3d    adrawOrigin;
-    // RotMatrix   adrawMatrix;
+    // if (accudraw.isActive()) {
+    //   const acrawOrigin = accudraw.origin;
+    //   const adrawMatrix = accudraw.getRotation();
 
-    // accudraw.GetOrigin(adrawOrigin);
-    // accudraw.GetRotation(adrawMatrix);
+    //   pickPt = ev.point; // Use adjusted point when AccuDraw is active...
 
-    // pickPt = pickPtOrig = * ev.GetPoint(); // Use adjusted point when AccuDraw is active...
+    //   let viewZWorld: Vector3d;
+    //   DPoint3d    distWorld = pickPt;
 
-    // DVec3d      viewZWorld;
-    // DPoint3d    distWorld = pickPt;
+    //   // Lock to the construction plane
+    //   if (vp.isCameraOn())
+    //     viewZWorld.DifferenceOf(distWorld, viewport -> GetCamera().GetEyePoint());
+    //   else
+    //     viewZWorld = vp.rotMatrix.getRow(2);
 
-    // // Lock to the construction plane
-    // if (viewport -> IsCameraOn())
-    //   viewZWorld.DifferenceOf(distWorld, viewport -> GetCamera().GetEyePoint());
-    // else
-    //   viewport -> GetRotMatrix().GetRow(viewZWorld, 2);
+    //   DVec3d      adrawZWorld;
+    //   DPoint3d    pickPt;
 
-    // DVec3d      adrawZWorld;
-    // DPoint3d    pickPt;
+    //   adrawMatrix.GetRow(adrawZWorld, 2);
+    //   LegacyMath:: Vec:: LinePlaneIntersect(& distWorld, & distWorld, & viewZWorld, & adrawOrigin, & adrawZWorld, false);
+    //   pickPt = distWorld;
 
-    // adrawMatrix.GetRow(adrawZWorld, 2);
-    // LegacyMath:: Vec:: LinePlaneIntersect(& distWorld, & distWorld, & viewZWorld, & adrawOrigin, & adrawZWorld, false);
-    // pickPt = distWorld;
+    //   const flags = AccuDrawFlags.AlwaysSetOrigin | AccuDrawFlags.SetModePolar | AccuDrawFlags.FixedOrigin;
+    //   DVec3d      adrawX, adrawY, adrawZ;
 
-    // uint32_t    flags = ACCUDRAW_AlwaysSetOrigin | ACCUDRAW_SetModePolar | ACCUDRAW_FixedOrigin;
-    // DVec3d      adrawX, adrawY, adrawZ;
+    //   if (adrawX.NormalizedDifference(pickPt, activeOrg) > mgds_fc_epsilon) {
+    //     adrawMatrix.GetRow(adrawZ, 2);
+    //     adrawY.CrossProduct(adrawZ, adrawX);
+    //     adrawMatrix.InitFromRowVectors(adrawX, adrawY, adrawZ);
+    //     adrawMatrix.NormalizeRowsOf(adrawMatrix, adrawZWorld);
 
-    // if (adrawX.NormalizedDifference(pickPt, activeOrg) > mgds_fc_epsilon) {
-    //   adrawMatrix.GetRow(adrawZ, 2);
-    //   adrawY.CrossProduct(adrawZ, adrawX);
-    //   adrawMatrix.InitFromRowVectors(adrawX, adrawY, adrawZ);
-    //   adrawMatrix.NormalizeRowsOf(adrawMatrix, adrawZWorld);
+    //     flags |= AccuDrawFlags.SetRMatrix;
+    //   }
 
-    //   flags |= ACCUDRAW_SetRMatrix;
-    // }
-
-    // accudraw.SetContext((AccuDrawFlags) flags, & activeOrg, (DVec3dP) & adrawMatrix);
+    //   accudraw.setContext(flags, activeOrg, adrawMatrix);
 
     const viewPt = vp.worldToView(pickPt);
     tool.viewPtToSpherePt(viewPt, true, this.ballVector0);
