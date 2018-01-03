@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Microsoft/web-build-tools/master/apps/rush-lib/src/schemas/command-line.schema.json",
+  "customCommands": [
+    {
+      "name": "clean",
+      "summary": "Cleans all projects",
+      "documentation": "Cleans build output from every project",
+      "parallelized": true
+    }
+  ]
+}
