@@ -51,6 +51,7 @@ export abstract class IModel implements IModelProps {
     out.projectExtents = this.projectExtents;
     out.globalOrigin = this.globalOrigin;
     out.ecefTrans = this.ecefTrans;
+    out.iModelToken = this.iModelToken;
     return out;
   }
 
