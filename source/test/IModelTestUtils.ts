@@ -6,13 +6,12 @@ import { assert } from "chai";
 import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
-import { ConnectClient, Project, IModelHubClient, Briefcase } from "@bentley/imodeljs-clients";
+import { ConnectClient, Project, IModelHubClient, Briefcase, DeploymentEnv } from "@bentley/imodeljs-clients";
 import { Code } from "../common/Code";
 import { Gateway } from "../common/Gateway";
 import { Element } from "../backend/Element";
 import { IModelDb } from "../backend/IModelDb";
 import { BriefcaseManager } from "../backend/BriefcaseManager";
-import { NodeAddonLoader } from "@bentley/imodeljs-nodeaddon/NodeAddonLoader";
 import { NodeAddonRegistry } from "../backend/NodeAddonRegistry";
 import { IModelGateway } from "../gateway/IModelGateway";
 import { ElementProps, GeometricElementProps } from "../common/ElementProps";
@@ -23,13 +22,15 @@ import { DefinitionModel } from "../backend/Model";
 import { SpatialCategory } from "../backend/Category";
 import { Appearance } from "../common/SubCategoryAppearance";
 
+import { Configuration } from "../common/IModel";
+
 // Initialize the gateway classes used by tests
 Gateway.initialize(IModelGateway);
 
 declare const __dirname: string;
 
 // Initialize the Node addon used by tests
-NodeAddonRegistry.registerAddon(NodeAddonLoader.loadAddon());
+NodeAddonRegistry.loadAndRegisterStandardAddon();
 
 // Initialize the location where BriefcaseManager will create briefcases
 BriefcaseManager.cachePath = path.join(__dirname, "output/cache/imodels");
@@ -46,8 +47,25 @@ export class IModelTestUtils {
     password: "pmadm1",
   };
 
-  public static connectClient = new ConnectClient("QA");
-  public static hubClient = new IModelHubClient("QA");
+  private static _connectClient: ConnectClient|undefined;
+  public static get connectClient(): ConnectClient {
+    if (!IModelTestUtils._connectClient)
+      IModelTestUtils.setIModelHubDeployConfig("QA");
+    return IModelTestUtils._connectClient!;
+  }
+
+  private static _hubClient: IModelHubClient|undefined;
+  public static get hubClient(): IModelHubClient {
+    if (!IModelTestUtils._connectClient)
+      IModelTestUtils.setIModelHubDeployConfig("QA");
+    return IModelTestUtils._hubClient!;
+  }
+
+  public static setIModelHubDeployConfig(deployConfig: DeploymentEnv) {
+    Configuration.iModelHubDeployConfig = deployConfig;
+    IModelTestUtils._connectClient = new ConnectClient(deployConfig);
+    IModelTestUtils._hubClient = new IModelHubClient(deployConfig);
+  }
 
   public static async getTestUserAccessToken(): Promise<AccessToken> {
     const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient("QA")).getToken(IModelTestUtils.user.email, IModelTestUtils.user.password);
