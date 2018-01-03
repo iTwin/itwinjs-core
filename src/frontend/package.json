@@ -16,7 +16,8 @@
   "scripts": {
     "build": "tsc && npm run resolve-imports",
     "clean": "rimraf lib",
-    "resolve-imports": "cd lib && replace \"@build/imodeljs-core\" \"@bentley/imodeljs-frontend\" -r -q ."
+    "resolve-imports": "cd lib && replace \"@build/imodeljs-core\" \"@bentley/imodeljs-frontend\" -r -q .",
+    "prepublishOnly": "npm run test && npm run build"
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "^1.2.4",
