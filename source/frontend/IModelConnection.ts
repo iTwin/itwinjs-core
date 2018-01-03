@@ -42,7 +42,7 @@ export class IModelConnection extends IModel {
     if (!changeSetId)
       changeSetId = "0"; // The first version is arbitrarily setup to have changeSetId = "0" since it's required by the gateway API.
     const iModelToken = IModelToken.create(iModelId, changeSetId, openMode, accessToken.getUserProfile().userId, contextId);
-    const openResponse: IModel = await IModelGateway.getProxy().openForRead(accessToken, iModelToken);
+    const openResponse: IModel = await IModelGateway.getProxy().openForRead(accessToken, iModelToken, version);
     Logger.logInfo("IModelConnection.open", () => ({ iModelId, openMode, changeSetId }));
 
     // todo: Setup userId if it's a readWrite open - this is necessary to reopen the same exact briefcase at the backend

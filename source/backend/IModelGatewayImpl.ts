@@ -21,18 +21,16 @@ export class IModelGatewayImpl extends IModelGateway {
     Gateway.registerImplementation(IModelGateway, IModelGatewayImpl);
   }
 
-  public async openForRead(accessToken: any, contextId: string, iModelId: string, version: any): Promise<IModel> {
-    return this.open(accessToken, contextId, iModelId, version, OpenMode.Readonly);
+  public async openForRead(accessToken: AccessToken, iModelToken: IModelToken, version: IModelVersion): Promise<IModel> {
+    if (iModelToken.contextId==undefined)
+      throw  "Expecting context id";
+    return await IModelDb.open(accessToken, iModelToken.contextId!, iModelToken.iModelId, OpenMode.Readonly, version);
   }
 
-  public async openForWrite(accessToken: any, contextId: string, iModelId: string, version: any): Promise<IModel> {
-    return this.open(accessToken, contextId, iModelId, version, OpenMode.ReadWrite);
+  public async openForWrite(accessToken: AccessToken, iModelToken: IModelToken, version: IModelVersion): Promise<IModel> {
+    return await IModelDb.open(accessToken, iModelToken.contextId!, iModelToken.iModelId, OpenMode.ReadWrite, version);
   }
-
-  private async open(accessToken: any, contextId: string, iModelId: string, version: any, openMode: OpenMode): Promise<IModel> {
-    return await IModelDb.open(AccessToken.fromJson(accessToken)!, contextId, iModelId, openMode, IModelVersion.fromJson(version));
-  }
-
+  
   /** Ask the backend to open a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend. */
   public async openStandalone(fileName: string, openMode: OpenMode): Promise<IModel> {
     return await IModelDb.openStandalone(fileName, openMode);
