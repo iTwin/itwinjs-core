@@ -104,8 +104,8 @@ describe("Viewport", () => {
     viewStateXYZ = new SpatialViewState(spatialViewProps, imodel, categorySelectorState, displayStyleState, modelSelectorState);
   });
 
-  after(() => {
-    imodel.closeStandalone();
+  after(async () => {
+    await imodel.closeStandalone();
   });
 
   it("should obtain equal viewport from round-trip setup using frustum", () => {
