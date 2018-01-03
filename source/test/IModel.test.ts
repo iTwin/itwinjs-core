@@ -29,7 +29,7 @@ import { ModelProps } from "../common/ModelProps";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { ElementGroupsMembers } from "../backend/LinkTableRelationship";
 import { Appearance } from "../common/SubCategoryAppearance";
-import { ColorDef } from "../common/Render";
+import { ColorDef } from "../common/ColorDef";
 
 describe("iModel", () => {
   let imodel1: IModelDb;
@@ -289,7 +289,6 @@ describe("iModel", () => {
     // assert.isArray(item.properties);
   });
 
-
   it("should be some categories", async () => {
     const categoryRows: any[] = await imodel1.executeQuery("SELECT EcInstanceId as elementId FROM " + Category.sqlName);
     assert.exists(categoryRows, "Should have some Category ids");
@@ -301,7 +300,6 @@ describe("iModel", () => {
         continue;
       if (!(category instanceof Category))
         continue;
-
 
       // verify the default subcategory.
       const defaultSubCategoryId: Id64 = category.myDefaultSubCategoryId();
