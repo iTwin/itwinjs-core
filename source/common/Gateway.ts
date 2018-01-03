@@ -323,21 +323,26 @@ export namespace Gateway {
 
         const path = this.generateOpenAPIPathForOperation(identifier, new HttpProtocol.OperationRequest(...request.parameters));
         const connection = this.generateConnectionForOperationRequest();
-        connection.open(this.supplyHttpVerbForOperation(identifier), path, true);
+        const method = this.supplyHttpVerbForOperation(identifier);
+        connection.open(method, path, true);
+        Logger.logInfo("Gateway.frontend.request", () => ({ method, path }));
 
         connection.addEventListener("load", () => {
           if (!request.active)
             return;
 
-          if (this.canResolvePendingRequest(request, connection.status)) {
+          const status = connection.status;
+          Logger.logInfo("Gateway.frontend.response", () => ({ method, path, status }));
+
+          if (this.canResolvePendingRequest(request, status)) {
             const result = this.deserializeOperationResult(connection.responseText);
             request.resolve(result);
-          } else if (this.isPendingRequestPending(request, connection.status)) {
+          } else if (this.isPendingRequestPending(request, status)) {
             this.registerPendingRequest(request);
             request.currentStatus = connection.responseText;
             this.reportPendingRequestStatus(request);
-          } else if (this.shouldRejectPendingRequest(request, connection.status)) {
-            const error = new IModelError(BentleyStatus.ERROR, `Server error: ${connection.status} ${connection.responseText}`);
+          } else if (this.shouldRejectPendingRequest(request, status)) {
+            const error = new IModelError(BentleyStatus.ERROR, `Server error: ${status} ${connection.responseText}`);
             request.reject(error);
           } else {
             throw new IModelError(BentleyStatus.ERROR, "Unhandled response.");
@@ -348,6 +353,7 @@ export namespace Gateway {
           if (!request.active)
             return;
 
+          Logger.logInfo("Gateway.frontend.connectionError", () => ({ method, path }));
           request.reject(new IModelError(BentleyStatus.ERROR, "Connection error."));
         });
 
@@ -355,6 +361,7 @@ export namespace Gateway {
           if (!request.active)
             return;
 
+          Logger.logInfo("Gateway.frontend.connectionAborted", () => ({ method, path }));
           request.reject(new IModelError(BentleyStatus.ERROR, "Connection aborted."));
         });
 

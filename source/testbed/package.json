@@ -27,8 +27,8 @@
   },
   "//optionalDependencies": "imodeljs-e_1_6_11-win32-x64 is optional because it is not available for all platforms where we install, build, and test imodeljs-core",
   "optionalDependencies": {
-    "@bentley/imodeljs-e_1_6_11-win32-x64": "~1.4.0",
-    "@bentley/imodeljs-nodeaddonapi": "~1.4.0"
+    "@bentley/imodeljs-nodeaddonapi": "~1.4.3",
+    "@bentley/imodeljs-electronaddonapi": "~1.4.3"
   },
   "devDependencies": {
     "@types/body-parser": "^1.16.8",

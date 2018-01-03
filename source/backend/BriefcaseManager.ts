@@ -225,8 +225,11 @@ export class BriefcaseManager {
 
   /** Initialize the briefcase manager. This hydrates a cache of in-memory briefcases if necessary. */
   public static async initialize(accessToken?: AccessToken): Promise<void> {
-    if (BriefcaseManager.cache)
-      return;
+    if (BriefcaseManager.cache) {
+      if (BriefcaseManager.hubClient!.deploymentEnv === Configuration.iModelHubDeployConfig)
+        return;
+      // console.log("Detected change of configuration - reinitializing Briefcase cache!"); // tslint:disable-line:no-console
+    }
 
     BriefcaseManager.hubClient = new IModelHubClient(Configuration.iModelHubDeployConfig);
     BriefcaseManager.cache = new BriefcaseCache();
@@ -238,7 +241,15 @@ export class BriefcaseManager {
     const iModelIds = Object.getOwnPropertyNames(briefcaseInfos);
     for (const iModelId of iModelIds) {
       const localBriefcases = briefcaseInfos[iModelId];
-      const hubBriefcases: HubBriefcase[] = await BriefcaseManager.hubClient.getBriefcases(accessToken, iModelId);
+
+      let hubBriefcases: HubBriefcase[] = new Array<HubBriefcase>();
+      try {
+        hubBriefcases = await BriefcaseManager.hubClient.getBriefcases(accessToken, iModelId);
+      } catch (error) {
+        // The iModel is unreachable on the hub (the current deployment configuration is different, or the imodel was removed)
+        localBriefcases.forEach((localBriefcase: BriefcaseInfo) => BriefcaseManager.deleteBriefcaseFromLocalDisk(localBriefcase));
+        continue;
+      }
 
       for (const localBriefcase of localBriefcases) {
         const briefcase = new BriefcaseInfo();
@@ -251,8 +262,8 @@ export class BriefcaseManager {
         if (briefcase.openMode === OpenMode.ReadWrite) {
           const hubBriefcase = hubBriefcases.find((bc: HubBriefcase) => bc.briefcaseId === localBriefcase.briefcaseId);
           if (!hubBriefcase) {
-            // The local briefcase has been deleted from the hub. Remove it from the disk
-            BriefcaseManager.deleteBriefcaseFromLocalDisk(briefcase);
+            // The local briefcase is unreachable on the hub - either because it has been removed,
+            // or because the deployment configuration has changed (during development).
             continue;
           }
           briefcase.userId = hubBriefcase.userId;
@@ -281,8 +292,7 @@ export class BriefcaseManager {
 
   /** Open a briefcase */
   public static async open(accessToken: AccessToken, projectId: string, iModelId: string, openMode: OpenMode, version: IModelVersion): Promise<BriefcaseInfo> {
-    if (!BriefcaseManager.cache)
-      await BriefcaseManager.initialize(accessToken);
+    await BriefcaseManager.initialize(accessToken);
     assert (!!BriefcaseManager.hubClient);
 
     const changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId);
@@ -466,15 +476,8 @@ export class BriefcaseManager {
 
   /** Deletes a briefcase from the local disk */
   private static deleteBriefcaseFromLocalDisk(briefcase: BriefcaseInfo) {
-    if (fs.existsSync(briefcase.pathname))
-      fs.unlinkSync(briefcase.pathname);
     const dirName = path.dirname(briefcase.pathname);
-    try {
-      if (fs.existsSync(dirName))
-        fs.unlinkSync(dirName);
-    } catch (err) {
-        return; // todo: This seems to fail sometimes for no reason
-    }
+    BriefcaseManager.deleteFolderRecursive(dirName);
   }
 
   /** Deletes a briefcase from the hub */
@@ -553,7 +556,7 @@ export class BriefcaseManager {
       await BriefcaseManager.hubClient!.downloadChangeSets(changeSetsToDownload, changeSetsPath)
         .catch(() => {
           assert(false, "Could not download ChangeSets");
-          fs.unlinkSync(changeSetsPath); // Just in case there was a partial download, delete the entire folder
+          BriefcaseManager.deleteFolderRecursive(changeSetsPath); // Just in case there was a partial download, delete the entire folder
           Promise.reject(new IModelError(BriefcaseStatus.CannotDownload));
         });
     }
@@ -563,8 +566,7 @@ export class BriefcaseManager {
 
   /** Open a standalone iModel from the local disk */
   public static async openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean): Promise<BriefcaseInfo> {
-    if (!BriefcaseManager.cache)
-      BriefcaseManager.initialize();
+    BriefcaseManager.initialize();
 
     const nativeDb: NodeAddonDgnDb = new (NodeAddonRegistry.getAddon()).NodeAddonDgnDb();
 
@@ -624,6 +626,33 @@ export class BriefcaseManager {
     for (const briefcase of briefcases) {
       await BriefcaseManager.deleteBriefcase(accessToken, briefcase);
     }
+  }
+
+  private static deleteFolderRecursive(folderPath: string) {
+    if (!fs.existsSync(folderPath))
+        return;
+    try {
+        fs.readdirSync(folderPath).forEach((file) => {
+          const curPath = folderPath + "/" + file;
+          if (fs.lstatSync(curPath).isDirectory()) {
+            BriefcaseManager.deleteFolderRecursive(curPath);
+          } else {
+            // delete file
+            fs.unlinkSync(curPath);
+          }
+        });
+        fs.rmdirSync(folderPath);
+    } catch (err) {
+      return; // todo: This seems to fail sometimes for no reason
+    }
+  }
+
+  /** Purge all briefcases and reset the briefcase manager */
+  public static purgeAll() {
+    if (fs.existsSync(BriefcaseManager.cachePath))
+      BriefcaseManager.deleteFolderRecursive(BriefcaseManager.cachePath);
+
+    BriefcaseManager.cache = undefined;
   }
 
   /** Find the existing briefcase */

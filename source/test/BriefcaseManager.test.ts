@@ -127,6 +127,29 @@ describe("BriefcaseManager", () => {
     assert.exists(iModelNoVer);
   });
 
+  it("should open briefcase of an iModel in both DEV and QA", async () => {
+    IModelTestUtils.setIModelHubDeployConfig("DEV");
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Turn off SSL validation in DEV
+    const devProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
+    assert(devProjectId);
+    const devIModelId = await IModelTestUtils.getTestIModelId(accessToken, devProjectId, "MyTestModel");
+    assert(devIModelId);
+    const devChangeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, devIModelId, false);
+    expect(devChangeSets.length).equals(0); // needs change sets
+    const devIModel: IModelConnection = await IModelConnection.open(accessToken, devProjectId, devIModelId, OpenMode.Readonly, IModelVersion.latest());
+    assert.exists(devIModel);
+
+    IModelTestUtils.setIModelHubDeployConfig("QA");
+    const qaProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
+    assert(qaProjectId);
+    const qaIModelId = await IModelTestUtils.getTestIModelId(accessToken, qaProjectId, "MyTestModel");
+    assert(qaIModelId);
+    const qaChangeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, qaIModelId, false);
+    expect(qaChangeSets.length).greaterThan(0);
+    const qaIModel: IModelConnection = await IModelConnection.open(accessToken, qaProjectId, qaIModelId, OpenMode.Readonly, IModelVersion.latest());
+    assert.exists(qaIModel);
+  });
+
   it("should build resource request", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
 
