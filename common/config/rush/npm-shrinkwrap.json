@@ -23,9 +23,9 @@
       }
     },
     "@bentley/bentleyjs-tools": {
-      "version": "1.1.3",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bentleyjs-tools/-/bentleyjs-tools-1.1.3.tgz",
-      "integrity": "sha1-c+Fsg3OVU61WbeDeOD0T2mRtN/Y=",
+      "version": "1.1.4",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bentleyjs-tools/-/bentleyjs-tools-1.1.4.tgz",
+      "integrity": "sha1-usx9ydMOt51RKmo2sjuVkVyg8xQ=",
       "requires": {
         "chai": "4.1.2",
         "chalk": "2.3.0",
@@ -40,7 +40,7 @@
         "glob": "7.1.2",
         "gulp": "3.9.1",
         "gulp-mocha": "4.3.1",
-        "gulp-sourcemaps": "2.6.2",
+        "gulp-sourcemaps": "2.6.3",
         "gulp-tslint": "8.1.2",
         "gulp-typedoc": "2.1.2",
         "gulp-typescript": "3.2.3",
@@ -56,7 +56,7 @@
         "rimraf": "2.6.2",
         "sanitize-filename": "1.6.1",
         "ts-node": "3.3.0",
-        "tsconfig-paths": "2.6.0",
+        "tsconfig-paths": "2.7.2",
         "tslint": "5.8.0",
         "typedoc": "0.9.0",
         "typescript": "2.6.2",
@@ -139,29 +139,10 @@
         "proxy-from-env": "0.0.1"
       }
     },
-    "@bentley/ecpresentation-backend": {
-      "version": "0.0.23",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/ecpresentation-backend/-/ecpresentation-backend-0.0.23.tgz",
-      "integrity": "sha1-Z9eJmpxq8Gd5k6fYEZirN5QhewM=",
-      "requires": {
-        "@bentley/bentleyjs-core": "1.2.4",
-        "@bentley/imodeljs-backend": "0.12.0",
-        "@bentley/imodeljs-nodeaddonapi": "1.3.0"
-      }
-    },
-    "@bentley/ecpresentation-frontend": {
-      "version": "0.0.12",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/ecpresentation-frontend/-/ecpresentation-frontend-0.0.12.tgz",
-      "integrity": "sha1-/VBVtO/P3BoL+fLvy+rCPy+/0Qw=",
-      "requires": {
-        "@bentley/bentleyjs-core": "1.2.4",
-        "@bentley/imodeljs-frontend": "0.10.0"
-      }
-    },
     "@bentley/geometry-core": {
-      "version": "1.2.5",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/geometry-core/-/geometry-core-1.2.5.tgz",
-      "integrity": "sha1-f/gI3bNnIsH0LRbna+Q4R+7eyJo=",
+      "version": "1.2.6",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/geometry-core/-/geometry-core-1.2.6.tgz",
+      "integrity": "sha1-OLjYGfCCK5LHr+728qwLEU46W1E=",
       "requires": {
         "flatbuffers": "1.8.0"
       }
@@ -172,7 +153,7 @@
       "integrity": "sha1-7dKYzGOd3M7/nJE0TG0fNkMz3ZM=",
       "requires": {
         "@bentley/bentleyjs-core": "1.2.4",
-        "@bentley/geometry-core": "1.2.5",
+        "@bentley/geometry-core": "1.2.6",
         "@bentley/imodeljs-clients": "1.0.40",
         "@bentley/imodeljs-nodeaddonapi": "1.3.0",
         "fs-extra": "4.0.3",
@@ -214,9 +195,9 @@
       }
     },
     "@bentley/imodeljs-e_1_6_11-win32-x64": {
-      "version": "1.4.3",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-e_1_6_11-win32-x64/-/imodeljs-e_1_6_11-win32-x64-1.4.3.tgz",
-      "integrity": "sha1-B/NzhOx2CvllpOXs4RKDGwK66NE="
+      "version": "1.6.1",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-e_1_6_11-win32-x64/-/imodeljs-e_1_6_11-win32-x64-1.6.1.tgz",
+      "integrity": "sha1-c/5CeLjzIcW5AD270ktCfR/xCP8="
     },
     "@bentley/imodeljs-frontend": {
       "version": "0.10.0",
@@ -224,22 +205,22 @@
       "integrity": "sha1-3mnQPs1+MW8JnWFTt+sLlhhhPa4=",
       "requires": {
         "@bentley/bentleyjs-core": "1.2.4",
-        "@bentley/geometry-core": "1.2.5",
+        "@bentley/geometry-core": "1.2.6",
         "@bentley/imodeljs-clients": "1.0.40",
         "js-base64": "2.4.0"
       }
     },
     "@bentley/imodeljs-n_8_9-win32-x64": {
-      "version": "1.4.3",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-n_8_9-win32-x64/-/imodeljs-n_8_9-win32-x64-1.4.3.tgz",
-      "integrity": "sha1-mS6chsxf8S4NhiRXbcTroTLrBqY="
+      "version": "1.6.1",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-n_8_9-win32-x64/-/imodeljs-n_8_9-win32-x64-1.6.1.tgz",
+      "integrity": "sha1-goaguOXghoqwslkzh0mbHfQvMhs="
     },
     "@bentley/imodeljs-nodeaddon": {
       "version": "1.3.0",
       "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-nodeaddon/-/imodeljs-nodeaddon-1.3.0.tgz",
       "integrity": "sha1-4kKDEU2IgBdzy0yl5+cUFM3YYJY=",
       "requires": {
-        "@bentley/imodeljs-n_8_9-win32-x64": "1.4.3",
+        "@bentley/imodeljs-n_8_9-win32-x64": "1.6.1",
         "@bentley/imodeljs-nodeaddonapi": "1.3.0"
       }
     },
@@ -249,16 +230,16 @@
       "integrity": "sha1-LdKJfRhI4WVBVGzo+kcpMboAB64="
     },
     "@bentley/imodeljs-react-scripts": {
-      "version": "3.0.0-alpha11",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-react-scripts/-/imodeljs-react-scripts-3.0.0-alpha11.tgz",
-      "integrity": "sha1-KLN1BL4tU6gc66Pt+q28oYmgGfs=",
+      "version": "3.0.0-alpha12",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-react-scripts/-/imodeljs-react-scripts-3.0.0-alpha12.tgz",
+      "integrity": "sha1-ImSWeJRu0ZAfpo4Yr5yrbhoD1kQ=",
       "requires": {
         "@bentley/dev-cors-proxy-server": "0.0.1",
         "@types/chai": "4.0.10",
         "@types/enzyme": "2.8.12",
         "@types/mocha": "2.2.45",
         "@types/node": "8.5.2",
-        "@types/react": "16.0.31",
+        "@types/react": "16.0.32",
         "@types/react-dom": "16.0.3",
         "@types/sinon": "2.3.7",
         "app-root-path": "2.0.1",
@@ -1690,9 +1671,9 @@
     },
     "@rush-temp/ecpresentation": {
       "version": "file:projects/ecpresentation.tgz",
-      "integrity": "sha1-/4Xe7u4xzxehCJ1H95Id8kd+mME=",
+      "integrity": "sha1-iV4Gqb9ljJiK/opsV54S7b6ShVE=",
       "requires": {
-        "@bentley/bentleyjs-tools": "1.1.3",
+        "@bentley/bentleyjs-tools": "1.1.4",
         "concurrently": "3.5.1",
         "tslint": "5.8.0",
         "tslint-consistent-codestyle": "1.11.0",
@@ -1701,10 +1682,10 @@
     },
     "@rush-temp/ecpresentation-backend": {
       "version": "file:projects/ecpresentation-backend.tgz",
-      "integrity": "sha1-hM1DDZtJOIkDDTCqXrtMYgEWVQY=",
+      "integrity": "sha1-z7u2YIYRnEPX38/gPy8Q86pNk5A=",
       "requires": {
         "@bentley/bentleyjs-core": "1.2.4",
-        "@bentley/bentleyjs-tools": "1.1.3",
+        "@bentley/bentleyjs-tools": "1.1.4",
         "@bentley/imodeljs-backend": "0.12.0",
         "@bentley/imodeljs-nodeaddonapi": "1.3.0",
         "@types/flatbuffers": "1.6.5",
@@ -1714,7 +1695,7 @@
     },
     "@rush-temp/ecpresentation-frontend": {
       "version": "file:projects/ecpresentation-frontend.tgz",
-      "integrity": "sha1-fOk3uyZJ1AHo9jEaHN0vMY8ukHQ=",
+      "integrity": "sha1-PYEprUUH2DeSvamTNiP8LzPa+qc=",
       "requires": {
         "@bentley/bentleyjs-core": "1.2.4",
         "@bentley/imodeljs-frontend": "0.10.0",
@@ -1724,9 +1705,9 @@
     },
     "@rush-temp/ecpresentation-tests": {
       "version": "file:projects/ecpresentation-tests.tgz",
-      "integrity": "sha1-9h5BzmSwht926i/0AN09X/NP8pk=",
+      "integrity": "sha1-rtMgXvDUQjbPYqjyO+DXgfhriM0=",
       "requires": {
-        "@bentley/bentleyjs-tools": "1.1.3",
+        "@bentley/bentleyjs-tools": "1.1.4",
         "@types/chai": "4.0.10",
         "@types/mocha": "2.2.45",
         "chai": "4.1.2",
@@ -1737,22 +1718,20 @@
     },
     "@rush-temp/sample-ecpresentation-app": {
       "version": "file:projects/sample-ecpresentation-app.tgz",
-      "integrity": "sha1-J/r+lhy1P9CJoMrj5ju3PzoUH3o=",
+      "integrity": "sha1-3Af492tP4PNipoAHnbDQD0netUw=",
       "requires": {
         "@bentley/bentleyjs-core": "1.2.4",
-        "@bentley/ecpresentation-backend": "0.0.23",
-        "@bentley/ecpresentation-frontend": "0.0.12",
         "@bentley/imodeljs-backend": "0.12.0",
-        "@bentley/imodeljs-e_1_6_11-win32-x64": "1.4.3",
+        "@bentley/imodeljs-e_1_6_11-win32-x64": "1.6.1",
         "@bentley/imodeljs-frontend": "0.10.0",
-        "@bentley/imodeljs-n_8_9-win32-x64": "1.4.3",
+        "@bentley/imodeljs-n_8_9-win32-x64": "1.6.1",
         "@bentley/imodeljs-nodeaddon": "1.3.0",
-        "@bentley/imodeljs-react-scripts": "3.0.0-alpha11",
+        "@bentley/imodeljs-react-scripts": "3.0.0-alpha12",
         "@types/body-parser": "1.16.8",
         "@types/bunyan": "1.8.4",
         "@types/electron-devtools-installer": "2.0.2",
         "@types/express": "4.11.0",
-        "@types/react": "16.0.31",
+        "@types/react": "16.0.32",
         "@types/react-dom": "16.0.3",
         "body-parser": "1.18.2",
         "bunyan": "1.8.12",
@@ -1805,7 +1784,7 @@
       "integrity": "sha1-pmnXnOF2DXJBvEtvt1NdaGadeK0=",
       "requires": {
         "@types/cheerio": "0.22.7",
-        "@types/react": "16.0.31"
+        "@types/react": "16.0.32"
       }
     },
     "@types/events": {
@@ -1888,9 +1867,9 @@
       "integrity": "sha1-g7gQP6miwug9ePcBqap8lTlzmqU="
     },
     "@types/react": {
-      "version": "16.0.31",
-      "resolved": "https://npm.bentley.com/npm/npm/@types/react/-/react-16.0.31.tgz",
-      "integrity": "sha1-UoXaYvOsYreX9tBymh1hgfMYDD4="
+      "version": "16.0.32",
+      "resolved": "https://npm.bentley.com/npm/npm/@types/react/-/react-16.0.32.tgz",
+      "integrity": "sha512-6YgvK/wBi3wtI111rHtzG/zto150inkc5WlXgG1xuZYp+ymgD/FAe+YVWBiriwZrB3MxLouavhQyKDO7qwNwnQ=="
     },
     "@types/react-dom": {
       "version": "16.0.3",
@@ -1898,7 +1877,7 @@
       "integrity": "sha1-isytfqvatMyj4aVvXMtX3i2g/2Q=",
       "requires": {
         "@types/node": "8.5.2",
-        "@types/react": "16.0.31"
+        "@types/react": "16.0.32"
       }
     },
     "@types/serve-static": {
@@ -7518,9 +7497,9 @@
       }
     },
     "gulp-sourcemaps": {
-      "version": "2.6.2",
-      "resolved": "https://npm.bentley.com/npm/npm/gulp-sourcemaps/-/gulp-sourcemaps-2.6.2.tgz",
-      "integrity": "sha1-T0HHKzWn6ga2ZtLj9XkX4sDnHE4=",
+      "version": "2.6.3",
+      "resolved": "https://npm.bentley.com/npm/npm/gulp-sourcemaps/-/gulp-sourcemaps-2.6.3.tgz",
+      "integrity": "sha1-EbAz91n5CeCl8Vt730esKcxU76Q=",
       "requires": {
         "@gulp-sourcemaps/identity-map": "1.0.1",
         "@gulp-sourcemaps/map-sources": "1.0.0",
@@ -18616,9 +18595,9 @@
       }
     },
     "tsconfig-paths": {
-      "version": "2.6.0",
-      "resolved": "https://npm.bentley.com/npm/npm/tsconfig-paths/-/tsconfig-paths-2.6.0.tgz",
-      "integrity": "sha1-3bjIavVO+SvXE3BGGJfzsCkv9J4=",
+      "version": "2.7.2",
+      "resolved": "https://npm.bentley.com/npm/npm/tsconfig-paths/-/tsconfig-paths-2.7.2.tgz",
+      "integrity": "sha1-ow1aeOEx/xOlfB6KDRNldu5vy0I=",
       "requires": {
         "deepmerge": "2.0.1",
         "strip-bom": "3.0.0",
