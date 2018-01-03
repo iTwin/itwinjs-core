@@ -175,7 +175,7 @@ class BriefcaseCache {
  *      ...
  */
 export class BriefcaseManager {
-  private static hubClient = new IModelHubClient("QA");
+  public static hubClient = new IModelHubClient("QA");
   private static cache?: BriefcaseCache;
 
   /** The path where the cache of briefcases are stored. */
@@ -186,8 +186,12 @@ export class BriefcaseManager {
     return path.join(BriefcaseManager.cachePath, iModelId);
   }
 
-  private static getChangeSetsPath(iModelId: string): string {
+  public static getChangeSetsPath(iModelId: string): string {
     return path.join(BriefcaseManager.getIModelPath(iModelId), "csets");
+  }
+
+  public static buildChangeSummaryFilePath(iModelId: string): string {
+    return path.join(BriefcaseManager.getIModelPath(iModelId), iModelId.concat(".bim.ecchanges"));
   }
 
   private static buildReadOnlyPath(iModelId: string, iModelName: string): string {
@@ -521,7 +525,14 @@ export class BriefcaseManager {
     const toChangeSetId: string = !!changeSet ? changeSet.wsgId : "";
     const toChangeSetIndex: number = !!changeSet ? +changeSet.index : 0;
     const fromChangeSetId: string = briefcase.changeSetId!;
-    const changeSetTokens = await BriefcaseManager.downloadChangeSets(accessToken, briefcase.iModelId, toChangeSetId, fromChangeSetId);
+    const changeSets = await BriefcaseManager.downloadChangeSets(accessToken, briefcase.iModelId, toChangeSetId, fromChangeSetId);
+
+    const changeSetTokens = new Array<ChangeSetToken>();
+    const changeSetsPath: string = BriefcaseManager.getChangeSetsPath(briefcase.iModelId);
+    for (const downloadedChangeSet of changeSets) {
+      const changeSetPathname = path.join(changeSetsPath, downloadedChangeSet.fileName);
+      changeSetTokens.push(new ChangeSetToken(downloadedChangeSet.wsgId, +downloadedChangeSet.index, changeSetPathname));
+    }
 
     const nativeDb: NodeAddonDgnDb = new (NodeAddonRegistry.getAddon()).NodeAddonDgnDb();
     const res: DbResult = await nativeDb.openBriefcaseSync(JSON.stringify(briefcase), JSON.stringify(changeSetTokens));
@@ -535,17 +546,15 @@ export class BriefcaseManager {
   }
 
   /** Downloads changesets in the specified range */
-  private static async downloadChangeSets(accessToken: AccessToken, iModelId: string, toChangeSetId: string, fromChangeSetId?: string): Promise<ChangeSetToken[]> {
+  public static async downloadChangeSets(accessToken: AccessToken, iModelId: string, toChangeSetId: string, fromChangeSetId?: string): Promise<ChangeSet[]> {
     const changeSets = await BriefcaseManager.getChangeSets(accessToken, iModelId, toChangeSetId, true /*includeDownloadLink*/, fromChangeSetId);
     if (changeSets.length === 0)
-      return new Array<ChangeSetToken>();
+      return new Array<ChangeSet>();
 
-    const changeSetTokens = new Array<ChangeSetToken>();
     const changeSetsToDownload = new Array<ChangeSet>();
     const changeSetsPath: string = BriefcaseManager.getChangeSetsPath(iModelId);
     for (const changeSet of changeSets) {
       const changeSetPathname = path.join(changeSetsPath, changeSet.fileName);
-      changeSetTokens.push(new ChangeSetToken(changeSet.wsgId, +changeSet.index, changeSetPathname));
       if (!fs.existsSync(changeSetPathname))
         changeSetsToDownload.push(changeSet);
     }
@@ -561,7 +570,7 @@ export class BriefcaseManager {
         });
     }
 
-    return changeSetTokens;
+    return changeSets;
   }
 
   /** Open a standalone iModel from the local disk */
@@ -615,6 +624,21 @@ export class BriefcaseManager {
     briefcase.nativeDb!.closeDgnDb();
     briefcase.isOpen = false;
     BriefcaseManager.cache!.removeBriefcase(briefcase);
+  }
+
+
+  public static attachChangeCache(briefcase: BriefcaseInfo) {
+    if (!briefcase.isOpen)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Failed to attach change cache to ${briefcase.pathname} because the briefcase is not open.`);
+
+    const csumFilePath: string = BriefcaseManager.buildChangeSummaryFilePath(briefcase.iModelId);
+    assert(briefcase.nativeDb != null);
+    if (briefcase.nativeDb!.isChangeCacheAttached())
+      return;
+
+    const res: DbResult = briefcase.nativeDb!.attachChangeCache(csumFilePath);
+    if (res !== DbResult.BE_SQLITE_OK)
+      throw new IModelError(res, `Failed to attach change cache to ${briefcase.pathname}.`);
   }
 
   /** Purge closed briefcases */
