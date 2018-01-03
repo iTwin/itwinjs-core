@@ -340,7 +340,10 @@ export class GeometricPrimitive {
           }
           break;
         }
-      // case GeometryType.CurveVector:
+      case GeometryType.CurveCollection:
+        {
+          break;
+        }
       case GeometryType.SolidPrimitive:
         {
           const solidPrim = this.asSolidPrimitive;
