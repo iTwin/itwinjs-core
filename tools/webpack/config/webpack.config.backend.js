@@ -32,7 +32,17 @@ const prodLoaders = (process.env.NODE_ENV !== "production") ? [] : [
     loader: require.resolve('null-loader'),
     include: (process.env.ELECTRON_ENV === "production") ? paths.appSrcBackendWeb : paths.appSrcBackendElectron,
   },
-]
+];
+
+const createDevToolModuleFilename = (info) => {
+  // default:
+  // return `webpack:///${info.resourcePath}?${info.loaders}`
+  let resourcePath = info.resourcePath;
+  const tildePos = resourcePath.indexOf("~");
+  if (-1 !== tildePos)
+    resourcePath = `./${resourcePath.substr(tildePos)}`;
+  return `webpack:///${resourcePath}`;
+}
 
 // This is the development configuration.
 // It is focused on developer experience and fast rebuilds.
@@ -64,8 +74,7 @@ module.exports = {
     // This is the URL that app is served from. We use "/" in development.
     publicPath: publicPath,
     // Point sourcemap entries to original disk location (format as URL on Windows)
-    devtoolModuleFilenameTemplate: info =>
-      path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
+    devtoolModuleFilenameTemplate: createDevToolModuleFilename,
   },
   resolve: {
     // This allows you to set a fallback for where Webpack should look for modules.
@@ -101,6 +110,11 @@ module.exports = {
         loader: require.resolve('tslint-loader'),
         enforce: 'pre',
         include: paths.appSrc,
+      },
+      {
+        test: /\.js$/,
+        loader: require.resolve('source-map-loader'),
+        enforce: 'pre',
       },
       ...prodLoaders,
       // Compile .ts

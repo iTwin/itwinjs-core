@@ -188,7 +188,6 @@ const baseConfiguration = {
         test: /\.js$/,
         loader: require.resolve('source-map-loader'),
         enforce: 'pre',
-        include: paths.appSrc,
       },
       // "sass" loader compiles SASS into CSS.
       {
@@ -338,6 +337,16 @@ const commonPlugins = [
     }),
 ];
 
+const createDevToolModuleFilename = (info) => {
+  // default:
+  // return `webpack:///${info.resourcePath}?${info.loaders}`
+  let resourcePath = info.resourcePath;
+  const tildePos = resourcePath.indexOf("~");
+  if (-1 !== tildePos)
+    resourcePath = `./${resourcePath.substr(tildePos)}`;
+  return `webpack:///${resourcePath}`;
+};
+
 //======================================================================================================================================
 // This is the PRODUCTION configuration.
 // It compiles slowly and is focused on producing a fast and minimal bundle.
@@ -362,10 +371,7 @@ if (PRODUCTION) {
       // We inferred the "public path" (such as / or /my-project) from homepage.
       publicPath: publicPath,
       // Point sourcemap entries to original disk location (format as URL on Windows)
-      devtoolModuleFilenameTemplate: info =>
-        path
-          .relative(paths.appSrc, info.absoluteResourcePath)
-          .replace(/\\/g, '/'),
+      devtoolModuleFilenameTemplate: createDevToolModuleFilename,
     },
     plugins: [
       ...commonPlugins,
@@ -452,8 +458,7 @@ if (DEVELOPMENT) {
       // This is the URL that app is served from. We use "/" in development.
       publicPath: publicPath,
       // Point sourcemap entries to original disk location (format as URL on Windows)
-      devtoolModuleFilenameTemplate: info =>
-        path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
+      devtoolModuleFilenameTemplate: createDevToolModuleFilename,
     },
     plugins: [
       ...commonPlugins,
