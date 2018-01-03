@@ -37,15 +37,13 @@ import ECPresentationManager from "@bentley/ecpresentation-backend/lib/backend/E
 ECPresentationManager;
 ```
 
-
 ## Software dependencies
-The primary dependencies required by ecpresentation packages are the imodeljs-core packages (backend and frontend) and the imodeljs-nodeaddonapi package. It's **VERY** important that version of imodeljs-nodeaddonapi used by ecpresentation-backend matches the one used by imodeljs-backend.
+The primary dependencies required by ecpresentation packages are the imodeljs-core packages (backend and frontend) and the imodeljs-nodeaddonapi package. It's **VERY** important that version of `imodeljs-nodeaddonapi` used by `ecpresentation-backend` matches the one used by `imodeljs-backend`.
 
 ## API references
 TODO: See sample app.
 
 # Build and Test
-
 The library uses [@microsoft/rush](https://github.com/Microsoft/web-build-tools/wiki/Rush) for managing multiple packages in the repository. It's a requirement to have this package installed globally:
 ```
 $ npm install -g @microsoft/rush
@@ -54,6 +52,14 @@ After that the steps to build are simple:
 ```
 $ rush install
 $ rush rebuild
+```
+To build just one package + all its dependencies:
+```
+$ rush rebuild --to @bentley/ecpresentation-tests
+```
+To build rebuild all dependencies after changing one package:
+```
+$ rush rebuild --from @bentley/ecpresentation-frontend
 ```
 
 ## Test

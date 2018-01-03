@@ -2,10 +2,6 @@
   "extends": "./node_modules/@bentley/bentleyjs-tools/tsconfig-base.json",
   "compilerOptions": {
     "target": "es2017",
-    "module": "commonjs",
-    "baseUrl": "source/backend/node_modules/", /* Get intellisense to work in source/gateway */
-    "paths": {
-      "@build/imodeljs-core/*": ["@bentley/imodeljs-backend/*"] /* Get intellisense to work in source/gateway */
-    }
+    "module": "commonjs"
   }
 }
