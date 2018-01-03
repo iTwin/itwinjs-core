@@ -18,6 +18,7 @@ const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const getClientEnvironment = require('./env');
 const plugins = require("../scripts/utils/webpackPlugins");
 const paths = require('./paths');
+const helpers = require('./helpers');
 
 const PRODUCTION = (process.env.NODE_ENV === "production");
 const DEVELOPMENT = !PRODUCTION;
@@ -188,6 +189,7 @@ const baseConfiguration = {
         test: /\.js$/,
         loader: require.resolve('source-map-loader'),
         enforce: 'pre',
+        include: helpers.createBentleySourceMapsIncludePaths(),
       },
       // "sass" loader compiles SASS into CSS.
       {
@@ -337,16 +339,6 @@ const commonPlugins = [
     }),
 ];
 
-const createDevToolModuleFilename = (info) => {
-  // default:
-  // return `webpack:///${info.resourcePath}?${info.loaders}`
-  let resourcePath = info.resourcePath;
-  const tildePos = resourcePath.indexOf("~");
-  if (-1 !== tildePos)
-    resourcePath = `./${resourcePath.substr(tildePos)}`;
-  return `webpack:///${resourcePath}`;
-};
-
 //======================================================================================================================================
 // This is the PRODUCTION configuration.
 // It compiles slowly and is focused on producing a fast and minimal bundle.
@@ -371,7 +363,7 @@ if (PRODUCTION) {
       // We inferred the "public path" (such as / or /my-project) from homepage.
       publicPath: publicPath,
       // Point sourcemap entries to original disk location (format as URL on Windows)
-      devtoolModuleFilenameTemplate: createDevToolModuleFilename,
+      devtoolModuleFilenameTemplate: helpers.createDevToolModuleFilename,
     },
     plugins: [
       ...commonPlugins,
@@ -458,7 +450,7 @@ if (DEVELOPMENT) {
       // This is the URL that app is served from. We use "/" in development.
       publicPath: publicPath,
       // Point sourcemap entries to original disk location (format as URL on Windows)
-      devtoolModuleFilenameTemplate: createDevToolModuleFilename,
+      devtoolModuleFilenameTemplate: helpers.createDevToolModuleFilename,
     },
     plugins: [
       ...commonPlugins,
