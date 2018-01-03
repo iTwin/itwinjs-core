@@ -101,6 +101,12 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
 /**
  * Defines a view of one or more SpatialModels.
  * The list of viewed models is stored by the ModelSelector.
+ * This is how a SpatialViewDefinition selects the elements to display:
+ * SpatialViewDefinition
+ *    * ModelSelector
+ *        * ModelIds  -------> SpatialModels    <----------GeometricElement3d.Model
+ *    * CategorySelector
+ *        * CategoryIds -----> SpatialCategories <----------GeometricElement3d.Category
  */
 export class SpatialViewDefinition extends ViewDefinition3d implements SpatialViewDefinitionProps {
   public modelSelectorId: Id64;
