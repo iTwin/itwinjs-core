@@ -31,10 +31,10 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bemetalsmith": "^1.16.7",
-    "@bentley/bentleyjs-tools": "^1.0.57",
+    "@bentley/bemetalsmith": "^1.17.4",
+    "@bentley/bentleyjs-tools": "^1.1.5",
     "@types/chai": "^4.0.10",
-    "@types/mocha": "^2.2.44",
+    "@types/mocha": "^2.2.45",
     "nyc": "^11.4.1",
     "rimraf": "^2.6.2",
     "ts-node": "^3.3.0",
