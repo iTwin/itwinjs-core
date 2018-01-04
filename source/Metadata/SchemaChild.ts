@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaInterface, SchemaChildInterface, SchemaChildKeyInterface } from "../Interfaces";
+import { SchemaInterface, SchemaChildInterface } from "../Interfaces";
 import { ECVersion, SchemaChildKey, SchemaKey } from "../ECObjects";
 import { SchemaContext } from "../Context";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
@@ -13,7 +13,7 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
 export default abstract class SchemaChild implements SchemaChildInterface {
   // This is a pointer back to the parent schema
   private _schema?: SchemaInterface;
-  public key: SchemaChildKeyInterface;
+  public key: SchemaChildKey;
   public description?: string;
   public label?: string;
 

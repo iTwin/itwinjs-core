@@ -1,24 +1,24 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
 import { ECClassInterface, MixinInterface, EntityClassInterface, PropertyInterface, CustomAttributeClassInterface, RelationshipClassInterface,
-  RelationshipConstraintInterface, NavigationPropertyInterface, PrimitivePropertyInterface, PrimitiveArrayPropertyInteface, SchemaChildInterface,
-  StructPropertyInterface, StructArrayPropertyInterface, SchemaInterface } from "../Interfaces";
+  RelationshipConstraintInterface, SchemaInterface } from "../Interfaces";
 import { ECClassModifier, CustomAttributeContainerType, RelationshipMultiplicity, RelationshipEnd, RelatedInstanceDirection, StrengthType,
   parseCustomAttributeContainerType, parseClassModifier, parseStrength, parseStrengthDirection, PrimitiveType, parsePrimitiveType, SchemaChildType } from "../ECObjects";
-import { ICustomAttributeContainer, CustomAttributeSet } from "./CustomAttribute";
+import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import SchemaChild from "./SchemaChild";
-import { NavigationProperty, PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty } from "./Property";
+import { NavigationProperty, PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty, ECProperty } from "./Property";
+import { Enumeration } from "Metadata/Enumeration";
 
 /**
  * A common abstract class for all of the ECClass types.
  */
-export abstract class ECClass extends SchemaChild implements ICustomAttributeContainer, ECClassInterface {
+export abstract class ECClass extends SchemaChild implements CustomAttributeContainerProps, ECClassInterface {
   public modifier: ECClassModifier;
-  public baseClass?: ECClassInterface;
-  public properties?: PropertyInterface[];
+  public baseClass?: ECClass;
+  public properties?: ECProperty[];
   public customAttributes?: CustomAttributeSet;
 
   constructor(name: string, modifier?: ECClassModifier) {
@@ -35,23 +35,23 @@ export abstract class ECClass extends SchemaChild implements ICustomAttributeCon
    * @param name
    */
   public getProperty<T extends PropertyInterface>(name: string, includeInherited: boolean = false): T | undefined {
-    let foundProp;
+    let foundProp: PropertyInterface | undefined;
 
     if (this.properties) {
-      foundProp = this.properties.find((prop) => prop.name.toLowerCase() === name.toLowerCase()) as T;
+      foundProp = this.properties.find((prop) => prop.name.toLowerCase() === name.toLowerCase());
       if (foundProp)
-        return foundProp;
+        return foundProp as T;
     }
 
     if (includeInherited)
-      return this.getInheritedProperty(name);
+      return this.getInheritedProperty<T>(name);
 
     return undefined;
   }
 
   /**
    * Searches the base class, if one exists, for the property with the name provided.
-   * @param name
+   * @param name The name of the inherited property to find.
    */
   public getInheritedProperty<T extends PropertyInterface>(name: string): T | undefined {
     let inheritedProperty;
@@ -66,20 +66,20 @@ export abstract class ECClass extends SchemaChild implements ICustomAttributeCon
   }
 
   /**
-   * Creates a PrimitiveECProperty with the given name and type
+   * Creates a PrimitiveECProperty.
    * @param name The name of property to create.
-   * @param type The type of the primitive property. If it is in string form it will be parsed as a PrimitiveType.
+   * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
    * @throws ECObjectsStatus DuplicateProperty: thrown if a property with the same name already exists in the class.
    */
-  public createPrimitiveProperty(name: string, type?: string | PrimitiveType): PrimitivePropertyInterface {
+  public createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): PrimitiveProperty {
     if (this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     let correctType: PrimitiveType | undefined;
-    if (type && typeof(type) === "string")
-      correctType = parsePrimitiveType(type);
+    if (primitiveType && typeof(primitiveType) === "string")
+      correctType = parsePrimitiveType(primitiveType);
     else
-      correctType = type as PrimitiveType | undefined;
+      correctType = primitiveType as PrimitiveType | undefined;
 
     const primProp = new PrimitiveProperty(name, correctType);
 
@@ -91,19 +91,19 @@ export abstract class ECClass extends SchemaChild implements ICustomAttributeCon
   }
 
   /**
-   *
-   * @param name
-   * @param type
+   * Creates a PrimitiveArrayECProperty.
+   * @param name The name of property to create.
+   * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
    */
-  public createPrimitiveArrayProperty(name: string, type?: string | PrimitiveType): PrimitiveArrayPropertyInteface {
+  public createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): PrimitiveArrayProperty {
     if (this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
-    let correctType: PrimitiveType | undefined;
-    if (type && typeof(type) === "string")
-      correctType = parsePrimitiveType(type);
+    let correctType: Enumeration | PrimitiveType | undefined;
+    if (primitiveType && typeof(primitiveType) === "string")
+      correctType = parsePrimitiveType(primitiveType);
     else
-      correctType = type as PrimitiveType | undefined;
+      correctType = primitiveType as PrimitiveType | undefined;
 
     const primArrProp = new PrimitiveArrayProperty(name, correctType);
 
@@ -116,21 +116,21 @@ export abstract class ECClass extends SchemaChild implements ICustomAttributeCon
 
   /**
    *
-   * @param name
-   * @param type
+   * @param name The name of property to create.
+   * @param structType The struct type of property to create.
    */
-  public createStructProperty(name: string, type: string | SchemaChildInterface): StructPropertyInterface {
+  public createStructProperty(name: string, structType: string | StructClass): StructProperty {
     if (this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     let correctType: StructClass | undefined;
-    if (typeof(type) === "string" && this.schema) {
-      correctType = this.schema.getChild<StructClass>(type);
+    if (typeof(structType) === "string" && this.schema) {
+      correctType = this.schema.getChild<StructClass>(structType);
     } else
-      correctType = type as StructClass;
+      correctType = structType as StructClass;
 
     if (!correctType)
-      throw new ECObjectsError(ECObjectsStatus.ECOBJECTS_ERROR_BASE, ``);
+      throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
 
     const structProp = new StructProperty(name, correctType);
 
@@ -146,18 +146,18 @@ export abstract class ECClass extends SchemaChild implements ICustomAttributeCon
    * @param name
    * @param type
    */
-  public createStructArrayProperty(name: string, type: string | SchemaChildInterface): StructArrayPropertyInterface {
+  public createStructArrayProperty(name: string, structType: string | StructClass): StructArrayProperty {
     if (this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     let correctType: StructClass | undefined;
-    if (typeof(type) === "string" && this.schema) {
-      correctType = this.schema.getChild<StructClass>(type);
+    if (typeof(structType) === "string" && this.schema) {
+      correctType = this.schema.getChild<StructClass>(structType);
     } else
-      correctType = type as StructClass;
+      correctType = structType as StructClass;
 
     if (!correctType)
-      throw new ECObjectsError(ECObjectsStatus.ECOBJECTS_ERROR_BASE, ``);
+      throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
 
     const structProp = new StructArrayProperty(name, correctType);
 
@@ -198,7 +198,7 @@ export abstract class ECClass extends SchemaChild implements ICustomAttributeCon
  * A Typescript class representation of an ECEntityClass.
  */
 export class EntityClass extends ECClass implements EntityClassInterface {
-  private _mixins?: MixinInterface[];
+  private _mixins?: MixinClass[];
 
   constructor(name: string, modifier?: ECClassModifier) {
     super(name, modifier);
@@ -206,10 +206,10 @@ export class EntityClass extends ECClass implements EntityClassInterface {
     this.key.type = SchemaChildType.EntityClass;
   }
 
-  set mixins(mixins: MixinInterface[]) {
+  set mixins(mixins: MixinClass[]) {
     this._mixins = mixins;
   }
-  get mixins(): MixinInterface[] {
+  get mixins(): MixinClass[] {
     if (!this._mixins)
       return [];
     return this._mixins;
@@ -219,7 +219,7 @@ export class EntityClass extends ECClass implements EntityClassInterface {
    *
    * @param mixin
    */
-  public addMixin(mixin: MixinInterface | MixinInterface[]) {
+  public addMixin(mixin: MixinClass | MixinClass[]) {
     if (!this._mixins)
       this._mixins = [];
 
@@ -255,7 +255,7 @@ export class EntityClass extends ECClass implements EntityClassInterface {
    * @param relationship
    * @param direction
    */
-  public createNavigationProperty(name: string, relationship: string | RelationshipClassInterface, direction: string | RelatedInstanceDirection): NavigationPropertyInterface {
+  public createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | RelatedInstanceDirection): NavigationProperty {
     if (this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
@@ -288,7 +288,7 @@ export class EntityClass extends ECClass implements EntityClassInterface {
       if (!this.schema)
         throw new ECObjectsError(ECObjectsStatus.ECOBJECTS_ERROR_BASE, `TODO: Fix this message`);
 
-      const tempMixin = this.schema.getChild<MixinInterface>(mixinFullName);
+      const tempMixin = this.schema.getChild<MixinClass>(mixinFullName);
       if (!tempMixin)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `TODO: Fix this message`);
 
@@ -314,7 +314,7 @@ export class EntityClass extends ECClass implements EntityClassInterface {
  * A Typescript class representation of a Mixin.
  */
 export class MixinClass extends ECClass implements MixinInterface {
-  public appliesTo: string | EntityClassInterface;
+  public appliesTo: string | EntityClass;
 
   constructor(name: string) {
     super(name, ECClassModifier.Abstract);
@@ -329,7 +329,7 @@ export class MixinClass extends ECClass implements MixinInterface {
       // TODO: Fix
       if (!this.schema)
         throw new ECObjectsError(ECObjectsStatus.ECOBJECTS_ERROR_BASE, `TODO: Fix this error`);
-      const tmpClass = this.schema.getChild<EntityClassInterface>(jsonObj.appliesTo);
+      const tmpClass = this.schema.getChild<EntityClass>(jsonObj.appliesTo);
       if (!tmpClass)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
@@ -394,7 +394,7 @@ export class RelationshipClass extends ECClass implements RelationshipClassInter
    * @param relationship
    * @param direction
    */
-  public createNavigationProperty(name: string, relationship: string | RelationshipClassInterface, direction: string | RelatedInstanceDirection): NavigationPropertyInterface {
+  public createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | RelatedInstanceDirection): NavigationProperty {
     if (this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
@@ -431,13 +431,13 @@ export class RelationshipClass extends ECClass implements RelationshipClassInter
  * A Typescript class representation of a ECRelationshipConstraint.
  */
 export class RelationshipConstraint implements RelationshipConstraintInterface {
-  private _abstractConstraint: EntityClassInterface | RelationshipClassInterface;
-  public relationshipClass: RelationshipClassInterface;
+  private _abstractConstraint: EntityClass | RelationshipClass;
+  public relationshipClass: RelationshipClass;
   public relationshipEnd: RelationshipEnd;
   public multiplicity?: RelationshipMultiplicity;
   public polymorphic?: boolean;
   public roleLabel?: string;
-  public constraintClasses?: EntityClassInterface[] | RelationshipClassInterface[];
+  public constraintClasses?: EntityClass[] | RelationshipClass[];
 
   constructor(relClass: RelationshipClass, relEnd: RelationshipEnd) {
     this.relationshipEnd = relEnd;
@@ -446,7 +446,7 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
     this.relationshipClass = relClass;
   }
 
-  get abstractConstraint(): EntityClassInterface | RelationshipClassInterface {
+  get abstractConstraint(): EntityClass | RelationshipClass {
     if (this._abstractConstraint)
       return this._abstractConstraint;
 
@@ -456,7 +456,7 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
     return this._abstractConstraint;
   }
 
-  set abstractConstraint(abstractConstraint: EntityClassInterface | RelationshipClassInterface) {
+  set abstractConstraint(abstractConstraint: EntityClass | RelationshipClass) {
     this._abstractConstraint = abstractConstraint;
   }
 
@@ -470,9 +470,9 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
    * @param constraint The class to add as a constraint class.
    */
   public addClass(constraint: EntityClassInterface | RelationshipClassInterface): void {
-    const areEntityConstraints = undefined !== this.constraintClasses as EntityClassInterface[];
+    const areEntityConstraints = undefined !== this.constraintClasses as EntityClass[];
 
-    if (areEntityConstraints && (undefined === constraint as EntityClassInterface))
+    if (areEntityConstraints && (undefined === constraint as EntityClass))
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
     // TODO: Handle relationship constraints
@@ -481,9 +481,9 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
       this.constraintClasses = [];
 
     if (areEntityConstraints)
-      (this.constraintClasses as EntityClassInterface[]).push(constraint as EntityClassInterface);
+      (this.constraintClasses as EntityClass[]).push(constraint as EntityClass);
     else
-      (this.constraintClasses as RelationshipClassInterface[]).push(constraint as RelationshipClassInterface);
+      (this.constraintClasses as RelationshipClass[]).push(constraint as RelationshipClass);
 
   }
 
@@ -511,13 +511,13 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
 
       relClassSchema = this.relationshipClass.getSchema();
       if (relClassSchema) {
-        const tempAbstractConstraint = relClassSchema.getChild<ECClassInterface>(jsonObj.abstractConstraint);
+        const tempAbstractConstraint = relClassSchema.getChild<ECClass>(jsonObj.abstractConstraint);
         if (!tempAbstractConstraint)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
-        this.abstractConstraint = tempAbstractConstraint as EntityClassInterface === null ?
-                                tempAbstractConstraint as RelationshipClassInterface :
-                                tempAbstractConstraint as EntityClassInterface;
+        this.abstractConstraint = tempAbstractConstraint as EntityClass === null ?
+                                tempAbstractConstraint as RelationshipClass :
+                                tempAbstractConstraint as EntityClass;
       }
     }
 
@@ -530,13 +530,13 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
 
       jsonObj.constraintClasses.forEach((constraintClass: string) => {
         if (relClassSchema) {
-          const tempConstraintClass = relClassSchema.getChild<ECClassInterface>(constraintClass);
+          const tempConstraintClass = relClassSchema.getChild<ECClass>(constraintClass);
           if (!tempConstraintClass)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
-          this.addClass(tempConstraintClass as EntityClassInterface === null ?
-                        tempConstraintClass as RelationshipClassInterface :
-                        tempConstraintClass as EntityClassInterface);
+          this.addClass(tempConstraintClass as EntityClass === null ?
+                        tempConstraintClass as RelationshipClass :
+                        tempConstraintClass as EntityClass);
         }
       });
     }

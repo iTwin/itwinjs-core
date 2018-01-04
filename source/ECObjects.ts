@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaKeyInterface, SchemaChildKeyInterface } from "./Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
+import ECStringConstants from "./Constants";
 
 export const enum ECClassModifier {
   None,
@@ -224,7 +224,7 @@ export function containerTypeToString(type: CustomAttributeContainerType): strin
   };
 
   if (testContainerTypeValue(CustomAttributeContainerType.Any, type))
-    return "Any";
+    return ECStringConstants.CONTAINERTYPE_ANY;
 
   const setOrAppend = (str: string, val: string) => {
     if (str.length === 0)
@@ -241,37 +241,37 @@ export function containerTypeToString(type: CustomAttributeContainerType): strin
     setOrAppend(containerType, "AnyClass");
   else {
     if (testContainerTypeValue(CustomAttributeContainerType.EntityClass, type))
-      setOrAppend(containerType, "EntityClass");
+      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_ENTITYCLASS);
     if (testContainerTypeValue(CustomAttributeContainerType.CustomAttributeClass, type))
-      setOrAppend(containerType, "CustomAttributeClass");
+      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_CUSTOMATTRIBUTECLASS);
     if (testContainerTypeValue(CustomAttributeContainerType.StructClass, type))
-      setOrAppend(containerType, "StructClass");
+      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_STRUCTCLASS);
     if (testContainerTypeValue(CustomAttributeContainerType.RelationshipClass, type))
-      setOrAppend(containerType, "RelationshipClass");
+      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_RELATIONSHIPCLASS);
   }
 
   if (testContainerTypeValue(CustomAttributeContainerType.AnyProperty, type))
-    setOrAppend(containerType, "AnyProperty");
+    setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_ANYPROPERTY);
   else {
     if (testContainerTypeValue(CustomAttributeContainerType.PrimitiveProperty, type))
-      setOrAppend(containerType, "PrimitiveProperty");
+      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_PRIMITIVEPROPERTY);
     if (testContainerTypeValue(CustomAttributeContainerType.StructProperty, type))
-      setOrAppend(containerType, "StructProperty");
+      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_STRUCTPROPERTY);
     if (testContainerTypeValue(CustomAttributeContainerType.PrimitiveArrayProperty, type))
-      setOrAppend(containerType, "PrimitiveArrayProperty");
+      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_ARRAYPROPERTY);
     if (testContainerTypeValue(CustomAttributeContainerType.StructArrayProperty, type))
-      setOrAppend(containerType, "StructArrayProperty");
+      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_STRUCTARRAYPROPERTY);
     if (testContainerTypeValue(CustomAttributeContainerType.NavigationProperty, type))
-      setOrAppend(containerType, "NavigationProperty");
+      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_NAVIGATIONPROPERTY);
   }
 
   if (testContainerTypeValue(CustomAttributeContainerType.AnyRelationshipConstraint, type))
-    setOrAppend(containerType, "AnyRelationshipConstraint");
+    setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_ANYRELATIONSHIPCONSTRAINT);
   else {
     if (testContainerTypeValue(CustomAttributeContainerType.SourceRelationshipConstraint, type))
-      setOrAppend(containerType, "SourceRelationshipConstraint");
+      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_SOURCERELATIONSHIPCONSTRAINT);
     if (testContainerTypeValue(CustomAttributeContainerType.TargetRelationshipConstraint, type))
-      setOrAppend(containerType, "TargetRelationshipConstraint");
+      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_TARGETRELATIONSHIPCONSTRAINT);
   }
 
   return containerType;
@@ -283,6 +283,13 @@ export function containerTypeToString(type: CustomAttributeContainerType): strin
 export const enum RelationshipEnd {
   Source = 0,
   Target = 1,
+}
+
+export function relationshipEndToString(end: RelationshipEnd): string {
+  if (end === RelationshipEnd.Source)
+    return ECStringConstants.RELATIONSHIP_END_SOURCE;
+  else
+    return ECStringConstants.RELATIONSHIP_END_TARGET;
 }
 
 export const enum StrengthType {
@@ -406,11 +413,11 @@ export class ECName {
 /**
  * The SchemaKey object contains
  */
-export class SchemaKey implements SchemaKeyInterface {
+export class SchemaKey {
   private _name: ECName;
   public version: ECVersion;
   public checksum: number;
-  // TODO: need to add a hash
+  // TODO: need to add a checksum
 
   constructor(name?: string, readVersion?: number, writeVersion?: number, minorVersion?: number) {
     if (name)
@@ -455,7 +462,7 @@ export class SchemaKey implements SchemaKeyInterface {
    * @param rhs The SchemaKey to compare with
    * @param matchType The match type to use for comparison.
    */
-  public matches(rhs: SchemaKeyInterface, matchType: SchemaMatchType = SchemaMatchType.Identical): boolean {
+  public matches(rhs: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Identical): boolean {
     switch (matchType) {
       case SchemaMatchType.Identical:
         if (this.checksum && rhs.checksum)
@@ -490,13 +497,13 @@ export class SchemaKey implements SchemaKeyInterface {
 /**
  *
  */
-export class SchemaChildKey implements SchemaChildKeyInterface {
+export class SchemaChildKey {
   private _name: ECName;
   public type: SchemaChildType;
-  public schema: SchemaKeyInterface;
-  // TODO: Possibly add checksum
+  public schema: SchemaKey;
+  // TODO: Need a checksum
 
-  constructor(name?: string, type?: SchemaChildType, schema?: SchemaKeyInterface) {
+  constructor(name?: string, type?: SchemaChildType, schema?: SchemaKey) {
     if (name) this.name = name;
     if (type) this.type = type;
     if (schema) this.schema = schema;
@@ -522,8 +529,8 @@ export class SchemaChildKey implements SchemaChildKeyInterface {
    * Checks whether this SchemaChildKey matches the one provided.
    * @param rhs The SchemaChildKey to compare to this.
    */
-  // TODO: Possibly need to add a match type
-  public matches(rhs: SchemaChildKeyInterface): boolean {
+  // TODO: Need to add a match type
+  public matches(rhs: SchemaChildKey): boolean {
     if (rhs.name !== this.name)
       return false;
 

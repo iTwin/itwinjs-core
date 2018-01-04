@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
@@ -21,8 +21,9 @@ export const enum ECObjectsStatus {
   InvalidPrimitiveType = ECOBJECTS_ERROR_BASE + 12,
   InvalidStrength = ECOBJECTS_ERROR_BASE + 13,
   InvalidStrengthDirection = ECOBJECTS_ERROR_BASE + 14,
-  MissingSchemaUrl = ECOBJECTS_ERROR_BASE + 15,
-  UnableToLocateSchema = ECOBJECTS_ERROR_BASE + 16,
+  InvalidType = ECOBJECTS_ERROR_BASE + 15,
+  MissingSchemaUrl = ECOBJECTS_ERROR_BASE + 16,
+  UnableToLocateSchema = ECOBJECTS_ERROR_BASE + 17,
 }
 
 export class ECObjectsError extends Error {
@@ -47,6 +48,7 @@ export class ECObjectsError extends Error {
       case ECObjectsStatus.InvalidPrimitiveType: return this._appendMessage("ECObjectsStatus.InvalidPrimitiveType");
       case ECObjectsStatus.InvalidStrength: return this._appendMessage("ECObjectsStatus.InvalidStrength");
       case ECObjectsStatus.InvalidStrengthDirection: return this._appendMessage("ECObjectsStatus.InvalidStrengthDirection");
+      case ECObjectsStatus.InvalidType: return this._appendMessage("ECObjectsStatus.InvalidType");
       case ECObjectsStatus.MissingSchemaUrl: return this._appendMessage("ECObjectsStatus.MissingSchemaUrl");
       case ECObjectsStatus.UnableToLocateSchema: return this._appendMessage("ECObjectsStatus.UnableToLocateSchema");
       default:

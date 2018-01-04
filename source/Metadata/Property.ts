@@ -1,15 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { PropertyInterface, ECClassInterface, RelationshipClassInterface, PrimitivePropertyInterface, StructPropertyInterface,
-  NavigationPropertyInterface, PrimitiveArrayPropertyInteface, StructArrayPropertyInterface, SchemaChildInterface } from "../Interfaces";
+import { PropertyInterface, ECClassInterface, PrimitivePropertyInterface, StructPropertyInterface,
+  NavigationPropertyInterface, PrimitiveArrayPropertyInterface, StructArrayPropertyInterface } from "../Interfaces";
 import { ECName, PrimitiveType, RelatedInstanceDirection } from "../ECObjects";
 import PropertyCategory from "./PropertyCategory";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import KindOfQuantity from "./KindOfQuantity";
 import { Enumeration } from "./Enumeration";
-import { StructClass } from "./Class";
+import { StructClass, RelationshipClass } from "./Class";
 
 /**
  * A common abstract class for all ECProperty types.
@@ -22,7 +22,7 @@ export abstract class ECProperty implements PropertyInterface {
   public isReadOnly: boolean;
   public priority: number;
   public inherited?: boolean;
-  public category: PropertyCategory;
+  public category?: PropertyCategory;
 
   constructor(name: string) {
     this.name = name;
@@ -52,14 +52,14 @@ export abstract class ECProperty implements PropertyInterface {
  *
  */
 export class PrimitiveProperty extends ECProperty implements PrimitivePropertyInterface {
-  public kindOfQuantity: KindOfQuantity;
+  public kindOfQuantity?: KindOfQuantity;
   public type: PrimitiveType | Enumeration;
   public minLength: number;
   public maxLength: number;
   public minValue: number;
   public maxValue: number;
 
-  constructor(name: string, type?: PrimitiveType) {
+  constructor(name: string, type?: PrimitiveType | Enumeration) {
     super(name);
 
     if (type)
@@ -102,7 +102,7 @@ export class PrimitiveProperty extends ECProperty implements PrimitivePropertyIn
 /**
  *
  */
-export class PrimitiveArrayProperty extends PrimitiveProperty implements PrimitiveArrayPropertyInteface {
+export class PrimitiveArrayProperty extends PrimitiveProperty implements PrimitiveArrayPropertyInterface {
   public minOccurs: number = 0;
   public maxOccurs: number;
 }
@@ -113,7 +113,7 @@ export class PrimitiveArrayProperty extends PrimitiveProperty implements Primiti
 export class StructProperty extends ECProperty implements StructPropertyInterface {
   public type: StructClass;
 
-  constructor(name: string, type: SchemaChildInterface) {
+  constructor(name: string, type: StructClass) {
     super(name);
 
     this.type = type as StructClass; // TODO: See how this error is handled.
@@ -138,10 +138,10 @@ export class StructArrayProperty extends StructProperty implements StructArrayPr
  *
  */
 export class NavigationProperty extends ECProperty implements NavigationPropertyInterface {
-  public relationship: RelationshipClassInterface;
+  public relationship: RelationshipClass;
   public direction: RelatedInstanceDirection;
 
-  constructor(name: string, relationship: RelationshipClassInterface, direction: RelatedInstanceDirection) {
+  constructor(name: string, relationship: RelationshipClass, direction: RelatedInstanceDirection) {
     super(name);
 
     this.relationship = relationship;

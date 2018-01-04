@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 import { ECVersion, SchemaKey, ECClassModifier } from "../ECObjects";
 import { SchemaInterface, SchemaChildInterface } from "../Interfaces";
@@ -10,7 +10,7 @@ import KindOfQuantity from "./KindOfQuantity";
 import PropertyCategory from "./PropertyCategory";
 import SchemaReadHelper from "../Deserialization/Helper";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { ICustomAttributeContainer, CustomAttributeSet } from "./CustomAttribute";
+import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { SchemaContext } from "../Context";
 
 const SCHEMAURL3_1 = "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema";
@@ -18,7 +18,7 @@ const SCHEMAURL3_1 = "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecsche
 /**
  *
  */
-export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
+export class ECSchema  implements SchemaInterface, CustomAttributeContainerProps {
   private _immutable: boolean = false;
   public schemaKey: SchemaKey;
   public alias: string;

@@ -1,56 +1,21 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaKeyInterface, SchemaInterface, SchemaChildInterface, SchemaChildKeyInterface } from "./Interfaces";
+import { SchemaInterface, SchemaChildInterface } from "./Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 import { SchemaKey, SchemaMatchType } from "./ECObjects";
 import SchemaChild from "./Metadata/SchemaChild";
 
 export class SchemaMap extends Array<SchemaInterface> { }
-class SchemaChildMap extends Array<SchemaChildInterface> { }
+// class SchemaChildMap extends Array<SchemaChildInterface> { }
 
 /**
  * The interface defines what is needed to be a ISchemaLocater, which are used in a SchemaContext.
  */
 export interface ISchemaLocater {
-  getSchemaSync<T extends SchemaInterface>(schemaKey: SchemaKeyInterface, matchType: SchemaMatchType): T | undefined;
+  getSchemaSync<T extends SchemaInterface>(schemaKey: SchemaKey, matchType: SchemaMatchType): T | undefined;
   // getSchema<T extends SchemaInterface>(schemaKey: SchemaKeyInterface, matchType: SchemaMatchType): Promise<T | undefined>;
-}
-
-// TODO: Not sure if we want to keep this????
-export class SchemaChildCache {
-  private _schemaChildren: SchemaChildMap;
-
-  constructor() {
-    this._schemaChildren = new SchemaChildMap();
-  }
-
-  get count() { return this._schemaChildren.length; }
-
-  // TODO: may need to add a match type...
-  public getSchemaChild<T extends SchemaChildInterface>(schemaChildKey: SchemaChildKeyInterface): T | undefined {
-    if (this._schemaChildren.length === 0)
-      return undefined;
-
-    const findFunc = (schemaChild: SchemaChildInterface) => {
-      return schemaChild.key.matches(schemaChildKey);
-    };
-
-    const foundChild = this._schemaChildren.find(findFunc);
-
-    if (!foundChild)
-      return foundChild;
-
-    return foundChild as T;
-  }
-
-  public addChild<T extends SchemaChildInterface>(child: T) {
-    if (this.getSchemaChild(child.key))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateChild, `The schema child ${child.key.name} already exists within this cache.`);
-
-    this._schemaChildren.push(child);
-  }
 }
 
 /**
@@ -114,7 +79,7 @@ export class SchemaCache implements ISchemaLocater {
    * @param schemaKey
    * @param matchType
    */
-  public getSchemaSync<T extends SchemaInterface>(schemaKey: SchemaKeyInterface, matchType: SchemaMatchType = SchemaMatchType.Latest): T | undefined {
+  public getSchemaSync<T extends SchemaInterface>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): T | undefined {
     if (this.count === 0)
       return undefined;
 
