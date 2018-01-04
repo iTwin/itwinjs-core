@@ -42,8 +42,6 @@ const enum TapEventType {
   TwoFingerSingleTap = 2,
 }
 
-const toolAdmin = ToolAdmin.instance;
-
 class TouchPoint extends Point2d {
   public initialX: number;
   public initialY: number;
@@ -169,16 +167,16 @@ export class EventController {
     this.registerListener("touchcancel", element, this.handleTouchCancel as EventListener);
   }
 
-  private recordShiftKey() { toolAdmin.currentInputState.setKeyQualifier(BeModifierKey.Shift, true); }
-  private recordControlKey() { toolAdmin.currentInputState.setKeyQualifier(BeModifierKey.Control, true); }
-  private clearKeyboardModifiers() { toolAdmin.currentInputState.clearKeyQualifiers(); }
+  private recordShiftKey() { ToolAdmin.instance.currentInputState.setKeyQualifier(BeModifierKey.Shift, true); }
+  private recordControlKey() { ToolAdmin.instance.currentInputState.setKeyQualifier(BeModifierKey.Control, true); }
+  private clearKeyboardModifiers() { ToolAdmin.instance.currentInputState.clearKeyQualifiers(); }
 
-  private handleMiddleDown(pos: Point2d) { toolAdmin.onMiddleButtonDown(this.vp, pos); }
-  private handleMiddleUp(pos: Point2d) { toolAdmin.onMiddleButtonUp(this.vp, pos); }
-  private handleLeftDown(pos: Point2d) { toolAdmin.onDataButtonDown(this.vp, pos, InputSource.Mouse); }
-  private handleLeftUp(pos: Point2d) { toolAdmin.onDataButtonUp(this.vp, pos, InputSource.Mouse); }
-  private handleRightDown(pos: Point2d) { toolAdmin.onResetButtonDown(this.vp, pos); }
-  private handleRightUp(pos: Point2d) { toolAdmin.onResetButtonUp(this.vp, pos); }
+  private handleMiddleDown(pos: Point2d) { ToolAdmin.instance.onMiddleButtonDown(this.vp, pos); }
+  private handleMiddleUp(pos: Point2d) { ToolAdmin.instance.onMiddleButtonUp(this.vp, pos); }
+  private handleLeftDown(pos: Point2d) { ToolAdmin.instance.onDataButtonDown(this.vp, pos, InputSource.Mouse); }
+  private handleLeftUp(pos: Point2d) { ToolAdmin.instance.onDataButtonUp(this.vp, pos, InputSource.Mouse); }
+  private handleRightDown(pos: Point2d) { ToolAdmin.instance.onResetButtonDown(this.vp, pos); }
+  private handleRightUp(pos: Point2d) { ToolAdmin.instance.onResetButtonUp(this.vp, pos); }
 
   private getMouseButtonHandler(button: MouseButton, isDown: boolean) {
     switch (button) {
@@ -224,7 +222,7 @@ export class EventController {
   private handleMouseMove(ev: MouseEvent) {
     this.recordKeyboardModifiers(ev);
     const pos = this.getPosition(ev, EventController.scratchMousePos);
-    toolAdmin.onMouseMotion(this.vp, pos, InputSource.Mouse);
+    ToolAdmin.instance.onMouseMotion(this.vp, pos, InputSource.Mouse);
     ev.preventDefault();
   }
 
@@ -243,7 +241,7 @@ export class EventController {
     if (!delta)
       return;
 
-    toolAdmin.onWheel(this.vp, delta, toolAdmin.currentInputState.lastMotion);
+    ToolAdmin.instance.onWheel(this.vp, delta, ToolAdmin.instance.currentInputState.lastMotion);
     ev.preventDefault();
   }
 
@@ -295,18 +293,18 @@ export class EventController {
 
   private dispatchTouchEvent(info: GestureInfo, vp: Viewport): void {
     if (info.isEndGesture) {
-      toolAdmin.onEndGesture(vp, info);
+      ToolAdmin.instance.onEndGesture(vp, info);
       return;
     }
 
     switch (info.gestureId) {
-      case GestureId.MultiFingerMove: return toolAdmin.onMultiFingerMove(vp, info);
-      case GestureId.SingleFingerMove: return toolAdmin.onSingleFingerMove(vp, info);
-      case GestureId.TwoFingerTap: return toolAdmin.onTwoFingerTap(vp, info);
-      case GestureId.PressAndTap: return toolAdmin.onPressAndTap(vp, info);
-      case GestureId.SingleTap: return toolAdmin.onSingleTap(vp, info);
-      case GestureId.DoubleTap: return toolAdmin.onDoubleTap(vp, info);
-      case GestureId.LongPress: return toolAdmin.onLongPress(vp, info);
+      case GestureId.MultiFingerMove: return ToolAdmin.instance.onMultiFingerMove(vp, info);
+      case GestureId.SingleFingerMove: return ToolAdmin.instance.onSingleFingerMove(vp, info);
+      case GestureId.TwoFingerTap: return ToolAdmin.instance.onTwoFingerTap(vp, info);
+      case GestureId.PressAndTap: return ToolAdmin.instance.onPressAndTap(vp, info);
+      case GestureId.SingleTap: return ToolAdmin.instance.onSingleTap(vp, info);
+      case GestureId.DoubleTap: return ToolAdmin.instance.onDoubleTap(vp, info);
+      case GestureId.LongPress: return ToolAdmin.instance.onLongPress(vp, info);
     }
   }
 
