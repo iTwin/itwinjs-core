@@ -313,7 +313,7 @@ export class HitList {
     // walk backwards through list so we don't have to worry about what happens on remove
     for (let i = this.size() - 1; i >= 0; i--) {
       const thisHit = this.hits[i];
-      if (thisHit && element.equals(thisHit.m_elementId))
+      if (thisHit && Id64.areEqual(element, thisHit.m_elementId))
         removedOne = true;
       this.removeHit(i);
     }
