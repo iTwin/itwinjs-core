@@ -9,11 +9,10 @@ import { ECSqlStatement } from "../backend/ECSqlStatement";
 
 /** Allows performing CRUD operations in an ECDb */
 export class ECDb {
-  public _ecdb: NodeAddonECDb;
+  public nativeDb: NodeAddonECDb;
 
-  /** Construct an invalid ECDb Error. */
-  private _newInvalidDatabaseError(): IModelError {
-    return new IModelError(DbResult.BE_SQLITE_ERROR, "ECDb must be created or opened to complete this operation");
+  constructor() {
+    this.nativeDb =  new (NodeAddonRegistry.getAddon()).NodeAddonECDb();
   }
 
   /** Create an ECDb
@@ -21,10 +20,7 @@ export class ECDb {
    * @throws [[IModelError]] if the operation failed.
    */
   public createDb(pathname: string): void {
-    if (!this._ecdb)
-      this._ecdb =  new (NodeAddonRegistry.getAddon()).NodeAddonECDb();
-
-    const status = this._ecdb.createDb(pathname);
+    const status = this.nativeDb.createDb(pathname);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to created ECDb");
   }
@@ -35,17 +31,14 @@ export class ECDb {
    * @throws [[IModelError]] if the operation failed.
    */
   public openDb(pathname: string, openMode: OpenMode = OpenMode.Readonly): void {
-    if (!this._ecdb)
-      this._ecdb = new (NodeAddonRegistry.getAddon()).NodeAddonECDb();
-
-    const status = this._ecdb.openDb(pathname, openMode);
+    const status = this.nativeDb.openDb(pathname, openMode);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to open ECDb");
   }
 
   /** Returns true if the ECDb is open */
   public isOpen(): boolean {
-    return this._ecdb && this._ecdb.isOpen();
+    return this.nativeDb.isOpen();
   }
 
   /** Close the Db after saving any uncommitted changes.
@@ -53,10 +46,7 @@ export class ECDb {
    * @throws [[IModelError]] if the database is not open.
    */
   public closeDb(): void {
-    if (!this._ecdb)
-      throw this._newInvalidDatabaseError();
-
-    this._ecdb.closeDb();
+    this.nativeDb.closeDb();
   }
 
   /** Commit the outermost transaction, writing changes to the file. Then, restart the transaction.
@@ -64,10 +54,7 @@ export class ECDb {
    * @throws [[IModelError]] if the database is not open or if the operation failed.
    */
   public saveChanges(changeSetName?: string): void {
-    if (!this._ecdb)
-      throw this._newInvalidDatabaseError();
-
-    const status: DbResult = this._ecdb.saveChanges(changeSetName);
+    const status: DbResult = this.nativeDb.saveChanges(changeSetName);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to save changes");
   }
@@ -76,10 +63,7 @@ export class ECDb {
    * @throws [[IModelError]] if the database is not open or if the operation failed.
    */
   public abandonChanges(): void {
-    if (!this._ecdb)
-      throw this._newInvalidDatabaseError();
-
-    const status = this._ecdb.abandonChanges();
+    const status = this.nativeDb.abandonChanges();
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to abandon changes");
   }
@@ -88,10 +72,7 @@ export class ECDb {
    * @throws [[IModelError]] if the database is not open or if the operation failed.
    */
   public importSchema(pathname: string): void {
-    if (!this._ecdb)
-      throw this._newInvalidDatabaseError();
-
-    const status = this._ecdb.importSchema(pathname);
+    const status = this.nativeDb.importSchema(pathname);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to import schema");
   }
@@ -101,11 +82,8 @@ export class ECDb {
    * @throws [[IModelError]] if there is a problem preparing the statement.
    */
   public prepareStatement(sql: string): ECSqlStatement {
-    if (!this._ecdb)
-      throw this._newInvalidDatabaseError();
-
     const stmt = new ECSqlStatement();
-    stmt.prepare(this._ecdb, sql);
+    stmt.prepare(this.nativeDb, sql);
     return stmt;
   }
 }

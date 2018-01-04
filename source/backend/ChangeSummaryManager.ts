@@ -45,24 +45,19 @@ export class ChangeSummaryManager {
     const changesPath: string = BriefcaseManager.buildChangeSummaryFilePath(iModelId);
     const changesFile = new ECDb();
     iModel.createChangeCache(changesFile, changesPath);
-    const stmt: ECSqlStatement = changesFile.prepareStatement("UPDATE change.ChangeSummary SET ExtendedProperties=? WHERE ECInstanceId=?");
+    const alreadyExtractedStmt: ECSqlStatement = changesFile.prepareStatement("SELECT 1 FROM change.ChangeSummary WHERE json_extract(ExtendedProperties,'$.wsgid')=?");
+    const addExtendedInfoStmt: ECSqlStatement = changesFile.prepareStatement("UPDATE change.ChangeSummary SET ExtendedProperties=? WHERE ECInstanceId=?");
 
     const userInfoCache = new Map<string, string>();
 
     for (const changeSet of changeSets) {
       const version: IModelVersion = IModelVersion.asOfChangeSet(changeSet.wsgId);
       iModel = await IModelDb.open(accessToken, projectId, iModelId, OpenMode.Readonly, version);
-
-      const alreadyExtracted: boolean = iModel.withPreparedStatement("SELECT 1 FROM change.ChangeSummary WHERE json_extract(ExtendedProperties,'$.wsgid')=?", (myStmt: ECSqlStatement) => {
-        myStmt.bindValues([changeSet.wsgId]);
-        return DbResult.BE_SQLITE_ROW === myStmt.step();
-      });
-
-      if (alreadyExtracted)
+      if (ChangeSummaryManager.isSummaryAlreadyExtracted(alreadyExtractedStmt, changeSet.wsgId))
         continue;
 
       const changeSetFilePath: string = path.join(changeSetsFolder, changeSet.fileName);
-      const stat: ErrorStatusOrResult<DbResult, string> = iModel.briefcaseInfo!.nativeDb.extractChangeSummary(changesFile._ecdb, changeSetFilePath);
+      const stat: ErrorStatusOrResult<DbResult, string> = iModel.briefcaseInfo!.nativeDb.extractChangeSummary(changesFile.nativeDb, changeSetFilePath);
       if (stat.error != null && stat.error!.status !== DbResult.BE_SQLITE_OK)
         return Promise.reject(new IModelError(stat.error!.status));
 
@@ -77,17 +72,30 @@ export class ChangeSummaryManager {
         userInfoCache.set(changeSet.userCreated, userEmail);
       }
 
-      const infoStr: string = JSON.stringify(new ChangeSummaryExtendedInfo(changeSet.wsgId, changeSet.pushDate, userEmail, changeSet.parentId));
-      stmt.bindValues([infoStr, changeSummaryId]);
-      const r: DbResult = stmt.step();
-      if (r !== DbResult.BE_SQLITE_DONE)
-        return Promise.reject(new IModelError(r));
-
-      stmt.clearBindings();
-      stmt.reset();
+      ChangeSummaryManager.addExtendedInfos(addExtendedInfoStmt, changeSummaryId, new ChangeSummaryExtendedInfo(changeSet.wsgId, changeSet.pushDate, userEmail, changeSet.parentId));
     }
 
     changesFile.saveChanges();
     Promise.resolve();
   }
+
+  private static isSummaryAlreadyExtracted(stmt: ECSqlStatement, changeSetId: string): boolean {
+    stmt.bindValues([changeSetId]);
+    const stat: DbResult = stmt.step();
+    stmt.reset();
+    stmt.clearBindings();
+    return DbResult.BE_SQLITE_ROW === stat;
+  }
+
+  private static addExtendedInfos(stmt: ECSqlStatement, changeSummaryId: string, extendedInfo: ChangeSummaryExtendedInfo): void {
+    const infoStr: string = JSON.stringify(extendedInfo);
+    stmt.bindValues([infoStr, changeSummaryId]);
+    const r: DbResult = stmt.step();
+    if (r !== DbResult.BE_SQLITE_DONE)
+      throw new IModelError(r);
+
+    stmt.clearBindings();
+    stmt.reset();
+  }
+
 }

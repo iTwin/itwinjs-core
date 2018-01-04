@@ -198,7 +198,7 @@ export class IModelDb extends IModel {
     if (!this.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
 
-    this.briefcaseInfo!.nativeDb.createChangeCache(changeCache._ecdb, changeCachePath);
+    this.briefcaseInfo!.nativeDb.createChangeCache(changeCache.nativeDb, changeCachePath);
   }
 
   public attachChangeCache(): void {
