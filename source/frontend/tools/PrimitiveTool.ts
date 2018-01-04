@@ -10,7 +10,6 @@ import { IModel } from "../../common/IModel";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 // tslint:disable:no-empty
-
 const toolAdmin = ToolAdmin.instance;
 const viewManager = ViewManager.instance;
 
@@ -164,7 +163,7 @@ export abstract class PrimitiveTool extends Tool {
     if (0 !== (toolAdmin.toolState.coordLockOvr & CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_ACS))
       return true;
 
-    const extents = iModel.getExtents();
+    const extents = iModel.projectExtents;
     if (extents.containsPoint(ev.point))
       return true;
 

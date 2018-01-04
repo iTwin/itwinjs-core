@@ -18,7 +18,7 @@ import { Element } from "../backend/Element";
 import { DictionaryModel, Model } from "../backend/Model";
 import { SpatialCategory } from "../backend/Category";
 import { Appearance } from "../common/SubCategoryAppearance";
-import { ColorDef } from "../common/Render";
+import { ColorDef } from "../common/ColorDef";
 
 describe("BriefcaseManager", () => {
   let accessToken: AccessToken;

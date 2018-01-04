@@ -6,7 +6,6 @@ import { CodeProps, Code } from "./Code";
 import { EntityProps } from "./EntityProps";
 import { GeometryStream } from "./geometry/GeometryStream";
 import { Placement3dProps, Placement2d } from "./geometry/Primitives";
-import { XAndY, XYAndZ } from "@bentley/geometry-core/lib/PointVector";
 
 export interface RelatedElementProps {
   id: Id64 | string;
@@ -55,7 +54,7 @@ export interface GeometricElement2dProps extends GeometricElementProps {
 }
 
 export interface ViewAttachmentProps extends GeometricElement2dProps {
-  view?: RelatedElementProps;
+  view?: Id64 | string;
 }
 
 export interface SubjectProps extends ElementProps {
@@ -70,14 +69,14 @@ export interface SheetBorderTemplateProps extends ElementProps {
 export interface SheetTemplateProps extends ElementProps {
   height?: number;
   width?: number;
-  border?: RelatedElementProps;
+  border?: Id64 | string;
 }
 
 export interface SheetProps extends ElementProps {
   scale?: number;
   height?: number;
   width?: number;
-  sheetTemplate?: RelatedElementProps;
+  sheetTemplate?: Id64 | string;
 }
 
 export interface TypeDefinitionElementProps extends ElementProps {
@@ -93,16 +92,24 @@ export interface AuxCoordSystemProps extends ElementProps {
   description?: string;
 }
 
+/**
+ * Properties of AuxCoordSystem2d
+ * @note angle is stored in degrees
+ */
 export interface AuxCoordSystem2dProps extends AuxCoordSystemProps {
-  origin?: XAndY | string;
-  angle?: number;
+  origin?: object;
+  angle?: number; // in degrees
 }
 
+/**
+ * Properties of AuxCoordSystem3d
+ * @note All angles are stored in degrees
+ */
 export interface AuxCoordSystem3dProps extends AuxCoordSystemProps {
-  origin?: XYAndZ | string;
-  yaw?: number;
-  pitch?: number;
-  roll?: number;
+  origin?: object;
+  yaw?: number;  // in degrees
+  pitch?: number; // in degrees
+  roll?: number; // in degrees
 }
 
 export interface LightLocationProps extends GeometricElement3dProps {

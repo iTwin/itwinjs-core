@@ -29,7 +29,7 @@ import { ModelProps } from "../common/ModelProps";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { ElementGroupsMembers } from "../backend/LinkTableRelationship";
 import { Appearance } from "../common/SubCategoryAppearance";
-import { ColorDef } from "../common/Render";
+import { ColorDef } from "../common/ColorDef";
 
 describe("iModel", () => {
   let imodel1: IModelDb;
@@ -71,7 +71,7 @@ describe("iModel", () => {
   });
 
   it("should be able to get extents of the IModel", () => {
-    const extents: AxisAlignedBox3d = imodel1.getExtents();
+    const extents: AxisAlignedBox3d = imodel1.projectExtents;
     assert(!extents.isNull());
   });
 

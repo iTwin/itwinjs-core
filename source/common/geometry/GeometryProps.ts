@@ -7,7 +7,7 @@ import { LineStyleInfo } from "./LineStyle";
 import { GradientSymb } from "./GradientPattern";
 import { PatternParams } from "./AreaPattern";
 import { DgnFB } from "./ElementGraphicsSchema";
-import { ColorDef, ColorRgb } from "../Render";
+import { ColorDef, ColorRgb } from "../ColorDef";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Appearance } from "../SubCategoryAppearance";
 

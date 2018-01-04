@@ -27,13 +27,13 @@ export enum GeometryType {
  * A Range3d that is aligned with the axes of a coordinate space.
  */
 export class AxisAlignedBox3d extends Range3d {
-  constructor(low?: Point3d, high?: Point3d) {
+  constructor(low?: XYAndZ, high?: XYAndZ) {
     if (low === undefined || high === undefined)
       super(); // defines an empty box
     else
       super(low.x, low.y, low.z, high.x, high.y, high.z);
   }
-  public static fromRange2d(r: Range2d) { const v = new AxisAlignedBox3d(); v.low.x = r.low.x; v.low.y = r.low.y; v.high.x = r.high.x; v.high.y = r.high.y; return v; }
+  public static fromRange2d(r: LowAndHighXY) { const v = new AxisAlignedBox3d(); v.low.x = r.low.x; v.low.y = r.low.y; v.high.x = r.high.x; v.high.y = r.high.y; return v; }
 
   public getCenter(): Point3d { return this.low.interpolate(.5, this.high); }
 
@@ -105,9 +105,9 @@ export class ElementAlignedBox2d extends Range2d {
 }
 
 export interface Placement3dProps {
-  origin: XYAndZ;
+  origin: Point3d | object;
   angles: YawPitchRollAngles | object;
-  bbox: LowAndHighXYZ;
+  bbox: LowAndHighXYZ | object;
 }
 
 /**
@@ -116,7 +116,7 @@ export interface Placement3dProps {
  */
 export class Placement3d implements Placement3dProps {
   public constructor(public origin: Point3d, public angles: YawPitchRollAngles, public bbox: ElementAlignedBox3d) { }
-  public getTransform() { return Transform.createOriginAndMatrix(this.origin, this.angles.toRotMatrix()); }
+  public getTransform(): Transform { return Transform.createOriginAndMatrix(this.origin, this.angles.toRotMatrix()); }
   public static fromJSON(json?: any): Placement3d {
     json = json ? json : {};
     return new Placement3d(Point3d.fromJSON(json.origin), YawPitchRollAngles.fromJSON(json.angles), ElementAlignedBox3d.fromJSON(json.bbox));
@@ -146,15 +146,15 @@ export class Placement3d implements Placement3dProps {
 }
 
 export interface Placement2dProps {
-  origin: XAndY;
+  origin: XAndY | object;
   angle: Angle | number | object;
-  bbox: LowAndHighXY;
+  bbox: LowAndHighXY | object;
 }
 
 /** The placement of a GeometricElement2d. This includes the origin, rotation, and size (bounding box) of the element. */
 export class Placement2d implements Placement2dProps {
   public constructor(public origin: Point2d, public angle: Angle, public bbox: ElementAlignedBox2d) { }
-  public getTransform() { return Transform.createOriginAndMatrix(Point3d.createFrom(this.origin), RotMatrix.createRotationAroundVector(Vector3d.unitZ(), this.angle)!); }
+  public getTransform(): Transform { return Transform.createOriginAndMatrix(Point3d.createFrom(this.origin), RotMatrix.createRotationAroundVector(Vector3d.unitZ(), this.angle)!); }
   public static fromJSON(json?: any): Placement2d {
     json = json ? json : {};
     return new Placement2d(Point2d.fromJSON(json.origin), Angle.fromJSON(json.angle), ElementAlignedBox2d.fromJSON(json.bbox));
@@ -188,7 +188,7 @@ export class Placement2d implements Placement2dProps {
 }
 
 /**
- * Class for multiple RefCounted geometry types: CurvePrimitive, CurveVector, SolidPrimitive, BsplineSurface, PolyfaceHeader, BRepEntity
+ * Class for multiple geometry types: CurvePrimitive, CurveVector, SolidPrimitive, BsplineSurface, PolyfaceHeader, BRepEntity
  */
 export class GeometricPrimitive {
   protected _type: GeometryType;
@@ -201,9 +201,6 @@ export class GeometricPrimitive {
   public get asSolidPrimitive(): SolidPrimitive | undefined { return (this._type === GeometryType.SolidPrimitive) ? this._data as SolidPrimitive : undefined; }
   public get asBsplineSurface(): BSplineSurface3d | undefined { return (this._type === GeometryType.BsplineSurface) ? this._data as BSplineSurface3d : undefined; }
   public get asIndexedPolyface(): IndexedPolyface | undefined { return (this._type === GeometryType.IndexedPolyface) ? this._data as IndexedPolyface : undefined; }
-  // public get asIBRepEntity() { return this._data as ; }
-  // public get asTextString() { return this._data as ; }
-  // public get asImage() { return this._data as ; }
 
   protected constructor(type: GeometryType, source: any) {
     this._type = type;
@@ -231,35 +228,19 @@ export class GeometricPrimitive {
   /** Create, checking for proper instance, using either a reference or a clone. */
   public static create(source: any, useRef: boolean): GeometricPrimitive | undefined {
     if (source instanceof CurvePrimitive)
-      if (useRef)
-        return GeometricPrimitive.createCurvePrimitiveRef(source);
-      else
-        return GeometricPrimitive.createCurvePrimitiveClone(source);
-    else if (source instanceof CurveCollection)
-      if (useRef)
-        return GeometricPrimitive.createCurveCollectionRef(source);
-      else
-        return GeometricPrimitive.createCurveCollectionClone(source);
-    else if (source instanceof SolidPrimitive)
-      if (useRef)
-        return GeometricPrimitive.createSolidPrimitiveRef(source);
-      else
-        return GeometricPrimitive.createSolidPrimitiveClone(source);
-    else if (source instanceof BSplineSurface3d)
-      if (useRef)
-        return GeometricPrimitive.createBsplineSurfaceRef(source);
-      else
-        return GeometricPrimitive.createBsplineSurfaceClone(source);
-    else if (source instanceof IndexedPolyface)
-      if (useRef)
-        return GeometricPrimitive.createIndexedPolyfaceRef(source);
-      else
-        return GeometricPrimitive.createIndexedPolyfaceClone(source);
+      return useRef ? GeometricPrimitive.createCurvePrimitiveRef(source) : GeometricPrimitive.createCurvePrimitiveClone(source);
+    if (source instanceof CurveCollection)
+      return useRef ? GeometricPrimitive.createCurveCollectionRef(source) : GeometricPrimitive.createCurveCollectionClone(source);
+    if (source instanceof SolidPrimitive)
+      return useRef ? GeometricPrimitive.createSolidPrimitiveRef(source) : GeometricPrimitive.createSolidPrimitiveClone(source);
+    if (source instanceof BSplineSurface3d)
+      return useRef ? GeometricPrimitive.createBsplineSurfaceRef(source) : GeometricPrimitive.createBsplineSurfaceClone(source);
+    if (source instanceof IndexedPolyface)
+      return useRef ? GeometricPrimitive.createIndexedPolyfaceRef(source) : GeometricPrimitive.createIndexedPolyfaceClone(source);
     // elseif instanceof BRepEntity
     // elseif instanceof TextString
     // elseif instanceof ImageGraphic
-    else
-      return undefined;
+    return undefined;
   }
 
   public is3dGeometryType(): boolean {
@@ -342,7 +323,9 @@ export class GeometricPrimitive {
         }
       case GeometryType.CurveCollection:
         {
-          break;
+          // Temporary fix...
+          localToWorld.setIdentity();
+          return true;
         }
       case GeometryType.SolidPrimitive:
         {
@@ -411,14 +394,11 @@ export class GeometricPrimitive {
     return true;
   }
 
-  // Expensive... copies geometry
   public getLocalRange(localToWorld: Transform, result?: Range3d): Range3d | undefined {
     if (result) result.setNull;
     const localRange = result ? result : Range3d.createNull();
     if (!this.getLocalCoordinateFrame(localToWorld))
       return undefined;
-    if (localToWorld.isIdentity())
-      return this.getRange(undefined, localRange);
     /*
     #if defined (BENTLEYCONFIG_PARASOLID)
     GeometricPrimitivePtr clone;
@@ -431,12 +411,10 @@ export class GeometricPrimitive {
     #else
     GeometricPrimitivePtr clone = Clone();
     */
-    const clone = this.clone();
     const worldToLocal = localToWorld.inverse();
     if (!worldToLocal)
       return undefined;
-    clone.tryTransformInPlace(worldToLocal);
-    return clone.getRange(undefined, localRange);
+    return this.getRange(worldToLocal, localRange);
   }
 
   /** Makes a call to the GeometryQuery range function, which begins with a null range and */

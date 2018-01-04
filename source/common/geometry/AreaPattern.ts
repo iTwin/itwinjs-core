@@ -4,7 +4,7 @@
 
 import { Point2d, Point3d, RotMatrix, Transform, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { Geometry } from "@bentley/geometry-core/lib/Geometry";
-import { ColorDef } from "../Render";
+import { ColorDef } from "../ColorDef";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 /** Explicit declaration, separate from generated "schema", for easily changing and reassigning values */
