@@ -675,7 +675,6 @@ export abstract class GraphicBuilder {
   // void SetPlacement(TransformCR tf) { this.placement = tf; }
   //     };
 
-  // CreateParams    this.createParams;
   public currClip?: ClipVector;
 
   // GraphicBuilder(CreateParams const& params): this.createParams(params) { }
@@ -804,19 +803,6 @@ export abstract class GraphicBuilder {
   public abstract createSubGraphic(trans: Transform, clip?: ClipVector): GraphicBuilder;
   // public wantStrokeLineStyle(LineStyleSymbCR, IFacetOptionsPtr &) { return true; }
   public wantStrokePattern(_pattern: PatternParams) { return true; }
-  //   DGNPLATFORM_EXPORT virtual bool _WantPreBakedBody(IBRepEntityCR body); // By default, returns true if parasolid is not supported, or if the body contains no curved faces or edges.
-
-  //   virtual void _AddBSplineCurveR(RefCountedMSBsplineCurveR curve, bool filled) { _AddBSplineCurve(curve, filled); }
-  // virtual void _AddBSplineCurve2dR(RefCountedMSBsplineCurveR curve, bool filled, double zDepth) { _AddBSplineCurve2d(curve, filled, zDepth); }
-  // virtual void _AddCurveVectorR(CurveVectorR curves, bool isFilled) { _AddCurveVector(curves, isFilled); }
-  // virtual void _AddCurveVector2dR(CurveVectorR curves, bool isFilled, double zDepth) { _AddCurveVector2d(curves, isFilled, zDepth); }
-  // virtual void _AddSolidPrimitiveR(ISolidPrimitiveR primitive) { _AddSolidPrimitive(primitive); }
-  // virtual void _AddBSplineSurfaceR(RefCountedMSBsplineSurfaceR surface) { _AddBSplineSurface(surface); }
-  // virtual void _AddPolyfaceR(PolyfaceHeaderR meshData, bool filled = false) { _AddPolyface(meshData, filled); }
-  // virtual void _AddBodyR(IBRepEntityR body) { _AddBody(body); }
-  // virtual void _AddTextStringR(TextStringR text) { _AddTextString(text); }
-  // virtual void _AddTextString2dR(TextStringR text, double zDepth) { _AddTextString2d(text, zDepth); }
-
   public finish(): Graphic | undefined { assert(this.isOpen()); return this.isOpen() ? this._finish() : undefined; }
 
   public setCurrentClip(clip?: ClipVector) { this.currClip = clip; }

@@ -101,13 +101,13 @@ describe("ViewState", () => {
       ),
       displayStyleId: dStyleState.id.value,
       jsonProperties:
-      {
-        viewDetails:
         {
-          gridOrient: 0,
-          gridSpaceX: 0.001,
+          viewDetails:
+            {
+              gridOrient: 0,
+              gridSpaceX: 0.001,
+            },
         },
-      },
     }, imodel, catSelState, dStyleState, modSelState);
   });
 
@@ -166,7 +166,7 @@ describe("ViewState", () => {
       });
     nativeResultJSON = (imodel.constructEntity(nativeResultJSON) as Element).toJSON();
     const viewStateJSON = (await convertViewDefToViewState(imodel, flatView)).toJSON() as any;
-    viewStateJSON.description = undefined;    // Currently does not appear if not explitly specified in TS
+    viewStateJSON.description = undefined;    // Currently does not appear if not explicitly specified in TS
     assert.isTrue(jsonCompare.compare(viewStateJSON, nativeResultJSON), "Native side ViewState creation matches TS");
   });
 

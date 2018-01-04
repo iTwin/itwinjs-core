@@ -45,7 +45,7 @@ describe("Viewport", () => {
   let viewStateXYZ: SpatialViewState;
 
   // tslint:disable-next-line:only-arrow-functions
-  before(async function() {   // Create a ViewState to load into a ViewPort
+  before(async function () {   // Create a ViewState to load into a ViewPort
     this.timeout(99999);
     imodel = await IModelConnection.openStandalone(bimFileLocation);
     const spatialViewProps = (await imodel.elements.getElementProps([new Id64("0x34")]))[0] as SpatialViewDefinitionProps;
@@ -84,7 +84,7 @@ describe("Viewport", () => {
         classFullName: "ModelSelector",
       }, imodel);
     // ============================================================================================
-    // Set up 3 seperate ViewState classes ========================================================
+    // Set up 3 separate ViewState classes ========================================================
     spatialViewProps.origin = Point3d.create(-5, -5, 0);
     spatialViewProps.extents = Vector3d.create(10, 10, 1);
     spatialViewProps.angles = YawPitchRollAngles.createDegrees(0, 0, 0);
@@ -145,7 +145,7 @@ describe("Viewport", () => {
       }
     }
 
-    // assert that a viewstate with eye backed up to infinity produces a "flat view"
+    // assert that a ViewState with eye backed up to infinity produces a "flat view"
     const flatViewWithCamera = viewStateXYZ.clone<SpatialViewState>();
     flatViewWithCamera.setEyePoint(Point3d.create(0, 0, Number.MAX_VALUE));
     flatViewWithCamera.setFocusDistance(10000);
