@@ -9,7 +9,7 @@ import { ECSqlStatement } from "../backend/ECSqlStatement";
 
 /** Allows performing CRUD operations in an ECDb */
 export class ECDb {
-  private _ecdb: NodeAddonECDb;
+  public _ecdb: NodeAddonECDb;
 
   /** Construct an invalid ECDb Error. */
   private _newInvalidDatabaseError(): IModelError {
@@ -20,12 +20,12 @@ export class ECDb {
    * @param pathname  The pathname of the Db.
    * @throws [[IModelError]] if the operation failed.
    */
-  public  createDb(pathname: string): void {
+  public createDb(pathname: string): void {
     if (!this._ecdb)
       this._ecdb =  new (NodeAddonRegistry.getAddon()).NodeAddonECDb();
 
-    var status   = this._ecdb.createDb(pathname);
-    if (status != DbResult.BE_SQLITE_OK)
+    const status = this._ecdb.createDb(pathname);
+    if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to created ECDb");
   }
 
@@ -38,9 +38,9 @@ export class ECDb {
     if (!this._ecdb)
       this._ecdb = new (NodeAddonRegistry.getAddon()).NodeAddonECDb();
 
-    var status = this._ecdb.openDb(pathname, openMode);
-    if (status != DbResult.BE_SQLITE_OK)
-      throw new IModelError(status, "Failed to open ECDb");   
+    const status = this._ecdb.openDb(pathname, openMode);
+    if (status !== DbResult.BE_SQLITE_OK)
+      throw new IModelError(status, "Failed to open ECDb");
   }
 
   /** Returns true if the ECDb is open */
@@ -67,10 +67,9 @@ export class ECDb {
     if (!this._ecdb)
       throw this._newInvalidDatabaseError();
 
-    var status = this._ecdb.saveChanges(changeSetName);
-    if (status != DbResult.BE_SQLITE_OK)
-      throw new IModelError(status, "Failed to AbandonChanges");
-
+    const status: DbResult = this._ecdb.saveChanges(changeSetName);
+    if (status !== DbResult.BE_SQLITE_OK)
+      throw new IModelError(status, "Failed to save changes");
   }
 
   /** Abandon (cancel) the outermost transaction, discarding all changes since last save. Then, restart the transaction.
@@ -80,9 +79,9 @@ export class ECDb {
     if (!this._ecdb)
       throw this._newInvalidDatabaseError();
 
-    var status = this._ecdb.abandonChanges();
-    if (status != DbResult.BE_SQLITE_OK)
-      throw new IModelError(status, "Failed to AbandonChanges");
+    const status = this._ecdb.abandonChanges();
+    if (status !== DbResult.BE_SQLITE_OK)
+      throw new IModelError(status, "Failed to abandon changes");
   }
 
   /** Import a schema. If the import was successful, the database is automatically saved to disk.
@@ -92,12 +91,12 @@ export class ECDb {
     if (!this._ecdb)
       throw this._newInvalidDatabaseError();
 
-    var status = this._ecdb.importSchema(pathname);
-    if (status != DbResult.BE_SQLITE_OK)
-      throw new IModelError(status, "Failed to import schema");   
+    const status = this._ecdb.importSchema(pathname);
+    if (status !== DbResult.BE_SQLITE_OK)
+      throw new IModelError(status, "Failed to import schema");
   }
 
-    /** Prepare an ECSql statement.
+  /** Prepare an ECSql statement.
    * @param sql The ECSql statement to prepare
    * @throws [[IModelError]] if there is a problem preparing the statement.
    */

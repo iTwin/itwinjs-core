@@ -21,6 +21,7 @@ import { Model } from "./Model";
 import { BriefcaseInfo, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./BriefcaseManager";
 import { NodeAddonBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { ECSqlStatement } from "./ECSqlStatement";
+import { ECDb } from "./ECDb";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BindingValue } from "./BindingUtility";
 import { CodeSpecs } from "./CodeSpecs";
@@ -191,6 +192,27 @@ export class IModelDb extends IModel {
     await BriefcaseManager.close(accessToken, this.briefcaseInfo, keepBriefcase);
     this.briefcaseInfo.iModelDb = undefined;
     this.briefcaseInfo = undefined;
+  }
+
+  public createChangeCache(changeCache: ECDb, changeCachePath: string): void {
+    if (!this.briefcaseInfo)
+      throw new IModelError(IModelStatus.BadRequest);
+
+    this.briefcaseInfo!.nativeDb.createChangeCache(changeCache._ecdb, changeCachePath);
+  }
+
+  public attachChangeCache(): void {
+    if (!this.briefcaseInfo)
+      throw new IModelError(IModelStatus.BadRequest);
+
+    BriefcaseManager.attachChangeCache(this.briefcaseInfo);
+  }
+
+  public isChangeCacheAttached(): boolean {
+    if (!this.briefcaseInfo)
+      throw new IModelError(IModelStatus.BadRequest);
+
+    return this.briefcaseInfo!.nativeDb.isChangeCacheAttached();
   }
 
   /** Get the in-memory handle of the native Db */

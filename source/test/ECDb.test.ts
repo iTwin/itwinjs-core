@@ -72,34 +72,34 @@ describe("ECDb", () => {
   });
 
   it("should be able to insert an instance", () => {
-   let stmt :ECSqlStatement = ecdb.prepareStatement("INSERT INTO TestSchema.TestClass(integerProperty,doubleProperty,booleanProperty,stringProperty) VALUES(?, ?, ?, ?)");
+   const stmt: ECSqlStatement = ecdb.prepareStatement("INSERT INTO TestSchema.TestClass(integerProperty,doubleProperty,booleanProperty,stringProperty) VALUES(?, ?, ?, ?)");
    assert.isTrue(stmt.isPrepared());
    stmt.bindValues([11, 1.23, true, "Test String"]);
-   assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);    
+   assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
    stmt.dispose();
   });
 
   it("should be able to read an instance", () => {
-    let stmt :ECSqlStatement = ecdb.prepareStatement("SELECT integerProperty,doubleProperty,booleanProperty,stringProperty FROM TestSchema.TestClass");
+    const stmt: ECSqlStatement = ecdb.prepareStatement("SELECT integerProperty,doubleProperty,booleanProperty,stringProperty FROM TestSchema.TestClass");
     assert.isTrue(stmt.isPrepared());
-    assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);    
+    assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
 
-    var row = stmt.getRow()
+    const row = stmt.getRow();
     assert.isNotNull(row);
     assert.isObject(row);
 
     assert.equal(row.integerProperty, 11);
     assert.equal(row.doubleProperty, 1.23);
     assert.equal(row.booleanProperty, true);
-    assert.equal(row.stringProperty, "Test String"); 
+    assert.equal(row.stringProperty, "Test String");
     stmt.dispose();
   });
 
   it("should be able to update an instance", () => {
-    let stmt :ECSqlStatement = ecdb.prepareStatement("UPDATE TestSchema.TestClass SET integerProperty=?,doubleProperty=?,booleanProperty=?,stringProperty=?");
+    const stmt: ECSqlStatement = ecdb.prepareStatement("UPDATE TestSchema.TestClass SET integerProperty=?,doubleProperty=?,booleanProperty=?,stringProperty=?");
     assert.isTrue(stmt.isPrepared());
     stmt.bindValues([332, 131.45, false, "Modifed Test String"]);
-    assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);   
+    assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
     stmt.dispose();
   });
 /*
