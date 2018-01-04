@@ -248,7 +248,7 @@ export class ElementLocateManager {
 
   public filterHit(hit: HitDetail, mode: SubSelectionMode, _action: LocateAction, out: LocateResponse): boolean {
     // Tools must opt-in to locate of transient geometry as it requires special treatment.
-    if (!hit.m_elementId.isValid() && !this.m_options.allowTransients) {
+    if (!hit.m_elementId && !this.m_options.allowTransients) {
       out.reason = LocateFailureValue.Transient;
       return true;
     }

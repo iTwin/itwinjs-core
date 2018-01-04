@@ -246,7 +246,7 @@ export class TentativePoint {
       const snap = this.snapPaths.getHit(iSnapDetail)! as SnapDetail;
       const snapElem = snap.m_elementId;
 
-      if (!snapElem.isValid())
+      if (!snapElem || !snapElem.isValid())
         continue;
 
       let foundAny = false;
@@ -254,7 +254,7 @@ export class TentativePoint {
         const otherSnap = this.snapPaths.getHit(jSnapDetail)! as SnapDetail;
 
         if (otherSnap.getAdjustedPoint().isExactEqual(snap.getAdjustedPoint())) {
-          if (snapElem.equals(otherSnap.m_elementId)) {
+          if (Id64.areEqual(snapElem, otherSnap.m_elementId)) {
             this.snapPaths.setHit(jSnapDetail, undefined);
             foundAny = true;
           }
@@ -321,7 +321,7 @@ export class TentativePoint {
     this.optimizeHitList();
 
     // if something is AccuSnapped, make that the current tp snap
-    if (currHit && HitDetailType.Snap <= currHit.getHitType()) {
+    if (currHit && currHit.m_elementId && HitDetailType.Snap <= currHit.getHitType()) {
       // now we have to remove that path from the tp list.
       this.snapPaths.removeHitsFrom(currHit.m_elementId);
       this.snapPaths.resetCurrentHit();

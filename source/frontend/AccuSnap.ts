@@ -277,7 +277,7 @@ export class AccuSnap {
       if (!this.wantAutoInfoBalloon())
         return;
 
-      theHit = AccuSnap.instanceHit;
+      theHit = accuSnapHit;
     }
 
     // have we waited long enough to show the balloon?
@@ -602,7 +602,7 @@ export class AccuSnap {
     // they'll get the next most reasonable hit.
     if (keepCurrentHit) {
       const theHit = this.retestList.getHit(0);
-      if (theHit) {
+      if (theHit && theHit.m_elementId) {
         this.aSnapHits.removeHitsFrom(theHit.m_elementId);
         this.aSnapHits.insert(0, theHit);
       }
