@@ -21,6 +21,7 @@ import { HitDetail, SnapDetail, SnapMode } from "./HitDetail";
 import { DecorateContext } from "./ViewContext";
 import { ColorDef } from "../common/ColorDef";
 import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
+import { LegacyMath } from "../common/LegacyMath";
 
 /** A rectangle in view coordinates. */
 export class ViewRect extends ElementAlignedBox2d {
@@ -1071,13 +1072,12 @@ export class Viewport {
     return undefined;
   }
 
-  //   static void roundGrid(double & num, double units)
-  //     {
-  //   double sign = ((num * units) < 0.0) ? -1.0 : 1.0;
-
-  //   num = (num * sign) / units + 0.5;
-  //   num = units * sign * floor(num);
-  // }
+  private static roundGrid(num: number, units: number): number {
+    const sign = ((num * units) < 0.0) ? -1.0 : 1.0;
+    num = (num * sign) / units + 0.5;
+    num = units * sign * Math.floor(num);
+    return num;
+  }
 
   private getGridOrientation(origin: Point3d, rMatrix: RotMatrix) {
     if (this.view.isSpatialView())
@@ -1108,44 +1108,39 @@ export class Viewport {
     }
   }
 
-  private pointToStandardGrid(_point: Point3d, _rMatrix: RotMatrix, _origin: Point3d): void {
-    // const planeNormal = rMatrix.getRow(2);
+  private pointToStandardGrid(point: Point3d, rMatrix: RotMatrix, origin: Point3d): void {
+    const planeNormal = rMatrix.getRow(2);
 
-    // if (this.isCameraOn())
-    //   eyeVec.NormalizedDifference(point, vp.GetCamera().GetEyePoint());
-    // else
-    //   vp.GetRotMatrix().GetRow(eyeVec, 2);
+    let eyeVec: Vector3d;
+    if (this.view.is3d() && this.isCameraOn())
+      eyeVec = this.view.camera.eye.vectorTo(point);
+    else
+      eyeVec = this.rotMatrix.getRow(2).clone();
 
-    // LegacyMath:: Vec:: LinePlaneIntersect(& point, & point, & eyeVec, & origin, & planeNormal, false);
+    eyeVec.normalizeInPlace();
+    LegacyMath.linePlaneIntersect(point, point, eyeVec, origin, planeNormal, false);
 
     // // get origin and point in view coordinate system
-    // DPoint3d pointView, originView;
+    const pointView = point.clone();
+    const originView = origin.clone();
+    this.toView(pointView);
+    this.toView(originView);
 
-    // rMatrix.Multiply(pointView, point);
-    // rMatrix.Multiply(originView, origin);
+    // subtract off the origin
+    pointView.y -= originView.y;
+    pointView.x -= originView.x;
 
-    // // see whether we need to adjust the origin for iso-grid
-    // if (isoGrid) {
-    //   long ltmp = (long)(pointView.y / roundingDistance.y);
+    // round off the remainder to the grid distances
+    pointView.x = Viewport.roundGrid(pointView.x, this.gridSpacing.x);
+    pointView.y = Viewport.roundGrid(pointView.y, this.gridSpacing.y);
 
-    //   if (ltmp & 0x0001)
-    //     originView.x += (roundingDistance.x / 2.0);
-    // }
+    // add the origin back in
+    pointView.x += originView.x;
+    pointView.y += originView.y;
 
-    // // subtract off the origin
-    // pointView.y -= originView.y;
-    // pointView.x -= originView.x;
-
-    // // round off the remainder to the grid distances
-    // roundGrid(pointView.y, roundingDistance.y);
-    // roundGrid(pointView.x, roundingDistance.x);
-
-    // // add the origin back in
-    // pointView.x += originView.x;
-    // pointView.y += originView.y;
-
-    // // go back to root coordinate system
-    // rMatrix.MultiplyTranspose(point, pointView);
+    // go back to root coordinate system
+    this.fromView(pointView);
+    point.setFrom(pointView);
   }
 
   public pointToGrid(point: Point3d): void {

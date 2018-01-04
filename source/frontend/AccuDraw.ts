@@ -17,6 +17,7 @@ import { TentativePoint } from "./TentativePoint";
 import { LinePixels, GraphicBuilder } from "../common/Render";
 import { DecorateContext, SnapContext } from "./ViewContext";
 import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
+import { LegacyMath } from "../common/LegacyMath";
 
 // tslint:disable:one-variable-per-declaration
 // tslint:disable:no-conditional-assignment
@@ -204,8 +205,8 @@ export class AccuDraw {
   private angle = 0;            // current angle
   private locked = LockedStates.NONE_LOCKED;           // axis/distance locked bit mask
   private indexed = LockedStates.NONE_LOCKED;          // axis/distance indexed bit mask
-  private readonly distRndoff = new RoundOff();       // distance round off enabled and unit
-  private readonly anglRndoff = new RoundOff();       // angle round off enabled and unit
+  private readonly distanceRoundOff = new RoundOff();       // distance round off enabled and unit
+  private readonly angleRoundOff = new RoundOff();       // angle round off enabled and unit
   private readonly flags = new Flags();            // current state flags
   private readonly fieldLocked: boolean[] = [];   // locked state of fields
   private readonly keyinStatus: KeyinStatus[] = [];   // state of input field
@@ -1485,7 +1486,7 @@ export class AccuDraw {
       this.setCompassMode(this.flags.baseMode);
   }
 
-  private setContext(flags: AccuDrawFlags, originP?: Point3d, orientationP?: RotMatrix, deltaP?: Vector3d, distanceP?: number, angleP?: number, transP?: Transform): BentleyStatus {
+  public setContext(flags: AccuDrawFlags, originP?: Point3d, orientationP?: RotMatrix, deltaP?: Vector3d, distanceP?: number, angleP?: number, transP?: Transform): BentleyStatus {
     this.published.flags |= flags;
 
     if (flags & AccuDrawFlags.SetOrigin && originP) {
@@ -2058,7 +2059,7 @@ export class AccuDraw {
         const rMatrix = vp.getAuxCoordRotation(AccuDraw.tempRot);
         const axes = ThreeAxes.createFromRotMatrix(rMatrix);
         this.accountForAuxRotationPlane(axes, this.flags.auxRotationPlane);
-        // LegacyMath:: Vec:: LinePlaneIntersect(outPtP, inPtP, axes.z, pointOnPlaneP, normalVectorP, false);
+        LegacyMath.linePlaneIntersect(outPtP, inPtP, axes.z, pointOnPlaneP, normalVectorP, false);
       } else {
         projectionVector = inPtP.vectorTo(pointOnPlaneP);
         distance = projectionVector.dotProduct(normalVectorP);
@@ -2215,8 +2216,8 @@ export class AccuDraw {
 
     // constrain angle
     if (this.flags.pointIsOnPlane && !(this.locked & LockedStates.VEC_BM)) {
-      if (!TentativeOrAccuSnap.isHot() && this.anglRndoff.active) {
-        this.angle = this.anglRndoff.units * Math.floor((this.angle / this.anglRndoff.units) + 0.5);
+      if (!TentativeOrAccuSnap.isHot() && this.angleRoundOff.active) {
+        this.angle = this.angleRoundOff.units * Math.floor((this.angle / this.angleRoundOff.units) + 0.5);
 
         xyCorrection.x += Math.cos(this.angle) * mag - rotVec.x;
         xyCorrection.y += Math.sin(this.angle) * mag - rotVec.y;
@@ -2276,8 +2277,8 @@ export class AccuDraw {
       distChanged = true;
       this.indexed &= ~LockedStates.DIST_BM;
     } else if (!TentativeOrAccuSnap.isHot()) { // if non-snap, try rounding and aligning
-      if (this.distRndoff.active) {
-        mag = this.distRndoff.units * Math.floor((mag / this.distRndoff.units) + 0.5);
+      if (this.distanceRoundOff.active) {
+        mag = this.distanceRoundOff.units * Math.floor((mag / this.distanceRoundOff.units) + 0.5);
         distChanged = true;
       }
 
@@ -2354,9 +2355,9 @@ export class AccuDraw {
 
     if (AccuDraw.allowAxisIndexing(this.flags.pointIsOnPlane)) {
       if (!(this.locked & LockedStates.X_BM)) { // not locked in x
-        if (this.distRndoff.active) { // round x
-          xyCorrection.x = this.distRndoff.units * Math.floor((this.rawDelta.x / this.distRndoff.units) + 0.5) - this.rawDelta.x;
-          this.rawDelta.x = this.distRndoff.units * Math.floor((this.rawDelta.x / this.distRndoff.units) + 0.5);
+        if (this.distanceRoundOff.active) { // round x
+          xyCorrection.x = this.distanceRoundOff.units * Math.floor((this.rawDelta.x / this.distanceRoundOff.units) + 0.5) - this.rawDelta.x;
+          this.rawDelta.x = this.distanceRoundOff.units * Math.floor((this.rawDelta.x / this.distanceRoundOff.units) + 0.5);
         }
 
         if (this.rawDelta.x < this.tolerance && this.rawDelta.x > -this.tolerance &&
@@ -2367,9 +2368,9 @@ export class AccuDraw {
         }
       }
       if (!(this.locked & LockedStates.Y_BM)) {
-        if (this.distRndoff.active) { // round y
-          xyCorrection.y = this.distRndoff.units * Math.floor((this.rawDelta.y / this.distRndoff.units) + 0.5) - this.rawDelta.y;
-          this.rawDelta.y = this.distRndoff.units * Math.floor((this.rawDelta.y / this.distRndoff.units) + 0.5);
+        if (this.distanceRoundOff.active) { // round y
+          xyCorrection.y = this.distanceRoundOff.units * Math.floor((this.rawDelta.y / this.distanceRoundOff.units) + 0.5) - this.rawDelta.y;
+          this.rawDelta.y = this.distanceRoundOff.units * Math.floor((this.rawDelta.y / this.distanceRoundOff.units) + 0.5);
         }
 
         if (this.rawDelta.y < this.tolerance && this.rawDelta.y > -this.tolerance &&

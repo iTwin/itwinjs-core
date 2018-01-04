@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Point3d, Point2d, XAndY } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, Point2d, XAndY, Vector3d } from "@bentley/geometry-core/lib/PointVector";
 import { NpcCenter, ViewStatus } from "../../common/ViewState";
 import { Viewport } from "../Viewport";
 import { IdleTool } from "./IdleTool";
@@ -20,6 +20,7 @@ import { ViewManager } from "../ViewManager";
 import { AccuDraw } from "../AccuDraw";
 import { HitDetail } from "../HitDetail";
 import { ElementLocateManager } from "../ElementLocateManager";
+import { LegacyMath } from "../../common/LegacyMath";
 
 export const enum CoordinateLockOverrides {
   OVERRIDE_COORDINATE_LOCK_None = 0,
@@ -435,33 +436,30 @@ export class ToolAdmin {
     ev.reset();
   }
 
-  public adjustPointToACS(_pointActive: Point3d, _vp: Viewport, _perpendicular: boolean): void {
+  public adjustPointToACS(pointActive: Point3d, vp: Viewport, perpendicular: boolean): void {
     // The "I don't want ACS lock" flag can be set by tools to override the default behavior...
     if (0 !== (this.toolState.coordLockOvr & CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_ACS))
       return;
 
-    // let viewZRoot: Vector3d;
+    let viewZRoot: Vector3d;
 
-    // // Lock to the construction plane
-    // if (vp.view.is3d() && vp.view.isCameraOn())
-    //   viewZRoot = vp.view.camera.eye.vectorTo(pointActive);
-    // else
-    //   viewZRoot = vp.rotMatrix.getRow(2);
+    // Lock to the construction plane
+    if (vp.view.is3d() && vp.view.isCameraOn())
+      viewZRoot = vp.view.camera.eye.vectorTo(pointActive);
+    else
+      viewZRoot = vp.rotMatrix.getRow(2);
 
-    // const auxOriginRoot = vp.getAuxCoordOrigin();
-    // const auxRMatrixRoot = vp.getAuxCoordRotation();
-    // const auxNormalRoot = auxRMatrixRoot.getRow(2);
+    const auxOriginRoot = vp.getAuxCoordOrigin();
+    const auxRMatrixRoot = vp.getAuxCoordRotation();
+    let auxNormalRoot = auxRMatrixRoot.getRow(2);
 
-    // // If ACS xy plane is perpendicular to view and not snapping, project to closest xz or yz plane instead...
-    // if (auxNormalRoot.isPerpendicularTo(viewZRoot) && !TentativeOrAccuSnap.isHot()) {
-    //   DVec3d  auxXRoot, auxYRoot;
-    //   auxRMatrixRoot.GetRow(auxXRoot, 0);
-    //   auxRMatrixRoot.GetRow(auxYRoot, 1);
-
-    //   auxNormalRoot = (fabs(auxXRoot.DotProduct(viewZRoot)) > fabs(auxYRoot.DotProduct(viewZRoot))) ? auxXRoot : auxYRoot;
-    // }
-
-    // LegacyMath:: Vec:: LinePlaneIntersect(& pointActive, & pointActive, & viewZRoot, & auxOriginRoot, & auxNormalRoot, perpendicular);
+    // If ACS xy plane is perpendicular to view and not snapping, project to closest xz or yz plane instead...
+    if (auxNormalRoot.isPerpendicularTo(viewZRoot) && !TentativeOrAccuSnap.isHot()) {
+      const auxXRoot = auxRMatrixRoot.getRow(0);
+      const auxYRoot = auxRMatrixRoot.getRow(1);
+      auxNormalRoot = (Math.abs(auxXRoot.dotProduct(viewZRoot)) > Math.abs(auxYRoot.dotProduct(viewZRoot))) ? auxXRoot : auxYRoot;
+    }
+    LegacyMath.linePlaneIntersect(pointActive, pointActive, viewZRoot, auxOriginRoot, auxNormalRoot, perpendicular);
   }
 
   public adjustPointToGrid(pointActive: Point3d, vp: Viewport) {

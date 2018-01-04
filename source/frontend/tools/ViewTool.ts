@@ -9,10 +9,9 @@ import { Frustum, NpcCenter, Npc, MarginPercent, ViewStatus, ViewState3d } from 
 import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
+import { AccuDraw, AccuDrawFlags } from "../AccuDraw";
+import { LegacyMath } from "../../common/LegacyMath";
 
-// tslint:disable:no-empty
-
-const toolAdmin = ToolAdmin.instance;
 const scratchButtonEvent = new BeButtonEvent();
 const scratchFrustum = new Frustum();
 const scratchTransform1 = Transform.createIdentity();
@@ -74,6 +73,7 @@ export abstract class ViewTool extends Tool {
   public beginDynamicUpdate() { this.inDynamicUpdate = true; }
   public endDynamicUpdate() { this.inDynamicUpdate = false; }
   public installToolImplementation(): BentleyStatus {
+    const toolAdmin = ToolAdmin.instance;
     if (!toolAdmin.onInstallTool(this))
       return BentleyStatus.ERROR;
 
@@ -87,7 +87,7 @@ export abstract class ViewTool extends Tool {
   public onResetButtonUp(_ev: BeButtonEvent) { this.exitTool(); return true; }
 
   /** Do not override. */
-  public exitTool(): void { toolAdmin.exitViewTool(); }
+  public exitTool(): void { ToolAdmin.instance.exitViewTool(); }
 }
 
 export abstract class ViewingToolHandle {
@@ -102,7 +102,7 @@ export abstract class ViewingToolHandle {
   public abstract firstPoint(ev: BeButtonEvent): boolean;
   public abstract testHandleForHit(ptScreen: Point3d): { distance: number, priority: HitPriority } | undefined;
   public abstract get handleType(): ViewHandleType;
-  public focusIn(): void { toolAdmin.viewCursor = this.getHandleCursor(); }
+  public focusIn(): void { ToolAdmin.instance.viewCursor = this.getHandleCursor(); }
 }
 
 export class ViewHandleArray {
@@ -267,7 +267,7 @@ export class ViewManip extends ViewTool {
   }
 
   public onReinitialize(): void {
-    toolAdmin.gesturePending = false;
+    ToolAdmin.instance.gesturePending = false;
     if (this.viewport) {
       this.viewport.synchWithView(true); // make sure we store any changes in view undo buffer.
       this.viewHandles.setFocus(-1);
@@ -329,7 +329,7 @@ export class ViewManip extends ViewTool {
       ev.coordsFrom = CoordSource.Precision; // don't want raw point used...
     }
 
-    toolAdmin.processWheelEvent(ev, false);
+    ToolAdmin.instance.processWheelEvent(ev, false);
     this.doUpdate(true);
     return true;
   }
@@ -338,7 +338,7 @@ export class ViewManip extends ViewTool {
     this.isDragOperation = true;
     this.stoppedOverHandle = false;
 
-    toolAdmin.gesturePending = false;
+    ToolAdmin.instance.gesturePending = false;
     if (0 === this.nPts)
       this.onDataButtonDown(ev);
 
@@ -593,7 +593,7 @@ export class ViewManip extends ViewTool {
     const viewPt = vp.worldToView(this.targetCenterWorld, scratchPoint3d1);
     const ev = scratchButtonEvent;
     ev.initEvent(this.targetCenterWorld, this.targetCenterWorld, viewPt, vp, CoordSource.User, 0);
-    toolAdmin.setAdjustedDataPoint(ev);
+    ToolAdmin.instance.setAdjustedDataPoint(ev);
     ev.reset();
   }
 
@@ -769,7 +769,7 @@ class ViewPan extends ViewingToolHandle {
   public onReinitialize() {
     const vha = this.viewTool.viewHandles.hitHandle;
     if (vha === this)
-      toolAdmin.viewCursor = this.getHandleCursor();
+      ToolAdmin.instance.viewCursor = this.getHandleCursor();
   }
 
   public testHandleForHit(_ptScreen: Point3d) { return { distance: 0.0, priority: HitPriority.Low }; }
@@ -808,48 +808,45 @@ class ViewRotate extends ViewingToolHandle {
   }
 
   public firstPoint(ev: BeButtonEvent) {
-    if (toolAdmin.gesturePending)
+    if (ToolAdmin.instance.gesturePending)
       return false;
 
     const tool = this.viewTool;
     const vp = tool.viewport!;
 
-    const pickPt = ev.rawPoint; // Use raw point when AccuDraw is not active, don't want tentative location...
-    // if (accudraw.isActive()) {
-    //   const acrawOrigin = accudraw.origin;
-    //   const adrawMatrix = accudraw.getRotation();
+    let pickPt = ev.rawPoint; // Use raw point when AccuDraw is not active, don't want tentative location...
+    const accudraw = AccuDraw.instance;
+    if (accudraw.isActive()) {
+      const aDrawOrigin = accudraw.origin;
+      const aDrawMatrix = accudraw.getRotation();
+      pickPt = ev.point; // Use adjusted point when AccuDraw is active...
 
-    //   pickPt = ev.point; // Use adjusted point when AccuDraw is active...
+      let viewZWorld: Vector3d;
+      const distWorld = pickPt.clone();
 
-    //   let viewZWorld: Vector3d;
-    //   DPoint3d    distWorld = pickPt;
+      // Lock to the construction plane
+      if (vp.view.is3d() && vp.isCameraOn())
+        viewZWorld = vp.view.camera.eye.vectorTo(distWorld);
+      else
+        viewZWorld = vp.rotMatrix.getRow(2);
 
-    //   // Lock to the construction plane
-    //   if (vp.isCameraOn())
-    //     viewZWorld.DifferenceOf(distWorld, viewport -> GetCamera().GetEyePoint());
-    //   else
-    //     viewZWorld = vp.rotMatrix.getRow(2);
+      const adrawZWorld = aDrawMatrix.getRow(2);
+      LegacyMath.linePlaneIntersect(distWorld, distWorld, viewZWorld, aDrawOrigin, adrawZWorld, false);
 
-    //   DVec3d      adrawZWorld;
-    //   DPoint3d    pickPt;
+      let flags = AccuDrawFlags.AlwaysSetOrigin | AccuDrawFlags.SetModePolar | AccuDrawFlags.FixedOrigin;
+      const activeOrg = this.viewTool.targetCenterWorld;
+      const aDrawX = activeOrg.vectorTo(pickPt);
 
-    //   adrawMatrix.GetRow(adrawZWorld, 2);
-    //   LegacyMath:: Vec:: LinePlaneIntersect(& distWorld, & distWorld, & viewZWorld, & adrawOrigin, & adrawZWorld, false);
-    //   pickPt = distWorld;
+      if (aDrawX.normalizeWithLength(aDrawX).mag > 0.00001) {
+        const aDrawZ = aDrawMatrix.getRow(2);
+        const aDrawY = aDrawZ.crossProduct(aDrawX);
+        RotMatrix.createRows(aDrawX, aDrawY, aDrawZ, aDrawMatrix);
+        aDrawMatrix.normalizeRowsInPlace();
+        flags |= AccuDrawFlags.SetRMatrix;
+      }
 
-    //   const flags = AccuDrawFlags.AlwaysSetOrigin | AccuDrawFlags.SetModePolar | AccuDrawFlags.FixedOrigin;
-    //   DVec3d      adrawX, adrawY, adrawZ;
-
-    //   if (adrawX.NormalizedDifference(pickPt, activeOrg) > mgds_fc_epsilon) {
-    //     adrawMatrix.GetRow(adrawZ, 2);
-    //     adrawY.CrossProduct(adrawZ, adrawX);
-    //     adrawMatrix.InitFromRowVectors(adrawX, adrawY, adrawZ);
-    //     adrawMatrix.NormalizeRowsOf(adrawMatrix, adrawZWorld);
-
-    //     flags |= AccuDrawFlags.SetRMatrix;
-    //   }
-
-    //   accudraw.setContext(flags, activeOrg, adrawMatrix);
+      accudraw.setContext(flags, activeOrg, aDrawMatrix);
+    }
 
     const viewPt = vp.worldToView(pickPt);
     tool.viewPtToSpherePt(viewPt, true, this.ballVector0);
@@ -1185,7 +1182,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
   }
 
   public getNavigateMode(): NavigateMode {
-    const state = toolAdmin.currentInputState;
+    const state = ToolAdmin.instance.currentInputState;
     if (state.isShiftDown || !this.viewTool.viewport!.isCameraOn())
       return NavigateMode.Pan;
     return state.isControlDown ? NavigateMode.Look : NavigateMode.Travel;
@@ -1544,8 +1541,8 @@ export class WindowAreaTool extends ViewTool {
     // this.overlay.visible = false;
   }
 
-  public onSingleFingerMove(ev: BeGestureEvent): boolean { toolAdmin.convertGestureMoveToButtonDownAndMotion(ev); return true; }
-  public onEndGesture(ev: BeGestureEvent): boolean { toolAdmin.convertGestureEndToButtonUp(ev); return true; }
+  public onSingleFingerMove(ev: BeGestureEvent): boolean { ToolAdmin.instance.convertGestureMoveToButtonDownAndMotion(ev); return true; }
+  public onEndGesture(ev: BeGestureEvent): boolean { ToolAdmin.instance.convertGestureEndToButtonUp(ev); return true; }
 }
 
 /** tool that handles gestures */
