@@ -21,11 +21,18 @@ const s_focused: any = {};
 const s_notSnappable: any = {};
 const s_appFiltered: any = {};
 
-class AccuSnapToolState {
+export class AccuSnapToolState {
   public m_enabled = false;
   public m_locate = false;
   public m_suspended = 0;
   public m_subSelectionMode = 0;
+  public setFrom(other: AccuSnapToolState): void {
+    this.m_enabled = other.m_enabled;
+    this.m_locate = other.m_locate;
+    this.m_suspended = other.m_suspended;
+    this.m_subSelectionMode = other.m_subSelectionMode;
+  }
+  public clone(): AccuSnapToolState { const val = new AccuSnapToolState(); val.setFrom(this); return val; }
 }
 
 class SnapElemIgnore {
@@ -74,7 +81,7 @@ export class AccuSnap {
   private readonly lastCursorPos = new Point2d();        // Location of cursor when we last checked for motion
   private totalMotionSq = 0;                             // Accumulated distance (squared) the mouse has moved since we started checking for motion
   private motionToleranceSq = 0;                         // How much mouse movement constitutes a "move" (squared)
-  private readonly toolState = new AccuSnapToolState();
+  public readonly toolState = new AccuSnapToolState();
   private readonly defaultSettings = new AccuSnapSettings();
   private settings = this.defaultSettings;
 

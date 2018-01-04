@@ -14,7 +14,7 @@ import {
 } from "./Tool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { DecorateContext } from "../ViewContext";
-import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
+import { AccuSnap, TentativeOrAccuSnap, AccuSnapToolState } from "../AccuSnap";
 import { TentativePoint } from "../TentativePoint";
 import { ViewManager } from "../ViewManager";
 import { AccuDraw } from "../AccuDraw";
@@ -32,6 +32,44 @@ export const enum CoordinateLockOverrides {
 export class ToolState {
   public coordLockOvr = CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_None;
   public locateCircleOn = true;
+  public setFrom(other: ToolState) { this.coordLockOvr = other.coordLockOvr; this.locateCircleOn = other.locateCircleOn; }
+  public clone(): ToolState { const val = new ToolState(); val.setFrom(this); return val; }
+}
+
+export class SuspendedToolState {
+  private readonly toolState: ToolState;
+  private readonly accuSnapState: AccuSnapToolState;
+  private readonly viewCursor?: BeCursor;
+  private inDynamics: boolean;
+  private shuttingDown = false;
+
+  constructor() {
+    const toolAdmin = ToolAdmin.instance;
+    const viewManager = ViewManager.instance;
+    toolAdmin.setIncompatibleViewportCursor(true); // Don't save this...
+
+    this.toolState = toolAdmin.toolState.clone();
+    this.accuSnapState = AccuSnap.instance.toolState.clone();
+    this.viewCursor = viewManager.cursor;
+    this.inDynamics = viewManager.inDynamicsMode;
+    if (this.inDynamics)
+      viewManager.endDynamicsMode();
+  }
+
+  public stop() {
+    if (this.shuttingDown)
+      return;
+
+    const toolAdmin = ToolAdmin.instance;
+    const viewManager = ViewManager.instance;
+    toolAdmin.setIncompatibleViewportCursor(true); // Don't restore this...
+
+    toolAdmin.toolState.setFrom(this.toolState);
+    AccuSnap.instance.toolState.setFrom(this.accuSnapState);
+    viewManager.cursor = this.viewCursor;
+    if (this.inDynamics)
+      viewManager.beginDynamicsMode();
+  }
 }
 
 export class CurrentInputState {
@@ -273,13 +311,17 @@ export class ToolAdmin {
   private _toolEvents = new BeEventList();
   public static instance = new ToolAdmin();
   public currentInputState = new CurrentInputState();
-  public toolState = new ToolState();
+  public readonly toolState = new ToolState();
+  // private suspended?: SuspendedToolState;
+  private inputCollectorSave?: SuspendedToolState;
   public cursorInView = false;
   private _viewCursor?: BeCursor;
   private viewTool?: ViewTool;
   private primitiveTool?: PrimitiveTool;
   private idleTool: IdleTool;
   private inputCollector?: Tool;
+  public saveCursor?: BeCursor;
+  public saveLocateCircle: boolean;
   private defaultTool?: PrimitiveTool;
   public gesturePending: boolean;
   private modifierKeyWentDown: boolean;
@@ -888,6 +930,27 @@ export class ToolAdmin {
       this.activeToolChanged.raiseEvent(newActiveTool);
   }
 
+  public startInputCollector(_newTool: Tool): void {
+    if (this.inputCollector)
+      this.setInputCollector(undefined);
+    else
+      this.inputCollectorSave = new SuspendedToolState();
+  }
+
+  public exitInputCollector() {
+    if (this.inputCollectorSave)
+      this.inputCollectorSave.stop();
+    this.inputCollectorSave = undefined;
+    this.setInputCollector(undefined);
+  }
+
+  public setInputCollector(newTool?: Tool) {
+    if (this.inputCollector)
+      this.inputCollector.onCleanup();
+
+    this.inputCollector = newTool;
+  }
+
   /** Invoked by ViewTool.installToolImplementation */
   public setViewTool(newTool?: ViewTool) {
     if (this.viewTool)
@@ -1051,6 +1114,26 @@ export class ToolAdmin {
   public convertGestureEndToButtonUp(ev: BeGestureEvent) {
     this.onDataButtonUp(ev.viewport!, ev.getDisplayPoint(), InputSource.Touch);
     this.touchBridgeMode = false;
+  }
+
+  public setIncompatibleViewportCursor(restore: boolean) {
+    if (restore) {
+      if (!this.saveCursor)
+        return;
+
+      this.toolState.locateCircleOn = this.saveLocateCircle;
+      this.viewCursor = this.saveCursor;
+      this.saveCursor = undefined;
+      return;
+    }
+
+    if (this.saveCursor)
+      return;
+
+    this.saveLocateCircle = this.toolState.locateCircleOn;
+    this.saveCursor = this.viewCursor;
+    this.toolState.locateCircleOn = false;
+    this.viewCursor = BeCursor.NotAllowed;
   }
 
   private wheelEventProcessor = new WheelEventProcessor();

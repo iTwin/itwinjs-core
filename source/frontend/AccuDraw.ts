@@ -156,6 +156,18 @@ class SavedState {
   public fixedOrg = false;
   public ignoreDataButton = false; // Allow data point that terminates an input collector to be ignored...
   public init(): void { this.state = CurrentState.NotEnabled; this.view = undefined; this.mode = CompassMode.Polar; this.rotationMode = RotationMode.View; }
+  public setFrom(other: SavedState) {
+    this.state = other.state;
+    this.view = other.view;
+    this.mode = other.mode;
+    this.rotationMode = other.rotationMode;
+    this.axes.setFrom(other.axes);
+    this.origin.setFrom(other.origin);
+    this.auxRotationPlane = other.auxRotationPlane;
+    this.contextRotMode = other.contextRotMode;
+    this.fixedOrg = other.fixedOrg;
+    this.ignoreDataButton = other.ignoreDataButton;
+  }
 }
 
 class SavedCoords {

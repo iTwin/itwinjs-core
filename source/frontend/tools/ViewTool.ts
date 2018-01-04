@@ -821,17 +821,11 @@ class ViewRotate extends ViewingToolHandle {
       const aDrawMatrix = accudraw.getRotation();
       pickPt = ev.point; // Use adjusted point when AccuDraw is active...
 
-      let viewZWorld: Vector3d;
-      const distWorld = pickPt.clone();
-
       // Lock to the construction plane
-      if (vp.view.is3d() && vp.isCameraOn())
-        viewZWorld = vp.view.camera.eye.vectorTo(distWorld);
-      else
-        viewZWorld = vp.rotMatrix.getRow(2);
-
-      const adrawZWorld = aDrawMatrix.getRow(2);
-      LegacyMath.linePlaneIntersect(distWorld, distWorld, viewZWorld, aDrawOrigin, adrawZWorld, false);
+      const distWorld = pickPt.clone();
+      const viewZWorld = (vp.view.is3d() && vp.isCameraOn()) ? vp.view.camera.eye.vectorTo(distWorld) : vp.rotMatrix.getRow(2);
+      const aDrawZWorld = aDrawMatrix.getRow(2);
+      LegacyMath.linePlaneIntersect(distWorld, distWorld, viewZWorld, aDrawOrigin, aDrawZWorld, false);
 
       let flags = AccuDrawFlags.AlwaysSetOrigin | AccuDrawFlags.SetModePolar | AccuDrawFlags.FixedOrigin;
       const activeOrg = this.viewTool.targetCenterWorld;
