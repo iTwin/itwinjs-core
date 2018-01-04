@@ -8,14 +8,14 @@ import { ECDb } from "./ECDb";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelVersion } from "../common/IModelVersion";
 import { IModelError } from "../common/IModelError";
-import { ErrorStatusOrResult} from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
+import { ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { BriefcaseManager } from "./BriefcaseManager";
 import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 // import * as fs from "fs";
 
 class ChangeSummaryExtendedInfo {
-  constructor(public changeSetId: string, public pushDate: string, public user: string, public parentChangeSetId: string) {}
+  constructor(public changeSetId: string, public pushDate: string, public user: string, public parentChangeSetId: string) { }
 }
 
 export class ChangeSummaryManager {

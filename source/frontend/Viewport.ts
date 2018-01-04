@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Vector3d, XYZ, Point3d, Range3d, RotMatrix, Transform, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ } from "@bentley/geometry-core/lib/PointVector";
 import { Map4d, Point4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
-import { AxisOrder, Angle } from "@bentley/geometry-core/lib/Geometry";
+import { AxisOrder, Angle, AngleSweep } from "@bentley/geometry-core/lib/Geometry";
 import { ViewState, Frustum, ViewStatus, Npc, NpcCenter, NpcCorners, MarginPercent, GridOrientationType } from "../common/ViewState";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { ElementAlignedBox2d, Placement3dProps, Placement2dProps, Placement2d, Placement3d } from "../common/geometry/Primitives";
@@ -16,11 +16,12 @@ import { AuxCoordSystemState } from "../common/AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { DecorationList } from "../common/Render";
-
-const toolAdmin = ToolAdmin.instance;
-
-// tslint:disable:no-empty
+import { DecorationList, Hilite } from "../common/Render";
+import { HitDetail, SnapDetail, SnapMode } from "./HitDetail";
+import { DecorateContext } from "./ViewContext";
+import { ColorDef } from "../common/ColorDef";
+import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
+import { LegacyMath } from "../common/LegacyMath";
 
 /** A rectangle in view coordinates. */
 export class ViewRect extends ElementAlignedBox2d {
@@ -172,6 +173,7 @@ export class Viewport {
   private iModel?: IModelConnection;
   /** Called whenever this viewport is synchronized with its ViewState */
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
+  public readonly hilite = new Hilite.Settings();
   private zClipAdjusted = false;    // were the view z clip planes adjusted due to front/back clipping off?
   /** view origin, potentially expanded */
   public readonly viewOrg = new Point3d();
@@ -211,8 +213,8 @@ export class Viewport {
   public getAuxCoordRotation(result?: RotMatrix) { return this.auxCoordSystem ? this.auxCoordSystem.getRotation(result) : RotMatrix.createIdentity(result); }
   public getAuxCoordOrigin(result?: Point3d) { return this.auxCoordSystem ? this.auxCoordSystem.getOrigin(result) : Point3d.createZero(result); }
   public isPointAdjustmentRequired(): boolean { return this.view.is3d(); }
-  public isSnapAdjustmentRequired(): boolean { return toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
-  public isContextRotationRequired(): boolean { return toolAdmin.acsContextLock; }
+  public isSnapAdjustmentRequired(): boolean { return ToolAdmin.instance.acsPlaneSnapLock && this.view.is3d(); }
+  public isContextRotationRequired(): boolean { return ToolAdmin.instance.acsContextLock; }
 
   constructor(public canvas?: HTMLCanvasElement, private _view?: ViewState) { this.setCursor(); }
 
@@ -1072,13 +1074,12 @@ export class Viewport {
     return undefined;
   }
 
-  //   static void roundGrid(double & num, double units)
-  //     {
-  //   double sign = ((num * units) < 0.0) ? -1.0 : 1.0;
-
-  //   num = (num * sign) / units + 0.5;
-  //   num = units * sign * floor(num);
-  // }
+  private static roundGrid(num: number, units: number): number {
+    const sign = ((num * units) < 0.0) ? -1.0 : 1.0;
+    num = (num * sign) / units + 0.5;
+    num = units * sign * Math.floor(num);
+    return num;
+  }
 
   private getGridOrientation(origin: Point3d, rMatrix: RotMatrix) {
     if (this.view.isSpatialView())
@@ -1109,44 +1110,39 @@ export class Viewport {
     }
   }
 
-  private pointToStandardGrid(_point: Point3d, _rMatrix: RotMatrix, _origin: Point3d): void {
-    // const planeNormal = rMatrix.getRow(2);
+  private pointToStandardGrid(point: Point3d, rMatrix: RotMatrix, origin: Point3d): void {
+    const planeNormal = rMatrix.getRow(2);
 
-    // if (this.isCameraOn())
-    //   eyeVec.NormalizedDifference(point, vp.GetCamera().GetEyePoint());
-    // else
-    //   vp.GetRotMatrix().GetRow(eyeVec, 2);
+    let eyeVec: Vector3d;
+    if (this.view.is3d() && this.isCameraOn())
+      eyeVec = this.view.camera.eye.vectorTo(point);
+    else
+      eyeVec = this.rotMatrix.getRow(2).clone();
 
-    // LegacyMath:: Vec:: LinePlaneIntersect(& point, & point, & eyeVec, & origin, & planeNormal, false);
+    eyeVec.normalizeInPlace();
+    LegacyMath.linePlaneIntersect(point, point, eyeVec, origin, planeNormal, false);
 
     // // get origin and point in view coordinate system
-    // DPoint3d pointView, originView;
+    const pointView = point.clone();
+    const originView = origin.clone();
+    this.toView(pointView);
+    this.toView(originView);
 
-    // rMatrix.Multiply(pointView, point);
-    // rMatrix.Multiply(originView, origin);
+    // subtract off the origin
+    pointView.y -= originView.y;
+    pointView.x -= originView.x;
 
-    // // see whether we need to adjust the origin for iso-grid
-    // if (isoGrid) {
-    //   long ltmp = (long)(pointView.y / roundingDistance.y);
+    // round off the remainder to the grid distances
+    pointView.x = Viewport.roundGrid(pointView.x, this.gridSpacing.x);
+    pointView.y = Viewport.roundGrid(pointView.y, this.gridSpacing.y);
 
-    //   if (ltmp & 0x0001)
-    //     originView.x += (roundingDistance.x / 2.0);
-    // }
+    // add the origin back in
+    pointView.x += originView.x;
+    pointView.y += originView.y;
 
-    // // subtract off the origin
-    // pointView.y -= originView.y;
-    // pointView.x -= originView.x;
-
-    // // round off the remainder to the grid distances
-    // roundGrid(pointView.y, roundingDistance.y);
-    // roundGrid(pointView.x, roundingDistance.x);
-
-    // // add the origin back in
-    // pointView.x += originView.x;
-    // pointView.y += originView.y;
-
-    // // go back to root coordinate system
-    // rMatrix.MultiplyTranspose(point, pointView);
+    // go back to root coordinate system
+    this.fromView(pointView);
+    point.setFrom(pointView);
   }
 
   public pointToGrid(point: Point3d): void {
@@ -1190,5 +1186,78 @@ export class Viewport {
     }
 
     return worldPts[0].distance(worldPts[1]);
+  }
+
+  /** Show the surface normal for geometry under the cursor when snapping. */
+  private static drawLocateHitDetail(context: DecorateContext, aperture: number, hit: HitDetail): void {
+    // NEEDSWORK: Need to decide the fate of this...when/if to show it, etc.
+    const vp = context.viewport;
+    if (!vp.view.is3d())
+      return; // Not valuable in 2d...
+
+    if (!(hit instanceof SnapDetail))
+      return; // Don't display unless snapped...
+
+    if (!hit.m_geomDetail.isValidSurfaceHit())
+      return; // AccuSnap will flash edge/segment geometry...
+
+    if (SnapMode.Nearest !== hit.m_snapMode && hit.isHot)
+      return; // Only display if snap is nearest or NOT hot...surface normal is for hit location, not snap location...
+
+    const color = new ColorDef(~vp.hilite.color.getRgb); // Invert hilite color for good contrast...
+    const colorFill = color.clone();
+    const pt = hit.getHitPoint();
+    const radius = (2.5 * aperture) * vp.getPixelSizeAtPoint(pt);
+    const normal = hit.m_geomDetail.m_normal;
+    const rMatrix = RotMatrix.createHeadsUpTriad(normal);
+    color.setAlpha(100);
+    colorFill.setAlpha(200);
+
+    const ellipse = Arc3d.createScaledXYColumns(pt, rMatrix, radius, radius, AngleSweep.create360())!;
+    const graphic = context.createWorldOverlay();
+    graphic.setSymbology(color, colorFill, 1);
+    graphic.addArc(ellipse, true, true);
+    graphic.addArc(ellipse, false, false);
+
+    const length = (0.6 * radius);
+    ellipse.vector0.normalize(normal);
+    const pt1 = pt.plusScaled(normal, length);
+    const pt2 = pt.plusScaled(normal, -length);
+    graphic.addLineString(2, [pt1, pt2]);
+    ellipse.vector90.normalize(normal);
+    pt.plusScaled(normal, length, pt1);
+    pt.plusScaled(normal, -length, pt2);
+    graphic.addLineString(2, [pt1, pt2]);
+    context.addWorldOverlay(graphic.finish()!);
+  }
+
+  /** draw a filled and outlined circle to represent the size of the location tolerance in the current view. */
+  private static drawLocateCircle(context: DecorateContext, aperture: number, pt: Point3d): void {
+    const radius = (aperture / 2.0) + .5;
+    const center = context.viewport.worldToView(pt);
+    const ellipse = Arc3d.createXYEllipse(center, radius, radius);
+    const ellipse2 = Arc3d.createXYEllipse(center, radius + 1, radius + 1);
+    const graphic = context.createViewOverlay();
+    const white = ColorDef.white.clone();
+    const black = ColorDef.black.clone();
+
+    white.setAlpha(165);
+    graphic.setSymbology(white, white, 1);
+    graphic.addArc2d(ellipse, true, true, 0.0);
+    black.setAlpha(100);
+    graphic.setSymbology(black, black, 1);
+    graphic.addArc2d(ellipse2, false, false, 0.0);
+    white.setAlpha(20);
+    graphic.setSymbology(white, white, 1);
+    graphic.addArc2d(ellipse, false, false, 0.0);
+    context.addViewOverlay(graphic.finish()!);
+  }
+
+  public drawLocateCursor(context: DecorateContext, pt: Point3d, aperture: number, isLocateCircleOn: boolean, hit?: HitDetail): void {
+    if (hit)
+      Viewport.drawLocateHitDetail(context, aperture, hit);
+
+    if (isLocateCircleOn)
+      Viewport.drawLocateCircle(context, aperture, pt);
   }
 }

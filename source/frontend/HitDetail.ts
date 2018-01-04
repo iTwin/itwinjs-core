@@ -13,7 +13,6 @@ import { Sprite } from "./Sprites";
 
 // tslint:disable:variable-name
 // tslint:disable:no-conditional-assignment
-// tslint:disable:no-empty
 
 export const enum SnapMode {
   Invalid = -1,
@@ -203,12 +202,12 @@ export class HitDetail {
   public m_elemTopo?: ElemTopology; // details about the topology of the element.
   public m_hitDescription: string;
   public m_subSelectionMode = SubSelectionMode.None; // segment hilite/flash mode.
-  public constructor(public m_viewport: Viewport, public m_sheetViewport: Viewport | undefined, public m_elementId: Id64, public m_testPoint: Point3d, public m_locateSource: HitSource, public m_geomDetail: GeomDetail) { }
+  public constructor(public m_viewport: Viewport, public m_sheetViewport: Viewport | undefined, public m_elementId: Id64 | undefined, public m_testPoint: Point3d, public m_locateSource: HitSource, public m_geomDetail: GeomDetail) { }
 
   public isSnapDetail(): this is SnapDetail { return false; }
   public getHitType(): HitDetailType { return HitDetailType.Hit; }
   public isSameHit(otherHit?: HitDetail): boolean {
-    if (!otherHit || this.m_elementId.equals(otherHit.m_elementId)) return false;
+    if (!otherHit || Id64.areEqual(this.m_elementId, otherHit.m_elementId)) return false;
     if (!this.m_elemTopo && !otherHit.m_elemTopo) return true;
     if (this.m_elemTopo && !otherHit.m_elemTopo) return false;
     return this.m_elemTopo!.isEqual(otherHit.m_elemTopo!);
@@ -314,7 +313,7 @@ export class HitList {
     // walk backwards through list so we don't have to worry about what happens on remove
     for (let i = this.size() - 1; i >= 0; i--) {
       const thisHit = this.hits[i];
-      if (thisHit && element.equals(thisHit.m_elementId))
+      if (thisHit && Id64.areEqual(element, thisHit.m_elementId))
         removedOne = true;
       this.removeHit(i);
     }

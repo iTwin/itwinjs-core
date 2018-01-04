@@ -9,8 +9,6 @@ import { ToolAdmin } from "./tools/ToolAdmin";
 import { EventController } from "./tools/EventController";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
 
-// tslint:disable:no-empty
-
 /** The ViewManager holds the list of opened views, plus the "selected view" */
 export class ViewManager {
   public static readonly instance = new ViewManager();
@@ -62,8 +60,8 @@ export class ViewManager {
   public clearInfoWindow(): void { }
 
   public showInfoWindow(_viewPt: Point3d, _vp: Viewport, _msg: string) {
-    // if (this.doesHostHaveFocus())
-    //   this.getInfoWindow().show(viewPt, vp, msg);
+    //   if (this.doesHostHaveFocus())
+    //     this.getInfoWindow().show(viewPt, vp, msg);
   }
 
   /** The "selected view" is the default for certain operations.  */

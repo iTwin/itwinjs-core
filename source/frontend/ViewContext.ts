@@ -7,8 +7,6 @@ import { Point3d, Vector3d, RotMatrix, Point2d, Transform } from "@bentley/geome
 import { HitDetail, SnapMode, SnapDetail } from "./HitDetail";
 import { DecorationList, GraphicList, Decorations, Graphic, GraphicType, GraphicBuilder } from "../common/Render";
 
-// tslint:disable:no-empty
-
 export class ViewContext {
   public viewport: Viewport;
 }
@@ -141,5 +139,4 @@ export class DecorateContext extends RenderContext {
   public createWorldDecoration(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphic(tf, GraphicType.WorldDecoration)!; }
   public createWorldOverlay(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphic(tf, GraphicType.WorldOverlay)!; }
   public createViewOverlay(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphic(tf, GraphicType.ViewOverlay)!; }
-
 }

@@ -58,6 +58,11 @@ export class IModelGatewayImpl extends IModelGateway {
     return rows;
   }
 
+  public async saveChanges(iModelToken: IModelToken, description?: string) {
+    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    iModelDb.saveChanges(description);
+  }
+
   public async getModelProps(iModelToken: IModelToken, modelIds: string[]): Promise<string[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const modelJsonArray: string[] = [];

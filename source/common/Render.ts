@@ -923,6 +923,33 @@ export class GraphicList {
 export class DecorationList extends GraphicList {
 }
 
+export namespace Hilite {
+  /**  Describes the width of the outline applied to hilited geometry. */
+  export const enum Silhouette {
+    None,
+    Thin,
+    Thick,
+  }
+
+  const defaultColor = ColorDef.from(0x23, 0xbb, 0xfc);
+  const defaultVisibleRatio = 0.25;
+  const defaultHiddenRatio = 0.0;
+  const defaultWidth = Silhouette.Thin;
+
+  /**
+   * Describes the effect applied to hilited elements within a view.
+   */
+  export class Settings {
+    private static clamp(value: number) { return Math.min(1.0, Math.max(0.0, value)); }
+    public constructor(public readonly color = defaultColor.clone(), public visibleRatio = defaultVisibleRatio, public hiddenRatio = defaultHiddenRatio, public silhouette = defaultWidth) {
+      this.visibleRatio = Settings.clamp(this.visibleRatio);
+      this.hiddenRatio = Settings.clamp(this.hiddenRatio);
+    }
+    /** Change the color, preserving all other settings */
+    public setColor(color: ColorDef) { this.color.setFrom(color); }
+  }
+}
+
 /**
  * A set of GraphicLists of various types of Graphics that are "decorated" into the Render::Target,
  * in addition to the Scene.

@@ -96,6 +96,16 @@ export class IModelConnection extends IModel {
       return undefined;
     return IModelGateway.getProxy().executeTestById(this.iModelToken, id, params);
   }
+
+  /**
+   * Commit pending changes to this iModel
+   * @param _description Optional description of the changes
+   * @throws [[IModelError]] if there is a problem saving changes.
+   */
+  public async saveChanges(description?: string): Promise<void> {
+    Logger.logInfo("IModelConnection.saveChanges", () => ({ iModelId: this.iModelToken.iModelId, description }));
+    return await IModelGateway.getProxy().saveChanges(this.iModelToken, description);
+  }
 }
 
 /** The collection of models for an [[IModelConnection]]. */

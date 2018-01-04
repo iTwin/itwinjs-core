@@ -257,8 +257,8 @@ export class IModelDb extends IModel {
       throw new IModelError(IModelStatus.BadRequest);
     const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForLinkTableRelationship(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(instance), opcode);
     if (rc !== RepositoryStatus.Success)
-        throw new IModelError(rc);
-    }
+      throw new IModelError(rc);
+  }
 
   /** See CodeSpec.buildResourcesRequest */
   public buildResourcesRequestForCodeSpec(req: BriefcaseManager.ResourcesRequest, instance: CodeSpec, opcode: DbOpcode): void {
@@ -266,8 +266,8 @@ export class IModelDb extends IModel {
       throw new IModelError(IModelStatus.BadRequest);
     const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForCodeSpec(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(instance.id), opcode);
     if (rc !== RepositoryStatus.Success)
-        throw new IModelError(rc);
-    }
+      throw new IModelError(rc);
+  }
 
   /**
    * Try to acquire the requested resources from iModelHub.

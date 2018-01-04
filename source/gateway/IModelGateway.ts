@@ -28,12 +28,12 @@ export abstract class IModelGateway extends Gateway {
   }
 
   /** Opens an IModel (read-only) on the backend to service frontend requests. */
-  public async openForRead(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<IModel> {
+  public async openForRead(_accessToken: AccessToken, _iModelToken: IModelToken, _version: IModelVersion): Promise<IModel> {
     return this.forward.apply(this, arguments);
   }
 
   /** Opens an IModel (read/write) on the backend to service frontend requests. */
-  public async openForWrite(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<IModel> {
+  public async openForWrite(_accessToken: AccessToken, _iModelToken: IModelToken, _version: IModelVersion): Promise<IModel> {
     return this.forward.apply(this, arguments);
   }
 
@@ -97,6 +97,14 @@ export abstract class IModelGateway extends Gateway {
 
   // !!! TESTING METHOD
   public executeTestById(_iModelToken: IModelToken, _id: number, _params: any): any {
+  }
+
+  /**
+   * Commit pending changes to this iModel
+   * @param _description Optional description of the changes
+   * @throws [[IModelError]] if there is a problem saving changes.
+   */
+  public async saveChanges(_iModelToken: IModelToken, _description?: string): Promise<void> {
     return this.forward.apply(this, arguments);
   }
 }

@@ -297,7 +297,7 @@ export class BriefcaseManager {
   /** Open a briefcase */
   public static async open(accessToken: AccessToken, projectId: string, iModelId: string, openMode: OpenMode, version: IModelVersion): Promise<BriefcaseInfo> {
     await BriefcaseManager.initialize(accessToken);
-    assert (!!BriefcaseManager.hubClient);
+    assert(!!BriefcaseManager.hubClient);
 
     const changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId);
     let changeSet: ChangeSet | null;
@@ -489,10 +489,10 @@ export class BriefcaseManager {
     assert(!!briefcase.iModelId);
     if (briefcase.userId) {
       await BriefcaseManager.hubClient!.deleteBriefcase(accessToken, briefcase.iModelId, briefcase.briefcaseId)
-      .catch(() => {
-        assert(false, "Could not delete the accquired briefcase");
-        return Promise.reject(new IModelError(BriefcaseStatus.CannotDelete));
-      });
+        .catch(() => {
+          assert(false, "Could not delete the accquired briefcase");
+          return Promise.reject(new IModelError(BriefcaseStatus.CannotDelete));
+        });
     }
   }
 
@@ -653,18 +653,18 @@ export class BriefcaseManager {
 
   private static deleteFolderRecursive(folderPath: string) {
     if (!fs.existsSync(folderPath))
-        return;
+      return;
     try {
-        fs.readdirSync(folderPath).forEach((file) => {
-          const curPath = folderPath + "/" + file;
-          if (fs.lstatSync(curPath).isDirectory()) {
-            BriefcaseManager.deleteFolderRecursive(curPath);
-          } else {
-            // delete file
-            fs.unlinkSync(curPath);
-          }
-        });
-        fs.rmdirSync(folderPath);
+      fs.readdirSync(folderPath).forEach((file) => {
+        const curPath = folderPath + "/" + file;
+        if (fs.lstatSync(curPath).isDirectory()) {
+          BriefcaseManager.deleteFolderRecursive(curPath);
+        } else {
+          // delete file
+          fs.unlinkSync(curPath);
+        }
+      });
+      fs.rmdirSync(folderPath);
     } catch (err) {
       return; // todo: This seems to fail sometimes for no reason
     }
@@ -692,7 +692,7 @@ export namespace BriefcaseManager {
 
   /** This is a stand-in for NodeAddonBriefcaseManagerResourcesRequest. We cannot (re-)export that for technical reasons. */
   export class ResourcesRequest {
-    private constructor() {}
+    private constructor() { }
 
     /** Create an empty ResourcesRequest */
     public static create(): ResourcesRequest {
@@ -725,7 +725,7 @@ export namespace BriefcaseManager {
     updateVsDelete: ConflictResolution;
     /** What to do with the incoming change in the case where an entity was deleted locally and would be updated by the incoming change. */
     deleteVsUpdate: ConflictResolution;
-    }
+  }
 
   /** Specifies an optimistic concurrency policy.
    * Optimistic concurrency allows entities to be modified in the local briefcase without first acquiring locks. Allows codes to be used in the local briefcase without first acquiring them.

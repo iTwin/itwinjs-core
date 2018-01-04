@@ -17,7 +17,9 @@ import { TentativePoint } from "./TentativePoint";
 import { LinePixels, GraphicBuilder } from "../common/Render";
 import { DecorateContext, SnapContext } from "./ViewContext";
 import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
+import { LegacyMath } from "../common/LegacyMath";
 
+// tslint:disable:one-variable-per-declaration
 // tslint:disable:no-conditional-assignment
 
 export const enum AccuDrawFlags {
@@ -154,6 +156,18 @@ class SavedState {
   public fixedOrg = false;
   public ignoreDataButton = false; // Allow data point that terminates an input collector to be ignored...
   public init(): void { this.state = CurrentState.NotEnabled; this.view = undefined; this.mode = CompassMode.Polar; this.rotationMode = RotationMode.View; }
+  public setFrom(other: SavedState) {
+    this.state = other.state;
+    this.view = other.view;
+    this.mode = other.mode;
+    this.rotationMode = other.rotationMode;
+    this.axes.setFrom(other.axes);
+    this.origin.setFrom(other.origin);
+    this.auxRotationPlane = other.auxRotationPlane;
+    this.contextRotMode = other.contextRotMode;
+    this.fixedOrg = other.fixedOrg;
+    this.ignoreDataButton = other.ignoreDataButton;
+  }
 }
 
 class SavedCoords {
@@ -203,8 +217,8 @@ export class AccuDraw {
   private angle = 0;            // current angle
   private locked = LockedStates.NONE_LOCKED;           // axis/distance locked bit mask
   private indexed = LockedStates.NONE_LOCKED;          // axis/distance indexed bit mask
-  private readonly distRndoff = new RoundOff();       // distance round off enabled and unit
-  private readonly anglRndoff = new RoundOff();       // angle round off enabled and unit
+  private readonly distanceRoundOff = new RoundOff();       // distance round off enabled and unit
+  private readonly angleRoundOff = new RoundOff();       // angle round off enabled and unit
   private readonly flags = new Flags();            // current state flags
   private readonly fieldLocked: boolean[] = [];   // locked state of fields
   private readonly keyinStatus: KeyinStatus[] = [];   // state of input field
@@ -757,7 +771,7 @@ export class AccuDraw {
 
     const ev = new BeButtonEvent();
     ev.initEvent(pt, pt, vp.worldToView(pt), vp, CoordSource.User, BeModifierKey.None);
-    toolAdmin.setAdjustedDataPoint(ev);
+    ToolAdmin.instance.setAdjustedDataPoint(ev);
   }
 
   public sendDataPoint(pt: Point3d, vp: Viewport): void {
@@ -765,17 +779,17 @@ export class AccuDraw {
     ev.initEvent(pt, pt, vp.worldToView(pt), vp, CoordSource.User, BeModifierKey.None);
 
     // Send both down and up events...
-    toolAdmin.sendDataPoint(ev);
+    ToolAdmin.instance.sendDataPoint(ev);
     ev.isDown = false;
-    toolAdmin.sendDataPoint(ev);
+    ToolAdmin.instance.sendDataPoint(ev);
   }
 
   public clearTentative(): boolean {
-    if (!tentativePoint.isActive)
+    if (!TentativePoint.instance.isActive)
       return false;
 
-    const wasSnapped = tentativePoint.isSnapped();
-    tentativePoint.clear(true);
+    const wasSnapped = TentativePoint.instance.isSnapped();
+    TentativePoint.instance.clear(true);
     return wasSnapped;
   }
 
@@ -1135,10 +1149,10 @@ export class AccuDraw {
       return true;
 
     // The "I don't want grid lock" flag can be set by tools to override the default behavior...
-    if (0 === (toolAdmin.toolState.coordLockOvr & CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_Grid))
+    if (0 === (ToolAdmin.instance.toolState.coordLockOvr & CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_Grid))
       return true;
 
-    return (!toolAdmin.gridLock);
+    return (!ToolAdmin.instance.gridLock);
   }
 
   public processFieldInput(index: ItemField, input: string, synchText: boolean): void {
@@ -1251,7 +1265,7 @@ export class AccuDraw {
       nStandard = StandardViewId.Top;
 
     const rMatrix = standardViewMatrices[nStandard].clone();
-    const useVp = vp ? vp : viewManager.selectedView;
+    const useVp = vp ? vp : ViewManager.instance.selectedView;
     if (!useACS || !useVp)
       return rMatrix;
 
@@ -1260,10 +1274,10 @@ export class AccuDraw {
   }
 
   public static getCurrentOrientation(vp: Viewport, checkAccuDraw: boolean, checkACS: boolean, rMatrix?: RotMatrix): RotMatrix | undefined {
-    if (checkAccuDraw && accuDraw.isActive())
-      return accuDraw.getRotation(rMatrix);
+    if (checkAccuDraw && AccuDraw.instance.isActive())
+      return AccuDraw.instance.getRotation(rMatrix);
 
-    const useVp = vp ? vp : viewManager.selectedView;
+    const useVp = vp ? vp : ViewManager.instance.selectedView;
     if (!useVp)
       return RotMatrix.createIdentity(rMatrix);
 
@@ -1276,7 +1290,7 @@ export class AccuDraw {
   public static updateAuxCoordinateSystem(acs: AuxCoordSystemState, vp: Viewport, allViews: boolean): void {
     // When modeling with multiple spatial views open, you'd typically want the same ACS in all views...
     if (allViews && vp.view.isSpatialView()) {
-      for (const otherVp of viewManager.viewports) {
+      for (const otherVp of ViewManager.instance.viewports) {
         if (otherVp !== vp && otherVp.view.isSpatialView())
           otherVp.auxCoordSystem = acs;
       }
@@ -1285,7 +1299,7 @@ export class AccuDraw {
     vp.auxCoordSystem = acs;
 
     // NOTE: Change AccuDraw's base rotation to ACS.
-    accuDraw.setContext(AccuDrawFlags.OrientACS);
+    AccuDraw.instance.setContext(AccuDrawFlags.OrientACS);
   }
 
   private distanceLock(synchText: boolean, saveInHistory: boolean): void {
@@ -1484,7 +1498,7 @@ export class AccuDraw {
       this.setCompassMode(this.flags.baseMode);
   }
 
-  private setContext(flags: AccuDrawFlags, originP?: Point3d, orientationP?: RotMatrix, deltaP?: Vector3d, distanceP?: number, angleP?: number, transP?: Transform): BentleyStatus {
+  public setContext(flags: AccuDrawFlags, originP?: Point3d, orientationP?: RotMatrix, deltaP?: Vector3d, distanceP?: number, angleP?: number, transP?: Transform): BentleyStatus {
     this.published.flags |= flags;
 
     if (flags & AccuDrawFlags.SetOrigin && originP) {
@@ -1575,7 +1589,7 @@ export class AccuDraw {
     this.onEventCommon();
 
     // Save current primitive command AccuDraw state...
-    const tool = toolAdmin.activeTool;
+    const tool = ToolAdmin.instance.activeTool;
     if (tool && !tool.isView())
       this.saveState(false);
 
@@ -1689,7 +1703,7 @@ export class AccuDraw {
     }
 
     const isRectMode = (CompassMode.Rectangular === this.getCompassMode());
-    const offsetSnap = ((TentativeOrAccuSnap.isHot() || tentativePoint.isActive) && ((this.locked) || (distance > 0.0)));
+    const offsetSnap = ((TentativeOrAccuSnap.isHot() || TentativePoint.instance.isActive) && ((this.locked) || (distance > 0.0)));
 
     // XY Offset:
     if (offsetSnap) {
@@ -2057,7 +2071,7 @@ export class AccuDraw {
         const rMatrix = vp.getAuxCoordRotation(AccuDraw.tempRot);
         const axes = ThreeAxes.createFromRotMatrix(rMatrix);
         this.accountForAuxRotationPlane(axes, this.flags.auxRotationPlane);
-        // LegacyMath:: Vec:: LinePlaneIntersect(outPtP, inPtP, axes.z, pointOnPlaneP, normalVectorP, false);
+        LegacyMath.linePlaneIntersect(outPtP, inPtP, axes.z, pointOnPlaneP, normalVectorP, false);
       } else {
         projectionVector = inPtP.vectorTo(pointOnPlaneP);
         distance = projectionVector.dotProduct(normalVectorP);
@@ -2214,8 +2228,8 @@ export class AccuDraw {
 
     // constrain angle
     if (this.flags.pointIsOnPlane && !(this.locked & LockedStates.VEC_BM)) {
-      if (!TentativeOrAccuSnap.isHot() && this.anglRndoff.active) {
-        this.angle = this.anglRndoff.units * Math.floor((this.angle / this.anglRndoff.units) + 0.5);
+      if (!TentativeOrAccuSnap.isHot() && this.angleRoundOff.active) {
+        this.angle = this.angleRoundOff.units * Math.floor((this.angle / this.angleRoundOff.units) + 0.5);
 
         xyCorrection.x += Math.cos(this.angle) * mag - rotVec.x;
         xyCorrection.y += Math.sin(this.angle) * mag - rotVec.y;
@@ -2275,8 +2289,8 @@ export class AccuDraw {
       distChanged = true;
       this.indexed &= ~LockedStates.DIST_BM;
     } else if (!TentativeOrAccuSnap.isHot()) { // if non-snap, try rounding and aligning
-      if (this.distRndoff.active) {
-        mag = this.distRndoff.units * Math.floor((mag / this.distRndoff.units) + 0.5);
+      if (this.distanceRoundOff.active) {
+        mag = this.distanceRoundOff.units * Math.floor((mag / this.distanceRoundOff.units) + 0.5);
         distChanged = true;
       }
 
@@ -2353,9 +2367,9 @@ export class AccuDraw {
 
     if (AccuDraw.allowAxisIndexing(this.flags.pointIsOnPlane)) {
       if (!(this.locked & LockedStates.X_BM)) { // not locked in x
-        if (this.distRndoff.active) { // round x
-          xyCorrection.x = this.distRndoff.units * Math.floor((this.rawDelta.x / this.distRndoff.units) + 0.5) - this.rawDelta.x;
-          this.rawDelta.x = this.distRndoff.units * Math.floor((this.rawDelta.x / this.distRndoff.units) + 0.5);
+        if (this.distanceRoundOff.active) { // round x
+          xyCorrection.x = this.distanceRoundOff.units * Math.floor((this.rawDelta.x / this.distanceRoundOff.units) + 0.5) - this.rawDelta.x;
+          this.rawDelta.x = this.distanceRoundOff.units * Math.floor((this.rawDelta.x / this.distanceRoundOff.units) + 0.5);
         }
 
         if (this.rawDelta.x < this.tolerance && this.rawDelta.x > -this.tolerance &&
@@ -2366,9 +2380,9 @@ export class AccuDraw {
         }
       }
       if (!(this.locked & LockedStates.Y_BM)) {
-        if (this.distRndoff.active) { // round y
-          xyCorrection.y = this.distRndoff.units * Math.floor((this.rawDelta.y / this.distRndoff.units) + 0.5) - this.rawDelta.y;
-          this.rawDelta.y = this.distRndoff.units * Math.floor((this.rawDelta.y / this.distRndoff.units) + 0.5);
+        if (this.distanceRoundOff.active) { // round y
+          xyCorrection.y = this.distanceRoundOff.units * Math.floor((this.rawDelta.y / this.distanceRoundOff.units) + 0.5) - this.rawDelta.y;
+          this.rawDelta.y = this.distanceRoundOff.units * Math.floor((this.rawDelta.y / this.distanceRoundOff.units) + 0.5);
         }
 
         if (this.rawDelta.y < this.tolerance && this.rawDelta.y > -this.tolerance &&
@@ -2528,16 +2542,16 @@ export class AccuDraw {
     vp.invalidateDecorations();
 
     // Make sure active tool updates it's dynamics. NOTE: Can't just call UpdateDynamics, need point adjusted for new locks, etc.
-    const tool = toolAdmin.activeTool;
+    const tool = ToolAdmin.instance.activeTool;
     if (!tool || !tool.isPrimitive())
       return;
 
     const ev = new BeButtonEvent();
-    toolAdmin.fillEventFromCursorLocation(ev);
+    ToolAdmin.instance.fillEventFromCursorLocation(ev);
 
     // NOTE: Can't call DgnTool::OnMouseMotion since it can cause AccuDraw to move focus...
     const uorPoint = ev.point;
-    toolAdmin.adjustPoint(uorPoint, ev.viewport!);
+    ToolAdmin.instance.adjustPoint(uorPoint, ev.viewport!);
     ev.point = uorPoint;
     tool.updateDynamics(ev);
   }
@@ -2659,8 +2673,8 @@ export class AccuDraw {
   }
 
   public oResetButtonUp(_ev: BeButtonEvent): boolean {
-    if (tentativePoint.isActive && this.isActive()) {
-      tentativePoint.clear(true);
+    if (TentativePoint.instance.isActive && this.isActive()) {
+      TentativePoint.instance.clear(true);
       return true;
     }
 
@@ -2872,8 +2886,3 @@ export class AccuDraw {
       this.grabInputFocus();
   }
 }
-
-const viewManager = ViewManager.instance;
-const accuDraw = AccuDraw.instance;
-const toolAdmin = ToolAdmin.instance;
-const tentativePoint = TentativePoint.instance;

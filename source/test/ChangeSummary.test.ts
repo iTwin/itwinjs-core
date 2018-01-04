@@ -32,7 +32,7 @@ describe("ChangeSummary", () => {
     const changesPath: string = BriefcaseManager.buildChangeSummaryFilePath(testIModelId);
     if (fs.existsSync(changesPath))
       fs.removeSync(changesPath);
-   });
+  });
 
   it("Attach ChangeCache file to readwrite briefcase", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());

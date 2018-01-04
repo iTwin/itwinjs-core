@@ -9,6 +9,7 @@ import { ViewTool } from "./ViewTool";
 import { DecorateContext } from "../ViewContext";
 import { HitDetail } from "../HitDetail";
 import { LocateResponse } from "../ElementLocateManager";
+import { ToolAdmin } from "./ToolAdmin";
 
 export const enum BeButton {
   Data = 0,
@@ -324,6 +325,7 @@ export class BeWheelEvent extends BeButtonEvent {
 export abstract class Tool {
   // tslint:disable:no-empty
   public static get toolId(): string { return ""; }
+  public getLocalizedToolName(): string { return Object.getPrototypeOf(this).constructor.toolId; } // NEEDS_WORK
   public abstract installToolImplementation(): BentleyStatus;
   public installTool(): BentleyStatus { return this.installToolImplementation(); }
   /** Override to execute additional logic after tool becomes active */
@@ -420,4 +422,21 @@ export abstract class Tool {
 
   public isPrimitive(): this is PrimitiveTool { return this instanceof PrimitiveTool; }
   public isView(): this is ViewTool { return this instanceof ViewTool; }
+}
+
+export abstract class InputCollector extends Tool {
+  public installToolImplementation(): BentleyStatus {
+    const toolAdmin = ToolAdmin.instance;
+    // An input collector can only suspend a primitive tool, don't install if a viewing tool is active...
+    if (!toolAdmin.activeViewTool || !toolAdmin.onInstallTool(this))
+      return BentleyStatus.ERROR;
+
+    toolAdmin.startInputCollector(this);
+    toolAdmin.setInputCollector(this);
+    toolAdmin.onPostInstallTool(this);
+    return BentleyStatus.SUCCESS;
+  }
+
+  public exitTool() { ToolAdmin.instance.exitInputCollector(); }
+  public onResetButtonUp(_ev: BeButtonEvent) { this.exitTool(); return true; }
 }

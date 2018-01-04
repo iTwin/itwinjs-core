@@ -9,9 +9,7 @@ import { TentativePoint } from "./TentativePoint";
 import { BeButtonEvent } from "./tools/Tool";
 import { AccuSnap } from "./AccuSnap";
 
-// tslint:disable:no-empty
 // tslint:disable:variable-name
-// tslint:disable:no-conditional-assignment
 
 /** The possible actions for which a locate filter can be called. */
 export const enum LocateAction {
@@ -250,7 +248,7 @@ export class ElementLocateManager {
 
   public filterHit(hit: HitDetail, mode: SubSelectionMode, _action: LocateAction, out: LocateResponse): boolean {
     // Tools must opt-in to locate of transient geometry as it requires special treatment.
-    if (!hit.m_elementId.isValid() && !this.m_options.allowTransients) {
+    if (!hit.m_elementId && !this.m_options.allowTransients) {
       out.reason = LocateFailureValue.Transient;
       return true;
     }

@@ -12,7 +12,7 @@ export class ECDb {
   public nativeDb: NodeAddonECDb;
 
   constructor() {
-    this.nativeDb =  new (NodeAddonRegistry.getAddon()).NodeAddonECDb();
+    this.nativeDb = new (NodeAddonRegistry.getAddon()).NodeAddonECDb();
   }
 
   /** Create an ECDb
