@@ -92,9 +92,9 @@ export class IModelConnection extends IModel {
    * @param params A JSON string that should all of the data/parameters the test needs to function correctly
    */
   public executeTestById(id: number, params: any): any {
-    if (!this._iModelToken)
+    if (!this.iModelToken)
       return undefined;
-    return IModelGateway.getProxy().executeTestById(this._iModelToken, id, params);
+    return IModelGateway.getProxy().executeTestById(this.iModelToken, id, params);
   }
 }
 
