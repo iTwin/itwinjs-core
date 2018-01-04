@@ -625,7 +625,6 @@ export class BriefcaseManager {
     BriefcaseManager.cache!.removeBriefcase(briefcase);
   }
 
-
   public static attachChangeCache(briefcase: BriefcaseInfo) {
     if (!briefcase.isOpen)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Failed to attach change cache to ${briefcase.pathname} because the briefcase is not open.`);
