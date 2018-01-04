@@ -319,7 +319,6 @@ export default class SchemaReadHelper {
       }
     };
 
-
     switch (propertyJson.propertyType) {
       case "PrimitiveProperty":
         loadTypeName();
