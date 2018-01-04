@@ -19,8 +19,7 @@ import { TentativePoint } from "../TentativePoint";
 import { ViewManager } from "../ViewManager";
 import { AccuDraw } from "../AccuDraw";
 import { HitDetail } from "../HitDetail";
-
-// tslint:disable:no-empty
+import { ElementLocateManager } from "../ElementLocateManager";
 
 export const enum CoordinateLockOverrides {
   OVERRIDE_COORDINATE_LOCK_None = 0,
@@ -30,8 +29,8 @@ export const enum CoordinateLockOverrides {
 }
 
 export class ToolState {
-  public coordLockOvr: CoordinateLockOverrides = CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_None;
-  public locateCircleOn: boolean = true;
+  public coordLockOvr = CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_None;
+  public locateCircleOn = true;
 }
 
 export class CurrentInputState {
@@ -151,10 +150,10 @@ export class CurrentInputState {
         from = snap.isHot() ? CoordSource.ElemSnap : CoordSource.User;
         uorPt = snap.getAdjustedPoint(); // NOTE: Updated by AdjustSnapPoint even when not hot...
         vp = snap.m_viewport;
-      } else if (tentativePoint.isActive) {
+      } else if (TentativePoint.instance.isActive) {
         from = CoordSource.TentativePoint;
-        uorPt = tentativePoint.point;
-        vp = tentativePoint.viewport;
+        uorPt = TentativePoint.instance.point;
+        vp = TentativePoint.instance.viewport;
       }
     }
 
@@ -194,12 +193,12 @@ export class CurrentInputState {
     // NOTE: Using the hit point on the element is preferable to ignoring a snap that is not "hot" completely...
     if (TentativeOrAccuSnap.getCurrentSnap(false)) {
       if (applyLocks)
-        toolAdmin.adjustSnapPoint();
+        ToolAdmin.instance.adjustSnapPoint();
 
       return;
     }
 
-    toolAdmin.adjustPoint(this._uorPoint, vp, true, applyLocks);
+    ToolAdmin.instance.adjustPoint(this._uorPoint, vp, true, applyLocks);
   }
 
   public fromGesture(vp: Viewport, gestureInfo: GestureInfo, applyLocks: boolean) {
@@ -327,7 +326,7 @@ export class ToolAdmin {
   /** called when a viewport is closed */
   public onViewportClosed(vp: Viewport): void {
     //  Closing the viewport may also delete the QueryModel so we have to prevent AccuSnap from trying to use it.
-    accuSnap.clear();
+    AccuSnap.instance.clear();
     this.currentInputState.clearViewport(vp);
   }
 
@@ -383,8 +382,8 @@ export class ToolAdmin {
         tool.onModelNoMotion(ev);
 
       if (InputSource.Mouse === current.inputSource) {
-        accuSnap.onNoMotion(ev);
-        // accuDraw.onNoMotion(ev);
+        AccuSnap.instance.onNoMotion(ev);
+        // AccuDraw.instance.onNoMotion(ev);
       }
     }
 
@@ -392,7 +391,7 @@ export class ToolAdmin {
       if (tool)
         tool.onModelMotionStopped(ev);
       if (InputSource.Mouse === current.inputSource) {
-        accuSnap.onMotionStopped(ev);
+        AccuSnap.instance.onMotionStopped(ev);
       }
     }
 
@@ -436,7 +435,7 @@ export class ToolAdmin {
     ev.reset();
   }
 
-  private adjustPointToACS(_pointActive: Point3d, _vp: Viewport, _perpendicular: boolean): void {
+  public adjustPointToACS(_pointActive: Point3d, _vp: Viewport, _perpendicular: boolean): void {
     // The "I don't want ACS lock" flag can be set by tools to override the default behavior...
     if (0 !== (this.toolState.coordLockOvr & CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_ACS))
       return;
@@ -465,7 +464,7 @@ export class ToolAdmin {
     // LegacyMath:: Vec:: LinePlaneIntersect(& pointActive, & pointActive, & viewZRoot, & auxOriginRoot, & auxNormalRoot, perpendicular);
   }
 
-  private adjustPointToGrid(pointActive: Point3d, vp: Viewport) {
+  public adjustPointToGrid(pointActive: Point3d, vp: Viewport) {
     // The "I don't want grid lock" flag can be set by tools to override the default behavior...
     if (0 !== (this.toolState.coordLockOvr & CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_Grid))
       return;
@@ -482,7 +481,7 @@ export class ToolAdmin {
 
     let handled = false;
 
-    if (applyLocks && !(tentativePoint.isActive || accuSnap.isHot()))
+    if (applyLocks && !(TentativePoint.instance.isActive || AccuSnap.instance.isHot()))
       handled = AccuDraw.instance.adjustPoint(pointActive, vp, false);
 
     // NOTE: We don't need to support axis lock, it's worthless if you have AccuDraw...
@@ -499,7 +498,7 @@ export class ToolAdmin {
 
       // if grid lock changes point, resend point to accudraw
       if (handled && !pointActive.isExactEqual(savePoint))
-        accuDraw.adjustPoint(pointActive, vp, false);
+        AccuDraw.instance.adjustPoint(pointActive, vp, false);
     }
 
     if (Math.abs(pointActive.z) < 1.0e-7)
@@ -519,9 +518,9 @@ export class ToolAdmin {
     if (!isHot) // Want point adjusted to grid for a hit that isn't hot...
       this.adjustPointToGrid(point, vp);
 
-    if (!accuDraw.adjustPoint(point, vp, isHot)) {
+    if (!AccuDraw.instance.adjustPoint(point, vp, isHot)) {
       if (vp.isSnapAdjustmentRequired())
-        this.adjustPointToACS(point, vp, perpendicular || accuDraw.isActive());
+        this.adjustPointToACS(point, vp, perpendicular || AccuDraw.instance.isActive());
     }
 
     if (!point.isExactEqual(savePt))
@@ -770,7 +769,7 @@ export class ToolAdmin {
       this.currentInputState.clearTouch();
     }
     ev.reset();
-    accuSnap.clear();
+    AccuSnap.instance.clear();
   }
 
   public onSingleFingerMove(vp: Viewport, gestureInfo: GestureInfo) {
@@ -881,7 +880,7 @@ export class ToolAdmin {
     const prevActiveTool = this.activeTool;
     if (this.primitiveTool) {
       this.primitiveTool.onCleanup();
-      viewManager.endDynamicsMode();
+      ViewManager.instance.endDynamicsMode();
     }
 
     this.primitiveTool = primitiveTool;
@@ -915,14 +914,14 @@ export class ToolAdmin {
     // this.suspendedCursor = undefined;
     this.setViewTool(undefined);
 
-    // AccuDraw:: GetInstance()._OnViewToolExit();
+    AccuDraw.instance.onViewToolExit();
 
-    // DgnPrimitiveTool * primitiveTool = dynamic_cast < DgnPrimitiveTool *> (GetActiveTool());
-    // if (nullptr != primitiveTool) {
-    //   DgnButtonEvent ev;
-    //   _FillEventFromCursorLocation(ev);
-    //   primitiveTool -> UpdateDynamics(ev);
-    // }
+    const tool = this.activeTool;
+    if (tool && tool.isPrimitive()) {
+      const ev = ToolAdmin.scratchButtonEvent1;
+      this.fillEventFromCursorLocation(ev);
+      tool.updateDynamics(ev);
+    }
   }
 
   public startViewTool() {
@@ -931,7 +930,7 @@ export class ToolAdmin {
     // else
     //   this.suspendedCursor = this.viewCursor;
 
-    accuSnap.onStartTool();
+    AccuSnap.instance.onStartTool();
 
     this.viewCursor = BeCursor.CrossHair;
     // we don't actually start the tool here...
@@ -945,7 +944,7 @@ export class ToolAdmin {
     // this.exitInputCollector();
     // this.setIncompatibleViewportCursor(true); // Don't restore this...
     AccuDraw.instance.onPrimitiveToolInstall();
-    accuSnap.onStartTool();
+    AccuSnap.instance.onStartTool();
 
     this.viewCursor = newTool.getCursor();
 
@@ -993,27 +992,28 @@ export class ToolAdmin {
     if (!this.cursorInView)
       return;
 
-    // const viewport = context.viewport;
-    // DgnButtonEvent ev;
+    const viewport = context.viewport;
+    const ev = ToolAdmin.scratchButtonEvent1;
+    this.fillEventFromCursorLocation(ev);
+    if (ev.viewport !== viewport)
+      return;
 
-    // _FillEventFromCursorLocation(ev);
-
-    // if (ev.GetViewport() != & viewport)
-    //   return;
-
-    // const hit = AccuDraw.instance.isActive ? undefined : accuSnap.currHit; // NOTE: Show surface normal until AccuDraw becomes active...
-    // viewport.view.drawLocateCursor(context, * ev.GetPoint(), viewport.PixelsFromInches(ElementLocateManager:: GetManager().GetApertureInches()), _IsLocateCircleOn(), hit);
+    const hit = AccuDraw.instance.isActive ? undefined : AccuSnap.instance.currHit; // NOTE: Show surface normal until AccuDraw becomes active...
+    viewport.drawLocateCursor(context, ev.point, viewport.pixelsFromInches(ElementLocateManager.instance.getApertureInches()), this.isLocateCircleOn(), hit);
+  }
+  public isLocateCircleOn(): boolean {
+    return this.toolState.locateCircleOn && this.currentInputState.inputSource === InputSource.Mouse;
   }
 
   public beginDynamics(): void {
-    accuDraw.onBeginDynamics();
-    viewManager.beginDynamicsMode();
+    AccuDraw.instance.onBeginDynamics();
+    ViewManager.instance.beginDynamicsMode();
     // this.setLocateCursor(false);
   }
 
   public endDynamics(): void {
-    accuDraw.onEndDynamics();
-    viewManager.endDynamicsMode();
+    AccuDraw.instance.onEndDynamics();
+    ViewManager.instance.endDynamicsMode();
   }
 
   public fillEventFromCursorLocation(ev: BeButtonEvent) { this.currentInputState.toEvent(ev, true); }
@@ -1094,7 +1094,7 @@ class WheelEventProcessor {
         vp.synchWithView(true);
 
       // AccuSnap hit won't be invalidated without cursor motion (closes info window, etc.).
-      accuSnap.clear();
+      AccuSnap.instance.clear();
     }
     return true;
   }
@@ -1120,9 +1120,3 @@ class WheelEventProcessor {
     return result;
   }
 }
-
-const accuDraw = AccuDraw.instance;
-const accuSnap = AccuSnap.instance;
-const tentativePoint = TentativePoint.instance;
-const viewManager = ViewManager.instance;
-const toolAdmin = ToolAdmin.instance;

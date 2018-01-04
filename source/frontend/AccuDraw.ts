@@ -20,8 +20,6 @@ import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
 
 // tslint:disable:one-variable-per-declaration
 // tslint:disable:no-conditional-assignment
-// tslint:disable:no-empty
-// tslint:disable:no-switch-case-fall-through
 
 export const enum AccuDrawFlags {
   SetModePolar = 1,
@@ -760,7 +758,7 @@ export class AccuDraw {
 
     const ev = new BeButtonEvent();
     ev.initEvent(pt, pt, vp.worldToView(pt), vp, CoordSource.User, BeModifierKey.None);
-    toolAdmin.setAdjustedDataPoint(ev);
+    ToolAdmin.instance.setAdjustedDataPoint(ev);
   }
 
   public sendDataPoint(pt: Point3d, vp: Viewport): void {
@@ -768,17 +766,17 @@ export class AccuDraw {
     ev.initEvent(pt, pt, vp.worldToView(pt), vp, CoordSource.User, BeModifierKey.None);
 
     // Send both down and up events...
-    toolAdmin.sendDataPoint(ev);
+    ToolAdmin.instance.sendDataPoint(ev);
     ev.isDown = false;
-    toolAdmin.sendDataPoint(ev);
+    ToolAdmin.instance.sendDataPoint(ev);
   }
 
   public clearTentative(): boolean {
-    if (!tentativePoint.isActive)
+    if (!TentativePoint.instance.isActive)
       return false;
 
-    const wasSnapped = tentativePoint.isSnapped();
-    tentativePoint.clear(true);
+    const wasSnapped = TentativePoint.instance.isSnapped();
+    TentativePoint.instance.clear(true);
     return wasSnapped;
   }
 
@@ -1138,10 +1136,10 @@ export class AccuDraw {
       return true;
 
     // The "I don't want grid lock" flag can be set by tools to override the default behavior...
-    if (0 === (toolAdmin.toolState.coordLockOvr & CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_Grid))
+    if (0 === (ToolAdmin.instance.toolState.coordLockOvr & CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_Grid))
       return true;
 
-    return (!toolAdmin.gridLock);
+    return (!ToolAdmin.instance.gridLock);
   }
 
   public processFieldInput(index: ItemField, input: string, synchText: boolean): void {
@@ -1254,7 +1252,7 @@ export class AccuDraw {
       nStandard = StandardViewId.Top;
 
     const rMatrix = standardViewMatrices[nStandard].clone();
-    const useVp = vp ? vp : viewManager.selectedView;
+    const useVp = vp ? vp : ViewManager.instance.selectedView;
     if (!useACS || !useVp)
       return rMatrix;
 
@@ -1263,10 +1261,10 @@ export class AccuDraw {
   }
 
   public static getCurrentOrientation(vp: Viewport, checkAccuDraw: boolean, checkACS: boolean, rMatrix?: RotMatrix): RotMatrix | undefined {
-    if (checkAccuDraw && accuDraw.isActive())
-      return accuDraw.getRotation(rMatrix);
+    if (checkAccuDraw && AccuDraw.instance.isActive())
+      return AccuDraw.instance.getRotation(rMatrix);
 
-    const useVp = vp ? vp : viewManager.selectedView;
+    const useVp = vp ? vp : ViewManager.instance.selectedView;
     if (!useVp)
       return RotMatrix.createIdentity(rMatrix);
 
@@ -1279,7 +1277,7 @@ export class AccuDraw {
   public static updateAuxCoordinateSystem(acs: AuxCoordSystemState, vp: Viewport, allViews: boolean): void {
     // When modeling with multiple spatial views open, you'd typically want the same ACS in all views...
     if (allViews && vp.view.isSpatialView()) {
-      for (const otherVp of viewManager.viewports) {
+      for (const otherVp of ViewManager.instance.viewports) {
         if (otherVp !== vp && otherVp.view.isSpatialView())
           otherVp.auxCoordSystem = acs;
       }
@@ -1288,7 +1286,7 @@ export class AccuDraw {
     vp.auxCoordSystem = acs;
 
     // NOTE: Change AccuDraw's base rotation to ACS.
-    accuDraw.setContext(AccuDrawFlags.OrientACS);
+    AccuDraw.instance.setContext(AccuDrawFlags.OrientACS);
   }
 
   private distanceLock(synchText: boolean, saveInHistory: boolean): void {
@@ -1578,7 +1576,7 @@ export class AccuDraw {
     this.onEventCommon();
 
     // Save current primitive command AccuDraw state...
-    const tool = toolAdmin.activeTool;
+    const tool = ToolAdmin.instance.activeTool;
     if (tool && !tool.isView())
       this.saveState(false);
 
@@ -1692,7 +1690,7 @@ export class AccuDraw {
     }
 
     const isRectMode = (CompassMode.Rectangular === this.getCompassMode());
-    const offsetSnap = ((TentativeOrAccuSnap.isHot() || tentativePoint.isActive) && ((this.locked) || (distance > 0.0)));
+    const offsetSnap = ((TentativeOrAccuSnap.isHot() || TentativePoint.instance.isActive) && ((this.locked) || (distance > 0.0)));
 
     // XY Offset:
     if (offsetSnap) {
@@ -2531,16 +2529,16 @@ export class AccuDraw {
     vp.invalidateDecorations();
 
     // Make sure active tool updates it's dynamics. NOTE: Can't just call UpdateDynamics, need point adjusted for new locks, etc.
-    const tool = toolAdmin.activeTool;
+    const tool = ToolAdmin.instance.activeTool;
     if (!tool || !tool.isPrimitive())
       return;
 
     const ev = new BeButtonEvent();
-    toolAdmin.fillEventFromCursorLocation(ev);
+    ToolAdmin.instance.fillEventFromCursorLocation(ev);
 
     // NOTE: Can't call DgnTool::OnMouseMotion since it can cause AccuDraw to move focus...
     const uorPoint = ev.point;
-    toolAdmin.adjustPoint(uorPoint, ev.viewport!);
+    ToolAdmin.instance.adjustPoint(uorPoint, ev.viewport!);
     ev.point = uorPoint;
     tool.updateDynamics(ev);
   }
@@ -2662,8 +2660,8 @@ export class AccuDraw {
   }
 
   public oResetButtonUp(_ev: BeButtonEvent): boolean {
-    if (tentativePoint.isActive && this.isActive()) {
-      tentativePoint.clear(true);
+    if (TentativePoint.instance.isActive && this.isActive()) {
+      TentativePoint.instance.clear(true);
       return true;
     }
 
@@ -2875,8 +2873,3 @@ export class AccuDraw {
       this.grabInputFocus();
   }
 }
-
-const viewManager = ViewManager.instance;
-const accuDraw = AccuDraw.instance;
-const toolAdmin = ToolAdmin.instance;
-const tentativePoint = TentativePoint.instance;

@@ -9,10 +9,6 @@ import { ViewManager } from "../ViewManager";
 import { IModel } from "../../common/IModel";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
-// tslint:disable:no-empty
-const toolAdmin = ToolAdmin.instance;
-const viewManager = ViewManager.instance;
-
 /**
  * The PrimitiveTool class can be used to implement a primitive command. Placement
  * tools that don't need to locate or modify elements are good candidates for a PrimitiveTool.
@@ -89,16 +85,16 @@ export abstract class PrimitiveTool extends Tool {
    *  @private
    */
   public installToolImplementation(): BentleyStatus {
-    if (this.isCompatibleViewport(viewManager.selectedView, false) || !toolAdmin.onInstallTool(this))
+    if (this.isCompatibleViewport(ViewManager.instance.selectedView, false) || !ToolAdmin.instance.onInstallTool(this))
       return BentleyStatus.ERROR;
 
-    toolAdmin.startPrimitiveTool(this);
-    toolAdmin.setPrimitiveTool(this);
+    ToolAdmin.instance.startPrimitiveTool(this);
+    ToolAdmin.instance.setPrimitiveTool(this);
 
     // The tool may exit in onPostInstall causing "this" to be
     // deleted so installToolImplementation must not call any
     // methods on "this" after _OnPostInstall returns.
-    toolAdmin.onPostInstallTool(this);
+    ToolAdmin.instance.onPostInstallTool(this);
 
     return BentleyStatus.SUCCESS;
   }
@@ -160,7 +156,7 @@ export abstract class PrimitiveTool extends Tool {
       return true;
 
     // NOTE: If points aren't being adjusted then the tool shouldn't be creating geometry currently (ex. locating elements) and we shouldn't filter point...
-    if (0 !== (toolAdmin.toolState.coordLockOvr & CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_ACS))
+    if (0 !== (ToolAdmin.instance.toolState.coordLockOvr & CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_ACS))
       return true;
 
     const extents = iModel.projectExtents;
@@ -174,7 +170,7 @@ export abstract class PrimitiveTool extends Tool {
     return false;
   }
 
-  public exitTool(): void { toolAdmin.startDefaultTool(); }
+  public exitTool(): void { ToolAdmin.instance.startDefaultTool(); }
 
   /**
    * Called to revert to a previous tool state (ex. undo last data button).
@@ -229,13 +225,13 @@ export abstract class PrimitiveTool extends Tool {
     // AccuDrawShortcuts:: ProcessPendingHints(); // Process any hints the active tool setup in _OnUndoPreviousStep now...
 
     const ev = new BeButtonEvent();
-    toolAdmin.fillEventFromCursorLocation(ev);
+    ToolAdmin.instance.fillEventFromCursorLocation(ev);
     this.updateDynamics(ev);
     return true;
   }
 
   public updateDynamics(ev: BeButtonEvent): void {
-    if (!ev.viewport || !viewManager.inDynamicsMode)
+    if (!ev.viewport || !ViewManager.instance.inDynamicsMode)
       return;
 
     // DynamicsContext context(* ev.GetViewport(), Render:: Task:: Priority:: Highest());

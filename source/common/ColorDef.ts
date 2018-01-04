@@ -573,3 +573,8 @@ export class ColorDef {
   public static readonly green = new ColorDef(ColorRgb.green);
   public static readonly blue = new ColorDef(ColorRgb.blue);
 }
+Object.freeze(ColorDef.black);
+Object.freeze(ColorDef.white);
+Object.freeze(ColorDef.red);
+Object.freeze(ColorDef.green);
+Object.freeze(ColorDef.blue);

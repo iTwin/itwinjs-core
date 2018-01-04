@@ -9,8 +9,6 @@ import { ToolAdmin } from "./tools/ToolAdmin";
 import { EventController } from "./tools/EventController";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
 
-// tslint:disable:no-empty
-
 /** The ViewManager holds the list of opened views, plus the "selected view" */
 export class ViewManager {
   public static readonly instance = new ViewManager();

@@ -9,9 +9,7 @@ import { TentativePoint } from "./TentativePoint";
 import { BeButtonEvent } from "./tools/Tool";
 import { AccuSnap } from "./AccuSnap";
 
-// tslint:disable:no-empty
 // tslint:disable:variable-name
-// tslint:disable:no-conditional-assignment
 
 /** The possible actions for which a locate filter can be called. */
 export const enum LocateAction {

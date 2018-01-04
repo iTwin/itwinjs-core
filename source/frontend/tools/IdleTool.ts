@@ -8,8 +8,7 @@ import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { TentativePoint } from "../TentativePoint";
 import { AccuDraw } from "../AccuDraw";
-
-const toolAdmin = ToolAdmin.instance;
+import { GeomDetail, HitDetail, HitSource, SnapDetail } from "../HitDetail";
 
 /**
  * The default "idle" tool. If no tool is active, or the active tool does not respond to a given
@@ -37,7 +36,7 @@ export class IdleTool extends Tool {
     const vp = ev.viewport;
     if (!vp)
       return true;
-    const cur = toolAdmin.currentInputState;
+    const cur = ToolAdmin.instance.currentInputState;
     if (cur.isDragging(BeButton.Data) || cur.isDragging(BeButton.Reset))
       return false;
 
@@ -49,7 +48,7 @@ export class IdleTool extends Tool {
     } else if (false) {
       /* ###TODO: Other view tools if needed... */
     } else {
-      const currTool = toolAdmin.activeViewTool;
+      const currTool = ToolAdmin.instance.activeViewTool;
       if (currTool && currTool instanceof ViewManip) {
         if (!currTool.isDragging && currTool.viewHandles.hasHandle(ViewHandleType.ViewPan))
           currTool.forcedHandle = ViewHandleType.ViewPan;
@@ -67,7 +66,7 @@ export class IdleTool extends Tool {
     if (ev.isDoubleClick || ev.isControlKey || ev.isShiftKey)
       return false;
 
-    const currTool = toolAdmin.activeViewTool;
+    const currTool = ToolAdmin.instance.activeViewTool;
     if (currTool && currTool instanceof ViewManip) {
       if (currTool.viewHandles.hasHandle(ViewHandleType.ViewPan))
         currTool.forcedHandle = ViewHandleType.None; // Didn't get start drag, don't leave ViewPan active...
@@ -80,47 +79,41 @@ export class IdleTool extends Tool {
     tp.process(ev);
 
     if (tp.isSnapped) {
-      toolAdmin.adjustSnapPoint();
+      ToolAdmin.instance.adjustSnapPoint();
     } else {
       if (AccuDraw.instance.isActive) {
-        //         DPoint3dR point = tp.GetTpPoint();
-        //         DgnViewportR vp = * ev.GetViewport();
+        const point = tp.point;
+        const vp = ev.viewport!;
+        if (vp.isSnapAdjustmentRequired()) {
+          ToolAdmin.instance.adjustPointToACS(point, vp, false);
 
-        //         if (vp.IsSnapAdjustmentRequired()) {
-        //           GetToolAdmin()._AdjustPointToACS(point, * ev.GetViewport(), false);
+          const geomDetail = new GeomDetail();
+          geomDetail.m_closePoint.setFrom(point);
+          const hit = new HitDetail(vp, undefined, undefined, point, HitSource.TentativeSnap, geomDetail);
+          const snap = new SnapDetail(hit);
 
-        //           GeomDetail  geomDetail; geomDetail.Init(); geomDetail.SetClosestPoint(point);
-        //           HitDetail   hit(* ev.GetViewport(), nullptr, nullptr, point, HitSource:: TentativeSnap, geomDetail);
-        //           SnapDetailP snap = new SnapDetail(& hit);
-
-        //           snap -> AddRef();
-        //           tp.SetCurrSnap(snap);
-        //           GetToolAdmin()._AdjustSnapPoint();
-        //           tp.GetTpPoint() = * tp.GetPoint();
-        //           tp.SetCurrSnap(nullptr);
-        //           snap -> Release();
-        //         } else {
-        //           AccuDraw:: GetInstance()._AdjustPoint(point, vp, false);
-
-        //           DPoint3d savePoint = point;
-        //           GetToolAdmin()._AdjustPointToGrid(point, vp);
-
-        //           if (!point.IsEqual(savePoint))
-        //             AccuDraw:: GetInstance()._AdjustPoint(point, vp, false);
-
-        //           tp.GetTpPoint() = point;
-        // }
+          tp.setCurrSnap(snap);
+          ToolAdmin.instance.adjustSnapPoint();
+          tp.point.setFrom(tp.point);
+          tp.setCurrSnap(undefined);
+        } else {
+          AccuDraw.instance.adjustPoint(point, vp, false);
+          const savePoint = point.clone();
+          ToolAdmin.instance.adjustPointToGrid(point, vp);
+          if (!point.isExactEqual(savePoint))
+            AccuDraw.instance.adjustPoint(point, vp, false);
+          tp.point.setFrom(point);
+        }
       } else {
-        toolAdmin.adjustPoint(tp.point, ev.viewport!);
+        ToolAdmin.instance.adjustPoint(tp.point, ev.viewport!);
       }
-
       AccuDraw.instance.onTentative();
     }
 
     // NOTE: Need to synch tool dynamics because of UpdateDynamics call in _ExitViewTool from OnMiddleButtonUp before point was adjusted. :(
     if (currTool && currTool instanceof PrimitiveTool) {
       const tmpEv = new BeButtonEvent();
-      toolAdmin.fillEventFromCursorLocation(tmpEv);
+      ToolAdmin.instance.fillEventFromCursorLocation(tmpEv);
       currTool.updateDynamics(tmpEv);
     }
 
@@ -128,7 +121,7 @@ export class IdleTool extends Tool {
   }
 
   public onMouseWheel(ev: BeWheelEvent) {
-    return toolAdmin.processWheelEvent(ev, true);
+    return ToolAdmin.instance.processWheelEvent(ev, true);
   }
 
   public installToolImplementation() { return BentleyStatus.SUCCESS; }
@@ -136,7 +129,7 @@ export class IdleTool extends Tool {
   public onDataButtonDown(_ev: BeButtonEvent) { return false; }
   public onMultiFingerMove(ev: BeGestureEvent) { const tool = new RotatePanZoomGestureTool(ev, true); tool.installTool(); return true; }
   public onSingleFingerMove(ev: BeGestureEvent) { return this.onMultiFingerMove(ev); }
-  public onSingleTap(ev: BeGestureEvent) { toolAdmin.convertGestureSingleTapToButtonDownAndUp(ev); return true; }
+  public onSingleTap(ev: BeGestureEvent) { ToolAdmin.instance.convertGestureSingleTapToButtonDownAndUp(ev); return true; }
   public onDoubleTap(ev: BeGestureEvent) { if (ev.viewport) { const tool = new FitViewTool(ev.viewport, true); tool.installTool(); } return true; }
-  public onTwoFingerTap(ev: BeGestureEvent) { toolAdmin.convertGestureToResetButtonDownAndUp(ev); return true; }
+  public onTwoFingerTap(ev: BeGestureEvent) { ToolAdmin.instance.convertGestureToResetButtonDownAndUp(ev); return true; }
 }
