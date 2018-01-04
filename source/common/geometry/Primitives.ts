@@ -226,7 +226,7 @@ export class GeometricPrimitive {
   // public static createImageGraphicRef();
 
   /** Create, checking for proper instance, using either a reference or a clone. */
-  public static create(source: any, useRef: boolean): any {
+  public static create(source: any, useRef: boolean): GeometricPrimitive | undefined {
     if (source instanceof CurvePrimitive)
       return useRef ? GeometricPrimitive.createCurvePrimitiveRef(source) : GeometricPrimitive.createCurvePrimitiveClone(source);
     if (source instanceof CurveCollection)
@@ -321,7 +321,12 @@ export class GeometricPrimitive {
           }
           break;
         }
-      // case GeometryType.CurveVector:
+      case GeometryType.CurveCollection:
+        {
+          // Temporary fix...
+          localToWorld.setIdentity();
+          return true;
+        }
       case GeometryType.SolidPrimitive:
         {
           const solidPrim = this.asSolidPrimitive;
@@ -389,14 +394,11 @@ export class GeometricPrimitive {
     return true;
   }
 
-  // Expensive... copies geometry
   public getLocalRange(localToWorld: Transform, result?: Range3d): Range3d | undefined {
     if (result) result.setNull;
     const localRange = result ? result : Range3d.createNull();
     if (!this.getLocalCoordinateFrame(localToWorld))
       return undefined;
-    if (localToWorld.isIdentity())
-      return this.getRange(undefined, localRange);
     /*
     #if defined (BENTLEYCONFIG_PARASOLID)
     GeometricPrimitivePtr clone;
@@ -409,12 +411,10 @@ export class GeometricPrimitive {
     #else
     GeometricPrimitivePtr clone = Clone();
     */
-    const clone = this.clone();
     const worldToLocal = localToWorld.inverse();
     if (!worldToLocal)
       return undefined;
-    clone.tryTransformInPlace(worldToLocal);
-    return clone.getRange(undefined, localRange);
+    return this.getRange(worldToLocal, localRange);
   }
 
   /** Makes a call to the GeometryQuery range function, which begins with a null range and */

@@ -20,7 +20,6 @@ import { LineStyleInfo, LineStyleParams } from "./LineStyle";
 import { GradientSymb } from "./GradientPattern";
 import { PatternParams, DwgHatchDefLine } from "./AreaPattern";
 import { ColorDef } from "../ColorDef";
-import { IModel } from "../IModel";
 import { flatbuffers } from "flatbuffers";
 import { DgnFB } from "./ElementGraphicsSchema";
 import { Base64 } from "js-base64";
@@ -64,7 +63,7 @@ export enum EntryType {
   ImageGraphic = 9,  // ImageGraphic
 }
 
-export enum CoordSystem {
+export enum GeomCoordSystem {
   Local = 0,  // <-- GeometricPrimitive being supplied in local coordinates. @note Builder must be created with a known placement for local coordinates to be meaningful.
   World = 1,  // <-- GeometricPrimitive being supplied in world coordinates. @note Builder requires world coordinate geometry when placement isn't specified up front.
 }
@@ -586,7 +585,6 @@ export class GeometryStream {
 
 /** Internal op code writer and temporary storage for the buffer */
 export class GSWriter {
-  public imodel: IModel;
   private buffer: ArrayBuffer;
 
   /** Returns the current size (in bytes) of the buffer. */
@@ -594,9 +592,7 @@ export class GSWriter {
   /** Returns the data as a raw ArrayBuffer */
   public get rawData() { return this.buffer; }
 
-  public constructor(imodel?: IModel) {
-    if (imodel)
-      this.imodel = imodel;
+  public constructor() {
     this.buffer = new ArrayBuffer(0);   // Start out empty
   }
 
@@ -1219,12 +1215,6 @@ export class GSWriter {
 
 /** Reader class that returns geometry based on given Operations (which hold their own buffer) */
 export class GSReader {
-  public imodel: IModel;
-
-  public constructor(imodel?: IModel) {
-    if (imodel)
-      this.imodel = imodel;
-  }
 
   /** Read the header. Return undefined if unsuccessful */
   public static getHeader(egOp: Operation): Uint8Array | undefined { return (OpCode.Header === egOp.opCode) ? egOp.data : undefined; }
@@ -1889,12 +1879,10 @@ export class GeometryBuilder {
   private _appendAsSubGraphics: boolean = false;
   private _placement3d: Placement3d;
   private _placement2d: Placement2d;
-  // private imodel: IModel;
   private _elParams: GeometryParams;
-  private _elParamsModified: GeometryParams;
+  private _elParamsModified: GeometryParams | undefined;
   private _writer: GSWriter;
 
-  // public get imodel() { return this.imodel; }
   public get havePlacement() { return this._havePlacement; }
   public get isPartCreate() { return this._isPartCreate; }
   /** Whether builder is creating a 2d or 3d GeometryStream */
@@ -1909,7 +1897,7 @@ export class GeometryBuilder {
   public get currentSize() { return this._writer.size; }
   /** Enable option so that subsequent calls to Append a GeometricPrimitive produce sub-graphics with local ranges to optimize picking/range testing. Not valid when creating a part */
   public setAppendAsSubGraphics() { this._appendAsSubGraphics = !this._isPartCreate; }
-  /** Get the raw ArrayBuffer from the current  */
+  /** Get the raw ArrayBuffer from the current writer. Note that this is a reference to the ArrayBuffer and not a clone. */
   public getRawData(): ArrayBuffer { return this._writer.rawData; }
   /** Get a GeometryStream whose buffer's bytes are a direct reference to the current writer's */
   public getGeometryStreamRef(): GeometryStream { return this._writer.outputGSRef(); }
@@ -1950,47 +1938,29 @@ export class GeometryBuilder {
     return entryId;
   }
 
-  private constructor(/* imodel: IModel, */ categoryId: Id64, is3d: boolean) {
-    // this.imodel = imodel;
+  private constructor(categoryId: Id64, is3d: boolean) {
     this._isPartCreate = !categoryId.isValid();
     this._is3d = is3d;
-    this._writer = new GSWriter(/*imodel*/);
+    this._writer = new GSWriter();
     this._elParams = GeometryParams.createDefaults();
     this._elParams.setCategoryId(categoryId);
   }
 
-  private static createPlacement2d(/*imodel: IModel,*/ categoryId: Id64, placement: Placement2d): GeometryBuilder {
-    const retVal = new GeometryBuilder(/*imodel,*/ categoryId, false);
+  private static createPlacement2d(categoryId: Id64, placement: Placement2d): GeometryBuilder {
+    const retVal = new GeometryBuilder(categoryId, false);
     retVal._placement2d = placement;
     retVal._placement2d.bbox.setNull();  // Throw away pre-existing bounding box
     retVal._havePlacement = true;
     return retVal;
   }
 
-  private static createPlacement3d(/*imodel: IModel,*/ categoryId: Id64, placement: Placement3d): GeometryBuilder {
-    const retVal = new GeometryBuilder(/*imodel,*/ categoryId, true);
+  private static createPlacement3d(categoryId: Id64, placement: Placement3d): GeometryBuilder {
+    const retVal = new GeometryBuilder(categoryId, true);
     retVal._placement3d = placement;
     retVal._placement3d.bbox.setNull();  // Throw away pre-existing bounding box
     retVal._havePlacement = true;
     return retVal;
   }
-
-  // !!!!!!!! THE FOLLOWING COMMENTED-OUT FUNCTIONS REQUIRE BACK-END FUNCTIONALITY
-
-  // private static createIdOnly(/*imodel: IModel,*/ categoryId: any, is3d: boolean): GeometryBuilder {
-  //  return new GeometryBuilder(/*imodel,*/ categoryId, is3d);
-  // }
-
-  /** Create builder using model, categoryId, and placement2d or placement3d of the supplied GeometricElementand an existing GeometricElement's GeometryStream */
-  // public static create()
-
-  /** Create builder using model, categoryId, and Placement2d or Placement3d of an existing GeometricElement.
-   *  NOTE: It is expected that either the GeometrySource has a valid non-identity placement already set, or that the caller will update the placement
-   *  after adding GeometricPrimitive in local coordinates. World coordinate geometry should never be added to a builder with an identity placement unless
-   *  the element is really located at the origin. The supplied GeometrySource is solely used to query information, it does not need to be the same GeometricPrimitive that
-   *  is updated through the use of its updateFromGeometricBuilder function.
-   */
-  // public static create()
 
   /** Create builder from model and categoryId. A placement will be computed from the first appended GeometricPrimitive.
    *  NOTE: Only CoordSystem.World is supported for append and it's not possible to append a GeometryPartId as it need to e positioned relative to a known coordinate
@@ -2001,7 +1971,7 @@ export class GeometryBuilder {
   /** Create builder from model, categoryId, and placement as represented by a transform.
    *  NOTE: Transform must satisfy requirements of YawPitchRollAngles.TryFromTransform; scale is not supported
    */
-  public static createTransform(/*imodel, */is3d: boolean, categoryId: Id64, transform: Transform): GeometryBuilder | undefined {
+  public static createTransform(is3d: boolean, categoryId: Id64, transform: Transform): GeometryBuilder | undefined {
     if (!categoryId.isValid())
       return undefined;
 
@@ -2166,7 +2136,6 @@ export class GeometryBuilder {
 
       iterator.nextOp();
     }
-
     return builder;
   }
 
@@ -2374,6 +2343,23 @@ export class GeometryBuilder {
       this._writer.dgnAppendRange3d(localRange);
   }
 
+  /** RESETS THE BUILDER. All mod boolean values are set to false, placement is set to origin, if GeometryParams exists, is set to default, and the
+   *  writer is cleared to contain 0 bytes.
+   */
+  public reset() {
+    this._appearanceChanged = false;
+    this._appearanceModified = false;
+    this._isPartCreate = false;
+    this._appendAsSubGraphics = false;
+    if (this._is3d)
+      this._placement3d = new Placement3d(Point3d.create(0, 0, 0), YawPitchRollAngles.createDegrees(0, 0, 0), new ElementAlignedBox3d());
+    else
+      this._placement2d = new Placement2d(Point2d.create(0, 0), Angle.createDegrees(0), new ElementAlignedBox2d());
+    this._elParams = GeometryParams.createDefaults();
+    this._elParamsModified = undefined;
+    this._writer.reset();
+  }
+
   /** Set GeometryParams by SubCategoryId - Appearance. Any subsequent Append of a GeometricPrimitive will display using this symbology.
    *  NOTE - If no symbology is specifically set in a GeometryStream, the GeometricPrimitive display uses the default SubCategoryId for the GeometricElement's CategoryId.
    */
@@ -2388,7 +2374,7 @@ export class GeometryBuilder {
    *  NOTE: If no symbology is specifically set in a GeometryStream, the GeometricPrimitive display uses the default SubCategoryId for the GeometricElement's
    *  CategoryId. World vs. local affects PatternParams and LineStyleInfo that need to store an orientation and other "placement" relative info.
    */
-  public appendGeometryParams(elParams: GeometryParams, coord: CoordSystem = CoordSystem.Local): boolean {
+  public appendGeometryParams(elParams: GeometryParams, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
     // NOTE: Allow explicit symbology in GeometryPart's GeometryStream, sub-category won't be persisted
     if (!this._isPartCreate) {
       if (!this._elParams.categoryId.isValid())
@@ -2402,7 +2388,7 @@ export class GeometryBuilder {
        */
     }
     if (elParams.isTransformable()) {
-      if (coord === CoordSystem.World) {
+      if (coord === GeomCoordSystem.World) {
         if (this._isPartCreate)
           return false;   // Part GeoemtryParams must be supplied in local coordinates...
 
@@ -2416,7 +2402,7 @@ export class GeometryBuilder {
           if (!worldToLocal.isIdentity()) {
             const localParams = elParams.clone();
             localParams.applyTransform(worldToLocal);
-            return this.appendGeometryParams(localParams, CoordSystem.Local);
+            return this.appendGeometryParams(localParams, GeomCoordSystem.Local);
           }
         }
       } else {
@@ -2486,11 +2472,11 @@ export class GeometryBuilder {
   */
 
   /** Append GeometricPrimitive to the builder in either local or world coordinates. */
-  public appendGeometricPrimitive(geom: GeometricPrimitive, coord: CoordSystem = CoordSystem.Local): boolean {
+  public appendGeometricPrimitive(geom: GeometricPrimitive, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
     if (!this._is3d && geom.is3dGeometryType())
       return false;   // 3d only geometry
 
-    if (coord === CoordSystem.Local)
+    if (coord === GeomCoordSystem.Local)
       return this.appendLocal(geom);
 
     /*
@@ -2514,8 +2500,8 @@ export class GeometryBuilder {
   }
 
   /** Append a CurvePrimitive to builder in either local or world coordinates. */
-  public appendCurvePrimitive(geom: CurvePrimitive, coord: CoordSystem = CoordSystem.Local): boolean {
-    if (coord === CoordSystem.Local) {
+  public appendCurvePrimitive(geom: CurvePrimitive, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
+    if (coord === GeomCoordSystem.Local) {
       const localRange = Range3d.createNull();
       geom.extendRange(localRange);
 
@@ -2531,8 +2517,8 @@ export class GeometryBuilder {
   }
 
   /** Append a CurveCollection to builder in either local or world coordinates. */
-  public appendCurveCollection(geom: CurveCollection, coord: CoordSystem = CoordSystem.Local): boolean {
-    if (coord === CoordSystem.Local) {
+  public appendCurveCollection(geom: CurveCollection, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
+    if (coord === GeomCoordSystem.Local) {
       const localRange = Range3d.createNull();
       geom.extendRange(localRange);
 
@@ -2550,11 +2536,11 @@ export class GeometryBuilder {
   /** Append a SolidPrimitive to builder in either local or world coordinates.
    *  NOTE: Only valid with a 3d builder
    */
-  public appendSolidPrimitive(geom: SolidPrimitive, coord: CoordSystem = CoordSystem.Local): boolean {
+  public appendSolidPrimitive(geom: SolidPrimitive, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
     if (!this._is3d)
       return false;   // 3d only geometry
 
-    if (coord === CoordSystem.Local) {
+    if (coord === GeomCoordSystem.Local) {
       const localRange = Range3d.createNull();
       geom.extendRange(localRange);
 
@@ -2572,11 +2558,11 @@ export class GeometryBuilder {
   /** Append a BsplineSurface3d to builder in either local or world coordinates.
    *  NOTE: Only valid with 3d builder
    */
-  public appendBsplineSurface(geom: BSplineSurface3d, coord: CoordSystem = CoordSystem.Local): boolean {
+  public appendBsplineSurface(geom: BSplineSurface3d, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
     if (!this._is3d)
       return false;   // only 3d geometry
 
-    if (coord === CoordSystem.Local) {
+    if (coord === GeomCoordSystem.Local) {
       const localRange = Range3d.createNull();
       geom.extendRange(localRange);
 
@@ -2594,11 +2580,11 @@ export class GeometryBuilder {
   /** Append an IndexedPolyface to builder in either local or world coordinates.
    *  NOTE: Only valid with 3d builder
    */
-  public appendPolyface(geom: IndexedPolyface, coord: CoordSystem = CoordSystem.Local): boolean {
+  public appendPolyface(geom: IndexedPolyface, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
     if (!this._is3d)
       return false;   // 3d only geometry
 
-    if (coord === CoordSystem.Local) {
+    if (coord === GeomCoordSystem.Local) {
       const localRange = Range3d.createNull();
       geom.extendRange(localRange);
 
@@ -2616,7 +2602,7 @@ export class GeometryBuilder {
   // public appendBRepEntity
 
   /** Append a non-specific geometry, passed using the encompassing GeometryQuery abstract class. */
-  public appendGeometryQuery(geometry: GeometryQuery, coord: CoordSystem = CoordSystem.Local): boolean {
+  public appendGeometryQuery(geometry: GeometryQuery, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
     if (geometry instanceof CurvePrimitive)
       return this.appendCurvePrimitive(geometry, coord);
     if (geometry instanceof CurveCollection)

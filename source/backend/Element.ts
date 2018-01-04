@@ -145,7 +145,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
     }
 
     if (this.geom)
-      this.geom.setFrom(builder.getRawData());
+      this.geom.setFrom(builder.getGeometryStreamClone());
     else
       this.geom = builder.getGeometryStreamClone();
     return true;
