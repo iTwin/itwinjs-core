@@ -94,4 +94,13 @@ export abstract class IModelGateway extends Gateway {
   public async getAllCodeSpecs(_iModelToken: IModelToken): Promise<any[]> {
     return this.forward.apply(this, arguments);
   }
+
+  /**
+   * Commit pending changes to this iModel
+   * @param _description Optional description of the changes
+   * @throws [[IModelError]] if there is a problem saving changes.
+   */
+  public async saveChanges(_iModelToken: IModelToken, _description?: string): Promise<void> {
+    return this.forward.apply(this, arguments);
+  }
 }

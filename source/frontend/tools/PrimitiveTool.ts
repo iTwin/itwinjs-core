@@ -6,8 +6,8 @@ import { Tool, BeButtonEvent, BeCursor } from "./Tool";
 import { Viewport } from "../Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { ViewManager } from "../ViewManager";
-import { IModel } from "../../common/IModel";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { IModelConnection } from "../IModelConnection";
 
 /**
  * The PrimitiveTool class can be used to implement a primitive command. Placement
@@ -49,7 +49,7 @@ export abstract class PrimitiveTool extends Tool {
   }
 
   /** Get the iModel the tool is operating against. */
-  public getIModel(): IModel { return this.targetView!.view!.iModel; }
+  public getIModel(): IModelConnection { return this.targetView!.view!.iModel as IModelConnection; }
 
   /**
    * Called when an external event may invalidate the current tool's state.
@@ -178,9 +178,11 @@ export abstract class PrimitiveTool extends Tool {
    */
   public onUndoPreviousStep(): boolean { return false; }
 
-  // Tools need to call SaveChanges to commit any elements they have added/changes they have made.
-  // This helper method supplies the tool name for the undo string to iModel::SaveChanges.
-  // BeSQLite:: DbResult SaveChanges() { return GetIModel().SaveChanges(GetLocalizedToolName().c_str()); }
+  /**
+   * Tools need to call SaveChanges to commit any elements they have added/changes they have made.
+   * This helper method supplies the tool name for the undo string to iModel.saveChanges.
+   */
+  public saveChanges(): Promise<void> { return this.getIModel().saveChanges(this.getLocalizedToolName()); }
 
   // //! Ensures that any locks and/or codes required for the operation are obtained from iModelServer before making any changes to the iModel.
   // //! Default implementation invokes _PopulateRequest() and forwards request to server.
@@ -202,21 +204,14 @@ export abstract class PrimitiveTool extends Tool {
   // //! If your tool operates on more than one element it should batch all such requests rather than calling this convenience function repeatedly.
   //  RepositoryStatus LockElementForOperation(DgnElementCR element, BeSQLite:: DbOpcode operation);
 
-  // //! Call to find out of complex dynamics are currently active.
-  // //! @return true if dynamics have been started.
-  //  bool GetDynamicsStarted();
-
-  // //! Call to initialize complex dynamics.
-  // //! @see #_OnDynamicFrame
-  //  virtual void _BeginDynamics();
-
-  // //! Call to terminate complex dynamics.
-  // //! @see #_OnDynamicFrame
-  //  virtual void _EndDynamics();
-
+  /** Call to find out of complex dynamics are currently active. */
+  public isDynamicsStarted() { return ViewManager.instance.inDynamicsMode; }
+  /** Call to initialize dynamics mode. */
+  public beginDynamics() { ToolAdmin.instance.beginDynamics(); }
+  /** Call to terminate dynamics mode. */
+  public endDynamics() { ToolAdmin.instance.endDynamics(); }
   /** Called to display dynamic elements. */
   public onDynamicFrame(_ev: BeButtonEvent) { }
-
   public callOnRestartTool(): void { this.onRestartTool(); }
   public undoPreviousStep(): boolean {
     if (!this.onUndoPreviousStep())

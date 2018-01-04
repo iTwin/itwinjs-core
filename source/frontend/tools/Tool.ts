@@ -324,6 +324,7 @@ export class BeWheelEvent extends BeButtonEvent {
 export abstract class Tool {
   // tslint:disable:no-empty
   public static get toolId(): string { return ""; }
+  public getLocalizedToolName(): string { return Object.getPrototypeOf(this).constructor.toolId; } // NEEDS_WORK
   public abstract installToolImplementation(): BentleyStatus;
   public installTool(): BentleyStatus { return this.installToolImplementation(); }
   /** Override to execute additional logic after tool becomes active */

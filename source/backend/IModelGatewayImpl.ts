@@ -22,15 +22,13 @@ export class IModelGatewayImpl extends IModelGateway {
   }
 
   public async openForRead(accessToken: AccessToken, iModelToken: IModelToken, version: IModelVersion): Promise<IModel> {
-    if (iModelToken.contextId==undefined)
-      throw  "Expecting context id";
     return await IModelDb.open(accessToken, iModelToken.contextId!, iModelToken.iModelId, OpenMode.Readonly, version);
   }
 
   public async openForWrite(accessToken: AccessToken, iModelToken: IModelToken, version: IModelVersion): Promise<IModel> {
     return await IModelDb.open(accessToken, iModelToken.contextId!, iModelToken.iModelId, OpenMode.ReadWrite, version);
   }
-  
+
   /** Ask the backend to open a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend. */
   public async openStandalone(fileName: string, openMode: OpenMode): Promise<IModel> {
     return await IModelDb.openStandalone(fileName, openMode);
@@ -53,6 +51,11 @@ export class IModelGatewayImpl extends IModelGateway {
     const rows: any[] = await iModelDb.executeQuery(sql, bindings);
     Logger.logInfo("IModelDbRemoting.executeQuery", () => ({ sql, numRows: rows.length }));
     return rows;
+  }
+
+  public async saveChanges(iModelToken: IModelToken, description?: string) {
+    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    iModelDb.saveChanges(description);
   }
 
   public async getModelProps(iModelToken: IModelToken, modelIds: string[]): Promise<string[]> {
