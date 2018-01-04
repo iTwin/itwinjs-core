@@ -107,63 +107,63 @@ describe("ECDb", () => {
       const instanceExists: boolean = await ecdb.containsInstance<TestClass>(testInstanceKey);
       assert.isTrue(instanceExists);
     });
-  
+
     it("should be able to save changes", async () => {
       await ecdb.saveChanges("Inserted an instance");
-  
+
       await ecdb.closeDb();
       assert.isFalse(ecdb.isDbOpen());
-  
+
       await ecdb.openDb(dbPathname, OpenMode.ReadWrite);
       assert.isTrue(ecdb.isDbOpen());
-  
+
       const instanceExists: boolean = await ecdb.containsInstance<TestClass>(testInstanceKey);
       assert.isTrue(instanceExists);
     });
-  
+
     it("should be able to delete an instance", async () => {
       await ecdb.deleteInstance(testInstanceKey);
       const instanceExists: boolean = await ecdb.containsInstance<TestClass>(testInstanceKey);
       assert.isFalse(instanceExists);
     });
-  
+
     it("should be able to abandon changes", async () => {
       await ecdb.abandonChanges();
       const instanceExists: boolean = await ecdb.containsInstance<TestClass>(testInstanceKey);
       assert.isTrue(instanceExists);
     });
-  
+
     it("should be able to execute queries", async () => {
       let rows: any[] = await ecdb.executeQuery("SELECT * FROM TestSchema.TestClass");
       if (rows.length === 0) {
         assert.fail();
         return;
       }
-  
+
       assert.isArray(rows);
       assert.equal(rows.length, 1);
       assert.equal(rows[0].id, testInstance.id);
-  
+
       const testInstanceId = new Id64(testInstanceKey.id);  // NB: In the queries that follow, ECInstanceId must be strongly typed as an Id64, not a string! The ECSql binding logic will insist on that.
-  
+
       rows = await ecdb.executeQuery("SELECT * FROM TestSchema.TestClass WHERE ECInstanceId=?", [testInstanceId]);
       if (rows.length === 0) {
         assert.fail();
         return;
       }
-  
+
       const map = new Map<string, BindingValue>([
         ["instanceId", testInstanceId],
       ]);
       rows = await ecdb.executeQuery("SELECT * FROM TestSchema.TestClass WHERE ECInstanceId=:instanceId", map);
       assert.notEqual(rows.length, 0);
     });
-  
+
     it("should be able to execute statements", async () => {
       // todo: need to make this test comprehensive for all types.
       const ecsql: string = `INSERT INTO TestSchema.KitchenSink(BooleanProperty, DoubleProperty, IntegerProperty, LongProperty, Point2dProperty, Point3dProperty, StringProperty)
         VALUES(:booleanProperty, :doubleProperty, :integerProperty, :longProperty, :point2dProperty, :point3dProperty, :stringProperty)`;
-  
+
       const map = new Map<string, BindingValue>([
         ["booleanProperty", true],
         ["doubleProperty", 1.2],
@@ -173,14 +173,14 @@ describe("ECDb", () => {
         ["point3dProperty", { x: 3.3, y: 4.4, z: 5.5 }],
         ["stringProperty", "Test String"],
       ]);
-  
+
       const instanceId: string = await ecdb.executeStatement(ecsql, true, map);
       assert.isAbove(instanceId.length, 0);
-  
+
       const instanceExists: boolean = await ecdb.containsInstance<TestClass>(testInstanceKey);
       assert.isTrue(instanceExists);
     });
-  
+
     it("should be able to handle invalid inputs elegantly", async () => {
       try {
         await ecdb.executeQuery("");
@@ -189,7 +189,7 @@ describe("ECDb", () => {
         assert.isTrue(error instanceof IModelError);
         expect(error.errorNumber).equals(DbResult.BE_SQLITE_ERROR);
       }
-  
+
       let test: any;
       try {
         await ecdb.executeQuery(test);
@@ -198,7 +198,7 @@ describe("ECDb", () => {
         assert.isTrue(error instanceof IModelError);
         expect(error.errorNumber).equals(DbResult.BE_SQLITE_ERROR);
       }
-  
+
       try {
         test = 3;
         await ecdb.executeQuery("SELECT * FROM TestSchema.TestClass", [test]);
@@ -207,7 +207,7 @@ describe("ECDb", () => {
         assert.isTrue(error instanceof IModelError);
         expect(error.errorNumber).equals(DbResult.BE_SQLITE_ERROR);
       }
-  
+
       const ecdb2 = new ECDb();
       try {
         test = undefined;
@@ -217,7 +217,7 @@ describe("ECDb", () => {
         assert.isTrue(error instanceof IModelError);
         expect(error.errorNumber).equals(DbResult.BE_SQLITE_ERROR);
       }
-  
+
       try {
         test = "horriblyWrongMode";
         await ecdb2.openDb(dbPathname, test);
