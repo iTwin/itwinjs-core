@@ -4,7 +4,8 @@
 import { assert } from "chai";
 import { Id64 } from "@build/imodeljs-core/node_modules/@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Vector3d, YawPitchRollAngles, RotMatrix } from "@build/imodeljs-core/node_modules/@bentley/geometry-core/lib/PointVector";
-import { DisplayStyle3dState, ModelSelectorState, SpatialViewState, CategorySelectorState, ViewState, Frustum, SpatialViewDefinitionProps } from "@build/imodeljs-core/lib/common/ViewState";
+import { DisplayStyle3dState, ModelSelectorState, SpatialViewState, CategorySelectorState, ViewState, SpatialViewDefinitionProps } from "@build/imodeljs-core/lib/common/ViewState";
+import { Frustum } from "@build/imodeljs-core/lib/common/Frustum";
 import { IModelConnection } from "@build/imodeljs-core/lib/frontend/IModelConnection";
 import { Viewport, ViewRect, CoordSystem } from "@build/imodeljs-core/lib/frontend/Viewport";
 import { Cartographic } from "@build/imodeljs-core/lib/common/geometry/Cartographic";
