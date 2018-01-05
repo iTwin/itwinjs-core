@@ -1,8 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+*--------------------------------------------------------------------------------------------*/
 'use strict';
 
+const glob = require('glob');
 const path = require('path');
 const fs = require('fs');
 const paths = require('./paths');
@@ -26,8 +27,11 @@ const createBentleySourceMapsIncludePaths = () => {
   let includePaths = [paths.appSrc];
   const bentleyIncludesPath = path.resolve(paths.appNodeModules, "@bentley");
   const bentleyIncludes = fs.readdirSync(bentleyIncludesPath);
-  for (const bentleyInclude of bentleyIncludes)
-    includePaths.push(fs.realpathSync(path.resolve(bentleyIncludesPath, bentleyInclude)));
+  for (const bentleyInclude of bentleyIncludes) {
+    const matches = glob.sync(path.resolve(path.resolve(bentleyIncludesPath, bentleyInclude, "**/*.map")))
+    if (matches && matches.length > 0)
+      includePaths.push(fs.realpathSync(path.resolve(bentleyIncludesPath, bentleyInclude)));
+  }
   return includePaths;
 };
 
