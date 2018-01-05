@@ -6,10 +6,9 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
 import { Point3d, Vector3d, YawPitchRollAngles, Range3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { Element } from "../backend/Element";
-import { DisplayStyle3dState, ModelSelectorState, SpatialViewState, CategorySelectorState, ViewStatus, Camera, MarginPercent } from "../common/ViewState";
+import { DisplayStyle3dState, ModelSelectorState, SpatialViewState, CategorySelectorState, ViewStatus, Camera, MarginPercent, CategorySelectorProps, ModelSelectorProps } from "../common/ViewState";
 import { IModelDb } from "../backend/IModelDb";
-import { DisplayStyle3d, ModelSelector, CategorySelector, SpatialViewDefinition } from "../backend/ViewDefinition";
+import { DisplayStyle3d, SpatialViewDefinition } from "../backend/ViewDefinition";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import * as path from "path";
 
@@ -33,24 +32,21 @@ async function convertViewDefToViewState(imodel: IModelDb, view: SpatialViewDefi
   const d3 = dStyleState.clone();
   assert.deepEqual(dStyleState, d3);
 
-  const catSel = await imodel.elements.getElement(view.categorySelectorId) as CategorySelector;
+  const catSel = await imodel.elements.getElementProps(view.categorySelectorId) as CategorySelectorProps;
   assert.isDefined(catSel.categories);
   assert.lengthOf(catSel.categories, 4);
-  const modelSel = await imodel.elements.getElement(view.modelSelectorId) as ModelSelector;
+  const modelSel = await imodel.elements.getElementProps(view.modelSelectorId) as ModelSelectorProps;
   assert.isDefined(modelSel.models);
   assert.lengthOf(modelSel.models, 5);
 
-  const catSelState = new CategorySelectorState(catSel.toJSON(), imodel);
+  const catSelState = new CategorySelectorState(catSel, imodel);
   const c2 = catSelState.clone<CategorySelectorState>();
   assert.deepEqual(catSelState, c2);
 
-  const modSelState = new ModelSelectorState(modelSel.toJSON(), imodel);
+  const modSelState = new ModelSelectorState(modelSel, imodel);
   const m2 = modSelState.clone<ModelSelectorState>();
   assert.deepEqual(modSelState, m2);
-
-  return new Promise<SpatialViewState>((resolve) => {
-    resolve(new SpatialViewState(view.toJSON(), imodel, catSelState, dStyleState, modSelState));
-  });
+  return new SpatialViewState(view.toJSON(), imodel, catSelState, dStyleState, modSelState);
 }
 
 describe("ViewState", () => {
@@ -70,9 +66,9 @@ describe("ViewState", () => {
     flatView = await imodel.elements.getElement(viewId) as SpatialViewDefinition;
 
     // Set up ViewState with camera turned on
-    const dStyleState = new DisplayStyle3dState((await imodel.elements.getElement(flatView.displayStyleId)).toJSON(), imodel);
-    const catSelState = new CategorySelectorState((await imodel.elements.getElement(flatView.categorySelectorId) as CategorySelector).toJSON(), imodel);
-    const modSelState = new ModelSelectorState((await imodel.elements.getElement(flatView.modelSelectorId) as ModelSelector).toJSON(), imodel);
+    const dStyleState = new DisplayStyle3dState((await imodel.elements.getElementProps(flatView.displayStyleId)), imodel);
+    const catSelState = new CategorySelectorState((await imodel.elements.getElementProps(flatView.categorySelectorId)) as CategorySelectorProps, imodel);
+    const modSelState = new ModelSelectorState((await imodel.elements.getElementProps(flatView.modelSelectorId)) as ModelSelectorProps, imodel);
     cameraViewState = new SpatialViewState({
       classFullName: "BisCore:SpatialViewDefinition",
       id: new Id64("0x34"),
@@ -115,7 +111,7 @@ describe("ViewState", () => {
     imodel.closeStandalone();
   });
 
-  it("should be able to create ViewState from SpatialViewDefinition extracted from bim file", async () => {
+  it("should be able to create ViewState from SpatialViewDefinition", async () => {
     assert.isTrue(flatView instanceof SpatialViewDefinition, "Should be instance of SpatialViewDefinition");
     assert.isTrue(flatView.code.value === "A Views - View 1", "Code value is A Views - View 1");
     assert.isTrue(flatView.displayStyleId.value === "0x36", "Display Style Id is 0x36");
@@ -154,7 +150,7 @@ describe("ViewState", () => {
   // ===================================================================================================================================
   // C++ Tests:
 
-  it.only("should see ViewState creation parallels that of ViewState created in C++", async () => {
+  it("ViewState creation parallels C++", async () => {
     // compare the extracted view with that in native C++
     let nativeResultJSON = imodel.elements.executeTestById(1,
       {
@@ -164,10 +160,10 @@ describe("ViewState", () => {
         msId: flatView.modelSelectorId.value,
         path: bimFileLocation,
       });
-    nativeResultJSON = (imodel.constructEntity(nativeResultJSON) as Element).toJSON();
-    const viewStateJSON = (await convertViewDefToViewState(imodel, flatView)).toJSON() as any;
+    nativeResultJSON = imodel.constructEntity(nativeResultJSON).toJSON();
+    const viewStateJSON = (await convertViewDefToViewState(imodel, flatView)).toJSON();
     viewStateJSON.description = undefined;    // Currently does not appear if not explicitly specified in TS
-    assert.isTrue(jsonCompare.compare(viewStateJSON, nativeResultJSON), "Native side ViewState creation matches TS");
+    assert.deepEqual(viewStateJSON, nativeResultJSON, "Native side ViewState creation matches TS");
   });
 
   it("view volume adjustments should match that of adjustments in C++", async () => {
@@ -193,7 +189,7 @@ describe("ViewState", () => {
         msId: flatView.modelSelectorId.value,
         path: bimFileLocation,
       });
-    cppFlatViewStateJSON = (imodel.constructEntity(cppFlatViewStateJSON) as Element).toJSON();
+    cppFlatViewStateJSON = imodel.constructEntity(cppFlatViewStateJSON).toJSON();
     assert.isTrue(jsonCompare.compare(tsFlatViewStateJSON, cppFlatViewStateJSON), "Native side ViewState 'lookAtVolume' test 1 matches TS");
     // ============================================================================================================
 
@@ -218,7 +214,7 @@ describe("ViewState", () => {
         msId: flatView.modelSelectorId.value,
         path: bimFileLocation,
       });
-    cppFlatViewStateJSON = (imodel.constructEntity(cppFlatViewStateJSON) as Element).toJSON();
+    cppFlatViewStateJSON = imodel.constructEntity(cppFlatViewStateJSON).toJSON();
     // in native C++, yawpitchroll will be defined, even though it is technically not valid (did not conform to certain bounds)
     cppFlatViewStateJSON.angles = undefined;
 
@@ -241,7 +237,7 @@ describe("ViewState", () => {
         msId: flatView.modelSelectorId.value,
         path: bimFileLocation,
       });
-    cppCamViewStateJSON = (imodel.constructEntity(cppCamViewStateJSON) as Element).toJSON();
+    cppCamViewStateJSON = imodel.constructEntity(cppCamViewStateJSON).toJSON();
     assert.isTrue(jsonCompare.compare(tsCamViewStateJSON, cppCamViewStateJSON), "Native side ViewState 'lookAtVolume' test 3 matches TS");
     // =============================================================================================================
 
@@ -266,12 +262,12 @@ describe("ViewState", () => {
         msId: flatView.modelSelectorId.value,
         path: bimFileLocation,
       });
-    cppCamViewStateJSON = (imodel.constructEntity(cppCamViewStateJSON) as Element).toJSON();
+    cppCamViewStateJSON = imodel.constructEntity(cppCamViewStateJSON).toJSON();
     assert.isTrue(jsonCompare.compare(tsCamViewStateJSON, cppCamViewStateJSON), "Native side ViewState 'lookAtVolume' test 4 matches TS");
     // =============================================================================================================
   });
 
-  it("rotation and 'lookAt' results should match that of those in C++", async () => {
+  it("rotation and 'lookAt' results should match C++", async () => {
     // Flat view test ==============================================================================================
     const tsFlatViewState = await convertViewDefToViewState(imodel, flatView);
     tsFlatViewState.setOrigin(Point3d.create(-5, -5, 0));
@@ -283,7 +279,7 @@ describe("ViewState", () => {
 
     tsFlatViewState.rotateCameraLocal(Angle.createRadians(1.28), Vector3d.create(2, 5, 7), undefined);
     const tsFlatViewStateJSON = tsFlatViewState.toJSON();
-    (tsFlatViewStateJSON as any).description = undefined;  // Currently does not appear if not explicitly specified in TS
+    tsFlatViewStateJSON.description = undefined;  // Currently does not appear if not explicitly specified in TS
 
     let cppFlatViewStateJSON = imodel.elements.executeTestById(3,
       {
@@ -295,7 +291,7 @@ describe("ViewState", () => {
         path: bimFileLocation,
       });
 
-    cppFlatViewStateJSON = (imodel.constructEntity(cppFlatViewStateJSON) as Element).toJSON();
+    cppFlatViewStateJSON = imodel.constructEntity(cppFlatViewStateJSON).toJSON();
     // in native C++, yawpitchroll will be defined, even though it is technically not valid (did not conform to certain bounds)
     cppFlatViewStateJSON.angles = undefined;
 
@@ -324,7 +320,7 @@ describe("ViewState", () => {
         msId: flatView.modelSelectorId.value,
         path: bimFileLocation,
       });
-    cppCamViewStateJSON = (imodel.constructEntity(cppCamViewStateJSON) as Element).toJSON();
+    cppCamViewStateJSON = imodel.constructEntity(cppCamViewStateJSON).toJSON();
     assert.isTrue(jsonCompare.compare(tsCamViewStateJSON, cppCamViewStateJSON), "Native side ViewState 'rotate & lookat' test 2 matches TS");
     // =============================================================================================================
 
@@ -350,7 +346,7 @@ describe("ViewState", () => {
         path: bimFileLocation,
       });
 
-    cppCamViewStateJSON = (imodel.constructEntity(cppCamViewStateJSON) as Element).toJSON();
+    cppCamViewStateJSON = imodel.constructEntity(cppCamViewStateJSON).toJSON();
 
     // in native C++, yawpitchroll will be defined, even though it is technically not valid (did not conform to certain bounds)
     cppCamViewStateJSON.angles = undefined;

@@ -4,7 +4,7 @@
 import { Vector3d, XYZ, Point3d, Range3d, RotMatrix, Transform, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ } from "@bentley/geometry-core/lib/PointVector";
 import { Map4d, Point4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { AxisOrder, Angle, AngleSweep } from "@bentley/geometry-core/lib/Geometry";
-import { ViewState, Frustum, ViewStatus, Npc, NpcCenter, NpcCorners, MarginPercent, GridOrientationType } from "../common/ViewState";
+import { ViewState, ViewStatus, MarginPercent, GridOrientationType } from "../common/ViewState";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { ElementAlignedBox2d, Placement3dProps, Placement2dProps, Placement2d, Placement3d } from "../common/geometry/Primitives";
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core/lib/Time";
@@ -22,6 +22,7 @@ import { DecorateContext } from "./ViewContext";
 import { ColorDef } from "../common/ColorDef";
 import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
 import { LegacyMath } from "../common/LegacyMath";
+import { Frustum, Npc, NpcCorners, NpcCenter } from "../common/Frustum";
 
 /** A rectangle in view coordinates. */
 export class ViewRect extends ElementAlignedBox2d {
@@ -766,7 +767,7 @@ export class Viewport {
 
       // and convert them to npc coordinates of the expanded view
       this.worldToNpcArray(ueRootBox.points);
-      box.setPoints(ueRootBox.points);
+      box.setFrom(ueRootBox);
     }
 
     // now convert from NPC space to the specified coordinate system.
@@ -1190,7 +1191,7 @@ export class Viewport {
 
   /** Show the surface normal for geometry under the cursor when snapping. */
   private static drawLocateHitDetail(context: DecorateContext, aperture: number, hit: HitDetail): void {
-    // NEEDSWORK: Need to decide the fate of this...when/if to show it, etc.
+    // NEEDS_WORK: Need to decide the fate of this...when/if to show it, etc.
     const vp = context.viewport;
     if (!vp.view.is3d())
       return; // Not valuable in 2d...

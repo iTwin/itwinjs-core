@@ -2,7 +2,7 @@
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Point3d, Point2d, XAndY, Vector3d } from "@bentley/geometry-core/lib/PointVector";
-import { NpcCenter, ViewStatus } from "../../common/ViewState";
+import { ViewStatus } from "../../common/ViewState";
 import { Viewport } from "../Viewport";
 import { IdleTool } from "./IdleTool";
 import { ViewTool, ViewToolSettings } from "./ViewTool";
@@ -21,6 +21,7 @@ import { AccuDraw } from "../AccuDraw";
 import { HitDetail } from "../HitDetail";
 import { ElementLocateManager } from "../ElementLocateManager";
 import { LegacyMath } from "../../common/LegacyMath";
+import { NpcCenter } from "../../common/Frustum";
 
 export const enum CoordinateLockOverrides {
   OVERRIDE_COORDINATE_LOCK_None = 0,

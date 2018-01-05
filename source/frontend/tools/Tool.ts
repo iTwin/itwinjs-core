@@ -213,7 +213,7 @@ export class BeButtonEvent {
   public get isAltKey() { return 0 !== (this.keyModifiers & BeModifierKey.Alt); }
   public reset() { this.viewport = undefined; }
 
-  public copyFrom(src: BeButtonEvent) {
+  public setFrom(src: BeButtonEvent) {
     this.point = src.point;
     this.rawPoint = src.rawPoint;
     this.viewPoint = src.viewPoint;
@@ -228,7 +228,7 @@ export class BeButtonEvent {
   }
   public clone(result?: BeButtonEvent): BeButtonEvent {
     result = result ? result : new BeButtonEvent();
-    result.copyFrom(this);
+    result.setFrom(this);
     return result;
   }
 }
@@ -293,13 +293,13 @@ export class GestureInfo {
 /** Specialization of ButtonEvent describing a gesture event, typically originating from touch input. */
 export class BeGestureEvent extends BeButtonEvent {
   public gestureInfo?: GestureInfo;
-  public copyFrom(src: BeGestureEvent) {
-    super.copyFrom(src);
+  public setFrom(src: BeGestureEvent) {
+    super.setFrom(src);
     this.gestureInfo = src.gestureInfo;
   }
   public clone(result?: BeGestureEvent): BeGestureEvent {
     result = result ? result : new BeGestureEvent();
-    result.copyFrom(this);
+    result.setFrom(this);
     return result;
   }
 }
@@ -307,13 +307,13 @@ export class BeGestureEvent extends BeButtonEvent {
 /** Information about movement of the "wheel". */
 export class BeWheelEvent extends BeButtonEvent {
   public constructor(public wheelDelta: number = 0) { super(); }
-  public copyFrom(src: BeWheelEvent): void {
-    super.copyFrom(src);
+  public setFrom(src: BeWheelEvent): void {
+    super.setFrom(src);
     this.wheelDelta = src.wheelDelta;
   }
   public clone(result?: BeWheelEvent): BeWheelEvent {
     result = result ? result : new BeWheelEvent();
-    result.copyFrom(this);
+    result.setFrom(this);
     return result;
   }
 }
