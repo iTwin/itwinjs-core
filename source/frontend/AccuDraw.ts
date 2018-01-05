@@ -18,6 +18,8 @@ import { LinePixels, GraphicBuilder } from "../common/Render";
 import { DecorateContext, SnapContext } from "./ViewContext";
 import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
 import { LegacyMath } from "../common/LegacyMath";
+import { ViewTool } from "./tools/ViewTool";
+import { PrimitiveTool } from "./tools/PrimitiveTool";
 
 // tslint:disable:one-variable-per-declaration
 // tslint:disable:no-conditional-assignment
@@ -1590,7 +1592,7 @@ export class AccuDraw {
 
     // Save current primitive command AccuDraw state...
     const tool = ToolAdmin.instance.activeTool;
-    if (tool && !tool.isView())
+    if (tool && !(tool instanceof ViewTool))
       this.saveState(false);
 
     // Setup viewing tool defaults, disabled, etc.
@@ -2543,7 +2545,7 @@ export class AccuDraw {
 
     // Make sure active tool updates it's dynamics. NOTE: Can't just call UpdateDynamics, need point adjusted for new locks, etc.
     const tool = ToolAdmin.instance.activeTool;
-    if (!tool || !tool.isPrimitive())
+    if (!tool || !(tool instanceof PrimitiveTool))
       return;
 
     const ev = new BeButtonEvent();

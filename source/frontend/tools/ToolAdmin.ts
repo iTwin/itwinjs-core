@@ -2,7 +2,7 @@
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Point3d, Point2d, XAndY, Vector3d } from "@bentley/geometry-core/lib/PointVector";
-import { NpcCenter, ViewStatus } from "../../common/ViewState";
+import { ViewStatus } from "../../common/ViewState";
 import { Viewport } from "../Viewport";
 import { IdleTool } from "./IdleTool";
 import { ViewTool, ViewToolSettings } from "./ViewTool";
@@ -21,6 +21,7 @@ import { AccuDraw } from "../AccuDraw";
 import { HitDetail } from "../HitDetail";
 import { ElementLocateManager } from "../ElementLocateManager";
 import { LegacyMath } from "../../common/LegacyMath";
+import { NpcCenter } from "../../common/Frustum";
 
 export const enum CoordinateLockOverrides {
   OVERRIDE_COORDINATE_LOCK_None = 0,
@@ -307,6 +308,58 @@ export class CurrentInputState {
     }
   }
 }
+
+// tslint:disable-next-line:variable-name
+const WheelSettings = {
+  zoomRatio: 1.75,
+  navigateDistPct: 3.0,
+  navigateMouseDistPct: 10.0,
+};
+
+class WheelEventProcessor {
+  constructor(public ev?: BeWheelEvent) { }
+  public process(doUpdate: boolean): boolean {
+    const vp = this.ev!.viewport;
+    if (!vp)
+      return true;
+
+    this.doZoom();
+
+    if (doUpdate) {
+      const hasPendingWheelEvent = false; //  Display:: Kernel:: HasPendingMouseWheelEvent(); NEEDS_WORK
+
+      // don't put into undo buffer if we're about to get another wheel event.
+      if (!hasPendingWheelEvent)
+        vp.synchWithView(true);
+
+      // AccuSnap hit won't be invalidated without cursor motion (closes info window, etc.).
+      AccuSnap.instance.clear();
+    }
+    return true;
+  }
+
+  private doZoom(): ViewStatus {
+    const ev = this.ev!;
+    let zoomRatio = Math.max(1.0, WheelSettings.zoomRatio);
+
+    const wheelDelta = ev.wheelDelta;
+    if (wheelDelta > 0)
+      zoomRatio = 1.0 / zoomRatio;
+
+    const vp = ev.viewport!;
+    const startFrust = vp.getFrustum();
+
+    const zoomCenter = vp.getZoomCenter(ev);
+    const result = vp.zoom(zoomCenter, zoomRatio);
+    if (ViewStatus.Success === result) {
+      if (ViewToolSettings.animateZoom)
+        vp.animateFrustumChange(startFrust, vp.getFrustum(), BeDuration.fromMilliseconds(100));
+    }
+
+    return result;
+  }
+}
+
 export class ToolAdmin {
   private _toolEvents = new BeEventList();
   public static instance = new ToolAdmin();
@@ -978,7 +1031,7 @@ export class ToolAdmin {
     AccuDraw.instance.onViewToolExit();
 
     const tool = this.activeTool;
-    if (tool && tool.isPrimitive()) {
+    if (tool && tool instanceof PrimitiveTool) {
       const ev = ToolAdmin.scratchButtonEvent1;
       this.fillEventFromCursorLocation(ev);
       tool.updateDynamics(ev);
@@ -1146,57 +1199,6 @@ export class ToolAdmin {
 
     if (this.primitiveTool)
       this.primitiveTool.updateDynamics(ev);
-
-    return result;
-  }
-}
-
-// tslint:disable-next-line:variable-name
-const WheelSettings = {
-  zoomRatio: 1.75,
-  navigateDistPct: 3.0,
-  navigateMouseDistPct: 10.0,
-};
-
-class WheelEventProcessor {
-  constructor(public ev?: BeWheelEvent) { }
-  public process(doUpdate: boolean): boolean {
-    const vp = this.ev!.viewport;
-    if (!vp)
-      return true;
-
-    this.doZoom();
-
-    if (doUpdate) {
-      const hasPendingWheelEvent = false; //  Display:: Kernel:: HasPendingMouseWheelEvent(); NEEDS_WORK
-
-      // don't put into undo buffer if we're about to get another wheel event.
-      if (!hasPendingWheelEvent)
-        vp.synchWithView(true);
-
-      // AccuSnap hit won't be invalidated without cursor motion (closes info window, etc.).
-      AccuSnap.instance.clear();
-    }
-    return true;
-  }
-
-  private doZoom(): ViewStatus {
-    const ev = this.ev!;
-    let zoomRatio = Math.max(1.0, WheelSettings.zoomRatio);
-
-    const wheelDelta = ev.wheelDelta;
-    if (wheelDelta > 0)
-      zoomRatio = 1.0 / zoomRatio;
-
-    const vp = ev.viewport!;
-    const startFrust = vp.getFrustum();
-
-    const zoomCenter = vp.getZoomCenter(ev);
-    const result = vp.zoom(zoomCenter, zoomRatio);
-    if (ViewStatus.Success === result) {
-      if (ViewToolSettings.animateZoom)
-        vp.animateFrustumChange(startFrust, vp.getFrustum(), BeDuration.fromMilliseconds(100));
-    }
 
     return result;
   }

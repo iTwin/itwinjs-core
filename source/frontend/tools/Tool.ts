@@ -4,12 +4,9 @@
 import { Point3d, Point2d, XAndY } from "@bentley/geometry-core/lib/PointVector";
 import { Viewport } from "../Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
-import { PrimitiveTool } from "./PrimitiveTool";
-import { ViewTool } from "./ViewTool";
 import { DecorateContext } from "../ViewContext";
 import { HitDetail } from "../HitDetail";
 import { LocateResponse } from "../ElementLocateManager";
-import { ToolAdmin } from "./ToolAdmin";
 
 export const enum BeButton {
   Data = 0,
@@ -213,7 +210,7 @@ export class BeButtonEvent {
   public get isAltKey() { return 0 !== (this.keyModifiers & BeModifierKey.Alt); }
   public reset() { this.viewport = undefined; }
 
-  public copyFrom(src: BeButtonEvent) {
+  public setFrom(src: BeButtonEvent) {
     this.point = src.point;
     this.rawPoint = src.rawPoint;
     this.viewPoint = src.viewPoint;
@@ -228,7 +225,7 @@ export class BeButtonEvent {
   }
   public clone(result?: BeButtonEvent): BeButtonEvent {
     result = result ? result : new BeButtonEvent();
-    result.copyFrom(this);
+    result.setFrom(this);
     return result;
   }
 }
@@ -293,13 +290,13 @@ export class GestureInfo {
 /** Specialization of ButtonEvent describing a gesture event, typically originating from touch input. */
 export class BeGestureEvent extends BeButtonEvent {
   public gestureInfo?: GestureInfo;
-  public copyFrom(src: BeGestureEvent) {
-    super.copyFrom(src);
+  public setFrom(src: BeGestureEvent) {
+    super.setFrom(src);
     this.gestureInfo = src.gestureInfo;
   }
   public clone(result?: BeGestureEvent): BeGestureEvent {
     result = result ? result : new BeGestureEvent();
-    result.copyFrom(this);
+    result.setFrom(this);
     return result;
   }
 }
@@ -307,13 +304,13 @@ export class BeGestureEvent extends BeButtonEvent {
 /** Information about movement of the "wheel". */
 export class BeWheelEvent extends BeButtonEvent {
   public constructor(public wheelDelta: number = 0) { super(); }
-  public copyFrom(src: BeWheelEvent): void {
-    super.copyFrom(src);
+  public setFrom(src: BeWheelEvent): void {
+    super.setFrom(src);
     this.wheelDelta = src.wheelDelta;
   }
   public clone(result?: BeWheelEvent): BeWheelEvent {
     result = result ? result : new BeWheelEvent();
-    result.copyFrom(this);
+    result.setFrom(this);
     return result;
   }
 }
@@ -419,24 +416,4 @@ export abstract class Tool {
    * The default implementation shows hit description
    */
   public getInfoString(hit: HitDetail, _delimiter: string): string { return hit.m_hitDescription; }
-
-  public isPrimitive(): this is PrimitiveTool { return this instanceof PrimitiveTool; }
-  public isView(): this is ViewTool { return this instanceof ViewTool; }
-}
-
-export abstract class InputCollector extends Tool {
-  public installToolImplementation(): BentleyStatus {
-    const toolAdmin = ToolAdmin.instance;
-    // An input collector can only suspend a primitive tool, don't install if a viewing tool is active...
-    if (!toolAdmin.activeViewTool || !toolAdmin.onInstallTool(this))
-      return BentleyStatus.ERROR;
-
-    toolAdmin.startInputCollector(this);
-    toolAdmin.setInputCollector(this);
-    toolAdmin.onPostInstallTool(this);
-    return BentleyStatus.SUCCESS;
-  }
-
-  public exitTool() { ToolAdmin.instance.exitInputCollector(); }
-  public onResetButtonUp(_ev: BeButtonEvent) { this.exitTool(); return true; }
 }
