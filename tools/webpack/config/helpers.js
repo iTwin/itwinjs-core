@@ -28,7 +28,7 @@ const createBentleySourceMapsIncludePaths = () => {
   const bentleyIncludesPath = path.resolve(paths.appNodeModules, "@bentley");
   const bentleyIncludes = fs.readdirSync(bentleyIncludesPath);
   for (const bentleyInclude of bentleyIncludes) {
-    const matches = glob.sync(path.resolve(path.resolve(bentleyIncludesPath, bentleyInclude, "**/*.map")))
+    const matches = glob.sync(path.resolve(bentleyIncludesPath, bentleyInclude, "**/*.map"))
     if (matches && matches.length > 0)
       includePaths.push(fs.realpathSync(path.resolve(bentleyIncludesPath, bentleyInclude)));
   }
