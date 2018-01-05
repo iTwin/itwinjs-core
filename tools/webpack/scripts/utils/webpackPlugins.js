@@ -48,6 +48,8 @@ class CopyNativeAddonsPlugin {
       const matches = glob.sync(dir)
 
       matches.push("@bentley/imodeljs-nodeaddon");
+      matches.push("@bentley/imodeljs-nodeaddonapi");
+      matches.push("@bentley/imodeljs-electronaddon");
 
       for (const match of matches) {
         const nativeDependency = pathToPackageName(match);

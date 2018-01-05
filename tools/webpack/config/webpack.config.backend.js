@@ -46,6 +46,7 @@ module.exports = {
   externals: [
     // We need the following work around to keep the native addon loader out of the bundle:
     /@bentley\/imodeljs-nodeaddon/,
+    /@bentley\/imodeljs-electronaddon/,
   ],
   // These are the "entry points" to our application.
   // This means they will be the "root" imports that are included in JS bundle.
