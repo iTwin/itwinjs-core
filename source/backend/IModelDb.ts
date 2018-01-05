@@ -20,7 +20,7 @@ import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./Elemen
 import { Model } from "./Model";
 import { BriefcaseInfo, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./BriefcaseManager";
 import { NodeAddonBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
-import { ECSqlStatement } from "./ECSqlStatement";
+import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { ECDb } from "./ECDb";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BindingValue } from "./BindingUtility";
@@ -37,100 +37,12 @@ IModelGatewayImpl.register();
 // Register the use of BisCore for the backend
 BisCore.registerSchema();
 
-class CachedECSqlStatement {
-  public statement: ECSqlStatement;
-  public useCount: number;
-}
-
-class ECSqlStatementCache {
-  private statements: Map<string, CachedECSqlStatement> = new Map<string, CachedECSqlStatement>();
-
-  public add(str: string, stmt: ECSqlStatement): void {
-
-    assert(!stmt.isShared(), "when you add a statement to the cache, the cache takes ownership of it. You can't add a statement that is already being shared in some other way");
-    assert(stmt.isPrepared(), "you must cache only cached statements.");
-
-    const existing = this.statements.get(str);
-    if (existing !== undefined) {
-      assert(existing.useCount > 0, "you should only add a statement if all existing copies of it are in use.");
-    }
-    const cs = new CachedECSqlStatement();
-    cs.statement = stmt;
-    cs.statement.setIsShared(true);
-    cs.useCount = 1;
-    this.statements.set(str, cs);
-  }
-
-  public getCount(): number {
-    return this.statements.size;
-  }
-
-  public find(str: string): CachedECSqlStatement | undefined {
-    return this.statements.get(str);
-  }
-
-  public release(stmt: ECSqlStatement): void {
-    for (const cs of this.statements) {
-      const css = cs[1];
-      if (css.statement === stmt) {
-        if (css.useCount > 0) {
-          css.useCount--;
-          if (css.useCount === 0) {
-            css.statement.reset();
-            css.statement.clearBindings();
-          }
-        } else {
-          assert(false, "double-release of cached statement");
-        }
-        // leave the statement in the cache, even if its use count goes to zero. See removeUnusedStatements and clearOnClose.
-        // *** TODO: we should remove it if it is a duplicate of another unused statement in the cache. The trouble is that we don't have the ecsql for the statement,
-        //           so we can't check for other equivalent statements.
-        break;
-      }
-    }
-  }
-
-  public removeUnusedStatements(targetCount: number) {
-    const keysToRemove = [];
-    for (const cs of this.statements) {
-      const css = cs[1];
-      assert(css.statement.isShared());
-      assert(css.statement.isPrepared());
-      if (css.useCount === 0) {
-        css.statement.setIsShared(false);
-        css.statement.dispose();
-        keysToRemove.push(cs[0]);
-        if (keysToRemove.length >= targetCount)
-          break;
-      }
-    }
-    for (const k of keysToRemove) {
-      this.statements.delete(k);
-    }
-  }
-
-  public clearOnClose() {
-    for (const cs of this.statements) {
-      assert(cs[1].useCount === 0, "statement was never released: " + cs[0]);
-      assert(cs[1].statement.isShared());
-      assert(cs[1].statement.isPrepared());
-      const stmt = cs[1].statement;
-      if (stmt !== undefined) {
-        stmt.setIsShared(false);
-        stmt.dispose();
-      }
-    }
-    this.statements.clear();
-  }
-}
-
 /** Represents a physical copy (briefcase) of an iModel that can be accessed as a file. */
 export class IModelDb extends IModel {
   public readonly models: IModelDbModels;
   public readonly elements: IModelDbElements;
   public readonly linkTableRelationships: IModelDbLinkTableRelationships;
   private readonly statementCache: ECSqlStatementCache = new ECSqlStatementCache();
-  private _maxStatementCacheCount = 20;
   private _codeSpecs: CodeSpecs;
   private _classMetaDataRegistry: MetaDataRegistry;
 
@@ -195,10 +107,12 @@ export class IModelDb extends IModel {
   }
 
   public createChangeCache(changeCache: ECDb, changeCachePath: string): void {
-    if (!this.briefcaseInfo)
+    if (this.nativeDb == null || changeCache.nativeDb == null)
       throw new IModelError(IModelStatus.BadRequest);
 
-    this.briefcaseInfo!.nativeDb.createChangeCache(changeCache.nativeDb, changeCachePath);
+    const stat: DbResult = this.nativeDb.createChangeCache(changeCache.nativeDb, changeCachePath);
+    if (stat !== DbResult.BE_SQLITE_OK)
+      throw new IModelError(stat);
   }
 
   public attachChangeCache(): void {
@@ -209,10 +123,10 @@ export class IModelDb extends IModel {
   }
 
   public isChangeCacheAttached(): boolean {
-    if (!this.briefcaseInfo)
+    if (this.nativeDb == null)
       throw new IModelError(IModelStatus.BadRequest);
 
-    return this.briefcaseInfo!.nativeDb.isChangeCacheAttached();
+    return this.nativeDb.isChangeCacheAttached();
   }
 
   /** Get the in-memory handle of the native Db */
@@ -359,12 +273,12 @@ export class IModelDb extends IModel {
   }
 
   /** Get a prepared ECSql statement - may require preparing the statement, if not found in the cache.
-   * @param sql The ECSql statement to prepare
+   * @param ecsql The ECSql statement to prepare
    * @return the prepared statement
    * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSql syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
    */
-  public getPreparedStatement(sql: string): ECSqlStatement {
-    const cs = this.statementCache.find(sql);
+  public getPreparedStatement(ecsql: string): ECSqlStatement {
+    const cs = this.statementCache.find(ecsql);
     if (cs !== undefined && cs.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
       assert(cs.statement.isShared());
       assert(cs.statement.isPrepared());
@@ -372,22 +286,20 @@ export class IModelDb extends IModel {
       return cs.statement;
     }
 
-    if (this.statementCache.getCount() > this._maxStatementCacheCount) {
-      this.statementCache.removeUnusedStatements(this._maxStatementCacheCount);
-    }
+    this.statementCache.removeUnusedStatementsIfNecessary();
 
-    const stmt = this.prepareStatement(sql);
-    this.statementCache.add(sql, stmt);
+    const stmt = this.prepareStatement(ecsql);
+    this.statementCache.add(ecsql, stmt);
     return stmt;
   }
 
   /** Use a prepared statement. This function takes care of preparing the statement and then releasing it.
-   * @param sql The ECSql statement to execute
+   * @param ecsql The ECSql statement to execute
    * @param cb the callback to invoke on the prepared statement
    * @return the value returned by cb
    */
-  public withPreparedStatement<T>(sql: string, cb: (stmt: ECSqlStatement) => T): T {
-    const stmt = this.getPreparedStatement(sql);
+  public withPreparedStatement<T>(ecsql: string, cb: (stmt: ECSqlStatement) => T): T {
+    const stmt = this.getPreparedStatement(ecsql);
     try {
       const val: T = cb(stmt);
       this.releasePreparedStatement(stmt);
@@ -400,13 +312,13 @@ export class IModelDb extends IModel {
   }
 
   /** Execute a query against this IModelDb.
-   * @param sql The ECSql statement to execute
+   * @param ecsql The ECSql statement to execute
    * @param bindings Optional values to bind to placeholders in the statement.
    * @returns all rows as an array or an empty array if nothing was selected
    * @throws [[IModelError]] If the statement is invalid
    */
-  public async executeQuery(sql: string, bindings?: BindingValue[] | Map<string, BindingValue> | any): Promise<any[]> {
-    return this.withPreparedStatement(sql, (stmt: ECSqlStatement) => {
+  public async executeQuery(ecsql: string, bindings?: BindingValue[] | Map<string, BindingValue> | any): Promise<any[]> {
+    return this.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {
       if (bindings)
         stmt.bindValues(bindings);
       const rows: any[] = [];

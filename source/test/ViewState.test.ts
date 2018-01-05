@@ -154,7 +154,7 @@ describe("ViewState", () => {
   // ===================================================================================================================================
   // C++ Tests:
 
-  it.only("should see ViewState creation parallels that of ViewState created in C++", async () => {
+  it("should see ViewState creation parallels that of ViewState created in C++", async () => {
     // compare the extracted view with that in native C++
     let nativeResultJSON = imodel.elements.executeTestById(1,
       {

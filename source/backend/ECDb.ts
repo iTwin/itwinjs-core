@@ -3,16 +3,20 @@
  *--------------------------------------------------------------------------------------------*/
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelError } from "../common/IModelError";
-import { NodeAddonRegistry } from "./NodeAddonRegistry";
 import { NodeAddonECDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
-import { ECSqlStatement } from "../backend/ECSqlStatement";
+import { NodeAddonRegistry } from "./NodeAddonRegistry";
+import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
+import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 /** Allows performing CRUD operations in an ECDb */
 export class ECDb {
   public nativeDb: NodeAddonECDb;
+  private readonly statementCache: ECSqlStatementCache;
 
   constructor() {
     this.nativeDb = new (NodeAddonRegistry.getAddon()).NodeAddonECDb();
+    this.statementCache = new ECSqlStatementCache();
   }
 
   /** Create an ECDb
@@ -46,6 +50,7 @@ export class ECDb {
    * @throws [[IModelError]] if the database is not open.
    */
   public closeDb(): void {
+    this.statementCache.clearOnClose();
     this.nativeDb.closeDb();
   }
 
@@ -77,13 +82,52 @@ export class ECDb {
       throw new IModelError(status, "Failed to import schema");
   }
 
+  /** Get a prepared ECSql statement - may require preparing the statement, if not found in the cache.
+   * @param ecsql The ECSql statement to prepare
+   * @return the prepared statement
+   * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSql syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
+   */
+  public getPreparedStatement(ecsql: string): ECSqlStatement {
+    const cachedStmt = this.statementCache.find(ecsql);
+    if (cachedStmt !== undefined && cachedStmt.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
+      assert(cachedStmt.statement.isShared());
+      assert(cachedStmt.statement.isPrepared());
+      cachedStmt.useCount++;
+      return cachedStmt.statement;
+    }
+
+    this.statementCache.removeUnusedStatementsIfNecessary();
+
+    const stmt = this.prepareStatement(ecsql);
+    this.statementCache.add(ecsql, stmt);
+    return stmt;
+  }
+
+  /** Use a prepared statement. This function takes care of preparing the statement and then releasing it.
+   * @param ecsql The ECSql statement to execute
+   * @param cb the callback to invoke on the prepared statement
+   * @return the value returned by cb
+   */
+  public withPreparedStatement<T>(ecsql: string, cb: (stmt: ECSqlStatement) => T): T {
+    const stmt = this.getPreparedStatement(ecsql);
+    try {
+      const val: T = cb(stmt);
+      this.statementCache.release(stmt);
+      return val;
+    } catch (err) {
+      this.statementCache.release(stmt);
+      Logger.logError(err.toString());
+      throw err;
+    }
+  }
+
   /** Prepare an ECSql statement.
-   * @param sql The ECSql statement to prepare
+   * @param ecsql The ECSql statement to prepare
    * @throws [[IModelError]] if there is a problem preparing the statement.
    */
-  public prepareStatement(sql: string): ECSqlStatement {
+  public prepareStatement(ecsql: string): ECSqlStatement {
     const stmt = new ECSqlStatement();
-    stmt.prepare(this.nativeDb, sql);
+    stmt.prepare(this.nativeDb, ecsql);
     return stmt;
   }
 }

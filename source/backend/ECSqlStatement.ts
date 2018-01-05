@@ -113,3 +113,97 @@ export class ECSqlStatement implements IterableIterator<any> {
     return this;
   }
 }
+
+export class CachedECSqlStatement {
+  public statement: ECSqlStatement;
+  public useCount: number;
+}
+
+export class ECSqlStatementCache {
+  private statements: Map<string, CachedECSqlStatement> = new Map<string, CachedECSqlStatement>();
+  public maxCount: number;
+
+  constructor(maxCount: number = 20) {
+    this.maxCount = maxCount;
+  }
+  public add(str: string, stmt: ECSqlStatement): void {
+
+    assert(!stmt.isShared(), "when you add a statement to the cache, the cache takes ownership of it. You can't add a statement that is already being shared in some other way");
+    assert(stmt.isPrepared(), "you must cache only cached statements.");
+
+    const existing = this.statements.get(str);
+    if (existing !== undefined) {
+      assert(existing.useCount > 0, "you should only add a statement if all existing copies of it are in use.");
+    }
+    const cs = new CachedECSqlStatement();
+    cs.statement = stmt;
+    cs.statement.setIsShared(true);
+    cs.useCount = 1;
+    this.statements.set(str, cs);
+  }
+
+  public getCount(): number {
+    return this.statements.size;
+  }
+
+  public find(str: string): CachedECSqlStatement | undefined {
+    return this.statements.get(str);
+  }
+
+  public release(stmt: ECSqlStatement): void {
+    for (const cs of this.statements) {
+      const css = cs[1];
+      if (css.statement === stmt) {
+        if (css.useCount > 0) {
+          css.useCount--;
+          if (css.useCount === 0) {
+            css.statement.reset();
+            css.statement.clearBindings();
+          }
+        } else {
+          assert(false, "double-release of cached statement");
+        }
+        // leave the statement in the cache, even if its use count goes to zero. See removeUnusedStatements and clearOnClose.
+        // *** TODO: we should remove it if it is a duplicate of another unused statement in the cache. The trouble is that we don't have the ecsql for the statement,
+        //           so we can't check for other equivalent statements.
+        break;
+      }
+    }
+  }
+
+  public removeUnusedStatementsIfNecessary(): void {
+    if (this.getCount() <= this.maxCount)
+      return;
+
+    const keysToRemove = [];
+    for (const cs of this.statements) {
+      const css = cs[1];
+      assert(css.statement.isShared());
+      assert(css.statement.isPrepared());
+      if (css.useCount === 0) {
+        css.statement.setIsShared(false);
+        css.statement.dispose();
+        keysToRemove.push(cs[0]);
+        if (keysToRemove.length >= this.maxCount)
+          break;
+      }
+    }
+    for (const k of keysToRemove) {
+      this.statements.delete(k);
+    }
+  }
+
+  public clearOnClose() {
+    for (const cs of this.statements) {
+      assert(cs[1].useCount === 0, "statement was never released: " + cs[0]);
+      assert(cs[1].statement.isShared());
+      assert(cs[1].statement.isPrepared());
+      const stmt = cs[1].statement;
+      if (stmt !== undefined) {
+        stmt.setIsShared(false);
+        stmt.dispose();
+      }
+    }
+    this.statements.clear();
+  }
+}
