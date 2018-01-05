@@ -13,7 +13,7 @@ if (!buildTarget) {
 }
 
 if ("electron" === buildTarget)
-process.env.ELECTRON_ENV = 'production';
+  process.env.ELECTRON_ENV = 'production';
 
 const path = require('path');
 const fs = require('fs-extra');
