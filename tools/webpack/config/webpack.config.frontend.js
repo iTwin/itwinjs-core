@@ -371,6 +371,10 @@ if (PRODUCTION) {
       new UglifyJSPlugin({
         parallel: true,
         uglifyOptions: {
+          mangle: {
+            // NEEDSWORK: Mangling classnames appears to break gateway marshalling...
+            keep_classnames: true,
+          },
           compress: {
             warnings: false,
             // Disabled because of an issue with Uglify breaking seemingly valid code:
