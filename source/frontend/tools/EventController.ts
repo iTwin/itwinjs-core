@@ -131,8 +131,13 @@ export class EventController {
   private interpretingDataButtonAsTouch: boolean;
   private endGestureId: GestureId;
   private removals: RemovalFunction[] = [];
+  private static scratchMousePos = new Point2d();
+  private static scratchGestureInfo: GestureInfo;
 
   constructor(public vp: Viewport) {
+    if (!EventController.scratchGestureInfo)
+      EventController.scratchGestureInfo = new GestureInfo();
+
     this.registerListeners();
     this.initializeTouches();
   }
@@ -203,7 +208,6 @@ export class EventController {
     return result;
   }
 
-  private static scratchMousePos = new Point2d();
   private handleMouseUpDown(ev: MouseEvent, isDown: boolean): void {
     const handler = this.getMouseButtonHandler(ev.button, isDown);
     if (!handler)
@@ -330,7 +334,6 @@ export class EventController {
     this.state = newState;
   }
 
-  private static scratchGestureInfo = new GestureInfo();
   private initGestureInfo(gestureId: GestureId, centerX: number, centerY: number, distance: number, points: TouchPoint[], isEnding: boolean, isFromMouse: boolean) {
     const info = EventController.scratchGestureInfo;
     info.init(gestureId, centerX, centerY, distance, points, isEnding, isFromMouse, this.getPreviousNumberTouches(true));

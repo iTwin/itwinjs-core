@@ -13,7 +13,6 @@ import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { AccuDraw, AccuDrawFlags } from "../AccuDraw";
 import { LegacyMath } from "../../common/LegacyMath";
 
-const scratchButtonEvent = new BeButtonEvent();
 const scratchFrustum = new Frustum();
 const scratchTransform1 = Transform.createIdentity();
 const scratchTransform2 = Transform.createIdentity();
@@ -22,7 +21,6 @@ const scratchPoint3d1 = new Point3d();
 const scratchPoint3d2 = new Point3d();
 const scratchVector3d1 = new Vector3d();
 const scratchVector3d2 = new Vector3d();
-const scratchViewRect = new ViewRect();
 
 export const enum ViewHandleType {
   None = 0,
@@ -592,7 +590,7 @@ export class ViewManip extends ViewTool {
     vp.viewCmdTargetCenter = (snapOrPrecision ? pt : undefined);
 
     const viewPt = vp.worldToView(this.targetCenterWorld, scratchPoint3d1);
-    const ev = scratchButtonEvent;
+    const ev = new BeButtonEvent();
     ev.initEvent(this.targetCenterWorld, this.targetCenterWorld, viewPt, vp, CoordSource.User, 0);
     ToolAdmin.instance.setAdjustedDataPoint(ev);
     ev.reset();
@@ -1460,8 +1458,9 @@ export class WindowAreaTool extends ViewTool {
       let npcZ: number;
 
       // Try to get nearest Z within rectangle directly from depth buffer
-      scratchViewRect.initFromRange(viewRange);
-      const depthRange = vp.pickRange(scratchViewRect);
+      const viewRect = new ViewRect();
+      viewRect.initFromRange(viewRange);
+      const depthRange = vp.pickRange(viewRect);
       if (depthRange) {
         npcZ = depthRange.minimum;
         // } else if (nullptr != (path = ViewManip:: GetTargetHitDetail(* m_viewport, DPoint3d:: FromInterpolate(corners[0], 0.5, corners[1]))))
@@ -1817,4 +1816,21 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     this.clearTouchStopData();
     return this.endGesture();
   }
+}
+
+export abstract class InputCollector extends Tool {
+  public installToolImplementation(): BentleyStatus {
+    const toolAdmin = ToolAdmin.instance;
+    // An input collector can only suspend a primitive tool, don't install if a viewing tool is active...
+    if (!toolAdmin.activeViewTool || !toolAdmin.onInstallTool(this))
+      return BentleyStatus.ERROR;
+
+    toolAdmin.startInputCollector(this);
+    toolAdmin.setInputCollector(this);
+    toolAdmin.onPostInstallTool(this);
+    return BentleyStatus.SUCCESS;
+  }
+
+  public exitTool() { ToolAdmin.instance.exitInputCollector(); }
+  public onResetButtonUp(_ev: BeButtonEvent) { this.exitTool(); return true; }
 }

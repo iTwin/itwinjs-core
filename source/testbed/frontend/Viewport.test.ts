@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import { Id64 } from "@build/imodeljs-core/node_modules/@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Vector3d, YawPitchRollAngles, RotMatrix } from "@build/imodeljs-core/node_modules/@bentley/geometry-core/lib/PointVector";
-import { DisplayStyle3dState, ModelSelectorState, SpatialViewState, CategorySelectorState, ViewState, SpatialViewDefinitionProps } from "@build/imodeljs-core/lib/common/ViewState";
+import { DisplayStyle3dState, ModelSelectorState, SpatialViewState, CategorySelectorState, ViewState, SpatialViewDefinitionProps, Camera } from "@build/imodeljs-core/lib/common/ViewState";
 import { Frustum } from "@build/imodeljs-core/lib/common/Frustum";
 import { IModelConnection } from "@build/imodeljs-core/lib/frontend/IModelConnection";
 import { Viewport, ViewRect, CoordSystem } from "@build/imodeljs-core/lib/frontend/Viewport";
@@ -89,9 +89,11 @@ describe("Viewport", () => {
     spatialViewProps.origin = Point3d.create(-5, -5, 0);
     spatialViewProps.extents = Vector3d.create(10, 10, 1);
     spatialViewProps.angles = YawPitchRollAngles.createDegrees(0, 0, 0);
-    spatialViewProps.camera.setLensAngle(Angle.createDegrees(50));
-    spatialViewProps.camera.setEyePoint(Point3d.create(5, 5, 50));
-    spatialViewProps.camera.setFocusDistance(49);
+    const camera = new Camera();
+    camera.setLensAngle(Angle.createDegrees(50));
+    camera.setEyePoint(Point3d.create(5, 5, 50));
+    camera.setFocusDistance(49);
+    spatialViewProps.camera = camera;
     spatialViewProps.cameraOn = false;
     viewStateXYFlat = new SpatialViewState(spatialViewProps, imodel, categorySelectorState, displayStyleState, modelSelectorState);
 
@@ -101,7 +103,7 @@ describe("Viewport", () => {
 
     spatialViewProps.origin = Point3d.create(-5, -5, 0);
     spatialViewProps.angles = YawPitchRollAngles.createDegrees(0, 0, 0);
-    spatialViewProps.camera.setEyePoint(Point3d.create(5, 5, 20));
+    camera.setEyePoint(Point3d.create(5, 5, 20));
     viewStateXYZ = new SpatialViewState(spatialViewProps, imodel, categorySelectorState, displayStyleState, modelSelectorState);
   });
 

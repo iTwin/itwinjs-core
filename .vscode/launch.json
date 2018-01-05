@@ -23,7 +23,7 @@
       "request": "launch",
       "name": "Run testbed",
       "cwd": "${workspaceFolder}/source/testbed/",
-      "runtimeExecutable": "${workspaceFolder}/source/testbed/node_modules/.bin/electron",
+      "runtimeExecutable": "${workspaceFolder}\\source\\testbed\\node_modules\\.bin\\electron",
       "runtimeArgs": [
         "${workspaceFolder}/source/testbed/node_modules/floss/electron",
         "{\"debug\":true, \"path\":\"frontend/lib/frontend/index.js\"}",

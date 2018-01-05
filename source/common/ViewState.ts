@@ -892,7 +892,8 @@ export class Camera {
     this.focusDistance = rhs.focusDistance;
     this.eye.setFrom(rhs.eye);
   }
-  public constructor(json: any) {
+  public constructor(json?: any) {
+    json = json ? json : {};
     this.lens = Angle.fromJSON(json.lens);
     this.focusDistance = JsonUtils.asDouble(json.focusDist);
     this.eye = Point3d.fromJSON(json.eye);
@@ -902,10 +903,10 @@ export class Camera {
 /** Parameters to construct a ViewDefinition3d */
 export interface ViewDefinition3dProps extends ViewDefinitionProps {
   cameraOn: boolean;  // if true, m_camera is valid.
-  origin: Point3d;    // The lower left back corner of the view frustum.
-  extents: Vector3d;   // The extent of the view frustum.
-  angles: YawPitchRollAngles | undefined;    // Rotation of the view frustum (could be undefined if going RotMatrix -> YawPitchRoll).
-  camera: Camera;    // The camera used for this view.
+  origin: Point3d | object;    // The lower left back corner of the view frustum.
+  extents: Vector3d | object;   // The extent of the view frustum.
+  angles: YawPitchRollAngles | object | undefined;    // Rotation of the view frustum (could be undefined if going RotMatrix -> YawPitchRoll).
+  camera: Camera | object;    // The camera used for this view.
 }
 
 /** Defines the state of a view of 3d models. */
