@@ -90,6 +90,7 @@ export class IModelConnection extends IModel {
    * Execute a test known to exist using the id recognized by the addon's test execution handler
    * @param id The id of the test you wish to execute
    * @param params A JSON string that should all of the data/parameters the test needs to function correctly
+   * @hidden
    */
   public executeTestById(id: number, params: any): any {
     if (!this.iModelToken)
