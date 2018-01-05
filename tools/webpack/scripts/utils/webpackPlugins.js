@@ -55,7 +55,7 @@ class CopyNativeAddonsPlugin {
         const nativeDependency = pathToPackageName(match);
 
         if (!packageLock.dependencies[nativeDependency] || !packageLock.dependencies[nativeDependency].dev)
-          fs.copySync(path.resolve(paths.appNodeModules, nativeDependency), path.resolve(paths.appLib, "node_modules", nativeDependency));
+          fs.copySync(path.resolve(paths.appNodeModules, nativeDependency), path.resolve(paths.appLib, "node_modules", nativeDependency), { dereference: true });
       }
     });
   }
