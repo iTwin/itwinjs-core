@@ -30,6 +30,7 @@ import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { ElementGroupsMembers } from "../backend/LinkTableRelationship";
 import { Appearance } from "../common/SubCategoryAppearance";
 import { ColorDef } from "../common/ColorDef";
+import { IModel } from "../common/IModel";
 
 describe("iModel", () => {
   let imodel1: IModelDb;
@@ -700,10 +701,10 @@ describe("iModel", () => {
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(testImodel, Code.createEmpty(), true);
 
     // Find or create a SpatialCategory
-    const dictionary: DictionaryModel = await testImodel.models.getModel(Model.getDictionaryId()) as DictionaryModel;
+    const dictionary: DictionaryModel = await testImodel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
     let spatialCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
     if (undefined === spatialCategoryId) {
-      spatialCategoryId = await IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({color: new ColorDef("rgb(255,0,0)")}));
+      spatialCategoryId = await IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
     }
 
     // Create a couple of physical elements.
@@ -713,7 +714,7 @@ describe("iModel", () => {
 
     // Create grouping relationships from 0 to 1 and from 0 to 2
     const r1: ElementGroupsMembers = ElementGroupsMembers.create(testImodel, id0, id1);
-    testImodel. linkTableRelationships.insertInstance(r1);
+    testImodel.linkTableRelationships.insertInstance(r1);
     const r2: ElementGroupsMembers = ElementGroupsMembers.create(testImodel, id0, id2);
     testImodel.linkTableRelationships.insertInstance(r2);
 
@@ -727,10 +728,10 @@ describe("iModel", () => {
     assert.equal(g2.classFullName, "BisCore:ElementGroupsMembers");
 
     // Look up by source and target
-    const g1byst: ElementGroupsMembers = await testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.sqlName, {sourceId: r1.sourceId, targetId: r1.targetId}) as ElementGroupsMembers;
+    const g1byst: ElementGroupsMembers = await testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.sqlName, { sourceId: r1.sourceId, targetId: r1.targetId }) as ElementGroupsMembers;
     assert.deepEqual(g1byst, g1);
 
-    // TODO: Do an ECSql query to verify that 0->1 and 0->2 relatoinships can be found
+    // TODO: Do an ECSql query to verify that 0->1 and 0->2 relationships can be found
 
     // Update relationship instance property
     r1.memberPriority = 1;
@@ -752,7 +753,7 @@ describe("iModel", () => {
 
     const ifperfimodel = await IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", { copyFilename: "ImodelJsTest_MeasureInsertPerformance.bim", enableTransactions: true });
 
-    const dictionary: DictionaryModel = await ifperfimodel.models.getModel(Model.getDictionaryId()) as DictionaryModel;
+    const dictionary: DictionaryModel = await ifperfimodel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
 
     // tslint:disable-next-line:no-console
     console.time("ImodelJsTest.MeasureInsertPerformance");

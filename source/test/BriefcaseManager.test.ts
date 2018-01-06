@@ -15,10 +15,11 @@ import { IModelTestUtils } from "./IModelTestUtils";
 import { Code } from "../common/Code";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Element } from "../backend/Element";
-import { DictionaryModel, Model } from "../backend/Model";
+import { DictionaryModel } from "../backend/Model";
 import { SpatialCategory } from "../backend/Category";
 import { Appearance } from "../common/SubCategoryAppearance";
 import { ColorDef } from "../common/ColorDef";
+import { IModel } from "../common/IModel";
 
 describe("BriefcaseManager", () => {
   let accessToken: AccessToken;
@@ -172,7 +173,7 @@ describe("BriefcaseManager", () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
 
     // Turn on optimistic concurrency control. This allows the app to modify elements, models, etc. without first acquiring locks.
-    // (Later, when the app downloads and merges changesets from the Hub into the briefcase, BriefcaseManager will merge changes and handle conflicts.)
+    // (Later, when the app downloads and merges changeSets from the Hub into the briefcase, BriefcaseManager will merge changes and handle conflicts.)
     iModel.setConcurrencyControlPolicy(new BriefcaseManager.OptimisticConcurrencyControlPolicy({
       updateVsUpdate: BriefcaseManager.ConflictResolution.Reject,
       updateVsDelete: BriefcaseManager.ConflictResolution.Take,
@@ -189,10 +190,10 @@ describe("BriefcaseManager", () => {
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, Code.createEmpty(), true);
 
     // Find or create a SpatialCategory
-    const dictionary: DictionaryModel = await iModel.models.getModel(Model.getDictionaryId()) as DictionaryModel;
+    const dictionary: DictionaryModel = await iModel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
     let spatialCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
     if (undefined === spatialCategoryId) {
-      spatialCategoryId = await IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({color: new ColorDef("rgb(255,0,0)")}));
+      spatialCategoryId = await IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
     }
 
     // Create a couple of physical elements.
@@ -202,7 +203,7 @@ describe("BriefcaseManager", () => {
     // Commit the local changes to a local transaction in the briefcase.
     iModel.saveChanges("inserted generic objects");
 
-    // TBD: Sync with iModelHub and  then upload the local changes as a changeset to iModelHub
+    // TBD: Sync with iModelHub and  then upload the local changes as a changeSet to iModelHub
 
     await iModel.close(accessToken);
   });
@@ -211,7 +212,7 @@ describe("BriefcaseManager", () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
     assert.exists(iModel);
 
-    const dictionary: DictionaryModel = await iModel.models.getModel(Model.getDictionaryId()) as DictionaryModel;
+    const dictionary: DictionaryModel = await iModel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
 
     let newModelId: Id64;
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, Code.createEmpty(), true);
@@ -232,7 +233,7 @@ describe("BriefcaseManager", () => {
     iModel.requestResources(req);
 
     for (const el of elements)
-        iModel.elements.insertElement(el);
+      iModel.elements.insertElement(el);
 
     iModel.saveChanges("inserted generic objects");
 
@@ -249,5 +250,5 @@ describe("BriefcaseManager", () => {
   // should not reuse closed briefcases for older versions
   // should delete closed briefcases if necessary
   // should reuse briefcases between users in readonly mode
-  // should not reuse briefcases between users in readwrite mode
+  // should not reuse briefcases between users in readWrite mode
 });

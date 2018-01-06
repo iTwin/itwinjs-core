@@ -25,6 +25,7 @@
     "Polyface",
     "Polyfaces",
     "Renormalize",
+    "Topo",
     "Unexpanded",
     "Viewport's",
     "XYZW",
@@ -67,6 +68,7 @@
     "undoable",
     "unsuspended",
     "viewflags",
+    "viewlet",
     "viewports",
     "zbuffer"
   ],

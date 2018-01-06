@@ -1202,4 +1202,12 @@ export class ToolAdmin {
 
     return result;
   }
+
+  public setLocateCircleOn(val: boolean) { if (!this.saveCursor) this.toolState.locateCircleOn = val; else this.saveLocateCircle = val; }
+  public setLocateCursor(enableLocate: boolean): void {
+    const viewMan = ViewManager.instance;
+    this.viewCursor = viewMan.inDynamicsMode ? BeCursor.Dynamics : BeCursor.CrossHair;
+    this.setLocateCircleOn(enableLocate);
+    viewMan.invalidateDecorationsAllViews();
+  }
 }

@@ -22,4 +22,7 @@ export class LegacyMath {
     }
     outP.setFrom(temp.plus(linePt));
   }
+
+  public static normalizedDifference(point1: Point3d, point2: Point3d, out: Vector3d): number { return point2.vectorTo(point1).normalizeWithLength(out).mag; }
+  public static normalizedCrossProduct(vec1: Vector3d, vec2: Vector3d, out: Vector3d): number { return vec1.crossProduct(vec2, out).normalizeWithLength(out).mag; }
 }

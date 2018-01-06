@@ -198,7 +198,7 @@ export class Viewport {
   private _viewCmdTargetCenter?: Point3d;
   public frustFraction: number = 1.0;
   public maxUndoSteps = 20;
-  public _auxCoordSystem?: AuxCoordSystemState;
+  private _auxCoordSystem?: AuxCoordSystemState;
   public gridOrientation = GridOrientationType.WorldXY;
   public readonly gridSpacing = new Point2d(1.0, 1.0);
   public gridsPerRef = 10;
@@ -209,10 +209,6 @@ export class Viewport {
   private _evController?: EventController;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
 
-  public get auxCoordSystem(): AuxCoordSystemState | undefined { return this._auxCoordSystem; }
-  public set auxCoordSystem(val: AuxCoordSystemState | undefined) { this._auxCoordSystem = val; this.view.setAuxiliaryCoordinateSystemId(Id64.fromJSON(val)); }
-  public getAuxCoordRotation(result?: RotMatrix) { return this.auxCoordSystem ? this.auxCoordSystem.getRotation(result) : RotMatrix.createIdentity(result); }
-  public getAuxCoordOrigin(result?: Point3d) { return this.auxCoordSystem ? this.auxCoordSystem.getOrigin(result) : Point3d.createZero(result); }
   public isPointAdjustmentRequired(): boolean { return this.view.is3d(); }
   public isSnapAdjustmentRequired(): boolean { return ToolAdmin.instance.acsPlaneSnapLock && this.view.is3d(); }
   public isContextRotationRequired(): boolean { return ToolAdmin.instance.acsContextLock; }
@@ -248,6 +244,11 @@ export class Viewport {
     }
     this.flashDuration = duration;
   }
+
+  public getAuxCoordSystem(): AuxCoordSystemState { if (!this._auxCoordSystem) this._auxCoordSystem = this.view.createAuxCoordSystem(""); return this._auxCoordSystem; }
+  public setAuxCoordSystem(val: AuxCoordSystemState | undefined) { this._auxCoordSystem = val; this.view.setAuxiliaryCoordinateSystemId(Id64.fromJSON(val)); }
+  public getAuxCoordRotation(result?: RotMatrix) { return this._auxCoordSystem ? this._auxCoordSystem.getRotation(result) : RotMatrix.createIdentity(result); }
+  public getAuxCoordOrigin(result?: Point3d) { return this._auxCoordSystem ? this._auxCoordSystem.getOrigin(result) : Point3d.createZero(result); }
 
   private static copyOutput = (from: XYZ, to?: XYZ) => { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; };
   public toView(from: XYZ, to?: XYZ) { this.rotMatrix.multiply3dInPlace(Viewport.copyOutput(from, to)); }
@@ -334,8 +335,9 @@ export class Viewport {
     const auxCoordSysId = view.getAuxiliaryCoordinateSystemId();
     if (auxCoordSysId.isValid()) {
       const props = await this.iModel.elements.getElementProps([auxCoordSysId]);
-      this.auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
-    }
+      this._auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
+    } else { this._auxCoordSystem = undefined; }
+
     this.gridOrientation = view.getGridOrientation();
     this.gridsPerRef = view.getGridsPerRef();
     view.getGridSpacing(this.gridSpacing);

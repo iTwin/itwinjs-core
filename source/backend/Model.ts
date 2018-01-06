@@ -43,14 +43,11 @@ export class Model extends Entity implements ModelProps {
     return val;
   }
 
-  /** Get the Id of the special dictionary model */
-  public static getDictionaryId(): Id64 { return new Id64("0x10"); }
-
- /**
-  * Add the lock, code, and other resource requests that would be needed in order to carry out the specified operation.
-  * @param req The request object, which accumulates requests.
-  * @param opcode The operation that will be performed on the element.
-  */
+  /**
+   * Add the lock, code, and other resource requests that would be needed in order to carry out the specified operation.
+   * @param req The request object, which accumulates requests.
+   * @param opcode The operation that will be performed on the element.
+   */
   public buildResourcesRequest(req: BriefcaseManager.ResourcesRequest, opcode: DbOpcode): void {
     this.iModel.buildResourcesRequestForModel(req, this, opcode);
   }

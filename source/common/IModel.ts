@@ -74,6 +74,9 @@ export abstract class IModel implements IModelProps {
 
   public isReadonly() { return this.token.openMode === OpenMode.Readonly; }
   public static getDefaultSubCategoryId(id: Id64): Id64 { return id.isValid() ? new Id64([id.getLow() + 1, id.getHigh()]) : new Id64(); }
+
+  /** Get the Id of the special dictionary model */
+  public static getDictionaryId(): Id64 { return new Id64("0x10"); }
 }
 
 /** Common configuration for various API */
@@ -89,7 +92,7 @@ export abstract class Configuration {
 
   /**
    * Set the deployment configuration of Connect and IModelHub services - these are used to find Projects and iModels
-   * @remarks This needs to be setup just once before any imodels are opened, and cannot be switched thereafter.
+   * @remarks This needs to be setup just once before any iModels are opened, and cannot be switched thereafter.
    */
   public static set iModelHubDeployConfig(deploymentEnv: DeploymentEnv) {
     Configuration._iModelHubDeployConfig = deploymentEnv;

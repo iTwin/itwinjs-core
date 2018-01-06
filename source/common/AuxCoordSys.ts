@@ -1,12 +1,15 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ElementState, ViewState } from "./ViewState";
+import { ViewState } from "./ViewState";
 import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps } from "./ElementProps";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Point3d, RotMatrix, Point2d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { IModel } from "./IModel";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
+import { Code, CodeSpecNames } from "./Code";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { ElementState } from "./EntityState";
 
 export const enum ACSType {
   None = 0,
@@ -39,6 +42,17 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     return new AuxCoordSystemSpatialState(props, iModel);
   }
 
+  /**
+   * Create a new AuxCoordSystem.
+   * @param acsName the name for the new AuxCoordSystem
+   * @param iModel the iModel for which the ACS applies.
+   * @note call this method with the appropriate subclass (e.g. AuxCoordSystemSpatialState, AuxCoordSystem2dState, etc), not on AuxCoordSystemState directly
+   */
+  public static createNew(acsName: string, iModel: IModel): AuxCoordSystemState {
+    const myCode = new Code({ spec: CodeSpecNames.AuxCoordSystemSpatial(), scope: IModel.getDictionaryId().toString(), value: acsName });
+    return new AuxCoordSystemSpatialState({ model: IModel.getDictionaryId(), code: myCode, classFullName: this.getClassFullName(), id: new Id64() }, iModel);
+  }
+
   public constructor(props: AuxCoordSystemProps, iModel: IModel) {
     super(props, iModel);
     this.type = JsonUtils.asInt(props.type, ACSType.None);
@@ -62,7 +76,6 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
   public abstract getRotation(result?: RotMatrix): RotMatrix;
   public abstract setRotation(val: RotMatrix): void;
   public is3d(): boolean { return this instanceof AuxCoordSystem3dState; }
-
 }
 
 export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoordSystem2dProps {

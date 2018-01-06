@@ -24,6 +24,7 @@ export enum BeCursor {
   NotAllowed = "not-allowed",
   Text = "text",
   Busy = "wait",
+  Dynamics = "move",
 }
 
 export const enum GestureId {

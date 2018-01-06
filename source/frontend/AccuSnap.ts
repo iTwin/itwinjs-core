@@ -104,7 +104,7 @@ export class AccuSnap {
   private clearIsFlashed(view: Viewport) { this.areFlashed.delete(view); }
   private isSnapEnabled(): boolean { return this.toolState.m_enabled; }
   private getUserEnabled(): boolean { return this.settings.enableFlag; }
-  private userWantsSnaps(): boolean { return this.getUserEnabled(); }
+  public userWantsSnaps(): boolean { return this.getUserEnabled(); }
   private static toSnapDetail(hit?: HitDetail): SnapDetail | undefined { return (hit && hit.isSnapDetail()) ? hit : undefined; }
   public getCurrSnapDetail(): SnapDetail | undefined { return AccuSnap.toSnapDetail(this.currHit); }
   public isHot(): boolean { const currSnap = this.getCurrSnapDetail(); return !currSnap ? false : currSnap.isHot(); }
@@ -484,7 +484,7 @@ export class AccuSnap {
     return this.suppressed;
   }
 
-  private enableSnap(yesNo: boolean) {
+  public enableSnap(yesNo: boolean) {
     const previousDoSnapping = this.doSnapping();
     this.toolState.m_enabled = yesNo;
     if (!yesNo) this.clear();
@@ -908,7 +908,7 @@ export class AccuSnap {
     }
   }
 
-  private enableLocate(yesNo: boolean) {
+  public enableLocate(yesNo: boolean) {
     this.toolState.m_locate = yesNo;
     this.toolState.m_subSelectionMode = SubSelectionMode.None;
   }

@@ -64,7 +64,7 @@ export const enum RotationMode {
   Restore = 7,
 }
 
-const enum LockedStates {
+export const enum LockedStates {
   NONE_LOCKED = 0,
   X_BM = (1),
   Y_BM = (1 << 1),
@@ -74,14 +74,14 @@ const enum LockedStates {
   ANGLE_BM = (XY_BM | VEC_BM),
 }
 
-const enum CurrentState {
+export const enum CurrentState {
   NotEnabled = 0, // Compass disabled/unwanted for this session.
   Deactivated = 1, // Compass deactivated but CAN be activated by user.
   Inactive = 2, // Compass not displayed awaiting automatic activation (default tool state).
   Active = 3, // Compass displayed and adjusting points.
 }
 
-const enum ContextMode {
+export const enum ContextMode {
   Locked = 0,
   XAxis = 1,
   YAxis = 2,
@@ -110,7 +110,7 @@ enum Constants {
   SMALL_DELTA = 0.00001,
 }
 
-class AccudrawData {
+export class AccudrawData {
   public flags = 0;      // AccuDrawFlags
   public readonly origin = new Point3d();     // used if ACCUDRAW_SetOrigin
   public readonly delta = new Point3d();      // if ACCUDRAW_Lock_X, etc.
@@ -121,7 +121,7 @@ class AccudrawData {
   public zero() { this.flags = this.distance = this.angle = 0; this.origin.setZero(); this.delta.setZero(); this.vector.setZero(); this.rMatrix.setIdentity(); }
 }
 
-class Flags {
+export class Flags {
   public redrawCompass = false;
   public dialogNeedsUpdate = false;
   public rotationNeedsUpdate = true;
@@ -141,12 +141,12 @@ class Flags {
   public animateRotation = false;
 }
 
-class RoundOff {
+export class RoundOff {
   public active = false;
   public units = 0;
 }
 
-class SavedState {
+export class SavedState {
   public state = CurrentState.NotEnabled;
   public view?: Viewport;
   public mode = CompassMode.Polar;
@@ -178,7 +178,7 @@ class SavedCoords {
   public readonly savedValIsAngle: boolean[] = [];
 }
 
-class ThreeAxes {
+export class ThreeAxes {
   public readonly x = Vector3d.unitX();
   public readonly y = Vector3d.unitY();
   public readonly z = Vector3d.unitZ();
@@ -207,37 +207,37 @@ class ThreeAxes {
  */
 export class AccuDraw {
   public static readonly instance = new AccuDraw();
-  private currentState = CurrentState.NotEnabled;     // Compass state
+  public currentState = CurrentState.NotEnabled;     // Compass state
   private currentMode = CompassMode.Rectangular;      // Compass mode
-  private rotationMode = RotationMode.View;     // Compass rotation
-  private currentView?: Viewport;      // will be nullptr if view not yet defined
-  private readonly published = new AccudrawData();        // Staging area for hints
+  public rotationMode = RotationMode.View;     // Compass rotation
+  public currentView?: Viewport;      // will be nullptr if view not yet defined
+  public readonly published = new AccudrawData();        // Staging area for hints
   public readonly origin = new Point3d();    // origin point...not on compass plane when z != 0.0
-  private readonly axes = new ThreeAxes();    // X, Y and Z vectors (3d rotation matrix)
-  private readonly delta = Vector3d.unitZ();         // dialog items (x, y & z)
+  public readonly axes = new ThreeAxes();    // X, Y and Z vectors (3d rotation matrix)
+  public readonly delta = Vector3d.unitZ();         // dialog items (x, y & z)
   private distance = 0;         // current distance
   private angle = 0;            // current angle
-  private locked = LockedStates.NONE_LOCKED;           // axis/distance locked bit mask
-  private indexed = LockedStates.NONE_LOCKED;          // axis/distance indexed bit mask
+  public locked = LockedStates.NONE_LOCKED;           // axis/distance locked bit mask
+  public indexed = LockedStates.NONE_LOCKED;          // axis/distance indexed bit mask
   private readonly distanceRoundOff = new RoundOff();       // distance round off enabled and unit
   private readonly angleRoundOff = new RoundOff();       // angle round off enabled and unit
-  private readonly flags = new Flags();            // current state flags
+  public readonly flags = new Flags();            // current state flags
   private readonly fieldLocked: boolean[] = [];   // locked state of fields
   private readonly keyinStatus: KeyinStatus[] = [];   // state of input field
-  private readonly savedState = new SavedState();       // Restore point for shortcuts/tools...
+  public readonly savedState = new SavedState();       // Restore point for shortcuts/tools...
   private readonly savedCoords = new SavedCoords();      // History of previous angles/distances...
-  private readonly baseAxes = new ThreeAxes();     // Used for "context" base rotation to hold arbitrary rotation w/o needing to change ACS...
-  private readonly lastAxes = new ThreeAxes();      // Last result from UpdateRotation, replaces cM.rMatrix...
+  public readonly baseAxes = new ThreeAxes();     // Used for "context" base rotation to hold arbitrary rotation w/o needing to change ACS...
+  public readonly lastAxes = new ThreeAxes();      // Last result from UpdateRotation, replaces cM.rMatrix...
   private lastDistance = 0;     // previous saved distance or distance indexing tick
   private tolerance = 0;        // computed view based indexing tolerance
   private percentChanged = 0;   // Compass animation state
   private threshold = 0;        // Threshold for automatic x/y field focus change.
-  private readonly planePt = new Point3d();          // same as origin unless non-zero locked z value
+  public readonly planePt = new Point3d();          // same as origin unless non-zero locked z value
   private readonly rawDelta = new Point2d();         // used by rect fix point
   private readonly rawPoint = new Point3d();         // raw uor point passed to fix point
   private readonly rawPointOnPlane = new Point3d();  // adjusted rawPoint by applying hard/soft construction plane
-  private readonly point = new Point3d();            // current cursor point
-  private readonly vector = Vector3d.unitZ();           // current/last good locked direction
+  public readonly point = new Point3d();            // current cursor point
+  public readonly vector = Vector3d.unitZ();           // current/last good locked direction
   private xIsNegative = false;      // Last delta.x was negative
   private yIsNegative = false;      // Last delta.y was negative
   private xIsExplicit = false;      // Sign of delta.x established from user input input, don't allow +/- side flip.
@@ -257,15 +257,15 @@ export class AccuDraw {
   protected indexColor = new ColorDef(ColorRgb.white);
 
   // User Preference Settings...
-  protected smartKeyin = true;
-  protected floatingOrigin = true;
-  protected stickyZLock = false;
-  protected alwaysShowCompass = false;
-  protected contextSensitive = true;
-  protected axisIndexing = true;
-  protected distanceIndexing = true;
-  protected autoFocusFields = true;
-  protected autoPointPlacement = false;
+  public smartKeyin = true;
+  public floatingOrigin = true;
+  public stickyZLock = false;
+  public alwaysShowCompass = false;
+  public contextSensitive = true;
+  public axisIndexing = true;
+  public distanceIndexing = true;
+  public autoFocusFields = true;
+  public autoPointPlacement = false;
 
   private static tempRot = new RotMatrix();
   public getRotation(rMatrix?: RotMatrix): RotMatrix { if (!rMatrix) rMatrix = this.rMatrix; RotMatrix.createRows(this.axes.x, this.axes.y, this.axes.z, rMatrix); return rMatrix; }
@@ -277,7 +277,9 @@ export class AccuDraw {
   public isDeactivated(): boolean { return (CurrentState.Deactivated === this.currentState); }
   public animateCompassChanges() { return true; }
   protected setNewFocus(index: ItemField) { this.newFocus = index; }
-  protected grabInputFocus() { }
+  public getFieldLock(index: ItemField): boolean { return this.fieldLocked[index]; }
+  public getKeyinStatus(index: ItemField): KeyinStatus { return this.keyinStatus[index]; }
+  public grabInputFocus() { }
 
   public activate(): void {
     // Upgrade state to inactive so OnBeginDynamics knows it's ok to move to active...
@@ -481,7 +483,7 @@ export class AccuDraw {
     return false;
   }
 
-  private accountForAuxRotationPlane(rot: ThreeAxes, plane: RotationMode): void {
+  public accountForAuxRotationPlane(rot: ThreeAxes, plane: RotationMode): void {
     // ACS mode now can have "front" and "side" variations...
     switch (plane) {
       case RotationMode.Top:
@@ -657,7 +659,7 @@ export class AccuDraw {
     }
   }
 
-  private updateRotation(animate: boolean = false, newRotationIn?: RotMatrix): void {
+  public updateRotation(animate: boolean = false, newRotationIn?: RotMatrix): void {
     let clearLocks = true;
     const oldRotation = this.axes.clone();
     let rMatrix: RotMatrix;
@@ -1065,7 +1067,7 @@ export class AccuDraw {
     return BentleyStatus.SUCCESS;
   }
 
-  private unlockAllFields(): void {
+  public unlockAllFields(): void {
     this.locked = 0;
 
     if (CompassMode.Polar === this.getCompassMode()) {
@@ -1262,11 +1264,12 @@ export class AccuDraw {
     this.setKeyinStatus(index, KeyinStatus.Dynamic);
   }
 
-  private static getStandardRotation(nStandard: StandardViewId, vp: Viewport | undefined, useACS: boolean): RotMatrix {
+  public static getStandardRotation(nStandard: StandardViewId, vp: Viewport | undefined, useACS: boolean, out?: RotMatrix): RotMatrix {
     if (nStandard < StandardViewId.Top || nStandard > StandardViewId.RightIso)
       nStandard = StandardViewId.Top;
 
-    const rMatrix = standardViewMatrices[nStandard].clone();
+    const rMatrix = out ? out : new RotMatrix();
+    rMatrix.setFrom(standardViewMatrices[nStandard]);
     const useVp = vp ? vp : ViewManager.instance.selectedView;
     if (!useACS || !useVp)
       return rMatrix;
@@ -1289,22 +1292,22 @@ export class AccuDraw {
     return useVp.rotMatrix;
   }
 
-  public static updateAuxCoordinateSystem(acs: AuxCoordSystemState, vp: Viewport, allViews: boolean): void {
+  public static updateAuxCoordinateSystem(acs: AuxCoordSystemState, vp: Viewport, allViews: boolean = true): void {
     // When modeling with multiple spatial views open, you'd typically want the same ACS in all views...
     if (allViews && vp.view.isSpatialView()) {
       for (const otherVp of ViewManager.instance.viewports) {
         if (otherVp !== vp && otherVp.view.isSpatialView())
-          otherVp.auxCoordSystem = acs;
+          otherVp.setAuxCoordSystem(acs);
       }
     }
 
-    vp.auxCoordSystem = acs;
+    vp.setAuxCoordSystem(acs);
 
     // NOTE: Change AccuDraw's base rotation to ACS.
     AccuDraw.instance.setContext(AccuDrawFlags.OrientACS);
   }
 
-  private distanceLock(synchText: boolean, saveInHistory: boolean): void {
+  public distanceLock(synchText: boolean, saveInHistory: boolean): void {
     this.locked |= LockedStates.DIST_BM;
 
     if (!this.fieldLocked[ItemField.DIST_Item])
@@ -1319,7 +1322,7 @@ export class AccuDraw {
     }
   }
 
-  private angleLock(): void {
+  public angleLock(): void {
     if (this.indexed & LockedStates.Y_BM)
       this.locked |= LockedStates.Y_BM;
     else if (this.indexed & LockedStates.X_BM)
@@ -1367,7 +1370,7 @@ export class AccuDraw {
     }
   }
 
-  private saveCoordinate(index: ItemField, value: number): void {
+  public saveCoordinate(index: ItemField, value: number): void {
     const isAngle = (ItemField.ANGLE_Item === index);
     let currIndex = this.savedCoords.nSaveValues + 1;
 
@@ -1396,7 +1399,7 @@ export class AccuDraw {
       this.lastDistance = value;
   }
 
-  private changeCompassMode(animate: boolean = false): void {
+  public changeCompassMode(animate: boolean = false): void {
     this.setCompassMode(CompassMode.Polar === this.getCompassMode() ? CompassMode.Rectangular : CompassMode.Polar);
 
     const viewport = this.currentView;
@@ -1611,7 +1614,7 @@ export class AccuDraw {
     return false;
   }
 
-  private saveState(restore: boolean, stateBuffer?: SavedState): void {
+  public saveState(restore: boolean, stateBuffer?: SavedState): void {
     if (!stateBuffer)
       stateBuffer = this.savedState;
 
@@ -2050,12 +2053,12 @@ export class AccuDraw {
     }
   }
 
-  protected onCompassModeChange(): void { }
-  protected onRotationModeChange(): void { }
-  protected onFieldLockChange(_index: ItemField) { }
-  protected onFieldValueChange(_index: ItemField) { }
-  protected hasInputFocus() { return true; }
-  protected setFocusItem(_index: ItemField) { }
+  public onCompassModeChange(): void { }
+  public onRotationModeChange(): void { }
+  public onFieldLockChange(_index: ItemField) { }
+  public onFieldValueChange(_index: ItemField) { }
+  public hasInputFocus() { return true; }
+  public setFocusItem(_index: ItemField) { }
 
   private static getMinPolarMag(origin: Point3d): number {
     return (1.0e-12 * (1.0 + origin.magnitude()));
@@ -2107,7 +2110,7 @@ export class AccuDraw {
     return BentleyStatus.SUCCESS;
   }
 
-  private softConstructionPlane(outPtP: Point3d, inPtP: Point3d, pointOnPlaneP: Point3d, normalVectorP: Vector3d, vp: Viewport, isSnap: boolean): boolean {
+  public softConstructionPlane(outPtP: Point3d, inPtP: Point3d, pointOnPlaneP: Point3d, normalVectorP: Vector3d, vp: Viewport, isSnap: boolean): boolean {
     if (!vp.isPointAdjustmentRequired()) {
       outPtP.setFrom(inPtP);
       return true;
@@ -2128,7 +2131,7 @@ export class AccuDraw {
   }
 
   /** snap projects normal, always produces point */
-  private hardConstructionPlane(outPtP: Point3d, inPtP: Point3d, pointOnPlaneP: Point3d, normalVectorP: Vector3d, vp: Viewport, isSnap: boolean): boolean {
+  public hardConstructionPlane(outPtP: Point3d, inPtP: Point3d, pointOnPlaneP: Point3d, normalVectorP: Vector3d, vp: Viewport, isSnap: boolean): boolean {
     if (!vp.isPointAdjustmentRequired()) {
       outPtP.setFrom(inPtP);
       return true;
@@ -2341,7 +2344,7 @@ export class AccuDraw {
       this.delta.z = (this.flags.pointIsOnPlane) ? 0.0 : delta.dotProduct(this.axes.z);
   }
 
-  private fixPointRectangular(vp: Viewport): void {
+  public fixPointRectangular(vp: Viewport): void {
     const zLocked = this.isZLocked(vp);
     const xyCorrection = new Vector3d();
 
@@ -2535,7 +2538,7 @@ export class AccuDraw {
     }
   }
 
-  private refreshDecorationsAndDynamics(): void {
+  public refreshDecorationsAndDynamics(): void {
     // Make sure AccuDraw updates it's decorations...
     const vp = this.currentView;
     if (!vp)
@@ -2872,7 +2875,7 @@ export class AccuDraw {
     }
   }
 
-  private processHints(): void {
+  public processHints(): void {
     if (!this.published.flags || !this.isEnabled())
       return;
 

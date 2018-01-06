@@ -190,6 +190,7 @@ export class GeomDetail {
     }
     return false;
   }
+  public setClosestPoint(pt: Point3d) { this.m_closePoint.setFrom(pt); }
 }
 
 export const enum HitDetailType {
@@ -202,7 +203,7 @@ export class HitDetail {
   public m_elemTopo?: ElemTopology; // details about the topology of the element.
   public m_hitDescription: string;
   public m_subSelectionMode = SubSelectionMode.None; // segment hilite/flash mode.
-  public constructor(public m_viewport: Viewport, public m_sheetViewport: Viewport | undefined, public m_elementId: Id64 | undefined, public m_testPoint: Point3d, public m_locateSource: HitSource, public m_geomDetail: GeomDetail) { }
+  public constructor(public m_viewport: Viewport, public m_sheetViewport: Viewport | undefined, public m_elementId: Id64 | undefined, public readonly m_testPoint: Point3d, public m_locateSource: HitSource, public readonly m_geomDetail: GeomDetail) { }
 
   public isSnapDetail(): this is SnapDetail { return false; }
   public getHitType(): HitDetailType { return HitDetailType.Hit; }
@@ -214,6 +215,20 @@ export class HitDetail {
   }
   public draw(context: DecorateContext): void { context.drawHit(this); }
   public getHitPoint(): Point3d { return this.m_geomDetail.m_closePoint; }
+  public setHitPoint(pt: Point3d) { this.m_geomDetail.setClosestPoint(pt); }
+  public setTestPoint(pt: Point3d) { this.m_testPoint.setFrom(pt); }
+  public setFrom(other: HitDetail) {
+    this.m_elemTopo = other.m_elemTopo;
+    this.m_hitDescription = other.m_hitDescription;
+    this.m_subSelectionMode = other.m_subSelectionMode;
+    this.m_viewport = other.m_viewport;
+    this.m_sheetViewport = other.m_sheetViewport;
+    this.m_elementId = other.m_elementId;
+    this.m_testPoint.setFrom(other.m_testPoint);
+    this.m_locateSource = other.m_locateSource;
+    this.m_geomDetail.setFrom(other.m_geomDetail);
+  }
+  public clone(): HitDetail { const val = new HitDetail(this.m_viewport, this.m_sheetViewport, this.m_elementId, this.m_testPoint, this.m_locateSource, this.m_geomDetail.clone()); val.setFrom(this); return val; }
 }
 
 export class SnapDetail extends HitDetail {
@@ -244,12 +259,31 @@ export class SnapDetail extends HitDetail {
     }
   }
 
+  public setFrom(other: SnapDetail) {
+    super.setFrom(other);
+    this.m_heat = other.m_heat;
+    this.m_hitDescription = other.m_hitDescription;
+    this.m_screenPt.setFrom(other.m_screenPt);
+    this.m_divisor = other.m_divisor;
+    this.m_sprite = other.m_sprite;
+    this.m_snapMode = other.m_snapMode;
+    this.m_originalSnapMode = other.m_originalSnapMode;
+    this.m_minScreenDist = other.m_minScreenDist;
+    this.m_snapPoint.setFrom(other.m_snapPoint);
+    this.m_adjustedPt.setFrom(other.m_adjustedPt);
+    this.m_customKeypointSize = other.m_customKeypointSize;
+    this.m_customKeypointData = other.m_customKeypointData;
+    this.m_allowAssociations = other.m_allowAssociations;
+  }
+
+  public clone(): SnapDetail { const val = new SnapDetail(this); val.setFrom(this); return val; }
   public isSnapDetail(): this is SnapDetail { return true; }
   public getAdjustedPoint() { return this.m_adjustedPt; }
   public isHot(): boolean { return this.m_heat !== SnapHeat.None; }
   public isPointOnCurve(): boolean { return this.m_heat === SnapHeat.InRange; }
   public getHitType(): HitDetailType { return HitDetailType.Snap; }
   public getHitPoint(): Point3d { return this.isHot() ? this.m_snapPoint : super.getHitPoint(); }
+  public setHitPoint(hitPoint: Point3d) { this.m_snapPoint.setFrom(hitPoint); this.m_adjustedPt.setFrom(hitPoint); }
 }
 
 export class IntersectDetail extends SnapDetail {

@@ -115,8 +115,6 @@ describe("Viewport", () => {
   it("should obtain equal viewport from round-trip setup using frustum", () => {
     for (const viewState of [viewStateXYFlat, viewStateXZFlat, viewStateXYZ]) {
       const viewPort = new TestViewport(viewState);
-      assert.isDefined(viewPort, "Could create testing equivalent of a ViewPort");
-
       const newViewState = viewPort.view.clone<SpatialViewState>();
       let frustumWorld: Frustum;
 
