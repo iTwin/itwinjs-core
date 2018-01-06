@@ -78,12 +78,11 @@ describe("ChangeSummary", () => {
     await iModel.close(accessToken);
   });
 
-  it.skip("Extract ChangeSummaries from existing changesets", async () => {
+  it("Extract ChangeSummaries from existing changesets", async () => {
     await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, testIModelId);
 
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.exists(iModel);
-    assert(iModel.iModelToken.openMode === OpenMode.Readonly);
     iModel.attachChangeCache();
     assert.isTrue(iModel.isChangeCacheAttached());
 
