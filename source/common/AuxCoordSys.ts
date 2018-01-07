@@ -4,7 +4,7 @@
 import { ViewState } from "./ViewState";
 import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps } from "./ElementProps";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { Point3d, RotMatrix, Point2d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, RotMatrix, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY } from "@bentley/geometry-core/lib/PointVector";
 import { IModel } from "./IModel";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Code, CodeSpecNames } from "./Code";
@@ -72,7 +72,8 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
   }
 
   public abstract getOrigin(result?: Point3d): Point3d;
-  public abstract setOrigin(val: Point3d): void;
+  public abstract setOrigin(val: XYAndZ | XAndY): void;
+  /** get a *copy of* the rotation matrix for this ACS. */
   public abstract getRotation(result?: RotMatrix): RotMatrix;
   public abstract setRotation(val: RotMatrix): void;
   public is3d(): boolean { return this instanceof AuxCoordSystem3dState; }
@@ -98,7 +99,7 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
   }
 
   public getOrigin(result?: Point3d): Point3d { return Point3d.createFrom(this.origin, result); }
-  public setOrigin(val: Point3d): void { this.origin.setFrom(val); }
+  public setOrigin(val: XYAndZ | XAndY): void { this.origin.setFrom(val); }
   public getRotation(result?: RotMatrix): RotMatrix { return this._rMatrix.clone(result); }
   public setRotation(val: RotMatrix): void {
     this._rMatrix.setFrom(val);
@@ -133,7 +134,7 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
   }
 
   public getOrigin(result?: Point3d): Point3d { return Point3d.createFrom(this.origin, result); }
-  public setOrigin(val: Point3d): void { this.origin.setFrom(val); }
+  public setOrigin(val: XYAndZ | XAndY): void { this.origin.setFrom(val); }
   public getRotation(result?: RotMatrix): RotMatrix { return this._rMatrix.clone(result); }
   public setRotation(rMatrix: RotMatrix): void {
     this._rMatrix.setFrom(rMatrix);

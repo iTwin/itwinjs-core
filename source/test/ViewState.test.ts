@@ -6,11 +6,12 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
 import { Point3d, Vector3d, YawPitchRollAngles, Range3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { DisplayStyle3dState, ModelSelectorState, SpatialViewState, CategorySelectorState, ViewStatus, Camera, MarginPercent, CategorySelectorProps, ModelSelectorProps } from "../common/ViewState";
+import { DisplayStyle3dState, ModelSelectorState, SpatialViewState, CategorySelectorState, ViewStatus, Camera, MarginPercent, CategorySelectorProps, ModelSelectorProps, standardView } from "../common/ViewState";
 import { IModelDb } from "../backend/IModelDb";
 import { DisplayStyle3d, SpatialViewDefinition } from "../backend/ViewDefinition";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import * as path from "path";
+import { AuxCoordSystemSpatialState } from "../common/AuxCoordSys";
 
 /* tslint:disable: no-console */
 
@@ -144,12 +145,16 @@ describe("ViewState", () => {
     assert.equal(stat, ViewStatus.Success);
     assert.notDeepEqual(v2, viewState);
 
+    const acs = v2.createAuxCoordSystem("test");
+    assert.equal(acs.code.value, "test");
+    assert.instanceOf(acs, AuxCoordSystemSpatialState);
+    acs.setOrigin({ x: 1, y: 1 });
+    assert.isTrue(acs.getOrigin().isExactEqual({ x: 1, y: 1, z: 0 }));
+    acs.setRotation(standardView.Iso);
+    assert.isTrue(acs.getRotation().isExactEqual(standardView.Iso));
   });
 
-  // ===================================================================================================================================
-  // ===================================================================================================================================
   // C++ Tests:
-
   it("ViewState creation parallels C++", async () => {
     // compare the extracted view with that in native C++
     let nativeResultJSON = imodel.elements.executeTestById(1,
@@ -167,7 +172,7 @@ describe("ViewState", () => {
   });
 
   it("view volume adjustments should match that of adjustments in C++", async () => {
-    // Flat view test #1 ==========================================================================================
+    // Flat view test #1
     const tsFlatViewState = await convertViewDefToViewState(imodel, flatView);
     tsFlatViewState.setOrigin(Point3d.create(-5, -5, 0));
     tsFlatViewState.setExtents(Vector3d.create(10, 10, 1));
@@ -191,9 +196,8 @@ describe("ViewState", () => {
       });
     cppFlatViewStateJSON = imodel.constructEntity(cppFlatViewStateJSON).toJSON();
     assert.isTrue(jsonCompare.compare(tsFlatViewStateJSON, cppFlatViewStateJSON), "Native side ViewState 'lookAtVolume' test 1 matches TS");
-    // ============================================================================================================
 
-    // Flat view test #2 ==========================================================================================
+    // Flat view test #2
     tsFlatViewState.setOrigin(Point3d.create(100, 1000, -2));
     tsFlatViewState.setExtents(Vector3d.create(314, 1, -.00001));
     tsFlatViewState.setRotation(RotMatrix.createRowValues(1, 4, -1, 2, 3, 6, -9, 4, 3));
@@ -219,9 +223,8 @@ describe("ViewState", () => {
     cppFlatViewStateJSON.angles = undefined;
 
     assert.isTrue(jsonCompare.compare(tsFlatViewStateJSON, cppFlatViewStateJSON), "Native side ViewState 'lookAtVolume' test 2 matches TS");
-    // =============================================================================================================
 
-    // Camera view test #1 =========================================================================================
+    // Camera view test #1
     const tsCamViewState = cameraViewState.clone<SpatialViewState>();
 
     tsCamViewState.lookAtVolume(Range3d.createXYZXYZ(0.1, 0.1, 0.1, 10, 20, 30));
@@ -239,9 +242,8 @@ describe("ViewState", () => {
       });
     cppCamViewStateJSON = imodel.constructEntity(cppCamViewStateJSON).toJSON();
     assert.isTrue(jsonCompare.compare(tsCamViewStateJSON, cppCamViewStateJSON), "Native side ViewState 'lookAtVolume' test 3 matches TS");
-    // =============================================================================================================
 
-    // Camera view test #2 =========================================================================================
+    // Camera view test #2
     tsCamViewState.setOrigin(Point3d.create(100, 1000, -2));
     tsCamViewState.setExtents(Vector3d.create(314, 1, -.00001));
     tsCamViewState.setRotation(YawPitchRollAngles.createDegrees(25, 25, 0.1).toRotMatrix());
@@ -264,11 +266,10 @@ describe("ViewState", () => {
       });
     cppCamViewStateJSON = imodel.constructEntity(cppCamViewStateJSON).toJSON();
     assert.isTrue(jsonCompare.compare(tsCamViewStateJSON, cppCamViewStateJSON), "Native side ViewState 'lookAtVolume' test 4 matches TS");
-    // =============================================================================================================
   });
 
   it("rotation and 'lookAt' results should match C++", async () => {
-    // Flat view test ==============================================================================================
+    // Flat view test
     const tsFlatViewState = await convertViewDefToViewState(imodel, flatView);
     tsFlatViewState.setOrigin(Point3d.create(-5, -5, 0));
     tsFlatViewState.setExtents(Vector3d.create(10, 10, 1));
@@ -296,9 +297,8 @@ describe("ViewState", () => {
     cppFlatViewStateJSON.angles = undefined;
 
     assert.isTrue(jsonCompare.compare(tsFlatViewStateJSON, cppFlatViewStateJSON), "Native side ViewState 'rotate & lookat' test 1 matches TS");
-    // =============================================================================================================
 
-    // Camera view test ============================================================================================
+    // Camera view test
     const tsCamViewState = cameraViewState.clone<SpatialViewState>();
     tsCamViewState.setOrigin(Point3d.create(100, 23, -18));
     tsCamViewState.setExtents(Vector3d.create(55, 0.01, 23));
@@ -322,9 +322,8 @@ describe("ViewState", () => {
       });
     cppCamViewStateJSON = imodel.constructEntity(cppCamViewStateJSON).toJSON();
     assert.isTrue(jsonCompare.compare(tsCamViewStateJSON, cppCamViewStateJSON), "Native side ViewState 'rotate & lookat' test 2 matches TS");
-    // =============================================================================================================
 
-    // Camera view test (using lookAtUsingLensAngle) ===============================================================
+    // Camera view test (using lookAtUsingLensAngle)
     tsCamViewState.setOrigin(Point3d.create(100, 23, -18));
     tsCamViewState.setExtents(Vector3d.create(55, 0.01, 23));
     tsCamViewState.setRotation(YawPitchRollAngles.createDegrees(23, 65, 2).toRotMatrix());
@@ -351,6 +350,5 @@ describe("ViewState", () => {
     // in native C++, yawpitchroll will be defined, even though it is technically not valid (did not conform to certain bounds)
     cppCamViewStateJSON.angles = undefined;
     assert.isTrue(jsonCompare.compare(tsCamViewStateJSON, cppCamViewStateJSON), "Native side ViewState 'rotate & lookat' test 2 matches TS");
-    // =============================================================================================================
   });
 });

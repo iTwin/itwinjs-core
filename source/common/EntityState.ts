@@ -20,8 +20,7 @@ export class EntityState implements EntityProps {
   public readonly iModel: IModel;
   public readonly classFullName: string;
   public readonly jsonProperties: any;
-
-  public static schemaName = "BIS";
+  public static schemaName = "BisCore";
 
   constructor(props: EntityProps, iModel: IModel) {
     this.classFullName = props.classFullName;
