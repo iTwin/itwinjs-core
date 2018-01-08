@@ -8,7 +8,7 @@ import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { Code, CodeSpec, CodeScopeSpec } from "../common/Code";
 import { EntityProps } from "../common/EntityProps";
-import { ModelSelectorState, ModelSelectorProps } from "../common/ViewState";
+import { ModelSelectorState } from "../common/ViewState";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { Entity, EntityCtor, EntityMetaData, PrimitiveTypeCode } from "../backend/Entity";
 import { Model, DictionaryModel } from "../backend/Model";
@@ -16,7 +16,7 @@ import { Category, SubCategory, SpatialCategory } from "../backend/Category";
 import { ClassRegistry } from "../backend/ClassRegistry";
 import { BisCore } from "../backend/BisCore";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
-import { GeometricElementProps } from "../common/ElementProps";
+import { GeometricElementProps, ModelSelectorProps } from "../common/ElementProps";
 import {
   Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
   LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject,

@@ -7,7 +7,6 @@ import { Vector3d, Vector2d, Point3d, Point2d, Range3d, RotMatrix, Transform, Ya
 import { AxisOrder, Angle, Geometry } from "@bentley/geometry-core/lib/Geometry";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { ClipVector } from "@bentley/geometry-core/lib/numerics/ClipVector";
-import { ElementProps } from "./ElementProps";
 import { Light, LightType } from "./Lighting";
 import { ViewFlags, HiddenLine } from "./Render";
 import { ColorDef, ColorRgb } from "./ColorDef";
@@ -16,6 +15,7 @@ import { AxisAlignedBox3d } from "./geometry/Primitives";
 import { Frustum, Npc } from "./Frustum";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState, Model2dState } from "./EntityState";
+import { ElementProps, ModelSelectorProps, CategorySelectorProps, ViewDefinitionProps, ViewDefinition3dProps, SpatialViewDefinitionProps, ViewDefinition2dProps, CameraProps } from "./ElementProps";
 
 export const enum GridOrientationType {
   View = 0,
@@ -62,16 +62,6 @@ export const standardViewMatrices = [
 ];
 standardViewMatrices.forEach((view) => Object.freeze(view));
 Object.freeze(standardViewMatrices);
-
-/** adjust to any nearby standard view */
-function findNearbyStandardViewMatrix(rMatrix: RotMatrix): void {
-  for (const test of standardViewMatrices) {
-    if (test.maxDiff(rMatrix) < 1.0e-7) {
-      rMatrix.setFrom(test);
-      return;
-    }
-  }
-}
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
 export abstract class DisplayStyleState extends ElementState {
@@ -230,11 +220,6 @@ export class DisplayStyle3dState extends DisplayStyleState {
   public getSceneBrightness(): number { return JsonUtils.asDouble(this.getStyle("sceneLights").fstop, 0.0); }
 }
 
-/** properties that define a ModelSelector */
-export interface ModelSelectorProps extends ElementProps {
-  models: string[];
-}
-
 /** A list of GeometricModels for a SpatialViewDefinition. */
 export class ModelSelectorState extends ElementState {
   public readonly models: Set<string> = new Set<string>();
@@ -257,11 +242,6 @@ export class ModelSelectorState extends ElementState {
   public addModel(id: Id64) { this.models.add(id.value); }
   public dropModel(id: Id64): boolean { return this.models.delete(id.value); }
   public containsModel(modelId: Id64): boolean { return this.models.has(modelId.value); }
-}
-
-/** properties that define a CategorySelector */
-export interface CategorySelectorProps extends ElementProps {
-  categories: string[];
 }
 
 /** A list of Categories to be displayed in a view. */
@@ -294,13 +274,6 @@ export class CategorySelectorState extends ElementState {
 
   /** Add or Drop a category to this CategorySelector */
   public changeCategoryDisplay(categoryId: Id64, add: boolean): void { if (add) this.addCategory(categoryId); else this.dropCategory(categoryId); }
-}
-
-/** Parameters used to construct a ViewDefinition */
-export interface ViewDefinitionProps extends ElementProps {
-  categorySelectorId: Id64 | string;
-  displayStyleId: Id64 | string;
-  description?: string;
 }
 
 export const enum ViewStatus {
@@ -341,6 +314,7 @@ export class MarginPercent {
  * Subclasses of ViewDefinition determine which model(s) are viewed.
  */
 export abstract class ViewState extends ElementState {
+  public static getClassFullName(): string { return this.schemaName + ":ViewDefinition"; }
   protected constructor(props: ViewDefinitionProps, iModel: IModel, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
     super(props, iModel);
     if (categorySelector instanceof ViewState) { // from clone, 3rd argument is source ViewState
@@ -415,7 +389,8 @@ export abstract class ViewState extends ElementState {
     if (!frustMatrix)
       return ViewStatus.InvalidWindow;
 
-    findNearbyStandardViewMatrix(frustMatrix);
+    // if we're close to one of the standard views, adjust to it to remove any "fuzz"
+    standardViewMatrices.some((test) => { if (test.maxDiff(frustMatrix) > 1.0e-7) return false; frustMatrix.setFrom(test); return true; });
 
     const xDir = frustMatrix.getColumn(0);
     const yDir = frustMatrix.getColumn(1);
@@ -764,7 +739,7 @@ export abstract class ViewState extends ElementState {
 /**
  * The current position (eyepoint), lens angle, and focus distance of a camera.
  */
-export class Camera {
+export class Camera implements CameraProps {
   public readonly lens: Angle;
   public focusDistance: number;
   public readonly eye: Point3d;
@@ -796,15 +771,6 @@ export class Camera {
   }
 }
 
-/** Parameters to construct a ViewDefinition3d */
-export interface ViewDefinition3dProps extends ViewDefinitionProps {
-  cameraOn: boolean;  // if true, m_camera is valid.
-  origin: Point3d | object;    // The lower left back corner of the view frustum.
-  extents: Vector3d | object;   // The extent of the view frustum.
-  angles: YawPitchRollAngles | object | undefined;    // Rotation of the view frustum (could be undefined if going RotMatrix -> YawPitchRoll).
-  camera: Camera | object;    // The camera used for this view.
-}
-
 /** Defines the state of a view of 3d models. */
 export abstract class ViewState3d extends ViewState {
   protected cameraOn: boolean;  // if true, m_camera is valid.
@@ -812,6 +778,7 @@ export abstract class ViewState3d extends ViewState {
   public readonly extents: Vector3d;      // The extent of the view frustum.
   public readonly rotation: RotMatrix;    // Rotation of the view frustum.
   public readonly camera: Camera;         // The camera used for this view.
+  public static getClassFullName(): string { return this.schemaName + ":ViewDefinition3d"; }
 
   public allow3dManipulations(): boolean { return true; }
   public forceMinFrontDist() { return 0.0; } // minimum distance for front plane
@@ -936,7 +903,7 @@ export abstract class ViewState3d extends ViewState {
    * If newExtents is undefined, the existing size is unchanged.
    * @param frontDistance The distance from the eyePoint to the front plane. If undefined, the existing front distance is used.
    * @param backDistance The distance from the eyePoint to the back plane. If undefined, the existing back distance is used.
-   * @returns a status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
+   * @returns a status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
    * @e If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
    * adjusted when the Viewport is synchronized from this view.
    */
@@ -1012,7 +979,7 @@ export abstract class ViewState3d extends ViewState {
    * @param fov The angle, in radians, that defines the field-of-view for the camera. Must be between .0001 and pi.
    * @param frontDistance The distance from the eyePoint to the front plane. If undefined, the existing front distance is used.
    * @param backDistance The distance from the eyePoint to the back plane. If undefined, the existing back distance is used.
-   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
+   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
    * @note The aspect ratio of the view remains unchanged.
    */
   public lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number): ViewStatus {
@@ -1036,7 +1003,7 @@ export abstract class ViewState3d extends ViewState {
   /**
    * Move the camera relative to its current location by a distance in camera coordinates.
    * @param distance to move camera. Length is in world units, direction relative to current camera orientation.
-   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
+   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
    */
   public moveCameraLocal(distance: Vector3d): ViewStatus {
     const distWorld = this.getRotation().multiplyTransposeVector(distance);
@@ -1046,7 +1013,7 @@ export abstract class ViewState3d extends ViewState {
   /**
    * Move the camera relative to its current location by a distance in world coordinates.
    * @param distance in world units.
-   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
+   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
    */
   public moveCameraWorld(distance: Vector3d): ViewStatus {
     if (!this.cameraOn) {
@@ -1066,7 +1033,7 @@ export abstract class ViewState3d extends ViewState {
    * @param aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is undefined, the camera rotates in place
    *  (i.e. about the current eyePoint).
    * @note Even though the axis is relative to the current camera orientation, the aboutPt is in world coordinates, \b not relative to the camera.
-   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
+   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
    */
   public rotateCameraLocal(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus {
     const axisWorld = this.getRotation().multiplyTransposeVector(axis);
@@ -1079,7 +1046,7 @@ export abstract class ViewState3d extends ViewState {
    * @param axis The world-based axis (direction) about which to rotate the camera.
    * @param aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is undefined, the camera rotates in place
    *  (i.e. about the current eyePoint).
-   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewportStatus]] for possible errors.
+   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
    */
   public rotateCameraWorld(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus {
     const about = aboutPt ? aboutPt : this.getEyePoint();
@@ -1195,11 +1162,6 @@ export abstract class ViewState3d extends ViewState {
 
 }
 
-/** Parameters to construct a SpatialViewDefinition */
-export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
-  modelSelectorId: Id64 | string;
-}
-
 /** Defines a view of one or more SpatialModels.
  * The list of viewed models is stored by the ModelSelector.
  */
@@ -1210,6 +1172,7 @@ export class SpatialViewState extends ViewState3d {
       this.modelSelector = arg3.modelSelector;
     }
   }
+  public static getClassFullName(): string { return this.schemaName + ":SpatialViewDefinition"; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
   public getViewedExtents(): AxisAlignedBox3d { return this.iModel.projectExtents; }
 
@@ -1224,6 +1187,7 @@ export class SpatialViewState extends ViewState3d {
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection. */
 export class OrthographicViewState extends SpatialViewState {
+  public static getClassFullName(): string { return this.schemaName + ":OrthographicViewDefinition"; }
   constructor(props: SpatialViewDefinitionProps, iModel: IModel, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle, modelSelector); }
 
   // tslint:disable-next-line:no-empty
@@ -1231,19 +1195,12 @@ export class OrthographicViewState extends SpatialViewState {
   public supportsCamera(): boolean { return false; }
 }
 
-/** Parameters used to construct a ViewDefinition2d */
-export interface ViewDefinition2dProps extends ViewDefinitionProps {
-  baseModelId: Id64 | string;
-  origin: Point2d;
-  delta: Point2d;
-  angle: Angle;
-}
-
 /** Defines the state of a view of a single 2d model. */
 export class ViewState2d extends ViewState {
   public readonly origin: Point2d;
   public readonly delta: Point2d;
   public readonly angle: Angle;
+  public static getClassFullName(): string { return this.schemaName + ":ViewDefinition2d"; }
 
   public constructor(props: ViewDefinition2dProps, iModel: IModel, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, public readonly baseModel: Model2dState) {
     super(props, iModel, categories, displayStyle);
@@ -1277,8 +1234,10 @@ export class ViewState2d extends ViewState {
 
 /** a view of a DrawingModel */
 export class DrawingViewState extends ViewState2d {
+  public static getClassFullName(): string { return this.schemaName + ":DrawingViewDefinition"; }
 }
 
 /** a view of a SheetModel */
 export class SheetViewState extends ViewState2d {
+  public static getClassFullName(): string { return this.schemaName + ":SheetViewDefinition"; }
 }

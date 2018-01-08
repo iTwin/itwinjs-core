@@ -53,9 +53,7 @@
   "ElementLocate": {
     "NoElementsFound": "No Elements Found",
     "MSG2": "Element is in a model with locate turned off",
-    "MSG3": "Level lock is on, and element is not on the active level",
     "MSG4": "Element is locked",
-    "MSG5": "Element is on a locked level",
     "MSG6": "Element is view only",
     "MSG7": "Element not valid for tool",
     "MSG8": "Element rejected by tool",
@@ -64,8 +62,6 @@
     "MSG11": "Element is a transient element",
     "MSG12": "Element is in a model that is not allowed by this tool",
     "MSG15": "Element is not snappable",
-    "MSG16": "Element is in a non-snappable model",
-    "MSG18": "Element is in a model without Export permission",
     "MSG22": "Element does not allow this operation"
   },
   "RegionTool": {

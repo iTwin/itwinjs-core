@@ -6,6 +6,8 @@ import { CodeProps, Code } from "./Code";
 import { EntityProps } from "./EntityProps";
 import { GeometryStream } from "./geometry/GeometryStream";
 import { Placement3dProps, Placement2d } from "./geometry/Primitives";
+import { Point3d, Vector3d, YawPitchRollAngles, Point2d } from "@bentley/geometry-core/lib/PointVector";
+import { Angle } from "@bentley/geometry-core/lib/Geometry";
 
 export interface RelatedElementProps {
   id: Id64 | string;
@@ -85,6 +87,52 @@ export interface TypeDefinitionElementProps extends ElementProps {
 
 export interface InformationPartitionElementProps extends ElementProps {
   description?: string;
+}
+
+/** properties that define a ModelSelector */
+export interface ModelSelectorProps extends ElementProps {
+  models: string[];
+}
+
+/** properties that define a CategorySelector */
+export interface CategorySelectorProps extends ElementProps {
+  categories: string[];
+}
+
+/** Parameters used to construct a ViewDefinition */
+export interface ViewDefinitionProps extends ElementProps {
+  categorySelectorId: Id64 | string;
+  displayStyleId: Id64 | string;
+  description?: string;
+}
+
+/** properties of a camera */
+export interface CameraProps {
+  lens: Angle | object;
+  focusDistance: number;
+  eye: Point3d | object;
+}
+
+/** Parameters to construct a ViewDefinition3d */
+export interface ViewDefinition3dProps extends ViewDefinitionProps {
+  cameraOn: boolean;  // if true, m_camera is valid.
+  origin: Point3d | object;    // The lower left back corner of the view frustum.
+  extents: Vector3d | object;   // The extent of the view frustum.
+  angles: YawPitchRollAngles | object | undefined;    // Rotation of the view frustum (could be undefined if going RotMatrix -> YawPitchRoll).
+  camera: CameraProps;    // The camera used for this view.
+}
+
+/** Parameters to construct a SpatialViewDefinition */
+export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
+  modelSelectorId: Id64 | string;
+}
+
+/** Parameters used to construct a ViewDefinition2d */
+export interface ViewDefinition2dProps extends ViewDefinitionProps {
+  baseModelId: Id64 | string;
+  origin: Point2d | object;
+  delta: Point2d | object;
+  angle: Angle | object | number;
 }
 
 export interface AuxCoordSystemProps extends ElementProps {
