@@ -294,7 +294,7 @@ export class BriefcaseManager {
       }
     }
 
-    console.log(`Init of briefcase cache: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
+    console.log(`    ...initialization of briefcase cache: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
   }
 
   /** Get the index of the change set from it's id */

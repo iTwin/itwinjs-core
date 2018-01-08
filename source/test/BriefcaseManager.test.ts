@@ -33,9 +33,10 @@ describe("BriefcaseManager", () => {
 
   before(async () => {
     let startTime = new Date().getTime();
+    console.log("    Started monitoring briefcase manager performance..."); // tslint:disable-line:no-console
 
     accessToken = await IModelTestUtils.getTestUserAccessToken();
-    console.log(`Getting user access token the first time from IMS: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
+    console.log(`    ...getting user access token from IMS: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     startTime = new Date().getTime();
 
     testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
@@ -52,7 +53,7 @@ describe("BriefcaseManager", () => {
     if (shouldDeleteAllBriefcases)
       await IModelTestUtils.deleteAllBriefcases(accessToken, testIModelId);
 
-    console.log(`Getting information (project+imodel+changeset) for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
+    console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
   });
 
   it("should be able to open an IModel from the Hub in Readonly mode", async () => {
