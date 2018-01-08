@@ -11,17 +11,32 @@
   "scripts": {
     "build": "tsc",
     "clean": "rimraf lib",
-    "test": "node node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode --packageRoot \"./\" --testDir=\"./src/test\" --tscPaths",
-    "cover": "nyc npm run test"
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "npm run test:unit:backend && npm run test:unit:frontend",
+    "test:unit:frontend": "node node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/unit/frontend\"",
+    "test:unit:backend": "node node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/unit/backend\"",
+    "test:integration": "node node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/integration\""
   },
-  "dependencies": {},
+  "dependencies": {
+    "@bentley/bentleyjs-core": "^1.2.4",
+    "@bentley/ecpresentation-backend": "^0.0.24",
+    "@bentley/ecpresentation-frontend": "^0.0.13",
+    "@bentley/imodeljs-backend": "^0.15.0",
+    "@bentley/imodeljs-e_1_6_11-win32-x64": "^1.4.0",
+    "@bentley/imodeljs-electronaddon": "^1.4.0",
+    "@bentley/imodeljs-frontend": "^0.12.0",
+    "@bentley/imodeljs-n_8_9-win32-x64": "^1.4.0",
+    "@bentley/imodeljs-nodeaddon": "^1.4.0"
+  },
   "devDependencies": {
     "@bentley/bentleyjs-tools": "^1.0.58",
     "@types/chai": "^4.0.10",
     "@types/mocha": "^2.2.44",
     "chai": "^4.1.2",
+    "concurrently": "^3.5.0",
     "mocha": "^4.0.1",
     "nyc": "^11.4.1",
-    "rimraf": "^2.6.2"
+    "rimraf": "^2.6.2",
+    "tsconfig-paths": "^2.6.0"
   }
 }

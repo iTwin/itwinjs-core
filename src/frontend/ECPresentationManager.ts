@@ -6,7 +6,7 @@ import { SelectionInfo, Descriptor, Content } from "../common/Content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes";
 import { ECInstanceKeysList } from "../common/EC";
 import { PageOptions, ECPresentationManager as ECPInterface } from "../common/ECPresentationManager";
-import ECPresentationGateway from "../gateway/ECPresentationGateway";
+import ECPresentationGateway from "./ECPresentationGateway";
 import { IModelToken } from "@bentley/imodeljs-frontend/lib/common/IModel";
 
 class ECPresentationManager implements ECPInterface {

@@ -4,13 +4,14 @@
 import { Gateway } from "@bentley/imodeljs-backend/lib/common/Gateway";
 import { IModelToken } from "@bentley/imodeljs-backend/lib/common/IModel";
 import ECPresentationManager from "./ECPresentationManager";
-import ECPresentationGateway from "../gateway/ECPresentationGateway";
+import ECPresentationGatewayDefinition from "../common/ECPresentationGatewayDefinition";
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "../common/Hierarchy";
 import { SelectionInfo, Descriptor, Content } from "../common/Content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes";
 import { PageOptions } from "../common/ECPresentationManager";
 import { ECInstanceKeysList } from "../common/EC";
 
+/** Gateway uses singleton presentation manager instance. */
 let manager: ECPresentationManager | null = null;
 const getManager = (): ECPresentationManager => {
   if (!manager)
@@ -18,13 +19,8 @@ const getManager = (): ECPresentationManager => {
   return manager;
 };
 
-/** The backend implementation of ECPresentationGateway.
- * @hidden
- */
-export default class ECPresentationGatewayImpl extends ECPresentationGateway {
-  public static register() {
-    Gateway.registerImplementation(ECPresentationGateway, ECPresentationGatewayImpl);
-  }
+/** The backend implementation of ECPresentationGatewayDefinition. */
+export default class ECPresentationGateway extends ECPresentationGatewayDefinition {
 
   public async getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<NavNode[]> {
     return await getManager().getRootNodes(token, pageOptions, options);
@@ -70,3 +66,6 @@ export default class ECPresentationGatewayImpl extends ECPresentationGateway {
     return await getManager().saveValueChange(token, instancesInfo, propertyAccessor, value, options);
   }
 }
+
+/** Auto-register the gateway when this file is included. */
+Gateway.registerImplementation(ECPresentationGatewayDefinition, ECPresentationGateway);

@@ -23,6 +23,48 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Tests: Backend",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "--packageRoot=${workspaceFolder}",
+        "--testDir=${workspaceFolder}/src/test/lib/unit/backend",
+        "--debug"
+      ],
+      "port": 9229,
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tests: Frontend",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "--packageRoot=${workspaceFolder}",
+        "--testDir=${workspaceFolder}/src/test/lib/unit/frontend",
+        "--debug"
+      ],
+      "port": 9229,
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tests: Integration",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "--packageRoot=${workspaceFolder}",
+        "--testDir=${workspaceFolder}/src/test/lib/integration",
+        "--debug"
+      ],
+      "port": 9229,
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Web: Server (backend)",
       "protocol": "inspector",
       "program": "${workspaceFolder}/src/sample/node_modules/@bentley/imodeljs-react-scripts/scripts/start",

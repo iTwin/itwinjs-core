@@ -13,10 +13,10 @@ import { NodeAddonECPresentationManager } from "@bentley/imodeljs-nodeaddonapi/i
 import { IModelToken } from "@bentley/imodeljs-backend/lib/common/IModel";
 import { IModelError, IModelStatus } from "@bentley/imodeljs-backend/lib/common/IModelError";
 import { IModelDb } from "@bentley/imodeljs-backend/lib/backend/IModelDb";
-import ECPresentationGatewayImpl from "./ECPresentationGatewayImpl";
+import ECPresentationGateway from "./ECPresentationGateway";
 
-// Register the backend implementation of IModelGateway
-ECPresentationGatewayImpl.register();
+// make sure the gateway gets registered (hopefully this is temporary)
+ECPresentationGateway;
 
 export default class ECPresentationManager implements ECPInterface {
   private _manager: NodeAddonECPresentationManager;

@@ -3,37 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 import { Gateway } from "@build/imodeljs-core/lib/common/Gateway";
 import { IModelToken } from "@build/imodeljs-core/lib/common/IModel";
+import ECPresentationGatewayDefinition from "../common/ECPresentationGatewayDefinition";
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "../common/Hierarchy";
 import * as content from "../common/Content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes";
-import { PageOptions, ECPresentationManager as ECPInterface } from "../common/ECPresentationManager";
+import { PageOptions } from "../common/ECPresentationManager";
 import { ECInstanceKeysList } from "../common/EC";
 
-export default class ECPresentationGateway extends Gateway implements ECPInterface {
-  /** The version of the gateway. */
-  public static version = "1.0.0";
-
-  /** The types that can be marshaled by the gateway. */
-  public static types = () => [
-    IModelToken,
-    content.CategoryDescription,
-    content.SelectClassInfo,
-    content.TypeDescription,
-    content.PrimitiveTypeDescription,
-    content.ArrayTypeDescription,
-    content.StructTypeDescription,
-    content.EditorDescription,
-    content.Property,
-    content.Field,
-    content.PropertiesField,
-    content.NestedContentField,
-    content.SelectionInfo,
-    content.Descriptor,
-    content.PropertyValueKeys,
-    content.ContentSetItem,
-    content.Content,
-  ]
-
+export default class ECPresentationGateway extends ECPresentationGatewayDefinition {
   /** Returns the ECPresentationGateway instance for the frontend. */
   public static getProxy(): ECPresentationGateway {
     return Gateway.getProxyForGateway(ECPresentationGateway);

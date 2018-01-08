@@ -4,7 +4,7 @@
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AuthorizationToken, AccessToken } from "@bentley/imodeljs-clients";
 import { Config as ClientConfig } from "@bentley/imodeljs-clients/lib/Config";
 import { IModelGateway } from "@bentley/imodeljs-frontend/lib/gateway/IModelGateway";
-import ECPresentationGateway from "@bentley/ecpresentation-frontend/lib/gateway/ECPresentationGateway";
+import ECPresentationGateway from "@bentley/ecpresentation-frontend/lib/frontend/ECPresentationGateway";
 import { IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend/IModelConnection";
 import { GetMetaDataFunction } from "@bentley/imodeljs-frontend/lib/common/IModelError";
 import { LogFunction, Logger } from "@bentley/bentleyjs-core/lib/Logger";

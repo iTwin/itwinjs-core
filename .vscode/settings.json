@@ -5,7 +5,6 @@
   "editor.detectIndentation": false,
   "editor.trimAutoWhitespace": true,
   "files.exclude": {
-    "coverage": true,
     "node_modules": true,
     "lib": true,
     "src/backend/lib": true,
@@ -22,8 +21,10 @@
     "**/package-deps.json": true,
   },
   "cSpell.words": [
+    "changeset",
     "imodel",
     "imodels",
+    "lcov",
     "ruleset"
   ]
 }

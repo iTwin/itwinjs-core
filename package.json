@@ -24,13 +24,11 @@
     "publish": "echo use 'rush publish'",
     "start": "cd src/sample && npm start",
     "lint": "node node_modules/@bentley/bentleyjs-tools/scripts/tslint.js",
-    "test": "cd src/test && npm run test",
-    "cover": "cd src/test && npm run cover"
+    "test": "cd src/test && npm run test"
   },
   "dependencies": {},
   "devDependencies": {
     "@bentley/bentleyjs-tools": "^1.0.58",
-    "concurrently": "^3.5.0",
     "tslint": "^5.8.0",
     "tslint-consistent-codestyle": "^1.11.0",
     "typescript": "^2.6.2"
