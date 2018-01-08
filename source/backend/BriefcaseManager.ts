@@ -15,8 +15,6 @@ import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 
-declare const __dirname: string;
-
 /** The ID assigned to a briefcase by iModelHub, or one of the special values that identify special kinds of iModels */
 export class BriefcaseId {
   private value: number;
@@ -175,7 +173,7 @@ export class BriefcaseManager {
   private static cache?: BriefcaseCache;
 
   /** The path where the cache of briefcases are stored. */
-  public static cachePath = "";
+  public static cachePath = path.join(os.tmpdir(), "Bentley/IModelJs/cache/imodels");
 
   /** Get the local path of the root folder storing the imodel seed file, change sets and briefcases */
   private static getIModelPath(iModelId: string): string {
@@ -235,11 +233,6 @@ export class BriefcaseManager {
         return;
       // console.log("Detected change of configuration - reinitializing Briefcase cache!"); // tslint:disable-line:no-console
     }
-
-    let rootPath = os.tmpdir();
-    if (!rootPath || !fs.existsSync(rootPath))
-      rootPath = __dirname;
-    BriefcaseManager.cachePath = path.join(rootPath, "Bentley/IModelJs/cache/imodels");
 
     BriefcaseManager.hubClient = new IModelHubClient(Configuration.iModelHubDeployConfig);
     BriefcaseManager.cache = new BriefcaseCache();
