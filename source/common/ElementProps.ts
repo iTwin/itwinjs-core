@@ -7,7 +7,7 @@ import { EntityProps } from "./EntityProps";
 import { GeometryStream } from "./geometry/GeometryStream";
 import { Placement3dProps, Placement2d } from "./geometry/Primitives";
 import { Point3d, Vector3d, YawPitchRollAngles, Point2d } from "@bentley/geometry-core/lib/PointVector";
-import { Angle } from "@bentley/geometry-core/lib/Geometry";
+import { AngleProps } from "@bentley/geometry-core/lib/Geometry";
 
 export interface RelatedElementProps {
   id: Id64 | string;
@@ -108,7 +108,7 @@ export interface ViewDefinitionProps extends ElementProps {
 
 /** properties of a camera */
 export interface CameraProps {
-  lens: Angle | object;
+  lens: AngleProps | number;
   focusDistance: number;
   eye: Point3d | object;
 }
@@ -132,7 +132,7 @@ export interface ViewDefinition2dProps extends ViewDefinitionProps {
   baseModelId: Id64 | string;
   origin: Point2d | object;
   delta: Point2d | object;
-  angle: Angle | object | number;
+  angle: AngleProps | number;
 }
 
 export interface AuxCoordSystemProps extends ElementProps {
