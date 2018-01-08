@@ -255,19 +255,25 @@ export class EntityClass extends ECClass implements EntityClassInterface {
    * @param relationship
    * @param direction
    */
-  public createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | RelatedInstanceDirection): NavigationProperty {
+  public createNavigationProperty(name: string, relationship: string | RelationshipClass, direction?: string | RelatedInstanceDirection): NavigationProperty {
     if (this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
-    if (typeof(relationship) === "string") {
-      // Attempt to locate the relationship
-      throw new ECObjectsError(ECObjectsStatus.ECOBJECTS_ERROR_BASE, ``);
-    }
+    let resolvedRelationship: RelationshipClass | undefined;
+    if (typeof(relationship) === "string" && this.schema)
+      resolvedRelationship = this.schema.getChild<RelationshipClass>(relationship);
+    else
+      resolvedRelationship = relationship as RelationshipClass;
 
-    if (typeof(direction) === "string")
+    if (!resolvedRelationship)
+      throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid StructClass.`);
+
+    if (!direction)
+      direction = RelatedInstanceDirection.Forward;
+    else if (typeof(direction) === "string")
       direction = parseStrengthDirection(direction);
 
-    const navProp = new NavigationProperty(name, relationship, direction);
+    const navProp = new NavigationProperty(name, resolvedRelationship, direction);
 
     if (!this.properties)
       this.properties = [];
@@ -394,19 +400,25 @@ export class RelationshipClass extends ECClass implements RelationshipClassInter
    * @param relationship
    * @param direction
    */
-  public createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | RelatedInstanceDirection): NavigationProperty {
+  public createNavigationProperty(name: string, relationship: string | RelationshipClass, direction?: string | RelatedInstanceDirection): NavigationProperty {
     if (this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
-    if (typeof(relationship) === "string") {
-      // Attempt to locate the relationship
-      throw new ECObjectsError(ECObjectsStatus.ECOBJECTS_ERROR_BASE, ``);
-    }
+    let resolvedRelationship: RelationshipClass | undefined;
+    if (typeof(relationship) === "string" && this.schema)
+      resolvedRelationship = this.schema.getChild<RelationshipClass>(relationship);
+    else
+      resolvedRelationship = relationship as RelationshipClass;
 
-    if (typeof(direction) === "string")
+    if (!resolvedRelationship)
+      throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid StructClass.`);
+
+    if (!direction)
+      direction = RelatedInstanceDirection.Forward;
+    else if (typeof(direction) === "string")
       direction = parseStrengthDirection(direction);
 
-    const navProp = new NavigationProperty(name, relationship, direction);
+    const navProp = new NavigationProperty(name, resolvedRelationship, direction);
 
     if (!this.properties)
       this.properties = [];

@@ -279,7 +279,7 @@ export default class SchemaReadHelper {
 
     if (relConstraintJson.constraintClasses) {
       if (!Array.isArray(relConstraintJson.constraintClasses))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${relationshipEndToString(relConstraint.relationshipEnd)} Constraint of ${relConstraint.relClass!.name} has an invalid 'constraintClasses' property. It should be of type 'array'.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${relationshipEndToString(relConstraint.relationshipEnd)} Constraint of ${relConstraint.relClass!.name} has an invalid 'constraintClasses' property. It should be of type 'array'.`);
       relConstraintJson.constraintClasses.forEach((constraintClass: string) => {
         this.findSchemaChild(constraintClass);
       });
@@ -345,9 +345,26 @@ export default class SchemaReadHelper {
         this.loadProperty(structArrProp, propertyJson);
         break;
       case "NavigationProperty":
-        // const navProp = classObj.createNavigationProperty(propName);
-        // this.loadNavigationProperty(navProp, propertyJson);
-        break;
+        const hasNavigationProperty = (testClass: ECClassInterface): testClass is EntityClassInterface | RelationshipClassInterface => {
+          return (testClass as EntityClassInterface | RelationshipClassInterface).createNavigationProperty !== undefined;
+        };
+
+        if (!hasNavigationProperty(classObj))
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson);
+
+        const specificClass: EntityClassInterface | RelationshipClassInterface = classObj as EntityClassInterface | RelationshipClassInterface;
+
+        if (!propertyJson.relationshipName)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${specificClass.name}.${propName} is missing the required 'relationshipName' property.`);
+
+        if (propertyJson.relationshipName) {
+          if (typeof(propertyJson.relationshipName) !== "string")
+            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${specificClass.name}.${propName} has an invalid 'relationshipClass' property. It should be of type 'string'.`);
+          this.findSchemaChild(propertyJson.relationshipName);
+        }
+
+        const navProp = specificClass.createNavigationProperty(propName, propertyJson.relationshipName);
+        this.loadProperty(navProp, propertyJson);
     }
   }
 
@@ -368,14 +385,4 @@ export default class SchemaReadHelper {
 
     prop.fromJson(propertyJson);
   }
-
-  // private loadNavigationProperty<T extends NavigationPropertyInterface>(navProp: T, propertyJson: any): void {
-  //   if (propertyJson.relationshipName) {
-  //     if (typeof(propertyJson.relationshipName) !== "string")
-  //     throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${navProp.class.name}.${navProp.name} has an invalid 'relationshipClass' property. It should be of type 'string'.`);
-  //     this.findSchemaChild(propertyJson.typeName);
-  //   }
-
-  //   this.loadProperty(navProp, propertyJson);
-  // }
 }

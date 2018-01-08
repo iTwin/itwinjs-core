@@ -141,11 +141,15 @@ export class NavigationProperty extends ECProperty implements NavigationProperty
   public relationship: RelationshipClass;
   public direction: RelatedInstanceDirection;
 
-  constructor(name: string, relationship: RelationshipClass, direction: RelatedInstanceDirection) {
+  constructor(name: string, relationship: RelationshipClass, direction?: RelatedInstanceDirection) {
     super(name);
 
     this.relationship = relationship;
-    this.direction = direction;
+
+    if (direction)
+      this.direction = direction;
+    else
+      this.direction = RelatedInstanceDirection.Forward;
   }
 
   public fromJson(jsonObj: any): void {

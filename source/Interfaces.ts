@@ -65,7 +65,7 @@ export interface EntityClassProps extends ECClassProps {
 }
 
 export interface EntityClassInterface extends ECClassInterface, EntityClassProps {
-  createNavigationProperty(name: string, relationship: string | RelationshipClassInterface, direction: string | RelatedInstanceDirection): NavigationPropertyInterface;
+  createNavigationProperty(name: string, relationship: string | RelationshipClassInterface, direction?: string | RelatedInstanceDirection): NavigationPropertyInterface;
 }
 
 export interface StructClassInterface extends ECClassInterface, ECClassProps { }
@@ -83,7 +83,7 @@ export interface RelationshipClassProps extends ECClassProps {
 }
 
 export interface RelationshipClassInterface extends ECClassInterface, RelationshipClassProps {
-  createNavigationProperty(name: string, relationship: string | RelationshipClassInterface, direction: string | RelatedInstanceDirection): NavigationPropertyInterface;
+  createNavigationProperty(name: string, relationship: string | RelationshipClassInterface, direction?: string | RelatedInstanceDirection): NavigationPropertyInterface;
 }
 
 export interface RelationshipConstraintProps extends CustomAttributeContainerProps {

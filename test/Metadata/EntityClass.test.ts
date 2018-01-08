@@ -4,8 +4,9 @@
 
 import { assert, expect } from "chai";
 import { ECSchema } from "../../source/Metadata/Schema";
-import { ECClass, EntityClass, MixinClass } from "../../source/Metadata/Class";
+import { ECClass, EntityClass, MixinClass, RelationshipClass } from "../../source/Metadata/Class";
 import { ECClassModifier } from "../../source/ECObjects";
+import { NavigationProperty } from "../../source/Metadata/Property";
 
 describe("entity class", () => {
   describe("get inherited properties", () => {
@@ -155,6 +156,64 @@ describe("entity class", () => {
       assert.isTrue(typeof(testEntity!.baseClass) === "object");
 
       assert.isTrue(testEntity!.baseClass === testBaseEntity);
+    });
+
+    it("with navigation property", () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        children: {
+          NavPropRelationship: {
+            schemaChildType: "RelationshipClass",
+            strength: "Embedding",
+            strengthDirection: "Forward",
+            modifier: "Sealed",
+            source: {
+              polymorphic: true,
+              multiplicity: "(0..*)",
+              roleLabel: "Source RoleLabel",
+              constraintClasses: [
+                "TestSchema.TestClass",
+              ],
+            },
+            target: {
+              polymorphic: true,
+              multiplicity: "(0..*)",
+              roleLabel: "Target RoleLabel",
+              constraintClasses: [
+                "TestSchema.TargetClass",
+              ],
+            },
+          },
+          TargetClass: {
+            schemaChildType: "EntityClass",
+          },
+          TestClass: {
+            schemaChildType: "EntityClass",
+            properties: [
+              {
+                propertyType: "NavigationProperty",
+                name: "testNavProp",
+                relationshipName: "TestSchema.NavPropRelationship",
+              },
+            ],
+          },
+        },
+      };
+
+      const schema = ECSchema.fromJson(schemaJson);
+      assert.isDefined(schema);
+
+      const entityClass = schema.getClass<EntityClass>("TestClass");
+      assert.isDefined(entityClass);
+
+      const navProp = entityClass!.getProperty<NavigationProperty>("testNavProp");
+      assert.isDefined(navProp);
+
+      const relClass = schema.getClass<RelationshipClass>("NavPropRelationship");
+
+      assert.isTrue(navProp!.relationship === relClass);
     });
   });
 });
