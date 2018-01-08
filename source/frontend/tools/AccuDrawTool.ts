@@ -1139,6 +1139,7 @@ export abstract class AccuDrawTool {
     tool.installTool();
   }
   public static outputPrompt(_msg: string) {
+    // getLocalizedString("AccuDraw.Prompt." + msg);
     // Utf8String msgStr = DgnViewL10N:: GetString(msgId);
     // NotificationManager:: OutputPrompt(msgStr.c_str());
   }
@@ -1149,7 +1150,7 @@ class RotateAxesTool extends AccuDrawTool {
   public onManipulationComplete(): AccuDrawFlags { return AccuDrawFlags.SetRMatrix; }
   public doManipulationStart(): void {
     super.doManipulationStart();
-    AccuDrawTool.outputPrompt(ToolString.ACCUDRAW_PROMPT_DefineXAxis);
+    AccuDrawTool.outputPrompt("DefineXAxis");
   }
   public doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean {
     const vp = ev ? ev.viewport : AccuDraw.instance.currentView;
@@ -1179,7 +1180,7 @@ class RotateElementTool extends AccuDrawTool {
   public doManipulationStart(): void {
     //   this.rotateElmHelper.enableGeometryCache(); // Keep geometry cache...
     super.doManipulationStart();
-    AccuDrawTool.outputPrompt(ToolString.ACCUDRAW_PROMPT_DefineElem);
+    AccuDrawTool.outputPrompt("DefineElem");
     const accuSnap = AccuSnap.instance;
     // If user doesn't want AccuSnap, tool will work fine with with just auto-locate (which the user can no longer disable).
     if (!accuSnap.userWantsSnaps()) {
@@ -1298,12 +1299,12 @@ class DefineACSByPointsTool extends AccuDrawTool {
 
     const tentativePoint = TentativePoint.instance;
     if (!tentativePoint.isActive) {
-      AccuDrawTool.outputPrompt(ToolString.ACCUDRAW_PROMPT_DefineOrigin);
+      AccuDrawTool.outputPrompt("DefineOrigin");
       return;
     }
 
     const origin = tentativePoint.getPoint().clone();
-    AccuDrawTool.outputPrompt(ToolString.ACCUDRAW_PROMPT_DefineXAxis);
+    AccuDrawTool.outputPrompt("DefineXAxis");
     AccuDraw.instance.setContext(AccuDrawFlags.SetOrigin | AccuDrawFlags.FixedOrigin, origin);
     this.points.push(origin);
     tentativePoint.clear(true);
@@ -1329,7 +1330,7 @@ class DefineACSByPointsTool extends AccuDrawTool {
       return true;
     }
 
-    AccuDrawTool.outputPrompt(1 === this.points.length ? ToolString.ACCUDRAW_PROMPT_DefineXAxis : ToolString.ACCUDRAW_PROMPT_DefineYDir);
+    AccuDrawTool.outputPrompt(1 === this.points.length ? "DefineXAxis" : "DefineYDir");
     return false;
   }
 
