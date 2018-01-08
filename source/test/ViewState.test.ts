@@ -6,12 +6,13 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
 import { Point3d, Vector3d, YawPitchRollAngles, Range3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { DisplayStyle3dState, ModelSelectorState, SpatialViewState, CategorySelectorState, ViewStatus, Camera, MarginPercent, CategorySelectorProps, ModelSelectorProps, standardView } from "../common/ViewState";
+import { DisplayStyle3dState, ModelSelectorState, SpatialViewState, CategorySelectorState, ViewStatus, Camera, MarginPercent, standardView } from "../common/ViewState";
 import { IModelDb } from "../backend/IModelDb";
 import { DisplayStyle3d, SpatialViewDefinition } from "../backend/ViewDefinition";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import * as path from "path";
 import { AuxCoordSystemSpatialState } from "../common/AuxCoordSys";
+import { CategorySelectorProps, ModelSelectorProps } from "../common/ElementProps";
 
 /* tslint:disable: no-console */
 
