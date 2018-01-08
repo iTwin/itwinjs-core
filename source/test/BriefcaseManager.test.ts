@@ -128,7 +128,7 @@ describe("BriefcaseManager", () => {
     assert.exists(iModelNoVer);
   });
 
-  it("should open briefcase of an iModel in both DEV and QA", async () => {
+  it.skip("should open briefcase of an iModel in both DEV and QA", async () => {
     IModelTestUtils.setIModelHubDeployConfig("DEV");
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Turn off SSL validation in DEV
     const devProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
