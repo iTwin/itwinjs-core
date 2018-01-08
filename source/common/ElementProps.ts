@@ -5,8 +5,7 @@ import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 import { CodeProps, Code } from "./Code";
 import { EntityProps } from "./EntityProps";
 import { GeometryStream } from "./geometry/GeometryStream";
-import { Placement3dProps, Placement2d } from "./geometry/Primitives";
-import { Point3d, Vector3d, YawPitchRollAngles, Point2d } from "@bentley/geometry-core/lib/PointVector";
+import { XYAndZ, XAndY, YawPitchRollProps, LowAndHighXYZ, LowAndHighXY, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { AngleProps } from "@bentley/geometry-core/lib/Geometry";
 
 export interface RelatedElementProps {
@@ -43,6 +42,18 @@ export interface GeometricElementProps extends ElementProps {
   geom?: GeometryStream;
 }
 
+export interface Placement3dProps {
+  origin: XYAndZ | object;
+  angles: YawPitchRollProps | YawPitchRollAngles;
+  bbox: LowAndHighXYZ;
+}
+
+export interface Placement2dProps {
+  origin: XAndY | object;
+  angle: AngleProps | number;
+  bbox: LowAndHighXY;
+}
+
 /** Properties that define a GeometricElement3d */
 export interface GeometricElement3dProps extends GeometricElementProps {
   placement: Placement3dProps;
@@ -51,8 +62,8 @@ export interface GeometricElement3dProps extends GeometricElementProps {
 
 /** Properties that define a GeometricElement2d */
 export interface GeometricElement2dProps extends GeometricElementProps {
-  placement: Placement2d;
-  typeDefinition?: TypeDefinition;
+  placement: Placement2dProps;
+  typeDefinition?: RelatedElementProps;
 }
 
 export interface ViewAttachmentProps extends GeometricElement2dProps {
@@ -110,15 +121,15 @@ export interface ViewDefinitionProps extends ElementProps {
 export interface CameraProps {
   lens: AngleProps | number;
   focusDistance: number;
-  eye: Point3d | object;
+  eye: XYAndZ | object;
 }
 
 /** Parameters to construct a ViewDefinition3d */
 export interface ViewDefinition3dProps extends ViewDefinitionProps {
   cameraOn: boolean;  // if true, m_camera is valid.
-  origin: Point3d | object;    // The lower left back corner of the view frustum.
-  extents: Vector3d | object;   // The extent of the view frustum.
-  angles: YawPitchRollAngles | object | undefined;    // Rotation of the view frustum (could be undefined if going RotMatrix -> YawPitchRoll).
+  origin: XYAndZ | object;    // The lower left back corner of the view frustum.
+  extents: XYAndZ | object;   // The extent of the view frustum.
+  angles: YawPitchRollProps | undefined;    // Rotation of the view frustum (could be undefined if going RotMatrix -> YawPitchRoll).
   camera: CameraProps;    // The camera used for this view.
 }
 
@@ -130,8 +141,8 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
 /** Parameters used to construct a ViewDefinition2d */
 export interface ViewDefinition2dProps extends ViewDefinitionProps {
   baseModelId: Id64 | string;
-  origin: Point2d | object;
-  delta: Point2d | object;
+  origin: XAndY | object;
+  delta: XAndY | object;
   angle: AngleProps | number;
 }
 

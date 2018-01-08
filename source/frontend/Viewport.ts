@@ -6,7 +6,7 @@ import { Map4d, Point4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { AxisOrder, Angle, AngleSweep } from "@bentley/geometry-core/lib/Geometry";
 import { ViewState, ViewStatus, MarginPercent, GridOrientationType } from "../common/ViewState";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
-import { ElementAlignedBox2d, Placement3dProps, Placement2dProps, Placement2d, Placement3d } from "../common/geometry/Primitives";
+import { ElementAlignedBox2d, Placement2d, Placement3d } from "../common/geometry/Primitives";
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core/lib/Time";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { BeButtonEvent, BeCursor } from "./tools/Tool";
@@ -23,6 +23,7 @@ import { ColorDef } from "../common/ColorDef";
 import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
 import { LegacyMath } from "../common/LegacyMath";
 import { Frustum, Npc, NpcCorners, NpcCenter } from "../common/Frustum";
+import { Placement3dProps, Placement2dProps } from "../common/ElementProps";
 
 /** A rectangle in view coordinates. */
 export class ViewRect extends ElementAlignedBox2d {
