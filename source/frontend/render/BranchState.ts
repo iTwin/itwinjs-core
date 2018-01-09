@@ -10,7 +10,7 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
  * all sub-nodes of the branch.
  */
 export class BranchState {
-  public readonly transform: Transform=Transform.createIdentity();
+  public readonly transform: Transform = Transform.createIdentity();
   public readonly viewFlags: ViewFlags;
 
   // NOTE: invoked by e.g.:
@@ -52,12 +52,12 @@ export class BranchStack {
     // NOTE: We have no way of preventing caller from modifying the returned value.
     // Don't want to clone it out of paranoia...
     assert(!this.empty);
-    return this._stack[this._stack.length-1];
+    return this._stack[this._stack.length - 1];
   }
 
   // NOTE: a property.
   public get empty(): boolean {
-    return 0 == this._stack.length;
+    return 0 === this._stack.length;
   }
 
   public pop(): void {
@@ -67,5 +67,3 @@ export class BranchStack {
     }
   }
 }
-
-

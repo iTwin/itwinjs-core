@@ -35,11 +35,11 @@ export class RenderStateFlags {
   }
 
   public equals(rhs: RenderStateFlags): boolean {
-    return this.cull == rhs.cull
-        && this.depthTest == rhs.depthTest
-        && this.blend == rhs.blend
-        && this.stencilTest == rhs.stencilTest
-        && this.depthMask == rhs.depthMask;
+    return this.cull === rhs.cull
+        && this.depthTest === rhs.depthTest
+        && this.blend === rhs.blend
+        && this.stencilTest === rhs.stencilTest
+        && this.depthMask === rhs.depthMask;
   }
 
   public apply(gl: WebGLRenderingContext, previousFlags: RenderStateFlags): void {
@@ -48,13 +48,13 @@ export class RenderStateFlags {
     RenderStateFlags.enableOrDisable(gl, this.blend, GL.Capability.Blend, previousFlags.blend);
     RenderStateFlags.enableOrDisable(gl, this.stencilTest, GL.Capability.StencilTest, previousFlags.stencilTest);
 
-    if (previousFlags.depthMask != this.depthMask) {
+    if (previousFlags.depthMask !== this.depthMask) {
       gl.depthMask(this.depthMask);
     }
   }
 
   public static enableOrDisable(gl: WebGLRenderingContext, currentFlag: boolean, value: number, previousFlag: boolean) {
-    if (currentFlag != previousFlag) {
+    if (currentFlag !== previousFlag) {
       if (currentFlag) {
         gl.enable(value);
       } else {
@@ -98,28 +98,27 @@ export class RenderState {
 
   public equals(rhs: RenderState): boolean {
     return this.flags.equals(rhs.flags)
-        && this.frontFace == rhs.frontFace
-        && this.cullFace == rhs.cullFace
-        && this.depthFunc == rhs.depthFunc;
+        && this.frontFace === rhs.frontFace
+        && this.cullFace === rhs.cullFace
+        && this.depthFunc === rhs.depthFunc;
   }
 
   public apply(gl: WebGLRenderingContext, prevState: RenderState): void {
     this.flags.apply(gl, prevState.flags);
     if (this.flags.cull) {
-      if (!prevState.flags.cull || prevState.cullFace != this.cullFace) {
+      if (!prevState.flags.cull || prevState.cullFace !== this.cullFace) {
         gl.cullFace(this.cullFace);
       }
 
       if (this.flags.depthTest) {
-        if (!prevState.flags.depthTest || prevState.depthFunc != this.depthFunc) {
+        if (!prevState.flags.depthTest || prevState.depthFunc !== this.depthFunc) {
           gl.depthFunc(this.depthFunc);
         }
       }
 
-      if (this.frontFace != prevState.frontFace) {
+      if (this.frontFace !== prevState.frontFace) {
         gl.frontFace(this.frontFace);
       }
     }
   }
 }
-  

@@ -7,13 +7,13 @@ import { GL } from "@build/imodeljs-core/lib/frontend/render/GL";
 import { RenderState } from "@build/imodeljs-core/lib/frontend/render/RenderState";
 
 // ###TODO: canvas.getContext() returns null on PRG...GPU should not be required
-var haveWebGL = false;
+const haveWebGL = false;
 
 function getWebGLContext(): WebGLRenderingContext | null {
-  let canvas = document.createElement("canvas") as HTMLCanvasElement;
+  const canvas = document.createElement("canvas") as HTMLCanvasElement;
   assert.isNotNull(canvas);
 
-  if (null == canvas) {
+  if (null === canvas) {
     return null;
   }
 
@@ -23,7 +23,7 @@ function getWebGLContext(): WebGLRenderingContext | null {
 
 describe("WebGL context tests", () => {
   it("should obtain valid WebGL context", () => {
-    let gl = getWebGLContext();
+    const gl = getWebGLContext();
     if (haveWebGL) {
       assert.isNotNull(gl);
     }
@@ -35,7 +35,7 @@ describe("RenderState API", () => {
     let a = new RenderState();
     assert.isTrue(a.equals(a));
 
-    let b = new RenderState();
+    const b = new RenderState();
     assert.isTrue(a.equals(b));
     assert.isTrue(b.equals(a));
     a.flags.depthTest = true;
@@ -62,19 +62,19 @@ describe("RenderState API", () => {
 
 describe("RenderState.apply()", () => {
   it("should apply state", () => {
-    let gl = getWebGLContext();
+    const gl = getWebGLContext();
     if (haveWebGL) {
       assert.isNotNull(gl);
     }
 
-    if (null == gl) {
+    if (null === gl) {
       return;
     }
 
     assert.isTrue(gl.getParameter(GL.Capability.DepthWriteMask) === true, "depth mask should be enabled by default");
 
-    let prevState = new RenderState();
-    let newState = new RenderState();
+    const prevState = new RenderState();
+    const newState = new RenderState();
 
     newState.flags.depthMask = false;
     newState.apply(gl, prevState);
@@ -91,4 +91,3 @@ describe("RenderState.apply()", () => {
     /// NEEDSWORK: assert.isTrue(gl.getParameter(GL.Capability.DepthFunc) === GL.DepthFunc.Always, "depth func should be ALWAYS but is " + GL.DepthFunc[depthFunc]);
     });
 });
-

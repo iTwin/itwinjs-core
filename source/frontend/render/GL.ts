@@ -7,13 +7,13 @@ export namespace GL {
     Front = WebGLRenderingContext.FRONT,
     Back = WebGLRenderingContext.BACK,
     FrontAndBack = WebGLRenderingContext.FRONT_AND_BACK,
-    Default = Back
+    Default = Back,
   }
 
   export enum FrontFace {
     CounterClockwise = WebGLRenderingContext.CCW,
     Clockwise = WebGLRenderingContext.CW,
-    Default = CounterClockwise
+    Default = CounterClockwise,
   }
 
   export enum DepthFunc {
@@ -25,7 +25,7 @@ export namespace GL {
     NotEqual = WebGLRenderingContext.NOTEQUAL,
     GreaterOrEqual = WebGLRenderingContext.GEQUAL,
     Always = WebGLRenderingContext.ALWAYS,
-    Default = Less
+    Default = Less,
   }
 
   export enum Capability {
@@ -34,13 +34,12 @@ export namespace GL {
     Blend = WebGLRenderingContext.BLEND,
     StencilTest = WebGLRenderingContext.STENCIL_TEST,
     DepthWriteMask = WebGLRenderingContext.DEPTH_WRITEMASK,
-    DepthFunc = WebGLRenderingContext.DEPTH_FUNC
+    DepthFunc = WebGLRenderingContext.DEPTH_FUNC,
   }
 
   export enum WrapMode {
     Repeat = WebGLRenderingContext.REPEAT,
     MirroredRepeat = WebGLRenderingContext.MIRRORED_REPEAT,
-    ClampToEdge = WebGLRenderingContext.CLAMP_TO_EDGE
+    ClampToEdge = WebGLRenderingContext.CLAMP_TO_EDGE,
   }
 }
-
