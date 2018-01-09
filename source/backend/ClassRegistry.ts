@@ -121,7 +121,6 @@ export class ClassRegistry {
 
     // Make sure that we have all base classes registered.
     // This recurses. I have to know that the super class is defined and registered before defining a derived class.
-    // Therefore, I must await getRegisteredClass.
     if (metadata!.baseClasses && metadata.baseClasses.length !== 0) {
       ClassRegistry.getClass(metadata.baseClasses[0], iModel);
     }

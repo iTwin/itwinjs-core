@@ -36,12 +36,12 @@ export class IModelGatewayImpl extends IModelGateway {
 
   /** Ask the backend to open a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend. */
   public async openStandalone(fileName: string, openMode: OpenMode): Promise<IModel> {
-    return await IModelDb.openStandalone(fileName, openMode);
+    return IModelDb.openStandalone(fileName, openMode);
   }
 
   public async close(accessToken: AccessToken, iModelToken: IModelToken): Promise<boolean> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    await iModelDb.close(AccessToken.fromJson(accessToken)!);
+    iModelDb.close(AccessToken.fromJson(accessToken)!);
     return true; // NEEDS_WORK: Promise<void> seems to crash the transport layer.
   }
 
@@ -53,7 +53,7 @@ export class IModelGatewayImpl extends IModelGateway {
 
   public async executeQuery(iModelToken: IModelToken, sql: string, bindings?: any): Promise<string[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    const rows: any[] = await iModelDb.executeQuery(sql, bindings);
+    const rows: any[] = iModelDb.executeQuery(sql, bindings);
     Logger.logInfo("IModelDbRemoting.executeQuery", () => ({ sql, numRows: rows.length }));
     return rows;
   }
@@ -67,7 +67,7 @@ export class IModelGatewayImpl extends IModelGateway {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const modelJsonArray: string[] = [];
     for (const modelId of modelIds) {
-      modelJsonArray.push(await iModelDb.models.getModelJson(modelId));
+      modelJsonArray.push(iModelDb.models.getModelJson(modelId));
     }
     return modelJsonArray;
   }
@@ -76,7 +76,7 @@ export class IModelGatewayImpl extends IModelGateway {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const elementProps: string[] = [];
     for (const elementId of elementIds) {
-      elementProps.push(await iModelDb.elements.getElementJson(elementId));
+      elementProps.push(iModelDb.elements.getElementJson(elementId));
     }
     return elementProps;
   }
@@ -103,7 +103,7 @@ export class IModelGatewayImpl extends IModelGateway {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const formatArray: any[] = [];
     for (const elementId of elementIds) {
-      const formatString: string = await iModelDb.getElementPropertiesForDisplay(elementId);
+      const formatString: string = iModelDb.getElementPropertiesForDisplay(elementId);
       formatArray.push(JSON.parse(formatString));
     }
     return formatArray;

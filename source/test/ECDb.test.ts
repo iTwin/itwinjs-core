@@ -134,7 +134,7 @@ describe("ECDb", () => {
     });
 
     it("should be able to execute queries", async () => {
-      let rows: any[] = await ecdb.executeQuery("SELECT * FROM TestSchema.TestClass");
+      let rows: any[] = ecdb.executeQuery("SELECT * FROM TestSchema.TestClass");
       if (rows.length === 0) {
         assert.fail();
         return;
@@ -146,7 +146,7 @@ describe("ECDb", () => {
 
       const testInstanceId = new Id64(testInstanceKey.id);  // NB: In the queries that follow, ECInstanceId must be strongly typed as an Id64, not a string! The ECSql binding logic will insist on that.
 
-      rows = await ecdb.executeQuery("SELECT * FROM TestSchema.TestClass WHERE ECInstanceId=?", [testInstanceId]);
+      rows = ecdb.executeQuery("SELECT * FROM TestSchema.TestClass WHERE ECInstanceId=?", [testInstanceId]);
       if (rows.length === 0) {
         assert.fail();
         return;
@@ -155,7 +155,7 @@ describe("ECDb", () => {
       const map = new Map<string, BindingValue>([
         ["instanceId", testInstanceId],
       ]);
-      rows = await ecdb.executeQuery("SELECT * FROM TestSchema.TestClass WHERE ECInstanceId=:instanceId", map);
+      rows = ecdb.executeQuery("SELECT * FROM TestSchema.TestClass WHERE ECInstanceId=:instanceId", map);
       assert.notEqual(rows.length, 0);
     });
 
@@ -183,7 +183,7 @@ describe("ECDb", () => {
 
     it("should be able to handle invalid inputs elegantly", async () => {
       try {
-        await ecdb.executeQuery("");
+        ecdb.executeQuery("");
         assert.fail(); // expect line above to throw an Error
       } catch (error) {
         assert.isTrue(error instanceof IModelError);
@@ -192,7 +192,7 @@ describe("ECDb", () => {
 
       let test: any;
       try {
-        await ecdb.executeQuery(test);
+        ecdb.executeQuery(test);
         assert.fail(); // expect line above to throw an Error
       } catch (error) {
         assert.isTrue(error instanceof IModelError);
@@ -201,7 +201,7 @@ describe("ECDb", () => {
 
       try {
         test = 3;
-        await ecdb.executeQuery("SELECT * FROM TestSchema.TestClass", [test]);
+        ecdb.executeQuery("SELECT * FROM TestSchema.TestClass", [test]);
         assert.fail(); // expect line above to throw an Error
       } catch (error) {
         assert.isTrue(error instanceof IModelError);

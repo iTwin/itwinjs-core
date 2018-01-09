@@ -116,7 +116,7 @@ export class IModelTestUtils {
     return stat;
   }
 
-  public static async openIModel(filename: string, opts?: IModelTestUtilsOpenOptions): Promise<IModelDb> {
+  public static openIModel(filename: string, opts?: IModelTestUtilsOpenOptions): IModelDb {
     const destPath = __dirname + "/output";
     if (!fs.existsSync(destPath))
       fs.mkdirSync(destPath);
@@ -132,7 +132,7 @@ export class IModelTestUtils {
       fs.copySync(srcName, dbName, { preserveTimestamps: true });
     }
 
-    const iModel: IModelDb = await IModelDb.openStandalone(dbName, opts.openMode, opts.enableTransactions); // could throw Error
+    const iModel: IModelDb = IModelDb.openStandalone(dbName, opts.openMode, opts.enableTransactions); // could throw Error
     assert.exists(iModel);
     return iModel!;
   }
@@ -187,10 +187,10 @@ export class IModelTestUtils {
   }
 
   // Create a SpatialCategory, insert it, and set its default appearance
-  public static async createAndInsertSpatialCategory(definitionModel: DefinitionModel, categoryName: string, appearance: Appearance): Promise<Id64> {
+  public static createAndInsertSpatialCategory(definitionModel: DefinitionModel, categoryName: string, appearance: Appearance): Id64 {
     const cat: SpatialCategory = SpatialCategory.create(definitionModel, categoryName);
     cat.id = cat.insert();
-    await cat.setDefaultAppearance(appearance);
+    cat.setDefaultAppearance(appearance);
     return cat.id;
   }
 

@@ -196,7 +196,7 @@ export class IModelDbLinkTableRelationships {
     if (!this._iModel.briefcaseInfo)
       throw this._iModel._newNotOpenError();
 
-    const { error, result: json } = this._iModel.briefcaseInfo.nativeDb.insertLinkTableRelationshipSync(JSON.stringify(props));
+    const { error, result: json } = this._iModel.briefcaseInfo.nativeDb.insertLinkTableRelationship(JSON.stringify(props));
     if (error)
       throw new IModelError(error.status, "Problem inserting relationship instance", Logger.logWarning);
 
@@ -213,7 +213,7 @@ export class IModelDbLinkTableRelationships {
     if (!this._iModel.briefcaseInfo)
       throw this._iModel._newNotOpenError();
 
-    const error: DbResult = this._iModel.briefcaseInfo.nativeDb.updateLinkTableRelationshipSync(JSON.stringify(props));
+    const error: DbResult = this._iModel.briefcaseInfo.nativeDb.updateLinkTableRelationship(JSON.stringify(props));
     if (error !== DbResult.BE_SQLITE_OK)
       throw new IModelError(error, "", Logger.logWarning);
   }
@@ -227,20 +227,20 @@ export class IModelDbLinkTableRelationships {
     if (!this._iModel.briefcaseInfo)
       throw this._iModel._newNotOpenError();
 
-    const error: DbResult = this._iModel.briefcaseInfo.nativeDb.deleteLinkTableRelationshipSync(JSON.stringify(props));
+    const error: DbResult = this._iModel.briefcaseInfo.nativeDb.deleteLinkTableRelationship(JSON.stringify(props));
     if (error !== DbResult.BE_SQLITE_DONE)
       throw new IModelError(error, "", Logger.logWarning);
   }
 
   /** get the props of a relationship instance */
-  private async getInstanceProps(relClassSqlName: string, criteria: Id64 | SourceAndTarget): Promise<LinkTableRelationshipProps> {
+  private getInstanceProps(relClassSqlName: string, criteria: Id64 | SourceAndTarget): LinkTableRelationshipProps {
 
     if (criteria instanceof Id64) {
 
       return this._iModel.withPreparedStatement("SELECT * FROM " + relClassSqlName + " WHERE ecinstanceid=?", (stmt: ECSqlStatement) => {
         stmt.bindValues([criteria as Id64]);
         if (DbResult.BE_SQLITE_ROW !== stmt.step())
-          return Promise.reject(new IModelError(IModelStatus.NotFound));
+          throw new IModelError(IModelStatus.NotFound);
         return stmt.getRow() as LinkTableRelationshipProps;
       });
 
@@ -252,17 +252,17 @@ export class IModelDbLinkTableRelationships {
       return this._iModel.withPreparedStatement("SELECT * FROM " + relClassSqlName + " WHERE SourceECInstanceId=? AND TargetECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindValues([st.sourceId, st.targetId]);
         if (DbResult.BE_SQLITE_ROW !== stmt.step())
-          return Promise.reject(new IModelError(IModelStatus.NotFound));
+          throw new IModelError(IModelStatus.NotFound);
         return stmt.getRow() as LinkTableRelationshipProps;
       });
     }
 
-    return Promise.reject(new IModelError(IModelStatus.BadArg));
+    throw new IModelError(IModelStatus.BadArg);
   }
 
   /** get a relationship instance */
-  public async getInstance(relClassSqlName: string, criteria: Id64 | SourceAndTarget): Promise<LinkTableRelationship> {
-    const props = await this.getInstanceProps(relClassSqlName, criteria);
+  public getInstance(relClassSqlName: string, criteria: Id64 | SourceAndTarget): LinkTableRelationship {
+    const props = this.getInstanceProps(relClassSqlName, criteria);
     props.classFullName = props.className.replace(".", ":");
     if (props.sourceClassName !== undefined)
       props.sourceClassName = props.sourceClassName.replace(".", ":");

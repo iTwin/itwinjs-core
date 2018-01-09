@@ -57,7 +57,7 @@ describe("BriefcaseManager", () => {
     const files = fs.readdirSync(iModelLocalReadonlyPath);
     expect(files.length).greaterThan(0);
 
-    await iModel.close(accessToken);
+    iModel.close(accessToken);
   });
 
   it("should be able to open an IModel from the Hub in ReadWrite mode", async () => {
@@ -69,7 +69,7 @@ describe("BriefcaseManager", () => {
     const files = fs.readdirSync(iModelLocalReadWritePath);
     expect(files.length).greaterThan(0);
 
-    await iModel.close(accessToken);
+    iModel.close(accessToken);
   });
 
   it("should reuse open briefcases in Readonly mode", async () => {
@@ -103,7 +103,7 @@ describe("BriefcaseManager", () => {
     const diff = files2.filter((item) => files.indexOf(item) < 0);
     expect(diff.length).equals(0);
 
-    await iModel.close(accessToken);
+    iModel.close(accessToken);
   });
 
   it("should open briefcases of specific versions in Readonly mode", async () => {
@@ -154,7 +154,7 @@ describe("BriefcaseManager", () => {
   it("should build resource request", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
 
-    const el: Element = await iModel.elements.getRootSubject();
+    const el: Element = iModel.elements.getRootSubject();
     const req: BriefcaseManager.ResourcesRequest = BriefcaseManager.ResourcesRequest.create();
     el.buildResourcesRequest(req, DbOpcode.Update);    // make a list of the resources that will be needed to update this element (e.g., a shared lock on the model and a code)
     const reqAsAny: any = BriefcaseManager.ResourcesRequest.toAny(req);
@@ -164,7 +164,7 @@ describe("BriefcaseManager", () => {
     assert.isArray(reqAsAny.Codes);
     assert.equal(reqAsAny.Codes.length, 0);
 
-    await iModel.close(accessToken);
+    iModel.close(accessToken);
   });
 
   it("should write to briefcase with optimistic concurrency", async () => {
@@ -181,7 +181,7 @@ describe("BriefcaseManager", () => {
     }));
 
     // Show that we can modify the properties of an element. In this case, we modify the root element itself.
-    const rootEl: Element = (await iModel.elements.getRootSubject()).copyForEdit<Element>();
+    const rootEl: Element = (iModel.elements.getRootSubject()).copyForEdit<Element>();
     rootEl.userLabel = rootEl.userLabel + "changed";
     iModel.elements.updateElement(rootEl);
 
@@ -190,10 +190,10 @@ describe("BriefcaseManager", () => {
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, Code.createEmpty(), true);
 
     // Find or create a SpatialCategory
-    const dictionary: DictionaryModel = await iModel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
+    const dictionary: DictionaryModel = iModel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
     let spatialCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
     if (undefined === spatialCategoryId) {
-      spatialCategoryId = await IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
     }
 
     // Create a couple of physical elements.
@@ -205,14 +205,14 @@ describe("BriefcaseManager", () => {
 
     // TBD: Sync with iModelHub and  then upload the local changes as a changeSet to iModelHub
 
-    await iModel.close(accessToken);
+    iModel.close(accessToken);
   });
 
   it.skip("should make revisions", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
     assert.exists(iModel);
 
-    const dictionary: DictionaryModel = await iModel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
+    const dictionary: DictionaryModel = iModel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
 
     let newModelId: Id64;
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, Code.createEmpty(), true);
@@ -237,7 +237,7 @@ describe("BriefcaseManager", () => {
 
     iModel.saveChanges("inserted generic objects");
 
-    await iModel.close(accessToken);
+    iModel.close(accessToken);
   });
 
   // should not be able to open the same iModel both Readonly and ReadWrite

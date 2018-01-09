@@ -20,24 +20,24 @@ import { CategorySelectorProps, ModelSelectorProps } from "../common/ElementProp
 const bimFileLocation = path.join(__dirname + "/assets/test.bim");
 
 // Given a ViewDefinition, return a ViewState that defines the members of that ViewDefinition
-async function convertViewDefToViewState(imodel: IModelDb, view: SpatialViewDefinition): Promise<SpatialViewState> {
-  const displayStyle = await imodel.elements.getElement(view.displayStyleId);
+function convertViewDefToViewState(imodel: IModelDb, view: SpatialViewDefinition): SpatialViewState {
+  const displayStyle = imodel.elements.getElement(view.displayStyleId);
   assert.isTrue(displayStyle instanceof DisplayStyle3d, "The Display Style should be a DisplayStyle3d");
   const dStyleState = new DisplayStyle3dState(displayStyle.toJSON(), imodel);
   const bgColorDef = dStyleState.backgroundColor;
   assert.isTrue(bgColorDef.tbgr === 0, "The background as expected");
   const sceneBrightness: number = dStyleState.getSceneBrightness();
   assert.equal(sceneBrightness, 0);
-  const styleProps = await imodel.elements.getElementProps(view.displayStyleId);
+  const styleProps = imodel.elements.getElementProps(view.displayStyleId);
   const dStyleState2 = new DisplayStyle3dState(styleProps, imodel);
   assert.deepEqual(dStyleState, dStyleState2);
   const d3 = dStyleState.clone();
   assert.deepEqual(dStyleState, d3);
 
-  const catSel = await imodel.elements.getElementProps(view.categorySelectorId) as CategorySelectorProps;
+  const catSel = imodel.elements.getElementProps(view.categorySelectorId) as CategorySelectorProps;
   assert.isDefined(catSel.categories);
   assert.lengthOf(catSel.categories, 4);
-  const modelSel = await imodel.elements.getElementProps(view.modelSelectorId) as ModelSelectorProps;
+  const modelSel = imodel.elements.getElementProps(view.modelSelectorId) as ModelSelectorProps;
   assert.isDefined(modelSel.models);
   assert.lengthOf(modelSel.models, 5);
 
@@ -59,18 +59,18 @@ describe("ViewState", () => {
   const jsonCompare = new DeepCompare();
 
   // Includes some usable objects for basic testing purposes
-  before(async () => {
+  before(() => {
     // Pull down flat view known to exist from bim file
-    imodel = await IModelDb.openStandalone(bimFileLocation, OpenMode.Readonly);
-    const viewRows: any[] = await imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + SpatialViewDefinition.sqlName);
+    imodel = IModelDb.openStandalone(bimFileLocation, OpenMode.Readonly);
+    const viewRows: any[] = imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + SpatialViewDefinition.sqlName);
     assert.exists(viewRows, "Should find some views");
     const viewId = new Id64(viewRows[0].elementId);
-    flatView = await imodel.elements.getElement(viewId) as SpatialViewDefinition;
+    flatView = imodel.elements.getElement(viewId) as SpatialViewDefinition;
 
     // Set up ViewState with camera turned on
-    const dStyleState = new DisplayStyle3dState((await imodel.elements.getElementProps(flatView.displayStyleId)), imodel);
-    const catSelState = new CategorySelectorState((await imodel.elements.getElementProps(flatView.categorySelectorId)) as CategorySelectorProps, imodel);
-    const modSelState = new ModelSelectorState((await imodel.elements.getElementProps(flatView.modelSelectorId)) as ModelSelectorProps, imodel);
+    const dStyleState = new DisplayStyle3dState((imodel.elements.getElementProps(flatView.displayStyleId)), imodel);
+    const catSelState = new CategorySelectorState((imodel.elements.getElementProps(flatView.categorySelectorId)) as CategorySelectorProps, imodel);
+    const modSelState = new ModelSelectorState((imodel.elements.getElementProps(flatView.modelSelectorId)) as ModelSelectorProps, imodel);
     cameraViewState = new SpatialViewState({
       classFullName: "BisCore:SpatialViewDefinition",
       id: new Id64("0x34"),
@@ -125,7 +125,7 @@ describe("ViewState", () => {
     assert.isTrue(flatView.jsonProperties.viewDetails.gridOrient === 0, "Grid orientation as expected");
     assert.isTrue(flatView.jsonProperties.viewDetails.gridSpaceX === 0.001, "GridSpaceX as expected");
 
-    const viewState = await convertViewDefToViewState(imodel, flatView);
+    const viewState = convertViewDefToViewState(imodel, flatView);
 
     assert.isDefined(viewState.displayStyle);
     assert.instanceOf(viewState.categorySelector, CategorySelectorState);
@@ -156,7 +156,7 @@ describe("ViewState", () => {
   });
 
   // C++ Tests:
-  it("ViewState creation parallels C++", async () => {
+  it("ViewState creation parallels C++", () => {
     // compare the extracted view with that in native C++
     let nativeResultJSON = imodel.elements.executeTestById(1,
       {
@@ -167,14 +167,14 @@ describe("ViewState", () => {
         path: bimFileLocation,
       });
     nativeResultJSON = imodel.constructEntity(nativeResultJSON).toJSON();
-    const viewStateJSON = (await convertViewDefToViewState(imodel, flatView)).toJSON();
+    const viewStateJSON = (convertViewDefToViewState(imodel, flatView)).toJSON();
     viewStateJSON.description = undefined;    // Currently does not appear if not explicitly specified in TS
     assert.deepEqual(viewStateJSON, nativeResultJSON, "Native side ViewState creation matches TS");
   });
 
-  it("view volume adjustments should match that of adjustments in C++", async () => {
+  it("view volume adjustments should match that of adjustments in C++", () => {
     // Flat view test #1
-    const tsFlatViewState = await convertViewDefToViewState(imodel, flatView);
+    const tsFlatViewState = convertViewDefToViewState(imodel, flatView);
     tsFlatViewState.setOrigin(Point3d.create(-5, -5, 0));
     tsFlatViewState.setExtents(Vector3d.create(10, 10, 1));
     tsFlatViewState.setRotation(RotMatrix.createIdentity());
@@ -210,7 +210,7 @@ describe("ViewState", () => {
     tsFlatViewStateJSON = tsFlatViewState.toJSON();
     (tsFlatViewStateJSON as any).description = undefined;  // Currently does not appear if not explicitly specified in TS
 
-    cppFlatViewStateJSON = await imodel.elements.executeTestById(2,
+    cppFlatViewStateJSON = imodel.elements.executeTestById(2,
       {
         testMode: 1,
         id: flatView.id.value,
@@ -271,7 +271,7 @@ describe("ViewState", () => {
 
   it("rotation and 'lookAt' results should match C++", async () => {
     // Flat view test
-    const tsFlatViewState = await convertViewDefToViewState(imodel, flatView);
+    const tsFlatViewState = convertViewDefToViewState(imodel, flatView);
     tsFlatViewState.setOrigin(Point3d.create(-5, -5, 0));
     tsFlatViewState.setExtents(Vector3d.create(10, 10, 1));
     tsFlatViewState.setRotation(RotMatrix.createIdentity());

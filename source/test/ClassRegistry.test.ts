@@ -11,8 +11,8 @@ import { IModelTestUtils } from "./IModelTestUtils";
 describe("Class Registry", () => {
   let imodel: IModelDb;
 
-  before(async () => {
-    imodel = await IModelTestUtils.openIModel("test.bim");
+  before(() => {
+    imodel = IModelTestUtils.openIModel("test.bim");
     assert.exists(imodel);
   });
 
@@ -20,12 +20,12 @@ describe("Class Registry", () => {
     IModelTestUtils.closeIModel(imodel);
   });
 
-  it("should verify the Entity metadata of known element subclasses", async () => {
+  it("should verify the Entity metadata of known element subclasses", () => {
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
-    const el = await imodel.elements.getElement(code1);
+    const el = imodel.elements.getElement(code1);
     assert.exists(el);
     if (el) {
-      const metaData: EntityMetaData | undefined = await el.getClassMetaData();
+      const metaData: EntityMetaData | undefined = el.getClassMetaData();
       assert.exists(metaData);
       if (undefined === metaData)
         return;
@@ -43,10 +43,10 @@ describe("Class Registry", () => {
       assert.equal(p.extendedType, "BeGuid");
       assert.equal(p.customAttributes![1].ecclass, "CoreCustomAttributes:HiddenProperty");
     }
-    const el2 = await imodel.elements.getElement(new Id64("0x34"));
+    const el2 = imodel.elements.getElement(new Id64("0x34"));
     assert.exists(el2);
     if (el2) {
-      const metaData = await el2.getClassMetaData();
+      const metaData = el2.getClassMetaData();
       assert.exists(metaData);
       if (undefined === metaData)
         return;

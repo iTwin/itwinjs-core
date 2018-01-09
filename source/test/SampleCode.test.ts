@@ -12,8 +12,8 @@ import { IModelTestUtils } from "./IModelTestUtils";
 describe("Sample Code", () => {
   let iModel: IModelDb;
 
-  before(async () => {
-    iModel = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
+  before(() => {
+    iModel = IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
   });
 
   after(() => {
@@ -25,7 +25,7 @@ describe("Sample Code", () => {
     assert.exists(s);
   };
 
-  it("should extract working sample code", async () => {
+  it("should extract working sample code", () => {
     // __PUBLISH_EXTRACT_START__ BisCore1.sampleCode
     // Register any schemas that will be used directly
     BisCore.registerSchema();

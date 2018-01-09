@@ -27,7 +27,7 @@ import { BindingValue } from "./BindingUtility";
 import { CodeSpecs } from "./CodeSpecs";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelGatewayImpl } from "./IModelGatewayImpl";
-import { StatusCodeWithMessage, RepositoryStatus } from "@bentley/bentleyjs-core/lib/BentleyError";
+import { RepositoryStatus } from "@bentley/bentleyjs-core/lib/BentleyError";
 import * as path from "path";
 import { IModelDbLinkTableRelationships, LinkTableRelationship } from "./LinkTableRelationship";
 
@@ -73,8 +73,8 @@ export class IModelDb extends IModel {
    * @param openMode Open mode for database
    * @throws [[IModelError]]
    */
-  public static async openStandalone(pathname: string, openMode: OpenMode = OpenMode.ReadWrite, enableTransactions: boolean = false): Promise<IModelDb> {
-    const briefcaseInfo: BriefcaseInfo = await BriefcaseManager.openStandalone(pathname, openMode, enableTransactions);
+  public static openStandalone(pathname: string, openMode: OpenMode = OpenMode.ReadWrite, enableTransactions: boolean = false): IModelDb {
+    const briefcaseInfo: BriefcaseInfo = BriefcaseManager.openStandalone(pathname, openMode, enableTransactions);
     Logger.logInfo("IModelDb.openStandalone", () => ({ pathname, openMode }));
     return IModelDb.create(briefcaseInfo);
   }
@@ -97,11 +97,11 @@ export class IModelDb extends IModel {
   }
 
   /** Close this iModel, if it is currently open. */
-  public async close(accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
+  public close(accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): void {
     if (!this.briefcaseInfo)
       return;
     this.clearStatementCacheOnClose();
-    await BriefcaseManager.close(accessToken, this.briefcaseInfo, keepBriefcase);
+    BriefcaseManager.close(accessToken, this.briefcaseInfo, keepBriefcase);
     this.briefcaseInfo.iModelDb = undefined;
     this.briefcaseInfo = undefined;
   }
@@ -317,7 +317,7 @@ export class IModelDb extends IModel {
    * @returns all rows as an array or an empty array if nothing was selected
    * @throws [[IModelError]] If the statement is invalid
    */
-  public async executeQuery(ecsql: string, bindings?: BindingValue[] | Map<string, BindingValue> | any): Promise<any[]> {
+  public executeQuery(ecsql: string, bindings?: BindingValue[] | Map<string, BindingValue> | any): any[] {
     return this.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {
       if (bindings)
         stmt.bindValues(bindings);
@@ -407,7 +407,7 @@ export class IModelDb extends IModel {
     if (!this.briefcaseInfo)
       throw this._newNotOpenError();
 
-    const { error, result: idHexStr } = this.briefcaseInfo.nativeDb.insertCodeSpecSync(codeSpec.name, codeSpec.specScopeType, codeSpec.scopeReq);
+    const { error, result: idHexStr } = this.briefcaseInfo.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.specScopeType, codeSpec.scopeReq);
     if (error)
       throw new IModelError(error.status, "Problem inserting CodeSpec", Logger.logWarning);
 
@@ -415,20 +415,15 @@ export class IModelDb extends IModel {
   }
 
   /** @deprecated */
-  public async getElementPropertiesForDisplay(elementId: string): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-      if (!this.briefcaseInfo) {
-        reject(this._newNotOpenError());
-        return;
-      }
+  public getElementPropertiesForDisplay(elementId: string): string {
+    if (!this.briefcaseInfo)
+      throw this._newNotOpenError();
 
-      this.briefcaseInfo.nativeDb.getElementPropertiesForDisplay(elementId, (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
-        if (error)
-          reject(new IModelError(error.status, error.message, Logger.logError, () => ({ iModelId: this.token.iModelId, elementId })));
-        else
-          resolve(json);
-      });
-    });
+    const { error, result: idHexStr } = this.briefcaseInfo.nativeDb.getElementPropertiesForDisplay(elementId);
+    if (error)
+        throw new IModelError(error.status, error.message, Logger.logError, () => ({ iModelId: this.token.iModelId, elementId }));
+
+    return idHexStr!;
   }
 
   /** Prepare an ECSql statement.
@@ -490,7 +485,7 @@ export class IModelDb extends IModel {
     if (className.length !== 2)
       throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, () => ({ iModelId: this.token.iModelId, classFullName }));
 
-    const { error, result: metaDataJson } = this.briefcaseInfo.nativeDb.getECClassMetaDataSync(className[0], className[1]);
+    const { error, result: metaDataJson } = this.briefcaseInfo.nativeDb.getECClassMetaData(className[0], className[1]);
     if (error)
       throw new IModelError(error.status, undefined, Logger.logError, () => ({ iModelId: this.token.iModelId, classFullName }));
 
@@ -538,59 +533,52 @@ export class IModelDbModels {
    * @param modelId The Model identifier.
    * @throws [[IModelError]]
    */
-  public async getModel(modelId: Id64): Promise<Model> {
+  public getModel(modelId: Id64): Model {
     // first see if the model is already in the local cache.
     const loaded = this._loaded.get(modelId.toString());
     if (loaded)
       return loaded;
 
-    return new Promise<Model>((resolve, reject) => {
-      if (!this._iModel.briefcaseInfo)
-        return reject(this._iModel._newNotOpenError());
+    if (!this._iModel.briefcaseInfo)
+      throw this._iModel._newNotOpenError();
 
-      // Must go get the model from the iModel. Start by requesting the model's data.
-      this._iModel.briefcaseInfo.nativeDb.getModel(JSON.stringify({ id: modelId }), (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
-        if (error) {
-          reject(new IModelError(error.status, error.message, Logger.logWarning));
-          return;
-        }
+    // Must go get the model from the iModel. Start by requesting the model's data.
+    const {error, result: json} = this._iModel.briefcaseInfo.nativeDb.getModel(JSON.stringify({ id: modelId }));
+    if (error)
+      throw new IModelError(error.status, error.message, Logger.logWarning);
 
-        const props = JSON.parse(json) as ModelProps;
-        props.iModel = this._iModel;
-        const entity = this._iModel.constructEntity(props);
-        assert(entity instanceof Model);
-        const model = entity as Model;
+    const props = JSON.parse(json!) as ModelProps;
+    props.iModel = this._iModel;
+    const entity = this._iModel.constructEntity(props);
+    assert(entity instanceof Model);
+    const model = entity as Model;
 
-        // We have created the model. Cache it before we return it.
-        model.setPersistent(); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
-        this._loaded.set(model.id.toString(), model);
-        resolve(model);
-      });
-    });
+    // We have created the model. Cache it before we return it.
+    model.setPersistent(); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
+    this._loaded.set(model.id.toString(), model);
+    return model;
   }
 
-  public async getModelJson(modelIdStr: string): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-      if (!this._iModel.briefcaseInfo)
-        return reject(this._iModel._newNotOpenError());
+  public getModelJson(modelIdStr: string): string {
+    if (!this._iModel.briefcaseInfo)
+      throw this._iModel._newNotOpenError();
 
-      this._iModel.briefcaseInfo.nativeDb.getModel(JSON.stringify({ id: modelIdStr }), (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
-        if (error)
-          reject(new IModelError(error.status, error.message, Logger.logWarning));
-        else
-          resolve(json);
-      });
-    });
+    // Must go get the model from the iModel. Start by requesting the model's data.
+    const {error, result: json} = this._iModel.briefcaseInfo.nativeDb.getModel(JSON.stringify({ id: modelIdStr }));
+    if (error)
+      throw new IModelError(error.status, error.message, Logger.logWarning);
+
+    return json!;
   }
 
   /** Get the sub-model of the specified Element.
    * @param elementId The Element identifier.
    * @throws [[IModelError]]
    */
-  public async getSubModel(modeledElementId: Id64 | Guid | Code): Promise<Model> {
-    const modeledElement: Element = await this._iModel.elements.getElement(modeledElementId);
+  public getSubModel(modeledElementId: Id64 | Guid | Code): Model {
+    const modeledElement: Element = this._iModel.elements.getElement(modeledElementId);
     if (modeledElement.id.equals(this._iModel.elements.rootSubjectId))
-      return Promise.reject(new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model", Logger.logWarning));
+      throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model", Logger.logWarning);
 
     return this.getModel(modeledElement.id);
   }
@@ -622,7 +610,7 @@ export class IModelDbModels {
       throw new IModelError(IModelStatus.WriteError, "Cannot insert a model marked as persistent. Call copyForEdit.", Logger.logError);
     }
 
-    const { error, result: json } = this._iModel.briefcaseInfo.nativeDb.insertModelSync(JSON.stringify(model));
+    const { error, result: json } = this._iModel.briefcaseInfo.nativeDb.insertModel(JSON.stringify(model));
     if (error)
       throw new IModelError(error.status, "Problem inserting model", Logger.logWarning);
 
@@ -642,7 +630,7 @@ export class IModelDbModels {
       throw new IModelError(IModelStatus.WriteError, "Cannot update a model marked as persistent. Call copyForEdit.", Logger.logError);
     }
 
-    const error: IModelStatus = this._iModel.briefcaseInfo.nativeDb.updateModelSync(JSON.stringify(model));
+    const error: IModelStatus = this._iModel.briefcaseInfo.nativeDb.updateModel(JSON.stringify(model));
     if (error !== IModelStatus.Success)
       throw new IModelError(error, "", Logger.logWarning);
 
@@ -658,7 +646,7 @@ export class IModelDbModels {
     if (!this._iModel.briefcaseInfo)
       throw this._iModel._newNotOpenError();
 
-    const error: IModelStatus = this._iModel.briefcaseInfo.nativeDb.deleteModelSync(model.id.toString());
+    const error: IModelStatus = this._iModel.briefcaseInfo.nativeDb.deleteModel(model.id.toString());
     if (error !== IModelStatus.Success)
       throw new IModelError(error, "", Logger.logWarning);
 
@@ -680,40 +668,32 @@ export class IModelDbElements {
   public constructor(iModel: IModelDb, maxElements: number = 2000) { this._iModel = iModel; this._loaded = new LRUMap<string, Element>(maxElements); }
 
   /** Private implementation details of getElementProps */
-  private async _getElementProps(opts: ElementLoadParams): Promise<ElementProps> {
-    return new Promise<ElementProps>((resolve, reject) => {
-      if (!this._iModel.briefcaseInfo)
-        return reject(this._iModel._newNotOpenError());
+  private _getElementProps(opts: ElementLoadParams): ElementProps {
+    if (!this._iModel.briefcaseInfo)
+      throw this._iModel._newNotOpenError();
 
-      // Must go get the element from the iModel. Start by requesting the element's data.
-      this._iModel.briefcaseInfo.nativeDb.getElement(JSON.stringify(opts), (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
-        if (error)
-          reject(new IModelError(error.status, error.message, Logger.logWarning));
-        else {
-          const props = JSON.parse(json) as ElementProps;
-          props.iModel = this._iModel;
-          resolve(props);
-        }
-      });
-    });
+    // Must go get the element from the iModel. Start by requesting the element's data.
+    const {error, result: json} = this._iModel.briefcaseInfo.nativeDb.getElement(JSON.stringify(opts));
+    if (error)
+      throw new IModelError(error.status, error.message, Logger.logWarning);
+    const props = JSON.parse(json!) as ElementProps;
+    props.iModel = this._iModel;
+    return props;
   }
 
-  public async getElementJson(elementIdStr: string): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-      if (!this._iModel.briefcaseInfo)
-        return reject(this._iModel._newNotOpenError());
+  public getElementJson(elementIdStr: string): string {
+    if (!this._iModel.briefcaseInfo)
+      throw this._iModel._newNotOpenError();
 
-      this._iModel.briefcaseInfo.nativeDb.getElement(JSON.stringify({ id: elementIdStr }), (error: StatusCodeWithMessage<IModelStatus>, json: string) => {
-        if (error)
-          reject(new IModelError(error.status, error.message, Logger.logWarning));
-        else
-          resolve(json);
-      });
-    });
+    // Must go get the element from the iModel. Start by requesting the element's data.
+    const {error, result: json} = this._iModel.briefcaseInfo.nativeDb.getElement(JSON.stringify({ id: elementIdStr }));
+    if (error)
+      throw new IModelError(error.status, error.message, Logger.logWarning);
+    return json!;
   }
 
   /** Private implementation details of getElement */
-  private async _doGetElement(opts: ElementLoadParams): Promise<Element> {
+  private _doGetElement(opts: ElementLoadParams): Element {
     // first see if the element is already in the local cache.
     if (opts.id) {
       const loaded = this._loaded.get(opts.id.toString());
@@ -721,7 +701,7 @@ export class IModelDbElements {
         return loaded;
     }
 
-    const props = await this._getElementProps(opts);
+    const props = this._getElementProps(opts);
     const el = this._iModel.constructEntity(props) as Element;
 
     // We have created the element. Cache it before we return it.
@@ -734,11 +714,11 @@ export class IModelDbElements {
    * Get properties of an Element by Id, FederationGuid, or Code
    * @throws [[IModelError]] if the element is not found.
    */
-  public getElementProps(elementId: Id64 | Guid | Code): Promise<ElementProps> {
+  public getElementProps(elementId: Id64 | Guid | Code): ElementProps {
     if (elementId instanceof Id64) return this._getElementProps({ id: elementId });
     if (elementId instanceof Guid) return this._getElementProps({ federationGuid: elementId.value });
     if (elementId instanceof Code) return this._getElementProps({ code: elementId });
-    return Promise.reject(new IModelError(IModelStatus.BadArg, undefined, Logger.logError, () => ({ elementId })));
+    throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, () => ({ elementId }));
   }
 
   /**
@@ -746,11 +726,11 @@ export class IModelDbElements {
    * @param elementId either the element's Id, Code, or FederationGuid
    * @throws [[IModelError]] if the element is not found.
    */
-  public getElement(elementId: Id64 | Guid | Code): Promise<Element> {
+  public getElement(elementId: Id64 | Guid | Code): Element {
     if (elementId instanceof Id64) return this._doGetElement({ id: elementId });
     if (elementId instanceof Guid) return this._doGetElement({ federationGuid: elementId.value });
     if (elementId instanceof Code) return this._doGetElement({ code: elementId });
-    return Promise.reject(new IModelError(IModelStatus.BadArg, undefined, Logger.logError, () => ({ elementId })));
+    throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, () => ({ elementId }));
   }
 
   /**
@@ -795,7 +775,7 @@ export class IModelDbElements {
     if (!this._iModel.briefcaseInfo)
       throw this._iModel._newNotOpenError();
 
-    const { error, result: json } = this._iModel.briefcaseInfo.nativeDb.insertElementSync(JSON.stringify(elProps));
+    const { error, result: json } = this._iModel.briefcaseInfo.nativeDb.insertElement(JSON.stringify(elProps));
     if (error)
       throw new IModelError(error.status, "Problem inserting element", Logger.logWarning);
 
@@ -810,7 +790,7 @@ export class IModelDbElements {
     if (!this._iModel.briefcaseInfo)
       throw this._iModel._newNotOpenError();
 
-    const error: IModelStatus = this._iModel.briefcaseInfo.nativeDb.updateElementSync(JSON.stringify(props));
+    const error: IModelStatus = this._iModel.briefcaseInfo.nativeDb.updateElement(JSON.stringify(props));
     if (error !== IModelStatus.Success)
       throw new IModelError(error, "", Logger.logWarning);
 
@@ -827,7 +807,7 @@ export class IModelDbElements {
     if (!this._iModel.briefcaseInfo)
       throw this._iModel._newNotOpenError();
 
-    const error: IModelStatus = this._iModel.briefcaseInfo.nativeDb.deleteElementSync(id.toString());
+    const error: IModelStatus = this._iModel.briefcaseInfo.nativeDb.deleteElement(id.toString());
     if (error !== IModelStatus.Success)
       throw new IModelError(error, "", Logger.logWarning);
 
@@ -839,29 +819,29 @@ export class IModelDbElements {
    * @returns Returns an array of child element identifiers.
    * @throws [[IModelError]]
    */
-  public async queryChildren(elementId: Id64): Promise<Id64[]> {
-    const rows: any[] = await this._iModel.executeQuery("SELECT ECInstanceId as id FROM " + Element.sqlName + " WHERE Parent.Id=?", [elementId]);
+  public queryChildren(elementId: Id64): Id64[] {
+    const rows: any[] = this._iModel.executeQuery("SELECT ECInstanceId as id FROM " + Element.sqlName + " WHERE Parent.Id=?", [elementId]);
     const childIds: Id64[] = [];
     for (const row of rows) {
       childIds.push(new Id64(row.id));
     }
-    return Promise.resolve(childIds);
+    return childIds;
   }
 
   /** The Id of the root subject element. */
   public get rootSubjectId(): Id64 { return new Id64("0x1"); }
 
   /** Get the root subject element. */
-  public getRootSubject(): Promise<Element> { return this.getElement(this.rootSubjectId); }
+  public getRootSubject(): Element { return this.getElement(this.rootSubjectId); }
 
   /** Query for aspects rows (by aspect class name) associated with this element.
    * @throws [[IModelError]]
    */
-  private async _queryAspects(elementId: Id64, aspectClassName: string): Promise<ElementAspect[]> {
+  private _queryAspects(elementId: Id64, aspectClassName: string): ElementAspect[] {
     const name = aspectClassName.split(":");
-    const rows: any[] = await this._iModel.executeQuery("SELECT * FROM [" + name[0] + "].[" + name[1] + "] WHERE Element.Id=?", [elementId]);
+    const rows: any[] = this._iModel.executeQuery("SELECT * FROM [" + name[0] + "].[" + name[1] + "] WHERE Element.Id=?", [elementId]);
     if (rows.length === 0)
-      return Promise.reject(new IModelError(IModelStatus.NotFound, undefined, Logger.logWarning));
+      throw new IModelError(IModelStatus.NotFound, undefined, Logger.logWarning);
 
     const aspects: ElementAspect[] = [];
     for (const row of rows) {
@@ -884,8 +864,8 @@ export class IModelDbElements {
   /** Get an ElementUniqueAspect instance (by class name) that is related to the specified element.
    * @throws [[IModelError]]
    */
-  public async getUniqueAspect(elementId: Id64, aspectClassName: string): Promise<ElementUniqueAspect> {
-    const aspects: ElementAspect[] = await this._queryAspects(elementId, aspectClassName);
+  public getUniqueAspect(elementId: Id64, aspectClassName: string): ElementUniqueAspect {
+    const aspects: ElementAspect[] = this._queryAspects(elementId, aspectClassName);
     assert(aspects[0] instanceof ElementUniqueAspect);
     return aspects[0];
   }
@@ -893,8 +873,8 @@ export class IModelDbElements {
   /** Get the ElementMultiAspect instances (by class name) that are related to the specified element.
    * @throws [[IModelError]]
    */
-  public async getMultiAspects(elementId: Id64, aspectClassName: string): Promise<ElementMultiAspect[]> {
-    const aspects: ElementAspect[] = await this._queryAspects(elementId, aspectClassName);
+  public getMultiAspects(elementId: Id64, aspectClassName: string): ElementMultiAspect[] {
+    const aspects: ElementAspect[] = this._queryAspects(elementId, aspectClassName);
     return aspects;
   }
 

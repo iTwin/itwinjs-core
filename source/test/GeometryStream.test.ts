@@ -119,8 +119,8 @@ describe("GeometricPrimitive", () => {
 describe("GeometryStream", () => {
   let imodel: IModelDb;
 
-  before(async () => {
-    imodel = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
+  before(() => {
+    imodel = IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
   });
 
   after(() => {
@@ -187,7 +187,7 @@ describe("GeometryStream", () => {
     const geometryStream = gsWriter.outputGSRef();
 
     // Set up element to be placed in iModel
-    const seedElement = await imodel.elements.getElement(new Id64("0x1d"));
+    const seedElement = imodel.elements.getElement(new Id64("0x1d"));
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -209,7 +209,7 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
 
     // Extract and test value returned
-    const value = await imodel.elements.getElement(id);
+    const value = imodel.elements.getElement(id);
     assert.isDefined(value.geom);
 
     if (value.geom) {
@@ -243,10 +243,10 @@ describe("GeometryBuilder", () => {
   let surface: BSplineSurface3d;
   let polyface: IndexedPolyface;
 
-  before(async () => {
-    imodel = await IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
+  before(() => {
+    imodel = IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
     // Used to get information of imodel container
-    seedElement = await imodel.elements.getElement(new Id64("0x1d"));
+    seedElement = imodel.elements.getElement(new Id64("0x1d"));
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
     ellipse =  Arc3d.create(Point3d.create(1, 2, 3), Vector3d.create(0, 0, 2), Vector3d.create(0, 3, 0), AngleSweep.createStartEndRadians(0, 2 * Math.PI))!;
@@ -262,7 +262,7 @@ describe("GeometryBuilder", () => {
     IModelTestUtils.closeIModel(imodel);
   });
 
-  it("should be able to create GeometricElement3d from various geometry (preserved during round trip testing to native code)", async () => {
+  it("should be able to create GeometricElement3d from various geometry (preserved during round trip testing to native code)", () => {
 
     // Create an element that will take in the GeometryStream and placement
     const elementProps: GeometricElement3dProps = {
@@ -299,7 +299,7 @@ describe("GeometryBuilder", () => {
     assert.isTrue(insert3d.isValid(), "Successfully inserted GeometricElement3d resulting from a GeometryBuilder's GeometryStream");
 
     // Extract back out of iModel and parse
-    const returned3d = await imodel.elements.getElement(insert3d);
+    const returned3d = imodel.elements.getElement(insert3d);
     assert.isDefined(returned3d.geom, "Returned element has GeometryStream");
 
     const collection = new GSCollection(returned3d.geom.geomStream);
@@ -318,7 +318,7 @@ describe("GeometryBuilder", () => {
     }
   });
 
-  it("should be able to make appendages to GeometricElement2d, with an exception of 3d geometry", async () => {
+  it("should be able to make appendages to GeometricElement2d, with an exception of 3d geometry", () => {
 
     const builder = GeometryBuilder.createCategoryOrigin2d(seedElement.category, Point2d.create());
     assert.isDefined(builder, "Builder is successfully created");
