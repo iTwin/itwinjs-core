@@ -18,7 +18,10 @@
     "test:integration": "node node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/integration\""
   },
   "dependencies": {
+  },
+  "devDependencies": {
     "@bentley/bentleyjs-core": "^1.2.4",
+    "@bentley/bentleyjs-tools": "^1.0.58",
     "@bentley/ecpresentation-backend": "^0.0.25",
     "@bentley/ecpresentation-frontend": "^0.0.14",
     "@bentley/imodeljs-backend": "^0.15.0",
@@ -26,12 +29,11 @@
     "@bentley/imodeljs-electronaddon": "^1.4.0",
     "@bentley/imodeljs-frontend": "^0.12.0",
     "@bentley/imodeljs-n_8_9-win32-x64": "^1.4.0",
-    "@bentley/imodeljs-nodeaddon": "^1.4.0"
-  },
-  "devDependencies": {
-    "@bentley/bentleyjs-tools": "^1.0.58",
+    "@bentley/imodeljs-nodeaddon": "^1.4.0",
     "@types/chai": "^4.0.10",
+    "@types/faker": "^4.1.0",
     "@types/mocha": "^2.2.44",
+    "faker": "^4.1.0",
     "chai": "^4.1.2",
     "concurrently": "^3.5.0",
     "mocha": "^4.0.1",

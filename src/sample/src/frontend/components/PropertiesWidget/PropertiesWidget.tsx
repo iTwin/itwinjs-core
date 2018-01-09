@@ -2,7 +2,7 @@ import * as React from "react";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelToken } from "@bentley/imodeljs-frontend/lib/common/IModel";
 import { IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend/IModelConnection";
-import { ECInstanceKey } from "@bentley/ecpresentation-frontend/lib/common/EC";
+import { InstanceKey } from "@bentley/ecpresentation-frontend/lib/common/EC";
 import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/frontend/ECPresentationManager";
 import PropertyPaneDataProvider from "@bentley/ecpresentation-frontend/lib/frontend/Controls/PropertyPaneDataProvider";
 import { PropertyRecord } from "@bentley/ecpresentation-frontend/lib/frontend/Controls/ContentBuilder";
@@ -13,7 +13,7 @@ export interface Props {
   imodel: IModelConnection;
 }
 export interface State {
-  instanceKey?: ECInstanceKey;
+  instanceKey?: InstanceKey;
 }
 export default class PropertiesWidget extends React.Component<Props, State> {
   constructor(props: Props, context?: any) {
@@ -21,7 +21,7 @@ export default class PropertiesWidget extends React.Component<Props, State> {
     this.state = {};
   }
   // tslint:disable-next-line:naming-convention
-  private onECInstanceKeyEntered = (key: ECInstanceKey | undefined) => {
+  private onECInstanceKeyEntered = (key: InstanceKey | undefined) => {
     this.setState({ ...this.state, instanceKey: key });
   }
   public render() {
@@ -44,7 +44,7 @@ export default class PropertiesWidget extends React.Component<Props, State> {
 
 interface InputFieldsProps {
   imodel: IModelConnection;
-  onInstanceKeyEntered: (key: ECInstanceKey | undefined) => void;
+  onInstanceKeyEntered: (key: InstanceKey | undefined) => void;
 }
 class InputFields extends React.Component<InputFieldsProps> {
   private _classIdInput: HTMLInputElement | null = null;
@@ -152,7 +152,7 @@ class InputFields extends React.Component<InputFieldsProps> {
 
 interface PropertyPaneProps {
   imodelToken: IModelToken;
-  instanceKey: ECInstanceKey;
+  instanceKey: InstanceKey;
 }
 interface PropertyDisplayInfo {
   label: string;
@@ -187,7 +187,7 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
         return record.displayValue ? record.displayValue.toString() : "";
     }
   }
-  private async fetchProperties(_imodelToken: IModelToken, instanceKey: ECInstanceKey) {
+  private async fetchProperties(_imodelToken: IModelToken, instanceKey: InstanceKey) {
     try {
       const records: PropertyDisplayInfo[] = [];
       this._dataProvider.keys = [instanceKey];

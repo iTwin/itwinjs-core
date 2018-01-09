@@ -2,14 +2,13 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { ECInstanceKeysList } from "../common/EC";
+import * as ec from "../common/EC";
 import { NavNode, NavNodeKey, NavNodeKeyPath, NavNodePathElement } from "../common/Hierarchy";
 import * as content from "../common/Content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes";
 import { PageOptions, ECPresentationManager as ECPInterface } from "../common/ECPresentationManager";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { NodeAddonRegistry } from "@bentley/imodeljs-backend/lib/backend/NodeAddonRegistry";
-import { NodeAddonECPresentationManager } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { IModelToken } from "@bentley/imodeljs-backend/lib/common/IModel";
 import { IModelError, IModelStatus } from "@bentley/imodeljs-backend/lib/common/IModelError";
 import { IModelDb } from "@bentley/imodeljs-backend/lib/backend/IModelDb";
@@ -18,11 +17,19 @@ import ECPresentationGateway from "./ECPresentationGateway";
 // make sure the gateway gets registered (hopefully this is temporary)
 ECPresentationGateway;
 
-export default class ECPresentationManager implements ECPInterface {
-  private _manager: NodeAddonECPresentationManager;
+/** @hidden */
+export interface ECPresentationManagerNodeAddonDefinition {
+  handleRequest(db: any, options: string): string;
+}
 
-  constructor() {
-    this._manager = new (NodeAddonRegistry.getAddon()).NodeAddonECPresentationManager();
+export default class ECPresentationManager implements ECPInterface {
+
+  private _manager: ECPresentationManagerNodeAddonDefinition | null = null;
+
+  private getManager(): ECPresentationManagerNodeAddonDefinition {
+    if (!this._manager)
+      this._manager = new (NodeAddonRegistry.getAddon()).NodeAddonECPresentationManager();
+    return this._manager!;
   }
 
   public async getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<NavNode[]> {
@@ -65,7 +72,7 @@ export default class ECPresentationManager implements ECPInterface {
     return [];
   }
 
-  public async getContentDescriptor(token: IModelToken, displayType: string, keys: ECInstanceKeysList, selection: content.SelectionInfo | null, options: object): Promise<content.Descriptor | null> {
+  public async getContentDescriptor(token: IModelToken, displayType: string, keys: ec.InstanceKeysList, selection: content.SelectionInfo | null, options: object): Promise<content.Descriptor | null> {
     const params = this.createRequestParams("GetContentDescriptor", {
       displayType,
       keys,
@@ -75,7 +82,7 @@ export default class ECPresentationManager implements ECPInterface {
     return this.request(token, params, this.createContentDescriptor);
   }
 
-  public async getContentSetSize(token: IModelToken, _descriptor: content.Descriptor, keys: ECInstanceKeysList, options: object): Promise<number> {
+  public async getContentSetSize(token: IModelToken, _descriptor: content.Descriptor, keys: ec.InstanceKeysList, options: object): Promise<number> {
     const params = this.createRequestParams("GetContent", {
       keys,
       options,
@@ -83,7 +90,7 @@ export default class ECPresentationManager implements ECPInterface {
     return this.request(token, params);
   }
 
-  public async getContent(token: IModelToken, _descriptor: content.Descriptor, keys: ECInstanceKeysList, pageOptions: PageOptions, options: object): Promise<content.Content> {
+  public async getContent(token: IModelToken, _descriptor: content.Descriptor, keys: ec.InstanceKeysList, pageOptions: PageOptions, options: object): Promise<content.Content> {
     const params = this.createRequestParams("GetContent", {
       keys,
       pageOptions,
@@ -106,7 +113,7 @@ export default class ECPresentationManager implements ECPInterface {
     if (!imodel || !imodel.nativeDb)
       throw new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, () => ({ iModelId: token.iModelId }));
 
-    const serializedResponse = this._manager.handleRequest(imodel.nativeDb, params);
+    const serializedResponse = this.getManager().handleRequest(imodel.nativeDb, params);
     const response = JSON.parse(serializedResponse);
     if (responseHandler)
       return responseHandler(response);
@@ -143,7 +150,6 @@ export default class ECPresentationManager implements ECPInterface {
         isExpanded: rNode.IsExpanded,
         isCheckboxVisible: rNode.IsCheckboxVisible,
         isCheckboxEnabled: rNode.IsCheckboxEnabled,
-        ecInstanceId: rNode.ECInstanceId,
       });
     }
     return nodes;
@@ -170,12 +176,12 @@ export default class ECPresentationManager implements ECPInterface {
     const cont = new content.Content(descriptor);
 
     for (const itemResp of r.ContentSet) {
-      let classInfo: content.ECClassInfo | null = null;
+      let classInfo: ec.ClassInfo | null = null;
       if (itemResp.ClassInfo) {
         classInfo = {
           id: itemResp.ClassInfo.Id,
           name: itemResp.ClassInfo.Name,
-          displayLabel: itemResp.ClassInfo.Label,
+          label: itemResp.ClassInfo.Label,
         };
       }
       const item = new content.ContentSetItem(itemResp.PrimaryKeys, itemResp.DisplayLabel, itemResp.ImageId, classInfo,
@@ -269,7 +275,7 @@ export default class ECPresentationManager implements ECPInterface {
     const classInfo = {
       id: r.SelectClassInfo.Id,
       name: r.SelectClassInfo.Name,
-      displayLabel: r.SelectClassInfo.Label,
+      label: r.SelectClassInfo.Label,
     };
     const info = new content.SelectClassInfo(classInfo, r.IsPolymorphic,
       this.createRelationshipPath(r.PathToPrimaryClass));
@@ -341,27 +347,29 @@ export default class ECPresentationManager implements ECPInterface {
   }
 
   // tslint:disable-next-line:naming-convention
-  private createChoices = (r: any): content.ECEnumerationChoice[] => {
-    const choices = new Array<content.ECEnumerationChoice>();
+  private createChoices = (r: any): ec.EnumerationChoice[] => {
+    const choices = new Array<ec.EnumerationChoice>();
     for (const choice of r)
       choices.push({ label: choice.Label, value: choice.Value });
     return choices;
   }
 
   // tslint:disable-next-line:naming-convention
-  private createECPropertyInfo = (r: any): content.ECPropertyInfo => {
-    const propertyInfo: content.ECPropertyInfo = {
+  private createECPropertyInfo = (r: any): ec.PropertyInfo => {
+    const propertyInfo: ec.PropertyInfo = {
       classInfo: {
         id: r.ActualClassInfo.Id,
         name: r.ActualClassInfo.Name,
-        displayLabel: r.ActualClassInfo.Label,
+        label: r.ActualClassInfo.Label,
       },
       name: r.Name,
       type: r.Type,
     };
     if (r.Choices) {
-      propertyInfo.choices = this.createChoices(r.Choices),
-      propertyInfo.isStrict = r.IsStrict;
+      propertyInfo.enumerationInfo = {
+        choices: this.createChoices(r.Choices),
+        isStrict: r.IsStrict ? true : false,
+      };
     }
     /* todo:
     if (r.KindOfQuantity)
@@ -371,30 +379,30 @@ export default class ECPresentationManager implements ECPInterface {
   }
 
   // tslint:disable-next-line:naming-convention
-  private createRelatedClassInfo = (r: any): content.RelatedClassInfo => {
+  private createRelatedClassInfo = (r: any): ec.RelatedClassInfo => {
     return {
       sourceClassInfo: {
         id: r.SourceClassInfo.Id,
         name: r.SourceClassInfo.Name,
-        displayLabel: r.SourceClassInfo.Label,
+        label: r.SourceClassInfo.Label,
       },
       targetClassInfo: {
         id: r.TargetClassInfo.Id,
         name: r.TargetClassInfo.Name,
-        displayLabel: r.TargetClassInfo.Label,
+        label: r.TargetClassInfo.Label,
       },
       relationshipInfo: {
         id: r.RelationshipInfo.Id,
         name: r.RelationshipInfo.Name,
-        displayLabel: r.RelationshipInfo.Label,
+        label: r.RelationshipInfo.Label,
       },
       isForwardRelationship: r.IsForwardRelationship,
     };
   }
 
   // tslint:disable-next-line:naming-convention
-  private createRelationshipPath = (r: any[]): content.RelationshipPathInfo => {
-    const path = new Array<content.RelatedClassInfo>();
+  private createRelationshipPath = (r: any[]): ec.RelationshipPathInfo => {
+    const path = new Array<ec.RelatedClassInfo>();
     for (const pr of r)
       path.push(this.createRelatedClassInfo(pr));
     return path;
@@ -428,7 +436,7 @@ export default class ECPresentationManager implements ECPInterface {
       const classInfo = {
         id: r.ContentClassInfo.Id,
         name: r.ContentClassInfo.Name,
-        displayLabel: r.ContentClassInfo.Label,
+        label: r.ContentClassInfo.Label,
       };
       const field = new content.NestedContentField(category, r.Name, r.DisplayLabel, type.asStructDescription()!,
         classInfo, this.createRelationshipPath(r.PathToPrimary), r.IsReadOnly, r.Priority, editor, parent);

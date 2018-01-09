@@ -1,5 +1,6 @@
 // Place your settings in this file to overwrite default and user settings.
 {
+  "cSpell.showStatus": false,
   "editor.insertSpaces": true,
   "editor.tabSize": 2,
   "editor.detectIndentation": false,
@@ -20,11 +21,4 @@
     "**/*.build.error.log": true,
     "**/package-deps.json": true,
   },
-  "cSpell.words": [
-    "changeset",
-    "imodel",
-    "imodels",
-    "lcov",
-    "ruleset"
-  ]
 }

@@ -4,7 +4,7 @@
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "../common/Hierarchy";
 import { SelectionInfo, Descriptor, Content } from "../common/Content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes";
-import { ECInstanceKeysList } from "../common/EC";
+import { InstanceKeysList } from "../common/EC";
 import { PageOptions, ECPresentationManager as ECPInterface } from "../common/ECPresentationManager";
 import ECPresentationGateway from "./ECPresentationGateway";
 import { IModelToken } from "@bentley/imodeljs-frontend/lib/common/IModel";
@@ -34,15 +34,15 @@ class ECPresentationManager implements ECPInterface {
     return ECPresentationGateway.getProxy().getFilteredNodesPaths(token, filterText, options);
   }
 
-  public async getContentDescriptor(token: IModelToken, displayType: string, keys: ECInstanceKeysList, selection: SelectionInfo | null, options: object): Promise<Descriptor | null> {
+  public async getContentDescriptor(token: IModelToken, displayType: string, keys: InstanceKeysList, selection: SelectionInfo | null, options: object): Promise<Descriptor | null> {
     return ECPresentationGateway.getProxy().getContentDescriptor(token, displayType, keys, selection, options);
   }
 
-  public async getContentSetSize(token: IModelToken, descriptor: Descriptor, keys: ECInstanceKeysList, options: object): Promise<number> {
+  public async getContentSetSize(token: IModelToken, descriptor: Descriptor, keys: InstanceKeysList, options: object): Promise<number> {
     return ECPresentationGateway.getProxy().getContentSetSize(token, descriptor, keys, options);
   }
 
-  public async getContent(token: IModelToken, descriptor: Descriptor, keys: ECInstanceKeysList, pageOptions: PageOptions, options: object): Promise<Content> {
+  public async getContent(token: IModelToken, descriptor: Descriptor, keys: InstanceKeysList, pageOptions: PageOptions, options: object): Promise<Content> {
     return ECPresentationGateway.getProxy().getContent(token, descriptor, keys, pageOptions, options);
   }
 

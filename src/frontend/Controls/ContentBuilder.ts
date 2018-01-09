@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as content from "../../common/Content";
-import { ECInstanceKey } from "../../common/EC";
+import * as ec from "../../common/EC";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 export interface PropertyDescription {
@@ -16,10 +16,12 @@ export interface EnumerationChoice {
   label: string;
   value: any;
 }
-export type EnumerationChoices = EnumerationChoice[];
-export interface ChoicesPropertyDescription extends PropertyDescription {
-  choices: EnumerationChoices;
+export interface EnumerationInfo {
+  choices: EnumerationChoice[];
   isStrict: boolean;
+}
+export interface ChoicesPropertyDescription extends PropertyDescription {
+  enumerationInfo: EnumerationInfo;
   maxDisplayedRows: number | null;
 }
 
@@ -116,7 +118,7 @@ export default class ContentBuilder {
     const isValueReadOnly = field.isReadOnly || item.isMerged(field.name) || !item.getFieldPropertyValueKeys(field.name).every((keys: content.PropertyValueKeys): boolean => {
       // note: fields can have multiple properties and each field value can belong to zero or more ECInstances -
       // we consider field value read-only if there's at least one ECInstanceKey which doesn't have an ECInstanceId.
-      return keys.keys.every((key: ECInstanceKey): boolean => (key.instanceId !== "0"));
+      return keys.keys.every((key: ec.InstanceKey): boolean => (key.instanceId !== "0"));
     });
 
     return ContentBuilder.createRecord(ContentBuilder.createPropertyDescription(field), field.description,
@@ -142,8 +144,7 @@ export default class ContentBuilder {
           displayLabel: field.label,
           typename: field.description.typeName,
           editor: field.editor ? field.editor.name : null,
-          choices: field.asPropertiesField()!.properties[0].property.choices,
-          isStrict: field.asPropertiesField()!.properties[0].property.isStrict,
+          enumerationInfo: field.asPropertiesField()!.properties[0].property.enumerationInfo!,
           maxDisplayedRows: null,
         } as ChoicesPropertyDescription;
       }

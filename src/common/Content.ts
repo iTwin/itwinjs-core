@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { ECClassId, ECInstanceKey } from "./EC";
+import * as ec from "./EC";
 
 /** Describes one step of property accessor path. */
 export interface PropertyAccessor {
@@ -69,83 +69,27 @@ export class CategoryDescription {
   public get expand(): boolean { return this._expand; }
 }
 
-/** Information about an ECClass. */
-export interface ECClassInfo {
-  /** Get the ECClass ID. */
-  id: ECClassId;
-
-  /** Get the ECClass name. */
-  name: string;
-
-  /** Get the ECClass display label. */
-  displayLabel: string;
-}
-
-export interface ECEnumerationChoice {
-  label: string;
-  value: any;
-}
-
-/** Information about an ECProperty. */
-export interface ECPropertyInfo {
-  /** Get information about ECClass that the ECProperty belongs to. */
-  classInfo: ECClassInfo;
-
-  /** Get name of the ECProperty. */
-  name: string;
-
-  /** Get the type name of the ECProperty. */
-  type: string;
-
-  /** In case this is an enumeration property, get choices of enumeration property. */
-  choices?: ECEnumerationChoice[];
-
-  /** In case this is an enumeration property, get flag whether enumeration is strict or not. */
-  isStrict?: boolean;
-
-  /** In case this property has KindOfQuantity, get the KindOfQuantity. TODO: */
-  // KindOfQuantity?: ui.IECKindOfQuantityInfo;
-}
-
-/** A structure that describes a related class and the properties of that relationship. */
-export interface RelatedClassInfo {
-  /** Information about the source ECClass */
-  sourceClassInfo: ECClassInfo;
-
-  /** Information about the target ECClass */
-  targetClassInfo: ECClassInfo;
-
-  /** Information about the relationship ECClass */
-  relationshipInfo: ECClassInfo;
-
-  /** Should the relationship be followed in a forward direction to access the related class. */
-  isForwardRelationship: boolean;
-}
-
-/** A structure that describes a related class path. */
-export type RelationshipPathInfo = RelatedClassInfo[];
-
 /** Data structure that describes an ECClass in ContentDescriptor. In addition to the class
  * itself the structure holds its relationship path to the primary ECClass and paths
  * to related property classes.
  */
 export class SelectClassInfo {
-  private _selectClassInfo: ECClassInfo;
+  private _selectClassInfo: ec.ClassInfo;
   private _isSelectPolymorphic: boolean;
-  private _pathToPrimaryClass: RelationshipPathInfo;
-  private _relatedPropertyPaths: RelationshipPathInfo[];
+  private _pathToPrimaryClass: ec.RelationshipPathInfo;
+  private _relatedPropertyPaths: ec.RelationshipPathInfo[];
 
-  constructor(classInfo: ECClassInfo, isPolymorphic: boolean, pathToPrimaryClass: RelationshipPathInfo) {
+  constructor(classInfo: ec.ClassInfo, isPolymorphic: boolean, pathToPrimaryClass: ec.RelationshipPathInfo) {
     this._selectClassInfo = classInfo;
     this._isSelectPolymorphic = isPolymorphic;
     this._pathToPrimaryClass = pathToPrimaryClass;
-    this._relatedPropertyPaths = new Array<RelationshipPathInfo>();
+    this._relatedPropertyPaths = new Array<ec.RelationshipPathInfo>();
   }
 
-  public get selectClassInfo(): ECClassInfo { return this._selectClassInfo; }
+  public get selectClassInfo(): ec.ClassInfo { return this._selectClassInfo; }
   public get isSelectPolymorphic(): boolean { return this._isSelectPolymorphic; }
-  public get pathToPrimaryClass(): RelationshipPathInfo { return this._pathToPrimaryClass; }
-  public get relatedPropertyPaths(): RelationshipPathInfo[] { return this._relatedPropertyPaths; }
+  public get pathToPrimaryClass(): ec.RelationshipPathInfo { return this._pathToPrimaryClass; }
+  public get relatedPropertyPaths(): ec.RelationshipPathInfo[] { return this._relatedPropertyPaths; }
 }
 
 export enum PropertyValueFormat {
@@ -229,22 +173,22 @@ export class EditorDescription {
 
 /** Describes a single ECProperty that's included in a @ref ContentField. */
 export class Property {
-  private _property: ECPropertyInfo;
-  private _relatedClassPath: RelationshipPathInfo;
+  private _property: ec.PropertyInfo;
+  private _relatedClassPath: ec.RelationshipPathInfo;
 
   /** Constructor.
    * @param[in] property Information about the property that this field property is based on.
    */
-  constructor(property: ECPropertyInfo) {
+  constructor(property: ec.PropertyInfo) {
     this._property = property;
-    this._relatedClassPath = new Array<RelatedClassInfo>();
+    this._relatedClassPath = new Array<ec.RelatedClassInfo>();
   }
 
   /** Get the property. */
-  public get property(): ECPropertyInfo { return this._property; }
+  public get property(): ec.PropertyInfo { return this._property; }
 
   /** In case this is a related property, relationship path from the actual instance to this property. */
-  public get relatedClassPath(): RelationshipPathInfo { return this._relatedClassPath; }
+  public get relatedClassPath(): ec.RelationshipPathInfo { return this._relatedClassPath; }
 }
 
 /** Describes a single content field. A field is usually represented as a grid column
@@ -347,8 +291,8 @@ export class PropertiesField extends Field {
 
 /** Describes a single content field that contains nested content. */
 export class NestedContentField extends Field {
-  private _contentClassInfo: ECClassInfo;
-  private _pathToPrimaryClass: RelationshipPathInfo;
+  private _contentClassInfo: ec.ClassInfo;
+  private _pathToPrimaryClass: ec.RelationshipPathInfo;
   private _nestedFields: Field[];
 
   /** Constructor.
@@ -364,7 +308,7 @@ export class NestedContentField extends Field {
    * @param[in] parentField Parent field (in case this field is nested)
    */
   constructor(category: CategoryDescription, name: string, label: string, type: StructTypeDescription,
-    contentClassInfo: ECClassInfo, pathToPrimaryClass: RelationshipPathInfo,
+    contentClassInfo: ec.ClassInfo, pathToPrimaryClass: ec.RelationshipPathInfo,
     isReadOnly: boolean, priority: number, editor: EditorDescription | null,
     parentField: NestedContentField | null) {
     super(category, name, label, type, isReadOnly, priority, editor, parentField);
@@ -376,10 +320,10 @@ export class NestedContentField extends Field {
   public asNestedContentField(): NestedContentField { return this; }
 
   /** Get information about the class whose content is contained in this field. */
-  public get contentClass(): ECClassInfo { return this._contentClassInfo; }
+  public get contentClass(): ec.ClassInfo { return this._contentClassInfo; }
 
   /** Get relationship path from content class to primary instance class. */
-  public get pathToPrimaryInstanceClass(): RelationshipPathInfo { return this._pathToPrimaryClass; }
+  public get pathToPrimaryInstanceClass(): ec.RelationshipPathInfo { return this._pathToPrimaryClass; }
 
   /** Get nested content fields. */
   public get nestedFields(): Field[] { return this._nestedFields; }
@@ -387,7 +331,7 @@ export class NestedContentField extends Field {
 
 /** Flags that control content format. */
 export enum ContentFlags {
-  /** Each content record has only ECInstanceKey and no data */
+  /** Each content record has only ec.InstanceKey and no data */
   KeysOnly = 1 << 0,
 
   /** Each content record additionally has an image id */
@@ -402,7 +346,7 @@ export enum ContentFlags {
   /** Content has only distinct values */
   DistinctValues = 1 << 4,
 
-  /** Doesnt create property or calculated fields. Can be used in conjunction with @e ShowLabels. */
+  /** Doesn't create property or calculated fields. Can be used in conjunction with @e ShowLabels. */
   NoFields = 1 << 5,
 }
 
@@ -523,9 +467,9 @@ export class Descriptor {
 export class PropertyValueKeys {
   private _field: Field;
   private _property: Property;
-  private _keys: ECInstanceKey[];
+  private _keys: ec.InstanceKey[];
 
-  constructor(field: Field, fieldProperty: Property, keys: ECInstanceKey[]) {
+  constructor(field: Field, fieldProperty: Property, keys: ec.InstanceKey[]) {
     this._field = field;
     this._property = fieldProperty;
     this._keys = keys;
@@ -533,11 +477,11 @@ export class PropertyValueKeys {
 
   public get field(): Field { return this._field; }
   public get property(): Property { return this._property; }
-  public get keys(): ECInstanceKey[] { return this._keys; }
+  public get keys(): ec.InstanceKey[] { return this._keys; }
 }
 
 interface NestedContent {
-  primaryKeys: ECInstanceKey[];
+  primaryKeys: ec.InstanceKey[];
   values: any;
   displayValues: any;
 }
@@ -553,10 +497,10 @@ export interface ValuesDictionary<T> {
 
 /** A struct that represents a single content record. */
 export class ContentSetItem {
-  private _primaryKeys: ECInstanceKey[];
+  private _primaryKeys: ec.InstanceKey[];
   private _displayLabel: string;
   private _imageId: string;
-  private _classInfo: ECClassInfo | null;
+  private _classInfo: ec.ClassInfo | null;
   private _values: ValuesDictionary<any>;
   private _displayValues: ValuesDictionary<string | null>;
   private _mergedFieldNames: string[];
@@ -572,7 +516,7 @@ export class ContentSetItem {
    * @param[in] mergedFieldNames Names of fields whose values are merged in this record.
    * @param[in] fieldPropertyValueKeys ECInstanceKeys of related instances for each field in this record.
    */
-  constructor(primaryKeys: ECInstanceKey[], displayLabel: string, imageId: string, classInfo: ECClassInfo | null,
+  constructor(primaryKeys: ec.InstanceKey[], displayLabel: string, imageId: string, classInfo: ec.ClassInfo | null,
     values: ValuesDictionary<any>, displayValues: ValuesDictionary<string | null>, mergedFieldNames: string[],
     fieldPropertyValueKeys: FieldPropertyValueKeys) {
     this._primaryKeys = primaryKeys;
@@ -586,10 +530,10 @@ export class ContentSetItem {
   }
 
   /** The information about the ECClass of this item. */
-  public get classInfo(): ECClassInfo | null { return this._classInfo; }
+  public get classInfo(): ec.ClassInfo | null { return this._classInfo; }
 
   /** Array of keys which describe whose values this item contains. */
-  public get primaryKeys(): ECInstanceKey[] { return this._primaryKeys; }
+  public get primaryKeys(): ec.InstanceKey[] { return this._primaryKeys; }
 
   /** The display label of this content item. */
   public get displayLabel(): string { return this._displayLabel; }
@@ -616,7 +560,7 @@ export class ContentSetItem {
   }
 
   /** Get keys of nested instances accessible using supplied accessor. */
-  public getNestedInstanceKeys(accessor: PropertyAccessorPath): ECInstanceKey[] {
+  public getNestedInstanceKeys(accessor: PropertyAccessorPath): ec.InstanceKey[] {
     assert(accessor.length >= 2, "For nested fields the accessor length is expected to be at least 2");
     let values: any = this.values;
     for (let i = 0; i < accessor.length && values; ++i) {

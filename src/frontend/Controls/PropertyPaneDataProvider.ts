@@ -4,7 +4,7 @@
 import ContentDataProvider from "./ContentDataProvider";
 import ContentBuilder, { PropertyRecord } from "./ContentBuilder";
 import * as content from "../../common/Content";
-import { ECInstanceKey } from "../../common/EC";
+import { InstanceKey } from "../../common/EC";
 import { getUniqueNumber } from "../../common/Utils";
 import { ECPresentationManager } from "../../common/ECPresentationManager";
 import { IModelToken } from "@bentley/imodeljs-frontend/lib/common/IModel";
@@ -98,7 +98,7 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
   private _categoryFieldsValidationId: number;
   private _includeFieldsWithNoValues: boolean;
   private _favorites: { [name: string]: boolean };
-  private _keys: ECInstanceKey[];
+  private _keys: InstanceKey[];
 
   /** Constructor. */
   constructor(manager: ECPresentationManager, imodelToken: IModelToken, rulesetId: string) {
@@ -111,7 +111,7 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
   }
 
   public get keys() { return this._keys; }
-  public set keys(keys: ECInstanceKey[]) {
+  public set keys(keys: InstanceKey[]) {
     this._keys = keys;
     this.invalidateCache();
   }

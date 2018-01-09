@@ -8,7 +8,7 @@ import { NavNode, NavNodeKeyPath, NavNodePathElement } from "../common/Hierarchy
 import * as content from "../common/Content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes";
 import { PageOptions } from "../common/ECPresentationManager";
-import { ECInstanceKeysList } from "../common/EC";
+import { InstanceKeysList } from "../common/EC";
 
 export default class ECPresentationGateway extends ECPresentationGatewayDefinition {
   /** Returns the ECPresentationGateway instance for the frontend. */
@@ -40,15 +40,15 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return this.forward.apply(this, arguments);
   }
 
-  public async getContentDescriptor(_token: IModelToken, _displayType: string, _keys: ECInstanceKeysList, _selection: content.SelectionInfo | null, _options: object): Promise<content.Descriptor | null> {
+  public async getContentDescriptor(_token: IModelToken, _displayType: string, _keys: InstanceKeysList, _selection: content.SelectionInfo | null, _options: object): Promise<content.Descriptor | null> {
     return this.forward.apply(this, arguments);
   }
 
-  public async getContentSetSize(_token: IModelToken, _descriptor: content.Descriptor, _keys: ECInstanceKeysList, _options: object): Promise<number> {
+  public async getContentSetSize(_token: IModelToken, _descriptor: content.Descriptor, _keys: InstanceKeysList, _options: object): Promise<number> {
     return this.forward.apply(this, arguments);
   }
 
-  public async getContent(_token: IModelToken, _descriptor: content.Descriptor, _keys: ECInstanceKeysList, _pageOptions: PageOptions, _options: object): Promise<content.Content> {
+  public async getContent(_token: IModelToken, _descriptor: content.Descriptor, _keys: InstanceKeysList, _pageOptions: PageOptions, _options: object): Promise<content.Content> {
     return this.forward.apply(this, arguments);
   }
 

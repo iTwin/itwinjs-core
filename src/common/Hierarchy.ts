@@ -16,14 +16,14 @@ export type NavNodeKeyPath = NavNodeKey[];
  */
 export interface NavNode {
   nodeId: number;
-  parentNodeId: number;
+  parentNodeId: number | null;
   key: NavNodeKey;
   label: string;
   description: string;
-  imageId: string;
-  foreColor: string;
-  backColor: string;
-  fontStyle: string;
+  imageId: string | null;
+  foreColor: string | null;
+  backColor: string | null;
+  fontStyle: string | null;
   type: string;
   hasChildren: boolean;
   isSelectable: boolean;
@@ -32,7 +32,6 @@ export interface NavNode {
   isExpanded: boolean;
   isCheckboxVisible: boolean;
   isCheckboxEnabled: boolean;
-  ecInstanceId: string;
 }
 
 /** A set of unique @ref NavNodeKey objects. */

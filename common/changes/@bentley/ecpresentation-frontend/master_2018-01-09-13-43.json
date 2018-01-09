@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-frontend",
+      "comment": "Some renaming and moving of EC-types",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-frontend",
+  "email": "grigas.petraitis@bentley.com"
+}

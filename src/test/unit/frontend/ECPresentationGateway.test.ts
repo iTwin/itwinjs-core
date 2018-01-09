@@ -9,13 +9,13 @@ describe("ECPresentationGateway", () => {
 
   describe("getProxy", () => {
 
-    it("Throws when not registered", () => {
+    it("throws when not registered", () => {
       assert.throws(() => {
         ECPresentationGateway.getProxy();
       });
     });
 
-    it("Returns gateway when registered", () => {
+    it("returns gateway when registered", () => {
       FrontendGatewayConfiguration.initialize([ECPresentationGateway]);
       const proxy = ECPresentationGateway.getProxy();
       assert.isNotNull(proxy);

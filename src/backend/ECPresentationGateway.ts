@@ -8,12 +8,12 @@ import ECPresentationGatewayDefinition from "../common/ECPresentationGatewayDefi
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "../common/Hierarchy";
 import { SelectionInfo, Descriptor, Content } from "../common/Content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes";
-import { PageOptions } from "../common/ECPresentationManager";
-import { ECInstanceKeysList } from "../common/EC";
+import { PageOptions, ECPresentationManager as ECPresentationManagerDefinition } from "../common/ECPresentationManager";
+import { InstanceKeysList } from "../common/EC";
 
 /** Gateway uses singleton presentation manager instance. */
-let manager: ECPresentationManager | null = null;
-const getManager = (): ECPresentationManager => {
+let manager: ECPresentationManagerDefinition | null = null;
+const getManager = (): ECPresentationManagerDefinition => {
   if (!manager)
     manager = new ECPresentationManager();
   return manager;
@@ -21,6 +21,11 @@ const getManager = (): ECPresentationManager => {
 
 /** The backend implementation of ECPresentationGatewayDefinition. */
 export default class ECPresentationGateway extends ECPresentationGatewayDefinition {
+
+  /** @hidden */
+  public static set manager(value: ECPresentationManagerDefinition) { manager = value; }
+  /** @hidden */
+  public static get manager(): ECPresentationManagerDefinition { return getManager(); }
 
   public async getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<NavNode[]> {
     return await getManager().getRootNodes(token, pageOptions, options);
@@ -46,15 +51,15 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return await getManager().getFilteredNodesPaths(token, filterText, options);
   }
 
-  public async getContentDescriptor(token: IModelToken, displayType: string, keys: ECInstanceKeysList, selection: SelectionInfo | null, options: object): Promise<Descriptor | null> {
+  public async getContentDescriptor(token: IModelToken, displayType: string, keys: InstanceKeysList, selection: SelectionInfo | null, options: object): Promise<Descriptor | null> {
     return await getManager().getContentDescriptor(token, displayType, keys, selection, options);
   }
 
-  public async getContentSetSize(token: IModelToken, descriptor: Descriptor, keys: ECInstanceKeysList, options: object): Promise<number> {
+  public async getContentSetSize(token: IModelToken, descriptor: Descriptor, keys: InstanceKeysList, options: object): Promise<number> {
     return await getManager().getContentSetSize(token, descriptor, keys, options);
   }
 
-  public async getContent(token: IModelToken, descriptor: Descriptor, keys: ECInstanceKeysList, pageOptions: PageOptions, options: object): Promise<Content> {
+  public async getContent(token: IModelToken, descriptor: Descriptor, keys: InstanceKeysList, pageOptions: PageOptions, options: object): Promise<Content> {
     return await getManager().getContent(token, descriptor, keys, pageOptions, options);
   }
 

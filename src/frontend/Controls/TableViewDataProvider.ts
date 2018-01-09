@@ -4,7 +4,7 @@
 import ContentDataProvider from "./ContentDataProvider";
 import ContentBuilder, { PropertyDescription } from "./ContentBuilder";
 import * as content from "../../common/Content";
-import { ECInstanceKey } from "../../common/EC";
+import { InstanceKey } from "../../common/EC";
 import { ECPresentationManager, PageOptions } from "../../common/ECPresentationManager";
 import { IModelToken } from "@bentley/imodeljs-frontend/lib/common/IModel";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
@@ -33,7 +33,7 @@ export interface CellItem {
 }
 
 export interface RowItem {
-  key: ECInstanceKey;
+  key: InstanceKey;
   cells: CellItem[];
 }
 
@@ -214,7 +214,7 @@ export default class TableViewDataProvider extends ContentDataProvider {
   private _sortDirection: SortDirection;
   private _filterExpression: string | null;
   private _pages: PageContainer;
-  private _keys: ECInstanceKey[];
+  private _keys: InstanceKey[];
 
   /** Constructor.
    * @param[in] connectionid Id of connection to pull data from.
@@ -261,14 +261,14 @@ export default class TableViewDataProvider extends ContentDataProvider {
   }
 
   public get keys() { return this._keys; }
-  public set keys(keys: ECInstanceKey[]) {
+  public set keys(keys: InstanceKey[]) {
     this._keys = keys;
     this.invalidateCache();
   }
 
   /** Returns column definitions for the content. */
   public async getColumns(): Promise<ColumnDescription[]> {
-    // setup onFufilled promise function
+    // setup onFulfilled promise function
     const getColumnsFromDescriptor = (descriptor: content.Descriptor | null): ColumnDescription[] => {
       const cols = new Array<ColumnDescription>();
       if (!descriptor)

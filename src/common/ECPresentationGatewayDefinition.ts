@@ -7,9 +7,9 @@ import { NavNode, NavNodeKeyPath, NavNodePathElement } from "../common/Hierarchy
 import * as content from "../common/Content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes";
 import { PageOptions, ECPresentationManager as ECPInterface } from "../common/ECPresentationManager";
-import { ECInstanceKeysList } from "../common/EC";
+import * as ec from "../common/EC";
 
-/** Gateway definition for ECPresentation services. 
+/** Gateway definition for ECPresentation services.
  * WIP: would like to name it ECPresentationGatewayDefinition, but can't because
  * Gateway's API requires it's name to match the name of the frontend implementation.
  */
@@ -44,9 +44,9 @@ export default abstract class ECPresentationGateway extends Gateway implements E
   public abstract getChildrenCount(token: IModelToken, parent: NavNode, options: object): Promise<number>;
   public abstract getNodePaths(token: IModelToken, paths: NavNodeKeyPath[], markedIndex: number, options: object): Promise<NavNodePathElement[]>;
   public abstract getFilteredNodesPaths(token: IModelToken, filterText: string, options: object): Promise<NavNodePathElement[]>;
-  public abstract getContentDescriptor(token: IModelToken, displayType: string, keys: ECInstanceKeysList, selection: content.SelectionInfo | null, options: object): Promise<content.Descriptor | null>;
-  public abstract getContentSetSize(token: IModelToken, descriptor: content.Descriptor, keys: ECInstanceKeysList, options: object): Promise<number>;
-  public abstract getContent(token: IModelToken, descriptor: content.Descriptor, keys: ECInstanceKeysList, pageOptions: PageOptions, options: object): Promise<content.Content>;
+  public abstract getContentDescriptor(token: IModelToken, displayType: string, keys: ec.InstanceKeysList, selection: content.SelectionInfo | null, options: object): Promise<content.Descriptor | null>;
+  public abstract getContentSetSize(token: IModelToken, descriptor: content.Descriptor, keys: ec.InstanceKeysList, options: object): Promise<number>;
+  public abstract getContent(token: IModelToken, descriptor: content.Descriptor, keys: ec.InstanceKeysList, pageOptions: PageOptions, options: object): Promise<content.Content>;
   public abstract getDistinctValues(token: IModelToken, displayType: string, fieldName: string, maximumValueCount: number, options: object): Promise<string[]>;
   public abstract saveValueChange(token: IModelToken, instancesInfo: ChangedECInstanceInfo[], propertyAccessor: string, value: any, options: object): Promise<ECInstanceChangeResult[]>;
 }

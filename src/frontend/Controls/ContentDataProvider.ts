@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ECInstanceKeysList } from "../../common/EC";
+import { InstanceKeysList } from "../../common/EC";
 import { ECPresentationManager, PageOptions } from "../../common/ECPresentationManager";
 import * as content from "../../common/Content";
 import { IModelToken } from "@bentley/imodeljs-frontend/lib/common/IModel";
@@ -78,7 +78,7 @@ export default abstract class ContentDataProvider {
    * @param keys Keys of ECInstances to get content for.
    * @param selectionInfo Info about selection in case the content is requested due to selection change.
    */
-  public async getContentDescriptor(keys: ECInstanceKeysList, selectionInfo: content.SelectionInfo | null = null): Promise<content.Descriptor | null> {
+  public async getContentDescriptor(keys: InstanceKeysList, selectionInfo: content.SelectionInfo | null = null): Promise<content.Descriptor | null> {
     if (null == this._configuredDescriptorPromise) {
       if (null == this._descriptorPromise) {
         this._descriptorPromise = this._manager.getContentDescriptor(this.imodelToken, this._displayType, keys,
@@ -127,7 +127,7 @@ export default abstract class ContentDataProvider {
    * @param pageStart Start index of the page to load.
    * @param pageSize The number of requested items in the page (0 means all items).
    */
-  protected async getContent(keys: ECInstanceKeysList, selectionInfo: content.SelectionInfo | null = null, { pageStart = 0, pageSize = 0 }: PageOptions): Promise<content.Content> {
+  protected async getContent(keys: InstanceKeysList, selectionInfo: content.SelectionInfo | null = null, { pageStart = 0, pageSize = 0 }: PageOptions): Promise<content.Content> {
     if (!this._contentPromise) {
       const self = this;
       const getContent = (descriptor: content.Descriptor | null): Promise<content.Content> => {
@@ -144,7 +144,7 @@ export default abstract class ContentDataProvider {
    * @param selectionInfo Info about selection in case the content is requested due to selection change.
    * @note The method returns the total number of records (without paging).
    */
-  protected async getContentSetSize(keys: ECInstanceKeysList, selectionInfo: content.SelectionInfo | null = null): Promise<number> {
+  protected async getContentSetSize(keys: InstanceKeysList, selectionInfo: content.SelectionInfo | null = null): Promise<number> {
     if (!this._contentSetSizePromise) {
       const self = this;
       this._contentSetSizePromise = this.getContentDescriptor(keys, selectionInfo).then((descriptor: content.Descriptor | null) => {

@@ -1,13 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ECInstanceKey } from "./EC";
-import { RelationshipPathInfo } from "./Content";
+import { InstanceKey, RelationshipPathInfo } from "./EC";
 
 /** Info about changed instances. */
 export interface ChangedECInstanceInfo {
-  primaryInstanceKey: ECInstanceKey;
-  changedInstanceKey: ECInstanceKey;
+  primaryInstanceKey: InstanceKey;
+  changedInstanceKey: InstanceKey;
   relationshipPath: RelationshipPathInfo;
 }
 
