@@ -11,6 +11,13 @@ const registry: Map<GatewayDefinition, GatewayImplementation> = new Map();
 const types: Map<string, Function> = new Map();
 let marshalingScope = "";
 
+let electron: any = null;
+declare const global: any;
+if (typeof (global) !== "undefined" && global && global.process && global.process.type) {
+  // tslint:disable-next-line no-eval
+  electron = eval("require")("electron");
+}
+
 // tslint:disable-next-line:ban-types
 export interface GatewayConstructor<T extends Gateway> { new(): T; version: string; types: () => Function[]; }
 
@@ -749,8 +756,88 @@ export namespace Gateway {
   }
 
   /** IPC within an Electron application. */
-  export abstract class ElectronProtocol extends Protocol {
+  export class ElectronProtocol extends Protocol {
+    private static id: number = 0;
+    private static channel: string = "bentley.imodeljs.marshalling";
 
+    /** Associates the gateways for the protocol with unique names. */
+    protected gatewayRegistry: Map<string, GatewayDefinition> = new Map();
+
+    /** Returns the registered backend implementation for a gateway operation. */
+    public lookupGatewayImplementation(gatewayName: string): Gateway {
+      const gateway = this.gatewayRegistry.get(gatewayName) as GatewayDefinition;
+      return Gateway.getImplementationForGateway(gateway);
+    }
+
+    /** Returns deserialized gateway operation request parameters. */
+    public deserializeOperationRequestParameters(request: string): any[] {
+      return JSON.parse(request, Gateway.unmarshal);
+    }
+
+    /** Returns a serialized gateway operation result. */
+    public serializeOperationResult(gatewayName: string, result: any): string {
+      marshalingScope = gatewayName;
+      return JSON.stringify(result, Gateway.marshal);
+    }
+
+    /** Obtains the implementation result for a gateway operation. */
+    public obtainGatewayImplementationResult<T>(gateway: GatewayDefinition, operation: string, ...parameters: any[]): Promise<T> {
+      return new Promise<T>((resolve, reject) => {
+        try {
+          const id = ++ElectronProtocol.id;
+          electron.ipcRenderer.once(ElectronProtocol.channel + id, (evt: any, arg: string) => {
+            evt;
+            resolve(this.deserializeOperationResult(arg));
+          });
+          electron.ipcRenderer.send(ElectronProtocol.channel, id, gateway.name, operation, this.serializeParametersForOperationRequest(gateway.name, ...parameters));
+        } catch (e) {
+          reject(e);
+        }
+      });
+    }
+
+    public handleMessagesInMainProcess() {
+      electron.ipcMain.on(ElectronProtocol.channel, async (evt: any, requestId: number, gatewayName: string, operation: string, body: string) => {
+        const operationParameters = this.deserializeOperationRequestParameters(body);
+        const operationResult = await this.lookupGatewayImplementation(gatewayName).invoke(operation, ...operationParameters);
+        const operationResponse = this.serializeOperationResult(gatewayName, operationResult);
+
+        evt.sender.send(ElectronProtocol.channel + requestId, operationResponse);
+      });
+    }
+
+    /** Returns a string serialization of the parameters for a gateway operation request. */
+    protected serializeParametersForOperationRequest(gatewayName: string, ...parameters: any[]): string {
+      marshalingScope = gatewayName;
+      return JSON.stringify(Array.from(parameters), Gateway.marshal);
+    }
+
+    /** Returns a deserialized gateway operation result. */
+    protected deserializeOperationResult(response: string): any {
+      return JSON.parse(response, Gateway.unmarshal);
+    }
+
+    /** Constructs an electron protocol. */
+    constructor(configuration: Configuration) {
+      super(configuration);
+      this.registerGateways();
+    }
+
+    /** Returns a name for a gateway that is unique within the scope of the protocol. */
+    protected obtainGatewayName<T extends Gateway>(gateway: GatewayDefinition<T>): string {
+      return gateway.name;
+    }
+
+    /** Registers the gateways for this protocol. */
+    protected registerGateways() {
+      this.configuration.gateways().forEach((gateway) => {
+        const name = this.obtainGatewayName(gateway);
+        if (this.gatewayRegistry.has(name))
+          throw new IModelError(BentleyStatus.ERROR, `Gateway "${name}" is already registered within this protocol.`);
+
+        this.gatewayRegistry.set(name, gateway);
+      });
+    }
   }
 
   /** Direct function call protocol within a single JavaScript context (suitable for testing). */
@@ -773,6 +860,35 @@ export namespace Gateway {
     export class Default extends Configuration {
       public gateways = () => [];
       public protocol: Protocol = new DirectProtocol(this);
+    }
+
+    /** Operating parameters for electron gateway. */
+    export abstract class Electron extends Configuration {
+      public static get isElectron() { return electron !== null; }
+
+      /** The protocol of the configuration. */
+      public abstract protocol: ElectronProtocol;
+
+      /** Performs gateway configuration for the application. */
+      public static initialize(params: { protocol?: typeof ElectronProtocol }, gateways: GatewayDefinition[]) {
+        const protocol = (params.protocol || ElectronProtocol);
+
+        const config = class extends Electron {
+          public gateways = () => gateways;
+          public protocol: ElectronProtocol = new protocol(this);
+        };
+
+        for (const gateway of gateways)
+          Gateway.setConfiguration(gateway, () => config);
+
+        const instance = Gateway.Configuration.getInstance(config);
+        instance.initializeGateways();
+
+        if (electron.ipcMain)
+          instance.protocol.handleMessagesInMainProcess();
+
+        return instance;
+      }
     }
   }
 }
