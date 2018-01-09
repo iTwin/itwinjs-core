@@ -2,13 +2,13 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import ECClass from "./Class";
-import EntityClass from "./EntityClass";
+import ECClass from "Metadata/Class";
+import EntityClass from "Metadata/EntityClass";
 import { ECClassModifier, RelatedInstanceDirection, RelationshipEnd, RelationshipMultiplicity, SchemaChildType, StrengthType,
-        parseStrength, parseStrengthDirection } from "../ECObjects";
-import { EntityClassInterface, RelationshipClassInterface, RelationshipConstraintInterface, SchemaInterface } from "../Interfaces";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { NavigationProperty } from "./Property";
+        parseStrength, parseStrengthDirection } from "ECObjects";
+import { EntityClassInterface, RelationshipClassInterface, RelationshipConstraintInterface, SchemaInterface } from "Interfaces";
+import { ECObjectsError, ECObjectsStatus } from "Exception";
+import { NavigationProperty } from "Metadata/Property";
 
 /**
  * A Typescript class representation of a ECRelationshipClass.

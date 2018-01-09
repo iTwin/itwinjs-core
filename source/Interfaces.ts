@@ -3,8 +3,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ECClassModifier, CustomAttributeContainerType, PrimitiveType, RelationshipMultiplicity, RelationshipEnd,
-        StrengthType, RelatedInstanceDirection, SchemaKey, SchemaChildKey } from "./ECObjects";
-import { SchemaContext } from "./Context";
+        StrengthType, RelatedInstanceDirection, SchemaKey, SchemaChildKey } from "ECObjects";
+import { SchemaContext } from "Context";
 import { CustomAttributeContainerProps } from "Metadata/CustomAttribute";
 
 export interface SchemaProps extends CustomAttributeContainerProps {

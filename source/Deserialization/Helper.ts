@@ -4,11 +4,11 @@
 
 import { SchemaInterface, SchemaChildInterface, ECClassInterface, EntityClassInterface, MixinInterface,
         RelationshipClassInterface, RelationshipConstraintInterface, CustomAttributeClassInterface,
-        KindOfQuantityInterface, PropertyInterface } from "../Interfaces";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { SchemaContext } from "../Context";
-import { ECVersion, SchemaKey, parsePrimitiveType, relationshipEndToString } from "../ECObjects";
-import SchemaChild from "../Metadata/SchemaChild";
+        KindOfQuantityInterface, PropertyInterface } from "Interfaces";
+import { ECObjectsError, ECObjectsStatus } from "Exception";
+import { SchemaContext } from "Context";
+import { ECVersion, SchemaKey, parsePrimitiveType, relationshipEndToString } from "ECObjects";
+import SchemaChild from "Metadata/SchemaChild";
 
 /**
  * The purpose of this class is to properly order the deserialization of ECSchemas and SchemaChildren from the JSON formats.

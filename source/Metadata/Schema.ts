@@ -1,21 +1,21 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
-import { ECVersion, SchemaKey, ECClassModifier } from "../ECObjects";
-import { SchemaInterface, SchemaChildInterface } from "../Interfaces";
-import ECClass, { StructClass } from "./Class";
-import CustomAttributeClass from "./CustomAttributeClass";
-import MixinClass from "./MixinClass";
-import EntityClass from "./EntityClass";
-import RelationshipClass from "./RelationshipClass";
-import SchemaChild from "./SchemaChild";
-import Enumeration from "./Enumeration";
-import KindOfQuantity from "./KindOfQuantity";
-import PropertyCategory from "./PropertyCategory";
-import SchemaReadHelper from "../Deserialization/Helper";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
-import { SchemaContext } from "../Context";
+import { ECVersion, SchemaKey, ECClassModifier } from "ECObjects";
+import { SchemaInterface, SchemaChildInterface } from "Interfaces";
+import ECClass, { StructClass } from "Metadata/Class";
+import CustomAttributeClass from "Metadata/CustomAttributeClass";
+import MixinClass from "Metadata/MixinClass";
+import EntityClass from "Metadata/EntityClass";
+import RelationshipClass from "Metadata/RelationshipClass";
+import SchemaChild from "Metadata/SchemaChild";
+import Enumeration from "Metadata/Enumeration";
+import KindOfQuantity from "Metadata/KindOfQuantity";
+import PropertyCategory from "Metadata/PropertyCategory";
+import SchemaReadHelper from "Deserialization/Helper";
+import { ECObjectsError, ECObjectsStatus } from "Exception";
+import { CustomAttributeContainerProps, CustomAttributeSet } from "Metadata/CustomAttribute";
+import { SchemaContext } from "Context";
 
 const SCHEMAURL3_1 = "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema";
 

@@ -3,14 +3,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { PropertyInterface, ECClassInterface, PrimitivePropertyInterface, StructPropertyInterface,
-  NavigationPropertyInterface, PrimitiveArrayPropertyInterface, StructArrayPropertyInterface } from "../Interfaces";
-import { ECName, PrimitiveType, RelatedInstanceDirection } from "../ECObjects";
-import PropertyCategory from "./PropertyCategory";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import KindOfQuantity from "./KindOfQuantity";
-import Enumeration from "./Enumeration";
-import { StructClass } from "./Class";
-import RelationshipClass from "./RelationshipClass";
+  NavigationPropertyInterface, PrimitiveArrayPropertyInterface, StructArrayPropertyInterface } from "Interfaces";
+import { ECName, PrimitiveType, RelatedInstanceDirection } from "ECObjects";
+import PropertyCategory from "Metadata/PropertyCategory";
+import { ECObjectsError, ECObjectsStatus } from "Exception";
+import KindOfQuantity from "Metadata/KindOfQuantity";
+import Enumeration from "Metadata/Enumeration";
+import { StructClass } from "Metadata/Class";
+import RelationshipClass from "Metadata/RelationshipClass";
 
 /**
  * A common abstract class for all ECProperty types.

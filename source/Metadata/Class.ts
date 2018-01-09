@@ -2,12 +2,12 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { ECClassInterface, PropertyInterface } from "../Interfaces";
-import { ECClassModifier, parseClassModifier, PrimitiveType, parsePrimitiveType } from "../ECObjects";
-import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import SchemaChild from "./SchemaChild";
-import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty, ECProperty } from "./Property";
+import { ECClassInterface, PropertyInterface } from "Interfaces";
+import { ECClassModifier, parseClassModifier, PrimitiveType, parsePrimitiveType } from "ECObjects";
+import { CustomAttributeContainerProps, CustomAttributeSet } from "Metadata/CustomAttribute";
+import { ECObjectsError, ECObjectsStatus } from "Exception";
+import SchemaChild from "Metadata/SchemaChild";
+import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty, ECProperty } from "Metadata/Property";
 import Enumeration from "Metadata/Enumeration";
 
 /**
