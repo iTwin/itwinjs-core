@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { Point2d, Point3d, Vector3d, Range2d, Transform, Range3d, RotMatrix, YawPitchRollAngles, XYAndZ, XAndY, LowAndHighXYZ, LowAndHighXY } from "@bentley/geometry-core/lib/PointVector";
+import { Point2d, Point3d, Vector3d, Range2d, Transform, Range3d, RotMatrix, YawPitchRollAngles, XYAndZ, XAndY, LowAndHighXY } from "@bentley/geometry-core/lib/PointVector";
 import { CurveCollection } from "@bentley/geometry-core/lib/curve/CurveChain";
 import { BSplineSurface3d } from "@bentley/geometry-core/lib/bspline/BSplineSurface";
 import { GeometryQuery, CurvePrimitive } from "@bentley/geometry-core/lib/curve/CurvePrimitive";
@@ -10,6 +10,7 @@ import { SolidPrimitive } from "@bentley/geometry-core/lib/solid/SolidPrimitive"
 import { IndexedPolyface } from "@bentley/geometry-core/lib/polyface/Polyface";
 import { AxisOrder, Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
+import { Placement2dProps, Placement3dProps } from "../ElementProps";
 
 export enum GeometryType {
   Undefined = 0,
@@ -104,12 +105,6 @@ export class ElementAlignedBox2d extends Range2d {
   }
 }
 
-export interface Placement3dProps {
-  origin: Point3d | object;
-  angles: YawPitchRollAngles | object;
-  bbox: LowAndHighXYZ | object;
-}
-
 /**
  * The placement of a GeometricElement3d. This includes the origin, orientation, and size (bounding box) of the element.
  * All geometry of a GeometricElement are relative to its placement.
@@ -143,12 +138,6 @@ export class Placement3d implements Placement3dProps {
     range.fixRange();
     return range;
   }
-}
-
-export interface Placement2dProps {
-  origin: XAndY | object;
-  angle: Angle | number | object;
-  bbox: LowAndHighXY | object;
 }
 
 /** The placement of a GeometricElement2d. This includes the origin, rotation, and size (bounding box) of the element. */

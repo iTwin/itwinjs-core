@@ -4,6 +4,7 @@
 import { AccessToken, Briefcase as HubBriefcase, IModelHubClient, ChangeSet, IModel as ConnectIModel } from "@bentley/imodeljs-clients";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { BriefcaseStatus, IModelError } from "../common/IModelError";
 import { IModelVersion } from "../common/IModelVersion";
 import { IModelToken, Configuration } from "../common/IModel";
@@ -13,8 +14,7 @@ import { IModelDb } from "./IModelDb";
 
 import * as fs from "fs";
 import * as path from "path";
-
-declare const __dirname: string;
+import * as os from "os";
 
 /** The ID assigned to a briefcase by iModelHub, or one of the special values that identify special kinds of iModels */
 export class BriefcaseId {
@@ -174,7 +174,7 @@ export class BriefcaseManager {
   private static cache?: BriefcaseCache;
 
   /** The path where the cache of briefcases are stored. */
-  public static cachePath = path.join(__dirname, "cache/imodels");
+  public static cachePath = path.join(os.tmpdir(), "Bentley/IModelJs/cache/imodels");
 
   /** Get the local path of the root folder storing the imodel seed file, change sets and briefcases */
   private static getIModelPath(iModelId: string): string {
@@ -232,8 +232,10 @@ export class BriefcaseManager {
     if (BriefcaseManager.cache) {
       if (BriefcaseManager.hubClient!.deploymentEnv === Configuration.iModelHubDeployConfig)
         return;
-      // console.log("Detected change of configuration - reinitializing Briefcase cache!"); // tslint:disable-line:no-console
+      Logger.logWarning("Detected change of configuration - reinitializing Briefcase cache!");
     }
+
+    const startTime = new Date().getTime();
 
     BriefcaseManager.hubClient = new IModelHubClient(Configuration.iModelHubDeployConfig);
     BriefcaseManager.cache = new BriefcaseCache();
@@ -246,39 +248,55 @@ export class BriefcaseManager {
     for (const iModelId of iModelIds) {
       const localBriefcases = briefcaseInfos[iModelId];
 
-      let hubBriefcases: HubBriefcase[] = new Array<HubBriefcase>();
-      try {
-        hubBriefcases = await BriefcaseManager.hubClient.getBriefcases(accessToken, iModelId);
-      } catch (error) {
-        // The iModel is unreachable on the hub (the current deployment configuration is different, or the imodel was removed)
-        localBriefcases.forEach((localBriefcase: BriefcaseInfo) => BriefcaseManager.deleteBriefcaseFromLocalDisk(localBriefcase));
-        continue;
-      }
+      let hubBriefcases: HubBriefcase[]|undefined;
 
       for (const localBriefcase of localBriefcases) {
+
         const briefcase = new BriefcaseInfo();
         briefcase.iModelId = iModelId;
         briefcase.changeSetId = localBriefcase.parentChangeSetId;
-        briefcase.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, iModelId, briefcase.changeSetId);
         briefcase.briefcaseId = localBriefcase.briefcaseId;
         briefcase.pathname = localBriefcase.pathname;
         briefcase.openMode = localBriefcase.readOnly ? OpenMode.Readonly : OpenMode.ReadWrite;
-        if (briefcase.openMode === OpenMode.ReadWrite) {
+        briefcase.isOpen = false;
+
+        try {
+          briefcase.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, iModelId, briefcase.changeSetId);
+        } catch (error) {
+          // The iModel is unreachable on the hub (the current deployment configuration is different, or the imodel was removed)
+          Logger.logWarning(`Unable to find change set information for ${briefcase.iModelId} on the Hub. Deleting it from the local cache`);
+          BriefcaseManager.deleteBriefcaseFromLocalDisk(localBriefcase);
+        }
+
+        if (!localBriefcase.readOnly) {
+          if (!hubBriefcases) {
+            hubBriefcases = new Array<HubBriefcase>();
+            try {
+              hubBriefcases = await BriefcaseManager.hubClient.getBriefcases(accessToken, iModelId);
+            } catch (error) {
+              // The iModel is unreachable on the hub (the current deployment configuration is different, or the imodel was removed)
+              Logger.logWarning(`Unable to find imodel ${briefcase.iModelId} on the Hub`);  // tslint:disable-line:no-console
+            }
+          }
+
           const hubBriefcase = hubBriefcases.find((bc: HubBriefcase) => bc.briefcaseId === localBriefcase.briefcaseId);
           if (!hubBriefcase) {
-            // The local briefcase is unreachable on the hub - either because it has been removed,
-            // or because the deployment configuration has changed (during development).
+            // The iModel is unreachable on the hub (the current deployment configuration is different, or the imodel was removed)
+            Logger.logWarning(`Unable to find briefcase ${briefcase.iModelId}:${briefcase.briefcaseId} on the Hub. Deleting it from the local cache`);  // tslint:disable-line:no-console
+            BriefcaseManager.deleteBriefcaseFromLocalDisk(localBriefcase);
             continue;
           }
           briefcase.userId = hubBriefcase.userId;
         }
 
-        briefcase.isOpen = false;
         // briefcase.nativeDb = undefined;
 
         BriefcaseManager.cache.addBriefcase(briefcase);
       }
     }
+
+    // TODO: Temporary logging for resolving potential performance issue with briefcase manager initialization
+    console.log(`    ...initialization of briefcase cache: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
   }
 
   /** Get the index of the change set from it's id */
