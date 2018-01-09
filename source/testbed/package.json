@@ -16,8 +16,8 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/imodeljs-electronaddon": "~2.0.0",
-    "@bentley/imodeljs-nodeaddonapi": "~2.0.0",
+    "@bentley/imodeljs-electronaddon": "~3.0.0",
+    "@bentley/imodeljs-nodeaddonapi": "~3.0.0",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
     "electron": "1.6.11",
