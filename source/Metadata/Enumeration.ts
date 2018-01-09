@@ -10,7 +10,7 @@ import SchemaChild from "./SchemaChild";
 /**
  * A Typescript class representation of an ECEnumeration.
  */
-export class Enumeration extends SchemaChild implements EnumerationInterface {
+export default class Enumeration extends SchemaChild implements EnumerationInterface {
   public type: PrimitiveType.Integer | PrimitiveType.String;
   public isStrict: boolean;
   public enumerators: Enumerator[];

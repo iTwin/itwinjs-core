@@ -3,8 +3,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { ECSchema } from "../../source/Metadata/Schema";
-import { ECClass, EntityClass, MixinClass, RelationshipClass } from "../../source/Metadata/Class";
+import ECSchema from "../../source/Metadata/Schema";
+import ECClass from "../../source/Metadata/Class";
+import EntityClass from "../../source/Metadata/EntityClass";
+import MixinClass from "../../source/Metadata/MixinClass";
+import RelationshipClass from "../../source/Metadata/RelationshipClass";
 import { ECClassModifier } from "../../source/ECObjects";
 import { NavigationProperty } from "../../source/Metadata/Property";
 

@@ -4,8 +4,11 @@
 
 import { assert, expect } from "chai";
 
-import { ECSchema } from "../../source/Metadata/Schema";
-import { ECClass, EntityClass, MixinClass, StructClass } from "../../source/Metadata/Class";
+import ECSchema from "../../source/Metadata/Schema";
+import ECClass from "../../source/Metadata/Class";
+import EntityClass from "../../source/Metadata/EntityClass";
+import MixinClass from "../../source/Metadata/MixinClass";
+import { StructClass } from "../../source/Metadata/Class";
 import { ECObjectsError } from "../../source/Exception";
 import { SchemaKey, SchemaMatchType } from "../../source/ECObjects";
 

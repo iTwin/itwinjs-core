@@ -3,8 +3,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { ECSchema } from "../../source/Metadata/Schema";
-import { RelationshipClass, EntityClass } from "../../source/Metadata/Class";
+import ECSchema from "../../source/Metadata/Schema";
+import EntityClass from "../../source/Metadata/EntityClass";
+import RelationshipClass from "../../source/Metadata/RelationshipClass";
 import { RelationshipMultiplicity, StrengthType, RelatedInstanceDirection } from "../../source/ECObjects";
 
 describe("relationship multiplicity", () => {

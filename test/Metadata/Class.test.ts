@@ -4,8 +4,9 @@
 
 import { assert, expect } from "chai";
 
-import { ECSchema } from "../../source/Metadata/Schema";
-import { ECClass, EntityClass } from "../../source/Metadata/Class";
+import ECSchema from "../../source/Metadata/Schema";
+import ECClass from "../../source/Metadata/EntityClass";
+import EntityClass from "../../source/Metadata/EntityClass";
 import { SchemaContext } from "../../source/Context";
 
 describe("class", () => {

@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { ECSchema } from "../../source/Metadata/Schema";
+import ECSchema from "../../source/Metadata/Schema";
 import { ECObjectsError } from "../../source/Exception";
 import PropertyCategory from "../../source/Metadata/PropertyCategory";
 

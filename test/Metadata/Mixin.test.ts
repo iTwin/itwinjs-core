@@ -3,8 +3,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { ECSchema } from "../../source/Metadata/Schema";
-import { EntityClass, MixinClass } from "../../source/Metadata/Class";
+import ECSchema from "../../source/Metadata/Schema";
+import EntityClass from "../../source/Metadata/EntityClass";
+import MixinClass from "../../source/Metadata/MixinClass";
 
 describe("mixin", () => {
   describe("deserialization", () => {

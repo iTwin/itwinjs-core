@@ -4,7 +4,7 @@
 
 import { assert, expect } from "chai";
 import { SchemaCache } from "../../source/Context";
-import { ECSchema } from "../../source/Metadata/Schema";
+import ECSchema from "../../source/Metadata/Schema";
 import { ECObjectsError } from "../../source/Exception";
 
 describe("Schema Cache", () => {

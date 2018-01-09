@@ -3,9 +3,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { ECVersion, SchemaKey, ECClassModifier } from "../ECObjects";
 import { SchemaInterface, SchemaChildInterface } from "../Interfaces";
-import { ECClass, MixinClass, EntityClass, StructClass, CustomAttributeClass, RelationshipClass } from "./Class";
+import ECClass, { StructClass } from "./Class";
+import CustomAttributeClass from "./CustomAttributeClass";
+import MixinClass from "./MixinClass";
+import EntityClass from "./EntityClass";
+import RelationshipClass from "./RelationshipClass";
 import SchemaChild from "./SchemaChild";
-import { Enumeration } from "./Enumeration";
+import Enumeration from "./Enumeration";
 import KindOfQuantity from "./KindOfQuantity";
 import PropertyCategory from "./PropertyCategory";
 import SchemaReadHelper from "../Deserialization/Helper";
@@ -18,7 +22,7 @@ const SCHEMAURL3_1 = "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecsche
 /**
  *
  */
-export class ECSchema  implements SchemaInterface, CustomAttributeContainerProps {
+export default class ECSchema  implements SchemaInterface, CustomAttributeContainerProps {
   private _immutable: boolean = false;
   public schemaKey: SchemaKey;
   public alias: string;

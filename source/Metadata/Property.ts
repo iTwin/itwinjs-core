@@ -8,8 +8,9 @@ import { ECName, PrimitiveType, RelatedInstanceDirection } from "../ECObjects";
 import PropertyCategory from "./PropertyCategory";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import KindOfQuantity from "./KindOfQuantity";
-import { Enumeration } from "./Enumeration";
-import { StructClass, RelationshipClass } from "./Class";
+import Enumeration from "./Enumeration";
+import { StructClass } from "./Class";
+import RelationshipClass from "./RelationshipClass";
 
 /**
  * A common abstract class for all ECProperty types.
