@@ -32,7 +32,13 @@ describe("BriefcaseManager", () => {
   let shouldDeleteAllBriefcases: boolean = false;
 
   before(async () => {
+    let startTime = new Date().getTime();
+    console.log("    Started monitoring briefcase manager performance..."); // tslint:disable-line:no-console
+
     accessToken = await IModelTestUtils.getTestUserAccessToken();
+    console.log(`    ...getting user access token from IMS: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
+    startTime = new Date().getTime();
+
     testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
     testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "MyTestModel");
 
@@ -46,6 +52,8 @@ describe("BriefcaseManager", () => {
     shouldDeleteAllBriefcases = !fs.existsSync(BriefcaseManager.cachePath);
     if (shouldDeleteAllBriefcases)
       await IModelTestUtils.deleteAllBriefcases(accessToken, testIModelId);
+
+    console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
   });
 
   it("should be able to open an IModel from the Hub in Readonly mode", async () => {
@@ -128,7 +136,8 @@ describe("BriefcaseManager", () => {
     assert.exists(iModelNoVer);
   });
 
-  it("should open briefcase of an iModel in both DEV and QA", async () => {
+  it.skip("should open briefcase of an iModel in both DEV and QA", async () => {
+    // Note: This test is commented out since it causes the entire cache to be discarded and is therefore expensive.
     IModelTestUtils.setIModelHubDeployConfig("DEV");
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Turn off SSL validation in DEV
     const devProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");

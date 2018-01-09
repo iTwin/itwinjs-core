@@ -16,7 +16,7 @@ import { IModelGateway } from "../gateway/IModelGateway";
 /** The backend implementation of IModelGateway.
  * @hidden
  */
-export class IModelGatewayImpl extends IModelGateway {
+export class IModelGatewayImpl extends Gateway {
   public static register() {
     Gateway.registerImplementation(IModelGateway, IModelGatewayImpl);
   }

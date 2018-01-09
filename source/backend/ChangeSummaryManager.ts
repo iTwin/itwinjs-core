@@ -57,33 +57,30 @@ export class ChangeSummaryManager {
       if (nativeIModelDb == null)
         throw new IModelError(IModelStatus.WrongIModel);
 
-      if (ChangeSummaryManager.isSummaryAlreadyExtracted(changesFile, changeSet.wsgId)) {
-        await iModel.close(accessToken);
-        continue;
-      }
-
       try {
-      const changeSetFilePath: string = path.join(changeSetsFolder, changeSet.fileName);
-      const stat: ErrorStatusOrResult<DbResult, string> = nativeIModelDb.extractChangeSummary(changesFile.nativeDb, changeSetFilePath);
-      if (stat.error != null && stat.error!.status !== DbResult.BE_SQLITE_OK)
-        throw new IModelError(stat.error!.status);
 
-      assert(stat.result != null);
-      const changeSummaryId: string = stat.result!;
+        if (ChangeSummaryManager.isSummaryAlreadyExtracted(changesFile, changeSet.wsgId)) {
+          continue;
+        }
 
-      let userEmail: string | undefined = userInfoCache.get(changeSet.userCreated);
-      if (!userEmail) {
-        const userInfo: UserInfo = await BriefcaseManager.hubClient!.getUserInfo(accessToken, iModelId, changeSet.userCreated);
-        userEmail = userInfo.email;
-        userInfoCache.set(changeSet.userCreated, userEmail);
-      }
+        const changeSetFilePath: string = path.join(changeSetsFolder, changeSet.fileName);
+        const stat: ErrorStatusOrResult<DbResult, string> = nativeIModelDb.extractChangeSummary(changesFile.nativeDb, changeSetFilePath);
+        if (stat.error != null && stat.error!.status !== DbResult.BE_SQLITE_OK)
+          throw new IModelError(stat.error!.status);
 
-      ChangeSummaryManager.addExtendedInfos(changesFile, changeSummaryId, new ChangeSummaryExtendedInfo(changeSet.wsgId, changeSet.pushDate, userEmail, changeSet.parentId));
+        assert(stat.result != null);
+        const changeSummaryId: string = stat.result!;
 
-      await iModel.close(accessToken);
-      } catch (e) {
+        let userEmail: string | undefined = userInfoCache.get(changeSet.userCreated);
+        if (!userEmail) {
+          const userInfo: UserInfo = await BriefcaseManager.hubClient!.getUserInfo(accessToken, iModelId, changeSet.userCreated);
+          userEmail = userInfo.email;
+          userInfoCache.set(changeSet.userCreated, userEmail);
+        }
+
+        ChangeSummaryManager.addExtendedInfos(changesFile, changeSummaryId, new ChangeSummaryExtendedInfo(changeSet.wsgId, changeSet.pushDate, userEmail, changeSet.parentId));
+      } finally {
         await iModel.close(accessToken);
-        throw e;
       }
     }
 
@@ -105,12 +102,10 @@ export class ChangeSummaryManager {
 
     try {
       iModel.createChangeCache(changesFile, changesPath);
-      await iModel.close(accessToken);
       return changesFile;
 
-      } catch (e) {
+      } finally {
       await iModel.close(accessToken);
-      throw e;
     }
   }
 

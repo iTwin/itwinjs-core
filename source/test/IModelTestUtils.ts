@@ -16,7 +16,6 @@ import { NodeAddonRegistry } from "../backend/NodeAddonRegistry";
 import { IModelGateway } from "../gateway/IModelGateway";
 import { ElementProps, GeometricElementProps } from "../common/ElementProps";
 
-import * as path from "path";
 import { Entity } from "../backend/Entity";
 import { DefinitionModel } from "../backend/Model";
 import { SpatialCategory } from "../backend/Category";
@@ -31,9 +30,6 @@ declare const __dirname: string;
 
 // Initialize the Node addon used by tests
 NodeAddonRegistry.loadAndRegisterStandardAddon();
-
-// Initialize the location where BriefcaseManager will create briefcases
-BriefcaseManager.cachePath = path.join(__dirname, "output/cache/imodels");
 
 export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;
