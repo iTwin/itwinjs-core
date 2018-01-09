@@ -1,0 +1,17 @@
+{
+  "name": "@bentley/ecpresentation-frontend",
+  "entries": [
+    {
+      "version": "0.0.14",
+      "tag": "@bentley/ecpresentation-frontend_v0.0.14",
+      "date": "Mon, 08 Jan 2018 14:51:31 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Some restructuring to make the code more maintainable.\n- Use imodeljs-frontend@0.12.0"
+          }
+        ]
+      }
+    }
+  ]
+}

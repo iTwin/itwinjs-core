@@ -1,12 +1,13 @@
 {
   "name": "@bentley/ecpresentation-backend",
-  "version": "0.0.24",
+  "version": "0.0.25",
   "description": "Backend of ECPresentation library",
   "keywords": [
     "Bentley",
     "EC",
     "Presentation",
-    "iModelJS"
+    "iModelJS",
+    "Backend"
   ],
   "license": "UNLICENSED",
   "author": {
@@ -17,7 +18,7 @@
     "build": "tsc && npm run resolve-imports",
     "clean": "rimraf lib",
     "resolve-imports": "cd lib && replace \"@build/imodeljs-core\" \"@bentley/imodeljs-backend\" -r -q .",
-    "prepublishOnly": "npm run test && npm run build"
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "^1.2.4",
@@ -28,6 +29,7 @@
     "@bentley/bentleyjs-tools": "^1.0.58",
     "@types/flatbuffers": "^1.6.5",
     "node-replace": "^0.3.3",
-    "rimraf": "^2.6.2"
+    "rimraf": "^2.6.2",
+    "typescript": "^2.6.2"
   }
 }

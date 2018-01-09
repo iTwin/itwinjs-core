@@ -1,0 +1,17 @@
+{
+  "name": "@bentley/ecpresentation-backend",
+  "entries": [
+    {
+      "version": "0.0.25",
+      "tag": "@bentley/ecpresentation-backend_v0.0.25",
+      "date": "Mon, 08 Jan 2018 14:51:31 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Some restructuring to make the code more maintainable.\n- Use imodeljs-backend@0.15.0"
+          }
+        ]
+      }
+    }
+  ]
+}

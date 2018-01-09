@@ -1,12 +1,13 @@
 {
   "name": "@bentley/ecpresentation-frontend",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "Frontend of ECPresentation library",
   "keywords": [
     "Bentley",
     "EC",
     "Presentation",
-    "iModelJS"
+    "iModelJS",
+    "Frontend"
   ],
   "license": "UNLICENSED",
   "author": {
@@ -17,7 +18,7 @@
     "build": "tsc && npm run resolve-imports",
     "clean": "rimraf lib",
     "resolve-imports": "cd lib && replace \"@build/imodeljs-core\" \"@bentley/imodeljs-frontend\" -r -q .",
-    "prepublishOnly": "npm run test && npm run build"
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "^1.2.4",
@@ -25,6 +26,7 @@
   },
   "devDependencies": {
     "node-replace": "^0.3.3",
-    "rimraf": "^2.6.2"
+    "rimraf": "^2.6.2",
+    "typescript": "^2.6.2"
   }
 }

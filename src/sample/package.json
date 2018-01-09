@@ -18,8 +18,8 @@
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "^1.2.4",
-    "@bentley/ecpresentation-backend": "^0.0.24",
-    "@bentley/ecpresentation-frontend": "^0.0.13",
+    "@bentley/ecpresentation-backend": "^0.0.25",
+    "@bentley/ecpresentation-frontend": "^0.0.14",
     "@bentley/imodeljs-backend": "^0.15.0",
     "@bentley/imodeljs-e_1_6_11-win32-x64": "^1.4.0",
     "@bentley/imodeljs-electronaddon": "^1.4.0",
