@@ -18,10 +18,7 @@ if (typeof (global) !== "undefined" && global && global.process && global.proces
   electron = eval("require")("electron");
 }
 
-// tslint:disable-next-line:ban-types
-export interface GatewayConstructor<T extends Gateway> { new(): T; version: string; types: () => Function[]; }
-
-export type GatewayImplementation<T extends Gateway = Gateway> = GatewayConstructor<T>;
+export type GatewayImplementation<T extends Gateway = Gateway> = new() => T;
 // tslint:disable-next-line:ban-types
 export interface GatewayDefinition<T extends Gateway = Gateway> { prototype: T; name: string; version: string; types: () => Function[]; }
 export type GatewayConfigurationSupplier = () => { new(): Gateway.Configuration };
@@ -85,7 +82,7 @@ export abstract class Gateway {
       if (Gateway.getInstance(definition))
         throw new IModelError(BentleyStatus.ERROR, `Gateway proxy for "${definition.name}" is already initialized.`);
 
-      const proxy = Gateway.makeInstance(definition as GatewayConstructor<T>);
+      const proxy = Gateway.makeInstance(definition as any);
       proxy.setupProxyInstance();
     }
   }
@@ -163,12 +160,12 @@ export abstract class Gateway {
 
   /** Obtains the implementation result for a gateway operation. */
   protected forward<T>(operation: string, ...parameters: any[]): Promise<T> {
-    return this.configuration.protocol.obtainGatewayImplementationResult<T>(this.constructor as GatewayConstructor<Gateway>, operation, ...parameters);
+    return this.configuration.protocol.obtainGatewayImplementationResult<T>(this.constructor as any, operation, ...parameters);
   }
 
   /** Configures a gateway proxy. */
   protected setupProxyInstance() {
-    Gateway.forEachOperation(this.constructor as GatewayConstructor<Gateway>, (operation) => this.makeOperationForwarder(operation));
+    Gateway.forEachOperation(this.constructor as any, (operation) => this.makeOperationForwarder(operation));
   }
 
   /** Configures a gateway implementation. */
@@ -191,7 +188,7 @@ export abstract class Gateway {
   }
 
   /** Creates and returns the instance of a gateway class. */
-  private static makeInstance<T extends Gateway>(constructor: GatewayConstructor<T>) {
+  private static makeInstance<T extends Gateway>(constructor: new() => T) {
     return (constructor as any)[INSTANCE] = new constructor();
   }
 
