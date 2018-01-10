@@ -30,6 +30,7 @@ import { IModelGatewayImpl } from "./IModelGatewayImpl";
 import { RepositoryStatus } from "@bentley/bentleyjs-core/lib/BentleyError";
 import * as path from "path";
 import { IModelDbLinkTableRelationships, LinkTableRelationship } from "./LinkTableRelationship";
+import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 
 // Register the backend implementation of IModelGateway
 IModelGatewayImpl.register();
@@ -353,6 +354,19 @@ export class IModelDb extends IModel {
     return this.briefcaseInfo.nativeDb.setDbGuid(guidStr);
   }
 
+  /** Update the imodel project extents. */
+  public updateProjectExtents(newExtents: AxisAlignedBox3d) {
+    if (!this.briefcaseInfo)
+      throw this._newNotOpenError();
+    this.projectExtents.setFrom(newExtents);
+    /*
+    Currently awaiting merge of bim0200dev into bim0200.....
+
+    const extentsJson = newExtents.toJSON();
+    this.briefcaseInfo.nativeDb.updateProjectExtents(JSON.stringify(extentsJson));
+    */
+  }
+
   /**
    * Commit pending changes to this iModel
    * @param _description Optional description of the changes
@@ -494,6 +508,22 @@ export class IModelDb extends IModel {
     // Recursive, to make sure that base class is cached.
     if (metaData.baseClasses !== undefined && metaData.baseClasses.length > 0)
       this.loadMetaData(metaData.baseClasses[0]);
+  }
+
+  // !!! TEST FUNCTION
+  /**
+   * Execute a test known to exist using the id recognized by the addon's test execution handler
+   * @param id The id of the test you wish to execute
+   * @param params A JSON string that should all of the data/parameters the test needs to function correctly
+   */
+  public executeTestById(testId: number, params: any): any {
+    if (!this.briefcaseInfo)
+      throw this._newNotOpenError();
+
+    const retVal: string = this.briefcaseInfo.nativeDb.executeTestById(testId, JSON.stringify(params));
+    if (retVal.length === 0)
+      return {};
+    return JSON.parse(retVal);
   }
 }
 
@@ -876,21 +906,5 @@ export class IModelDbElements {
   public getMultiAspects(elementId: Id64, aspectClassName: string): ElementMultiAspect[] {
     const aspects: ElementAspect[] = this._queryAspects(elementId, aspectClassName);
     return aspects;
-  }
-
-  // !!! TEST FUNCTION
-  /**
-   * Execute a test known to exist using the id recognized by the addon's test execution handler
-   * @param id The id of the test you wish to execute
-   * @param params A JSON string that should all of the data/parameters the test needs to function correctly
-   */
-  public executeTestById(testId: number, params: any): any {
-    if (!this._iModel.briefcaseInfo)
-      return this._iModel._newNotOpenError();
-
-    const retVal: string = this._iModel.briefcaseInfo!.nativeDb.executeTestById(testId, JSON.stringify(params));
-    if (retVal.length === 0)
-      return {};
-    return JSON.parse(retVal);
   }
 }

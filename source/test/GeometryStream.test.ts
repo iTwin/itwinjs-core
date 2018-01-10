@@ -242,6 +242,7 @@ describe("GeometryBuilder", () => {
   let cylinder: SolidPrimitive;
   let surface: BSplineSurface3d;
   let polyface: IndexedPolyface;
+  let polyPoints: Point3d[];
 
   before(() => {
     imodel = IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
@@ -253,9 +254,24 @@ describe("GeometryBuilder", () => {
     curveCollection = Sample.createSimpleParityRegions()[0];
     cylinder = Cone.createAxisPoints(Point3d.create(0, 0.34, 0), Point3d.create(0, 0, 1030.0), 1.5, 1.5, true)!;
     surface = Sample.createXYGridBsplineSurface(4, 6, 3, 4)!;
-    const polyBuilder = PolyfaceBuilder.create();
-    polyBuilder.addCone(cylinder as Cone);
-    polyface = polyBuilder.claimPolyface();
+    polyface = IndexedPolyface.create(false, false, false);
+    polyPoints = [
+      Point3d.create(0, 0),
+      Point3d.create(1.589, 5.687),
+      Point3d.create(-5.89, -2),
+      Point3d.create(86, 1.00001),
+      Point3d.create(100, -100),
+      Point3d.create(867.5309, 1.01010101),
+      Point3d.create(5.87, 0),
+    ];
+    for (const point of polyPoints)
+      polyface.addPoint(point);
+    for (let i = 0; i < 5; i++) {
+      polyface.addPointIndex(i);
+      polyface.addPointIndex(i + 1);
+      polyface.addPointIndex(i + 2);
+      polyface.terminateFacet();
+    }
   });
 
   after(() => {
@@ -351,9 +367,11 @@ describe("GeometryBuilder", () => {
       geom: builder.getGeometryStreamRef().toJSON(),
       bsurfacePts: pts,
       numSurfacePts: pts.length,
+      polyPts: polyPoints,
+      numPolyPts: polyPoints.length,
     };
 
-    const cppResult = imodel.elements.executeTestById(4, json);
+    const cppResult = imodel.executeTestById(4, json);
     const jsonCompare = new DeepCompare();
     assert.isTrue(jsonCompare.compare({returnValue : true}, cppResult));
   });
@@ -363,8 +381,10 @@ describe("GeometryBuilder", () => {
     const json: any = {
       bsurfacePts: pts,
       numSurfacePts: pts.length,
+      polyPts: polyPoints,
+      numPolyPts: polyPoints.length,
     };
-    const cppResult = imodel.elements.executeTestById(5, json);
+    const cppResult = imodel.executeTestById(5, json);
     assert.isTrue(cppResult.hasOwnProperty("geom"), "Successfully obtained geometry stream back from C++");
     const stream = GeometryStream.fromJSON(cppResult.geom);
     assert.isDefined(stream, "Geometry stream is defined");
@@ -399,10 +419,8 @@ describe("GeometryBuilder", () => {
           break;
         }
         case OpCode.Polyface: {
-          /*
           const cppPolyface = geomPrim!.asIndexedPolyface!;
           assert.isTrue(polyface.isAlmostEqual(cppPolyface));
-          */
           break;
         }
         default: {

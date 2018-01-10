@@ -7,6 +7,7 @@ import { EntityQueryParams } from "../common/EntityProps";
 import { IModel, IModelToken } from "../common/IModel";
 import { IModelVersion } from "../common/IModelVersion";
 import { Gateway } from "../common/Gateway";
+import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 
 /** The iModel core gateway definition.
  * @hidden
@@ -95,16 +96,22 @@ export abstract class IModelGateway extends Gateway {
     return this.forward.apply(this, arguments);
   }
 
-  // !!! TESTING METHOD
-  public executeTestById(_iModelToken: IModelToken, _id: number, _params: any): any {
-  }
-
   /**
    * Commit pending changes to this iModel
    * @param _description Optional description of the changes
    * @throws [[IModelError]] if there is a problem saving changes.
    */
   public async saveChanges(_iModelToken: IModelToken, _description?: string): Promise<void> {
+    return this.forward.apply(this, arguments);
+  }
+
+  /** Updates the project extents of the imodel. */
+  public updateProjectExtents(_iModelToken: IModelToken, _newExtents: AxisAlignedBox3d): void {
+    return this.forward.apply(this, arguments);
+  }
+
+  // !!! TESTING METHOD
+  public executeTestById(_iModelToken: IModelToken, _id: number, _params: any): any {
     return this.forward.apply(this, arguments);
   }
 }

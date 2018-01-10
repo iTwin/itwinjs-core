@@ -13,6 +13,7 @@ import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { ModelProps } from "../common/ModelProps";
 import { IModelGateway } from "../gateway/IModelGateway";
 import { IModelVersion } from "../common/IModelVersion";
+import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 
 /** A connection to an iModel database hosted on the backend. */
 export class IModelConnection extends IModel {
@@ -85,27 +86,34 @@ export class IModelConnection extends IModel {
     return await IModelGateway.getProxy().executeQuery(this.iModelToken, sql, bindings);
   }
 
-  // !!! TESTING METHOD
   /**
-   * Execute a test known to exist using the id recognized by the addon's test execution handler
-   * @param id The id of the test you wish to execute
-   * @param params A JSON string that should all of the data/parameters the test needs to function correctly
-   * @hidden
+   * Update the project extents of this iModel.
+   * @param newExtents The new project extents as an AxisAlignedBox3d
    */
-  public executeTestById(id: number, params: any): any {
-    if (!this.iModelToken)
-      return undefined;
-    return IModelGateway.getProxy().executeTestById(this.iModelToken, id, params);
+  public updateProjectExtents(newExtents: AxisAlignedBox3d): void {
+    Logger.logInfo("IModelConnection.updateProjectExtents", () => ({ iModelId: this.iModelToken.iModelId, newExtents }));
+    IModelGateway.getProxy().updateProjectExtents(this.iModelToken, newExtents);
   }
 
   /**
    * Commit pending changes to this iModel
-   * @param _description Optional description of the changes
+   * @param description Optional description of the changes
    * @throws [[IModelError]] if there is a problem saving changes.
    */
   public async saveChanges(description?: string): Promise<void> {
     Logger.logInfo("IModelConnection.saveChanges", () => ({ iModelId: this.iModelToken.iModelId, description }));
     return await IModelGateway.getProxy().saveChanges(this.iModelToken, description);
+  }
+
+  // !!! TESTING METHOD
+  /**
+   * Execute a test known to exist using the id recognized by the addon's test execution handler
+   * @param id The id of the test to execute
+   * @param params A JSON string containing all parameters the test requires
+   * @hidden
+   */
+  public executeTestById(id: number, params: any): any {
+    return IModelGateway.getProxy().executeTestById(this.iModelToken, id, params);
   }
 }
 
