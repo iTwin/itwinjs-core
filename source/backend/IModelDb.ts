@@ -30,6 +30,7 @@ import { IModelGatewayImpl } from "./IModelGatewayImpl";
 import { RepositoryStatus } from "@bentley/bentleyjs-core/lib/BentleyError";
 import * as path from "path";
 import { IModelDbLinkTableRelationships, LinkTableRelationship } from "./LinkTableRelationship";
+import { RepositoryManager } from "./RepositoryManager";
 
 // Register the backend implementation of IModelGateway
 IModelGatewayImpl.register();
@@ -83,7 +84,9 @@ export class IModelDb extends IModel {
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
     const briefcaseInfo: BriefcaseInfo = await BriefcaseManager.open(accessToken, contextId, iModelId, openMode, version);
     Logger.logInfo("IModelDb.open", () => ({ iModelId, openMode }));
-    return IModelDb.create(briefcaseInfo, contextId);
+    const db = await IModelDb.create(briefcaseInfo, contextId);
+    db.briefcaseInfo!.nativeDb.setRepositoryManager(new RepositoryManager(db));
+    return db;
   }
 
   /** Close this iModel, if it is currently open */
@@ -233,15 +236,14 @@ export class IModelDb extends IModel {
   }
 
   /**
-   * Start a bulk update operation. This allows apps to write entities and codes to the local briefcase without first acquiring locks.
-   * The transaction manager then attempts to acquire all needed locks and codes before saving the changes to the local briefcase.
+   * Start a bulk change. This allows the app to insert, update, and delete entities in the local briefcase without first acquiring locks.
+   * When the app calls saveChanges, the transaction manager attempts to acquire all needed locks and codes.
    * The transaction manager will roll back all pending changes if any lock or code cannot be acquired at save time. Lock and code acquisition will fail if another user
-   * has push changes to the same entities or used the same codes as the local transaction.
-   * This policy does prevent conflicts and is the easiest way to implement the pessimistic locking policy efficiently.
-   * It however carries the risk that local changes could be rolled back, and so it can only be used safely in special cases, where
-   * contention for locks and codes is not a risk. Normally, that is only possible when writing to a model that is exclusively locked and where codes
-   * are scoped to that model.
+   * has pushed changes to the same entities or used the same codes as the local transaction.
+   * This mode can therefore be used safely only in special cases where contention for locks and codes is not a risk.
+   * Normally, that is only possible when writing to a model that is exclusively locked and where codes are scoped to that model.
    * See saveChanges and endBulkUpdateMode.
+   * @throws IModelError if it would be illegal to enter bulk operation mode.
    */
   public startBulkUpdateMode(): void {
     if (!this.briefcaseInfo)
@@ -252,10 +254,11 @@ export class IModelDb extends IModel {
   }
 
   /**
-   * Call this if you want to acquire locks and codes *before* the end of the transaction.
-   * Note that saveChanges automatically calls this function to end the bulk operation and acquire locks and codes.
+   * Call this in the rare case where you want to acquire locks and codes *before* the end of the transaction.
+   * Note that saveChanges automatically calls this method to end the bulk operation and acquire locks and codes, so there is no need to call this method directly.
    * If successful, this terminates the bulk operation.
    * If not successful, the caller should abandon all changes.
+   * @throws IModelError if some locks or codes could not be acquired. In that case, the caller should abandon all changes.
    */
   public endBulkUpdateMode(): void {
     if (!this.briefcaseInfo)

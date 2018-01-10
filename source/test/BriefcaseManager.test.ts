@@ -176,7 +176,7 @@ describe("BriefcaseManager", () => {
     iModel.close(accessToken);
   });
 
-  it("should write to briefcase with optimistic concurrency", async () => {
+  it.only("should write to briefcase with optimistic concurrency", async () => {
 
     // Acquire a briefcase from iModelHub
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
@@ -184,9 +184,9 @@ describe("BriefcaseManager", () => {
     // Turn on optimistic concurrency control. This allows the app to modify elements, models, etc. without first acquiring locks.
     // (Later, when the app downloads and merges changeSets from the Hub into the briefcase, BriefcaseManager will merge changes and handle conflicts.)
     iModel.setConcurrencyControlPolicy(new BriefcaseManager.OptimisticConcurrencyControlPolicy({
-      updateVsUpdate: BriefcaseManager.ConflictResolution.Reject,
-      updateVsDelete: BriefcaseManager.ConflictResolution.Take,
-      deleteVsUpdate: BriefcaseManager.ConflictResolution.Reject,
+      updateVsUpdate: BriefcaseManager.OnConflict.RejectIncomingChange,
+      updateVsDelete: BriefcaseManager.OnConflict.AcceptIncomingChange,
+      deleteVsUpdate: BriefcaseManager.OnConflict.RejectIncomingChange,
     }));
 
     // Show that we can modify the properties of an element. In this case, we modify the root element itself.
