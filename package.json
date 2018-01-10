@@ -111,7 +111,8 @@
     ],
     "reporter": [
       "text-summary",
-      "lcov"
+      "lcov",
+      "cobertura"
     ],
     "report-dir": "./source/test/lib/coverage",
     "all": true
