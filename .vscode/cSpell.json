@@ -6,18 +6,25 @@
     "language": "en",
     // words - list of words to be always considered correct
     "words": [
+        "appicon",
         "changeset",
+        "Cornsilk",
+        "ecproperties",
+        "ecproperty",
+        "Gainsboro",
+        "hexa",
+        "IFNULL",
         "imodel",
         "lcov",
-        "overriden",
+        "performant",
         "ruleset",
         "selectable",
-        "hexa",
-        "ecproperty",
-        "ecproperties",
+        "structs"
     ],
     // flagWords - list of words to be always considered incorrect
     // This is useful for offensive words and common spelling errors.
     // For example "hte" should be "the"
-    "flagWords": []
+    "flagWords": [],
+    // do not show up in the status bar
+    "showStatus": false
 }

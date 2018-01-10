@@ -216,11 +216,7 @@ export default class TableViewDataProvider extends ContentDataProvider {
   private _pages: PageContainer;
   private _keys: InstanceKey[];
 
-  /** Constructor.
-   * @param[in] connectionid Id of connection to pull data from.
-   * @param[in] pageSize Number of rows in a single page.
-   * @param[in] cachedPagesCount Number of cached pages.
-   */
+  /** Constructor. */
   constructor(manager: ECPresentationManager, imodelToken: IModelToken, rulesetId: string, pageSize: number = 20, cachedPagesCount: number = 5) {
     super(manager, imodelToken, rulesetId, content.DefaultContentDisplayTypes.GRID);
     this._pages = new PageContainer(pageSize, cachedPagesCount);

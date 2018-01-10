@@ -36,7 +36,7 @@ class CategoryFields {
   private _fields: { [categoryName: string]: content.Field[] };
 
   constructor(c: content.Content | null, includeFieldsWithNoValues: boolean, isFieldFavorite?: FieldPredicate, isFieldHidden?: FieldPredicate,
-    categoriesSortHandler?: CategoriesSortHandler, fieldsSortFunctionSupplyer?: FieldsSortHandlerSupplier) {
+    categoriesSortHandler?: CategoriesSortHandler, fieldsSortFunctionSupplier?: FieldsSortHandlerSupplier) {
     this._categories = [];
     this._fields = {};
 
@@ -68,7 +68,7 @@ class CategoryFields {
 
     // sort fields by priority
     for (const category of this._categories) {
-      const sortFunction = fieldsSortFunctionSupplyer ? fieldsSortFunctionSupplyer(category) : null;
+      const sortFunction = fieldsSortFunctionSupplier ? fieldsSortFunctionSupplier(category) : null;
       this._fields[category.name].sort(sortFunction ? sortFunction : prioritySortFunction);
     }
   }

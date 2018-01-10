@@ -26,7 +26,7 @@ describe("ECPresentationGatewayImpl", () => {
     assert.instanceOf(impl, ECPresentationGateway);
   });
 
-  it("uses default ECPresentationManager implementation if not overriden", () => {
+  it("uses default ECPresentationManager implementation if not overridden", () => {
     const manager = ECPresentationGateway.manager;
     assert.instanceOf(manager, ECPresentationManager);
   });

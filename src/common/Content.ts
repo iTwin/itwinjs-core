@@ -227,7 +227,7 @@ export class Field {
     this._parent = parentField;
   }
 
-  /** Get this fiels as properties field. */
+  /** Get this fields as properties field. */
   public asPropertiesField(): PropertiesField | null { return null; }
   /** Is this a properties field. */
   public get isPropertiesField(): boolean { return null != this.asPropertiesField(); }

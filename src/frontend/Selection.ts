@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
-import { Disposable, DisposableList } from "../common/Disposable";
-import { ConnectionManager, ConnectionEventArgs } from "./Connections";
+import { IDisposable, DisposableList } from "@bentley/bentleyjs-core/lib/Disposable";
+import { Connection, ConnectionManager, ConnectionEventArgs } from "./Connections";
 
 export class SelectedItem {
 }
@@ -127,8 +127,8 @@ export enum SelectionChangeType {
 
 /** The event object that's sent when the selection changes */
 export interface SelectionChangeEventArgs {
-  /** The ID of the connection where the selection change happen. */
-  connectionId: string;
+  /** The connection where the selection change happened. */
+  connection: Connection;
 
   /** The name of the selection source which caused the selection change. */
   source: string;
@@ -169,43 +169,43 @@ export interface SelectionManager extends SelectionProvider {
   selectionChange: SelectionChangeEvent;
 
   /** Add to selection.
-   * @param[in] connectionId Id of the project, which should handle selection.
+   * @param[in] connection Connection to the project whose selection should be changed.
    * @param[in] source The name of the selection source that is modifying the selection.
    * @param[in] isSubSelection A flag indicating whether to add to the sub-selection or the main selection.
    * @param[in] items The items to add to selection.
    * @param[in] extendedData The extended data that should be stored in the selection change event.
    */
-  addToSelection(connectionId: string, source: string, isSubSelection: boolean, items: SelectedItem[], extendedData: any): void;
+  addToSelection(connection: Connection, source: string, isSubSelection: boolean, items: SelectedItem[], extendedData: any): void;
 
   /** Remove from selection.
-   * @param[in] connectionId Id of the project, which should handle selection.
+   * @param[in] connection Connection to the project whose selection should be changed.
    * @param[in] source The name of the selection source that is modifying the selection.
    * @param[in] isSubSelection A flag indicating whether to remove from the sub-selection or the main selection.
    * @param[in] items The items to remove from selection.
    * @param[in] extendedData The extended data that should be stored in the selection change event.
    */
-  removeFromSelection(connectionId: string, source: string, isSubSelection: boolean, items: SelectedItem[], extendedData: any): void;
+  removeFromSelection(connection: Connection, source: string, isSubSelection: boolean, items: SelectedItem[], extendedData: any): void;
 
   /** Change selection.
-   * @param[in] connectionId Id of the project, which should handle selection.
+   * @param[in] connection Connection to the project whose selection should be changed.
    * @param[in] source The name of the selection source that is modifying the selection.
    * @param[in] isSubSelection A flag indicating whether to change the sub-selection or the main selection.
    * @param[in] items The items indicating the new selection.
    * @param[in] extendedData The extended data that should be stored in the selection change event.
    */
-  replaceSelection(connectionId: string, source: string, isSubSelection: boolean, items: SelectedItem[], extendedData: any): void;
+  replaceSelection(connection: Connection, source: string, isSubSelection: boolean, items: SelectedItem[], extendedData: any): void;
 
   /** Clear selection.
-   * @param[in] connectionId Id of the project, which should handle selection.
+   * @param[in] connection Connection to the project whose selection should be changed.
    * @param[in] source The name of the selection source that is modifying the selection.
    * @param[in] isSubSelection A flag indicating whether to clear the sub-selection or the main selection.
    * @param[in] extendedData The extended data that should be stored in the selection change event.
    */
-  clearSelection(connectionId: string, source: string, isSubSelection: boolean, extendedData: any): void;
+  clearSelection(connection: Connection, source: string, isSubSelection: boolean, extendedData: any): void;
 }
 
 /** The selection manager which stores the overall selection */
-export class SelectionManagerImpl implements Disposable, SelectionManager {
+export class SelectionManagerImpl implements IDisposable, SelectionManager {
   private _selection: SelectedItemsSet;
   private _subSelection: SelectedItemsSet;
   private _disposables: DisposableList;
@@ -226,10 +226,8 @@ export class SelectionManagerImpl implements Disposable, SelectionManager {
 
   public dispose(): void { this._disposables.dispose(); }
 
-  /** @copydoc SelectionProvider.selection */
   public get selection(): SelectedItemsSet { return this._selection; }
 
-  /** @copydoc SelectionProvider.subSelection */
   public get subSelection(): SelectedItemsSet { return this._subSelection; }
 
   private handleEvent(evt: SelectionChangeEventArgs): void {
@@ -266,7 +264,7 @@ export class SelectionManagerImpl implements Disposable, SelectionManager {
 
   private onConnectionClose(args: ConnectionEventArgs): void {
       const selectionEvent: SelectionChangeEventArgs = {
-        connectionId: args.connection.connectionId,
+        connection: args.connection,
         source: "Unknown",
         isSubSelection: false,
         changeType: SelectionChangeType.Clear,
@@ -276,10 +274,9 @@ export class SelectionManagerImpl implements Disposable, SelectionManager {
       this.handleEvent(selectionEvent);
   }
 
-  /** @copydoc SelectionManager.addToSelection */
-  public addToSelection(connectionId: string, source: string, isSubSelection: boolean, items: SelectedItem[], extendedData: any): void {
+  public addToSelection(connection: Connection, source: string, isSubSelection: boolean, items: SelectedItem[], extendedData: any): void {
     const evt: SelectionChangeEventArgs = {
-      connectionId,
+      connection,
       source,
       isSubSelection,
       changeType: SelectionChangeType.Add,
@@ -289,10 +286,9 @@ export class SelectionManagerImpl implements Disposable, SelectionManager {
     this.handleEvent(evt);
   }
 
-  /** @copydoc SelectionManager.removeFromSelection */
-  public removeFromSelection(connectionId: string, source: string, isSubSelection: boolean, items: SelectedItem[], extendedData: any): void {
+  public removeFromSelection(connection: Connection, source: string, isSubSelection: boolean, items: SelectedItem[], extendedData: any): void {
     const evt: SelectionChangeEventArgs = {
-      connectionId,
+      connection,
       source,
       isSubSelection,
       changeType: SelectionChangeType.Remove,
@@ -302,10 +298,9 @@ export class SelectionManagerImpl implements Disposable, SelectionManager {
     this.handleEvent(evt);
   }
 
-  /** @copydoc SelectionManager.replaceSelection */
-  public replaceSelection(connectionId: string, source: string, isSubSelection: boolean, items: SelectedItem[], extendedData: any): void {
+  public replaceSelection(connection: Connection, source: string, isSubSelection: boolean, items: SelectedItem[], extendedData: any): void {
     const evt: SelectionChangeEventArgs = {
-      connectionId,
+      connection,
       source,
       isSubSelection,
       changeType: SelectionChangeType.Replace,
@@ -315,10 +310,9 @@ export class SelectionManagerImpl implements Disposable, SelectionManager {
     this.handleEvent(evt);
   }
 
-  /** @copydoc SelectionManager.clearSelection */
-  public clearSelection(connectionId: string, source: string, isSubSelection: boolean, extendedData: any): void {
+  public clearSelection(connection: Connection, source: string, isSubSelection: boolean, extendedData: any): void {
     const evt: SelectionChangeEventArgs = {
-      connectionId,
+      connection,
       source,
       isSubSelection,
       changeType: SelectionChangeType.Clear,
@@ -330,11 +324,11 @@ export class SelectionManagerImpl implements Disposable, SelectionManager {
 }
 
 /** A class that handles selection changes and helps to change the selection */
-export abstract class SelectionHandler implements Disposable {
+export abstract class SelectionHandler implements IDisposable {
   private _manager: SelectionManager;
   private _inSelect: boolean;
   private _disposables: DisposableList;
-  public connectionId: string;
+  public connection: Connection;
   public name: string;
 
   /** Constructor.
@@ -393,7 +387,7 @@ export abstract class SelectionHandler implements Disposable {
     if (this._inSelect)
       return;
 
-    return this._manager.addToSelection(this.connectionId, this.name, isSubSelection, items, this.supplySelectionExtendedData());
+    return this._manager.addToSelection(this.connection, this.name, isSubSelection, items, this.supplySelectionExtendedData());
   }
 
   /** Remove from selection.
@@ -404,7 +398,7 @@ export abstract class SelectionHandler implements Disposable {
     if (this._inSelect)
       return;
 
-    return this._manager.removeFromSelection(this.connectionId, this.name, isSubSelection, items, this.supplySelectionExtendedData());
+    return this._manager.removeFromSelection(this.connection, this.name, isSubSelection, items, this.supplySelectionExtendedData());
   }
 
   /** Change selection.
@@ -415,7 +409,7 @@ export abstract class SelectionHandler implements Disposable {
     if (this._inSelect)
       return;
 
-    return this._manager.replaceSelection(this.connectionId, this.name, isSubSelection, items, this.supplySelectionExtendedData());
+    return this._manager.replaceSelection(this.connection, this.name, isSubSelection, items, this.supplySelectionExtendedData());
   }
 
   /** Clear selection.
@@ -425,7 +419,7 @@ export abstract class SelectionHandler implements Disposable {
     if (this._inSelect)
       return;
 
-    return this._manager.clearSelection(this.connectionId, this.name, isSubSelection, this.supplySelectionExtendedData());
+    return this._manager.clearSelection(this.connection, this.name, isSubSelection, this.supplySelectionExtendedData());
   }
 }
 
@@ -500,7 +494,6 @@ export abstract class RangeSelectionHandler extends SelectionHandler {
     this.isInSelectionChange = false;
   }
 
-  /** @copydoc SelectionHandler::AddToSelection */
   public addToSelection(isSubSelection: boolean, items: SelectedItem[]): void {
     if (null != this._rangeSelectionContainer) {
       for (const key of items)
@@ -516,7 +509,6 @@ export abstract class RangeSelectionHandler extends SelectionHandler {
     return super.addToSelection(isSubSelection, items);
   }
 
-  /** @copydoc SelectionHandler::RemoveFromSelection */
   public removeFromSelection(isSubSelection: boolean, items: SelectedItem[]): void {
     if (null != this._rangeSelectionContainer) {
       for (const key of items)

@@ -164,10 +164,10 @@ export default class StyleHelper {
 
   private static getColorFromRGB(name: string): number {
     name = name.substring(name.indexOf("(") + 1, name.indexOf(")"));
-    const splitedString = name.split(",");
-    const r: number = Number(splitedString[0]);
-    const g: number = Number(splitedString[1]);
-    const b: number = Number(splitedString[2]);
+    const components = name.split(",");
+    const r: number = Number(components[0]);
+    const g: number = Number(components[1]);
+    const b: number = Number(components[2]);
     return r << 24 | g << 16 | b << 8 | 255;
   }
 
