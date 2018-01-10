@@ -12,6 +12,7 @@ import { EntityMetaData } from "../backend/Entity";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { IModelDb } from "../backend/IModelDb";
 import { IModelGateway } from "../gateway/IModelGateway";
+import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 
 /** The backend implementation of IModelGateway.
  * @hidden
@@ -136,9 +137,14 @@ export class IModelGatewayImpl extends Gateway {
     return codeSpecs;
   }
 
+  public updateProjectExtents(iModelToken: IModelToken, newExtents: AxisAlignedBox3d): void {
+    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    iModelDb.updateProjectExtents(newExtents);
+  }
+
   // !!! TESTING METHOD
   public executeTestById(iModelToken: IModelToken, id: number, params: any): any {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    return iModelDb.elements.executeTestById(id, params);
+    return iModelDb.executeTestById(id, params);
   }
 }

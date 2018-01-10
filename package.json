@@ -94,12 +94,14 @@
   },
   "nyc": {
     "include": [
-      "source/frontend/**/*.ts",
       "source/backend/**/*.ts",
       "source/common/**/*.ts"
     ],
     "exclude": [
-      "source/test/*"
+      "source/test/*",
+      "source/testbed/*",
+      "source/frontend/**/*.ts",
+      "**/*.d.ts"
     ],
     "extension": [
       ".ts"
@@ -109,8 +111,10 @@
     ],
     "reporter": [
       "text-summary",
-      "lcov"
+      "lcov",
+      "cobertura"
     ],
-    "report-dir": "./source/test/lib/coverage"
+    "report-dir": "./source/test/lib/coverage",
+    "all": true
   }
 }

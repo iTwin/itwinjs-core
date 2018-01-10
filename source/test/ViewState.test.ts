@@ -158,7 +158,7 @@ describe("ViewState", () => {
   // C++ Tests:
   it("ViewState creation parallels C++", () => {
     // compare the extracted view with that in native C++
-    let nativeResultJSON = imodel.elements.executeTestById(1,
+    let nativeResultJSON = imodel.executeTestById(1,
       {
         id: flatView.id.value,
         dsId: flatView.displayStyleId.value,
@@ -186,7 +186,7 @@ describe("ViewState", () => {
     let tsFlatViewStateJSON = tsFlatViewState.toJSON();
     (tsFlatViewStateJSON as any).description = undefined;  // Currently does not appear if not explicitly specified in TS
 
-    let cppFlatViewStateJSON = imodel.elements.executeTestById(2,
+    let cppFlatViewStateJSON = imodel.executeTestById(2,
       {
         testMode: 0,
         id: flatView.id.value,
@@ -210,7 +210,7 @@ describe("ViewState", () => {
     tsFlatViewStateJSON = tsFlatViewState.toJSON();
     (tsFlatViewStateJSON as any).description = undefined;  // Currently does not appear if not explicitly specified in TS
 
-    cppFlatViewStateJSON = imodel.elements.executeTestById(2,
+    cppFlatViewStateJSON = imodel.executeTestById(2,
       {
         testMode: 1,
         id: flatView.id.value,
@@ -232,7 +232,7 @@ describe("ViewState", () => {
     let tsCamViewStateJSON = tsCamViewState.toJSON();
     (tsCamViewStateJSON as any).description = undefined;  // Currently does not appear if not explicitly specified in TS
 
-    let cppCamViewStateJSON = imodel.elements.executeTestById(2,
+    let cppCamViewStateJSON = imodel.executeTestById(2,
       {
         testMode: 2,
         id: flatView.id.value,
@@ -256,7 +256,7 @@ describe("ViewState", () => {
     tsCamViewStateJSON = tsCamViewState.toJSON();
     (tsCamViewStateJSON as any).description = undefined;  // Currently does not appear if not explicitly specified in TS
 
-    cppCamViewStateJSON = imodel.elements.executeTestById(2,
+    cppCamViewStateJSON = imodel.executeTestById(2,
       {
         testMode: 3,
         id: flatView.id.value,
@@ -283,7 +283,7 @@ describe("ViewState", () => {
     const tsFlatViewStateJSON = tsFlatViewState.toJSON();
     tsFlatViewStateJSON.description = undefined;  // Currently does not appear if not explicitly specified in TS
 
-    let cppFlatViewStateJSON = imodel.elements.executeTestById(3,
+    let cppFlatViewStateJSON = imodel.executeTestById(3,
       {
         testMode: 0,
         id: flatView.id.value,
@@ -312,7 +312,7 @@ describe("ViewState", () => {
     let tsCamViewStateJSON = tsCamViewState.toJSON();
     (tsCamViewStateJSON as any).description = undefined;    // Currently does not appear if not explicitly specified in TS
 
-    let cppCamViewStateJSON = imodel.elements.executeTestById(3,
+    let cppCamViewStateJSON = imodel.executeTestById(3,
       {
         testMode: 1,
         id: flatView.id.value,
@@ -336,7 +336,7 @@ describe("ViewState", () => {
     tsCamViewStateJSON = tsCamViewState.toJSON();
     (tsCamViewStateJSON as any).description = undefined;    // Currently does not appear if not explicitly specified in TS
 
-    cppCamViewStateJSON = imodel.elements.executeTestById(3,
+    cppCamViewStateJSON = imodel.executeTestById(3,
       {
         testMode: 2,
         id: flatView.id.value,

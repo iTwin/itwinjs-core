@@ -32,6 +32,8 @@ import { Appearance } from "../common/SubCategoryAppearance";
 import { ColorDef } from "../common/ColorDef";
 import { IModel } from "../common/IModel";
 
+/* tslint:disable: no-console */
+
 describe("iModel", () => {
   let imodel1: IModelDb;
   let imodel2: IModelDb;
@@ -509,6 +511,20 @@ describe("iModel", () => {
     const metaData: EntityMetaData = imodel1.getMetaData("BisCore:Element");
     assert.exists(metaData);
     checkElementMetaData(metaData);
+  });
+
+  it.skip("should update the imodel project extents", async () => {
+    const originalExtents = imodel1.projectExtents;
+    const newExtents = new AxisAlignedBox3d(originalExtents.low, originalExtents.high);
+    newExtents.low.x -= 50; newExtents.low.y -= 25; newExtents.low.z -= 189;
+    newExtents.high.x += 1087; newExtents.high.y += 19; newExtents.high.z += .001;
+    imodel1.updateProjectExtents(newExtents);
+
+    assert.isDefined(imodel1.briefcaseInfo, "Briefcase info should be defined before getting iModel props");
+    const updatedProps = JSON.parse(imodel1.briefcaseInfo!.nativeDb.getIModelProps());
+    assert.isTrue(updatedProps.hasOwnProperty("projectExtents"), "Returned property JSON object has project extents");
+    const updatedExtents = AxisAlignedBox3d.fromJSON(updatedProps.projectExtents);
+    assert.isTrue(newExtents.isAlmostEqual(updatedExtents), "Project extents successfully updated in database");
   });
 
   function checkClassHasHandlerMetaData(obj: EntityMetaData) {

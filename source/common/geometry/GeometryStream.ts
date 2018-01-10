@@ -2355,7 +2355,7 @@ export class GeometryBuilder {
       this._placement3d = new Placement3d(Point3d.create(0, 0, 0), YawPitchRollAngles.createDegrees(0, 0, 0), new ElementAlignedBox3d());
     else
       this._placement2d = new Placement2d(Point2d.create(0, 0), Angle.createDegrees(0), new ElementAlignedBox2d());
-    this._elParams = GeometryParams.createDefaults();
+    this._elParams = GeometryParams.createId(this._elParams.categoryId, this._elParams.subCategoryId);
     this._elParamsModified = undefined;
     this._writer.reset();
   }
