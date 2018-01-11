@@ -39,6 +39,7 @@
     "mocha": "^4.0.1",
     "nyc": "^11.4.1",
     "rimraf": "^2.6.2",
-    "tsconfig-paths": "^2.6.0"
+    "tsconfig-paths": "^2.6.0",
+    "typemoq": "^2.1.0"
   }
 }

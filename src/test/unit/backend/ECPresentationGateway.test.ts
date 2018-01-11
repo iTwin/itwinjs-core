@@ -2,15 +2,14 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
+import * as moq from "typemoq";
 import ECPresentationManager from "@bentley/ecpresentation-backend/lib/backend/ECPresentationManager";
 import ECPresentationGateway from "@bentley/ecpresentation-backend/lib/backend/ECPresentationGateway";
 import ECPresentationGatewayDefinition from "@bentley/ecpresentation-backend/lib/common/ECPresentationGatewayDefinition";
-import TestECPresentationManager from "../../helpers/backend/TestECPresentationManager";
 import { Gateway } from "@bentley/imodeljs-backend/lib/common/Gateway";
 import { IModelToken } from "@bentley/imodeljs-backend/lib/common/IModel";
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-backend/lib/common/Hierarchy";
-import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-backend/lib/common/Content";
-import { InstanceKeysList } from "@bentley/ecpresentation-backend/lib/common/EC";
+import { SelectionInfo, Content } from "@bentley/ecpresentation-backend/lib/common/Content";
 import { PageOptions } from "@bentley/ecpresentation-backend/lib/common/ECPresentationManager";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { createRandomECInstanceKey } from "../../helpers/backend/random/EC";
@@ -27,8 +26,8 @@ describe("ECPresentationGatewayImpl", () => {
   });
 
   it("uses default ECPresentationManager implementation if not overridden", () => {
-    const manager = ECPresentationGateway.manager;
-    assert.instanceOf(manager, ECPresentationManager);
+    const gateway = new ECPresentationGateway();
+    assert.instanceOf(gateway.getManager(), ECPresentationManager);
   });
 
   describe("calls forwarding", () => {
@@ -44,66 +43,52 @@ describe("ECPresentationGatewayImpl", () => {
       descriptor: createRandomDescriptor(),
       extendedOptions: { rulesetId: "aaa", someOtherOption: 789 },
     };
-    const setupTestData = () => {
-    };
 
-    before(() => {
-      setupTestData();
-    });
-
-    let manager: TestECPresentationManager;
+    const mock = moq.Mock.ofType<ECPresentationManager>(undefined, moq.MockBehavior.Loose);
     beforeEach(() => {
-      manager = new TestECPresentationManager();
-      ECPresentationGateway.manager = manager;
+      mock.reset();
+      gateway.setManager(mock.object);
     });
 
     it("calls manager's getRootNodes", async () => {
       const result: NavNode[] = [createRandomECInstanceNode(), createRandomECInstanceNode(), createRandomECInstanceNode()];
-      manager.getRootNodes = (actualToken: IModelToken, actualPageOptions: PageOptions, actualExtendedOptions: object): Promise<NavNode[]> => {
-        assert.deepEqual(actualToken, testData.imodelToken);
-        assert.deepEqual(actualPageOptions, testData.pageOptions);
-        assert.deepEqual(actualExtendedOptions, testData.extendedOptions);
-        return Promise.resolve(result);
-      };
+      mock.setup((x) => x.getRootNodes(testData.imodelToken, testData.pageOptions, testData.extendedOptions))
+        .returns(() => Promise.resolve(result))
+        .verifiable(moq.Times.once());
       const actualResult = await gateway.getRootNodes(testData.imodelToken, testData.pageOptions, testData.extendedOptions);
+      mock.verifyAll();
       assert.deepEqual(actualResult, result);
     });
 
     it("calls manager's getRootNodesCount", async () => {
       const result = 999;
-      manager.getRootNodesCount = (actualToken: IModelToken, actualExtendedOptions: object): Promise<number> => {
-        assert.deepEqual(actualToken, testData.imodelToken);
-        assert.deepEqual(actualExtendedOptions, testData.extendedOptions);
-        return Promise.resolve(result);
-      };
+      mock.setup((x) => x.getRootNodesCount(testData.imodelToken, testData.extendedOptions))
+        .returns(() => Promise.resolve(result))
+        .verifiable(moq.Times.once());
       const actualResult = await gateway.getRootNodesCount(testData.imodelToken, testData.extendedOptions);
+      mock.verifyAll();
       assert.equal(actualResult, result);
     });
 
     it("calls manager's getChildren", async () => {
       const parentNode = createRandomECInstanceNode();
       const result: NavNode[] = [createRandomECInstanceNode(), createRandomECInstanceNode(), createRandomECInstanceNode()];
-      manager.getChildren = (actualToken: IModelToken, actualParentNode: NavNode, actualPageOptions: PageOptions, actualExtendedOptions: object): Promise<NavNode[]> => {
-        assert.deepEqual(actualToken, testData.imodelToken);
-        assert.deepEqual(actualParentNode, parentNode);
-        assert.deepEqual(actualPageOptions, testData.pageOptions);
-        assert.deepEqual(actualExtendedOptions, testData.extendedOptions);
-        return Promise.resolve(result);
-      };
+      mock.setup((x) => x.getChildren(testData.imodelToken, parentNode, testData.pageOptions, testData.extendedOptions))
+        .returns(() => Promise.resolve(result))
+        .verifiable(moq.Times.once());
       const actualResult = await gateway.getChildren(testData.imodelToken, parentNode, testData.pageOptions, testData.extendedOptions);
+      mock.verifyAll();
       assert.deepEqual(actualResult, result);
     });
 
     it("calls manager's getChildrenCount", async () => {
       const parentNode = createRandomECInstanceNode();
       const result = 999;
-      manager.getChildrenCount = (actualToken: IModelToken, actualParentNode: NavNode, actualExtendedOptions: object): Promise<number> => {
-        assert.deepEqual(actualToken, testData.imodelToken);
-        assert.deepEqual(actualParentNode, parentNode);
-        assert.deepEqual(actualExtendedOptions, testData.extendedOptions);
-        return Promise.resolve(result);
-      };
+      mock.setup((x) => x.getChildrenCount(testData.imodelToken, parentNode, testData.extendedOptions))
+        .returns(() => Promise.resolve(result))
+        .verifiable(moq.Times.once());
       const actualResult = await gateway.getChildrenCount(testData.imodelToken, parentNode, testData.extendedOptions);
+      mock.verifyAll();
       assert.equal(actualResult, result);
     });
 
@@ -114,69 +99,52 @@ describe("ECPresentationGatewayImpl", () => {
       ];
       const markedIndex = 555;
       const result: NavNodePathElement[] = [createRandomNodePathElement(3), createRandomNodePathElement(1), createRandomNodePathElement(2)];
-      manager.getNodePaths = (actualToken: IModelToken, actualPaths: NavNodeKeyPath[], actualMarkedIndex: number, actualExtendedOptions: object): Promise<NavNodePathElement[]> => {
-        assert.deepEqual(actualToken, testData.imodelToken);
-        assert.deepEqual(actualPaths, paths);
-        assert.deepEqual(actualMarkedIndex, markedIndex);
-        assert.deepEqual(actualExtendedOptions, testData.extendedOptions);
-        return Promise.resolve(result);
-      };
+      mock.setup((x) => x.getNodePaths(testData.imodelToken, paths, markedIndex, testData.extendedOptions))
+        .returns(() => Promise.resolve(result))
+        .verifiable(moq.Times.once());
       const actualResult = await gateway.getNodePaths(testData.imodelToken, paths, markedIndex, testData.extendedOptions);
+      mock.verifyAll();
       assert.deepEqual(actualResult, result);
     });
 
     it("calls manager's getFilteredNodesPaths", async () => {
       const filterText = "test filter";
       const result: NavNodePathElement[] = [createRandomNodePathElement(1), createRandomNodePathElement(2)];
-      manager.getFilteredNodesPaths = (actualToken: IModelToken, actualFilterText: string, actualExtendedOptions: object): Promise<NavNodePathElement[]> => {
-        assert.deepEqual(actualToken, testData.imodelToken);
-        assert.deepEqual(actualFilterText, filterText);
-        assert.deepEqual(actualExtendedOptions, testData.extendedOptions);
-        return Promise.resolve(result);
-      };
+      mock.setup((x) => x.getFilteredNodesPaths(testData.imodelToken, filterText, testData.extendedOptions))
+        .returns(() => Promise.resolve(result))
+        .verifiable(moq.Times.once());
       const actualResult = await gateway.getFilteredNodesPaths(testData.imodelToken, filterText, testData.extendedOptions);
+      mock.verifyAll();
       assert.deepEqual(actualResult, result);
     });
 
     it("calls manager's getContentDescriptor", async () => {
       const result = testData.descriptor;
-      manager.getContentDescriptor = (actualToken: IModelToken, actualDisplayType: string, actualInputKeys: InstanceKeysList, actualSelectionInfo: SelectionInfo | null, actualExtendedOptions: object): Promise<Descriptor | null> => {
-        assert.deepEqual(actualToken, testData.imodelToken);
-        assert.deepEqual(actualDisplayType, testData.displayType);
-        assert.deepEqual(actualInputKeys, testData.inputKeys);
-        assert.deepEqual(actualSelectionInfo, testData.selectionInfo);
-        assert.deepEqual(actualExtendedOptions, testData.extendedOptions);
-        return Promise.resolve(result);
-      };
+      mock.setup((x) => x.getContentDescriptor(testData.imodelToken, testData.displayType, testData.inputKeys, testData.selectionInfo, testData.extendedOptions))
+        .returns(() => Promise.resolve(result))
+        .verifiable(moq.Times.once());
       const actualResult = await gateway.getContentDescriptor(testData.imodelToken, testData.displayType,
         testData.inputKeys, testData.selectionInfo, testData.extendedOptions);
+      mock.verifyAll();
       assert.deepEqual(actualResult, result);
     });
 
     it("calls manager's getContentSetSize", async () => {
       const result = 789;
-      manager.getContentSetSize = (actualToken: IModelToken, actualDescriptor: Descriptor, actualInputKeys: InstanceKeysList, actualExtendedOptions: object): Promise<number> => {
-        assert.deepEqual(actualToken, testData.imodelToken);
-        assert.deepEqual(actualDescriptor, testData.descriptor);
-        assert.deepEqual(actualInputKeys, testData.inputKeys);
-        assert.deepEqual(actualExtendedOptions, testData.extendedOptions);
-        return Promise.resolve(result);
-      };
+      mock.setup((x) => x.getContentSetSize(testData.imodelToken, testData.descriptor, testData.inputKeys, testData.extendedOptions))
+        .returns(() => Promise.resolve(result))
+        .verifiable(moq.Times.once());
       const actualResult = await gateway.getContentSetSize(testData.imodelToken, testData.descriptor,
         testData.inputKeys, testData.extendedOptions);
+      mock.verifyAll();
       assert.deepEqual(actualResult, result);
     });
 
     it("calls manager's getContent", async () => {
       const result = new Content(testData.descriptor);
-      manager.getContent = (actualToken: IModelToken, actualDescriptor: Descriptor, actualInputKeys: InstanceKeysList, actualPageOptions: PageOptions, actualExtendedOptions: object): Promise<Content> => {
-        assert.deepEqual(actualToken, testData.imodelToken);
-        assert.deepEqual(actualDescriptor, testData.descriptor);
-        assert.deepEqual(actualInputKeys, testData.inputKeys);
-        assert.deepEqual(actualPageOptions, testData.pageOptions);
-        assert.deepEqual(actualExtendedOptions, testData.extendedOptions);
-        return Promise.resolve(result);
-      };
+      mock.setup((x) => x.getContent(testData.imodelToken, testData.descriptor, testData.inputKeys, testData.pageOptions, testData.extendedOptions))
+        .returns(() => Promise.resolve(result))
+        .verifiable(moq.Times.once());
       const actualResult = await gateway.getContent(testData.imodelToken, testData.descriptor,
         testData.inputKeys, testData.pageOptions, testData.extendedOptions);
       assert.deepEqual(actualResult, result);
@@ -186,16 +154,12 @@ describe("ECPresentationGatewayImpl", () => {
       const fieldName = "test field name";
       const maxValueCount = 789;
       const result = ["one", "two", "three"];
-      manager.getDistinctValues = (actualToken: IModelToken, actualDisplayType: string, actualFieldName: string, actualMaxValueCount: number, actualExtendedOptions: object): Promise<string[]> => {
-        assert.deepEqual(actualToken, testData.imodelToken);
-        assert.deepEqual(actualDisplayType, testData.displayType);
-        assert.deepEqual(actualFieldName, fieldName);
-        assert.deepEqual(actualMaxValueCount, maxValueCount);
-        assert.deepEqual(actualExtendedOptions, testData.extendedOptions);
-        return Promise.resolve(result);
-      };
+      mock.setup((x) => x.getDistinctValues(testData.imodelToken, testData.displayType, fieldName, maxValueCount, testData.extendedOptions))
+        .returns(() => Promise.resolve(result))
+        .verifiable(moq.Times.once());
       const actualResult = await gateway.getDistinctValues(testData.imodelToken, testData.displayType,
         fieldName, maxValueCount, testData.extendedOptions);
+      mock.verifyAll();
       assert.deepEqual(actualResult, result);
     });
 
