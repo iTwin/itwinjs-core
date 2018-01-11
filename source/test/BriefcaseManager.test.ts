@@ -207,11 +207,14 @@ describe("BriefcaseManager", () => {
     }
 
     // Create a couple of physical elements.
-    iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
+    const elid1 = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
     iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
 
     // Commit the local changes to a local transaction in the briefcase.
     iModel.saveChanges("inserted generic objects");
+
+    iModel.elements.getElement(elid1); // throws if elid1 is not found
+    iModel.elements.getElement(spatialCategoryId); // throws if spatialCategoryId is not found
 
     // TBD: Sync with iModelHub and  then upload the local changes as a changeSet to iModelHub
 

@@ -2,8 +2,9 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelDb } from "./IModelDb";
-import { NodeAddonDgnDb, NodeAddonHeldResources, NodeAddonRepositoryManagerRequest, NodeAddonRepositoryManagerResponse } from "@bentley/imodeljs-nodeaddonapi";
+import { NodeAddonDgnDb, NodeAddonHeldResources, NodeAddonRepositoryManagerResponse } from "@bentley/imodeljs-nodeaddonapi";
 import { RepositoryStatus } from "@bentley/bentleyjs-core/lib/BentleyError";
+import { IModelError } from "../common/IModelError";
 
 // TODO: Move this into a common location that both imodeljs-backend and imodeljs-nodeaddonapi can see.
 export enum NodeAddonRepositoryManagerResponseOptions {
@@ -36,13 +37,16 @@ export class RepositoryManager {
    * @param queryOnly Is the request only to query the locks and codes? Otherwise, the request is to acquire them.
    * @return non-zero error status if the request fails.
    */
-  public processRequest(req: NodeAddonRepositoryManagerRequest, _db: NodeAddonDgnDb, queryOnly: boolean): NodeAddonRepositoryManagerResponse {
-    // TODO: call Raman's new iModelHub client API
-    // BeAssert(db == db.briefcasein)
-    console.log("req=" + req);
-    console.log("queryOnly=" + queryOnly);
-    return {Status: RepositoryStatus.ServerUnavailable, Purpose: NodeAddonRepositoryManagerRequestPurpose.Acquire, Options: req.Options,
-          LockStates: "", CodeStates: ""};
+  public processRequest(reqJsonStr: string, _db: NodeAddonDgnDb, queryOnly: boolean): NodeAddonRepositoryManagerResponse {
+    if (queryOnly)
+      return {Status: RepositoryStatus.Success, Purpose: NodeAddonRepositoryManagerRequestPurpose.Acquire, Options: NodeAddonRepositoryManagerResponseOptions.None, LockStates: "", CodeStates: ""};
+
+    const req = JSON.parse(reqJsonStr);
+    if (req.Codes.length !== 0 || req.Locks.length !== 0) {
+      throw new IModelError(RepositoryStatus.InvalidRequest, "TBD: only supporting optimistic concurrency for now. All codes must be reserved before calling saveChanges");
+    }
+
+    return {Status: RepositoryStatus.Success, Purpose: NodeAddonRepositoryManagerRequestPurpose.Acquire, Options: req.Options, LockStates: "", CodeStates: ""};
   }
 
   /**
@@ -53,6 +57,8 @@ export class RepositoryManager {
    * @return the locks and codes that are held, plus a list of locks and codes that are unavailable.
    */
   public queryHeldResources(_db: NodeAddonDgnDb): NodeAddonHeldResources {
+    // TBD: For now, we pretend that we hold all needed codes.
+    // TBD: For now, we support only optimistic concurrency, where locks are not needed.
     return {status: RepositoryStatus.Success, codes: "", locks: "", unavailableCodes: "", unavailableLocks: ""};
   }
 
