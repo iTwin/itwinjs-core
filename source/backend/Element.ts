@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 import { Transform, Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { Code } from "../common/Code";
+import { Code, CodeSpecNames } from "../common/Code";
 import { Placement3d, Placement2d, AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { GeometryStream, GeometryBuilder } from "../common/geometry/GeometryStream";
 import { Entity, EntityMetaData } from "./Entity";
@@ -447,6 +447,13 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
 export abstract class InformationPartitionElement extends InformationContentElement implements InformationPartitionElementProps {
   public description?: string;
   public constructor(props: InformationPartitionElementProps, iModel: IModelDb) { super(props, iModel); }
+
+  /** Create a code that can be used for any kind of InformationPartitionElement. */
+  public static createCode(scopeElement: Element, codeValue: string): Code {
+    const codeSpec = scopeElement.iModel.codeSpecs.getCodeSpecByName(CodeSpecNames.InformationPartitionElement());
+    return new Code({ spec: codeSpec.id, scope: scopeElement.id.toString(), value: codeValue });
+  }
+
 }
 
 /**

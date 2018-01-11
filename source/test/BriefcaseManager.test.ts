@@ -14,7 +14,7 @@ import { IModelConnection } from "../frontend/IModelConnection";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Code } from "../common/Code";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { Element } from "../backend/Element";
+import { Element, InformationPartitionElement } from "../backend/Element";
 import { DictionaryModel } from "../backend/Model";
 import { SpatialCategory } from "../backend/Category";
 import { Appearance } from "../common/SubCategoryAppearance";
@@ -196,7 +196,8 @@ describe("BriefcaseManager", () => {
 
     // Create a new physical model
     let newModelId: Id64;
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, Code.createEmpty(), true);
+    const modelCode = InformationPartitionElement.createCode(iModel.elements.getRootSubject(), "newPhysicalModel");
+    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, modelCode, true);
 
     // Find or create a SpatialCategory
     const dictionary: DictionaryModel = iModel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
