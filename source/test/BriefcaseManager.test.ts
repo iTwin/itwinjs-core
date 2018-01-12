@@ -210,6 +210,13 @@ describe("BriefcaseManager", () => {
     const elid1 = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
     iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
 
+    // Must reserve codes *before* calling saveChanges.
+    try {
+      iModel.requestResources(iModel.extractBulkResourcesRequest());
+    } catch (err) {
+      // *** TODO: deal with some codes that could not be reserved. Maybe delete the elements that use them?
+    }
+
     // Commit the local changes to a local transaction in the briefcase.
     iModel.saveChanges("inserted generic objects");
 

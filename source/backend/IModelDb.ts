@@ -197,10 +197,25 @@ export class IModelDb extends IModel {
    * requests that could not be fulfilled.
    * @return BentleyStatus.SUCCESS if all resources were acquired or non-zero if some could not be acquired.
    */
-  public requestResources(_req: BriefcaseManager.ResourcesRequest) {
+  public requestResources(req: BriefcaseManager.ResourcesRequest) {
     if (!this.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
-    // throw new Error("TBD");
+    // *** TODO
+    console.log("TODO: request " + JSON.stringify(BriefcaseManager.ResourcesRequest.toAny(req)));
+    console.log("");
+  }
+
+  /**
+   * Get the lock and code requests that have been detected so far in the current bulk operation or optimistic transaction. 
+   * This clears the transaction manager's record of pending request and transfers it to the caller.
+   * @param req The request object, which accumulates requests.
+   */
+  public extractBulkResourcesRequest(): BriefcaseManager.ResourcesRequest {
+    if (!this.briefcaseInfo)
+      throw new IModelError(IModelStatus.BadRequest);
+    const req = BriefcaseManager.ResourcesRequest.create();
+    this.briefcaseInfo.nativeDb.extractBulkResourcesRequest(req as NodeAddonBriefcaseManagerResourcesRequest);
+    return req;
   }
 
   /**

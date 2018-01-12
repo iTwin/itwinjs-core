@@ -32,6 +32,8 @@ export class RepositoryManager {
 
   /**
    * Process a request.
+   * *** WIP For now, this is just a watchdog to ensure that there are *NO LOCKS OR CODES REQUIRED*. The app must run in optimistic concurrency mode (no locks) and must
+   * *** must reserve all codes before calling saveChanges.
    * @param reqJson The request in stringified JSON format.
    * @param db The DgnDb
    * @param queryOnly Is the request only to query the locks and codes? Otherwise, the request is to acquire them.
