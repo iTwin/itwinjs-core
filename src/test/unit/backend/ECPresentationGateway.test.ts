@@ -32,7 +32,6 @@ describe("ECPresentationGatewayImpl", () => {
 
   describe("calls forwarding", () => {
 
-    const gateway = new ECPresentationGateway();
     const testData = {
       imodelToken: IModelToken.create("test id", "changeset id", OpenMode.ReadWrite, "user id", "context id"),
       pageOptions: { pageStart: 123, pageSize: 456 } as PageOptions,
@@ -43,8 +42,8 @@ describe("ECPresentationGatewayImpl", () => {
       descriptor: createRandomDescriptor(),
       extendedOptions: { rulesetId: "aaa", someOtherOption: 789 },
     };
-
-    const mock = moq.Mock.ofType<ECPresentationManager>(undefined, moq.MockBehavior.Loose);
+    const gateway = new ECPresentationGateway();
+    const mock = moq.Mock.ofType<ECPresentationManager>();
     beforeEach(() => {
       mock.reset();
       gateway.setManager(mock.object);
@@ -54,7 +53,7 @@ describe("ECPresentationGatewayImpl", () => {
       const result: NavNode[] = [createRandomECInstanceNode(), createRandomECInstanceNode(), createRandomECInstanceNode()];
       mock.setup((x) => x.getRootNodes(testData.imodelToken, testData.pageOptions, testData.extendedOptions))
         .returns(() => Promise.resolve(result))
-        .verifiable(moq.Times.once());
+        .verifiable();
       const actualResult = await gateway.getRootNodes(testData.imodelToken, testData.pageOptions, testData.extendedOptions);
       mock.verifyAll();
       assert.deepEqual(actualResult, result);
@@ -64,7 +63,7 @@ describe("ECPresentationGatewayImpl", () => {
       const result = 999;
       mock.setup((x) => x.getRootNodesCount(testData.imodelToken, testData.extendedOptions))
         .returns(() => Promise.resolve(result))
-        .verifiable(moq.Times.once());
+        .verifiable();
       const actualResult = await gateway.getRootNodesCount(testData.imodelToken, testData.extendedOptions);
       mock.verifyAll();
       assert.equal(actualResult, result);
@@ -75,7 +74,7 @@ describe("ECPresentationGatewayImpl", () => {
       const result: NavNode[] = [createRandomECInstanceNode(), createRandomECInstanceNode(), createRandomECInstanceNode()];
       mock.setup((x) => x.getChildren(testData.imodelToken, parentNode, testData.pageOptions, testData.extendedOptions))
         .returns(() => Promise.resolve(result))
-        .verifiable(moq.Times.once());
+        .verifiable();
       const actualResult = await gateway.getChildren(testData.imodelToken, parentNode, testData.pageOptions, testData.extendedOptions);
       mock.verifyAll();
       assert.deepEqual(actualResult, result);
@@ -86,7 +85,7 @@ describe("ECPresentationGatewayImpl", () => {
       const result = 999;
       mock.setup((x) => x.getChildrenCount(testData.imodelToken, parentNode, testData.extendedOptions))
         .returns(() => Promise.resolve(result))
-        .verifiable(moq.Times.once());
+        .verifiable();
       const actualResult = await gateway.getChildrenCount(testData.imodelToken, parentNode, testData.extendedOptions);
       mock.verifyAll();
       assert.equal(actualResult, result);
@@ -101,7 +100,7 @@ describe("ECPresentationGatewayImpl", () => {
       const result: NavNodePathElement[] = [createRandomNodePathElement(3), createRandomNodePathElement(1), createRandomNodePathElement(2)];
       mock.setup((x) => x.getNodePaths(testData.imodelToken, paths, markedIndex, testData.extendedOptions))
         .returns(() => Promise.resolve(result))
-        .verifiable(moq.Times.once());
+        .verifiable();
       const actualResult = await gateway.getNodePaths(testData.imodelToken, paths, markedIndex, testData.extendedOptions);
       mock.verifyAll();
       assert.deepEqual(actualResult, result);
@@ -112,7 +111,7 @@ describe("ECPresentationGatewayImpl", () => {
       const result: NavNodePathElement[] = [createRandomNodePathElement(1), createRandomNodePathElement(2)];
       mock.setup((x) => x.getFilteredNodesPaths(testData.imodelToken, filterText, testData.extendedOptions))
         .returns(() => Promise.resolve(result))
-        .verifiable(moq.Times.once());
+        .verifiable();
       const actualResult = await gateway.getFilteredNodesPaths(testData.imodelToken, filterText, testData.extendedOptions);
       mock.verifyAll();
       assert.deepEqual(actualResult, result);
@@ -122,7 +121,7 @@ describe("ECPresentationGatewayImpl", () => {
       const result = testData.descriptor;
       mock.setup((x) => x.getContentDescriptor(testData.imodelToken, testData.displayType, testData.inputKeys, testData.selectionInfo, testData.extendedOptions))
         .returns(() => Promise.resolve(result))
-        .verifiable(moq.Times.once());
+        .verifiable();
       const actualResult = await gateway.getContentDescriptor(testData.imodelToken, testData.displayType,
         testData.inputKeys, testData.selectionInfo, testData.extendedOptions);
       mock.verifyAll();
@@ -133,7 +132,7 @@ describe("ECPresentationGatewayImpl", () => {
       const result = 789;
       mock.setup((x) => x.getContentSetSize(testData.imodelToken, testData.descriptor, testData.inputKeys, testData.extendedOptions))
         .returns(() => Promise.resolve(result))
-        .verifiable(moq.Times.once());
+        .verifiable();
       const actualResult = await gateway.getContentSetSize(testData.imodelToken, testData.descriptor,
         testData.inputKeys, testData.extendedOptions);
       mock.verifyAll();
@@ -144,7 +143,7 @@ describe("ECPresentationGatewayImpl", () => {
       const result = new Content(testData.descriptor);
       mock.setup((x) => x.getContent(testData.imodelToken, testData.descriptor, testData.inputKeys, testData.pageOptions, testData.extendedOptions))
         .returns(() => Promise.resolve(result))
-        .verifiable(moq.Times.once());
+        .verifiable();
       const actualResult = await gateway.getContent(testData.imodelToken, testData.descriptor,
         testData.inputKeys, testData.pageOptions, testData.extendedOptions);
       assert.deepEqual(actualResult, result);
@@ -156,7 +155,7 @@ describe("ECPresentationGatewayImpl", () => {
       const result = ["one", "two", "three"];
       mock.setup((x) => x.getDistinctValues(testData.imodelToken, testData.displayType, fieldName, maxValueCount, testData.extendedOptions))
         .returns(() => Promise.resolve(result))
-        .verifiable(moq.Times.once());
+        .verifiable();
       const actualResult = await gateway.getDistinctValues(testData.imodelToken, testData.displayType,
         fieldName, maxValueCount, testData.extendedOptions);
       mock.verifyAll();

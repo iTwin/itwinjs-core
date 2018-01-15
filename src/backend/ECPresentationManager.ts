@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import * as responseTypes from "./AddonResponses";
 import * as ec from "../common/EC";
 import { NavNode, NavNodeKey, NavNodeKeyPath, NavNodePathElement } from "../common/Hierarchy";
 import * as content from "../common/Content";
@@ -18,46 +19,81 @@ import ECPresentationGateway from "./ECPresentationGateway";
 ECPresentationGateway;
 
 /** @hidden */
-export interface ECPresentationManagerNodeAddonDefinition {
+export interface NodeAddonDefinition {
   handleRequest(db: any, options: string): string;
+  getImodelAddon(token: IModelToken): any;
+}
+
+/** @hidden */
+export enum NodeAddonRequestTypes {
+  GetRootNodes = "GetRootNodes",
+  GetRootNodesCount = "GetRootNodesCount",
+  GetChildren = "GetChildren",
+  GetChildrenCount = "GetChildrenCount",
+  GetFilteredNodesPaths = "GetFilteredNodesPaths",
+  GetNodePaths = "GetNodePaths",
+  GetContentDescriptor = "GetContentDescriptor",
+  GetContentSetSize = "GetContentSetSize",
+  GetContent = "GetContent",
+  GetDistinctValues = "GetDistinctValues",
 }
 
 export default class ECPresentationManager implements ECPInterface {
 
-  private _manager: ECPresentationManagerNodeAddonDefinition | null = null;
+  private _addon: NodeAddonDefinition | null = null;
 
-  private getManager(): ECPresentationManagerNodeAddonDefinition {
-    if (!this._manager)
-      this._manager = new (NodeAddonRegistry.getAddon()).NodeAddonECPresentationManager();
-    return this._manager!;
+  /** @hidden */
+  public getAddon(): NodeAddonDefinition {
+    if (!this._addon) {
+      // note the implementation is constructed here to make ECPresentationManager
+      // usable without loading the actual addon (if addon is set to something other)
+      const addonImpl = class extends (NodeAddonRegistry.getAddon()).NodeAddonECPresentationManager implements NodeAddonDefinition {
+        public handleRequest(db: any, options: string): string {
+          return super.handleRequest(db, options);
+        }
+        public getImodelAddon(token: IModelToken): any {
+          const imodel = IModelDb.find(token);
+          if (!imodel || !imodel.nativeDb)
+            throw new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, () => ({ iModelId: token.iModelId }));
+          return imodel.nativeDb;
+        }
+      };
+      this._addon = new addonImpl();
+    }
+    return this._addon!;
+  }
+
+  /** @hidden */
+  public setAddon(addon: NodeAddonDefinition | null) {
+    this._addon = addon;
   }
 
   public async getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<NavNode[]> {
-    const params = this.createRequestParams("GetRootNodes", {
+    const params = this.createRequestParams(NodeAddonRequestTypes.GetRootNodes, {
       pageOptions,
       options,
     });
-    return this.request(token, params, this.createNodesList);
+    return this.request(token, params, Conversion.createNodesList);
   }
 
   public async getRootNodesCount(token: IModelToken, options: object): Promise<number> {
-    const params = this.createRequestParams("GetRootNodesCount", {
+    const params = this.createRequestParams(NodeAddonRequestTypes.GetRootNodesCount, {
       options,
     });
     return this.request(token, params);
   }
 
   public async getChildren(token: IModelToken, parent: NavNode, pageOptions: PageOptions, options: object): Promise<NavNode[]> {
-    const params = this.createRequestParams("GetChildren", {
+    const params = this.createRequestParams(NodeAddonRequestTypes.GetChildren, {
       nodeId: parent.nodeId,
       pageOptions,
       options,
     });
-    return this.request(token, params, this.createNodesList);
+    return this.request(token, params, Conversion.createNodesList);
   }
 
   public async getChildrenCount(token: IModelToken, parent: NavNode, options: object): Promise<number> {
-    const params = this.createRequestParams("GetChildrenCount", {
+    const params = this.createRequestParams(NodeAddonRequestTypes.GetChildrenCount, {
       nodeId: parent.nodeId,
       options,
     });
@@ -73,17 +109,17 @@ export default class ECPresentationManager implements ECPInterface {
   }
 
   public async getContentDescriptor(token: IModelToken, displayType: string, keys: ec.InstanceKeysList, selection: content.SelectionInfo | null, options: object): Promise<content.Descriptor | null> {
-    const params = this.createRequestParams("GetContentDescriptor", {
+    const params = this.createRequestParams(NodeAddonRequestTypes.GetContentDescriptor, {
       displayType,
       keys,
       selection,
       options,
     });
-    return this.request(token, params, this.createContentDescriptor);
+    return this.request(token, params, Conversion.createContentDescriptor);
   }
 
   public async getContentSetSize(token: IModelToken, _descriptor: content.Descriptor, keys: ec.InstanceKeysList, options: object): Promise<number> {
-    const params = this.createRequestParams("GetContent", {
+    const params = this.createRequestParams(NodeAddonRequestTypes.GetContent, {
       keys,
       options,
     });
@@ -91,12 +127,12 @@ export default class ECPresentationManager implements ECPInterface {
   }
 
   public async getContent(token: IModelToken, _descriptor: content.Descriptor, keys: ec.InstanceKeysList, pageOptions: PageOptions, options: object): Promise<content.Content> {
-    const params = this.createRequestParams("GetContent", {
+    const params = this.createRequestParams(NodeAddonRequestTypes.GetContent, {
       keys,
       pageOptions,
       options,
     });
-    return this.request(token, params, this.createContent);
+    return this.request(token, params, Conversion.createContent);
   }
 
   public async getDistinctValues(_token: IModelToken, _displayType: string, _fieldName: string, _maximumValueCount: number, _options: object): Promise<string[]> {
@@ -109,11 +145,10 @@ export default class ECPresentationManager implements ECPInterface {
   }
 
   private request(token: IModelToken, params: string, responseHandler?: (response: any) => any) {
-    const imodel = IModelDb.find(token);
-    if (!imodel || !imodel.nativeDb)
-      throw new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, () => ({ iModelId: token.iModelId }));
-
-    const serializedResponse = this.getManager().handleRequest(imodel.nativeDb, params);
+    const imodelAddon = this.getAddon().getImodelAddon(token);
+    const serializedResponse = this.getAddon().handleRequest(imodelAddon, params);
+    if (!serializedResponse)
+      throw new Error("Received invalid response from the addon: " + serializedResponse);
     const response = JSON.parse(serializedResponse);
     if (responseHandler)
       return responseHandler(response);
@@ -127,22 +162,22 @@ export default class ECPresentationManager implements ECPInterface {
     };
     return JSON.stringify(request);
   }
+}
 
-  // tslint:disable-next-line:naming-convention
-  private createNodesList = (r: any[]): NavNode[] => {
+namespace Conversion {
+  export function createNodesList(r: responseTypes.Node[]): NavNode[] {
     const nodes = new Array<NavNode>();
     for (const rNode of r) {
       nodes.push({
         nodeId: rNode.NodeId,
         parentNodeId: rNode.ParentNodeId,
-        key: this.createNavNodeKey(rNode.Key),
+        key: createNavNodeKey(rNode.Key),
         label: rNode.Label,
         description: rNode.Description,
         imageId: rNode.ExpandedImageId,
         foreColor: rNode.ForeColor,
         backColor: rNode.BackColor,
         fontStyle: rNode.FontStyle,
-        type: rNode.Type,
         hasChildren: rNode.HasChildren,
         isSelectable: rNode.IsSelectable,
         isEditable: rNode.IsEditable,
@@ -155,21 +190,38 @@ export default class ECPresentationManager implements ECPInterface {
     return nodes;
   }
 
-  // tslint:disable-next-line:naming-convention
-  private createNavNodeKey = (r: any): NavNodeKey => {
+  function createNavNodeKey(r: responseTypes.NodeKey): NavNodeKey {
     /* todo:
     switch (r.Type) {
     }
     assert(false, "Unknown node key type");*/
-    return {type: r.Type};
+    return { type: r.Type };
   }
 
-  // tslint:disable-next-line:naming-convention
-  private createContent = (r: any): content.Content | null => {
+  function createClassInfo(r: responseTypes.ClassInfo): ec.ClassInfo {
+    return {
+      id: r.Id,
+      name: r.Name,
+      label: r.Label,
+    };
+  }
+
+  function createInstanceKey(r: responseTypes.ECInstanceKey): ec.InstanceKey {
+    return {
+      classId: r.ECClassId,
+      instanceId: r.ECInstanceId,
+    };
+  }
+
+  function createInstanceKeyList(r: responseTypes.ECInstanceKey[]): ec.InstanceKey[] {
+    return r.map((k: responseTypes.ECInstanceKey) => createInstanceKey(k));
+  }
+
+  export function createContent(r: responseTypes.Content): content.Content | null {
     if (!r)
       return null;
 
-    const descriptor = this.createContentDescriptor(r.Descriptor);
+    const descriptor = createContentDescriptor(r.Descriptor);
     if (!descriptor)
       return null;
 
@@ -177,24 +229,19 @@ export default class ECPresentationManager implements ECPInterface {
 
     for (const itemResp of r.ContentSet) {
       let classInfo: ec.ClassInfo | null = null;
-      if (itemResp.ClassInfo) {
-        classInfo = {
-          id: itemResp.ClassInfo.Id,
-          name: itemResp.ClassInfo.Name,
-          label: itemResp.ClassInfo.Label,
-        };
-      }
-      const item = new content.ContentSetItem(itemResp.PrimaryKeys, itemResp.DisplayLabel, itemResp.ImageId, classInfo,
-        itemResp.Values, itemResp.DisplayValues, itemResp.MergedFieldNames,
-        this.createItemValueKeys(descriptor, itemResp.FieldValueKeys));
+      if (itemResp.ClassInfo)
+        classInfo = createClassInfo(itemResp.ClassInfo);
+      const item = new content.ContentSetItem(createInstanceKeyList(itemResp.PrimaryKeys!),
+        itemResp.DisplayLabel!, itemResp.ImageId!, classInfo,
+        itemResp.Values!, itemResp.DisplayValues!, itemResp.MergedFieldNames!,
+        createItemValueKeys(descriptor, itemResp.FieldValueKeys!));
       cont.contentSet.push(item);
     }
 
     return cont;
   }
 
-  // tslint:disable-next-line:naming-convention
-  private createItemValueKeys = (descriptor: content.Descriptor, fieldValueKeysResp: { [fieldName: string]: any[] }): content.FieldPropertyValueKeys => {
+  function createItemValueKeys(descriptor: content.Descriptor, fieldValueKeysResp: { [fieldName: string]: any[] }): content.FieldPropertyValueKeys {
     const result: content.FieldPropertyValueKeys = {};
     for (const field of descriptor.fields) {
       if (!field.isPropertiesField || field.description.isArrayDescription || field.description.isStructDescription) {
@@ -222,19 +269,18 @@ export default class ECPresentationManager implements ECPInterface {
     return result;
   }
 
-  // tslint:disable-next-line:naming-convention
-  private createContentDescriptor = (r: any): content.Descriptor | null => {
+  export function createContentDescriptor(r: responseTypes.Descriptor): content.Descriptor | null {
     if (!r)
       return null;
 
     const selectClasses = new Array<content.SelectClassInfo>();
     for (const respClass of r.SelectClasses)
-      selectClasses.push(this.createSelectClassInfo(respClass));
+      selectClasses.push(createSelectClassInfo(respClass));
 
     const categories: { [name: string]: content.CategoryDescription } = {};
     const fields = new Array<content.Field>();
     for (const respField of r.Fields)
-      fields.push(this.createField(respField, categories, null));
+      fields.push(createField(respField, categories, null));
 
     let sortingField: content.Field | null = null;
     const sortingDirection = r.SortDirection as content.SortDirection;
@@ -248,20 +294,19 @@ export default class ECPresentationManager implements ECPInterface {
     return descriptor;
   }
 
-  // tslint:disable-next-line:naming-convention
-  private createFieldType = (r: any): content.TypeDescription => {
+  function createFieldType(r: responseTypes.FieldTypeDescription): content.TypeDescription {
     switch (r.ValueFormat) {
       case "Primitive":
         return new content.PrimitiveTypeDescription(r.TypeName);
       case "Array":
-        return new content.ArrayTypeDescription(r.TypeName, this.createFieldType(r.MemberType));
+        return new content.ArrayTypeDescription(r.TypeName, createFieldType((r as responseTypes.FieldArrayTypeDescription).MemberType));
       case "Struct":
         const structDescription = new content.StructTypeDescription(r.TypeName);
-        for (const member of r.Members) {
+        for (const member of (r as responseTypes.FieldStructTypeDescription).Members) {
           structDescription.members.push({
             name: member.Name,
             label: member.Label,
-            type: this.createFieldType(member.Type),
+            type: createFieldType(member.Type),
           });
         }
         return structDescription;
@@ -270,22 +315,15 @@ export default class ECPresentationManager implements ECPInterface {
     return new content.PrimitiveTypeDescription("string");
   }
 
-  // tslint:disable-next-line:naming-convention
-  private createSelectClassInfo = (r: any): content.SelectClassInfo => {
-    const classInfo = {
-      id: r.SelectClassInfo.Id,
-      name: r.SelectClassInfo.Name,
-      label: r.SelectClassInfo.Label,
-    };
-    const info = new content.SelectClassInfo(classInfo, r.IsPolymorphic,
-      this.createRelationshipPath(r.PathToPrimaryClass));
+  function createSelectClassInfo(r: responseTypes.SelectClassInfo): content.SelectClassInfo {
+    const info = new content.SelectClassInfo(createClassInfo(r.SelectClassInfo), r.IsPolymorphic,
+      createRelationshipPath(r.PathToPrimaryClass));
     for (const pr of r.RelatedPropertyPaths)
-      info.relatedPropertyPaths.push(this.createRelationshipPath(pr));
+      info.relatedPropertyPaths.push(createRelationshipPath(pr));
     return info;
   }
 
-  // tslint:disable-next-line:naming-convention
-  private createFieldEditor = (_r: any): content.EditorDescription | null => {
+  function createFieldEditor(_r: responseTypes.Editor): content.EditorDescription | null {
     return null;
     /* todo:
     if (!r)
@@ -336,8 +374,7 @@ export default class ECPresentationManager implements ECPInterface {
     return editor;*/
   }
 
-  // tslint:disable-next-line:naming-convention
-  private createCategory = (r: any, categories: { [name: string]: content.CategoryDescription }): content.CategoryDescription => {
+  function createCategory(r: responseTypes.Category, categories: { [name: string]: content.CategoryDescription }): content.CategoryDescription {
     if (categories.hasOwnProperty(r.Name))
       return categories[r.Name];
 
@@ -346,28 +383,22 @@ export default class ECPresentationManager implements ECPInterface {
     return category;
   }
 
-  // tslint:disable-next-line:naming-convention
-  private createChoices = (r: any): ec.EnumerationChoice[] => {
+  function createChoices(r: responseTypes.EnumerationChoice[]): ec.EnumerationChoice[] {
     const choices = new Array<ec.EnumerationChoice>();
     for (const choice of r)
       choices.push({ label: choice.Label, value: choice.Value });
     return choices;
   }
 
-  // tslint:disable-next-line:naming-convention
-  private createECPropertyInfo = (r: any): ec.PropertyInfo => {
+  function createECPropertyInfo(r: responseTypes.ECProperty): ec.PropertyInfo {
     const propertyInfo: ec.PropertyInfo = {
-      classInfo: {
-        id: r.ActualClassInfo.Id,
-        name: r.ActualClassInfo.Name,
-        label: r.ActualClassInfo.Label,
-      },
+      classInfo: createClassInfo(r.ActualClassInfo),
       name: r.Name,
       type: r.Type,
     };
     if (r.Choices) {
       propertyInfo.enumerationInfo = {
-        choices: this.createChoices(r.Choices),
+        choices: createChoices(r.Choices),
         isStrict: r.IsStrict ? true : false,
       };
     }
@@ -378,73 +409,67 @@ export default class ECPresentationManager implements ECPInterface {
     return propertyInfo;
   }
 
-  // tslint:disable-next-line:naming-convention
-  private createRelatedClassInfo = (r: any): ec.RelatedClassInfo => {
+  function createRelatedClassInfo(r: responseTypes.RelatedClass): ec.RelatedClassInfo {
     return {
-      sourceClassInfo: {
-        id: r.SourceClassInfo.Id,
-        name: r.SourceClassInfo.Name,
-        label: r.SourceClassInfo.Label,
-      },
-      targetClassInfo: {
-        id: r.TargetClassInfo.Id,
-        name: r.TargetClassInfo.Name,
-        label: r.TargetClassInfo.Label,
-      },
-      relationshipInfo: {
-        id: r.RelationshipInfo.Id,
-        name: r.RelationshipInfo.Name,
-        label: r.RelationshipInfo.Label,
-      },
+      sourceClassInfo: createClassInfo(r.SourceClassInfo),
+      targetClassInfo: createClassInfo(r.TargetClassInfo),
+      relationshipInfo: createClassInfo(r.RelationshipInfo),
       isForwardRelationship: r.IsForwardRelationship,
     };
   }
 
-  // tslint:disable-next-line:naming-convention
-  private createRelationshipPath = (r: any[]): ec.RelationshipPathInfo => {
+  function createRelationshipPath(r: responseTypes.RelatedClassPath): ec.RelationshipPathInfo {
     const path = new Array<ec.RelatedClassInfo>();
     for (const pr of r)
-      path.push(this.createRelatedClassInfo(pr));
+      path.push(createRelatedClassInfo(pr));
     return path;
   }
 
-  // tslint:disable-next-line:naming-convention
-  private createFieldProperty = (r: any): content.Property => {
-    const propertyInfo = this.createECPropertyInfo(r.Property);
+  function createFieldProperty(r: responseTypes.FieldProperty): content.Property {
+    const propertyInfo = createECPropertyInfo(r.Property);
     const property = new content.Property(propertyInfo);
     for (const pr of r.RelatedClassPath)
-      property.relatedClassPath.push(this.createRelatedClassInfo(pr));
+      property.relatedClassPath.push(createRelatedClassInfo(pr));
     return property;
   }
 
-  // tslint:disable-next-line:naming-convention
-  private createField = (r: any, categories: { [name: string]: content.CategoryDescription }, parent: content.NestedContentField | null): content.Field => {
-    const type = this.createFieldType(r.Type);
-    const editor = this.createFieldEditor(r.Editor);
-    const category = this.createCategory(r.Category, categories);
-    if (r.Properties) {
-      // ecproperties-based field
-      const field = new content.PropertiesField(category, r.Name, r.DisplayLabel, type,
-        r.IsReadOnly, r.Priority, editor, parent);
-      for (const pr of r.Properties)
-        field.properties.push(this.createFieldProperty(pr));
-      return field;
+  function createPropertiesField(r: responseTypes.ECPropertiesField, type: content.TypeDescription, editor: content.EditorDescription | null,
+    category: content.CategoryDescription, parent: content.NestedContentField | null): content.PropertiesField {
+    const field = new content.PropertiesField(category, r.Name, r.DisplayLabel, type,
+      r.IsReadOnly, r.Priority, editor, parent);
+    for (const pr of r.Properties)
+      field.properties.push(createFieldProperty(pr));
+    return field;
+  }
+
+  function createNestedContentField(r: responseTypes.NestedContentField, type: content.TypeDescription, editor: content.EditorDescription | null,
+    categories: { [name: string]: content.CategoryDescription }, parent: content.NestedContentField | null): content.NestedContentField {
+    assert(type.isStructDescription, "Nested content fields' type should be 'struct'");
+    const category = categories[r.Category.Name];
+    const field = new content.NestedContentField(category, r.Name, r.DisplayLabel, type.asStructDescription()!,
+      createClassInfo(r.ContentClassInfo), createRelationshipPath(r.PathToPrimary), r.IsReadOnly, r.Priority, editor, parent);
+    for (const nestedField of r.NestedFields)
+      field.nestedFields.push(createField(nestedField, categories, field));
+    return field;
+  }
+
+  function isPropertiesField(field: responseTypes.Field): field is responseTypes.ECPropertiesField {
+    return (field as any).Properties;
+  }
+
+  function isNestedContentField(field: responseTypes.Field): field is responseTypes.NestedContentField {
+    return (field as any).ContentClassInfo;
+  }
+
+  function createField(r: responseTypes.Field, categories: { [name: string]: content.CategoryDescription }, parent: content.NestedContentField | null): content.Field {
+    const type = createFieldType(r.Type);
+    const editor = createFieldEditor(r.Editor!);
+    const category = createCategory(r.Category, categories);
+    if (isPropertiesField(r))
+      return createPropertiesField(r as responseTypes.ECPropertiesField, type, editor, category, parent);
+    if (isNestedContentField(r)) {
+      return createNestedContentField(r as responseTypes.NestedContentField, type, editor, categories, parent);
     }
-    if (r.ContentClassInfo) {
-      // nested content field
-      assert(type.isStructDescription, "Nested content fields' type should be 'struct'");
-      const classInfo = {
-        id: r.ContentClassInfo.Id,
-        name: r.ContentClassInfo.Name,
-        label: r.ContentClassInfo.Label,
-      };
-      const field = new content.NestedContentField(category, r.Name, r.DisplayLabel, type.asStructDescription()!,
-        classInfo, this.createRelationshipPath(r.PathToPrimary), r.IsReadOnly, r.Priority, editor, parent);
-      for (const nestedField of r.NestedFields)
-        field.nestedFields.push(this.createField(nestedField, categories, field));
-      return field;
-    }
-    // generic field (display label, calculated, etc.)
     return new content.Field(category, r.Name, r.DisplayLabel, type,
       r.IsReadOnly, r.Priority, editor, parent);
   }

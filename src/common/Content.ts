@@ -491,7 +491,6 @@ export interface FieldPropertyValueKeys {
 }
 
 export interface ValuesDictionary<T> {
-  key: T;
   [key: string]: T;
 }
 

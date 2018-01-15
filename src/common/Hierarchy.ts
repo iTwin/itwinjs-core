@@ -24,7 +24,6 @@ export interface NavNode {
   foreColor: string | null;
   backColor: string | null;
   fontStyle: string | null;
-  type: string;
   hasChildren: boolean;
   isSelectable: boolean;
   isEditable: boolean;

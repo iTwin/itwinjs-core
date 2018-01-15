@@ -24,7 +24,7 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
   }
 
   /** @hidden */
-  public setManager(mgr: ECPresentationManagerDefinition): void {
+  public setManager(mgr: ECPresentationManagerDefinition | null): void {
     this._manager = mgr;
   }
 

@@ -11,8 +11,8 @@
   "scripts": {
     "build": "tsc",
     "clean": "rimraf lib",
-    "test": "npm run test:unit && npm run test:integration",
-    "test:unit": "npm run test:unit:backend && npm run test:unit:frontend",
+    "test": "concurrently --names \"BACKEND,FRONTEND,INTEGRATION\" \"npm run test:unit:backend\" \"npm run test:unit:frontend\" \"npm run test:integration\"",
+    "test:unit": "concurrently --names \"BACKEND,FRONTEND\" \"npm run test:unit:backend\" \"npm run test:unit:frontend\"",
     "test:unit:frontend": "node node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/unit/frontend\"",
     "test:unit:backend": "node node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/unit/backend\"",
     "test:integration": "node node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/integration\""

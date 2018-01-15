@@ -22,7 +22,6 @@ export const createRandomECInstanceNode = (): h.NavNode => {
     foreColor: nullable<string>(faker.commerce.color),
     backColor: nullable<string>(faker.commerce.color),
     fontStyle: null,
-    type: "ECInstanceNode",
     hasChildren: faker.random.boolean(),
     isSelectable: faker.random.boolean(),
     isEditable: faker.random.boolean(),
