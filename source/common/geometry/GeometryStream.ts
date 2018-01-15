@@ -1023,8 +1023,8 @@ export class GSWriter {
       return true;
     }
 
-    const origin = geomToElem.translation();
-    const rMatrix = geomToElem.matrixRef();
+    const origin = geomToElem.getTranslation();
+    const rMatrix = geomToElem.matrix;
     const scaleResult = rMatrix.factorRigidWithSignedScale();
     let scale: number | undefined;
 
@@ -1981,8 +1981,8 @@ export class GeometryBuilder {
         return nullptr;
     */
 
-    const origin = transform.translation();
-    const rMatrix = transform.matrixRef();
+    const origin = transform.getTranslation();
+    const rMatrix = transform.matrix;
     const angles = YawPitchRollAngles.createDegrees(0, 0, 0);
     const retVal = YawPitchRollAngles.createFromRotMatrix(rMatrix, angles);
 
@@ -2156,8 +2156,8 @@ export class GeometryBuilder {
       if (!geom.getLocalCoordinateFrame(localToWorld))
         return false;
 
-      const origin = localToWorld.translation();
-      const rMatrix = localToWorld.matrixRef();
+      const origin = localToWorld.getTranslation();
+      const rMatrix = localToWorld.matrix;
       const angles = YawPitchRollAngles.createFromRotMatrix(rMatrix);
       if (!angles)
         return false;

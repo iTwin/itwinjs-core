@@ -33,6 +33,7 @@ import { ColorDef } from "../common/ColorDef";
 import { IModel } from "../common/IModel";
 
 /* tslint:disable: no-console */
+/* spell-checker: disable */
 
 describe("iModel", () => {
   let imodel1: IModelDb;

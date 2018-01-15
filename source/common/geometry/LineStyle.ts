@@ -106,7 +106,7 @@ export class LineStyleParams {
 
   public applyTransform(transform: Transform, bitOptions: number) {
     if (this.modifiers & StyleMod.Normal) {
-      transform.matrixRef().multiplyVector(this.normal, this.normal);
+      transform.matrix.multiplyVector(this.normal, this.normal);
       const normalized = this.normal.normalize();
       if (normalized)
         this.normal.setFrom(normalized);
@@ -114,7 +114,7 @@ export class LineStyleParams {
     if (this.modifiers & StyleMod.RMatrix) {
       const rTmp = this.rMatrix.inverse();
       if (rTmp) {
-        rTmp.multiplyMatrixMatrix(transform.matrixRef(), rTmp);
+        rTmp.multiplyMatrixMatrix(transform.matrix, rTmp);
         RotMatrix.createPerpendicularUnitColumnsFromRotMatrix(rTmp, AxisOrder.XYZ, rTmp);
         const rTmpInverse = rTmp.inverse();
         if (rTmpInverse)
@@ -126,7 +126,7 @@ export class LineStyleParams {
 
     let scaleFactor = 1.0;
     const scaleVector = Vector3d.create();
-    const scaleMatrix = transform.matrixRef();
+    const scaleMatrix = transform.matrix;
     scaleMatrix.normalizeRowsInPlace(scaleVector);
 
     // Check for flatten transform, dividing scaleVector by 3 gives wrong scaleFactor
