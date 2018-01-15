@@ -177,7 +177,7 @@ export class PatternParams {
   }
 
   public static getTransformPatternScale(transform: Transform): number {
-    const xDir = transform.matrixRef().getColumn(0);
+    const xDir = transform.matrix.getColumn(0);
     const mag = xDir.magnitude();
     return (mag > 1.0e-10) ? mag : 1.0;
   }
@@ -209,7 +209,7 @@ export class PatternParams {
     }
 
     transform.multiplyPoint(this._origin);
-    this._rMatrix.multiplyMatrixMatrix(transform.matrixRef(), this._rMatrix);
+    this._rMatrix.multiplyMatrixMatrix(transform.matrix, this._rMatrix);
     const normalized = RotMatrix.createPerpendicularUnitColumnsFromRotMatrix(this._rMatrix);
     if (normalized)
       this._rMatrix.setFrom(normalized);

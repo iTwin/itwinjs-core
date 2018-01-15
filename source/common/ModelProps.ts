@@ -3,10 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { EntityProps } from "./EntityProps";
 import { XAndY } from "@bentley/geometry-core/lib/PointVector";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64Props } from "@bentley/bentleyjs-core/lib/Id";
 
 export interface ModelProps extends EntityProps {
-  modeledElement: Id64 | string;
+  modeledElement: Id64Props;
   isPrivate?: boolean;
   isTemplate?: boolean;
   jsonProperties?: any;

@@ -239,8 +239,8 @@ export class SnapDetail extends HitDetail {
   public m_snapMode: SnapMode;            // snap mode currently associated with this snap
   public m_originalSnapMode: SnapMode;    // snap mode used when snap was created, before constraint override was applied
   public m_minScreenDist: number;         // minimum distance to element in screen coordinates.
-  public readonly m_snapPoint: Point3d;   // hitpoint adjusted by snap
-  public readonly m_adjustedPt: Point3d;  // sometimes accusnap adjusts the point after the snap.
+  public readonly m_snapPoint: Point3d;   // hitPoint adjusted by snap
+  public readonly m_adjustedPt: Point3d;  // sometimes accuSnap adjusts the point after the snap.
   public m_customKeypointSize = 0;
   public m_customKeypointData?: any;
   public m_allowAssociations = true;
@@ -360,7 +360,7 @@ export class HitList {
     const normal = oHitSurf.m_geomDetail.m_normal;
     const homogeneousPlane = Point4d.createFromPointAndWeight(normal, -normal.dotProduct(origin));
     const worldToViewMap = oHitSurf.m_viewport.rootToView;
-    const eyePointWorld = worldToViewMap.transform1Ref().columnZ();
+    const eyePointWorld = worldToViewMap.transform1.columnZ();
     const testPointWorld = oHitEdge.m_geomDetail.m_closePoint;
     const a0 = homogeneousPlane.dotProduct(eyePointWorld);
     const a1 = homogeneousPlane.dotProductXYZW(testPointWorld.x, testPointWorld.y, testPointWorld.z, 1.0);
@@ -391,7 +391,7 @@ export class HitList {
     const normal1 = oHit1.m_geomDetail.m_normal;
     const normal2 = oHit2.m_geomDetail.m_normal;
 
-    // NOTE: Only surfaces display hidden edges...NEEDSWORK: Nothing is hidden by transparent display style (RenderMode::SmoothShade)...
+    // NOTE: Only surfaces display hidden edges...NEEDS_WORK: Nothing is hidden by transparent display style (RenderMode::SmoothShade)...
     const flags1 = oHit1.m_viewport.view.displayStyle.viewFlags;
     const flags2 = oHit2.m_viewport.view.displayStyle.viewFlags;
     const hiddenEdgesVisible = flags1.hiddenEdgesVisible();

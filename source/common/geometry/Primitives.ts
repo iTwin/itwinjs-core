@@ -324,8 +324,8 @@ export class GeometricPrimitive {
             localToWorld.setIdentity();
             return false;
           }
-          const worldToLocal = tMap.transform1Ref();
-          localToWorld.setFrom(tMap.transform0Ref());
+          const worldToLocal = tMap.transform1;
+          localToWorld.setFrom(tMap.transform0);
           if (!worldToLocal) {
             localToWorld.setIdentity();
             return false;
@@ -377,7 +377,7 @@ export class GeometricPrimitive {
     }
 
     // NOTE: Ensure rotation is squared up and normalized (ComputePrincipalAreaMoments/GetEntityTransform is scaled)...
-    const rMatrix = localToWorld.matrixRef();
+    const rMatrix = localToWorld.matrix;
     RotMatrix.createPerpendicularUnitColumns(rMatrix.columnX(), rMatrix.columnY(), AxisOrder.XYZ, rMatrix);
 
     return true;
