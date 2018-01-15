@@ -15,6 +15,7 @@ export enum CheckBoxState {
 
 /** A node item which can be displayed in a tree */
 export interface TreeNodeItem {
+  id: string;
   label: string;
   description: string;
   hasChildren: boolean;
@@ -104,6 +105,7 @@ export class TreeDataProvider {
 
   private createTreeNodeItem(node: NavNode): TreeNodeItem {
     const item: TreeNodeItem = {
+      id: node.nodeId.toString(),
       parent: null,
       label: node.label,
       description: node.description,

@@ -4,8 +4,12 @@
 
  /** Base class for a @ref INavNode key which identifies similar nodes. */
 export interface NavNodeKey {
-  /** Type of the @ref INavNode. */
   type: string;
+}
+export interface ECInstanceNodeKey extends NavNodeKey {
+  // WIP:
+  classId: string;
+  instanceId: string;
 }
 
 /** Contains a series of INavNodeKey objects which defines a path of nodes. */

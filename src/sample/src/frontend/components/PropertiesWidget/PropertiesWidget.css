@@ -1,34 +1,13 @@
 .PropertiesWidget {
   display: flex;
   flex-direction: column;
-  width: 50%;
-  border: 1px solid black;
+  width: 60%;
+  border-left: 1px solid black;
   padding: 5px;
 }
 
 .PropertiesWidget h3 {
   margin: 0;
-}
-
-.PropertiesWidget .Description {
-  margin-bottom: 0;
-}
-
-.PropertiesWidget .InputFields {
-  margin-bottom: 20px;
-}
-
-.PropertiesWidget .InputFields p {
-  display: inline-block;
-  margin-top: 0;
-  margin-bottom: 0;
-  width: 200px;
-}
-
-.PropertiesWidget input {
-  width: 200px;
-  margin-left: 5px;
-  margin-right: 5px;
 }
 
 .PropertiesWidget .ContentContainer {
