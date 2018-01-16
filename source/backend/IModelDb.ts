@@ -394,21 +394,17 @@ export class IModelDb extends IModel {
 
 /**
  * Transaction Concurrency Control.
- * By "locking" a DB entity, such as an element or a model, a transaction prevents another transaction from locking the same entity.
- * By "reserving a code", a transaction prevents another transaction from reserving the same code.
- * Turn these activities into nouns:
- * A "lock" is a mechanism to prevent concurrent access to DB entities.
- * A "code reservation" is a mechanism to prevent concurrent reservation of codes.
- * To obtain a lock or reserve a code, we must send a "request" to iModelHub or the code authority.
- * So, we "request" locks and code reservations.
- * The ConcurrencyControl class helps with making reservations for locks and/or codes.
+ * <p>
+ * The ConcurrencyControl class helps with making requests for locks and code reservations. 
+ * @see #request()
+ * @see #CodeSpec.buildConcurrencyControlRequest
+ * @see Model.buildConcurrencyControlRequest
+ * @see Element.buildConcurrencyControlRequest
+ * @see LinkTableRelationship.buildConcurrencyControlRequest
  *
- * There are two concurrency control strategies: optimistic and pessismistic. The ConcurrencyControl class has methods
- * to set the control policy. See setConcurrencyControlPolicy.
+ * The ConcurrencyControl class has methods to set the concurrency control policy. @see setConcurrencyControlPolicy.
  *
- * There are two policies for when requests for locks or code reservations must be made: either 1) before the associated DB entities can be written to the local IModelDb
- * or 2) after the associated entities are written but before the transaction is committed to the local IModelDb. The second is called "bulk operation mode".
- * The ConcurrencyControl class has methods to set the request timing mode. The first is the default mode. See startBulkUpdateMode for how to enter bulk operation mode.
+ * The ConcurrencyControl class has methods to set the policy for when requests must be made. @see startBulkOperationMode.
  */
 export class ConcurrencyControl {
   private _pendingRequest: ConcurrencyControl.Request;
@@ -417,10 +413,20 @@ export class ConcurrencyControl {
 
   constructor(im: IModelDb) {
     this._imodel = im;
-    this._pendingRequest = ConcurrencyControl.Request.create();
+    this._pendingRequest = ConcurrencyControl.createRequest();
   }
 
-  /** See Model.buildConcurrencyControlRequest */
+  /** Create an empty Request */
+  public static createRequest(): ConcurrencyControl.Request {
+    return new (NodeAddonRegistry.getAddon()).NodeAddonBriefcaseManagerResourcesRequest();
+  }
+
+  /** Convert the request to any */
+  public static convertRequestToAny(req: ConcurrencyControl.Request): any {
+    return JSON.parse((req as NodeAddonBriefcaseManagerResourcesRequest).toJSON());
+  }
+
+  /** @private @see Model.buildConcurrencyControlRequest */
   public buildRequestForModel(model: Model, opcode: DbOpcode): void {
     if (!this._imodel.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
@@ -429,7 +435,7 @@ export class ConcurrencyControl {
       throw new IModelError(rc);
   }
 
-  /** See Element.buildConcurrencyControlRequest */
+  /** @private @see Element.buildConcurrencyControlRequest */
   public buildRequestForElement(element: Element, opcode: DbOpcode): void {
     if (!this._imodel.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
@@ -442,7 +448,7 @@ export class ConcurrencyControl {
       throw new IModelError(rc);
   }
 
-  /** See LinkTableRelationship.buildConcurrencyControlRequest */
+  /** @private @see LinkTableRelationship.buildConcurrencyControlRequest */
   public buildRequestForLinkTableRelationship(instance: LinkTableRelationship, opcode: DbOpcode): void {
     if (!this._imodel.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
@@ -451,7 +457,7 @@ export class ConcurrencyControl {
       throw new IModelError(rc);
   }
 
-  /** See CodeSpec.buildConcurrencyControlRequest */
+  /** @private @see CodeSpec.buildConcurrencyControlRequest */
   public buildRequestForCodeSpec(instance: CodeSpec, opcode: DbOpcode): void {
     if (!this._imodel.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
@@ -477,7 +483,7 @@ export class ConcurrencyControl {
     const extractLocks: boolean = !codesOnly;
     const extractCodes: boolean = !locksOnly;
 
-    const req = ConcurrencyControl.Request.create();
+    const req: ConcurrencyControl.Request = ConcurrencyControl.createRequest();
     this._imodel.briefcaseInfo.nativeDb.extractBulkResourcesRequest(req as NodeAddonBriefcaseManagerResourcesRequest, extractLocks, extractCodes);
     this._imodel.briefcaseInfo.nativeDb.extractBriefcaseManagerResourcesRequest(req as NodeAddonBriefcaseManagerResourcesRequest, this._pendingRequest as NodeAddonBriefcaseManagerResourcesRequest, extractLocks, extractCodes);
 
@@ -497,7 +503,7 @@ export class ConcurrencyControl {
     if (req === undefined)
       req = this.extractPendingRequest();
     console.log("");
-    console.log("TODO: send request to iModelHubClient " + JSON.stringify(ConcurrencyControl.Request.toAny(req)));
+    console.log("TODO: send request to iModelHubClient " + JSON.stringify(ConcurrencyControl.convertRequestToAny(req)));
     console.log("");
   }
 
@@ -508,7 +514,7 @@ export class ConcurrencyControl {
    */
   public areAvailable(_req: ConcurrencyControl.Request): boolean {
     if (!this._imodel.briefcaseInfo)
-      throw new IModelError(IModelStatus.BadRequest);
+      throw this._imodel._newNotOpenError();
     // throw new Error("TBD");
     return false; // *** TBD
   }
@@ -541,10 +547,10 @@ export class ConcurrencyControl {
    * has pushed changes to the same entities or used the same codes as the local transaction.
    * This mode can therefore be used safely only in special cases where contention for locks and codes is not a risk.
    * Normally, that is only possible when writing to a model that is exclusively locked and where codes are scoped to that model.
-   * See saveChanges and endBulkUpdateMode.
+   * See saveChanges and endBulkOperationMode.
    * @throws IModelError if it would be illegal to enter bulk operation mode.
    */
-  public startBulkUpdateMode(): void {
+  public startBulkOperationMode(): void {
     if (!this._imodel.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
     const rc: RepositoryStatus = this._imodel.briefcaseInfo.nativeDb.briefcaseManagerStartBulkOperation();
@@ -559,7 +565,7 @@ export class ConcurrencyControl {
    * If not successful, the caller should abandon all changes.
    * @throws IModelError if some locks or codes could not be acquired. In that case, the caller should abandon all changes.
    */
-  public endBulkUpdateMode(): void {
+  public endBulkOperationMode(): void {
     if (!this._imodel.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
     const rc: RepositoryStatus = this._imodel.briefcaseInfo.nativeDb.briefcaseManagerEndBulkOperation();
@@ -576,23 +582,11 @@ export class ConcurrencyControl {
 
 }
 
-/** Types that are relative to ConcurrencyControl. Typescript declaration merging will make these types appear to be "nested" in the ConcurrencyControl class. In fact, they will become static properties of that class. */
 export namespace ConcurrencyControl {
 
-  /** This is a stand-in for NodeAddonBriefcaseManagerResourcesRequest. We cannot (re-)export that for technical reasons. */
+  /** A request for locks and/or code reservations. */
   export class Request {
     private constructor() { }
-
-    /** Create an empty Request */
-    public static create(): Request {
-      return new (NodeAddonRegistry.getAddon()).NodeAddonBriefcaseManagerResourcesRequest();
-    }
-
-    /** Convert the request to any */
-    public static toAny(req: Request): any {
-      return JSON.parse((req as NodeAddonBriefcaseManagerResourcesRequest).toJSON());
-    }
-
   }
 
   /** How to handle a conflict. Keep this consistent with DgnPlatform/RepositoryManager.h. */

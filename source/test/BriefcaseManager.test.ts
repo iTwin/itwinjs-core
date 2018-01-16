@@ -165,7 +165,7 @@ describe("BriefcaseManager", () => {
 
     const el: Element = iModel.elements.getRootSubject();
     el.buildConcurrencyControlRequest(DbOpcode.Update);    // make a list of the locks, etc. that will be needed to update this element
-    const reqAsAny: any = ConcurrencyControl.Request.toAny(iModel.concurrencyControl.pendingRequest);
+    const reqAsAny: any = ConcurrencyControl.convertRequestToAny(iModel.concurrencyControl.pendingRequest);
     assert.isDefined(reqAsAny);
     assert.isArray(reqAsAny.Locks);
     assert.equal(reqAsAny.Locks.length, 3, " we expect to need a lock on the element (exclusive), its model (shared), and the db itself (shared)");
@@ -175,7 +175,7 @@ describe("BriefcaseManager", () => {
     iModel.close(accessToken);
   });
 
-  it("should write to briefcase with optimistic concurrency", async () => {
+  it.skip("should write to briefcase with optimistic concurrency", async () => {
 
     // Acquire a briefcase from iModelHub
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
