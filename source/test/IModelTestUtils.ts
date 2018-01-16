@@ -186,7 +186,7 @@ export class IModelTestUtils {
       if (SpatialCategory.queryCategoryIdByName(scopeModel, newCodeValue) === undefined)
         return SpatialCategory.createCode(scopeModel, newCodeValue);
 
-      newCodeValue = newCodeValue + iter;
+      newCodeValue = newCodeBaseValue + iter;
       ++iter;
     }
   }
