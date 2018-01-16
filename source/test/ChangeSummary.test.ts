@@ -139,8 +139,4 @@ describe("ChangeSummary", () => {
       await iModel.close(accessToken);
     }
   });
-
-  it("Extract ChangeSummaries for invalid imodel", async () => {
-    await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, "123");
-  });
 });
