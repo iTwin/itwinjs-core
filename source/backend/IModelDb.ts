@@ -30,8 +30,8 @@ import { IModelGatewayImpl } from "./IModelGatewayImpl";
 import { RepositoryStatus } from "@bentley/bentleyjs-core/lib/BentleyError";
 import * as path from "path";
 import { IModelDbLinkTableRelationships, LinkTableRelationship } from "./LinkTableRelationship";
-import { RepositoryManager } from "./RepositoryManager";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
+import { NodeAddonRegistry } from "./NodeAddonRegistry";
 
 // Register the backend implementation of IModelGateway
 IModelGatewayImpl.register();
@@ -47,6 +47,7 @@ export class IModelDb extends IModel {
   private readonly statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private _codeSpecs: CodeSpecs;
   private _classMetaDataRegistry: MetaDataRegistry;
+  private _conc: ConcurrencyControl;
 
   /** @hidden */
   public briefcaseInfo?: BriefcaseInfo;
@@ -85,9 +86,7 @@ export class IModelDb extends IModel {
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
     const briefcaseInfo: BriefcaseInfo = await BriefcaseManager.open(accessToken, contextId, iModelId, openMode, version);
     Logger.logInfo("IModelDb.open", () => ({ iModelId, openMode }));
-    const db = await IModelDb.create(briefcaseInfo, contextId);
-    db.briefcaseInfo!.nativeDb.setRepositoryManager(new RepositoryManager(db));
-    return db;
+    return await IModelDb.create(briefcaseInfo, contextId);
   }
 
   /** Close this iModel, if it is currently open */
@@ -145,143 +144,6 @@ export class IModelDb extends IModel {
     if (!this.briefcaseInfo)
       return new BriefcaseId(BriefcaseId.Illegal);
     return new BriefcaseId(this.briefcaseInfo.briefcaseId);
-  }
-
-  /** See Model.buildResourcesRequest */
-  public buildResourcesRequestForModel(req: BriefcaseManager.ResourcesRequest, model: Model, opcode: DbOpcode): void {
-    if (!this.briefcaseInfo)
-      throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForModel(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(model.id), opcode);
-    if (rc !== RepositoryStatus.Success)
-      throw new IModelError(rc);
-  }
-
-  /** See Element.buildResourcesRequest */
-  public buildResourcesRequestForElement(req: BriefcaseManager.ResourcesRequest, element: Element, opcode: DbOpcode): void {
-    if (!this.briefcaseInfo)
-      throw new IModelError(IModelStatus.BadRequest);
-    let rc: RepositoryStatus;
-    if (element.id === undefined || opcode === DbOpcode.Insert)
-      rc = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForElement(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify({ modelid: element.model, code: element.code }), opcode);
-    else
-      rc = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForElement(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(element.id), opcode);
-    if (rc !== RepositoryStatus.Success)
-      throw new IModelError(rc);
-  }
-
-  /** See LinkTableRelationship.buildResourcesRequest */
-  public buildResourcesRequestForLinkTableRelationship(req: BriefcaseManager.ResourcesRequest, instance: LinkTableRelationship, opcode: DbOpcode): void {
-    if (!this.briefcaseInfo)
-      throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForLinkTableRelationship(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(instance), opcode);
-    if (rc !== RepositoryStatus.Success)
-      throw new IModelError(rc);
-  }
-
-  /** See CodeSpec.buildResourcesRequest */
-  public buildResourcesRequestForCodeSpec(req: BriefcaseManager.ResourcesRequest, instance: CodeSpec, opcode: DbOpcode): void {
-    if (!this.briefcaseInfo)
-      throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForCodeSpec(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(instance.id), opcode);
-    if (rc !== RepositoryStatus.Success)
-      throw new IModelError(rc);
-  }
-
-  /**
-   * Try to acquire the requested resources from iModelHub.
-   * This function may fulfill some requests and fail to fulfill others. This function returns a zero status
-   * if all requests were fulfilled. It returns a non-zero status if some or all requests could not be fulfilled.
-   * This function updates req to remove the requests that were successfully fulfilled. Therefore, if a non-zero
-   * status is returned, the caller can look at req to see which requests failed.
-   * @param req On input, this is the list of resource requests to be fulfilled. On return, this is the list of
-   * requests that could not be fulfilled.
-   * @return BentleyStatus.SUCCESS if all resources were acquired or non-zero if some could not be acquired.
-   */
-  public requestResources(req: BriefcaseManager.ResourcesRequest) {
-    if (!this.briefcaseInfo)
-      throw new IModelError(IModelStatus.BadRequest);
-    // *** TODO
-    console.log("TODO: request " + JSON.stringify(BriefcaseManager.ResourcesRequest.toAny(req)));
-    console.log("");
-  }
-
-  /**
-   * Get the lock and code requests that have been detected so far in the current bulk operation or optimistic transaction. 
-   * This clears the transaction manager's record of pending request and transfers it to the caller.
-   * @param req The request object, which accumulates requests.
-   */
-  public extractBulkResourcesRequest(): BriefcaseManager.ResourcesRequest {
-    if (!this.briefcaseInfo)
-      throw new IModelError(IModelStatus.BadRequest);
-    const req = BriefcaseManager.ResourcesRequest.create();
-    this.briefcaseInfo.nativeDb.extractBulkResourcesRequest(req as NodeAddonBriefcaseManagerResourcesRequest);
-    return req;
-  }
-
-  /**
-   * Check to see if *all* of the requested resources could be acquired from iModelHub.
-   * @param req the list of resource requests to be fulfilled.
-   * @return true if all resources could be acquired or false if any could not be acquired.
-   */
-  public areResourcesAvailable(_req: BriefcaseManager.ResourcesRequest): boolean {
-    if (!this.briefcaseInfo)
-      throw new IModelError(IModelStatus.BadRequest);
-    // throw new Error("TBD");
-    return false; // *** TBD
-  }
-
-  /** Set the concurrency control policy.
-   * Before changing from optimistic to pessimistic, all local changes must be saved and uploaded to iModelHub.
-   * Before changing the locking policy of the pessimistic concurrency policy, all local changes must be saved to the local briefcase.
-   * @param policy The policy to used
-   * @throws IModelError if the policy cannot be set.
-   */
-  public setConcurrencyControlPolicy(policy: BriefcaseManager.PessimisticConcurrencyControlPolicy | BriefcaseManager.OptimisticConcurrencyControlPolicy): void {
-    if (!this.briefcaseInfo)
-      throw new IModelError(IModelStatus.BadRequest);
-    let rc: RepositoryStatus = RepositoryStatus.Success;
-    if (policy as BriefcaseManager.OptimisticConcurrencyControlPolicy) {
-      const oc: BriefcaseManager.OptimisticConcurrencyControlPolicy = policy as BriefcaseManager.OptimisticConcurrencyControlPolicy;
-      rc = this.briefcaseInfo.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(oc.conflictResolution);
-    } else {
-      rc = this.briefcaseInfo.nativeDb.setBriefcaseManagerPessimisticConcurrencyControlPolicy();
-    }
-    if (RepositoryStatus.Success !== rc) {
-      throw new IModelError(rc);
-    }
-  }
-
-  /**
-   * Start a bulk change. This allows the app to insert, update, and delete entities in the local briefcase without first acquiring locks.
-   * When the app calls saveChanges, the transaction manager attempts to acquire all needed locks and codes.
-   * The transaction manager will roll back all pending changes if any lock or code cannot be acquired at save time. Lock and code acquisition will fail if another user
-   * has pushed changes to the same entities or used the same codes as the local transaction.
-   * This mode can therefore be used safely only in special cases where contention for locks and codes is not a risk.
-   * Normally, that is only possible when writing to a model that is exclusively locked and where codes are scoped to that model.
-   * See saveChanges and endBulkUpdateMode.
-   * @throws IModelError if it would be illegal to enter bulk operation mode.
-   */
-  public startBulkUpdateMode(): void {
-    if (!this.briefcaseInfo)
-      throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.briefcaseManagerStartBulkOperation();
-    if (RepositoryStatus.Success !== rc)
-      throw new IModelError(rc);
-  }
-
-  /**
-   * Call this in the rare case where you want to acquire locks and codes *before* the end of the transaction.
-   * Note that saveChanges automatically calls this method to end the bulk operation and acquire locks and codes, so there is no need to call this method directly.
-   * If successful, this terminates the bulk operation.
-   * If not successful, the caller should abandon all changes.
-   * @throws IModelError if some locks or codes could not be acquired. In that case, the caller should abandon all changes.
-   */
-  public endBulkUpdateMode(): void {
-    if (!this.briefcaseInfo)
-      throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.briefcaseManagerEndBulkOperation();
-    if (RepositoryStatus.Success !== rc)
-      throw new IModelError(rc);
   }
 
   /** Returns a new IModelError with errorNumber, message, and meta-data set properly for a *not open* error.
@@ -394,6 +256,8 @@ export class IModelDb extends IModel {
     if (!this.briefcaseInfo)
       throw this._newNotOpenError();
 
+    this.concurrencyControl.request(); // throws if any lock or code could not be acquired.
+
     const stat = this.briefcaseInfo.nativeDb.saveChanges(description);
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, "Problem saving changes", Logger.logError);
@@ -427,6 +291,13 @@ export class IModelDb extends IModel {
     return this._classMetaDataRegistry;
   }
 
+  /** Get access to the ConcurrencyControl for this IModel. */
+  public get concurrencyControl(): ConcurrencyControl {
+    if (this._conc === undefined)
+      this._conc = new ConcurrencyControl(this);
+    return this._conc;
+  }
+
   /** Get access to the CodeSpecs in this IModel. */
   public get codeSpecs(): CodeSpecs {
     if (this._codeSpecs === undefined)
@@ -453,7 +324,7 @@ export class IModelDb extends IModel {
 
     const { error, result: idHexStr } = this.briefcaseInfo.nativeDb.getElementPropertiesForDisplay(elementId);
     if (error)
-        throw new IModelError(error.status, error.message, Logger.logError, () => ({ iModelId: this.token.iModelId, elementId }));
+      throw new IModelError(error.status, error.message, Logger.logError, () => ({ iModelId: this.token.iModelId, elementId }));
 
     return idHexStr!;
   }
@@ -546,27 +417,317 @@ export class IModelDb extends IModel {
 }
 
 /**
- * Models to be locked.
+ * Transaction Concurrency Control.
+ * By "locking" a DB entity, such as an element or a model, a transaction prevents another transaction from locking the same entity.
+ * By "reserving a code", a transaction prevents another transaction from reserving the same code.
+ * Turn these activities into nouns:
+ * A "lock" is a mechanism to prevent concurrent access to DB entities.
+ * A "code reservation" is a mechanism to prevent concurrent reservation of codes.
+ * To obtain a lock or reserve a code, we must send a "request" to iModelHub or the code authority.
+ * So, we "request" locks and code reservations.
+ * The ConcurrencyControl class helps with making reservations for locks and/or codes.
+ *
+ * There are two concurrency control strategies: optimistic and pessismistic. The ConcurrencyControl class has methods
+ * to set the control policy. See setConcurrencyControlPolicy.
+ *
+ * There are two policies for when requests for locks or code reservations must be made: either 1) before the associated DB entities can be written to the local IModelDb
+ * or 2) after the associated entities are written but before the transaction is committed to the local IModelDb. The second is called "bulk operation mode".
+ * The ConcurrencyControl class has methods to set the request timing mode. The first is the default mode. See startBulkUpdateMode for how to enter bulk operation mode.
  */
-export interface ModelsToLock {
-  /** The models to be inserted */
-  newModels?: Model[];
-  /** The models to be updated */
-  modelsToUpdate?: Model[];
-  /** The models to be deleted */
-  modelsToDelete?: Model[];
+export class ConcurrencyControl {
+  private _pendingRequest: ConcurrencyControl.Request;
+  private _imodel: IModelDb;
+  private _codes: ConcurrencyControl.Codes;
+
+  constructor(im: IModelDb) {
+    this._imodel = im;
+    this._pendingRequest = ConcurrencyControl.Request.create();
+  }
+
+  /** See Model.buildConcurrencyControlRequest */
+  public buildRequestForModel(model: Model, opcode: DbOpcode): void {
+    if (!this._imodel.briefcaseInfo)
+      throw new IModelError(IModelStatus.BadRequest);
+    const rc: RepositoryStatus = this._imodel.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForModel(this._pendingRequest as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(model.id), opcode);
+    if (rc !== RepositoryStatus.Success)
+      throw new IModelError(rc);
+  }
+
+  /** See Element.buildConcurrencyControlRequest */
+  public buildRequestForElement(element: Element, opcode: DbOpcode): void {
+    if (!this._imodel.briefcaseInfo)
+      throw new IModelError(IModelStatus.BadRequest);
+    let rc: RepositoryStatus;
+    if (element.id === undefined || opcode === DbOpcode.Insert)
+      rc = this._imodel.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForElement(this._pendingRequest as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify({ modelid: element.model, code: element.code }), opcode);
+    else
+      rc = this._imodel.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForElement(this._pendingRequest as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(element.id), opcode);
+    if (rc !== RepositoryStatus.Success)
+      throw new IModelError(rc);
+  }
+
+  /** See LinkTableRelationship.buildConcurrencyControlRequest */
+  public buildRequestForLinkTableRelationship(instance: LinkTableRelationship, opcode: DbOpcode): void {
+    if (!this._imodel.briefcaseInfo)
+      throw new IModelError(IModelStatus.BadRequest);
+    const rc: RepositoryStatus = this._imodel.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForLinkTableRelationship(this._pendingRequest as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(instance), opcode);
+    if (rc !== RepositoryStatus.Success)
+      throw new IModelError(rc);
+  }
+
+  /** See CodeSpec.buildConcurrencyControlRequest */
+  public buildRequestForCodeSpec(instance: CodeSpec, opcode: DbOpcode): void {
+    if (!this._imodel.briefcaseInfo)
+      throw new IModelError(IModelStatus.BadRequest);
+    const rc: RepositoryStatus = this._imodel.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForCodeSpec(this._pendingRequest as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(instance.id), opcode);
+    if (rc !== RepositoryStatus.Success)
+      throw new IModelError(rc);
+  }
+
+  /** @private */
+  public get pendingRequest(): ConcurrencyControl.Request {
+    return this._pendingRequest;
+  }
+
+  /**
+   * Take ownership of all or some of the pending request for locks and codes.
+   * @param locksOnly If true, only the locks in the pending request are extracted. The default is to extract all requests.
+   * @param codesOnly If true, only the codes in the pending request are extracted. The default is to extract all requests.
+   */
+  public extractPendingRequest(locksOnly?: boolean, codesOnly?: boolean): ConcurrencyControl.Request {
+    if (!this._imodel.briefcaseInfo)
+      throw new IModelError(IModelStatus.BadRequest);
+
+    const extractLocks: boolean = !codesOnly;
+    const extractCodes: boolean = !locksOnly;
+
+    const req = ConcurrencyControl.Request.create();
+    this._imodel.briefcaseInfo.nativeDb.extractBulkResourcesRequest(req as NodeAddonBriefcaseManagerResourcesRequest, extractLocks, extractCodes);
+    this._imodel.briefcaseInfo.nativeDb.extractBriefcaseManagerResourcesRequest(req as NodeAddonBriefcaseManagerResourcesRequest, this._pendingRequest as NodeAddonBriefcaseManagerResourcesRequest, extractLocks, extractCodes);
+
+    return req;
+  }
+
+  /**
+   * Try to acquire locks and/or reserve codes from iModelHub.
+   * This function may fulfill some requests and fail to fulfill others. This function returns a zero status
+   * if all requests were fulfilled. It returns a non-zero status if some or all requests could not be fulfilled.
+   * This function updates req to remove the requests that were successfully fulfilled. Therefore, if a non-zero
+   * status is returned, the caller can look at req to see which requests failed.
+   * @param req The list of requests to be sent to iModelHub. If undefined, all pending requests are sent to iModelHub.
+   * @throws RequestError if some or all of the request could not be fulfilled by iModelHub.
+   */
+  public request(req?: ConcurrencyControl.Request) {
+    if (req === undefined)
+      req = this.extractPendingRequest();
+    console.log("");
+    console.log("TODO: send request to iModelHubClient " + JSON.stringify(ConcurrencyControl.Request.toAny(req)));
+    console.log("");
+  }
+
+  /**
+   * Check to see if *all* of the requested resources could be acquired from iModelHub.
+   * @param req the list of resource requests to be fulfilled.
+   * @return true if all resources could be acquired or false if any could not be acquired.
+   */
+  public areAvailable(_req: ConcurrencyControl.Request): boolean {
+    if (!this._imodel.briefcaseInfo)
+      throw new IModelError(IModelStatus.BadRequest);
+    // throw new Error("TBD");
+    return false; // *** TBD
+  }
+
+  /** Set the concurrency control policy.
+   * Before changing from optimistic to pessimistic, all local changes must be saved and uploaded to iModelHub.
+   * Before changing the locking policy of the pessimistic concurrency policy, all local changes must be saved to the local briefcase.
+   * @param policy The policy to used
+   * @throws IModelError if the policy cannot be set.
+   */
+  public setPolicy(policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy): void {
+    if (!this._imodel.briefcaseInfo)
+      throw new IModelError(IModelStatus.BadRequest);
+    let rc: RepositoryStatus = RepositoryStatus.Success;
+    if (policy as ConcurrencyControl.OptimisticPolicy) {
+      const oc: ConcurrencyControl.OptimisticPolicy = policy as ConcurrencyControl.OptimisticPolicy;
+      rc = this._imodel.briefcaseInfo.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(oc.conflictResolution);
+    } else {
+      rc = this._imodel.briefcaseInfo.nativeDb.setBriefcaseManagerPessimisticConcurrencyControlPolicy();
+    }
+    if (RepositoryStatus.Success !== rc) {
+      throw new IModelError(rc);
+    }
+  }
+
+  /**
+   * Start a bulk change. This allows the app to insert, update, and delete entities in the local briefcase without first acquiring locks.
+   * When the app calls saveChanges, the transaction manager attempts to acquire all needed locks and codes.
+   * The transaction manager will roll back all pending changes if any lock or code cannot be acquired at save time. Lock and code acquisition will fail if another user
+   * has pushed changes to the same entities or used the same codes as the local transaction.
+   * This mode can therefore be used safely only in special cases where contention for locks and codes is not a risk.
+   * Normally, that is only possible when writing to a model that is exclusively locked and where codes are scoped to that model.
+   * See saveChanges and endBulkUpdateMode.
+   * @throws IModelError if it would be illegal to enter bulk operation mode.
+   */
+  public startBulkUpdateMode(): void {
+    if (!this._imodel.briefcaseInfo)
+      throw new IModelError(IModelStatus.BadRequest);
+    const rc: RepositoryStatus = this._imodel.briefcaseInfo.nativeDb.briefcaseManagerStartBulkOperation();
+    if (RepositoryStatus.Success !== rc)
+      throw new IModelError(rc);
+  }
+
+  /**
+   * Call this in the rare case where you want to acquire locks and codes *before* the end of the transaction.
+   * Note that saveChanges automatically calls this method to end the bulk operation and acquire locks and codes, so there is no need to call this method directly.
+   * If successful, this terminates the bulk operation.
+   * If not successful, the caller should abandon all changes.
+   * @throws IModelError if some locks or codes could not be acquired. In that case, the caller should abandon all changes.
+   */
+  public endBulkUpdateMode(): void {
+    if (!this._imodel.briefcaseInfo)
+      throw new IModelError(IModelStatus.BadRequest);
+    const rc: RepositoryStatus = this._imodel.briefcaseInfo.nativeDb.briefcaseManagerEndBulkOperation();
+    if (RepositoryStatus.Success !== rc)
+      throw new IModelError(rc);
+  }
+
+  /** API to reserve Codes and query the status of Codes */
+  get codes(): ConcurrencyControl.Codes {
+    if (this._codes === undefined)
+      this._codes = new ConcurrencyControl.Codes(this._imodel);
+    return this._codes;
+  }
+
 }
 
-/**
- * Elements to be locked.
- */
-export interface ElementsToLock {
-  /** The Elements to be inserted */
-  newElements?: Element[];
-  /** The Elements to be updated */
-  ElementsToUpdate?: Element[];
-  /** The Elements to be deleted */
-  ElementsToDelete?: Element[];
+/** Types that are relative to ConcurrencyControl. Typescript declaration merging will make these types appear to be "nested" in the ConcurrencyControl class. In fact, they will become static properties of that class. */
+export namespace ConcurrencyControl {
+
+  /** This is a stand-in for NodeAddonBriefcaseManagerResourcesRequest. We cannot (re-)export that for technical reasons. */
+  export class Request {
+    private constructor() { }
+
+    /** Create an empty Request */
+    public static create(): Request {
+      return new (NodeAddonRegistry.getAddon()).NodeAddonBriefcaseManagerResourcesRequest();
+    }
+
+    /** Convert the request to any */
+    public static toAny(req: Request): any {
+      return JSON.parse((req as NodeAddonBriefcaseManagerResourcesRequest).toJSON());
+    }
+
+  }
+
+  /** How to handle a conflict. Keep this consistent with DgnPlatform/RepositoryManager.h. */
+  export const enum OnConflict {
+    /** Reject the incoming change */
+    RejectIncomingChange = 0,
+    /** Accept the incoming change */
+    AcceptIncomingChange = 1,
+  }
+
+  /** The options for how conflicts are to be handled during change-merging in an OptimisticConcurrencyControlPolicy.
+   * The scenario is that the caller has made some changes to the *local* briefcase. Now, the caller is attempting to
+   * merge in changes from iModelHub. The properties of this policy specify how to handle the *incoming* changes from iModelHub.
+   */
+  export interface ConflictResolutionPolicy {
+    /** What to do with the incoming change in the case where the same entity was updated locally and also would be updated by the incoming change. */
+    updateVsUpdate: OnConflict;
+    /** What to do with the incoming change in the case where an entity was updated locally and would be deleted by the incoming change. */
+    updateVsDelete: OnConflict;
+    /** What to do with the incoming change in the case where an entity was deleted locally and would be updated by the incoming change. */
+    deleteVsUpdate: OnConflict;
+  }
+
+  /** Specifies an optimistic concurrency policy.
+   * Optimistic concurrency allows entities to be modified in the local briefcase without first acquiring locks. Allows codes to be used in the local briefcase without first acquiring them.
+   * This creates the possibility that other apps may have uploaded changesets to iModelHub that overlap with local changes.
+   * In that case, overlapping changes are merged when changesets are downloaded from iModelHub.
+   * A ConflictResolutionPolicy is then applied in cases where an overlapping change conflict with a local change.
+   */
+  export class OptimisticPolicy {
+    public conflictResolution: ConflictResolutionPolicy;
+    constructor(p: ConflictResolutionPolicy) { this.conflictResolution = p; }
+  }
+
+  /** Specifies a pessimistic concurrency policy.
+   * Pessimistic concurrency means that entities must be locked and codes must be acquired before local changes can be pushed to iModelHub.
+   * There is more than one strategy for when to acquire locks. See IModelDb.startBulkOperation.
+   */
+  export class PessimisticPolicy {
+  }
+
+  /** Thrown when iModelHub denies or cannot process a request. */
+  export class RequestError extends IModelError {
+    public unavailableCodes: Code[];
+    public unavailableLocks: Code[];
+  }
+
+  /** Thrown when iModelHub denies or cannot process a request to reserve Codes. */
+  export class CodeReservationError extends IModelError {
+    public unavailable: Code[];
+  }
+
+  /*
+  export enum CodeStateValue {
+      Available,  // The Code can be reserved for use by any briefcase
+      Reserved,   // The Code has been reserved for use by a briefcase
+      Used,       // A revision has been committed to the server in which the Code was used by an object.
+      Discarded,  // A revision has been committed to the server in which the Code became discarded by the object by which it was previously used.
+  }
+
+  export class CodeState {
+    public state: CodeStateValue;
+    public revisionId: string;
+    public briefcaseId: Id64;
+  }
+  */
+
+  export enum CodeState {
+    Available,  // The Code can be reserved for use by any briefcase
+    Reserved,   // The Code has been reserved for use by a briefcase
+    Used,       // A revision has been committed to the server in which the Code was used by an object.
+    Discarded,  // A revision has been committed to the server in which the Code became discarded by the object by which it was previously used.
+  }
+
+  /** Code manager */
+  export class Codes {
+    private _imodel: IModelDb;
+
+    constructor(im: IModelDb) {
+      this._imodel = im;
+    }
+
+    /**
+     * Contacts the code service to reserve Codes. If no Codes are specified, then the Codes that are in all currently pending requests are reserved.
+     * @param codes The Codes to reserve
+     * @throws CodeReservationError
+     */
+    public reserve(codes?: Code[]): void {
+      if (!this._imodel.briefcaseInfo)
+        throw this._imodel._newNotOpenError();
+      let req: ConcurrencyControl.Request;
+      if (codes === undefined) {
+        req = this._imodel.concurrencyControl.extractPendingRequest(false, true);
+        this._imodel.briefcaseInfo.nativeDb.extractBulkResourcesRequest(req as NodeAddonBriefcaseManagerResourcesRequest, false, true);
+        this._imodel.briefcaseInfo.nativeDb.extractBriefcaseManagerResourcesRequest(req as NodeAddonBriefcaseManagerResourcesRequest, req as NodeAddonBriefcaseManagerResourcesRequest, false, true);
+        // TODO: examine result and throw CodeReservationError if some codes could not be reserved
+      } else {
+        throw new IModelError(IModelStatus.BadArg, "TODO: convert to code request and reserve " + JSON.stringify(codes));
+      }
+      this._imodel.concurrencyControl.request(req);
+    }
+
+    /**
+     * Queries the state of the specified Codes in the code service.
+     * @param codes The Codes to query
+     */
+    public queryState(codes: Code[]): CodeState[] {
+      throw new IModelError(IModelStatus.BadArg, "TODO: queryState " + JSON.stringify(codes));
+    }
+  }
+
 }
 
 /** The collection of models in an [[IModelDb]]. */
@@ -591,7 +752,7 @@ export class IModelDbModels {
       throw this._iModel._newNotOpenError();
 
     // Must go get the model from the iModel. Start by requesting the model's data.
-    const {error, result: json} = this._iModel.briefcaseInfo.nativeDb.getModel(JSON.stringify({ id: modelId }));
+    const { error, result: json } = this._iModel.briefcaseInfo.nativeDb.getModel(JSON.stringify({ id: modelId }));
     if (error)
       throw new IModelError(error.status, error.message, Logger.logWarning);
 
@@ -612,7 +773,7 @@ export class IModelDbModels {
       throw this._iModel._newNotOpenError();
 
     // Must go get the model from the iModel. Start by requesting the model's data.
-    const {error, result: json} = this._iModel.briefcaseInfo.nativeDb.getModel(JSON.stringify({ id: modelIdStr }));
+    const { error, result: json } = this._iModel.briefcaseInfo.nativeDb.getModel(JSON.stringify({ id: modelIdStr }));
     if (error)
       throw new IModelError(error.status, error.message, Logger.logWarning);
 
@@ -721,7 +882,7 @@ export class IModelDbElements {
       throw this._iModel._newNotOpenError();
 
     // Must go get the element from the iModel. Start by requesting the element's data.
-    const {error, result: json} = this._iModel.briefcaseInfo.nativeDb.getElement(JSON.stringify(opts));
+    const { error, result: json } = this._iModel.briefcaseInfo.nativeDb.getElement(JSON.stringify(opts));
     if (error)
       throw new IModelError(error.status, error.message, Logger.logWarning);
     const props = JSON.parse(json!) as ElementProps;
@@ -734,7 +895,7 @@ export class IModelDbElements {
       throw this._iModel._newNotOpenError();
 
     // Must go get the element from the iModel. Start by requesting the element's data.
-    const {error, result: json} = this._iModel.briefcaseInfo.nativeDb.getElement(JSON.stringify({ id: elementIdStr }));
+    const { error, result: json } = this._iModel.briefcaseInfo.nativeDb.getElement(JSON.stringify({ id: elementIdStr }));
     if (error)
       throw new IModelError(error.status, error.message, Logger.logWarning);
     return json!;

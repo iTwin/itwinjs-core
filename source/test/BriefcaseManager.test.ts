@@ -9,7 +9,7 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import { ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "../common/IModelVersion";
 import { BriefcaseManager } from "../backend/BriefcaseManager";
-import { IModelDb } from "../backend/IModelDb";
+import { IModelDb, ConcurrencyControl } from "../backend/IModelDb";
 import { IModelConnection } from "../frontend/IModelConnection";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Code } from "../common/Code";
@@ -160,33 +160,32 @@ describe("BriefcaseManager", () => {
     assert.exists(qaIModel);
   });
 
-  it("should build resource request", async () => {
+  it("should build concurrency control request", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
 
     const el: Element = iModel.elements.getRootSubject();
-    const req: BriefcaseManager.ResourcesRequest = BriefcaseManager.ResourcesRequest.create();
-    el.buildResourcesRequest(req, DbOpcode.Update);    // make a list of the resources that will be needed to update this element (e.g., a shared lock on the model and a code)
-    const reqAsAny: any = BriefcaseManager.ResourcesRequest.toAny(req);
+    el.buildConcurrencyControlRequest(DbOpcode.Update);    // make a list of the locks, etc. that will be needed to update this element
+    const reqAsAny: any = ConcurrencyControl.Request.toAny(iModel.concurrencyControl.pendingRequest);
     assert.isDefined(reqAsAny);
     assert.isArray(reqAsAny.Locks);
-    assert.equal(reqAsAny.Locks.length, 3);
+    assert.equal(reqAsAny.Locks.length, 3, " we expect to need a lock on the element (exclusive), its model (shared), and the db itself (shared)");
     assert.isArray(reqAsAny.Codes);
-    assert.equal(reqAsAny.Codes.length, 0);
+    assert.equal(reqAsAny.Codes.length, 0, " since we didn't add or change the element's code, we don't expect to need a code reservation");
 
     iModel.close(accessToken);
   });
 
-  it.only("should write to briefcase with optimistic concurrency", async () => {
+  it("should write to briefcase with optimistic concurrency", async () => {
 
     // Acquire a briefcase from iModelHub
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
 
     // Turn on optimistic concurrency control. This allows the app to modify elements, models, etc. without first acquiring locks.
     // (Later, when the app downloads and merges changeSets from the Hub into the briefcase, BriefcaseManager will merge changes and handle conflicts.)
-    iModel.setConcurrencyControlPolicy(new BriefcaseManager.OptimisticConcurrencyControlPolicy({
-      updateVsUpdate: BriefcaseManager.OnConflict.RejectIncomingChange,
-      updateVsDelete: BriefcaseManager.OnConflict.AcceptIncomingChange,
-      deleteVsUpdate: BriefcaseManager.OnConflict.RejectIncomingChange,
+    iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy({
+      updateVsUpdate: ConcurrencyControl.OnConflict.RejectIncomingChange,
+      updateVsDelete: ConcurrencyControl.OnConflict.AcceptIncomingChange,
+      deleteVsUpdate: ConcurrencyControl.OnConflict.RejectIncomingChange,
     }));
 
     // Show that we can modify the properties of an element. In this case, we modify the root element itself.
@@ -210,11 +209,10 @@ describe("BriefcaseManager", () => {
     const elid1 = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
     iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
 
-    // Must reserve codes *before* calling saveChanges.
     try {
-      iModel.requestResources(iModel.extractBulkResourcesRequest());
+      iModel.concurrencyControl.codes.reserve();
     } catch (err) {
-      // *** TODO: deal with some codes that could not be reserved. Maybe delete the elements that use them?
+      // *** TODO: deal with CodeReservationError
     }
 
     // Commit the local changes to a local transaction in the briefcase.
@@ -245,12 +243,11 @@ describe("BriefcaseManager", () => {
       IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId),
     ];
 
-    const req: BriefcaseManager.ResourcesRequest = BriefcaseManager.ResourcesRequest.create();
     for (const el of elements) {
-      el.buildResourcesRequest(req, DbOpcode.Insert);    // make a list of the resources that will be needed to insert this element (e.g., a shared lock on the model and a code)
+      el.buildConcurrencyControlRequest(DbOpcode.Insert);    // make a list of the resources that will be needed to insert this element (e.g., a shared lock on the model and a code)
     }
 
-    iModel.requestResources(req);
+    iModel.concurrencyControl.request(); // In a pessimistic concurrency regime, we must request locks and codes *before* writing to the local IModelDb.
 
     for (const el of elements)
       iModel.elements.insertElement(el);

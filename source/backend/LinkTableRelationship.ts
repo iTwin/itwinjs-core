@@ -7,7 +7,6 @@ import { EntityProps } from "../common/EntityProps";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { assert, IModelError, IModelStatus } from "../common/IModelError";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
-import { BriefcaseManager } from "./BriefcaseManager";
 import { DbOpcode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { ECSqlStatement } from "./ECSqlStatement";
 
@@ -55,12 +54,11 @@ export class LinkTableRelationship extends Entity implements LinkTableRelationsh
   // TODO: Expose properties for 'strength' and 'direction'
 
  /**
-  * Add the resource request that would be needed in order to carry out the specified operation.
-  * @param req The request object, which accumulates requests.
+  * Add a request for the locks that would be needed in order to carry out the specified operation.
   * @param opcode The operation that will be performed on the LinkTableRelationship instance.
   */
-  public buildResourcesRequest(req: BriefcaseManager.ResourcesRequest, opcode: DbOpcode): void {
-    this.iModel.buildResourcesRequestForLinkTableRelationship(req, this, opcode);
+  public buildConcurrencyControlRequest(opcode: DbOpcode): void {
+    this.iModel.concurrencyControl.buildRequestForLinkTableRelationship(this, opcode);
   }
 }
 

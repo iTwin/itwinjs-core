@@ -7,7 +7,6 @@ import { IModelError, IModelStatus } from "../common/IModelError";
 import { CodeSpec } from "../common/Code";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelDb } from "./IModelDb";
-import { BriefcaseManager } from "./BriefcaseManager";
 
 /** Manages CodeSpecs within an [[IModelDb]] */
 export class CodeSpecs {
@@ -98,13 +97,12 @@ export class CodeSpecs {
     });
   }
 
- /**
-  * Add the resource request that would be needed in order to carry out the specified operation.
-  * @param req The request object, which accumulates requests.
-  * @param codeSpec The CodeSpec
-  * @param opcode The operation that will be performed on the CodeSpec.
-  */
-  public buildResourcesRequest(req: BriefcaseManager.ResourcesRequest, codeSpec: CodeSpec, opcode: DbOpcode): void {
-    this._imodel.buildResourcesRequestForCodeSpec(req, codeSpec, opcode);
+  /**
+   * Add a request for the locks that would be needed in order to carry out the specified operation.
+   * @param codeSpec The CodeSpec
+   * @param opcode The operation that will be performed on the CodeSpec.
+   */
+  public buildConcurrencyControlRequest(codeSpec: CodeSpec, opcode: DbOpcode): void {
+    this._imodel.concurrencyControl.buildRequestForCodeSpec(codeSpec, opcode);
   }
 }

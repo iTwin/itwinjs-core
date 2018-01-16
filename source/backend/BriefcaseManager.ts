@@ -9,7 +9,7 @@ import { BriefcaseStatus, IModelError } from "../common/IModelError";
 import { IModelVersion } from "../common/IModelVersion";
 import { IModelToken, Configuration } from "../common/IModel";
 import { NodeAddonRegistry } from "./NodeAddonRegistry";
-import { NodeAddonDgnDb, ErrorStatusOrResult, NodeAddonBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
+import { NodeAddonDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { IModelDb } from "./IModelDb";
 
 import * as fs from "fs";
@@ -696,63 +696,4 @@ export class BriefcaseManager {
     return BriefcaseManager.cache.findBriefcase(iModelToken);
   }
 
-}
-
-/** Types that are relative to BriefcaseManager. Typescript declaration merging will make these types appear to be properties of the BriefcaseManager class. */
-export namespace BriefcaseManager {
-
-  /** This is a stand-in for NodeAddonBriefcaseManagerResourcesRequest. We cannot (re-)export that for technical reasons. */
-  export class ResourcesRequest {
-    private constructor() { }
-
-    /** Create an empty ResourcesRequest */
-    public static create(): ResourcesRequest {
-      return new (NodeAddonRegistry.getAddon()).NodeAddonBriefcaseManagerResourcesRequest();
-    }
-
-    /** Convert the request to any */
-    public static toAny(req: ResourcesRequest): any {
-      return JSON.parse((req as NodeAddonBriefcaseManagerResourcesRequest).toJSON());
-    }
-
-  }
-
-  /** How to handle a conflict. Keep this consistent with DgnPlatform/RepositoryManager.h. */
-  export const enum OnConflict {
-    /** Reject the incoming change */
-    RejectIncomingChange = 0,
-    /** Accept the incoming change */
-    AcceptIncomingChange = 1,
-  }
-
-  /** The options for how conflicts are to be handled during change-merging in an OptimisticConcurrencyControlPolicy.
-   * The scenario is that the caller has made some changes to the *local* briefcase. Now, the caller is attempting to
-   * merge in changes from iModelHub. The properties of this policy specify how to handle the *incoming* changes from iModelHub.
-   */
-  export interface ConflictResolutionPolicy {
-    /** What to do with the incoming change in the case where the same entity was updated locally and also would be updated by the incoming change. */
-    updateVsUpdate: OnConflict;
-    /** What to do with the incoming change in the case where an entity was updated locally and would be deleted by the incoming change. */
-    updateVsDelete: OnConflict;
-    /** What to do with the incoming change in the case where an entity was deleted locally and would be updated by the incoming change. */
-    deleteVsUpdate: OnConflict;
-  }
-
-  /** Specifies an optimistic concurrency policy.
-   * Optimistic concurrency allows entities to be modified in the local briefcase without first acquiring locks. Allows codes to be used in the local briefcase without first acquiring them.
-   * This creates the possibility that other apps may have uploaded changesets to iModelHub that overlap with local changes.
-   * In that case, overlapping changes are merged when changesets are downloaded from iModelHub.
-   * A ConflictResolutionPolicy is then applied in cases where an overlapping change conflict with a local change.
-   */
-  export class OptimisticConcurrencyControlPolicy {
-    public conflictResolution: ConflictResolutionPolicy;
-    constructor(p: ConflictResolutionPolicy) { this.conflictResolution = p; }
-  }
-
-  /** Specifies a pessimistic concurrency policy.
-   * Pessimistic concurrency means that entities must be locked and codes must be acquired before local changes can be pushed to iModelHub.
-   * There is more than one strategy for when to acquire locks. See IModelDb.startBulkOperation.
-   */
-  export class PessimisticConcurrencyControlPolicy {
-  }
 }

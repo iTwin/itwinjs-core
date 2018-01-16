@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs-extra";
 import { assert } from "chai";
-import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
 import { ConnectClient, Project, IModelHubClient, Briefcase, DeploymentEnv } from "@bentley/imodeljs-clients";
@@ -11,12 +11,9 @@ import { Code } from "../common/Code";
 import { Gateway } from "../common/Gateway";
 import { Element } from "../backend/Element";
 import { IModelDb } from "../backend/IModelDb";
-import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { NodeAddonRegistry } from "../backend/NodeAddonRegistry";
 import { IModelGateway } from "../gateway/IModelGateway";
 import { ElementProps, GeometricElementProps } from "../common/ElementProps";
-
-import { Entity } from "../backend/Entity";
 import { DefinitionModel } from "../backend/Model";
 import { SpatialCategory } from "../backend/Category";
 import { Appearance } from "../common/SubCategoryAppearance";
@@ -154,14 +151,12 @@ export class IModelTestUtils {
       code: newModelCode,
     };
     const modeledElement: Element = testImodel.elements.createElement(modeledElementProps);
-    IModelTestUtils.requestResources(modeledElement, DbOpcode.Insert);
     modeledElementId = testImodel.elements.insertElement(modeledElement);
 
     assert.isTrue(modeledElementId.isValid());
 
     // The model
     const newModel = testImodel.models.createModel({ id: new Id64(), modeledElement: modeledElementId, classFullName: "BisCore:PhysicalModel", isPrivate: privateModel });
-    IModelTestUtils.requestResources(newModel, DbOpcode.Insert);
     newModelId = testImodel.models.insertModel(newModel);
 
     assert.isTrue(newModelId.isValid());
@@ -169,17 +164,6 @@ export class IModelTestUtils {
     assert.deepEqual(newModelId, newModel.id);
 
     return [modeledElementId, newModelId];
-  }
-
-  //
-  // Acquire the resources needed to carry out the specified operation on the specified entity
-  // *** NB: This just for test code! It is very inefficient to acquire resources for entities one by one!
-  // *** NB: A real app must accumulate many requests and then make a single call on iModelHub!
-  //
-  public static requestResources(entity: Entity, opcode: DbOpcode) {
-    const req: BriefcaseManager.ResourcesRequest = BriefcaseManager.ResourcesRequest.create();
-    entity.buildResourcesRequest(req, opcode);
-    entity.iModel.requestResources(req);
   }
 
   // Create a SpatialCategory, insert it, and set its default appearance
