@@ -139,4 +139,18 @@ describe("ChangeSummary", () => {
       await iModel.close(accessToken);
     }
   });
+
+  it("Extract ChangeSummaries with invalid input", async () => {
+    try {
+      await ChangeSummaryManager.extractChangeSummaries(accessToken, "123", testIModelId);
+     } catch (e) {
+       assert.equal(e.message, "Not Found");
+     }
+
+    try {
+     await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, "123");
+    } catch (e) {
+      assert.equal(e.message, "Not Found");
+    }
+  });
 });
