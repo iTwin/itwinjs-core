@@ -2,21 +2,34 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { IModelError } from "../common/IModelError";
+import { IModelError, IModelStatus } from "../common/IModelError";
 import { NodeAddonECDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { NodeAddonRegistry } from "./NodeAddonRegistry";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
+import { IDisposable } from "@bentley/bentleyjs-core/lib/Disposable";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 /** Allows performing CRUD operations in an ECDb */
-export class ECDb {
-  public nativeDb: NodeAddonECDb;
-  private readonly statementCache: ECSqlStatementCache;
+export class ECDb implements IDisposable {
+  private _nativeDb: NodeAddonECDb | undefined;
+  private readonly _statementCache: ECSqlStatementCache;
 
   constructor() {
-    this.nativeDb = new (NodeAddonRegistry.getAddon()).NodeAddonECDb();
-    this.statementCache = new ECSqlStatementCache();
+    this._nativeDb = new (NodeAddonRegistry.getAddon()).NodeAddonECDb();
+    this._statementCache = new ECSqlStatementCache();
+  }
+
+  /** Call this function when finished with this ECDb object. This releases the native resources held by the
+   *  ECDb object.
+   */
+  public dispose(): void {
+    if (this._nativeDb == null)
+      return;
+
+    this.closeDb();
+    this._nativeDb!.dispose();
+    this._nativeDb = undefined;
   }
 
   /** Create an ECDb
@@ -50,7 +63,7 @@ export class ECDb {
    * @throws [[IModelError]] if the database is not open.
    */
   public closeDb(): void {
-    this.statementCache.clearOnClose();
+    this._statementCache.clearOnClose();
     this.nativeDb.closeDb();
   }
 
@@ -88,7 +101,7 @@ export class ECDb {
    * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSql syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
    */
   public getPreparedStatement(ecsql: string): ECSqlStatement {
-    const cachedStmt = this.statementCache.find(ecsql);
+    const cachedStmt = this._statementCache.find(ecsql);
     if (cachedStmt !== undefined && cachedStmt.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
       assert(cachedStmt.statement.isShared());
       assert(cachedStmt.statement.isPrepared());
@@ -96,10 +109,10 @@ export class ECDb {
       return cachedStmt.statement;
     }
 
-    this.statementCache.removeUnusedStatementsIfNecessary();
+    this._statementCache.removeUnusedStatementsIfNecessary();
 
     const stmt = this.prepareStatement(ecsql);
-    this.statementCache.add(ecsql, stmt);
+    this._statementCache.add(ecsql, stmt);
     return stmt;
   }
 
@@ -112,10 +125,10 @@ export class ECDb {
     const stmt = this.getPreparedStatement(ecsql);
     try {
       const val: T = cb(stmt);
-      this.statementCache.release(stmt);
+      this._statementCache.release(stmt);
       return val;
     } catch (err) {
-      this.statementCache.release(stmt);
+      this._statementCache.release(stmt);
       Logger.logError(err.toString());
       throw err;
     }
@@ -129,5 +142,12 @@ export class ECDb {
     const stmt = new ECSqlStatement();
     stmt.prepare(this.nativeDb, ecsql);
     return stmt;
+  }
+
+  public get nativeDb(): NodeAddonECDb {
+    if (this._nativeDb == null)
+      throw new IModelError(IModelStatus.BadRequest, "ECDb object has already been disposed.");
+
+    return this._nativeDb!;
   }
 }

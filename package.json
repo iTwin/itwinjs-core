@@ -44,6 +44,7 @@
     "test:tsnode": "node node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode --packageRoot \"./\" --testDir=\"./source/test\" --tscPaths",
     "testbed": "cd source/testbed && npm run start",
     "cover": "nyc npm run test:tsnode",
+    "cover:docs": "cd source/test && node ../../node_modules/@bentley/bentleyjs-tools/scripts/docscoverage.js",
     "module:backend": "cd source/backend && node ../../node_modules/@bentley/bentleyjs-tools/scripts/mastermodule --includes=../common --recursively=true",
     "module:frontend": "cd source/frontend && node ../../node_modules/@bentley/bentleyjs-tools/scripts/mastermodule --includes=../common --recursively=true"
   },
@@ -60,7 +61,7 @@
   "dependencies": {},
   "//devDependencies": "NOTE: These are the union of all devDependencies for source/frontend, source/backend, and source/test",
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "^1.1.5",
+    "@bentley/bentleyjs-tools": "^1.2.1",
     "@types/chai": "^4.0.8",
     "@types/flatbuffers": "^1.6.5",
     "@types/fs-extra": "^4.0.7",

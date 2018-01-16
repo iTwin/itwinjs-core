@@ -1,11 +1,12 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.21.0",
+  "version": "0.22.0",
   "description": "iModelJs backend components",
   "license": "UNLICENSED",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run copy:assets",
     "clean": "rimraf lib",
+    "copy:assets": "cpx ./assets/**/* ./lib/backend/assets",
     "test": "echo \"Error: run tests from the '../test' directory.\" && exit 1"
   },
   "repository": {},

@@ -5,6 +5,7 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelError } from "../common/IModelError";
 import { BindingUtility, BindingValue } from "./BindingUtility";
+import { IDisposable } from "@bentley/bentleyjs-core/lib/Disposable";
 import { NodeAddonRegistry } from "./NodeAddonRegistry";
 import { NodeAddonECSqlStatement, NodeAddonECDb, NodeAddonDgnDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 
@@ -12,7 +13,7 @@ import { NodeAddonECSqlStatement, NodeAddonECDb, NodeAddonDgnDb } from "@bentley
  * in before use. See bindValues. A prepared statement can be stepped through all matching rows by calling step. ECSqlStatement is-a iterator, so that you
  * can step through its results by using standard iteration syntax, such as "for in".
  */
-export class ECSqlStatement implements IterableIterator<any> {
+export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   private _stmt: NodeAddonECSqlStatement | undefined;
   private _isShared: boolean = false;
 
