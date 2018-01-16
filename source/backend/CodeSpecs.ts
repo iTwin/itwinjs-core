@@ -97,12 +97,4 @@ export class CodeSpecs {
     });
   }
 
-  /**
-   * Add a request for the locks that would be needed in order to carry out the specified operation.
-   * @param codeSpec The CodeSpec
-   * @param opcode The operation that will be performed on the CodeSpec.
-   */
-  public buildConcurrencyControlRequest(codeSpec: CodeSpec, opcode: DbOpcode): void {
-    this._imodel.concurrencyControl.buildRequestForCodeSpec(codeSpec, opcode);
-  }
 }

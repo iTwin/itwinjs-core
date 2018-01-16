@@ -43,8 +43,11 @@ describe("Sample Code", () => {
     // __PUBLISH_EXTRACT_END__
 
     // __PUBLISH_EXTRACT_START__ BisCore1.sampleSetPolicy
-    // Turn on optimistic concurrency control. This allows the app to modify elements, models, etc. without first acquiring locks.
-    // (Later, when the app downloads and merges changeSets from the Hub into the briefcase, BriefcaseManager will merge changes and handle conflicts.)
+    // Turn on optimistic concurrency control.
+    // This allows the app to modify elements, models, etc. without first acquiring locks.
+    // Later, when the app downloads and merges changeSets from iModelHub,
+    // IModelDb's ConcurrencyControl will merge changes and handle conflicts, 
+    // as specified by this policy.
     iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy({
       updateVsUpdate: ConcurrencyControl.OnConflict.RejectIncomingChange,
       updateVsDelete: ConcurrencyControl.OnConflict.AcceptIncomingChange,

@@ -395,14 +395,10 @@ export class IModelDb extends IModel {
 /**
  * Transaction Concurrency Control.
  * <p>
- * The ConcurrencyControl class helps with making requests for locks and code reservations.
- * See [[request]]
- * [[CodeSpecs.buildConcurrencyControlRequest]]
- * [[Model.buildConcurrencyControlRequest]]
- * [[Element.buildConcurrencyControlRequest]]
- * [[LinkTableRelationship.buildConcurrencyControlRequest]]
+ * The ConcurrencyControl class helps with making requesting locks and reserving codes.
+ * See [[request]], [[ConcurrencyControl.Codes.reserve]], [[Model.buildConcurrencyControlRequest]], [[Element.buildConcurrencyControlRequest]]
  *
- * The ConcurrencyControl class has methods to set the concurrency control policy. [[setConcurrencyControlPolicy]]
+ * The ConcurrencyControl class has methods to set the concurrency control policy. [[setPolicy]]
  *
  * The ConcurrencyControl class has methods to set the policy for when requests must be made. [[startBulkOperationMode]]
  */
@@ -453,15 +449,6 @@ export class ConcurrencyControl {
     if (!this._imodel.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
     const rc: RepositoryStatus = this._imodel.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForLinkTableRelationship(this._pendingRequest as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(instance), opcode);
-    if (rc !== RepositoryStatus.Success)
-      throw new IModelError(rc);
-  }
-
-  /** @hidden [[CodeSpec.buildConcurrencyControlRequest]] */
-  public buildRequestForCodeSpec(instance: CodeSpec, opcode: DbOpcode): void {
-    if (!this._imodel.briefcaseInfo)
-      throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this._imodel.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForCodeSpec(this._pendingRequest as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(instance.id), opcode);
     if (rc !== RepositoryStatus.Success)
       throw new IModelError(rc);
   }
@@ -521,7 +508,7 @@ export class ConcurrencyControl {
 
   /** Set the concurrency control policy.
    * Before changing from optimistic to pessimistic, all local changes must be saved and uploaded to iModelHub.
-   * Before changing the locking policy of the pessimistic concurrency policy, all local changes must be saved to the local briefcase.
+   * Before changing the locking policy of the pessimistic concurrency policy, all local changes must be saved to the IModelDb.
    * Here is an example of setting an optimistic policy:
    * ``` ts
    * [[include:BisCore1.sampleSetPolicy]]
@@ -545,7 +532,7 @@ export class ConcurrencyControl {
   }
 
   /**
-   * Start a bulk change. This allows the app to insert, update, and delete entities in the local briefcase without first acquiring locks.
+   * By entering bulk operation mode, an app can insert, update, and delete entities in the IModelDb without first acquiring locks.
    * When the app calls saveChanges, the transaction manager attempts to acquire all needed locks and codes.
    * The transaction manager will roll back all pending changes if any lock or code cannot be acquired at save time. Lock and code acquisition will fail if another user
    * has pushed changes to the same entities or used the same codes as the local transaction.
@@ -602,7 +589,7 @@ export namespace ConcurrencyControl {
   }
 
   /** The options for how conflicts are to be handled during change-merging in an OptimisticConcurrencyControlPolicy.
-   * The scenario is that the caller has made some changes to the *local* briefcase. Now, the caller is attempting to
+   * The scenario is that the caller has made some changes to the *local* IModelDb. Now, the caller is attempting to
    * merge in changes from iModelHub. The properties of this policy specify how to handle the *incoming* changes from iModelHub.
    */
   export interface ConflictResolutionPolicy {
@@ -615,7 +602,7 @@ export namespace ConcurrencyControl {
   }
 
   /** Specifies an optimistic concurrency policy.
-   * Optimistic concurrency allows entities to be modified in the local briefcase without first acquiring locks. Allows codes to be used in the local briefcase without first acquiring them.
+   * Optimistic concurrency allows entities to be modified in the IModelDb without first acquiring locks. Allows codes to be used in the IModelDb without first acquiring them.
    * This creates the possibility that other apps may have uploaded changesets to iModelHub that overlap with local changes.
    * In that case, overlapping changes are merged when changesets are downloaded from iModelHub.
    * A ConflictResolutionPolicy is then applied in cases where an overlapping change conflict with a local change.
@@ -640,6 +627,7 @@ export namespace ConcurrencyControl {
 
   /** Thrown when iModelHub denies or cannot process a request to reserve Codes. */
   export class CodeReservationError extends IModelError {
+    /** The codes that cannot be reserved. */
     public unavailable: Code[];
   }
 
