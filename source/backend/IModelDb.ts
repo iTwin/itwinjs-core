@@ -131,7 +131,7 @@ export class IModelDb extends IModel {
 
   /** Get a prepared ECSql statement - may require preparing the statement, if not found in the cache.
    * @param ecsql The ECSql statement to prepare
-   * @return the prepared statement
+   * @returns the prepared statement
    * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSql syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
    */
   public getPreparedStatement(ecsql: string): ECSqlStatement {
@@ -153,7 +153,7 @@ export class IModelDb extends IModel {
   /** Use a prepared statement. This function takes care of preparing the statement and then releasing it.
    * @param ecsql The ECSql statement to execute
    * @param cb the callback to invoke on the prepared statement
-   * @return the value returned by cb
+   * @returns the value returned by cb
    */
   public withPreparedStatement<T>(ecsql: string, cb: (stmt: ECSqlStatement) => T): T {
     const stmt = this.getPreparedStatement(ecsql);
@@ -281,7 +281,7 @@ export class IModelDb extends IModel {
     return this._codeSpecs;
   }
 
-  /** @private */
+  /** @hidden */
   public insertCodeSpec(codeSpec: CodeSpec): Id64 {
     if (!this.briefcaseInfo)
       throw this._newNotOpenError();
@@ -395,16 +395,16 @@ export class IModelDb extends IModel {
 /**
  * Transaction Concurrency Control.
  * <p>
- * The ConcurrencyControl class helps with making requests for locks and code reservations. 
- * @see #request()
- * @see #CodeSpec.buildConcurrencyControlRequest
- * @see Model.buildConcurrencyControlRequest
- * @see Element.buildConcurrencyControlRequest
- * @see LinkTableRelationship.buildConcurrencyControlRequest
+ * The ConcurrencyControl class helps with making requests for locks and code reservations.
+ * See [[request]]
+ * [[CodeSpecs.buildConcurrencyControlRequest]]
+ * [[Model.buildConcurrencyControlRequest]]
+ * [[Element.buildConcurrencyControlRequest]]
+ * [[LinkTableRelationship.buildConcurrencyControlRequest]]
  *
- * The ConcurrencyControl class has methods to set the concurrency control policy. @see setConcurrencyControlPolicy.
+ * The ConcurrencyControl class has methods to set the concurrency control policy. [[setConcurrencyControlPolicy]]
  *
- * The ConcurrencyControl class has methods to set the policy for when requests must be made. @see startBulkOperationMode.
+ * The ConcurrencyControl class has methods to set the policy for when requests must be made. [[startBulkOperationMode]]
  */
 export class ConcurrencyControl {
   private _pendingRequest: ConcurrencyControl.Request;
@@ -426,7 +426,7 @@ export class ConcurrencyControl {
     return JSON.parse((req as NodeAddonBriefcaseManagerResourcesRequest).toJSON());
   }
 
-  /** @private @see Model.buildConcurrencyControlRequest */
+  /** @hidden [[Model.buildConcurrencyControlRequest]] */
   public buildRequestForModel(model: Model, opcode: DbOpcode): void {
     if (!this._imodel.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
@@ -435,7 +435,7 @@ export class ConcurrencyControl {
       throw new IModelError(rc);
   }
 
-  /** @private @see Element.buildConcurrencyControlRequest */
+  /** @hidden [[Element.buildConcurrencyControlRequest]] */
   public buildRequestForElement(element: Element, opcode: DbOpcode): void {
     if (!this._imodel.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
@@ -448,7 +448,7 @@ export class ConcurrencyControl {
       throw new IModelError(rc);
   }
 
-  /** @private @see LinkTableRelationship.buildConcurrencyControlRequest */
+  /** @hidden [[LinkTableRelationship.buildConcurrencyControlRequest]] */
   public buildRequestForLinkTableRelationship(instance: LinkTableRelationship, opcode: DbOpcode): void {
     if (!this._imodel.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
@@ -457,7 +457,7 @@ export class ConcurrencyControl {
       throw new IModelError(rc);
   }
 
-  /** @private @see CodeSpec.buildConcurrencyControlRequest */
+  /** @hidden [[CodeSpec.buildConcurrencyControlRequest]] */
   public buildRequestForCodeSpec(instance: CodeSpec, opcode: DbOpcode): void {
     if (!this._imodel.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
@@ -466,7 +466,7 @@ export class ConcurrencyControl {
       throw new IModelError(rc);
   }
 
-  /** @private */
+  /** @hidden */
   public get pendingRequest(): ConcurrencyControl.Request {
     return this._pendingRequest;
   }
@@ -497,7 +497,7 @@ export class ConcurrencyControl {
    * This function updates req to remove the requests that were successfully fulfilled. Therefore, if a non-zero
    * status is returned, the caller can look at req to see which requests failed.
    * @param req The list of requests to be sent to iModelHub. If undefined, all pending requests are sent to iModelHub.
-   * @throws RequestError if some or all of the request could not be fulfilled by iModelHub.
+   * @throws [[RequestError]] if some or all of the request could not be fulfilled by iModelHub.
    */
   public request(req?: ConcurrencyControl.Request) {
     if (req === undefined)
@@ -510,7 +510,7 @@ export class ConcurrencyControl {
   /**
    * Check to see if *all* of the requested resources could be acquired from iModelHub.
    * @param req the list of resource requests to be fulfilled.
-   * @return true if all resources could be acquired or false if any could not be acquired.
+   * @returns true if all resources could be acquired or false if any could not be acquired.
    */
   public areAvailable(_req: ConcurrencyControl.Request): boolean {
     if (!this._imodel.briefcaseInfo)
@@ -522,8 +522,12 @@ export class ConcurrencyControl {
   /** Set the concurrency control policy.
    * Before changing from optimistic to pessimistic, all local changes must be saved and uploaded to iModelHub.
    * Before changing the locking policy of the pessimistic concurrency policy, all local changes must be saved to the local briefcase.
+   * Here is an example of setting an optimistic policy:
+   * ``` ts
+   * [[include:BisCore1.sampleSetPolicy]]
+   * ```
    * @param policy The policy to used
-   * @throws IModelError if the policy cannot be set.
+   * @throws [[IModelError]] if the policy cannot be set.
    */
   public setPolicy(policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy): void {
     if (!this._imodel.briefcaseInfo)
@@ -548,7 +552,7 @@ export class ConcurrencyControl {
    * This mode can therefore be used safely only in special cases where contention for locks and codes is not a risk.
    * Normally, that is only possible when writing to a model that is exclusively locked and where codes are scoped to that model.
    * See saveChanges and endBulkOperationMode.
-   * @throws IModelError if it would be illegal to enter bulk operation mode.
+   * @throws [[IModelError]] if it would be illegal to enter bulk operation mode.
    */
   public startBulkOperationMode(): void {
     if (!this._imodel.briefcaseInfo)
@@ -563,7 +567,7 @@ export class ConcurrencyControl {
    * Note that saveChanges automatically calls this method to end the bulk operation and acquire locks and codes, so there is no need to call this method directly.
    * If successful, this terminates the bulk operation.
    * If not successful, the caller should abandon all changes.
-   * @throws IModelError if some locks or codes could not be acquired. In that case, the caller should abandon all changes.
+   * @throws [[IModelError]] if some locks or codes could not be acquired. In that case, the caller should abandon all changes.
    */
   public endBulkOperationMode(): void {
     if (!this._imodel.briefcaseInfo)
@@ -671,8 +675,11 @@ export namespace ConcurrencyControl {
 
     /**
      * Contacts the code service to reserve Codes. If no Codes are specified, then the Codes that are in all currently pending requests are reserved.
+     * ``` ts
+     * [[include:BisCore1.sampleReserveCodesWithErrorHandling]]
+     * ```
      * @param codes The Codes to reserve
-     * @throws CodeReservationError
+     * @throws [[CodeReservationError]]
      */
     public reserve(codes?: Code[]): void {
       if (!this._imodel.briefcaseInfo)
@@ -915,7 +922,7 @@ export class IModelDbElements {
   /**
    * Query for the DgnElementId of the element that has the specified code
    * @param code The code to look for
-   * @return The element that uses the code or undefined if the code is not used.
+   * @returns The element that uses the code or undefined if the code is not used.
    * @throws IModelError if the code is invalid
    */
   public queryElementIdByCode(code: Code): Id64 | undefined {

@@ -5,7 +5,7 @@ import { assert } from "chai";
 import { BisCore } from "../backend/BisCore";
 import { Element } from "../backend/Element";
 import { EntityCtor } from "../backend/Entity";
-import { IModelDb } from "../backend/IModelDb";
+import { IModelDb, ConcurrencyControl } from "../backend/IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Sample code organized as tests to make sure that it builds and runs successfully. */
@@ -40,6 +40,24 @@ describe("Sample Code", () => {
     // Do something with the returned element class
     doSomethingWithString(elementClass.schema.name);
     doSomethingWithString(elementClass.name);
+    // __PUBLISH_EXTRACT_END__
+
+    // __PUBLISH_EXTRACT_START__ BisCore1.sampleSetPolicy
+    // Turn on optimistic concurrency control. This allows the app to modify elements, models, etc. without first acquiring locks.
+    // (Later, when the app downloads and merges changeSets from the Hub into the briefcase, BriefcaseManager will merge changes and handle conflicts.)
+    iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy({
+      updateVsUpdate: ConcurrencyControl.OnConflict.RejectIncomingChange,
+      updateVsDelete: ConcurrencyControl.OnConflict.AcceptIncomingChange,
+      deleteVsUpdate: ConcurrencyControl.OnConflict.RejectIncomingChange,
+    }));
+    // __PUBLISH_EXTRACT_END__
+
+    // __PUBLISH_EXTRACT_START__ BisCore1.sampleReserveCodesWithErrorHandling
+    try {
+      iModel.concurrencyControl.codes.reserve();
+    } catch (err) {
+      // *** TODO: deal with CodeReservationError
+    }
     // __PUBLISH_EXTRACT_END__
 
     // assertions to ensure sample code is working properly
