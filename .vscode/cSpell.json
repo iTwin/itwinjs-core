@@ -19,6 +19,7 @@
         "lcov",
         "performant",
         "ruleset",
+        "rulesets",
         "selectable",
         "structs",
         "typemoq"

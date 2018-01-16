@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<PresentationRuleSet RuleSetId="Custom" VersionMajor="1" VersionMinor="3" SupportedSchemas="Generic,BisCore" 
+<PresentationRuleSet RuleSetId="Items" VersionMajor="1" VersionMinor="3" SupportedSchemas="Generic,BisCore" 
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <!-- Label overrides -->
   <LabelOverride Condition='ThisNode.IsInstanceNode ANDALSO this.IsOfClass("DefinitionPartition", "BisCore") ANDALSO ThisNode.InstanceId = "16"' Label='"Dictionary"' Priority='200'/>

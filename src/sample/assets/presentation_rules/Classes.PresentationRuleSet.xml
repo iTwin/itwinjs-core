@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<PresentationRuleSet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" RuleSetId="Classes" VersionMajor="1" VersionMinor="0" SupportedSchemas="ECDbMeta">
+  
+  <!--Label overrides-->
+  <LabelOverride Condition='ThisNode.IsInstanceNode ANDALSO ThisNode.IsOfClass("ECSchemaDef", "ECDbMeta")' Label='this.DisplayLabel' />
+  <LabelOverride Condition='ThisNode.IsInstanceNode ANDALSO ThisNode.IsOfClass("ECClassDef", "ECDbMeta")' Label='this.DisplayLabel'/>
+  <LabelOverride Condition='ThisNode.IsInstanceNode ANDALSO ThisNode.IsOfClass("ECEnumerationDef", "ECDbMeta")' Label='this.DisplayLabel'/>
+  <LabelOverride Condition='ThisNode.IsInstanceNode ANDALSO ThisNode.IsOfClass("KindOfQuantityDef", "ECDbMeta")' Label='this.DisplayLabel'/>
+  
+  <!-- Root Node rules -->
+  <!-- Create 6 distinct groups based on node type for icons, labels, etc.-->
+  <RootNodeRule>
+    <CustomNode Type='NODE_TYPE_EntityClassRoot' Label='Entities' Description='@ecSchemaEditorapplib_msg:CUSTOM_NODE_DESCRIPTION_Entities@' ImageId='ECLiteralImage://ENTITYCLASS' HideIfNoChildren='false' />
+    <CustomNode Type='NODE_TYPE_StructClassRoot' Label='Structs' Description='@ecSchemaEditorapplib_msg:CUSTOM_NODE_DESCRIPTION_Structs@' ImageId='ECLiteralImage://STRUCTCLASS' HideIfNoChildren='false' />
+    <CustomNode Type='NODE_TYPE_CustomAttributeClassRoot' Label='CustomAttributes' Description='@ecSchemaEditorapplib_msg:CUSTOM_NODE_DESCRIPTION_CustomAttributes@' ImageId='ECLiteralImage://CUSTOMATTRIBUTECLASS' HideIfNoChildren='false' />
+    <CustomNode Type='NODE_TYPE_RelClassRoot' Label='Relationships' Description='@ecSchemaEditorapplib_msg:CUSTOM_NODE_DESCRIPTION_Relationships@' ImageId='ECLiteralImage://RELATIONSHIPCLASS' HideIfNoChildren='false' />
+    <CustomNode Type='NODE_TYPE_EnumerationRoot' Label='Enums' Description='@ecSchemaEditorapplib_msg:CUSTOM_NODE_DESCRIPTION_Enums@' ImageId='ECLiteralImage://ENUMERATION' HideIfNoChildren='false' />
+    <CustomNode Type='NODE_TYPE_KindOfQuantityRoot' Label='Kinds of Quantity' Description='@ecSchemaEditorapplib_msg:CUSTOM_NODE_DESCRIPTION_Koq@' ImageId='ECLiteralImage://KINDOFQUANTITY' HideIfNoChildren='false' />
+  </RootNodeRule>
+  
+  <!-- Child Node rules -->
+  <!-- Correctly populate the root groups above with top-level Entities, Structs, CustomAttributes, Relationships, KindOfQuantities, and Enumerations -->
+  <ChildNodeRule Condition='ParentNode.Type="NODE_TYPE_EntityClassRoot"'>
+    <InstancesOfSpecificClasses GroupByClass="false" ClassNames='ECDbMeta:ECClassDef' GroupByLabel="false" ArePolymorphic="false" InstanceFilter='this.Type = 0'/>
+  </ChildNodeRule>
+  <ChildNodeRule Condition='ParentNode.Type="NODE_TYPE_StructClassRoot"'>
+    <InstancesOfSpecificClasses GroupByClass="false" ClassNames='ECDbMeta:ECClassDef' GroupByLabel="false" ArePolymorphic="false" InstanceFilter='this.Type = 2'/>
+  </ChildNodeRule>
+  <ChildNodeRule Condition='ParentNode.Type="NODE_TYPE_CustomAttributeClassRoot"'>
+    <InstancesOfSpecificClasses GroupByClass="false" ClassNames='ECDbMeta:ECClassDef' GroupByLabel="false" ArePolymorphic="false" InstanceFilter='this.Type = 3'/>
+  </ChildNodeRule>
+  <ChildNodeRule Condition='ParentNode.Type="NODE_TYPE_RelClassRoot"'>
+    <InstancesOfSpecificClasses GroupByClass="false" ClassNames='ECDbMeta:ECClassDef' GroupByLabel="false" ArePolymorphic="false" InstanceFilter='this.Type = 1'/>
+  </ChildNodeRule>
+  <ChildNodeRule Condition='ParentNode.Type="NODE_TYPE_KindOfQuantityRoot"'>
+    <InstancesOfSpecificClasses GroupByClass="false" ClassNames='ECDbMeta:KindOfQuantityDef' GroupByLabel="false" />
+  </ChildNodeRule>
+  <ChildNodeRule Condition='ParentNode.Type="NODE_TYPE_EnumerationRoot"'>
+    <InstancesOfSpecificClasses GroupByClass="false" ClassNames='ECDbMeta:ECEnumerationDef' GroupByLabel="false" />
+  </ChildNodeRule>
+  <!-- Show all derived classes -->
+  <ChildNodeRule Condition='ParentNode.SchemaName = "ECDbMeta" ANDALSO ParentNode.IsOfClass("ECClassDef", "ECDbMeta")'>
+    <RelatedInstances GroupByClass="false" GroupByRelationship="false" GroupByLabel="false" RelationshipClassNames="ECDbMeta:ClassHasBaseClasses" RequiredDirection="Backward"/>
+  </ChildNodeRule>
+  <!-- Show schema references as children of the referenced schemas -->
+  <ChildNodeRule Condition='ParentNode.SchemaName = "ECDbMeta" ANDALSO ParentNode.ClassName = "ECSchemaDef"'>
+    <RelatedInstances GroupByClass="false" GroupByLabel="false" RelationshipClassNames="ECDbMeta:SchemaHasSchemaReferences" RelatedClassNames="ECDbMeta:ECSchemaDef" RequiredDirection="Backward" />
+  </ChildNodeRule>
+ 
+  <ContentRule>
+    <SelectedNodeInstances />
+  </ContentRule>
+
+</PresentationRuleSet>

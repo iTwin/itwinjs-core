@@ -12,6 +12,7 @@ import "./PropertiesWidget.css";
 
 export interface Props {
   imodel: IModelConnection;
+  rulesetId?: string;
   selectedNode?: TreeNodeItem;
 }
 export default class PropertiesWidget extends React.Component<Props> {
@@ -24,7 +25,7 @@ export default class PropertiesWidget extends React.Component<Props> {
       <div className="PropertiesWidget">
         <h3>Properties</h3>
         <div className="ContentContainer">
-          <PropertyPane imodelToken={this.props.imodel.iModelToken} selectedNode={this.props.selectedNode} />
+          <PropertyPane imodelToken={this.props.imodel.iModelToken} rulesetId={this.props.rulesetId} selectedNode={this.props.selectedNode} />
         </div>
       </div>
     );
@@ -33,6 +34,7 @@ export default class PropertiesWidget extends React.Component<Props> {
 
 interface PropertyPaneProps {
   imodelToken: IModelToken;
+  rulesetId?: string;
   selectedNode?: TreeNodeItem;
 }
 interface PropertyDisplayInfo {
@@ -44,18 +46,21 @@ interface PropertyPaneState {
 }
 class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState> {
   private _presentationManager: ECPresentationManager;
-  private _dataProvider: PropertyPaneDataProvider;
+  private _dataProvider: PropertyPaneDataProvider | undefined;
 
   constructor(props: PropertyPaneProps, context?: any) {
     super(props, context);
     this.state = {};
     this._presentationManager = new ECPresentationManager();
-    this._dataProvider = new PropertyPaneDataProvider(this._presentationManager, props.imodelToken, "Custom");
+    if (props.rulesetId)
+      this._dataProvider = new PropertyPaneDataProvider(this._presentationManager, props.imodelToken, props.rulesetId);
   }
   public componentWillMount() {
     this.fetchProperties(this.props.imodelToken, this.props.selectedNode);
   }
   public componentWillReceiveProps(newProps: PropertyPaneProps) {
+    if (newProps.rulesetId !== this.props.rulesetId)
+      this._dataProvider = (newProps.rulesetId) ? new PropertyPaneDataProvider(this._presentationManager, newProps.imodelToken, newProps.rulesetId) : undefined;
     if (newProps.imodelToken !== this.props.imodelToken || newProps.selectedNode !== this.props.selectedNode)
       this.fetchProperties(newProps.imodelToken, newProps.selectedNode);
   }
@@ -69,12 +74,16 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
     }
   }
   private async fetchProperties(_imodelToken: IModelToken, selectedNode?: TreeNodeItem) {
-    if (!selectedNode)
+    if (!selectedNode || !this._dataProvider) {
+      this.setState({});
       return;
+    }
 
     const key = selectedNode.extendedData.node.key;
-    if (!key.classId || !key.instanceId)
+    if (!key.classId || !key.instanceId) {
+      this.setState({});
       return;
+    }
 
     try {
       const instanceKey: InstanceKey = { classId: key.classId, instanceId: key.instanceId };

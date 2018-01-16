@@ -47,6 +47,9 @@ export class TreeDataProvider {
     this.imodelToken = imodelToken;
   }
 
+  /** Get id of the ruleset used by this data provider */
+  public get rulesetId(): string { return this._rulesetId; }
+
   /** Called to get extended options for node requests */
   private createRequestOptions(): object {
     return {

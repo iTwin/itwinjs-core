@@ -9,6 +9,15 @@
   margin: 0;
 }
 
+.TreeWidget .RulesetSelector {
+  margin: 5px 0 10px 0;
+}
+
+.TreeWidget .RulesetSelector p {
+  display: inline;
+  margin-right: 5px;
+}
+
 .rc-tree {
   margin: 0;
   padding: 5px;

@@ -9,6 +9,7 @@ import "./App.css";
 
 export interface State {
   imodel?: IModelConnection;
+  currentRulesetId?: string;
   selectedNode?: TreeNodeItem;
 }
 
@@ -25,15 +26,15 @@ export default class App extends React.Component<{}, State> {
   }
 
   // tslint:disable-next-line:naming-convention
-  private onTreeNodeSelected = (node?: TreeNodeItem) => {
-    this.setState({ ...this.state, selectedNode: node });
+  private onTreeNodeSelected = (node: TreeNodeItem | undefined, rulesetId: string | undefined) => {
+    this.setState({ ...this.state, selectedNode: node, currentRulesetId: rulesetId });
   }
 
   private renderIModelComponents(imodel: IModelConnection) {
     return (
       <div className="Content">
         <TreeWidget imodel={imodel} onTreeNodeSelected={this.onTreeNodeSelected} />
-        <PropertiesWidget imodel={imodel} selectedNode={this.state.selectedNode} />
+        <PropertiesWidget imodel={imodel} rulesetId={this.state.currentRulesetId} selectedNode={this.state.selectedNode} />
       </div>
     );
   }
