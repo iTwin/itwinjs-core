@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { BentleyError, IModelStatus, BriefcaseStatus, GetMetaDataFunction } from "@bentley/bentleyjs-core/lib/BentleyError";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";

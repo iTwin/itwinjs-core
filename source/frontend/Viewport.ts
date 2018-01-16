@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-| $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Vector3d, XYZ, Point3d, Range3d, RotMatrix, Transform, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ } from "@bentley/geometry-core/lib/PointVector";
 import { Map4d, Point4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
