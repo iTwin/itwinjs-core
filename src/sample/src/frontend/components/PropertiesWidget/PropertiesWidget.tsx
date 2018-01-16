@@ -50,7 +50,7 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
     super(props, context);
     this.state = {};
     this._presentationManager = new ECPresentationManager();
-    this._dataProvider = new PropertyPaneDataProvider(this._presentationManager, props.imodelToken, "");
+    this._dataProvider = new PropertyPaneDataProvider(this._presentationManager, props.imodelToken, "Custom");
   }
   public componentWillMount() {
     this.fetchProperties(this.props.imodelToken, this.props.selectedNode);

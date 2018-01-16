@@ -67,7 +67,7 @@ export default abstract class ContentDataProvider {
    */
   private createRequestOptions(): object {
     return {
-      rulesetId: this._rulesetId,
+      RulesetId: this._rulesetId,
     };
   }
 

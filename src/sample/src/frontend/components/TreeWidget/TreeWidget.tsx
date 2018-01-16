@@ -19,14 +19,14 @@ export interface State {
 export default class TreeWidget extends React.Component<Props, State> {
   private _manager: ECPresentationManager;
   private _dataProvider: TreeDataProvider;
-  private _items: Map<string, TreeNodeItem>;
+  private _items: Map<string, TreeData>;
 
   constructor(props: Props, context?: any) {
     super(props, context);
-    this._items = new Map<string, TreeNodeItem>();
+    this._items = new Map<string, TreeData>();
     this.state = { treeData: [] };
     this._manager = new ECPresentationManager();
-    this._dataProvider = new TreeDataProvider(this._manager, this.props.imodel.iModelToken, "Models");
+    this._dataProvider = new TreeDataProvider(this._manager, this.props.imodel.iModelToken, "Custom");
   }
 
   public async componentWillMount() {
@@ -54,12 +54,9 @@ export default class TreeWidget extends React.Component<Props, State> {
       this.setState({ treeData: data });
     } else {
       this.setState((prev: State) => {
-        const treeData = [...prev.treeData];
-        treeData.forEach((item: TreeData) => {
-          if (item.id === parentItem!.id)
-            item.children = data;
-        });
-        return { treeData };
+        // note: update the parent item's children and just return the same state
+        parentItem.children = data;
+        return { ...prev };
       });
     }
   }

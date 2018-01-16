@@ -18,54 +18,30 @@ import ECPresentationGateway from "./ECPresentationGateway";
 // make sure the gateway gets registered (hopefully this is temporary)
 ECPresentationGateway;
 
-/** @hidden */
-export interface NodeAddonDefinition {
-  handleRequest(db: any, options: string): string;
-  getImodelAddon(token: IModelToken): any;
-}
-
-/** @hidden */
-export enum NodeAddonRequestTypes {
-  GetRootNodes = "GetRootNodes",
-  GetRootNodesCount = "GetRootNodesCount",
-  GetChildren = "GetChildren",
-  GetChildrenCount = "GetChildrenCount",
-  GetFilteredNodesPaths = "GetFilteredNodesPaths",
-  GetNodePaths = "GetNodePaths",
-  GetContentDescriptor = "GetContentDescriptor",
-  GetContentSetSize = "GetContentSetSize",
-  GetContent = "GetContent",
-  GetDistinctValues = "GetDistinctValues",
+export interface Props {
+  /** @hidden */
+  addon?: NodeAddonDefinition;
+  rulesetDirectories?: string[];
 }
 
 export default class ECPresentationManager implements ECPInterface {
 
   private _addon: NodeAddonDefinition | null = null;
 
-  /** @hidden */
-  public getAddon(): NodeAddonDefinition {
-    if (!this._addon) {
-      // note the implementation is constructed here to make ECPresentationManager
-      // usable without loading the actual addon (if addon is set to something other)
-      const addonImpl = class extends (NodeAddonRegistry.getAddon()).NodeAddonECPresentationManager implements NodeAddonDefinition {
-        public handleRequest(db: any, options: string): string {
-          return super.handleRequest(db, options);
-        }
-        public getImodelAddon(token: IModelToken): any {
-          const imodel = IModelDb.find(token);
-          if (!imodel || !imodel.nativeDb)
-            throw new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, () => ({ iModelId: token.iModelId }));
-          return imodel.nativeDb;
-        }
-      };
-      this._addon = new addonImpl();
-    }
-    return this._addon!;
+  constructor(props?: Props) {
+    if (props && props.addon)
+      this._addon = props.addon;
+    if (props && props.rulesetDirectories)
+      this.getAddon().setupRulesetDirectories(props.rulesetDirectories);
   }
 
   /** @hidden */
-  public setAddon(addon: NodeAddonDefinition | null) {
-    this._addon = addon;
+  public getAddon(): NodeAddonDefinition {
+    if (!this._addon) {
+      const addonImpl = createAddonImpl();
+      this._addon = new addonImpl();
+    }
+    return this._addon!;
   }
 
   public async getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<NavNode[]> {
@@ -162,6 +138,46 @@ export default class ECPresentationManager implements ECPInterface {
     };
     return JSON.stringify(request);
   }
+}
+
+/** @hidden */
+export interface NodeAddonDefinition {
+  handleRequest(db: any, options: string): string;
+  setupRulesetDirectories(directories: string[]): void;
+  getImodelAddon(token: IModelToken): any;
+}
+
+const createAddonImpl = () => {
+  // note the implementation is constructed here to make ECPresentationManager
+  // usable without loading the actual addon (if addon is set to something other)
+  return class extends (NodeAddonRegistry.getAddon()).NodeAddonECPresentationManager implements NodeAddonDefinition {
+    public handleRequest(db: any, options: string): string {
+      return super.handleRequest(db, options);
+    }
+    public setupRulesetDirectories(directories: string[]): void {
+      return super.setupRulesetDirectories(directories);
+    }
+    public getImodelAddon(token: IModelToken): any {
+      const imodel = IModelDb.find(token);
+      if (!imodel || !imodel.nativeDb)
+        throw new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, () => ({ iModelId: token.iModelId }));
+      return imodel.nativeDb;
+    }
+  };
+};
+
+/** @hidden */
+export enum NodeAddonRequestTypes {
+  GetRootNodes = "GetRootNodes",
+  GetRootNodesCount = "GetRootNodesCount",
+  GetChildren = "GetChildren",
+  GetChildrenCount = "GetChildrenCount",
+  GetFilteredNodesPaths = "GetFilteredNodesPaths",
+  GetNodePaths = "GetNodePaths",
+  GetContentDescriptor = "GetContentDescriptor",
+  GetContentSetSize = "GetContentSetSize",
+  GetContent = "GetContent",
+  GetDistinctValues = "GetDistinctValues",
 }
 
 namespace Conversion {

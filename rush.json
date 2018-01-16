@@ -14,7 +14,7 @@
       "shouldPublish": true
     },
     {
-      "packageName": "@bentley/sample-ecpresentation-app",
+      "packageName": "@bentley/ecpresentation-sample",
       "projectFolder": "src/sample"
     },
     {

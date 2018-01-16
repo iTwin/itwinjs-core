@@ -10,7 +10,7 @@ import { NodeAddonRegistry } from "@bentley/imodeljs-backend/lib/backend/NodeAdd
 import { IModelToken } from "@bentley/imodeljs-backend/lib/common/IModel";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { PageOptions } from "@bentley/ecpresentation-backend/lib/common/ECPresentationManager";
-import { NavNode, /*, NavNodeKeyPath, NavNodePathElement*/ NavNodeKey} from "@bentley/ecpresentation-backend/lib/common/Hierarchy";
+import { NavNode, /*, NavNodeKeyPath, NavNodePathElement*/ NavNodeKey } from "@bentley/ecpresentation-backend/lib/common/Hierarchy";
 // import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-backend/lib/common/Content";
 // import { InstanceKeysList } from "@bentley/ecpresentation-backend/lib/common/EC";
 // import { createRandomECInstanceKey } from "../../helpers/backend/random/EC";
@@ -25,6 +25,28 @@ describe("ECPresentationManager", () => {
     assert.instanceOf(manager.getAddon(), NodeAddonRegistry.getAddon().NodeAddonECPresentationManager);
   });
 
+  it("uses addon implementation supplied through props", () => {
+    const mock = moq.Mock.ofType<NodeAddonDefinition>();
+    const manager = new ECPresentationManager({ addon: mock.object });
+    assert.equal(manager.getAddon(), mock.object);
+  });
+
+  describe("addon setup based on constructor props", () => {
+
+    const addon = moq.Mock.ofType<NodeAddonDefinition>();
+    beforeEach(() => {
+      addon.reset();
+    });
+
+    it("sets up ruleset directories if supplied", () => {
+      const dirs = ["test1", "test2"];
+      addon.setup((x) => x.setupRulesetDirectories(dirs)).verifiable();
+      new ECPresentationManager({ addon: addon.object, rulesetDirectories: dirs });
+      addon.verifyAll();
+    });
+
+  });
+
   describe("addon results conversion to ECPresentation objects", () => {
 
     const testData = {
@@ -35,12 +57,12 @@ describe("ECPresentationManager", () => {
         someOtherOption: 789,
       },
     };
-    const manager = new ECPresentationManager();
+
     const mock = moq.Mock.ofType<NodeAddonDefinition>();
+    const manager = new ECPresentationManager({ addon: mock.object });
     beforeEach(() => {
       mock.reset();
       mock.setup((x) => x.getImodelAddon(testData.imodelToken)).verifiable(moq.Times.atLeastOnce());
-      manager.setAddon(mock.object);
     });
     afterEach(() => {
       mock.verifyAll();
@@ -59,7 +81,7 @@ describe("ECPresentationManager", () => {
       const addonResponse: addonTypes.Node[] = [{
         NodeId: 123,
         ParentNodeId: 456,
-        Key: {Type: "type1"} as addonTypes.NodeKey,
+        Key: { Type: "type1" } as addonTypes.NodeKey,
         Label: "test1",
         Description: "description1",
         ExpandedImageId: "img_expanded_1",
@@ -97,7 +119,7 @@ describe("ECPresentationManager", () => {
       const expectedResult: NavNode[] = [{
         nodeId: addonResponse[0].NodeId,
         parentNodeId: addonResponse[0].ParentNodeId,
-        key: {type: addonResponse[0].Key.Type} as NavNodeKey,
+        key: { type: addonResponse[0].Key.Type } as NavNodeKey,
         label: addonResponse[0].Label,
         description: addonResponse[0].Description,
         imageId: addonResponse[0].ExpandedImageId,

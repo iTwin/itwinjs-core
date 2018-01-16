@@ -22,8 +22,8 @@
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "^1.3.0",
-    "@bentley/imodeljs-backend": "^0.15.0",
-    "@bentley/imodeljs-nodeaddonapi": "~1.4.0"
+    "@bentley/imodeljs-backend": "^0.21.0",
+    "@bentley/imodeljs-nodeaddonapi": "~3.0.0"
   },
   "devDependencies": {
     "@bentley/bentleyjs-tools": "^1.0.58",

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-backend",
+      "comment": "Added ability to configure presentation manager to use an app-supplied assets directory for finding app's presentation rulesets.",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-backend",
+  "email": "grigas.petraitis@bentley.com"
+}

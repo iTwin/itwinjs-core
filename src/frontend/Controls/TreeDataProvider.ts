@@ -50,7 +50,7 @@ export class TreeDataProvider {
   /** Called to get extended options for node requests */
   private createRequestOptions(): object {
     return {
-      rulesetId: this._rulesetId,
+      RulesetId: this._rulesetId,
     };
   }
 
