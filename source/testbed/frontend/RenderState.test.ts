@@ -87,7 +87,7 @@ describe("RenderState.apply()", () => {
     newState.depthFunc = GL.DepthFunc.Always;
     newState.apply(gl, prevState);
     assert.isTrue(gl.getParameter(GL.Capability.DepthTest) === true, "depth test should now be enabled");
-    let depthFunc : GL.DepthFunc = gl.getParameter(GL.Capability.DepthFunc) as GL.DepthFunc;
+    const depthFunc: GL.DepthFunc = gl.getParameter(GL.Capability.DepthFunc) as GL.DepthFunc;
     assert.isTrue(gl.getParameter(GL.Capability.DepthFunc) === GL.DepthFunc.Always, "depth func should be ALWAYS but is " + GL.DepthFunc[depthFunc]);
     });
 });
