@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-| $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Point3d, Point2d, XAndY } from "@bentley/geometry-core/lib/PointVector";
 import { Viewport } from "../Viewport";

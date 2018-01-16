@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { DeploymentEnv } from "@bentley/imodeljs-clients";
-import { LowAndHighXYZ, XYAndZ, Transform, Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { Transform, Point3d, XYZProps, TransformProps, Range3dProps } from "@bentley/geometry-core/lib/PointVector";
 import { AxisAlignedBox3d } from "./geometry/Primitives";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
@@ -30,9 +30,9 @@ export class IModelToken {
 
 export interface IModelProps {
   rootSubject?: { name: string, description?: string };
-  projectExtents?: LowAndHighXYZ | object;
-  globalOrigin?: XYAndZ | object;
-  ecefTrans?: Transform | object;
+  projectExtents?: Range3dProps;
+  globalOrigin?: XYZProps;
+  ecefTrans?: TransformProps;
 }
 
 /** An abstract class representing an instance of an iModel. */

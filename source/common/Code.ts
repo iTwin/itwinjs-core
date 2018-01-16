@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64, Id64Props } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { IModel } from "./IModel";
 
 /** Properties that define a Code */
 export interface CodeProps {
-  spec: Id64 | string;
+  spec: Id64Props;
   scope: string;
   value?: string;
 }
@@ -69,15 +69,15 @@ export class CodeSpecNames {
 
 export namespace CodeScopeSpec {
   export const enum Type {
-      Repository = 1,     /** The Code value must be unique within (at least) the DgnDb repository */
-      Model = 2,          /** The Code value must be unique within the scope of the DgnModel */
-      ParentElement = 3,  /** The Code value must be unique among other children of the same parent element */
-      RelatedElement = 4, /** The Code value must be unique among other elements also scoped by the same element */
+    Repository = 1,     /** The Code value must be unique within (at least) the DgnDb repository */
+    Model = 2,          /** The Code value must be unique within the scope of the DgnModel */
+    ParentElement = 3,  /** The Code value must be unique among other children of the same parent element */
+    RelatedElement = 4, /** The Code value must be unique among other elements also scoped by the same element */
   }
 
   export const enum ScopeRequirement {
-      ElementId = 1,      /** The DgnCode is required to have a valid DgnElementId as its scope */
-      FederationGuid = 2, /** The DgnCode is required to have a valid FederationGuid as its scope */
+    ElementId = 1,      /** The DgnCode is required to have a valid DgnElementId as its scope */
+    FederationGuid = 2, /** The DgnCode is required to have a valid FederationGuid as its scope */
   }
 }
 

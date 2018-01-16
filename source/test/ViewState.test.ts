@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
@@ -15,6 +15,7 @@ import { AuxCoordSystemSpatialState } from "../common/AuxCoordSys";
 import { CategorySelectorProps, ModelSelectorProps } from "../common/ElementProps";
 
 /* tslint:disable: no-console */
+/* spell-checker: disable */
 
 // Note: This will be relative to root imodeljs-core directory for VS Code debugging, but relative to the test directory for running in console
 const bimFileLocation = path.join(__dirname + "/assets/test.bim");

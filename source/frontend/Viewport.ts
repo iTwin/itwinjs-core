@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-| $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Vector3d, XYZ, Point3d, Range3d, RotMatrix, Transform, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ } from "@bentley/geometry-core/lib/PointVector";
 import { Map4d, Point4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
@@ -247,7 +247,7 @@ export class Viewport {
   }
 
   public getAuxCoordSystem(): AuxCoordSystemState { if (!this._auxCoordSystem) this._auxCoordSystem = this.view.createAuxCoordSystem(""); return this._auxCoordSystem; }
-  public setAuxCoordSystem(val: AuxCoordSystemState | undefined) { this._auxCoordSystem = val; this.view.setAuxiliaryCoordinateSystemId(Id64.fromJSON(val)); }
+  public setAuxCoordSystem(val: AuxCoordSystemState | undefined) { this._auxCoordSystem = val; this.view.setAuxiliaryCoordinateSystemId(Id64.fromJSON(val ? val.id : undefined)); }
   public getAuxCoordRotation(result?: RotMatrix) { return this._auxCoordSystem ? this._auxCoordSystem.getRotation(result) : RotMatrix.createIdentity(result); }
   public getAuxCoordOrigin(result?: Point3d) { return this._auxCoordSystem ? this._auxCoordSystem.getOrigin(result) : Point3d.createZero(result); }
 
@@ -719,18 +719,18 @@ export class Viewport {
     Transform.initFromRange(corners.low, corners.high, scrToNpcTran, undefined);
     return scrToNpcTran.multiplyPoint(pt, out);
   }
-  public worldToNpcArray(pts: Point3d[]): void { this.rootToNpc.transform0Ref().multiplyPoint3dArrayQuietNormalize(pts); }
-  public npcToWorldArray(pts: Point3d[]): void { this.rootToNpc.transform1Ref().multiplyPoint3dArrayQuietNormalize(pts); }
-  public worldToViewArray(pts: Point3d[]): void { this.rootToView.transform0Ref().multiplyPoint3dArrayQuietNormalize(pts); }
-  public worldToView4dArray(worldPts: Point3d[], viewPts: Point4d[]): void { this.rootToView.transform0Ref().multiplyPoint3dArray(worldPts, viewPts); }
-  public viewToWorldArray(pts: Point3d[]) { this.rootToView.transform1Ref().multiplyPoint3dArrayQuietNormalize(pts); }
-  public view4dToWorldArray(viewPts: Point4d[], worldPts: Point3d[]): void { this.rootToView.transform1Ref().multiplyPoint4dArrayQuietRenormalize(viewPts, worldPts); }
-  public worldToNpc(pt: Point3d, out?: Point3d): Point3d { return this.rootToNpc.transform0Ref().multiplyPoint3dQuietNormalize(pt, out); }
-  public npcToWorld(pt: Point3d, out?: Point3d): Point3d { return this.rootToNpc.transform1Ref().multiplyPoint3dQuietNormalize(pt, out); }
-  public worldToView(input: Point3d, out?: Point3d): Point3d { return this.rootToView.transform0Ref().multiplyPoint3dQuietNormalize(input, out); }
-  public worldToView4d(input: Point3d, out?: Point4d): Point4d { return this.rootToView.transform0Ref().multiplyPoint3d(input, 1.0, out); }
-  public viewToWorld(input: Point3d, out?: Point3d): Point3d { return this.rootToView.transform1Ref().multiplyPoint3dQuietNormalize(input, out); }
-  public view4dToWorld(input: Point4d, out?: Point3d): Point3d { return this.rootToView.transform1Ref().multiplyXYZWQuietRenormalize(input.x, input.y, input.z, input.w, out); }
+  public worldToNpcArray(pts: Point3d[]): void { this.rootToNpc.transform0.multiplyPoint3dArrayQuietNormalize(pts); }
+  public npcToWorldArray(pts: Point3d[]): void { this.rootToNpc.transform1.multiplyPoint3dArrayQuietNormalize(pts); }
+  public worldToViewArray(pts: Point3d[]): void { this.rootToView.transform0.multiplyPoint3dArrayQuietNormalize(pts); }
+  public worldToView4dArray(worldPts: Point3d[], viewPts: Point4d[]): void { this.rootToView.transform0.multiplyPoint3dArray(worldPts, viewPts); }
+  public viewToWorldArray(pts: Point3d[]) { this.rootToView.transform1.multiplyPoint3dArrayQuietNormalize(pts); }
+  public view4dToWorldArray(viewPts: Point4d[], worldPts: Point3d[]): void { this.rootToView.transform1.multiplyPoint4dArrayQuietRenormalize(viewPts, worldPts); }
+  public worldToNpc(pt: Point3d, out?: Point3d): Point3d { return this.rootToNpc.transform0.multiplyPoint3dQuietNormalize(pt, out); }
+  public npcToWorld(pt: Point3d, out?: Point3d): Point3d { return this.rootToNpc.transform1.multiplyPoint3dQuietNormalize(pt, out); }
+  public worldToView(input: Point3d, out?: Point3d): Point3d { return this.rootToView.transform0.multiplyPoint3dQuietNormalize(input, out); }
+  public worldToView4d(input: Point3d, out?: Point4d): Point4d { return this.rootToView.transform0.multiplyPoint3d(input, 1.0, out); }
+  public viewToWorld(input: Point3d, out?: Point3d): Point3d { return this.rootToView.transform1.multiplyPoint3dQuietNormalize(input, out); }
+  public view4dToWorld(input: Point4d, out?: Point3d): Point3d { return this.rootToView.transform1.multiplyXYZWQuietRenormalize(input.x, input.y, input.z, input.w, out); }
 
   /** Converts inches to pixels based on screen DPI.
    * @Note this information may not be accurate in some browsers.
@@ -766,7 +766,7 @@ export class Viewport {
 
       // get the root corners of the unexpanded box
       const ueRootBox = new Frustum();
-      ueRootToNpc.transform1Ref().multiplyPoint3dArrayQuietNormalize(ueRootBox.points);
+      ueRootToNpc.transform1.multiplyPoint3dArrayQuietNormalize(ueRootBox.points);
 
       // and convert them to npc coordinates of the expanded view
       this.worldToNpcArray(ueRootBox.points);

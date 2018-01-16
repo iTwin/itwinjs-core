@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { AccessToken, Briefcase as HubBriefcase, IModelHubClient, ChangeSet, IModel as ConnectIModel } from "@bentley/imodeljs-clients";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -634,20 +634,6 @@ export class BriefcaseManager {
     briefcase.nativeDb!.closeDgnDb();
     briefcase.isOpen = false;
     BriefcaseManager.cache!.removeBriefcase(briefcase);
-  }
-
-  public static attachChangeCache(briefcase: BriefcaseInfo) {
-    if (!briefcase.isOpen)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Failed to attach change cache to ${briefcase.pathname} because the briefcase is not open.`);
-
-    const csumFilePath: string = BriefcaseManager.buildChangeSummaryFilePath(briefcase.iModelId);
-    assert(briefcase.nativeDb != null);
-    if (briefcase.nativeDb!.isChangeCacheAttached())
-      return;
-
-    const res: DbResult = briefcase.nativeDb!.attachChangeCache(csumFilePath);
-    if (res !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(res, `Failed to attach change cache to ${briefcase.pathname}.`);
   }
 
   /** Purge closed briefcases */

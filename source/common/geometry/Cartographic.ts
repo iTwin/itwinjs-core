@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Point3d, Vector3d, XYZ, XYAndZ } from "@bentley/geometry-core/lib/PointVector";

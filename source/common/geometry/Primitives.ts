@@ -1,7 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
 import { Point2d, Point3d, Vector3d, Range2d, Transform, Range3d, RotMatrix, YawPitchRollAngles, XYAndZ, XAndY, LowAndHighXY } from "@bentley/geometry-core/lib/PointVector";
 import { CurveCollection } from "@bentley/geometry-core/lib/curve/CurveChain";
 import { BSplineSurface3d } from "@bentley/geometry-core/lib/bspline/BSplineSurface";
@@ -324,8 +323,8 @@ export class GeometricPrimitive {
             localToWorld.setIdentity();
             return false;
           }
-          const worldToLocal = tMap.transform1Ref();
-          localToWorld.setFrom(tMap.transform0Ref());
+          const worldToLocal = tMap.transform1;
+          localToWorld.setFrom(tMap.transform0);
           if (!worldToLocal) {
             localToWorld.setIdentity();
             return false;
@@ -377,7 +376,7 @@ export class GeometricPrimitive {
     }
 
     // NOTE: Ensure rotation is squared up and normalized (ComputePrincipalAreaMoments/GetEntityTransform is scaled)...
-    const rMatrix = localToWorld.matrixRef();
+    const rMatrix = localToWorld.matrix;
     RotMatrix.createPerpendicularUnitColumns(rMatrix.columnX(), rMatrix.columnY(), AxisOrder.XYZ, rMatrix);
 
     return true;

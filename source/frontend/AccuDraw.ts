@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Point3d, Vector3d, RotMatrix, Point2d, Transform } from "@bentley/geometry-core/lib/PointVector";
 import { Viewport } from "./Viewport";
@@ -1517,14 +1517,14 @@ export class AccuDraw {
       this.published.delta.setFrom(deltaP);
 
       if (transP)
-        this.published.delta.scaleInPlace(transP.matrixRef().columnX().magnitude());
+        this.published.delta.scaleInPlace(transP.matrix.columnX().magnitude());
     }
 
     if (typeof distanceP === "number") {
       this.published.distance = distanceP;
 
       if (transP)
-        this.published.distance *= transP.matrixRef().columnX().magnitude();
+        this.published.distance *= transP.matrix.columnX().magnitude();
     }
 
     if (typeof angleP === "number")
@@ -1535,14 +1535,14 @@ export class AccuDraw {
         this.published.vector.setFrom(orientationP.columnX());
 
         if (transP)
-          transP.matrixRef().multiply3dInPlace(this.published.vector);
+          transP.matrix.multiply3dInPlace(this.published.vector);
 
         this.published.vector.normalizeInPlace();
       } else if (flags & AccuDrawFlags.SetRMatrix) {
         this.published.rMatrix.setFrom(orientationP);
 
         if (transP) {
-          this.published.rMatrix.multiplyMatrixMatrix(transP.matrixRef(), this.published.rMatrix);
+          this.published.rMatrix.multiplyMatrixMatrix(transP.matrix, this.published.rMatrix);
           this.published.rMatrix.normalizeColumnsInPlace();
         }
       }
