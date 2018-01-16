@@ -400,7 +400,7 @@ export class IModelDb extends IModel {
  *
  * The ConcurrencyControl class has methods to set the concurrency control policy. [[setPolicy]]
  *
- * The ConcurrencyControl class has methods to set the policy for when requests must be made. [[startBulkOperationMode]]
+ * The ConcurrencyControl class has methods to set the policy for when requests must be made. [[startBulkOperation]]
  */
 export class ConcurrencyControl {
   private _pendingRequest: ConcurrencyControl.Request;
@@ -538,10 +538,10 @@ export class ConcurrencyControl {
    * has pushed changes to the same entities or used the same codes as the local transaction.
    * This mode can therefore be used safely only in special cases where contention for locks and codes is not a risk.
    * Normally, that is only possible when writing to a model that is exclusively locked and where codes are scoped to that model.
-   * See saveChanges and endBulkOperationMode.
+   * See saveChanges and endBulkOperation.
    * @throws [[IModelError]] if it would be illegal to enter bulk operation mode.
    */
-  public startBulkOperationMode(): void {
+  public startBulkOperation(): void {
     if (!this._imodel.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
     const rc: RepositoryStatus = this._imodel.briefcaseInfo.nativeDb.briefcaseManagerStartBulkOperation();
@@ -556,9 +556,14 @@ export class ConcurrencyControl {
    * If not successful, the caller should abandon all changes.
    * @throws [[IModelError]] if some locks or codes could not be acquired. In that case, the caller should abandon all changes.
    */
-  public endBulkOperationMode(): void {
+  public endBulkOperation(): void {
     if (!this._imodel.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
+    // Make sure that we have processed the pending bulk op request.
+    const req: ConcurrencyControl.Request = ConcurrencyControl.createRequest();
+    this._imodel.briefcaseInfo.nativeDb.extractBulkResourcesRequest(req as NodeAddonBriefcaseManagerResourcesRequest, true, true);
+    this.request(req);
+    // Now exit bulk operation mode in the addon. It will then stop collecting (and start enforcing) lock and code requirements.
     const rc: RepositoryStatus = this._imodel.briefcaseInfo.nativeDb.briefcaseManagerEndBulkOperation();
     if (RepositoryStatus.Success !== rc)
       throw new IModelError(rc);

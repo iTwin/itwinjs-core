@@ -14,7 +14,7 @@ import { IModelConnection } from "../frontend/IModelConnection";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Code } from "../common/Code";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { Element, InformationPartitionElement } from "../backend/Element";
+import { Element } from "../backend/Element";
 import { DictionaryModel } from "../backend/Model";
 import { SpatialCategory } from "../backend/Category";
 import { Appearance } from "../common/SubCategoryAppearance";
@@ -175,7 +175,7 @@ describe("BriefcaseManager", () => {
     iModel.close(accessToken);
   });
 
-  it.skip("should write to briefcase with optimistic concurrency", async () => {
+  it.only("should write to briefcase with optimistic concurrency", async () => {
 
     // Acquire a briefcase from iModelHub
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
@@ -193,27 +193,26 @@ describe("BriefcaseManager", () => {
     rootEl.userLabel = rootEl.userLabel + "changed";
     iModel.elements.updateElement(rootEl);
 
-    // Create a new physical model
-    let newModelId: Id64;
-    const modelCode = InformationPartitionElement.createCode(iModel.elements.getRootSubject(), "newPhysicalModel");
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, modelCode, true);
+    // Operations such as creating models and categories are best done in the scope of a "bulk operation".
+    // IModelDb's ConcurrencyControl will figure out what codes are needed. We'll reserve them later, all at once.
+    iModel.concurrencyControl.startBulkOperation();
 
-    // Find or create a SpatialCategory
+    // Create a new physical model.
+    let newModelId: Id64;
+    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, IModelTestUtils.getUniqueModelCode(iModel, "newPhysicalModel"), true);
+
+    // Find or create a SpatialCategory.
+    // Here we show how to use a bulk operation to reserve codes.
     const dictionary: DictionaryModel = iModel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
-    let spatialCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
-    if (undefined === spatialCategoryId) {
-      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
-    }
+    const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
+    const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+
+    // Reserve all of the codes that are required by the new model and category.
+    iModel.concurrencyControl.endBulkOperation();
 
     // Create a couple of physical elements.
     const elid1 = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
     iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
-
-    try {
-      iModel.concurrencyControl.codes.reserve();
-    } catch (err) {
-      // *** TODO: deal with CodeReservationError
-    }
 
     // Commit the local changes to a local transaction in the briefcase.
     iModel.saveChanges("inserted generic objects");

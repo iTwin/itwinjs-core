@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { DbResult, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { CodeSpec } from "../common/Code";

@@ -9,12 +9,12 @@ import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegat
 import { ConnectClient, Project, IModelHubClient, Briefcase, DeploymentEnv } from "@bentley/imodeljs-clients";
 import { Code } from "../common/Code";
 import { Gateway } from "../common/Gateway";
-import { Element } from "../backend/Element";
+import { Element, InformationPartitionElement } from "../backend/Element";
 import { IModelDb } from "../backend/IModelDb";
 import { NodeAddonRegistry } from "../backend/NodeAddonRegistry";
 import { IModelGateway } from "../gateway/IModelGateway";
 import { ElementProps, GeometricElementProps } from "../common/ElementProps";
-import { DefinitionModel } from "../backend/Model";
+import { DefinitionModel, Model } from "../backend/Model";
 import { SpatialCategory } from "../backend/Category";
 import { Appearance } from "../common/SubCategoryAppearance";
 
@@ -134,6 +134,19 @@ export class IModelTestUtils {
     iModel.closeStandalone();
   }
 
+  public static getUniqueModelCode(testIModel: IModelDb, newModelCodeBase: string): Code {
+    let newModelCode: string = newModelCodeBase;
+    let iter: number = 0;
+    while (true) {
+      const modelCode = InformationPartitionElement.createCode(testIModel.elements.getRootSubject(), newModelCode);
+      if (testIModel.elements.queryElementIdByCode(modelCode) === undefined)
+        return modelCode;
+
+      newModelCode = newModelCodeBase + iter;
+      ++iter;
+    }
+  }
+
   //
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
   //
@@ -164,6 +177,18 @@ export class IModelTestUtils {
     assert.deepEqual(newModelId, newModel.id);
 
     return [modeledElementId, newModelId];
+  }
+
+  public static getUniqueSpatialCategoryCode(scopeModel: Model, newCodeBaseValue: string): Code {
+    let newCodeValue: string = newCodeBaseValue;
+    let iter: number = 0;
+    while (true) {
+      if (SpatialCategory.queryCategoryIdByName(scopeModel, newCodeValue) === undefined)
+        return SpatialCategory.createCode(scopeModel, newCodeValue);
+
+      newCodeValue = newCodeValue + iter;
+      ++iter;
+    }
   }
 
   // Create a SpatialCategory, insert it, and set its default appearance
