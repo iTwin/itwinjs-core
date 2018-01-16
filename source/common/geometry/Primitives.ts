@@ -1,7 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
 import { Point2d, Point3d, Vector3d, Range2d, Transform, Range3d, RotMatrix, YawPitchRollAngles, XYAndZ, XAndY, LowAndHighXY } from "@bentley/geometry-core/lib/PointVector";
 import { CurveCollection } from "@bentley/geometry-core/lib/curve/CurveChain";
 import { BSplineSurface3d } from "@bentley/geometry-core/lib/bspline/BSplineSurface";
