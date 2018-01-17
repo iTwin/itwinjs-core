@@ -221,7 +221,7 @@ describe("BriefcaseManager", () => {
     assert.isTrue(category.code.value !== undefined);
     const codeStates = await iModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope);
     let foundIt = false;
-    for (let cs of codeStates) {
+    for (const cs of codeStates) {
       if (cs.values.includes(category.code.value!))
         foundIt = true;
     }
