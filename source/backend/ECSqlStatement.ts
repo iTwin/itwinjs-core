@@ -66,9 +66,13 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     assert(!this.isPrepared()); // leaves the statement in the un-prepared state
   }
 
-  /** Clear any bindings that were previously set on this statement. */
-  public clearBindings(): DbResult {
-    return this._stmt!.clearBindings();
+  /** Clear any bindings that were previously set on this statement. 
+   * @throws IModelError in case of errors
+  */
+  public clearBindings(): void {
+    const stat: DbResult = this._stmt!.clearBindings();
+    if (stat !== DbResult.BE_SQLITE_OK)
+      throw new IModelError(stat);
   }
 
   /** Bind values to placeholders.
