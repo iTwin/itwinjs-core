@@ -9,7 +9,7 @@ import { ModelProps } from "@build/imodeljs-core/lib/common/ModelProps";
 import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "@build/imodeljs-core/lib/frontend/IModelConnection";
 import { TestData } from "./TestData";
 
-describe("IModelConnection", () => {
+describe.skip("IModelConnection", () => {
   it("should be able to get elements and models from an IModelConnection", async () => {
     const iModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
     assert.exists(iModel);
