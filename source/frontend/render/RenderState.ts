@@ -93,7 +93,7 @@ export class RenderStateBlend {
   }
 
   public copyFrom(src: RenderStateBlend): void {
-    this.setColor (src.color);
+    this.setColor(src.color);
     this.equationRgb = src.equationRgb;
     this.equationAlpha = src.equationAlpha;
     this.functionSourceRgb = src.functionSourceRgb;
