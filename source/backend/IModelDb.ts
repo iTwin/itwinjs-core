@@ -229,13 +229,13 @@ export class IModelDb extends IModel {
   /**
    * Commit pending changes to this iModel
    * @param _description Optional description of the changes
-   * @throws [[IModelError]] if there is a problem saving changes.
+   * @throws [[IModelError]] if there is a problem saving changes or if there are requests for locks or codes that have yet to be processed. See [[ConcurrencyControl.request]]
    */
   public saveChanges(description?: string) {
     if (!this.briefcaseInfo)
       throw this._newNotOpenError();
 
-    if (this.concurrencyControl.inBulkOperationWithPendingRequests())
+    if (this.concurrencyControl.hasPendingRequests())
       throw new IModelError(IModelStatus.TransactionActive);
 
     const stat = this.briefcaseInfo.nativeDb.saveChanges(description);
@@ -474,6 +474,20 @@ export class ConcurrencyControl {
     return this._pendingRequest;
   }
 
+  /** Are there pending, unprocessed requests for locks or codes? */
+  public hasPendingRequests(): boolean {
+    if (!this._imodel.briefcaseInfo)
+      return false;
+    if (this.inBulkOperationWithPendingRequests())
+      return true;
+    if (this._pendingRequest !== undefined) {
+      const reqAny: any = ConcurrencyControl.convertRequestToAny(this._pendingRequest);
+      if (reqAny.Codes.length !== 0 || reqAny.Locks.length !== 0)
+        return true;
+    }
+    return false;
+  }
+
   /**
    * Take ownership of all or some of the pending request for locks and codes.
    * @param locksOnly If true, only the locks in the pending request are extracted. The default is to extract all requests.
@@ -637,21 +651,21 @@ export class ConcurrencyControl {
     Promise.reject(new IModelError(IModelStatus.BadRequest, "TBD locks"));
   }
 
-    /** process a Code-reservation request. The requests in bySpecId must already be in iModelHub REST format. */
-    private async reserveCodes2(bySpecId: Map<string, any>, briefcaseInfo: BriefcaseInfo, accessToken: AccessToken): Promise<MultiCode[]> {
+  /** process a Code-reservation request. The requests in bySpecId must already be in iModelHub REST format. */
+  private async reserveCodes2(bySpecId: Map<string, any>, briefcaseInfo: BriefcaseInfo, accessToken: AccessToken): Promise<MultiCode[]> {
 
-      const imodelHubClient = this.getIModelHubClient();
+    const imodelHubClient = this.getIModelHubClient();
 
-      const results: MultiCode[] = [];
+    const results: MultiCode[] = [];
 
-      for (const [, thisSpec] of bySpecId) {
-        for (const [, thisReq] of thisSpec) {
-          results.push(await imodelHubClient.requestMultipleCodes(accessToken, briefcaseInfo.iModelId, thisReq));
-        }
+    for (const [, thisSpec] of bySpecId) {
+      for (const [, thisReq] of thisSpec) {
+        results.push(await imodelHubClient.requestMultipleCodes(accessToken, briefcaseInfo.iModelId, thisReq));
       }
-
-      return results;
     }
+
+    return results;
+  }
 
   /** process the Code-specific part of the request. */
   private async reserveCodesFromRequest(req: ConcurrencyControl.Request, briefcaseInfo: BriefcaseInfo, accessToken: AccessToken): Promise<MultiCode[]> {
@@ -672,27 +686,27 @@ export class ConcurrencyControl {
       throw new IModelError(IModelStatus.NotFound);
 
     return this.reserveCodes2(bySpecId, this._imodel.briefcaseInfo, accessToken);
-    }
-
-// Query the state of the Codes for the specified CodeSpec and scope.
-public async queryCodeStates(accessToken: AccessToken, specId: Id64, scopeId: string, _value?: string): Promise<MultiCode[]> {
-  if (this._imodel.briefcaseInfo === undefined)
-    throw this._imodel._newNotOpenError();
-
-  const queryOptions: RequestQueryOptions = {
-    $filter: `CodeSpecId+eq+'${specId}'+and+CodeScope+eq+'${scopeId}'`,
-  };
-
-  /* NEEDS WORK
-  if (value !== undefined) {
-    queryOptions.$filter += `+and+Value+eq+'${value}'`;
   }
-  */
 
-  const imodelHubClient = this.getIModelHubClient();
+  // Query the state of the Codes for the specified CodeSpec and scope.
+  public async queryCodeStates(accessToken: AccessToken, specId: Id64, scopeId: string, _value?: string): Promise<MultiCode[]> {
+    if (this._imodel.briefcaseInfo === undefined)
+      throw this._imodel._newNotOpenError();
 
-  return imodelHubClient.getMultipleCodes(accessToken, this._imodel.briefcaseInfo.iModelId, queryOptions);
-}
+    const queryOptions: RequestQueryOptions = {
+      $filter: `CodeSpecId+eq+'${specId}'+and+CodeScope+eq+'${scopeId}'`,
+    };
+
+    /* NEEDS WORK
+    if (value !== undefined) {
+      queryOptions.$filter += `+and+Value+eq+'${value}'`;
+    }
+    */
+
+    const imodelHubClient = this.getIModelHubClient();
+
+    return imodelHubClient.getMultipleCodes(accessToken, this._imodel.briefcaseInfo.iModelId, queryOptions);
+  }
 
   /** Abandon any pending requests for locks or codes. */
   public abandonRequest() {
