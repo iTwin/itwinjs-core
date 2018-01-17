@@ -675,7 +675,7 @@ export class ConcurrencyControl {
     }
 
 // Query the state of the Codes for the specified CodeSpec and scope.
-public async queryCodeStates(accessToken: AccessToken, specId: Id64, scopeId: string, value?: string): Promise<MultiCode[]> {
+public async queryCodeStates(accessToken: AccessToken, specId: Id64, scopeId: string, _value?: string): Promise<MultiCode[]> {
   if (this._imodel.briefcaseInfo === undefined)
     throw this._imodel._newNotOpenError();
 
