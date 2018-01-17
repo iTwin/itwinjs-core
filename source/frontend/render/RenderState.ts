@@ -109,16 +109,16 @@ export class RenderState {
       if (!prevState.flags.cull || prevState.cullFace !== this.cullFace) {
         gl.cullFace(this.cullFace);
       }
+    }
 
-      if (this.flags.depthTest) {
-        if (!prevState.flags.depthTest || prevState.depthFunc !== this.depthFunc) {
-          gl.depthFunc(this.depthFunc);
-        }
+    if (this.flags.depthTest) {
+      if (!prevState.flags.depthTest || prevState.depthFunc !== this.depthFunc) {
+        gl.depthFunc(this.depthFunc);
       }
+    }
 
-      if (this.frontFace !== prevState.frontFace) {
-        gl.frontFace(this.frontFace);
-      }
+    if (this.frontFace !== prevState.frontFace) {
+      gl.frontFace(this.frontFace);
     }
   }
 }
