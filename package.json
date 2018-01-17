@@ -40,7 +40,7 @@
     "extract": "node node_modules/@bentley/bentleyjs-tools/scripts/extract.js --extractFrom=source/test --out=source/test/lib/extract",
     "test": "npm run test:backend && npm run test:frontend",
     "test:backend": "cd source/test && npm run test",
-    "test:frontend": "npm run build && cd source/testbed && npm run test",
+    "test:frontend": "concurrently \"npm run build:backend\" \"npm run build:frontend\" && cd source/testbed && npm run build && npm run test",
     "test:tsnode": "node node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode --packageRoot \"./\" --testDir=\"./source/test\" --tscPaths",
     "testbed": "cd source/testbed && npm run start",
     "cover": "nyc npm run test:tsnode",
