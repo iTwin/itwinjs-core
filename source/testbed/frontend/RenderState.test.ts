@@ -49,6 +49,43 @@ describe("RenderState API", () => {
     a = new RenderState(b);
     assert.isTrue(a.equals(b));
 
+    b.blend.setColor([0.0, 0.0, 0.0, 1.0]);
+    assert.isFalse(a.equals(b));
+    b.blend.setColor([0.0, 0.0, 0.0, 0.0]);
+    assert.isTrue(a.equals(b));
+    b.blend.equationRgb = GL.BlendEquation.Subtract;
+    assert.isFalse(a.equals(b));
+    b.blend.equationRgb = GL.BlendEquation.Add;
+    assert.isTrue(a.equals(b));
+    b.blend.equationAlpha = GL.BlendEquation.Subtract;
+    assert.isFalse(a.equals(b));
+    b.blend.equationAlpha = GL.BlendEquation.Add;
+    assert.isTrue(a.equals(b));
+    b.blend.setBlendFunc(GL.BlendFactor.AlphaSaturate, GL.BlendFactor.DefaultDst);
+    assert.isFalse(a.equals(b));
+    b.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.DefaultDst);
+    assert.isTrue(a.equals(b));
+    b.blend.setBlendFunc(GL.BlendFactor.DefaultSrc, GL.BlendFactor.AlphaSaturate);
+    assert.isFalse(a.equals(b));
+    b.blend.setBlendFunc(GL.BlendFactor.DefaultSrc, GL.BlendFactor.Zero);
+    assert.isTrue(a.equals(b));
+    b.blend.setBlendFuncSeperate(GL.BlendFactor.AlphaSaturate, GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultDst, GL.BlendFactor.DefaultDst);
+    assert.isFalse(a.equals(b));
+    b.blend.setBlendFuncSeperate(GL.BlendFactor.One, GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultDst, GL.BlendFactor.DefaultDst);
+    assert.isTrue(a.equals(b));
+    b.blend.setBlendFuncSeperate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.AlphaSaturate, GL.BlendFactor.DefaultDst, GL.BlendFactor.DefaultDst);
+    assert.isFalse(a.equals(b));
+    b.blend.setBlendFuncSeperate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.One, GL.BlendFactor.DefaultDst, GL.BlendFactor.DefaultDst);
+    assert.isTrue(a.equals(b));
+    b.blend.setBlendFuncSeperate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultSrc, GL.BlendFactor.AlphaSaturate, GL.BlendFactor.DefaultDst);
+    assert.isFalse(a.equals(b));
+    b.blend.setBlendFuncSeperate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultSrc, GL.BlendFactor.Zero, GL.BlendFactor.DefaultDst);
+    assert.isTrue(a.equals(b));
+    b.blend.setBlendFuncSeperate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultDst, GL.BlendFactor.AlphaSaturate);
+    assert.isFalse(a.equals(b));
+    b.blend.setBlendFuncSeperate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultDst, GL.BlendFactor.Zero);
+    assert.isTrue(a.equals(b));
+
     a = b.clone();
     assert.isTrue(a.equals(b));
 
@@ -89,5 +126,13 @@ describe("RenderState.apply()", () => {
     assert.isTrue(gl.getParameter(GL.Capability.DepthTest) === true, "depth test should now be enabled");
     const depthFunc: GL.DepthFunc = gl.getParameter(GL.Capability.DepthFunc) as GL.DepthFunc;
     assert.isTrue(gl.getParameter(GL.Capability.DepthFunc) === GL.DepthFunc.Always, "depth func should be ALWAYS but is " + GL.DepthFunc[depthFunc]);
+
+    prevState.copyFrom(newState);
+    assert.isTrue(gl.getParameter(GL.Capability.Blend) === false, "blend should be disabled by default");
+
+    newState.flags.blend = true;
+    newState.apply(gl, prevState);
+    assert.isTrue(gl.getParameter(GL.Capability.Blend) === true, "blend should now be enabled");
+
     });
 });
