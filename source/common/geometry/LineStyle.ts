@@ -47,6 +47,7 @@ export class LineStyleParams {
       }
     }
     retVal.scale = retVal.gapScale = retVal.dashScale = retVal.normal.z = 1.0;
+
     return retVal;
   }
 

@@ -38,9 +38,9 @@
     "ModifyProjectExtents": "Modify Project Extents"
   },
   "ElementUndo": {
-    "NothingToUndo": "No actions to UNDO",
-    "NothingToRedo": "Nothing has been UNDONE",
-    "UndoAll": "Do you really want to UNDO ALL CHANGES?"
+    "NothingToUndo": "No actions to undo",
+    "NothingToRedo": "Nothing has been undone",
+    "UndoAll": "Do you really want to undo all changes?"
   },
   "AccuDraw": {
     "Prompt": {

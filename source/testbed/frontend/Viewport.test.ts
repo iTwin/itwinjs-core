@@ -8,17 +8,13 @@ import { DisplayStyle3dState, ModelSelectorState, SpatialViewState, CategorySele
 import { Frustum } from "@build/imodeljs-core/lib/common/Frustum";
 import { IModelConnection } from "@build/imodeljs-core/lib/frontend/IModelConnection";
 import { Viewport, ViewRect, CoordSystem } from "@build/imodeljs-core/lib/frontend/Viewport";
+import { IModelApp } from "@build/imodeljs-core/lib/frontend/IModelApp";
 import { Cartographic } from "@build/imodeljs-core/lib/common/geometry/Cartographic";
 import { Angle } from "@build/imodeljs-core/node_modules/@bentley/geometry-core/lib/Geometry";
 import * as path from "path";
 import { SpatialViewDefinitionProps } from "@build/imodeljs-core/lib/common/ElementProps";
 
 /* tslint:disable: no-console */
-
-// ==========================================================================================================================================
-// Test-Specific Declarations and Data
-// ==========================================================================================================================================
-
 const bimFileLocation = path.join(__dirname, "../../../../test/lib/test/assets/test.bim");
 
 /** Class with scope limited to this file, used for creating a Viewport without a canvas */
@@ -33,10 +29,8 @@ class TestViewport extends Viewport {
   public getClientRect(): ClientRect { return this.clientRect; }
 }
 
-// ==========================================================================================================================================
-// ==========================================================================================================================================
-
 describe("Viewport", () => {
+  IModelApp.startup();
   let imodel: IModelConnection;
   let categorySelectorState: CategorySelectorState;
   let displayStyleState: DisplayStyle3dState;
@@ -53,7 +47,7 @@ describe("Viewport", () => {
     imodel = await IModelConnection.openStandalone(bimFileLocation);
     const spatialViewProps = (await imodel.elements.getElementProps([new Id64("0x34")]))[0] as SpatialViewDefinitionProps;
 
-    // Set up supporting ViewState classes =====================================================
+    // Set up supporting ViewState classes
     categorySelectorState = new CategorySelectorState(
       {
         categories: ["test0"],
@@ -86,8 +80,8 @@ describe("Viewport", () => {
         id: new Id64("0x22"),
         classFullName: "ModelSelector",
       }, imodel);
-    // ============================================================================================
-    // Set up 3 separate ViewState classes ========================================================
+
+    // Set up 3 separate ViewState classes
     spatialViewProps.origin = Point3d.create(-5, -5, 0);
     spatialViewProps.extents = Vector3d.create(10, 10, 1);
     spatialViewProps.angles = YawPitchRollAngles.createDegrees(0, 0, 0);
@@ -144,7 +138,7 @@ describe("Viewport", () => {
         const frontFrac = newViewState.getFrontDistance();
         const frustFraction = frontFrac / backFrac;
         // !!! Note: Tolerance is extremely low currently...
-        assert.isTrue(Math.abs(viewPort.frustFraction - frustFraction) < 1.0e-2, "Planes correctly conform to the found frustfraction");
+        assert.isTrue(Math.abs(viewPort.frustFraction - frustFraction) < 1.0e-2, "Planes correctly conform to the found frustFraction");
       }
     }
 
