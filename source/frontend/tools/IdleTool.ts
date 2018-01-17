@@ -42,8 +42,10 @@ export class IdleTool extends Tool {
     let viewTool;
     if (ev.isDoubleClick) {
       viewTool = new FitViewTool(vp, true);
+    } else if (ev.isControlKey) {
+      viewTool = iModelApp.tools.createTool("View." + vp.view.is3d() ? "Look" : "Scroll", vp);
     } else if (ev.isShiftKey) {
-      viewTool = new ViewManip(vp, ViewHandleType.Rotate, true, false, true);
+      viewTool = iModelApp.tools.createTool("View.Rotate", vp);
     } else if (false) {
       /* ###TODO: Other view tools if needed... */
     } else {
@@ -55,10 +57,10 @@ export class IdleTool extends Tool {
         return true;
       }
 
-      viewTool = new ViewManip(vp, ViewHandleType.ViewPan, true, false, true);
+      viewTool = iModelApp.tools.createTool("View.Pan", vp);
     }
 
-    return BentleyStatus.SUCCESS === viewTool.installTool();
+    return !!viewTool && BentleyStatus.SUCCESS === viewTool.installTool();
   }
 
   public onMiddleButtonUp(ev: BeButtonEvent): boolean {

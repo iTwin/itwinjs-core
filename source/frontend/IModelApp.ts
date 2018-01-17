@@ -14,17 +14,23 @@ declare var require: any;
 /** global access to the active IModelApp. Initialized by calling IModelApp.startup(). */
 export let iModelApp: IModelApp;
 
+/** holds a mapping of toolId string to tool class */
 export class ToolRegistry {
   public map: Map<string, ToolCtor> = new Map<string, ToolCtor>();
-  public lookupTool(toolId: string): ToolCtor | undefined { return this.map.get(toolId); }
-  public createTool(toolId: string): Tool | undefined {
-    const ctor = this.lookupTool(toolId);
-    return ctor ? new ctor() : undefined;
+
+  /** look up a tool by toolId. If found create a new instance of that tool with the supplied arguments */
+  public createTool(toolId: string, ...args: any[]): Tool | undefined {
+    const ctor = this.map.get(toolId);
+    return ctor ? new ctor(args) : undefined;
   }
+
+  /** register a tool  */
   public registerTool(ctor: ToolCtor) {
     if (ctor.toolId.length !== 0)
       this.map.set(ctor.toolId, ctor);
   }
+
+  /** register all the tools found in a module */
   public registerModuleTools(moduleObj: any) {
     for (const thisMember in moduleObj) {
       if (!thisMember)
@@ -68,10 +74,10 @@ export class IModelApp {
    */
   public static startup(app?: IModelApp) {
     iModelApp = app ? app : new IModelApp();
-    iModelApp.initialize();
+    iModelApp.onStartup();
   }
 
-  protected initialize(): void {
+  protected onStartup(): void {
     if (!this._viewManager) this._viewManager = new ViewManager();
     if (!this._toolAdmin) this._toolAdmin = new ToolAdmin();
     if (!this._accuDraw) this._accuDraw = new AccuDraw();

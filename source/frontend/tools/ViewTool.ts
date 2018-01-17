@@ -221,7 +221,7 @@ export class ViewHandleArray {
 }
 
 /** Base class for tools that manipulate the viewing frustum of a Viewport */
-export class ViewManip extends ViewTool {
+export abstract class ViewManip extends ViewTool {
   public viewport?: Viewport;
   public viewHandles: ViewHandleArray;
   public frustumValid = false;
@@ -240,7 +240,7 @@ export class ViewManip extends ViewTool {
   public forcedHandle: ViewHandleType = ViewHandleType.None;
   public lastFrustum: Frustum = new Frustum();
 
-  constructor(viewport: Viewport, public handleMask: number, public isOneShot: boolean, public scrollOnNoMotion: boolean,
+  constructor(viewport: Viewport | undefined, public handleMask: number, public isOneShot: boolean, public scrollOnNoMotion: boolean,
     public isDragOperationRequired: boolean = false) {
     super();
     this.viewport = viewport;
@@ -250,19 +250,6 @@ export class ViewManip extends ViewTool {
     if (handleMask & ViewHandleType.ViewWalk) this.viewHandles.add(new ViewWalk(this));
 
     this.onReinitialize();
-  }
-
-  public get toolId(): string {
-    const handleMask = this.handleMask;
-    if (handleMask & (ViewHandleType.Rotate | ViewHandleType.TargetCenter)) return "View.Rotate";
-    if (handleMask & ViewHandleType.ViewPan) return "View.Pan";
-    if (handleMask & ViewHandleType.ViewScroll) return "View.Scroll";
-    if (handleMask & ViewHandleType.ViewZoom) return "View.Zoom";
-    if (handleMask & ViewHandleType.ViewWalk) return "View.Walk";
-    if (handleMask & ViewHandleType.ViewWalkMobile) return "View.WalkMobile";
-    if (handleMask & ViewHandleType.ViewFly) return "View.Fly";
-    if (handleMask & ViewHandleType.ViewLook) return "View.Look";
-    return "";
   }
 
   public onReinitialize(): void {
@@ -1541,6 +1528,7 @@ export class WindowAreaTool extends ViewTool {
 
 /** tool that handles gestures */
 export class ViewGestureTool extends ViewManip {
+  public static toolId = ""; // gesture tools are never registered
   protected startInfo: GestureInfo = new GestureInfo();
   protected numberTouches: number = 0;
   protected touches = [new Point2d(), new Point2d(), new Point2d()];
@@ -1817,7 +1805,33 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     return this.endGesture();
   }
 }
+export class ViewLookTool extends ViewManip {
+  public static toolId = "View.Look";
+  constructor(vp: Viewport) {
+    super(vp, ViewHandleType.ViewLook, true, false, true);
+  }
+}
 
+export class ViewScrollTool extends ViewManip {
+  public static toolId = "View.Scroll";
+  constructor(vp: Viewport) {
+    super(vp, ViewHandleType.ViewScroll, true, false, true);
+  }
+}
+
+export class ViewRotateTool extends ViewManip {
+  public static toolId = "View.Rotate";
+  constructor(vp: Viewport) {
+    super(vp, ViewHandleType.Rotate, true, false, true);
+  }
+}
+
+export class ViewPanTool extends ViewManip {
+  public static toolId = "View.Pan";
+  constructor(vp: Viewport) {
+    super(vp, ViewHandleType.ViewPan, true, false, true);
+  }
+}
 export abstract class InputCollector extends Tool {
   public installToolImplementation(): BentleyStatus {
     const toolAdmin = iModelApp.toolAdmin;

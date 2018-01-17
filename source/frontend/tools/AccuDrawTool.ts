@@ -1088,10 +1088,10 @@ class AccuDrawShortcuts {
 }
 
 class AccuDrawShortcutsTool extends InputCollector {
+  public static toolId = "View.AccuDraw";
   private cancel: boolean;
   private shortcut: AccuDrawTool;
 
-  public static get toolId(): string { return "View.AccuDraw"; }
   public onPostInstall(): void { super.onPostInstall(); this.shortcut.doManipulationStart(); }
   public pnCleanup(): void { this.shortcut.doManipulationStop(this.cancel); }
   public onDataButtonDown(ev: BeButtonEvent): boolean { if (this.shortcut.doManipulation(ev, false)) { this.cancel = false; this.exitTool(); } return false; }

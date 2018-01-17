@@ -319,7 +319,7 @@ export class BeWheelEvent extends BeButtonEvent {
 export interface ToolCtor extends FunctionConstructor {
   toolId: string;
   hidden: boolean;
-  new(): Tool;
+  new(args?: any): Tool;
 }
 
 /**
@@ -330,6 +330,7 @@ export abstract class Tool {
   // tslint:disable:no-empty
   public static hidden = false;
   public static toolId = "";
+
   public getLocalizedToolName(): string { return Object.getPrototypeOf(this).constructor.toolId; } // NEEDS_WORK
   public abstract installToolImplementation(): BentleyStatus;
   public installTool(): BentleyStatus { return this.installToolImplementation(); }
