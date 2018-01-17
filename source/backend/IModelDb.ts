@@ -4,10 +4,12 @@
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { OpenMode, DbResult, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
+import { DeploymentEnv } from "@bentley/imodeljs-clients/lib/Clients";
+import { MultiCode, IModelHubClient, CodeState } from "@bentley/imodeljs-clients/lib/IModelHubClients";
 import { Code, CodeSpec } from "../common/Code";
 import { ElementProps, ElementAspectProps, ElementLoadParams } from "../common/ElementProps";
-import { IModel, IModelProps } from "../common/IModel";
+import { IModel, IModelProps, Configuration } from "../common/IModel";
 import { IModelVersion } from "../common/IModelVersion";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { ModelProps } from "../common/ModelProps";
@@ -31,6 +33,7 @@ import * as path from "path";
 import { IModelDbLinkTableRelationships, LinkTableRelationship } from "./LinkTableRelationship";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { NodeAddonRegistry } from "./NodeAddonRegistry";
+import { RequestQueryOptions } from "@bentley/imodeljs-clients/lib";
 
 // Register the backend implementation of IModelGateway
 IModelGatewayImpl.register();
@@ -232,11 +235,24 @@ export class IModelDb extends IModel {
     if (!this.briefcaseInfo)
       throw this._newNotOpenError();
 
-    this.concurrencyControl.request(); // throws if any lock or code could not be acquired.
+    if (this.concurrencyControl.inBulkOperationWithPendingRequests())
+      throw new IModelError(IModelStatus.TransactionActive);
 
     const stat = this.briefcaseInfo.nativeDb.saveChanges(description);
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, "Problem saving changes", Logger.logError);
+  }
+
+  /**
+   * Abandon pending changes to this iModel
+   */
+  public abandonChanges() {
+    if (!this.briefcaseInfo)
+      throw this._newNotOpenError();
+
+    this.concurrencyControl.abandonRequest();
+
+    this.briefcaseInfo.nativeDb.abandonChanges();
   }
 
   /** Import an ECSchema. */
@@ -483,15 +499,204 @@ export class ConcurrencyControl {
    * if all requests were fulfilled. It returns a non-zero status if some or all requests could not be fulfilled.
    * This function updates req to remove the requests that were successfully fulfilled. Therefore, if a non-zero
    * status is returned, the caller can look at req to see which requests failed.
-   * @param req The list of requests to be sent to iModelHub. If undefined, all pending requests are sent to iModelHub.
+   * @param accessToken The user's iModelHub access token
+   * @param req The requests to be sent to iModelHub. If undefined, all pending requests are sent to iModelHub.
    * @throws [[RequestError]] if some or all of the request could not be fulfilled by iModelHub.
+   * @throws [[IModelError]] if the IModelDb is not open or is not connected to an iModel.
    */
-  public request(req?: ConcurrencyControl.Request) {
+  public async request(accessToken: AccessToken, req?: ConcurrencyControl.Request): Promise<void> {
+    if (!this._imodel.briefcaseInfo)
+      throw this._imodel._newNotOpenError();
     if (req === undefined)
       req = this.extractPendingRequest();
-    console.log("");
-    console.log("TODO: send request to iModelHubClient " + JSON.stringify(ConcurrencyControl.convertRequestToAny(req)));
-    console.log("");
+    const codeResults = await this.reserveCodesFromRequest(req, this._imodel.briefcaseInfo, accessToken);
+    await this.acquireLocksFromRequest(req, this._imodel.briefcaseInfo, accessToken);
+
+    let err: ConcurrencyControl.RequestError | undefined;
+    for (const code of codeResults) {
+      if (code.state !== CodeState.Reserved) {
+        if (err === undefined)
+          err = new ConcurrencyControl.RequestError(IModelStatus.CodeNotReserved);
+        err.unavailableCodes.push(code);
+      }
+    }
+
+    if (err !== undefined)
+      return Promise.reject(err);
+  }
+
+  private buildCodeRequest(briefcaseInfo: BriefcaseInfo, codeSpecId: string, codeScope: string): MultiCode {
+    const thisReq = new MultiCode();
+    thisReq.briefcaseId = briefcaseInfo.briefcaseId;
+    thisReq.state = CodeState.Reserved;
+    thisReq.codeSpecId = codeSpecId;
+    thisReq.codeScope = codeScope;
+    thisReq.values = [];
+    return thisReq;
+  }
+
+  private buildCodeRequests(briefcaseInfo: BriefcaseInfo, req: ConcurrencyControl.Request): Map<string, any> | undefined {
+    const reqAny: any = ConcurrencyControl.convertRequestToAny(req);
+
+    if (!reqAny.hasOwnProperty("Codes") || reqAny.Codes.length === 0)
+      return undefined;
+
+    const bySpecId: Map<string, any> = new Map();
+    for (const creq of reqAny.Codes) {
+      let byScope: Map<string, MultiCode> | undefined = bySpecId.get(creq.Id);
+      if (byScope === undefined)
+        bySpecId.set(creq.Id, (byScope = new Map()));
+
+      let thisReq: MultiCode | undefined = byScope.get(creq.Scope);
+      if (thisReq === undefined) {
+        thisReq = this.buildCodeRequest(briefcaseInfo, creq.Id, creq.Scope);
+        byScope.set(creq.Scope, (thisReq = thisReq));
+      }
+
+      thisReq.values.push(creq.Name);
+    }
+
+    return bySpecId;
+  }
+
+  private buildCodeRequestsFromCodes(briefcaseInfo: BriefcaseInfo, codes: Code[]): Map<string, any> {
+
+    const bySpecId: Map<string, any> = new Map();
+    for (const code of codes) {
+      if (code.value === undefined)
+        continue;
+      const specId = code.spec.toString();
+      let byScope: Map<string, MultiCode> | undefined = bySpecId.get(specId);
+      if (byScope === undefined)
+        bySpecId.set(specId, (byScope = new Map()));
+
+      let thisReq: MultiCode | undefined = byScope.get(code.scope);
+      if (thisReq === undefined) {
+        thisReq = this.buildCodeRequest(briefcaseInfo, specId, code.scope);
+        byScope.set(code.scope, (thisReq = thisReq));
+      }
+
+      thisReq.values.push(code.value);
+    }
+
+    return bySpecId;
+  }
+
+  private buildLockRequests(_briefcaseInfo: BriefcaseInfo, req: ConcurrencyControl.Request): Map<string, any> | undefined {
+    const reqAny: any = ConcurrencyControl.convertRequestToAny(req);
+
+    if (!reqAny.hasOwnProperty("Locks") || reqAny.Locks.length === 0)
+      return undefined;
+
+    /*
+    const bySpecId: Map<string, any> = new Map();
+    for (const creq of reqAny.Locks) {
+      let byScope: Map<string, MultiCode> | undefined = bySpecId.get(creq.Id);
+      if (byScope === undefined)
+        bySpecId.set(creq.Id, (byScope = new Map()));
+
+      let thisReq: MultiCode | undefined = byScope.get(creq.Scope);
+      if (thisReq === undefined) {
+        thisReq = this.buildCodeRequest(briefcaseInfo, creq.Id, creq.Scope);
+        byScope.set(creq.Scope, (thisReq = thisReq));
+      }
+
+      thisReq.values.push(creq.Name);
+    }
+
+    return bySpecId;
+    */
+    throw new IModelError(IModelStatus.BadRequest, "TBD locks");
+  }
+
+  private getDeploymentEnv(): DeploymentEnv {
+    return Configuration.iModelHubDeployConfig;
+  }
+
+  private getIModelHubClient(): IModelHubClient {
+    return new IModelHubClient(this.getDeploymentEnv());
+  }
+
+  /** process the Lock-specific part of the request. */
+  private async acquireLocksFromRequest(req: ConcurrencyControl.Request, briefcaseInfo: BriefcaseInfo, _accessToken: AccessToken): Promise<void> {
+    const bySpecId = this.buildLockRequests(briefcaseInfo, req);
+    if (bySpecId === undefined)
+      return;
+
+    /* TODO locks
+
+    const imodelHubClient = this.getIModelHubClient();
+
+    for (const [, thisSpec] of bySpecId) {
+      for (const [, thisReq] of thisSpec) {
+        const newCodes: MultiCode = await imodelHubClient.requestMultipleCodes(accessToken, briefcaseInfo.iModelId, thisReq);
+        console.log(JSON.stringify(newCodes));
+      }
+    }
+    */
+    Promise.reject(new IModelError(IModelStatus.BadRequest, "TBD locks"));
+  }
+
+    /** process a Code-reservation request. The requests in bySpecId must already be in iModelHub REST format. */
+    private async reserveCodes2(bySpecId: Map<string, any>, briefcaseInfo: BriefcaseInfo, accessToken: AccessToken): Promise<MultiCode[]> {
+
+      const imodelHubClient = this.getIModelHubClient();
+
+      const results: MultiCode[] = [];
+
+      for (const [, thisSpec] of bySpecId) {
+        for (const [, thisReq] of thisSpec) {
+          results.push(await imodelHubClient.requestMultipleCodes(accessToken, briefcaseInfo.iModelId, thisReq));
+        }
+      }
+
+      return results;
+    }
+
+  /** process the Code-specific part of the request. */
+  private async reserveCodesFromRequest(req: ConcurrencyControl.Request, briefcaseInfo: BriefcaseInfo, accessToken: AccessToken): Promise<MultiCode[]> {
+    const bySpecId = this.buildCodeRequests(briefcaseInfo, req);
+    if (bySpecId === undefined)
+      return [];
+
+    return this.reserveCodes2(bySpecId, briefcaseInfo, accessToken);
+  }
+
+  /** Reserve the specified codes */
+  public async reserveCodes(accessToken: AccessToken, codes: Code[]): Promise<MultiCode[]> {
+    if (this._imodel.briefcaseInfo === undefined)
+      throw this._imodel._newNotOpenError();
+
+    const bySpecId = this.buildCodeRequestsFromCodes(this._imodel.briefcaseInfo, codes);
+    if (bySpecId === undefined)
+      throw new IModelError(IModelStatus.NotFound);
+
+    return this.reserveCodes2(bySpecId, this._imodel.briefcaseInfo, accessToken);
+    }
+
+// Query the state of the Codes for the specified CodeSpec and scope.
+public async queryCodeStates(accessToken: AccessToken, specId: Id64, scopeId: string, value?: string): Promise<MultiCode[]> {
+  if (this._imodel.briefcaseInfo === undefined)
+    throw this._imodel._newNotOpenError();
+
+  const queryOptions: RequestQueryOptions = {
+    $filter: `CodeSpecId+eq+'${specId}'+and+CodeScope+eq+'${scopeId}'`,
+  };
+
+  /* NEEDS WORK
+  if (value !== undefined) {
+    queryOptions.$filter += `+and+Value+eq+'${value}'`;
+  }
+  */
+
+  const imodelHubClient = this.getIModelHubClient();
+
+  return imodelHubClient.getMultipleCodes(accessToken, this._imodel.briefcaseInfo.iModelId, queryOptions);
+}
+
+  /** Abandon any pending requests for locks or codes. */
+  public abandonRequest() {
+    this.extractPendingRequest();
   }
 
   /**
@@ -539,6 +744,10 @@ export class ConcurrencyControl {
    * This mode can therefore be used safely only in special cases where contention for locks and codes is not a risk.
    * Normally, that is only possible when writing to a model that is exclusively locked and where codes are scoped to that model.
    * See saveChanges and endBulkOperation.
+   * ``` ts
+   * [[include:BisCore1.sampleBulkOperation]]
+   * ```
+   * (For the model-creation code in the sample, see [[IModelDbModels.createModel]])
    * @throws [[IModelError]] if it would be illegal to enter bulk operation mode.
    */
   public startBulkOperation(): void {
@@ -549,6 +758,13 @@ export class ConcurrencyControl {
       throw new IModelError(rc);
   }
 
+  /** Check if there is a bulk operation in progress and if any requests have been detected and remain unprocessed. */
+  public inBulkOperationWithPendingRequests(): boolean {
+    if (!this._imodel.briefcaseInfo)
+      return false;
+    return this._imodel.briefcaseInfo.nativeDb.inBulkOperationWithPendingRequests();
+  }
+
   /**
    * Call this in the rare case where you want to acquire locks and codes *before* the end of the transaction.
    * Note that saveChanges automatically calls this method to end the bulk operation and acquire locks and codes, so there is no need to call this method directly.
@@ -556,13 +772,13 @@ export class ConcurrencyControl {
    * If not successful, the caller should abandon all changes.
    * @throws [[IModelError]] if some locks or codes could not be acquired. In that case, the caller should abandon all changes.
    */
-  public endBulkOperation(): void {
+  public async endBulkOperation(accessToken: AccessToken) {
     if (!this._imodel.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
     // Make sure that we have processed the pending bulk op request.
     const req: ConcurrencyControl.Request = ConcurrencyControl.createRequest();
     this._imodel.briefcaseInfo.nativeDb.extractBulkResourcesRequest(req as NodeAddonBriefcaseManagerResourcesRequest, true, true);
-    this.request(req);
+    await this.request(accessToken, req);
     // Now exit bulk operation mode in the addon. It will then stop collecting (and start enforcing) lock and code requirements.
     const rc: RepositoryStatus = this._imodel.briefcaseInfo.nativeDb.briefcaseManagerEndBulkOperation();
     if (RepositoryStatus.Success !== rc)
@@ -626,36 +842,14 @@ export namespace ConcurrencyControl {
 
   /** Thrown when iModelHub denies or cannot process a request. */
   export class RequestError extends IModelError {
-    public unavailableCodes: Code[];
-    public unavailableLocks: Code[];
+    public unavailableCodes: MultiCode[];
+    public unavailableLocks: MultiCode[];
   }
 
   /** Thrown when iModelHub denies or cannot process a request to reserve Codes. */
   export class CodeReservationError extends IModelError {
     /** The codes that cannot be reserved. */
     public unavailable: Code[];
-  }
-
-  /*
-  export enum CodeStateValue {
-      Available,  // The Code can be reserved for use by any briefcase
-      Reserved,   // The Code has been reserved for use by a briefcase
-      Used,       // A revision has been committed to the server in which the Code was used by an object.
-      Discarded,  // A revision has been committed to the server in which the Code became discarded by the object by which it was previously used.
-  }
-
-  export class CodeState {
-    public state: CodeStateValue;
-    public revisionId: string;
-    public briefcaseId: Id64;
-  }
-  */
-
-  export enum CodeState {
-    Available,  // The Code can be reserved for use by any briefcase
-    Reserved,   // The Code has been reserved for use by a briefcase
-    Used,       // A revision has been committed to the server in which the Code was used by an object.
-    Discarded,  // A revision has been committed to the server in which the Code became discarded by the object by which it was previously used.
   }
 
   /** Code manager */
@@ -674,27 +868,34 @@ export namespace ConcurrencyControl {
      * @param codes The Codes to reserve
      * @throws [[CodeReservationError]]
      */
-    public reserve(codes?: Code[]): void {
+    public async reserve(accessToken: AccessToken, codes?: Code[]) {
+
       if (!this._imodel.briefcaseInfo)
         throw this._imodel._newNotOpenError();
-      let req: ConcurrencyControl.Request;
-      if (codes === undefined) {
-        req = this._imodel.concurrencyControl.extractPendingRequest(false, true);
-        this._imodel.briefcaseInfo.nativeDb.extractBulkResourcesRequest(req as NodeAddonBriefcaseManagerResourcesRequest, false, true);
-        this._imodel.briefcaseInfo.nativeDb.extractBriefcaseManagerResourcesRequest(req as NodeAddonBriefcaseManagerResourcesRequest, req as NodeAddonBriefcaseManagerResourcesRequest, false, true);
+
+      if (codes !== undefined) {
+        await this._imodel.concurrencyControl.reserveCodes(accessToken, codes);
         // TODO: examine result and throw CodeReservationError if some codes could not be reserved
-      } else {
-        throw new IModelError(IModelStatus.BadArg, "TODO: convert to code request and reserve " + JSON.stringify(codes));
+        return;
       }
-      this._imodel.concurrencyControl.request(req);
+
+      const req: ConcurrencyControl.Request = this._imodel.concurrencyControl.extractPendingRequest(false, true);
+      this._imodel.briefcaseInfo.nativeDb.extractBulkResourcesRequest(req as NodeAddonBriefcaseManagerResourcesRequest, false, true);
+      this._imodel.briefcaseInfo.nativeDb.extractBriefcaseManagerResourcesRequest(req as NodeAddonBriefcaseManagerResourcesRequest, req as NodeAddonBriefcaseManagerResourcesRequest, false, true);
+      await this._imodel.concurrencyControl.request(accessToken, req);
+      // TODO: examine result and throw CodeReservationError if some codes could not be reserved
+      return;
     }
 
     /**
      * Queries the state of the specified Codes in the code service.
-     * @param codes The Codes to query
+     * @param accessToken The user's iModelHub access token
+     * @param specId The CodeSpec to query
+     * @param scopeId The scope to query
+     * @param value Optional. The Code value to query.
      */
-    public queryState(codes: Code[]): CodeState[] {
-      throw new IModelError(IModelStatus.BadArg, "TODO: queryState " + JSON.stringify(codes));
+    public async query(accessToken: AccessToken, specId: Id64, scopeId: string, value?: string): Promise<MultiCode[]> {
+      return this._imodel.concurrencyControl.queryCodeStates(accessToken, specId, scopeId, value);
     }
   }
 
@@ -766,6 +967,9 @@ export class IModelDbModels {
   public get repositoryModelId(): Id64 { return new Id64("0x1"); }
 
   /** Create a new model in memory.
+   * ``` ts
+   * [[include:BisCore1.sampleCreateModel]]
+   * ```
    * @param modelProps The properties to use when creating the model.
    * @throws [[IModelError]] if there is a problem creating the model.
    */

@@ -175,7 +175,7 @@ describe("BriefcaseManager", () => {
     iModel.close(accessToken);
   });
 
-  it.skip("should write to briefcase with optimistic concurrency", async () => {
+  it.only("should write to briefcase with optimistic concurrency", async () => {
 
     // Acquire a briefcase from iModelHub
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
@@ -208,7 +208,32 @@ describe("BriefcaseManager", () => {
     const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
 
     // Reserve all of the codes that are required by the new model and category.
-    iModel.concurrencyControl.endBulkOperation();
+    try {
+      await iModel.concurrencyControl.endBulkOperation(accessToken);
+    } catch (err) {
+      if (err instanceof ConcurrencyControl.RequestError) {
+          assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
+      }
+    }
+
+    // Verify that the codes are reserved.
+    const category = iModel.elements.getElement(spatialCategoryId);
+    assert.isTrue(category.code.value !== undefined);
+    const codeStates = await iModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope);
+    let foundIt = false;
+    for (let cs of codeStates) {
+      if (cs.values.includes(category.code.value!))
+        foundIt = true;
+    }
+    assert.isTrue(foundIt);
+
+      /* NEEDS WORK - query just this one code
+    assert.isTrue(category.code.value !== undefined);
+    const codeStates2 = await iModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope, category.code.value!);
+    assert.equal(codeStates2.length, 1);
+    assert.equal(codeStates2[0].values.length, 1);
+    assert.equal(codeStates2[0].values[0], category.code.value!);
+    */
 
     // Create a couple of physical elements.
     const elid1 = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
@@ -246,7 +271,7 @@ describe("BriefcaseManager", () => {
       el.buildConcurrencyControlRequest(DbOpcode.Insert);    // make a list of the resources that will be needed to insert this element (e.g., a shared lock on the model and a code)
     }
 
-    iModel.concurrencyControl.request(); // In a pessimistic concurrency regime, we must request locks and codes *before* writing to the local IModelDb.
+    await iModel.concurrencyControl.request(accessToken); // In a pessimistic concurrency regime, we must request locks and codes *before* writing to the local IModelDb.
 
     for (const el of elements)
       iModel.elements.insertElement(el);
