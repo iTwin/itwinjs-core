@@ -509,10 +509,8 @@ export class ConcurrencyControl {
 
   /**
    * Try to acquire locks and/or reserve codes from iModelHub.
-   * This function may fulfill some requests and fail to fulfill others. This function returns a zero status
-   * if all requests were fulfilled. It returns a non-zero status if some or all requests could not be fulfilled.
-   * This function updates req to remove the requests that were successfully fulfilled. Therefore, if a non-zero
-   * status is returned, the caller can look at req to see which requests failed.
+   * This function may fulfill some requests and fail to fulfill others. This function returns a rejection of type RequestError if some or all requests could not be fulfilled.
+   * The error object will identify the locks and/or codes that are unavailable.
    * @param accessToken The user's iModelHub access token
    * @param req The requests to be sent to iModelHub. If undefined, all pending requests are sent to iModelHub.
    * @throws [[RequestError]] if some or all of the request could not be fulfilled by iModelHub.
@@ -860,12 +858,6 @@ export namespace ConcurrencyControl {
     public unavailableLocks: MultiCode[];
   }
 
-  /** Thrown when iModelHub denies or cannot process a request to reserve Codes. */
-  export class CodeReservationError extends IModelError {
-    /** The codes that cannot be reserved. */
-    public unavailable: Code[];
-  }
-
   /** Code manager */
   export class Codes {
     private _imodel: IModelDb;
@@ -875,12 +867,14 @@ export namespace ConcurrencyControl {
     }
 
     /**
-     * Contacts the code service to reserve Codes. If no Codes are specified, then the Codes that are in all currently pending requests are reserved.
+     * Reserve Codes. If no Codes are specified, then all of the Codes that are in currently pending requests are reserved.
+     * This function may only be able to reserve some of the requested Codes. In that case, this function will return a rejection of type RequestError.
+     * The error object will identify the codes that are unavailable.
      * ``` ts
      * [[include:BisCore1.sampleReserveCodesWithErrorHandling]]
      * ```
      * @param codes The Codes to reserve
-     * @throws [[CodeReservationError]]
+     * @throws [[RequestError]]
      */
     public async reserve(accessToken: AccessToken, codes?: Code[]) {
 
@@ -896,9 +890,7 @@ export namespace ConcurrencyControl {
       const req: ConcurrencyControl.Request = this._imodel.concurrencyControl.extractPendingRequest(false, true);
       this._imodel.briefcaseInfo.nativeDb.extractBulkResourcesRequest(req as NodeAddonBriefcaseManagerResourcesRequest, false, true);
       this._imodel.briefcaseInfo.nativeDb.extractBriefcaseManagerResourcesRequest(req as NodeAddonBriefcaseManagerResourcesRequest, req as NodeAddonBriefcaseManagerResourcesRequest, false, true);
-      await this._imodel.concurrencyControl.request(accessToken, req);
-      // TODO: examine result and throw CodeReservationError if some codes could not be reserved
-      return;
+      return this._imodel.concurrencyControl.request(accessToken, req);
     }
 
     /**

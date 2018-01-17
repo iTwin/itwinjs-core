@@ -92,7 +92,9 @@ describe("Sample Code", () => {
     try {
       await iModel.concurrencyControl.codes.reserve(accessToken);
     } catch (err) {
-      // *** TODO: deal with CodeReservationError
+      if (err instanceof ConcurrencyControl.RequestError) {
+          // Do something about err.unavailableCodes ...
+      }
     }
     // __PUBLISH_EXTRACT_END__
 
