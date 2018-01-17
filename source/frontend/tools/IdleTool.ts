@@ -43,9 +43,9 @@ export class IdleTool extends Tool {
     if (ev.isDoubleClick) {
       viewTool = new FitViewTool(vp, true);
     } else if (ev.isControlKey) {
-      viewTool = iModelApp.tools.createTool("View." + vp.view.is3d() ? "Look" : "Scroll", vp);
+      viewTool = iModelApp.createTool("View." + vp.view.is3d() ? "Look" : "Scroll", vp);
     } else if (ev.isShiftKey) {
-      viewTool = iModelApp.tools.createTool("View.Rotate", vp);
+      viewTool = iModelApp.createTool("View.Rotate", vp);
     } else if (false) {
       /* ###TODO: Other view tools if needed... */
     } else {
@@ -57,7 +57,7 @@ export class IdleTool extends Tool {
         return true;
       }
 
-      viewTool = iModelApp.tools.createTool("View.Pan", vp);
+      viewTool = iModelApp.createTool("View.Pan", vp);
     }
 
     return !!viewTool && BentleyStatus.SUCCESS === viewTool.installTool();

@@ -18,12 +18,6 @@ export let iModelApp: IModelApp;
 export class ToolRegistry {
   public map: Map<string, ToolCtor> = new Map<string, ToolCtor>();
 
-  /** look up a tool by toolId. If found create a new instance of that tool with the supplied arguments */
-  public createTool(toolId: string, ...args: any[]): Tool | undefined {
-    const ctor = this.map.get(toolId);
-    return ctor ? new ctor(args) : undefined;
-  }
-
   /** register a tool  */
   public registerTool(ctor: ToolCtor) {
     if (ctor.toolId.length !== 0)
@@ -94,5 +88,11 @@ export class IModelApp {
 
     this.tools.map.clear();
     this.tools.registerModuleTools(require("./tools/ViewTool"));
+  }
+
+  /** look up a tool by toolId. If found create a new instance of that tool with the supplied arguments */
+  public createTool(toolId: string, ...args: any[]): Tool | undefined {
+    const ctor = this.tools.map.get(toolId);
+    return ctor ? new ctor(...args) : undefined;
   }
 }
