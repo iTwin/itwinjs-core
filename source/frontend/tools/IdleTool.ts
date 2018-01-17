@@ -28,7 +28,8 @@ import { iModelApp } from "../IModelApp";
 *  Touch inputs can be combined e.g. drag two fingers while moving them closer together => pan + zoom in
 */
 export class IdleTool extends Tool {
-  public get toolId() { return ""; }
+  public static toolId = "Idle";
+  public static hidden = true;
 
   public onMiddleButtonDown(ev: BeButtonEvent): boolean {
     const vp = ev.viewport;

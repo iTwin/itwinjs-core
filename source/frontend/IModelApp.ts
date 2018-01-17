@@ -10,6 +10,8 @@ import { TentativePoint } from "./TentativePoint";
 import { ToolCtor, Tool } from "./tools/Tool";
 
 declare var require: any;
+
+/** global access to the active IModelApp. Initialized by calling IModelApp.startup(). */
 export let iModelApp: IModelApp;
 
 export class ToolRegistry {
@@ -29,7 +31,7 @@ export class ToolRegistry {
         continue;
 
       const thisTool = moduleObj[thisMember];
-      if (thisTool instanceof Tool.constructor) {
+      if (thisTool.prototype instanceof Tool) {
         this.registerTool(thisTool);
       }
     }
@@ -52,7 +54,7 @@ export class IModelApp {
   protected _accuSnap?: AccuSnap;
   protected _locateManager?: ElementLocateManager;
   protected _tentativePoint?: TentativePoint;
-  public tools: ToolRegistry;
+  public tools = new ToolRegistry();
 
   public get viewManager(): ViewManager { return this._viewManager!; }
   public get toolAdmin(): ToolAdmin { return this._toolAdmin!; }
