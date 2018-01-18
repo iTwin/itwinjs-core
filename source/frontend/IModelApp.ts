@@ -8,6 +8,7 @@ import { AccuSnap } from "./AccuSnap";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { TentativePoint } from "./TentativePoint";
 import { ToolCtor, Tool, ToolGroup } from "./tools/Tool";
+import { I18N } from "./Localization";
 
 /** holds a mapping of toolId string to tool class */
 export class ToolRegistry {
@@ -58,6 +59,7 @@ export class IModelApp {
   protected _accuSnap?: AccuSnap;
   protected _locateManager?: ElementLocateManager;
   protected _tentativePoint?: TentativePoint;
+  protected _i18N?: I18N;
   public readonly tools = new ToolRegistry();
 
   public get viewManager(): ViewManager { return this._viewManager!; }
@@ -66,6 +68,7 @@ export class IModelApp {
   public get accuSnap(): AccuSnap { return this._accuSnap!; }
   public get locateManager(): ElementLocateManager { return this._locateManager!; }
   public get tentativePoint(): TentativePoint { return this._tentativePoint!; }
+  public get i18N(): I18N { return this._i18N!; }
 
   /**
    * This method must be called before any iModelJs services are used. Typically, an application will make a subclass of IModelApp
@@ -96,6 +99,7 @@ export class IModelApp {
     if (!iModelApp._accuSnap) iModelApp._accuSnap = new AccuSnap();
     if (!iModelApp._locateManager) iModelApp._locateManager = new ElementLocateManager();
     if (!iModelApp._tentativePoint) iModelApp._tentativePoint = new TentativePoint();
+    if (!iModelApp._i18N) iModelApp._i18N = new I18N(["tools"], "tools", null);
 
     iModelApp._viewManager.onInitialized();
     iModelApp._toolAdmin.onInitialized();
@@ -113,5 +117,9 @@ export class IModelApp {
   public createTool(toolId: string, ...args: any[]): Tool | undefined {
     const ctor = this.tools.map.get(toolId);
     return ctor ? new ctor(...args) : undefined;
+  }
+  public createLocalizer(nameSpaces: string[], defaultNameSpace: string, renderFunction: any): I18N {
+    // create a separate instance of i18next, so it doesn't interfere with other i18next instances.
+    return new I18N(nameSpaces, defaultNameSpace, renderFunction);
   }
 }
