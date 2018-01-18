@@ -30,6 +30,30 @@ export namespace GL {
     DefaultDst = Zero,
   }
 
+  export enum StencilOperation {
+    Keep = WebGLRenderingContext.KEEP,
+    Zero = WebGLRenderingContext.ZERO,
+    Replace = WebGLRenderingContext.REPLACE,
+    Incr = WebGLRenderingContext.INCR,
+    IncrWrap = WebGLRenderingContext.INCR_WRAP,
+    Decr = WebGLRenderingContext.DECR,
+    DecrWrap = WebGLRenderingContext.DECR_WRAP,
+    Invert = WebGLRenderingContext.INVERT,
+    Default = Keep,
+  }
+
+  export enum StencilFunction {
+    Never = WebGLRenderingContext.NEVER,
+    Less = WebGLRenderingContext.LESS,
+    LEqual = WebGLRenderingContext.LEQUAL,
+    Greater = WebGLRenderingContext.GREATER,
+    GEqual = WebGLRenderingContext.GEQUAL,
+    Equal = WebGLRenderingContext.EQUAL,
+    NotEqual = WebGLRenderingContext.NOTEQUAL,
+    Always = WebGLRenderingContext.ALWAYS,
+    Default = Always,
+  }
+
   export enum CullFace {
     Front = WebGLRenderingContext.FRONT,
     Back = WebGLRenderingContext.BACK,
