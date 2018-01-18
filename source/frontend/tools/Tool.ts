@@ -7,6 +7,7 @@ import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DecorateContext } from "../ViewContext";
 import { HitDetail } from "../HitDetail";
 import { LocateResponse } from "../ElementLocateManager";
+import { iModelApp } from "../IModelApp";
 
 export const enum BeButton {
   Data = 0,
@@ -336,7 +337,10 @@ export abstract class Tool {
   public static hidden = false;
   public static toolId = "";
   public static group?: ToolGroup;
-  public static getLocalizedName(): string { return this.toolId; } // NEEDS_WORK
+  public static getLocalizedName(): string {
+    const namespace = this.group ? this.group.namespace : "tool";
+    return iModelApp.i18N.translate(namespace.concat(":", this.toolId));
+  }
 }
 
 /** a tool that performs an action immediately. Does not become "active". */

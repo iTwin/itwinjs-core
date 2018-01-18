@@ -37,10 +37,3 @@ export class I18N {
     return this.i18n.t(key);
   }
 }
-
-export class I18NManager {
-  public static initialize(nameSpaces: string[], defaultNameSpace: string, renderFunction: any): I18N {
-    // create a separate instance of i18next, so it doesn't interfere with other i18next instances.
-    return new I18N(nameSpaces, defaultNameSpace, renderFunction);
-  }
-}
