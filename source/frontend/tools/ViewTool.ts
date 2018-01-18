@@ -696,7 +696,9 @@ export abstract class ViewManip extends ViewTool {
   }
 
   protected synchViewBallInfo(initialSetup: boolean): void {
-    const frustum = this.viewport!.getFrustum(CoordSystem.Screen, false, scratchFrustum);
+    if (!this.viewport)
+      return;
+    const frustum = this.viewport.getFrustum(CoordSystem.Screen, false, scratchFrustum);
     const screenRange = scratchPoint3d1;
     screenRange.set(
       frustum.points[Npc._000].distance(frustum.points[Npc._100]),

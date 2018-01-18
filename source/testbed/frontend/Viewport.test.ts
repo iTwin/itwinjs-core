@@ -48,7 +48,7 @@ describe("Viewport", () => {
 
   // tslint:disable-next-line:only-arrow-functions
   // tslint:disable-next-line:space-before-function-paren
-  before(async function () {   // Create a ViewState to load into a ViewPort
+  before(async function () {   // Create a ViewState to load into a Viewport
     this.timeout(99999);
     TestIModelApp.startup();
     assert.instanceOf(iModelApp, TestIModelApp);

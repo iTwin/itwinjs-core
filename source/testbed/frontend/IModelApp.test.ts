@@ -42,7 +42,7 @@ class TestApp extends IModelApp {
 describe("IModelApp", () => {
   // tslint:disable-next-line:only-arrow-functions
   // tslint:disable-next-line:space-before-function-paren
-  before(async function () {   // Create a ViewState to load into a ViewPort
+  before(async function () {
     this.timeout(99999);
     TestApp.startup();
   });
@@ -57,7 +57,7 @@ describe("IModelApp", () => {
     assert.equal(testVal2, "test2", "arg2");
     assert.isFalse(iModelApp.runImmediateTool("Not.Found"), "toolId is not registered");
     assert.isFalse(iModelApp.runImmediateTool("View.Pan"), "not an immediate tool");
-    // assert.instanceOf(iModelApp.createTool("View.Rotate"), TestRotateTool, "rotate tool override");
+    assert.isTrue(iModelApp.installTool("View.Pan"), "install view pan");
   });
 
 });

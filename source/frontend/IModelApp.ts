@@ -7,7 +7,8 @@ import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { TentativePoint } from "./TentativePoint";
-import { ToolCtor, Tool, ToolGroup, ImmediateTool } from "./tools/Tool";
+import { ToolCtor, Tool, ToolGroup, ImmediateTool, InteractiveTool } from "./tools/Tool";
+import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 
 /** holds a mapping of toolId string to tool class */
 export class ToolRegistry {
@@ -112,18 +113,38 @@ export class IModelApp {
   protected onStartup(): void { }
 
   /**
-   * Look up a tool by toolId. If found, create a new instance of that tool with the supplied arguments
+   * Look up a tool by toolId and, if found, create an instance with the supplied arguments.
+   * @param toolId the toolId of the tool
+   * @param args arguments to pass to the constructor.
+   * @returns an instance of the registered Tool class, or undefined if toolId is not registered.
    */
   public createTool(toolId: string, ...args: any[]): Tool | undefined {
     const ctor = this.tools.map.get(toolId);
     return ctor ? new ctor(...args) : undefined;
   }
 
+  /**
+   * Look up an ImmediateTool by toolId and, if found, create an instance and call its run method with the supplied arguments.
+   * @param toolId toolId of the immediate tool
+   * @param args arguments to pass to run method.
+   * @return true if the tool was found and executed.
+   */
   public runImmediateTool(toolId: string, ...args: any[]): boolean {
     const tool = this.createTool(toolId);
     if (!(tool instanceof ImmediateTool))
       return false;
     tool.run(...args);
     return true;
+  }
+
+  /**
+   * Look up an InteractiveTool by toolId and, if found, create an instance with the supplied arguments and install it.
+   * @param toolId toolId of the immediate tool
+   * @param args arguments to pass to the constructor.
+   * @return true if the tool was found and installed.
+   */
+  public installTool(toolId: string, ...args: any[]): boolean {
+    const tool = this.createTool(toolId, ...args);
+    return (tool instanceof InteractiveTool) && (BentleyStatus.SUCCESS === tool.installTool());
   }
 }
