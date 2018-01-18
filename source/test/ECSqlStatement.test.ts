@@ -7,6 +7,7 @@ import { ECDb } from "../backend/ECDb";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { using } from "@bentley/bentleyjs-core/lib/Disposable";
 import * as fs from "fs-extra";
 
 describe("ECSqlStatement", () => {
@@ -37,7 +38,7 @@ describe("ECSqlStatement", () => {
   };
 
   it("Bind Scenarios", () => {
-    const ecdb: ECDb = setupECDb("bindscenarios.ecdb",
+    using (setupECDb("bindscenarios.ecdb",
     `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
     <ECStructClass typeName="MyStruct" modifier="Sealed">
       <ECProperty propertyName="Bl" typeName="binary"/>
@@ -67,7 +68,7 @@ describe("ECSqlStatement", () => {
       <ECStructProperty propertyName="Struct" typeName="MyStruct"/>
       <ECStructArrayProperty propertyName="Struct_Array" typeName="MyStruct"/>
     </ECEntityClass>
-    </ECSchema>`);
+    </ECSchema>`), (ecdb) => {
 
     assert.isTrue(ecdb.isOpen());
 
@@ -126,6 +127,8 @@ describe("ECSqlStatement", () => {
     ecdb.withPreparedStatement("INSERT INTO test.Foo(Dt_Array) VALUES(?)", (stmt) => {
       stmt.bindArray(1, [new DateTime("2018-01-01"), new DateTime("2018-01-02")]);
     });
+
+  });
 
   });
 
