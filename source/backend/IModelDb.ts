@@ -484,8 +484,7 @@ export class ConcurrencyControl {
   public hasPendingRequests(): boolean {
     if (!this._imodel.briefcaseInfo)
       return false;
-    this.captureBulkOpRequest();
-    const reqAny: any = ConcurrencyControl.convertRequestToAny(this._pendingRequest);
+    const reqAny: any = ConcurrencyControl.convertRequestToAny(this.pendingRequest);
     return (reqAny.Codes.length !== 0) || (reqAny.Locks.length !== 0);
   }
 
@@ -502,9 +501,8 @@ export class ConcurrencyControl {
     const extractLocks: boolean = !codesOnly;
     const extractCodes: boolean = !locksOnly;
 
-    this.captureBulkOpRequest();
     const req: ConcurrencyControl.Request = ConcurrencyControl.createRequest();
-    this._imodel.briefcaseInfo.nativeDb.extractBriefcaseManagerResourcesRequest(req as NodeAddonBriefcaseManagerResourcesRequest, this._pendingRequest as NodeAddonBriefcaseManagerResourcesRequest, extractLocks, extractCodes);
+    this._imodel.briefcaseInfo.nativeDb.extractBriefcaseManagerResourcesRequest(req as NodeAddonBriefcaseManagerResourcesRequest, this.pendingRequest as NodeAddonBriefcaseManagerResourcesRequest, extractLocks, extractCodes);
     return req;
   }
 
@@ -732,7 +730,7 @@ export class ConcurrencyControl {
       return Promise.reject(this._imodel._newNotOpenError());
     // throw new Error("TBD");
     if (req === undefined)
-      req = this._pendingRequest;
+      req = this.pendingRequest;
     const bySpecId = this.buildCodeRequests(this._imodel.briefcaseInfo, req);
     if (bySpecId !== undefined) {
       for (const [specId, thisSpec] of bySpecId) {
@@ -740,7 +738,7 @@ export class ConcurrencyControl {
           // Query the state of all codes in this spec and scope
           const multiCodes = await this.queryCodeStates(accessToken, new Id64(specId), scopeId);
           for (const multiCode of multiCodes) {
-              if (multiCode.state != CodeState.Available) {
+              if (multiCode.state !== CodeState.Available) {
                 if (ConcurrencyControl.anyFound(multiCode.values, thisReq.values)) {
                   return false;
                 }
@@ -762,7 +760,7 @@ export class ConcurrencyControl {
       return Promise.reject(this._imodel._newNotOpenError());
 
     if (req === undefined)
-      req = this._pendingRequest;
+      req = this.pendingRequest;
 
     const allCodesAreAvailable = await this.areCodesAvailable(accessToken, req);
     if (!allCodesAreAvailable)

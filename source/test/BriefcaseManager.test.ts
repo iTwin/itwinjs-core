@@ -240,6 +240,7 @@ describe("BriefcaseManager", () => {
     */
 
     // Create a couple of physical elements.
+    // (Note that these elements don't have codes and we don't need locks. So, that is why we can run these methods outside of a bulk op.)
     const elid1 = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
     iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
 
