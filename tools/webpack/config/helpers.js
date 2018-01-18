@@ -18,7 +18,7 @@ const createDevToolModuleFilename = (info) => {
   const tildePos = resourcePath.indexOf("~");
   if (-1 !== tildePos)
     resourcePath = `./${resourcePath.substr(tildePos)}`;
-  console.log(resourcePath);
+
   return `webpack:///${resourcePath}`;
 };
 
