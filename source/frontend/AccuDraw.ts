@@ -142,7 +142,7 @@ export class Flags {
 
 export class RoundOff {
   public active = false;
-  public units = 0;
+  public units = new Set<number>();
 }
 
 export class SavedState {
@@ -269,7 +269,7 @@ export class AccuDraw {
   public onInitialized() { this.enableForSession(); }
   public getRotation(rMatrix?: RotMatrix): RotMatrix { if (!rMatrix) rMatrix = this.rMatrix; RotMatrix.createRows(this.axes.x, this.axes.y, this.axes.z, rMatrix); return rMatrix; }
 
-  public getCompassMode() { return this.currentMode; }
+  public getCompassMode(): CompassMode { return this.currentMode; }
   public isActive(): boolean { return CurrentState.Active === this.currentState; }
   public isEnabled(): boolean { return (this.currentState > CurrentState.NotEnabled); }
   public isInactive(): boolean { return (CurrentState.Inactive === this.currentState); }
@@ -2159,6 +2159,74 @@ export class AccuDraw {
     return (!!snapDetail && (SnapMode.Nearest === snapDetail.snapMode));
   }
 
+  private applyDistanceRoundOff(distance: number, vp: Viewport): number | undefined {
+    if (!this.distanceRoundOff.active || !this.distanceRoundOff.units.size)
+      return undefined;
+
+    let roundValue = this.distanceRoundOff.units.values().next().value;
+
+    if (this.distanceRoundOff.units.size > 1) {
+      // NOTE: Set isn't ordered, find smallest entry...
+      this.distanceRoundOff.units.forEach((thisRoundValue) => {
+        if (thisRoundValue < roundValue)
+          roundValue = thisRoundValue;
+      });
+
+      if (vp.viewDelta.magnitudeXY() < roundValue)
+        return undefined; // Smallest rounding value is larger than view...don't use...
+
+      const smallScreenDist = 0.0787402; // ~2 mm...
+      const pixelSize = vp.getPixelSizeAtPoint(this.origin);
+      const screenDist = vp.pixelsFromInches(smallScreenDist) * pixelSize;
+
+      this.distanceRoundOff.units.forEach((thisRoundValue) => {
+        if (thisRoundValue > roundValue && thisRoundValue < screenDist)
+          roundValue = thisRoundValue;
+      });
+    }
+
+    if (roundValue <= 0.0)
+      return undefined;
+
+    return roundValue * Math.floor((distance / roundValue) + 0.5);
+  }
+
+  private applyAngleRoundOff(angle: number, distance: number, vp: Viewport): number | undefined {
+    if (!this.angleRoundOff.active || !this.angleRoundOff.units.size)
+      return undefined;
+
+    let roundValue = this.angleRoundOff.units.values().next().value;
+
+    if (this.angleRoundOff.units.size > 1) {
+      // NOTE: Set isn't ordered, find smallest entry...
+      this.angleRoundOff.units.forEach((thisRoundValue) => {
+        if (thisRoundValue < roundValue)
+          roundValue = thisRoundValue;
+      });
+
+      const circumference = 2.0 * Math.PI * distance;
+      const roundDist = circumference / ((2.0 * Math.PI) / roundValue);
+
+      if (vp.viewDelta.magnitudeXY() < roundDist)
+        return undefined; // Smallest rounding value is larger than view...don't use...
+
+      const smallScreenDist = 0.0787402; // ~2 mm...
+      const pixelSize = vp.getPixelSizeAtPoint(this.origin);
+      const screenDist = vp.pixelsFromInches(smallScreenDist) * pixelSize;
+
+      this.angleRoundOff.units.forEach((thisRoundValue) => {
+        const thisRoundDist = circumference / ((2.0 * Math.PI) / thisRoundValue);
+        if (thisRoundValue > roundValue && thisRoundDist < screenDist)
+          roundValue = thisRoundValue;
+      });
+    }
+
+    if (roundValue <= 0.0)
+      return undefined;
+
+    return roundValue * Math.floor((angle / roundValue) + 0.5);
+  }
+
   public fixPointPolar(vp: Viewport): void {
     let angleChanged = false;
     let distChanged = false;
@@ -2232,16 +2300,16 @@ export class AccuDraw {
 
     // constrain angle
     if (this.flags.pointIsOnPlane && !(this.locked & LockedStates.VEC_BM)) {
-      if (!TentativeOrAccuSnap.isHot() && this.angleRoundOff.active) {
-        this.angle = this.angleRoundOff.units * Math.floor((this.angle / this.angleRoundOff.units) + 0.5);
-
-        xyCorrection.x += Math.cos(this.angle) * mag - rotVec.x;
-        xyCorrection.y += Math.sin(this.angle) * mag - rotVec.y;
-
-        rotVec.x = Math.cos(this.angle) * mag;
-        rotVec.y = Math.sin(this.angle) * mag;
-
-        angleChanged = true;
+      if (!TentativeOrAccuSnap.isHot()) {
+        const newAngle = this.applyAngleRoundOff(this.angle, mag, vp);
+        if (undefined !== newAngle) {
+          angleChanged = true;
+          this.angle = newAngle;
+          xyCorrection.x += Math.cos(this.angle) * mag - rotVec.x;
+          xyCorrection.y += Math.sin(this.angle) * mag - rotVec.y;
+          rotVec.x = Math.cos(this.angle) * mag;
+          rotVec.y = Math.sin(this.angle) * mag;
+        }
       }
 
       if (this.locked & LockedStates.X_BM || (AccuDraw.allowAxisIndexing(this.flags.pointIsOnPlane) && (rotVec.x < this.tolerance && rotVec.x > - this.tolerance) && !this.flags.indexLocked && this.axisIndexing)) {
@@ -2293,9 +2361,10 @@ export class AccuDraw {
       distChanged = true;
       this.indexed &= ~LockedStates.DIST_BM;
     } else if (!TentativeOrAccuSnap.isHot()) { // if non-snap, try rounding and aligning
-      if (this.distanceRoundOff.active) {
-        mag = this.distanceRoundOff.units * Math.floor((mag / this.distanceRoundOff.units) + 0.5);
+      const newDist = this.applyDistanceRoundOff(mag, vp);
+      if (undefined !== newDist) {
         distChanged = true;
+        mag = newDist;
       }
 
       if (Geometry.isDistanceWithinTol(mag - this.lastDistance, this.tolerance) && !this.flags.indexLocked && this.distanceIndexing) {
@@ -2371,9 +2440,10 @@ export class AccuDraw {
 
     if (AccuDraw.allowAxisIndexing(this.flags.pointIsOnPlane)) {
       if (!(this.locked & LockedStates.X_BM)) { // not locked in x
-        if (this.distanceRoundOff.active) { // round x
-          xyCorrection.x = this.distanceRoundOff.units * Math.floor((this.rawDelta.x / this.distanceRoundOff.units) + 0.5) - this.rawDelta.x;
-          this.rawDelta.x = this.distanceRoundOff.units * Math.floor((this.rawDelta.x / this.distanceRoundOff.units) + 0.5);
+        const roundedDeltaX = this.applyDistanceRoundOff(this.rawDelta.x, vp); // round x
+        if (undefined !== roundedDeltaX) {
+          xyCorrection.x = roundedDeltaX - this.rawDelta.x;
+          this.rawDelta.x = roundedDeltaX;
         }
 
         if (this.rawDelta.x < this.tolerance && this.rawDelta.x > -this.tolerance &&
@@ -2384,9 +2454,10 @@ export class AccuDraw {
         }
       }
       if (!(this.locked & LockedStates.Y_BM)) {
-        if (this.distanceRoundOff.active) { // round y
-          xyCorrection.y = this.distanceRoundOff.units * Math.floor((this.rawDelta.y / this.distanceRoundOff.units) + 0.5) - this.rawDelta.y;
-          this.rawDelta.y = this.distanceRoundOff.units * Math.floor((this.rawDelta.y / this.distanceRoundOff.units) + 0.5);
+        const roundedDeltaY = this.applyDistanceRoundOff(this.rawDelta.y, vp); // round y
+        if (undefined !== roundedDeltaY) {
+          xyCorrection.y = roundedDeltaY - this.rawDelta.y;
+          this.rawDelta.y = roundedDeltaY;
         }
 
         if (this.rawDelta.y < this.tolerance && this.rawDelta.y > -this.tolerance &&
