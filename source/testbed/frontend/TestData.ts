@@ -21,7 +21,7 @@ export class TestData {
   public static async load() {
     TestData.accessToken = await TestData.getTestUserAccessToken();
     TestData.testProjectId = await TestData.getTestProjectId(TestData.accessToken, "NodeJsTestProject");
-    TestData.testIModelId = await TestData.getTestIModelId(TestData.accessToken, TestData.testProjectId, "MyTestModel");
+    TestData.testIModelId = await TestData.getTestIModelId(TestData.accessToken, TestData.testProjectId, "TestModel");
   }
 
   public static async getTestUserAccessToken(): Promise<AccessToken> {

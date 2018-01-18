@@ -21,7 +21,7 @@ import { Appearance } from "../common/SubCategoryAppearance";
 import { ColorDef } from "../common/ColorDef";
 import { IModel } from "../common/IModel";
 
-describe.skip("BriefcaseManager", () => {
+describe("BriefcaseManager", () => {
   let accessToken: AccessToken;
   let testProjectId: string;
   let testIModelId: string;
@@ -40,7 +40,7 @@ describe.skip("BriefcaseManager", () => {
     startTime = new Date().getTime();
 
     testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
-    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "MyTestModel");
+    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "TestModel");
 
     testChangeSets = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
     expect(testChangeSets.length).greaterThan(2);

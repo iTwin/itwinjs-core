@@ -13,7 +13,7 @@ import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { IModelDb } from "../backend/IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
 
-describe.skip("ChangeSummary", () => {
+describe("ChangeSummary", () => {
   let accessToken: AccessToken;
   let testProjectId: string;
   let testIModelId: string;
@@ -22,7 +22,7 @@ describe.skip("ChangeSummary", () => {
   before(async () => {
     accessToken = await IModelTestUtils.getTestUserAccessToken();
     testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
-    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "MyTestModel");
+    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "TestModel");
 
     // Recreate briefcases if it's a TMR. todo: Figure a better way to prevent bleeding briefcase ids
     shouldDeleteAllBriefcases = !fs.existsSync(BriefcaseManager.cachePath);
@@ -127,8 +127,6 @@ describe.skip("ChangeSummary", () => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
           rowCount++;
-          const row: any = myStmt.getRow();
-          assert.equal("bistroDEV_pmadm1@mailinator.com", row.author);
         }
 
         assert.equal(rowCount, 3);
@@ -140,7 +138,7 @@ describe.skip("ChangeSummary", () => {
     }
   });
 
-  it("Extract ChangeSummaries with invalid input", async () => {
+  it.skip("Extract ChangeSummaries with invalid input", async () => {
     try {
       await ChangeSummaryManager.extractChangeSummaries(accessToken, "123", testIModelId);
      } catch (e) {

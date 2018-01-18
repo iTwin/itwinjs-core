@@ -6,7 +6,7 @@ import { IModelConnection } from "../frontend/IModelConnection";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 
-describe.skip("IModelConnection", () => {
+describe("IModelConnection", () => {
   // todo: These tests need a better location
   let accessToken: AccessToken;
   let testProjectId: string;
@@ -16,7 +16,7 @@ describe.skip("IModelConnection", () => {
   before(async () => {
     accessToken = await IModelTestUtils.getTestUserAccessToken();
     testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
-    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "MyTestModel");
+    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "TestModel");
     iModel = await IModelConnection.open(accessToken, testProjectId, testIModelId);
   });
 
