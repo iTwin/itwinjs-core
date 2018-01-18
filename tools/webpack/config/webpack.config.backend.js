@@ -8,6 +8,7 @@ const webpack = require('webpack');
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
 const WatchMissingNodeModulesPlugin = require('react-dev-utils/WatchMissingNodeModulesPlugin');
 const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
+const LicenseWebpackPlugin = require('license-webpack-plugin').LicenseWebpackPlugin;
 const nodeExternals = require('webpack-node-externals');
 const getClientEnvironment = require('./env');
 const plugins = require("../scripts/utils/webpackPlugins");
@@ -154,6 +155,10 @@ module.exports = {
     // See https://github.com/facebookincubator/create-react-app/issues/186
     new WatchMissingNodeModulesPlugin(paths.appNodeModules),
     // Replace $(iModelJs-Common) with @bentley/imodeljs-backend when resolving modules
-    new webpack.NormalModuleReplacementPlugin(paths.imodeljsCommonRegex, (r) => r.request = resolveIModeljsCommon(r.request))
+    new webpack.NormalModuleReplacementPlugin(paths.imodeljsCommonRegex, (r) => r.request = resolveIModeljsCommon(r.request)),
+    // Find and bundle all license notices from package dependencies
+    new LicenseWebpackPlugin({
+      pattern: /.*/,
+    }),
   ]
 };

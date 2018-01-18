@@ -12,6 +12,7 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const ManifestPlugin = require('webpack-manifest-plugin');
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin');
 const WatchMissingNodeModulesPlugin = require('react-dev-utils/WatchMissingNodeModulesPlugin');
+const LicenseWebpackPlugin = require('license-webpack-plugin').LicenseWebpackPlugin;
 const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
 const SpriteLoaderPlugin = require('svg-sprite-loader/plugin');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
@@ -390,7 +391,11 @@ if (PRODUCTION) {
             ascii_only: true,
           },
           sourceMap: true,
-        }
+        },
+      }),
+      // Find and bundle all license notices from package dependencies
+      new LicenseWebpackPlugin({
+        pattern: /.*/,
       }),
       // Note: this won't work without ExtractTextPlugin.extract(..) in `loaders`.
       new ExtractTextPlugin({
