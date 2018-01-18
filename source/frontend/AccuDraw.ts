@@ -269,7 +269,7 @@ export class AccuDraw {
   public onInitialized() { this.enableForSession(); }
   public getRotation(rMatrix?: RotMatrix): RotMatrix { if (!rMatrix) rMatrix = this.rMatrix; RotMatrix.createRows(this.axes.x, this.axes.y, this.axes.z, rMatrix); return rMatrix; }
 
-  public getCompassMode() { return this.currentMode; }
+  public getCompassMode(): CompassMode { return this.currentMode; }
   public isActive(): boolean { return CurrentState.Active === this.currentState; }
   public isEnabled(): boolean { return (this.currentState > CurrentState.NotEnabled); }
   public isInactive(): boolean { return (CurrentState.Inactive === this.currentState); }

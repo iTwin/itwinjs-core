@@ -7,7 +7,7 @@ import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { TentativePoint } from "./TentativePoint";
-import { ToolCtor, Tool, ToolGroup } from "./tools/Tool";
+import { ToolCtor, Tool, ToolGroup, ImmediateTool } from "./tools/Tool";
 
 /** holds a mapping of toolId string to tool class */
 export class ToolRegistry {
@@ -39,7 +39,7 @@ export class ToolRegistry {
   }
 }
 
-/** global access to the active IModelApp. Initialized by calling IModelApp.startup(). */
+/** Global access to the IModelApp. Initialized by calling IModelApp.startup(). */
 export let iModelApp: IModelApp;
 
 /**
@@ -71,13 +71,13 @@ export class IModelApp {
    * This method must be called before any iModelJs services are used. Typically, an application will make a subclass of IModelApp
    * and call this method on that subclass. E.g:
    * ``` ts
-   * MyIModelApp extends IModelApp {
+   * MyApp extends IModelApp {
    *  . . .
    * }
    * ```
    * in your source somewhere before you use any iModelJs services, call:
    * ``` ts
-   * MyIModelApp.startup();
+   * MyApp.startup();
    * ```
    */
   public static startup() {
@@ -105,6 +105,10 @@ export class IModelApp {
     iModelApp._tentativePoint.onInitialized();
   }
 
+  /**
+   * Implement this method to register your app's tools, override implementation of managers, and initialize your app-specific members.
+   * @note The default tools will already be registered, so if you register tools with the same toolId, your tools will override the defaults.
+   */
   protected onStartup(): void { }
 
   /**
@@ -113,5 +117,13 @@ export class IModelApp {
   public createTool(toolId: string, ...args: any[]): Tool | undefined {
     const ctor = this.tools.map.get(toolId);
     return ctor ? new ctor(...args) : undefined;
+  }
+
+  public runImmediateTool(toolId: string, ...args: any[]): boolean {
+    const tool = this.createTool(toolId);
+    if (!(tool instanceof ImmediateTool))
+      return false;
+    tool.run(...args);
+    return true;
   }
 }

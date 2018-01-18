@@ -1832,6 +1832,7 @@ export class ViewPanTool extends ViewManip {
     super(vp, ViewHandleType.ViewPan, true, false, true);
   }
 }
+
 export abstract class InputCollector extends InteractiveTool {
   public installToolImplementation(): BentleyStatus {
     const toolAdmin = iModelApp.toolAdmin;
