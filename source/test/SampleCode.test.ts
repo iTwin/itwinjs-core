@@ -103,18 +103,21 @@ describe("Sample Code", () => {
     const newModeledElementId = createNewModel(iModel.elements.getRootSubject(), "newModelCode", false);
 
     // __PUBLISH_EXTRACT_START__ BisCore1.sampleConcurrencyControlRequest
-    // Now acquire all locks and reserve all codes needed. If this fails, then the transaction must be rolled back.
+    // Now acquire all locks and reserve all codes needed.
+    // This is a *prequisite* to saving local changes.
     try {
       await iModel.concurrencyControl.request(accessToken);
     } catch (err) {
-      // If we can't get *all* of the locks and codes that are needed, then we can't go on with this transaction as is.
-      // We could possibly make additional changes to remove the need for the resources that are unavailable. In this case,
+      // If we can't get *all* of the locks and codes that are needed,
+      // then we can't go on with this transaction as is.
+      // We could possibly make additional changes to remove the need
+      // for the resources that are unavailable. In this case,
       // we will just bail out and print a message.
       iModel.abandonChanges();
       // report error ...
     }
-    // Commit the local changes to a local transaction in the briefcase.
-    // Note that saveChanges ends the bulk operation automatically, so there's no need to call endBulkOperation.
+    // Now we can commit the local changes to a local transaction in the
+    // IModelDb.
     iModel.saveChanges("inserted generic objects");
 
     // __PUBLISH_EXTRACT_END__

@@ -227,9 +227,10 @@ export class IModelDb extends IModel {
   }
 
   /**
-   * Commit pending changes to this iModel
+   * Commit pending changes to this iModel.
+   * @note If this IModelDb is connected to an iModel, then you must call [[ConcurrencyControl.request]] before attempting to save changes.
    * @param _description Optional description of the changes
-   * @throws [[IModelError]] if there is a problem saving changes or if there are requests for locks or codes that have yet to be processed. See [[ConcurrencyControl.request]]
+   * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    */
   public saveChanges(description?: string) {
     if (!this.briefcaseInfo)
@@ -430,16 +431,19 @@ export class ConcurrencyControl {
     this._pendingRequest = ConcurrencyControl.createRequest();
   }
 
+  /** @hidden */
   public onSaveChanges() {
     if (this.hasPendingRequests())
       throw new IModelError(IModelStatus.TransactionActive);
   }
 
+  /** @hidden */
   public onSavedChanges() {
     this.applyTransactionOptions();
   }
 
-  public applyTransactionOptions() {
+  /** @hidden */
+  private applyTransactionOptions() {
     if (!this._policy)
       return;
     if (this._policy.transactionOptions.alwaysInBulkOperationMode && !this.inBulkOperation())
