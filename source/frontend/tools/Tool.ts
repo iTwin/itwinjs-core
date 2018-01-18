@@ -317,10 +317,13 @@ export class BeWheelEvent extends BeButtonEvent {
   }
 }
 
+/** A collection of related tools. Tools are associated with a ToolGroup via ToolRegistry.registerTool */
 export class ToolGroup {
+  /** @param namespace the namespace to find localization messages. */
   constructor(public namespace: string) { }
 }
 
+/** The static properties of a Tool class */
 export interface ToolCtor extends FunctionConstructor {
   toolId: string;
   hidden: boolean;
@@ -341,6 +344,7 @@ export abstract class Tool {
     const namespace = this.group ? this.group.namespace : "tool";
     return iModelApp.i18N.translate(namespace.concat(":", this.toolId));
   }
+  public static register(group: ToolGroup) { iModelApp.tools.registerTool(this.prototype.constructor as ToolCtor, group); }
 }
 
 /** a tool that performs an action immediately. Does not become "active". */

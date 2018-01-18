@@ -368,7 +368,7 @@ export class ToolAdmin {
   private _viewCursor?: BeCursor;
   private viewTool?: ViewTool;
   private primitiveTool?: PrimitiveTool;
-  private idleTool: IdleTool;
+  private _idleTool: IdleTool;
   private inputCollector?: InputCollector;
   public saveCursor?: BeCursor;
   public saveLocateCircle: boolean;
@@ -387,7 +387,8 @@ export class ToolAdmin {
   /** If ACS Plane Lock is on, standard view rotations are relative to the ACS instead of global. */
   public acsContextLock = false;
 
-  public onInitialized() { this.idleTool = iModelApp.createTool("Idle") as IdleTool; }
+  public onInitialized() { this._idleTool = iModelApp.createTool("Idle") as IdleTool; }
+  public get idleTool(): IdleTool { return this._idleTool; }
   protected filterViewport(_vp: Viewport) { return false; }
   public isCurrentInputSourceMouse() { return this.currentInputState.inputSource === InputSource.Mouse; }
   public onInstallTool(tool: InteractiveTool) { this.currentInputState.clearKeyQualifiers(); return tool.onInstall(); }
@@ -401,7 +402,7 @@ export class ToolAdmin {
   public getInfoString(hit: HitDetail, delimiter: string): string {
     let tool = this.activeTool;
     if (!tool)
-      tool = this.idleTool;
+      tool = this._idleTool;
 
     return tool.getInfoString(hit, delimiter);
   }
@@ -444,7 +445,7 @@ export class ToolAdmin {
   public onWheelEvent(wheelEvent: BeWheelEvent): void {
     const activeTool = this.activeTool;
     if (!activeTool || !activeTool.onMouseWheel(wheelEvent))
-      this.idleTool.onMouseWheel(wheelEvent);
+      this._idleTool.onMouseWheel(wheelEvent);
   }
 
   private static scratchButtonEvent1 = new BeButtonEvent();
@@ -737,7 +738,7 @@ export class ToolAdmin {
     current.buttonDownTool = tool;
 
     if (!tool || !tool.onMiddleButtonDown(ev)) {
-      if (this.idleTool.onMiddleButtonDown(ev)) {
+      if (this._idleTool.onMiddleButtonDown(ev)) {
         // The active tool might have changed since the idle tool installs viewing tools.
         const activeTool = this.activeTool;
         if (activeTool !== tool)
@@ -779,7 +780,7 @@ export class ToolAdmin {
 
     current.changeButtonToDownPoint(ev);
     if (!tool || !tool.onMiddleButtonUp(ev))
-      this.idleTool.onMiddleButtonUp(ev);
+      this._idleTool.onMiddleButtonUp(ev);
 
     ev.reset();
   }
@@ -855,7 +856,7 @@ export class ToolAdmin {
     if (this.onGestureEvent(ev)) {
       const activeTool = this.activeTool;
       if (!activeTool || !activeTool.onEndGesture(ev))
-        this.idleTool.onEndGesture(ev);
+        this._idleTool.onEndGesture(ev);
 
       this.currentInputState.clearTouch();
     }
@@ -876,7 +877,7 @@ export class ToolAdmin {
     if (this.onGestureEvent(ev)) {
       const activeTool = this.activeTool;
       if (!activeTool || !activeTool.onSingleFingerMove(ev))
-        this.idleTool.onSingleFingerMove(ev);
+        this._idleTool.onSingleFingerMove(ev);
 
       current.onTouchMotionChange(gestureInfo.numberTouches, gestureInfo.touches);
     }
@@ -897,7 +898,7 @@ export class ToolAdmin {
     if (this.onGestureEvent(ev)) {
       const activeTool = this.activeTool;
       if (!activeTool || !activeTool.onMultiFingerMove(ev))
-        this.idleTool.onMultiFingerMove(ev);
+        this._idleTool.onMultiFingerMove(ev);
 
       current.onTouchMotionChange(gestureInfo.numberTouches, gestureInfo.touches);
     }
@@ -912,7 +913,7 @@ export class ToolAdmin {
     const activeTool = this.activeTool as any;
     const activeToolFunc = activeTool[funcName];
     if (!activeToolFunc || !activeToolFunc.call(activeTool, ev))
-      (this.idleTool as any)[funcName].call(this.idleTool, ev);
+      (this._idleTool as any)[funcName].call(this._idleTool, ev);
 
     ev.reset();
   }
