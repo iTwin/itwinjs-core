@@ -85,7 +85,8 @@ describe("Sample Code", () => {
       updateVsUpdate: ConcurrencyControl.OnConflict.RejectIncomingChange,
       updateVsDelete: ConcurrencyControl.OnConflict.AcceptIncomingChange,
       deleteVsUpdate: ConcurrencyControl.OnConflict.RejectIncomingChange,
-    }));
+      }, {alwaysInBulkOperationMode: true}
+    ));
     // __PUBLISH_EXTRACT_END__
 
     // __PUBLISH_EXTRACT_START__ BisCore1.sampleReserveCodesWithErrorHandling
@@ -98,12 +99,10 @@ describe("Sample Code", () => {
     }
     // __PUBLISH_EXTRACT_END__
 
-    // __PUBLISH_EXTRACT_START__ BisCore1.sampleBulkOperation
-    // Operations such as creating models and categories are best done in the scope of a "bulk operation".
-    // IModelDb's ConcurrencyControl will figure out what locks and/or codes are needed.
-    iModel.concurrencyControl.startBulkOperation();
     // Create a modeled element and a model.
     const newModeledElementId = createNewModel(iModel.elements.getRootSubject(), "newModelCode", false);
+
+    // __PUBLISH_EXTRACT_START__ BisCore1.sampleConcurrencyControlRequest
     // Now acquire all locks and reserve all codes needed. If this fails, then the transaction must be rolled back.
     try {
       await iModel.concurrencyControl.request(accessToken);

@@ -235,12 +235,13 @@ export class IModelDb extends IModel {
     if (!this.briefcaseInfo)
       throw this._newNotOpenError();
 
-    if (this.concurrencyControl.hasPendingRequests())
-      throw new IModelError(IModelStatus.TransactionActive);
+    this.concurrencyControl.onSaveChanges();
 
     const stat = this.briefcaseInfo.nativeDb.saveChanges(description);
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, "Problem saving changes", Logger.logError);
+
+    this.concurrencyControl.onSavedChanges();
   }
 
   /**
@@ -422,10 +423,27 @@ export class ConcurrencyControl {
   private _pendingRequest: ConcurrencyControl.Request;
   private _imodel: IModelDb;
   private _codes: ConcurrencyControl.Codes;
+  private _policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy;
 
   constructor(im: IModelDb) {
     this._imodel = im;
     this._pendingRequest = ConcurrencyControl.createRequest();
+  }
+
+  public onSaveChanges() {
+    if (this.hasPendingRequests())
+      throw new IModelError(IModelStatus.TransactionActive);
+  }
+
+  public onSavedChanges() {
+    this.applyTransactionOptions();
+  }
+
+  public applyTransactionOptions() {
+    if (!this._policy)
+      return;
+    if (this._policy.transactionOptions.alwaysInBulkOperationMode && !this.inBulkOperation())
+      this.startBulkOperation();
   }
 
   /** Create an empty Request */
@@ -510,6 +528,9 @@ export class ConcurrencyControl {
    * Try to acquire locks and/or reserve codes from iModelHub.
    * This function may fulfill some requests and fail to fulfill others. This function returns a rejection of type RequestError if some or all requests could not be fulfilled.
    * The error object will identify the locks and/or codes that are unavailable.
+   * ``` ts
+   * [[include:BisCore1.sampleConcurrencyControlRequest]]
+   * ```
    * @param accessToken The user's iModelHub access token
    * @param req The requests to be sent to iModelHub. If undefined, all pending requests are sent to iModelHub.
    * @throws [[RequestError]] if some or all of the request could not be fulfilled by iModelHub.
@@ -782,6 +803,7 @@ export class ConcurrencyControl {
    * @throws [[IModelError]] if the policy cannot be set.
    */
   public setPolicy(policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy): void {
+    this._policy = policy;
     if (!this._imodel.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
     let rc: RepositoryStatus = RepositoryStatus.Success;
@@ -794,6 +816,7 @@ export class ConcurrencyControl {
     if (RepositoryStatus.Success !== rc) {
       throw new IModelError(rc);
     }
+    this.applyTransactionOptions();
   }
 
   /**
@@ -804,10 +827,6 @@ export class ConcurrencyControl {
    * This mode can therefore be used safely only in special cases where contention for locks and codes is not a risk.
    * Normally, that is only possible when writing to a model that is exclusively locked and where codes are scoped to that model.
    * See [[request]], [[IModelDb.saveChanges]] and [[endBulkOperation]].
-   * ``` ts
-   * [[include:BisCore1.sampleBulkOperation]]
-   * ```
-   * (For the model-creation code in the sample, see [[IModelDbModels.createModel]])
    * @throws [[IModelError]] if it would be illegal to enter bulk operation mode.
    */
   public startBulkOperation(): void {
@@ -836,6 +855,7 @@ export class ConcurrencyControl {
     const rc: RepositoryStatus = this._imodel.briefcaseInfo.nativeDb.briefcaseManagerEndBulkOperation();
     if (RepositoryStatus.Success !== rc)
       throw new IModelError(rc);
+    this.applyTransactionOptions(); // (may re-start the bulk operation)
   }
 
   /** API to reserve Codes and query the status of Codes */
@@ -875,6 +895,12 @@ export namespace ConcurrencyControl {
     deleteVsUpdate: OnConflict;
   }
 
+  /** Concurrency control-related transaction options. */
+  export interface TransactionOptions {
+    /** Should the transaction always run in "bulk operation" mode? See [[ConcurrencyControl.startBulkOperation]] */
+    alwaysInBulkOperationMode: boolean;
+  }
+
   /** Specifies an optimistic concurrency policy.
    * Optimistic concurrency allows entities to be modified in the IModelDb without first acquiring locks. Allows codes to be used in the IModelDb without first acquiring them.
    * This creates the possibility that other apps may have uploaded changesets to iModelHub that overlap with local changes.
@@ -883,7 +909,8 @@ export namespace ConcurrencyControl {
    */
   export class OptimisticPolicy {
     public conflictResolution: ConflictResolutionPolicy;
-    constructor(p: ConflictResolutionPolicy) { this.conflictResolution = p; }
+    public transactionOptions: TransactionOptions;
+    constructor(p: ConflictResolutionPolicy, o: TransactionOptions) { this.conflictResolution = p; this.transactionOptions = o; }
   }
 
   /** Specifies a pessimistic concurrency policy.
@@ -891,6 +918,7 @@ export namespace ConcurrencyControl {
    * There is more than one strategy for when to acquire locks. See IModelDb.startBulkOperation.
    */
   export class PessimisticPolicy {
+    public transactionOptions: TransactionOptions;
   }
 
   /** Thrown when iModelHub denies or cannot process a request. */

@@ -186,16 +186,12 @@ describe("BriefcaseManager", () => {
       updateVsUpdate: ConcurrencyControl.OnConflict.RejectIncomingChange,
       updateVsDelete: ConcurrencyControl.OnConflict.AcceptIncomingChange,
       deleteVsUpdate: ConcurrencyControl.OnConflict.RejectIncomingChange,
-    }));
+      }, {alwaysInBulkOperationMode: true}));
 
     // Show that we can modify the properties of an element. In this case, we modify the root element itself.
     const rootEl: Element = (iModel.elements.getRootSubject()).copyForEdit<Element>();
     rootEl.userLabel = rootEl.userLabel + "changed";
     iModel.elements.updateElement(rootEl);
-
-    // Operations such as creating models and categories are best done in the scope of a "bulk operation".
-    // IModelDb's ConcurrencyControl will figure out what codes are needed. We'll reserve them later, all at once.
-    iModel.concurrencyControl.startBulkOperation();
 
     // Create a new physical model.
     let newModelId: Id64;
@@ -240,7 +236,6 @@ describe("BriefcaseManager", () => {
     */
 
     // Create a couple of physical elements.
-    // (Note that these elements don't have codes and we don't need locks. So, that is why we can run these methods outside of a bulk op.)
     const elid1 = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
     iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
 
