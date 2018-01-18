@@ -38,7 +38,7 @@ export class Schemas {
 
   /** Look up a previously registered schema
    * @param schemaName The name of the schema
-   * @returns the previously registered schema or `undefined` if not registered.
+   * @returns the previously registered schema or undefined if not registered.
    */
   public static getRegisteredSchema(schemaName: string): Schema | undefined {
     return Schemas._registeredSchemas[schemaName.toLowerCase()];

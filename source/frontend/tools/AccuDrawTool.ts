@@ -21,7 +21,7 @@ import { iModelApp } from "../IModelApp";
  * A shortcut may require no user input  (immediate) or it may install a viewing tool.Tool implementors should not use
  * this class to setup AccuDraw, instead use AccuDraw.setContext to provide hints.
  */
-class AccuDrawShortcuts {
+export class AccuDrawShortcuts {
   public static rotateAxesByPoint(isSnapped: boolean, aboutCurrentZ: boolean): boolean {
     const accudraw = iModelApp.accuDraw;
     if (!accudraw.isEnabled())

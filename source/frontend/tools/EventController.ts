@@ -112,12 +112,12 @@ type RemovalFunction = () => void;
 
 /**
  * An EventController maps user input events from the canvas of a Viewport to the ToolAdmin so that tools can process them.
- * Viewports is assigned an EventController when the are registered with ViewManager.addViewport, and they are destroyed with
+ * Viewports are assigned an EventController when they are registered with ViewManager.addViewport, and they are destroyed with
  * ViewManager.dropViewport.
  */
 export class EventController {
   private readonly touchPoints: TouchPoint[] = [];
-  private touchQueue: GestureInfo[] = [];
+  private readonly touchQueue: GestureInfo[] = [];
   private previousNumberTouches: number = 0;
   private readonly firstDown = new TouchPoint();
   private readonly firstTap1 = new TouchPoint();  // 1- and 2-finger taps
@@ -127,10 +127,10 @@ export class EventController {
   private touchTimer = Date.now();
   private tapDownTime: number;
   private tapUpTime: number;
-  private state: TouchState;
+  private state = TouchState.Invalid;
   private interpretingDataButtonAsTouch: boolean;
   private endGestureId: GestureId;
-  private removals: RemovalFunction[] = [];
+  private readonly removals: RemovalFunction[] = [];
   private static scratchMousePos = new Point2d();
   private static scratchGestureInfo: GestureInfo;
 

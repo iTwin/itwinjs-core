@@ -242,17 +242,17 @@ export class AccuDraw {
   private yIsExplicit = false;      // Sign of delta.y established from user input input, don't allow +/- side flip.
   public dontMoveFocus = false;    // Disable automatic focus change when user is entering input.
   public newFocus = ItemField.X_Item;         // Item to move focus to (X_Item or Y_Item) for automatic focus change.
-  private rMatrix = new RotMatrix();
+  private readonly rMatrix = new RotMatrix();
 
   // Compass Display Preferences...
   protected compassSizeInches = 0.44;
   protected animationFrames = 12;
   protected indexToleranceInches = 0.11;
-  protected frameColor = new ColorDef(ColorRgb.lightGrey);
-  protected fillColor = new ColorDef(ColorRgb.blue);
-  protected xColor = new ColorDef(ColorRgb.red);
-  protected yColor = new ColorDef(ColorRgb.green);
-  protected indexColor = new ColorDef(ColorRgb.white);
+  protected readonly frameColor = new ColorDef(ColorRgb.lightGrey);
+  protected readonly fillColor = new ColorDef(ColorRgb.blue);
+  protected readonly xColor = new ColorDef(ColorRgb.red);
+  protected readonly yColor = new ColorDef(ColorRgb.green);
+  protected readonly indexColor = new ColorDef(ColorRgb.white);
 
   // User Preference Settings...
   public smartKeyin = true;
@@ -264,9 +264,9 @@ export class AccuDraw {
   public distanceIndexing = true;
   public autoFocusFields = true;
   public autoPointPlacement = false;
-
-  public onInitialized() { }
   private static tempRot = new RotMatrix();
+
+  public onInitialized() { this.enableForSession(); }
   public getRotation(rMatrix?: RotMatrix): RotMatrix { if (!rMatrix) rMatrix = this.rMatrix; RotMatrix.createRows(this.axes.x, this.axes.y, this.axes.z, rMatrix); return rMatrix; }
 
   public getCompassMode() { return this.currentMode; }
