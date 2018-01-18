@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { GL } from "@build/imodeljs-core/lib/frontend/render/GL";
-import { RenderState } from "@build/imodeljs-core/lib/frontend/render/RenderState";
+import { GL } from "../../frontend/render/GL";
+import { RenderState } from "../../frontend/render/RenderState";
 
 // ###TODO: canvas.getContext() returns null on PRG...GPU should not be required
 const haveWebGL = false;

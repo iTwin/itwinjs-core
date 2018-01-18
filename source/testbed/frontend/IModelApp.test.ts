@@ -2,11 +2,11 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelApp, iModelApp } from "@build/imodeljs-core/lib/frontend/IModelApp";
-import { AccuDraw, CompassMode } from "@build/imodeljs-core/lib/frontend/AccuDraw";
-import { IdleTool } from "@build/imodeljs-core/lib/frontend/tools/IdleTool";
-import { ToolGroup, ImmediateTool } from "@build/imodeljs-core/lib/frontend/tools/Tool";
-import { ViewRotateTool } from "@build/imodeljs-core/lib/frontend/tools/ViewTool";
+import { IModelApp, iModelApp } from "../../frontend/IModelApp";
+import { AccuDraw, CompassMode } from "../../frontend/AccuDraw";
+import { IdleTool } from "../../frontend/tools/IdleTool";
+import { ToolGroup, ImmediateTool } from "../../frontend/tools/Tool";
+import { ViewRotateTool } from "../../frontend/tools/ViewTool";
 
 /** class to simulate overriding the default AccuDraw */
 class TestAccuDraw extends AccuDraw {

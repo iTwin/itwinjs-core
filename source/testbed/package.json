@@ -4,18 +4,17 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "concurrently \"npm run build:backend\" \"npm run build:frontend\"",
-    "build:backend": "cd backend && tsc",
-    "build:frontend": "cd frontend && tsc",
-    "postbuild": "concurrently \"npm run resolve-imports-backend\" \"npm run resolve-imports-frontend\"",
-    "clean": "rimraf backend/lib && rimraf frontend/lib",
-    "start": "floss --debug --path frontend/lib/frontend/index.js",
-    "test": "floss --path frontend/lib/frontend/index.js",
-    "resolve-imports-backend": "cd backend/lib && replace \"@build/imodeljs-core\" \"../../../../backend\" -r -q .",
-    "resolve-imports-frontend": "cd frontend/lib && replace \"@build/imodeljs-core\" \"../../../../frontend\" -r -q ."
+    "build": "tsc",
+    "clean": "rimraf lib",
+    "start": "floss --debug --path lib/testbed/frontend/index.js",
+    "pretest": "npm run build",
+    "test": "floss --path lib/testbed/frontend/index.js"
   },
   "repository": {},
   "dependencies": {
+    "@bentley/bentleyjs-core": "^1.3.1",
+    "@bentley/geometry-core": "^3.0.1",
+    "@bentley/imodeljs-clients": "^1.0.40",
     "@bentley/imodeljs-electronaddon": "~3.0.0",
     "@bentley/imodeljs-nodeaddonapi": "~3.0.0",
     "body-parser": "^1.18.2",
@@ -24,7 +23,7 @@
     "express": "^4.16.2",
     "floss": "^2.1.3",
     "fs-extra": "^4.0.3",
-    "node-replace": "^0.3.3",
+    "save": "^2.3.2",
     "webpack": "^3.10.0"
   },
   "devDependencies": {
