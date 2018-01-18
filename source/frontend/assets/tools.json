@@ -1,4 +1,12 @@
 {
+  "BaseTool": {
+    "View": {
+      "Pan": "Pan View",
+      "Rotate": "Rotate View",
+      "Zoom": "Zoom View",
+      "Look": "Walk"
+    }
+  },
   "ViewingTool": {
     "SelectView": "Select view",
     "WindowArea": "Click and drag to zoom into area defined by the rectangle.",

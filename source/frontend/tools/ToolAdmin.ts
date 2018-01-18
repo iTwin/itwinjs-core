@@ -5,12 +5,12 @@ import { Point3d, Point2d, XAndY, Vector3d } from "@bentley/geometry-core/lib/Po
 import { ViewStatus } from "../../common/ViewState";
 import { Viewport } from "../Viewport";
 import { IdleTool } from "./IdleTool";
-import { ViewTool, ViewToolSettings } from "./ViewTool";
+import { ViewTool, ViewToolSettings, InputCollector } from "./ViewTool";
 import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
 import { BeEvent, BeEventList } from "@bentley/bentleyjs-core/lib/BeEvent";
 import {
   BeModifierKey, BeButtonState, BeButton, BeGestureEvent, Tool, BeButtonEvent, CoordSource, GestureInfo,
-  BeCursor, BeWheelEvent, InputSource, BeVirtualKey,
+  BeCursor, BeWheelEvent, InputSource, BeVirtualKey, InteractiveTool,
 } from "./Tool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { DecorateContext } from "../ViewContext";
@@ -357,8 +357,9 @@ class WheelEventProcessor {
   }
 }
 
+/** controls the current view, primitive, and idle tools. Forwards events to the appropriate tool. */
 export class ToolAdmin {
-  private _toolEvents = new BeEventList();
+  private readonly _toolEvents = new BeEventList();
   public currentInputState = new CurrentInputState();
   public readonly toolState = new ToolState();
   // private suspended?: SuspendedToolState;
@@ -368,7 +369,7 @@ export class ToolAdmin {
   private viewTool?: ViewTool;
   private primitiveTool?: PrimitiveTool;
   private idleTool: IdleTool;
-  private inputCollector?: Tool;
+  private inputCollector?: InputCollector;
   public saveCursor?: BeCursor;
   public saveLocateCircle: boolean;
   private defaultTool?: PrimitiveTool;
@@ -386,14 +387,14 @@ export class ToolAdmin {
   /** If ACS Plane Lock is on, standard view rotations are relative to the ACS instead of global. */
   public acsContextLock = false;
 
-  public onInitialized() { }
+  public onInitialized() { this.idleTool = iModelApp.createTool("Idle") as IdleTool; }
   protected filterViewport(_vp: Viewport) { return false; }
   public isCurrentInputSourceMouse() { return this.currentInputState.inputSource === InputSource.Mouse; }
-  public onInstallTool(tool: Tool) { this.currentInputState.clearKeyQualifiers(); return tool.onInstall(); }
-  public onPostInstallTool(tool: Tool) { tool.onPostInstall(); }
+  public onInstallTool(tool: InteractiveTool) { this.currentInputState.clearKeyQualifiers(); return tool.onInstall(); }
+  public onPostInstallTool(tool: InteractiveTool) { tool.onPostInstall(); }
 
   public get activeViewTool(): ViewTool | undefined { return this.viewTool; }
-  public get activeTool(): Tool | undefined {
+  public get activeTool(): InteractiveTool | undefined {
     return this.viewTool ? this.viewTool : (this.inputCollector ? this.inputCollector : this.primitiveTool); // NOTE: Viewing tools suspend input collectors as well as primitives...
   }
 
@@ -980,7 +981,7 @@ export class ToolAdmin {
       this.activeToolChanged.raiseEvent(newActiveTool);
   }
 
-  public startInputCollector(_newTool: Tool): void {
+  public startInputCollector(_newTool: InputCollector): void {
     if (this.inputCollector)
       this.setInputCollector(undefined);
     else
@@ -994,14 +995,15 @@ export class ToolAdmin {
     this.setInputCollector(undefined);
   }
 
-  public setInputCollector(newTool?: Tool) {
+  /** @hidden */
+  public setInputCollector(newTool?: InputCollector) {
     if (this.inputCollector)
       this.inputCollector.onCleanup();
 
     this.inputCollector = newTool;
   }
 
-  /** Invoked by ViewTool.installToolImplementation */
+  /** @hidden Invoked by ViewTool.installToolImplementation */
   public setViewTool(newTool?: ViewTool) {
     if (this.viewTool)
       this.viewTool.onCleanup();
@@ -1016,7 +1018,7 @@ export class ToolAdmin {
     this.activeToolChanged.raiseEvent(newTool);
   }
 
-  /** Invoked by ViewTool.exitTool */
+  /** @hidden Invoked by ViewTool.exitTool */
   public exitViewTool() {
     if (!this.viewTool)
       return;
@@ -1112,6 +1114,7 @@ export class ToolAdmin {
     const hit = iModelApp.accuDraw.isActive ? undefined : iModelApp.accuSnap.currHit; // NOTE: Show surface normal until AccuDraw becomes active...
     viewport.drawLocateCursor(context, ev.point, viewport.pixelsFromInches(iModelApp.locateManager.getApertureInches()), this.isLocateCircleOn(), hit);
   }
+
   public isLocateCircleOn(): boolean {
     return this.toolState.locateCircleOn && this.currentInputState.inputSource === InputSource.Mouse;
   }

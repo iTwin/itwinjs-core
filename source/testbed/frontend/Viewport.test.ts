@@ -30,6 +30,12 @@ class TestViewport extends Viewport {
   public getClientRect(): ClientRect { return this.clientRect; }
 }
 
+class TestIModelApp extends IModelApp {
+  protected onStartup() {
+    super.onStartup();
+  }
+}
+
 describe("Viewport", () => {
   let imodel: IModelConnection;
   let categorySelectorState: CategorySelectorState;
@@ -44,7 +50,9 @@ describe("Viewport", () => {
   // tslint:disable-next-line:space-before-function-paren
   before(async function () {   // Create a ViewState to load into a ViewPort
     this.timeout(99999);
-    IModelApp.startup();
+    TestIModelApp.startup();
+    assert.instanceOf(iModelApp, TestIModelApp);
+
     imodel = await IModelConnection.openStandalone(bimFileLocation);
     const spatialViewProps = (await imodel.elements.getElementProps([new Id64("0x34")]))[0] as SpatialViewDefinitionProps;
 
