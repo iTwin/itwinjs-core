@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-| $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Viewport } from "../Viewport";
 import { GestureId, GestureInfo, BeModifierKey, InputSource } from "./Tool";
-import { ToolAdmin } from "./ToolAdmin";
 import { Point2d } from "@bentley/geometry-core/lib/PointVector";
+import { iModelApp } from "../IModelApp";
 
 const enum MouseButton {
   LEFT = 0,
@@ -112,12 +112,12 @@ type RemovalFunction = () => void;
 
 /**
  * An EventController maps user input events from the canvas of a Viewport to the ToolAdmin so that tools can process them.
- * Viewports is assigned an EventController when the are registered with ViewManager.addViewport, and they are destroyed with
+ * Viewports are assigned an EventController when they are registered with ViewManager.addViewport, and they are destroyed with
  * ViewManager.dropViewport.
  */
 export class EventController {
   private readonly touchPoints: TouchPoint[] = [];
-  private touchQueue: GestureInfo[] = [];
+  private readonly touchQueue: GestureInfo[] = [];
   private previousNumberTouches: number = 0;
   private readonly firstDown = new TouchPoint();
   private readonly firstTap1 = new TouchPoint();  // 1- and 2-finger taps
@@ -127,10 +127,10 @@ export class EventController {
   private touchTimer = Date.now();
   private tapDownTime: number;
   private tapUpTime: number;
-  private state: TouchState;
+  private state = TouchState.Invalid;
   private interpretingDataButtonAsTouch: boolean;
   private endGestureId: GestureId;
-  private removals: RemovalFunction[] = [];
+  private readonly removals: RemovalFunction[] = [];
   private static scratchMousePos = new Point2d();
   private static scratchGestureInfo: GestureInfo;
 
@@ -172,16 +172,16 @@ export class EventController {
     this.registerListener("touchcancel", element, this.handleTouchCancel as EventListener);
   }
 
-  private recordShiftKey() { ToolAdmin.instance.currentInputState.setKeyQualifier(BeModifierKey.Shift, true); }
-  private recordControlKey() { ToolAdmin.instance.currentInputState.setKeyQualifier(BeModifierKey.Control, true); }
-  private clearKeyboardModifiers() { ToolAdmin.instance.currentInputState.clearKeyQualifiers(); }
+  private recordShiftKey() { iModelApp.toolAdmin.currentInputState.setKeyQualifier(BeModifierKey.Shift, true); }
+  private recordControlKey() { iModelApp.toolAdmin.currentInputState.setKeyQualifier(BeModifierKey.Control, true); }
+  private clearKeyboardModifiers() { iModelApp.toolAdmin.currentInputState.clearKeyQualifiers(); }
 
-  private handleMiddleDown(pos: Point2d) { ToolAdmin.instance.onMiddleButtonDown(this.vp, pos); }
-  private handleMiddleUp(pos: Point2d) { ToolAdmin.instance.onMiddleButtonUp(this.vp, pos); }
-  private handleLeftDown(pos: Point2d) { ToolAdmin.instance.onDataButtonDown(this.vp, pos, InputSource.Mouse); }
-  private handleLeftUp(pos: Point2d) { ToolAdmin.instance.onDataButtonUp(this.vp, pos, InputSource.Mouse); }
-  private handleRightDown(pos: Point2d) { ToolAdmin.instance.onResetButtonDown(this.vp, pos); }
-  private handleRightUp(pos: Point2d) { ToolAdmin.instance.onResetButtonUp(this.vp, pos); }
+  private handleMiddleDown(pos: Point2d) { iModelApp.toolAdmin.onMiddleButtonDown(this.vp, pos); }
+  private handleMiddleUp(pos: Point2d) { iModelApp.toolAdmin.onMiddleButtonUp(this.vp, pos); }
+  private handleLeftDown(pos: Point2d) { iModelApp.toolAdmin.onDataButtonDown(this.vp, pos, InputSource.Mouse); }
+  private handleLeftUp(pos: Point2d) { iModelApp.toolAdmin.onDataButtonUp(this.vp, pos, InputSource.Mouse); }
+  private handleRightDown(pos: Point2d) { iModelApp.toolAdmin.onResetButtonDown(this.vp, pos); }
+  private handleRightUp(pos: Point2d) { iModelApp.toolAdmin.onResetButtonUp(this.vp, pos); }
 
   private getMouseButtonHandler(button: MouseButton, isDown: boolean) {
     switch (button) {
@@ -226,7 +226,7 @@ export class EventController {
   private handleMouseMove(ev: MouseEvent) {
     this.recordKeyboardModifiers(ev);
     const pos = this.getPosition(ev, EventController.scratchMousePos);
-    ToolAdmin.instance.onMouseMotion(this.vp, pos, InputSource.Mouse);
+    iModelApp.toolAdmin.onMouseMotion(this.vp, pos, InputSource.Mouse);
     ev.preventDefault();
   }
 
@@ -245,7 +245,7 @@ export class EventController {
     if (!delta)
       return;
 
-    ToolAdmin.instance.onWheel(this.vp, delta, ToolAdmin.instance.currentInputState.lastMotion);
+    iModelApp.toolAdmin.onWheel(this.vp, delta, iModelApp.toolAdmin.currentInputState.lastMotion);
     ev.preventDefault();
   }
 
@@ -297,18 +297,18 @@ export class EventController {
 
   private dispatchTouchEvent(info: GestureInfo, vp: Viewport): void {
     if (info.isEndGesture) {
-      ToolAdmin.instance.onEndGesture(vp, info);
+      iModelApp.toolAdmin.onEndGesture(vp, info);
       return;
     }
 
     switch (info.gestureId) {
-      case GestureId.MultiFingerMove: return ToolAdmin.instance.onMultiFingerMove(vp, info);
-      case GestureId.SingleFingerMove: return ToolAdmin.instance.onSingleFingerMove(vp, info);
-      case GestureId.TwoFingerTap: return ToolAdmin.instance.onTwoFingerTap(vp, info);
-      case GestureId.PressAndTap: return ToolAdmin.instance.onPressAndTap(vp, info);
-      case GestureId.SingleTap: return ToolAdmin.instance.onSingleTap(vp, info);
-      case GestureId.DoubleTap: return ToolAdmin.instance.onDoubleTap(vp, info);
-      case GestureId.LongPress: return ToolAdmin.instance.onLongPress(vp, info);
+      case GestureId.MultiFingerMove: return iModelApp.toolAdmin.onMultiFingerMove(vp, info);
+      case GestureId.SingleFingerMove: return iModelApp.toolAdmin.onSingleFingerMove(vp, info);
+      case GestureId.TwoFingerTap: return iModelApp.toolAdmin.onTwoFingerTap(vp, info);
+      case GestureId.PressAndTap: return iModelApp.toolAdmin.onPressAndTap(vp, info);
+      case GestureId.SingleTap: return iModelApp.toolAdmin.onSingleTap(vp, info);
+      case GestureId.DoubleTap: return iModelApp.toolAdmin.onDoubleTap(vp, info);
+      case GestureId.LongPress: return iModelApp.toolAdmin.onLongPress(vp, info);
     }
   }
 

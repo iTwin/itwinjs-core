@@ -1,14 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-| $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Tool, BeButton, BeButtonEvent, BeGestureEvent, BeWheelEvent } from "./Tool";
-import { ToolAdmin } from "./ToolAdmin";
-import { ViewManip, ViewHandleType, FitViewTool, RotatePanZoomGestureTool } from "./ViewTool";
+import { BeButton, BeButtonEvent, BeGestureEvent, BeWheelEvent, InteractiveTool } from "./Tool";
+import { ViewManip, ViewHandleType, FitViewTool, RotatePanZoomGestureTool, ViewTool } from "./ViewTool";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { PrimitiveTool } from "./PrimitiveTool";
-import { TentativePoint } from "../TentativePoint";
-import { AccuDraw } from "../AccuDraw";
 import { GeomDetail, HitDetail, HitSource, SnapDetail } from "../HitDetail";
+import { iModelApp } from "../IModelApp";
 
 /**
  * The default "idle" tool. If no tool is active, or the active tool does not respond to a given
@@ -29,26 +27,29 @@ import { GeomDetail, HitDetail, HitSource, SnapDetail } from "../HitDetail";
 *      double-tap: fit view
 *  Touch inputs can be combined e.g. drag two fingers while moving them closer together => pan + zoom in
 */
-export class IdleTool extends Tool {
-  public get toolId() { return ""; }
+export class IdleTool extends InteractiveTool {
+  public static toolId = "Idle";
+  public static hidden = true;
 
   public onMiddleButtonDown(ev: BeButtonEvent): boolean {
     const vp = ev.viewport;
     if (!vp)
       return true;
-    const cur = ToolAdmin.instance.currentInputState;
+    const cur = iModelApp.toolAdmin.currentInputState;
     if (cur.isDragging(BeButton.Data) || cur.isDragging(BeButton.Reset))
       return false;
 
-    let viewTool;
+    let viewTool: ViewTool | undefined;
     if (ev.isDoubleClick) {
       viewTool = new FitViewTool(vp, true);
+    } else if (ev.isControlKey) {
+      viewTool = iModelApp.createTool("View." + vp.view.is3d() ? "Look" : "Scroll", vp) as ViewTool | undefined;
     } else if (ev.isShiftKey) {
-      viewTool = new ViewManip(vp, ViewHandleType.Rotate, true, false, true);
+      viewTool = iModelApp.createTool("View.Rotate", vp) as ViewTool | undefined;
     } else if (false) {
       /* ###TODO: Other view tools if needed... */
     } else {
-      const currTool = ToolAdmin.instance.activeViewTool;
+      const currTool = iModelApp.toolAdmin.activeViewTool;
       if (currTool && currTool instanceof ViewManip) {
         if (!currTool.isDragging && currTool.viewHandles.hasHandle(ViewHandleType.ViewPan))
           currTool.forcedHandle = ViewHandleType.ViewPan;
@@ -56,17 +57,17 @@ export class IdleTool extends Tool {
         return true;
       }
 
-      viewTool = new ViewManip(vp, ViewHandleType.ViewPan, true, false, true);
+      viewTool = iModelApp.createTool("View.Pan", vp) as ViewTool | undefined;
     }
 
-    return BentleyStatus.SUCCESS === viewTool.installTool();
+    return !!viewTool && BentleyStatus.SUCCESS === viewTool.installTool();
   }
 
   public onMiddleButtonUp(ev: BeButtonEvent): boolean {
     if (ev.isDoubleClick || ev.isControlKey || ev.isShiftKey)
       return false;
 
-    const currTool = ToolAdmin.instance.activeViewTool;
+    const currTool = iModelApp.toolAdmin.activeViewTool;
     if (currTool && currTool instanceof ViewManip) {
       if (currTool.viewHandles.hasHandle(ViewHandleType.ViewPan))
         currTool.forcedHandle = ViewHandleType.None; // Didn't get start drag, don't leave ViewPan active...
@@ -75,45 +76,45 @@ export class IdleTool extends Tool {
         currTool.invalidateTargetCenter();
     }
 
-    const tp = TentativePoint.instance;
+    const tp = iModelApp.tentativePoint;
     tp.process(ev);
 
     if (tp.isSnapped) {
-      ToolAdmin.instance.adjustSnapPoint();
+      iModelApp.toolAdmin.adjustSnapPoint();
     } else {
-      if (AccuDraw.instance.isActive) {
+      if (iModelApp.accuDraw.isActive) {
         const point = tp.point;
         const vp = ev.viewport!;
         if (vp.isSnapAdjustmentRequired()) {
-          ToolAdmin.instance.adjustPointToACS(point, vp, false);
+          iModelApp.toolAdmin.adjustPointToACS(point, vp, false);
 
           const geomDetail = new GeomDetail();
-          geomDetail.m_closePoint.setFrom(point);
+          geomDetail.closePoint.setFrom(point);
           const hit = new HitDetail(vp, undefined, undefined, point, HitSource.TentativeSnap, geomDetail);
           const snap = new SnapDetail(hit);
 
           tp.setCurrSnap(snap);
-          ToolAdmin.instance.adjustSnapPoint();
+          iModelApp.toolAdmin.adjustSnapPoint();
           tp.point.setFrom(tp.point);
           tp.setCurrSnap(undefined);
         } else {
-          AccuDraw.instance.adjustPoint(point, vp, false);
+          iModelApp.accuDraw.adjustPoint(point, vp, false);
           const savePoint = point.clone();
-          ToolAdmin.instance.adjustPointToGrid(point, vp);
+          iModelApp.toolAdmin.adjustPointToGrid(point, vp);
           if (!point.isExactEqual(savePoint))
-            AccuDraw.instance.adjustPoint(point, vp, false);
+            iModelApp.accuDraw.adjustPoint(point, vp, false);
           tp.point.setFrom(point);
         }
       } else {
-        ToolAdmin.instance.adjustPoint(tp.point, ev.viewport!);
+        iModelApp.toolAdmin.adjustPoint(tp.point, ev.viewport!);
       }
-      AccuDraw.instance.onTentative();
+      iModelApp.accuDraw.onTentative();
     }
 
     // NOTE: Need to synch tool dynamics because of UpdateDynamics call in _ExitViewTool from OnMiddleButtonUp before point was adjusted. :(
     if (currTool && currTool instanceof PrimitiveTool) {
       const tmpEv = new BeButtonEvent();
-      ToolAdmin.instance.fillEventFromCursorLocation(tmpEv);
+      iModelApp.toolAdmin.fillEventFromCursorLocation(tmpEv);
       currTool.updateDynamics(tmpEv);
     }
 
@@ -121,7 +122,7 @@ export class IdleTool extends Tool {
   }
 
   public onMouseWheel(ev: BeWheelEvent) {
-    return ToolAdmin.instance.processWheelEvent(ev, true);
+    return iModelApp.toolAdmin.processWheelEvent(ev, true);
   }
 
   public installToolImplementation() { return BentleyStatus.SUCCESS; }
@@ -129,7 +130,7 @@ export class IdleTool extends Tool {
   public onDataButtonDown(_ev: BeButtonEvent) { return false; }
   public onMultiFingerMove(ev: BeGestureEvent) { const tool = new RotatePanZoomGestureTool(ev, true); tool.installTool(); return true; }
   public onSingleFingerMove(ev: BeGestureEvent) { return this.onMultiFingerMove(ev); }
-  public onSingleTap(ev: BeGestureEvent) { ToolAdmin.instance.convertGestureSingleTapToButtonDownAndUp(ev); return true; }
+  public onSingleTap(ev: BeGestureEvent) { iModelApp.toolAdmin.convertGestureSingleTapToButtonDownAndUp(ev); return true; }
   public onDoubleTap(ev: BeGestureEvent) { if (ev.viewport) { const tool = new FitViewTool(ev.viewport, true); tool.installTool(); } return true; }
-  public onTwoFingerTap(ev: BeGestureEvent) { ToolAdmin.instance.convertGestureToResetButtonDownAndUp(ev); return true; }
+  public onTwoFingerTap(ev: BeGestureEvent) { iModelApp.toolAdmin.convertGestureToResetButtonDownAndUp(ev); return true; }
 }

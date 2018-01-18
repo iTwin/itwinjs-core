@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-| $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Vector3d, XYZ, Point3d, Range3d, RotMatrix, Transform, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ } from "@bentley/geometry-core/lib/PointVector";
 import { Map4d, Point4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
@@ -11,7 +11,6 @@ import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core/lib/Time";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { BeButtonEvent, BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
-import { ToolAdmin } from "./tools/ToolAdmin";
 import { AuxCoordSystemState } from "../common/AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
 import { IModelError, IModelStatus } from "../common/IModelError";
@@ -24,6 +23,7 @@ import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
 import { LegacyMath } from "../common/LegacyMath";
 import { Frustum, Npc, NpcCorners, NpcCenter } from "../common/Frustum";
 import { Placement3dProps, Placement2dProps } from "../common/ElementProps";
+import { iModelApp } from "./IModelApp";
 
 /** A rectangle in view coordinates. */
 export class ViewRect extends ElementAlignedBox2d {
@@ -211,8 +211,8 @@ export class Viewport {
   private static get2dFrustumDepth() { return Constant.oneMeter; }
 
   public isPointAdjustmentRequired(): boolean { return this.view.is3d(); }
-  public isSnapAdjustmentRequired(): boolean { return ToolAdmin.instance.acsPlaneSnapLock && this.view.is3d(); }
-  public isContextRotationRequired(): boolean { return ToolAdmin.instance.acsContextLock; }
+  public isSnapAdjustmentRequired(): boolean { return iModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
+  public isContextRotationRequired(): boolean { return iModelApp.toolAdmin.acsContextLock; }
 
   constructor(public canvas?: HTMLCanvasElement, private _view?: ViewState) { this.setCursor(); }
 
@@ -247,7 +247,7 @@ export class Viewport {
   }
 
   public getAuxCoordSystem(): AuxCoordSystemState { if (!this._auxCoordSystem) this._auxCoordSystem = this.view.createAuxCoordSystem(""); return this._auxCoordSystem; }
-  public setAuxCoordSystem(val: AuxCoordSystemState | undefined) { this._auxCoordSystem = val; this.view.setAuxiliaryCoordinateSystemId(Id64.fromJSON(val)); }
+  public setAuxCoordSystem(val: AuxCoordSystemState | undefined) { this._auxCoordSystem = val; this.view.setAuxiliaryCoordinateSystemId(Id64.fromJSON(val ? val.id : undefined)); }
   public getAuxCoordRotation(result?: RotMatrix) { return this._auxCoordSystem ? this._auxCoordSystem.getRotation(result) : RotMatrix.createIdentity(result); }
   public getAuxCoordOrigin(result?: Point3d) { return this._auxCoordSystem ? this._auxCoordSystem.getOrigin(result) : Point3d.createZero(result); }
 
@@ -719,18 +719,18 @@ export class Viewport {
     Transform.initFromRange(corners.low, corners.high, scrToNpcTran, undefined);
     return scrToNpcTran.multiplyPoint(pt, out);
   }
-  public worldToNpcArray(pts: Point3d[]): void { this.rootToNpc.transform0Ref().multiplyPoint3dArrayQuietNormalize(pts); }
-  public npcToWorldArray(pts: Point3d[]): void { this.rootToNpc.transform1Ref().multiplyPoint3dArrayQuietNormalize(pts); }
-  public worldToViewArray(pts: Point3d[]): void { this.rootToView.transform0Ref().multiplyPoint3dArrayQuietNormalize(pts); }
-  public worldToView4dArray(worldPts: Point3d[], viewPts: Point4d[]): void { this.rootToView.transform0Ref().multiplyPoint3dArray(worldPts, viewPts); }
-  public viewToWorldArray(pts: Point3d[]) { this.rootToView.transform1Ref().multiplyPoint3dArrayQuietNormalize(pts); }
-  public view4dToWorldArray(viewPts: Point4d[], worldPts: Point3d[]): void { this.rootToView.transform1Ref().multiplyPoint4dArrayQuietRenormalize(viewPts, worldPts); }
-  public worldToNpc(pt: Point3d, out?: Point3d): Point3d { return this.rootToNpc.transform0Ref().multiplyPoint3dQuietNormalize(pt, out); }
-  public npcToWorld(pt: Point3d, out?: Point3d): Point3d { return this.rootToNpc.transform1Ref().multiplyPoint3dQuietNormalize(pt, out); }
-  public worldToView(input: Point3d, out?: Point3d): Point3d { return this.rootToView.transform0Ref().multiplyPoint3dQuietNormalize(input, out); }
-  public worldToView4d(input: Point3d, out?: Point4d): Point4d { return this.rootToView.transform0Ref().multiplyPoint3d(input, 1.0, out); }
-  public viewToWorld(input: Point3d, out?: Point3d): Point3d { return this.rootToView.transform1Ref().multiplyPoint3dQuietNormalize(input, out); }
-  public view4dToWorld(input: Point4d, out?: Point3d): Point3d { return this.rootToView.transform1Ref().multiplyXYZWQuietRenormalize(input.x, input.y, input.z, input.w, out); }
+  public worldToNpcArray(pts: Point3d[]): void { this.rootToNpc.transform0.multiplyPoint3dArrayQuietNormalize(pts); }
+  public npcToWorldArray(pts: Point3d[]): void { this.rootToNpc.transform1.multiplyPoint3dArrayQuietNormalize(pts); }
+  public worldToViewArray(pts: Point3d[]): void { this.rootToView.transform0.multiplyPoint3dArrayQuietNormalize(pts); }
+  public worldToView4dArray(worldPts: Point3d[], viewPts: Point4d[]): void { this.rootToView.transform0.multiplyPoint3dArray(worldPts, viewPts); }
+  public viewToWorldArray(pts: Point3d[]) { this.rootToView.transform1.multiplyPoint3dArrayQuietNormalize(pts); }
+  public view4dToWorldArray(viewPts: Point4d[], worldPts: Point3d[]): void { this.rootToView.transform1.multiplyPoint4dArrayQuietRenormalize(viewPts, worldPts); }
+  public worldToNpc(pt: Point3d, out?: Point3d): Point3d { return this.rootToNpc.transform0.multiplyPoint3dQuietNormalize(pt, out); }
+  public npcToWorld(pt: Point3d, out?: Point3d): Point3d { return this.rootToNpc.transform1.multiplyPoint3dQuietNormalize(pt, out); }
+  public worldToView(input: Point3d, out?: Point3d): Point3d { return this.rootToView.transform0.multiplyPoint3dQuietNormalize(input, out); }
+  public worldToView4d(input: Point3d, out?: Point4d): Point4d { return this.rootToView.transform0.multiplyPoint3d(input, 1.0, out); }
+  public viewToWorld(input: Point3d, out?: Point3d): Point3d { return this.rootToView.transform1.multiplyPoint3dQuietNormalize(input, out); }
+  public view4dToWorld(input: Point4d, out?: Point3d): Point3d { return this.rootToView.transform1.multiplyXYZWQuietRenormalize(input.x, input.y, input.z, input.w, out); }
 
   /** Converts inches to pixels based on screen DPI.
    * @Note this information may not be accurate in some browsers.
@@ -766,7 +766,7 @@ export class Viewport {
 
       // get the root corners of the unexpanded box
       const ueRootBox = new Frustum();
-      ueRootToNpc.transform1Ref().multiplyPoint3dArrayQuietNormalize(ueRootBox.points);
+      ueRootToNpc.transform1.multiplyPoint3dArrayQuietNormalize(ueRootBox.points);
 
       // and convert them to npc coordinates of the expanded view
       this.worldToNpcArray(ueRootBox.points);
@@ -1202,17 +1202,17 @@ export class Viewport {
     if (!(hit instanceof SnapDetail))
       return; // Don't display unless snapped...
 
-    if (!hit.m_geomDetail.isValidSurfaceHit())
+    if (!hit.geomDetail.isValidSurfaceHit())
       return; // AccuSnap will flash edge/segment geometry...
 
-    if (SnapMode.Nearest !== hit.m_snapMode && hit.isHot)
+    if (SnapMode.Nearest !== hit.snapMode && hit.isHot)
       return; // Only display if snap is nearest or NOT hot...surface normal is for hit location, not snap location...
 
     const color = new ColorDef(~vp.hilite.color.getRgb); // Invert hilite color for good contrast...
     const colorFill = color.clone();
     const pt = hit.getHitPoint();
     const radius = (2.5 * aperture) * vp.getPixelSizeAtPoint(pt);
-    const normal = hit.m_geomDetail.m_normal;
+    const normal = hit.geomDetail.normal;
     const rMatrix = RotMatrix.createHeadsUpTriad(normal);
     color.setAlpha(100);
     colorFill.setAlpha(200);

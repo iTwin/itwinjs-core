@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-| $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Point3d, Point2d, XAndY } from "@bentley/geometry-core/lib/PointVector";
 import { Viewport } from "../Viewport";
@@ -7,6 +7,7 @@ import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DecorateContext } from "../ViewContext";
 import { HitDetail } from "../HitDetail";
 import { LocateResponse } from "../ElementLocateManager";
+import { iModelApp } from "../IModelApp";
 
 export const enum BeButton {
   Data = 0,
@@ -302,7 +303,7 @@ export class BeGestureEvent extends BeButtonEvent {
   }
 }
 
-/** Information about movement of the "wheel". */
+/** Information about movement of the mouse wheel. */
 export class BeWheelEvent extends BeButtonEvent {
   public constructor(public wheelDelta: number = 0) { super(); }
   public setFrom(src: BeWheelEvent): void {
@@ -316,20 +317,48 @@ export class BeWheelEvent extends BeButtonEvent {
   }
 }
 
+/** A collection of related tools. Tools are associated with a ToolGroup via ToolRegistry.registerTool */
+export class ToolGroup {
+  /** @param namespace the namespace to find localization messages. */
+  constructor(public namespace: string) { }
+}
+
+/** The static properties of a Tool class */
+export interface ToolCtor extends FunctionConstructor {
+  toolId: string;
+  hidden: boolean;
+  group?: ToolGroup;
+  getLocalizedName(): string;
+  new(...args: any[]): Tool;
+}
+
 /**
  * Base Tool class for handling user input events from Viewports.
- * Applications should create subclasses of ViewTool or PrimitiveTool and not Tool directly.
  */
 export abstract class Tool {
   // tslint:disable:no-empty
-  public static get toolId(): string { return ""; }
-  public getLocalizedToolName(): string { return Object.getPrototypeOf(this).constructor.toolId; } // NEEDS_WORK
+  public static hidden = false;
+  public static toolId = "";
+  public static group?: ToolGroup;
+  public static getLocalizedName(): string { return this.toolId; } // NEEDS_WORK
+  public static register(group: ToolGroup) { iModelApp.tools.registerTool(this.prototype.constructor as ToolCtor, group); }
+}
+
+/** a tool that performs an action immediately. Does not become "active". */
+export abstract class ImmediateTool extends Tool {
+  public abstract run(...args: any[]): void;
+}
+
+export abstract class InteractiveTool extends Tool {
   public abstract installToolImplementation(): BentleyStatus;
   public installTool(): BentleyStatus { return this.installToolImplementation(); }
   /** Override to execute additional logic after tool becomes active */
   public onPostInstall(): void { }
   /** Override to execute additional logic when tool is installed. Return false to prevent this tool from becoming active */
   public onInstall(): boolean { return true; }
+  public abstract exitTool(): void;
+  /** Invoked when the tool becomes no longer active, to perform additional cleanup logic */
+  public onCleanup() { }
   /** Implement to handle data-button-down events */
   public abstract onDataButtonDown(ev: BeButtonEvent): void;
   /** Invoked when the data button is released. */
@@ -359,9 +388,6 @@ export abstract class Tool {
   /** Invoked when the mouse wheel moves. */
   public onMouseWheel(_ev: BeWheelEvent): boolean { return false; }
   /** Implemented by direct subclasses to handle when the tool becomes no longer active. Generally not overridden by other subclasses */
-  public abstract exitTool(): void;
-  /** Invoked when the tool becomes no longer active, to perform additional cleanup logic */
-  public onCleanup() { }
   /** Invoked when the dimensions of the tool's viewport change */
   public onViewportResized() { }
   /** Invoked to allow a tool to update any view decorations it may have created */
@@ -411,10 +437,10 @@ export abstract class Tool {
   /**
    * Invoked just before the locate tooltip is displayed to retrieve the info text. Allows the tool to override the default description.
    * @param hit The HitDetail whose info is needed.
-   * @param _delimiter Put this string to break lines of the description.
+   * @param _delimiter Use this string to break lines of the description.
    * @return the string to describe the hit.
    * @note If you override this method, you may decide whether to call your superclass' implementation or not (it is not required).
    * The default implementation shows hit description
    */
-  public getInfoString(hit: HitDetail, _delimiter: string): string { return hit.m_hitDescription; }
+  public getInfoString(hit: HitDetail, _delimiter: string): string { return hit.hitDescription; }
 }

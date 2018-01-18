@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
@@ -38,7 +38,7 @@ export class Schemas {
 
   /** Look up a previously registered schema
    * @param schemaName The name of the schema
-   * @returns the previously registered schema or `undefined` if not registered.
+   * @returns the previously registered schema or undefined if not registered.
    */
   public static getRegisteredSchema(schemaName: string): Schema | undefined {
     return Schemas._registeredSchemas[schemaName.toLowerCase()];

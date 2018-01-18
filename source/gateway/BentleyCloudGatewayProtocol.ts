@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelError } from "../common/IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
@@ -69,9 +69,9 @@ export abstract class BentleyCloudGatewayProtocol extends Gateway.HttpProtocol {
     const token = request ? request.findParameterOfType(IModelToken) : undefined;
     const contextId = (token && token.contextId) ? encodeURIComponent(token.contextId) : "{contextId}";
     const iModelId = (token && token.iModelId) ? encodeURIComponent(token.iModelId) : "{iModelId}";
-    const versionId = (token && token.changeSetId) ? encodeURIComponent(token.changeSetId) : "{versionId}";
+    const changeSetId = (token && token.changeSetId) ? encodeURIComponent(token.changeSetId) : "{changeSetId}";
 
-    return `${prefix}/${info.title}/${info.version}/Context/${contextId}/iModel/${iModelId}/Version/${versionId}/${operation.gateway}/${operation.version}/${operation.operation}`;
+    return `${prefix}/${info.title}/${info.version}/context/${contextId}/imodel/${iModelId}/changeset/${changeSetId}/${operation.gateway}/${operation.version}/${operation.operation}`;
   }
 
   /** Returns the OpenAPI path parameters for a gateway operation. */
@@ -79,7 +79,7 @@ export abstract class BentleyCloudGatewayProtocol extends Gateway.HttpProtocol {
     return [
       { name: "contextId", in: "path", required: true, schema: { type: "string" } },
       { name: "iModelId", in: "path", required: true, schema: { type: "string" } },
-      { name: "versionId", in: "path", required: true, schema: { type: "string" } },
+      { name: "changeSetId", in: "path", required: true, schema: { type: "string" } },
     ];
   }
 

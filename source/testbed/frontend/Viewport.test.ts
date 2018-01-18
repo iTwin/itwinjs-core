@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Id64 } from "@build/imodeljs-core/node_modules/@bentley/bentleyjs-core/lib/Id";
@@ -8,17 +8,14 @@ import { DisplayStyle3dState, ModelSelectorState, SpatialViewState, CategorySele
 import { Frustum } from "@build/imodeljs-core/lib/common/Frustum";
 import { IModelConnection } from "@build/imodeljs-core/lib/frontend/IModelConnection";
 import { Viewport, ViewRect, CoordSystem } from "@build/imodeljs-core/lib/frontend/Viewport";
+import { IModelApp, iModelApp } from "@build/imodeljs-core/lib/frontend/IModelApp";
 import { Cartographic } from "@build/imodeljs-core/lib/common/geometry/Cartographic";
 import { Angle } from "@build/imodeljs-core/node_modules/@bentley/geometry-core/lib/Geometry";
 import * as path from "path";
 import { SpatialViewDefinitionProps } from "@build/imodeljs-core/lib/common/ElementProps";
+import { ViewPanTool } from "@build/imodeljs-core/lib/frontend/tools/ViewTool";
 
 /* tslint:disable: no-console */
-
-// ==========================================================================================================================================
-// Test-Specific Declarations and Data
-// ==========================================================================================================================================
-
 const bimFileLocation = path.join(__dirname, "../../../../test/lib/test/assets/test.bim");
 
 /** Class with scope limited to this file, used for creating a Viewport without a canvas */
@@ -33,8 +30,11 @@ class TestViewport extends Viewport {
   public getClientRect(): ClientRect { return this.clientRect; }
 }
 
-// ==========================================================================================================================================
-// ==========================================================================================================================================
+class TestIModelApp extends IModelApp {
+  protected onStartup() {
+    super.onStartup();
+  }
+}
 
 describe("Viewport", () => {
   let imodel: IModelConnection;
@@ -50,10 +50,13 @@ describe("Viewport", () => {
   // tslint:disable-next-line:space-before-function-paren
   before(async function () {   // Create a ViewState to load into a ViewPort
     this.timeout(99999);
+    TestIModelApp.startup();
+    assert.instanceOf(iModelApp, TestIModelApp);
+
     imodel = await IModelConnection.openStandalone(bimFileLocation);
     const spatialViewProps = (await imodel.elements.getElementProps([new Id64("0x34")]))[0] as SpatialViewDefinitionProps;
 
-    // Set up supporting ViewState classes =====================================================
+    // Set up supporting ViewState classes
     categorySelectorState = new CategorySelectorState(
       {
         categories: ["test0"],
@@ -86,8 +89,8 @@ describe("Viewport", () => {
         id: new Id64("0x22"),
         classFullName: "ModelSelector",
       }, imodel);
-    // ============================================================================================
-    // Set up 3 separate ViewState classes ========================================================
+
+    // Set up 3 separate ViewState classes
     spatialViewProps.origin = Point3d.create(-5, -5, 0);
     spatialViewProps.extents = Vector3d.create(10, 10, 1);
     spatialViewProps.angles = YawPitchRollAngles.createDegrees(0, 0, 0);
@@ -115,14 +118,18 @@ describe("Viewport", () => {
 
   it("should obtain equal viewport from round-trip setup using frustum", () => {
     for (const viewState of [viewStateXYFlat, viewStateXZFlat, viewStateXYZ]) {
-      const viewPort = new TestViewport(viewState);
-      const newViewState = viewPort.view.clone<SpatialViewState>();
+      const viewport = new TestViewport(viewState);
+      const newViewState = viewport.view.clone<SpatialViewState>();
       let frustumWorld: Frustum;
 
+      const pan = iModelApp.createTool("View.Pan", viewport) as ViewPanTool | undefined;
+      assert.instanceOf(pan, ViewPanTool);
+      assert.equal(pan!.viewport, viewport);
+
       if (viewState.isCameraOn()) {
-        frustumWorld = viewPort.getFrustum(CoordSystem.World, true);
+        frustumWorld = viewport.getFrustum(CoordSystem.World, true);
       } else {
-        frustumWorld = viewPort.getFrustum(CoordSystem.World, false);
+        frustumWorld = viewport.getFrustum(CoordSystem.World, false);
         // "Dirty up the data"
         newViewState.setRotation(RotMatrix.createRowValues(
           5, 342, 34,
@@ -135,16 +142,16 @@ describe("Viewport", () => {
 
       newViewState.setupFromFrustum(frustumWorld);
 
-      if (viewPort.frustFraction === 1) {   // Dealing with flat box, data has been "dirtied," check it was replaced correctly
-        assert.isTrue(newViewState.origin.isAlmostEqual(viewPort.view.getOrigin()), "ViewState created from old ViewState's frustum has same origin");
-        assert.isTrue(newViewState.extents.isAlmostEqual(viewPort.view.getExtents()), "ViewState created from old ViewState's frustum has same extents");
-        assert.isTrue(newViewState.rotation.isAlmostEqual(viewPort.view.getRotation()), "ViewState created from old ViewState's frustum has same rotation");
+      if (viewport.frustFraction === 1) {   // Dealing with flat box, data has been "dirtied," check it was replaced correctly
+        assert.isTrue(newViewState.origin.isAlmostEqual(viewport.view.getOrigin()), "ViewState created from old ViewState's frustum has same origin");
+        assert.isTrue(newViewState.extents.isAlmostEqual(viewport.view.getExtents()), "ViewState created from old ViewState's frustum has same extents");
+        assert.isTrue(newViewState.rotation.isAlmostEqual(viewport.view.getRotation()), "ViewState created from old ViewState's frustum has same rotation");
       } else {  // Camera angle adjusted our view
         const backFrac = newViewState.getBackDistance();
         const frontFrac = newViewState.getFrontDistance();
         const frustFraction = frontFrac / backFrac;
         // !!! Note: Tolerance is extremely low currently...
-        assert.isTrue(Math.abs(viewPort.frustFraction - frustFraction) < 1.0e-2, "Planes correctly conform to the found frustfraction");
+        assert.isTrue(Math.abs(viewport.frustFraction - frustFraction) < 1.0e-2, "Planes correctly conform to the found frustFraction");
       }
     }
 

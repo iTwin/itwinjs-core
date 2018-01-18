@@ -1,7 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
 import { IModelError, IModelStatus } from "../common/IModelError";
 
 /** Class that holds the singleton addon instance that was loaded by the app for this iModelJs session. It is up to the app to load the addon. */
@@ -64,7 +63,6 @@ export class NodeAddonRegistry {
     }
     NodeAddonRegistry.registerAddon(loaderModule.NodeAddonLoader.loadAddon());
   }
-
 }
 
 /** Utility class to help apps compute the name of the default addon package that should be used in the current environment.
@@ -100,5 +98,4 @@ export class NodeAddonPackageName {
   public static computeDefaultImodelNodeAddonName(): string {
     return NodeAddonPackageName.computeDefaultImodelNodeAddonPackageName() + "/addon/imodeljs.node";
   }
-
 }

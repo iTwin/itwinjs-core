@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-| $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
@@ -773,7 +773,7 @@ export class Camera implements CameraProps {
 
 /** Defines the state of a view of 3d models. */
 export abstract class ViewState3d extends ViewState {
-  protected cameraOn: boolean;  // if true, m_camera is valid.
+  protected cameraOn: boolean;  // if true, camera is valid.
   public readonly origin: Point3d;        // The lower left back corner of the view frustum.
   public readonly extents: Vector3d;      // The extent of the view frustum.
   public readonly rotation: RotMatrix;    // Rotation of the view frustum.

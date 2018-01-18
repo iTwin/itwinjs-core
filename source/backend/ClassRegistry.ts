@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { EntityProps } from "../common/EntityProps";
@@ -103,7 +103,7 @@ export class ClassRegistry {
         continue;
 
       const thisClass = moduleObj[thisMember];
-      if (thisClass instanceof Entity.constructor) {
+      if (thisClass.prototype instanceof Entity) {
         thisClass.schema = schema;
         ClassRegistry.registerEcClass(thisClass);
       }

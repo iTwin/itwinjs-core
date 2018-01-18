@@ -64,11 +64,186 @@ export class RenderStateFlags {
   }
 }
 
+export class RenderStateBlend {
+  public color: [number, number, number, number] = [0.0, 0.0, 0.0, 0.0];
+  public equationRgb: GL.BlendEquation = GL.BlendEquation.Default;
+  public equationAlpha: GL.BlendEquation = GL.BlendEquation.Default;
+  public functionSourceRgb: GL.BlendFactor = GL.BlendFactor.DefaultSrc;
+  public functionSourceAlpha: GL.BlendFactor = GL.BlendFactor.DefaultSrc;
+  public functionDestRgb: GL.BlendFactor = GL.BlendFactor.DefaultDst;
+  public functionDestAlpha: GL.BlendFactor = GL.BlendFactor.DefaultDst;
+
+  public constructor(src?: RenderStateBlend) {
+    if (src) {
+      this.copyFrom(src);
+    }
+  }
+
+  public apply(gl: WebGLRenderingContext, previousBlend?: RenderStateBlend): void {
+    if (previousBlend === undefined || previousBlend.color !== this.color) {
+      gl.blendColor(this.color[0], this.color[1], this.color[2], this.color[3]);
+    }
+    if (previousBlend === undefined || previousBlend.equationRgb !== this.equationRgb || previousBlend.equationAlpha !== this.equationAlpha) {
+      gl.blendEquationSeparate(this.equationRgb, this.equationAlpha);
+    }
+    if (previousBlend === undefined || previousBlend.functionSourceRgb !== this.functionSourceRgb || previousBlend.functionSourceAlpha !== this.functionSourceAlpha
+      || previousBlend.functionDestRgb !== this.functionDestRgb || previousBlend.functionDestAlpha !== this.functionDestAlpha) {
+      gl.blendFuncSeparate(this.functionSourceRgb, this.functionSourceAlpha, this.functionDestRgb, this.functionDestAlpha);
+    }
+  }
+
+  public copyFrom(src: RenderStateBlend): void {
+    this.setColor(src.color);
+    this.equationRgb = src.equationRgb;
+    this.equationAlpha = src.equationAlpha;
+    this.functionSourceRgb = src.functionSourceRgb;
+    this.functionSourceAlpha = src.functionSourceAlpha;
+    this.functionDestRgb = src.functionDestRgb;
+    this.functionDestAlpha = src.functionDestAlpha;
+  }
+
+  public clone(result?: RenderStateBlend): RenderStateBlend {
+    if (!result) {
+      return new RenderStateBlend(this);
+    } else {
+      result.copyFrom(this);
+      return result;
+    }
+  }
+
+  public equals(rhs: RenderStateBlend): boolean {
+    return this.color[0] === rhs.color[0] && this.color[1] === rhs.color[1] && this.color[2] === rhs.color[2] && this.color[3] === rhs.color[3]
+        && this.equationRgb === rhs.equationRgb
+        && this.equationAlpha === rhs.equationAlpha
+        && this.functionSourceRgb === rhs.functionSourceRgb
+        && this.functionSourceAlpha === rhs.functionSourceAlpha
+        && this.functionDestRgb === rhs.functionDestRgb
+        && this.functionDestAlpha === rhs.functionDestAlpha;
+  }
+
+  public setColor(color: [number, number, number, number]) {
+    this.color[0] = color[0];
+    this.color[1] = color[1];
+    this.color[2] = color[2];
+    this.color[3] = color[3];
+  }
+
+  public setBlendFunc(src: GL.BlendFactor, dst: GL.BlendFactor): void {
+    this.setBlendFuncSeperate(src, src, dst, dst);
+  }
+
+  public setBlendFuncSeperate(srcRgb: GL.BlendFactor, srcAlpha: GL.BlendFactor, dstRgb: GL.BlendFactor, dstAlpha: GL.BlendFactor): void {
+    this.functionSourceRgb = srcRgb;
+    this.functionSourceAlpha = srcAlpha;
+    this.functionDestRgb = dstRgb;
+    this.functionDestAlpha = dstAlpha;
+  }
+}
+
+export class RenderStateStencilOperation {
+  public fail: GL.StencilOperation = GL.StencilOperation.Default;
+  public zFail: GL.StencilOperation = GL.StencilOperation.Default;
+  public zPass: GL.StencilOperation = GL.StencilOperation.Default;
+
+  public constructor(src?: RenderStateStencilOperation) {
+    if (src) {
+      this.copyFrom(src);
+    }
+  }
+
+  public copyFrom(src: RenderStateStencilOperation): void {
+    this.fail = src.fail;
+    this.zFail = src.zFail;
+    this.zPass = src.zPass;
+  }
+
+  public clone(result?: RenderStateStencilOperation): RenderStateStencilOperation {
+    if (!result) {
+      return new RenderStateStencilOperation(this);
+    } else {
+      result.copyFrom(this);
+      return result;
+    }
+  }
+
+  public equals(rhs: RenderStateStencilOperation): boolean {
+    return this.fail === rhs.fail
+        && this.zFail === rhs.zFail
+        && this.zPass === rhs.zPass;
+  }
+}
+
+export class RenderStateStencil {
+  public frontFunction: GL.StencilFunction = GL.StencilFunction.Default;
+  public backFunction: GL.StencilFunction = GL.StencilFunction.Default;
+  public frontRef: number = 0xFF;
+  public backRef: number = 0xFF;
+  public frontMask: number = 0xFF;
+  public backMask: number = 0xFF;
+  public frontOperation: RenderStateStencilOperation = new RenderStateStencilOperation();
+  public backOperation: RenderStateStencilOperation = new RenderStateStencilOperation();
+
+  public constructor(src?: RenderStateStencil) {
+    if (src) {
+      this.copyFrom(src);
+    }
+  }
+
+  public apply(gl: WebGLRenderingContext, previousStencil?: RenderStateStencil): void {
+    if (previousStencil === undefined || previousStencil.frontFunction !== this.frontFunction || previousStencil.frontRef !== this.frontRef || previousStencil.frontMask !== this.frontMask) {
+      gl.stencilFuncSeparate(GL.CullFace.Front, this.frontFunction, this.frontRef, this.frontMask);
+    }
+    if (previousStencil === undefined || previousStencil.backFunction !== this.backFunction || previousStencil.backRef !== this.backRef || previousStencil.backMask !== this.backMask) {
+      gl.stencilFuncSeparate(GL.CullFace.Back, this.backFunction, this.backRef, this.backMask);
+    }
+    if (previousStencil === undefined || !previousStencil.frontOperation.equals(this.frontOperation)) {
+      gl.stencilOpSeparate(GL.CullFace.Front, this.frontOperation.fail, this.frontOperation.zFail, this.frontOperation.zPass);
+    }
+    if (previousStencil === undefined || !previousStencil.backOperation.equals(this.backOperation)) {
+      gl.stencilOpSeparate(GL.CullFace.Back, this.backOperation.fail, this.backOperation.zFail, this.backOperation.zPass);
+    }
+  }
+
+  public copyFrom(src: RenderStateStencil): void {
+    this.frontFunction = src.frontFunction;
+    this.backFunction = src.backFunction;
+    this.frontRef = src.frontRef;
+    this.backRef = src.backRef;
+    this.frontMask = src.frontMask;
+    this.backMask = src.backMask;
+    this.frontOperation.copyFrom(src.frontOperation);
+    this.backOperation.copyFrom(src.backOperation);
+  }
+
+  public clone(result?: RenderStateStencil): RenderStateStencil {
+    if (!result) {
+      return new RenderStateStencil(this);
+    } else {
+      result.copyFrom(this);
+      return result;
+    }
+  }
+
+  public equals(rhs: RenderStateStencil): boolean {
+    return this.frontFunction === rhs.frontFunction
+        && this.backFunction === rhs.backFunction
+        && this.frontRef === rhs.frontRef
+        && this.backRef === rhs.backRef
+        && this.frontMask === rhs.frontMask
+        && this.backMask === rhs.backMask
+        && this.frontOperation.equals(rhs.frontOperation)
+        && this.backOperation.equals(rhs.backOperation);
+  }
+}
+
 export class RenderState {
   public flags: RenderStateFlags = new RenderStateFlags();
+  public stencil: RenderStateStencil = new RenderStateStencil();
+  public blend: RenderStateBlend = new RenderStateBlend();
   public frontFace: GL.FrontFace = GL.FrontFace.Default;
   public cullFace: GL.CullFace = GL.CullFace.Default;
   public depthFunc: GL.DepthFunc = GL.DepthFunc.Default;
+  public stencilMask: number = ~0;
 
   public constructor(src?: RenderState) {
     if (src) {
@@ -78,9 +253,12 @@ export class RenderState {
 
   public copyFrom(src: RenderState): void {
     this.flags.copyFrom(src.flags);
+    this.blend.copyFrom(src.blend);
+    this.stencil.copyFrom(src.stencil);
     this.frontFace = src.frontFace;
     this.cullFace = src.cullFace;
     this.depthFunc = src.depthFunc;
+    this.stencilMask = src.stencilMask;
   }
 
   public clone(result?: RenderState): RenderState {
@@ -98,27 +276,49 @@ export class RenderState {
 
   public equals(rhs: RenderState): boolean {
     return this.flags.equals(rhs.flags)
+        && this.blend.equals(rhs.blend)
+        && this.stencil.equals(rhs.stencil)
         && this.frontFace === rhs.frontFace
         && this.cullFace === rhs.cullFace
-        && this.depthFunc === rhs.depthFunc;
+        && this.depthFunc === rhs.depthFunc
+        && this.stencilMask === rhs.stencilMask;
   }
 
   public apply(gl: WebGLRenderingContext, prevState: RenderState): void {
     this.flags.apply(gl, prevState.flags);
+
+    if (this.flags.blend) {
+      if (prevState.flags.blend)
+        this.blend.apply(gl, prevState.blend);
+      else
+        this.blend.apply(gl);
+    }
+
     if (this.flags.cull) {
       if (!prevState.flags.cull || prevState.cullFace !== this.cullFace) {
         gl.cullFace(this.cullFace);
       }
+    }
 
-      if (this.flags.depthTest) {
-        if (!prevState.flags.depthTest || prevState.depthFunc !== this.depthFunc) {
-          gl.depthFunc(this.depthFunc);
-        }
+    if (this.flags.depthTest) {
+      if (!prevState.flags.depthTest || prevState.depthFunc !== this.depthFunc) {
+        gl.depthFunc(this.depthFunc);
       }
+    }
 
-      if (this.frontFace !== prevState.frontFace) {
-        gl.frontFace(this.frontFace);
-      }
+    if (this.flags.stencilTest) {
+      if (prevState.flags.stencilTest)
+        this.stencil.apply(gl, prevState.stencil);
+      else
+        this.stencil.apply(gl);
+    }
+
+    if (this.frontFace !== prevState.frontFace) {
+      gl.frontFace(this.frontFace);
+    }
+
+    if (this.stencilMask !== prevState.stencilMask) {
+      gl.stencilMask(this.stencilMask);
     }
   }
 }

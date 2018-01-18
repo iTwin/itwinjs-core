@@ -1,7 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
 import { Vector3d, RotMatrix, Transform } from "@bentley/geometry-core/lib/PointVector";
 import { AxisOrder } from "@bentley/geometry-core/lib/Geometry";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
@@ -37,18 +36,19 @@ export class LineStyleParams {
 
   /** Returns LineStyleParams with default values */
   public static createDefaults(): LineStyleParams {
-    const retval = new LineStyleParams();
-    retval.rMatrix = RotMatrix.createIdentity();
-    retval.normal = Vector3d.create();
+    const retVal = new LineStyleParams();
+    retVal.rMatrix = RotMatrix.createIdentity();
+    retVal.normal = Vector3d.create();
 
-    const tmpRetval = retval as any;
-    for (const prop in tmpRetval) {    // Assign all numeric properties to zero to begin
-      if (this.hasOwnProperty(prop) && typeof tmpRetval[prop] === "number") {
-        tmpRetval[prop] = 0;
+    const tmpRetVal = retVal as any;
+    for (const prop in tmpRetVal) {    // Assign all numeric properties to zero to begin
+      if (this.hasOwnProperty(prop) && typeof tmpRetVal[prop] === "number") {
+        tmpRetVal[prop] = 0;
       }
     }
-    retval.scale = retval.gapScale = retval.dashScale = retval.normal.z = 1.0;
-    return retval;
+    retVal.scale = retVal.gapScale = retVal.dashScale = retVal.normal.z = 1.0;
+
+    return retVal;
   }
 
   /** Returns a deep copy of this object. */
@@ -106,7 +106,7 @@ export class LineStyleParams {
 
   public applyTransform(transform: Transform, bitOptions: number) {
     if (this.modifiers & StyleMod.Normal) {
-      transform.matrixRef().multiplyVector(this.normal, this.normal);
+      transform.matrix.multiplyVector(this.normal, this.normal);
       const normalized = this.normal.normalize();
       if (normalized)
         this.normal.setFrom(normalized);
@@ -114,7 +114,7 @@ export class LineStyleParams {
     if (this.modifiers & StyleMod.RMatrix) {
       const rTmp = this.rMatrix.inverse();
       if (rTmp) {
-        rTmp.multiplyMatrixMatrix(transform.matrixRef(), rTmp);
+        rTmp.multiplyMatrixMatrix(transform.matrix, rTmp);
         RotMatrix.createPerpendicularUnitColumnsFromRotMatrix(rTmp, AxisOrder.XYZ, rTmp);
         const rTmpInverse = rTmp.inverse();
         if (rTmpInverse)
@@ -126,7 +126,7 @@ export class LineStyleParams {
 
     let scaleFactor = 1.0;
     const scaleVector = Vector3d.create();
-    const scaleMatrix = transform.matrixRef();
+    const scaleMatrix = transform.matrix;
     scaleMatrix.normalizeRowsInPlace(scaleVector);
 
     // Check for flatten transform, dividing scaleVector by 3 gives wrong scaleFactor
@@ -237,22 +237,22 @@ export class LineStyleSymb {
 
   /** Returns LineStyleParams with default values */
   public static createDefaults(lstyle: any): LineStyleSymb {
-    const retval = new LineStyleSymb(lstyle);
-    retval._options = new LineStyleSymbOptions();
-    retval._nIterate = 0;
-    retval._scale = retval._dashScale = retval._gapScale = 1.0;
-    retval._orgWidth = retval._endWidth = retval._phaseShift = retval._autoPhase = retval._styleWidth = 0.0;
-    retval._maxCompress = 0.3;
-    retval._planeByRows = RotMatrix.createIdentity();
-    retval._useLinePixels = false;
-    retval._useStroker = false;
-    retval._totalLength = 0;
-    retval._xElemPhase = 0;
-    retval._startTangent = Vector3d.create();
-    retval._endTangent = Vector3d.create();
-    retval._linePixels = 0;
+    const retVal = new LineStyleSymb(lstyle);
+    retVal._options = new LineStyleSymbOptions();
+    retVal._nIterate = 0;
+    retVal._scale = retVal._dashScale = retVal._gapScale = 1.0;
+    retVal._orgWidth = retVal._endWidth = retVal._phaseShift = retVal._autoPhase = retVal._styleWidth = 0.0;
+    retVal._maxCompress = 0.3;
+    retVal._planeByRows = RotMatrix.createIdentity();
+    retVal._useLinePixels = false;
+    retVal._useStroker = false;
+    retVal._totalLength = 0;
+    retVal._xElemPhase = 0;
+    retVal._startTangent = Vector3d.create();
+    retVal._endTangent = Vector3d.create();
+    retVal._linePixels = 0;
 
-    return retval;
+    return retVal;
   }
 
   /** Tests if two LineStyleSymb are equal */
@@ -328,10 +328,10 @@ export class LineStyleSymb {
     const retVal = new LineStyleSymb(this._lstyle ? this._lstyle.clone() : undefined);
     // Clone the options members
     const tmpThis = this._options as any;
-    const tmpRetval = retVal._options as any;
+    const tmpRetVal = retVal._options as any;
     for (const prop in tmpThis) {
       if (tmpThis.hasOwnProperty(prop))
-        tmpRetval[prop] = tmpThis[prop];
+        tmpRetVal[prop] = tmpThis[prop];
     }
 
     // Clone the immediate members

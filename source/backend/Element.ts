@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 import { Transform, Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
@@ -76,11 +76,11 @@ export abstract class Element extends Entity implements ElementProps {
   /** remove a set of JSON user properties, specified by namespace, from this Element */
   public removeUserProperties(nameSpace: string) { delete this.getAllUserProperties()[nameSpace]; }
 
- /**
-  * Add the lock, code, and other resource requests that would be needed in order to carry out the specified operation.
-  * @param req The request object, which accumulates requests.
-  * @param opcode The operation that will be performed on the element.
-  */
+  /**
+   * Add the lock, code, and other resource requests that would be needed in order to carry out the specified operation.
+   * @param req The request object, which accumulates requests.
+   * @param opcode The operation that will be performed on the element.
+   */
   public buildResourcesRequest(req: BriefcaseManager.ResourcesRequest, opcode: DbOpcode): void {
     this.iModel.buildResourcesRequestForElement(req, this, opcode);
   }

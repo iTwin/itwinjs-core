@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelGateway } from "@build/imodeljs-core/lib/gateway/IModelGateway";
 import { OpenMode } from "@build/imodeljs-core/node_modules/@bentley/bentleyjs-core/lib/BeSQLite";

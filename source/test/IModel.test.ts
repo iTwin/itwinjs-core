@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import * as path from "path";
@@ -33,6 +33,7 @@ import { ColorDef } from "../common/ColorDef";
 import { IModel } from "../common/IModel";
 
 /* tslint:disable: no-console */
+/* spell-checker: disable */
 
 describe("iModel", () => {
   let imodel1: IModelDb;
