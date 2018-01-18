@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import * as express from "express";
 import * as bodyParser from "body-parser";
-import { IModelDb } from "@build/imodeljs-core/lib/backend/IModelDb";
-import { NodeAddonRegistry } from "@build/imodeljs-core/lib/backend/NodeAddonRegistry";
+import { IModelDb } from "../../backend/IModelDb";
+import { NodeAddonRegistry } from "../../backend/NodeAddonRegistry";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
 import { TestGatewayImpl } from "./TestGatewayImpl";
 

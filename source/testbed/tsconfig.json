@@ -1,15 +1,26 @@
 {
   "extends": "../../node_modules/@bentley/bentleyjs-tools/tsconfig-base.json",
   "compilerOptions": {
-    "strictFunctionTypes": false, //temporary...electron.d.ts@1.6.11 fails this check
+    "target": "es2017",
+    "module": "commonjs",
     "baseUrl": "./node_modules/",
     "paths": {
-      "@build/imodeljs-core*": ["../../backend/*"]
-    }
+      "*": [
+        "@types/*",
+        "*"
+      ]
+    },
+    "outDir": "./lib"
   },
+  "include": [
+    "../common/**/*.ts",
+    "../backend/**/*.ts",
+    "../gateway/**/*.ts",
+    "../frontend/*.ts",
+    "./**/*.ts"
+  ],
   "exclude": [
-    "frontend/lib",
-    "backend/lib",
+    "lib",
     "node_modules"
   ]
 }

@@ -2,18 +2,18 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64 } from "@build/imodeljs-core/node_modules/@bentley/bentleyjs-core/lib/Id";
-import { Point3d, Vector3d, YawPitchRollAngles, RotMatrix } from "@build/imodeljs-core/node_modules/@bentley/geometry-core/lib/PointVector";
-import { DisplayStyle3dState, ModelSelectorState, SpatialViewState, CategorySelectorState, ViewState, Camera } from "@build/imodeljs-core/lib/common/ViewState";
-import { Frustum } from "@build/imodeljs-core/lib/common/Frustum";
-import { IModelConnection } from "@build/imodeljs-core/lib/frontend/IModelConnection";
-import { Viewport, ViewRect, CoordSystem } from "@build/imodeljs-core/lib/frontend/Viewport";
-import { IModelApp, iModelApp } from "@build/imodeljs-core/lib/frontend/IModelApp";
-import { Cartographic } from "@build/imodeljs-core/lib/common/geometry/Cartographic";
-import { Angle } from "@build/imodeljs-core/node_modules/@bentley/geometry-core/lib/Geometry";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Point3d, Vector3d, YawPitchRollAngles, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
+import { DisplayStyle3dState, ModelSelectorState, SpatialViewState, CategorySelectorState, ViewState, Camera } from "../../common/ViewState";
+import { Frustum } from "../../common/Frustum";
+import { IModelConnection } from "../../frontend/IModelConnection";
+import { Viewport, ViewRect, CoordSystem } from "../../frontend/Viewport";
+import { IModelApp, iModelApp } from "../../frontend/IModelApp";
+import { Cartographic } from "../../common/geometry/Cartographic";
+import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import * as path from "path";
-import { SpatialViewDefinitionProps } from "@build/imodeljs-core/lib/common/ElementProps";
-import { ViewPanTool } from "@build/imodeljs-core/lib/frontend/tools/ViewTool";
+import { SpatialViewDefinitionProps } from "../../common/ElementProps";
+import { ViewPanTool } from "../../frontend/tools/ViewTool";
 
 /* tslint:disable: no-console */
 const bimFileLocation = path.join(__dirname, "../../../../test/lib/test/assets/test.bim");

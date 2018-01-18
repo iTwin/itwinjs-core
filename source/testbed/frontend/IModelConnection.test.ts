@@ -2,11 +2,11 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64 } from "@build/imodeljs-core/node_modules/@bentley/bentleyjs-core/lib/Id";
-import { CodeSpec, CodeSpecNames } from "@build/imodeljs-core/lib/common/Code";
-import { ElementProps } from "@build/imodeljs-core/lib/common/ElementProps";
-import { ModelProps } from "@build/imodeljs-core/lib/common/ModelProps";
-import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "@build/imodeljs-core/lib/frontend/IModelConnection";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { CodeSpec, CodeSpecNames } from "../../common/Code";
+import { ElementProps } from "../../common/ElementProps";
+import { ModelProps } from "../../common/ModelProps";
+import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "../../frontend/IModelConnection";
 import { TestData } from "./TestData";
 
 describe("IModelConnection", () => {

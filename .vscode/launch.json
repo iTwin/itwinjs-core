@@ -26,7 +26,7 @@
       "runtimeExecutable": "${workspaceFolder}\\source\\testbed\\node_modules\\.bin\\electron",
       "runtimeArgs": [
         "${workspaceFolder}/source/testbed/index.js",
-        "{\"debug\":true, \"path\":\"frontend/lib/frontend/index.js\"}",
+        "{\"debug\":true, \"path\":\"lib/testbed/frontend/index.js\"}",
         "--debug-brk=5858",
         "--remote-debugging-port=9223"
       ],
@@ -34,8 +34,7 @@
       "port": 5858,
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/source/testbed/backend/lib/**/*.js",
-        "${workspaceRoot}/source/backend/lib/**/*.js"
+        "${workspaceRoot}/source/testbed/lib/**/*.js"
       ]
     },
     {
