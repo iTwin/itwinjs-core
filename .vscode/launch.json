@@ -21,13 +21,14 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Run testbed",
+      "name": "_Testbed (backend)",
       "cwd": "${workspaceFolder}/source/testbed/",
       "runtimeExecutable": "${workspaceFolder}\\source\\testbed\\node_modules\\.bin\\electron",
       "runtimeArgs": [
-        "${workspaceFolder}/source/testbed/node_modules/floss/electron",
+        "${workspaceFolder}/source/testbed/index.js",
         "{\"debug\":true, \"path\":\"frontend/lib/frontend/index.js\"}",
-        "--debug-brk=5858"
+        "--debug-brk=5858",
+        "--remote-debugging-port=9223"
       ],
       "protocol": "legacy",
       "port": 5858,
@@ -35,6 +36,23 @@
       "outFiles": [
         "${workspaceRoot}/source/testbed/backend/lib/**/*.js",
         "${workspaceRoot}/source/backend/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "_Testbed (frontend)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223,
+      "webRoot": "${workspaceRoot}",
+      "sourceMaps": true
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Run Testbed (all)",
+      "configurations": [
+        "_Testbed (frontend)",
+        "_Testbed (backend)"
       ]
     }
   ]

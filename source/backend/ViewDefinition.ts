@@ -73,7 +73,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
 
 /** Defines a view of 3d models. */
 export abstract class ViewDefinition3d extends ViewDefinition implements ViewDefinition3dProps {
-  public cameraOn: boolean;  // if true, m_camera is valid.
+  public cameraOn: boolean;  // if true, camera is valid.
   public origin: Point3d;        // The lower left back corner of the view frustum.
   public extents: Vector3d;      // The extent of the view frustum.
   public angles: YawPitchRollAngles;   // Rotation of the view frustum.

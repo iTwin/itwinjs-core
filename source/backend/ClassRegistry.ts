@@ -103,7 +103,7 @@ export class ClassRegistry {
         continue;
 
       const thisClass = moduleObj[thisMember];
-      if (thisClass instanceof Entity.constructor) {
+      if (thisClass.prototype instanceof Entity) {
         thisClass.schema = schema;
         ClassRegistry.registerEcClass(thisClass);
       }

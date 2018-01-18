@@ -9,5 +9,5 @@ export class TestConfig {
   public static readonly email: string = "bistroDEV_pmadm1@mailinator.com";
   public static readonly password: string = "pmadm1";
   public static readonly projectName: string = "NodeJsTestProject";
-  public static readonly iModelName: string = "MyTestModel";
+  public static readonly iModelName: string = "TestModel";
 }

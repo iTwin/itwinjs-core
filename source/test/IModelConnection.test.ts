@@ -16,7 +16,7 @@ describe("IModelConnection", () => {
   before(async () => {
     accessToken = await IModelTestUtils.getTestUserAccessToken();
     testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
-    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "MyTestModel");
+    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "TestModel");
     iModel = await IModelConnection.open(accessToken, testProjectId, testIModelId);
   });
 
