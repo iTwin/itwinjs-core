@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
-const path = require('path');
-const fs = require('fs');
-const url = require('url');
+const path = require("path");
+const fs = require("fs");
+const url = require("url");
 
 // Make sure any symlinks in the project folder are resolved:
 // https://github.com/facebookincubator/create-react-app/issues/637
@@ -16,7 +16,7 @@ const envPublicUrl = process.env.PUBLIC_URL;
 const electronUrlProtocol = (process.env.ELECTRON_ENV === "production") ? "electron://" : null;
 
 function ensureSlash(path, needsSlash) {
-  const hasSlash = path.endsWith('/');
+  const hasSlash = path.endsWith("/");
   if (hasSlash && !needsSlash) {
     return path.substr(path, path.length - 1);
   } else if (!hasSlash && needsSlash) {
@@ -38,38 +38,75 @@ const getPublicUrl = appPackageJson =>
 function getServedPath(appPackageJson) {
   const publicUrl = getPublicUrl(appPackageJson);
   const servedUrl =
-    envPublicUrl || (publicUrl ? publicUrl : '/');
+    envPublicUrl || (publicUrl ? publicUrl : "/");
   return ensureSlash(servedUrl, true);
 }
 
-// config after eject: we're in ./config/
-module.exports = {
-  dotenv: resolveApp('.env'),
-  appLib: resolveApp('lib'),
-  appLibPublic: resolveApp('lib/public'),
-  appPublic: resolveApp('public'),
-  appHtml: resolveApp('public/index.html'),
-  appIndexJs: resolveApp('src/frontend/index.tsx'),
-  appPackageJson: resolveApp('package.json'),
-  appPackageLockJson: resolveApp('package-lock.json'),
-  appSrc: resolveApp('src'),
-  appSrcBackend: resolveApp('src/backend'),
-  appSrcBackendElectron: resolveApp('src/backend/electron'),
-  appSrcBackendWeb: resolveApp('src/backend/web'),
-  appSrcFrontend: resolveApp('src/frontend'),
-  appTest: resolveApp('test'),
-  appAssets: resolveApp('assets'),
-  appSnapshots: resolveApp('.snapshots'),
-  appLcovReport: resolveApp('coverage/lcov-report/index.html'),
-  appCoberturaReport: resolveApp('coverage/cobertura-coverage.xml'),
-  yarnLockFile: resolveApp('yarn.lock'),        // STILL USED?
-  testsSetup: resolveApp('src/setupTests.ts'),
-  appNodeModules: resolveApp('node_modules'),
-  appTsConfig: resolveApp('tsconfig.json'),
-  publicUrl: getPublicUrl(resolveApp('package.json')),
-  servedPath: getServedPath(resolveApp('package.json')),
-  appMainJs: resolveApp('src/backend/main.ts'),
-  appBuiltMainJs: resolveApp('lib/main.js'),
-  appJUnitTestResults: resolveApp('lib/junit_results.xml'),
+// Allow projects to override certain paths by specifying buildConfig.paths in their package.json
+function getPackageJsonPathOverrides(appPackageJson) {
+  const buildConfig = require(appPackageJson).buildConfig || {};
+  let pathOverrides = buildConfig.paths || {};
+  for (const key of Object.keys(pathOverrides)) {
+    pathOverrides[key] = resolveApp(pathOverrides[key])
+  }
+
+  return pathOverrides;
+}
+
+// We'll define all of these paths in several steps, so that each level of subdirectories is relative to the last.
+// That way, you can just override appSrc without having to also redefine appSrcFrontend, appSrcBackend, etc.
+
+// First we'll setup a "base" config, with any top-level paths.
+// This will also contain *all* path overrides specified in the app's package.json
+let baseConfig = {
+  // Top-level files
+  dotenv: resolveApp(".env"),
+  appTsConfig: resolveApp("tsconfig.json"),
+  appPackageJson: resolveApp("package.json"),
+  appPackageLockJson: resolveApp("package-lock.json"),
+  
+  // Top-level directories
+  appNodeModules: resolveApp("node_modules"),
+  appSrc: resolveApp("src"),
+  appTest: resolveApp("test"),
+  appAssets: resolveApp("assets"),
+  appPublic: resolveApp("public"),
+  appLib: resolveApp("lib"),
+  appCoverage: resolveApp("coverage"),
+  appSnapshots: resolveApp(".snapshots"),
+  
+  // Misc. Config
+  publicUrl: getPublicUrl(resolveApp("package.json")),
+  servedPath: getServedPath(resolveApp("package.json")),
   imodeljsCommonRegex: /^\$\(iModelJs-Common\)/,
+
+  ...getPackageJsonPathOverrides(resolveApp("package.json"))
+}
+
+// Now add any subdirectories that the final set of paths may depend on
+baseConfig.appSrcFrontend = baseConfig.appSrcFrontend || path.resolve(baseConfig.appSrc, "frontend");
+baseConfig.appSrcBackend = baseConfig.appSrcBackend || path.resolve(baseConfig.appSrc, "backend");
+
+// Finally, include all deeply nested paths that are relative to an earlier path.
+module.exports = {
+  // lib/
+  appLibPublic: path.resolve(baseConfig.appLib, "public"),
+  appBuiltMainJs: path.resolve(baseConfig.appLib, "main.js"),
+  appJUnitTestResults: path.resolve(baseConfig.appLib, "junit_results.xml"),
+
+  // src/
+  appSrcBackendWeb: path.resolve(baseConfig.appSrcBackend, "web"),
+  appSrcBackendElectron: path.resolve(baseConfig.appSrcBackend, "electron"),
+  appMainJs: path.resolve(baseConfig.appSrcBackend, "main.ts"),
+  appIndexJs: path.resolve(baseConfig.appSrcFrontend, "index.tsx"),
+  
+  // public/
+  appHtml: path.resolve(baseConfig.appPublic, "index.html"),
+
+  // coverage/
+  appLcovReport: path.resolve(baseConfig.appCoverage, "lcov-report/index.html"),
+  appCoberturaReport: path.resolve(baseConfig.appCoverage, "cobertura-coverage.xml"),
+
+  // Note that this will *still* overwrite any of the above paths 
+  ...baseConfig,
 };
