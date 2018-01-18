@@ -207,9 +207,13 @@ describe("BriefcaseManager", () => {
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
     const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
 
+    // Verify that a) there are pending code requests and b) all codes are available
+    assert.isTrue(iModel.concurrencyControl.hasPendingRequests());
+    assert.isTrue(await iModel.concurrencyControl.areAvailable(accessToken));
+
     // Reserve all of the codes that are required by the new model and category.
     try {
-      await iModel.concurrencyControl.endBulkOperation(accessToken);
+      await iModel.concurrencyControl.request(accessToken);
     } catch (err) {
       if (err instanceof ConcurrencyControl.RequestError) {
           assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
@@ -240,6 +244,7 @@ describe("BriefcaseManager", () => {
     iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
 
     // Commit the local changes to a local transaction in the briefcase.
+    // (Note that this ends the bulk operation automatically, so there's no need to call endBulkOperation.)
     iModel.saveChanges("inserted generic objects");
 
     iModel.elements.getElement(elid1); // throws if elid1 is not found

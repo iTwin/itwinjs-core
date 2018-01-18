@@ -469,8 +469,14 @@ export class ConcurrencyControl {
       throw new IModelError(rc);
   }
 
+  private captureBulkOpRequest() {
+    if (this._imodel.briefcaseInfo)
+      this._imodel.briefcaseInfo.nativeDb.extractBulkResourcesRequest(this._pendingRequest as NodeAddonBriefcaseManagerResourcesRequest, true, true);
+  }
+
   /** @hidden */
   public get pendingRequest(): ConcurrencyControl.Request {
+    this.captureBulkOpRequest();
     return this._pendingRequest;
   }
 
@@ -478,17 +484,13 @@ export class ConcurrencyControl {
   public hasPendingRequests(): boolean {
     if (!this._imodel.briefcaseInfo)
       return false;
-    if (this.inBulkOperationWithPendingRequests())
-      return true;
-    if (this._pendingRequest !== undefined) {
-      const reqAny: any = ConcurrencyControl.convertRequestToAny(this._pendingRequest);
-      if (reqAny.Codes.length !== 0 || reqAny.Locks.length !== 0)
-        return true;
-    }
-    return false;
+    this.captureBulkOpRequest();
+    const reqAny: any = ConcurrencyControl.convertRequestToAny(this._pendingRequest);
+    return (reqAny.Codes.length !== 0) || (reqAny.Locks.length !== 0);
   }
 
   /**
+   * @hidden
    * Take ownership of all or some of the pending request for locks and codes.
    * @param locksOnly If true, only the locks in the pending request are extracted. The default is to extract all requests.
    * @param codesOnly If true, only the codes in the pending request are extracted. The default is to extract all requests.
@@ -500,10 +502,9 @@ export class ConcurrencyControl {
     const extractLocks: boolean = !codesOnly;
     const extractCodes: boolean = !locksOnly;
 
+    this.captureBulkOpRequest();
     const req: ConcurrencyControl.Request = ConcurrencyControl.createRequest();
-    this._imodel.briefcaseInfo.nativeDb.extractBulkResourcesRequest(req as NodeAddonBriefcaseManagerResourcesRequest, extractLocks, extractCodes);
     this._imodel.briefcaseInfo.nativeDb.extractBriefcaseManagerResourcesRequest(req as NodeAddonBriefcaseManagerResourcesRequest, this._pendingRequest as NodeAddonBriefcaseManagerResourcesRequest, extractLocks, extractCodes);
-
     return req;
   }
 
@@ -518,9 +519,11 @@ export class ConcurrencyControl {
    */
   public async request(accessToken: AccessToken, req?: ConcurrencyControl.Request): Promise<void> {
     if (!this._imodel.briefcaseInfo)
-      throw this._imodel._newNotOpenError();
+      return Promise.reject(this._imodel._newNotOpenError());
+
     if (req === undefined)
       req = this.extractPendingRequest();
+
     const codeResults = await this.reserveCodesFromRequest(req, this._imodel.briefcaseInfo, accessToken);
     await this.acquireLocksFromRequest(req, this._imodel.briefcaseInfo, accessToken);
 
@@ -677,11 +680,11 @@ export class ConcurrencyControl {
   /** Reserve the specified codes */
   public async reserveCodes(accessToken: AccessToken, codes: Code[]): Promise<MultiCode[]> {
     if (this._imodel.briefcaseInfo === undefined)
-      throw this._imodel._newNotOpenError();
+      return Promise.reject(this._imodel._newNotOpenError());
 
     const bySpecId = this.buildCodeRequestsFromCodes(this._imodel.briefcaseInfo, codes);
     if (bySpecId === undefined)
-      throw new IModelError(IModelStatus.NotFound);
+      return Promise.reject(new IModelError(IModelStatus.NotFound));
 
     return this.reserveCodes2(bySpecId, this._imodel.briefcaseInfo, accessToken);
   }
@@ -689,7 +692,7 @@ export class ConcurrencyControl {
   // Query the state of the Codes for the specified CodeSpec and scope.
   public async queryCodeStates(accessToken: AccessToken, specId: Id64, scopeId: string, _value?: string): Promise<MultiCode[]> {
     if (this._imodel.briefcaseInfo === undefined)
-      throw this._imodel._newNotOpenError();
+      return Promise.reject(this._imodel._newNotOpenError());
 
     const queryOptions: RequestQueryOptions = {
       $filter: `CodeSpecId+eq+'${specId}'+and+CodeScope+eq+'${scopeId}'`,
@@ -711,16 +714,63 @@ export class ConcurrencyControl {
     this.extractPendingRequest();
   }
 
+  private static anyFound(a1: string[], a2: string[]) {
+    for (const a of a1) {
+      if (a2.includes(a))
+        return true;
+    }
+    return false;
+  }
+
+  /**
+   * Check to see if *all* of the codes in the specified request are available.
+   * @param req the list of code requests to be fulfilled. If not specified then all pending requests for codes are queried.
+   * @returns true if all codes are available or false if any is not.
+   */
+  public async areCodesAvailable(accessToken: AccessToken, req?: ConcurrencyControl.Request): Promise<boolean> {
+    if (!this._imodel.briefcaseInfo)
+      return Promise.reject(this._imodel._newNotOpenError());
+    // throw new Error("TBD");
+    if (req === undefined)
+      req = this._pendingRequest;
+    const bySpecId = this.buildCodeRequests(this._imodel.briefcaseInfo, req);
+    if (bySpecId !== undefined) {
+      for (const [specId, thisSpec] of bySpecId) {
+        for (const [scopeId, thisReq] of thisSpec) {
+          // Query the state of all codes in this spec and scope
+          const multiCodes = await this.queryCodeStates(accessToken, new Id64(specId), scopeId);
+          for (const multiCode of multiCodes) {
+              if (multiCode.state != CodeState.Available) {
+                if (ConcurrencyControl.anyFound(multiCode.values, thisReq.values)) {
+                  return false;
+                }
+              }
+          }
+        }
+      }
+    }
+    return true;
+  }
+
   /**
    * Check to see if *all* of the requested resources could be acquired from iModelHub.
-   * @param req the list of resource requests to be fulfilled.
+   * @param req the list of resource requests to be fulfilled. If not specified then all pending requests for locks and codes are queried.
    * @returns true if all resources could be acquired or false if any could not be acquired.
    */
-  public areAvailable(_req: ConcurrencyControl.Request): boolean {
+  public async areAvailable(accessToken: AccessToken, req?: ConcurrencyControl.Request): Promise<boolean> {
     if (!this._imodel.briefcaseInfo)
-      throw this._imodel._newNotOpenError();
-    // throw new Error("TBD");
-    return false; // *** TBD
+      return Promise.reject(this._imodel._newNotOpenError());
+
+    if (req === undefined)
+      req = this._pendingRequest;
+
+    const allCodesAreAvailable = await this.areCodesAvailable(accessToken, req);
+    if (!allCodesAreAvailable)
+      return false;
+
+    // TODO: Locks
+
+    return true;
   }
 
   /** Set the concurrency control policy.
@@ -755,7 +805,7 @@ export class ConcurrencyControl {
    * has pushed changes to the same entities or used the same codes as the local transaction.
    * This mode can therefore be used safely only in special cases where contention for locks and codes is not a risk.
    * Normally, that is only possible when writing to a model that is exclusively locked and where codes are scoped to that model.
-   * See saveChanges and endBulkOperation.
+   * See [[request]], [[IModelDb.saveChanges]] and [[endBulkOperation]].
    * ``` ts
    * [[include:BisCore1.sampleBulkOperation]]
    * ```
@@ -770,27 +820,20 @@ export class ConcurrencyControl {
       throw new IModelError(rc);
   }
 
-  /** Check if there is a bulk operation in progress and if any requests have been detected and remain unprocessed. */
-  public inBulkOperationWithPendingRequests(): boolean {
+  /** Check if there is a bulk operation in progress */
+  public inBulkOperation(): boolean {
     if (!this._imodel.briefcaseInfo)
       return false;
-    return this._imodel.briefcaseInfo.nativeDb.inBulkOperationWithPendingRequests();
+    return this._imodel.briefcaseInfo.nativeDb.inBulkOperation();
   }
 
   /**
-   * Call this in the rare case where you want to acquire locks and codes *before* the end of the transaction.
-   * Note that saveChanges automatically calls this method to end the bulk operation and acquire locks and codes, so there is no need to call this method directly.
-   * If successful, this terminates the bulk operation.
-   * If not successful, the caller should abandon all changes.
-   * @throws [[IModelError]] if some locks or codes could not be acquired. In that case, the caller should abandon all changes.
+   * Ends the bulk operation and appends the locks and codes that it recorded to the pending request.
    */
-  public async endBulkOperation(accessToken: AccessToken) {
+  public endBulkOperation() {
     if (!this._imodel.briefcaseInfo)
-      throw new IModelError(IModelStatus.BadRequest);
-    // Make sure that we have processed the pending bulk op request.
-    const req: ConcurrencyControl.Request = ConcurrencyControl.createRequest();
-    this._imodel.briefcaseInfo.nativeDb.extractBulkResourcesRequest(req as NodeAddonBriefcaseManagerResourcesRequest, true, true);
-    await this.request(accessToken, req);
+      return;
+    this.captureBulkOpRequest();
     // Now exit bulk operation mode in the addon. It will then stop collecting (and start enforcing) lock and code requirements.
     const rc: RepositoryStatus = this._imodel.briefcaseInfo.nativeDb.briefcaseManagerEndBulkOperation();
     if (RepositoryStatus.Success !== rc)
@@ -879,7 +922,7 @@ export namespace ConcurrencyControl {
     public async reserve(accessToken: AccessToken, codes?: Code[]) {
 
       if (!this._imodel.briefcaseInfo)
-        throw this._imodel._newNotOpenError();
+        return Promise.reject(this._imodel._newNotOpenError());
 
       if (codes !== undefined) {
         await this._imodel.concurrencyControl.reserveCodes(accessToken, codes);
