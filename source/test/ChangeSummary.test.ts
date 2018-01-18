@@ -34,7 +34,7 @@ describe("ChangeSummary", () => {
       fs.removeSync(changesPath);
   });
 
-  it.only("Attach ChangeCache file to readwrite briefcase", async () => {
+  it("Attach ChangeCache file to readwrite briefcase", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
     try {
       assert.exists(iModel);
