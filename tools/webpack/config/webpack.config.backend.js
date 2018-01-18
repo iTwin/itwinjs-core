@@ -136,6 +136,7 @@ module.exports = {
     setImmediate: false
   },
   plugins: [
+    new plugins.CopyAssetsPlugin(),
     new plugins.CopyNativeAddonsPlugin(),
     // Add module names to factory functions so they appear in browser profiler.
     new webpack.NamedModulesPlugin(),

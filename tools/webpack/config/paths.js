@@ -58,6 +58,7 @@ module.exports = {
   appSrcBackendWeb: resolveApp('src/backend/web'),
   appSrcFrontend: resolveApp('src/frontend'),
   appTest: resolveApp('test'),
+  appAssets: resolveApp('assets'),
   appSnapshots: resolveApp('.snapshots'),
   appLcovReport: resolveApp('coverage/lcov-report/index.html'),
   appCoberturaReport: resolveApp('coverage/cobertura-coverage.xml'),

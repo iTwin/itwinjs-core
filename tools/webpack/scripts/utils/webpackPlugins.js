@@ -61,6 +61,15 @@ class CopyNativeAddonsPlugin {
   }
 }
 
+class CopyAssetsPlugin {
+  apply(compiler) {
+    compiler.plugin('environment', () => {
+      if (fs.existsSync(paths.appAssets))
+        fs.copySync(paths.appAssets, path.resolve(paths.appLib, "assets"));
+    });
+  }
+}
+
 class BanFrontendImportsPlugin extends BanImportsPlugin {
   constructor() {
     super("BACKEND", "FRONTEND", paths.appSrcFrontend, /imodeljs-frontend/);
@@ -77,4 +86,5 @@ module.exports = {
   BanFrontendImportsPlugin,
   BanBackendImportsPlugin,
   CopyNativeAddonsPlugin,
+  CopyAssetsPlugin,
 };
