@@ -150,17 +150,17 @@ export interface ElemTopology {
 }
 
 export class GeomDetail {
-  public m_primitive?: CurvePrimitive;         // curve primitive for hit (world coordinates).
-  public readonly m_closePoint = new Point3d(); // the closest point on geometry (world coordinates).
-  public readonly m_normal = new Vector3d();  // surface hit normal (world coordinates).
-  public m_parentType = HitParentGeomType.None;     // type of parent geometry.
-  public m_geomType = HitGeomType.None;             // type of hit geometry (edge or interior).
-  public m_detailSource = HitDetailSource.None;     // mask of HitDetailSource values.
-  public m_hitPriority = HitPriority.Highest;          // Relative priority of hit.
-  public m_nonSnappable = false;             // non-snappable detail, ex. pattern or line style.
-  public m_viewDist = 0;                  // xy distance to hit (view coordinates).
-  public m_viewZ = 0;                     // z distance to hit (view coordinates).
-  public m_geomId?: Id64;                      // id of geometric primitive that generated this hit
+  public primitive?: CurvePrimitive;         // curve primitive for hit (world coordinates).
+  public readonly closePoint = new Point3d(); // the closest point on geometry (world coordinates).
+  public readonly normal = new Vector3d();  // surface hit normal (world coordinates).
+  public parentType = HitParentGeomType.None;     // type of parent geometry.
+  public geomType = HitGeomType.None;             // type of hit geometry (edge or interior).
+  public detailSource = HitDetailSource.None;     // mask of HitDetailSource values.
+  public hitPriority = HitPriority.Highest;          // Relative priority of hit.
+  public nonSnappable = false;             // non-snappable detail, ex. pattern or line style.
+  public viewDist = 0;                  // xy distance to hit (view coordinates).
+  public viewZ = 0;                     // z distance to hit (view coordinates).
+  public geomId?: Id64;                      // id of geometric primitive that generated this hit
 
   public clone(): GeomDetail {
     const other = new GeomDetail();
@@ -168,21 +168,21 @@ export class GeomDetail {
     return other;
   }
   public setFrom(other: GeomDetail): void {
-    other.m_primitive = this.m_primitive;
-    other.m_closePoint.setFrom(this.m_closePoint);
-    other.m_normal.setFrom(this.m_normal);
-    other.m_parentType = this.m_parentType;
-    other.m_geomType = this.m_geomType;
-    other.m_detailSource = this.m_detailSource;
-    other.m_hitPriority = this.m_hitPriority;
-    other.m_nonSnappable = this.m_nonSnappable;
-    other.m_viewDist = this.m_viewDist;
-    other.m_viewZ = this.m_viewZ;
-    other.m_geomId = this.m_geomId;
+    other.primitive = this.primitive;
+    other.closePoint.setFrom(this.closePoint);
+    other.normal.setFrom(this.normal);
+    other.parentType = this.parentType;
+    other.geomType = this.geomType;
+    other.detailSource = this.detailSource;
+    other.hitPriority = this.hitPriority;
+    other.nonSnappable = this.nonSnappable;
+    other.viewDist = this.viewDist;
+    other.viewZ = this.viewZ;
+    other.geomId = this.geomId;
   }
-  public isValidSurfaceHit(): boolean { return (HitGeomType.Surface === this.m_geomType && 0.0 !== this.m_normal.magnitude()); }
+  public isValidSurfaceHit(): boolean { return (HitGeomType.Surface === this.geomType && 0.0 !== this.normal.magnitude()); }
   public isValidEdgeHit(): boolean {
-    switch (this.m_geomType) {
+    switch (this.geomType) {
       case HitGeomType.Segment:
       case HitGeomType.Curve:
       case HitGeomType.Arc:
@@ -190,7 +190,7 @@ export class GeomDetail {
     }
     return false;
   }
-  public setClosestPoint(pt: Point3d) { this.m_closePoint.setFrom(pt); }
+  public setClosestPoint(pt: Point3d) { this.closePoint.setFrom(pt); }
 }
 
 export const enum HitDetailType {
@@ -200,90 +200,90 @@ export const enum HitDetailType {
 }
 
 export class HitDetail {
-  public m_elemTopo?: ElemTopology; // details about the topology of the element.
-  public m_hitDescription: string;
-  public m_subSelectionMode = SubSelectionMode.None; // segment hilite/flash mode.
-  public constructor(public m_viewport: Viewport, public m_sheetViewport: Viewport | undefined, public m_elementId: Id64 | undefined, public readonly m_testPoint: Point3d, public m_locateSource: HitSource, public readonly m_geomDetail: GeomDetail) { }
+  public elemTopo?: ElemTopology; // details about the topology of the element.
+  public hitDescription: string;
+  public subSelectionMode = SubSelectionMode.None; // segment hilite/flash mode.
+  public constructor(public viewport: Viewport, public sheetViewport: Viewport | undefined, public elementId: Id64 | undefined, public readonly testPoint: Point3d, public locateSource: HitSource, public readonly geomDetail: GeomDetail) { }
 
   public isSnapDetail(): this is SnapDetail { return false; }
   public getHitType(): HitDetailType { return HitDetailType.Hit; }
   public isSameHit(otherHit?: HitDetail): boolean {
-    if (!otherHit || Id64.areEqual(this.m_elementId, otherHit.m_elementId)) return false;
-    if (!this.m_elemTopo && !otherHit.m_elemTopo) return true;
-    if (this.m_elemTopo && !otherHit.m_elemTopo) return false;
-    return this.m_elemTopo!.isEqual(otherHit.m_elemTopo!);
+    if (!otherHit || Id64.areEqual(this.elementId, otherHit.elementId)) return false;
+    if (!this.elemTopo && !otherHit.elemTopo) return true;
+    if (this.elemTopo && !otherHit.elemTopo) return false;
+    return this.elemTopo!.isEqual(otherHit.elemTopo!);
   }
   public draw(context: DecorateContext): void { context.drawHit(this); }
-  public getHitPoint(): Point3d { return this.m_geomDetail.m_closePoint; }
-  public setHitPoint(pt: Point3d) { this.m_geomDetail.setClosestPoint(pt); }
-  public setTestPoint(pt: Point3d) { this.m_testPoint.setFrom(pt); }
+  public getHitPoint(): Point3d { return this.geomDetail.closePoint; }
+  public setHitPoint(pt: Point3d) { this.geomDetail.setClosestPoint(pt); }
+  public setTestPoint(pt: Point3d) { this.testPoint.setFrom(pt); }
   public setFrom(other: HitDetail) {
-    this.m_elemTopo = other.m_elemTopo;
-    this.m_hitDescription = other.m_hitDescription;
-    this.m_subSelectionMode = other.m_subSelectionMode;
-    this.m_viewport = other.m_viewport;
-    this.m_sheetViewport = other.m_sheetViewport;
-    this.m_elementId = other.m_elementId;
-    this.m_testPoint.setFrom(other.m_testPoint);
-    this.m_locateSource = other.m_locateSource;
-    this.m_geomDetail.setFrom(other.m_geomDetail);
+    this.elemTopo = other.elemTopo;
+    this.hitDescription = other.hitDescription;
+    this.subSelectionMode = other.subSelectionMode;
+    this.viewport = other.viewport;
+    this.sheetViewport = other.sheetViewport;
+    this.elementId = other.elementId;
+    this.testPoint.setFrom(other.testPoint);
+    this.locateSource = other.locateSource;
+    this.geomDetail.setFrom(other.geomDetail);
   }
-  public clone(): HitDetail { const val = new HitDetail(this.m_viewport, this.m_sheetViewport, this.m_elementId, this.m_testPoint, this.m_locateSource, this.m_geomDetail.clone()); val.setFrom(this); return val; }
+  public clone(): HitDetail { const val = new HitDetail(this.viewport, this.sheetViewport, this.elementId, this.testPoint, this.locateSource, this.geomDetail.clone()); val.setFrom(this); return val; }
 }
 
 export class SnapDetail extends HitDetail {
-  public m_heat = SnapHeat.None;
-  public readonly m_screenPt = new Point2d();
-  public m_divisor: number;
-  public m_sprite?: Sprite;
-  public m_snapMode: SnapMode;            // snap mode currently associated with this snap
-  public m_originalSnapMode: SnapMode;    // snap mode used when snap was created, before constraint override was applied
-  public m_minScreenDist: number;         // minimum distance to element in screen coordinates.
-  public readonly m_snapPoint: Point3d;   // hitPoint adjusted by snap
-  public readonly m_adjustedPt: Point3d;  // sometimes accuSnap adjusts the point after the snap.
-  public m_customKeypointSize = 0;
-  public m_customKeypointData?: any;
-  public m_allowAssociations = true;
+  public heat = SnapHeat.None;
+  public readonly screenPt = new Point2d();
+  public divisor: number;
+  public sprite?: Sprite;
+  public snapMode: SnapMode;            // snap mode currently associated with this snap
+  public originalSnapMode: SnapMode;    // snap mode used when snap was created, before constraint override was applied
+  public minScreenDist: number;         // minimum distance to element in screen coordinates.
+  public readonly snapPoint: Point3d;   // hitPoint adjusted by snap
+  public readonly adjustedPt: Point3d;  // sometimes accuSnap adjusts the point after the snap.
+  public customKeypointSize = 0;
+  public customKeypointData?: any;
+  public allowAssociations = true;
 
   public constructor(from: HitDetail) {
-    super(from.m_viewport, from.m_sheetViewport, from.m_elementId, from.m_testPoint, from.m_locateSource, from.m_geomDetail);
-    this.m_snapPoint = this.m_geomDetail.m_closePoint.clone();
-    this.m_adjustedPt = this.m_snapPoint.clone();
-    this.m_snapMode = this.m_originalSnapMode = SnapMode.First;
+    super(from.viewport, from.sheetViewport, from.elementId, from.testPoint, from.locateSource, from.geomDetail);
+    this.snapPoint = this.geomDetail.closePoint.clone();
+    this.adjustedPt = this.snapPoint.clone();
+    this.snapMode = this.originalSnapMode = SnapMode.First;
 
     if (from.isSnapDetail()) {
-      this.m_minScreenDist = from.m_minScreenDist;
+      this.minScreenDist = from.minScreenDist;
     } else {
-      this.m_minScreenDist = this.m_geomDetail.m_viewDist;
-      this.m_geomDetail.m_viewDist = 0.0;
+      this.minScreenDist = this.geomDetail.viewDist;
+      this.geomDetail.viewDist = 0.0;
     }
   }
 
   public setFrom(other: SnapDetail) {
     super.setFrom(other);
-    this.m_heat = other.m_heat;
-    this.m_hitDescription = other.m_hitDescription;
-    this.m_screenPt.setFrom(other.m_screenPt);
-    this.m_divisor = other.m_divisor;
-    this.m_sprite = other.m_sprite;
-    this.m_snapMode = other.m_snapMode;
-    this.m_originalSnapMode = other.m_originalSnapMode;
-    this.m_minScreenDist = other.m_minScreenDist;
-    this.m_snapPoint.setFrom(other.m_snapPoint);
-    this.m_adjustedPt.setFrom(other.m_adjustedPt);
-    this.m_customKeypointSize = other.m_customKeypointSize;
-    this.m_customKeypointData = other.m_customKeypointData;
-    this.m_allowAssociations = other.m_allowAssociations;
+    this.heat = other.heat;
+    this.hitDescription = other.hitDescription;
+    this.screenPt.setFrom(other.screenPt);
+    this.divisor = other.divisor;
+    this.sprite = other.sprite;
+    this.snapMode = other.snapMode;
+    this.originalSnapMode = other.originalSnapMode;
+    this.minScreenDist = other.minScreenDist;
+    this.snapPoint.setFrom(other.snapPoint);
+    this.adjustedPt.setFrom(other.adjustedPt);
+    this.customKeypointSize = other.customKeypointSize;
+    this.customKeypointData = other.customKeypointData;
+    this.allowAssociations = other.allowAssociations;
   }
 
   public clone(): SnapDetail { const val = new SnapDetail(this); val.setFrom(this); return val; }
   public isSnapDetail(): this is SnapDetail { return true; }
-  public getAdjustedPoint() { return this.m_adjustedPt; }
-  public isHot(): boolean { return this.m_heat !== SnapHeat.None; }
-  public isPointOnCurve(): boolean { return this.m_heat === SnapHeat.InRange; }
+  public getAdjustedPoint() { return this.adjustedPt; }
+  public isHot(): boolean { return this.heat !== SnapHeat.None; }
+  public isPointOnCurve(): boolean { return this.heat === SnapHeat.InRange; }
   public getHitType(): HitDetailType { return HitDetailType.Snap; }
-  public getHitPoint(): Point3d { return this.isHot() ? this.m_snapPoint : super.getHitPoint(); }
-  public setHitPoint(hitPoint: Point3d) { this.m_snapPoint.setFrom(hitPoint); this.m_adjustedPt.setFrom(hitPoint); }
+  public getHitPoint(): Point3d { return this.isHot() ? this.snapPoint : super.getHitPoint(); }
+  public setHitPoint(hitPoint: Point3d) { this.snapPoint.setFrom(hitPoint); this.adjustedPt.setFrom(hitPoint); }
 }
 
 export class IntersectDetail extends SnapDetail {
@@ -296,11 +296,11 @@ export class IntersectDetail extends SnapDetail {
  */
 export class HitList {
   public hits: HitDetail[];
-  public m_currHit: number;
+  public currHit: number;
   public size(): number { return this.hits.length; }
   public clear(): void { this.hits.length = 0; }
   public empty(): void { this.clear(); this.resetCurrentHit(); }
-  public resetCurrentHit(): void { this.m_currHit = -1; }
+  public resetCurrentHit(): void { this.currHit = -1; }
 
   /**
    * get a hit from a particular index into a HitList
@@ -323,19 +323,19 @@ export class HitList {
       this.hits.push(hit);
   }
 
-  public getCurrentHit(): HitDetail | undefined { return -1 === this.m_currHit ? undefined : this.getHit(this.m_currHit); }
-  public getNextHit(): HitDetail | undefined { this.m_currHit++; return this.getCurrentHit(); }
+  public getCurrentHit(): HitDetail | undefined { return -1 === this.currHit ? undefined : this.getHit(this.currHit); }
+  public getNextHit(): HitDetail | undefined { this.currHit++; return this.getCurrentHit(); }
 
   /** remove a hit in the list. */
   public removeHit(hitNum: number) {
     if (hitNum < 0)                     // *** NEEDS WORK: The old ObjectArray used to support -1 == END
       hitNum = this.size() - 1;
 
-    if (hitNum >= this.m_currHit)
-      this.m_currHit = -1;
+    if (hitNum >= this.currHit)
+      this.currHit = -1;
 
-    if (hitNum >= this.size())        // Locate calls GetNextHit, which increments m_currHit, until it goes beyond the end of size of the array.
-      return;                         // Then Reset call RemoteCurrentHit, which passes in m_currHit. When it's out of range, we do nothing.
+    if (hitNum >= this.size())        // Locate calls GetNextHit, which increments currHit, until it goes beyond the end of size of the array.
+      return;                         // Then Reset call RemoteCurrentHit, which passes in currHit. When it's out of range, we do nothing.
 
     this.hits.splice(hitNum, 1);
   }
@@ -347,7 +347,7 @@ export class HitList {
     // walk backwards through list so we don't have to worry about what happens on remove
     for (let i = this.size() - 1; i >= 0; i--) {
       const thisHit = this.hits[i];
-      if (thisHit && Id64.areEqual(element, thisHit.m_elementId))
+      if (thisHit && Id64.areEqual(element, thisHit.elementId))
         removedOne = true;
       this.removeHit(i);
     }
@@ -356,12 +356,12 @@ export class HitList {
 
   private static s_tooCloseTolerance = 1.0e-10;
   private static doZCompareOfSurfaceAndEdge(oHitSurf: HitDetail, oHitEdge: HitDetail): number {
-    const origin = oHitSurf.m_geomDetail.m_closePoint;
-    const normal = oHitSurf.m_geomDetail.m_normal;
+    const origin = oHitSurf.geomDetail.closePoint;
+    const normal = oHitSurf.geomDetail.normal;
     const homogeneousPlane = Point4d.createFromPointAndWeight(normal, -normal.dotProduct(origin));
-    const worldToViewMap = oHitSurf.m_viewport.rootToView;
+    const worldToViewMap = oHitSurf.viewport.rootToView;
     const eyePointWorld = worldToViewMap.transform1.columnZ();
-    const testPointWorld = oHitEdge.m_geomDetail.m_closePoint;
+    const testPointWorld = oHitEdge.geomDetail.closePoint;
     const a0 = homogeneousPlane.dotProduct(eyePointWorld);
     const a1 = homogeneousPlane.dotProductXYZW(testPointWorld.x, testPointWorld.y, testPointWorld.z, 1.0);
     const tol = HitList.s_tooCloseTolerance * (1.0 + Math.abs(a0) + Math.abs(a1) + Math.abs(homogeneousPlane.w));
@@ -369,11 +369,11 @@ export class HitList {
   }
 
   private static doZCompare(oHit1: HitDetail, oHit2: HitDetail): number {
-    const z1 = oHit1.m_geomDetail.m_viewZ;
-    const z2 = oHit2.m_geomDetail.m_viewZ;
+    const z1 = oHit1.geomDetail.viewZ;
+    const z2 = oHit2.geomDetail.viewZ;
 
     // For 2d hits z reflects display priority which should be checked before locate priority, etc. when a fill/surface hit is involved...
-    if (!oHit1.m_viewport.view.is3d()) {
+    if (!oHit1.viewport.view.is3d()) {
       // screen z values are sorted descending
       if (z2 < z1) return -1;
       if (z2 > z1) return 1;
@@ -381,22 +381,22 @@ export class HitList {
     }
 
     // Point clouds already output only a single best z for a screen location...only compare using screen distance, not z...
-    if (HitDetailSource.PointCloud === oHit1.m_geomDetail.m_detailSource && HitDetailSource.PointCloud === oHit2.m_geomDetail.m_detailSource)
+    if (HitDetailSource.PointCloud === oHit1.geomDetail.detailSource && HitDetailSource.PointCloud === oHit2.geomDetail.detailSource)
       return 0;
 
     // Always prioritize sprites (ex. HUD markers) over surface hits...
-    if (HitDetailSource.Sprite === oHit1.m_geomDetail.m_detailSource || HitDetailSource.Sprite === oHit2.m_geomDetail.m_detailSource)
+    if (HitDetailSource.Sprite === oHit1.geomDetail.detailSource || HitDetailSource.Sprite === oHit2.geomDetail.detailSource)
       return 0;
 
-    const normal1 = oHit1.m_geomDetail.m_normal;
-    const normal2 = oHit2.m_geomDetail.m_normal;
+    const normal1 = oHit1.geomDetail.normal;
+    const normal2 = oHit2.geomDetail.normal;
 
     // NOTE: Only surfaces display hidden edges...NEEDS_WORK: Nothing is hidden by transparent display style (RenderMode::SmoothShade)...
-    const flags1 = oHit1.m_viewport.view.displayStyle.viewFlags;
-    const flags2 = oHit2.m_viewport.view.displayStyle.viewFlags;
+    const flags1 = oHit1.viewport.view.displayStyle.viewFlags;
+    const flags2 = oHit2.viewport.view.displayStyle.viewFlags;
     const hiddenEdgesVisible = flags1.hiddenEdgesVisible();
-    const isObscurableWireHit1 = (RenderMode.Wireframe !== flags1.renderMode && HitParentGeomType.Wire === oHit1.m_geomDetail.m_parentType);
-    const isObscurableWireHit2 = (RenderMode.Wireframe !== flags2.renderMode && HitParentGeomType.Wire === oHit2.m_geomDetail.m_parentType);
+    const isObscurableWireHit1 = (RenderMode.Wireframe !== flags1.renderMode && HitParentGeomType.Wire === oHit1.geomDetail.parentType);
+    const isObscurableWireHit2 = (RenderMode.Wireframe !== flags2.renderMode && HitParentGeomType.Wire === oHit2.geomDetail.parentType);
 
     const mag1 = normal1.magnitude();
     const mag2 = normal2.magnitude();
@@ -447,20 +447,20 @@ export class HitList {
     }
 
     if (comparePriority) {
-      const p1 = oHit1.m_geomDetail.m_hitPriority;
-      const p2 = oHit2.m_geomDetail.m_hitPriority;
+      const p1 = oHit1.geomDetail.hitPriority;
+      const p2 = oHit2.geomDetail.hitPriority;
       if (p2 < p1) return -1;
       if (p2 > p1) return 1;
     }
 
-    const dist1 = HitList.tenthOfPixel(oHit1.m_geomDetail.m_viewDist);
-    const dist2 = HitList.tenthOfPixel(oHit2.m_geomDetail.m_viewDist);
+    const dist1 = HitList.tenthOfPixel(oHit1.geomDetail.viewDist);
+    const dist2 = HitList.tenthOfPixel(oHit2.geomDetail.viewDist);
     if (dist2 < dist1) return -1;
     if (dist2 > dist1) return 1;
 
     // Linestyle/pattern/thickness hits have lower priority...
-    const source1 = oHit1.m_geomDetail.m_detailSource;
-    const source2 = oHit2.m_geomDetail.m_detailSource;
+    const source1 = oHit1.geomDetail.detailSource;
+    const source2 = oHit2.geomDetail.detailSource;
     return (source2 < source1) ? -1 : (source2 > source1) ? 1 : 0;
   }
 
@@ -488,7 +488,7 @@ export class HitList {
     return index;
   }
 
-  public removeCurrentHit() { this.removeHit(this.m_currHit); }
+  public removeCurrentHit() { this.removeHit(this.currHit); }
   public setCurrentHit(hit: HitDetail): void {
     this.resetCurrentHit();
     for (let thisHit; undefined !== (thisHit = this.getNextHit());) {

@@ -40,7 +40,7 @@ describe("BriefcaseManager", () => {
     startTime = new Date().getTime();
 
     testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
-    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "MyTestModel");
+    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "TestModel");
 
     testChangeSets = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
     expect(testChangeSets.length).greaterThan(2);

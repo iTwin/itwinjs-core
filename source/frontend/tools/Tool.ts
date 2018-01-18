@@ -316,13 +316,21 @@ export class BeWheelEvent extends BeButtonEvent {
   }
 }
 
+export interface ToolCtor extends FunctionConstructor {
+  toolId: string;
+  hidden: boolean;
+  new(args?: any): Tool;
+}
+
 /**
  * Base Tool class for handling user input events from Viewports.
  * Applications should create subclasses of ViewTool or PrimitiveTool and not Tool directly.
  */
 export abstract class Tool {
   // tslint:disable:no-empty
-  public static get toolId(): string { return ""; }
+  public static hidden = false;
+  public static toolId = "";
+
   public getLocalizedToolName(): string { return Object.getPrototypeOf(this).constructor.toolId; } // NEEDS_WORK
   public abstract installToolImplementation(): BentleyStatus;
   public installTool(): BentleyStatus { return this.installToolImplementation(); }
@@ -416,5 +424,5 @@ export abstract class Tool {
    * @note If you override this method, you may decide whether to call your superclass' implementation or not (it is not required).
    * The default implementation shows hit description
    */
-  public getInfoString(hit: HitDetail, _delimiter: string): string { return hit.m_hitDescription; }
+  public getInfoString(hit: HitDetail, _delimiter: string): string { return hit.hitDescription; }
 }

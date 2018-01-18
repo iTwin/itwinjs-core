@@ -126,7 +126,7 @@ export interface CameraProps {
 
 /** Parameters to construct a ViewDefinition3d */
 export interface ViewDefinition3dProps extends ViewDefinitionProps {
-  cameraOn: boolean;  // if true, m_camera is valid.
+  cameraOn: boolean;  // if true, camera is valid.
   origin: XYZProps;    // The lower left back corner of the view frustum.
   extents: XYZProps;   // The extent of the view frustum.
   angles: YawPitchRollProps | undefined;    // Rotation of the view frustum (could be undefined if going RotMatrix -> YawPitchRoll).

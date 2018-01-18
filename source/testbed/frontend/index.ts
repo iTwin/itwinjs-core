@@ -6,6 +6,7 @@ import { TestbedConfig } from "../common/TestbedConfig";
 import { assert } from "chai";
 import { TestData } from "./TestData";
 import * as webpack from "webpack";
+import * as path from "path";
 
 TestbedConfig.initializeGatewayConfig();
 TestbedConfig.gatewayConfig.protocol.openAPIPathPrefix = () => `http://localhost:${TestbedConfig.serverPort}`;
@@ -13,7 +14,7 @@ TestbedConfig.gatewayConfig.protocol.openAPIPathPrefix = () => `http://localhost
 const { ipcRenderer, remote } = require("electron");
 TestbedConfig.ipc = ipcRenderer;
 remote.getCurrentWindow().setTitle(TestbedConfig.gatewayParams.info.title);
-remote.require("../../../backend/lib/backend/index");
+remote.require(path.join(__dirname, "../../../backend/lib/backend/index"));
 
 describe("Testbed", () => {
   it("Server should be accessible", (done) => {
@@ -66,6 +67,6 @@ for (const entry of fs.readdirSync(__dirname)) {
       }).timeout(99999);
     });
 
-    require(entryPath);
+    setTimeout(() => require(entryPath));
   }
 }
