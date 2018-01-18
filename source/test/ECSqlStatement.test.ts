@@ -82,7 +82,8 @@ describe("ECSqlStatement", () => {
 
     // Scenario Bind Id
     ecdb.withPreparedStatement("SELECT * FROM test.Foo WHERE ECInstanceId=:id AND ECClassId=:classid", (stmt) => {
-      stmt.bindId(1, new Id64("0x1"));
+      stmt.bindId("id", new Id64("0x1"));
+      stmt.bindId("classid", new Id64("0x4443434"));
     });
 
     // Scenario Bind primitives
