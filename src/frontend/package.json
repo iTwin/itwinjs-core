@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecpresentation-frontend",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "Frontend of ECPresentation library",
   "keywords": [
     "Bentley",

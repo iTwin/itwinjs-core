@@ -2,6 +2,30 @@
   "name": "@bentley/ecpresentation-frontend",
   "entries": [
     {
+      "version": "0.0.15",
+      "tag": "@bentley/ecpresentation-frontend_v0.0.15",
+      "date": "Fri, 19 Jan 2018 11:51:55 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Some renaming and moving of EC-types"
+          },
+          {
+            "comment": "Use IDisposable interface provided by bentleyjs-core"
+          },
+          {
+            "comment": "Cleaned up Selection API a little"
+          },
+          {
+            "comment": "Fixed tree and content data providers to create valid request options"
+          },
+          {
+            "comment": "Use imodeljs-frontend v0.23.0"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.14",
       "tag": "@bentley/ecpresentation-frontend_v0.0.14",
       "date": "Mon, 08 Jan 2018 14:51:31 GMT",

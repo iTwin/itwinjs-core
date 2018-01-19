@@ -2,6 +2,24 @@
   "name": "@bentley/ecpresentation-backend",
   "entries": [
     {
+      "version": "0.0.26",
+      "tag": "@bentley/ecpresentation-backend_v0.0.26",
+      "date": "Fri, 19 Jan 2018 11:51:55 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Some renaming and moving of EC-types"
+          },
+          {
+            "comment": "Added ability to configure presentation manager to use an app-supplied assets directory for finding app's presentation rulesets."
+          },
+          {
+            "comment": "Use node addon v3.1.0 and imodeljs-backend v0.24.0"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.25",
       "tag": "@bentley/ecpresentation-backend_v0.0.25",
       "date": "Mon, 08 Jan 2018 14:51:31 GMT",
