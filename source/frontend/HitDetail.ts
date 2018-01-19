@@ -295,7 +295,7 @@ export class IntersectDetail extends SnapDetail {
  *  are somehow "better" than those later on.
  */
 export class HitList {
-  public hits: HitDetail[];
+  public hits: HitDetail[] = [];
   public currHit: number;
   public size(): number { return this.hits.length; }
   public clear(): void { this.hits.length = 0; }

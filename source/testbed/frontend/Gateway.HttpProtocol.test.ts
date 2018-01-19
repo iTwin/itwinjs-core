@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Gateway } from "@build/imodeljs-core/lib/common/Gateway";
+import { Gateway } from "../../common/Gateway";
 import { TestGateway, TestOp1Params } from "../common/TestGateway";
 import { assert } from "chai";
 import { TestbedConfig } from "../common/TestbedConfig";

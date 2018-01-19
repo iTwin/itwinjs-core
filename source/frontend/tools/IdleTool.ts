@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Tool, BeButton, BeButtonEvent, BeGestureEvent, BeWheelEvent } from "./Tool";
-import { ViewManip, ViewHandleType, FitViewTool, RotatePanZoomGestureTool } from "./ViewTool";
+import { BeButton, BeButtonEvent, BeGestureEvent, BeWheelEvent, InteractiveTool } from "./Tool";
+import { ViewManip, ViewHandleType, FitViewTool, RotatePanZoomGestureTool, ViewTool } from "./ViewTool";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { GeomDetail, HitDetail, HitSource, SnapDetail } from "../HitDetail";
@@ -27,7 +27,7 @@ import { iModelApp } from "../IModelApp";
 *      double-tap: fit view
 *  Touch inputs can be combined e.g. drag two fingers while moving them closer together => pan + zoom in
 */
-export class IdleTool extends Tool {
+export class IdleTool extends InteractiveTool {
   public static toolId = "Idle";
   public static hidden = true;
 
@@ -39,13 +39,13 @@ export class IdleTool extends Tool {
     if (cur.isDragging(BeButton.Data) || cur.isDragging(BeButton.Reset))
       return false;
 
-    let viewTool;
+    let viewTool: ViewTool | undefined;
     if (ev.isDoubleClick) {
       viewTool = new FitViewTool(vp, true);
     } else if (ev.isControlKey) {
-      viewTool = iModelApp.createTool("View." + vp.view.is3d() ? "Look" : "Scroll", vp);
+      viewTool = iModelApp.createTool("View." + vp.view.is3d() ? "Look" : "Scroll", vp) as ViewTool | undefined;
     } else if (ev.isShiftKey) {
-      viewTool = iModelApp.createTool("View.Rotate", vp);
+      viewTool = iModelApp.createTool("View.Rotate", vp) as ViewTool | undefined;
     } else if (false) {
       /* ###TODO: Other view tools if needed... */
     } else {
@@ -57,7 +57,7 @@ export class IdleTool extends Tool {
         return true;
       }
 
-      viewTool = iModelApp.createTool("View.Pan", vp);
+      viewTool = iModelApp.createTool("View.Pan", vp) as ViewTool | undefined;
     }
 
     return !!viewTool && BentleyStatus.SUCCESS === viewTool.installTool();

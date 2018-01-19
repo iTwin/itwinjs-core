@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Tool, BeButtonEvent, BeCursor, BeWheelEvent, CoordSource, BeGestureEvent, GestureInfo } from "./Tool";
+import { BeButtonEvent, BeCursor, BeWheelEvent, CoordSource, BeGestureEvent, GestureInfo, InteractiveTool } from "./Tool";
 import { Viewport, CoordSystem, ViewRect } from "../Viewport";
 import { Point3d, Vector3d, RotMatrix, Transform, YawPitchRollAngles, Range3d, Point2d, Vector2d } from "@bentley/geometry-core/lib/PointVector";
 import { Frustum, NpcCenter, Npc } from "../../common/Frustum";
@@ -67,7 +67,7 @@ export const ViewToolSettings = {
   pickSize: 13,
 };
 
-export abstract class ViewTool extends Tool {
+export abstract class ViewTool extends InteractiveTool {
   public inDynamicUpdate = false;
   public beginDynamicUpdate() { this.inDynamicUpdate = true; }
   public endDynamicUpdate() { this.inDynamicUpdate = false; }
@@ -696,7 +696,9 @@ export abstract class ViewManip extends ViewTool {
   }
 
   protected synchViewBallInfo(initialSetup: boolean): void {
-    const frustum = this.viewport!.getFrustum(CoordSystem.Screen, false, scratchFrustum);
+    if (!this.viewport)
+      return;
+    const frustum = this.viewport.getFrustum(CoordSystem.Screen, false, scratchFrustum);
     const screenRange = scratchPoint3d1;
     screenRange.set(
       frustum.points[Npc._000].distance(frustum.points[Npc._100]),
@@ -1832,7 +1834,8 @@ export class ViewPanTool extends ViewManip {
     super(vp, ViewHandleType.ViewPan, true, false, true);
   }
 }
-export abstract class InputCollector extends Tool {
+
+export abstract class InputCollector extends InteractiveTool {
   public installToolImplementation(): BentleyStatus {
     const toolAdmin = iModelApp.toolAdmin;
     // An input collector can only suspend a primitive tool, don't install if a viewing tool is active...

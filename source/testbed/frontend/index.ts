@@ -14,7 +14,7 @@ TestbedConfig.gatewayConfig.protocol.openAPIPathPrefix = () => `http://localhost
 const { ipcRenderer, remote } = require("electron");
 TestbedConfig.ipc = ipcRenderer;
 remote.getCurrentWindow().setTitle(TestbedConfig.gatewayParams.info.title);
-remote.require(path.join(__dirname, "../../../backend/lib/backend/index"));
+remote.require(path.join(__dirname, "../backend/index"));
 
 describe("Testbed", () => {
   it("Server should be accessible", (done) => {
@@ -39,7 +39,7 @@ describe("Testbed", () => {
 
 const fs = remote.require("fs");
 for (const entry of fs.readdirSync(__dirname)) {
-  if (entry.indexOf(".test.js") !== -1) {
+  if (entry.indexOf(".test.js") !== -1 && entry.indexOf(".test.js.map") === -1) {
     const entryPath = `${__dirname}/${entry}`;
 
     describe(entry, () => {

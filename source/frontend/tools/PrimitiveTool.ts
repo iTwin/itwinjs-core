@@ -2,18 +2,19 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { CoordinateLockOverrides } from "./ToolAdmin";
-import { Tool, BeButtonEvent, BeCursor } from "./Tool";
+import { Tool, BeButtonEvent, BeCursor, InteractiveTool } from "./Tool";
 import { Viewport } from "../Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelConnection } from "../IModelConnection";
 import { iModelApp } from "../IModelApp";
+import { AccuDrawShortcuts } from "./AccuDrawTool";
 
 /**
  * The PrimitiveTool class can be used to implement a primitive command. Placement
  * tools that don't need to locate or modify elements are good candidates for a PrimitiveTool.
  */
-export abstract class PrimitiveTool extends Tool {
+export abstract class PrimitiveTool extends InteractiveTool {
   public targetView?: Viewport;
   public targetModelId = new Id64();
   public targetIsLocked: boolean = false; // If target model is known, set this to true in constructor and override getTargetModel.
@@ -182,7 +183,7 @@ export abstract class PrimitiveTool extends Tool {
    * Tools need to call SaveChanges to commit any elements they have added/changes they have made.
    * This helper method supplies the tool name for the undo string to iModel.saveChanges.
    */
-  public saveChanges(): Promise<void> { return this.getIModel().saveChanges(this.getLocalizedToolName()); }
+  public saveChanges(): Promise<void> { return this.getIModel().saveChanges(Object.getPrototypeOf(this).constructor.getLocalizedToolName()); }
 
   // //! Ensures that any locks and/or codes required for the operation are obtained from iModelServer before making any changes to the iModel.
   // //! Default implementation invokes _PopulateRequest() and forwards request to server.
@@ -217,7 +218,7 @@ export abstract class PrimitiveTool extends Tool {
     if (!this.onUndoPreviousStep())
       return false;
 
-    // AccuDrawShortcuts:: ProcessPendingHints(); // Process any hints the active tool setup in _OnUndoPreviousStep now...
+    AccuDrawShortcuts.processPendingHints(); // Process any hints the active tool setup in _OnUndoPreviousStep now...
 
     const ev = new BeButtonEvent();
     iModelApp.toolAdmin.fillEventFromCursorLocation(ev);

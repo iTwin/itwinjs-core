@@ -3,12 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { Viewport } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
 import { SnapMode, HitList, SnapDetail, SnapHeat, HitDetail, SubSelectionMode, HitSource, HitDetailType } from "./HitDetail";
 import { SnapContext, DecorateContext } from "./ViewContext";
 import { SnapType, SnapStatus, HitListHolder } from "./ElementLocateManager";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { GraphicBuilder, LinePixels } from "../common/Render";
 import { ColorDef } from "../common/ColorDef";
 import { iModelApp } from "./IModelApp";
@@ -19,7 +19,7 @@ export class TentativePoint {
   public candidateSnapMode = SnapMode.First;    // during snap creation: the snap to try
   public currSnap?: SnapDetail;
   public tpHits?: HitList;
-  public readonly snapPaths: HitList;
+  public readonly snapPaths = new HitList();
   public hotDistanceInches = 0.21;
   public readonly rawPoint = new Point3d();     // world coordinates
   public readonly point = new Point3d();        // world coords (adjusted for locks)
