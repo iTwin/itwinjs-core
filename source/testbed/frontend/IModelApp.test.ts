@@ -60,4 +60,9 @@ describe("IModelApp", () => {
     // assert.instanceOf(iModelApp.createTool("View.Rotate"), TestRotateTool, "rotate tool override");
   });
 
+  it("Should get localized name for TestImmediate tool"), () => {
+    assert.equal(TestImmediate.getLocalizedName(), "Localized TestImmediate Name");
+  )
+  });
+
 });

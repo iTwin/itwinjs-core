@@ -4,10 +4,11 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "tsc && npm run copy:backendassets",
+    "build": "tsc && npm run copy:backendassets && npm run copy:frontendpublic",
     "clean": "rimraf lib",
     "copy:assets": "cpx ./assets/**/* ./lib/test/assets",
     "copy:backendassets": "cpx ../backend/assets/**/* ./lib/backend/assets",
+    "copy:frontendpublic": "cpx ../frontend/public/**/* ./lib/public",
     "pretest": "npm run copy:assets && npm run build",
     "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\""
   },
