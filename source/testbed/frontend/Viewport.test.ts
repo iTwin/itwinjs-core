@@ -14,6 +14,7 @@ import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import * as path from "path";
 import { SpatialViewDefinitionProps } from "../../common/ElementProps";
 import { ViewPanTool } from "../../frontend/tools/ViewTool";
+import { CompassMode } from "../../frontend/AccuDraw";
 
 /* tslint:disable: no-console */
 const bimFileLocation = path.join(__dirname, "../../../../test/lib/test/assets/test.bim");
@@ -26,7 +27,7 @@ class TestViewport extends Viewport {
   }
 
   /** Needed since we don't have a canvas */
-  private clientRect = new ViewRect(0, 0, 10, 10);
+  private clientRect = new ViewRect(0, 0, 1000, 1000);
   public getClientRect(): ClientRect { return this.clientRect; }
 }
 
@@ -122,7 +123,7 @@ describe("Viewport", () => {
       const newViewState = viewport.view.clone<SpatialViewState>();
       let frustumWorld: Frustum;
 
-      const pan = iModelApp.createTool("View.Pan", viewport) as ViewPanTool | undefined;
+      const pan = iModelApp.tools.create("View.Pan", viewport) as ViewPanTool | undefined;
       assert.instanceOf(pan, ViewPanTool);
       assert.equal(pan!.viewport, viewport);
 
@@ -162,6 +163,22 @@ describe("Viewport", () => {
     const port = new TestViewport(flatViewWithCamera);
     assert.isTrue(Math.abs(port.frustFraction - 1) < 1.0e-4);
   }).timeout(99999);
+
+  it("AccuDraw should work properly", () => {
+    const viewport = new TestViewport(viewStateXYFlat);
+    const accudraw = iModelApp.accuDraw;
+    assert.isTrue(accudraw.isEnabled(), "Accudraw should be enabled");
+    const pt = new Point3d(1, 1, 1);
+    accudraw.adjustPoint(pt, viewport, false);
+
+    accudraw.activate();
+    assert.isTrue(accudraw.isActive(), "AccuDraw is active");
+    accudraw.deactivate();
+    assert.isFalse(accudraw.isActive(), "not active");
+    accudraw.setCompassMode(CompassMode.Polar);
+    assert.equal(accudraw.getCompassMode(), CompassMode.Polar, "polar mode");
+  });
+
 });
 
 describe("Cartographic tests", () => {

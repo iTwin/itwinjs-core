@@ -88,7 +88,7 @@ export class ClassRegistry {
     return domainDef + "class " + className + " " + classExtends + " { } " + classStaticProps;
   }
 
-  public static registerEcClass(ctor: EntityCtor) {
+  public static register(ctor: EntityCtor) {
     const key = ClassRegistry.getKey(ctor.schema.name, ctor.name);
     ClassRegistry.classMap.set(key, ctor);
   }
@@ -97,7 +97,7 @@ export class ClassRegistry {
    * @param moduleObj The module to search for subclasses of Entity
    * @param schema The schema for all found classes
    */
-  public static registerModuleClasses(moduleObj: any, schema: Schema) {
+  public static registerModule(moduleObj: any, schema: Schema) {
     for (const thisMember in moduleObj) {
       if (!thisMember)
         continue;
@@ -105,7 +105,7 @@ export class ClassRegistry {
       const thisClass = moduleObj[thisMember];
       if (thisClass.prototype instanceof Entity) {
         thisClass.schema = schema;
-        ClassRegistry.registerEcClass(thisClass);
+        ClassRegistry.register(thisClass);
       }
     }
   }
@@ -135,7 +135,7 @@ export class ClassRegistry {
   public static generateClassForEntity(entityMetaData: EntityMetaData): EntityCtor {
     const name = entityMetaData.ecclass.split(":");
     // Generate and register this class
-    const jsDef = ClassRegistry.generateClassFromMetaData(entityMetaData) + " ClassRegistry.registerEcClass(" + name[1] + "); ";
+    const jsDef = ClassRegistry.generateClassFromMetaData(entityMetaData) + " ClassRegistry.register(" + name[1] + "); ";
 
     // tslint:disable-next-line:no-eval NOTE: eval is OK here, because we just generated the expression
     eval(jsDef);

@@ -3,7 +3,6 @@
  *--------------------------------------------------------------------------------------------*/
 import { Point3d, Point2d, XAndY } from "@bentley/geometry-core/lib/PointVector";
 import { Viewport } from "../Viewport";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DecorateContext } from "../ViewContext";
 import { HitDetail } from "../HitDetail";
 import { LocateResponse } from "../ElementLocateManager";
@@ -289,7 +288,7 @@ export class GestureInfo {
   }
 }
 
-/** Specialization of ButtonEvent describing a gesture event, typically originating from touch input. */
+/** Specialization of ButtonEvent describing a gesture event originating from touch input. */
 export class BeGestureEvent extends BeButtonEvent {
   public gestureInfo?: GestureInfo;
   public setFrom(src: BeGestureEvent) {
@@ -341,17 +340,19 @@ export abstract class Tool {
   public static toolId = "";
   public static group?: ToolGroup;
   public static getLocalizedName(): string { return this.toolId; } // NEEDS_WORK
-  public static register(group: ToolGroup) { iModelApp.tools.registerTool(this.prototype.constructor as ToolCtor, group); }
+  public static register(group: ToolGroup) { iModelApp.tools.register(this.prototype.constructor as ToolCtor, group); }
+  public abstract run(): boolean;
 }
 
 /** a tool that performs an action immediately. Does not become "active". */
 export abstract class ImmediateTool extends Tool {
-  public abstract run(...args: any[]): void;
 }
 
+/**
+ * A Tool that may be installed, via ToolAdmin, to handle user input. The ToolAdmin manages the currently installed ViewingTool, PrimitiveTool,
+ * InputCollector, and IdleTool. Each must derive from this class and there may only be one of each type installed at a time.
+ */
 export abstract class InteractiveTool extends Tool {
-  public abstract installToolImplementation(): BentleyStatus;
-  public installTool(): BentleyStatus { return this.installToolImplementation(); }
   /** Override to execute additional logic after tool becomes active */
   public onPostInstall(): void { }
   /** Override to execute additional logic when tool is installed. Return false to prevent this tool from becoming active */
@@ -361,9 +362,9 @@ export abstract class InteractiveTool extends Tool {
   public onCleanup() { }
   /** Implement to handle data-button-down events */
   public abstract onDataButtonDown(ev: BeButtonEvent): void;
-  /** Invoked when the data button is released. */
+  /** Invoked when the data-button-up events. */
   public onDataButtonUp(_ev: BeButtonEvent): boolean { return false; }
-  /** Invoked when the reset button is pressed. */
+  /** Invoked when the reset-button-down events. */
   public onResetButtonDown(_ev: BeButtonEvent): boolean { return false; }
   /** Invoked when the reset button is released. */
   public onResetButtonUp(_ev: BeButtonEvent): boolean { return false; }
@@ -443,4 +444,56 @@ export abstract class InteractiveTool extends Tool {
    * The default implementation shows hit description
    */
   public getInfoString(hit: HitDetail, _delimiter: string): string { return hit.hitDescription; }
+}
+
+/** holds a mapping of toolId string to tool class */
+export class ToolRegistry {
+  public map: Map<string, ToolCtor> = new Map<string, ToolCtor>();
+  public unRegisterTool(toolId: string) { this.map.delete(toolId); }
+
+  /** register a tool  */
+  public register(ctor: ToolCtor, group: ToolGroup) {
+    if (ctor.toolId.length !== 0) {
+      ctor.group = group;
+      this.map.set(ctor.toolId, ctor);
+    }
+  }
+
+  /**
+   * register all the tools found in a module.
+   * @param modelObj the module to search for subclasses of Tool.
+   */
+  public registerModule(moduleObj: any, group: ToolGroup) {
+    for (const thisMember in moduleObj) {
+      if (!thisMember)
+        continue;
+
+      const thisTool = moduleObj[thisMember];
+      if (thisTool.prototype instanceof Tool) {
+        this.register(thisTool, group);
+      }
+    }
+  }
+
+  /**
+   * Look up a tool by toolId and, if found, create an instance with the supplied arguments.
+   * @param toolId the toolId of the tool
+   * @param args arguments to pass to the constructor.
+   * @returns an instance of the registered Tool class, or undefined if toolId is not registered.
+   */
+  public create(toolId: string, ...args: any[]): Tool | undefined {
+    const ctor = this.map.get(toolId);
+    return ctor ? new ctor(...args) : undefined;
+  }
+
+  /**
+   * Look up a tool by toolId and, if found, create an instance with the supplied arguments and run it.
+   * @param toolId toolId of the immediate tool
+   * @param args arguments to pass to the constructor.
+   * @return true if the tool was found and successfully installed.
+   */
+  public run(toolId: string, ...args: any[]): boolean {
+    const tool = this.create(toolId, ...args);
+    return !!tool && tool.run();
+  }
 }

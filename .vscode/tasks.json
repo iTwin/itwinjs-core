@@ -15,6 +15,27 @@
       "type": "npm",
       "script": "test",
       "problemMatcher": []
+    },
+    {
+      "type": "npm",
+      "script": "build:frontend",
+      "problemMatcher": [
+        "$tsc"
+      ]
+    },
+    {
+      "type": "npm",
+      "script": "build:test",
+      "problemMatcher": [
+        "$tsc"
+      ]
+    },
+    {
+      "type": "npm",
+      "script": "build:testbed",
+      "problemMatcher": [
+        "$tsc"
+      ]
     }
   ]
 }
