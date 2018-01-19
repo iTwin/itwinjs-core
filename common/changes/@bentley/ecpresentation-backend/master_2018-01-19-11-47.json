@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-backend",
+      "comment": "Use node addon v3.1.0 and imodeljs-backend v0.24.0",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-backend",
+  "email": "grigas.petraitis@bentley.com"
+}

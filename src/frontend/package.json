@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "^1.3.0",
-    "@bentley/imodeljs-frontend": "^0.14.1"
+    "@bentley/imodeljs-frontend": "^0.23.0"
   },
   "devDependencies": {
     "@types/flatbuffers": "^1.6.5",
