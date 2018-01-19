@@ -5,7 +5,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { expect, assert } from "chai";
 import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken, MultiCode, CodeState } from "@bentley/imodeljs-clients";
 import { ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "../common/IModelVersion";
 import { BriefcaseManager } from "../backend/BriefcaseManager";
@@ -181,29 +181,27 @@ describe("BriefcaseManager", () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
 
     // Turn on optimistic concurrency control. This allows the app to modify elements, models, etc. without first acquiring locks.
-    // (Later, when the app downloads and merges changeSets from the Hub into the briefcase, BriefcaseManager will merge changes and handle conflicts.)
-    iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy({
-      updateVsUpdate: ConcurrencyControl.OnConflict.RejectIncomingChange,
-      updateVsDelete: ConcurrencyControl.OnConflict.AcceptIncomingChange,
-      deleteVsUpdate: ConcurrencyControl.OnConflict.RejectIncomingChange,
-      }, {alwaysInBulkOperationMode: true}));
+    // Later, when the app downloads and merges changeSets from the Hub into the briefcase, BriefcaseManager will merge changes and handle conflicts.
+    // The app still has to reserve codes.
+    iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
     // Show that we can modify the properties of an element. In this case, we modify the root element itself.
     const rootEl: Element = (iModel.elements.getRootSubject()).copyForEdit<Element>();
     rootEl.userLabel = rootEl.userLabel + "changed";
     iModel.elements.updateElement(rootEl);
 
+    assert.isFalse(iModel.concurrencyControl.hasPendingRequests());
+
     // Create a new physical model.
     let newModelId: Id64;
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, IModelTestUtils.getUniqueModelCode(iModel, "newPhysicalModel"), true);
 
     // Find or create a SpatialCategory.
-    // Here we show how to use a bulk operation to reserve codes.
     const dictionary: DictionaryModel = iModel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
     const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
 
-    // Verify that a) there are pending code requests and b) all codes are available
+    // iModel.concurrencyControl should have recorded the codes that are required by the new elements.
     assert.isTrue(iModel.concurrencyControl.hasPendingRequests());
     assert.isTrue(await iModel.concurrencyControl.areAvailable(accessToken));
 
@@ -219,13 +217,9 @@ describe("BriefcaseManager", () => {
     // Verify that the codes are reserved.
     const category = iModel.elements.getElement(spatialCategoryId);
     assert.isTrue(category.code.value !== undefined);
-    const codeStates = await iModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope);
-    let foundIt = false;
-    for (const cs of codeStates) {
-      if (cs.values.includes(category.code.value!))
-        foundIt = true;
-    }
-    assert.isTrue(foundIt);
+    const codeStates: MultiCode[] = await iModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope);
+    const foundCode: MultiCode[] = codeStates.filter((cs) => cs.values.includes(category.code.value!) && (cs.state === CodeState.Reserved));
+    assert.equal(foundCode.length, 1);
 
       /* NEEDS WORK - query just this one code
     assert.isTrue(category.code.value !== undefined);

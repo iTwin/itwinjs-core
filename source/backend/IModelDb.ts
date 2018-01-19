@@ -418,7 +418,6 @@ export class IModelDb extends IModel {
  *
  * The ConcurrencyControl class has methods to set the concurrency control policy. [[setPolicy]]
  *
- * The ConcurrencyControl class has methods to set the policy for when requests must be made. [[startBulkOperation]]
  */
 export class ConcurrencyControl {
   private _pendingRequest: ConcurrencyControl.Request;
@@ -446,7 +445,7 @@ export class ConcurrencyControl {
   private applyTransactionOptions() {
     if (!this._policy)
       return;
-    if (this._policy.transactionOptions.alwaysInBulkOperationMode && !this.inBulkOperation())
+    if (!this.inBulkOperation())
       this.startBulkOperation();
   }
 
@@ -833,7 +832,7 @@ export class ConcurrencyControl {
    * See [[request]], [[IModelDb.saveChanges]] and [[endBulkOperation]].
    * @throws [[IModelError]] if it would be illegal to enter bulk operation mode.
    */
-  public startBulkOperation(): void {
+  private startBulkOperation(): void {
     if (!this._imodel.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
     const rc: RepositoryStatus = this._imodel.briefcaseInfo.nativeDb.briefcaseManagerStartBulkOperation();
@@ -842,16 +841,15 @@ export class ConcurrencyControl {
   }
 
   /** Check if there is a bulk operation in progress */
-  public inBulkOperation(): boolean {
+  private inBulkOperation(): boolean {
     if (!this._imodel.briefcaseInfo)
       return false;
     return this._imodel.briefcaseInfo.nativeDb.inBulkOperation();
   }
 
-  /**
+  /*
    * Ends the bulk operation and appends the locks and codes that it recorded to the pending request.
-   */
-  public endBulkOperation() {
+  private endBulkOperation() {
     if (!this._imodel.briefcaseInfo)
       return;
     this.captureBulkOpRequest();
@@ -861,6 +859,7 @@ export class ConcurrencyControl {
       throw new IModelError(rc);
     this.applyTransactionOptions(); // (may re-start the bulk operation)
   }
+   */
 
   /** API to reserve Codes and query the status of Codes */
   get codes(): ConcurrencyControl.Codes {
@@ -886,23 +885,30 @@ export namespace ConcurrencyControl {
     AcceptIncomingChange = 1,
   }
 
-  /** The options for how conflicts are to be handled during change-merging in an OptimisticConcurrencyControlPolicy.
+  /**
+   * The options for how conflicts are to be handled during change-merging in an OptimisticConcurrencyControlPolicy.
    * The scenario is that the caller has made some changes to the *local* IModelDb. Now, the caller is attempting to
    * merge in changes from iModelHub. The properties of this policy specify how to handle the *incoming* changes from iModelHub.
    */
-  export interface ConflictResolutionPolicy {
+  export class ConflictResolutionPolicy {
     /** What to do with the incoming change in the case where the same entity was updated locally and also would be updated by the incoming change. */
-    updateVsUpdate: OnConflict;
+    public updateVsUpdate: OnConflict;
     /** What to do with the incoming change in the case where an entity was updated locally and would be deleted by the incoming change. */
-    updateVsDelete: OnConflict;
+    public updateVsDelete: OnConflict;
     /** What to do with the incoming change in the case where an entity was deleted locally and would be updated by the incoming change. */
-    deleteVsUpdate: OnConflict;
-  }
+    public deleteVsUpdate: OnConflict;
 
-  /** Concurrency control-related transaction options. */
-  export interface TransactionOptions {
-    /** Should the transaction always run in "bulk operation" mode? See [[ConcurrencyControl.startBulkOperation]] */
-    alwaysInBulkOperationMode: boolean;
+    /**
+     * Construct a ConflictResolutionPolicy.
+     * @param updateVsUpdate - the default is ConcurrencyControl.OnConflict.RejectIncomingChange
+     * @param updateVsDelete - the default is ConcurrencyControl.OnConflict.AcceptIncomingChange
+     * @param deleteVsUpdate - the default is ConcurrencyControl.OnConflict.RejectIncomingChange
+     */
+    constructor(updateVsUpdate?: OnConflict, updateVsDelete?: OnConflict, deleteVsUpdate?: OnConflict) {
+      this.updateVsUpdate = updateVsUpdate ? updateVsUpdate! : ConcurrencyControl.OnConflict.RejectIncomingChange;
+      this.updateVsDelete = updateVsDelete ? updateVsDelete! : ConcurrencyControl.OnConflict.AcceptIncomingChange;
+      this.deleteVsUpdate = deleteVsUpdate ? deleteVsUpdate! : ConcurrencyControl.OnConflict.RejectIncomingChange;
+    }
   }
 
   /** Specifies an optimistic concurrency policy.
@@ -913,16 +919,13 @@ export namespace ConcurrencyControl {
    */
   export class OptimisticPolicy {
     public conflictResolution: ConflictResolutionPolicy;
-    public transactionOptions: TransactionOptions;
-    constructor(p: ConflictResolutionPolicy, o: TransactionOptions) { this.conflictResolution = p; this.transactionOptions = o; }
+    constructor(p?: ConflictResolutionPolicy) { this.conflictResolution = p ? p! : new ConflictResolutionPolicy(); }
   }
 
   /** Specifies a pessimistic concurrency policy.
    * Pessimistic concurrency means that entities must be locked and codes must be acquired before local changes can be pushed to iModelHub.
-   * There is more than one strategy for when to acquire locks. See IModelDb.startBulkOperation.
    */
   export class PessimisticPolicy {
-    public transactionOptions: TransactionOptions;
   }
 
   /** Thrown when iModelHub denies or cannot process a request. */

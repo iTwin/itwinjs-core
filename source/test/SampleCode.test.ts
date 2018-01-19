@@ -81,12 +81,7 @@ describe("Sample Code", () => {
     // Later, when the app downloads and merges changeSets from iModelHub,
     // IModelDb's ConcurrencyControl will merge changes and handle conflicts,
     // as specified by this policy.
-    iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy({
-      updateVsUpdate: ConcurrencyControl.OnConflict.RejectIncomingChange,
-      updateVsDelete: ConcurrencyControl.OnConflict.AcceptIncomingChange,
-      deleteVsUpdate: ConcurrencyControl.OnConflict.RejectIncomingChange,
-      }, {alwaysInBulkOperationMode: true}
-    ));
+    iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     // __PUBLISH_EXTRACT_END__
 
     // __PUBLISH_EXTRACT_START__ BisCore1.sampleReserveCodesWithErrorHandling
