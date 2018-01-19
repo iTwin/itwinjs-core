@@ -335,12 +335,8 @@ export class IModelDb extends IModel {
     if (!this.briefcaseInfo)
       throw this._newNotOpenError();
     this.projectExtents.setFrom(newExtents);
-    /*
-    Currently awaiting merge of bim0200dev into bim0200.....
-
     const extentsJson = newExtents.toJSON();
     this.briefcaseInfo.nativeDb.updateProjectExtents(JSON.stringify(extentsJson));
-    */
   }
 
   /**
