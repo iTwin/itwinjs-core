@@ -95,27 +95,6 @@ export class ECDb implements IDisposable {
       throw new IModelError(status, "Failed to import schema");
   }
 
-  /** Get a prepared ECSql statement - may require preparing the statement, if not found in the cache.
-   * @param ecsql The ECSql statement to prepare
-   * @return the prepared statement
-   * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSql syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
-   */
-  public getPreparedStatement(ecsql: string): ECSqlStatement {
-    const cachedStmt = this._statementCache.find(ecsql);
-    if (cachedStmt !== undefined && cachedStmt.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
-      assert(cachedStmt.statement.isShared());
-      assert(cachedStmt.statement.isPrepared());
-      cachedStmt.useCount++;
-      return cachedStmt.statement;
-    }
-
-    this._statementCache.removeUnusedStatementsIfNecessary();
-
-    const stmt = this.prepareStatement(ecsql);
-    this._statementCache.add(ecsql, stmt);
-    return stmt;
-  }
-
   /** Use a prepared statement. This function takes care of preparing the statement and then releasing it.
    * @param ecsql The ECSql statement to execute
    * @param cb the callback to invoke on the prepared statement
@@ -134,6 +113,26 @@ export class ECDb implements IDisposable {
     }
   }
 
+  /** Get a prepared ECSql statement - may require preparing the statement, if not found in the cache.
+   * @param ecsql The ECSql statement to prepare
+   * @return the prepared statement
+   * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSql syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
+   */
+  private getPreparedStatement(ecsql: string): ECSqlStatement {
+    const cachedStmt = this._statementCache.find(ecsql);
+    if (cachedStmt !== undefined && cachedStmt.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
+      assert(cachedStmt.statement.isShared());
+      assert(cachedStmt.statement.isPrepared());
+      cachedStmt.useCount++;
+      return cachedStmt.statement;
+    }
+
+    this._statementCache.removeUnusedStatementsIfNecessary();
+
+    const stmt = this.prepareStatement(ecsql);
+    this._statementCache.add(ecsql, stmt);
+    return stmt;
+  }
   /** Prepare an ECSql statement.
    * @param ecsql The ECSql statement to prepare
    * @throws [[IModelError]] if there is a problem preparing the statement.

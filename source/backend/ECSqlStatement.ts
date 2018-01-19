@@ -15,11 +15,21 @@ import { StatusCodeWithMessage } from "@bentley/bentleyjs-core/lib/BentleyError"
 export class DateTime {
   public constructor(public isoString: string) {}
 }
+
 export class Int64 {
   public constructor(public value: string | number) {}
 }
+
 export class Blob {
   public constructor(public base64: string) {}
+}
+
+export class NavigationValue {
+  public constructor(public navId: Id64, public relClassName?: string, public relClassTableSpace?: string) {}
+}
+
+export class ECSqlInsertResult {
+  public constructor(public status: DbResult, public id?: Id64) {}
 }
 
 /** An ECSql Statement. A statement must be prepared before it can be executed. See prepare. A statement may contain placeholders that must be filled
@@ -79,52 +89,90 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     assert(!this.isPrepared()); // leaves the statement in the un-prepared state
   }
 
+  /** Binds null to the specified ECSQL parameter
+   *  @param param Index (1-based) or name of the parameter
+   */
   public bindNull(param: number | string): void {
     using(this.getBinder(param), (binder) => binder.bindNull());
   }
 
+  /** Binds a BLOB value to the specified ECSQL parameter
+   *  @param param Index (1-based) or name of the parameter
+   *  @param val BLOB value
+   */
   public bindBlob(param: number | string, val: Blob): void {
     using(this.getBinder(param), (binder) => binder.bindBlob(val.base64));
   }
 
+  /** Binds a boolean value to the specified ECSQL parameter
+   *  @param param Index (1-based) or name of the parameter
+   *  @param val Boolean value
+   */
   public bindBoolean(param: number | string, val: boolean): void {
     using(this.getBinder(param), (binder) => binder.bindBoolean(val));
   }
 
+  /** Binds a DateTime value to the specified ECSQL parameter
+   *  @param param Index (1-based) or name of the parameter
+   */
   public bindDateTime(param: number | string, val: DateTime): void {
     using(this.getBinder(param), (binder) => binder.bindDateTime(val.isoString));
   }
 
+  /** Binds a double value to the specified ECSQL parameter
+   *  @param param Index (1-based) or name of the parameter
+   */
   public bindDouble(param: number | string, val: number): void {
     using(this.getBinder(param), (binder) => binder.bindDouble(val));
   }
 
+  /** Binds an Id value to the specified ECSQL parameter
+   *  @param param Index (1-based) or name of the parameter
+   */
   public bindId(param: number | string, val: Id64): void {
     using(this.getBinder(param), (binder) => binder.bindId(val.value));
    }
 
+  /** Binds an integer value to the specified ECSQL parameter
+   *  @param param Index (1-based) or name of the parameter
+   */
   public bindInt(param: number | string, val: number): void {
     using(this.getBinder(param), (binder) => binder.bindInt(val));
   }
 
+  /** Binds an Int64 value to the specified ECSQL parameter
+   *  @param param Index (1-based) or name of the parameter
+   */
   public bindInt64(param: number | string, val: Int64): void {
     using(this.getBinder(param), (binder) => binder.bindInt64(val.value));
   }
 
+  /** Binds an Point2d value to the specified ECSQL parameter
+   *  @param param Index (1-based) or name of the parameter
+   */
   public bindPoint2d(param: number | string, val: XAndY): void {
     using(this.getBinder(param), (binder) => binder.bindPoint2d(val.x, val.y));
   }
 
+  /** Binds an Point3d value to the specified ECSQL parameter
+   *  @param param Index (1-based) or name of the parameter
+   */
   public bindPoint3d(param: number | string, val: XYAndZ): void {
     using(this.getBinder(param), (binder) => binder.bindPoint3d(val.x, val.y, val.z));
   }
 
+  /** Binds an string to the specified ECSQL parameter
+   *  @param param Index (1-based) or name of the parameter
+   */
   public bindString(param: number | string, val: string): void {
     using(this.getBinder(param), (binder) => binder.bindString(val));
   }
 
-  public bindNavigation(param: number | string, navId: Id64, relClassName?: string, relClassTableSpace?: string): void {
-    using(this.getBinder(param), (binder) => binder.bindNavigation(navId.value, relClassName, relClassTableSpace));
+  /** Binds a navigation property value to the specified ECSQL parameter
+   *  @param param Index (1-based) or name of the parameter
+   */
+  public bindNavigation(param: number | string, val: NavigationValue): void {
+    using(this.getBinder(param), (binder) => binder.bindNavigation(val.navId.value, val.relClassName, val.relClassTableSpace));
     }
 
   public bindStruct(param: number | string, value: object): void {
@@ -139,6 +187,27 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     return this._stmt!.getBinder(param);
   }
 
+  public bindValues2(values: any[] | Map<string, any>): void {
+    if (Array.isArray(values)) {
+      for (let i = 0; i < values.length; i++) {
+        const paramIndex: number = i + 1;
+        const paramValue: any = values[i];
+        using (this.getBinder(paramIndex),
+          (binder) => ECSqlBindingHelper.bindValue(binder, paramValue));
+      }
+      return;
+    }
+
+    if (values instanceof Map) {
+      for (const entry of values.entries()) {
+        const paramName: string = entry[0];
+        const paramValue: any = entry[1];
+        using (this.getBinder(paramName),
+          (binder) => ECSqlBindingHelper.bindValue(binder, paramValue));
+      }
+    }
+  }
+
   /** Clear any bindings that were previously set on this statement.
    * @throws IModelError in case of errors
    */
@@ -148,7 +217,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
       throw new IModelError(stat);
   }
 
-  /** Bind values to placeholders.
+  /** Bind values to placeholders. @deprecated Use bindValues2 instead or the other bindXXX methods
    * @param bindings  The values to set for placeholders. Pass an array if the placeholders are positional. Pass an 'any' object
    * for named placeholders, where the properties of the object match the names of the placeholders in the statement.
    * @throws IModelError in case the binding fails. This will normally happen only if the type of a value does not match and cannot be converted to the type required for the corresponding property in the statement.
@@ -164,6 +233,20 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   /** Step this statement to the next matching row. */
   public step(): DbResult {
     return this._stmt!.step();
+  }
+
+  /** Step this INSERT statement and returns status and the ECInstanceId of the newly 
+   * created instance. 
+   * @return Object containing the status of the step. If successful, it contains
+   * DbResult.BE_SQLITE_DONE and the ECInstanceId of the newly created instance.
+   * In case of failure it contains the error DbResult code.
+   * */
+  public stepForInsert(): ECSqlInsertResult {
+    const r: {status: DbResult, id: string} = this._stmt!.stepForInsert();
+    if (r.status === DbResult.BE_SQLITE_DONE)
+      return new ECSqlInsertResult(r.status, new Id64(r.id));
+
+    return new ECSqlInsertResult(r.status);
   }
 
   /** Get the current row. */
@@ -194,14 +277,23 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
 class ECSqlBindingHelper {
 
+  /** Binds the specified value to the specified binder
+   * @param binder Parameter Binder to bind to
+   * @param val Value to be bound. Must be of one of these types:
+   *  null | undefined, boolean, number, string, DateTime, Blob, Int64, Id64, XY, XYZ, NavigationValue
+   *  Objects of primitives, objects or arrays of any of the above types when binding structs
+   *  Arrays of primitives or objects of any of the above when binding arrays
+   * @throws IModelError in case of errors
+   */
   public static bindValue(binder: NodeAddonECSqlBinder, val: any): void {
-    if (val == null) {
-      binder.bindNull();
+    // returns undefined if val is no primitive and returns DbResult if it is primitive and a binding call was done
+    const primStat: DbResult | undefined = ECSqlBindingHelper.tryBindPrimitiveTypes(binder, val);
+    if (primStat !== undefined) {
+      if (primStat !== DbResult.BE_SQLITE_OK)
+        throw new IModelError(primStat);
+
       return;
     }
-
-    if (ECSqlBindingHelper.tryBindPrimitive(binder, val))
-      return;
 
     if (typeof(val) === "object") {
       ECSqlBindingHelper.bindStruct(binder, val);
@@ -216,96 +308,107 @@ class ECSqlBindingHelper {
     throw new Error(`Bound value is of an unsupported type: ${val}`);
   }
 
+  /** Binds the specified primitive value to the specified binder
+   * @param binder Parameter Binder to bind to
+   * @param val Primitive value to be bound. Must be of one of these types:
+   *  null | undefined, boolean, number, string, DateTime, Blob, Int64, Id64, XY, XYZ, NavigationValue
+   * @throws IModelError in case of errors
+   */
   public static bindPrimitive(binder: NodeAddonECSqlBinder, val: any): void {
-    const isPrimitive: boolean = ECSqlBindingHelper.tryBindPrimitive(binder, val);
-    if (!isPrimitive)
-      throw new Error(`Binding value is of an unsupported primitive type: ${val}`);
+    const stat: DbResult | undefined = ECSqlBindingHelper.tryBindPrimitiveTypes(binder, val);
+    if (stat === undefined)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Binding value is of an unsupported primitive type: ${val}`);
+
+    if (stat !== DbResult.BE_SQLITE_OK)
+      throw new IModelError(stat);
   }
 
+  /** Binds the specified object to the specified struct binder
+   * @param binder Struct parameter binder to bind to
+   * @param val Value to be bound. Must be an Object with members of the supported types
+   * @throws IModelError in case of errors
+   */
   public static bindStruct(binder: NodeAddonECSqlBinder, val: object): void {
-    if (val == null) {
-      binder.bindNull();
+    if (val === null || val === undefined) {
+      const stat: DbResult = binder.bindNull();
+      if (stat !== DbResult.BE_SQLITE_OK)
+        throw new IModelError(stat);
+
       return;
     }
 
     for (const member of Object.entries(val)) {
       const memberName: string = member[0];
-
-      const memberBinder: NodeAddonECSqlBinder = binder.bindMember(memberName);
       const memberVal: any = member[1];
-      ECSqlBindingHelper.bindValue(memberBinder, memberVal);
-    }
+      using (binder.bindMember(memberName),
+        (memberBinder) => ECSqlBindingHelper.bindValue(memberBinder, memberVal));
+      }
   }
 
+  /** Binds the specified array to the specified array binder
+   * @param binder Array parameter binder to bind to
+   * @param val Value to be bound. Must be an Array with elements of the supported types
+   * @throws IModelError in case of errors
+   */
   public static bindArray(binder: NodeAddonECSqlBinder, val: any[]): void {
-    if (val == null) {
-      binder.bindNull();
+    if (val === null || val === undefined) {
+      const stat: DbResult = binder.bindNull();
+      if (stat !== DbResult.BE_SQLITE_OK)
+        throw new IModelError(stat);
+
       return;
     }
 
     for (const element of val) {
-      const elementBinder: NodeAddonECSqlBinder = binder.addArrayElement();
-      ECSqlBindingHelper.bindValue(elementBinder, element);
+      using (binder.addArrayElement(),
+        (elementBinder) => ECSqlBindingHelper.bindValue(elementBinder, element) );
       }
   }
 
-  private static tryBindPrimitive(binder: NodeAddonECSqlBinder, val: any): boolean {
-    if (val == null) {
-      binder.bindNull();
-      return true;
-    }
+  /** tries to interpret the passed value as known leaf types (primitives and navigation values).
+   *  @return undefined if the value wasn't a primitive. DbResult if it was a primitive and was bound to the binder
+   */
+  private static tryBindPrimitiveTypes(binder: NodeAddonECSqlBinder, val: any): DbResult | undefined {
+    if (val === undefined || val === null)
+      return binder.bindNull();
 
     if (typeof(val) === "number") {
       if (Number.isInteger(val))
-        binder.bindInt(val);
-      else
-        binder.bindDouble(val);
+        return binder.bindInt(val);
 
-      return true;
+      return binder.bindDouble(val);
     }
 
-    if (typeof(val) === "boolean") {
-      binder.bindBoolean(val);
-      return true;
-    }
+    if (typeof(val) === "boolean")
+      return binder.bindBoolean(val);
 
-    if (typeof(val) === "string") {
-      binder.bindString(val);
-      return true;
-    }
+    if (typeof(val) === "string")
+      return binder.bindString(val);
 
     assert(typeof(val) === "object");
 
-    if (val instanceof Blob) {
-      binder.bindBlob(val.base64);
-      return true;
-    }
+    if (val instanceof Blob)
+      return binder.bindBlob(val.base64);
 
-    if (val instanceof DateTime) {
-      binder.bindDateTime(val.isoString);
-      return true;
-    }
+    if (val instanceof DateTime)
+      return binder.bindDateTime(val.isoString);
 
-    if (val instanceof Id64) {
-      binder.bindId(val.value);
-      return true;
-    }
+    if (val instanceof Id64)
+      return binder.bindId(val.value);
 
-    if (val instanceof Int64) {
-      binder.bindInt64(val.value);
-      return true;
-    }
+    if (val instanceof Int64)
+      return binder.bindInt64(val.value);
 
-    if (val instanceof XY) {
-      binder.bindPoint2d(val.x, val.y);
-      return true;
-    }
-    if (val instanceof XYZ) {
-      binder.bindPoint3d(val.x, val.y, val.z);
-      return true;
-    }
+    if (val instanceof XY)
+      return binder.bindPoint2d(val.x, val.y);
 
-    return false;
+    if (val instanceof XYZ)
+      return binder.bindPoint3d(val.x, val.y, val.z);
+
+    if (val instanceof NavigationValue)
+      return binder.bindNavigation(val.navId.value, val.relClassName, val.relClassTableSpace);
+
+    return undefined;
   }
 }
 export class CachedECSqlStatement {
