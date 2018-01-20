@@ -10,7 +10,7 @@ import { Code, CodeSpec, CodeScopeSpec } from "../common/Code";
 import { EntityProps } from "../common/EntityProps";
 import { ModelSelectorState } from "../common/ViewState";
 import { IModelError, IModelStatus } from "../common/IModelError";
-import { Entity, EntityCtor, EntityMetaData, PrimitiveTypeCode } from "../backend/Entity";
+import { Entity, EntityMetaData, PrimitiveTypeCode } from "../backend/Entity";
 import { Model, DictionaryModel } from "../backend/Model";
 import { Category, SubCategory, SpatialCategory } from "../backend/Category";
 import { ClassRegistry } from "../backend/ClassRegistry";
@@ -65,7 +65,7 @@ describe("iModel", () => {
 
     // now round trip the entity through a json string and back to a new entity.
     const jsonObj = JSON.parse(JSON.stringify(entity)) as EntityProps;
-    const el2 = new (entity.constructor as EntityCtor)(jsonObj, entity.iModel); // create a new entity from the json
+    const el2 = new (entity.constructor as any)(jsonObj, entity.iModel); // create a new entity from the json
     el2.setPersistent(); // just to allow deepEqual to work
     assert.deepEqual(entity, el2, "json stringify worked");
   };

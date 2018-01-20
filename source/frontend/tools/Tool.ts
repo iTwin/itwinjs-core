@@ -322,30 +322,21 @@ export class ToolGroup {
   constructor(public namespace: string) { }
 }
 
-/** The static properties of a Tool class */
-export interface ToolCtor extends FunctionConstructor {
-  toolId: string;
-  hidden: boolean;
-  group?: ToolGroup;
-  getLocalizedName(): string;
-  new(...args: any[]): Tool;
-}
-
 /**
  * Base Tool class for handling user input events from Viewports.
  */
-export abstract class Tool {
-  // tslint:disable:no-empty
+export class Tool {
   public static hidden = false;
   public static toolId = "";
   public static group?: ToolGroup;
   public static getLocalizedName(): string { return this.toolId; } // NEEDS_WORK
-  public static register(group: ToolGroup) { iModelApp.tools.register(this.prototype.constructor as ToolCtor, group); }
-  public abstract run(): boolean;
-}
+  public static register(group: ToolGroup) { iModelApp.tools.register(this, group); }
 
-/** a tool that performs an action immediately. Does not become "active". */
-export abstract class ImmediateTool extends Tool {
+  /**
+   * run this instance of a Tool. Subclasses should override to perform their action.
+   * @returns true if the tool executed successfully.
+   */
+  public run(): boolean { return true; }
 }
 
 /**
@@ -446,21 +437,21 @@ export abstract class InteractiveTool extends Tool {
   public getInfoString(hit: HitDetail, _delimiter: string): string { return hit.hitDescription; }
 }
 
-/** holds a mapping of toolId string to tool class */
+/** holds a mapping of toolId string to Tool class */
 export class ToolRegistry {
-  public map: Map<string, ToolCtor> = new Map<string, ToolCtor>();
-  public unRegisterTool(toolId: string) { this.map.delete(toolId); }
+  public map: Map<string, typeof Tool> = new Map<string, typeof Tool>();
+  public unRegister(toolId: string) { this.map.delete(toolId); }
 
   /** register a tool  */
-  public register(ctor: ToolCtor, group: ToolGroup) {
-    if (ctor.toolId.length !== 0) {
-      ctor.group = group;
-      this.map.set(ctor.toolId, ctor);
+  public register(toolClass: typeof Tool, group: ToolGroup) {
+    if (toolClass.toolId.length !== 0) {
+      toolClass.group = group;
+      this.map.set(toolClass.toolId, toolClass);
     }
   }
 
   /**
-   * register all the tools found in a module.
+   * register all the Tool classes found in a module.
    * @param modelObj the module to search for subclasses of Tool.
    */
   public registerModule(moduleObj: any, group: ToolGroup) {
@@ -475,6 +466,9 @@ export class ToolRegistry {
     }
   }
 
+  /** Look up a tool by toolId */
+  public find(toolId: string): typeof Tool | undefined { return this.map.get(toolId); }
+
   /**
    * Look up a tool by toolId and, if found, create an instance with the supplied arguments.
    * @param toolId the toolId of the tool
@@ -482,15 +476,15 @@ export class ToolRegistry {
    * @returns an instance of the registered Tool class, or undefined if toolId is not registered.
    */
   public create(toolId: string, ...args: any[]): Tool | undefined {
-    const ctor = this.map.get(toolId);
-    return ctor ? new ctor(...args) : undefined;
+    const toolClass = this.find(toolId);
+    return toolClass ? new toolClass(...args) : undefined;
   }
 
   /**
    * Look up a tool by toolId and, if found, create an instance with the supplied arguments and run it.
    * @param toolId toolId of the immediate tool
    * @param args arguments to pass to the constructor.
-   * @return true if the tool was found and successfully installed.
+   * @return true if the tool was found and successfully run.
    */
   public run(toolId: string, ...args: any[]): boolean {
     const tool = this.create(toolId, ...args);

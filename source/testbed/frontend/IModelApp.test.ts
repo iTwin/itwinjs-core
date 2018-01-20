@@ -5,7 +5,7 @@ import { assert } from "chai";
 import { IModelApp, iModelApp } from "../../frontend/IModelApp";
 import { AccuDraw } from "../../frontend/AccuDraw";
 import { IdleTool } from "../../frontend/tools/IdleTool";
-import { ToolGroup, ImmediateTool } from "../../frontend/tools/Tool";
+import { ToolGroup, Tool } from "../../frontend/tools/Tool";
 import { ViewRotateTool, ViewPanTool } from "../../frontend/tools/ViewTool";
 
 /** class to simulate overriding the default AccuDraw */
@@ -20,10 +20,9 @@ let testVal1: string;
 let testVal2: string;
 
 /** class to test immediate tool */
-class TestImmediate extends ImmediateTool {
+class TestImmediate extends Tool {
   public static toolId = "Test.Immediate";
   constructor(val1: string, val2: string) { testVal1 = val1; testVal2 = val2; super(); }
-  public run() { return true; }
 }
 
 class TestRotateTool extends ViewRotateTool {
