@@ -5,7 +5,7 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { CodeSpec } from "../common/Code";
-import { ElementProps } from "../common/ElementProps";
+import { ElementProps, ViewDefinitionProps } from "../common/ElementProps";
 import { EntityQueryParams } from "../common/EntityProps";
 import { IModel, IModelToken, IModelProps } from "../common/IModel";
 import { IModelError, IModelStatus } from "../common/IModelError";
@@ -21,12 +21,14 @@ export class IModelConnection extends IModel {
   public readonly models: IModelConnectionModels;
   public readonly elements: IModelConnectionElements;
   public readonly codeSpecs: IModelConnectionCodeSpecs;
+  public readonly views: IModelConnectionViews;
 
   private constructor(iModelToken: IModelToken, name: string, props: IModelProps) {
     super(iModelToken, name, props);
     this.models = new IModelConnectionModels(this);
     this.elements = new IModelConnectionElements(this);
     this.codeSpecs = new IModelConnectionCodeSpecs(this);
+    this.views = new IModelConnectionViews(this);
   }
 
   private static create(iModel: IModel): IModelConnection {
@@ -219,5 +221,24 @@ export class IModelConnectionCodeSpecs {
       return Promise.reject(new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning));
 
     return found;
+  }
+}
+
+/** The collection of views for an [[IModelConnection]]. */
+export class IModelConnectionViews {
+  private _iModel: IModelConnection;
+
+  /** @hidden */
+  constructor(iModel: IModelConnection) {
+    this._iModel = iModel;
+  }
+
+  /** Query for the array of ViewDefinitionProps of the specified class and matching the specified IsPrivate setting.
+   * @param className Query for view definitions of this class.
+   * @param wantPrivate If true, include private view definitions.
+   */
+  public async queryViewDefinitionProps(className: string = "BisCore.ViewDefinition", wantPrivate: boolean = false): Promise<ViewDefinitionProps[]> {
+    const viewDefinitionProps: ViewDefinitionProps[] = await IModelGateway.getProxy().queryViewDefinitionProps(this._iModel.iModelToken, className, wantPrivate);
+    return viewDefinitionProps;
   }
 }

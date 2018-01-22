@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { CodeSpec, CodeSpecNames } from "../../common/Code";
-import { ElementProps } from "../../common/ElementProps";
+import { ElementProps, ViewDefinitionProps } from "../../common/ElementProps";
 import { ModelProps } from "../../common/ModelProps";
 import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "../../frontend/IModelConnection";
 import { TestData } from "./TestData";
@@ -49,6 +49,11 @@ describe("IModelConnection", () => {
     assert.exists(codeSpecById);
     const codeSpecByNewId: CodeSpec = await iModel.codeSpecs.getCodeSpecById(new Id64(codeSpecByName.id));
     assert.exists(codeSpecByNewId);
+
+    const viewDefinitionProps: ViewDefinitionProps[] = await iModel.views.queryViewDefinitionProps();
+    assert.isAtLeast(viewDefinitionProps.length, 1);
+    const spatialViewDefinitionProps: ViewDefinitionProps[] = await iModel.views.queryViewDefinitionProps("BisCore.SpatialViewDefinition");
+    assert.isAtLeast(spatialViewDefinitionProps.length, 1);
 
     await iModel.close(TestData.accessToken);
   }).timeout(99999);

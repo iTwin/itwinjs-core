@@ -6,7 +6,7 @@ import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { OpenMode, DbResult, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { Code, CodeSpec } from "../common/Code";
-import { ElementProps, ElementAspectProps, ElementLoadParams } from "../common/ElementProps";
+import { ElementProps, ElementAspectProps, ElementLoadParams, ViewDefinitionProps } from "../common/ElementProps";
 import { IModel, IModelProps } from "../common/IModel";
 import { IModelVersion } from "../common/IModelVersion";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
@@ -41,6 +41,7 @@ BisCore.registerSchema();
 export class IModelDb extends IModel {
   public readonly models: IModelDbModels;
   public readonly elements: IModelDbElements;
+  public readonly views: IModelDbViews;
   public readonly linkTableRelationships: IModelDbLinkTableRelationships;
   private readonly statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private _codeSpecs: CodeSpecs;
@@ -57,6 +58,7 @@ export class IModelDb extends IModel {
     this.briefcaseInfo = briefcaseInfo;
     this.models = new IModelDbModels(this);
     this.elements = new IModelDbElements(this);
+    this.views = new IModelDbViews(this);
     this.linkTableRelationships = new IModelDbLinkTableRelationships(this);
   }
 
@@ -878,5 +880,33 @@ export class IModelDbElements {
   public getMultiAspects(elementId: Id64, aspectClassName: string): ElementMultiAspect[] {
     const aspects: ElementAspect[] = this._queryAspects(elementId, aspectClassName);
     return aspects;
+  }
+}
+
+/** The collection of views in an [[IModelDb]]. */
+export class IModelDbViews {
+  private _iModel: IModelDb;
+
+  /** @hidden */
+  public constructor(iModel: IModelDb) { this._iModel = iModel; }
+
+  /** Query for the array of ViewDefinitionProps of the specified class and matching the specified IsPrivate setting.
+   * @param className Query for view definitions of this class.
+   * @param wantPrivate If true, include private view definitions.
+   */
+  public queryViewDefinitionProps(className: string = "BisCore.ViewDefinition", wantPrivate: boolean = false): ViewDefinitionProps[] {
+    let sql: string = "SELECT ECInstanceId AS id FROM " + className;
+    if (!wantPrivate)
+      sql += " WHERE IsPrivate=FALSE";
+
+    const viewIds: Id64[] = [];
+    const statement: ECSqlStatement = this._iModel.getPreparedStatement(sql);
+    try {
+      for (const row of statement)
+        viewIds.push(new Id64(row.id));
+    } finally {
+      this._iModel.releasePreparedStatement(statement);
+    }
+    return viewIds.map((viewId: Id64) => this._iModel.elements.getElementProps(viewId) as ViewDefinitionProps);
   }
 }

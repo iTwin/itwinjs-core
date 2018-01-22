@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
+import { ViewDefinitionProps } from "../common/ElementProps";
 import { EntityQueryParams } from "../common/EntityProps";
 import { Gateway } from "../common/Gateway";
 import { IModelToken, IModel } from "../common/IModel";
@@ -146,5 +147,10 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
   public executeTestById(iModelToken: IModelToken, id: number, params: any): any {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     return iModelDb.executeTestById(id, params);
+  }
+
+  public async queryViewDefinitionProps(iModelToken: IModelToken, className: string, wantPrivate: boolean): Promise<ViewDefinitionProps[]> {
+    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    return iModelDb.views.queryViewDefinitionProps(className, wantPrivate);
   }
 }
