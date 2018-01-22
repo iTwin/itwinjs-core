@@ -2,12 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { HitSource, HitDetail, HitList, SnapMode, SnapDetail, SubSelectionMode } from "./HitDetail";
-import { ToolAdmin } from "./tools/ToolAdmin";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { Viewport } from "./Viewport";
-import { TentativePoint } from "./TentativePoint";
 import { BeButtonEvent } from "./tools/Tool";
-import { AccuSnap } from "./AccuSnap";
+import { iModelApp } from "./IModelApp";
 
 // tslint:disable:variable-name
 
@@ -149,7 +147,7 @@ export class ElementPicker {
 
     // NEEDS_WORK
     // PickContext pickContext(options, stopTest);
-    // m_lastPickAborted = pickContext.PickElements(vp, pickPointWorld, pickApertureScreen, m_hitList);
+    // lastPickAborted = pickContext.PickElements(vp, pickPointWorld, pickApertureScreen, hitList);
 
     return this.hitList!.size();
   }
@@ -171,19 +169,19 @@ export class ElementPicker {
 }
 
 export class ElementLocateManager {
-  public static instance = new ElementLocateManager();
-  public m_hitList?: HitList;
-  public m_currHit?: HitDetail;
-  public readonly m_options = new LocateOptions();
-  public readonly m_picker = new ElementPicker();
+  public hitList?: HitList;
+  public currHit?: HitDetail;
+  public readonly options = new LocateOptions();
+  public readonly picker = new ElementPicker();
 
+  public onInitialized() { }
   public getApertureInches() { return 0.11; }
   public getKeypointDivisor() { return 2; }
   public synchSnapMode() { }
   public onFlashHit(_detail: SnapDetail) { }
   public onAccuSnapMotion(_detail: SnapDetail | undefined, _wasHot: boolean, _ev: BeButtonEvent) { }
-  public getElementPicker() { return this.m_picker; }
-  public getLocateOptions() { return this.m_options; }
+  public getElementPicker() { return this.picker; }
+  public getLocateOptions() { return this.options; }
   public setChosenSnapMode(_snapType: SnapType, _snapMode: SnapMode) { }
   public isConstraintSnapActive(): boolean { return false; }
   public performConstraintSnap(_detail: SnapDetail, _hotDistance: number, _snapSource: HitSource) { return SnapStatus.Success; }
@@ -202,27 +200,27 @@ export class ElementLocateManager {
   ]);
 
   public clear(): void { this.setCurrHit(undefined); }
-  public setHitList(list?: HitList) { this.m_hitList = list; }
-  public setCurrHit(hit?: HitDetail): void { this.m_currHit = hit; }
+  public setHitList(list?: HitList) { this.hitList = list; }
+  public setCurrHit(hit?: HitDetail): void { this.currHit = hit; }
   public getNextHit(): HitDetail | undefined {
-    const list = this.m_hitList;
+    const list = this.hitList;
     return list ? list.getNextHit() : undefined;
   }
 
   /** return the current path from either the snapping logic or the pre-locating systems. */
   public getPreLocatedHit(): HitDetail | undefined {
     // NOTE: Check AccuSnap first as Tentative is used to build intersect snap. For normal snaps when a Tentative is active there should be no AccuSnap.
-    let preLocated = AccuSnap.instance.getHitAndList(this);
+    let preLocated = iModelApp.accuSnap.getHitAndList(this);
 
-    if (!preLocated && !!(preLocated = TentativePoint.instance.getHitAndList(this))) {
-      const vp = preLocated.m_viewport!;
-      this.m_picker.empty(); // Get new hit list at hit point; want reset to cycle hits using adjusted point location...
-      this.m_picker.doPick(vp, preLocated.getHitPoint(), (vp.pixelsFromInches(this.getApertureInches()) / 2.0) + 1.5, this.m_options);
-      this.setHitList(this.m_picker.getHitList(true));
+    if (!preLocated && !!(preLocated = iModelApp.tentativePoint.getHitAndList(this))) {
+      const vp = preLocated.viewport!;
+      this.picker.empty(); // Get new hit list at hit point; want reset to cycle hits using adjusted point location...
+      this.picker.doPick(vp, preLocated.getHitPoint(), (vp.pixelsFromInches(this.getApertureInches()) / 2.0) + 1.5, this.options);
+      this.setHitList(this.picker.getHitList(true));
     }
 
-    if (this.m_hitList)
-      this.m_hitList.resetCurrentHit();
+    if (this.hitList)
+      this.hitList.resetCurrentHit();
 
     return preLocated;
   }
@@ -237,7 +235,7 @@ export class ElementLocateManager {
     const snaps: SnapMode[] = [];
 
     // The user's finger is likely to create unwanted AccuSnaps
-    if (HitSource.AccuSnap === source && !ToolAdmin.instance.isCurrentInputSourceMouse())
+    if (HitSource.AccuSnap === source && !iModelApp.toolAdmin.isCurrentInputSourceMouse())
       return snaps;
 
     // We need a snap mode UI!!! Removed center and intersection they were just obnoxious. -BB 06/2015
@@ -248,14 +246,14 @@ export class ElementLocateManager {
 
   public filterHit(hit: HitDetail, mode: SubSelectionMode, _action: LocateAction, out: LocateResponse): boolean {
     // Tools must opt-in to locate of transient geometry as it requires special treatment.
-    if (!hit.m_elementId && !this.m_options.allowTransients) {
+    if (!hit.elementId && !this.options.allowTransients) {
       out.reason = LocateFailureValue.Transient;
       return true;
     }
 
-    hit.m_subSelectionMode = mode; // Set mode for flashing segments/entire element...
+    hit.subSelectionMode = mode; // Set mode for flashing segments/entire element...
 
-    const tool = ToolAdmin.instance.activeTool;
+    const tool = iModelApp.toolAdmin.activeTool;
     if (!tool)
       return false;
 

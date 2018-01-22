@@ -3,6 +3,57 @@
  *--------------------------------------------------------------------------------------------*/
 
 export namespace GL {
+  export enum BlendEquation {
+    Add = WebGLRenderingContext.FUNC_ADD,
+    Subtract = WebGLRenderingContext.FUNC_SUBTRACT,
+    ReverseSubtract = WebGLRenderingContext.FUNC_REVERSE_SUBTRACT,
+    Default = Add,
+  }
+
+  export enum BlendFactor {
+    Zero = WebGLRenderingContext.ZERO,
+    One = WebGLRenderingContext.ONE,
+    SrcColor = WebGLRenderingContext.SRC_COLOR,
+    OneMinusSrcColor = WebGLRenderingContext.ONE_MINUS_SRC_COLOR,
+    DstColor = WebGLRenderingContext.DST_COLOR,
+    OneMinusDstColor = WebGLRenderingContext.ONE_MINUS_DST_COLOR,
+    SrcAlpha = WebGLRenderingContext.SRC_ALPHA,
+    OneMinusSrcAlpha = WebGLRenderingContext.ONE_MINUS_SRC_ALPHA,
+    DstAlpha = WebGLRenderingContext.DST_ALPHA,
+    OneMinusDstAlpha = WebGLRenderingContext.ONE_MINUS_DST_ALPHA,
+    ConstColor = WebGLRenderingContext.CONSTANT_COLOR,
+    OneMinusConstColor = WebGLRenderingContext.ONE_MINUS_CONSTANT_COLOR,
+    ConstAlpha = WebGLRenderingContext.CONSTANT_ALPHA,
+    OneMinusConstAlpha = WebGLRenderingContext.ONE_MINUS_CONSTANT_ALPHA,
+    AlphaSaturate = WebGLRenderingContext.SRC_ALPHA_SATURATE,
+    DefaultSrc = One,
+    DefaultDst = Zero,
+  }
+
+  export enum StencilOperation {
+    Keep = WebGLRenderingContext.KEEP,
+    Zero = WebGLRenderingContext.ZERO,
+    Replace = WebGLRenderingContext.REPLACE,
+    Incr = WebGLRenderingContext.INCR,
+    IncrWrap = WebGLRenderingContext.INCR_WRAP,
+    Decr = WebGLRenderingContext.DECR,
+    DecrWrap = WebGLRenderingContext.DECR_WRAP,
+    Invert = WebGLRenderingContext.INVERT,
+    Default = Keep,
+  }
+
+  export enum StencilFunction {
+    Never = WebGLRenderingContext.NEVER,
+    Less = WebGLRenderingContext.LESS,
+    LEqual = WebGLRenderingContext.LEQUAL,
+    Greater = WebGLRenderingContext.GREATER,
+    GEqual = WebGLRenderingContext.GEQUAL,
+    Equal = WebGLRenderingContext.EQUAL,
+    NotEqual = WebGLRenderingContext.NOTEQUAL,
+    Always = WebGLRenderingContext.ALWAYS,
+    Default = Always,
+  }
+
   export enum CullFace {
     Front = WebGLRenderingContext.FRONT,
     Back = WebGLRenderingContext.BACK,

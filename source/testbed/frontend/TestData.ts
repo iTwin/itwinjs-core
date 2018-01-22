@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@build/imodeljs-core/node_modules/@bentley/imodeljs-clients";
-import { ConnectClient, Project, IModelHubClient } from "@build/imodeljs-core/node_modules/@bentley/imodeljs-clients";
+import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
+import { ConnectClient, Project, IModelHubClient } from "@bentley/imodeljs-clients";
 
 export class TestData {
   public static user = {
@@ -21,7 +21,7 @@ export class TestData {
   public static async load() {
     TestData.accessToken = await TestData.getTestUserAccessToken();
     TestData.testProjectId = await TestData.getTestProjectId(TestData.accessToken, "NodeJsTestProject");
-    TestData.testIModelId = await TestData.getTestIModelId(TestData.accessToken, TestData.testProjectId, "MyTestModel");
+    TestData.testIModelId = await TestData.getTestIModelId(TestData.accessToken, TestData.testProjectId, "TestModel");
   }
 
   public static async getTestUserAccessToken(): Promise<AccessToken> {

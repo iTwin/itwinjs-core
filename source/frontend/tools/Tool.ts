@@ -3,10 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { Point3d, Point2d, XAndY } from "@bentley/geometry-core/lib/PointVector";
 import { Viewport } from "../Viewport";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { DecorateContext } from "../ViewContext";
 import { HitDetail } from "../HitDetail";
 import { LocateResponse } from "../ElementLocateManager";
+import { iModelApp } from "../IModelApp";
 
 export const enum BeButton {
   Data = 0,
@@ -288,7 +288,7 @@ export class GestureInfo {
   }
 }
 
-/** Specialization of ButtonEvent describing a gesture event, typically originating from touch input. */
+/** Specialization of ButtonEvent describing a gesture event originating from touch input. */
 export class BeGestureEvent extends BeButtonEvent {
   public gestureInfo?: GestureInfo;
   public setFrom(src: BeGestureEvent) {
@@ -302,7 +302,7 @@ export class BeGestureEvent extends BeButtonEvent {
   }
 }
 
-/** Information about movement of the "wheel". */
+/** Information about movement of the mouse wheel. */
 export class BeWheelEvent extends BeButtonEvent {
   public constructor(public wheelDelta: number = 0) { super(); }
   public setFrom(src: BeWheelEvent): void {
@@ -316,25 +316,46 @@ export class BeWheelEvent extends BeButtonEvent {
   }
 }
 
+/** A collection of related tools. Tools are associated with a ToolGroup via ToolRegistry.registerTool */
+export class ToolGroup {
+  /** @param namespace the namespace to find localization messages. */
+  constructor(public namespace: string) { }
+}
+
 /**
  * Base Tool class for handling user input events from Viewports.
- * Applications should create subclasses of ViewTool or PrimitiveTool and not Tool directly.
  */
-export abstract class Tool {
-  // tslint:disable:no-empty
-  public static get toolId(): string { return ""; }
-  public getLocalizedToolName(): string { return Object.getPrototypeOf(this).constructor.toolId; } // NEEDS_WORK
-  public abstract installToolImplementation(): BentleyStatus;
-  public installTool(): BentleyStatus { return this.installToolImplementation(); }
+export class Tool {
+  public static hidden = false;
+  public static toolId = "";
+  public static group?: ToolGroup;
+  public static getLocalizedName(): string { return this.toolId; } // NEEDS_WORK
+  public static register(group: ToolGroup) { iModelApp.tools.register(this, group); }
+
+  /**
+   * run this instance of a Tool. Subclasses should override to perform their action.
+   * @returns true if the tool executed successfully.
+   */
+  public run(): boolean { return true; }
+}
+
+/**
+ * A Tool that may be installed, via ToolAdmin, to handle user input. The ToolAdmin manages the currently installed ViewingTool, PrimitiveTool,
+ * InputCollector, and IdleTool. Each must derive from this class and there may only be one of each type installed at a time.
+ */
+export abstract class InteractiveTool extends Tool {
   /** Override to execute additional logic after tool becomes active */
   public onPostInstall(): void { }
   /** Override to execute additional logic when tool is installed. Return false to prevent this tool from becoming active */
   public onInstall(): boolean { return true; }
+  public abstract exitTool(): void;
+  /** Invoked when the tool becomes no longer active, to perform additional cleanup logic */
+  public onCleanup() { }
   /** Implement to handle data-button-down events */
   public abstract onDataButtonDown(ev: BeButtonEvent): void;
-  /** Invoked when the data button is released. */
+  /** Invoked when the data-button-up events. */
   public onDataButtonUp(_ev: BeButtonEvent): boolean { return false; }
-  /** Invoked when the reset button is pressed. */
+  /** Invoked when the reset-button-down events. */
   public onResetButtonDown(_ev: BeButtonEvent): boolean { return false; }
   /** Invoked when the reset button is released. */
   public onResetButtonUp(_ev: BeButtonEvent): boolean { return false; }
@@ -359,9 +380,6 @@ export abstract class Tool {
   /** Invoked when the mouse wheel moves. */
   public onMouseWheel(_ev: BeWheelEvent): boolean { return false; }
   /** Implemented by direct subclasses to handle when the tool becomes no longer active. Generally not overridden by other subclasses */
-  public abstract exitTool(): void;
-  /** Invoked when the tool becomes no longer active, to perform additional cleanup logic */
-  public onCleanup() { }
   /** Invoked when the dimensions of the tool's viewport change */
   public onViewportResized() { }
   /** Invoked to allow a tool to update any view decorations it may have created */
@@ -411,10 +429,65 @@ export abstract class Tool {
   /**
    * Invoked just before the locate tooltip is displayed to retrieve the info text. Allows the tool to override the default description.
    * @param hit The HitDetail whose info is needed.
-   * @param _delimiter Put this string to break lines of the description.
+   * @param _delimiter Use this string to break lines of the description.
    * @return the string to describe the hit.
    * @note If you override this method, you may decide whether to call your superclass' implementation or not (it is not required).
    * The default implementation shows hit description
    */
-  public getInfoString(hit: HitDetail, _delimiter: string): string { return hit.m_hitDescription; }
+  public getInfoString(hit: HitDetail, _delimiter: string): string { return hit.hitDescription; }
+}
+
+/** holds a mapping of toolId string to Tool class */
+export class ToolRegistry {
+  public map: Map<string, typeof Tool> = new Map<string, typeof Tool>();
+  public unRegister(toolId: string) { this.map.delete(toolId); }
+
+  /** register a tool  */
+  public register(toolClass: typeof Tool, group: ToolGroup) {
+    if (toolClass.toolId.length !== 0) {
+      toolClass.group = group;
+      this.map.set(toolClass.toolId, toolClass);
+    }
+  }
+
+  /**
+   * register all the Tool classes found in a module.
+   * @param modelObj the module to search for subclasses of Tool.
+   */
+  public registerModule(moduleObj: any, group: ToolGroup) {
+    for (const thisMember in moduleObj) {
+      if (!thisMember)
+        continue;
+
+      const thisTool = moduleObj[thisMember];
+      if (thisTool.prototype instanceof Tool) {
+        this.register(thisTool, group);
+      }
+    }
+  }
+
+  /** Look up a tool by toolId */
+  public find(toolId: string): typeof Tool | undefined { return this.map.get(toolId); }
+
+  /**
+   * Look up a tool by toolId and, if found, create an instance with the supplied arguments.
+   * @param toolId the toolId of the tool
+   * @param args arguments to pass to the constructor.
+   * @returns an instance of the registered Tool class, or undefined if toolId is not registered.
+   */
+  public create(toolId: string, ...args: any[]): Tool | undefined {
+    const toolClass = this.find(toolId);
+    return toolClass ? new toolClass(...args) : undefined;
+  }
+
+  /**
+   * Look up a tool by toolId and, if found, create an instance with the supplied arguments and run it.
+   * @param toolId toolId of the immediate tool
+   * @param args arguments to pass to the constructor.
+   * @return true if the tool was found and successfully run.
+   */
+  public run(toolId: string, ...args: any[]): boolean {
+    const tool = this.create(toolId, ...args);
+    return !!tool && tool.run();
+  }
 }

@@ -17,7 +17,7 @@ import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 /** The backend implementation of IModelGateway.
  * @hidden
  */
-export class IModelGatewayImpl extends Gateway {
+export class IModelGatewayImpl extends Gateway implements IModelGateway {
   public static register() {
     Gateway.registerImplementation(IModelGateway, IModelGatewayImpl);
   }

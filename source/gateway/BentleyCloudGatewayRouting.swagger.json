@@ -74,7 +74,7 @@
           }
         },
         {
-          "name": "versionId",
+          "name": "changeSetId",
           "in": "path",
           "required": true,
           "schema": {

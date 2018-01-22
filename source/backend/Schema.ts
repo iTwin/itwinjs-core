@@ -4,8 +4,8 @@
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { ClassRegistry } from "./ClassRegistry";
-import { EntityCtor } from "./Entity";
 import { IModelDb } from "./IModelDb";
+import { Entity } from "./Entity";
 
 /** Base class for all schema classes. */
 export class Schema {
@@ -17,7 +17,7 @@ export class Schema {
    * @param iModel The IModel that contains the class definitions
    * @returns The corresponding ClassCtor
    */
-  public static getClass(className: string, iModel: IModelDb): EntityCtor | undefined {
+  public static getClass(className: string, iModel: IModelDb): typeof Entity | undefined {
     return ClassRegistry.getClass(this.name + ":" + className, iModel);
   }
 }
@@ -38,7 +38,7 @@ export class Schemas {
 
   /** Look up a previously registered schema
    * @param schemaName The name of the schema
-   * @returns the previously registered schema or `undefined` if not registered.
+   * @returns the previously registered schema or undefined if not registered.
    */
   public static getRegisteredSchema(schemaName: string): Schema | undefined {
     return Schemas._registeredSchemas[schemaName.toLowerCase()];

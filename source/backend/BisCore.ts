@@ -4,8 +4,6 @@
 import { Schema, Schemas } from "./Schema";
 import { ClassRegistry } from "./ClassRegistry";
 
-declare var require: any;
-
 /** Represents the BisCore schema.
  * ``` ts
  * [[include:BisCore1.sampleCode]]
@@ -23,11 +21,11 @@ export class BisCore extends Schema {
   private constructor() {
     super();
     // this list should include all backend .ts files with implementations of Entity-based classes. Order does not matter.
-    ClassRegistry.registerModuleClasses(require("./Element"), this);
-    ClassRegistry.registerModuleClasses(require("./ElementAspect"), this);
-    ClassRegistry.registerModuleClasses(require("./Model"), this);
-    ClassRegistry.registerModuleClasses(require("./Category"), this);
-    ClassRegistry.registerModuleClasses(require("./ViewDefinition"), this);
-    ClassRegistry.registerModuleClasses(require("./LinkTableRelationship"), this);
+    ClassRegistry.registerModule(require("./Element"), this);
+    ClassRegistry.registerModule(require("./ElementAspect"), this);
+    ClassRegistry.registerModule(require("./Model"), this);
+    ClassRegistry.registerModule(require("./Category"), this);
+    ClassRegistry.registerModule(require("./ViewDefinition"), this);
+    ClassRegistry.registerModule(require("./LinkTableRelationship"), this);
   }
 }

@@ -1,7 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
 import { Vector3d, RotMatrix, Transform } from "@bentley/geometry-core/lib/PointVector";
 import { AxisOrder } from "@bentley/geometry-core/lib/Geometry";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
@@ -48,6 +47,7 @@ export class LineStyleParams {
       }
     }
     retVal.scale = retVal.gapScale = retVal.dashScale = retVal.normal.z = 1.0;
+
     return retVal;
   }
 

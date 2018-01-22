@@ -5,21 +5,34 @@ import { IModelError } from "./IModelError";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 
-const INSTANCE = Symbol("instance");
-const registry: Map<GatewayDefinition, GatewayImplementation> = new Map();
-// tslint:disable-next-line:ban-types
-const types: Map<string, Function> = new Map();
+// tslint:disable:ban-types
 let marshalingScope = "";
+const INSTANCE = Symbol.for("instance");
 
-let electron: any = null;
-declare const global: any;
-if (typeof (global) !== "undefined" && global && global.process && global.process.type) {
-  // tslint:disable-next-line no-eval
-  electron = eval("require")("electron");
+class Registry {
+  private static GATEWAY = Symbol.for("@bentley/imodeljs-core/common/Gateway");
+  private static _instance: Registry;
+
+  public static get instance() {
+    if (!Registry._instance) {
+      const globalObj: any = typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};
+
+      if (!globalObj[Registry.GATEWAY])
+        globalObj[Registry.GATEWAY] = new Registry();
+
+      Registry._instance = globalObj[Registry.GATEWAY];
+    }
+
+    return Registry._instance;
+  }
+
+  public proxies: Map<string, Gateway> = new Map();
+  public implementations: Map<string, Gateway> = new Map();
+  public implementationClasses: Map<string, GatewayImplementation> = new Map();
+  public types: Map<string, Function> = new Map();
 }
 
-export type GatewayImplementation<T extends Gateway = Gateway> = new() => T;
-// tslint:disable-next-line:ban-types
+export type GatewayImplementation<T extends Gateway = Gateway> = new () => T;
 export interface GatewayDefinition<T extends Gateway = Gateway> { prototype: T; name: string; version: string; types: () => Function[]; }
 export type GatewayConfigurationSupplier = () => { new(): Gateway.Configuration };
 
@@ -30,7 +43,7 @@ export abstract class Gateway {
 
   /** Returns the gateway proxy instance for the frontend. */
   public static getProxyForGateway<T extends Gateway>(definition: GatewayDefinition<T>): T {
-    const instance = Gateway.getInstance(definition);
+    const instance = Registry.instance.proxies.get(definition.name) as T;
     if (!instance)
       throw new IModelError(BentleyStatus.ERROR, `Gateway proxy for "${definition.name}" is not initialized.`);
 
@@ -39,11 +52,10 @@ export abstract class Gateway {
 
   /** Returns the gateway implementation instance for the backend. */
   public static getImplementationForGateway<T extends Gateway>(definition: GatewayDefinition<T>): T {
-    if (!registry.has(definition))
+    if (!Registry.instance.implementationClasses.has(definition.name))
       throw new IModelError(BentleyStatus.ERROR, `Gateway implementation for "${definition.name}" is not registered.`);
 
-    const implementation = registry.get(definition) as GatewayImplementation<T>;
-    const instance = Gateway.getInstance(implementation);
+    const instance = Registry.instance.implementations.get(definition.name) as T;
     if (!instance)
       throw new IModelError(BentleyStatus.ERROR, `Gateway implementation for "${definition.name}" is not initialized.`);
 
@@ -52,10 +64,10 @@ export abstract class Gateway {
 
   /** Registers the gateway implementation class for the backend. */
   public static registerImplementation<TDefinition extends Gateway, TImplementation extends TDefinition>(definition: GatewayDefinition<TDefinition>, implementation: GatewayImplementation<TImplementation>) {
-    if (registry.has(definition))
+    if (Registry.instance.implementationClasses.has(definition.name))
       throw new IModelError(BentleyStatus.ERROR, `Gateway "${definition.name}" is already registered.`);
 
-    registry.set(definition, implementation);
+    Registry.instance.implementationClasses.set(definition.name, implementation);
   }
 
   /**
@@ -65,25 +77,34 @@ export abstract class Gateway {
   public static initialize<T extends Gateway>(definition: GatewayDefinition<T>) {
     let directProtocol = false;
 
-    Gateway.initializeCommon(definition);
+    definition.types().forEach((type) => {
+      const name = `${definition.name}_${type.name}`;
+      if (Registry.instance.types.has(name))
+        throw new IModelError(BentleyStatus.ERROR, `Class "${name}" is already registered for gateway type marshaling.`);
 
-    const registeredImplementation = registry.get(definition) as GatewayImplementation<T>;
+      Registry.instance.types.set(name, type);
+    });
+
+    const registeredImplementation = Registry.instance.implementationClasses.get(definition.name) as GatewayImplementation<T>;
     if (registeredImplementation) {
-      if (Gateway.getInstance(registeredImplementation))
+      if (Registry.instance.implementations.has(definition.name))
         throw new IModelError(BentleyStatus.ERROR, `Gateway implementation for "${definition.name}" is already initialized.`);
 
-      const implementation = Gateway.makeInstance(registeredImplementation);
-      implementation.setupImplementationInstance();
+      if (definition.prototype.applicationConfigurationSupplier)
+        registeredImplementation.prototype.applicationConfigurationSupplier = definition.prototype.applicationConfigurationSupplier;
 
+      const implementation = new registeredImplementation();
+      Registry.instance.implementations.set(definition.name, implementation);
       directProtocol = implementation.configuration.protocol instanceof Gateway.DirectProtocol;
     }
 
     if (!registeredImplementation || directProtocol) {
-      if (Gateway.getInstance(definition))
+      if (Registry.instance.proxies.has(definition.name))
         throw new IModelError(BentleyStatus.ERROR, `Gateway proxy for "${definition.name}" is already initialized.`);
 
-      const proxy = Gateway.makeInstance(definition as any);
-      proxy.setupProxyInstance();
+      const proxy = new (definition as any)();
+      Registry.instance.proxies.set(definition.name, proxy);
+      Gateway.forEachOperation(definition, (operation) => proxy[operation] = proxy[operation].bind(proxy, operation));
     }
   }
 
@@ -105,7 +126,7 @@ export abstract class Gateway {
   public static marshal(_key: string, value: any) {
     if (typeof (value) === "object" && value !== null && value.constructor !== Array && value.constructor !== Object) {
       const name = `${marshalingScope}_${value.constructor.name}`;
-      if (!types.has(name))
+      if (!Registry.instance.types.has(name))
         throw new IModelError(BentleyStatus.ERROR, `Class "${name}" is not registered for gateway type marshaling.`);
 
       value[Gateway.MARSHALING_NAME_PROPERTY] = name;
@@ -119,7 +140,7 @@ export abstract class Gateway {
     if (typeof (value) === "object" && value !== null && value[Gateway.MARSHALING_NAME_PROPERTY]) {
       const name = value[Gateway.MARSHALING_NAME_PROPERTY];
       delete value[Gateway.MARSHALING_NAME_PROPERTY];
-      const type = types.get(name);
+      const type = Registry.instance.types.get(name);
       if (!type)
         throw new IModelError(BentleyStatus.ERROR, `Class "${name}" is not registered for gateway type marshaling.`);
 
@@ -153,54 +174,14 @@ export abstract class Gateway {
   }
 
   /** Returns the configuration for the gateway. */
-  protected supplyConfiguration(): Gateway.Configuration {
+  public supplyConfiguration(): Gateway.Configuration {
     const supplier = this.applicationConfigurationSupplier || this.defaultConfigurationSupplier;
     return Gateway.Configuration.getInstance(supplier());
   }
 
   /** Obtains the implementation result for a gateway operation. */
-  protected forward<T>(operation: string, ...parameters: any[]): Promise<T> {
+  public forward<T>(operation: string, ...parameters: any[]): Promise<T> {
     return this.configuration.protocol.obtainGatewayImplementationResult<T>(this.constructor as any, operation, ...parameters);
-  }
-
-  /** Configures a gateway proxy. */
-  protected setupProxyInstance() {
-    Gateway.forEachOperation(this.constructor as any, (operation) => this.makeOperationForwarder(operation));
-  }
-
-  /** Configures a gateway implementation. */
-  protected setupImplementationInstance() {
-    // No default setup
-  }
-
-  /** Creates a proxy forwarder for a gateway API operation. */
-  protected makeOperationForwarder(operation: string) {
-    const object = this as any;
-    object[operation] = object[operation].bind(object, operation);
-  }
-
-  /** Returns the instance of a gateway class if it exists. */
-  private static getInstance<T extends Gateway>(definition: GatewayDefinition<T> | GatewayImplementation<T>) {
-    if (!definition.hasOwnProperty(INSTANCE))
-      return undefined;
-
-    return (definition as any)[INSTANCE] as T;
-  }
-
-  /** Creates and returns the instance of a gateway class. */
-  private static makeInstance<T extends Gateway>(constructor: new() => T) {
-    return (constructor as any)[INSTANCE] = new constructor();
-  }
-
-  /** Common configuration. */
-  private static initializeCommon<T extends Gateway>(definition: GatewayDefinition<T>) {
-    definition.types().forEach((type) => {
-      const name = `${definition.name}_${type.name}`;
-      if (types.has(name))
-        throw new IModelError(BentleyStatus.ERROR, `Class "${name}" is already registered for gateway type marshaling.`);
-
-      types.set(name, type);
-    });
   }
 }
 
@@ -243,7 +224,7 @@ export namespace Gateway {
   /** An application protocol for a gateway. */
   export abstract class Protocol {
     /** The configuration for the protocol. */
-    protected configuration: Configuration;
+    public configuration: Configuration;
 
     /** Creates a protocol. */
     public constructor(configuration: Configuration) {
@@ -756,6 +737,20 @@ export namespace Gateway {
   export class ElectronProtocol extends Protocol {
     private static id: number = 0;
     private static channel: string = "bentley.imodeljs.marshalling";
+    private static _interop: any;
+
+    public static get interop() {
+      if (typeof (global) !== "undefined" && global && global.process && (global.process as any).type) {
+        if (!ElectronProtocol._interop) {
+          // tslint:disable-next-line:no-eval
+          ElectronProtocol._interop = eval("require")("electron");
+        }
+
+        return ElectronProtocol._interop;
+      }
+
+      return null;
+    }
 
     /** Associates the gateways for the protocol with unique names. */
     protected gatewayRegistry: Map<string, GatewayDefinition> = new Map();
@@ -782,11 +777,11 @@ export namespace Gateway {
       return new Promise<T>((resolve, reject) => {
         try {
           const id = ++ElectronProtocol.id;
-          electron.ipcRenderer.once(ElectronProtocol.channel + id, (evt: any, arg: string) => {
+          ElectronProtocol.interop.ipcRenderer.once(ElectronProtocol.channel + id, (evt: any, arg: string) => {
             evt;
             resolve(this.deserializeOperationResult(arg));
           });
-          electron.ipcRenderer.send(ElectronProtocol.channel, id, gateway.name, operation, this.serializeParametersForOperationRequest(gateway.name, ...parameters));
+          ElectronProtocol.interop.ipcRenderer.send(ElectronProtocol.channel, id, gateway.name, operation, this.serializeParametersForOperationRequest(gateway.name, ...parameters));
         } catch (e) {
           reject(e);
         }
@@ -794,7 +789,7 @@ export namespace Gateway {
     }
 
     public handleMessagesInMainProcess() {
-      electron.ipcMain.on(ElectronProtocol.channel, async (evt: any, requestId: number, gatewayName: string, operation: string, body: string) => {
+      ElectronProtocol.interop.ipcMain.on(ElectronProtocol.channel, async (evt: any, requestId: number, gatewayName: string, operation: string, body: string) => {
         const operationParameters = this.deserializeOperationRequestParameters(body);
         const operationResult = await this.lookupGatewayImplementation(gatewayName).invoke(operation, ...operationParameters);
         const operationResponse = this.serializeOperationResult(gatewayName, operationResult);
@@ -861,7 +856,7 @@ export namespace Gateway {
 
     /** Operating parameters for electron gateway. */
     export abstract class Electron extends Configuration {
-      public static get isElectron() { return electron !== null; }
+      public static get isElectron() { return ElectronProtocol.interop !== null; }
 
       /** The protocol of the configuration. */
       public abstract protocol: ElectronProtocol;
@@ -881,7 +876,7 @@ export namespace Gateway {
         const instance = Gateway.Configuration.getInstance(config);
         instance.initializeGateways();
 
-        if (electron.ipcMain)
+        if (ElectronProtocol.interop.ipcMain)
           instance.protocol.handleMessagesInMainProcess();
 
         return instance;

@@ -11,7 +11,6 @@ import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core/lib/Time";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { BeButtonEvent, BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
-import { ToolAdmin } from "./tools/ToolAdmin";
 import { AuxCoordSystemState } from "../common/AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
 import { IModelError, IModelStatus } from "../common/IModelError";
@@ -24,6 +23,7 @@ import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
 import { LegacyMath } from "../common/LegacyMath";
 import { Frustum, Npc, NpcCorners, NpcCenter } from "../common/Frustum";
 import { Placement3dProps, Placement2dProps } from "../common/ElementProps";
+import { iModelApp } from "./IModelApp";
 
 /** A rectangle in view coordinates. */
 export class ViewRect extends ElementAlignedBox2d {
@@ -211,8 +211,8 @@ export class Viewport {
   private static get2dFrustumDepth() { return Constant.oneMeter; }
 
   public isPointAdjustmentRequired(): boolean { return this.view.is3d(); }
-  public isSnapAdjustmentRequired(): boolean { return ToolAdmin.instance.acsPlaneSnapLock && this.view.is3d(); }
-  public isContextRotationRequired(): boolean { return ToolAdmin.instance.acsContextLock; }
+  public isSnapAdjustmentRequired(): boolean { return iModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
+  public isContextRotationRequired(): boolean { return iModelApp.toolAdmin.acsContextLock; }
 
   constructor(public canvas?: HTMLCanvasElement, private _view?: ViewState) { this.setCursor(); }
 
@@ -746,8 +746,9 @@ export class Viewport {
    * the front and back planes to enclose everything in the view [N.B. this is the way that views implement
    * the concept of "no front/back clipping", since there always must be a view frustum].
    * The "unadjusted" box is the one that is stored in the ViewState.
-   * @param[in] sys Coordinate system for \c points
-   * @param[in] adjustedBox If true, retrieve the adjusted box. Otherwise retrieve the box that came from the view definition.
+   * @param sys Coordinate system for points
+   * @param adjustedBox If true, retrieve the adjusted box. Otherwise retrieve the box that came from the view definition.
+   * @param box optional Frustum for return value
    * @return the view frustum
    * @note The "adjusted" box may be either larger or smaller than the "unadjusted" box.
    */
@@ -758,7 +759,7 @@ export class Viewport {
     // coordinates that correspond to the unexpanded box in the npc space of the Expanded view (that's the basis for all
     // of the root-based maps.)
     if (!adjustedBox && this.zClipAdjusted) {
-      // to get unexpanded box, we have to go recompute rootToNpc from original viewController.
+      // to get unexpanded box, we have to go recompute rootToNpc from original View.
       const ueRootToNpc = Map4d.createIdentity();
       const compression = this.rootToNpcFromViewDef(ueRootToNpc, this.viewOrgUnexpanded, this.viewDeltaUnexpanded);
       if (!compression)
@@ -1202,17 +1203,17 @@ export class Viewport {
     if (!(hit instanceof SnapDetail))
       return; // Don't display unless snapped...
 
-    if (!hit.m_geomDetail.isValidSurfaceHit())
+    if (!hit.geomDetail.isValidSurfaceHit())
       return; // AccuSnap will flash edge/segment geometry...
 
-    if (SnapMode.Nearest !== hit.m_snapMode && hit.isHot)
+    if (SnapMode.Nearest !== hit.snapMode && hit.isHot)
       return; // Only display if snap is nearest or NOT hot...surface normal is for hit location, not snap location...
 
     const color = new ColorDef(~vp.hilite.color.getRgb); // Invert hilite color for good contrast...
     const colorFill = color.clone();
     const pt = hit.getHitPoint();
     const radius = (2.5 * aperture) * vp.getPixelSizeAtPoint(pt);
-    const normal = hit.m_geomDetail.m_normal;
+    const normal = hit.geomDetail.normal;
     const rMatrix = RotMatrix.createHeadsUpTriad(normal);
     color.setAlpha(100);
     colorFill.setAlpha(200);

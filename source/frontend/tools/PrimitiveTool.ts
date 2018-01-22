@@ -1,19 +1,19 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ToolAdmin, CoordinateLockOverrides } from "./ToolAdmin";
-import { Tool, BeButtonEvent, BeCursor } from "./Tool";
+import { CoordinateLockOverrides } from "./ToolAdmin";
+import { Tool, BeButtonEvent, BeCursor, InteractiveTool } from "./Tool";
 import { Viewport } from "../Viewport";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
-import { ViewManager } from "../ViewManager";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelConnection } from "../IModelConnection";
+import { iModelApp } from "../IModelApp";
+import { AccuDrawShortcuts } from "./AccuDrawTool";
 
 /**
  * The PrimitiveTool class can be used to implement a primitive command. Placement
  * tools that don't need to locate or modify elements are good candidates for a PrimitiveTool.
  */
-export abstract class PrimitiveTool extends Tool {
+export abstract class PrimitiveTool extends InteractiveTool {
   public targetView?: Viewport;
   public targetModelId = new Id64();
   public targetIsLocked: boolean = false; // If target model is known, set this to true in constructor and override getTargetModel.
@@ -79,26 +79,29 @@ export abstract class PrimitiveTool extends Tool {
   public autoLockTarget(): void { if (!this.targetView) return; this.targetIsLocked = true; }
   public getCursor(): BeCursor { return BeCursor.Arrow; }
 
-  /** Called by InstallTool to setup tool instance as the current active primitive command.
-   *  @return SUCCESS if new tool instance is now the active primitive command.
-   *  @see Tool.installTool Tool.onInstall Tool.onPostInstall
-   *  @private
+  /** Establish this tool as the active PrimitiveTool.
+   *  @return SUCCESS if this tool is now the active PrimitiveTool.
+   *  @see Tool.onInstall, Tool.onPostInstall
    */
-  public installToolImplementation(): BentleyStatus {
-    if (this.isCompatibleViewport(ViewManager.instance.selectedView, false) || !ToolAdmin.instance.onInstallTool(this))
-      return BentleyStatus.ERROR;
+  public run(): boolean {
+    if (this.isCompatibleViewport(iModelApp.viewManager.selectedView, false) || !iModelApp.toolAdmin.onInstallTool(this))
+      return false;
 
-    ToolAdmin.instance.startPrimitiveTool(this);
-    ToolAdmin.instance.setPrimitiveTool(this);
+    iModelApp.toolAdmin.startPrimitiveTool(this);
+    iModelApp.toolAdmin.setPrimitiveTool(this);
 
     // The tool may exit in onPostInstall causing "this" to be
     // deleted so installToolImplementation must not call any
     // methods on "this" after _OnPostInstall returns.
-    ToolAdmin.instance.onPostInstallTool(this);
+    iModelApp.toolAdmin.onPostInstallTool(this);
 
-    return BentleyStatus.SUCCESS;
+    return true;
   }
 
+  /**
+   * Determine whether the supplied Viewport is compatible with this tool.
+   * @param vp the Viewport to check
+   */
   public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean {
     if (!vp)
       return false;
@@ -117,7 +120,7 @@ export abstract class PrimitiveTool extends Tool {
     if (!this.targetView)
       this.targetView = vp;
     else if (iModel !== this.getIModel())
-      return false; // Once a ViewController has been established, only accept views for the same iModel by default.
+      return false; // Once a viewport has been established, only accept viewport showing the same iModel.
 
     if (!this.targetIsLocked) {
       if (isSelectedViewChange)
@@ -156,7 +159,7 @@ export abstract class PrimitiveTool extends Tool {
       return true;
 
     // NOTE: If points aren't being adjusted then the tool shouldn't be creating geometry currently (ex. locating elements) and we shouldn't filter point...
-    if (0 !== (ToolAdmin.instance.toolState.coordLockOvr & CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_ACS))
+    if (0 !== (iModelApp.toolAdmin.toolState.coordLockOvr & CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_ACS))
       return true;
 
     const extents = iModel.projectExtents;
@@ -170,7 +173,7 @@ export abstract class PrimitiveTool extends Tool {
     return false;
   }
 
-  public exitTool(): void { ToolAdmin.instance.startDefaultTool(); }
+  public exitTool(): void { iModelApp.toolAdmin.startDefaultTool(); }
 
   /**
    * Called to revert to a previous tool state (ex. undo last data button).
@@ -182,7 +185,7 @@ export abstract class PrimitiveTool extends Tool {
    * Tools need to call SaveChanges to commit any elements they have added/changes they have made.
    * This helper method supplies the tool name for the undo string to iModel.saveChanges.
    */
-  public saveChanges(): Promise<void> { return this.getIModel().saveChanges(this.getLocalizedToolName()); }
+  public saveChanges(): Promise<void> { return this.getIModel().saveChanges(Object.getPrototypeOf(this).constructor.getLocalizedToolName()); }
 
   // //! Ensures that any locks and/or codes required for the operation are obtained from iModelServer before making any changes to the iModel.
   // //! Default implementation invokes _PopulateRequest() and forwards request to server.
@@ -205,11 +208,11 @@ export abstract class PrimitiveTool extends Tool {
   //  RepositoryStatus LockElementForOperation(DgnElementCR element, BeSQLite:: DbOpcode operation);
 
   /** Call to find out of complex dynamics are currently active. */
-  public isDynamicsStarted() { return ViewManager.instance.inDynamicsMode; }
+  public isDynamicsStarted() { return iModelApp.viewManager.inDynamicsMode; }
   /** Call to initialize dynamics mode. */
-  public beginDynamics() { ToolAdmin.instance.beginDynamics(); }
+  public beginDynamics() { iModelApp.toolAdmin.beginDynamics(); }
   /** Call to terminate dynamics mode. */
-  public endDynamics() { ToolAdmin.instance.endDynamics(); }
+  public endDynamics() { iModelApp.toolAdmin.endDynamics(); }
   /** Called to display dynamic elements. */
   public onDynamicFrame(_ev: BeButtonEvent) { }
   public callOnRestartTool(): void { this.onRestartTool(); }
@@ -217,16 +220,16 @@ export abstract class PrimitiveTool extends Tool {
     if (!this.onUndoPreviousStep())
       return false;
 
-    // AccuDrawShortcuts:: ProcessPendingHints(); // Process any hints the active tool setup in _OnUndoPreviousStep now...
+    AccuDrawShortcuts.processPendingHints(); // Process any hints the active tool setup in _OnUndoPreviousStep now...
 
     const ev = new BeButtonEvent();
-    ToolAdmin.instance.fillEventFromCursorLocation(ev);
+    iModelApp.toolAdmin.fillEventFromCursorLocation(ev);
     this.updateDynamics(ev);
     return true;
   }
 
   public updateDynamics(ev: BeButtonEvent): void {
-    if (!ev.viewport || !ViewManager.instance.inDynamicsMode)
+    if (!ev.viewport || !iModelApp.viewManager.inDynamicsMode)
       return;
 
     // DynamicsContext context(* ev.GetViewport(), Render:: Task:: Priority:: Highest());

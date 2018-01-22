@@ -21,7 +21,6 @@ import { Model } from "./Model";
 import { BriefcaseEntry, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./BriefcaseManager";
 import { NodeAddonBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
-import { ECDb } from "./ECDb";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BindingValue } from "./BindingUtility";
 import { CodeSpecs } from "./CodeSpecs";
@@ -125,29 +124,6 @@ export class IModelDb extends IModel {
 
   private onBriefcaseVersionUpdatedHandler() {
     this.iModelToken.changeSetId = this.briefcaseEntry!.changeSetId;
-  }
-
-  public createChangeCache(changeCache: ECDb, changeCachePath: string): void {
-    if (this.nativeDb == null || changeCache.nativeDb == null)
-      throw new IModelError(IModelStatus.BadRequest);
-
-    const stat: DbResult = this.nativeDb.createChangeCache(changeCache.nativeDb, changeCachePath);
-    if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat);
-  }
-
-  public attachChangeCache(): void {
-    if (!this.briefcaseEntry)
-      throw new IModelError(IModelStatus.BadRequest);
-
-    BriefcaseManager.attachChangeCache(this.briefcaseEntry);
-  }
-
-  public isChangeCacheAttached(): boolean {
-    if (this.nativeDb == null)
-      throw new IModelError(IModelStatus.BadRequest);
-
-    return this.nativeDb.isChangeCacheAttached();
   }
 
   /** Get the in-memory handle of the native Db */
@@ -379,12 +355,8 @@ export class IModelDb extends IModel {
     if (!this.briefcaseEntry)
       throw this._newNotOpenError();
     this.projectExtents.setFrom(newExtents);
-    /*
-    Currently awaiting merge of bim0200dev into bim0200.....
-
     const extentsJson = newExtents.toJSON();
     this.briefcaseEntry.nativeDb.updateProjectExtents(JSON.stringify(extentsJson));
-    */
   }
 
   /**

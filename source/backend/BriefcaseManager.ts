@@ -653,20 +653,6 @@ export class BriefcaseManager {
     BriefcaseManager.deleteBriefcaseFromCache(briefcase);
   }
 
-  public static attachChangeCache(briefcase: BriefcaseEntry) {
-    if (!briefcase.isOpen)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Failed to attach change cache to ${briefcase.pathname} because the briefcase is not open.`);
-
-    const csumFilePath: string = BriefcaseManager.buildChangeSummaryFilePath(briefcase.iModelId);
-    assert(briefcase.nativeDb != null);
-    if (briefcase.nativeDb!.isChangeCacheAttached())
-      return;
-
-    const res: DbResult = briefcase.nativeDb!.attachChangeCache(csumFilePath);
-    if (res !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(res, `Failed to attach change cache to ${briefcase.pathname}.`);
-  }
-
   /** Purge closed briefcases */
   public static async purgeClosed(accessToken: AccessToken) {
     if (!BriefcaseManager.cache)
