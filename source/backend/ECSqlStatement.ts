@@ -12,22 +12,55 @@ import { NodeAddonRegistry } from "./NodeAddonRegistry";
 import { NodeAddonECSqlStatement, NodeAddonECSqlBinder, NodeAddonECDb, NodeAddonDgnDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { StatusCodeWithMessage } from "@bentley/bentleyjs-core/lib/BentleyError";
 
+/** A DateTime value which can be bound to an ECSQL parameter
+ * @see ECSqlStatement.bindDateTime
+ */
 export class DateTime {
+   /** Contructor
+    * @param isoString DateTime ISO8601 string
+    */
   public constructor(public isoString: string) {}
 }
 
+/** An Integer64 value which can be bound to an ECSQL parameter
+ * @see ECSqlStatement.bindInt64
+ */
 export class Int64 {
-  public constructor(public value: string | number) {}
+   /** Contructor
+    * @param value Integer64 as number, decimal string, or hexadecimal string
+    */
+    public constructor(public value: string | number) {}
 }
 
+/** A BLOB value which can be bound to an ECSQL parameter
+ * @see ECSqlStatement.bindBlob
+ */
 export class Blob {
-  public constructor(public base64: string) {}
+   /** Contructor
+    * @param value BLOB formatted as Base64 string
+    */
+    public constructor(public base64: string) {}
 }
 
+/** A Navigation property value which can be bound to an ECSQL parameter
+ * @see ECSqlStatement.bindNavigation
+ */
 export class NavigationValue {
-  public constructor(public navId: Id64, public relClassName?: string, public relClassTableSpace?: string) {}
+   /** Contructor
+    * @param navId ECInstanceId of the related instance
+    * @param relClassName Fully qualified class name of the relationship backing the Navigation property
+    * @param relClassTableSpace Table space where the relationship's schema is persisted. This is only required
+    * if other ECDb files are attached to the primary one. In case a schema exists in more than one of the files,
+    * pass the table space to disambiguate.
+    */
+    public constructor(public navId: Id64, public relClassName?: string, public relClassTableSpace?: string) {}
 }
 
+/** The result of an ECSQL INSERT statement as returned from ECSqlStatement.stepForInsert.
+ *  If the step was successful, the ECSqlInsertResult contains
+ * DbResult.BE_SQLITE_DONE and the ECInstanceId of the newly created instance.
+ * In case of failure it contains the error DbResult code.
+ */
 export class ECSqlInsertResult {
   public constructor(public status: DbResult, public id?: Id64) {}
 }
@@ -114,6 +147,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Binds a DateTime value to the specified ECSQL parameter
    *  @param param Index (1-based) or name of the parameter
+   *  @param val DateTime value
    */
   public bindDateTime(param: number | string, val: DateTime): void {
     using(this.getBinder(param), (binder) => binder.bindDateTime(val.isoString));
@@ -121,6 +155,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Binds a double value to the specified ECSQL parameter
    *  @param param Index (1-based) or name of the parameter
+   *  @param val Double value
    */
   public bindDouble(param: number | string, val: number): void {
     using(this.getBinder(param), (binder) => binder.bindDouble(val));
@@ -128,6 +163,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Binds an Id value to the specified ECSQL parameter
    *  @param param Index (1-based) or name of the parameter
+   *  @param val Id value
    */
   public bindId(param: number | string, val: Id64): void {
     using(this.getBinder(param), (binder) => binder.bindId(val.value));
@@ -135,6 +171,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Binds an integer value to the specified ECSQL parameter
    *  @param param Index (1-based) or name of the parameter
+   *  @param val Integer value
    */
   public bindInt(param: number | string, val: number): void {
     using(this.getBinder(param), (binder) => binder.bindInt(val));
@@ -142,6 +179,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Binds an Int64 value to the specified ECSQL parameter
    *  @param param Index (1-based) or name of the parameter
+   *  @param val Int64 value
    */
   public bindInt64(param: number | string, val: Int64): void {
     using(this.getBinder(param), (binder) => binder.bindInt64(val.value));
@@ -149,6 +187,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Binds an Point2d value to the specified ECSQL parameter
    *  @param param Index (1-based) or name of the parameter
+   *  @param val Point2d value
    */
   public bindPoint2d(param: number | string, val: XAndY): void {
     using(this.getBinder(param), (binder) => binder.bindPoint2d(val.x, val.y));
@@ -156,6 +195,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Binds an Point3d value to the specified ECSQL parameter
    *  @param param Index (1-based) or name of the parameter
+   *  @param val Point3d value
    */
   public bindPoint3d(param: number | string, val: XYAndZ): void {
     using(this.getBinder(param), (binder) => binder.bindPoint3d(val.x, val.y, val.z));
@@ -163,6 +203,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Binds an string to the specified ECSQL parameter
    *  @param param Index (1-based) or name of the parameter
+   *  @param val String value
    */
   public bindString(param: number | string, val: string): void {
     using(this.getBinder(param), (binder) => binder.bindString(val));
@@ -170,24 +211,35 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Binds a navigation property value to the specified ECSQL parameter
    *  @param param Index (1-based) or name of the parameter
+   *  @param val Navigation property value
    */
   public bindNavigation(param: number | string, val: NavigationValue): void {
     using(this.getBinder(param), (binder) => binder.bindNavigation(val.navId.value, val.relClassName, val.relClassTableSpace));
     }
 
+  /** Binds a struct property value to the specified ECSQL parameter
+   *  @param param Index (1-based) or name of the parameter
+   *  @param val Struct value
+   */
   public bindStruct(param: number | string, value: object): void {
     using(this.getBinder(param), (binder) => ECSqlBindingHelper.bindStruct(binder, value));
   }
 
+  /** Binds a array value to the specified ECSQL parameter
+   *  @param param Index (1-based) or name of the parameter
+   *  @param val Array value
+   */
   public bindArray(param: number | string, value: any[]): void {
     using(this.getBinder(param), (binder) => ECSqlBindingHelper.bindArray(binder, value));
   }
 
-  private getBinder(param: string | number): NodeAddonECSqlBinder {
-    return this._stmt!.getBinder(param);
-  }
-
-  public bindValues2(values: any[] | Map<string, any>): void {
+  /** Bind values to all parameters in the statement.
+   * @param values The values to bind to the parameters. Pass an array if the placeholders are positional.
+   * Pass a Map of the values keyed on the parameter name for named parameters
+   * The values in either the array or Map must match the respective types of the parameter. See the bindXXX
+   * methods for each type.
+   */
+  public bindValues(values: any[] | Map<string, any>): void {
     if (Array.isArray(values)) {
       for (let i = 0; i < values.length; i++) {
         const paramIndex: number = i + 1;
@@ -208,6 +260,10 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     }
   }
 
+  private getBinder(param: string | number): NodeAddonECSqlBinder {
+    return this._stmt!.getBinder(param);
+  }
+
   /** Clear any bindings that were previously set on this statement.
    * @throws IModelError in case of errors
    */
@@ -217,12 +273,12 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
       throw new IModelError(stat);
   }
 
-  /** Bind values to placeholders. @deprecated Use bindValues2 instead or the other bindXXX methods
+  /** Bind values to placeholders. @deprecated Use bindValues instead or the other bindXXX methods
    * @param bindings  The values to set for placeholders. Pass an array if the placeholders are positional. Pass an 'any' object
    * for named placeholders, where the properties of the object match the names of the placeholders in the statement.
    * @throws IModelError in case the binding fails. This will normally happen only if the type of a value does not match and cannot be converted to the type required for the corresponding property in the statement.
    */
-  public bindValues(bindings: BindingValue[] | Map<string, BindingValue> | any): void {
+  public bindValues_Depr(bindings: BindingValue[] | Map<string, BindingValue> | any): void {
     const ecBindings = BindingUtility.preProcessBindings(bindings);
     const bindingsStr = JSON.stringify(ecBindings);
     const nativeError = this._stmt!.bindValues(bindingsStr);
