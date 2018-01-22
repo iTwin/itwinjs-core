@@ -193,10 +193,10 @@ export class IModelDbLinkTableRelationships {
    * @throws [[IModelError]] if unable to insert the relationship instance.
    */
   public insertInstance(props: LinkTableRelationshipProps): Id64 {
-    if (!this._iModel.briefcaseInfo)
+    if (!this._iModel.briefcaseEntry)
       throw this._iModel._newNotOpenError();
 
-    const { error, result: json } = this._iModel.briefcaseInfo.nativeDb.insertLinkTableRelationship(JSON.stringify(props));
+    const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.insertLinkTableRelationship(JSON.stringify(props));
     if (error)
       throw new IModelError(error.status, "Problem inserting relationship instance", Logger.logWarning);
 
@@ -210,10 +210,10 @@ export class IModelDbLinkTableRelationships {
    * @throws [[IModelError]] if unable to update the relationship instance.
    */
   public updateInstance(props: LinkTableRelationshipProps): void {
-    if (!this._iModel.briefcaseInfo)
+    if (!this._iModel.briefcaseEntry)
       throw this._iModel._newNotOpenError();
 
-    const error: DbResult = this._iModel.briefcaseInfo.nativeDb.updateLinkTableRelationship(JSON.stringify(props));
+    const error: DbResult = this._iModel.briefcaseEntry.nativeDb.updateLinkTableRelationship(JSON.stringify(props));
     if (error !== DbResult.BE_SQLITE_OK)
       throw new IModelError(error, "", Logger.logWarning);
   }
@@ -224,10 +224,10 @@ export class IModelDbLinkTableRelationships {
    * @throws [[IModelError]]
    */
   public deleteInstance(props: LinkTableRelationshipProps): void {
-    if (!this._iModel.briefcaseInfo)
+    if (!this._iModel.briefcaseEntry)
       throw this._iModel._newNotOpenError();
 
-    const error: DbResult = this._iModel.briefcaseInfo.nativeDb.deleteLinkTableRelationship(JSON.stringify(props));
+    const error: DbResult = this._iModel.briefcaseEntry.nativeDb.deleteLinkTableRelationship(JSON.stringify(props));
     if (error !== DbResult.BE_SQLITE_DONE)
       throw new IModelError(error, "", Logger.logWarning);
   }

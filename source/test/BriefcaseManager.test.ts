@@ -5,8 +5,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { expect, assert } from "chai";
 import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { AccessToken } from "@bentley/imodeljs-clients";
-import { ChangeSet } from "@bentley/imodeljs-clients";
+import { AccessToken, ChangeSet, IModel as HubIModel } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "../common/IModelVersion";
 import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { IModelDb } from "../backend/IModelDb";
@@ -177,47 +176,67 @@ describe("BriefcaseManager", () => {
   });
 
   it.skip("should write to briefcase with optimistic concurrency", async () => {
+    // Delete any existing iModels with the same name as the read-write test iModel
+    const iModelName = "ReadWriteTest";
+    const iModels: HubIModel[] = await IModelTestUtils.hubClient.getIModels(accessToken, testProjectId, {
+      $select: "*",
+      $filter: "Name+eq+'" + iModelName + "'",
+    });
+    for (const iModelTemp of iModels) {
+      await IModelTestUtils.hubClient.deleteIModel(accessToken, testProjectId, iModelTemp.wsgId);
+    }
+
+    // Create a new iModel on the Hub (by uploading a seed file)
+    const pathname = path.join(__dirname, "assets", iModelName + ".bim");
+    const rwIModelId: string = await BriefcaseManager.uploadIModel(accessToken, testProjectId, pathname);
+    assert.isNotEmpty(rwIModelId);
 
     // Acquire a briefcase from iModelHub
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
+    const rwIModel: IModelDb = await IModelDb.open(accessToken, testProjectId, rwIModelId, OpenMode.ReadWrite);
 
     // Turn on optimistic concurrency control. This allows the app to modify elements, models, etc. without first acquiring locks.
     // (Later, when the app downloads and merges changeSets from the Hub into the briefcase, BriefcaseManager will merge changes and handle conflicts.)
-    iModel.setConcurrencyControlPolicy(new BriefcaseManager.OptimisticConcurrencyControlPolicy({
+    rwIModel.setConcurrencyControlPolicy(new BriefcaseManager.OptimisticConcurrencyControlPolicy({
       updateVsUpdate: BriefcaseManager.ConflictResolution.Reject,
       updateVsDelete: BriefcaseManager.ConflictResolution.Take,
       deleteVsUpdate: BriefcaseManager.ConflictResolution.Reject,
     }));
 
     // Show that we can modify the properties of an element. In this case, we modify the root element itself.
-    const rootEl: Element = (iModel.elements.getRootSubject()).copyForEdit<Element>();
+    const rootEl: Element = (rwIModel.elements.getRootSubject()).copyForEdit<Element>();
     rootEl.userLabel = rootEl.userLabel + "changed";
-    iModel.elements.updateElement(rootEl);
+    rwIModel.elements.updateElement(rootEl);
 
     // Create a new physical model
     let newModelId: Id64;
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, Code.createEmpty(), true);
+    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(rwIModel, Code.createEmpty(), true);
 
     // Find or create a SpatialCategory
-    const dictionary: DictionaryModel = iModel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
+    const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
     let spatialCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
     if (undefined === spatialCategoryId) {
       spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
     }
 
     // Create a couple of physical elements.
-    iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
-    iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId));
+    rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
+    rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
 
     // Commit the local changes to a local transaction in the briefcase.
-    iModel.saveChanges("inserted generic objects");
+    rwIModel.saveChanges("inserted generic objects");
 
-    // TBD: Sync with iModelHub and  then upload the local changes as a changeSet to iModelHub
+    // Push the changes to the hub
+    await rwIModel.changeSets.push(accessToken);
 
-    iModel.close(accessToken);
+    // Open a readonly copy of the iModel
+    const roIModel: IModelDb = await IModelDb.open(accessToken, testProjectId, rwIModelId, OpenMode.Readonly, IModelVersion.latest());
+    assert.exists(roIModel);
+
+    rwIModel.close(accessToken);
+    roIModel.close(accessToken);
   });
 
-  it.skip("should make revisions", async () => {
+  it.skip("should make change sets", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
     assert.exists(iModel);
 
@@ -249,11 +268,9 @@ describe("BriefcaseManager", () => {
     iModel.close(accessToken);
   });
 
-  // should not be able to open the same iModel both Readonly and ReadWrite
-  // should not be able to open two copies of the iModel in ReadWrite mode
-  // Readme briefcases should always be standalone.
-  // should keep previously downloaded seed files and change sets
-  // should not reuse open briefcases in ReadWrite mode
+  // should open the same iModel+Latest+UserId combination in ReadOnly and ReadWrite connections
+  // should open the same iModel+Latest+UserId combination in ReadWrite and ReadWrite connections
+  // should not re-download previously downloaded seed files and change sets.
   // should not reuse open briefcases for different versions in Readonly mode
   // should reuse closed briefcases for newer versions
   // should not reuse closed briefcases for older versions

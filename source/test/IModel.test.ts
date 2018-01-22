@@ -522,8 +522,8 @@ describe("iModel", () => {
     newExtents.high.x += 1087; newExtents.high.y += 19; newExtents.high.z += .001;
     imodel1.updateProjectExtents(newExtents);
 
-    assert.isDefined(imodel1.briefcaseInfo, "Briefcase info should be defined before getting iModel props");
-    const updatedProps = JSON.parse(imodel1.briefcaseInfo!.nativeDb.getIModelProps());
+    assert.isDefined(imodel1.briefcaseEntry, "Briefcase info should be defined before getting iModel props");
+    const updatedProps = JSON.parse(imodel1.briefcaseEntry!.nativeDb.getIModelProps());
     assert.isTrue(updatedProps.hasOwnProperty("projectExtents"), "Returned property JSON object has project extents");
     const updatedExtents = AxisAlignedBox3d.fromJSON(updatedProps.projectExtents);
     assert.isTrue(newExtents.isAlmostEqual(updatedExtents), "Project extents successfully updated in database");
