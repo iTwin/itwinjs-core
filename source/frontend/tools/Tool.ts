@@ -342,7 +342,7 @@ export abstract class Tool {
   public static group?: ToolGroup;
   public static getLocalizedName(): string {
     const namespace = this.group ? this.group.namespace : "tool";
-    return iModelApp.i18N.translate(namespace.concat(":", this.toolId));
+    return iModelApp.i18N.translate(namespace.concat(":", "ToolIds.", this.toolId));
   }
   public static register(group: ToolGroup) { iModelApp.tools.registerTool(this.prototype.constructor as ToolCtor, group); }
 }

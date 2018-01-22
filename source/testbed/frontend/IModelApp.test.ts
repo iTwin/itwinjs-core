@@ -21,7 +21,7 @@ let testVal1: string;
 let testVal2: string;
 /** class to test immediate tool */
 class TestImmediate extends ImmediateTool {
-  public static toolId = "Test.Immediate";
+  public static toolId = "TestImmediate";
   public run(val1: string, val2: string) { testVal1 = val1; testVal2 = val2; }
 }
 
@@ -60,9 +60,8 @@ describe("IModelApp", () => {
     // assert.instanceOf(iModelApp.createTool("View.Rotate"), TestRotateTool, "rotate tool override");
   });
 
-  it("Should get localized name for TestImmediate tool"), () => {
+  it("Should get localized name for TestImmediate tool", () => {
     assert.equal(TestImmediate.getLocalizedName(), "Localized TestImmediate Name");
-  )
   });
 
 });

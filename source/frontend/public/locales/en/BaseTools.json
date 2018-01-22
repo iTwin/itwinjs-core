@@ -1,22 +1,61 @@
 {
-  "BaseTool": {
+  "ToolDefinitions": {
     "View": {
-      "Pan": "Pan View",
-      "Rotate": "Rotate View",
-      "Zoom": "Zoom View",
-      "Look": "Walk"
+      "Pan": {
+        "Keyin": "Pan View",
+        "Description": "Moves origin of view",
+        "Flyover": "Pan View",
+        "Prompt": "Click and drag to pan view."
+      },
+      "Rotate": {
+        "Keyin": "Rotate View",
+        "Description": "Rotates View about specified point",
+        "Flyover": "Rotate About Point",
+        "Prompt": "Click and drag to move view around rotation point. Change rotation point by moving crosshair."
+      },
+      "Zoom": {
+        "Keyin": "Zoom",
+        "Description": "Changes view magnification",
+        "Flyover": "Zoom About Point",
+        "Prompt": "Click to zoom view."
+      },
+      "Look": {
+        "Keyin": "Walk",
+        "Description": "Look around the design",
+        "Flyover": "Look Around",
+        "Prompt": "Click and drag to look around."
+      },
+      "WindowArea": {
+        "Keyin": "Window Area",
+        "Description": "Select viewing area",
+        "Flyover": " Window Area",
+        "Prompt": "Click and drag to define viewing area."
+      },
+      "Scroll": {
+        "Keyin": "Scroll View",
+        "Description": "Scrolls view",
+        "Flyover": "Scroll",
+      },
+      "Fit": {
+        "Keyin": "Fit View",
+        "Description": "Displays entire model",
+        "Flyover": "Fit View",
+        "Prompt": "Select view to fit",
+      }
+    },
+    "SelectTool": {
+      "Keyin": "Select",
+      "Description": "Selects Element for inspection or manipulation",
+      "Flyover": "Select Element",
+      "Prompt": "Click or drag to selection elements."
     }
   },
-  "ViewingTool": {
+  "CommonPrompts": {
     "SelectView": "Select view",
     "WindowArea": "Click and drag to zoom into area defined by the rectangle.",
-    "Rotate": "Click and drag to move view around rotation point. Change rotation point by moving crosshair.",
     "RotateDrag": "Click and drag to move view around rotation point.",
-    "Look": "Click and drag to look around.",
-    "Pan": "Click and drag to pan view.",
     "Navigate": "Click and drag to navigate view. Hold Shift to change elevation. Hold Ctrl to look around.",
     "Scroll": "Click to start scrolling view.",
-    "Zoom": "Click to zoom view.",
     "SelectViewToFit": "Select view to fit"
   },
   "ViewUndo": {

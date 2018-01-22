@@ -1,0 +1,7 @@
+{
+  "ToolIds": {
+    "Test": {
+      "Immediate": "Localized TestImmediate Name"
+    }
+  }
+}
