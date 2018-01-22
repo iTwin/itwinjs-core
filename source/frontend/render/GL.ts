@@ -30,29 +30,30 @@ export namespace GL {
     DefaultDst = Zero,
   }
 
-  export enum StencilOperation {
-    Keep = WebGLRenderingContext.KEEP,
-    Zero = WebGLRenderingContext.ZERO,
-    Replace = WebGLRenderingContext.REPLACE,
-    Incr = WebGLRenderingContext.INCR,
-    IncrWrap = WebGLRenderingContext.INCR_WRAP,
-    Decr = WebGLRenderingContext.DECR,
-    DecrWrap = WebGLRenderingContext.DECR_WRAP,
-    Invert = WebGLRenderingContext.INVERT,
-    Default = Keep,
-  }
+  /* Stenciling commented out for now since it is not used */
+  // export enum StencilOperation {
+  //   Keep = WebGLRenderingContext.KEEP,
+  //   Zero = WebGLRenderingContext.ZERO,
+  //   Replace = WebGLRenderingContext.REPLACE,
+  //   Incr = WebGLRenderingContext.INCR,
+  //   IncrWrap = WebGLRenderingContext.INCR_WRAP,
+  //   Decr = WebGLRenderingContext.DECR,
+  //   DecrWrap = WebGLRenderingContext.DECR_WRAP,
+  //   Invert = WebGLRenderingContext.INVERT,
+  //   Default = Keep,
+  // }
 
-  export enum StencilFunction {
-    Never = WebGLRenderingContext.NEVER,
-    Less = WebGLRenderingContext.LESS,
-    LEqual = WebGLRenderingContext.LEQUAL,
-    Greater = WebGLRenderingContext.GREATER,
-    GEqual = WebGLRenderingContext.GEQUAL,
-    Equal = WebGLRenderingContext.EQUAL,
-    NotEqual = WebGLRenderingContext.NOTEQUAL,
-    Always = WebGLRenderingContext.ALWAYS,
-    Default = Always,
-  }
+  // export enum StencilFunction {
+  //   Never = WebGLRenderingContext.NEVER,
+  //   Less = WebGLRenderingContext.LESS,
+  //   LEqual = WebGLRenderingContext.LEQUAL,
+  //   Greater = WebGLRenderingContext.GREATER,
+  //   GEqual = WebGLRenderingContext.GEQUAL,
+  //   Equal = WebGLRenderingContext.EQUAL,
+  //   NotEqual = WebGLRenderingContext.NOTEQUAL,
+  //   Always = WebGLRenderingContext.ALWAYS,
+  //   Default = Always,
+  // }
 
   export enum CullFace {
     Front = WebGLRenderingContext.FRONT,
@@ -80,12 +81,37 @@ export namespace GL {
   }
 
   export enum Capability {
-    CullFace = WebGLRenderingContext.CULL_FACE,
-    DepthTest = WebGLRenderingContext.DEPTH_TEST,
     Blend = WebGLRenderingContext.BLEND,
-    StencilTest = WebGLRenderingContext.STENCIL_TEST,
-    DepthWriteMask = WebGLRenderingContext.DEPTH_WRITEMASK,
+    BlendColor = WebGLRenderingContext.BLEND_COLOR,
+    BlendEquationAlpha = WebGLRenderingContext.BLEND_EQUATION_ALPHA,
+    BlendEquationRGB = WebGLRenderingContext.BLEND_EQUATION_RGB,
+    BlendSrcAlpha = WebGLRenderingContext.BLEND_SRC_ALPHA,
+    BlendSrcRgb = WebGLRenderingContext.BLEND_SRC_RGB,
+    BlendDstAlpha = WebGLRenderingContext.BLEND_DST_ALPHA,
+    BlendDstRgb = WebGLRenderingContext.BLEND_DST_RGB,
+    CullFace = WebGLRenderingContext.CULL_FACE,
+    CullFaceMode = WebGLRenderingContext.CULL_FACE_MODE,
     DepthFunc = WebGLRenderingContext.DEPTH_FUNC,
+    DepthTest = WebGLRenderingContext.DEPTH_TEST,
+    DepthWriteMask = WebGLRenderingContext.DEPTH_WRITEMASK,
+    FrontFace = WebGLRenderingContext.FRONT_FACE,
+    /* Stenciling commented out for now since it is not used */
+    // StencilFrontFunc = WebGLRenderingContext.STENCIL_FUNC,
+    // StencilFrontRef = WebGLRenderingContext.STENCIL_REF,
+    // StencilFrontValueMask = WebGLRenderingContext.STENCIL_VALUE_MASK,
+    // StencilFrontWriteMask = WebGLRenderingContext.STENCIL_WRITEMASK,
+    // StencilFrontOpFail = WebGLRenderingContext.STENCIL_FAIL,
+    // StencilFrontOpZFail = WebGLRenderingContext.STENCIL_PASS_DEPTH_FAIL,
+    // StencilFrontOpZPass = WebGLRenderingContext.STENCIL_PASS_DEPTH_PASS,
+    // StencilBackFunc = WebGLRenderingContext.STENCIL_BACK_FUNC,
+    // StencilBackRef = WebGLRenderingContext.STENCIL_BACK_REF,
+    // StencilBackValueMask = WebGLRenderingContext.STENCIL_BACK_VALUE_MASK,
+    // StencilBackWriteMask = WebGLRenderingContext.STENCIL_BACK_WRITEMASK,
+    // StencilBackOpFail = WebGLRenderingContext.STENCIL_BACK_FAIL,
+    // StencilBackOpZFail = WebGLRenderingContext.STENCIL_BACK_PASS_DEPTH_FAIL,
+    // StencilBackOpZPass = WebGLRenderingContext.STENCIL_BACK_PASS_DEPTH_PASS,
+    StencilTest = WebGLRenderingContext.STENCIL_TEST,
+    StencilWriteMask = WebGLRenderingContext.STENCIL_WRITEMASK,
   }
 
   export enum WrapMode {
