@@ -235,12 +235,12 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     return this._stmt!.step();
   }
 
-  /** Step this INSERT statement and returns status and the ECInstanceId of the newly 
-   * created instance. 
+  /** Step this INSERT statement and returns status and the ECInstanceId of the newly
+   * created instance.
    * @return Object containing the status of the step. If successful, it contains
    * DbResult.BE_SQLITE_DONE and the ECInstanceId of the newly created instance.
    * In case of failure it contains the error DbResult code.
-   * */
+   */
   public stepForInsert(): ECSqlInsertResult {
     const r: {status: DbResult, id: string} = this._stmt!.stepForInsert();
     if (r.status === DbResult.BE_SQLITE_DONE)
@@ -399,11 +399,12 @@ class ECSqlBindingHelper {
     if (val instanceof Int64)
       return binder.bindInt64(val.value);
 
-    if (val instanceof XY)
-      return binder.bindPoint2d(val.x, val.y);
-
+    // check for XYZ before XY because XY derives from XYZ
     if (val instanceof XYZ)
       return binder.bindPoint3d(val.x, val.y, val.z);
+
+    if (val instanceof XY)
+      return binder.bindPoint2d(val.x, val.y);
 
     if (val instanceof NavigationValue)
       return binder.bindNavigation(val.navId.value, val.relClassName, val.relClassTableSpace);

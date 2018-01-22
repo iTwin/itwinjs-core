@@ -42,8 +42,8 @@ describe("ECSqlStatement", () => {
 
     assert.isTrue(ecdb.isOpen());
 
-    const verify = (ecdb: ECDb, actualRes: ECSqlInsertResult, expectedId?: Id64) => {
-      if (expectedId === undefined) {
+    const verify = (ecdbToVerify: ECDb, actualRes: ECSqlInsertResult, expectedECInstanceId?: Id64) => {
+      if (expectedECInstanceId === undefined) {
         assert.notEqual(actualRes.status, DbResult.BE_SQLITE_DONE);
         assert.isUndefined(actualRes.id);
         return;
@@ -51,46 +51,46 @@ describe("ECSqlStatement", () => {
 
       assert.equal(actualRes.status, DbResult.BE_SQLITE_DONE);
       assert.isDefined(actualRes.id);
-      assert.equal(actualRes.id!.value, expectedId.value);
+      assert.equal(actualRes.id!.value, expectedECInstanceId.value);
 
-      ecdb.withPreparedStatement("SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=?", (stmt) => {
+      ecdbToVerify.withPreparedStatement("SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=?", (stmt) => {
         stmt.bindId(1, expectedId);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
         const row = stmt.getRow();
-        assert.equal(row.id, expectedId.toString());
+        assert.equal(row.id, expectedECInstanceId.toString());
         assert.equal(row.className, "ECDbFileInfo.ExternalFileInfo");
-        assert.equal(row.name, expectedId.getLow().toString() + ".txt");
+        assert.equal(row.name, expectedECInstanceId.getLow().toString() + ".txt");
         });
       };
 
-    let expectedId = new Id64([4444,0]);
+    let expectedId = new Id64([4444, 0]);
     let r: ECSqlInsertResult = ecdb.withPreparedStatement("INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(?,?)", (stmt) => {
       stmt.bindId(1, expectedId);
-      stmt.bindString(2,"4444.txt");
+      stmt.bindString(2, "4444.txt");
       return stmt.stepForInsert();
       });
 
     verify(ecdb, r, expectedId);
 
-    expectedId = new Id64([4445,0]);
+    expectedId = new Id64([4445, 0]);
     r = ecdb.withPreparedStatement("INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(:id,:name)", (stmt) => {
       stmt.bindId("id", expectedId);
-      stmt.bindString("name","4445.txt");
+      stmt.bindString("name", "4445.txt");
 
       return stmt.stepForInsert();
       });
     verify(ecdb, r, expectedId);
 
-    expectedId = new Id64([4446,0]);
+    expectedId = new Id64([4446, 0]);
     r = ecdb.withPreparedStatement("INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(?,?)", (stmt) => {
       stmt.bindValues2([expectedId, "4446.txt"]);
       return stmt.stepForInsert();
       });
     verify(ecdb, r, expectedId);
 
-    expectedId = new Id64([4447,0]);
+    expectedId = new Id64([4447, 0]);
     r = ecdb.withPreparedStatement("INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(:id,:name)", (stmt) => {
-      const values = new Map<string, any>([["id", expectedId],["name", "4447.txt"]]);
+      const values = new Map<string, any>([["id", expectedId], ["name", "4447.txt"]]);
       stmt.bindValues2(values);
       return stmt.stepForInsert();
       });
@@ -98,7 +98,7 @@ describe("ECSqlStatement", () => {
   });
 });
 
-it("Bind Scenarios", () => {using (setupECDb("bindscenarios.ecdb",
+  it("Bind Scenarios", () => {using (setupECDb("bindscenarios.ecdb",
     `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
     <ECStructClass typeName="MyStruct" modifier="Sealed">
       <ECProperty propertyName="Bl" typeName="binary"/>
@@ -213,7 +213,7 @@ it("Bind Scenarios", () => {using (setupECDb("bindscenarios.ecdb",
     <ECStructClass typeName="Address" modifier="Sealed">
       <ECProperty propertyName="Street" typeName="string"/>
       <ECProperty propertyName="City" typeName="string"/>
-      <ECProperty propertyName="Zip" typeName="integer"/>
+      <ECProperty propertyName="Zip" typeName="int"/>
     </ECStructClass>
     <ECEntityClass typeName="Person" modifier="Sealed">
       <ECProperty propertyName="Name" typeName="string"/>
@@ -231,7 +231,7 @@ it("Bind Scenarios", () => {using (setupECDb("bindscenarios.ecdb",
       stmt.bindString(1, "Mary Miller");
       stmt.bindInt(2, 30);
       stmt.bindStruct(3, {Street: "2000 Main Street", City: "New York", Zip: 12311});
-    
+
       const res: ECSqlInsertResult = stmt.stepForInsert();
       assert.equal(res.status, DbResult.BE_SQLITE_DONE);
       assert.isTrue(res.id !== undefined);
@@ -244,7 +244,7 @@ it("Bind Scenarios", () => {using (setupECDb("bindscenarios.ecdb",
       stmt.bindString(1, "Mary Miller");
       stmt.bindInt(2, 30);
       stmt.bindStruct(3, {Street: "2000 Main Street", City: "New York", Zip: 12311});
-    
+
       const res: ECSqlInsertResult = stmt.stepForInsert();
       assert.equal(res.status, DbResult.BE_SQLITE_DONE);
       assert.isTrue(res.id !== undefined);
@@ -261,7 +261,7 @@ it("Bind Scenarios", () => {using (setupECDb("bindscenarios.ecdb",
           assert.equal(row.id, id1.value);
         else
           assert.equal(row.id, id2.value);
-        
+
         assert.equal(row.className, "Test.Person");
         assert.equal(row.name, "Mary Miller");
         assert.equal(row.age, 30);
