@@ -387,7 +387,7 @@ export class ToolAdmin {
   /** If ACS Plane Lock is on, standard view rotations are relative to the ACS instead of global. */
   public acsContextLock = false;
 
-  public onInitialized() { this._idleTool = iModelApp.createTool("Idle") as IdleTool; }
+  public onInitialized() { this._idleTool = iModelApp.tools.create("Idle") as IdleTool; }
   public get idleTool(): IdleTool { return this._idleTool; }
   protected filterViewport(_vp: Viewport) { return false; }
   public isCurrentInputSourceMouse() { return this.currentInputState.inputSource === InputSource.Mouse; }
@@ -1073,7 +1073,7 @@ export class ToolAdmin {
    */
   public startDefaultTool() {
     if (this.defaultTool && this.activeTool !== this.defaultTool) {
-      this.defaultTool.installTool();
+      this.defaultTool.run();
     } else {
       this.setViewTool(undefined);
       this.setPrimitiveTool(undefined);

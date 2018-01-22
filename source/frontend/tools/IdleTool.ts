@@ -3,7 +3,6 @@
  *--------------------------------------------------------------------------------------------*/
 import { BeButton, BeButtonEvent, BeGestureEvent, BeWheelEvent, InteractiveTool } from "./Tool";
 import { ViewManip, ViewHandleType, FitViewTool, RotatePanZoomGestureTool, ViewTool } from "./ViewTool";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { GeomDetail, HitDetail, HitSource, SnapDetail } from "../HitDetail";
 import { iModelApp } from "../IModelApp";
@@ -43,9 +42,9 @@ export class IdleTool extends InteractiveTool {
     if (ev.isDoubleClick) {
       viewTool = new FitViewTool(vp, true);
     } else if (ev.isControlKey) {
-      viewTool = iModelApp.createTool("View." + vp.view.is3d() ? "Look" : "Scroll", vp) as ViewTool | undefined;
+      viewTool = iModelApp.tools.create("View." + vp.view.is3d() ? "Look" : "Scroll", vp) as ViewTool | undefined;
     } else if (ev.isShiftKey) {
-      viewTool = iModelApp.createTool("View.Rotate", vp) as ViewTool | undefined;
+      viewTool = iModelApp.tools.create("View.Rotate", vp) as ViewTool | undefined;
     } else if (false) {
       /* ###TODO: Other view tools if needed... */
     } else {
@@ -57,10 +56,10 @@ export class IdleTool extends InteractiveTool {
         return true;
       }
 
-      viewTool = iModelApp.createTool("View.Pan", vp) as ViewTool | undefined;
+      viewTool = iModelApp.tools.create("View.Pan", vp) as ViewTool | undefined;
     }
 
-    return !!viewTool && BentleyStatus.SUCCESS === viewTool.installTool();
+    return !!viewTool && viewTool.run();
   }
 
   public onMiddleButtonUp(ev: BeButtonEvent): boolean {
@@ -125,12 +124,12 @@ export class IdleTool extends InteractiveTool {
     return iModelApp.toolAdmin.processWheelEvent(ev, true);
   }
 
-  public installToolImplementation() { return BentleyStatus.SUCCESS; }
+  public run() { return true; }
   public exitTool(): void { }
   public onDataButtonDown(_ev: BeButtonEvent) { return false; }
-  public onMultiFingerMove(ev: BeGestureEvent) { const tool = new RotatePanZoomGestureTool(ev, true); tool.installTool(); return true; }
+  public onMultiFingerMove(ev: BeGestureEvent) { const tool = new RotatePanZoomGestureTool(ev, true); tool.run(); return true; }
   public onSingleFingerMove(ev: BeGestureEvent) { return this.onMultiFingerMove(ev); }
   public onSingleTap(ev: BeGestureEvent) { iModelApp.toolAdmin.convertGestureSingleTapToButtonDownAndUp(ev); return true; }
-  public onDoubleTap(ev: BeGestureEvent) { if (ev.viewport) { const tool = new FitViewTool(ev.viewport, true); tool.installTool(); } return true; }
+  public onDoubleTap(ev: BeGestureEvent) { if (ev.viewport) { const tool = new FitViewTool(ev.viewport, true); tool.run(); } return true; }
   public onTwoFingerTap(ev: BeGestureEvent) { iModelApp.toolAdmin.convertGestureToResetButtonDownAndUp(ev); return true; }
 }

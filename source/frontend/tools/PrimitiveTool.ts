@@ -4,7 +4,6 @@
 import { CoordinateLockOverrides } from "./ToolAdmin";
 import { Tool, BeButtonEvent, BeCursor, InteractiveTool } from "./Tool";
 import { Viewport } from "../Viewport";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelConnection } from "../IModelConnection";
 import { iModelApp } from "../IModelApp";
@@ -80,14 +79,13 @@ export abstract class PrimitiveTool extends InteractiveTool {
   public autoLockTarget(): void { if (!this.targetView) return; this.targetIsLocked = true; }
   public getCursor(): BeCursor { return BeCursor.Arrow; }
 
-  /** Called by InstallTool to setup tool instance as the current active primitive command.
-   *  @return SUCCESS if new tool instance is now the active primitive command.
-   *  @see Tool.installTool Tool.onInstall Tool.onPostInstall
-   *  @private
+  /** Establish this tool as the active PrimitiveTool.
+   *  @return SUCCESS if this tool is now the active PrimitiveTool.
+   *  @see Tool.onInstall, Tool.onPostInstall
    */
-  public installToolImplementation(): BentleyStatus {
+  public run(): boolean {
     if (this.isCompatibleViewport(iModelApp.viewManager.selectedView, false) || !iModelApp.toolAdmin.onInstallTool(this))
-      return BentleyStatus.ERROR;
+      return false;
 
     iModelApp.toolAdmin.startPrimitiveTool(this);
     iModelApp.toolAdmin.setPrimitiveTool(this);
@@ -97,9 +95,13 @@ export abstract class PrimitiveTool extends InteractiveTool {
     // methods on "this" after _OnPostInstall returns.
     iModelApp.toolAdmin.onPostInstallTool(this);
 
-    return BentleyStatus.SUCCESS;
+    return true;
   }
 
+  /**
+   * Determine whether the supplied Viewport is compatible with this tool.
+   * @param vp the Viewport to check
+   */
   public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean {
     if (!vp)
       return false;
@@ -118,7 +120,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     if (!this.targetView)
       this.targetView = vp;
     else if (iModel !== this.getIModel())
-      return false; // Once a ViewController has been established, only accept views for the same iModel by default.
+      return false; // Once a viewport has been established, only accept viewport showing the same iModel.
 
     if (!this.targetIsLocked) {
       if (isSelectedViewChange)

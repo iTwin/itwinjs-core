@@ -1134,7 +1134,7 @@ export abstract class AccuDrawTool {
   public onDecorate(_context: DecorateContext) { }
   public static installTool(shortcut: AccuDrawTool) {
     const tool = new AccuDrawShortcutsTool(shortcut);
-    tool.installTool();
+    tool.run();
   }
   public static outputPrompt(_msg: string) {
     // getLocalizedString("AccuDraw.Prompt." + msg);
