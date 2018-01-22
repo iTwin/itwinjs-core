@@ -24,7 +24,6 @@ import { BriefcaseEntry, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./
 import { AddonBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { BindingValue } from "./BindingUtility";
 import { CodeSpecs } from "./CodeSpecs";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelGatewayImpl } from "./IModelGatewayImpl";
