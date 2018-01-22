@@ -238,7 +238,7 @@ export class IModelDbLinkTableRelationships {
     if (criteria instanceof Id64) {
 
       return this._iModel.withPreparedStatement("SELECT * FROM " + relClassSqlName + " WHERE ecinstanceid=?", (stmt: ECSqlStatement) => {
-        stmt.bindValues([criteria as Id64]);
+        stmt.bindId(1, criteria);
         if (DbResult.BE_SQLITE_ROW !== stmt.step())
           throw new IModelError(IModelStatus.NotFound);
         return stmt.getRow() as LinkTableRelationshipProps;
@@ -250,7 +250,8 @@ export class IModelDbLinkTableRelationships {
 
       const st: SourceAndTarget = criteria as SourceAndTarget;
       return this._iModel.withPreparedStatement("SELECT * FROM " + relClassSqlName + " WHERE SourceECInstanceId=? AND TargetECInstanceId=?", (stmt: ECSqlStatement) => {
-        stmt.bindValues([st.sourceId, st.targetId]);
+        stmt.bindId(1, st.sourceId);
+        stmt.bindId(2, st.targetId);
         if (DbResult.BE_SQLITE_ROW !== stmt.step())
           throw new IModelError(IModelStatus.NotFound);
         return stmt.getRow() as LinkTableRelationshipProps;

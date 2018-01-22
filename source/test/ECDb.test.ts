@@ -72,9 +72,12 @@ describe("ECDb", () => {
   });
 
   it("should be able to insert an instance", () => {
-    const stmt: ECSqlStatement = ecdb.prepareStatement("INSERT INTO TestSchema.TestClass(integerProperty,doubleProperty,booleanProperty,stringProperty) VALUES(?, ?, ?, ?)");
+    const stmt: ECSqlStatement = ecdb.prepareStatement("INSERT INTO TestSchema.TestClass(integerProperty,doubleProperty,booleanProperty,stringProperty) VALUES(?,?,?,?)");
     assert.isTrue(stmt.isPrepared());
-    stmt.bindValues([11, 1.23, true, "Test String"]);
+    stmt.bindInt(1, 11);
+    stmt.bindDouble(2, 1.23);
+    stmt.bindBoolean(3, true);
+    stmt.bindString(4, "Test String");
     assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
     stmt.dispose();
   });
@@ -98,7 +101,11 @@ describe("ECDb", () => {
   it("should be able to update an instance", () => {
     const stmt: ECSqlStatement = ecdb.prepareStatement("UPDATE TestSchema.TestClass SET integerProperty=?,doubleProperty=?,booleanProperty=?,stringProperty=?");
     assert.isTrue(stmt.isPrepared());
-    stmt.bindValues([332, 131.45, false, "Modifed Test String"]);
+    stmt.bindInt(1, 332);
+    stmt.bindDouble(2, 131.45);
+    stmt.bindBoolean(3, false);
+    stmt.bindString(4, "Modifed Test String");
+
     assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
     stmt.dispose();
   });
