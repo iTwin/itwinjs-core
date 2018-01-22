@@ -18,7 +18,7 @@ import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { Model } from "./Model";
-import { BriefcaseInfo, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./BriefcaseManager";
+import { BriefcaseEntry, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./BriefcaseManager";
 import { NodeAddonBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { ECDb } from "./ECDb";
@@ -43,30 +43,32 @@ export class IModelDb extends IModel {
   public readonly models: IModelDbModels;
   public readonly elements: IModelDbElements;
   public readonly linkTableRelationships: IModelDbLinkTableRelationships;
+  public readonly changeSets: IModelDbChangeSets;
   private readonly statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private _codeSpecs: CodeSpecs;
   private _classMetaDataRegistry: MetaDataRegistry;
 
   /** @hidden */
-  public briefcaseInfo?: BriefcaseInfo;
+  public briefcaseEntry?: BriefcaseEntry;
 
   /** Get the mode used to open this iModel */
-  public get openMode(): OpenMode | undefined { return this.briefcaseInfo ? this.briefcaseInfo.openMode : undefined; }
+  public get openMode(): OpenMode | undefined { return this.briefcaseEntry ? this.briefcaseEntry.openMode : undefined; }
 
-  private constructor(briefcaseInfo: BriefcaseInfo, iModelToken: IModelToken, name: string, props: IModelProps) {
+  private constructor(briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, name: string, props: IModelProps) {
     super(iModelToken, name, props);
-    this.briefcaseInfo = briefcaseInfo;
+    this.setupBriefcaseEntry(briefcaseEntry);
     this.models = new IModelDbModels(this);
     this.elements = new IModelDbElements(this);
     this.linkTableRelationships = new IModelDbLinkTableRelationships(this);
+    this.changeSets = new IModelDbChangeSets(this);
   }
 
-  private static create(briefcaseInfo: BriefcaseInfo, contextId?: string): IModelDb {
-    const iModelToken = IModelToken.create(briefcaseInfo.iModelId, briefcaseInfo.changeSetId, briefcaseInfo.openMode, briefcaseInfo.userId, contextId);
-    const props = JSON.parse(briefcaseInfo.nativeDb.getIModelProps()) as IModelProps;
-    const name = props.rootSubject ? props.rootSubject.name : path.basename(briefcaseInfo.pathname);
-    briefcaseInfo.iModelDb = new IModelDb(briefcaseInfo, iModelToken, name, props);
-    return briefcaseInfo.iModelDb;
+  private static create(briefcaseEntry: BriefcaseEntry, contextId?: string): IModelDb {
+    const iModelToken = IModelToken.create(briefcaseEntry.iModelId, briefcaseEntry.changeSetId, briefcaseEntry.openMode, briefcaseEntry.userId, contextId);
+    const props = JSON.parse(briefcaseEntry.nativeDb.getIModelProps()) as IModelProps;
+    const name = props.rootSubject ? props.rootSubject.name : path.basename(briefcaseEntry.pathname);
+    const iModelDb = new IModelDb(briefcaseEntry, iModelToken, name, props);
+    return iModelDb;
   }
 
   /** Open the iModel from a local file
@@ -75,36 +77,54 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]]
    */
   public static openStandalone(pathname: string, openMode: OpenMode = OpenMode.ReadWrite, enableTransactions: boolean = false): IModelDb {
-    const briefcaseInfo: BriefcaseInfo = BriefcaseManager.openStandalone(pathname, openMode, enableTransactions);
+    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(pathname, openMode, enableTransactions);
     Logger.logInfo("IModelDb.openStandalone", () => ({ pathname, openMode }));
-    return IModelDb.create(briefcaseInfo);
+    return IModelDb.create(briefcaseEntry);
   }
 
   /** Open an iModel from the iModelHub */
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
-    const briefcaseInfo: BriefcaseInfo = await BriefcaseManager.open(accessToken, contextId, iModelId, openMode, version);
+    const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(accessToken, contextId, iModelId, openMode, version);
     Logger.logInfo("IModelDb.open", () => ({ iModelId, openMode }));
-    return IModelDb.create(briefcaseInfo, contextId);
+    return IModelDb.create(briefcaseEntry, contextId);
   }
 
   /** Close this iModel, if it is currently open */
   public closeStandalone(): void {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       return;
-    this.clearStatementCacheOnClose();
-    BriefcaseManager.closeStandalone(this.briefcaseInfo);
-    this.briefcaseInfo.iModelDb = undefined;
-    this.briefcaseInfo = undefined;
+    BriefcaseManager.closeStandalone(this.briefcaseEntry);
+    this.clearBriefcaseEntry();
   }
 
   /** Close this iModel, if it is currently open. */
-  public close(accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): void {
-    if (!this.briefcaseInfo)
+  public async close(accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
+    if (!this.briefcaseEntry)
       return;
+    await BriefcaseManager.close(accessToken, this.briefcaseEntry, keepBriefcase);
+    this.clearBriefcaseEntry();
+  }
+
+  private setupBriefcaseEntry(briefcaseEntry: BriefcaseEntry) {
+    this.briefcaseEntry = briefcaseEntry;
+    this.briefcaseEntry.iModelDb = this;
+    this.briefcaseEntry.onClose.addListener(this.onBriefcaseCloseHandler, this);
+    this.briefcaseEntry.onVersionUpdated.addListener(this.onBriefcaseVersionUpdatedHandler, this);
+  }
+
+  private clearBriefcaseEntry(): void {
+    this.briefcaseEntry!.onClose.removeListener(this.onBriefcaseCloseHandler, this);
+    this.briefcaseEntry!.onVersionUpdated.removeListener(this.onBriefcaseVersionUpdatedHandler, this);
+    this.briefcaseEntry!.iModelDb = undefined;
+    this.briefcaseEntry = undefined;
+  }
+
+  private onBriefcaseCloseHandler() {
     this.clearStatementCacheOnClose();
-    BriefcaseManager.close(accessToken, this.briefcaseInfo, keepBriefcase);
-    this.briefcaseInfo.iModelDb = undefined;
-    this.briefcaseInfo = undefined;
+  }
+
+  private onBriefcaseVersionUpdatedHandler() {
+    this.iModelToken.changeSetId = this.briefcaseEntry!.changeSetId;
   }
 
   public createChangeCache(changeCache: ECDb, changeCachePath: string): void {
@@ -117,10 +137,10 @@ export class IModelDb extends IModel {
   }
 
   public attachChangeCache(): void {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       throw new IModelError(IModelStatus.BadRequest);
 
-    BriefcaseManager.attachChangeCache(this.briefcaseInfo);
+    BriefcaseManager.attachChangeCache(this.briefcaseEntry);
   }
 
   public isChangeCacheAttached(): boolean {
@@ -132,54 +152,54 @@ export class IModelDb extends IModel {
 
   /** Get the in-memory handle of the native Db */
   public get nativeDb(): any {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       return undefined;
-    return this.briefcaseInfo.nativeDb;
+    return this.briefcaseEntry.nativeDb;
   }
 
   /** Get the briefcase ID of this iModel */
   public getBriefcaseId(): BriefcaseId {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       return new BriefcaseId(BriefcaseId.Illegal);
-    return new BriefcaseId(this.briefcaseInfo.briefcaseId);
+    return new BriefcaseId(this.briefcaseEntry.briefcaseId);
   }
 
   /** See Model.buildResourcesRequest */
   public buildResourcesRequestForModel(req: BriefcaseManager.ResourcesRequest, model: Model, opcode: DbOpcode): void {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForModel(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(model.id), opcode);
+    const rc: RepositoryStatus = this.briefcaseEntry.nativeDb.buildBriefcaseManagerResourcesRequestForModel(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(model.id), opcode);
     if (rc !== RepositoryStatus.Success)
       throw new IModelError(rc);
   }
 
   /** See Element.buildResourcesRequest */
   public buildResourcesRequestForElement(req: BriefcaseManager.ResourcesRequest, element: Element, opcode: DbOpcode): void {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       throw new IModelError(IModelStatus.BadRequest);
     let rc: RepositoryStatus;
     if (element.id === undefined || opcode === DbOpcode.Insert)
-      rc = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForElement(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify({ modelid: element.model, code: element.code }), opcode);
+      rc = this.briefcaseEntry.nativeDb.buildBriefcaseManagerResourcesRequestForElement(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify({ modelid: element.model, code: element.code }), opcode);
     else
-      rc = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForElement(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(element.id), opcode);
+      rc = this.briefcaseEntry.nativeDb.buildBriefcaseManagerResourcesRequestForElement(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(element.id), opcode);
     if (rc !== RepositoryStatus.Success)
       throw new IModelError(rc);
   }
 
   /** See LinkTableRelationship.buildResourcesRequest */
   public buildResourcesRequestForLinkTableRelationship(req: BriefcaseManager.ResourcesRequest, instance: LinkTableRelationship, opcode: DbOpcode): void {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForLinkTableRelationship(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(instance), opcode);
+    const rc: RepositoryStatus = this.briefcaseEntry.nativeDb.buildBriefcaseManagerResourcesRequestForLinkTableRelationship(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(instance), opcode);
     if (rc !== RepositoryStatus.Success)
       throw new IModelError(rc);
   }
 
   /** See CodeSpec.buildResourcesRequest */
   public buildResourcesRequestForCodeSpec(req: BriefcaseManager.ResourcesRequest, instance: CodeSpec, opcode: DbOpcode): void {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForCodeSpec(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(instance.id), opcode);
+    const rc: RepositoryStatus = this.briefcaseEntry.nativeDb.buildBriefcaseManagerResourcesRequestForCodeSpec(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(instance.id), opcode);
     if (rc !== RepositoryStatus.Success)
       throw new IModelError(rc);
   }
@@ -195,7 +215,7 @@ export class IModelDb extends IModel {
    * @return BentleyStatus.SUCCESS if all resources were acquired or non-zero if some could not be acquired.
    */
   public requestResources(_req: BriefcaseManager.ResourcesRequest) {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       throw new IModelError(IModelStatus.BadRequest);
     // throw new Error("TBD");
   }
@@ -206,7 +226,7 @@ export class IModelDb extends IModel {
    * @return true if all resources could be acquired or false if any could not be acquired.
    */
   public areResourcesAvailable(_req: BriefcaseManager.ResourcesRequest): boolean {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       throw new IModelError(IModelStatus.BadRequest);
     // throw new Error("TBD");
     return false; // *** TBD
@@ -219,14 +239,14 @@ export class IModelDb extends IModel {
    * @throws IModelError if the policy cannot be set.
    */
   public setConcurrencyControlPolicy(policy: BriefcaseManager.PessimisticConcurrencyControlPolicy | BriefcaseManager.OptimisticConcurrencyControlPolicy): void {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       throw new IModelError(IModelStatus.BadRequest);
     let rc: RepositoryStatus = RepositoryStatus.Success;
     if (policy as BriefcaseManager.OptimisticConcurrencyControlPolicy) {
       const oc: BriefcaseManager.OptimisticConcurrencyControlPolicy = policy as BriefcaseManager.OptimisticConcurrencyControlPolicy;
-      rc = this.briefcaseInfo.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(oc.conflictResolution);
+      rc = this.briefcaseEntry.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(oc.conflictResolution);
     } else {
-      rc = this.briefcaseInfo.nativeDb.setBriefcaseManagerPessimisticConcurrencyControlPolicy();
+      rc = this.briefcaseEntry.nativeDb.setBriefcaseManagerPessimisticConcurrencyControlPolicy();
     }
     if (RepositoryStatus.Success !== rc) {
       throw new IModelError(rc);
@@ -245,9 +265,9 @@ export class IModelDb extends IModel {
    * See saveChanges and endBulkUpdateMode.
    */
   public startBulkUpdateMode(): void {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.briefcaseManagerStartBulkOperation();
+    const rc: RepositoryStatus = this.briefcaseEntry.nativeDb.briefcaseManagerStartBulkOperation();
     if (RepositoryStatus.Success !== rc)
       throw new IModelError(rc);
   }
@@ -259,9 +279,9 @@ export class IModelDb extends IModel {
    * If not successful, the caller should abandon all changes.
    */
   public endBulkUpdateMode(): void {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.briefcaseManagerEndBulkOperation();
+    const rc: RepositoryStatus = this.briefcaseEntry.nativeDb.briefcaseManagerEndBulkOperation();
     if (RepositoryStatus.Success !== rc)
       throw new IModelError(rc);
   }
@@ -340,30 +360,30 @@ export class IModelDb extends IModel {
 
   /** Get the GUID of this iModel. */
   public getGuid(): Guid {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       throw this._newNotOpenError();
-    const guidStr = this.briefcaseInfo.nativeDb.getDbGuid();
+    const guidStr = this.briefcaseEntry.nativeDb.getDbGuid();
     return new Guid(guidStr);
   }
 
   /** Set the GUID of this iModel. */
   public setGuid(guid: Guid) {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       throw this._newNotOpenError();
     const guidStr = guid.toString();
-    return this.briefcaseInfo.nativeDb.setDbGuid(guidStr);
+    return this.briefcaseEntry.nativeDb.setDbGuid(guidStr);
   }
 
   /** Update the imodel project extents. */
   public updateProjectExtents(newExtents: AxisAlignedBox3d) {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       throw this._newNotOpenError();
     this.projectExtents.setFrom(newExtents);
     /*
     Currently awaiting merge of bim0200dev into bim0200.....
 
     const extentsJson = newExtents.toJSON();
-    this.briefcaseInfo.nativeDb.updateProjectExtents(JSON.stringify(extentsJson));
+    this.briefcaseEntry.nativeDb.updateProjectExtents(JSON.stringify(extentsJson));
     */
   }
 
@@ -373,20 +393,20 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] if there is a problem saving changes.
    */
   public saveChanges(description?: string) {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       throw this._newNotOpenError();
 
-    const stat = this.briefcaseInfo.nativeDb.saveChanges(description);
+    const stat = this.briefcaseEntry.nativeDb.saveChanges(description);
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, "Problem saving changes", Logger.logError);
   }
 
   /** Import an ECSchema. */
   public importSchema(schemaFileName: string) {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       throw this._newNotOpenError();
 
-    const stat = this.briefcaseInfo.nativeDb.importSchema(schemaFileName);
+    const stat = this.briefcaseEntry.nativeDb.importSchema(schemaFileName);
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, "Error importing schema", Logger.logError, () => ({ schemaFileName }));
   }
@@ -395,11 +415,11 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] if an open IModelDb matching the token is not found.
    */
   public static find(iModelToken: IModelToken): IModelDb {
-    const briefcaseInfo = BriefcaseManager.findBriefcase(iModelToken);
-    if (!briefcaseInfo)
+    const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
+    if (!briefcaseEntry)
       throw new IModelError(IModelStatus.NotFound, undefined, Logger.logError, () => ({ iModelId: iModelToken.iModelId }));
-    assert(!!briefcaseInfo.iModelDb);
-    return briefcaseInfo.iModelDb!;
+    assert(!!briefcaseEntry.iModelDb);
+    return briefcaseEntry.iModelDb!;
   }
 
   /** Get the ClassMetaDataRegistry for this iModel. */
@@ -418,10 +438,10 @@ export class IModelDb extends IModel {
 
   /** @private */
   public insertCodeSpec(codeSpec: CodeSpec): Id64 {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       throw this._newNotOpenError();
 
-    const { error, result: idHexStr } = this.briefcaseInfo.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.specScopeType, codeSpec.scopeReq);
+    const { error, result: idHexStr } = this.briefcaseEntry.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.specScopeType, codeSpec.scopeReq);
     if (error)
       throw new IModelError(error.status, "Problem inserting CodeSpec", Logger.logWarning);
 
@@ -430,10 +450,10 @@ export class IModelDb extends IModel {
 
   /** @deprecated */
   public getElementPropertiesForDisplay(elementId: string): string {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       throw this._newNotOpenError();
 
-    const { error, result: idHexStr } = this.briefcaseInfo.nativeDb.getElementPropertiesForDisplay(elementId);
+    const { error, result: idHexStr } = this.briefcaseEntry.nativeDb.getElementPropertiesForDisplay(elementId);
     if (error)
         throw new IModelError(error.status, error.message, Logger.logError, () => ({ iModelId: this.token.iModelId, elementId }));
 
@@ -445,11 +465,11 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] if there is a problem preparing the statement.
    */
   public prepareStatement(sql: string): ECSqlStatement {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       throw this._newNotOpenError();
 
     const stmt = new ECSqlStatement();
-    stmt.prepare(this.briefcaseInfo.nativeDb, sql);
+    stmt.prepare(this.briefcaseEntry.nativeDb, sql);
     return stmt;
   }
 
@@ -490,7 +510,7 @@ export class IModelDb extends IModel {
 
   /*** @hidden */
   private loadMetaData(classFullName: string) {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       throw this._newNotOpenError();
 
     if (this.classMetaDataRegistry.find(classFullName))
@@ -499,7 +519,7 @@ export class IModelDb extends IModel {
     if (className.length !== 2)
       throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, () => ({ iModelId: this.token.iModelId, classFullName }));
 
-    const { error, result: metaDataJson } = this.briefcaseInfo.nativeDb.getECClassMetaData(className[0], className[1]);
+    const { error, result: metaDataJson } = this.briefcaseEntry.nativeDb.getECClassMetaData(className[0], className[1]);
     if (error)
       throw new IModelError(error.status, undefined, Logger.logError, () => ({ iModelId: this.token.iModelId, classFullName }));
 
@@ -517,10 +537,10 @@ export class IModelDb extends IModel {
    * @param params A JSON string that should all of the data/parameters the test needs to function correctly
    */
   public executeTestById(testId: number, params: any): any {
-    if (!this.briefcaseInfo)
+    if (!this.briefcaseEntry)
       throw this._newNotOpenError();
 
-    const retVal: string = this.briefcaseInfo.nativeDb.executeTestById(testId, JSON.stringify(params));
+    const retVal: string = this.briefcaseEntry.nativeDb.executeTestById(testId, JSON.stringify(params));
     if (retVal.length === 0)
       return {};
     return JSON.parse(retVal);
@@ -551,6 +571,38 @@ export interface ElementsToLock {
   ElementsToDelete?: Element[];
 }
 
+export class IModelDbChangeSets {
+  private _iModel: IModelDb;
+
+  public constructor(iModel: IModelDb) {
+    this._iModel = iModel;
+  }
+
+  public async pullAndMerge(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    if (!this._iModel.briefcaseEntry)
+      return Promise.reject(this._iModel._newNotOpenError());
+
+    return BriefcaseManager.pullAndMergeChanges(accessToken, this._iModel.briefcaseEntry, version);
+  }
+
+  public async push(accessToken: AccessToken): Promise<void> {
+    if (!this._iModel.briefcaseEntry)
+      return Promise.reject(this._iModel._newNotOpenError());
+
+    return BriefcaseManager.pushChanges(accessToken, this._iModel.briefcaseEntry);
+  }
+
+  // public async reverse(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+  //   if (!this._iModel.briefcaseEntry)
+  //     return Promise.reject(this._iModel._newNotOpenError());
+  // }
+
+  // public async reinstate(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+  //   if (!this._iModel.briefcaseEntry)
+  //     return Promise.reject(this._iModel._newNotOpenError());
+  // }
+}
+
 /** The collection of models in an [[IModelDb]]. */
 export class IModelDbModels {
   private _iModel: IModelDb;
@@ -569,11 +621,11 @@ export class IModelDbModels {
     if (loaded)
       return loaded;
 
-    if (!this._iModel.briefcaseInfo)
+    if (!this._iModel.briefcaseEntry)
       throw this._iModel._newNotOpenError();
 
     // Must go get the model from the iModel. Start by requesting the model's data.
-    const {error, result: json} = this._iModel.briefcaseInfo.nativeDb.getModel(JSON.stringify({ id: modelId }));
+    const {error, result: json} = this._iModel.briefcaseEntry.nativeDb.getModel(JSON.stringify({ id: modelId }));
     if (error)
       throw new IModelError(error.status, error.message, Logger.logWarning);
 
@@ -590,11 +642,11 @@ export class IModelDbModels {
   }
 
   public getModelJson(modelIdStr: string): string {
-    if (!this._iModel.briefcaseInfo)
+    if (!this._iModel.briefcaseEntry)
       throw this._iModel._newNotOpenError();
 
     // Must go get the model from the iModel. Start by requesting the model's data.
-    const {error, result: json} = this._iModel.briefcaseInfo.nativeDb.getModel(JSON.stringify({ id: modelIdStr }));
+    const {error, result: json} = this._iModel.briefcaseEntry.nativeDb.getModel(JSON.stringify({ id: modelIdStr }));
     if (error)
       throw new IModelError(error.status, error.message, Logger.logWarning);
 
@@ -632,7 +684,7 @@ export class IModelDbModels {
    * @throws [[IModelError]] if unable to insert the model.
    */
   public insertModel(model: Model): Id64 {
-    if (!this._iModel.briefcaseInfo)
+    if (!this._iModel.briefcaseEntry)
       throw this._iModel._newNotOpenError();
 
     if (model.isPersistent()) {
@@ -640,7 +692,7 @@ export class IModelDbModels {
       throw new IModelError(IModelStatus.WriteError, "Cannot insert a model marked as persistent. Call copyForEdit.", Logger.logError);
     }
 
-    const { error, result: json } = this._iModel.briefcaseInfo.nativeDb.insertModel(JSON.stringify(model));
+    const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.insertModel(JSON.stringify(model));
     if (error)
       throw new IModelError(error.status, "Problem inserting model", Logger.logWarning);
 
@@ -652,7 +704,7 @@ export class IModelDbModels {
    * @throws [[IModelError]] if unable to update the model.
    */
   public updateModel(model: ModelProps): void {
-    if (!this._iModel.briefcaseInfo)
+    if (!this._iModel.briefcaseEntry)
       throw this._iModel._newNotOpenError();
 
     if ((model.isPersistent !== undefined) && model.isPersistent()) {
@@ -660,7 +712,7 @@ export class IModelDbModels {
       throw new IModelError(IModelStatus.WriteError, "Cannot update a model marked as persistent. Call copyForEdit.", Logger.logError);
     }
 
-    const error: IModelStatus = this._iModel.briefcaseInfo.nativeDb.updateModel(JSON.stringify(model));
+    const error: IModelStatus = this._iModel.briefcaseEntry.nativeDb.updateModel(JSON.stringify(model));
     if (error !== IModelStatus.Success)
       throw new IModelError(error, "", Logger.logWarning);
 
@@ -673,10 +725,10 @@ export class IModelDbModels {
    * @throws [[IModelError]]
    */
   public deleteModel(model: Model): void {
-    if (!this._iModel.briefcaseInfo)
+    if (!this._iModel.briefcaseEntry)
       throw this._iModel._newNotOpenError();
 
-    const error: IModelStatus = this._iModel.briefcaseInfo.nativeDb.deleteModel(model.id.toString());
+    const error: IModelStatus = this._iModel.briefcaseEntry.nativeDb.deleteModel(model.id.toString());
     if (error !== IModelStatus.Success)
       throw new IModelError(error, "", Logger.logWarning);
 
@@ -699,11 +751,11 @@ export class IModelDbElements {
 
   /** Private implementation details of getElementProps */
   private _getElementProps(opts: ElementLoadParams): ElementProps {
-    if (!this._iModel.briefcaseInfo)
+    if (!this._iModel.briefcaseEntry)
       throw this._iModel._newNotOpenError();
 
     // Must go get the element from the iModel. Start by requesting the element's data.
-    const {error, result: json} = this._iModel.briefcaseInfo.nativeDb.getElement(JSON.stringify(opts));
+    const {error, result: json} = this._iModel.briefcaseEntry.nativeDb.getElement(JSON.stringify(opts));
     if (error)
       throw new IModelError(error.status, error.message, Logger.logWarning);
     const props = JSON.parse(json!) as ElementProps;
@@ -712,11 +764,11 @@ export class IModelDbElements {
   }
 
   public getElementJson(elementIdStr: string): string {
-    if (!this._iModel.briefcaseInfo)
+    if (!this._iModel.briefcaseEntry)
       throw this._iModel._newNotOpenError();
 
     // Must go get the element from the iModel. Start by requesting the element's data.
-    const {error, result: json} = this._iModel.briefcaseInfo.nativeDb.getElement(JSON.stringify({ id: elementIdStr }));
+    const {error, result: json} = this._iModel.briefcaseEntry.nativeDb.getElement(JSON.stringify({ id: elementIdStr }));
     if (error)
       throw new IModelError(error.status, error.message, Logger.logWarning);
     return json!;
@@ -802,10 +854,10 @@ export class IModelDbElements {
    * @throws [[IModelError]] if unable to insert the element.
    */
   public insertElement(elProps: ElementProps): Id64 {
-    if (!this._iModel.briefcaseInfo)
+    if (!this._iModel.briefcaseEntry)
       throw this._iModel._newNotOpenError();
 
-    const { error, result: json } = this._iModel.briefcaseInfo.nativeDb.insertElement(JSON.stringify(elProps));
+    const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.insertElement(JSON.stringify(elProps));
     if (error)
       throw new IModelError(error.status, "Problem inserting element", Logger.logWarning);
 
@@ -817,10 +869,10 @@ export class IModelDbElements {
    * @throws [[IModelError]] if unable to update the element.
    */
   public updateElement(props: ElementProps): void {
-    if (!this._iModel.briefcaseInfo)
+    if (!this._iModel.briefcaseEntry)
       throw this._iModel._newNotOpenError();
 
-    const error: IModelStatus = this._iModel.briefcaseInfo.nativeDb.updateElement(JSON.stringify(props));
+    const error: IModelStatus = this._iModel.briefcaseEntry.nativeDb.updateElement(JSON.stringify(props));
     if (error !== IModelStatus.Success)
       throw new IModelError(error, "", Logger.logWarning);
 
@@ -834,10 +886,10 @@ export class IModelDbElements {
    * @throws [[IModelError]]
    */
   public deleteElement(id: Id64): void {
-    if (!this._iModel.briefcaseInfo)
+    if (!this._iModel.briefcaseEntry)
       throw this._iModel._newNotOpenError();
 
-    const error: IModelStatus = this._iModel.briefcaseInfo.nativeDb.deleteElement(id.toString());
+    const error: IModelStatus = this._iModel.briefcaseEntry.nativeDb.deleteElement(id.toString());
     if (error !== IModelStatus.Success)
       throw new IModelError(error, "", Logger.logWarning);
 

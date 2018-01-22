@@ -34,10 +34,18 @@ export class IModelVersion {
    * to be applied or merged to the iModel.
    * Note that all ChangeSets up to and and including the specified ChangeSet
    * needs to be applied.
+   * If the changeSetId is an empty string, it's assumed to be the first version
+   * before any change sets have been applied.
    */
   public static asOfChangeSet(changeSetId: string): IModelVersion {
-    assert(!!changeSetId || changeSetId === "0", "Use first to specify the first version");
+    assert(typeof changeSetId !== undefined && changeSetId !== "0", "Specify a valid change set id");
     const version = new IModelVersion();
+
+    if (changeSetId === "") {
+      version._first = true;
+      return version;
+    }
+
     version._afterChangeSetId = changeSetId;
     return version;
   }
@@ -73,7 +81,7 @@ export class IModelVersion {
   /** Returns the name of the version if this describes a named version. @see named() */
   public getName(): string | undefined { return this._versionName; }
 
-  /** Evaluate the ChangeSet Id corresponding to the version. All change sets upto and including
+  /** Evaluate the ChangeSet Id corresponding to the version. All change sets up to and including
    * the returned ChangeSet Id need to be applied to update the iModel to this version.
    * Returns an empty string if this contains the first version (before any change sets). If the
    * version was already specified as of a ChangeSet, the method simply returns
