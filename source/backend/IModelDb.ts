@@ -19,7 +19,7 @@ import { Element } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { Model } from "./Model";
 import { BriefcaseInfo, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./BriefcaseManager";
-import { NodeAddonBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
+import { AddonBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BindingValue } from "./BindingUtility";
@@ -124,7 +124,7 @@ export class IModelDb extends IModel {
   public buildResourcesRequestForModel(req: BriefcaseManager.ResourcesRequest, model: Model, opcode: DbOpcode): void {
     if (!this.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForModel(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(model.id), opcode);
+    const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForModel(req as AddonBriefcaseManagerResourcesRequest, JSON.stringify(model.id), opcode);
     if (rc !== RepositoryStatus.Success)
       throw new IModelError(rc);
   }
@@ -135,9 +135,9 @@ export class IModelDb extends IModel {
       throw new IModelError(IModelStatus.BadRequest);
     let rc: RepositoryStatus;
     if (element.id === undefined || opcode === DbOpcode.Insert)
-      rc = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForElement(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify({ modelid: element.model, code: element.code }), opcode);
+      rc = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForElement(req as AddonBriefcaseManagerResourcesRequest, JSON.stringify({ modelid: element.model, code: element.code }), opcode);
     else
-      rc = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForElement(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(element.id), opcode);
+      rc = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForElement(req as AddonBriefcaseManagerResourcesRequest, JSON.stringify(element.id), opcode);
     if (rc !== RepositoryStatus.Success)
       throw new IModelError(rc);
   }
@@ -146,7 +146,7 @@ export class IModelDb extends IModel {
   public buildResourcesRequestForLinkTableRelationship(req: BriefcaseManager.ResourcesRequest, instance: LinkTableRelationship, opcode: DbOpcode): void {
     if (!this.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForLinkTableRelationship(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(instance), opcode);
+    const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForLinkTableRelationship(req as AddonBriefcaseManagerResourcesRequest, JSON.stringify(instance), opcode);
     if (rc !== RepositoryStatus.Success)
       throw new IModelError(rc);
   }
@@ -155,7 +155,7 @@ export class IModelDb extends IModel {
   public buildResourcesRequestForCodeSpec(req: BriefcaseManager.ResourcesRequest, instance: CodeSpec, opcode: DbOpcode): void {
     if (!this.briefcaseInfo)
       throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForCodeSpec(req as NodeAddonBriefcaseManagerResourcesRequest, JSON.stringify(instance.id), opcode);
+    const rc: RepositoryStatus = this.briefcaseInfo.nativeDb.buildBriefcaseManagerResourcesRequestForCodeSpec(req as AddonBriefcaseManagerResourcesRequest, JSON.stringify(instance.id), opcode);
     if (rc !== RepositoryStatus.Success)
       throw new IModelError(rc);
   }
@@ -446,7 +446,7 @@ export class IModelDb extends IModel {
     return entity;
   }
 
-  /** Get metadata for a class. This method will load the metadata from the NodeAddonDgnDb into the cache as a side-effect, if necessary.
+  /** Get metadata for a class. This method will load the metadata from the AddonDgnDb into the cache as a side-effect, if necessary.
    * @throws [[IModelError]] if the metadata cannot be found nor loaded.
    */
   public getMetaData(classFullName: string): EntityMetaData {

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelError, IModelStatus } from "../common/IModelError";
-import { NodeAddonECDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
+import { AddonECDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { NodeAddonRegistry } from "./NodeAddonRegistry";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { IDisposable } from "@bentley/bentleyjs-core/lib/Disposable";
@@ -12,11 +12,11 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 /** Allows performing CRUD operations in an ECDb */
 export class ECDb implements IDisposable {
-  private _nativeDb: NodeAddonECDb | undefined;
+  private _nativeDb: AddonECDb | undefined;
   private readonly _statementCache: ECSqlStatementCache;
 
   constructor() {
-    this._nativeDb = new (NodeAddonRegistry.getAddon()).NodeAddonECDb();
+    this._nativeDb = new (NodeAddonRegistry.getAddon()).AddonECDb();
     this._statementCache = new ECSqlStatementCache();
   }
 
@@ -143,7 +143,7 @@ export class ECDb implements IDisposable {
     return stmt;
   }
 
-  public get nativeDb(): NodeAddonECDb {
+  public get nativeDb(): AddonECDb {
     if (this._nativeDb == null)
       throw new IModelError(IModelStatus.BadRequest, "ECDb object has already been disposed.");
 

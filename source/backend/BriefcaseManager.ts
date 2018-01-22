@@ -9,7 +9,7 @@ import { BriefcaseStatus, IModelError } from "../common/IModelError";
 import { IModelVersion } from "../common/IModelVersion";
 import { IModelToken, Configuration } from "../common/IModel";
 import { NodeAddonRegistry } from "./NodeAddonRegistry";
-import { NodeAddonDgnDb, ErrorStatusOrResult, NodeAddonBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
+import { AddonDgnDb, ErrorStatusOrResult, AddonBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { IModelDb } from "./IModelDb";
 
 import * as fs from "fs";
@@ -72,7 +72,7 @@ export class BriefcaseInfo {
   public userId?: string;
 
   /** In-memory handle of the native Db */
-  public nativeDb: NodeAddonDgnDb;
+  public nativeDb: AddonDgnDb;
 
   /** In-memory handle fo the IModelDb that corresponds with this briefcase. This is only set if an IModelDb wrapper has been created for this briefcase */
   public iModelDb?: IModelDb;
@@ -219,7 +219,7 @@ export class BriefcaseManager {
    * }
    */
   private static getCachedBriefcaseInfos(): any {
-    const nativeDb: NodeAddonDgnDb = new (NodeAddonRegistry.getAddon()).NodeAddonDgnDb();
+    const nativeDb: AddonDgnDb = new (NodeAddonRegistry.getAddon()).AddonDgnDb();
     const res: ErrorStatusOrResult<DbResult, string> = nativeDb.getCachedBriefcaseInfos(BriefcaseManager.cachePath);
     if (res.error)
       Promise.reject(new IModelError(res.error.status));
@@ -552,7 +552,7 @@ export class BriefcaseManager {
       changeSetTokens.push(new ChangeSetToken(downloadedChangeSet.wsgId, +downloadedChangeSet.index, changeSetPathname));
     }
 
-    const nativeDb: NodeAddonDgnDb = new (NodeAddonRegistry.getAddon()).NodeAddonDgnDb();
+    const nativeDb: AddonDgnDb = new (NodeAddonRegistry.getAddon()).AddonDgnDb();
     const res: DbResult = nativeDb.openBriefcase(JSON.stringify(briefcase), JSON.stringify(changeSetTokens));
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res);
@@ -595,7 +595,7 @@ export class BriefcaseManager {
   public static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean): BriefcaseInfo {
     BriefcaseManager.initialize();
 
-    const nativeDb: NodeAddonDgnDb = new (NodeAddonRegistry.getAddon()).NodeAddonDgnDb();
+    const nativeDb: AddonDgnDb = new (NodeAddonRegistry.getAddon()).AddonDgnDb();
 
     const res: DbResult = nativeDb.openDgnDb(pathname, openMode);
     if (DbResult.BE_SQLITE_OK !== res)
@@ -687,18 +687,18 @@ export class BriefcaseManager {
 /** Types that are relative to BriefcaseManager. Typescript declaration merging will make these types appear to be properties of the BriefcaseManager class. */
 export namespace BriefcaseManager {
 
-  /** This is a stand-in for NodeAddonBriefcaseManagerResourcesRequest. We cannot (re-)export that for technical reasons. */
+  /** This is a stand-in for AddonBriefcaseManagerResourcesRequest. We cannot (re-)export that for technical reasons. */
   export class ResourcesRequest {
     private constructor() { }
 
     /** Create an empty ResourcesRequest */
     public static create(): ResourcesRequest {
-      return new (NodeAddonRegistry.getAddon()).NodeAddonBriefcaseManagerResourcesRequest();
+      return new (NodeAddonRegistry.getAddon()).AddonBriefcaseManagerResourcesRequest();
     }
 
     /** Convert the request to any */
     public static toAny(req: ResourcesRequest): any {
-      return JSON.parse((req as NodeAddonBriefcaseManagerResourcesRequest).toJSON());
+      return JSON.parse((req as AddonBriefcaseManagerResourcesRequest).toJSON());
     }
 
   }
