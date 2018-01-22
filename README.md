@@ -1,4 +1,5 @@
-﻿# imodeljs-core
+﻿Copyright © Bentley Systems, Inc. 2018
+# imodeljs-core
 
 iModelJs extends the iModel technology stack to provide a JavaScript library (built using TypeScript) for querying, displaying, and modifying iModels.
 It can be used to build:
@@ -124,25 +125,6 @@ Therefore, a separate command had to be introduced.
 
 Note that imodeljs-core/source/common/ is built into both the **imodeljs-backend** and **imodeljs-frontend** packages.
 
-### Publishing
-
-Publishing is now a 2 step process as there are 2 separate packages.
-Generally, imodeljs-backend and imodeljs-frontend are published at the same time, but there could be cases of backend-specific or frontend-specific fixes.
-Note that any change to a "common" file is a change to both the **imodeljs-backend** and **imodeljs-frontend**.
-
-### Publish imodeljs-backend
-
-These instructions assume that you have already updated the version number in `source/backend/package.json` and have successfully rebuilt.
-
-1. Change to the backend directory: `cd source/backend`
-2. Publish: `npm publish`
-
-### Publish imodeljs-frontend
-
-These instructions assume that you have already updated the version number in `source/frontend/package.json` and have successfully rebuilt.
-
-1. Change to the frontend directory: `cd source/frontend`
-2. Publish: `npm publish`
 
 ## More Information
 
