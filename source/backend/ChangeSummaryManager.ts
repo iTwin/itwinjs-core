@@ -5,13 +5,12 @@ import { AccessToken, ChangeSet, UserInfo } from "@bentley/imodeljs-clients";
 import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelDb } from "./IModelDb";
 import { ECDb } from "./ECDb";
+import { DateTime } from "./ECSqlStatement";
 import { IModelVersion } from "../common/IModelVersion";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { ECValue, ValueKind } from "./BindingUtility";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { PrimitiveTypeCode } from "./Entity";
 import { using } from "@bentley/bentleyjs-core/lib/Disposable";
 import * as path from "path";
 import * as fs from "fs";
@@ -177,7 +176,7 @@ export class ChangeSummaryManager {
   private static isSummaryAlreadyExtracted(changesFile: ECDb, changeSetId: string): boolean {
     return changesFile.withPreparedStatement("SELECT 1 FROM imodelchange.ChangeSet WHERE WsgId=?",
       (stmt) => {
-        stmt.bindValues([changeSetId]);
+        stmt.bindString(1, changeSetId);
         return DbResult.BE_SQLITE_ROW === stmt.step();
       });
   }
@@ -185,13 +184,11 @@ export class ChangeSummaryManager {
   private static addExtendedInfos(changesFile: ECDb, changeSummaryId: string, extendedInfo: ChangeSummaryExtendedInfo): void {
     changesFile.withPreparedStatement("INSERT INTO imodelchange.ChangeSet(Summary.Id,WsgId,ParentWsgId,PushDate,Author) VALUES(?,?,?,?,?)",
       (stmt) => {
-        // bindValues function has issues with detecting ECValues created as JS objects.
-        // until this is fixed, create pushDate ECValue this way.
-        const pushDate = new ECValue();
-        pushDate.kind = ValueKind.Primitive;
-        pushDate.type = PrimitiveTypeCode.DateTime;
-        pushDate.value = extendedInfo.pushDate;
-        stmt.bindValues([new Id64(changeSummaryId), extendedInfo.changeSetId, extendedInfo.parentChangeSetId, pushDate, extendedInfo.author]);
+        stmt.bindId(1, new Id64(changeSummaryId));
+        stmt.bindString(2, extendedInfo.changeSetId);
+        stmt.bindString(3, extendedInfo.parentChangeSetId);
+        stmt.bindDateTime(4, new DateTime(extendedInfo.pushDate));
+        stmt.bindString(5, extendedInfo.author);
         const r: DbResult = stmt.step();
         if (r !== DbResult.BE_SQLITE_DONE)
           throw new IModelError(r, "Failed to add changeset information to extracted change summary " + changeSummaryId);

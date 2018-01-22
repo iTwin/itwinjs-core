@@ -753,7 +753,9 @@ export class IModelDbElements {
       throw new IModelError(IModelStatus.InvalidCode);
     }
     return this._iModel.withPreparedStatement("SELECT ecinstanceid as id FROM " + Element.sqlName + " WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?", (stmt: ECSqlStatement) => {
-      stmt.bindValues([code.spec, new Id64(code.scope), code.value!]);
+      stmt.bindId(1, code.spec);
+      stmt.bindId(2, new Id64(code.scope));
+      stmt.bindString(3, code.value!);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
         return undefined;
       return new Id64(stmt.getRow().id);

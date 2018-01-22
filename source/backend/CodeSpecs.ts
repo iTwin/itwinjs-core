@@ -21,7 +21,7 @@ export class CodeSpecs {
   /** Look up the Id of the CodeSpec with the specified name. */
   public queryCodeSpecId(name: string): Id64 {
     return this._imodel.withPreparedStatement("SELECT ECInstanceId as id FROM BisCore.CodeSpec WHERE Name=?", (stmt: ECSqlStatement) => {
-      stmt.bindValues([name]);
+      stmt.bindString(1, name);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
           throw new IModelError(IModelStatus.NotFound);
       return new Id64(stmt.getRow().id);
@@ -89,7 +89,7 @@ export class CodeSpecs {
     }
 
     return this._imodel.withPreparedStatement("SELECT name,jsonProperties FROM BisCore.CodeSpec WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
-      stmt.bindValues([id]);
+      stmt.bindId(1, id);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
         throw new IModelError(IModelStatus.InvalidId);
 
