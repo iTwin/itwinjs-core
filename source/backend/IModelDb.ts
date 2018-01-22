@@ -197,7 +197,7 @@ export class IModelDb extends IModel {
    * @returns all rows as an array or an empty array if nothing was selected
    * @throws [[IModelError]] If the statement is invalid
    */
-  public executeQuery(ecsql: string, bindings?: BindingValue[] | Map<string, BindingValue> | any): any[] {
+  public executeQuery(ecsql: string, bindings?: any[] | Map<string, any>): any[] {
     return this.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {
       if (bindings)
         stmt.bindValues(bindings);
