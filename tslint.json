@@ -1,5 +1,5 @@
 {
-  "extends": "@bentley/bentleyjs-tools/tslint.json",
+  "extends": "./node_modules/@bentley/bentleyjs-tools/tslint.json",
   "rulesDirectory": ["tslint-consistent-codestyle"],
   "rules": {
     "naming-convention": [

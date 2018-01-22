@@ -20,7 +20,7 @@
   },
   "scripts": {
     "rush:install": "node ./common/rush.js install",
-    "rush:build": "node ./common/rush.js rebuild",
+    "rush:build": "node ./common/rush.js rebuild -v",
     "rush:lint": "node ./common/rush.js lint",
     "build": "echo use 'rush rebuild'",
     "clean": "echo use 'rush clean'",
