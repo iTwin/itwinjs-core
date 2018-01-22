@@ -7,38 +7,8 @@ import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { TentativePoint } from "./TentativePoint";
-import { ToolCtor, Tool, ToolGroup, ImmediateTool } from "./tools/Tool";
+import { ToolRegistry, ToolGroup } from "./tools/Tool";
 import { I18N } from "./Localization";
-
-/** holds a mapping of toolId string to tool class */
-export class ToolRegistry {
-  public map: Map<string, ToolCtor> = new Map<string, ToolCtor>();
-  public unRegisterTool(toolId: string) { this.map.delete(toolId); }
-
-  /** register a tool  */
-  public registerTool(ctor: ToolCtor, group: ToolGroup) {
-    if (ctor.toolId.length !== 0) {
-      ctor.group = group;
-      this.map.set(ctor.toolId, ctor);
-    }
-  }
-
-  /**
-   * register all the tools found in a module.
-   * @param modelObj the module to search for subclasses of Tool.
-   */
-  public registerModuleTools(moduleObj: any, scope: ToolGroup) {
-    for (const thisMember in moduleObj) {
-      if (!thisMember)
-        continue;
-
-      const thisTool = moduleObj[thisMember];
-      if (thisTool.prototype instanceof Tool) {
-        this.registerTool(thisTool, scope);
-      }
-    }
-  }
-}
 
 /** Global access to the IModelApp. Initialized by calling IModelApp.startup(). */
 export let iModelApp: IModelApp;
@@ -88,8 +58,8 @@ export class IModelApp {
 
     const tools = iModelApp.tools; // first register all the default tools. Subclasses may choose to override them.
     const group = new ToolGroup("BaseTool");
-    tools.registerModuleTools(require("./tools/ViewTool"), group);
-    tools.registerModuleTools(require("./tools/IdleTool"), group);
+    tools.registerModule(require("./tools/ViewTool"), group);
+    tools.registerModule(require("./tools/IdleTool"), group);
 
     iModelApp.onStartup(); // allow subclasses to register their tools before we call onStartup
 
@@ -114,25 +84,4 @@ export class IModelApp {
    * @note The default tools will already be registered, so if you register tools with the same toolId, your tools will override the defaults.
    */
   protected onStartup(): void { }
-
-  /**
-   * Look up a tool by toolId. If found, create a new instance of that tool with the supplied arguments
-   */
-  public createTool(toolId: string, ...args: any[]): Tool | undefined {
-    const ctor = this.tools.map.get(toolId);
-    return ctor ? new ctor(...args) : undefined;
-  }
-
-  public runImmediateTool(toolId: string, ...args: any[]): boolean {
-    const tool = this.createTool(toolId);
-    if (!(tool instanceof ImmediateTool))
-      return false;
-    tool.run(...args);
-    return true;
-  }
-
-  public createLocalizer(nameSpaces: string[], defaultNameSpace: string, renderFunction: any): I18N {
-    // create a separate instance of i18next, so it doesn't interfere with other i18next instances.
-    return new I18N(nameSpaces, defaultNameSpace, renderFunction);
-  }
 }

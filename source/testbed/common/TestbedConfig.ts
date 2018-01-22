@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelGateway } from "@build/imodeljs-core/lib/gateway/IModelGateway";
-import { BentleyCloudGatewayConfiguration } from "@build/imodeljs-core/lib/gateway/BentleyCloudGatewayConfiguration";
+import { IModelGateway } from "../../gateway/IModelGateway";
+import { BentleyCloudGatewayConfiguration } from "../../gateway/BentleyCloudGatewayConfiguration";
 import { TestGateway } from "../common/TestGateway";
 
 export class TestbedConfig {

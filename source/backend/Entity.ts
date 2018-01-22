@@ -4,7 +4,6 @@
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
 import { EntityProps } from "../common/EntityProps";
-import { IModel } from "../common/IModel";
 import { ClassRegistry } from "./ClassRegistry";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
@@ -23,12 +22,6 @@ export const enum PrimitiveTypeCode {
   Point2d = 0x701,
   Point3d = 0x801,
   String = 0x901,
-}
-
-/** the constructor for an Entity. Must have a static member named schema and a ctor that accepts either an EntityProp or an Entity (for cloning). */
-export interface EntityCtor extends FunctionConstructor {
-  schema: Schema;
-  new(args: EntityProps | Entity, iModel: IModel): Entity;
 }
 
 /** a callback function to process properties of an Entity */
@@ -65,11 +58,11 @@ export class Entity implements EntityProps {
     return val;
   }
 
- /**
-  * Add the lock, code, and other resource requests that would be needed in order to carry out the specified operation.
-  * @param _req The request object, which accumulates requests.
-  * @param _opcode The operation that will be performed on the element.
-  */
+  /**
+   * Add the lock, code, and other resource requests that would be needed in order to carry out the specified operation.
+   * @param _req The request object, which accumulates requests.
+   * @param _opcode The operation that will be performed on the element.
+   */
   public buildResourcesRequest(_req: BriefcaseManager.ResourcesRequest, _opcode: DbOpcode): void {
     // subclasses must override this method to build a request for the resources they know that they need.
   }
@@ -95,7 +88,7 @@ export class Entity implements EntityProps {
   public isPersistent(): boolean { return this.persistent; }
 
   /** make a copy of this Entity so that it may be be modified. */
-  public copyForEdit<T extends Entity>(): T { return new (this.constructor as EntityCtor)(this, this.iModel) as T; }
+  public copyForEdit<T extends Entity>(): T { return new (this.constructor as any)(this, this.iModel) as T; }
 }
 
 /** A custom attribute instance */

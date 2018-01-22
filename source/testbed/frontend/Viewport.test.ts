@@ -2,18 +2,19 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64 } from "@build/imodeljs-core/node_modules/@bentley/bentleyjs-core/lib/Id";
-import { Point3d, Vector3d, YawPitchRollAngles, RotMatrix } from "@build/imodeljs-core/node_modules/@bentley/geometry-core/lib/PointVector";
-import { DisplayStyle3dState, ModelSelectorState, SpatialViewState, CategorySelectorState, ViewState, Camera } from "@build/imodeljs-core/lib/common/ViewState";
-import { Frustum } from "@build/imodeljs-core/lib/common/Frustum";
-import { IModelConnection } from "@build/imodeljs-core/lib/frontend/IModelConnection";
-import { Viewport, ViewRect, CoordSystem } from "@build/imodeljs-core/lib/frontend/Viewport";
-import { IModelApp, iModelApp } from "@build/imodeljs-core/lib/frontend/IModelApp";
-import { Cartographic } from "@build/imodeljs-core/lib/common/geometry/Cartographic";
-import { Angle } from "@build/imodeljs-core/node_modules/@bentley/geometry-core/lib/Geometry";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Point3d, Vector3d, YawPitchRollAngles, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
+import { DisplayStyle3dState, ModelSelectorState, SpatialViewState, CategorySelectorState, ViewState, Camera } from "../../common/ViewState";
+import { Frustum } from "../../common/Frustum";
+import { IModelConnection } from "../../frontend/IModelConnection";
+import { Viewport, ViewRect, CoordSystem } from "../../frontend/Viewport";
+import { IModelApp, iModelApp } from "../../frontend/IModelApp";
+import { Cartographic } from "../../common/geometry/Cartographic";
+import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import * as path from "path";
-import { SpatialViewDefinitionProps } from "@build/imodeljs-core/lib/common/ElementProps";
-import { ViewPanTool } from "@build/imodeljs-core/lib/frontend/tools/ViewTool";
+import { SpatialViewDefinitionProps } from "../../common/ElementProps";
+import { ViewPanTool } from "../../frontend/tools/ViewTool";
+import { CompassMode } from "../../frontend/AccuDraw";
 
 /* tslint:disable: no-console */
 const bimFileLocation = path.join(__dirname, "../../../../test/lib/test/assets/test.bim");
@@ -26,7 +27,7 @@ class TestViewport extends Viewport {
   }
 
   /** Needed since we don't have a canvas */
-  private clientRect = new ViewRect(0, 0, 10, 10);
+  private clientRect = new ViewRect(0, 0, 1000, 1000);
   public getClientRect(): ClientRect { return this.clientRect; }
 }
 
@@ -48,7 +49,7 @@ describe("Viewport", () => {
 
   // tslint:disable-next-line:only-arrow-functions
   // tslint:disable-next-line:space-before-function-paren
-  before(async function () {   // Create a ViewState to load into a ViewPort
+  before(async function () {   // Create a ViewState to load into a Viewport
     this.timeout(99999);
     TestIModelApp.startup();
     assert.instanceOf(iModelApp, TestIModelApp);
@@ -122,7 +123,7 @@ describe("Viewport", () => {
       const newViewState = viewport.view.clone<SpatialViewState>();
       let frustumWorld: Frustum;
 
-      const pan = iModelApp.createTool("View.Pan", viewport) as ViewPanTool | undefined;
+      const pan = iModelApp.tools.create("View.Pan", viewport) as ViewPanTool | undefined;
       assert.instanceOf(pan, ViewPanTool);
       assert.equal(pan!.viewport, viewport);
 
@@ -162,6 +163,22 @@ describe("Viewport", () => {
     const port = new TestViewport(flatViewWithCamera);
     assert.isTrue(Math.abs(port.frustFraction - 1) < 1.0e-4);
   }).timeout(99999);
+
+  it("AccuDraw should work properly", () => {
+    const viewport = new TestViewport(viewStateXYFlat);
+    const accudraw = iModelApp.accuDraw;
+    assert.isTrue(accudraw.isEnabled(), "Accudraw should be enabled");
+    const pt = new Point3d(1, 1, 1);
+    accudraw.adjustPoint(pt, viewport, false);
+
+    accudraw.activate();
+    assert.isTrue(accudraw.isActive(), "AccuDraw is active");
+    accudraw.deactivate();
+    assert.isFalse(accudraw.isActive(), "not active");
+    accudraw.setCompassMode(CompassMode.Polar);
+    assert.equal(accudraw.getCompassMode(), CompassMode.Polar, "polar mode");
+  });
+
 });
 
 describe("Cartographic tests", () => {

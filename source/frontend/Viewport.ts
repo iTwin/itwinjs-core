@@ -746,8 +746,9 @@ export class Viewport {
    * the front and back planes to enclose everything in the view [N.B. this is the way that views implement
    * the concept of "no front/back clipping", since there always must be a view frustum].
    * The "unadjusted" box is the one that is stored in the ViewState.
-   * @param[in] sys Coordinate system for \c points
-   * @param[in] adjustedBox If true, retrieve the adjusted box. Otherwise retrieve the box that came from the view definition.
+   * @param sys Coordinate system for points
+   * @param adjustedBox If true, retrieve the adjusted box. Otherwise retrieve the box that came from the view definition.
+   * @param box optional Frustum for return value
    * @return the view frustum
    * @note The "adjusted" box may be either larger or smaller than the "unadjusted" box.
    */
@@ -758,7 +759,7 @@ export class Viewport {
     // coordinates that correspond to the unexpanded box in the npc space of the Expanded view (that's the basis for all
     // of the root-based maps.)
     if (!adjustedBox && this.zClipAdjusted) {
-      // to get unexpanded box, we have to go recompute rootToNpc from original viewController.
+      // to get unexpanded box, we have to go recompute rootToNpc from original View.
       const ueRootToNpc = Map4d.createIdentity();
       const compression = this.rootToNpcFromViewDef(ueRootToNpc, this.viewOrgUnexpanded, this.viewDeltaUnexpanded);
       if (!compression)

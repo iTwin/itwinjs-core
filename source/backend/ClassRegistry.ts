@@ -4,13 +4,13 @@
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { EntityProps } from "../common/EntityProps";
 import { IModelError, IModelStatus } from "../common/IModelError";
-import { EntityCtor, Entity, EntityMetaData } from "./Entity";
+import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
 
 /** The mapping between a class name (schema.class) and its constructor function  */
 export class ClassRegistry {
-  private static classMap: Map<string, EntityCtor> = new Map<string, EntityCtor>();
+  private static classMap: Map<string, typeof Entity> = new Map<string, typeof Entity>();
 
   private static getKey(schemaName: string, className: string) {
     return (schemaName + ":" + className).toLowerCase();
@@ -88,7 +88,7 @@ export class ClassRegistry {
     return domainDef + "class " + className + " " + classExtends + " { } " + classStaticProps;
   }
 
-  public static registerEcClass(ctor: EntityCtor) {
+  public static register(ctor: typeof Entity) {
     const key = ClassRegistry.getKey(ctor.schema.name, ctor.name);
     ClassRegistry.classMap.set(key, ctor);
   }
@@ -97,7 +97,7 @@ export class ClassRegistry {
    * @param moduleObj The module to search for subclasses of Entity
    * @param schema The schema for all found classes
    */
-  public static registerModuleClasses(moduleObj: any, schema: Schema) {
+  public static registerModule(moduleObj: any, schema: Schema) {
     for (const thisMember in moduleObj) {
       if (!thisMember)
         continue;
@@ -105,7 +105,7 @@ export class ClassRegistry {
       const thisClass = moduleObj[thisMember];
       if (thisClass.prototype instanceof Entity) {
         thisClass.schema = schema;
-        ClassRegistry.registerEcClass(thisClass);
+        ClassRegistry.register(thisClass);
       }
     }
   }
@@ -113,7 +113,7 @@ export class ClassRegistry {
   /** This function fetches the specified Entity from the imodel, generates a JS class for it, and registers the generated
    * class. This function also ensures that all of the base classes of the Entity exist and are registered.
    */
-  private static generateClass(classFullName: string, iModel: IModelDb): EntityCtor {
+  private static generateClass(classFullName: string, iModel: IModelDb): typeof Entity {
 
     const metadata: EntityMetaData | undefined = iModel.classMetaDataRegistry.find(classFullName);
     if (metadata === undefined || metadata.ecclass === undefined)
@@ -132,10 +132,10 @@ export class ClassRegistry {
   /** This function generates a JS class for the specified Entity and registers it. It is up to the caller
    * to make sure that all superclasses are already registered.
    */
-  public static generateClassForEntity(entityMetaData: EntityMetaData): EntityCtor {
+  public static generateClassForEntity(entityMetaData: EntityMetaData): typeof Entity {
     const name = entityMetaData.ecclass.split(":");
     // Generate and register this class
-    const jsDef = ClassRegistry.generateClassFromMetaData(entityMetaData) + " ClassRegistry.registerEcClass(" + name[1] + "); ";
+    const jsDef = ClassRegistry.generateClassFromMetaData(entityMetaData) + " ClassRegistry.register(" + name[1] + "); ";
 
     // tslint:disable-next-line:no-eval NOTE: eval is OK here, because we just generated the expression
     eval(jsDef);
@@ -151,7 +151,7 @@ export class ClassRegistry {
    * @returns A promise that resolves to an object containing a result property set to the Entity.
    * @throws [[IModelError]] if the class is not found.
    */
-  public static getClass(fullName: string, iModel: IModelDb): EntityCtor {
+  public static getClass(fullName: string, iModel: IModelDb): typeof Entity {
     const key = fullName.toLowerCase();
     if (!ClassRegistry.classMap.has(key)) {
       return ClassRegistry.generateClass(fullName, iModel);

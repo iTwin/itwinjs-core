@@ -4,7 +4,6 @@
 import { assert } from "chai";
 import { BisCore } from "../backend/BisCore";
 import { Element } from "../backend/Element";
-import { EntityCtor } from "../backend/Entity";
 import { IModelDb } from "../backend/IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
 
@@ -30,8 +29,8 @@ describe("Sample Code", () => {
     // Register any schemas that will be used directly
     BisCore.registerSchema();
 
-    // Get the class constructor for the specified class name
-    const elementClass: EntityCtor | undefined = BisCore.getClass(Element.name, iModel);
+    // Get the class for the specified class name
+    const elementClass = BisCore.getClass(Element.name, iModel);
     if (elementClass === undefined) {
       assert.fail();
       return;

@@ -8,7 +8,6 @@ import { Frustum, NpcCenter, Npc } from "../../common/Frustum";
 import { MarginPercent, ViewStatus, ViewState3d } from "../../common/ViewState";
 import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { AccuDrawFlags } from "../AccuDraw";
 import { LegacyMath } from "../../common/LegacyMath";
 import { iModelApp } from "../IModelApp";
@@ -71,16 +70,16 @@ export abstract class ViewTool extends InteractiveTool {
   public inDynamicUpdate = false;
   public beginDynamicUpdate() { this.inDynamicUpdate = true; }
   public endDynamicUpdate() { this.inDynamicUpdate = false; }
-  public installToolImplementation(): BentleyStatus {
+  public run(): boolean {
     const toolAdmin = iModelApp.toolAdmin;
     if (!toolAdmin.onInstallTool(this))
-      return BentleyStatus.ERROR;
+      return false;
 
     toolAdmin.setViewTool(undefined);
     toolAdmin.startViewTool();
     toolAdmin.setViewTool(this);
     toolAdmin.onPostInstallTool(this);
-    return BentleyStatus.SUCCESS;
+    return true;
   }
 
   public onResetButtonUp(_ev: BeButtonEvent) { this.exitTool(); return true; }
@@ -696,7 +695,9 @@ export abstract class ViewManip extends ViewTool {
   }
 
   protected synchViewBallInfo(initialSetup: boolean): void {
-    const frustum = this.viewport!.getFrustum(CoordSystem.Screen, false, scratchFrustum);
+    if (!this.viewport)
+      return;
+    const frustum = this.viewport.getFrustum(CoordSystem.Screen, false, scratchFrustum);
     const screenRange = scratchPoint3d1;
     screenRange.set(
       frustum.points[Npc._000].distance(frustum.points[Npc._100]),
@@ -1834,16 +1835,16 @@ export class ViewPanTool extends ViewManip {
 }
 
 export abstract class InputCollector extends InteractiveTool {
-  public installToolImplementation(): BentleyStatus {
+  public run(): boolean {
     const toolAdmin = iModelApp.toolAdmin;
     // An input collector can only suspend a primitive tool, don't install if a viewing tool is active...
     if (!toolAdmin.activeViewTool || !toolAdmin.onInstallTool(this))
-      return BentleyStatus.ERROR;
+      return false;
 
     toolAdmin.startInputCollector(this);
     toolAdmin.setInputCollector(this);
     toolAdmin.onPostInstallTool(this);
-    return BentleyStatus.SUCCESS;
+    return true;
   }
 
   public exitTool() { iModelApp.toolAdmin.exitInputCollector(); }
