@@ -7,7 +7,6 @@ import { EntityProps } from "../common/EntityProps";
 import { ClassRegistry } from "./ClassRegistry";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
-import { BriefcaseManager } from "./BriefcaseManager";
 import { DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 
 /** The primitive types of an Entity property. */
@@ -58,13 +57,12 @@ export class Entity implements EntityProps {
     return val;
   }
 
-  /**
-   * Add the lock, code, and other resource requests that would be needed in order to carry out the specified operation.
-   * @param _req The request object, which accumulates requests.
-   * @param _opcode The operation that will be performed on the element.
-   */
-  public buildResourcesRequest(_req: BriefcaseManager.ResourcesRequest, _opcode: DbOpcode): void {
-    // subclasses must override this method to build a request for the resources they know that they need.
+ /**
+  * Add a request for locks, code reservations, and anything else that would be needed in order to carry out the specified operation.
+  * @param _opcode The operation that will be performed on the element.
+  */
+  public buildConcurrencyControlRequest(_opcode: DbOpcode): void {
+    // subclasses must override this method to build a request for the locks and codes and other concurrency control token that they know that they need.
   }
 
   /** call a function for each property of this Entity. Function arguments are property name and property metadata. */

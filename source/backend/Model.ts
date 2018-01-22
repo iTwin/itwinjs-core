@@ -7,7 +7,6 @@ import { ModelProps, GeometricModel2dProps } from "../common/ModelProps";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { BriefcaseManager } from "./BriefcaseManager";
 
 /**
  * A Model is a container for persisting a collection of related elements within an iModel.
@@ -44,12 +43,11 @@ export class Model extends Entity implements ModelProps {
   }
 
   /**
-   * Add the lock, code, and other resource requests that would be needed in order to carry out the specified operation.
-   * @param req The request object, which accumulates requests.
+   * Add a request for the locks that would be needed in order to carry out the specified operation.
    * @param opcode The operation that will be performed on the element.
    */
-  public buildResourcesRequest(req: BriefcaseManager.ResourcesRequest, opcode: DbOpcode): void {
-    this.iModel.buildResourcesRequestForModel(req, this, opcode);
+  public buildConcurrencyControlRequest(opcode: DbOpcode): void {
+    this.iModel.concurrencyControl.buildRequestForModel(this, opcode);
   }
 }
 

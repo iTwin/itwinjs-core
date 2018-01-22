@@ -642,7 +642,6 @@ describe("iModel", () => {
     const testImodel = imodel2;
 
     const codeSpec: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec1", CodeScopeSpec.Type.Model);
-    // TODO: codeSpec.buildResourcesRequest + tesetImodel.requestResources
     const codeSpecId: Id64 = testImodel.codeSpecs.insert(codeSpec); // throws in case of error
     assert.deepEqual(codeSpecId, codeSpec.id);
 
