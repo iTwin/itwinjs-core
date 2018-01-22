@@ -6,7 +6,7 @@ import { Viewport } from "./Viewport";
 import { DecorateContext } from "./ViewContext";
 
 /**
- * Sprites are (typically) small raster images that are drawn "on top" of Viewports by a ViewDecoration.
+ * Sprites are small raster images that are drawn "on top" of Viewports by a ViewDecoration.
  * Their purpose is to draw the user's attention to something of importance.
  * <p>
  * There are two classes in the Sprites subsystem: ISprite (a Sprite Definition) and SpriteLocation.
