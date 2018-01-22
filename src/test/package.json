@@ -11,6 +11,7 @@
   "scripts": {
     "build": "tsc",
     "clean": "rimraf lib",
+    "lint": "tslint -p ./tsconfig.json",
     "test": "concurrently --names \"BACKEND,FRONTEND,INTEGRATION\" \"npm run test:unit:backend\" \"npm run test:unit:frontend\" \"npm run test:integration\"",
     "test:unit": "concurrently --names \"BACKEND,FRONTEND\" \"npm run test:unit:backend\" \"npm run test:unit:frontend\"",
     "test:unit:frontend": "node node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/unit/frontend\"",
@@ -39,6 +40,7 @@
     "nyc": "^11.4.1",
     "rimraf": "^2.6.2",
     "tsconfig-paths": "^2.6.0",
+    "tslint": "^5.8.0",
     "typemoq": "^2.1.0"
   }
 }

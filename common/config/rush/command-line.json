@@ -6,6 +6,12 @@
       "summary": "Cleans all projects",
       "documentation": "Cleans build output from every project",
       "parallelized": true
+    },
+    {
+      "name": "lint",
+      "summary": "Lints all projects",
+      "documentation": "Runs Linter on every project",
+      "parallelized": true
     }
   ]
 }

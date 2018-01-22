@@ -21,15 +21,13 @@
   "scripts": {
     "build": "echo use 'rush rebuild'",
     "clean": "echo use 'rush clean'",
-    "publish": "echo use 'rush publish'",
+    "lint": "echo use 'rush lint'",
     "start": "cd src/sample && npm start",
-    "lint": "node node_modules/@bentley/bentleyjs-tools/scripts/tslint.js",
     "test": "cd src/test && npm run test"
   },
   "dependencies": {},
   "devDependencies": {
     "@bentley/bentleyjs-tools": "^1.0.58",
-    "tslint": "^5.8.0",
     "tslint-consistent-codestyle": "^1.11.0",
     "typescript": "^2.6.2"
   }
