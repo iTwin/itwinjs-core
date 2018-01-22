@@ -5,7 +5,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { expect, assert } from "chai";
 import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { AccessToken, ChangeSet, IModel as HubIModel } from "@bentley/imodeljs-clients";
+import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "../common/IModelVersion";
 import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { IModelDb, ConcurrencyControl } from "../backend/IModelDb";
