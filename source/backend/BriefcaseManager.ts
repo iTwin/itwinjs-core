@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { AccessToken, Briefcase as HubBriefcase, IModelHubClient, ChangeSet, IModel as ConnectIModel, ContainsSchemaChanges, SeedFile, SeedFileInitState } from "@bentley/imodeljs-clients";
+import { AccessToken, Briefcase as HubBriefcase, IModelHubClient, ChangeSet, IModel as HubIModel, ContainsSchemaChanges, SeedFile, SeedFileInitState } from "@bentley/imodeljs-clients";
 import { ChangeSetProcessOption } from "@bentley/bentleyjs-core/lib/Bentley";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -438,7 +438,7 @@ export class BriefcaseManager {
 
   /** Create a briefcase */
   private static async createBriefcase(accessToken: AccessToken, projectId: string, iModelId: string, openMode: OpenMode): Promise<BriefcaseEntry> {
-    const iModel: ConnectIModel = await BriefcaseManager.hubClient!.getIModel(accessToken, projectId, {
+    const iModel: HubIModel = await BriefcaseManager.hubClient!.getIModel(accessToken, projectId, {
       $select: "Name",
       $filter: "$id+eq+'" + iModelId + "'",
     });
@@ -798,15 +798,7 @@ export class BriefcaseManager {
 
     hubName = hubName || path.basename(pathname, ".bim");
 
-    const iModels: ConnectIModel[] = await BriefcaseManager.hubClient!.getIModels(accessToken, projectId, {
-      $select: "*",
-      $filter: "Name+eq+'" + hubName + "'",
-    });
-    for (const iModelTemp of iModels) {
-      await BriefcaseManager.hubClient!.deleteIModel(accessToken, projectId, iModelTemp.wsgId);
-    }
-
-    const iModel: ConnectIModel = await BriefcaseManager.hubClient!.createIModel(accessToken, projectId, hubName, hubDescription);
+    const iModel: HubIModel = await BriefcaseManager.hubClient!.createIModel(accessToken, projectId, hubName, hubDescription);
 
     const seedFile: SeedFile = await BriefcaseManager.hubClient!.uploadSeedFile(accessToken, iModel.wsgId, pathname, hubDescription)
       .catch(async () => {

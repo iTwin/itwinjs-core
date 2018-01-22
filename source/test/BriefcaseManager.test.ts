@@ -5,7 +5,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { expect, assert } from "chai";
 import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { AccessToken, ChangeSet } from "@bentley/imodeljs-clients";
+import { AccessToken, ChangeSet, IModel as HubIModel } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "../common/IModelVersion";
 import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { IModelDb } from "../backend/IModelDb";
@@ -175,15 +175,21 @@ describe("BriefcaseManager", () => {
     iModel.close(accessToken);
   });
 
-  it.skip ("should create and delete an iModel on the Hub", async () => {
-    const pathname = path.join(__dirname, "assets", "ReadWriteTest.bim");
+  it.skip("should write to briefcase with optimistic concurrency", async () => {
+    // Delete any existing iModels with the same name as the read-write test iModel
+    const iModelName = "ReadWriteTest";
+    const iModels: HubIModel[] = await IModelTestUtils.hubClient.getIModels(accessToken, testProjectId, {
+      $select: "*",
+      $filter: "Name+eq+'" + iModelName + "'",
+    });
+    for (const iModelTemp of iModels) {
+      await IModelTestUtils.hubClient.deleteIModel(accessToken, testProjectId, iModelTemp.wsgId);
+    }
+
+    // Create a new iModel on the Hub (by uploading a seed file)
+    const pathname = path.join(__dirname, "assets", iModelName + ".bim");
     const rwIModelId: string = await BriefcaseManager.uploadIModel(accessToken, testProjectId, pathname);
     assert.isNotEmpty(rwIModelId);
-  });
-
-  it.skip("should write to briefcase with optimistic concurrency", async () => {
-
-    const rwIModelId: string = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "ReadWriteTest");
 
     // Acquire a briefcase from iModelHub
     const rwIModel: IModelDb = await IModelDb.open(accessToken, testProjectId, rwIModelId, OpenMode.ReadWrite);
@@ -219,10 +225,12 @@ describe("BriefcaseManager", () => {
     // Commit the local changes to a local transaction in the briefcase.
     rwIModel.saveChanges("inserted generic objects");
 
+    // Push the changes to the hub
     await rwIModel.changeSets.push(accessToken);
 
     // Open a readonly copy of the iModel
     const roIModel: IModelDb = await IModelDb.open(accessToken, testProjectId, rwIModelId, OpenMode.Readonly, IModelVersion.latest());
+    assert.exists(roIModel);
 
     rwIModel.close(accessToken);
     roIModel.close(accessToken);
@@ -260,11 +268,9 @@ describe("BriefcaseManager", () => {
     iModel.close(accessToken);
   });
 
-  // should not be able to open the same iModel both Readonly and ReadWrite
-  // should not be able to open two copies of the iModel in ReadWrite mode
-  // Readme briefcases should always be standalone.
-  // should keep previously downloaded seed files and change sets
-  // should not reuse open briefcases in ReadWrite mode
+  // should open the same iModel+Latest+UserId combination in ReadOnly and ReadWrite connections
+  // should open the same iModel+Latest+UserId combination in ReadWrite and ReadWrite connections
+  // should not re-download previously downloaded seed files and change sets.
   // should not reuse open briefcases for different versions in Readonly mode
   // should reuse closed briefcases for newer versions
   // should not reuse closed briefcases for older versions
