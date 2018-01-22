@@ -159,7 +159,7 @@ describe("ECDb", () => {
         return;
       }
 
-      const map = new Map<string, BindingValue>([
+      const map = new Map<string, any>([
         ["instanceId", testInstanceId],
       ]);
       rows = ecdb.executeQuery("SELECT * FROM TestSchema.TestClass WHERE ECInstanceId=:instanceId", map);

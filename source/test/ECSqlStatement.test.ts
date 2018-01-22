@@ -83,7 +83,7 @@ describe("ECSqlStatement", () => {
 
     expectedId = new Id64([4446, 0]);
     r = ecdb.withPreparedStatement("INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(?,?)", (stmt) => {
-      stmt.bindValues2([expectedId, "4446.txt"]);
+      stmt.bindValues([expectedId, "4446.txt"]);
       return stmt.stepForInsert();
       });
     verify(ecdb, r, expectedId);
@@ -91,7 +91,7 @@ describe("ECSqlStatement", () => {
     expectedId = new Id64([4447, 0]);
     r = ecdb.withPreparedStatement("INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(:id,:name)", (stmt) => {
       const values = new Map<string, any>([["id", expectedId], ["name", "4447.txt"]]);
-      stmt.bindValues2(values);
+      stmt.bindValues(values);
       return stmt.stepForInsert();
       });
     verify(ecdb, r, expectedId);
