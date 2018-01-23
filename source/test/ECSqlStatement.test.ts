@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { ECDbTestHelper } from "./ECDbTestHelper";
-import { ECSqlInsertResult, DateTime, Blob } from "../backend/ECSqlStatement";
+import { ECSqlInsertResult, DateTime, Blob, Int64, NavigationValue } from "../backend/ECSqlStatement";
 import { ECDb } from "../backend/ECDb";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
@@ -74,9 +74,10 @@ describe("ECSqlStatement", () => {
   });
 });
 
-  it("Bind Scenarios", () => {using (ECDbTestHelper.createECDb(_outDir, "bindscenarios.ecdb",
-    `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
-    <ECStructClass typeName="MyStruct" modifier="Sealed">
+  it("Bind Primitives", () => {
+  using (ECDbTestHelper.createECDb(_outDir, "bindprimitives.ecdb",
+  `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+  <ECStructClass typeName="MyStruct" modifier="Sealed">
       <ECProperty propertyName="Bl" typeName="binary"/>
       <ECProperty propertyName="Bo" typeName="boolean"/>
       <ECProperty propertyName="D" typeName="double"/>
@@ -88,7 +89,7 @@ describe("ECSqlStatement", () => {
       <ECProperty propertyName="P3d" typeName="Point3d"/>
       <ECProperty propertyName="S" typeName="string"/>
     </ECStructClass>
-    <ECEntityClass typeName="Parent" modifier="Sealed">
+    <ECEntityClass typeName="Foo" modifier="Sealed">
       <ECProperty propertyName="Bl" typeName="binary"/>
       <ECProperty propertyName="Bo" typeName="boolean"/>
       <ECProperty propertyName="D" typeName="double"/>
@@ -99,10 +100,293 @@ describe("ECSqlStatement", () => {
       <ECProperty propertyName="P2d" typeName="Point2d"/>
       <ECProperty propertyName="P3d" typeName="Point3d"/>
       <ECProperty propertyName="S" typeName="string"/>
-      <ECArrayProperty propertyName="I_Array" typeName="int"/>
-      <ECArrayProperty propertyName="Dt_Array" typeName="dateTime"/>
       <ECStructProperty propertyName="Struct" typeName="MyStruct"/>
-      <ECStructArrayProperty propertyName="Struct_Array" typeName="MyStruct"/>
+    </ECEntityClass>
+    </ECSchema>`), (ecdb) => {
+    assert.isTrue(ecdb.isOpen());
+
+    const blobVal = new Blob("SGVsbG8gd29ybGQNCg==");
+    const boolVal: boolean = true;
+    const doubleVal: number = 3.5;
+    const dtVal = new DateTime("2018-01-23T12:24:00.000");
+    const intVal: number = 3;
+    const int64Val = new Int64("0x4122a1");
+    const p2dVal = new Point2d(1, 2);
+    const p3dVal = new Point3d(1, 2, 3);
+    const strVal: string = "Hello world";
+
+    const verify = (expectedId: Id64) => {
+      ecdb.withPreparedStatement("SELECT Bl,Bo,D,Dt,I,L,P2d,P3d,S,Struct.Bl s_bl,Struct.Bo s_bo,Struct.D s_d,Struct.Dt s_dt,Struct.I s_i,Struct.L s_l,Struct.P2d s_p2d,Struct.P3d s_p3d,Struct.S s_s FROM test.Foo WHERE ECInstanceId=?", (stmt) => {
+        stmt.bindId(1, expectedId);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+        const row = stmt.getRow();
+        assert.equal(row.bl, blobVal.base64);
+        assert.equal(row.bo, boolVal);
+        assert.equal(row.d, doubleVal);
+        assert.equal(row.dt, dtVal.isoString);
+        assert.equal(row.i, intVal);
+        assert.equal(row.l, int64Val.value as string);
+        assert.equal(row.p2d.x, p2dVal.x);
+        assert.equal(row.p2d.y, p2dVal.y);
+        assert.equal(row.p3d.x, p3dVal.x);
+        assert.equal(row.p3d.y, p3dVal.y);
+        assert.equal(row.p3d.z, p3dVal.z);
+        assert.equal(row.s, strVal);
+
+        assert.equal(row.s_bl, blobVal.base64);
+        assert.equal(row.s_bo, boolVal);
+        assert.equal(row.s_d, doubleVal);
+        assert.equal(row.s_dt, dtVal.isoString);
+        assert.equal(row.s_i, intVal);
+        assert.equal(row.s_l, int64Val.value as string);
+        assert.equal(row.s_p2d.x, p2dVal.x);
+        assert.equal(row.s_p2d.y, p2dVal.y);
+        assert.equal(row.s_p3d.x, p3dVal.x);
+        assert.equal(row.s_p3d.y, p3dVal.y);
+        assert.equal(row.s_p3d.z, p3dVal.z);
+        assert.equal(row.s_s, strVal);
+      });
+    };
+
+    const ids = new Array<Id64>();
+    ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl,Bo,D,Dt,I,L,P2d,P3d,S,Struct.Bl,Struct.Bo,Struct.D,Struct.Dt,Struct.I,Struct.L,Struct.P2d,Struct.P3d,Struct.S) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (stmt) => {
+      stmt.bindBlob(1, blobVal);
+      stmt.bindBoolean(2, boolVal);
+      stmt.bindDouble(3, doubleVal);
+      stmt.bindDateTime(4, dtVal);
+      stmt.bindInt(5, intVal);
+      stmt.bindInt64(6, int64Val);
+      stmt.bindPoint2d(7, p2dVal);
+      stmt.bindPoint3d(8, p3dVal);
+      stmt.bindString(9, strVal);
+      stmt.bindBlob(10, blobVal);
+      stmt.bindBoolean(11, boolVal);
+      stmt.bindDouble(12, doubleVal);
+      stmt.bindDateTime(13, dtVal);
+      stmt.bindInt(14, intVal);
+      stmt.bindInt64(15, int64Val);
+      stmt.bindPoint2d(16, p2dVal);
+      stmt.bindPoint3d(17, p3dVal);
+      stmt.bindString(18, strVal);
+
+      let res: ECSqlInsertResult = stmt.stepForInsert();
+      assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+      ids.push(res.id!);
+      stmt.reset();
+      stmt.clearBindings();
+      stmt.bindValues([blobVal, boolVal, doubleVal, dtVal, intVal, int64Val, p2dVal, p3dVal, strVal, blobVal, boolVal, doubleVal, dtVal, intVal, int64Val, p2dVal, p3dVal, strVal]);
+
+      res = stmt.stepForInsert();
+      assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+      ids.push(res.id!);
+    });
+
+    ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl,Bo,D,Dt,I,L,P2d,P3d,S,Struct.Bl,Struct.Bo,Struct.D,Struct.Dt,Struct.I,Struct.L,Struct.P2d,Struct.P3d,Struct.S) VALUES(:bl,:bo,:d,:dt,:i,:l,:p2d,:p3d,:s,:s_bl,:s_bo,:s_d,:s_dt,:s_i,:s_l,:s_p2d,:s_p3d,:s_s)", (stmt) => {
+      stmt.bindBlob("bl", blobVal);
+      stmt.bindBoolean("bo", boolVal);
+      stmt.bindDouble("d", doubleVal);
+      stmt.bindDateTime("dt", dtVal);
+      stmt.bindInt("i", intVal);
+      stmt.bindInt64("l", int64Val);
+      stmt.bindPoint2d("p2d", p2dVal);
+      stmt.bindPoint3d("p3d", p3dVal);
+      stmt.bindString("s", strVal);
+
+      stmt.bindBlob("s_bl", blobVal);
+      stmt.bindBoolean("s_bo", boolVal);
+      stmt.bindDouble("s_d", doubleVal);
+      stmt.bindDateTime("s_dt", dtVal);
+      stmt.bindInt("s_i", intVal);
+      stmt.bindInt64("s_l", int64Val);
+      stmt.bindPoint2d("s_p2d", p2dVal);
+      stmt.bindPoint3d("s_p3d", p3dVal);
+      stmt.bindString("s_s", strVal);
+
+      let res: ECSqlInsertResult = stmt.stepForInsert();
+      assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+      ids.push(res.id!);
+      stmt.reset();
+      stmt.clearBindings();
+      stmt.bindValues(new Map<string, any>([["bl", blobVal], ["bo", boolVal], ["d", doubleVal], ["dt", dtVal],
+            ["i", intVal], ["l", int64Val], ["p2d", p2dVal], ["p3d", p3dVal], ["s", strVal],
+            ["s_bl", blobVal], ["s_bo", boolVal], ["s_d", doubleVal], ["s_dt", dtVal],
+            ["s_i", intVal], ["s_l", int64Val], ["s_p2d", p2dVal], ["s_p3d", p3dVal], ["s_s", strVal]]));
+
+      res = stmt.stepForInsert();
+      assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+      ids.push(res.id!);
+      });
+
+    for (const id of ids) {
+      verify(id);
+      }
+    });
+  });
+
+  it("Bind Structs", () => {
+    using (ECDbTestHelper.createECDb(_outDir, "bindstructs.ecdb",
+    `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+      <ECStructClass typeName="MyStruct" modifier="Sealed">
+        <ECProperty propertyName="Bl" typeName="binary"/>
+        <ECProperty propertyName="Bo" typeName="boolean"/>
+        <ECProperty propertyName="D" typeName="double"/>
+        <ECProperty propertyName="Dt" typeName="dateTime"/>
+        <ECProperty propertyName="G" typeName="Bentley.Geometry.Common.IGeometry"/>
+        <ECProperty propertyName="I" typeName="int"/>
+        <ECProperty propertyName="L" typeName="long"/>
+        <ECProperty propertyName="P2d" typeName="Point2d"/>
+        <ECProperty propertyName="P3d" typeName="Point3d"/>
+        <ECProperty propertyName="S" typeName="string"/>
+      </ECStructClass>
+      <ECEntityClass typeName="Foo" modifier="Sealed">
+        <ECStructProperty propertyName="Struct" typeName="MyStruct"/>
+      </ECEntityClass>
+      </ECSchema>`), (ecdb) => {
+      assert.isTrue(ecdb.isOpen());
+
+      const structVal = {bl: new Blob("SGVsbG8gd29ybGQNCg=="), bo : true, d : 3.5, dt: new DateTime("2018-01-23T12:24:00.000"),
+                          i: 3, l: new Int64("0x4122a1"), p2d: new Point2d(1, 2), p3d: new Point3d(1, 2, 3), s: "Hello World"};
+
+      const verify = (expectedId: Id64) => {
+        ecdb.withPreparedStatement("SELECT Struct FROM test.Foo WHERE ECInstanceId=?", (stmt) => {
+          stmt.bindId(1, expectedId);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row = stmt.getRow();
+          assert.equal(row.struct.bl, structVal.bl.base64);
+          assert.equal(row.struct.bo, structVal.bo);
+          assert.equal(row.struct.d, structVal.d);
+          assert.equal(row.struct.dt, structVal.dt.isoString);
+          assert.equal(row.struct.i, structVal.i);
+          assert.equal(row.struct.l, structVal.l.value as string);
+          assert.equal(row.struct.p2d.x, structVal.p2d.x);
+          assert.equal(row.struct.p2d.y, structVal.p2d.y);
+          assert.equal(row.struct.p3d.x, structVal.p3d.x);
+          assert.equal(row.struct.p3d.y, structVal.p3d.y);
+          assert.equal(row.struct.p3d.z, structVal.p3d.z);
+          assert.equal(row.struct.s, structVal.s);
+      });
+
+        ecdb.withPreparedStatement("INSERT INTO test.Foo(Struct) VALUES(?)", (stmt) => {
+          stmt.bindStruct(1, structVal);
+          const res: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          verify(res.id!);
+        });
+
+        ecdb.withPreparedStatement("INSERT INTO test.Foo(Struct) VALUES(?)", (stmt) => {
+          stmt.bindValues([structVal]);
+          const res: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          verify(res.id!);
+        });
+
+        ecdb.withPreparedStatement("INSERT INTO test.Foo(Struct) VALUES(:str)", (stmt) => {
+          stmt.bindStruct("str", structVal);
+          const res: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          verify(res.id!);
+        });
+
+        ecdb.withPreparedStatement("INSERT INTO test.Foo(Struct) VALUES(:str)", (stmt) => {
+          stmt.bindValues(new Map<string, any> ([["str", structVal]]));
+          const res: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          verify(res.id!);
+        });
+      };
+    });
+  });
+
+  it("Bind Arrays", () => {
+    using (ECDbTestHelper.createECDb(_outDir, "bindstructs.ecdb",
+    `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+      <ECStructClass typeName="Location" modifier="Sealed">
+        <ECProperty propertyName="City" typeName="string"/>
+        <ECProperty propertyName="Zip" typeName="int"/>
+      </ECStructClass>
+      <ECEntityClass typeName="Foo" modifier="Sealed">
+        <ECArrayProperty propertyName="I_Array" typeName="int"/>
+        <ECArrayProperty propertyName="Dt_Array" typeName="dateTime"/>
+        <ECStructArrayProperty propertyName="Addresses" typeName="Location"/>
+      </ECEntityClass>
+      </ECSchema>`), (ecdb) => {
+      assert.isTrue(ecdb.isOpen());
+
+      const intArray = [1, 2, 3];
+      const dtArray = [new DateTime("2018-01-23T00:00:00.000"), new DateTime("2018-01-23T16:39:00.000")];
+      const addressArray = [{city: "London", zip: 10000}, {city: "Manchester", zip: 20000}, {city: "Edinburgh", zip: 30000}];
+
+      const verify = (expectedId: Id64) => {
+        ecdb.withPreparedStatement("SELECT I_Array, Dt_Array, Addresses FROM test.Foo WHERE ECInstanceId=?", (stmt) => {
+        stmt.bindId(1, expectedId);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+        const row = stmt.getRow();
+
+        // don't know why assert.equal doesn't work on arrays directly
+        assert.equal(row.i_Array.length, intArray.length);
+        for (let i = 0; i < intArray.length; i++) {
+          assert.equal(row.i_Array[i], intArray[i]);
+        }
+
+        assert.equal(row.dt_Array.length, dtArray.length);
+        for (let i = 0; i < dtArray.length; i++) {
+          assert.equal(row.dt_Array[i], dtArray[i].isoString);
+        }
+
+        assert.equal(row.addresses.length, addressArray.length);
+        for (let i = 0; i < addressArray.length; i++) {
+          assert.equal(row.addresses[i].city, addressArray[i].city);
+          assert.equal(row.addresses[i].zip, addressArray[i].zip);
+        }
+        });
+        };
+
+      ecdb.withPreparedStatement("INSERT INTO test.Foo(I_Array,Dt_Array,Addresses) VALUES(?,?,?)", (stmt) => {
+          stmt.bindArray(1, intArray);
+          stmt.bindArray(2, dtArray);
+          stmt.bindArray(3, addressArray);
+          const res: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          verify(res.id!);
+        });
+
+      ecdb.withPreparedStatement("INSERT INTO test.Foo(I_Array,Dt_Array,Addresses) VALUES(?,?,?)", (stmt) => {
+          stmt.bindValues([intArray, dtArray, addressArray]);
+          const res: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          verify(res.id!);
+        });
+
+      ecdb.withPreparedStatement("INSERT INTO test.Foo(I_Array,Dt_Array,Addresses) VALUES(:iarray,:dtarray,:addresses)", (stmt) => {
+          stmt.bindArray("iarray", intArray);
+          stmt.bindArray("dtarray", dtArray);
+          stmt.bindArray("addresses", addressArray);
+          const res: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          verify(res.id!);
+        });
+
+      ecdb.withPreparedStatement("INSERT INTO test.Foo(I_Array,Dt_Array,Addresses) VALUES(:iarray,:dtarray,:addresses)", (stmt) => {
+          stmt.bindValues(new Map<string, any> ([["iarray", intArray], ["dtarray", dtArray], ["addresses", addressArray]]));
+          const res: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          verify(res.id!);
+        });
+    });
+  });
+
+  it("Bind Navigation", () => {using (ECDbTestHelper.createECDb(_outDir, "bindnavigation.ecdb",
+    `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+    <ECEntityClass typeName="Parent" modifier="Sealed">
+      <ECProperty propertyName="Code" typeName="string"/>
     </ECEntityClass>
     <ECEntityClass typeName="Child" modifier="Sealed">
       <ECProperty propertyName="Name" typeName="string"/>
@@ -120,65 +404,62 @@ describe("ECSqlStatement", () => {
 
     assert.isTrue(ecdb.isOpen());
 
-    const stat: DbResult = ecdb.withPreparedStatement("INSERT INTO test.Parent(Bo,Dt) VALUES(?,?)", (stmt) => {
-      stmt.bindBoolean(1, true);
-      stmt.bindDateTime(2, new DateTime("2018-01-18"));
-
-      return stmt.step();
-    });
-    assert.equal(stat, DbResult.BE_SQLITE_DONE);
-
-    // Scenario Bind Id
-    ecdb.withPreparedStatement("SELECT * FROM test.Parent WHERE ECInstanceId=:id AND ECClassId=:classid", (stmt) => {
-      stmt.bindId("id", new Id64("0x1"));
-      stmt.bindId("classid", new Id64("0x4443434"));
+    const parentId: Id64 = ecdb.withPreparedStatement("INSERT INTO test.Parent(Code) VALUES('Parent 1')", (stmt) => {
+      const res: ECSqlInsertResult = stmt.stepForInsert();
+      assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+      assert.isDefined(res.id);
+      return res.id!;
     });
 
-    // Scenario Bind primitives
-    ecdb.withPreparedStatement("INSERT INTO test.Parent(Bl,Bo,D,Dt,I,P2d,P3d,S) VALUES(?,?,?,?,?,?,?,?)", (stmt) => {
+    const childIds = new Array<Id64>();
+    ecdb.withPreparedStatement("INSERT INTO test.Child(Name,Parent) VALUES(?,?)", (stmt) => {
+      stmt.bindString(1, "Child 1");
+      stmt.bindNavigation(2, new NavigationValue(parentId, "Test.ParentHasChildren"));
+      let res: ECSqlInsertResult = stmt.stepForInsert();
+      assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+      assert.isDefined(res.id);
+      childIds.push(res.id!);
 
-      stmt.bindBlob(1, new Blob("jA0EAwMCxamDR=="));
-      stmt.bindBoolean(2, true);
-      stmt.bindDouble(3, 3.14);
-      stmt.bindDateTime(4, new DateTime("2018-01-01"));
-      stmt.bindInt(5, 100);
-      stmt.bindPoint2d(6, Point2d.create(1, 2));
-      stmt.bindPoint3d(7, Point3d.create(1, 2, 3));
-      stmt.bindString(8, "Hello");
+      stmt.reset();
+      stmt.clearBindings();
 
-      assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      stmt.bindValues(["Child 2", new NavigationValue(parentId, "Test.ParentHasChildren")]);
+      res = stmt.stepForInsert();
+      assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+      assert.isDefined(res.id);
+      childIds.push(res.id!);
     });
-    // Scenario Struct
-    ecdb.withPreparedStatement("INSERT INTO test.Parent(Struct) VALUES(?)", (stmt) => {
-        stmt.bindStruct(1, {
-        Bl: new Blob("jA0EAwMCxamDR=="),
-        Bo: true,
-        Dt: new DateTime("2018-01-01"),
-        D: 3.14,
-        I: 100,
-        P2d: Point2d.create(1, 2), P3d: Point3d.create(1, 2, 3),
-        S: "Hello World"});
+
+    ecdb.withPreparedStatement("INSERT INTO test.Child(Name,Parent) VALUES(:name,:parent)", (stmt) => {
+      stmt.bindString("name", "Child 3");
+      stmt.bindNavigation("parent", new NavigationValue(parentId, "Test.ParentHasChildren"));
+      let res: ECSqlInsertResult = stmt.stepForInsert();
+      assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+      assert.isDefined(res.id);
+      childIds.push(res.id!);
+
+      stmt.reset();
+      stmt.clearBindings();
+
+      stmt.bindValues(new Map<string, any>([["name", "Child 4"], ["parent", new NavigationValue(parentId, "Test.ParentHasChildren")]]));
+      res = stmt.stepForInsert();
+      assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+      assert.isDefined(res.id);
+      childIds.push(res.id!);
+    });
+
+    ecdb.withPreparedStatement("SELECT Name,Parent FROM test.Child ORDER BY Name", (stmt) => {
+      let rowCount: number = 0;
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        rowCount++;
+        const row = stmt.getRow();
+        assert.equal(row.name, "Child " + rowCount);
+        assert.equal(row.parent.id, parentId.toString());
+        assert.equal(row.parent.relClassName, "Test.ParentHasChildren");
+      }
+      assert.equal(rowCount, 4);
       });
-
-    // Scenario Struct Array
-    ecdb.withPreparedStatement("INSERT INTO test.Parent(Struct_Array) VALUES(?)", (stmt) => {
-      // same scenarios apply as for structs
-      stmt.bindArray(1, [{S: "Hello World", D: 3.14, Dt: new DateTime("2018-01-01")},
-                         {I: 123, P2d: Point2d.create(1, 2), P3d: Point3d.create(1, 2, 3)}]);
     });
-
-    // Scenario Int Array
-    ecdb.withPreparedStatement("INSERT INTO test.Parent(I_Array) VALUES(?)", (stmt) => {
-          stmt.bindArray(1, [10, 20]);
-        });
-
-    // Scenario DateTime Array
-    ecdb.withPreparedStatement("INSERT INTO test.Parent(Dt_Array) VALUES(?)", (stmt) => {
-      stmt.bindArray(1, [new DateTime("2018-01-01"), new DateTime("2018-01-02")]);
-    });
-
-  });
-
   });
 
   /* This test doesn't do anything specific with the binder life time but just runs a few scenarios

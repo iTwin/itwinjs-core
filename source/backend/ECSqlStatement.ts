@@ -351,13 +351,13 @@ class ECSqlBindingHelper {
       return;
     }
 
-    if (typeof(val) === "object") {
-      ECSqlBindingHelper.bindStruct(binder, val);
+    if (Array.isArray(val)) {
+      ECSqlBindingHelper.bindArray(binder, val);
       return;
     }
 
-    if (Array.isArray(val)) {
-      ECSqlBindingHelper.bindArray(binder, val);
+    if (typeof(val) === "object") {
+      ECSqlBindingHelper.bindStruct(binder, val);
       return;
     }
 
