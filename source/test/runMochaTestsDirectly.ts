@@ -1,3 +1,5 @@
+// Run selected backend mocha tests programmatically. We do this in the mobile platform.
+
 import * as Mocha from "mocha";
 import * as path from "path";
 
@@ -6,7 +8,6 @@ const mocha = new Mocha();
 
 const testDir = "/imjs/imodeljs-core/source/test/lib/test";
 
-debugger;
 mocha.addFile(path.join(testDir, "Category.test.js"));
 
 // Run the tests.
