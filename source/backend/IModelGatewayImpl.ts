@@ -4,7 +4,7 @@
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { CategorySelectorProps, ViewDefinitionProps } from "../common/ElementProps";
+import { ViewDefinitionProps } from "../common/ElementProps";
 import { EntityQueryParams } from "../common/EntityProps";
 import { Gateway } from "../common/Gateway";
 import { IModelToken, IModel } from "../common/IModel";

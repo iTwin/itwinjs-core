@@ -14,7 +14,7 @@ import { IModelDb } from "../backend/IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { using } from "@bentley/bentleyjs-core/lib/Disposable";
 
-describe.only("ChangeSummary", () => {
+describe("ChangeSummary", () => {
   let accessToken: AccessToken;
   let testProjectId: string;
   let testIModelId: string;
