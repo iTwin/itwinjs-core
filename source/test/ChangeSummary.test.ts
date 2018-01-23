@@ -12,8 +12,9 @@ import { ChangeSummaryManager } from "../backend/ChangeSummaryManager";
 import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { IModelDb } from "../backend/IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
+import { using } from "@bentley/bentleyjs-core/lib/Disposable";
 
-describe("ChangeSummary", () => {
+describe.only("ChangeSummary", () => {
   let accessToken: AccessToken;
   let testProjectId: string;
   let testIModelId: string;
@@ -72,7 +73,7 @@ describe("ChangeSummary", () => {
     assert(iModel.iModelToken.openMode === OpenMode.Readonly);
     try {
       assert.isFalse(ChangeSummaryManager.isChangeCacheAttached(iModel));
-      assert.throw(() => iModel.getPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary"));
+      assert.throw(() => using (iModel.getPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary"), () => {}));
 
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
