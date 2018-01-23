@@ -69,6 +69,8 @@ export class IModelDb extends IModel {
   }
 
   private static create(briefcaseEntry: BriefcaseEntry, contextId?: string): IModelDb {
+    if (briefcaseEntry.iModelDb)
+      return briefcaseEntry.iModelDb; // If there's an imodeldb already associated with the briefcase, that should be reused.
     const iModelToken = IModelToken.create(briefcaseEntry.iModelId, briefcaseEntry.changeSetId, briefcaseEntry.openMode, briefcaseEntry.userId, contextId);
     const props = JSON.parse(briefcaseEntry.nativeDb.getIModelProps()) as IModelProps;
     const name = props.rootSubject ? props.rootSubject.name : path.basename(briefcaseEntry.pathname);
