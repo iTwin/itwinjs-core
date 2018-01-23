@@ -110,15 +110,18 @@ export abstract class IModelGateway extends Gateway {
     return this.forward.apply(this, arguments);
   }
 
-  /** For unit test execution only.
-   * @hidden
-   */
+  /** For unit test execution only. */
   public executeTestById(_iModelToken: IModelToken, _id: number, _params: any): any {
     return this.forward.apply(this, arguments);
   }
 
   /** Query for the array of ViewDefinitions of the specified class and matching the specified IsPrivate setting. */
   public async queryViewDefinitionProps(_iModelToken: IModelToken, _className: string, _wantPrivate: boolean): Promise<ViewDefinitionProps[]> {
+    return this.forward.apply(this, arguments);
+  }
+
+  /** Get the ViewState data for the specified ViewDefinition */
+  public async getViewStateData(_iModelToken: IModelToken, _viewDefinitionId: string): Promise<any> {
     return this.forward.apply(this, arguments);
   }
 }

@@ -16,7 +16,7 @@ import { Category, SubCategory, SpatialCategory } from "../backend/Category";
 import { ClassRegistry } from "../backend/ClassRegistry";
 import { BisCore } from "../backend/BisCore";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
-import { GeometricElementProps, ModelSelectorProps } from "../common/ElementProps";
+import { GeometricElementProps, ModelSelectorProps, ViewDefinitionProps } from "../common/ElementProps";
 import {
   Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
   LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject,
@@ -360,6 +360,16 @@ describe("iModel", () => {
         assert.isDefined(drawingGraphic.geom);
       }
     }
+  });
+
+  it("should be able to query for ViewDefinitionProps", () => {
+    let viewDefinitionProps: ViewDefinitionProps[] = imodel2.views.queryViewDefinitionProps(); // query for all ViewDefinitions
+    assert.isAtLeast(viewDefinitionProps.length, 3);
+    assert.isTrue(viewDefinitionProps[0].classFullName.includes("ViewDefinition"));
+    assert.isFalse(viewDefinitionProps[1].isPrivate);
+    viewDefinitionProps = imodel2.views.queryViewDefinitionProps("BisCore.SpatialViewDefinition"); // limit query to SpatialViewDefinitions
+    assert.isAtLeast(viewDefinitionProps.length, 3);
+    assert.exists(viewDefinitionProps[2].modelSelectorId);
   });
 
   it("should be children of RootSubject", () => {

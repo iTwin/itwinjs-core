@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { ViewDefinitionProps } from "../common/ElementProps";
@@ -149,8 +150,23 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
     return iModelDb.executeTestById(id, params);
   }
 
+  /** Query for the array of ViewDefinitions of the specified class and matching the specified IsPrivate setting. */
   public async queryViewDefinitionProps(iModelToken: IModelToken, className: string, wantPrivate: boolean): Promise<ViewDefinitionProps[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     return iModelDb.views.queryViewDefinitionProps(className, wantPrivate);
+  }
+
+  /** Get the ViewState data for the specified ViewDefinition */
+  public async getViewStateData(iModelToken: IModelToken, viewDefinitionId: string): Promise<any> {
+    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    const viewStateData: any = {};
+    viewStateData.viewDefinitionProps = iModelDb.elements.getElementProps(new Id64(viewDefinitionId)) as ViewDefinitionProps;
+    viewStateData.categorySelectorProps = iModelDb.elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.categorySelectorId));
+    viewStateData.displayStyleProps = iModelDb.elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.displayStyleId));
+    if (viewStateData.viewDefinitionProps.baseModelId)
+      viewStateData.baseModelProps = iModelDb.elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.baseModelId));
+    if (viewStateData.viewDefinitionProps.modelSelectorId)
+      viewStateData.modelSelectorProps = iModelDb.elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.modelSelectorId));
+    return viewStateData;
   }
 }
