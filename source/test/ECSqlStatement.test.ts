@@ -2,43 +2,19 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
+import { ECDbTestHelper } from "./ECDbTestHelper";
 import { ECSqlInsertResult, DateTime, Blob } from "../backend/ECSqlStatement";
 import { ECDb } from "../backend/ECDb";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { using } from "@bentley/bentleyjs-core/lib/Disposable";
-import * as fs from "fs-extra";
 
 describe("ECSqlStatement", () => {
   const _outDir = __dirname + "/output/";
 
-  const setupECDb = (fileName: string, schemaXml?: string) => {
-    if (!fs.existsSync(_outDir))
-      fs.mkdirSync(_outDir);
-
-    const path = _outDir + fileName;
-    if (fs.existsSync(path))
-      fs.removeSync(path);
-
-    const ecdb = new ECDb();
-    ecdb.createDb(path);
-
-    if (schemaXml == null)
-      return ecdb;
-
-    const schemaPath = _outDir + Guid.createValue() + ".ecschema.xml";
-    if (fs.existsSync(schemaPath))
-      fs.removeSync(schemaPath);
-
-    fs.writeFileSync(schemaPath, schemaXml);
-
-    ecdb.importSchema(schemaPath);
-    return ecdb;
-  };
-
   it("Bind Ids", () => {
-    using (setupECDb("bindids.ecdb"), (ecdb) => {
+    using (ECDbTestHelper.createECDb(_outDir, "bindids.ecdb"), (ecdb) => {
 
     assert.isTrue(ecdb.isOpen());
 
@@ -98,7 +74,7 @@ describe("ECSqlStatement", () => {
   });
 });
 
-  it("Bind Scenarios", () => {using (setupECDb("bindscenarios.ecdb",
+  it("Bind Scenarios", () => {using (ECDbTestHelper.createECDb(_outDir, "bindscenarios.ecdb",
     `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
     <ECStructClass typeName="MyStruct" modifier="Sealed">
       <ECProperty propertyName="Bl" typeName="binary"/>
@@ -208,7 +184,7 @@ describe("ECSqlStatement", () => {
   /* This test doesn't do anything specific with the binder life time but just runs a few scenarios
      with and without statement cache to test that stuff works fine */
   it("ECSqlBinder life time", () => {
-    using (setupECDb("ecsqlbinderlifetime.ecdb",
+    using (ECDbTestHelper.createECDb(_outDir, "ecsqlbinderlifetime.ecdb",
     `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
     <ECStructClass typeName="Address" modifier="Sealed">
       <ECProperty propertyName="Street" typeName="string"/>
