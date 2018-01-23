@@ -1,7 +1,9 @@
 // Run selected backend mocha tests programmatically. We do this in the mobile platform.
 
-import * as Mocha from "mocha";
 import * as path from "path";
+import * as useless from "mocha";
+
+useless;
 
 // Instantiate a Mocha instance.
 const mocha = new Mocha();
