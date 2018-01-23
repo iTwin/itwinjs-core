@@ -20,7 +20,7 @@ const {
 } = require("react-dev-utils/WebpackDevServerUtils");
 const openBrowser = require("react-dev-utils/openBrowser");
 const paths = require("../config/paths");
-const config = require("../config/webpack.config.frontend");
+const config = require("../config/webpack.config.frontend.dev");
 const createDevServerConfig = require("../config/webpackDevServer.config");
 const { handleInterrupts } = require("./utils/simpleSpawn");
 

@@ -35,7 +35,45 @@ const createBentleySourceMapsIncludePaths = () => {
   return includePaths;
 };
 
+const _ = require("lodash");
+const merge = require("webpack-merge");
+const uniteRules = require("webpack-merge/lib/join-arrays-smart").uniteRules;
+
+const mergeWebpackConfigs = merge({
+  customizeArray: (a, b, key) => {
+    if (key === "module.rules") {
+      const preAndPostRules = [];
+      const oneOfRule = a.pop();
+      if (!oneOfRule.oneOf)
+        throw new Error("Failed to merge webpack configs.  The last entry in a base config's module.rules must be { oneOf: [...] }.");
+
+      b.forEach(rule => {
+        if (rule.enforce)
+          preAndPostRules.push(rule);
+        else
+          oneOfRule.oneOf.unshift(rule);
+      });
+
+      return [..._.unionWith(a, preAndPostRules, uniteRules.bind(null, {}, key)), oneOfRule];
+    }
+
+    // Fall back to default merging
+    return undefined;
+  },
+
+  customizeObject: (a, b, key) => undefined,
+});
+
+const modulesToExcludeFromTests = [
+  paths.appMainJs,
+  paths.appIndexJs,
+  paths.appSrcBackendElectron,
+  paths.appSrcBackendWeb,
+]
+
 module.exports = {
   createDevToolModuleFilename,
   createBentleySourceMapsIncludePaths,
+  mergeWebpackConfigs,
+  modulesToExcludeFromTests,
 };

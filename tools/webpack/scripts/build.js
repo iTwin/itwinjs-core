@@ -25,8 +25,8 @@ const FileSizeReporter = require("react-dev-utils/FileSizeReporter");
 const { buildFrontend, buildBackend } = require("./utils/buildBackend");
 
 const paths = require("../config/paths");
-const frontendConfig = require("../config/webpack.config.frontend");
-const backendConfig = require("../config/webpack.config.backend");
+const frontendConfig = require("../config/webpack.config.frontend.prod");
+const backendConfig = require("../config/webpack.config.backend.prod");
 
 function getBuildTarget() {
   if (process.argv.length < 4) {

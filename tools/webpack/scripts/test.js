@@ -25,11 +25,13 @@ const reporterOptions = (!CONTINUOUS_INTEGRATION) ? [ "--inline-diffs",  "--colo
 const watchOptions = (!CONTINUOUS_INTEGRATION && argv.watch) ? ["--watch", "--interactive"] : [];
 const debugOptions = (argv.debug) ? ["--inspect-brk=" + argv.debug] : [];
 
+const webpackConfig = require.resolve(`../config/webpack.config.${(isCoverage) ? "coverage" : "test" }.js`);
+
 // Start the tests
 const args = [
   ...debugOptions,
   require.resolve("mocha-webpack/lib/cli"),
-  "--webpack-config",  require.resolve("../config/webpack.config.test.js"),
+  "--webpack-config",  webpackConfig,
   "--require", require.resolve("./utils/jsdomSetup"),
   "--include", require.resolve("./utils/testSetup"),
   ...watchOptions,
