@@ -3,16 +3,21 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { BisCore } from "../backend/BisCore";
-import { Element } from "../backend/Element";
-import { IModelDb } from "../backend/IModelDb";
+import { Element, InformationPartitionElement } from "../backend/Element";
+import { IModelDb, ConcurrencyControl } from "../backend/IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
+import { ElementProps } from "../common/ElementProps";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
 
 /** Sample code organized as tests to make sure that it builds and runs successfully. */
 describe("Sample Code", () => {
   let iModel: IModelDb;
+  let accessToken: AccessToken;
 
-  before(() => {
+  before(async () => {
     iModel = IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
+    accessToken = await IModelTestUtils.getTestUserAccessToken();
   });
 
   after(() => {
@@ -24,7 +29,35 @@ describe("Sample Code", () => {
     assert.exists(s);
   };
 
-  it("should extract working sample code", () => {
+  // __PUBLISH_EXTRACT_START__ BisCore1.sampleCreateModel
+  function createNewModel(parentElement: Element, modelName: string, isModelPrivate: boolean): Id64 {
+
+    const outputImodel = parentElement.iModel;
+
+    // The modeled element's code
+    const modelCode = InformationPartitionElement.createCode(parentElement, modelName);
+
+    //  The modeled element
+    const modeledElementProps: ElementProps = {
+      classFullName: "BisCore:PhysicalPartition",
+      iModel: outputImodel,
+      parent: { id: parentElement.id, relClass: "BisCore:SubjectOwnsPartitionElements" },
+      model: iModel.models.repositoryModelId,
+      id: new Id64(),
+      code: modelCode,
+    };
+    const modeledElement: Element = outputImodel.elements.createElement(modeledElementProps);
+    const modeledElementId: Id64 = outputImodel.elements.insertElement(modeledElement);
+
+    // The model
+    const newModel = outputImodel.models.createModel({ id: new Id64(), modeledElement: modeledElementId, classFullName: "BisCore:PhysicalModel", isPrivate: isModelPrivate });
+    const newModelId = outputImodel.models.insertModel(newModel);
+
+    return newModelId;
+  }
+  // __PUBLISH_EXTRACT_END__
+
+  it("should extract working sample code", async () => {
     // __PUBLISH_EXTRACT_START__ BisCore1.sampleCode
     // Register any schemas that will be used directly
     BisCore.registerSchema();
@@ -40,6 +73,49 @@ describe("Sample Code", () => {
     doSomethingWithString(elementClass.schema.name);
     doSomethingWithString(elementClass.name);
     // __PUBLISH_EXTRACT_END__
+
+    // __PUBLISH_EXTRACT_START__ BisCore1.sampleSetPolicy
+    // Turn on optimistic concurrency control.
+    // This allows the app to modify elements, models, etc. without first acquiring locks.
+    // Later, when the app downloads and merges changeSets from iModelHub,
+    // IModelDb's ConcurrencyControl will merge changes and handle conflicts,
+    // as specified by this policy.
+    iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    // __PUBLISH_EXTRACT_END__
+
+    // __PUBLISH_EXTRACT_START__ BisCore1.sampleReserveCodesWithErrorHandling
+    try {
+      await iModel.concurrencyControl.codes.reserve(accessToken);
+    } catch (err) {
+      if (err instanceof ConcurrencyControl.RequestError) {
+          // Do something about err.unavailableCodes ...
+      }
+    }
+    // __PUBLISH_EXTRACT_END__
+
+    // Create a modeled element and a model.
+    const newModeledElementId = createNewModel(iModel.elements.getRootSubject(), "newModelCode", false);
+
+    // __PUBLISH_EXTRACT_START__ BisCore1.sampleConcurrencyControlRequest
+    // Now acquire all locks and reserve all codes needed.
+    // This is a *prequisite* to saving local changes.
+    try {
+      await iModel.concurrencyControl.request(accessToken);
+    } catch (err) {
+      // If we can't get *all* of the locks and codes that are needed,
+      // then we can't go on with this transaction as is.
+      // We could possibly make additional changes to remove the need
+      // for the resources that are unavailable. In this case,
+      // we will just bail out and print a message.
+      iModel.abandonChanges();
+      // report error ...
+    }
+    // Now we can commit the local changes to a local transaction in the
+    // IModelDb.
+    iModel.saveChanges("inserted generic objects");
+
+    // __PUBLISH_EXTRACT_END__
+    assert.isTrue(newModeledElementId !== undefined);
 
     // assertions to ensure sample code is working properly
     assert.equal(BisCore.name, elementClass.schema.name);

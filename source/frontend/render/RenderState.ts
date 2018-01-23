@@ -237,6 +237,15 @@ export class RenderStateBlend {
 //   }
 // }
 
+/** Encapsulates the state of an OpenGL context.
+ * In order to modify the context for a rendering operation, do *not* directly call
+ * functions like glDepthMask(), glBlendFunc(), etc - otherwise such calls may adversely
+ * affect subsequent rendering operations.
+ * Instead, set up a RenderState as desired and invoke Target::ApplyRenderState() or
+ * System::ApplyRenderState().
+ * The context tracks the most-recently applied RenderState, allowing it to minimize
+ * the number of GL state changes actually invoked, improving performance.
+ */
 export class RenderState {
   public flags: RenderStateFlags = new RenderStateFlags();
   public blend: RenderStateBlend = new RenderStateBlend();

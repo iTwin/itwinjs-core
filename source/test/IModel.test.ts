@@ -532,8 +532,8 @@ describe("iModel", () => {
     newExtents.high.x += 1087; newExtents.high.y += 19; newExtents.high.z += .001;
     imodel1.updateProjectExtents(newExtents);
 
-    assert.isDefined(imodel1.briefcaseInfo, "Briefcase info should be defined before getting iModel props");
-    const updatedProps = JSON.parse(imodel1.briefcaseInfo!.nativeDb.getIModelProps());
+    assert.isDefined(imodel1.briefcaseEntry, "Briefcase info should be defined before getting iModel props");
+    const updatedProps = JSON.parse(imodel1.briefcaseEntry!.nativeDb.getIModelProps());
     assert.isTrue(updatedProps.hasOwnProperty("projectExtents"), "Returned property JSON object has project extents");
     const updatedExtents = AxisAlignedBox3d.fromJSON(updatedProps.projectExtents);
     assert.isTrue(newExtents.isAlmostEqual(updatedExtents), "Project extents successfully updated in database");
@@ -572,8 +572,8 @@ describe("iModel", () => {
       assert.isNotNull(stmt);
       // Reject an attempt to bind when there are no placeholders in the statement
       try {
-        stmt.bindValues({ foo: 1 });
-        assert.fail("bindValues should have failed with an exception");
+        stmt.bindStruct(1, { foo: 1 });
+        assert.fail("bindStruct should have failed with an exception");
       } catch (err2) {
         assert.isTrue(err2.constructor.name === "IModelError");
         assert.notEqual(err2.status, DbResult.BE_SQLITE_OK);
@@ -619,7 +619,7 @@ describe("iModel", () => {
     imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element WHERE (ecinstanceid=?)", (stmt3: ECSqlStatement) => {
       // Now try a statement with a placeholder
       const idToFind: Id64 = new Id64(lastId);
-      stmt3.bindValues([idToFind]);
+      stmt3.bindId(1, idToFind);
       let count = 0;
       while (DbResult.BE_SQLITE_ROW === stmt3.step()) {
         count = count + 1;
@@ -634,7 +634,7 @@ describe("iModel", () => {
     imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element WHERE (codeValue = :codevalue)", (stmt4: ECSqlStatement) => {
       // Try a named placeholder
       const codeValueToFind = firstCodeValue;
-      stmt4.bindValues({ codeValue: codeValueToFind });
+      stmt4.bindString("codeValue", codeValueToFind);
       let count = 0;
       while (DbResult.BE_SQLITE_ROW === stmt4.step()) {
         count = count + 1;
@@ -652,7 +652,6 @@ describe("iModel", () => {
     const testImodel = imodel2;
 
     const codeSpec: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec1", CodeScopeSpec.Type.Model);
-    // TODO: codeSpec.buildResourcesRequest + tesetImodel.requestResources
     const codeSpecId: Id64 = testImodel.codeSpecs.insert(codeSpec); // throws in case of error
     assert.deepEqual(codeSpecId, codeSpec.id);
 

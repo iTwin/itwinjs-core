@@ -3,13 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 import { Transform, Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { Code } from "../common/Code";
+import { Code, CodeSpecNames } from "../common/Code";
 import { Placement3d, Placement2d, AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { GeometryStream, GeometryBuilder } from "../common/geometry/GeometryStream";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { BriefcaseManager } from "./BriefcaseManager";
 import {
   ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
   ViewAttachmentProps, SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,
@@ -76,13 +75,12 @@ export abstract class Element extends Entity implements ElementProps {
   /** remove a set of JSON user properties, specified by namespace, from this Element */
   public removeUserProperties(nameSpace: string) { delete this.getAllUserProperties()[nameSpace]; }
 
-  /**
-   * Add the lock, code, and other resource requests that would be needed in order to carry out the specified operation.
-   * @param req The request object, which accumulates requests.
-   * @param opcode The operation that will be performed on the element.
-   */
-  public buildResourcesRequest(req: BriefcaseManager.ResourcesRequest, opcode: DbOpcode): void {
-    this.iModel.buildResourcesRequestForElement(req, this, opcode);
+ /**
+  * Add a request for locks, code reservations, and anything else that would be needed in order to carry out the specified operation.
+  * @param opcode The operation that will be performed on the element.
+  */
+  public buildConcurrencyControlRequest(opcode: DbOpcode): void {
+    this.iModel.concurrencyControl.buildRequestForElement(this, opcode);
   }
 }
 
@@ -447,6 +445,13 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
 export abstract class InformationPartitionElement extends InformationContentElement implements InformationPartitionElementProps {
   public description?: string;
   public constructor(props: InformationPartitionElementProps, iModel: IModelDb) { super(props, iModel); }
+
+  /** Create a code that can be used for any kind of InformationPartitionElement. */
+  public static createCode(scopeElement: Element, codeValue: string): Code {
+    const codeSpec = scopeElement.iModel.codeSpecs.getCodeSpecByName(CodeSpecNames.InformationPartitionElement());
+    return new Code({ spec: codeSpec.id, scope: scopeElement.id.toString(), value: codeValue });
+  }
+
 }
 
 /**

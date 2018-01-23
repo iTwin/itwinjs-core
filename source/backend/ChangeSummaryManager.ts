@@ -5,13 +5,12 @@ import { AccessToken, ChangeSet, UserInfo } from "@bentley/imodeljs-clients";
 import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelDb } from "./IModelDb";
 import { ECDb } from "./ECDb";
+import { DateTime } from "./ECSqlStatement";
 import { IModelVersion } from "../common/IModelVersion";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { ECValue, ValueKind } from "./BindingUtility";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { PrimitiveTypeCode } from "./Entity";
 import { using } from "@bentley/bentleyjs-core/lib/Disposable";
 import * as path from "path";
 import * as fs from "fs";
@@ -41,13 +40,13 @@ export class ChangeSummaryManager {
    * @throws [[IModelError]]
    */
   public static attachChangeCache(iModel: IModelDb): void {
-    if (iModel == null || iModel.briefcaseInfo == null || iModel.briefcaseInfo.nativeDb == null)
+    if (iModel == null || iModel.briefcaseEntry == null || iModel.briefcaseEntry.nativeDb == null)
       throw new IModelError(IModelStatus.BadRequest);
 
-    if (iModel.briefcaseInfo.nativeDb!.isChangeCacheAttached())
+    if (iModel.briefcaseEntry.nativeDb!.isChangeCacheAttached())
       return;
 
-    const changesCacheFilePath: string = BriefcaseManager.buildChangeSummaryFilePath(iModel.briefcaseInfo.iModelId);
+    const changesCacheFilePath: string = BriefcaseManager.buildChangeSummaryFilePath(iModel.briefcaseEntry.iModelId);
     if (!fs.existsSync(changesCacheFilePath)) {
       using (new ECDb(), (changesFile) => {
         ChangeSummaryManager.createChangesFile(iModel, changesFile, changesCacheFilePath);
@@ -55,9 +54,9 @@ export class ChangeSummaryManager {
     }
 
     assert(fs.existsSync(changesCacheFilePath));
-    const res: DbResult = iModel.briefcaseInfo.nativeDb!.attachChangeCache(changesCacheFilePath);
+    const res: DbResult = iModel.briefcaseEntry.nativeDb!.attachChangeCache(changesCacheFilePath);
     if (res !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(res, `Failed to attach Changes cache file to ${iModel.briefcaseInfo.pathname}.`);
+      throw new IModelError(res, `Failed to attach Changes cache file to ${iModel.briefcaseEntry.pathname}.`);
   }
 
   /** Extracts change summaries from the specified range of changesets
@@ -143,11 +142,11 @@ export class ChangeSummaryManager {
   }
 
   private static openOrCreateChangesFile(iModel: IModelDb): ECDb {
-    if (iModel == null || iModel.briefcaseInfo == null || !iModel.briefcaseInfo.isOpen)
+    if (iModel == null || iModel.briefcaseEntry == null || !iModel.briefcaseEntry.isOpen)
       throw new IModelError(IModelStatus.BadArg);
 
     const changesFile = new ECDb();
-    const changesPath: string = BriefcaseManager.buildChangeSummaryFilePath(iModel.briefcaseInfo.iModelId);
+    const changesPath: string = BriefcaseManager.buildChangeSummaryFilePath(iModel.briefcaseEntry.iModelId);
     if (fs.existsSync(changesPath)) {
       changesFile.openDb(changesPath, OpenMode.ReadWrite);
       return changesFile;
@@ -158,7 +157,7 @@ export class ChangeSummaryManager {
   }
 
   private static createChangesFile(iModel: IModelDb, changesFile: ECDb, changesFilePath: string): void {
-    if (iModel == null || iModel.briefcaseInfo == null || !iModel.briefcaseInfo.isOpen)
+    if (iModel == null || iModel.briefcaseEntry == null || !iModel.briefcaseEntry.isOpen)
       throw new IModelError(IModelStatus.BadArg);
 
     assert(iModel.nativeDb != null);
@@ -177,7 +176,7 @@ export class ChangeSummaryManager {
   private static isSummaryAlreadyExtracted(changesFile: ECDb, changeSetId: string): boolean {
     return changesFile.withPreparedStatement("SELECT 1 FROM imodelchange.ChangeSet WHERE WsgId=?",
       (stmt) => {
-        stmt.bindValues([changeSetId]);
+        stmt.bindString(1, changeSetId);
         return DbResult.BE_SQLITE_ROW === stmt.step();
       });
   }
@@ -185,13 +184,11 @@ export class ChangeSummaryManager {
   private static addExtendedInfos(changesFile: ECDb, changeSummaryId: string, extendedInfo: ChangeSummaryExtendedInfo): void {
     changesFile.withPreparedStatement("INSERT INTO imodelchange.ChangeSet(Summary.Id,WsgId,ParentWsgId,PushDate,Author) VALUES(?,?,?,?,?)",
       (stmt) => {
-        // bindValues function has issues with detecting ECValues created as JS objects.
-        // until this is fixed, create pushDate ECValue this way.
-        const pushDate = new ECValue();
-        pushDate.kind = ValueKind.Primitive;
-        pushDate.type = PrimitiveTypeCode.DateTime;
-        pushDate.value = extendedInfo.pushDate;
-        stmt.bindValues([new Id64(changeSummaryId), extendedInfo.changeSetId, extendedInfo.parentChangeSetId, pushDate, extendedInfo.author]);
+        stmt.bindId(1, new Id64(changeSummaryId));
+        stmt.bindString(2, extendedInfo.changeSetId);
+        stmt.bindString(3, extendedInfo.parentChangeSetId);
+        stmt.bindDateTime(4, new DateTime(extendedInfo.pushDate));
+        stmt.bindString(5, extendedInfo.author);
         const r: DbResult = stmt.step();
         if (r !== DbResult.BE_SQLITE_DONE)
           throw new IModelError(r, "Failed to add changeset information to extracted change summary " + changeSummaryId);
