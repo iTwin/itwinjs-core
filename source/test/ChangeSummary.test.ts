@@ -96,7 +96,7 @@ describe("ChangeSummary", () => {
   }
   });
 
-  it("Attach ChangeCache file to invalid imodel", async () => {
+  it("Attach ChangeCache file to closed imodel", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
     await iModel.close(accessToken);
     assert.exists(iModel);
