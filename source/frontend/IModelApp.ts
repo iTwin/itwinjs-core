@@ -8,6 +8,7 @@ import { AccuSnap } from "./AccuSnap";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { TentativePoint } from "./TentativePoint";
 import { ToolRegistry, ToolGroup } from "./tools/Tool";
+import { FeatureGates } from "../common/FeatureGates";
 
 /** Global access to the IModelApp. Initialized by calling IModelApp.startup(). */
 export let iModelApp: IModelApp;
@@ -28,6 +29,7 @@ export class IModelApp {
   protected _accuSnap?: AccuSnap;
   protected _locateManager?: ElementLocateManager;
   protected _tentativePoint?: TentativePoint;
+  public readonly features = new FeatureGates();
   public readonly tools = new ToolRegistry();
 
   public get viewManager(): ViewManager { return this._viewManager!; }
@@ -80,4 +82,5 @@ export class IModelApp {
    * @note The default tools will already be registered, so if you register tools with the same toolId, your tools will override the defaults.
    */
   protected onStartup(): void { }
+
 }

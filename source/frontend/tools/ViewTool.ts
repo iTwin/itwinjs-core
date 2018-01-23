@@ -1317,14 +1317,14 @@ export class FitViewTool extends ViewTool {
 
 /** tool that performs a Pan view operation */
 export class PanTool extends ViewManip {
+  public static toolId = "View.Pan";
   constructor(vp: Viewport) { super(vp, ViewHandleType.ViewPan, false, false, false); }
-  public get toolId() { return "View.Pan"; }
 }
 
 /** tool that performs a Rotate view operation */
 export class RotateTool extends ViewManip {
+  public static toolId = "View.Rotate";
   constructor(vp: Viewport) { super(vp, ViewHandleType.ViewPan | ViewHandleType.Rotate, false, false, false); }
-  public get toolId() { return "View.Rotate"; }
 }
 
 /** tool that performs the walk operation */
@@ -1817,20 +1817,6 @@ export class ViewScrollTool extends ViewManip {
   public static toolId = "View.Scroll";
   constructor(vp: Viewport) {
     super(vp, ViewHandleType.ViewScroll, true, false, true);
-  }
-}
-
-export class ViewRotateTool extends ViewManip {
-  public static toolId = "View.Rotate";
-  constructor(vp: Viewport) {
-    super(vp, ViewHandleType.Rotate, true, false, true);
-  }
-}
-
-export class ViewPanTool extends ViewManip {
-  public static toolId = "View.Pan";
-  constructor(vp: Viewport) {
-    super(vp, ViewHandleType.ViewPan, true, false, true);
   }
 }
 

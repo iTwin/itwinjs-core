@@ -1,9 +1,9 @@
-Copyright © Bentley Systems, Inc. 2017
+Copyright © Bentley Systems, Inc. 2018
 
 Third-Party Code
 ================
 
-This library incorporates the following third-party code.
+This library incorporates the following third-party code:
 
 ### [three.js](https://github.com/mrdoob/three.js/)
 
