@@ -13,7 +13,7 @@
   "private": true,
   "scripts": {
     "start": "imodeljs-react-scripts start",
-    "build": "imodeljs-react-scripts build \"web\"",
+    "build": "echo Disabled",
     "clean": "rimraf lib",
     "lint": "echo Linting is part of build, no need to lint separately"
   },
@@ -34,10 +34,13 @@
     "express": "^4.16.2",
     "react": "^16.1.1",
     "react-dom": "^16.1.1",
+
     "bcrypt-pbkdf": "^1.0.0",
     "ecc-jsbn": "~0.1.1",
     "jsbn": "~0.1.0",
-    "tweetnacl": "~0.14.0"
+    "tweetnacl": "~0.14.0",
+    "mv": "~2",
+    "safe-json-stringify": "~1"
   },
   "devDependencies": {
     "@bentley/bentleyjs-tools": "^1.0.58",
