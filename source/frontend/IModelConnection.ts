@@ -2,17 +2,19 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { CodeSpec } from "../common/Code";
 import { ElementProps, ViewDefinitionProps } from "../common/ElementProps";
 import { EntityQueryParams } from "../common/EntityProps";
+import { Model2dState } from "../common/EntityState";
 import { IModel, IModelToken, IModelProps } from "../common/IModel";
 import { IModelError, IModelStatus } from "../common/IModelError";
-import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { ModelProps } from "../common/ModelProps";
 import { IModelGateway } from "../gateway/IModelGateway";
 import { IModelVersion } from "../common/IModelVersion";
+import { CategorySelectorState, DrawingViewState, DisplayStyle2dState, DisplayStyle3dState, ModelSelectorState, OrthographicViewState, SheetViewState, SpatialViewState, ViewState, ViewState2d } from "../common/ViewState";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 
 /** A connection to an iModel database hosted on the backend. */
@@ -240,5 +242,37 @@ export class IModelConnectionViews {
   public async queryViewDefinitionProps(className: string = "BisCore.ViewDefinition", wantPrivate: boolean = false): Promise<ViewDefinitionProps[]> {
     const viewDefinitionProps: ViewDefinitionProps[] = await IModelGateway.getProxy().queryViewDefinitionProps(this._iModel.iModelToken, className, wantPrivate);
     return viewDefinitionProps;
+  }
+
+  public async loadViewState(viewDefinitionId: Id64): Promise<ViewState> {
+    const viewStateData: any = await IModelGateway.getProxy().getViewStateData(this._iModel.iModelToken, viewDefinitionId.toString());
+    const categorySelectorState = new CategorySelectorState(viewStateData.categorySelectorProps, this._iModel);
+
+    if (SpatialViewState.getClassFullName() === viewStateData.viewDefinitionProps.classFullName) {
+      const displayStyleState = new DisplayStyle3dState(viewStateData.displayStyleProps, this._iModel);
+      const modelSelectorState = new ModelSelectorState(viewStateData.modelSelectorProps, this._iModel);
+      return new SpatialViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, modelSelectorState);
+    }
+    if (OrthographicViewState.getClassFullName() === viewStateData.viewDefinitionProps.classFullName) {
+      const displayStyleState = new DisplayStyle3dState(viewStateData.displayStyleProps, this._iModel);
+      const modelSelectorState = new ModelSelectorState(viewStateData.modelSelectorProps, this._iModel);
+      return new OrthographicViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, modelSelectorState);
+    }
+    if (ViewState2d.getClassFullName() === viewStateData.viewDefinitionProps.classFullName) {
+      const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
+      const baseModelState = new Model2dState(viewStateData.baseModelProps, this._iModel);
+      return new ViewState2d(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, baseModelState);
+    }
+    if (DrawingViewState.getClassFullName() === viewStateData.viewDefinitionProps.classFullName) {
+      const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
+      const baseModelState = new Model2dState(viewStateData.baseModelProps, this._iModel);
+      return new DrawingViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, baseModelState);
+    }
+    if (SheetViewState.getClassFullName() === viewStateData.viewDefinitionProps.classFullName) {
+      const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
+      const baseModelState = new Model2dState(viewStateData.baseModelProps, this._iModel);
+      return new SheetViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, baseModelState);
+    }
+    return Promise.reject(new IModelError(IModelStatus.WrongClass, "Invalid ViewState subclass", Logger.logError, () => ({ viewStateData })));
   }
 }

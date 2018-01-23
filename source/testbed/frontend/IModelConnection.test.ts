@@ -6,6 +6,7 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { CodeSpec, CodeSpecNames } from "../../common/Code";
 import { ElementProps, ViewDefinitionProps } from "../../common/ElementProps";
 import { ModelProps } from "../../common/ModelProps";
+import { CategorySelectorState, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, OrthographicViewState, ViewState } from "../../common/ViewState";
 import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "../../frontend/IModelConnection";
 import { TestData } from "./TestData";
 
@@ -50,10 +51,23 @@ describe("IModelConnection", () => {
     const codeSpecByNewId: CodeSpec = await iModel.codeSpecs.getCodeSpecById(new Id64(codeSpecByName.id));
     assert.exists(codeSpecByNewId);
 
-    const viewDefinitionProps: ViewDefinitionProps[] = await iModel.views.queryViewDefinitionProps();
+    let viewDefinitionProps: ViewDefinitionProps[] = await iModel.views.queryViewDefinitionProps("BisCore.OrthographicViewDefinition");
     assert.isAtLeast(viewDefinitionProps.length, 1);
-    const spatialViewDefinitionProps: ViewDefinitionProps[] = await iModel.views.queryViewDefinitionProps("BisCore.SpatialViewDefinition");
-    assert.isAtLeast(spatialViewDefinitionProps.length, 1);
+    let viewState: ViewState = await iModel.views.loadViewState(new Id64(viewDefinitionProps[0].id));
+    assert.exists(viewState);
+    assert.equal(viewState.classFullName, OrthographicViewState.getClassFullName());
+    assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.getClassFullName());
+    assert.equal(viewState.displayStyle.classFullName, DisplayStyle3dState.getClassFullName());
+    assert.exists((viewState as OrthographicViewState).modelSelector);
+
+    viewDefinitionProps = await iModel.views.queryViewDefinitionProps("BisCore.DrawingViewDefinition");
+    assert.isAtLeast(viewDefinitionProps.length, 1);
+    viewState = await iModel.views.loadViewState(new Id64(viewDefinitionProps[0].id));
+    assert.exists(viewState);
+    assert.equal(viewState.classFullName, DrawingViewState.getClassFullName());
+    assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.getClassFullName());
+    assert.equal(viewState.displayStyle.classFullName, DisplayStyle2dState.getClassFullName());
+    assert.exists((viewState as DrawingViewState).baseModel);
 
     await iModel.close(TestData.accessToken);
   }).timeout(99999);
