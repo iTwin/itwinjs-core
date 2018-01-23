@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-const spawn = require('react-dev-utils/crossSpawn');
-const chalk = require('chalk');
+const spawn = require("react-dev-utils/crossSpawn");
+const chalk = require("chalk");
 
 function simpleSpawn(cmd, args, cwd, env) {
   if (!cwd)
@@ -12,17 +12,17 @@ function simpleSpawn(cmd, args, cwd, env) {
     const child = spawn(cmd, args, {
       cwd: cwd,
       env: Object.assign({FORCE_COLOR: "1"}, env || {}, process.env),
-      stdio: 'pipe'
+      stdio: "pipe"
     });
 
-    child.stdout.on('data', (data) => {
+    child.stdout.on("data", (data) => {
         process.stdout.write(data);
       })
-    child.stderr.on('data', (data) => {
+    child.stderr.on("data", (data) => {
       process.stderr.write(data);
     })
-    child.on('error', function(data) { console.log(chalk.red(data)); });  
-    child.on('close', (code)=> resolve(code));
+    child.on("error", function(data) { console.log(chalk.red(data)); });  
+    child.on("close", (code)=> resolve(code));
     simpleSpawn.children.push(child);
   });
 }
@@ -56,7 +56,7 @@ function handleInterrupts(callback) {
       });
   }
 
-  ['SIGINT', 'SIGTERM'].forEach(function(sig) {
+  ["SIGINT", "SIGTERM"].forEach(function(sig) {
     process.on(sig, function() {
       callback();
     });

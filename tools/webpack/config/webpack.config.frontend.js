@@ -1,25 +1,25 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-// 'use strict';
+// "use strict";
 
-const autoprefixer = require('autoprefixer');
-const path = require('path');
-const webpack = require('webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const ManifestPlugin = require('webpack-manifest-plugin');
-const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin');
-const WatchMissingNodeModulesPlugin = require('react-dev-utils/WatchMissingNodeModulesPlugin');
-const LicenseWebpackPlugin = require('license-webpack-plugin').LicenseWebpackPlugin;
-const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
-const SpriteLoaderPlugin = require('svg-sprite-loader/plugin');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
-const getClientEnvironment = require('./env');
+const autoprefixer = require("autoprefixer");
+const path = require("path");
+const webpack = require("webpack");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const ManifestPlugin = require("webpack-manifest-plugin");
+const InterpolateHtmlPlugin = require("react-dev-utils/InterpolateHtmlPlugin");
+const WatchMissingNodeModulesPlugin = require("react-dev-utils/WatchMissingNodeModulesPlugin");
+const LicenseWebpackPlugin = require("license-webpack-plugin").LicenseWebpackPlugin;
+const ModuleScopePlugin = require("react-dev-utils/ModuleScopePlugin");
+const SpriteLoaderPlugin = require("svg-sprite-loader/plugin");
+const UglifyJSPlugin = require("uglifyjs-webpack-plugin");
+const getClientEnvironment = require("./env");
 const plugins = require("../scripts/utils/webpackPlugins");
-const paths = require('./paths');
-const helpers = require('./helpers');
+const paths = require("./paths");
+const helpers = require("./helpers");
 
 const PRODUCTION = (process.env.NODE_ENV === "production");
 const DEVELOPMENT = !PRODUCTION;
@@ -27,10 +27,10 @@ const DEVELOPMENT = !PRODUCTION;
 // Webpack uses `publicPath` to determine where the app is being served from.
 // It requires a trailing slash, or the file assets will get an incorrect path.
 // In development, we always serve from the root. This makes config easier.
-const publicPath = (DEVELOPMENT) ? '/' : paths.servedPath;
+const publicPath = (DEVELOPMENT) ? "/" : paths.servedPath;
 // Some apps do not use client-side routing with pushState.
 // For these, "homepage" can be set to "." to enable relative asset paths.
-const shouldUseRelativeAssetPaths = publicPath === './';
+const shouldUseRelativeAssetPaths = publicPath === "./";
 // `publicUrl` is just like `publicPath`, but we will provide it to our app
 // as %PUBLIC_URL% in `index.html` and `process.env.PUBLIC_URL` in JavaScript.
 // Omit trailing slash as %PUBLIC_URL%/xyz looks better than %PUBLIC_URL%xyz.
@@ -40,12 +40,12 @@ const env = getClientEnvironment(publicUrl);
 
 // Assert this just to be safe.
 // Development builds of React are slow and not intended for production.
-if (PRODUCTION && env.stringified['process.env'].NODE_ENV !== '"production"') {
-  throw new Error('Production builds must have NODE_ENV=production.');
+if (PRODUCTION && env.stringified["process.env"].NODE_ENV !== ""production"") {
+  throw new Error("Production builds must have NODE_ENV=production.");
 }
 
 // Note: defined here because it will be used more than once.
-const cssFilename = 'static/css/[name].[contenthash:8].css';
+const cssFilename = "static/css/[name].[contenthash:8].css";
 
 // ExtractTextPlugin expects the build output to be flat.
 // (See https://github.com/webpack-contrib/extract-text-webpack-plugin/issues/27)
@@ -53,7 +53,7 @@ const cssFilename = 'static/css/[name].[contenthash:8].css';
 // To have this structure working with relative paths, we have to use custom options.
 const extractTextPluginOptions = (shouldUseRelativeAssetPaths)
   ? // Making sure that the publicPath goes back to to build folder.
-    { publicPath: Array(cssFilename.split('/').length).join('../') }
+    { publicPath: Array(cssFilename.split("/").length).join("../") }
   : {};
 
 // The loaders / rule for importing CSS and SASS files are very similar, 
@@ -63,7 +63,7 @@ function getCssRule() {
   // "css" loader resolves paths in CSS and adds assets as dependencies.
   const cssLoaders = [
     {
-      loader: require.resolve('css-loader'),
+      loader: require.resolve("css-loader"),
       options: {
         importLoaders: 1,
         minimize: PRODUCTION,
@@ -71,21 +71,21 @@ function getCssRule() {
       },
     },
     {
-      loader: require.resolve('postcss-loader'),
+      loader: require.resolve("postcss-loader"),
       options: {
         // Necessary for external CSS imports to work
         // https://github.com/facebookincubator/create-react-app/issues/2677
-        ident: 'postcss',
+        ident: "postcss",
         plugins: () => [
-          require('postcss-flexbugs-fixes'),
+          require("postcss-flexbugs-fixes"),
           autoprefixer({
             browsers: [
-              '>1%',
-              'last 4 versions',
-              'Firefox ESR',
-              'not ie < 9', // React doesn't support IE8 anyway
+              ">1%",
+              "last 4 versions",
+              "Firefox ESR",
+              "not ie < 9", // React doesn't support IE8 anyway
             ],
-            flexbox: 'no-2009',
+            flexbox: "no-2009",
           }),
         ],
       },
@@ -107,7 +107,7 @@ function getCssRule() {
       test: /\.s?css$/,
       loader: ExtractTextPlugin.extract(
         Object.assign({
-          fallback: require.resolve('style-loader'),
+          fallback: require.resolve("style-loader"),
           use: cssLoaders,
         }, extractTextPluginOptions),
       ),
@@ -119,7 +119,7 @@ function getCssRule() {
     // in development "style" loader enables hot editing of CSS.
     return {
       test: /\.s?css$/,
-      use: [ require.resolve('style-loader'), ...cssLoaders ]
+      use: [ require.resolve("style-loader"), ...cssLoaders ]
     }
   }
 }
@@ -134,7 +134,7 @@ const baseConfiguration = {
     // We placed these paths second because we want `node_modules` to "win"
     // if there are any conflicts. This matches Node resolution mechanism.
     // https://github.com/facebookincubator/create-react-app/issues/253
-    modules: ['node_modules', paths.appNodeModules, paths.appSrc].concat(
+    modules: ["node_modules", paths.appNodeModules, paths.appSrc].concat(
       // It is guaranteed to exist because we tweak it in `env.js`
       process.env.NODE_PATH.split(path.delimiter).filter(Boolean)
     ),
@@ -145,20 +145,20 @@ const baseConfiguration = {
     // `web` extension prefixes have been added for better support
     // for React Native Web.
     extensions: [
-      '.web.ts',
-      '.ts',
-      '.web.tsx',
-      '.tsx',
-      '.web.js',
-      '.js',
-      '.json',
-      '.web.jsx',
-      '.jsx',
+      ".web.ts",
+      ".ts",
+      ".web.tsx",
+      ".tsx",
+      ".web.js",
+      ".js",
+      ".json",
+      ".web.jsx",
+      ".jsx",
     ],
     alias: {
       // Support React Native Web
       // https://www.smashingmagazine.com/2016/08/a-glimpse-into-the-future-with-react-native-for-web/
-      'react-native': 'react-native-web',
+      "react-native": "react-native-web",
     },
     plugins: [
       // Prevents users from importing files from outside of src/ (or node_modules/).
@@ -182,24 +182,24 @@ const baseConfiguration = {
       // It's important to do this before Typescript runs.
       {
         test: /\.(ts|tsx)$/,
-        loader: require.resolve('tslint-loader'),
-        enforce: 'pre',
+        loader: require.resolve("tslint-loader"),
+        enforce: "pre",
         include: paths.appSrc,
       },
       {
         test: /\.js$/,
-        loader: require.resolve('source-map-loader'),
-        enforce: 'pre',
+        loader: require.resolve("source-map-loader"),
+        enforce: "pre",
         include: helpers.createBentleySourceMapsIncludePaths(),
       },
       // "sass" loader compiles SASS into CSS.
       {
         test: /\.scss$/,
-        loader: require.resolve('sass-loader'),
+        loader: require.resolve("sass-loader"),
         options: {
           includePaths: [paths.appNodeModules]
         },
-        enforce: 'pre',
+        enforce: "pre",
       },
       // ** ADDING/UPDATING LOADERS **
       // The "file" loader handles all assets unless explicitly excluded.
@@ -229,33 +229,33 @@ const baseConfiguration = {
           /\.scss$/,
           /\.svg$/,
         ],
-        loader: require.resolve('file-loader'),
+        loader: require.resolve("file-loader"),
         options: {
-          name: 'static/media/[name].[hash:8].[ext]',
+          name: "static/media/[name].[hash:8].[ext]",
         },
       },
       // "url" loader works just like "file" loader but it also embeds
       // assets smaller than specified size as data URLs to avoid requests.
       {
         test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
-        loader: require.resolve('url-loader'),
+        loader: require.resolve("url-loader"),
         options: {
           limit: 10000,
-          name: 'static/media/[name].[hash:8].[ext]',
+          name: "static/media/[name].[hash:8].[ext]",
         },
       },
       // Compile .tsx?
       {
         test: /\.(ts|tsx)$/,
         include: paths.appSrc,
-        loader: require.resolve('ts-loader'),
+        loader: require.resolve("ts-loader"),
         options: {
           compilerOptions: {
             // Replace $(iModelJs-Common) with @bentley/imodeljs-frontend when compiling typescript
             paths: {"$(iModelJs-Common)/*": [ "../node_modules/@bentley/imodeljs-frontend/*"] } 
           },
           onlyCompileBundledFiles: true,
-          logLevel: 'warn',
+          logLevel: "warn",
         }
       },
       // The rule for importing CSS and SASS files is defined above in getCssRule
@@ -265,11 +265,11 @@ const baseConfiguration = {
         test: /\.svg$/,
         use: [
           {
-            loader: require.resolve('svg-sprite-loader'),
+            loader: require.resolve("svg-sprite-loader"),
             options: {
-              runtimeGenerator: require.resolve('./generateSvgUrl'),
+              runtimeGenerator: require.resolve("./generateSvgUrl"),
               extract: true,
-              spriteFilename: 'sprite-[hash:6].svg'
+              spriteFilename: "sprite-[hash:6].svg"
             },
           }
         ]
@@ -281,10 +281,10 @@ const baseConfiguration = {
   // Some libraries import Node modules but don't use them in the browser.
   // Tell Webpack to provide empty mocks for them so importing them works.
   node: {
-    dgram: 'empty',
-    fs: 'empty',
-    net: 'empty',
-    tls: 'empty',
+    dgram: "empty",
+    fs: "empty",
+    net: "empty",
+    tls: "empty",
   },
 };
 
@@ -315,7 +315,7 @@ const commonPlugins = [
       },
     }),
     // Makes some environment variables available to the JS code, for example:
-    // if (process.env.NODE_ENV === 'development') { ... }. See `./env.js`.
+    // if (process.env.NODE_ENV === "development") { ... }. See `./env.js`.
     // For a PRODUCTION build, it is absolutely essential that NODE_ENV was set to production here.
     // Otherwise React will be compiled in the very slow development mode.
     new webpack.DefinePlugin(env.stringified),
@@ -350,17 +350,17 @@ if (PRODUCTION) {
     bail: true,
     // We generate sourcemaps in production. This is slow but gives good results.
     // You can exclude the *.map files from the build during deployment.
-    devtool: 'source-map',
+    devtool: "source-map",
     // In production, we only want to load the polyfills and the app code.
-    entry: [require.resolve('./polyfills'), paths.appIndexJs],
+    entry: [require.resolve("./polyfills"), paths.appIndexJs],
     output: {
       // The build folder.
       path: paths.appLibPublic,
       // Generated JS file names (with nested folders).
       // There will be one main bundle, and one file per asynchronous chunk.
       // We don't currently advertise code splitting but Webpack supports it.
-      filename: 'static/js/[name].[chunkhash:8].js',
-      chunkFilename: 'static/js/[name].[chunkhash:8].chunk.js',
+      filename: "static/js/[name].[chunkhash:8].js",
+      chunkFilename: "static/js/[name].[chunkhash:8].chunk.js",
       // We inferred the "public path" (such as / or /my-project) from homepage.
       publicPath: publicPath,
       // Point sourcemap entries to original disk location (format as URL on Windows)
@@ -405,7 +405,7 @@ if (PRODUCTION) {
       // to their corresponding output file so that tools can pick it up without
       // having to parse `index.html`.
       new ManifestPlugin({
-        fileName: 'asset-manifest.json',
+        fileName: "asset-manifest.json",
       }),
     ],
   });
@@ -417,9 +417,9 @@ if (PRODUCTION) {
 //======================================================================================================================================
 if (DEVELOPMENT) {
   module.exports = Object.assign(baseConfiguration, {
-    // You may want 'eval' instead if you prefer to see the compiled output in DevTools.
+    // You may want "eval" instead if you prefer to see the compiled output in DevTools.
     // See the discussion in https://github.com/facebookincubator/create-react-app/issues/343.
-    devtool: 'cheap-module-source-map',
+    devtool: "cheap-module-source-map",
     // These are the "entry points" to our application.
     // This means they will be the "root" imports that are included in JS bundle.
     // The first two entry points enable "hot" CSS and auto-refreshes for JS.
@@ -432,13 +432,13 @@ if (DEVELOPMENT) {
       // Note: instead of the default WebpackDevServer client, we use a custom one
       // to bring better experience for Create React App users. You can replace
       // the line below with these two lines if you prefer the stock client:
-      // require.resolve('webpack-dev-server/client') + '?/',
-      // require.resolve('webpack/hot/dev-server'),
-      require.resolve('react-dev-utils/webpackHotDevClient'),
+      // require.resolve("webpack-dev-server/client") + "?/",
+      // require.resolve("webpack/hot/dev-server"),
+      require.resolve("react-dev-utils/webpackHotDevClient"),
       // We ship a few polyfills by default:
-      require.resolve('./polyfills'),
+      require.resolve("./polyfills"),
       // Errors should be considered fatal in development
-      require.resolve('react-error-overlay'),
+      require.resolve("react-error-overlay"),
       // Finally, this is your app's code:
       paths.appIndexJs,
       // We include the app code last so that if there is a runtime error during
@@ -453,9 +453,9 @@ if (DEVELOPMENT) {
       // This does not produce a real file. It's just the virtual path that is
       // served by WebpackDevServer in development. This is the JS bundle
       // containing code from all our entry points, and the Webpack runtime.
-      filename: 'static/js/bundle.js',
+      filename: "static/js/bundle.js",
       // There are also additional JS chunk files if you use code splitting.
-      chunkFilename: 'static/js/[name].chunk.js',
+      chunkFilename: "static/js/[name].chunk.js",
       // This is the URL that app is served from. We use "/" in development.
       publicPath: publicPath,
       // Point sourcemap entries to original disk location (format as URL on Windows)

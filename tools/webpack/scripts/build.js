@@ -1,32 +1,32 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
-'use strict';
+"use strict";
 
 // Do this as the first thing so that any code reading it knows the right env.
 require("./utils/initialize")("production");
 
-const chalk = require('chalk');
+const chalk = require("chalk");
 const buildTarget = getBuildTarget();
 if (!buildTarget) {
   process.exit(1);
 }
 
 if ("electron" === buildTarget)
-  process.env.ELECTRON_ENV = 'production';
+  process.env.ELECTRON_ENV = "production";
 
-const path = require('path');
-const fs = require('fs-extra');
-const webpack = require('webpack');
-const checkRequiredFiles = require('react-dev-utils/checkRequiredFiles');
-const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages');
-const printHostingInstructions = require('react-dev-utils/printHostingInstructions');
-const FileSizeReporter = require('react-dev-utils/FileSizeReporter');
-const { buildFrontend, buildBackend } = require('./utils/buildBackend');
+const path = require("path");
+const fs = require("fs-extra");
+const webpack = require("webpack");
+const checkRequiredFiles = require("react-dev-utils/checkRequiredFiles");
+const formatWebpackMessages = require("react-dev-utils/formatWebpackMessages");
+const printHostingInstructions = require("react-dev-utils/printHostingInstructions");
+const FileSizeReporter = require("react-dev-utils/FileSizeReporter");
+const { buildFrontend, buildBackend } = require("./utils/buildBackend");
 
-const paths = require('../config/paths');
-const frontendConfig = require('../config/webpack.config.frontend');
-const backendConfig = require('../config/webpack.config.backend');
+const paths = require("../config/paths");
+const frontendConfig = require("../config/webpack.config.frontend");
+const backendConfig = require("../config/webpack.config.backend");
 
 function getBuildTarget() {
   if (process.argv.length < 4) {
@@ -90,7 +90,7 @@ function copyPublicFolder() {
   console.log(chalk.dim("\nCreating an optimized production build..."));
   const stats = await buildFrontend(frontendConfig);
 
-  console.log('File sizes after gzip:\n');
+  console.log("File sizes after gzip:\n");
   printFileSizesAfterBuild(
     stats,
     previousFileSizes,

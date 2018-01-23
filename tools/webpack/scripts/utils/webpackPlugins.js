@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-const chalk = require('chalk');
-const path = require('path');
-const fs = require('fs-extra');
-const glob = require('glob');
-const paths = require('../../config/paths');
+const chalk = require("chalk");
+const path = require("path");
+const fs = require("fs-extra");
+const glob = require("glob");
+const paths = require("../../config/paths");
 
 class BanImportsPlugin {
   constructor(bundleName, bannedName, bannedDir, bannedRegex) {
@@ -16,7 +16,7 @@ class BanImportsPlugin {
   }
 
   apply(resolver) {
-    resolver.plugin('file', (request, callback) => {
+    resolver.plugin("file", (request, callback) => {
       if (!request.context.issuer || !request.__innerRequest_request)
         return callback();
 
@@ -42,7 +42,7 @@ class CopyNativeAddonsPlugin {
   constructor(options) {}
 
   apply(compiler) {
-    compiler.plugin('environment', () => {
+    compiler.plugin("environment", () => {
       const packageLock = require(paths.appPackageLockJson);
       const dir = path.resolve(paths.appNodeModules, "**/*.node");
       const matches = glob.sync(dir)
@@ -63,7 +63,7 @@ class CopyNativeAddonsPlugin {
 
 class CopyAssetsPlugin {
   apply(compiler) {
-    compiler.plugin('environment', () => {
+    compiler.plugin("environment", () => {
       if (fs.existsSync(paths.appAssets))
         fs.copySync(paths.appAssets, path.resolve(paths.appLib, "assets"));
     });

@@ -1,7 +1,7 @@
-import * as __React from 'react';
-import * as __chai from 'chai';
-import * as __sinon from 'sinon';
-import * as __enzyme from 'enzyme';
+import * as __React from "react";
+import * as __chai from "chai";
+import * as __sinon from "sinon";
+import * as __enzyme from "enzyme";
 
 declare global {
   const React: typeof __React;

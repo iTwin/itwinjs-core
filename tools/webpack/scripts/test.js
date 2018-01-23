@@ -7,7 +7,7 @@
 require("./utils/initialize")("test");
 const isCoverage = (process.env.MOCHA_ENV === "coverage");
 
-const argv = require('yargs').argv;
+const argv = require("yargs").argv;
 const path = require("path");
 const paths = require("../config/paths");
 const { spawn, handleInterrupts } = require("./utils/simpleSpawn");

@@ -1,28 +1,28 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-'use strict';
+"use strict";
 
 // Do this as the first thing so that any code reading it knows the right env.
 require("./utils/initialize")("development");
 
-const fs = require('fs');
-const chalk = require('chalk');
-const webpack = require('webpack');
-const WebpackDevServer = require('webpack-dev-server');
-const clearConsole = require('react-dev-utils/clearConsole');
-const checkRequiredFiles = require('react-dev-utils/checkRequiredFiles');
+const fs = require("fs");
+const chalk = require("chalk");
+const webpack = require("webpack");
+const WebpackDevServer = require("webpack-dev-server");
+const clearConsole = require("react-dev-utils/clearConsole");
+const checkRequiredFiles = require("react-dev-utils/checkRequiredFiles");
 const {
   choosePort,
   createCompiler,
   prepareProxy,
   prepareUrls,
-} = require('react-dev-utils/WebpackDevServerUtils');
-const openBrowser = require('react-dev-utils/openBrowser');
-const paths = require('../config/paths');
-const config = require('../config/webpack.config.frontend');
-const createDevServerConfig = require('../config/webpackDevServer.config');
-const { handleInterrupts } = require('./utils/simpleSpawn');
+} = require("react-dev-utils/WebpackDevServerUtils");
+const openBrowser = require("react-dev-utils/openBrowser");
+const paths = require("../config/paths");
+const config = require("../config/webpack.config.frontend");
+const createDevServerConfig = require("../config/webpackDevServer.config");
+const { handleInterrupts } = require("./utils/simpleSpawn");
 
 const useYarn = fs.existsSync(paths.yarnLockFile);
 const isInteractive = process.stdout.isTTY;
@@ -34,7 +34,7 @@ if (!checkRequiredFiles([paths.appHtml, paths.appIndexJs])) {
 
 // Tools like Cloud9 rely on this.
 const DEFAULT_PORT = parseInt(process.env.PORT, 10) || 3000;
-const HOST = process.env.HOST || '0.0.0.0';
+const HOST = process.env.HOST || "0.0.0.0";
 
 let devServer = null;
 
@@ -48,7 +48,7 @@ let devServer = null;
     return;
   }
 
-  const protocol = process.env.HTTPS === 'true' ? 'https' : 'http';
+  const protocol = process.env.HTTPS === "true" ? "https" : "http";
   const appName = require(paths.appPackageJson).name;
   const urls = prepareUrls(protocol, HOST, port);
 
@@ -74,7 +74,7 @@ let devServer = null;
     if (isInteractive) {
       clearConsole();
     }
-    console.log(chalk.cyan('Starting the development server...'));
+    console.log(chalk.cyan("Starting the development server..."));
     openBrowser(urls.localUrlForBrowser);
   });
 })();

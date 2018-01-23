@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-const fs = require('fs');
-const path = require('path');
-const paths = require('../../config/paths');
-const webpack = require('webpack');
-const chalk = require('chalk');
-const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages');
+const fs = require("fs");
+const path = require("path");
+const paths = require("../../config/paths");
+const webpack = require("webpack");
+const chalk = require("chalk");
+const formatWebpackMessages = require("react-dev-utils/formatWebpackMessages");
 
 function runWebpackAsync(compiler) {
   return new Promise((resolve, reject) => { 
@@ -18,7 +18,7 @@ function runWebpackAsync(compiler) {
 function handleWarningsAndErrors(stats) {
   const { errors, warnings } = formatWebpackMessages(stats.toJson({}, true));
   if (errors.length)
-    throw new Error(errors.join('\n\n'));
+    throw new Error(errors.join("\n\n"));
 
   if (CONTINUOUS_INTEGRATION && warnings.length) {
     if (process.env.CI)
@@ -26,15 +26,15 @@ function handleWarningsAndErrors(stats) {
     else
       console.log(chalk.yellow(`\nTreating warnings as errors because process.env.TF_BUILD is set.\nTFS sets this automatically.\n`));
 
-    throw new Error(warnings.join('\n\n'));
+    throw new Error(warnings.join("\n\n"));
   }
 
   if (warnings.length) {
     console.log();
-    console.log(chalk.yellow('Compiled with warnings.\n'));
-    console.log(warnings.join('\n\n'));
-    console.log(`\nSearch for the ${chalk.underline(chalk.yellow('keywords'))} to learn more about each warning.`);
-    console.log(`To ignore, add ${chalk.cyan('// tslint-disable-next-line')} to the line before.\n`);
+    console.log(chalk.yellow("Compiled with warnings.\n"));
+    console.log(warnings.join("\n\n"));
+    console.log(`\nSearch for the ${chalk.underline(chalk.yellow("keywords"))} to learn more about each warning.`);
+    console.log(`To ignore, add ${chalk.cyan("// tslint-disable-next-line")} to the line before.\n`);
   }
 }
 

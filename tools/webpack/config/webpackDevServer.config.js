@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-'use strict';
+"use strict";
 
-const errorOverlayMiddleware = require('react-error-overlay/middleware');
-const config = require('./webpack.config.frontend');
-const paths = require('./paths');
+const errorOverlayMiddleware = require("react-error-overlay/middleware");
+const config = require("./webpack.config.frontend");
+const paths = require("./paths");
 
-const protocol = process.env.HTTPS === 'true' ? 'https' : 'http';
-const host = process.env.HOST || '0.0.0.0';
+const protocol = process.env.HTTPS === "true" ? "https" : "http";
+const host = process.env.HOST || "0.0.0.0";
 
 module.exports = function(proxy, allowedHost) {
   return {
@@ -29,12 +29,12 @@ module.exports = function(proxy, allowedHost) {
     // specified the `proxy` setting. Finally, we let you override it if you
     // really know what you're doing with a special environment variable.
     disableHostCheck:
-      !proxy || process.env.DANGEROUSLY_DISABLE_HOST_CHECK === 'true',
+      !proxy || process.env.DANGEROUSLY_DISABLE_HOST_CHECK === "true",
     // Enable gzip compression of generated files.
     compress: true,
-    // Silence WebpackDevServer's own logs since they're generally not useful.
+    // Silence WebpackDevServer"s own logs since they"re generally not useful.
     // It will still show compile warnings and errors with this setting.
-    clientLogLevel: 'none',
+    clientLogLevel: "none",
     // By default WebpackDevServer serves physical files from current directory
     // in addition to all the virtual build products that it serves from memory.
     // This is confusing because those files won’t automatically be available in
@@ -69,8 +69,8 @@ module.exports = function(proxy, allowedHost) {
     watchOptions: {
       ignored: /node_modules[\\/]+[^@][^b]/,
     },
-    // Enable HTTPS if the HTTPS environment variable is set to 'true'
-    https: protocol === 'https',
+    // Enable HTTPS if the HTTPS environment variable is set to "true"
+    https: protocol === "https",
     host: host,
     overlay: false,
     historyApiFallback: {

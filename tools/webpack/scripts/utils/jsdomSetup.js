@@ -1,5 +1,5 @@
 // This is all required to simulate a browser environment in React tests.
-const jsdom = require('jsdom');
+const jsdom = require("jsdom");
 const document = new jsdom.JSDOM("");
 const window = document.window;
 
@@ -8,13 +8,13 @@ global.window = window
 window.console = global.console
 
 Object.keys(window).forEach((property) => {
-  if (typeof global[property] === 'undefined') {
+  if (typeof global[property] === "undefined") {
     global[property] = window[property];
   }
 });
 
 global.navigator = {
-  userAgent: 'node.js'
+  userAgent: "node.js"
 };
 
 // polyfill requestAnimationFrame to avoid a react warning

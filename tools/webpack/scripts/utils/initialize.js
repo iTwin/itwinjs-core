@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-'use strict';
+"use strict";
 
 function init(NODE_ENV, MOCHA_ENV=undefined) {
   process.env.BABEL_ENV = NODE_ENV;
@@ -29,7 +29,7 @@ function init(NODE_ENV, MOCHA_ENV=undefined) {
   });
   
   // Ensure environment variables are read.
-  require('../../config/env');
+  require("../../config/env");
 }
 
 module.exports = init;

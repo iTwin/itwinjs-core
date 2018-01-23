@@ -6,10 +6,10 @@
 // Do this as the first thing so that any code reading it knows the right env.
 require("./utils/initialize")("test", "coverage");
 
-const chalk = require('chalk');
+const chalk = require("chalk");
 const path = require("path");
 const paths = require("../config/paths");
-const openBrowser = require('react-dev-utils/openBrowser');
+const openBrowser = require("react-dev-utils/openBrowser");
 const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 
 (async () => {

@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
-'use strict';
+"use strict";
 
-const glob = require('glob');
-const path = require('path');
-const fs = require('fs');
-const paths = require('./paths');
+const glob = require("glob");
+const path = require("path");
+const fs = require("fs");
+const paths = require("./paths");
 
 /** Uses webpack resource path syntax, but strips anything before ~ (node_modules)
  * to handle symlinked modules
