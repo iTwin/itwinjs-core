@@ -5,12 +5,7 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelConnection } from "./IModelConnection";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 
-export const enum EventType {
-  Add,
-  Remove,
-  Replace,
-  Clear,
-}
+export const enum EventType { Add, Remove, Replace, Clear }
 export type IdSet = Set<string>;
 export type IdArg = Id64 | IdSet;
 
@@ -34,6 +29,9 @@ export class SelectionSet {
 
   /** Check whether there are any selected elements. */
   public isActive() { return this.numSelected === 0; }
+
+  /** Query whether an element is in the selection set. */
+  public isSelected(elemId: Id64): boolean { return this.selected.has(elemId.value); }
 
   /** Clear current selection set. */
   public emptyAll(): void {
@@ -91,6 +89,4 @@ export class SelectionSet {
     this.add(elem, false);
     this.sendChangedEvent(EventType.Replace, this.selected);
   }
-  /** Query whether an element is in the selection set. */
-  public isSelected(elemId: Id64): boolean { return this.selected.has(elemId.value); }
 }
