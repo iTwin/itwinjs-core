@@ -40,6 +40,7 @@
     "extract": "node node_modules/@bentley/bentleyjs-tools/scripts/extract.js --extractFrom=source/test --out=source/test/lib/extract",
     "test": "npm run test:backend && npm run test:frontend",
     "test:backend": "cd source/test && npm run test",
+    "test:backendwebpackformobile": "cd source/test && npm run webpackformobile",
     "test:frontend": "cd source/testbed && npm run test",
     "test:tsnode": "node node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode --packageRoot \"./\" --testDir=\"./source/test\" --tscPaths",
     "testbed": "cd source/testbed && npm run start",
@@ -80,18 +81,22 @@
     "mocha": "^3.5.3",
     "node-replace": "^0.3.3",
     "nyc": "^11.4.1",
+    "null-loader": "latest",
     "object-assign": "^4.1.1",
     "once": "^1.4.0",
     "os-locale": "^2.1.0",
     "resolve": "^1.5.0",
     "rimraf": "^2.6.2",
     "semver": "^5.4.1",
+    "source-map-loader": "^0.2.3",
     "source-map-support": "^0.5.0",
     "string-width": "^2.1.1",
     "ts-node": "^3.3.0",
     "tsconfig-paths": "^2.7.2",
     "tslint": "^5.8.0",
-    "typescript": "^2.6.2"
+    "typescript": "^2.6.2",
+    "webpack": "^3.9.1",
+    "webpack-stream": "latest"
   },
   "nyc": {
     "include": [

@@ -680,7 +680,7 @@ describe("iModel", () => {
 
   it("should import schemas", () => {
     const schemaPathname = path.join(__dirname, "assets", "TestBim.ecschema.xml");
-    imodel1.importSchema(schemaPathname); // will throw an exception in import fails
+    imodel1.importSchema(schemaPathname); // will throw an exception if import fails
 
     const classMetaData = imodel1.getMetaData("TestBim:TestDocument"); // will throw on failure
     assert.isDefined(classMetaData.properties.testDocumentProperty);
@@ -773,6 +773,76 @@ describe("iModel", () => {
     // TODO: Do an ECSql query to verify that 0->1 is gone but 0->2 is still there.
 
     testImodel.saveChanges("");
+
+  });
+
+  it.skip("should set navigation properties", () => {
+
+    const testImodel: IModelDb = imodel1;
+    try {
+      testImodel.getMetaData("TestBim:TestPhysicalObject");
+    } catch (err) {
+      const schemaPathname = path.join(__dirname, "assets", "TestBim.ecschema.xml");
+      testImodel.importSchema(schemaPathname); // will throw an exception if import fails
+      assert.isTrue(testImodel.getMetaData("TestBim:TestPhysicalObject") !== undefined);
+    }
+
+    // Create a new physical model
+    let newModelId: Id64;
+    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(testImodel, Code.createEmpty(), true);
+
+    // Find or create a SpatialCategory
+    const dictionary: DictionaryModel = testImodel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
+    let spatialCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
+    if (undefined === spatialCategoryId) {
+      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+    }
+
+    let id1: Id64;
+    let id2: Id64;
+
+    if (true) {
+      // Create a couple of TestPhysicalObjects
+      const elementProps: GeometricElementProps = {
+        classFullName: "TestBim:TestPhysicalObject",
+        iModel: testImodel,
+        model: newModelId,
+        category: spatialCategoryId,
+        id: new Id64(),
+        code: Code.createEmpty(),
+      };
+
+      id1 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps));
+      assert.isTrue(id1.isValid());
+
+      // The second one should point to the first.
+      elementProps.id = new Id64();
+      elementProps.relatedElement = {id: id1, relClass: "TestBim:TestPhysicalObject"};
+
+      id2 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps));
+      assert.isTrue(id2.isValid());
+    }
+
+    if (true) {
+      // Test that el2 points to el1
+      const el2: Element = testImodel.elements.getElement(id2);
+      assert.isTrue(el2.hasOwnProperty("relatedElement"));
+      assert.isTrue(el2.relatedElement !== undefined);
+      assert.isTrue(el2.relatedElement.hasOwnProperty("id"));
+      assert.isTrue(el2.relatedElement.id.equals(id1));
+    }
+
+    if (true) {
+      // Change el2 to point to itself.
+      const el22: Element = testImodel.elements.getElement(id2);
+      const el2Modified: Element = el22.copyForEdit<Element>();
+      el2Modified.relatedElement = {id: id2, relClass: "TestBim:TestPhysicalObject"};
+      testImodel.elements.updateElement(el2Modified);
+    }
+
+    // Test that el2 points to itself.
+    const el23: Element = testImodel.elements.getElement(id2);
+    assert.isTrue(el23.relatedElement.id.equals(id2));
 
   });
 

@@ -8,6 +8,7 @@ import { ClassRegistry } from "./ClassRegistry";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 import { DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { RelatedElement } from "../common/ElementProps";
 
 /** The primitive types of an Entity property. */
 export const enum PrimitiveTypeCode {
@@ -177,8 +178,11 @@ export class PropertyMetaData {
           return this.createValueOrArray(Point3d.fromJSON, jsonObj);
       }
     }
-    if (null != this.direction) // the presence of this means it's a navigation property
+    if (null != this.direction) { // the presence of this means it's a navigation property
+      if (RelatedElement.isRelatedElement(jsonObj))
+        return RelatedElement.fromJSON(jsonObj);
       return Id64.fromJSON(jsonObj);
+    }
 
     return jsonObj;
   }

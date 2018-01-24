@@ -11,6 +11,7 @@ import { IModelVersion } from "../common/IModelVersion";
 import { ChangeSummaryManager } from "../backend/ChangeSummaryManager";
 import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { IModelDb } from "../backend/IModelDb";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { using } from "@bentley/bentleyjs-core/lib/Disposable";
 
@@ -114,20 +115,27 @@ describe("ChangeSummary", () => {
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
-      iModel.withPreparedStatement("SELECT ECInstanceId,ExtendedProperties FROM change.ChangeSummary", (myStmt) => {
+      const changeSummaryIds = new Array<Id64>();
+      iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,ExtendedProperties FROM change.ChangeSummary ORDER BY ECInstanceId", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
           rowCount++;
           const row: any = myStmt.getRow();
+          changeSummaryIds.push(new Id64(row.id));
+          assert.equal(row.className, "ECDbChange.ChangeSummary");
           assert.isUndefined(row.extendedProperties, "ChangeSummary.ExtendedProperties is not expected to be populated when change summaries are extracted.");
         }
         assert.equal(rowCount, 3);
       });
 
-      iModel.withPreparedStatement("SELECT * FROM imodelchange.ChangeSet", (myStmt) => {
+      iModel.withPreparedStatement("SELECT ECClassId,Summary FROM imodelchange.ChangeSet ORDER BY Summary.Id", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
           rowCount++;
+          const row: any = myStmt.getRow();
+          assert.equal(row.className, "IModelChange.ChangeSet");
+          assert.equal(row.summary.id, changeSummaryIds[rowCount - 1].value);
+          assert.equal(row.summary.relClassName, "IModelChange.ChangeSummaryIsExtractedFromChangeset");
         }
 
         assert.equal(rowCount, 3);

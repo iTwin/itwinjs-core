@@ -5,8 +5,9 @@ import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { CodeSpec, CodeSpecNames } from "../../common/Code";
 import { ElementProps, ViewDefinitionProps } from "../../common/ElementProps";
+import { Model2dState } from "../../common/EntityState";
 import { ModelProps } from "../../common/ModelProps";
-import { CategorySelectorState, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, OrthographicViewState, ViewState } from "../../common/ViewState";
+import { CategorySelectorState, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, ModelSelectorState, OrthographicViewState, ViewState } from "../../common/ViewState";
 import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "../../frontend/IModelConnection";
 import { TestData } from "./TestData";
 
@@ -58,7 +59,10 @@ describe("IModelConnection", () => {
     assert.equal(viewState.classFullName, OrthographicViewState.getClassFullName());
     assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.getClassFullName());
     assert.equal(viewState.displayStyle.classFullName, DisplayStyle3dState.getClassFullName());
-    assert.exists((viewState as OrthographicViewState).modelSelector);
+    assert.instanceOf(viewState, OrthographicViewState);
+    assert.instanceOf(viewState.categorySelector, CategorySelectorState);
+    assert.instanceOf(viewState.displayStyle, DisplayStyle3dState);
+    assert.instanceOf((viewState as OrthographicViewState).modelSelector, ModelSelectorState);
 
     viewDefinitionProps = await iModel.views.queryViewDefinitionProps("BisCore.DrawingViewDefinition");
     assert.isAtLeast(viewDefinitionProps.length, 1);
@@ -67,7 +71,10 @@ describe("IModelConnection", () => {
     assert.equal(viewState.classFullName, DrawingViewState.getClassFullName());
     assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.getClassFullName());
     assert.equal(viewState.displayStyle.classFullName, DisplayStyle2dState.getClassFullName());
-    assert.exists((viewState as DrawingViewState).baseModel);
+    assert.instanceOf(viewState, DrawingViewState);
+    assert.instanceOf(viewState.categorySelector, CategorySelectorState);
+    assert.instanceOf(viewState.displayStyle, DisplayStyle2dState);
+    assert.instanceOf((viewState as DrawingViewState).baseModel, Model2dState);
 
     await iModel.close(TestData.accessToken);
   }).timeout(99999);
