@@ -31,9 +31,9 @@ export class LineCode {
 }
 
 export class EdgeOverrides {
-  private color: FloatPreMulRgba;
-  private lineCode: LineCode;
-  private weight: number;
+  public color: FloatPreMulRgba;
+  public lineCode: LineCode;
+  public weight: number;
   public flags: OvrFlags = OvrFlags.None;
   public anyOverridden(): boolean { return OvrFlags.None !== this.flags; }
   public isOverridden(flags: OvrFlags): boolean { return flags === this.flags; }
