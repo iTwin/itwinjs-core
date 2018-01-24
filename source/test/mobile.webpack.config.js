@@ -15,11 +15,26 @@ module.exports = {
         enforce: "pre"
       },
       {
-        test: /growl|xunit\.js$/,
+        test: /growl\.js$/,
+        use: 'null-loader'
+      },
+      {
+        test: /xunit\.js$/,
+        use: 'null-loader'
+      },
+      {
+        test: /imodeljs-electronaddon$/,
+        use: 'null-loader'
+      },
+      {
+        test: /imodeljs-nodeaddon$/,
         use: 'null-loader'
       }
 
     ]
+  },
+  node: {
+    "fs": "empty"
   },
   stats: {
     warnings: false

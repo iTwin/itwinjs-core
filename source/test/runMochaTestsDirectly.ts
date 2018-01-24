@@ -2,8 +2,10 @@
 
 import * as path from "path";
 import * as useless from "mocha";
+import { Category } from "../backend/Category";
 
 useless;
+Category;
 
 // Instantiate a Mocha instance.
 const mocha = new Mocha();
