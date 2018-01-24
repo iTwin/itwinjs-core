@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { CustomAttributeClassInterface } from "Interfaces";
 import ECClass from "Metadata//Class";
+import { CustomAttributeClassInterface, SchemaInterface } from "Interfaces";
 import { CustomAttributeContainerType, ECClassModifier, SchemaChildType, parseCustomAttributeContainerType } from "ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "Exception";
 
@@ -13,8 +13,8 @@ import { ECObjectsError, ECObjectsStatus } from "Exception";
 export default class CustomAttributeClass extends ECClass implements CustomAttributeClassInterface {
   public containerType: CustomAttributeContainerType;
 
-  constructor(name: string, modifier?: ECClassModifier) {
-    super(name, modifier);
+  constructor(schema: SchemaInterface, name: string, modifier?: ECClassModifier) {
+    super(schema, name, modifier);
 
     this.key.type = SchemaChildType.CustomAttributeClass;
   }

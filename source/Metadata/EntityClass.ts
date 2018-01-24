@@ -5,7 +5,7 @@
 import ECClass from "Metadata/Class";
 import MixinClass from "Metadata/MixinClass";
 import RelationshipClass from "Metadata/RelationshipClass";
-import { EntityClassInterface, PropertyInterface } from "Interfaces";
+import { EntityClassInterface, PropertyInterface, SchemaInterface } from "Interfaces";
 import { ECClassModifier, RelatedInstanceDirection, SchemaChildType, parseStrengthDirection } from "ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "Exception";
 import { NavigationProperty } from "Metadata/Property";
@@ -16,15 +16,13 @@ import { NavigationProperty } from "Metadata/Property";
 export default class EntityClass extends ECClass implements EntityClassInterface {
   private _mixins?: MixinClass[];
 
-  constructor(name: string, modifier?: ECClassModifier) {
-    super(name, modifier);
+  constructor(schema: SchemaInterface, name: string, modifier?: ECClassModifier) {
+    super(schema, name, modifier);
 
     this.key.type = SchemaChildType.EntityClass;
   }
 
-  set mixins(mixins: MixinClass[]) {
-    this._mixins = mixins;
-  }
+  set mixins(mixins: MixinClass[]) { this._mixins = mixins; }
   get mixins(): MixinClass[] {
     if (!this._mixins)
       return [];
@@ -77,7 +75,7 @@ export default class EntityClass extends ECClass implements EntityClassInterface
 
     let resolvedRelationship: RelationshipClass | undefined;
     if (typeof(relationship) === "string" && this.schema)
-      resolvedRelationship = this.schema.getChild<RelationshipClass>(relationship);
+      resolvedRelationship = this.schema.getChildSync<RelationshipClass>(relationship, false);
     else
       resolvedRelationship = relationship as RelationshipClass;
 
@@ -110,7 +108,7 @@ export default class EntityClass extends ECClass implements EntityClassInterface
       if (!this.schema)
         throw new ECObjectsError(ECObjectsStatus.ECOBJECTS_ERROR_BASE, `TODO: Fix this message`);
 
-      const tempMixin = this.schema.getChild<MixinClass>(mixinFullName);
+      const tempMixin = this.schema.getChildSync<MixinClass>(mixinFullName, false);
       if (!tempMixin)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `TODO: Fix this message`);
 

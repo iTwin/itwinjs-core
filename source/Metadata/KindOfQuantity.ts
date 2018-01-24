@@ -4,7 +4,7 @@
 
 import SchemaChild from "Metadata/SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "Exception";
-import { KindOfQuantityInterface, FormatUnitSpecInterface } from "Interfaces";
+import { KindOfQuantityInterface, FormatUnitSpecInterface, SchemaInterface } from "Interfaces";
 import { SchemaChildType } from "ECObjects";
 
 export class FormatUnitSpec implements FormatUnitSpecInterface {
@@ -20,8 +20,8 @@ export default class KindOfQuantity extends SchemaChild implements KindOfQuantit
   public presentationUnits: FormatUnitSpec[];
   public persistenceUnit: FormatUnitSpec;
 
-  constructor(name: string) {
-    super(name);
+  constructor(schema: SchemaInterface, name: string) {
+    super(schema, name);
 
     this.key.type = SchemaChildType.KindOfQuantity;
   }

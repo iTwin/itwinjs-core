@@ -2,13 +2,13 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { ECClassInterface, PropertyInterface } from "Interfaces";
+import Enumeration from "Metadata/Enumeration";
+import SchemaChild from "Metadata/SchemaChild";
+import { ECClassInterface, PropertyInterface, SchemaInterface } from "Interfaces";
 import { ECClassModifier, parseClassModifier, PrimitiveType, parsePrimitiveType } from "ECObjects";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "Metadata/CustomAttribute";
 import { ECObjectsError, ECObjectsStatus } from "Exception";
-import SchemaChild from "Metadata/SchemaChild";
 import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty, ECProperty } from "Metadata/Property";
-import Enumeration from "Metadata/Enumeration";
 
 /**
  * A common abstract class for all of the ECClass types.
@@ -19,8 +19,8 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
   public properties?: ECProperty[];
   public customAttributes?: CustomAttributeSet;
 
-  constructor(name: string, modifier?: ECClassModifier) {
-    super(name);
+  constructor(schema: SchemaInterface, name: string, modifier?: ECClassModifier) {
+    super(schema, name);
 
     if (modifier)
       this.modifier = modifier;
@@ -123,7 +123,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
 
     let correctType: StructClass | undefined;
     if (typeof(structType) === "string" && this.schema) {
-      correctType = this.schema.getChild<StructClass>(structType);
+      correctType = this.schema.getChildSync<StructClass>(structType, false);
     } else
       correctType = structType as StructClass;
 
@@ -150,7 +150,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
 
     let correctType: StructClass | undefined;
     if (typeof(structType) === "string" && this.schema) {
-      correctType = this.schema.getChild<StructClass>(structType);
+      correctType = this.schema.getChildSync<StructClass>(structType, false);
     } else
       correctType = structType as StructClass;
 
@@ -181,7 +181,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The base class of ${this.name} is not a string type.`);
 
       if (this.schema && typeof(this.schema) !== "string") {
-        const baseClass = this.schema.getChild<ECClass>(jsonObj.baseClass);
+        const baseClass = this.schema.getChildSync<ECClass>(jsonObj.baseClass, false);
 
         if (!baseClass)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);

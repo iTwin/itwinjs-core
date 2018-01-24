@@ -2,10 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
+import SchemaChild from "Metadata/SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "Exception";
 import { PrimitiveType, SchemaChildType } from "ECObjects";
-import { EnumerationInterface, EnumeratorProps } from "Interfaces";
-import SchemaChild from "Metadata/SchemaChild";
+import { EnumerationInterface, EnumeratorProps, SchemaInterface } from "Interfaces";
 
 /**
  * A Typescript class representation of an ECEnumeration.
@@ -15,8 +15,8 @@ export default class Enumeration extends SchemaChild implements EnumerationInter
   public isStrict: boolean;
   public enumerators: Enumerator[];
 
-  constructor(name: string) {
-    super(name);
+  constructor(schema: SchemaInterface, name: string) {
+    super(schema, name);
 
     this.key.type = SchemaChildType.Enumeration;
 

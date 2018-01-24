@@ -5,12 +5,13 @@
 import SchemaChild from "Metadata/SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "Exception";
 import { SchemaChildType } from "ECObjects";
+import { SchemaInterface } from "Interfaces";
 
 export default class PropertyCategory extends SchemaChild {
   public priority: number;
 
-  constructor(name: string) {
-    super(name);
+  constructor(schema: SchemaInterface, name: string) {
+    super(schema, name);
 
     this.key.type = SchemaChildType.PropertyCategory;
   }

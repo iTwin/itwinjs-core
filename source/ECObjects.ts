@@ -500,13 +500,13 @@ export class SchemaKey {
 export class SchemaChildKey {
   private _name: ECName;
   public type: SchemaChildType;
-  public schema: SchemaKey;
+  public schemaKey: SchemaKey;
   // TODO: Need a checksum
 
   constructor(name?: string, type?: SchemaChildType, schema?: SchemaKey) {
     if (name) this.name = name;
     if (type) this.type = type;
-    if (schema) this.schema = schema;
+    if (schema) this.schemaKey = schema;
   }
 
   get name() { return this._name.name; }
@@ -514,7 +514,7 @@ export class SchemaChildKey {
     this._name = new ECName(name);
   }
 
-  get schemaName() { return this.schema.name; }
+  get schemaName() { return this.schemaKey.name; }
 
   /*
    * Compares two schema names and returns whether or not they match. Comparison is case-sensitive.
@@ -537,7 +537,7 @@ export class SchemaChildKey {
     if (rhs.type && this.type && rhs.type !== this.type)
       return false;
 
-    if (rhs.schema && this.schema && !rhs.schema.matches(this.schema, SchemaMatchType.Latest))
+    if (rhs.schemaKey && this.schemaKey && !rhs.schemaKey.matches(this.schemaKey, SchemaMatchType.Latest))
       return false;
 
     return true;

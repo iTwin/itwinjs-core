@@ -19,8 +19,8 @@ export default class RelationshipClass extends ECClass implements RelationshipCl
   public readonly source: RelationshipConstraintInterface;
   public readonly target: RelationshipConstraintInterface;
 
-  constructor(name: string, strength?: StrengthType, strengthDirection?: RelatedInstanceDirection, modifier?: ECClassModifier) {
-    super(name, modifier);
+  constructor(schema: SchemaInterface, name: string, strength?: StrengthType, strengthDirection?: RelatedInstanceDirection, modifier?: ECClassModifier) {
+    super(schema, name, modifier);
 
     this.key.type = SchemaChildType.RelationshipClass;
 
@@ -43,7 +43,7 @@ export default class RelationshipClass extends ECClass implements RelationshipCl
 
     let resolvedRelationship: RelationshipClass | undefined;
     if (typeof(relationship) === "string" && this.schema)
-      resolvedRelationship = this.schema.getChild<RelationshipClass>(relationship);
+      resolvedRelationship = this.schema.getChildSync<RelationshipClass>(relationship, false);
     else
       resolvedRelationship = relationship as RelationshipClass;
 
@@ -158,9 +158,9 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
       if (typeof(jsonObj.abstractConstraint) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
-      relClassSchema = this.relationshipClass.getSchema();
+      relClassSchema = this.relationshipClass.schema;
       if (relClassSchema) {
-        const tempAbstractConstraint = relClassSchema.getChild<ECClass>(jsonObj.abstractConstraint);
+        const tempAbstractConstraint = relClassSchema.getChildSync<ECClass>(jsonObj.abstractConstraint, false);
         if (!tempAbstractConstraint)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
@@ -175,11 +175,11 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
       if (!relClassSchema)
-        relClassSchema = this.relationshipClass.getSchema();
+        relClassSchema = this.relationshipClass.schema;
 
       jsonObj.constraintClasses.forEach((constraintClass: string) => {
         if (relClassSchema) {
-          const tempConstraintClass = relClassSchema.getChild<ECClass>(constraintClass);
+          const tempConstraintClass = relClassSchema.getChildSync<ECClass>(constraintClass, false);
           if (!tempConstraintClass)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 

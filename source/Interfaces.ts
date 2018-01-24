@@ -4,12 +4,11 @@
 
 import { ECClassModifier, CustomAttributeContainerType, PrimitiveType, RelationshipMultiplicity, RelationshipEnd,
         StrengthType, RelatedInstanceDirection, SchemaKey, SchemaChildKey } from "ECObjects";
-import { SchemaContext } from "Context";
 import { CustomAttributeContainerProps } from "Metadata/CustomAttribute";
 
 export interface SchemaProps extends CustomAttributeContainerProps {
-  schemaKey: SchemaKey;
-  alias: string;
+  readonly schemaKey: SchemaKey;
+  alias?: string;
   label?: string;
   description?: string;
   references?: SchemaInterface[];
@@ -19,36 +18,52 @@ export interface SchemaProps extends CustomAttributeContainerProps {
 /**
  * Extends the properties that are defined on a Schema to add the methods that are available on any class that implements this interface.
  */
-export interface SchemaInterface extends SchemaProps {
-  getChild<T extends SchemaChildInterface>(name: string): T | undefined;
-  createEntityClass(name: string): EntityClassInterface;
-  createMixinClass(name: string): MixinInterface;
-  createStructClass(name: string): StructClassInterface;
-  createCustomAttributeClass(name: string): CustomAttributeClassInterface;
-  createRelationshipClass(name: string): RelationshipClassInterface;
-  createKindOfQuantity(name: string): KindOfQuantityInterface;
-  createEnumeration(name: string): EnumerationInterface;
-  createPropertyCategory(name: string): PropertyCategoryInterface;
-  addReference(refSchema: SchemaInterface): void;
-  getReference<T extends SchemaInterface>(refSchemaName: string): T | undefined;
+export interface SchemaInterface extends SchemaSyncInterface {
+  /* async */ getChild<T extends SchemaChildInterface>(name: string, includeReference?: boolean): Promise<T | undefined>;
+  /* async */ addChild<T extends SchemaChildInterface>(child: T): Promise<void>;
+  /* async */ createEntityClass(name: string): Promise<EntityClassInterface>;
+  /* async */ createMixinClass(name: string): Promise<MixinInterface>;
+  /* async */ createStructClass(name: string): Promise<StructClassInterface>;
+  /* async */ createCustomAttributeClass(name: string): Promise<CustomAttributeClassInterface>;
+  /* async */ createRelationshipClass(name: string): Promise<RelationshipClassInterface>;
+  /* async */ createKindOfQuantity(name: string): Promise<KindOfQuantityInterface>;
+  /* async */ createEnumeration(name: string): Promise<EnumerationInterface>;
+  /* async */ createPropertyCategory(name: string): Promise<PropertyCategoryInterface>;
+  /* async */ addReference(refSchema: SchemaInterface): Promise<void>;
+  /* async */ getReference<T extends SchemaInterface>(refSchemaName: string): Promise<T | undefined>;
   fromJson(obj: any): void;
 }
 
+export interface SchemaSyncInterface extends SchemaProps {
+  getChildSync<T extends SchemaChildInterface>(name: string, includeReference?: boolean): T | undefined;
+  addChildSync<T extends SchemaChildInterface>(child: T): void;
+  createEntityClassSync(name: string): EntityClassInterface;
+  createMixinClassSync(name: string): MixinInterface;
+  createStructClassSync(name: string): StructClassInterface;
+  createCustomAttributeClassSync(name: string): CustomAttributeClassInterface;
+  createRelationshipClassSync(name: string): RelationshipClassInterface;
+  createKindOfQuantitySync(name: string): KindOfQuantityInterface;
+  createEnumerationSync(name: string): EnumerationInterface;
+  createPropertyCategorySync(name: string): PropertyCategoryInterface;
+  addReferenceSync(refSchema: SchemaInterface): void;
+  getReferenceSync<T extends SchemaInterface>(refSchemaName: string): T | undefined;
+}
+
 export interface SchemaChildProps {
-  key: SchemaChildKey;
-  name: string;
+  readonly schema: SchemaInterface;
+  readonly key: SchemaChildKey;
+  readonly name: string;
   label?: string;
   description?: string;
 }
 
 export interface SchemaChildInterface extends SchemaChildProps {
-  getSchema(context?: SchemaContext): SchemaInterface | undefined;
   fromJson(obj: any): void;
 }
 
 export interface ECClassProps extends SchemaChildProps {
   modifier: ECClassModifier;
-  baseClass?: string | ECClassInterface; // string should be a ECFullName
+  baseClass?: string | ECClassInterface;
   properties?: PropertyInterface[];
 }
 

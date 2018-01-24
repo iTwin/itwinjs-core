@@ -4,7 +4,7 @@
 
 import ECClass from "Metadata/Class";
 import EntityClass from "Metadata/EntityClass";
-import { MixinInterface } from "Interfaces";
+import { MixinInterface, SchemaInterface } from "Interfaces";
 import { ECClassModifier, SchemaChildType } from "ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "Exception";
 
@@ -14,8 +14,8 @@ import { ECObjectsError, ECObjectsStatus } from "Exception";
 export default class MixinClass extends ECClass implements MixinInterface {
   public appliesTo: string | EntityClass;
 
-  constructor(name: string) {
-    super(name, ECClassModifier.Abstract);
+  constructor(schema: SchemaInterface, name: string) {
+    super(schema, name, ECClassModifier.Abstract);
 
     this.key.type = SchemaChildType.MixinClass;
   }
@@ -27,7 +27,7 @@ export default class MixinClass extends ECClass implements MixinInterface {
       // TODO: Fix
       if (!this.schema)
         throw new ECObjectsError(ECObjectsStatus.ECOBJECTS_ERROR_BASE, `TODO: Fix this error`);
-      const tmpClass = this.schema.getChild<EntityClass>(jsonObj.appliesTo);
+      const tmpClass = this.schema.getChildSync<EntityClass>(jsonObj.appliesTo, false);
       if (!tmpClass)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 

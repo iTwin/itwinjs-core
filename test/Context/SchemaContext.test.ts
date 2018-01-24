@@ -16,7 +16,7 @@ describe("Schema Context", () => {
     context.addSchemaSync(schema);
 
     const testKey = new SchemaKey("TestSchema", 1, 5, 9);
-    const foundSchema = context.locateSchemaSync(testKey);
+    const foundSchema = context.getSchemaSync(testKey);
 
     assert.isDefined(foundSchema);
     assert.equal(foundSchema, schema);
@@ -26,7 +26,7 @@ describe("Schema Context", () => {
     const context = new SchemaContext();
 
     const testKey = new SchemaKey("TestSchema", 1, 5, 9);
-    const foundSchema = context.locateSchemaSync(testKey);
+    const foundSchema = context.getSchemaSync(testKey);
 
     assert.isUndefined(foundSchema);
   });
@@ -50,7 +50,7 @@ describe("Schema Context", () => {
 
     context.addLocater(cache);
 
-    const foundSchema = context.locateSchemaSync(schema.schemaKey);
+    const foundSchema = context.getSchemaSync(schema.schemaKey);
     assert.isDefined(foundSchema);
     assert.equal(foundSchema, schema);
 
@@ -60,7 +60,7 @@ describe("Schema Context", () => {
     const schema2 = new ECSchema("TestSchema", 1, 0, 10);
     cache2.addSchemaSync(schema2);
 
-    const foundSchema2 = context.locateSchemaSync(schema2.schemaKey);
+    const foundSchema2 = context.getSchemaSync(schema2.schemaKey);
     assert.isDefined(foundSchema2);
     assert.equal(foundSchema2, schema2);
   });

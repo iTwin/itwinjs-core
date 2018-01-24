@@ -7,7 +7,7 @@ import { SchemaInterface, SchemaChildInterface, ECClassInterface, EntityClassInt
         KindOfQuantityInterface, PropertyInterface } from "Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "Exception";
 import { SchemaContext } from "Context";
-import { ECVersion, SchemaKey, parsePrimitiveType, relationshipEndToString } from "ECObjects";
+import { ECVersion, SchemaKey, parsePrimitiveType, relationshipEndToString, SchemaChildKey } from "ECObjects";
 import SchemaChild from "Metadata/SchemaChild";
 
 /**
@@ -68,7 +68,7 @@ export default class SchemaReadHelper {
       for (const childName in this._itemToRead.children) {
         // Make sure the child has not already been read. No need to check the SchemaContext because all SchemaChildren are added to a Schema,
         // which would be found when adding to the context.
-        if (schema.getChild(childName) !== undefined)
+        if (schema.getChild(childName, false) !== undefined)
           continue;
 
         this.loadSchemaChild(schema, this._itemToRead.children[childName], childName);
@@ -80,6 +80,11 @@ export default class SchemaReadHelper {
 
     return schema;
   }
+
+  // public readSchemaChild<T extends SchemaChildInterface>(schemaChild: T, childJson: object | string): T {
+  //   this._itemToRead = typeof childJson === "string" ? JSON.parse(childJson) : childJson;
+
+  // }
 
   /**
    * Ensures that the SchemaReferences can be located and then loads the references.
@@ -104,7 +109,7 @@ export default class SchemaReadHelper {
       schemaKey.writeVersion = refVersion.write;
       schemaKey.minorVersion = refVersion.minor;
 
-      const refSchema = this._context.locateSchemaSync(schemaKey);
+      const refSchema = this._context.getSchemaSync(schemaKey);
       if (!refSchema)
         throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema.schemaKey.name}`);
 
@@ -128,35 +133,35 @@ export default class SchemaReadHelper {
 
     switch (schemaChildJson.schemaChildType) {
       case "EntityClass":
-        const entityClass: EntityClassInterface = schema.createEntityClass(childName);
+        const entityClass: EntityClassInterface = schema.createEntityClassSync(childName);
         this.loadEntityClass(entityClass, schemaChildJson);
         break;
       case "StructClass":
-        const structClass: ECClassInterface = schema.createStructClass(childName);
+        const structClass: ECClassInterface = schema.createStructClassSync(childName);
         this.loadClass(structClass, schemaChildJson);
         break;
       case "Mixin":
-        const mixin: MixinInterface = schema.createMixinClass(childName);
+        const mixin: MixinInterface = schema.createMixinClassSync(childName);
         this.loadMixin(mixin, schemaChildJson);
         break;
       case "CustomAttributeClass":
-        const caClass: CustomAttributeClassInterface = schema.createCustomAttributeClass(childName);
+        const caClass: CustomAttributeClassInterface = schema.createCustomAttributeClassSync(childName);
         this.loadClass(caClass, schemaChildJson);
         break;
       case "RelationshipClass":
-        const relClass: RelationshipClassInterface = schema.createRelationshipClass(childName);
+        const relClass: RelationshipClassInterface = schema.createRelationshipClassSync(childName);
         this.loadRelationshipClass(relClass, schemaChildJson);
         break;
       case "KindOfQuantity":
-        const koq: KindOfQuantityInterface = schema.createKindOfQuantity(childName);
+        const koq: KindOfQuantityInterface = schema.createKindOfQuantitySync(childName);
         koq.fromJson(schemaChildJson);
         break;
       case "PropertyCategory":
-        const propCategory: SchemaChildInterface = schema.createPropertyCategory(childName);
+        const propCategory: SchemaChildInterface = schema.createPropertyCategorySync(childName);
         propCategory.fromJson(schemaChildJson);
         break;
       case "Enumeration":
-        const enumeration: SchemaChildInterface = schema.createEnumeration(childName);
+        const enumeration: SchemaChildInterface = schema.createEnumerationSync(childName);
         enumeration.fromJson(schemaChildJson);
         break;
       // NOTE: we are being permissive here and allowing unknown types to silently fail. Not sure if we want to hard fail or just do a basic deserialization
@@ -171,9 +176,9 @@ export default class SchemaReadHelper {
   private findSchemaChild(fullName: string): void {
     const [schemaName, childName] = SchemaChild.parseFullName(fullName);
 
-    if (this._schema && this._schema.schemaKey.name.toLowerCase() === schemaName.toLowerCase() && undefined === this._schema.getChild(childName)) {
+    if (this._schema && this._schema.schemaKey.name.toLowerCase() === schemaName.toLowerCase() && undefined === this._schema.getChild(childName, false)) {
       this.loadSchemaChild(this._schema, this._itemToRead.children[childName], childName);
-    } else if (undefined === this._context.locateSchemaChildSync(fullName)) {
+    } else if (undefined === this._context.getSchemaChildSync(new SchemaChildKey(childName, undefined, new SchemaKey(schemaName)))) {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaChild ${fullName}.`);
     }
   }

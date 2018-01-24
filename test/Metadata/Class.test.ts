@@ -5,17 +5,22 @@
 import { assert, expect } from "chai";
 
 import ECSchema from "../../source/Metadata/Schema";
-import ECClass from "../../source/Metadata/EntityClass";
 import EntityClass from "../../source/Metadata/EntityClass";
 import { SchemaContext } from "../../source/Context";
 
 describe("class", () => {
+  let schema: ECSchema;
+
   describe("get properties", () => {
+    beforeEach(() => {
+      schema = new ECSchema("TestSchema", 1, 0, 0);
+    });
+
     it("inherited properties from base class", () => {
-      const baseClass = new EntityClass("TestBase");
+      const baseClass = new EntityClass(schema, "TestBase");
       const basePrimProp = baseClass.createPrimitiveProperty("BasePrimProp");
 
-      const entityClass = new EntityClass("TestClass");
+      const entityClass = new EntityClass(schema, "TestClass");
       entityClass.createPrimitiveProperty("PrimProp");
       entityClass.baseClass = baseClass;
 
@@ -27,7 +32,7 @@ describe("class", () => {
     });
 
     it("case-insentive search", () => {
-      const entityClass = new EntityClass("TestClass");
+      const entityClass = new EntityClass(schema, "TestClass");
       const primProp = entityClass.createPrimitiveProperty("TestProp");
 
       expect(entityClass.getProperty("TESTPROP")).equal(primProp);
@@ -36,10 +41,10 @@ describe("class", () => {
     });
 
     it("case-insensitive inherited property search", () => {
-      const baseClass = new EntityClass("BaseClass");
+      const baseClass = new EntityClass(schema, "BaseClass");
       const primProp = baseClass.createPrimitiveProperty("TestProp");
 
-      const entityClass = new EntityClass("TestClass");
+      const entityClass = new EntityClass(schema, "TestClass");
       entityClass.baseClass = baseClass;
 
       expect(entityClass.getProperty("TESTPROP", true)).equal(primProp);
@@ -69,15 +74,14 @@ describe("class", () => {
         },
       };
 
-      const ecschema = ECSchema.fromJson(schemaJson);
-      assert.isDefined(ecschema);
+      schema = ECSchema.fromJson(schemaJson);
+      assert.isDefined(schema);
 
-      let testClass = ecschema.getClass("testClass");
+      const testClass = schema.getClassSync<EntityClass>("testClass");
       assert.isDefined(testClass);
-      testClass = testClass as ECClass;
       assert.isDefined(testClass.baseClass);
 
-      const baseClass = ecschema.getClass("testBaseClass");
+      const baseClass = schema.getClassSync<EntityClass>("testBaseClass");
       assert.isDefined(baseClass);
 
       assert.isTrue(baseClass === testClass.baseClass);
@@ -108,9 +112,9 @@ describe("class", () => {
       const context = new SchemaContext();
       context.addSchemaSync(refSchema);
 
-      const schema = ECSchema.fromJson(schemaJson, context);
+      schema = ECSchema.fromJson(schemaJson, context);
 
-      const testClass = schema.getClass("testClass");
+      const testClass = schema.getClassSync<EntityClass>("testClass");
 
       assert.isDefined(testClass);
       assert.isDefined(testClass!.baseClass);
@@ -157,7 +161,7 @@ describe("class", () => {
       const ecSchema = ECSchema.fromJson(schemaJson);
       assert.isDefined(ecSchema);
 
-      const testEntity = ecSchema.getClass<EntityClass>("testClass");
+      const testEntity = ecSchema.getClassSync("testClass");
       assert.isDefined(testEntity);
 
       const testPrimProp = testEntity!.getProperty("testPrimProp");
