@@ -17,8 +17,7 @@ import { ElementProps, GeometricElementProps } from "../common/ElementProps";
 import { DefinitionModel, Model } from "../backend/Model";
 import { SpatialCategory } from "../backend/Category";
 import { Appearance } from "../common/SubCategoryAppearance";
-
-import { Configuration } from "../common/IModel";
+import { Configuration } from "../common/Configuration";
 
 // Initialize the gateway classes used by tests
 Gateway.initialize(IModelGateway);
