@@ -9,7 +9,8 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { BriefcaseStatus, IModelError } from "../common/IModelError";
 import { IModelVersion } from "../common/IModelVersion";
-import { IModelToken, Configuration } from "../common/IModel";
+import { IModelToken } from "../common/IModel";
+import { Configuration } from "../common/Configuration";
 import { NodeAddonRegistry } from "./NodeAddonRegistry";
 import { AddonDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { IModelDb } from "./IModelDb";
@@ -197,11 +198,11 @@ export class BriefcaseManager {
   private static cache?: BriefcaseCache;
 
   /** The path where the cache of briefcases are stored. */
-  public static cachePath = path.join(os.tmpdir(), "Bentley/IModelJs/cache/imodels");
+  public static cacheDir = path.join(os.tmpdir(), "Bentley/IModelJs/cache/imodels");
 
   /** Get the local path of the root folder storing the imodel seed file, change sets and briefcases */
   private static getIModelPath(iModelId: string): string {
-    return path.join(BriefcaseManager.cachePath, iModelId);
+    return path.join(BriefcaseManager.cacheDir, iModelId);
   }
 
   public static getChangeSetsPath(iModelId: string): string {
@@ -243,7 +244,7 @@ export class BriefcaseManager {
    */
   private static getCachedBriefcaseInfos(): any {
     const nativeDb: AddonDgnDb = new (NodeAddonRegistry.getAddon()).AddonDgnDb();
-    const res: ErrorStatusOrResult<DbResult, string> = nativeDb.getCachedBriefcaseInfos(BriefcaseManager.cachePath);
+    const res: ErrorStatusOrResult<DbResult, string> = nativeDb.getCachedBriefcaseInfos(BriefcaseManager.cacheDir);
     if (res.error)
       Promise.reject(new IModelError(res.error.status));
 
@@ -687,8 +688,8 @@ export class BriefcaseManager {
 
   /** Purge all briefcases and reset the briefcase manager */
   public static purgeAll() {
-    if (fs.existsSync(BriefcaseManager.cachePath))
-      BriefcaseManager.deleteFolderRecursive(BriefcaseManager.cachePath);
+    if (fs.existsSync(BriefcaseManager.cacheDir))
+      BriefcaseManager.deleteFolderRecursive(BriefcaseManager.cacheDir);
 
     BriefcaseManager.cache = undefined;
   }

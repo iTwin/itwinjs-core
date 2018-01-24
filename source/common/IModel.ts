@@ -2,7 +2,6 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { DeploymentEnv } from "@bentley/imodeljs-clients";
 import { Transform, Point3d, XYZProps, TransformProps, Range3dProps } from "@bentley/geometry-core/lib/PointVector";
 import { AxisAlignedBox3d } from "./geometry/Primitives";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
@@ -77,24 +76,4 @@ export abstract class IModel implements IModelProps {
 
   /** Get the Id of the special dictionary model */
   public static getDictionaryId(): Id64 { return new Id64("0x10"); }
-}
-
-/** Common configuration for various API */
-export abstract class Configuration {
-
-  private static _iModelHubDeployConfig?: DeploymentEnv;
-
-  /** Get the deployment configuration of Connect and IModelHub services - these are used to find Projects and iModels
-   */
-  public static get iModelHubDeployConfig(): DeploymentEnv {
-    return Configuration._iModelHubDeployConfig ? Configuration._iModelHubDeployConfig : "QA";
-  }
-
-  /**
-   * Set the deployment configuration of Connect and IModelHub services - these are used to find Projects and iModels
-   * @remarks This needs to be setup just once before any iModels are opened, and cannot be switched thereafter.
-   */
-  public static set iModelHubDeployConfig(deploymentEnv: DeploymentEnv) {
-    Configuration._iModelHubDeployConfig = deploymentEnv;
-  }
 }

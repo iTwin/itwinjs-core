@@ -9,7 +9,8 @@ import { DeploymentEnv } from "@bentley/imodeljs-clients/lib/Clients";
 import { MultiCode, IModelHubClient, CodeState } from "@bentley/imodeljs-clients/lib/IModelHubClients";
 import { Code, CodeSpec } from "../common/Code";
 import { ElementProps, ElementAspectProps, ElementLoadParams, ViewDefinitionProps } from "../common/ElementProps";
-import { IModel, IModelProps, Configuration } from "../common/IModel";
+import { IModel, IModelProps } from "../common/IModel";
+import { Configuration } from "../common/Configuration";
 import { IModelVersion } from "../common/IModelVersion";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { ModelProps } from "../common/ModelProps";
@@ -46,7 +47,6 @@ export class IModelDb extends IModel {
   public readonly elements: IModelDbElements;
   public readonly views: IModelDbViews;
   public readonly linkTableRelationships: IModelDbLinkTableRelationships;
-  public readonly changeSets: IModelDbChangeSets;
   private readonly statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private _codeSpecs: CodeSpecs;
   private _classMetaDataRegistry: MetaDataRegistry;
@@ -65,7 +65,6 @@ export class IModelDb extends IModel {
     this.elements = new IModelDbElements(this);
     this.views = new IModelDbViews(this);
     this.linkTableRelationships = new IModelDbLinkTableRelationships(this);
-    this.changeSets = new IModelDbChangeSets(this);
   }
 
   private static create(briefcaseEntry: BriefcaseEntry, contextId?: string): IModelDb {
@@ -81,6 +80,7 @@ export class IModelDb extends IModel {
   /** Open the iModel from a local file
    * @param pathname The pathname of the iModel
    * @param openMode Open mode for database
+   * @param enableTransactions Enable tracking of transactions in this standalone iModel
    * @throws [[IModelError]]
    */
   public static openStandalone(pathname: string, openMode: OpenMode = OpenMode.ReadWrite, enableTransactions: boolean = false): IModelDb {
@@ -89,14 +89,23 @@ export class IModelDb extends IModel {
     return IModelDb.create(briefcaseEntry);
   }
 
-  /** Open an iModel from the iModelHub */
+  /**
+   * Open an iModel from the iModelHub
+   * @param accessToken
+   * @param contextId
+   * @param iModelId
+   * @param openMode
+   * @param version
+   */
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(accessToken, contextId, iModelId, openMode, version);
     Logger.logInfo("IModelDb.open", () => ({ iModelId, openMode }));
     return IModelDb.create(briefcaseEntry, contextId);
   }
 
-  /** Close this iModel, if it is currently open */
+  /**
+   * Close this standalone iModel, if it is currently open
+   */
   public closeStandalone(): void {
     if (!this.briefcaseEntry)
       return;
@@ -263,6 +272,32 @@ export class IModelDb extends IModel {
 
     this.concurrencyControl.onSavedChanges();
   }
+
+  /** Pull and Merge changes from the iModelHub */
+  public async pullAndMergeChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    if (!this.briefcaseEntry)
+      throw this._newNotOpenError();
+
+    return BriefcaseManager.pullAndMergeChanges(accessToken, this.briefcaseEntry, version);
+  }
+
+  /** Push changes to the iModelHub */
+  public async pushChanges(accessToken: AccessToken): Promise<void> {
+    if (!this.briefcaseEntry)
+      throw this._newNotOpenError();
+
+    return BriefcaseManager.pushChanges(accessToken, this.briefcaseEntry);
+  }
+
+  // public async reverseChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+  //   if (!this._iModel.briefcaseEntry)
+  //     return Promise.reject(this._iModel._newNotOpenError());
+  // }
+
+  // public async reinstateChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+  //   if (!this._iModel.briefcaseEntry)
+  //     return Promise.reject(this._iModel._newNotOpenError());
+  // }
 
   /**
    * Abandon pending changes to this iModel
@@ -1000,38 +1035,6 @@ export namespace ConcurrencyControl {
     }
   }
 
-}
-
-export class IModelDbChangeSets {
-  private _iModel: IModelDb;
-
-  public constructor(iModel: IModelDb) {
-    this._iModel = iModel;
-  }
-
-  public async pullAndMerge(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    if (!this._iModel.briefcaseEntry)
-      return Promise.reject(this._iModel._newNotOpenError());
-
-    return BriefcaseManager.pullAndMergeChanges(accessToken, this._iModel.briefcaseEntry, version);
-  }
-
-  public async push(accessToken: AccessToken): Promise<void> {
-    if (!this._iModel.briefcaseEntry)
-      return Promise.reject(this._iModel._newNotOpenError());
-
-    return BriefcaseManager.pushChanges(accessToken, this._iModel.briefcaseEntry);
-  }
-
-  // public async reverse(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-  //   if (!this._iModel.briefcaseEntry)
-  //     return Promise.reject(this._iModel._newNotOpenError());
-  // }
-
-  // public async reinstate(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-  //   if (!this._iModel.briefcaseEntry)
-  //     return Promise.reject(this._iModel._newNotOpenError());
-  // }
 }
 
 /** The collection of models in an [[IModelDb]]. */
