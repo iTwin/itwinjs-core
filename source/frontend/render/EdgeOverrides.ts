@@ -8,7 +8,7 @@ import { OvrFlags } from "./RenderFlags";
 // Describes one of the pre-defined line patterns.
 // See Render::LinePixels.
 export class LineCode {
-  private value: number;
+  public value: number;
   public static count: number = 10;
   constructor(pixels: LinePixels = LinePixels.Solid) {
     this.value = LineCode.valueFromLinePixels(pixels);
@@ -34,7 +34,7 @@ export class EdgeOverrides {
   private color: FloatPreMulRgba;
   private lineCode: LineCode;
   private weight: number;
-  private flags: OvrFlags = OvrFlags.None;
+  public flags: OvrFlags = OvrFlags.None;
   public anyOverridden(): boolean { return OvrFlags.None !== this.flags; }
   public isOverridden(flags: OvrFlags): boolean { return flags === this.flags; }
   public init(style: HiddenLine.Style, forceOpaque: boolean): void {
