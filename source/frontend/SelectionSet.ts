@@ -1,13 +1,27 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64, Id64Set } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelConnection } from "./IModelConnection";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
+import { iModelApp } from "./IModelApp";
 
 export const enum EventType { Add, Remove, Replace, Clear }
-export type IdSet = Set<string>;
-export type IdArg = Id64 | IdSet;
+export type IdArg = Id64 | Id64Set | string[];
+
+export class HilitedSet {
+  public readonly hilited = new Set<string>();
+  public constructor(public iModel: IModelConnection) { }
+  public setHilite(arg: IdArg, onOff: boolean) {
+    Id64.toIdSet(arg).forEach((id) => onOff ? this.hilited.add(id) : this.hilited.delete(id));
+    iModelApp.viewManager.onSelectionSetChanged(this.iModel);
+  }
+  public clearAll() {
+    this.hilited.clear();
+    iModelApp.viewManager.onSelectionSetChanged(this.iModel);
+  }
+  public isHilited(id: Id64) { return this.hilited.has(id.value); }
+}
 
 /** the set of currently selected elements for an iModel */
 export class SelectionSet {
@@ -15,11 +29,6 @@ export class SelectionSet {
   public readonly onChanged = new BeEvent<(iModel: IModelConnection, evType: EventType, ids?: Set<string> | undefined) => void>();
   public constructor(public iModel: IModelConnection) { }
 
-  private toSet(id: IdArg) {
-    if (!(id instanceof Id64))
-      return id;
-    const ids = new Set<string>(); ids.add(id.value); return ids;
-  }
   private sendChangedEvent(evType: EventType, ids?: Set<string>) { this.onChanged.raiseEvent(this.iModel, evType, ids); }
   /**
    * Get the number of entries in the current selection set.
@@ -47,7 +56,7 @@ export class SelectionSet {
    */
   public add(elem: IdArg, sendEvent = true): boolean {
     const oldSize = this.selected.size;
-    elem = this.toSet(elem);
+    elem = Id64.toIdSet(elem);
     elem.forEach((id) => this.selected.add(id));
     const changed = oldSize !== this.selected.size;
     if (sendEvent && changed)
@@ -61,7 +70,7 @@ export class SelectionSet {
    */
   public remove(elem: IdArg, sendEvent = true): boolean {
     const oldSize = this.selected.size;
-    elem = this.toSet(elem);
+    elem = Id64.toIdSet(elem);
     elem.forEach((id) => this.selected.delete(id));
     const changed = oldSize !== this.selected.size;
     if (sendEvent && changed)
@@ -79,7 +88,7 @@ export class SelectionSet {
   public invert(elem: IdArg): boolean {
     const elementsToAdd = new Set<string>();
     const elementsToRemove = new Set<string>();
-    this.toSet(elem).forEach((id) => { if (this.selected.has(id)) elementsToRemove.add(id); else elementsToAdd.add(id); });
+    Id64.toIdSet(elem).forEach((id) => { if (this.selected.has(id)) elementsToRemove.add(id); else elementsToAdd.add(id); });
     return this.addAndRemove(elementsToAdd, elementsToRemove);
   }
 
