@@ -41,7 +41,7 @@ describe("Sample Code", () => {
     const modeledElementProps: ElementProps = {
       classFullName: "BisCore:PhysicalPartition",
       iModel: outputImodel,
-      parent: { id: parentElement.id, relClass: "BisCore:SubjectOwnsPartitionElements" },
+      parent: { id: parentElement.id, relClassName: "BisCore:SubjectOwnsPartitionElements" },
       model: iModel.models.repositoryModelId,
       id: new Id64(),
       code: modelCode,

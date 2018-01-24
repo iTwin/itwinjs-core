@@ -158,7 +158,7 @@ export class IModelTestUtils {
     const modeledElementProps: ElementProps = {
       classFullName: "BisCore:PhysicalPartition",
       iModel: testImodel,
-      parent: { id: testImodel.elements.rootSubjectId, relClass: "BisCore:SubjectOwnsPartitionElements" },
+      parent: { id: testImodel.elements.rootSubjectId, relClassName: "BisCore:SubjectOwnsPartitionElements" },
       model: testImodel.models.repositoryModelId,
       id: new Id64(),
       code: newModelCode,
