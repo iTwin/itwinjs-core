@@ -9,6 +9,21 @@ import { IModelConnection } from "../IModelConnection";
 import { iModelApp } from "../IModelApp";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 
+export const enum ModifyElementSource {
+  /** The source for the element is unknown - not caused by a modification command. */
+  Unknown = 0,
+  /** The element is selected by the user. */
+  Selected = 1,
+  /** The element is processed because it is in the selection set. */
+  SelectionSet = 2,
+  /** The element is processed because it is passes the fence criteria. */
+  Fence = 3,
+  /** The element is processed because it belongs to the group of the selected element (for _FilterAgendaEntries only) */
+  Group = 4,
+  /** The element is selected by the user by drag selection or multi-selection using ctrl. */
+  DragSelect = 5,
+}
+
 /**
  * The PrimitiveTool class can be used to implement a primitive command. Placement
  * tools that don't need to locate or modify elements are good candidates for a PrimitiveTool.
