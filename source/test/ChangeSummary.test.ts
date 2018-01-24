@@ -27,7 +27,7 @@ describe("ChangeSummary", () => {
     testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "TestModel");
 
     // Recreate briefcases if it's a TMR. todo: Figure a better way to prevent bleeding briefcase ids
-    shouldDeleteAllBriefcases = !fs.existsSync(BriefcaseManager.cachePath);
+    shouldDeleteAllBriefcases = !fs.existsSync(BriefcaseManager.cacheDir);
     if (shouldDeleteAllBriefcases)
       await IModelTestUtils.deleteAllBriefcases(accessToken, testIModelId);
 
@@ -61,7 +61,7 @@ describe("ChangeSummary", () => {
         assert.equal(row.csumcount, 0);
       });
 
-      const expectedCachePath: string = path.join(BriefcaseManager.cachePath, testIModelId, testIModelId.concat(".bim.ecchanges"));
+      const expectedCachePath: string = path.join(BriefcaseManager.cacheDir, testIModelId, testIModelId.concat(".bim.ecchanges"));
       expect(fs.existsSync(expectedCachePath));
     } finally {
       await iModel.close(accessToken);
@@ -91,7 +91,7 @@ describe("ChangeSummary", () => {
         assert.equal(row.csumcount, 0);
       });
 
-      const expectedCachePath: string = path.join(BriefcaseManager.cachePath, testIModelId, testIModelId.concat(".bim.ecchanges"));
+      const expectedCachePath: string = path.join(BriefcaseManager.cacheDir, testIModelId, testIModelId.concat(".bim.ecchanges"));
       expect(fs.existsSync(expectedCachePath));
     } finally {
     await iModel.close(accessToken);
