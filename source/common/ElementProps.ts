@@ -31,7 +31,12 @@ export class RelatedElement implements RelatedElementProps {
   public static fromJSON(json?: any): RelatedElement | undefined {
     return json ? new RelatedElement(json) : undefined;
   }
+
+  public static isRelatedElement(obj: any): obj is RelatedElement {
+    return obj.id !== undefined;
+  }
 }
+
 /** A RelatedElement that describes the type definition of an element. */
 export class TypeDefinition extends RelatedElement {
 }

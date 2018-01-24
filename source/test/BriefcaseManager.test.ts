@@ -44,11 +44,11 @@ describe("BriefcaseManager", () => {
     testChangeSets = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
     expect(testChangeSets.length).greaterThan(2);
 
-    iModelLocalReadonlyPath = path.join(BriefcaseManager.cachePath, testIModelId, "readOnly");
-    iModelLocalReadWritePath = path.join(BriefcaseManager.cachePath, testIModelId, "readWrite");
+    iModelLocalReadonlyPath = path.join(BriefcaseManager.cacheDir, testIModelId, "readOnly");
+    iModelLocalReadWritePath = path.join(BriefcaseManager.cacheDir, testIModelId, "readWrite");
 
     // Recreate briefcases if it's a TMR. todo: Figure a better way to prevent bleeding briefcase ids
-    shouldDeleteAllBriefcases = !fs.existsSync(BriefcaseManager.cachePath);
+    shouldDeleteAllBriefcases = !fs.existsSync(BriefcaseManager.cacheDir);
     if (shouldDeleteAllBriefcases)
       await IModelTestUtils.deleteAllBriefcases(accessToken, testIModelId);
 
@@ -254,7 +254,7 @@ describe("BriefcaseManager", () => {
     rwIModel.elements.getElement(spatialCategoryId); // throws if spatialCategoryId is not found
 
     // Push the changes to the hub
-    await rwIModel.changeSets.push(accessToken);
+    await rwIModel.pushChanges(accessToken);
 
     // Open a readonly copy of the iModel
     const roIModel: IModelDb = await IModelDb.open(accessToken, testProjectId, rwIModelId, OpenMode.Readonly, IModelVersion.latest());

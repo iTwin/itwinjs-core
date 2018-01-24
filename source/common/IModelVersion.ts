@@ -4,7 +4,7 @@
 import { AccessToken, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelError } from "./IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
-import { Configuration } from "./IModel";
+import { Configuration } from "./Configuration";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 /** Option to specify the version of the iModel to be acquired and used */

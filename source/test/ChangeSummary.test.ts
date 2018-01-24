@@ -8,7 +8,7 @@ import { expect, assert } from "chai";
 import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "../common/IModelVersion";
-import { ChangeSummaryManager } from "../backend/ChangeSummaryManager";
+import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../backend/ChangeSummaryManager";
 import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { IModelDb } from "../backend/IModelDb";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
@@ -27,7 +27,7 @@ describe("ChangeSummary", () => {
     testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "TestModel");
 
     // Recreate briefcases if it's a TMR. todo: Figure a better way to prevent bleeding briefcase ids
-    shouldDeleteAllBriefcases = !fs.existsSync(BriefcaseManager.cachePath);
+    shouldDeleteAllBriefcases = !fs.existsSync(BriefcaseManager.cacheDir);
     if (shouldDeleteAllBriefcases)
       await IModelTestUtils.deleteAllBriefcases(accessToken, testIModelId);
 
@@ -61,7 +61,7 @@ describe("ChangeSummary", () => {
         assert.equal(row.csumcount, 0);
       });
 
-      const expectedCachePath: string = path.join(BriefcaseManager.cachePath, testIModelId, testIModelId.concat(".bim.ecchanges"));
+      const expectedCachePath: string = path.join(BriefcaseManager.cacheDir, testIModelId, testIModelId.concat(".bim.ecchanges"));
       expect(fs.existsSync(expectedCachePath));
     } finally {
       await iModel.close(accessToken);
@@ -91,7 +91,7 @@ describe("ChangeSummary", () => {
         assert.equal(row.csumcount, 0);
       });
 
-      const expectedCachePath: string = path.join(BriefcaseManager.cachePath, testIModelId, testIModelId.concat(".bim.ecchanges"));
+      const expectedCachePath: string = path.join(BriefcaseManager.cacheDir, testIModelId, testIModelId.concat(".bim.ecchanges"));
       expect(fs.existsSync(expectedCachePath));
     } finally {
     await iModel.close(accessToken);
@@ -158,6 +158,46 @@ describe("ChangeSummary", () => {
      await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, "123");
     } catch (e) {
       assert.equal(e.message, "Not Found");
+    }
+  });
+
+  it("Query ChangeSummary content", async () => {
+    await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, testIModelId);
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
+    assert.exists(iModel);
+    ChangeSummaryManager.attachChangeCache(iModel);
+    assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
+
+    const outDir = __dirname + "/output/";
+    if (!fs.existsSync(outDir))
+      fs.mkdirSync(outDir);
+
+    const changeSummaries = new Array<ChangeSummary>();
+    iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.ChangeSummary ORDER BY ECInstanceId", (stmt) => {
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        const row = stmt.getRow();
+        const csum: ChangeSummary = ChangeSummaryManager.queryChangeSummary(iModel, new Id64(row.id));
+        changeSummaries.push(csum);
+      }
+    });
+
+    for (const changeSummary of changeSummaries) {
+      const filePath = outDir + "imodelid_" + testIModelId + "_changesummaryid_" + changeSummary.id + ".changesummary.json";
+      if (fs.existsSync(filePath))
+        fs.removeSync(filePath);
+
+      const content = {id: changeSummary.id, changeSet: changeSummary.changeSet, instanceChanges: new Array<InstanceChange>()};
+      iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId", (stmt) => {
+        stmt.bindId(1, changeSummary.id);
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          const row = stmt.getRow();
+
+          const instanceChange: InstanceChange = ChangeSummaryManager.queryInstanceChange(iModel, new Id64(row.id));
+          content.instanceChanges.push(instanceChange);
+        }
+      });
+
+      fs.writeFileSync(filePath, JSON.stringify(content));
     }
   });
 });

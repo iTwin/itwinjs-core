@@ -17,4 +17,23 @@
     <ECProperty propertyName="testProperty" typeName="string"/>
   </ECEntityClass>
 
+  <ECEntityClass typeName="TestPhysicalElement">
+    <BaseClass>bis:DefinitionElement</BaseClass>
+    <ECProperty propertyName="testProperty" typeName="string"/>
+  </ECEntityClass>
+
+  <ECRelationshipClass typeName="TestPhysicalObjectRelatedToTestPhysicalObject" strengthDirection="Backward" strength="referencing" modifier="Sealed">
+      <Source multiplicity="(0..1)" polymorphic="true" roleLabel="a" >
+          <Class class="TestPhysicalObject"/>
+      </Source>
+      <Target multiplicity="(0..1)" polymorphic="true" roleLabel="b" >
+          <Class class="TestPhysicalObject"/>
+      </Target>
+  </ECRelationshipClass>
+  
+  <ECEntityClass typeName="TestPhysicalObject" >
+    <BaseClass>bis:PhysicalElement</BaseClass>
+    <ECNavigationProperty propertyName="relatedElement" relationshipName="TestPhysicalObjectRelatedToTestPhysicalObject" direction="Forward" readOnly="True"/>
+</ECEntityClass>
+  
 </ECSchema>

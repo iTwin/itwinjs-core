@@ -27,6 +27,9 @@ import { Code } from "../common/Code";
 import { Placement3d, ElementAlignedBox3d } from "../common/geometry/Primitives";
 import { GeometricElement3dProps } from "../common/ElementProps";
 
+import * as path from "path";
+import * as os from "os";
+
 describe("GeometricPrimitive", () => {
   it("should be able to create GeometricPrimitives from various geometry", () => {
 
@@ -350,7 +353,7 @@ describe("GeometryBuilder", () => {
     assert.isFalse(builder.appendSolidPrimitive(cylinder3d!), "3d SolidPrimitive is NOT appended using 2d builder");
   });
 
-  it ("geometry stream built in JS should be deserialized properly in C++", () => {
+  it.skip("geometry stream built in JS should be deserialized properly in C++", () => {
     const builder = GeometryBuilder.createCategoryOrigin3d(seedElement.category, Point3d.create(0, 0, 0));
     assert.isDefined(builder, "Builder is successfully created");
     if (!builder)
@@ -369,6 +372,7 @@ describe("GeometryBuilder", () => {
       numSurfacePts: pts.length,
       polyPts: polyPoints,
       numPolyPts: polyPoints.length,
+      outFileName: path.join(os.tmpdir(), "myDb.bim"),
     };
 
     const cppResult = imodel.executeTestById(4, json);
@@ -376,13 +380,14 @@ describe("GeometryBuilder", () => {
     assert.isTrue(jsonCompare.compare({returnValue : true}, cppResult));
   });
 
-  it ("geometry stream built in C++ should be deserialized properly in TS", () => {
+  it.skip("geometry stream built in C++ should be deserialized properly in TS", () => {
     const pts = surface.copyPoints();
     const json: any = {
       bsurfacePts: pts,
       numSurfacePts: pts.length,
       polyPts: polyPoints,
       numPolyPts: polyPoints.length,
+      outFileName: path.join(os.tmpdir(), "testDb.bim"),
     };
     const cppResult = imodel.executeTestById(5, json);
     assert.isTrue(cppResult.hasOwnProperty("geom"), "Successfully obtained geometry stream back from C++");
