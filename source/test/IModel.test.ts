@@ -776,7 +776,7 @@ describe("iModel", () => {
 
   });
 
-  it.skip("should set navigation properties", () => {
+  it("should set navigation properties", () => {
 
     const testImodel: IModelDb = imodel1;
     try {
@@ -798,6 +798,8 @@ describe("iModel", () => {
       spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
     }
 
+    const trelClassName = "TestBim:TestPhysicalObjectRelatedToTestPhysicalObject";
+
     let id1: Id64;
     let id2: Id64;
 
@@ -817,7 +819,7 @@ describe("iModel", () => {
 
       // The second one should point to the first.
       elementProps.id = new Id64();
-      elementProps.relatedElement = {id: id1, relClass: "TestBim:TestPhysicalObject"};
+      elementProps.relatedElement = id1;      // use the short id-only format
 
       id2 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps));
       assert.isTrue(id2.isValid());
@@ -826,24 +828,51 @@ describe("iModel", () => {
     if (true) {
       // Test that el2 points to el1
       const el2: Element = testImodel.elements.getElement(id2);
-      assert.isTrue(el2.hasOwnProperty("relatedElement"));
-      assert.isTrue(el2.relatedElement !== undefined);
-      assert.isTrue(el2.relatedElement.hasOwnProperty("id"));
-      assert.isTrue(el2.relatedElement.id.equals(id1));
+      assert.equal(el2.classFullName, "TestBim:TestPhysicalObject");
+      assert.isTrue("relatedElement" in el2);
+      assert.isTrue("id" in el2.relatedElement);
+      assert.deepEqual(el2.relatedElement.id, id1);
+
+      // Even though I didn't set it, the platform knows the relationship class and reports it.
+      assert.isTrue("relClassName" in el2.relatedElement);
+      assert.equal(el2.relatedElement.relClassName.replace(".", ":"), trelClassName);
     }
 
     if (true) {
       // Change el2 to point to itself.
-      const el22: Element = testImodel.elements.getElement(id2);
-      const el2Modified: Element = el22.copyForEdit<Element>();
-      el2Modified.relatedElement = {id: id2, relClass: "TestBim:TestPhysicalObject"};
+      const el2: Element = testImodel.elements.getElement(id2);
+      const el2Modified: Element = el2.copyForEdit<Element>();
+      el2Modified.relatedElement = {id: id2, relClassName: trelClassName}; // this time, use the long RelatedElement format.
       testImodel.elements.updateElement(el2Modified);
+      // Test that el2 points to itself.
+      const el2after: Element = testImodel.elements.getElement(id2);
+      assert.deepEqual(el2after.relatedElement.id, id2);
+      assert.equal(el2after.relatedElement.relClassName.replace(".", ":"), trelClassName);
     }
 
-    // Test that el2 points to itself.
-    const el23: Element = testImodel.elements.getElement(id2);
-    assert.isTrue(el23.relatedElement.id.equals(id2));
+    if (true) {
+      // Now set the navigation property value to the same thing, using the short, id-only form
+      const el2: Element = testImodel.elements.getElement(id2);
+      const el2Modified: Element = el2.copyForEdit<Element>();
+      el2Modified.relatedElement = id1;
+      testImodel.elements.updateElement(el2Modified);
+      // Test that el2 points to el1 again.
+      const el2after: Element = testImodel.elements.getElement(id2);
+      assert.deepEqual(el2after.relatedElement.id, id1);
+      // (the platform knows the relationship class and reports it.)
+      assert.equal(el2after.relatedElement.relClassName.replace(".", ":"), trelClassName);
+    }
 
+    if (true) {
+      // Test that we can null out the navigation property
+      const el2: Element = testImodel.elements.getElement(id2);
+      const el2Modified: Element = el2.copyForEdit<Element>();
+      el2Modified.relatedElement = null;
+      testImodel.elements.updateElement(el2Modified);
+      // Test that el2 has no relatedElement property value
+      const el2after: Element = testImodel.elements.getElement(id2);
+      assert.isUndefined(el2after.relatedElement);
+    }
   });
 
   it.skip("ImodelJsTest.MeasureInsertPerformance", () => {

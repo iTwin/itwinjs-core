@@ -47,7 +47,7 @@ export class NodeAddonRegistry {
 
   /** Get the module that can load the standard addon. */
   public static getStandardAddonLoaderModule(): any | undefined {
-    if (process === undefined)
+    if (typeof (process) === "undefined")
       return undefined;
     if ("electron" in process.versions) {
       return require("@bentley/imodeljs-electronaddon");
@@ -57,6 +57,18 @@ export class NodeAddonRegistry {
 
   /** Load and register the standard addon. */
   public static loadAndRegisterStandardAddon() {
+    if (typeof (process) === "undefined") {
+      // We are not running in node or electron.
+      if (require("@bentley/imodeljs-services-tier-utilities") !== undefined) {
+        // We are running in imodeljs (our mobile platform)
+        NodeAddonRegistry.registerAddon(require("@bentley/imodeljs-mobile")); // special addon name is recognized by the mobile platform's loader.
+        return;
+      }
+      // We are running in an unknown platform.
+      throw new IModelError(IModelStatus.NotFound);
+    }
+
+    // We are running in node or electron.
     const loaderModule = NodeAddonRegistry.getStandardAddonLoaderModule();
     if (loaderModule === undefined) {
       throw new IModelError(IModelStatus.NotFound);
