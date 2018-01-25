@@ -60,7 +60,7 @@ export class IModelApp {
     iModelApp._i18N = new I18N(["iModelSystem"], "iModelSystem", iModelApp.supplyI18NOptions());
 
     const tools = iModelApp.tools; // first register all the default tools. Subclasses may choose to override them.
-    const namespace: I18NNamespace = I18NNamespace.register("BaseTools");
+    const namespace: I18NNamespace = iModelApp.i18N.registerNamespace("BaseTools");
     tools.registerModule(require("./tools/ViewTool"), namespace);
     tools.registerModule(require("./tools/IdleTool"), namespace);
 

@@ -35,7 +35,7 @@ class TestApp extends IModelApp {
   protected onStartup() {
     this._accuDraw = new TestAccuDraw();
 
-    this.registeredNamespace = I18NNamespace.register("TestApp");
+    this.registeredNamespace = iModelApp.i18N.registerNamespace("TestApp");
     TestIdleTool.register(this.registeredNamespace);
     TestImmediate.register(this.registeredNamespace);
     TestRotateTool.register(this.registeredNamespace);

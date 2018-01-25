@@ -11,6 +11,7 @@ export interface I18NOptions {
 
 export class I18N {
   private i18n: i18n;
+  private namespaceRegistry: Map<string, I18NNamespace> = new Map<string, I18NNamespace>();
 
   public constructor(nameSpaces: string[], defaultNameSpace: string, options?: I18NOptions, renderFunction?: any) {
     this.i18n = i18next.createInstance();
@@ -51,22 +52,15 @@ export class I18N {
   public languageList(): string[] {
     return this.i18n.languages;
   }
-}
-
-export class I18NNamespace {
-  private constructor(public name: string, public readFinished: Promise<void>) { }
-
-  // map of strings->I18NNamespace objects.
-  private static map: Map<string, I18NNamespace> = new Map<string, I18NNamespace>();
 
   // register a new Namespace. Must be unique in the system.
-  public static register(name: string): I18NNamespace {
-    if (this.map.get(name)) {
+  public registerNamespace(name: string): I18NNamespace {
+    if (this.namespaceRegistry.get(name)) {
       throw new IModelError(-1, "namespace must be unique");
     }
     const theReadPromise: Promise<void> = new Promise((resolve: any, _reject: any) => {
       iModelApp.i18N.loadNamespace(name, (err: any, _t: any) => {
-        const locales: string[] = iModelApp.i18N.languageList().map((thisLocale) => {
+        let locales: string[] = iModelApp.i18N.languageList().map((thisLocale) => {
           return ("/" + thisLocale + "/");
         });
         if (!err) {
@@ -79,15 +73,13 @@ export class I18NNamespace {
         // using i18next-xhr-backend, err will be an array of strings that includes the namespace it tried to read and the locale. There
         // might be errs for some other namespaces as well as this one. We resolve the promise unless there's an error for each possible language.
         const errorList: string[] = err as string[];
-        for (const thisErr of errorList) {
-          if (!thisErr.includes(name))
+        for (const thisError of errorList) {
+          if (!thisError.includes(name))
             continue;
-          for (let iLocale: number = 0; iLocale < locales.length; ++iLocale) {
-            if (thisErr.includes(locales[iLocale] + "/")) {
-              locales.splice(iLocale, 1);
-            }
+          locales = locales.filter ((thisLocale) => {
+            return(!thisError.includes(thisLocale));
+            });
           }
-        }
         // if we removed every locale from the array, it wasn't loaded.
         if (locales.length > 0)
           resolve();
@@ -96,7 +88,12 @@ export class I18NNamespace {
       });
     });
     const thisNamespace: I18NNamespace = new I18NNamespace(name, theReadPromise);
-    this.map.set(name, thisNamespace);
+    this.namespaceRegistry.set(name, thisNamespace);
     return thisNamespace;
   }
+}
+
+export class I18NNamespace {
+  public constructor(public name: string, public readFinished: Promise<void>) { }
+
 }
