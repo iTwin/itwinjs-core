@@ -31,27 +31,27 @@ export class LineCode {
 }
 
 export class EdgeOverrides {
-  public color: FloatPreMulRgba;
+  public color: FloatPreMulRgba = new FloatPreMulRgba();
   public lineCode: LineCode;
   public weight: number;
   public flags: OvrFlags = OvrFlags.None;
-  public anyOverridden(): boolean { return OvrFlags.None !== this.flags; }
-  public isOverridden(flags: OvrFlags): boolean { return flags === this.flags; }
+  public anyOverridden(): boolean { return this.flags !== OvrFlags.None; }
+  public isOverridden(flags: OvrFlags): boolean { return (flags & this.flags) === flags; }
   public init(style: HiddenLine.Style, forceOpaque: boolean): void {
-    this.flags = OvrFlags.None;
+    this.flags &= OvrFlags.None;
     if (style.ovrColor) {
-      this.flags = OvrFlags.Rgba;
+      this.flags |= OvrFlags.Rgba;
       this.color.initFromColorDef(style.color);
     }
     if (style.width !== 0) {
-      this.flags = OvrFlags.Weight;
+      this.flags |= OvrFlags.Weight;
       this.weight = style.width;
     }
     if (style.pattern !== LinePixels.Invalid) {
-      this.flags = OvrFlags.LineCode;
+      this.flags |= OvrFlags.LineCode;
       this.lineCode = new LineCode(style.pattern);
     }
     if (forceOpaque)
-        this.flags = OvrFlags.Alpha;
+        this.flags |= OvrFlags.Alpha;
   }
 }
