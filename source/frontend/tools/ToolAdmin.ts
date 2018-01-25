@@ -395,6 +395,7 @@ export class ToolAdmin {
   public onPostInstallTool(tool: InteractiveTool) { tool.onPostInstall(); }
 
   public get activeViewTool(): ViewTool | undefined { return this.viewTool; }
+  public get activePrimitiveTool(): PrimitiveTool | undefined { return this.primitiveTool; }
   public get activeTool(): InteractiveTool | undefined {
     return this.viewTool ? this.viewTool : (this.inputCollector ? this.inputCollector : this.primitiveTool); // NOTE: Viewing tools suspend input collectors as well as primitives...
   }

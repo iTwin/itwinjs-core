@@ -822,6 +822,8 @@ export class SelectionTool extends PrimitiveTool {
     super.onPostInstall();
     this.initSelectTool();
     this.synchManipulators(true); // Add manipulators for an existing selection set...
+    if (!this.targetView)
+      return;
     this.removeListener = this.iModel.selectionSet.onChanged.addListener(this.onSelectionChanged, this);
     // Utf8String msgStr = DgnClientFxToolsL10N:: GetString(DgnClientFxToolsL10N:: ELEMENT_SET_TOOL_PROMPT_IdentifyElement());
     // NotificationManager:: OutputPrompt(msgStr.c_str());

@@ -7,6 +7,7 @@ import { AccuDraw } from "../../frontend/AccuDraw";
 import { IdleTool } from "../../frontend/tools/IdleTool";
 import { ToolGroup, Tool } from "../../frontend/tools/Tool";
 import { RotateTool, PanTool } from "../../frontend/tools/ViewTool";
+import { SelectionTool } from "../../frontend/tools/SelectTool";
 
 // tslint:disable:no-string-literal
 
@@ -30,6 +31,9 @@ class TestImmediate extends Tool {
 class TestRotateTool extends RotateTool {
 }
 
+class TestSelectTool extends SelectionTool {
+}
+
 class TestApp extends IModelApp {
   protected onStartup() {
     this._accuDraw = new TestAccuDraw();
@@ -38,6 +42,7 @@ class TestApp extends IModelApp {
     TestIdleTool.register(group);
     TestImmediate.register(group);
     TestRotateTool.register(group);
+    TestSelectTool.register(group);
     this.features.setGate("feature2", { a: true, b: false });
     this.features.setGate("feature5", { val: { str1: "string1", doNot: false } });
   }
@@ -58,6 +63,8 @@ describe("IModelApp", () => {
     assert.isFalse(iModelApp.tools.run("Not.Found"), "toolId is not registered");
     assert.isTrue(iModelApp.tools.run("View.Pan"), "run view pan");
     assert.instanceOf(iModelApp.toolAdmin.activeViewTool, PanTool, "pan tool is active");
+    assert.isTrue(iModelApp.tools.run("Select"));
+    assert.instanceOf(iModelApp.toolAdmin.activePrimitiveTool, TestSelectTool, "test select tool is active");
 
     assert.isUndefined(iModelApp.features.check("feature1.test1"));
     assert.isTrue(iModelApp.features.check("feature2.a"));
