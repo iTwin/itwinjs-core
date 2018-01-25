@@ -6,7 +6,7 @@ import { FeatureDimension, FeatureDimensions, LUTDimension, FeatureIndexType } f
 import { TechniqueFlags, Mode, WithClipVolume } from "../../frontend/render/TechniqueFlags";
 
 describe("TechniqueFlags", () => {
-  it("constructor should correctly set methods", () => {
+  it("constructor should correctly set member variables", () => {
     let techFlags = new TechniqueFlags();
     assert.isFalse(techFlags.monochrome, "default constructor sets monochrome to false");
     assert.isFalse(techFlags.clipVolume, "default constructor sets clipVolume to false");
@@ -42,7 +42,7 @@ describe("TechniqueFlags", () => {
     assert.isTrue(techFlags.colorStr === "Non-uniform color", "colorStr updates correctly when colorDimension changed");
     expect(techFlags.descriptors).to.deep.equal(["Non-uniform color", "Empty feature overrides"]);
     assert.isTrue(techFlags.description === "Non-uniform color; Empty feature overrides", "description updates correctly when colorDimension changed");
-    // modifying transucent works as expected
+    // modifying translucent works as expected
     techFlags.translucent = true;
     assert.isTrue(techFlags.isTranslucent, "isTranslucent updates correctly when translucent changes");
     assert.isTrue(techFlags.translucentStr === "translucent", "translucentStr updates correctly when translucent changes");
