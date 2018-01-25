@@ -7,7 +7,9 @@ import { PrimitiveTypeCode } from "./Entity";
 import { IModelError } from "../common/IModelError";
 import { XYAndZ, XAndY, XYZ } from "@bentley/geometry-core/lib/PointVector";
 
-/** Value type (Match this to ECN::ValueKind in ECObjects.h) */
+/** @deprecated Use ECSqlStatement.bindValues or the ECSqlStatement.bindXXX methods instead.
+ * Value type (Match this to ECN::ValueKind in ECObjects.h)
+ */
 export const enum ValueKind {
   /** The ECValue has not be initialized yet */
   Uninitialized = 0x00,
@@ -21,7 +23,7 @@ export const enum ValueKind {
   Navigation = 0x08,
 }
 
-/**
+/** @deprecated Use ECSqlStatement.bindValues or the ECSqlStatement.bindXXX methods instead.
  * ECValue invariant.
  */
 export class ECValue {
@@ -30,17 +32,27 @@ export class ECValue {
   public value: null | PrimitiveType | StructType | ArrayType;
 }
 
-/** Value types. */
+/** @deprecated Use ECSqlStatement.bindValues or the ECSqlStatement.bindXXX methods instead.
+ * Value types.
+ */
 export type PrimitiveType = string | number | boolean | XAndY | XYAndZ;
+
+/** @deprecated Use ECSqlStatement.bindValues or the ECSqlStatement.bindXXX methods instead. */
 export interface StructType {
   [index: string]: ECValue;
 }
+
+/** @deprecated Use ECSqlStatement.bindValues or the ECSqlStatement.bindXXX methods instead. */
 export type ArrayType = ECValue[];
 
-/** Types that can be used for binding paramter values */
+/** @deprecated Use ECSqlStatement.bindValues or the ECSqlStatement.bindXXX methods instead.
+ * Types that can be used for binding paramter values
+ */
 export type BindingValue = null | PrimitiveType | ECValue | Id64;
 
-/** Allows performing CRUD operations in an ECDb */
+/** @deprecated Use ECSqlStatement.bindValues or the ECSqlStatement.bindXXX methods instead.
+ *  Allows performing CRUD operations in an ECDb
+ */
 export class BindingUtility {
 
   private static getPrimitiveType(bindingValue: BindingValue): PrimitiveTypeCode {

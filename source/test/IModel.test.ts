@@ -16,7 +16,7 @@ import { Category, SubCategory, SpatialCategory } from "../backend/Category";
 import { ClassRegistry } from "../backend/ClassRegistry";
 import { BisCore } from "../backend/BisCore";
 import { ECSqlStatement } from "../backend/ECSqlStatement";
-import { GeometricElementProps, ModelSelectorProps } from "../common/ElementProps";
+import { GeometricElementProps, ModelSelectorProps, ViewDefinitionProps } from "../common/ElementProps";
 import {
   Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
   LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject,
@@ -362,6 +362,16 @@ describe("iModel", () => {
     }
   });
 
+  it("should be able to query for ViewDefinitionProps", () => {
+    let viewDefinitionProps: ViewDefinitionProps[] = imodel2.views.queryViewDefinitionProps(); // query for all ViewDefinitions
+    assert.isAtLeast(viewDefinitionProps.length, 3);
+    assert.isTrue(viewDefinitionProps[0].classFullName.includes("ViewDefinition"));
+    assert.isFalse(viewDefinitionProps[1].isPrivate);
+    viewDefinitionProps = imodel2.views.queryViewDefinitionProps("BisCore.SpatialViewDefinition"); // limit query to SpatialViewDefinitions
+    assert.isAtLeast(viewDefinitionProps.length, 3);
+    assert.exists(viewDefinitionProps[2].modelSelectorId);
+  });
+
   it("should be children of RootSubject", () => {
     const queryString: string = "SELECT ECInstanceId as modelId FROM " + Model.sqlName + " WHERE ParentModel.Id=" + imodel2.models.repositoryModelId;
     const modelRows: any[] = imodel2.executeQuery(queryString);
@@ -522,8 +532,8 @@ describe("iModel", () => {
     newExtents.high.x += 1087; newExtents.high.y += 19; newExtents.high.z += .001;
     imodel1.updateProjectExtents(newExtents);
 
-    assert.isDefined(imodel1.briefcaseInfo, "Briefcase info should be defined before getting iModel props");
-    const updatedProps = JSON.parse(imodel1.briefcaseInfo!.nativeDb.getIModelProps());
+    assert.isDefined(imodel1.briefcaseEntry, "Briefcase info should be defined before getting iModel props");
+    const updatedProps = JSON.parse(imodel1.briefcaseEntry!.nativeDb.getIModelProps());
     assert.isTrue(updatedProps.hasOwnProperty("projectExtents"), "Returned property JSON object has project extents");
     const updatedExtents = AxisAlignedBox3d.fromJSON(updatedProps.projectExtents);
     assert.isTrue(newExtents.isAlmostEqual(updatedExtents), "Project extents successfully updated in database");
@@ -562,8 +572,8 @@ describe("iModel", () => {
       assert.isNotNull(stmt);
       // Reject an attempt to bind when there are no placeholders in the statement
       try {
-        stmt.bindValues({ foo: 1 });
-        assert.fail("bindValues should have failed with an exception");
+        stmt.bindStruct(1, { foo: 1 });
+        assert.fail("bindStruct should have failed with an exception");
       } catch (err2) {
         assert.isTrue(err2.constructor.name === "IModelError");
         assert.notEqual(err2.status, DbResult.BE_SQLITE_OK);
@@ -609,7 +619,7 @@ describe("iModel", () => {
     imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element WHERE (ecinstanceid=?)", (stmt3: ECSqlStatement) => {
       // Now try a statement with a placeholder
       const idToFind: Id64 = new Id64(lastId);
-      stmt3.bindValues([idToFind]);
+      stmt3.bindId(1, idToFind);
       let count = 0;
       while (DbResult.BE_SQLITE_ROW === stmt3.step()) {
         count = count + 1;
@@ -624,7 +634,7 @@ describe("iModel", () => {
     imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element WHERE (codeValue = :codevalue)", (stmt4: ECSqlStatement) => {
       // Try a named placeholder
       const codeValueToFind = firstCodeValue;
-      stmt4.bindValues({ codeValue: codeValueToFind });
+      stmt4.bindString("codeValue", codeValueToFind);
       let count = 0;
       while (DbResult.BE_SQLITE_ROW === stmt4.step()) {
         count = count + 1;
@@ -642,7 +652,6 @@ describe("iModel", () => {
     const testImodel = imodel2;
 
     const codeSpec: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec1", CodeScopeSpec.Type.Model);
-    // TODO: codeSpec.buildResourcesRequest + tesetImodel.requestResources
     const codeSpecId: Id64 = testImodel.codeSpecs.insert(codeSpec); // throws in case of error
     assert.deepEqual(codeSpecId, codeSpec.id);
 
@@ -671,7 +680,7 @@ describe("iModel", () => {
 
   it("should import schemas", () => {
     const schemaPathname = path.join(__dirname, "assets", "TestBim.ecschema.xml");
-    imodel1.importSchema(schemaPathname); // will throw an exception in import fails
+    imodel1.importSchema(schemaPathname); // will throw an exception if import fails
 
     const classMetaData = imodel1.getMetaData("TestBim:TestDocument"); // will throw on failure
     assert.isDefined(classMetaData.properties.testDocumentProperty);
@@ -765,6 +774,105 @@ describe("iModel", () => {
 
     testImodel.saveChanges("");
 
+  });
+
+  it("should set navigation properties", () => {
+
+    const testImodel: IModelDb = imodel1;
+    try {
+      testImodel.getMetaData("TestBim:TestPhysicalObject");
+    } catch (err) {
+      const schemaPathname = path.join(__dirname, "assets", "TestBim.ecschema.xml");
+      testImodel.importSchema(schemaPathname); // will throw an exception if import fails
+      assert.isTrue(testImodel.getMetaData("TestBim:TestPhysicalObject") !== undefined);
+    }
+
+    // Create a new physical model
+    let newModelId: Id64;
+    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(testImodel, Code.createEmpty(), true);
+
+    // Find or create a SpatialCategory
+    const dictionary: DictionaryModel = testImodel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
+    let spatialCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
+    if (undefined === spatialCategoryId) {
+      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+    }
+
+    const trelClassName = "TestBim:TestPhysicalObjectRelatedToTestPhysicalObject";
+
+    let id1: Id64;
+    let id2: Id64;
+
+    if (true) {
+      // Create a couple of TestPhysicalObjects
+      const elementProps: GeometricElementProps = {
+        classFullName: "TestBim:TestPhysicalObject",
+        iModel: testImodel,
+        model: newModelId,
+        category: spatialCategoryId,
+        id: new Id64(),
+        code: Code.createEmpty(),
+      };
+
+      id1 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps));
+      assert.isTrue(id1.isValid());
+
+      // The second one should point to the first.
+      elementProps.id = new Id64();
+      elementProps.relatedElement = id1;      // use the short id-only format
+
+      id2 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps));
+      assert.isTrue(id2.isValid());
+    }
+
+    if (true) {
+      // Test that el2 points to el1
+      const el2: Element = testImodel.elements.getElement(id2);
+      assert.equal(el2.classFullName, "TestBim:TestPhysicalObject");
+      assert.isTrue("relatedElement" in el2);
+      assert.isTrue("id" in el2.relatedElement);
+      assert.deepEqual(el2.relatedElement.id, id1);
+
+      // Even though I didn't set it, the platform knows the relationship class and reports it.
+      assert.isTrue("relClassName" in el2.relatedElement);
+      assert.equal(el2.relatedElement.relClassName.replace(".", ":"), trelClassName);
+    }
+
+    if (true) {
+      // Change el2 to point to itself.
+      const el2: Element = testImodel.elements.getElement(id2);
+      const el2Modified: Element = el2.copyForEdit<Element>();
+      el2Modified.relatedElement = {id: id2, relClassName: trelClassName}; // this time, use the long RelatedElement format.
+      testImodel.elements.updateElement(el2Modified);
+      // Test that el2 points to itself.
+      const el2after: Element = testImodel.elements.getElement(id2);
+      assert.deepEqual(el2after.relatedElement.id, id2);
+      assert.equal(el2after.relatedElement.relClassName.replace(".", ":"), trelClassName);
+    }
+
+    if (true) {
+      // Now set the navigation property value to the same thing, using the short, id-only form
+      const el2: Element = testImodel.elements.getElement(id2);
+      const el2Modified: Element = el2.copyForEdit<Element>();
+      el2Modified.relatedElement = id1;
+      testImodel.elements.updateElement(el2Modified);
+      // Test that el2 points to el1 again.
+      const el2after: Element = testImodel.elements.getElement(id2);
+      assert.deepEqual(el2after.relatedElement.id, id1);
+      // (the platform knows the relationship class and reports it.)
+      assert.equal(el2after.relatedElement.relClassName.replace(".", ":"), trelClassName);
+    }
+
+    if (true) {
+      // Test that we can null out the navigation property
+      const el2: Element = testImodel.elements.getElement(id2);
+      const el2Modified: Element = el2.copyForEdit<Element>();
+      el2Modified.relatedElement = null;
+      testImodel.elements.updateElement(el2Modified);
+      // Test that el2 has no relatedElement property value
+      const el2after: Element = testImodel.elements.getElement(id2);
+      assert.isUndefined(el2after.relatedElement);
+    }
   });
 
   it.skip("ImodelJsTest.MeasureInsertPerformance", () => {

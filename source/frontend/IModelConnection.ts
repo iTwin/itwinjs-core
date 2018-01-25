@@ -2,18 +2,21 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { CodeSpec } from "../common/Code";
-import { ElementProps } from "../common/ElementProps";
+import { ElementProps, ViewDefinitionProps } from "../common/ElementProps";
 import { EntityQueryParams } from "../common/EntityProps";
+import { Model2dState } from "../common/EntityState";
 import { IModel, IModelToken, IModelProps } from "../common/IModel";
 import { IModelError, IModelStatus } from "../common/IModelError";
-import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { ModelProps } from "../common/ModelProps";
 import { IModelGateway } from "../gateway/IModelGateway";
 import { IModelVersion } from "../common/IModelVersion";
+import { CategorySelectorState, DrawingViewState, DisplayStyle2dState, DisplayStyle3dState, ModelSelectorState, OrthographicViewState, SheetViewState, SpatialViewState, ViewState, ViewState2d } from "../common/ViewState";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
+import { HilitedSet, SelectionSet } from "./SelectionSet";
 
 /** A connection to an iModel database hosted on the backend. */
 export class IModelConnection extends IModel {
@@ -21,12 +24,18 @@ export class IModelConnection extends IModel {
   public readonly models: IModelConnectionModels;
   public readonly elements: IModelConnectionElements;
   public readonly codeSpecs: IModelConnectionCodeSpecs;
+  public readonly views: IModelConnectionViews;
+  public readonly hilited: HilitedSet;
+  public readonly selectionSet: SelectionSet;
 
   private constructor(iModelToken: IModelToken, name: string, props: IModelProps) {
     super(iModelToken, name, props);
     this.models = new IModelConnectionModels(this);
     this.elements = new IModelConnectionElements(this);
     this.codeSpecs = new IModelConnectionCodeSpecs(this);
+    this.views = new IModelConnectionViews(this);
+    this.hilited = new HilitedSet(this);
+    this.selectionSet = new SelectionSet(this);
   }
 
   private static create(iModel: IModel): IModelConnection {
@@ -219,5 +228,60 @@ export class IModelConnectionCodeSpecs {
       return Promise.reject(new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning));
 
     return found;
+  }
+}
+
+/** The collection of views for an [[IModelConnection]]. */
+export class IModelConnectionViews {
+  private _iModel: IModelConnection;
+
+  /** @hidden */
+  constructor(iModel: IModelConnection) {
+    this._iModel = iModel;
+  }
+
+  /** Query for the array of ViewDefinitionProps of the specified class and matching the specified IsPrivate setting.
+   * @param className Query for view definitions of this class.
+   * @param wantPrivate If true, include private view definitions.
+   */
+  public async queryViewDefinitionProps(className: string = "BisCore.ViewDefinition", wantPrivate: boolean = false): Promise<ViewDefinitionProps[]> {
+    const viewDefinitionProps: ViewDefinitionProps[] = await IModelGateway.getProxy().queryViewDefinitionProps(this._iModel.iModelToken, className, wantPrivate);
+    return viewDefinitionProps;
+  }
+
+  /** Load a [[ViewState]] object from the specified [[ViewDefinition]] identifier. */
+  public async loadViewState(viewDefinitionId: Id64): Promise<ViewState> {
+    const viewStateData: any = await IModelGateway.getProxy().getViewStateData(this._iModel.iModelToken, viewDefinitionId.toString());
+    const categorySelectorState = new CategorySelectorState(viewStateData.categorySelectorProps, this._iModel);
+
+    switch (viewStateData.viewDefinitionProps.classFullName) {
+      case SpatialViewState.getClassFullName(): {
+        const displayStyleState = new DisplayStyle3dState(viewStateData.displayStyleProps, this._iModel);
+        const modelSelectorState = new ModelSelectorState(viewStateData.modelSelectorProps, this._iModel);
+        return new SpatialViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, modelSelectorState);
+      }
+      case OrthographicViewState.getClassFullName(): {
+        const displayStyleState = new DisplayStyle3dState(viewStateData.displayStyleProps, this._iModel);
+        const modelSelectorState = new ModelSelectorState(viewStateData.modelSelectorProps, this._iModel);
+        return new OrthographicViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, modelSelectorState);
+      }
+      case ViewState2d.getClassFullName(): {
+        const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
+        const baseModelState = new Model2dState(viewStateData.baseModelProps, this._iModel);
+        return new ViewState2d(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, baseModelState);
+      }
+      case DrawingViewState.getClassFullName(): {
+        const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
+        const baseModelState = new Model2dState(viewStateData.baseModelProps, this._iModel);
+        return new DrawingViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, baseModelState);
+      }
+      case SheetViewState.getClassFullName(): {
+        const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
+        const baseModelState = new Model2dState(viewStateData.baseModelProps, this._iModel);
+        return new SheetViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, baseModelState);
+      }
+      default:
+        return Promise.reject(new IModelError(IModelStatus.WrongClass, "Invalid ViewState subclass", Logger.logError, () => ({ viewStateData })));
+    }
   }
 }

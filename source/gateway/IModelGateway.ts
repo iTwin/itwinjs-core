@@ -4,6 +4,7 @@
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
 import { EntityQueryParams } from "../common/EntityProps";
+import { ViewDefinitionProps } from "../common/ElementProps";
 import { IModel, IModelToken } from "../common/IModel";
 import { IModelVersion } from "../common/IModelVersion";
 import { Gateway } from "../common/Gateway";
@@ -96,8 +97,7 @@ export abstract class IModelGateway extends Gateway {
     return this.forward.apply(this, arguments);
   }
 
-  /**
-   * Commit pending changes to this iModel
+  /** Commit pending changes to this iModel
    * @param _description Optional description of the changes
    * @throws [[IModelError]] if there is a problem saving changes.
    */
@@ -110,8 +110,18 @@ export abstract class IModelGateway extends Gateway {
     return this.forward.apply(this, arguments);
   }
 
-  // !!! TESTING METHOD
+  /** For unit test execution only. */
   public executeTestById(_iModelToken: IModelToken, _id: number, _params: any): any {
+    return this.forward.apply(this, arguments);
+  }
+
+  /** Query for the array of ViewDefinitions of the specified class and matching the specified IsPrivate setting. */
+  public async queryViewDefinitionProps(_iModelToken: IModelToken, _className: string, _wantPrivate: boolean): Promise<ViewDefinitionProps[]> {
+    return this.forward.apply(this, arguments);
+  }
+
+  /** Get the ViewState data for the specified ViewDefinition */
+  public async getViewStateData(_iModelToken: IModelToken, _viewDefinitionId: string): Promise<any> {
     return this.forward.apply(this, arguments);
   }
 }

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelError, IModelStatus } from "../common/IModelError";
-import { NodeAddonECDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
+import { AddonECDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { NodeAddonRegistry } from "./NodeAddonRegistry";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { IDisposable } from "@bentley/bentleyjs-core/lib/Disposable";
@@ -12,11 +12,11 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 /** Allows performing CRUD operations in an ECDb */
 export class ECDb implements IDisposable {
-  private _nativeDb: NodeAddonECDb | undefined;
+  private _nativeDb: AddonECDb | undefined;
   private readonly _statementCache: ECSqlStatementCache;
 
   constructor() {
-    this._nativeDb = new (NodeAddonRegistry.getAddon()).NodeAddonECDb();
+    this._nativeDb = new (NodeAddonRegistry.getAddon()).AddonECDb();
     this._statementCache = new ECSqlStatementCache();
   }
 
@@ -95,27 +95,6 @@ export class ECDb implements IDisposable {
       throw new IModelError(status, "Failed to import schema");
   }
 
-  /** Get a prepared ECSql statement - may require preparing the statement, if not found in the cache.
-   * @param ecsql The ECSql statement to prepare
-   * @return the prepared statement
-   * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSql syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
-   */
-  public getPreparedStatement(ecsql: string): ECSqlStatement {
-    const cachedStmt = this._statementCache.find(ecsql);
-    if (cachedStmt !== undefined && cachedStmt.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
-      assert(cachedStmt.statement.isShared());
-      assert(cachedStmt.statement.isPrepared());
-      cachedStmt.useCount++;
-      return cachedStmt.statement;
-    }
-
-    this._statementCache.removeUnusedStatementsIfNecessary();
-
-    const stmt = this.prepareStatement(ecsql);
-    this._statementCache.add(ecsql, stmt);
-    return stmt;
-  }
-
   /** Use a prepared statement. This function takes care of preparing the statement and then releasing it.
    * @param ecsql The ECSql statement to execute
    * @param cb the callback to invoke on the prepared statement
@@ -134,6 +113,26 @@ export class ECDb implements IDisposable {
     }
   }
 
+  /** Get a prepared ECSql statement - may require preparing the statement, if not found in the cache.
+   * @param ecsql The ECSql statement to prepare
+   * @return the prepared statement
+   * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSql syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
+   */
+  private getPreparedStatement(ecsql: string): ECSqlStatement {
+    const cachedStmt = this._statementCache.find(ecsql);
+    if (cachedStmt !== undefined && cachedStmt.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
+      assert(cachedStmt.statement.isShared());
+      assert(cachedStmt.statement.isPrepared());
+      cachedStmt.useCount++;
+      return cachedStmt.statement;
+    }
+
+    this._statementCache.removeUnusedStatementsIfNecessary();
+
+    const stmt = this.prepareStatement(ecsql);
+    this._statementCache.add(ecsql, stmt);
+    return stmt;
+  }
   /** Prepare an ECSql statement.
    * @param ecsql The ECSql statement to prepare
    * @throws [[IModelError]] if there is a problem preparing the statement.
@@ -144,7 +143,7 @@ export class ECDb implements IDisposable {
     return stmt;
   }
 
-  public get nativeDb(): NodeAddonECDb {
+  public get nativeDb(): AddonECDb {
     if (this._nativeDb == null)
       throw new IModelError(IModelStatus.BadRequest, "ECDb object has already been disposed.");
 

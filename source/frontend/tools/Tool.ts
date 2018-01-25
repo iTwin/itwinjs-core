@@ -436,7 +436,7 @@ export abstract class InteractiveTool extends Tool {
   public getInfoString(hit: HitDetail, _delimiter: string): string { return hit.hitDescription; }
 }
 
-/** holds a mapping of toolId string to Tool class */
+/** Holds a mapping of toolId string to Tool class */
 export class ToolRegistry {
   public map: Map<string, typeof Tool> = new Map<string, typeof Tool>();
   public unRegister(toolId: string) { this.map.delete(toolId); }

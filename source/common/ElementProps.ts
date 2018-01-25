@@ -8,9 +8,10 @@ import { GeometryStream } from "./geometry/GeometryStream";
 import { XYZProps, XYProps, YawPitchRollProps, LowAndHighXYZ, LowAndHighXY } from "@bentley/geometry-core/lib/PointVector";
 import { AngleProps } from "@bentley/geometry-core/lib/Geometry";
 
+/** The shape of a Navigation property value. Note that the internal properties are defined by the iModelJs JSON wire format and must not be changed. */
 export interface RelatedElementProps {
   id: Id64Props;
-  relClass?: string;
+  relClassName?: string;
 }
 
 /** The properties that define an Element */
@@ -26,12 +27,17 @@ export interface ElementProps extends EntityProps {
 /** The Id and relationship class of an Element that is related to another Element */
 export class RelatedElement implements RelatedElementProps {
   public readonly id: Id64;
-  public readonly relClass?: string;
-  constructor(props: RelatedElementProps) { this.id = Id64.fromJSON(props.id); this.relClass = props.relClass; }
+  public readonly relClassName?: string;
+  constructor(props: RelatedElementProps) { this.id = Id64.fromJSON(props.id); this.relClassName = props.relClassName; }
   public static fromJSON(json?: any): RelatedElement | undefined {
     return json ? new RelatedElement(json) : undefined;
   }
+
+  public static isRelatedElement(obj: any): obj is RelatedElement {
+    return obj.id !== undefined;
+  }
 }
+
 /** A RelatedElement that describes the type definition of an element. */
 export class TypeDefinition extends RelatedElement {
 }

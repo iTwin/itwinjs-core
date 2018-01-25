@@ -1,13 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { DbResult, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { CodeSpec } from "../common/Code";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelDb } from "./IModelDb";
-import { BriefcaseManager } from "./BriefcaseManager";
 
 /** Manages CodeSpecs within an [[IModelDb]] */
 export class CodeSpecs {
@@ -21,7 +20,7 @@ export class CodeSpecs {
   /** Look up the Id of the CodeSpec with the specified name. */
   public queryCodeSpecId(name: string): Id64 {
     return this._imodel.withPreparedStatement("SELECT ECInstanceId as id FROM BisCore.CodeSpec WHERE Name=?", (stmt: ECSqlStatement) => {
-      stmt.bindValues([name]);
+      stmt.bindString(1, name);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
           throw new IModelError(IModelStatus.NotFound);
       return new Id64(stmt.getRow().id);
@@ -89,7 +88,7 @@ export class CodeSpecs {
     }
 
     return this._imodel.withPreparedStatement("SELECT name,jsonProperties FROM BisCore.CodeSpec WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
-      stmt.bindValues([id]);
+      stmt.bindId(1, id);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
         throw new IModelError(IModelStatus.InvalidId);
 
@@ -98,13 +97,4 @@ export class CodeSpecs {
     });
   }
 
- /**
-  * Add the resource request that would be needed in order to carry out the specified operation.
-  * @param req The request object, which accumulates requests.
-  * @param codeSpec The CodeSpec
-  * @param opcode The operation that will be performed on the CodeSpec.
-  */
-  public buildResourcesRequest(req: BriefcaseManager.ResourcesRequest, codeSpec: CodeSpec, opcode: DbOpcode): void {
-    this._imodel.buildResourcesRequestForCodeSpec(req, codeSpec, opcode);
-  }
 }

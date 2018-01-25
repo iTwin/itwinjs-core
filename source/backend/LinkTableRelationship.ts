@@ -7,7 +7,6 @@ import { EntityProps } from "../common/EntityProps";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { assert, IModelError, IModelStatus } from "../common/IModelError";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
-import { BriefcaseManager } from "./BriefcaseManager";
 import { DbOpcode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { ECSqlStatement } from "./ECSqlStatement";
 
@@ -55,12 +54,11 @@ export class LinkTableRelationship extends Entity implements LinkTableRelationsh
   // TODO: Expose properties for 'strength' and 'direction'
 
  /**
-  * Add the resource request that would be needed in order to carry out the specified operation.
-  * @param req The request object, which accumulates requests.
+  * Add a request for the locks that would be needed in order to carry out the specified operation.
   * @param opcode The operation that will be performed on the LinkTableRelationship instance.
   */
-  public buildResourcesRequest(req: BriefcaseManager.ResourcesRequest, opcode: DbOpcode): void {
-    this.iModel.buildResourcesRequestForLinkTableRelationship(req, this, opcode);
+  public buildConcurrencyControlRequest(opcode: DbOpcode): void {
+    this.iModel.concurrencyControl.buildRequestForLinkTableRelationship(this, opcode);
   }
 }
 
@@ -193,10 +191,10 @@ export class IModelDbLinkTableRelationships {
    * @throws [[IModelError]] if unable to insert the relationship instance.
    */
   public insertInstance(props: LinkTableRelationshipProps): Id64 {
-    if (!this._iModel.briefcaseInfo)
+    if (!this._iModel.briefcaseEntry)
       throw this._iModel._newNotOpenError();
 
-    const { error, result: json } = this._iModel.briefcaseInfo.nativeDb.insertLinkTableRelationship(JSON.stringify(props));
+    const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.insertLinkTableRelationship(JSON.stringify(props));
     if (error)
       throw new IModelError(error.status, "Problem inserting relationship instance", Logger.logWarning);
 
@@ -210,10 +208,10 @@ export class IModelDbLinkTableRelationships {
    * @throws [[IModelError]] if unable to update the relationship instance.
    */
   public updateInstance(props: LinkTableRelationshipProps): void {
-    if (!this._iModel.briefcaseInfo)
+    if (!this._iModel.briefcaseEntry)
       throw this._iModel._newNotOpenError();
 
-    const error: DbResult = this._iModel.briefcaseInfo.nativeDb.updateLinkTableRelationship(JSON.stringify(props));
+    const error: DbResult = this._iModel.briefcaseEntry.nativeDb.updateLinkTableRelationship(JSON.stringify(props));
     if (error !== DbResult.BE_SQLITE_OK)
       throw new IModelError(error, "", Logger.logWarning);
   }
@@ -224,10 +222,10 @@ export class IModelDbLinkTableRelationships {
    * @throws [[IModelError]]
    */
   public deleteInstance(props: LinkTableRelationshipProps): void {
-    if (!this._iModel.briefcaseInfo)
+    if (!this._iModel.briefcaseEntry)
       throw this._iModel._newNotOpenError();
 
-    const error: DbResult = this._iModel.briefcaseInfo.nativeDb.deleteLinkTableRelationship(JSON.stringify(props));
+    const error: DbResult = this._iModel.briefcaseEntry.nativeDb.deleteLinkTableRelationship(JSON.stringify(props));
     if (error !== DbResult.BE_SQLITE_DONE)
       throw new IModelError(error, "", Logger.logWarning);
   }
@@ -238,7 +236,7 @@ export class IModelDbLinkTableRelationships {
     if (criteria instanceof Id64) {
 
       return this._iModel.withPreparedStatement("SELECT * FROM " + relClassSqlName + " WHERE ecinstanceid=?", (stmt: ECSqlStatement) => {
-        stmt.bindValues([criteria as Id64]);
+        stmt.bindId(1, criteria);
         if (DbResult.BE_SQLITE_ROW !== stmt.step())
           throw new IModelError(IModelStatus.NotFound);
         return stmt.getRow() as LinkTableRelationshipProps;
@@ -250,7 +248,8 @@ export class IModelDbLinkTableRelationships {
 
       const st: SourceAndTarget = criteria as SourceAndTarget;
       return this._iModel.withPreparedStatement("SELECT * FROM " + relClassSqlName + " WHERE SourceECInstanceId=? AND TargetECInstanceId=?", (stmt: ECSqlStatement) => {
-        stmt.bindValues([st.sourceId, st.targetId]);
+        stmt.bindId(1, st.sourceId);
+        stmt.bindId(2, st.targetId);
         if (DbResult.BE_SQLITE_ROW !== stmt.step())
           throw new IModelError(IModelStatus.NotFound);
         return stmt.getRow() as LinkTableRelationshipProps;

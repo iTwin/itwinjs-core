@@ -9,6 +9,11 @@ import { ElementLocateManager } from "./ElementLocateManager";
 import { TentativePoint } from "./TentativePoint";
 import { ToolRegistry } from "./tools/Tool";
 import { I18N, I18NNamespace, I18NOptions } from "./Localization";
+import { FeatureGates } from "../common/FeatureGates";
+
+import * as selectTool from "./tools/SelectTool";
+import * as viewTool from "./tools/ViewTool";
+import * as idleTool from "./tools/IdleTool";
 
 /** Global access to the IModelApp. Initialized by calling IModelApp.startup(). */
 export let iModelApp: IModelApp;
@@ -30,6 +35,7 @@ export class IModelApp {
   protected _locateManager?: ElementLocateManager;
   protected _tentativePoint?: TentativePoint;
   protected _i18N?: I18N;
+  public readonly features = new FeatureGates();
   public readonly tools = new ToolRegistry();
 
   public get viewManager(): ViewManager { return this._viewManager!; }
@@ -61,8 +67,9 @@ export class IModelApp {
 
     const tools = iModelApp.tools; // first register all the default tools. Subclasses may choose to override them.
     const namespace: I18NNamespace = iModelApp.i18N.registerNamespace("BaseTools");
-    tools.registerModule(require("./tools/ViewTool"), namespace);
-    tools.registerModule(require("./tools/IdleTool"), namespace);
+    tools.registerModule(selectTool, namespace);
+    tools.registerModule(idleTool, namespace);
+    tools.registerModule(viewTool, namespace);
 
     iModelApp.onStartup(); // allow subclasses to register their tools before we call onStartup
 

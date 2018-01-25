@@ -13,7 +13,7 @@ import { Cartographic } from "../../common/geometry/Cartographic";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import * as path from "path";
 import { SpatialViewDefinitionProps } from "../../common/ElementProps";
-import { ViewPanTool } from "../../frontend/tools/ViewTool";
+import { PanTool } from "../../frontend/tools/ViewTool";
 import { CompassMode } from "../../frontend/AccuDraw";
 
 /* tslint:disable: no-console */
@@ -126,8 +126,8 @@ describe("Viewport", () => {
       const newViewState = viewport.view.clone<SpatialViewState>();
       let frustumWorld: Frustum;
 
-      const pan = iModelApp.tools.create("View.Pan", viewport) as ViewPanTool | undefined;
-      assert.instanceOf(pan, ViewPanTool);
+      const pan = iModelApp.tools.create("View.Pan", viewport) as PanTool | undefined;
+      assert.instanceOf(pan, PanTool);
       assert.equal(pan!.viewport, viewport);
 
       if (viewState.isCameraOn()) {
