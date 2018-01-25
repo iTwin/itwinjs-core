@@ -21,14 +21,14 @@ import { NpcCenter } from "../../common/Frustum";
 import { iModelApp } from "../IModelApp";
 
 export const enum CoordinateLockOverrides {
-  OVERRIDE_COORDINATE_LOCK_None = 0,
-  OVERRIDE_COORDINATE_LOCK_ACS = (1 << 1),
-  OVERRIDE_COORDINATE_LOCK_Grid = (1 << 2),     // also overrides unit lock
-  OVERRIDE_COORDINATE_LOCK_All = 0xffff,
+  None = 0,
+  ACS = (1 << 1),
+  Grid = (1 << 2),     // also overrides unit lock
+  All = 0xffff,
 }
 
 export class ToolState {
-  public coordLockOvr = CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_None;
+  public coordLockOvr = CoordinateLockOverrides.None;
   public locateCircleOn = true;
   public setFrom(other: ToolState) { this.coordLockOvr = other.coordLockOvr; this.locateCircleOn = other.locateCircleOn; }
   public clone(): ToolState { const val = new ToolState(); val.setFrom(this); return val; }
@@ -372,7 +372,7 @@ export class ToolAdmin {
   private inputCollector?: InputCollector;
   public saveCursor?: BeCursor;
   public saveLocateCircle: boolean;
-  private defaultTool?: PrimitiveTool;
+  public defaultTool = "Select";
   public gesturePending: boolean;
   private modifierKeyWentDown: boolean;
   private modifierKey: BeModifierKey;
@@ -533,7 +533,7 @@ export class ToolAdmin {
 
   public adjustPointToACS(pointActive: Point3d, vp: Viewport, perpendicular: boolean): void {
     // The "I don't want ACS lock" flag can be set by tools to override the default behavior...
-    if (0 !== (this.toolState.coordLockOvr & CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_ACS))
+    if (0 !== (this.toolState.coordLockOvr & CoordinateLockOverrides.ACS))
       return;
 
     let viewZRoot: Vector3d;
@@ -559,12 +559,8 @@ export class ToolAdmin {
 
   public adjustPointToGrid(pointActive: Point3d, vp: Viewport) {
     // The "I don't want grid lock" flag can be set by tools to override the default behavior...
-    if (0 !== (this.toolState.coordLockOvr & CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_Grid))
+    if (!this.gridLock || 0 !== (this.toolState.coordLockOvr & CoordinateLockOverrides.Grid))
       return;
-
-    if (!this.gridLock)
-      return;
-
     vp.pointToGrid(pointActive);
   }
 
@@ -1066,21 +1062,11 @@ export class ToolAdmin {
     // we don't actually start the tool here...
   }
 
-  /** establish the default tool */
-  public setDefaultTool(tool: PrimitiveTool) { this.defaultTool = tool; }
   /**
    * Starts the default tool, if any. Generally invoked automatically when other tools exit, so
    * shouldn't be called directly.
    */
-  public startDefaultTool() {
-    if (this.defaultTool && this.activeTool !== this.defaultTool) {
-      this.defaultTool.run();
-    } else {
-      this.setViewTool(undefined);
-      this.setPrimitiveTool(undefined);
-      this.viewCursor = BeCursor.Default;
-    }
-  }
+  public startDefaultTool() { iModelApp.tools.run(this.defaultTool); }
 
   public get viewCursor() { return this._viewCursor; }
   public set viewCursor(cursor: BeCursor | undefined) {

@@ -100,17 +100,13 @@ export abstract class PrimitiveTool extends InteractiveTool {
    *  @see Tool.onInstall, Tool.onPostInstall
    */
   public run(): boolean {
-    if (this.isCompatibleViewport(iModelApp.viewManager.selectedView, false) || !iModelApp.toolAdmin.onInstallTool(this))
+    const toolAdmin = iModelApp.toolAdmin;
+    if (this.isCompatibleViewport(iModelApp.viewManager.selectedView, false) || !toolAdmin.onInstallTool(this))
       return false;
 
-    iModelApp.toolAdmin.startPrimitiveTool(this);
-    iModelApp.toolAdmin.setPrimitiveTool(this);
-
-    // The tool may exit in onPostInstall causing "this" to be
-    // deleted so installToolImplementation must not call any
-    // methods on "this" after _OnPostInstall returns.
-    iModelApp.toolAdmin.onPostInstallTool(this);
-
+    toolAdmin.startPrimitiveTool(this);
+    toolAdmin.setPrimitiveTool(this);
+    toolAdmin.onPostInstallTool(this);
     return true;
   }
 
@@ -175,7 +171,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
       return true;
 
     // NOTE: If points aren't being adjusted then the tool shouldn't be creating geometry currently (ex. locating elements) and we shouldn't filter point...
-    if (0 !== (iModelApp.toolAdmin.toolState.coordLockOvr & CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_ACS))
+    if (0 !== (iModelApp.toolAdmin.toolState.coordLockOvr & CoordinateLockOverrides.ACS))
       return true;
 
     const extents = iModel.projectExtents;

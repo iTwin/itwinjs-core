@@ -15,6 +15,7 @@ import { SubSelectionMode, HitDetail } from "../HitDetail";
 import { GraphicBuilder, LinePixels } from "../../common/Render";
 import { ColorDef } from "../../common/ColorDef";
 import { FenceParams } from "../FenceParams";
+import { AccuDrawHintBuilder } from "../AccuDraw";
 
 export const enum SelectionMethod {
   /** Identify element(s) by picking for drag selection (inside/overlap for drag box selection determined by point direction and shift key) */
@@ -85,7 +86,7 @@ export class SelectionTool extends PrimitiveTool {
     iModelApp.toolAdmin.setLocateCircleOn(true);
     iModelApp.locateManager.initToolLocate(); // For drag move/copy...
     iModelApp.locateManager.options.allowTransients = true; // Support edit manipulator for transient geometry...
-    iModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_All;
+    iModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.All;
     iModelApp.accuSnap.enableLocate(true);
     iModelApp.accuSnap.enableSnap(false);
   }
@@ -295,7 +296,7 @@ export class SelectionTool extends PrimitiveTool {
     //       ignore incompatible locks when setting up button event/anchor point.
     const toolState = iModelApp.toolAdmin.toolState;
     const saveCoordLockOvr = toolState.coordLockOvr;
-    toolState.coordLockOvr = CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_None;
+    toolState.coordLockOvr = CoordinateLockOverrides.None;
     if (!this.manipulator.onPreModify(ev)) {
       toolState.coordLockOvr = saveCoordLockOvr;
       return false;
@@ -434,9 +435,9 @@ export class SelectionTool extends PrimitiveTool {
     iModelApp.accuSnap.enableLocate(false);
     iModelApp.accuSnap.enableSnap(true);
 
-    // AccuDrawHintBuilderPtr hints = AccuDrawHintBuilder:: Create();
-    // hints -> EnableSmartRotation();
-    // hints -> SendHints();
+    const hints = new AccuDrawHintBuilder();
+    hints.enableSmartRotation;
+    hints.sendHints();
 
     this.points.length = 0;
     this.points.push(ev.point.clone());
