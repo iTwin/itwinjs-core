@@ -9,6 +9,7 @@ import { ElementLocateManager } from "./ElementLocateManager";
 import { TentativePoint } from "./TentativePoint";
 import { ToolRegistry, ToolGroup } from "./tools/Tool";
 import { FeatureGates } from "../common/FeatureGates";
+import { SelectionTool } from "./tools/SelectTool";
 
 /** Global access to the IModelApp. Initialized by calling IModelApp.startup(). */
 export let iModelApp: IModelApp;
@@ -59,6 +60,7 @@ export class IModelApp {
     const group = new ToolGroup("BaseTool");
     tools.registerModule(require("./tools/ViewTool"), group);
     tools.registerModule(require("./tools/IdleTool"), group);
+    SelectionTool.register(group);
 
     iModelApp.onStartup(); // allow subclasses to register their tools before we call onStartup
 
@@ -82,5 +84,4 @@ export class IModelApp {
    * @note The default tools will already be registered, so if you register tools with the same toolId, your tools will override the defaults.
    */
   protected onStartup(): void { }
-
 }
