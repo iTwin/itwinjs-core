@@ -5,7 +5,8 @@ import { assert } from "chai";
 import { IModelApp, iModelApp } from "../../frontend/IModelApp";
 import { AccuDraw } from "../../frontend/AccuDraw";
 import { IdleTool } from "../../frontend/tools/IdleTool";
-import { ToolGroup, Tool } from "../../frontend/tools/Tool";
+import { I18NNamespace } from "../../frontend/Localization";
+import { Tool } from "../../frontend/tools/Tool";
 import { ViewRotateTool, ViewPanTool } from "../../frontend/tools/ViewTool";
 
 /** class to simulate overriding the default AccuDraw */
@@ -29,13 +30,19 @@ class TestRotateTool extends ViewRotateTool {
 }
 
 class TestApp extends IModelApp {
+  public registeredNamespace: I18NNamespace;
+
   protected onStartup() {
     this._accuDraw = new TestAccuDraw();
 
-    const group = new ToolGroup("TestApp");
-    TestIdleTool.register(group);
-    TestImmediate.register(group);
-    TestRotateTool.register(group);
+    this.registeredNamespace = I18NNamespace.register("TestApp");
+    TestIdleTool.register(this.registeredNamespace);
+    TestImmediate.register(this.registeredNamespace);
+    TestRotateTool.register(this.registeredNamespace);
+  }
+
+  protected supplyI18NOptions() {
+    return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" };
   }
 }
 
@@ -57,7 +64,10 @@ describe("IModelApp", () => {
   });
 
   it("Should get localized name for TestImmediate tool", () => {
-    assert.equal(TestImmediate.getLocalizedName(), "Localized TestImmediate Name");
+    // first, we must wait for the localization read to finish.
+    const thisApp: TestApp = iModelApp as TestApp;
+    thisApp.registeredNamespace.readFinished.then(() => {
+      assert.equal(TestImmediate.getLocalizedName(), "Localized TestImmediate Keyin");
+    });
   });
-
 });

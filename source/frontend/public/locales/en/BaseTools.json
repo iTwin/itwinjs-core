@@ -34,13 +34,17 @@
       "Scroll": {
         "Keyin": "Scroll View",
         "Description": "Scrolls view",
-        "Flyover": "Scroll",
+        "Flyover": "Scroll"
       },
       "Fit": {
         "Keyin": "Fit View",
         "Description": "Displays entire model",
         "Flyover": "Fit View",
         "Prompt": "Select view to fit",
+        "Model": {
+          "Keyin": "Fit Model",
+          "Description": "Fit all graphics in the chosen model"
+        }
       }
     },
     "SelectTool": {

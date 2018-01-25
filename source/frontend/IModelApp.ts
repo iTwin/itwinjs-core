@@ -7,8 +7,8 @@ import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { TentativePoint } from "./TentativePoint";
-import { ToolRegistry, ToolGroup } from "./tools/Tool";
-import { I18N } from "./Localization";
+import { ToolRegistry } from "./tools/Tool";
+import { I18N, I18NNamespace, I18NOptions } from "./Localization";
 
 /** Global access to the IModelApp. Initialized by calling IModelApp.startup(). */
 export let iModelApp: IModelApp;
@@ -56,10 +56,13 @@ export class IModelApp {
   public static startup() {
     iModelApp = new this(); // this will create an instance of the appropriate subclass of IModelApp (that calls this static method)
 
+    // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
+    iModelApp._i18N = new I18N(["iModelSystem"], "iModelSystem", iModelApp.supplyI18NOptions());
+
     const tools = iModelApp.tools; // first register all the default tools. Subclasses may choose to override them.
-    const group = new ToolGroup("BaseTool");
-    tools.registerModule(require("./tools/ViewTool"), group);
-    tools.registerModule(require("./tools/IdleTool"), group);
+    const namespace: I18NNamespace = I18NNamespace.register("BaseTools");
+    tools.registerModule(require("./tools/ViewTool"), namespace);
+    tools.registerModule(require("./tools/IdleTool"), namespace);
 
     iModelApp.onStartup(); // allow subclasses to register their tools before we call onStartup
 
@@ -69,7 +72,6 @@ export class IModelApp {
     if (!iModelApp._accuSnap) iModelApp._accuSnap = new AccuSnap();
     if (!iModelApp._locateManager) iModelApp._locateManager = new ElementLocateManager();
     if (!iModelApp._tentativePoint) iModelApp._tentativePoint = new TentativePoint();
-    if (!iModelApp._i18N) iModelApp._i18N = new I18N(["tools"], "tools", null);
 
     iModelApp._viewManager.onInitialized();
     iModelApp._toolAdmin.onInitialized();
@@ -84,4 +86,12 @@ export class IModelApp {
    * @note The default tools will already be registered, so if you register tools with the same toolId, your tools will override the defaults.
    */
   protected onStartup(): void { }
+
+  /**
+   * Implement this method to supply options for the initialization of the internationalization.
+   */
+  protected supplyI18NOptions(): I18NOptions | undefined {
+    // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
+    return undefined;
+  }
 }

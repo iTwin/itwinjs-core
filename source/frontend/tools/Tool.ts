@@ -6,6 +6,7 @@ import { Viewport } from "../Viewport";
 import { DecorateContext } from "../ViewContext";
 import { HitDetail } from "../HitDetail";
 import { LocateResponse } from "../ElementLocateManager";
+import { I18NNamespace } from "../Localization";
 import { iModelApp } from "../IModelApp";
 
 export const enum BeButton {
@@ -316,26 +317,19 @@ export class BeWheelEvent extends BeButtonEvent {
   }
 }
 
-/** A collection of related tools. Tools are associated with a ToolGroup via ToolRegistry.registerTool */
-export class ToolGroup {
-  /** @param namespace the namespace to find localization messages. */
-  constructor(public namespace: string) { }
-}
-
 /**
  * Base Tool class for handling user input events from Viewports.
  */
 export class Tool {
   public static hidden = false;
   public static toolId = "";
-  public static group?: ToolGroup;
+  public static namespace: I18NNamespace;
 
   public static getLocalizedName(): string {
-    const namespace = this.group ? this.group.namespace : "tool";
-    return iModelApp.i18N.translate(namespace.concat(":", "ToolDefinitions.", this.toolId));
+    return iModelApp.i18N.translate(this.namespace.name.concat(":", "ToolDefinitions.", this.toolId, ".Keyin"));
   }
 
-  public static register(group: ToolGroup) { iModelApp.tools.register(this, group); }
+  public static register(namespace: I18NNamespace) { iModelApp.tools.register(this, namespace); }
 
   /**
    * run this instance of a Tool. Subclasses should override to perform their action.
@@ -448,9 +442,9 @@ export class ToolRegistry {
   public unRegister(toolId: string) { this.map.delete(toolId); }
 
   /** register a tool  */
-  public register(toolClass: typeof Tool, group: ToolGroup) {
+  public register(toolClass: typeof Tool, namespace: I18NNamespace) {
     if (toolClass.toolId.length !== 0) {
-      toolClass.group = group;
+      toolClass.namespace = namespace;
       this.map.set(toolClass.toolId, toolClass);
     }
   }
@@ -459,14 +453,14 @@ export class ToolRegistry {
    * register all the Tool classes found in a module.
    * @param modelObj the module to search for subclasses of Tool.
    */
-  public registerModule(moduleObj: any, group: ToolGroup) {
+  public registerModule(moduleObj: any, namespace: I18NNamespace) {
     for (const thisMember in moduleObj) {
       if (!thisMember)
         continue;
 
       const thisTool = moduleObj[thisMember];
       if (thisTool.prototype instanceof Tool) {
-        this.register(thisTool, group);
+        this.register(thisTool, namespace);
       }
     }
   }
