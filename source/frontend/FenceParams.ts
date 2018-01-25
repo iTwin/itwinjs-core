@@ -27,11 +27,11 @@ export const enum FenceClipMode {
  * extrusion of a planar region profile.
  */
 export class FenceParams {
-  public m_overlapMode = false;
-  public m_onTolerance = .25;
-  public m_viewport?: Viewport;
-  public m_clipMode = FenceClipMode.None;
-  public m_clip?: ClipVector;
+  public overlapMode = false;
+  public onTolerance = .25;
+  public viewport?: Viewport;
+  public clipMode = FenceClipMode.None;
+  public clip?: ClipVector;
   public hasOverlaps = false;
-  public readonly m_fenceRangeNPC = new Range3d();
+  public readonly fenceRangeNPC = new Range3d();
 }

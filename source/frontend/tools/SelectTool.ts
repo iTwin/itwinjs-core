@@ -45,13 +45,13 @@ export const enum ManipulatorPreference {
 export class SelectionTool extends PrimitiveTool {
   public static hidden = true;
   public static toolId = "Select";
-  public m_isDragSelect = false;
-  public m_isDragControl = false;
-  public m_isDragElement = false;
-  public m_removeListener?: () => void;
-  public readonly m_points: Point3d[] = [];
+  public isDragSelect = false;
+  public isDragControl = false;
+  public isDragElement = false;
+  public removeListener?: () => void;
+  public readonly points: Point3d[] = [];
   public manipulatorPreference = ManipulatorPreference.Geometry;
-  public m_manipulator?: EditManipulator;
+  public manipulator?: EditManipulator;
 
   protected wantSelectionClearOnMiss(_ev: BeButtonEvent): boolean { return SelectionMode.Replace === this.getSelectionMode(); }
   protected wantDragOnlyManipulator() { return false; } // Restrict manipulator operation to drag, default behavior is to support click, click or drag...
@@ -73,16 +73,16 @@ export class SelectionTool extends PrimitiveTool {
   public onRestartTool() { this.exitTool(); }
   public onCleanup() {
     super.onCleanup();
-    this.m_manipulator = undefined;
-    if (this.m_removeListener) {
-      this.m_removeListener();
-      this.m_removeListener = undefined;
+    this.manipulator = undefined;
+    if (this.removeListener) {
+      this.removeListener();
+      this.removeListener = undefined;
     }
   }
 
   protected initSelectTool() {
-    this.m_isDragSelect = this.m_isDragControl = this.m_isDragElement = this.targetIsLocked = false;
-    this.m_points.length = 0;
+    this.isDragSelect = this.isDragControl = this.isDragElement = this.targetIsLocked = false;
+    this.points.length = 0;
     /// iModelApp.toolAdmin.setCursor(ViewManager:: GetManager().GetCursor(Display:: Cursor:: Id:: Arrow));
     iModelApp.toolAdmin.setLocateCircleOn(true);
     iModelApp.locateManager.initToolLocate(); // For drag move/copy...
@@ -97,7 +97,7 @@ export class SelectionTool extends PrimitiveTool {
       ev.viewport!.invalidateDecorations();
 
       // Allow manipulators to respond to clicks on their controls before doing normal processing and drags.
-      if (this.m_manipulator!.onClick(ev))
+      if (this.manipulator!.onClick(ev))
         return true;
 
       if (!this.wantDragOnlyManipulator()) {
@@ -109,7 +109,7 @@ export class SelectionTool extends PrimitiveTool {
   }
 
   public onSingleFingerMove(ev: BeGestureEvent): boolean {
-    if (this.m_isDragControl || this.m_isDragSelect) {
+    if (this.isDragControl || this.isDragSelect) {
       iModelApp.toolAdmin.convertGestureMoveToButtonDownAndMotion(ev);
       return true;
     }
@@ -147,7 +147,7 @@ export class SelectionTool extends PrimitiveTool {
 
     if (SelectEventType.Clear === evType || !ids || ids.size === 0) {
       // NOTE: Navigator's "clear selection" button should really be restarting the select tool...
-      if (this.m_isDragControl || this.m_isDragElement)
+      if (this.isDragControl || this.isDragElement)
         this.endDynamics();
 
       this.initSelectTool();
@@ -158,15 +158,15 @@ export class SelectionTool extends PrimitiveTool {
   public async synchManipulators(clearCurrent: boolean) {
     iModelApp.viewManager.invalidateDecorationsAllViews();
     if (ManipulatorPreference.Disabled === this.manipulatorPreference) {
-      this.m_manipulator = undefined;
+      this.manipulator = undefined;
       return;
     }
 
-    if (!clearCurrent && this.m_manipulator) {
+    if (!clearCurrent && this.manipulator) {
       // Make sure manipulator controls reflect the current element (post-accept)...
-      this.m_manipulator.doCleanupControls();
-      if (!this.m_manipulator.doCreateControls())
-        this.m_manipulator = undefined; // The manipulator is not happy any more so clear it...
+      this.manipulator.doCleanupControls();
+      if (!this.manipulator.doCreateControls())
+        this.manipulator = undefined; // The manipulator is not happy any more so clear it...
       return; // Preserve current manipulator
     }
 
@@ -255,41 +255,41 @@ export class SelectionTool extends PrimitiveTool {
   }
 
   protected drawControls(context: DecorateContext): boolean {
-    if (!this.m_manipulator || !this.m_manipulator.isDisplayedInView(context.viewport))
+    if (!this.manipulator || !this.manipulator.isDisplayedInView(context.viewport))
       return false;
-    this.m_manipulator.onDraw(context);
+    this.manipulator.onDraw(context);
     return true;
   }
 
   protected modifierTransitionControls(wentDown: boolean, key: number): boolean {
-    if (!this.m_manipulator)
+    if (!this.manipulator)
       return false;
-    this.m_manipulator.onModifierKeyTransition(wentDown, key);
+    this.manipulator.onModifierKeyTransition(wentDown, key);
     return true;
   }
 
   protected haveSelectedControls(): boolean {
-    return !!this.m_manipulator && this.m_manipulator.hasSelectedControls();
+    return !!this.manipulator && this.manipulator.hasSelectedControls();
   }
 
   protected selectControls(ev: BeButtonEvent): boolean {
-    if (this.m_isDragControl || !this.m_manipulator)
+    if (this.isDragControl || !this.manipulator)
       return false;
     const wasSelected = this.haveSelectedControls();
-    return this.m_manipulator.doUpdateFlashedControls(ev) ? true : wasSelected && !this.haveSelectedControls();
+    return this.manipulator.doUpdateFlashedControls(ev) ? true : wasSelected && !this.haveSelectedControls();
   }
 
   protected multiSelectControls(ev: BeButtonEvent | FenceParams): boolean {
-    if (!this.m_manipulator)
+    if (!this.manipulator)
       return false;
     const wasSelected = this.haveSelectedControls();
-    if (this.m_manipulator.doUpdateSelectedControls(ev, ManipulatorSelectionMode.Inverse))
+    if (this.manipulator.doUpdateSelectedControls(ev, ManipulatorSelectionMode.Inverse))
       return true;
     return wasSelected && !this.haveSelectedControls();
   }
 
   protected startDragControls(ev: BeButtonEvent): boolean {
-    if (BeButton.Data !== ev.button || !this.m_manipulator)
+    if (BeButton.Data !== ev.button || !this.manipulator)
       return false;
 
     // NOTE: By default, handle drag for "vertex" type handles should honor all locks...
@@ -298,38 +298,38 @@ export class SelectionTool extends PrimitiveTool {
     const toolState = iModelApp.toolAdmin.toolState;
     const saveCoordLockOvr = toolState.coordLockOvr;
     toolState.coordLockOvr = CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_None;
-    if (!this.m_manipulator.onPreModify(ev)) {
+    if (!this.manipulator.onPreModify(ev)) {
       toolState.coordLockOvr = saveCoordLockOvr;
       return false;
     }
-    this.m_manipulator.onModifyStart(ev);
+    this.manipulator.onModifyStart(ev);
     this.beginDynamics();
-    this.m_isDragControl = this.targetIsLocked = true;
+    this.isDragControl = this.targetIsLocked = true;
     return true;
   }
 
   protected dragControls(ev: BeButtonEvent, context?: DynamicsContext): boolean {
-    if (!this.m_isDragControl)
+    if (!this.isDragControl)
       return false;
 
     if (undefined === context) {
-      if (this.m_manipulator)
-        this.m_manipulator.onModifyAccept(ev);
+      if (this.manipulator)
+        this.manipulator.onModifyAccept(ev);
       this.endDynamics();
       this.initSelectTool();
       this.synchManipulators(false); // Current manipulator is still valid...
       return true;
     }
 
-    if (this.m_manipulator && this.m_manipulator.isDisplayedInView(ev.viewport!))
-      this.m_manipulator.onModify(ev, context);
+    if (this.manipulator && this.manipulator.isDisplayedInView(ev.viewport!))
+      this.manipulator.onModify(ev, context);
     return true;
   }
 
   protected useFenceOverlap(ev: BeButtonEvent): boolean {
     let overlapMode = false;
     const vp = ev.viewport!;
-    const pt1 = vp.worldToView(this.m_points[0]);
+    const pt1 = vp.worldToView(this.points[0]);
     const pt2 = vp.worldToView(ev.point);
     overlapMode = (pt1.x > pt2.x);
     return (ev.isShiftKey ? !overlapMode : overlapMode); // Shift inverts inside/overlap selection...
@@ -385,8 +385,8 @@ export class SelectionTool extends PrimitiveTool {
     if (!currHit)
       return false;
 
-    if (this.m_manipulator)
-      return this.m_manipulator.onDoubleClick(currHit);
+    if (this.manipulator)
+      return this.manipulator.onDoubleClick(currHit);
 
     // // NOTE: Even if manipulators are disabled, we still want to allow double-click processing...
     // DgnElementCPtr elem = currHit -> GetElement();
@@ -440,15 +440,15 @@ export class SelectionTool extends PrimitiveTool {
     // hints -> EnableSmartRotation();
     // hints -> SendHints();
 
-    this.m_points.length = 0;
-    this.m_points.push(ev.point.clone());
-    this.m_isDragElement = this.targetIsLocked = true;
+    this.points.length = 0;
+    this.points.push(ev.point.clone());
+    this.isDragElement = this.targetIsLocked = true;
     this.beginDynamics();
     return true;
   }
 
   protected dragElements(_ev: BeButtonEvent, context: DynamicsContext): boolean {
-    if (!this.m_isDragElement)
+    if (!this.isDragElement)
       return false;
 
     // NOTE: This is problematic for elements that want to prevent or constrain the drag of their elements...
@@ -538,7 +538,7 @@ export class SelectionTool extends PrimitiveTool {
   }
 
   private drawDragStateIndicator(context: DecorateContext): void {
-    if (!this.m_isDragElement)
+    if (!this.isDragElement)
       return;
 
     const ev = new BeButtonEvent();
@@ -559,7 +559,7 @@ export class SelectionTool extends PrimitiveTool {
   }
 
   private drawDragSelect(context: DecorateContext): void {
-    if (!this.m_isDragSelect)
+    if (!this.isDragSelect)
       return;
 
     const ev = new BeButtonEvent();
@@ -568,7 +568,7 @@ export class SelectionTool extends PrimitiveTool {
     const graphic = context.createViewOverlay();
 
     const vp = context.viewport;
-    const origin = vp.worldToView(this.m_points[0]);
+    const origin = vp.worldToView(this.points[0]);
     const corner = vp.worldToView(ev.point);
     origin.z = corner.z = 0.0;
 
@@ -593,16 +593,16 @@ export class SelectionTool extends PrimitiveTool {
   protected startDragSelect(ev: BeButtonEvent): boolean {
     if (BeButton.Data !== ev.button && BeButton.Reset !== ev.button)
       return false;
-    this.m_points.length = 0;
-    this.m_points.push(ev.point.clone());
-    this.m_isDragSelect = true;
+    this.points.length = 0;
+    this.points.push(ev.point.clone());
+    this.isDragSelect = true;
     iModelApp.accuSnap.enableLocate(false);
     iModelApp.toolAdmin.setLocateCircleOn(false);
     return true;
   }
 
   protected dragSelect(ev: BeButtonEvent): boolean {
-    if (!this.m_isDragSelect)
+    if (!this.isDragSelect)
       return false;
 
     const vp = ev.viewport;
@@ -612,7 +612,7 @@ export class SelectionTool extends PrimitiveTool {
     }
 
     const worldPts: Point3d[] = [];
-    const origin = vp.worldToView(this.m_points[0]);
+    const origin = vp.worldToView(this.points[0]);
     const corner = vp.worldToView(ev.point);
     origin.z = corner.z = 0.0;
 
@@ -665,7 +665,7 @@ export class SelectionTool extends PrimitiveTool {
 
     if (this.selectControls(ev) && this.haveSelectedControls()) {
       // Allow manipulators to respond to clicks on their controls before doing normal processing...
-      if (this.m_manipulator!.onClick(ev))
+      if (this.manipulator!.onClick(ev))
         return false;
 
       if (!this.wantDragOnlyManipulator()) {
@@ -743,7 +743,7 @@ export class SelectionTool extends PrimitiveTool {
       if (0 !== this.iModel.selectionSet.numSelected) {
         if (this.wantSelectionClearOnMiss(ev))
           this.iModel.selectionSet.emptyAll();
-      } else if (this.m_manipulator) {
+      } else if (this.manipulator) {
         this.synchManipulators(true); // Clear transient manipulator...
       }
     }
@@ -754,28 +754,28 @@ export class SelectionTool extends PrimitiveTool {
   public onDataButtonDown(_ev: BeButtonEvent): boolean { return false; }
 
   public onResetButtonUp(ev: BeButtonEvent): boolean {
-    if (this.m_isDragSelect) {
+    if (this.isDragSelect) {
       this.initSelectTool();
       this.synchManipulators(false);
       return false;
     }
 
-    if (this.m_isDragElement) {
+    if (this.isDragElement) {
       this.endDynamics();
       this.initSelectTool();
       this.synchManipulators(false);
       return true;
     }
 
-    if (this.m_manipulator) {
-      if (this.m_isDragControl) {
-        this.m_manipulator.onModifyCancel(ev);
+    if (this.manipulator) {
+      if (this.isDragControl) {
+        this.manipulator.onModifyCancel(ev);
         this.endDynamics();
         this.initSelectTool();
         this.synchManipulators(false);
         return false;
       }
-      if (this.m_manipulator.onRightClick(ev))
+      if (this.manipulator.onRightClick(ev))
         return false;
     }
 
@@ -824,7 +824,7 @@ export class SelectionTool extends PrimitiveTool {
     super.onPostInstall();
     this.initSelectTool();
     this.synchManipulators(true); // Add manipulators for an existing selection set...
-    this.m_removeListener = this.iModel.selectionSet.onChanged.addListener(this.onSelectionChanged, this);
+    this.removeListener = this.iModel.selectionSet.onChanged.addListener(this.onSelectionChanged, this);
     // Utf8String msgStr = DgnClientFxToolsL10N:: GetString(DgnClientFxToolsL10N:: ELEMENT_SET_TOOL_PROMPT_IdentifyElement());
     // NotificationManager:: OutputPrompt(msgStr.c_str());
   }
