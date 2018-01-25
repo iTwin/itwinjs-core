@@ -297,7 +297,7 @@ export class TentativePoint {
     if (!currHit) {
       // search for elements around the current raw point (search should not be affected by locks!)
       const aperture = (2.0 * this.viewport!.pixelsFromInches(iModelApp.locateManager.getApertureInches()) / 2.0) + 1.5;
-      const options = iModelApp.locateManager.getLocateOptions().clone(); // Copy to avoid changing out from under active Tool...
+      const options = iModelApp.locateManager.options.clone(); // Copy to avoid changing out from under active Tool...
       const picker = iModelApp.locateManager.getElementPicker();
       picker.empty();
       options.hitSource = HitSource.TentativeSnap;

@@ -82,6 +82,7 @@ export class LocateOptions {
     other.maxHits = this.maxHits;
     return other;
   }
+  public init() { this.maxHits = 20; this.hitSource = HitSource.DataPoint; }
 }
 
 export class LocateResponse {
@@ -181,7 +182,6 @@ export class ElementLocateManager {
   public onFlashHit(_detail: SnapDetail) { }
   public onAccuSnapMotion(_detail: SnapDetail | undefined, _wasHot: boolean, _ev: BeButtonEvent) { }
   public getElementPicker() { return this.picker; }
-  public getLocateOptions() { return this.options; }
   public setChosenSnapMode(_snapType: SnapType, _snapMode: SnapMode) { }
   public isConstraintSnapActive(): boolean { return false; }
   public performConstraintSnap(_detail: SnapDetail, _hotDistance: number, _snapSource: HitSource) { return SnapStatus.Success; }
@@ -262,5 +262,60 @@ export class ElementLocateManager {
       out.reason = LocateFailureValue.ByCommand;
 
     return retVal;
+  }
+
+  public initLocateOptions() { this.options.init(); }
+  public initToolLocate() {
+    this.initLocateOptions();
+    this.clear();
+    this.getElementPicker().empty();
+    iModelApp.tentativePoint.clear(true);
+  }
+
+  private _doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, vp: Viewport | undefined, mode: SubSelectionMode, filterHits: boolean): HitDetail | undefined {
+    if (!vp)
+      return;
+    // the "newSearch" flag indicates whether the caller wants us to conduct a new search at the testPoint, or just continue
+    // returning paths from the previous search.
+    if (newSearch) {
+      const hit = this.getPreLocatedHit();
+
+      // if we're snapped to something, that path has the highest priority and becomes the active hit.
+      if (hit) {
+        if (!filterHits || !this.filterHit(hit, mode, LocateAction.Identify, response))
+          return hit;
+
+        // we have the reason and explanation we want.
+        response = new LocateResponse();
+      }
+
+      this.picker.empty();
+      this.picker.doPick(vp, testPoint, (vp.pixelsFromInches(this.getApertureInches()) / 2.0) + 1.5, this.options);
+
+      const hitList = this.picker.getHitList(true);
+      this.setHitList(hitList);
+    }
+
+    let newHit: HitDetail | undefined;
+    while (undefined !== (newHit = this.getNextHit())) {
+      if (!filterHits || !this.filterHit(newHit, mode, LocateAction.Identify, response))
+        return newHit;
+      response = new LocateResponse(); // we have the reason and explanation we want.
+    }
+
+    return undefined;
+  }
+
+  public doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, view: Viewport | undefined, mode: SubSelectionMode = SubSelectionMode.None, filterHits = true): HitDetail | undefined {
+    response.reason = LocateFailureValue.NoElements;
+    response.explanation = "";
+
+    const hit = this._doLocate(response, newSearch, testPoint, view, mode, filterHits);
+    this.setCurrHit(hit);
+
+    // if we found a hit, remove it from the list of remaining hit near the current search point.
+    if (hit && this.hitList && hit.elementId)
+      this.hitList.removeHitsFrom(hit.elementId);
+    return hit;
   }
 }

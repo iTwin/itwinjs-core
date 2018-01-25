@@ -16,8 +16,6 @@ import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
 import { BSplineCurve3d } from "@bentley/geometry-core/lib/bspline/BSplineCurve";
 import { BSplineSurface3d } from "@bentley/geometry-core/lib/bspline/BSplineSurface";
 
-// tslint:disable:no-empty
-
 export const enum RenderMode {
   Wireframe = 0,
   HiddenLine = 3,
