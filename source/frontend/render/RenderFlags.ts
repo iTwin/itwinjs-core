@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { GL } from "./GL";
 
 // Ordered list of render passes which produce a rendered frame.
 export const enum RenderPass {
@@ -84,3 +85,5 @@ export const enum OvrFlags {
 
     Rgba = Rgb | Alpha,
 }
+
+export const enum IsTranslucent { No, Yes, Maybe }
