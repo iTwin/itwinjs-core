@@ -8,7 +8,7 @@ import { LineCode, EdgeOverrides } from "../../frontend/render/EdgeOverrides";
 import { FloatPreMulRgba } from "../../frontend/render/FloatRGBA";
 import { OvrFlags } from "../../frontend/render/RenderFlags";
 
-describe.only("LineCode", () => {
+describe("LineCode", () => {
   it("valueFromLinePixels correctly converts a LinePixel into a LineCode", () => {
     assert.isTrue(LineCode.valueFromLinePixels(LinePixels.Code0) === 0, "Code0 equals 0");
     assert.isTrue(LineCode.valueFromLinePixels(LinePixels.Code1) === 1, "Code1 equals 1");
@@ -43,7 +43,7 @@ describe.only("LineCode", () => {
   });
 });
 
-describe.only("EdgeOverrides", () => {
+describe("EdgeOverrides", () => {
   it("default constructor sets flags to None", () => {
     assert.isTrue(new EdgeOverrides().flags === OvrFlags.None);
   });

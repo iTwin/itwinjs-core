@@ -103,6 +103,16 @@ export const enum FeatureDimension {
   kCOUNT,
 }
 
+export function getFeatureName(dim: FeatureDimension): string | undefined {
+  switch (dim) {
+    case FeatureDimension.kEmpty: return "Empty";
+    case FeatureDimension.kSingleUniform: return "Single/Uniform";
+    case FeatureDimension.kSingleNonUniform: return "Single/Non-uniform";
+    case FeatureDimension.kMultiple: return "Multiple";
+    default: return undefined;
+  }
+}
+
 export const enum FeatureIndexType {
   kEmpty,
   kUniform,

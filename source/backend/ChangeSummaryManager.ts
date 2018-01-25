@@ -5,7 +5,7 @@ import { AccessToken, ChangeSet, UserInfo } from "@bentley/imodeljs-clients";
 import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelDb } from "./IModelDb";
 import { ECDb } from "./ECDb";
-import { DateTime } from "./ECSqlStatement";
+import { DateTime } from "../common/ECSqlBindingValues";
 import { IModelVersion } from "../common/IModelVersion";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
