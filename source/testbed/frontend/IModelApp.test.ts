@@ -7,7 +7,6 @@ import { AccuDraw } from "../../frontend/AccuDraw";
 import { IdleTool } from "../../frontend/tools/IdleTool";
 import { I18NNamespace } from "../../frontend/Localization";
 import { Tool } from "../../frontend/tools/Tool";
-import { ViewRotateTool, ViewPanTool } from "../../frontend/tools/ViewTool";
 import { RotateTool, PanTool } from "../../frontend/tools/ViewTool";
 import { SelectionTool } from "../../frontend/tools/SelectTool";
 
