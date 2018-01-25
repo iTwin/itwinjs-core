@@ -16,8 +16,6 @@ import { GraphicBuilder, LinePixels } from "../../common/Render";
 import { ColorDef } from "../../common/ColorDef";
 import { FenceParams } from "../FenceParams";
 
-// tslint:disable:variable-name
-
 export const enum SelectionMethod {
   /** Identify element(s) by picking for drag selection (inside/overlap for drag box selection determined by point direction and shift key) */
   Pick,

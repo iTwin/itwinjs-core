@@ -7,8 +7,6 @@ import { IModelConnection } from "../IModelConnection";
 
 export type IdArg = Id64 | Id64Set | string[];
 
-// tslint:disable:variable-name
-
 /** The requested source for the elements to modify. */
 export const enum ElemSource {
   /** Populate ElementAgenda from a locate */

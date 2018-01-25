@@ -4,6 +4,7 @@
   "files.exclude": {
     "node_modules": true,
     "lib": true,
+    ".nyc_output": true,
     "source/backend/lib": true,
     "source/backend/node_modules": true,
     "source/common/lib": true,

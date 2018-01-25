@@ -5,8 +5,6 @@ import { Viewport } from "./Viewport";
 import { Range3d } from "@bentley/geometry-core/lib/PointVector";
 import { ClipVector } from "@bentley/geometry-core/lib/numerics/ClipVector";
 
-// tslint:disable:variable-name
-
 /**
  * The fence clip mode controls element acceptance criteria. A clip mode of none returns
  * only elements inside the fence when overlaps aren't requested. A clip mode of
