@@ -35,6 +35,9 @@ class TestIModelApp extends IModelApp {
   protected onStartup() {
     super.onStartup();
   }
+  protected supplyI18NOptions() {
+    return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" };
+  }
 }
 
 describe("Viewport", () => {

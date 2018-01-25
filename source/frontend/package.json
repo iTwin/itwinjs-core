@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "0.30.0",
+  "version": "0.31.0",
   "description": "iModelJs frontend components",
   "license": "UNLICENSED",
   "scripts": {
@@ -27,8 +27,15 @@
     "@bentley/bentleyjs-core": "^1.4.1",
     "@bentley/geometry-core": "^3.0.1",
     "@bentley/imodeljs-clients": "^1.1.3",
+    "i18next": "^10.2.2",
+    "i18next-browser-languagedetector": "^2.1.0",
+    "i18next-xhr-backend": "^1.5.1",
     "js-base64": "^2.4.0"
   },
   "//devDependencies": "NOTE: all devDependencies should be recorded in the top-level package.json only",
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/i18next": "^8.4.2",
+    "@types/i18next-browser-languagedetector": "^2.0.1",
+    "@types/i18next-xhr-backend": "^1.4.1"
+  }
 }
