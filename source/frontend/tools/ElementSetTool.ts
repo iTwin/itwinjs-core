@@ -101,7 +101,7 @@ export class ElementAgenda {
   /** whether elements are flagged as hilited when added to the agenda. */
   public m_hiliteOnAdd = true;
   public m_hilitedState = HilitedState.Unknown;
-  public constructor(public iModel: IModelConnection) { }
+  public iModel?: IModelConnection;
 
   /** Populate an IdSet from this agenda. */
   public getElementIdSet(ids: Id64Set) { this.m_elements.forEach((id) => ids.add(id)); }
@@ -120,7 +120,7 @@ export class ElementAgenda {
   public getCount() { return this.m_elements.length; }
 
   /** Calls ClearHilite and empties this ElementAgenda. */
-  public clear() { this.clearHilite(); this.m_elements.length = 0; this.m_groupMarks.length = 0; }
+  public clear() { this.clearHilite(); this.m_elements.length = 0; this.m_groupMarks.length = 0; this.iModel = undefined; }
 
   /** clear hilite on any currently hilited entries */
   private clearHilite() {
@@ -133,7 +133,7 @@ export class ElementAgenda {
 
   private setEntriesHiliteState(onOff: boolean, groupStart = 0, groupEnd = 0) {
     const group = (0 === groupEnd) ? this.m_elements : this.m_elements.filter((_id, index) => index >= groupStart && index < groupEnd);
-    this.iModel.hilited.setHilite(group, onOff);
+    this.iModel!.hilited.setHilite(group, onOff);
   }
 
   /** Calls ClearHilite and removes the last group of elements added to this ElementAgenda. */
@@ -163,7 +163,12 @@ export class ElementAgenda {
   public find(id: Id64) { return this.hasValue(id.value); }
 
   /** Add elements to this ElementAgenda. */
-  public add(arg: IdArg) {
+  public add(arg: IdArg, iModel: IModelConnection) {
+    if (!this.iModel)
+      this.iModel = iModel;
+    else if (this.iModel !== iModel)
+      return false;
+
     const groupStart = this.m_elements.length;
     Id64.toIdSet(arg).forEach((id) => { if (!this.hasValue(id)) this.m_elements.push(id); });
     if (groupStart === this.m_elements.length)
@@ -174,7 +179,7 @@ export class ElementAgenda {
     return true;
   }
 
-  public removeOne(id: string) {
+  private removeOne(id: string) {
     let pos = -1;
     const elements = this.m_elements;
     const groupMarks = this.m_groupMarks;
@@ -236,8 +241,8 @@ export class ElementAgenda {
     return true;
   }
 
-  public remove(arg: IdArg) {
-    if (0 === this.m_elements.length)
+  public remove(arg: IdArg, iModel: IModelConnection) {
+    if (this.iModel !== iModel || 0 === this.m_elements.length)
       return false;
 
     const elSet = Id64.toIdSet(arg);
@@ -258,9 +263,14 @@ export class ElementAgenda {
   }
 
   /** Add elements not currently in the ElementAgenda and remove elements currently in the ElementAgenda. */
-  public invert(arg: IdArg) {
+  public invert(arg: IdArg, iModel: IModelConnection) {
+    if (!this.iModel)
+      this.iModel = iModel;
+    else if (this.iModel !== iModel)
+      return false;
+
     if (0 === this.m_elements.length)
-      return this.add(arg);
+      return this.add(arg, iModel);
 
     const elSet = Id64.toIdSet(arg);
     if (elSet.size === 0)

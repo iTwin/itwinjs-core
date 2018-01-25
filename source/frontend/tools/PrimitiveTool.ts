@@ -8,6 +8,7 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelConnection } from "../IModelConnection";
 import { iModelApp } from "../IModelApp";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
+import { DynamicsContext } from "../ViewContext";
 
 export const enum ModifyElementSource {
   /** The source for the element is unknown - not caused by a modification command. */
@@ -64,7 +65,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
   }
 
   /** Get the iModel the tool is operating against. */
-  public getIModel(): IModelConnection { return this.targetView!.view!.iModel as IModelConnection; }
+  public get iModel(): IModelConnection { return this.targetView!.view!.iModel as IModelConnection; }
 
   /**
    * Called when an external event may invalidate the current tool's state.
@@ -134,7 +135,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
 
     if (!this.targetView)
       this.targetView = vp;
-    else if (iModel !== this.getIModel())
+    else if (iModel !== this.iModel)
       return false; // Once a viewport has been established, only accept viewport showing the same iModel.
 
     if (!this.targetIsLocked) {
@@ -200,7 +201,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * Tools need to call SaveChanges to commit any elements they have added/changes they have made.
    * This helper method supplies the tool name for the undo string to iModel.saveChanges.
    */
-  public saveChanges(): Promise<void> { return this.getIModel().saveChanges(Object.getPrototypeOf(this).constructor.getLocalizedToolName()); }
+  public saveChanges(): Promise<void> { return this.iModel.saveChanges(Object.getPrototypeOf(this).constructor.getLocalizedToolName()); }
 
   // //! Ensures that any locks and/or codes required for the operation are obtained from iModelServer before making any changes to the iModel.
   // //! Default implementation invokes _PopulateRequest() and forwards request to server.
@@ -229,7 +230,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
   /** Call to terminate dynamics mode. */
   public endDynamics() { iModelApp.toolAdmin.endDynamics(); }
   /** Called to display dynamic elements. */
-  public onDynamicFrame(_ev: BeButtonEvent) { }
+  public onDynamicFrame(_ev: BeButtonEvent, _context: DynamicsContext) { }
   public callOnRestartTool(): void { this.onRestartTool(); }
   public undoPreviousStep(): boolean {
     if (!this.onUndoPreviousStep())
@@ -247,7 +248,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     if (!ev.viewport || !iModelApp.viewManager.inDynamicsMode)
       return;
 
-    // DynamicsContext context(* ev.GetViewport(), Render:: Task:: Priority:: Highest());
-    this.onDynamicFrame(ev);
+    const context = new DynamicsContext(); // NEEDS_WORK * ev.GetViewport(), Render:: Task:: Priority:: Highest());
+    this.onDynamicFrame(ev, context);
   }
 }

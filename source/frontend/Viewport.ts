@@ -1245,7 +1245,6 @@ export class Viewport {
     const graphic = context.createViewOverlay();
     const white = ColorDef.white.clone();
     const black = ColorDef.black.clone();
-
     white.setAlpha(165);
     graphic.setSymbology(white, white, 1);
     graphic.addArc2d(ellipse, true, true, 0.0);
@@ -1265,4 +1264,11 @@ export class Viewport {
     if (isLocateCircleOn)
       Viewport.drawLocateCircle(context, aperture, pt);
   }
+
+  public getContrastToBackgroundColor(): ColorDef {
+    const bgColor = this.view.backgroundColor.getColors();
+    const invert = ((bgColor.r + bgColor.g + bgColor.b) > (255 * 3) / 2);
+    return invert ? ColorDef.black : ColorDef.white; // should we use black or white?
+  }
+
 }

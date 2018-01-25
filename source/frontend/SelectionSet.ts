@@ -6,7 +6,7 @@ import { IModelConnection } from "./IModelConnection";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { iModelApp } from "./IModelApp";
 
-export const enum EventType { Add, Remove, Replace, Clear }
+export const enum SelectEventType { Add, Remove, Replace, Clear }
 export type IdArg = Id64 | Id64Set | string[];
 
 export class HilitedSet {
@@ -26,10 +26,10 @@ export class HilitedSet {
 /** the set of currently selected elements for an iModel */
 export class SelectionSet {
   public readonly selected = new Set<string>();
-  public readonly onChanged = new BeEvent<(iModel: IModelConnection, evType: EventType, ids?: Set<string> | undefined) => void>();
+  public readonly onChanged = new BeEvent<(iModel: IModelConnection, evType: SelectEventType, ids?: Set<string>) => void>();
   public constructor(public iModel: IModelConnection) { }
 
-  private sendChangedEvent(evType: EventType, ids?: Set<string>) { this.onChanged.raiseEvent(this.iModel, evType, ids); }
+  private sendChangedEvent(evType: SelectEventType, ids?: Set<string>) { this.onChanged.raiseEvent(this.iModel, evType, ids); }
   /**
    * Get the number of entries in the current selection set.
    * @return count of entries in current selection set.
@@ -40,14 +40,14 @@ export class SelectionSet {
   public isActive() { return this.numSelected === 0; }
 
   /** Query whether an element is in the selection set. */
-  public isSelected(elemId: Id64): boolean { return this.selected.has(elemId.value); }
+  public isSelected(elemId?: Id64): boolean { return !!elemId && this.selected.has(elemId.value); }
 
   /** Clear current selection set. */
   public emptyAll(): void {
     if (!this.isActive())
       return;
     this.selected.clear();
-    this.sendChangedEvent(EventType.Clear);
+    this.sendChangedEvent(SelectEventType.Clear);
   }
 
   /**
@@ -74,7 +74,7 @@ export class SelectionSet {
     elem.forEach((id) => this.selected.delete(id));
     const changed = oldSize !== this.selected.size;
     if (sendEvent && changed)
-      this.sendChangedEvent(EventType.Remove, elem);
+      this.sendChangedEvent(SelectEventType.Remove, elem);
     return changed;
   }
 
@@ -96,6 +96,6 @@ export class SelectionSet {
   public replace(elem: IdArg): void {
     this.selected.clear();
     this.add(elem, false);
-    this.sendChangedEvent(EventType.Replace, this.selected);
+    this.sendChangedEvent(SelectEventType.Replace, this.selected);
   }
 }

@@ -15,6 +15,9 @@ export class ViewContext {
 export class NullContext extends ViewContext {
 }
 
+export class DynamicsContext extends ViewContext {
+
+}
 export class SnapContext extends ViewContext {
   public snapDetail?: SnapDetail; // result of the snap
   public snapAperture: number;
