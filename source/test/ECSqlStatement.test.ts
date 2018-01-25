@@ -115,7 +115,7 @@ describe("ECSqlStatement", () => {
     const strVal: string = "Hello world";
 
     const verify = (expectedId: Id64) => {
-      ecdb.withPreparedStatement("SELECT Bl,Bo,D,Dt,I,P2d,P3d,S,Struct.Bl s_bl,Struct.Bo s_bo,Struct.D s_d,Struct.Dt s_dt,Struct.I s_i,Struct.L s_l,Struct.P2d s_p2d,Struct.P3d s_p3d,Struct.S s_s FROM test.Foo WHERE ECInstanceId=?", (stmt) => {
+      ecdb.withPreparedStatement("SELECT Bl,Bo,D,Dt,I,P2d,P3d,S,Struct.Bl s_bl,Struct.Bo s_bo,Struct.D s_d,Struct.Dt s_dt,Struct.I s_i,Struct.P2d s_p2d,Struct.P3d s_p3d,Struct.S s_s FROM test.Foo WHERE ECInstanceId=?", (stmt) => {
         stmt.bindId(1, expectedId);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
         const row = stmt.getRow();
@@ -152,17 +152,17 @@ describe("ECSqlStatement", () => {
       stmt.bindDouble(3, doubleVal);
       stmt.bindDateTime(4, dtVal);
       stmt.bindInt(5, intVal);
-      stmt.bindPoint2d(7, p2dVal);
-      stmt.bindPoint3d(8, p3dVal);
-      stmt.bindString(9, strVal);
-      stmt.bindBlob(10, blobVal);
-      stmt.bindBoolean(11, boolVal);
-      stmt.bindDouble(12, doubleVal);
-      stmt.bindDateTime(13, dtVal);
-      stmt.bindInt(14, intVal);
-      stmt.bindPoint2d(16, p2dVal);
-      stmt.bindPoint3d(17, p3dVal);
-      stmt.bindString(18, strVal);
+      stmt.bindPoint2d(6, p2dVal);
+      stmt.bindPoint3d(7, p3dVal);
+      stmt.bindString(8, strVal);
+      stmt.bindBlob(9, blobVal);
+      stmt.bindBoolean(10, boolVal);
+      stmt.bindDouble(11, doubleVal);
+      stmt.bindDateTime(12, dtVal);
+      stmt.bindInt(13, intVal);
+      stmt.bindPoint2d(14, p2dVal);
+      stmt.bindPoint3d(15, p3dVal);
+      stmt.bindString(16, strVal);
 
       let res: ECSqlInsertResult = stmt.stepForInsert();
       assert.equal(res.status, DbResult.BE_SQLITE_DONE);
