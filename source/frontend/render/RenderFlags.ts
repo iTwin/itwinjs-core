@@ -17,6 +17,43 @@ export const enum RenderPass {
     COUNT,
 }
 
+// Describes the type of geometry rendered by a ShaderProgram.
+export const enum GeometryType {
+    IndexedTriangles,
+    IndexedPoints,
+    ArrayedPoints,
+  }
+
+// Reserved texture units for specific sampler variables, to avoid conflicts between shader components which each have their own textures.
+export const enum TextureUnit {
+    // For shaders which know exactly which textures will be used
+    Zero = 0,
+    One = 1,
+    Two = 2,
+    Three = 3,
+    Four = 4,
+    Five = 5,
+    Six = 6,
+    Seven = 7, // Last one available for GLES2
+
+    NonUniformColor = Zero,
+    FeatureSymbology = One,
+    MeshTexture = Two,
+    LineCode = Two,
+    Point = Two,
+    ElementId = Three,
+
+    PickElementId0 = Four,
+    PickElementId1 = Five,
+    PickDepthAndOrder = Six,
+
+    // WIP - Image lighting (won't work if device limited to 8 textures).
+    IBLDiffuse  = 8,
+    IBLSpecular = 9,
+    BRDFLUT = 10,
+    EnvironmentMap = 11,
+}
+
 // Defines the order in which primitives are rendered within a GLESList. This is chiefly
 // used to sort primitives which originate from the same element. e.g., the blanking fill
 // associated with a text field must always render behind the text; the edges of a surface
