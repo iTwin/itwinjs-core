@@ -1,10 +1,10 @@
 "use strict";
+debugger;
 // Run selected backend mocha tests programmatically. We do this in the mobile platform.
 require("mocha"); // puts the symbol "mocha" in global.
 require("chai"); // puts 'assert', etc. into global
-mocha.setup("bdd"); // puts 'describe', 'it', etc. into global
 function mobileReporter(runner) {
-    mocha.reporters.Base.call(this, runner);
+    Mocha.reporters.Base.call(this, runner);
     var passes = 0;
     var failures = 0;
     runner.on('pass', function (test) {
@@ -20,6 +20,6 @@ function mobileReporter(runner) {
         // process.exit(failures);
     });
 }
-mocha.reporter = mobileReporter;
+mocha.setup({ui: 'bdd', reporter: mobileReporter}); // puts 'describe', 'it', etc. into global
 require("./Category.test.js");
 mocha.run();
