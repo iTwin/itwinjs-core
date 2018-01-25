@@ -2982,7 +2982,7 @@ export class AccuDrawHintBuilder {
   private origin?: Point3d;
   private axis?: Vector3d;
   private rMatrix?: RotMatrix;
-  private distance = 0;;
+  private distance = 0;
   private angle = 0;
 
   public setOriginFixed = false;
@@ -3003,7 +3003,10 @@ export class AccuDrawHintBuilder {
   public setDistance(distance: number) { this.distance = distance; this.flagDistance = true; }
   public setAngle(angle: number) { this.angle = angle; this.flagAngle = true; }
 
-  /**  Calls AccuDraw.setContext using the current builder state. */
+  /**
+   * Calls AccuDraw.setContext using the current builder state.
+   * @return true if hints were successfully sent.
+   */
   public sendHints(activate = true): boolean {
     let flags = 0;
     if (this.flagOrigin) flags |= AccuDrawFlags.SetOrigin;

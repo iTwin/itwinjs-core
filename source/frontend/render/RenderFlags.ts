@@ -1,21 +1,20 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { GL } from "./GL";
 
 // Ordered list of render passes which produce a rendered frame.
 export const enum RenderPass {
-  None = 0xff,
-  Background = 0,
-  OpaqueLinear,       // Linear geometry that is opaque and needs to be written to the pick data buffers
-  OpaquePlanar,       // Planar surface geometry that is opaque and needs to be written to the pick data buffers
-  OpaqueGeneral,      // All other opaque geometry (including point clouds and reality meshes) which are not written to the pick data buffers
-  Translucent,
-  HiddenEdge,
-  Hilite,
-  WorldOverlay,
-  ViewOverlay,
-  COUNT,
+    None = 0xff,
+    Background = 0,
+    OpaqueLinear,       // Linear geometry that is opaque and needs to be written to the pick data buffers
+    OpaquePlanar,       // Planar surface geometry that is opaque and needs to be written to the pick data buffers
+    OpaqueGeneral,      // All other opaque geometry (including point clouds and reality meshes) which are not written to the pick data buffers
+    Translucent,
+    HiddenEdge,
+    Hilite,
+    WorldOverlay,
+    ViewOverlay,
+    COUNT,
 }
 
 // Defines the order in which primitives are rendered within a GLESList. This is chiefly
