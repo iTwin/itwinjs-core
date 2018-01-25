@@ -30,10 +30,6 @@ export class LineStyleParams {
   public normal: Vector3d;
   public rMatrix: RotMatrix;
 
-  private constructor() {
-
-  }
-
   /** Returns LineStyleParams with default values */
   public static createDefaults(): LineStyleParams {
     const retVal = new LineStyleParams();
@@ -47,7 +43,6 @@ export class LineStyleParams {
       }
     }
     retVal.scale = retVal.gapScale = retVal.dashScale = retVal.normal.z = 1.0;
-
     return retVal;
   }
 
@@ -154,57 +149,34 @@ export class LineStyleParams {
 
 /** Non-exported supporting class for LineStyleSymb */
 class LineStyleSymbOptions {
-  public scale: boolean;
-  public dashScale: boolean;
-  public gapScale: boolean;
-  public orgWidth: boolean;
-  public endWidth: boolean;
-  public phaseShift: boolean;
-  public autoPhase: boolean;
-  public maxCompress: boolean;
-  public iterationLimit: boolean;
-  public treatAsSingleSegment: boolean;
-  public plane: boolean;
-  public cosmetic: boolean;
-  public centerPhase: boolean;
-  public xElemPhaseSet: boolean;
-  public startTangentSet: boolean;
-  public endTangentSet: boolean;
-  public elementIsClosed: boolean;
-  public continuationXElems: boolean;
-  public isCurve: boolean;
-  public isContinuous: boolean;
-
-  public constructor() {
-    this.scale = false;
-    this.dashScale = false;
-    this.gapScale = false;
-    this.orgWidth = false;
-    this.endWidth = false;
-    this.phaseShift = false;
-    this.autoPhase = false;
-    this.maxCompress = false;
-    this.iterationLimit = false;
-    this.treatAsSingleSegment = false;
-    this.plane = false;
-    this.cosmetic = false;
-    this.centerPhase = false;
-    this.xElemPhaseSet = false;
-    this.startTangentSet = false;
-    this.endTangentSet = false;
-    this.elementIsClosed = false;
-    this.continuationXElems = false;
-    this.isCurve = false;
-    this.isContinuous = false;
-  }
+  public scale = false;
+  public dashScale = false;
+  public gapScale = false;
+  public orgWidth = false;
+  public endWidth = false;
+  public phaseShift = false;
+  public autoPhase = false;
+  public maxCompress = false;
+  public iterationLimit = false;
+  public treatAsSingleSegment = false;
+  public plane = false;
+  public cosmetic = false;
+  public centerPhase = false;
+  public xElemPhaseSet = false;
+  public startTangentSet = false;
+  public endTangentSet = false;
+  public elementIsClosed = false;
+  public continuationXElems = false;
+  public isCurve = false;
+  public isContinuous = false;
 }
 
-// =======================================================================================
-// ! This structure contains options (modifications) that can be applied
-// ! to existing line styles to change their appearance without changing the line style
-// ! definition. Most of the options pertain to the operation of the StrokePatternComponent
-// ! component but the plane definition and scale factors can be used by all components.
-// =======================================================================================
+/**
+ * This structure contains options (modifications) that can be applied
+ * to existing line styles to change their appearance without changing the line style
+ * definition. Most of the options pertain to the operation of the StrokePatternComponent
+ * component but the plane definition and scale factors can be used by all components.
+ */
 export class LineStyleSymb {
   private _options: LineStyleSymbOptions;
   private _lstyle: any;    // <-- Change to use LineStyle class once it is created

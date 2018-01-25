@@ -9,7 +9,6 @@ export const enum GradientSymbFlags {
   None = 0,
   Invert = 1,
   Outline = (1 << 1),
-  Deprecated = (1 << 2),    // < Was AlwaysFilled, now controlled by FillDisplay...
 }
 
 /** Parameters defining a gradient */
@@ -21,8 +20,8 @@ export class GradientSymb {
   private _angle: number = 0.0;
   private _tint: number = 0.0;
   private _shift: number = 0.0;
-  private _colors: ColorDef[];
-  private _values: number[];
+  private readonly _colors: ColorDef[] = [];
+  private readonly _values: number[] = [];
 
   /** Stores the color definition at that index in the variable given, and returns the value at that index. */
   public getKey(idx: number, color: ColorDef): number { color.fromRgb(this._colors[idx].getRgb()); return this._values[idx]; }
@@ -46,11 +45,6 @@ export class GradientSymb {
       this._colors.push(colors[i]);
       this._values.push(values[i]);
     }
-  }
-
-  private constructor() {
-    this._colors = [];
-    this._values = [];
   }
 
   public static createDefaults() {

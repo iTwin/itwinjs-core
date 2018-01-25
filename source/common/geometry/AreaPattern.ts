@@ -10,19 +10,15 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 /** Explicit declaration, separate from generated "schema", for easily changing and reassigning values */
 export class DwgHatchDefLine {
   public angle: number;
-  public through: Point2d;
-  public offset: Point2d;
-  public dashes: number[];
-
-  public constructor() {
-    this.dashes = [];
-  }
+  public readonly through = new Point2d();
+  public readonly offset = new Point2d();
+  public readonly dashes: number[] = [];
 }
 
 /** Defines a hatch, cross hatch, or area pattern. */
 export class PatternParams {
-  private _origin: Point3d;                // Pattern origin (offset from to element's placement)
-  private _rMatrix: RotMatrix;             // Pattern coordinate system (relative to element's placement)
+  private readonly _origin = new Point3d();                // Pattern origin (offset from to element's placement)
+  private readonly _rMatrix = RotMatrix.createIdentity();             // Pattern coordinate system (relative to element's placement)
   private _space1: number;                 // Primary (row) spacing
   private _space2: number;                 // Secondary (column) spacing
   private _angle1: number;                 // Angle of first hatch or pattern
@@ -35,7 +31,7 @@ export class PatternParams {
   private _color?: ColorDef;                // The pattern / hatch color
   private _weight: number;                 // The pattern / hatch weight
   private _symbolId?: Id64;                 // The id of the GeometryPart to use for an area pattern
-  private _hatchLines: DwgHatchDefLine[];  // The DWG style hatch definition
+  private readonly _hatchLines: DwgHatchDefLine[] = [];  // The DWG style hatch definition
 
   public get dwgHatchDef() { return this._hatchLines; }
   public get origin() { return this._origin; }
@@ -53,8 +49,8 @@ export class PatternParams {
   public get invisibleBoundary() { return this._invisibleBoundary; }
   public get snappable() { return this._snappable; }
 
-  public setOrigin(origin: Point3d) { this._origin = origin; }
-  public setOrientation(rMatrix: RotMatrix) { this._rMatrix = rMatrix; }
+  public setOrigin(origin: Point3d) { this._origin.setFrom(origin); }
+  public setOrientation(rMatrix: RotMatrix) { this._rMatrix.setFrom(rMatrix); }
   public setPrimarySpacing(space1: number) { this._space1 = space1; }
   public setSecondarySpacing(space2: number) { this._space2 = space2; }
   public setPrimaryAngle(angle1: number) { this._angle1 = angle1; }
@@ -65,13 +61,7 @@ export class PatternParams {
   public setInvisibleBoundary(invisibleBoundary: boolean) { this._invisibleBoundary = invisibleBoundary; }
   public setSnappable(snappable: boolean) { this._snappable = snappable; }
   public setSymbolId(symbolId: Id64) { this._symbolId = symbolId; }
-  public setDwgHatchDef(hatchLines: DwgHatchDefLine[]) { this._hatchLines = hatchLines; }
-
-  private constructor() {
-    this._origin = Point3d.create();
-    this._rMatrix = RotMatrix.createIdentity();
-    this._hatchLines = [];
-  }
+  public setDwgHatchDef(hatchLines: DwgHatchDefLine[]) { this._hatchLines.length = 0; hatchLines.forEach((line) => this._hatchLines.push(line)); }
 
   public static createDefaults(): PatternParams {
     const retVal = new PatternParams();
@@ -97,9 +87,7 @@ export class PatternParams {
     retVal._useWeight = this._useWeight;
     retVal._weight = this._weight;
     retVal._symbolId = this._symbolId;
-    for (const i of this._hatchLines) {
-      retVal._hatchLines.push(i);
-    }
+    this._hatchLines.forEach((line) => retVal._hatchLines.push(line));
     return retVal;
   }
 
