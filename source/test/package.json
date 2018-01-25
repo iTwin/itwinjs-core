@@ -10,7 +10,7 @@
     "copy:backendassets": "cpx ../backend/assets/**/* ./lib/backend/assets",
     "pretest": "npm run copy:assets && npm run build",
     "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\"",
-    "webpackformobile": "webpack --config mobile.webpack.config.js"
+    "webpackformobile": "cpx runMochaTestsDirectly.js ./lib/test/mobile && webpack --config mobile.webpack.config.js"
   },
   "repository": {},
   "//dependencies": [
@@ -23,6 +23,7 @@
     "@bentley/geometry-core": "^3.0.1",
     "@bentley/imodeljs-clients": "^1.0.47",
     "@bentley/imodeljs-nodeaddon": "~5.0.0",
+    "@bentley/imodeljs-electronaddon": "~5.0.0",
     "@bentley/imodeljs-nodeaddonapi": "~5.0.0",
     "fs-extra": "^4.0.3",
     "js-base64": "^2.4.0"

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-export enum BuiltInTechniqueId {
+export const enum BuiltInTechniqueId {
   // Techniques with many different variations
   kSurface,
   kPolyline,
