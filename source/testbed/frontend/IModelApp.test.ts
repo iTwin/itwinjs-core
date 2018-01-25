@@ -5,7 +5,8 @@ import { assert } from "chai";
 import { IModelApp, iModelApp } from "../../frontend/IModelApp";
 import { AccuDraw } from "../../frontend/AccuDraw";
 import { IdleTool } from "../../frontend/tools/IdleTool";
-import { ToolGroup, Tool } from "../../frontend/tools/Tool";
+import { I18NNamespace } from "../../frontend/Localization";
+import { Tool } from "../../frontend/tools/Tool";
 import { RotateTool, PanTool } from "../../frontend/tools/ViewTool";
 import { SelectionTool } from "../../frontend/tools/SelectTool";
 
@@ -35,16 +36,22 @@ class TestSelectTool extends SelectionTool {
 }
 
 class TestApp extends IModelApp {
+  public registeredNamespace: I18NNamespace;
+
   protected onStartup() {
     this._accuDraw = new TestAccuDraw();
 
-    const group = new ToolGroup("TestApp");
-    TestIdleTool.register(group);
-    TestImmediate.register(group);
-    TestRotateTool.register(group);
-    TestSelectTool.register(group);
+    this.registeredNamespace = iModelApp.i18N.registerNamespace("TestApp");
+    TestIdleTool.register(this.registeredNamespace);
+    TestImmediate.register(this.registeredNamespace);
+    TestRotateTool.register(this.registeredNamespace);
+    TestSelectTool.register(this.registeredNamespace);
     this.features.setGate("feature2", { a: true, b: false });
     this.features.setGate("feature5", { val: { str1: "string1", doNot: false } });
+  }
+
+  protected supplyI18NOptions() {
+    return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" };
   }
 }
 
@@ -83,4 +90,11 @@ describe("IModelApp", () => {
     assert.isTrue(iModelApp.features.check("feat3.sub1.val.b.yes"));
   });
 
+  it("Should get localized name for TestImmediate tool", () => {
+    // first, we must wait for the localization read to finish.
+    const thisApp: TestApp = iModelApp as TestApp;
+    thisApp.registeredNamespace.readFinished.then(() => {
+      assert.equal(TestImmediate.getLocalizedName(), "Localized TestImmediate Keyin");
+    });
+  });
 });
