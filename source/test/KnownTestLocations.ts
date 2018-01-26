@@ -10,7 +10,7 @@ export class KnownTestLocations {
   public static get assetsDir(): string {
     const imodeljsMobile = PlatformKnownLocations.imodeljsMobile;
     if (imodeljsMobile !== undefined) {
-      return imodeljsMobile.knownLocations. ;
+      return imodeljsMobile.knownLocations.assetsDir;
     }
 
     // Assume that we are running in nodejs

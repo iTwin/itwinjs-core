@@ -12,7 +12,7 @@
     "copy:testpublic": "cpx ./public/**/* ./lib/public",
     "pretest": "npm run copy:assets && npm run build",
     "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\"",
-    "webpackformobile": "cpx runMochaTestsDirectly.js ./lib/test && webpack --target=webworker --config mobile.webpack.config.js"
+    "webpackformobile": "cpx runMochaTestsDirectly.js ./lib/test && webpack --verbose --target=webworker --config mobile.webpack.config.js"
   },
   "repository": {},
   "//dependencies": [
