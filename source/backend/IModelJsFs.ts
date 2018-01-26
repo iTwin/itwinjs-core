@@ -64,7 +64,7 @@ export class IModelJsFs {
 
   /** Get information about a file. */
   public static lstatSync(fn: string): IModelJsFsStats | undefined {
-    const stats = fs.statSync(fn);
+    const stats = fs.lstatSync(fn);
     if (stats === undefined)
       return undefined;
 

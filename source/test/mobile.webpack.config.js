@@ -32,14 +32,21 @@ module.exports = {
         use: 'null-loader'
       }
 
+    ],
+    loaders:[
+        {
+          exclude: path.resolve(__dirname, '../backend/IModelJsFs.js') 
+        },
+        {
+          exclude: /fs\-extra/
+        }
     ]
   },
-  exclude: [
-    path.resolve(__dirname, '../backend/IModelJsFs.js'),
-  ],
   externals: {
     "@bentley/imodeljs-mobile": "require('@bentley/imodeljs-mobile')",
-    "IModelJsFs": "IModelJsFs"
+    "IModelJsFs": "IModelJsFs",
+    "fs": "IModelJsFs",
+    "fs-extra": "IModelJsFs"
   },
   stats: {
     warnings: false

@@ -6,11 +6,11 @@ import {KnownLocations as PlatformKnownLocations} from "../backend/KnownLocation
 
 export class KnownTestLocations {
 
-  /** The directory where test assets are stored. */
+  /** The directory where test assets are stored. Keep in mind that the test is playing the role of the app. */
   public static get assetsDir(): string {
     const imodeljsMobile = PlatformKnownLocations.imodeljsMobile;
     if (imodeljsMobile !== undefined) {
-      return imodeljsMobile.knownLocations.appAssets;
+      return imodeljsMobile.knownLocations. ;
     }
 
     // Assume that we are running in nodejs

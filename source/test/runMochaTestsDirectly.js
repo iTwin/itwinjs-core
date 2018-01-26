@@ -21,6 +21,9 @@ function mobileReporter(runner) {
     });
 }
 mocha.setup({ui: 'bdd', reporter: mobileReporter}); // puts 'describe', 'it', etc. into global
+debugger;
 require("./IModelTestUtils.js");
-require("./ECSqlStatement.test.js");
+//require("./Category.test.js");
+//require("./ECSqlStatement.test.js");
+require("./ClassRegistry.test.js");
 mocha.run();
