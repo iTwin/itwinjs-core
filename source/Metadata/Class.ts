@@ -5,17 +5,18 @@
 import Enumeration from "Metadata/Enumeration";
 import SchemaChild from "Metadata/SchemaChild";
 import { ECClassInterface, PropertyInterface, SchemaInterface } from "Interfaces";
-import { ECClassModifier, parseClassModifier, PrimitiveType, parsePrimitiveType } from "ECObjects";
+import { ECClassModifier, parseClassModifier, PrimitiveType, parsePrimitiveType, SchemaChildKey } from "ECObjects";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "Metadata/CustomAttribute";
 import { ECObjectsError, ECObjectsStatus } from "Exception";
 import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty, ECProperty } from "Metadata/Property";
+import { DelayedPromise, DelayedPromiseWithProps } from "DelayedPromise";
 
 /**
  * A common abstract class for all of the ECClass types.
  */
 export default abstract class ECClass extends SchemaChild implements CustomAttributeContainerProps, ECClassInterface {
   public modifier: ECClassModifier;
-  public baseClass?: ECClass;
+  public baseClass?: Readonly<SchemaChildKey> & DelayedPromise<ECClassInterface>;
   public properties?: ECProperty[];
   public customAttributes?: CustomAttributeSet;
 
@@ -32,7 +33,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * Searches, case-insensitive, for a local ECProperty with the name provided.
    * @param name
    */
-  public getProperty<T extends PropertyInterface>(name: string, includeInherited: boolean = false): T | undefined {
+  public async getProperty<T extends PropertyInterface>(name: string, includeInherited: boolean = false): Promise<T | undefined> {
     let foundProp: PropertyInterface | undefined;
 
     if (this.properties) {
@@ -51,11 +52,11 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * Searches the base class, if one exists, for the property with the name provided.
    * @param name The name of the inherited property to find.
    */
-  public getInheritedProperty<T extends PropertyInterface>(name: string): T | undefined {
+  public async getInheritedProperty<T extends PropertyInterface>(name: string): Promise<T | undefined> {
     let inheritedProperty;
 
     if (this.baseClass) {
-      inheritedProperty = this.baseClass.getProperty(name);
+      inheritedProperty = (await this.baseClass).getProperty<T>(name);
       if (!inheritedProperty)
         return inheritedProperty;
     }
@@ -180,14 +181,16 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
       if (typeof(jsonObj.baseClass) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The base class of ${this.name} is not a string type.`);
 
-      if (this.schema && typeof(this.schema) !== "string") {
-        const baseClass = this.schema.getChildSync<ECClass>(jsonObj.baseClass, false);
-
+      const baseClassKey = new SchemaChildKey(jsonObj.baseClass, undefined, this.schema.schemaKey);
+      const loadBaseClass = async () => {
+        const baseClass = await this.schema.getChild<ECClassInterface>(baseClassKey.name, false);
         if (!baseClass)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-        this.baseClass = baseClass;
-      } else
-        this.baseClass = jsonObj.baseClass;
+
+        return baseClass;
+      };
+
+      this.baseClass = new DelayedPromiseWithProps<SchemaChildKey, ECClassInterface>(baseClassKey, loadBaseClass);
     }
   }
 }

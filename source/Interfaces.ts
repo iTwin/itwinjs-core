@@ -5,6 +5,7 @@
 import { ECClassModifier, CustomAttributeContainerType, PrimitiveType, RelationshipMultiplicity, RelationshipEnd,
         StrengthType, RelatedInstanceDirection, SchemaKey, SchemaChildKey } from "ECObjects";
 import { CustomAttributeContainerProps } from "Metadata/CustomAttribute";
+import { DelayedPromise } from "DelayedPromise";
 
 export interface SchemaProps extends CustomAttributeContainerProps {
   readonly schemaKey: SchemaKey;
@@ -63,12 +64,12 @@ export interface SchemaChildInterface extends SchemaChildProps {
 
 export interface ECClassProps extends SchemaChildProps {
   modifier: ECClassModifier;
-  baseClass?: string | ECClassInterface;
+  baseClass?: Readonly<SchemaChildKey> & DelayedPromise<ECClassInterface>;
   properties?: PropertyInterface[];
 }
 
 export interface ECClassInterface extends SchemaChildInterface, ECClassProps {
-  getProperty<T extends PropertyInterface>(name: string): T | undefined;
+  /* async */ getProperty<T extends PropertyInterface>(name: string): Promise<T | undefined>;
   createPrimitiveProperty(name: string, type?: string | PrimitiveType | EnumerationInterface): PrimitivePropertyInterface;
   createPrimitiveArrayProperty(name: string, type?: string | PrimitiveType | EnumerationInterface): PrimitiveArrayPropertyInterface;
   createStructProperty(name: string, type: string | StructClassInterface): StructPropertyInterface;
