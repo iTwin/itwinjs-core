@@ -106,12 +106,12 @@ export abstract class IModelGateway extends Gateway {
   }
 
   /** Updates the project extents of the imodel. */
-  public updateProjectExtents(_iModelToken: IModelToken, _newExtents: AxisAlignedBox3d): void {
+  public async updateProjectExtents(_iModelToken: IModelToken, _newExtents: AxisAlignedBox3d): Promise<void> {
     return this.forward.apply(this, arguments);
   }
 
   /** For unit test execution only. */
-  public executeTestById(_iModelToken: IModelToken, _id: number, _params: any): any {
+  public async executeTestById(_iModelToken: IModelToken, _id: number, _params: any): Promise<any> {
     return this.forward.apply(this, arguments);
   }
 

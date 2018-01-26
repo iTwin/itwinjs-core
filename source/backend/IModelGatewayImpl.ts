@@ -8,6 +8,7 @@ import { ViewDefinitionProps } from "../common/ElementProps";
 import { EntityQueryParams } from "../common/EntityProps";
 import { Gateway } from "../common/Gateway";
 import { IModelToken, IModel } from "../common/IModel";
+import { IModelError, IModelStatus } from "../common/IModelError";
 import { IModelVersion } from "../common/IModelVersion";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { EntityMetaData } from "../backend/Entity";
@@ -20,6 +21,10 @@ import { AxisAlignedBox3d } from "../common/geometry/Primitives";
  * @hidden
  */
 export class IModelGatewayImpl extends Gateway implements IModelGateway {
+  private static _hasReadWriteAccess(iModelToken: IModelToken) {
+    return OpenMode.ReadWrite === iModelToken.openMode;
+  }
+
   public static register() {
     Gateway.registerImplementation(IModelGateway, IModelGatewayImpl);
   }
@@ -29,6 +34,8 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
   }
 
   public async openForWrite(accessToken: AccessToken, iModelToken: IModelToken): Promise<IModel> {
+    if (!IModelGatewayImpl._hasReadWriteAccess(iModelToken))
+      return Promise.reject(new IModelError(IModelStatus.NotOpenForWrite));
     return this.open(accessToken, iModelToken);
   }
 
@@ -61,7 +68,9 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
     return rows;
   }
 
-  public async saveChanges(iModelToken: IModelToken, description?: string) {
+  public async saveChanges(iModelToken: IModelToken, description?: string): Promise<void> {
+    if (!IModelGatewayImpl._hasReadWriteAccess(iModelToken))
+      return Promise.reject(new IModelError(IModelStatus.NotOpenForWrite));
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     iModelDb.saveChanges(description);
   }
@@ -139,13 +148,15 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
     return codeSpecs;
   }
 
-  public updateProjectExtents(iModelToken: IModelToken, newExtents: AxisAlignedBox3d): void {
+  public async updateProjectExtents(iModelToken: IModelToken, newExtents: AxisAlignedBox3d): Promise<void> {
+    if (!IModelGatewayImpl._hasReadWriteAccess(iModelToken))
+      return Promise.reject(new IModelError(IModelStatus.NotOpenForWrite));
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     iModelDb.updateProjectExtents(newExtents);
   }
 
   // !!! TESTING METHOD
-  public executeTestById(iModelToken: IModelToken, id: number, params: any): any {
+  public async executeTestById(iModelToken: IModelToken, id: number, params: any): Promise<any> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     return iModelDb.executeTestById(id, params);
   }

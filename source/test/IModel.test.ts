@@ -524,8 +524,7 @@ describe("iModel", () => {
     checkElementMetaData(metaData);
   });
 
-  /** NOTE: THIS METHOD WILL WORK AFTER A PUBLISH OF THE ADDON AFTER 1/19/2018 */
-  it.skip("should update the imodel project extents", async () => {
+  it("should update the imodel project extents", async () => {
     const originalExtents = imodel1.projectExtents;
     const newExtents = new AxisAlignedBox3d(originalExtents.low, originalExtents.high);
     newExtents.low.x -= 50; newExtents.low.y -= 25; newExtents.low.z -= 189;
