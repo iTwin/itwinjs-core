@@ -10,7 +10,7 @@
     "copy:backendassets": "cpx ../backend/assets/**/* ./lib/backend/assets",
     "pretest": "npm run copy:assets && npm run build",
     "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\"",
-    "webpackformobile": "cpx runMochaTestsDirectly.js ./lib/test && webpack --config mobile.webpack.config.js"
+    "webpackformobile": "cpx runMochaTestsDirectly.js ./lib/test && webpack --target=webworker --config mobile.webpack.config.js"
   },
   "repository": {},
   "//dependencies": [

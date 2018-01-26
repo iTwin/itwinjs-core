@@ -31,6 +31,7 @@ import { ElementGroupsMembers } from "../backend/LinkTableRelationship";
 import { Appearance } from "../common/SubCategoryAppearance";
 import { ColorDef } from "../common/ColorDef";
 import { IModel } from "../common/IModel";
+import { KnownTestLocations } from "./KnownTestLocations";
 
 /* tslint:disable: no-console */
 /* spell-checker: disable */
@@ -679,7 +680,7 @@ describe("iModel", () => {
   });
 
   it("should import schemas", () => {
-    const schemaPathname = path.join(__dirname, "assets", "TestBim.ecschema.xml");
+    const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
     imodel1.importSchema(schemaPathname); // will throw an exception if import fails
 
     const classMetaData = imodel1.getMetaData("TestBim:TestDocument"); // will throw on failure
@@ -782,7 +783,7 @@ describe("iModel", () => {
     try {
       testImodel.getMetaData("TestBim:TestPhysicalObject");
     } catch (err) {
-      const schemaPathname = path.join(__dirname, "assets", "TestBim.ecschema.xml");
+      const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
       testImodel.importSchema(schemaPathname); // will throw an exception if import fails
       assert.isTrue(testImodel.getMetaData("TestBim:TestPhysicalObject") !== undefined);
     }

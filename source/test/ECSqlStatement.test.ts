@@ -9,9 +9,10 @@ import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { using } from "@bentley/bentleyjs-core/lib/Disposable";
+import { KnownTestLocations } from "./KnownTestLocations";
 
 describe("ECSqlStatement", () => {
-  const _outDir = __dirname + "/output/";
+  const _outDir = KnownTestLocations.outputDir;
 
   it("Bind Ids", () => {
     using (ECDbTestHelper.createECDb(_outDir, "bindids.ecdb"), (ecdb) => {

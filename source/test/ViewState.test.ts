@@ -13,12 +13,13 @@ import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import * as path from "path";
 import { AuxCoordSystemSpatialState } from "../common/AuxCoordSys";
 import { CategorySelectorProps, ModelSelectorProps } from "../common/ElementProps";
+import { KnownTestLocations } from "./KnownTestLocations";
 
 /* tslint:disable: no-console */
 /* spell-checker: disable */
 
 // Note: This will be relative to root imodeljs-core directory for VS Code debugging, but relative to the test directory for running in console
-const bimFileLocation = path.join(__dirname + "/assets/test.bim");
+const bimFileLocation = path.join(KnownTestLocations.assetsDir, "test.bim");
 
 // Given a ViewDefinition, return a ViewState that defines the members of that ViewDefinition
 function convertViewDefToViewState(imodel: IModelDb, view: SpatialViewDefinition): SpatialViewState {

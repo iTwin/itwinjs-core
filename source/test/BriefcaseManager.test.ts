@@ -19,6 +19,7 @@ import { SpatialCategory } from "../backend/Category";
 import { Appearance } from "../common/SubCategoryAppearance";
 import { ColorDef } from "../common/ColorDef";
 import { IModel } from "../common/IModel";
+import { KnownTestLocations } from "./KnownTestLocations";
 
 describe("BriefcaseManager", () => {
   let accessToken: AccessToken;
@@ -186,7 +187,7 @@ describe("BriefcaseManager", () => {
     }
 
     // Create a new iModel on the Hub (by uploading a seed file)
-    const pathname = path.join(__dirname, "assets", iModelName + ".bim");
+    const pathname = path.join(KnownTestLocations.assetsDir, iModelName + ".bim");
     const rwIModelId: string = await BriefcaseManager.uploadIModel(accessToken, testProjectId, pathname);
     assert.isNotEmpty(rwIModelId);
 

@@ -14,6 +14,7 @@ import { IModelDb } from "../backend/IModelDb";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { using } from "@bentley/bentleyjs-core/lib/Disposable";
+import { KnownTestLocations } from "./KnownTestLocations";
 
 describe("ChangeSummary", () => {
   let accessToken: AccessToken;
@@ -168,7 +169,7 @@ describe("ChangeSummary", () => {
     ChangeSummaryManager.attachChangeCache(iModel);
     assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
-    const outDir = __dirname + "/output/";
+    const outDir = KnownTestLocations.outputDir;
     if (!fs.existsSync(outDir))
       fs.mkdirSync(outDir);
 
