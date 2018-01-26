@@ -5,8 +5,6 @@ import { BentleyError, IModelStatus, BriefcaseStatus, GetMetaDataFunction } from
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { LogFunction } from "@bentley/bentleyjs-core/lib/Logger";
-
-export { assert } from "@bentley/bentleyjs-core/lib/Assert";
 export { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 export { BentleyError, IModelStatus, BriefcaseStatus, GetMetaDataFunction } from "@bentley/bentleyjs-core/lib/BentleyError";
 export { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";

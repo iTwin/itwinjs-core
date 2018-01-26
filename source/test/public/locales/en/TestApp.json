@@ -1,0 +1,10 @@
+{
+  "tools": {
+    "Test": {
+      "Immediate": {
+        "keyin": "Localized TestImmediate Keyin",
+        "description": "Test of an Immediate Command"
+      }
+    }
+  }
+}

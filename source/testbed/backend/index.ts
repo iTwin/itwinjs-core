@@ -31,6 +31,7 @@ NodeAddonRegistry.loadAndRegisterStandardAddon();
 
 const app = express();
 app.use(bodyParser.text());
+app.use(express.static(__dirname + "/public"));
 app.get(TestbedConfig.swaggerURI, (req, res) => TestbedConfig.gatewayConfig.protocol.handleOpenApiDescriptionRequest(req, res));
 
 app.post("*", (req, res) => {

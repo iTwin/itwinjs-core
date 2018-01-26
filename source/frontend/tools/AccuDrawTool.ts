@@ -1110,7 +1110,7 @@ export abstract class AccuDrawTool {
 
     // NOTE: Unlike starting a viewing tool, an input collector inherits the suspended primitive's state and must set everything...
     toolAdmin.setLocateCursor(false);
-    toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_None;
+    toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.None;
 
     if (this.activateAccuDrawOnStart())
       iModelApp.accuDraw.activate();

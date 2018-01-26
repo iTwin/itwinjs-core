@@ -297,27 +297,22 @@ export class GSCollection {
   public getEntryType() {
     switch (this.egOp.opCode) {
       case OpCode.GeometryPartInstance:
-        {
-          return EntryType.GeometryPart;
-        }
-      case OpCode.PointPrimitive:
-        {
-          const buffer = new flatbuffers.ByteBuffer(this.egOp.data);
-          const ppfb = DgnFB.PointPrimitive.getRootAsPointPrimitive(buffer);
-          return (DgnFB.BoundaryType.Closed === ppfb.boundary()) ? EntryType.CurveVector : EntryType.CurvePrimitive;
-        }
-      case OpCode.PointPrimitive2d:
-        {
-          const buffer = new flatbuffers.ByteBuffer(this.egOp.data);
-          const ppfb = DgnFB.PointPrimitive2d.getRootAsPointPrimitive2d(buffer);
-          return (DgnFB.BoundaryType.Closed === ppfb.boundary()) ? EntryType.CurveVector : EntryType.CurvePrimitive;
-        }
-      case OpCode.ArcPrimitive:
-        {
-          const buffer = new flatbuffers.ByteBuffer(this.egOp.data);
-          const ppfb = DgnFB.ArcPrimitive.getRootAsArcPrimitive(buffer);
-          return (DgnFB.BoundaryType.Closed === ppfb.boundary()) ? EntryType.CurveVector : EntryType.CurvePrimitive;
-        }
+        return EntryType.GeometryPart;
+      case OpCode.PointPrimitive: {
+        const buffer = new flatbuffers.ByteBuffer(this.egOp.data);
+        const ppfb = DgnFB.PointPrimitive.getRootAsPointPrimitive(buffer);
+        return (DgnFB.BoundaryType.Closed === ppfb.boundary()) ? EntryType.CurveVector : EntryType.CurvePrimitive;
+      }
+      case OpCode.PointPrimitive2d: {
+        const buffer = new flatbuffers.ByteBuffer(this.egOp.data);
+        const ppfb = DgnFB.PointPrimitive2d.getRootAsPointPrimitive2d(buffer);
+        return (DgnFB.BoundaryType.Closed === ppfb.boundary()) ? EntryType.CurveVector : EntryType.CurvePrimitive;
+      }
+      case OpCode.ArcPrimitive: {
+        const buffer = new flatbuffers.ByteBuffer(this.egOp.data);
+        const ppfb = DgnFB.ArcPrimitive.getRootAsArcPrimitive(buffer);
+        return (DgnFB.BoundaryType.Closed === ppfb.boundary()) ? EntryType.CurveVector : EntryType.CurvePrimitive;
+      }
       case OpCode.CurvePrimitive:
         return EntryType.CurvePrimitive;
       case OpCode.CurveCollection:
@@ -1713,10 +1708,10 @@ export class GSReader {
             line.angle = defLine.angle();
             const through = defLine.through();
             if (through)
-              line.through = Point2d.create(through.x(), through.y());
+              line.through.setFrom(Point2d.create(through.x(), through.y()));
             const offset = defLine.offset();
             if (offset)
-              line.offset = Point2d.create(offset.x(), offset.y());
+              line.offset.setFrom(Point2d.create(offset.x(), offset.y()));
 
             const dashArray = defLine.dashesArray();
             if (defLine.dashesLength() !== 0 && dashArray) {

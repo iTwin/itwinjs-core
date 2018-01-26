@@ -18,8 +18,8 @@ export const enum LUTDimension {
  * but this produces far too many shader variants so we always send all the params.
  */
 export class LUTParams {
-  public texStep: [number, number, number, number];
-  public texWidth: number;
+  public texStep: [number, number, number, number] = [0, 0, 0, 0];
+  public texWidth: number = 0;
 
   public init(width: number, height: number): void {
     assert(0 < width && 0 < height);
@@ -36,23 +36,6 @@ export class LUTParams {
     this.texStep[3] = stepY * 0.5;
   }
 
-  public copyFrom(src: LUTParams): void {
-    this.texStep[0] = src.texStep[0];
-    this.texStep[1] = src.texStep[1];
-    this.texStep[2] = src.texStep[2];
-    this.texStep[3] = src.texStep[3];
-    this.texWidth = src.texWidth;
-  }
-
-  public clone(result?: LUTParams): LUTParams {
-    if (!result) {
-      return new LUTParams();
-    } else {
-      result.copyFrom(this);
-      return result;
-    }
-  }
-
   public equals(rhs: LUTParams): boolean {
     return this.texStep[0] === rhs.texStep[0]
         && this.texStep[1] === rhs.texStep[1]
@@ -60,39 +43,6 @@ export class LUTParams {
         && this.texStep[3] === rhs.texStep[3]
         && this.texWidth === rhs.texWidth;
   }
-}
-
-/** Describes the type of geometry rendered by a ShaderProgram. */
-export const enum GeometryType {
-  IndexedTriangles,
-  IndexedPoints,
-  ArrayedPoints,
-}
-
-/** Reserved texture units for specific sampler variables, to avoid conflicts between
- * shader components which each have their own textures.
- */
-export const enum TextureUnit {
-    // For shaders which know exactly which textures will be used
-    Zero = 0,
-    One = 1,
-    Two = 2,
-    Three = 3,
-    Four = 4,
-    Five = 5,
-    Six = 6,
-    Seven = 7, // Last one available for GLES2
-
-    NonUniformColor = Zero,
-    FeatureSymbology = One,
-    MeshTexture = Two,
-    LineCode = Two,
-    Point = Two,
-    ElementId = Three,
-
-    PickElementId0 = Four,
-    PickElementId1 = Five,
-    PickDepthAndOrder = Six,
 }
 
 export const enum FeatureDimension {
@@ -103,6 +53,16 @@ export const enum FeatureDimension {
   kCOUNT,
 }
 
+export function getFeatureName(dim: FeatureDimension): string | undefined {
+  switch (dim) {
+    case FeatureDimension.kEmpty: return "Empty";
+    case FeatureDimension.kSingleUniform: return "Single/Uniform";
+    case FeatureDimension.kSingleNonUniform: return "Single/Non-uniform";
+    case FeatureDimension.kMultiple: return "Multiple";
+    default: return undefined;
+  }
+}
+
 export const enum FeatureIndexType {
   kEmpty,
   kUniform,
@@ -110,7 +70,7 @@ export const enum FeatureIndexType {
 }
 
 /** Describes the dimensionality of feature lookup based on the combination of:
- * - # of features contained in Primitive (0, 1, or multiple); and
+ * - number of features contained in Primitive (0, 1, or multiple); and
  * - dimensionality of FeatureTable (uniform, 1d, or 2d).
  * Note if Primitive contains multiple features, FeatureTable by definition is not uniform.
  */
@@ -121,6 +81,7 @@ export class FeatureDimensions {
     if (val === undefined) {
       this.value = FeatureDimension.kEmpty;
     } else {
+      assert ((val as number) < (FeatureDimension.kCOUNT as number));
       this.value = val;
     }
   }
@@ -181,21 +142,13 @@ export class FeatureDimensions {
 }
 
 export class FeatureDimensionsIterator {
-  private current: FeatureDimensions;
-  public begin(): FeatureDimensions { this.current = FeatureDimensions.empty(); return this.current; }
-  public end(): FeatureDimensions { return FeatureDimensions.multiple(); }
-  public next(): FeatureDimensions | undefined {
-    if (this.current.equals(FeatureDimensions.empty())) {
-      this.current = FeatureDimensions.singleUniform();
-      return this.current;
-    } else if (this.current.equals(FeatureDimensions.singleUniform())) {
-      this.current = FeatureDimensions.singleNonUniform();
-      return this.current;
-    } else if (this.current.equals(FeatureDimensions.singleNonUniform())) {
-      this.current = FeatureDimensions.multiple();
-      return this.current;
-    } else {
-      return undefined;
-    }
+  private current: FeatureDimension;
+  public constructor(value: FeatureDimension) { this.current = value; }
+  public static begin(): FeatureDimensionsIterator { return new FeatureDimensionsIterator (FeatureDimension.kEmpty); }
+  public static end(): FeatureDimensionsIterator { return new FeatureDimensionsIterator (FeatureDimension.kCOUNT); }
+  public equals(rhs: FeatureDimensionsIterator): boolean { return this.current === rhs.current; }
+  public next(): void {
+    this.current = (this.current.valueOf() + 1) as FeatureDimension;
   }
+  public get(): FeatureDimensions { return new FeatureDimensions(this.current); }
 }

@@ -16,6 +16,7 @@ import { IModelGateway } from "../gateway/IModelGateway";
 import { IModelVersion } from "../common/IModelVersion";
 import { CategorySelectorState, DrawingViewState, DisplayStyle2dState, DisplayStyle3dState, ModelSelectorState, OrthographicViewState, SheetViewState, SpatialViewState, ViewState, ViewState2d } from "../common/ViewState";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
+import { HilitedSet, SelectionSet } from "./SelectionSet";
 
 /** A connection to an iModel database hosted on the backend. */
 export class IModelConnection extends IModel {
@@ -24,6 +25,8 @@ export class IModelConnection extends IModel {
   public readonly elements: IModelConnectionElements;
   public readonly codeSpecs: IModelConnectionCodeSpecs;
   public readonly views: IModelConnectionViews;
+  public readonly hilited: HilitedSet;
+  public readonly selectionSet: SelectionSet;
 
   private constructor(iModelToken: IModelToken, name: string, props: IModelProps) {
     super(iModelToken, name, props);
@@ -31,6 +34,8 @@ export class IModelConnection extends IModel {
     this.elements = new IModelConnectionElements(this);
     this.codeSpecs = new IModelConnectionCodeSpecs(this);
     this.views = new IModelConnectionViews(this);
+    this.hilited = new HilitedSet(this);
+    this.selectionSet = new SelectionSet(this);
   }
 
   private static create(iModel: IModel): IModelConnection {

@@ -4,16 +4,17 @@
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { EntityProps } from "../common/EntityProps";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { assert, IModelError, IModelStatus } from "../common/IModelError";
+import { Id64, Id64Props } from "@bentley/bentleyjs-core/lib/Id";
+import { IModelError, IModelStatus } from "../common/IModelError";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { DbOpcode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { ECSqlStatement } from "./ECSqlStatement";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 /** Properties that are common to all types of link table ECRelationships */
 export interface LinkTableRelationshipProps extends EntityProps {
-  sourceId: Id64;
-  targetId: Id64;
+  sourceId: Id64Props;
+  targetId: Id64Props;
   sourceClassName?: string;
   targetClassName?: string;
 }
@@ -28,12 +29,10 @@ export class LinkTableRelationship extends Entity implements LinkTableRelationsh
   protected constructor(props: LinkTableRelationshipProps, iModel: IModelDb) {
     super(props, iModel);
     this.id = Id64.fromJSON(props.id);
-    this.sourceId = props.sourceId;
-    this.targetId = props.targetId;
-    if (props.sourceClassName !== undefined)
-      this.sourceClassName = props.sourceClassName;
-    if (props.targetClassName !== undefined)
-      this.targetClassName = props.targetClassName;
+    this.sourceId = Id64.fromJSON(props.sourceId);
+    this.targetId = Id64.fromJSON(props.targetId);
+    this.sourceClassName = props.sourceClassName;
+    this.targetClassName = props.targetClassName;
   }
 
   public toJSON(): LinkTableRelationshipProps {
@@ -49,22 +48,22 @@ export class LinkTableRelationship extends Entity implements LinkTableRelationsh
     if (this.targetClassName !== undefined)
       val.targetClassName = this.targetClassName;
     return val;
-    }
+  }
 
   // TODO: Expose properties for 'strength' and 'direction'
 
- /**
-  * Add a request for the locks that would be needed in order to carry out the specified operation.
-  * @param opcode The operation that will be performed on the LinkTableRelationship instance.
-  */
+  /**
+   * Add a request for the locks that would be needed in order to carry out the specified operation.
+   * @param opcode The operation that will be performed on the LinkTableRelationship instance.
+   */
   public buildConcurrencyControlRequest(opcode: DbOpcode): void {
     this.iModel.concurrencyControl.buildRequestForLinkTableRelationship(this, opcode);
   }
 }
 
- /**
-  * BisCore:ElementRefersToElements
-  */
+/**
+ * BisCore:ElementRefersToElements
+ */
 export class ElementRefersToElements extends LinkTableRelationship {
 
   /** @hidden */
@@ -94,9 +93,9 @@ export interface ElementGroupsMembersProps extends LinkTableRelationshipProps {
   memberPriority: number;
 }
 
- /**
-  * BisCore:ElementGroupsMembers
-  */
+/**
+ * BisCore:ElementGroupsMembers
+ */
 export class ElementGroupsMembers extends ElementRefersToElements {
   public memberPriority: number;
 
@@ -129,9 +128,9 @@ export interface ElementDrivesElementProps extends LinkTableRelationshipProps {
   priority: number;
 }
 
- /**
-  * BisCore:ElementDrivesElement
-  */
+/**
+ * BisCore:ElementDrivesElement
+ */
 export class ElementDrivesElement extends LinkTableRelationship implements ElementDrivesElementProps {
 
   public status: number;
@@ -175,7 +174,7 @@ export class IModelDbLinkTableRelationships {
   /**
    * Create a new instance of a LinkTableRelationship.
    * @param props The properties of the new LinkTableRelationship.
-   * @throws [[IModelError]] if there is a problem creating the eleLinkTableRelationshipment.
+   * @throws [[IModelError]] if there is a problem creating the inkTableRelationship.
    */
   public createInstance(elProps: LinkTableRelationshipProps): LinkTableRelationship {
     const rel: LinkTableRelationship = this._iModel.constructEntity(elProps) as LinkTableRelationship;

@@ -1152,7 +1152,7 @@ export class AccuDraw {
       return true;
 
     // The "I don't want grid lock" flag can be set by tools to override the default behavior...
-    if (0 === (iModelApp.toolAdmin.toolState.coordLockOvr & CoordinateLockOverrides.OVERRIDE_COORDINATE_LOCK_Grid))
+    if (0 === (iModelApp.toolAdmin.toolState.coordLockOvr & CoordinateLockOverrides.Grid))
       return true;
 
     return (!iModelApp.toolAdmin.gridLock);
@@ -1502,7 +1502,7 @@ export class AccuDraw {
       this.setCompassMode(this.flags.baseMode);
   }
 
-  public setContext(flags: AccuDrawFlags, originP?: Point3d, orientationP?: RotMatrix, deltaP?: Vector3d, distanceP?: number, angleP?: number, transP?: Transform): BentleyStatus {
+  public setContext(flags: AccuDrawFlags, originP?: Point3d, orientationP?: RotMatrix | Vector3d, deltaP?: Vector3d, distanceP?: number, angleP?: number, transP?: Transform): BentleyStatus {
     this.published.flags |= flags;
 
     if (flags & AccuDrawFlags.SetOrigin && originP) {
@@ -1531,14 +1531,14 @@ export class AccuDraw {
 
     if (orientationP) {
       if (flags & AccuDrawFlags.SetXAxis || flags & AccuDrawFlags.SetNormal || flags & AccuDrawFlags.SetXAxis2) {
-        this.published.vector.setFrom(orientationP.columnX());
+        this.published.vector.setFrom(orientationP as Vector3d);
 
         if (transP)
           transP.matrix.multiply3dInPlace(this.published.vector);
 
         this.published.vector.normalizeInPlace();
       } else if (flags & AccuDrawFlags.SetRMatrix) {
-        this.published.rMatrix.setFrom(orientationP);
+        this.published.rMatrix.setFrom(orientationP as RotMatrix);
 
         if (transP) {
           this.published.rMatrix.multiplyMatrixMatrix(transP.matrix, this.published.rMatrix);
@@ -2959,5 +2959,79 @@ export class AccuDraw {
     this.published.zero();
     if (this.isEnabled() || setFocus)
       this.grabInputFocus();
+  }
+}
+
+/**
+ * AccuDrawHintBuilder is a Tool helper class that facilitates AccuDraw interaction.
+ * The tool does not directly change the current AccuDraw state; the tool's job is merely
+ * to supply "hints" to AccuDraw regarding it's preferred AccuDraw configuration for the
+ * current tool state. User settings such as "Context Sensitivity" and "Floating Origin"
+ * affect how/which hints get applied.
+ */
+export class AccuDrawHintBuilder {
+  private flagOrigin = false;
+  private flagNormal = false;
+  private flagRotation = false;
+  private flagXAxis = false;
+  private flagXAxis2 = false;
+  private flagDistance = false;
+  private flagAngle = false;
+  private flagModePolar = false;
+  private flagModeRectangular = false;
+  private origin?: Point3d;
+  private axis?: Vector3d;
+  private rMatrix?: RotMatrix;
+  private distance = 0;
+  private angle = 0;
+
+  public setOriginFixed = false;
+  public setOriginAlways = false;
+  public setLockDistance = false;
+  public setLockAngle = false;
+  public setLockX = false;
+  public setLockY = false;
+  public setLockZ = false;
+  public enableSmartRotation = false;
+  public setOrigin(origin: Point3d) { this.origin = origin.clone(); this.flagOrigin = true; }
+  public setRotation(rMatrix: RotMatrix) { this.rMatrix = rMatrix.clone(); this.flagRotation = true; this.flagXAxis = this.flagNormal = false; }
+  public setXAxis(xAxis: Vector3d) { this.axis = xAxis.clone(); this.flagXAxis = true; this.flagRotation = this.flagNormal = this.flagXAxis2 = false; }
+  public setXAxis2(xAxis: Vector3d) { this.axis = xAxis.clone(); this.flagXAxis2 = true; this.flagRotation = this.flagNormal = this.flagXAxis = false; }
+  public setNormal(normal: Vector3d) { this.axis = normal.clone(); this.flagNormal = true; this.flagRotation = this.flagXAxis = this.flagXAxis2 = false; }
+  public setModePolar() { this.flagModePolar = true; this.flagModeRectangular = false; }
+  public setModeRectangular() { this.flagModeRectangular = true; this.flagModePolar = false; }
+  public setDistance(distance: number) { this.distance = distance; this.flagDistance = true; }
+  public setAngle(angle: number) { this.angle = angle; this.flagAngle = true; }
+
+  /**
+   * Calls AccuDraw.setContext using the current builder state.
+   * @return true if hints were successfully sent.
+   */
+  public sendHints(activate = true): boolean {
+    let flags = 0;
+    if (this.flagOrigin) flags |= AccuDrawFlags.SetOrigin;
+    if (this.setOriginFixed) flags |= AccuDrawFlags.FixedOrigin;
+    if (this.setOriginAlways) flags |= AccuDrawFlags.AlwaysSetOrigin;
+    if (this.flagRotation) flags |= AccuDrawFlags.SetRMatrix;
+    if (this.flagXAxis) flags |= AccuDrawFlags.SetXAxis;
+    if (this.flagXAxis2) flags |= AccuDrawFlags.SetXAxis2;
+    if (this.flagNormal) flags |= AccuDrawFlags.SetNormal;
+    if (this.flagModePolar) flags |= AccuDrawFlags.SetModePolar;
+    if (this.flagModeRectangular) flags |= AccuDrawFlags.SetModeRect;
+    if (this.setLockDistance) flags |= AccuDrawFlags.LockDistance;
+    if (this.setLockAngle) flags |= AccuDrawFlags.LockAngle;
+    if (this.setLockX) flags |= AccuDrawFlags.Lock_X;
+    if (this.setLockY) flags |= AccuDrawFlags.Lock_Y;
+    if (this.setLockZ) flags |= AccuDrawFlags.Lock_Z;
+    if (this.enableSmartRotation) flags |= AccuDrawFlags.SmartRotation;
+
+    const accuDraw = iModelApp.accuDraw;
+    if (BentleyStatus.SUCCESS !== accuDraw.setContext(flags, this.origin, this.flagRotation ? this.rMatrix : this.axis, undefined, this.flagDistance ? this.distance : undefined, this.flagAngle ? this.angle : undefined))
+      return false; // Not enabled for this session...
+
+    if (activate)
+      accuDraw.activate(); // If not already enabled (ex. dynamics not started) most/all callers would want to enable it now (optional activate arg provided just in case)...
+
+    return true;
   }
 }

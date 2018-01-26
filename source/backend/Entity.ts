@@ -58,10 +58,10 @@ export class Entity implements EntityProps {
     return val;
   }
 
- /**
-  * Add a request for locks, code reservations, and anything else that would be needed in order to carry out the specified operation.
-  * @param _opcode The operation that will be performed on the element.
-  */
+  /**
+   * Add a request for locks, code reservations, and anything else that would be needed in order to carry out the specified operation.
+   * @param _opcode The operation that will be performed on the element.
+   */
   public buildConcurrencyControlRequest(_opcode: DbOpcode): void {
     // subclasses must override this method to build a request for the locks and codes and other concurrency control token that they know that they need.
   }
@@ -76,10 +76,10 @@ export class Entity implements EntityProps {
   public get classFullName(): string { return this.schemaName + ":" + this.className; }
 
   /** Get the name of the schema that defines this class */
-  public get schemaName(): string { return Object.getPrototypeOf(this).constructor.schema.name; }
+  public get schemaName(): string { return (this.constructor as typeof Entity).schema.name; }
 
   /** Get the name of this class */
-  public get className(): string { return Object.getPrototypeOf(this).constructor.name; }
+  public get className(): string { return this.constructor.name; }
 
   /** Determine whether this Entity is in the persistent (unmodified) state from the database. Persistent Entities may
    * not be changed in any way. To modify an Entity, make a copy of it using [[copyForEdit]].

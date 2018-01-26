@@ -46,9 +46,6 @@ export class GeometryParams {
   private _gradient?: GradientSymb;               // !< gradient fill settings.
   private _pattern?: PatternParams;               // !< area pattern settings.
 
-  private constructor() {
-  }
-
   public static createDefaults(): GeometryParams {
     return new GeometryParams();
   }

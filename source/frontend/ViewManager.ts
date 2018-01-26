@@ -8,6 +8,7 @@ import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { EventController } from "./tools/EventController";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { iModelApp } from "./IModelApp";
+import { IModelConnection } from "./IModelConnection";
 
 /** The ViewManager holds the list of opened views, plus the "selected view" */
 export class ViewManager {
@@ -125,4 +126,10 @@ export class ViewManager {
   }
 
   public invalidateDecorationsAllViews(): void { this.viewports.forEach((vp) => vp.invalidateDecorations()); }
+  public onSelectionSetChanged(_iModel: IModelConnection) {
+    // for (auto & vp : m_viewports)
+    // if (& vp -> GetViewController().GetDgnDb() == & db)
+    //   vp -> GetViewControllerR().SetSelectionSetDirty();
+  }
+
 }

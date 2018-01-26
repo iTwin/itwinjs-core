@@ -6,7 +6,9 @@ import { Viewport } from "../Viewport";
 import { DecorateContext } from "../ViewContext";
 import { HitDetail } from "../HitDetail";
 import { LocateResponse } from "../ElementLocateManager";
+import { I18NNamespace } from "../Localization";
 import { iModelApp } from "../IModelApp";
+import { IModelError } from "../../common/IModelError";
 
 export const enum BeButton {
   Data = 0,
@@ -316,21 +318,33 @@ export class BeWheelEvent extends BeButtonEvent {
   }
 }
 
-/** A collection of related tools. Tools are associated with a ToolGroup via ToolRegistry.registerTool */
-export class ToolGroup {
-  /** @param namespace the namespace to find localization messages. */
-  constructor(public namespace: string) { }
-}
-
 /**
  * Base Tool class for handling user input events from Viewports.
  */
 export class Tool {
   public static hidden = false;
   public static toolId = "";
-  public static group?: ToolGroup;
-  public static getLocalizedName(): string { return this.toolId; } // NEEDS_WORK
-  public static register(group: ToolGroup) { iModelApp.tools.register(this, group); }
+  public static namespace: I18NNamespace;
+
+  /**
+   * Register this Tool class with the ToolRegistry.
+   * @param namespace optional namespace to supply to ToolRegistry.register. If undefined, use namespace from superclass.
+   */
+  public static register(namespace?: I18NNamespace) { iModelApp.tools.register(this, namespace); }
+
+  /**
+   * Get the localized keyin string for this Tool class. This returns the value of "tools." + this.toolId + ".keyin" from the
+   * .json file for the current locale of its registered NameSpace (e.g. "en/MyApp.json")
+   */
+  public static getKeyin(): string { return iModelApp.i18N.translate(this.namespace.name + ":tools." + this.toolId + ".keyin"); }
+  /**
+   * Get the toolId string for this Tool class. This string is used to identify the Tool in the ToolRegistry and is used to localize
+   * the keyin, description, etc. from the current locale.
+   */
+  public get toolId(): string { return (this.constructor as typeof Tool).toolId; }
+
+  /** Get the localized keyin string from this Tool's class */
+  public get keyin(): string { return (this.constructor as typeof Tool).getKeyin(); }
 
   /**
    * run this instance of a Tool. Subclasses should override to perform their action.
@@ -437,31 +451,44 @@ export abstract class InteractiveTool extends Tool {
   public getInfoString(hit: HitDetail, _delimiter: string): string { return hit.hitDescription; }
 }
 
-/** holds a mapping of toolId string to Tool class */
+/**
+ * The ToolRegistry holds a mapping between toolId and Tool class. This provides the mechanism to
+ * find Tools by their toolId, and also a way to iterate over the collection of Tools available.
+ */
 export class ToolRegistry {
   public map: Map<string, typeof Tool> = new Map<string, typeof Tool>();
   public unRegister(toolId: string) { this.map.delete(toolId); }
 
-  /** register a tool  */
-  public register(toolClass: typeof Tool, group: ToolGroup) {
-    if (toolClass.toolId.length !== 0) {
-      toolClass.group = group;
-      this.map.set(toolClass.toolId, toolClass);
-    }
+  /**
+   * Register a Tool class. This establishes a connection between the toolId of the class and the class itself.
+   * @param toolClass the subclass of Tool to register.
+   * @param namespace the namespace for the localized strings for this tool. If undefined, use namespace from superclass.
+   */
+  public register(toolClass: typeof Tool, namespace?: I18NNamespace) {
+    if (namespace) // namespace is optional because it can come from superclass
+      toolClass.namespace = namespace;
+
+    if (toolClass.toolId.length === 0)
+      return; // must be an abstract class
+
+    if (!toolClass.namespace)
+      throw new IModelError(-1, "Tools must have a namespace");
+
+    this.map.set(toolClass.toolId, toolClass);
   }
 
   /**
    * register all the Tool classes found in a module.
    * @param modelObj the module to search for subclasses of Tool.
    */
-  public registerModule(moduleObj: any, group: ToolGroup) {
+  public registerModule(moduleObj: any, namespace?: I18NNamespace) {
     for (const thisMember in moduleObj) {
       if (!thisMember)
         continue;
 
       const thisTool = moduleObj[thisMember];
       if (thisTool.prototype instanceof Tool) {
-        this.register(thisTool, group);
+        this.register(thisTool, namespace);
       }
     }
   }

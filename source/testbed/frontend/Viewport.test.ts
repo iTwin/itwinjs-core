@@ -35,9 +35,14 @@ class TestIModelApp extends IModelApp {
   protected onStartup() {
     super.onStartup();
   }
+  protected supplyI18NOptions() {
+    return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" };
+  }
 }
 
-describe("Viewport", () => {
+// tslint:disable:only-arrow-functions
+// tslint:disable-next-line:space-before-function-paren
+describe("Viewport", function () {
   let imodel: IModelConnection;
   let categorySelectorState: CategorySelectorState;
   let displayStyleState: DisplayStyle3dState;
@@ -47,10 +52,9 @@ describe("Viewport", () => {
   let viewStateXZFlat: SpatialViewState;
   let viewStateXYZ: SpatialViewState;
 
-  // tslint:disable-next-line:only-arrow-functions
-  // tslint:disable-next-line:space-before-function-paren
-  before(async function () {   // Create a ViewState to load into a Viewport
-    this.timeout(99999);
+  const mocha = this;
+  before(async () => {   // Create a ViewState to load into a Viewport
+    mocha.timeout(99999);
     TestIModelApp.startup();
     assert.instanceOf(iModelApp, TestIModelApp);
 

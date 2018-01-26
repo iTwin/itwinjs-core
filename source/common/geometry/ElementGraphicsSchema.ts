@@ -5,3156 +5,3161 @@ import { flatbuffers } from "flatbuffers";
 /**
  * @enum
  */
-export namespace DgnFB{
-export enum GradientMode{
-  None= 0,
-  Linear= 1,
-  Curved= 2,
-  Cylindrical= 3,
-  Spherical= 4,
-  Hemispherical= 5
-}};
+export namespace DgnFB {
+  export enum GradientMode {
+    None = 0,
+    Linear = 1,
+    Curved = 2,
+    Cylindrical = 3,
+    Spherical = 4,
+    Hemispherical = 5
+  }
+};
 
 /**
  * @enum
  */
-export namespace DgnFB{
-export enum BoundaryType{
-  None= 0,
-  Open= 1,
-  Closed= 2
-}};
+export namespace DgnFB {
+  export enum BoundaryType {
+    None = 0,
+    Open = 1,
+    Closed = 2
+  }
+};
 
 /**
  * @enum
  */
-export namespace DgnFB{
-export enum FillDisplay{
-  None= 0,
-  ByView= 1,
-  Always= 2,
-  Blanking= 3
-}};
+export namespace DgnFB {
+  export enum FillDisplay {
+    None = 0,
+    ByView = 1,
+    Always = 2,
+    Blanking = 3
+  }
+};
 
 /**
  * @enum
  */
-export namespace DgnFB{
-export enum GeometryClass{
-  Primary= 0,
-  Construction= 1,
-  Dimension= 2,
-  Pattern= 3
-}};
+export namespace DgnFB {
+  export enum GeometryClass {
+    Primary = 0,
+    Construction = 1,
+    Dimension = 2,
+    Pattern = 3
+  }
+};
 
 /**
  * @enum
  */
-export namespace DgnFB{
-export enum BRepType{
-  Solid= 0,
-  Sheet= 1,
-  Wire= 2
-}};
-
-/**
- * @constructor
- */
-export namespace DgnFB{
-export class DPoint3d {
-  /**
-   * @type {flatbuffers.ByteBuffer}
-   */
-  bb: flatbuffers.ByteBuffer;
-
-  /**
-   * @type {number}
-   */
-  bb_pos: number = 0;
-/**
- * @param {number} i
- * @param {flatbuffers.ByteBuffer} bb
- * @returns {DPoint3d}
- */
-__init(i: number, bb: flatbuffers.ByteBuffer): DPoint3d {
-  this.bb_pos = i;
-  this.bb = bb;
-  return this;
-};
-
-/**
- * @returns {number}
- */
-x(): number {
-  return this.bb.readFloat64(this.bb_pos);
-};
-
-/**
- * @returns {number}
- */
-y(): number {
-  return this.bb.readFloat64(this.bb_pos + 8);
-};
-
-/**
- * @returns {number}
- */
-z(): number {
-  return this.bb.readFloat64(this.bb_pos + 16);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} x
- * @param {number} y
- * @param {number} z
- * @returns {flatbuffers.Offset}
- */
-static createDPoint3d(builder: flatbuffers.Builder, x: number, y: number, z: number): flatbuffers.Offset {
-  builder.prep(8, 24);
-  builder.writeFloat64(z);
-  builder.writeFloat64(y);
-  builder.writeFloat64(x);
-  return builder.offset();
-};
-
-}
-}
-/**
- * @constructor
- */
-export namespace DgnFB{
-export class DPoint2d {
-  /**
-   * @type {flatbuffers.ByteBuffer}
-   */
-  bb: flatbuffers.ByteBuffer;
-
-  /**
-   * @type {number}
-   */
-  bb_pos: number = 0;
-/**
- * @param {number} i
- * @param {flatbuffers.ByteBuffer} bb
- * @returns {DPoint2d}
- */
-__init(i: number, bb: flatbuffers.ByteBuffer): DPoint2d {
-  this.bb_pos = i;
-  this.bb = bb;
-  return this;
-};
-
-/**
- * @returns {number}
- */
-x(): number {
-  return this.bb.readFloat64(this.bb_pos);
-};
-
-/**
- * @returns {number}
- */
-y(): number {
-  return this.bb.readFloat64(this.bb_pos + 8);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} x
- * @param {number} y
- * @returns {flatbuffers.Offset}
- */
-static createDPoint2d(builder: flatbuffers.Builder, x: number, y: number): flatbuffers.Offset {
-  builder.prep(8, 16);
-  builder.writeFloat64(y);
-  builder.writeFloat64(x);
-  return builder.offset();
-};
-
-}
-}
-/**
- * @constructor
- */
-export namespace DgnFB{
-export class DVec3d {
-  /**
-   * @type {flatbuffers.ByteBuffer}
-   */
-  bb: flatbuffers.ByteBuffer;
-
-  /**
-   * @type {number}
-   */
-  bb_pos: number = 0;
-/**
- * @param {number} i
- * @param {flatbuffers.ByteBuffer} bb
- * @returns {DVec3d}
- */
-__init(i: number, bb: flatbuffers.ByteBuffer): DVec3d {
-  this.bb_pos = i;
-  this.bb = bb;
-  return this;
-};
-
-/**
- * @returns {number}
- */
-x(): number {
-  return this.bb.readFloat64(this.bb_pos);
-};
-
-/**
- * @returns {number}
- */
-y(): number {
-  return this.bb.readFloat64(this.bb_pos + 8);
-};
-
-/**
- * @returns {number}
- */
-z(): number {
-  return this.bb.readFloat64(this.bb_pos + 16);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} x
- * @param {number} y
- * @param {number} z
- * @returns {flatbuffers.Offset}
- */
-static createDVec3d(builder: flatbuffers.Builder, x: number, y: number, z: number): flatbuffers.Offset {
-  builder.prep(8, 24);
-  builder.writeFloat64(z);
-  builder.writeFloat64(y);
-  builder.writeFloat64(x);
-  return builder.offset();
-};
-
-}
-}
-/**
- * @constructor
- */
-export namespace DgnFB{
-export class RotMatrix {
-  /**
-   * @type {flatbuffers.ByteBuffer}
-   */
-  bb: flatbuffers.ByteBuffer;
-
-  /**
-   * @type {number}
-   */
-  bb_pos: number = 0;
-/**
- * @param {number} i
- * @param {flatbuffers.ByteBuffer} bb
- * @returns {RotMatrix}
- */
-__init(i: number, bb: flatbuffers.ByteBuffer): RotMatrix {
-  this.bb_pos = i;
-  this.bb = bb;
-  return this;
-};
-
-/**
- * @returns {number}
- */
-x00(): number {
-  return this.bb.readFloat64(this.bb_pos);
-};
-
-/**
- * @returns {number}
- */
-x01(): number {
-  return this.bb.readFloat64(this.bb_pos + 8);
-};
-
-/**
- * @returns {number}
- */
-x02(): number {
-  return this.bb.readFloat64(this.bb_pos + 16);
-};
-
-/**
- * @returns {number}
- */
-x10(): number {
-  return this.bb.readFloat64(this.bb_pos + 24);
-};
-
-/**
- * @returns {number}
- */
-x11(): number {
-  return this.bb.readFloat64(this.bb_pos + 32);
-};
-
-/**
- * @returns {number}
- */
-x12(): number {
-  return this.bb.readFloat64(this.bb_pos + 40);
-};
-
-/**
- * @returns {number}
- */
-x20(): number {
-  return this.bb.readFloat64(this.bb_pos + 48);
-};
-
-/**
- * @returns {number}
- */
-x21(): number {
-  return this.bb.readFloat64(this.bb_pos + 56);
-};
-
-/**
- * @returns {number}
- */
-x22(): number {
-  return this.bb.readFloat64(this.bb_pos + 64);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} x00
- * @param {number} x01
- * @param {number} x02
- * @param {number} x10
- * @param {number} x11
- * @param {number} x12
- * @param {number} x20
- * @param {number} x21
- * @param {number} x22
- * @returns {flatbuffers.Offset}
- */
-static createRotMatrix(builder: flatbuffers.Builder, x00: number, x01: number, x02: number, x10: number, x11: number, x12: number, x20: number, x21: number, x22: number): flatbuffers.Offset {
-  builder.prep(8, 72);
-  builder.writeFloat64(x22);
-  builder.writeFloat64(x21);
-  builder.writeFloat64(x20);
-  builder.writeFloat64(x12);
-  builder.writeFloat64(x11);
-  builder.writeFloat64(x10);
-  builder.writeFloat64(x02);
-  builder.writeFloat64(x01);
-  builder.writeFloat64(x00);
-  return builder.offset();
-};
-
-}
-}
-/**
- * @constructor
- */
-export namespace DgnFB{
-export class Transform {
-  /**
-   * @type {flatbuffers.ByteBuffer}
-   */
-  bb: flatbuffers.ByteBuffer;
-
-  /**
-   * @type {number}
-   */
-  bb_pos: number = 0;
-/**
- * @param {number} i
- * @param {flatbuffers.ByteBuffer} bb
- * @returns {Transform}
- */
-__init(i: number, bb: flatbuffers.ByteBuffer): Transform {
-  this.bb_pos = i;
-  this.bb = bb;
-  return this;
-};
-
-/**
- * @returns {number}
- */
-x00(): number {
-  return this.bb.readFloat64(this.bb_pos);
-};
-
-/**
- * @returns {number}
- */
-x01(): number {
-  return this.bb.readFloat64(this.bb_pos + 8);
-};
-
-/**
- * @returns {number}
- */
-x02(): number {
-  return this.bb.readFloat64(this.bb_pos + 16);
-};
-
-/**
- * @returns {number}
- */
-tx(): number {
-  return this.bb.readFloat64(this.bb_pos + 24);
-};
-
-/**
- * @returns {number}
- */
-x10(): number {
-  return this.bb.readFloat64(this.bb_pos + 32);
-};
-
-/**
- * @returns {number}
- */
-x11(): number {
-  return this.bb.readFloat64(this.bb_pos + 40);
-};
-
-/**
- * @returns {number}
- */
-x12(): number {
-  return this.bb.readFloat64(this.bb_pos + 48);
-};
-
-/**
- * @returns {number}
- */
-ty(): number {
-  return this.bb.readFloat64(this.bb_pos + 56);
-};
-
-/**
- * @returns {number}
- */
-x20(): number {
-  return this.bb.readFloat64(this.bb_pos + 64);
-};
-
-/**
- * @returns {number}
- */
-x21(): number {
-  return this.bb.readFloat64(this.bb_pos + 72);
-};
-
-/**
- * @returns {number}
- */
-x22(): number {
-  return this.bb.readFloat64(this.bb_pos + 80);
-};
-
-/**
- * @returns {number}
- */
-tz(): number {
-  return this.bb.readFloat64(this.bb_pos + 88);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} x00
- * @param {number} x01
- * @param {number} x02
- * @param {number} tx
- * @param {number} x10
- * @param {number} x11
- * @param {number} x12
- * @param {number} ty
- * @param {number} x20
- * @param {number} x21
- * @param {number} x22
- * @param {number} tz
- * @returns {flatbuffers.Offset}
- */
-static createTransform(builder: flatbuffers.Builder, x00: number, x01: number, x02: number, tx: number, x10: number, x11: number, x12: number, ty: number, x20: number, x21: number, x22: number, tz: number): flatbuffers.Offset {
-  builder.prep(8, 96);
-  builder.writeFloat64(tz);
-  builder.writeFloat64(x22);
-  builder.writeFloat64(x21);
-  builder.writeFloat64(x20);
-  builder.writeFloat64(ty);
-  builder.writeFloat64(x12);
-  builder.writeFloat64(x11);
-  builder.writeFloat64(x10);
-  builder.writeFloat64(tx);
-  builder.writeFloat64(x02);
-  builder.writeFloat64(x01);
-  builder.writeFloat64(x00);
-  return builder.offset();
-};
-
-}
-}
-/**
- * @constructor
- */
-export namespace DgnFB{
-export class FaceSymbology {
-  /**
-   * @type {flatbuffers.ByteBuffer}
-   */
-  bb: flatbuffers.ByteBuffer;
-
-  /**
-   * @type {number}
-   */
-  bb_pos: number = 0;
-/**
- * @param {number} i
- * @param {flatbuffers.ByteBuffer} bb
- * @returns {FaceSymbology}
- */
-__init(i: number, bb: flatbuffers.ByteBuffer): FaceSymbology {
-  this.bb_pos = i;
-  this.bb = bb;
-  return this;
-};
-
-/**
- * @returns {number}
- */
-useColor(): number {
-  return this.bb.readUint8(this.bb_pos);
-};
-
-/**
- * @returns {number}
- */
-useMaterial(): number {
-  return this.bb.readUint8(this.bb_pos + 1);
-};
-
-/**
- * @returns {number}
- */
-color(): number {
-  return this.bb.readUint32(this.bb_pos + 4);
-};
-
-/**
- * @returns {flatbuffers.Long}
- */
-materialId(): flatbuffers.Long {
-  return this.bb.readInt64(this.bb_pos + 8);
-};
-
-/**
- * @returns {number}
- */
-transparency(): number {
-  return this.bb.readFloat64(this.bb_pos + 16);
-};
-
-/**
- * @param {DgnFB.DPoint2d=} obj
- * @returns {DgnFB.DPoint2d|null}
- */
-uv(obj?: DgnFB.DPoint2d): DgnFB.DPoint2d|null {
-  return (obj || new DgnFB.DPoint2d()).__init(this.bb_pos + 24, this.bb);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} useColor
- * @param {number} useMaterial
- * @param {number} color
- * @param {flatbuffers.Long} materialId
- * @param {number} transparency
- * @param {number} uv_x
- * @param {number} uv_y
- * @returns {flatbuffers.Offset}
- */
-static createFaceSymbology(builder: flatbuffers.Builder, useColor: number, useMaterial: number, color: number, materialId: flatbuffers.Long, transparency: number, uv_x: number, uv_y: number): flatbuffers.Offset {
-  builder.prep(8, 40);
-  builder.prep(8, 16);
-  builder.writeFloat64(uv_y);
-  builder.writeFloat64(uv_x);
-  builder.writeFloat64(transparency);
-  builder.writeInt64(materialId);
-  builder.writeInt32(color);
-  builder.pad(2);
-  builder.writeInt8(useMaterial);
-  builder.writeInt8(useColor);
-  return builder.offset();
-};
-
-}
-}
-/**
- * @constructor
- */
-export namespace DgnFB{
-export class FaceSymbologyIndex {
-  /**
-   * @type {flatbuffers.ByteBuffer}
-   */
-  bb: flatbuffers.ByteBuffer;
-
-  /**
-   * @type {number}
-   */
-  bb_pos: number = 0;
-/**
- * @param {number} i
- * @param {flatbuffers.ByteBuffer} bb
- * @returns {FaceSymbologyIndex}
- */
-__init(i: number, bb: flatbuffers.ByteBuffer): FaceSymbologyIndex {
-  this.bb_pos = i;
-  this.bb = bb;
-  return this;
-};
-
-/**
- * @returns {number}
- */
-faceIndex(): number {
-  return this.bb.readUint32(this.bb_pos);
-};
-
-/**
- * @returns {number}
- */
-symbIndex(): number {
-  return this.bb.readUint32(this.bb_pos + 4);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} faceIndex
- * @param {number} symbIndex
- * @returns {flatbuffers.Offset}
- */
-static createFaceSymbologyIndex(builder: flatbuffers.Builder, faceIndex: number, symbIndex: number): flatbuffers.Offset {
-  builder.prep(4, 8);
-  builder.writeInt32(symbIndex);
-  builder.writeInt32(faceIndex);
-  return builder.offset();
-};
-
-}
-}
-/**
- * @constructor
- */
-export namespace DgnFB{
-export class PointPrimitive {
-  /**
-   * @type {flatbuffers.ByteBuffer}
-   */
-  bb: flatbuffers.ByteBuffer;
-
-  /**
-   * @type {number}
-   */
-  bb_pos: number = 0;
-/**
- * @param {number} i
- * @param {flatbuffers.ByteBuffer} bb
- * @returns {PointPrimitive}
- */
-__init(i: number, bb: flatbuffers.ByteBuffer): PointPrimitive {
-  this.bb_pos = i;
-  this.bb = bb;
-  return this;
-};
-
-/**
- * @param {flatbuffers.ByteBuffer} bb
- * @param {PointPrimitive=} obj
- * @returns {PointPrimitive}
- */
-static getRootAsPointPrimitive(bb: flatbuffers.ByteBuffer, obj?: PointPrimitive): PointPrimitive {
-  return (obj || new PointPrimitive ()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
-
-/**
- * @param {number} index
- * @param {DgnFB.DPoint3d=} obj
- * @returns {DgnFB.DPoint3d}
- */
-coords(index: number, obj?: DgnFB.DPoint3d): DgnFB.DPoint3d|null {
-  const offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? (obj || new DgnFB.DPoint3d()).__init(this.bb.__vector(this.bb_pos + offset) + index * 24, this.bb) : null;
-};
-
-/**
- * @returns {number}
- */
-coordsLength(): number {
-  const offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns {DgnFB.BoundaryType}
- */
-boundary(): DgnFB.BoundaryType {
-  const offset = this.bb.__offset(this.bb_pos, 6);
-  return offset ? /** @type {DgnFB.BoundaryType} */ (this.bb.readInt8(this.bb_pos + offset)) : DgnFB.BoundaryType.None;
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- */
-static startPointPrimitive(builder: flatbuffers.Builder) {
-  builder.startObject(2);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} coordsOffset
- */
-static addCoords(builder: flatbuffers.Builder, coordsOffset: flatbuffers.Offset) {
-  builder.addFieldOffset(0, coordsOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} numElems
- */
-static startCoordsVector(builder: flatbuffers.Builder, numElems: number) {
-  builder.startVector(24, numElems, 8);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {DgnFB.BoundaryType} boundary
- */
-static addBoundary(builder: flatbuffers.Builder, boundary: DgnFB.BoundaryType) {
-  builder.addFieldInt8(1, boundary, DgnFB.BoundaryType.None);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @returns {flatbuffers.Offset}
- */
-static endPointPrimitive(builder: flatbuffers.Builder): flatbuffers.Offset {
-  const offset = builder.endObject();
-  return offset;
-};
-
-}
-}
-/**
- * @constructor
- */
-export namespace DgnFB{
-export class PointPrimitive2d {
-  /**
-   * @type {flatbuffers.ByteBuffer}
-   */
-  bb: flatbuffers.ByteBuffer;
-
-  /**
-   * @type {number}
-   */
-  bb_pos: number = 0;
-/**
- * @param {number} i
- * @param {flatbuffers.ByteBuffer} bb
- * @returns {PointPrimitive2d}
- */
-__init(i: number, bb: flatbuffers.ByteBuffer): PointPrimitive2d {
-  this.bb_pos = i;
-  this.bb = bb;
-  return this;
-};
-
-/**
- * @param {flatbuffers.ByteBuffer} bb
- * @param {PointPrimitive2d=} obj
- * @returns {PointPrimitive2d}
- */
-static getRootAsPointPrimitive2d(bb: flatbuffers.ByteBuffer, obj?: PointPrimitive2d): PointPrimitive2d {
-  return (obj || new PointPrimitive2d ()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
-
-/**
- * @param {number} index
- * @param {DgnFB.DPoint2d=} obj
- * @returns {DgnFB.DPoint2d}
- */
-coords(index: number, obj?: DgnFB.DPoint2d): DgnFB.DPoint2d|null {
-  const offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? (obj || new DgnFB.DPoint2d()).__init(this.bb.__vector(this.bb_pos + offset) + index * 16, this.bb) : null;
-};
-
-/**
- * @returns {number}
- */
-coordsLength(): number {
-  const offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns {DgnFB.BoundaryType}
- */
-boundary(): DgnFB.BoundaryType {
-  const offset = this.bb.__offset(this.bb_pos, 6);
-  return offset ? /** @type {DgnFB.BoundaryType} */ (this.bb.readInt8(this.bb_pos + offset)) : DgnFB.BoundaryType.None;
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- */
-static startPointPrimitive2d(builder: flatbuffers.Builder) {
-  builder.startObject(2);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} coordsOffset
- */
-static addCoords(builder: flatbuffers.Builder, coordsOffset: flatbuffers.Offset) {
-  builder.addFieldOffset(0, coordsOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} numElems
- */
-static startCoordsVector(builder: flatbuffers.Builder, numElems: number) {
-  builder.startVector(16, numElems, 8);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {DgnFB.BoundaryType} boundary
- */
-static addBoundary(builder: flatbuffers.Builder, boundary: DgnFB.BoundaryType) {
-  builder.addFieldInt8(1, boundary, DgnFB.BoundaryType.None);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @returns {flatbuffers.Offset}
- */
-static endPointPrimitive2d(builder: flatbuffers.Builder): flatbuffers.Offset {
-  const offset = builder.endObject();
-  return offset;
-};
-
-}
-}
-/**
- * @constructor
- */
-export namespace DgnFB{
-export class ArcPrimitive {
-  /**
-   * @type {flatbuffers.ByteBuffer}
-   */
-  bb: flatbuffers.ByteBuffer;
-
-  /**
-   * @type {number}
-   */
-  bb_pos: number = 0;
-/**
- * @param {number} i
- * @param {flatbuffers.ByteBuffer} bb
- * @returns {ArcPrimitive}
- */
-__init(i: number, bb: flatbuffers.ByteBuffer): ArcPrimitive {
-  this.bb_pos = i;
-  this.bb = bb;
-  return this;
-};
-
-/**
- * @param {flatbuffers.ByteBuffer} bb
- * @param {ArcPrimitive=} obj
- * @returns {ArcPrimitive}
- */
-static getRootAsArcPrimitive(bb: flatbuffers.ByteBuffer, obj?: ArcPrimitive): ArcPrimitive {
-  return (obj || new ArcPrimitive ()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
-
-/**
- * @param {DgnFB.DPoint3d=} obj
- * @returns {DgnFB.DPoint3d|null}
- */
-center(obj?: DgnFB.DPoint3d): DgnFB.DPoint3d|null {
-  const offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? (obj || new DgnFB.DPoint3d()).__init(this.bb_pos + offset, this.bb) : null;
-};
-
-/**
- * @param {DgnFB.DVec3d=} obj
- * @returns {DgnFB.DVec3d|null}
- */
-vector0(obj?: DgnFB.DVec3d): DgnFB.DVec3d|null {
-  const offset = this.bb.__offset(this.bb_pos, 6);
-  return offset ? (obj || new DgnFB.DVec3d()).__init(this.bb_pos + offset, this.bb) : null;
-};
-
-/**
- * @param {DgnFB.DVec3d=} obj
- * @returns {DgnFB.DVec3d|null}
- */
-vector90(obj?: DgnFB.DVec3d): DgnFB.DVec3d|null {
-  const offset = this.bb.__offset(this.bb_pos, 8);
-  return offset ? (obj || new DgnFB.DVec3d()).__init(this.bb_pos + offset, this.bb) : null;
-};
-
-/**
- * @returns {number}
- */
-start(): number {
-  const offset = this.bb.__offset(this.bb_pos, 10);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @returns {number}
- */
-sweep(): number {
-  const offset = this.bb.__offset(this.bb_pos, 12);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @returns {DgnFB.BoundaryType}
- */
-boundary(): DgnFB.BoundaryType {
-  const offset = this.bb.__offset(this.bb_pos, 14);
-  return offset ? /** @type {DgnFB.BoundaryType} */ (this.bb.readInt8(this.bb_pos + offset)) : DgnFB.BoundaryType.None;
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- */
-static startArcPrimitive(builder: flatbuffers.Builder) {
-  builder.startObject(6);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} centerOffset
- */
-static addCenter(builder: flatbuffers.Builder, centerOffset: flatbuffers.Offset) {
-  builder.addFieldStruct(0, centerOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} vector0Offset
- */
-static addVector0(builder: flatbuffers.Builder, vector0Offset: flatbuffers.Offset) {
-  builder.addFieldStruct(1, vector0Offset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} vector90Offset
- */
-static addVector90(builder: flatbuffers.Builder, vector90Offset: flatbuffers.Offset) {
-  builder.addFieldStruct(2, vector90Offset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} start
- */
-static addStart(builder: flatbuffers.Builder, start: number) {
-  builder.addFieldFloat64(3, start, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} sweep
- */
-static addSweep(builder: flatbuffers.Builder, sweep: number) {
-  builder.addFieldFloat64(4, sweep, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {DgnFB.BoundaryType} boundary
- */
-static addBoundary(builder: flatbuffers.Builder, boundary: DgnFB.BoundaryType) {
-  builder.addFieldInt8(5, boundary, DgnFB.BoundaryType.None);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @returns {flatbuffers.Offset}
- */
-static endArcPrimitive(builder: flatbuffers.Builder): flatbuffers.Offset {
-  const offset = builder.endObject();
-  return offset;
-};
-
-}
-}
-/**
- * @constructor
- */
-export namespace DgnFB{
-export class BRepData {
-  /**
-   * @type {flatbuffers.ByteBuffer}
-   */
-  bb: flatbuffers.ByteBuffer;
-
-  /**
-   * @type {number}
-   */
-  bb_pos: number = 0;
-/**
- * @param {number} i
- * @param {flatbuffers.ByteBuffer} bb
- * @returns {BRepData}
- */
-__init(i: number, bb: flatbuffers.ByteBuffer): BRepData {
-  this.bb_pos = i;
-  this.bb = bb;
-  return this;
-};
-
-/**
- * @param {flatbuffers.ByteBuffer} bb
- * @param {BRepData=} obj
- * @returns {BRepData}
- */
-static getRootAsBRepData(bb: flatbuffers.ByteBuffer, obj?: BRepData): BRepData {
-  return (obj || new BRepData ()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
-
-/**
- * @param {DgnFB.Transform=} obj
- * @returns {DgnFB.Transform|null}
- */
-entityTransform(obj?: DgnFB.Transform): DgnFB.Transform|null {
-  const offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? (obj || new DgnFB.Transform()).__init(this.bb_pos + offset, this.bb) : null;
-};
-
-/**
- * @returns {DgnFB.BRepType}
- */
-brepType(): DgnFB.BRepType {
-  const offset = this.bb.__offset(this.bb_pos, 6);
-  return offset ? /** @type {DgnFB.BRepType} */ (this.bb.readInt8(this.bb_pos + offset)) : DgnFB.BRepType.Solid;
-};
-
-/**
- * @param {number} index
- * @returns {number}
- */
-entityData(index: number): number|null {
-  const offset = this.bb.__offset(this.bb_pos, 8);
-  return offset ? this.bb.readUint8(this.bb.__vector(this.bb_pos + offset) + index) : 0;
-};
-
-/**
- * @returns {number}
- */
-entityDataLength(): number {
-  const offset = this.bb.__offset(this.bb_pos, 8);
-  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns {Uint8Array}
- */
-entityDataArray(): Uint8Array|null {
-  const offset = this.bb.__offset(this.bb_pos, 8);
-  return offset ? new Uint8Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-};
-
-/**
- * @param {number} index
- * @param {DgnFB.FaceSymbology=} obj
- * @returns {DgnFB.FaceSymbology}
- */
-symbology(index: number, obj?: DgnFB.FaceSymbology): DgnFB.FaceSymbology|null {
-  const offset = this.bb.__offset(this.bb_pos, 10);
-  return offset ? (obj || new DgnFB.FaceSymbology()).__init(this.bb.__vector(this.bb_pos + offset) + index * 40, this.bb) : null;
-};
-
-/**
- * @returns {number}
- */
-symbologyLength(): number {
-  const offset = this.bb.__offset(this.bb_pos, 10);
-  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-};
-
-/**
- * @param {number} index
- * @param {DgnFB.FaceSymbologyIndex=} obj
- * @returns {DgnFB.FaceSymbologyIndex}
- */
-symbologyIndex(index: number, obj?: DgnFB.FaceSymbologyIndex): DgnFB.FaceSymbologyIndex|null {
-  const offset = this.bb.__offset(this.bb_pos, 12);
-  return offset ? (obj || new DgnFB.FaceSymbologyIndex()).__init(this.bb.__vector(this.bb_pos + offset) + index * 8, this.bb) : null;
-};
-
-/**
- * @returns {number}
- */
-symbologyIndexLength(): number {
-  const offset = this.bb.__offset(this.bb_pos, 12);
-  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- */
-static startBRepData(builder: flatbuffers.Builder) {
-  builder.startObject(5);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} entityTransformOffset
- */
-static addEntityTransform(builder: flatbuffers.Builder, entityTransformOffset: flatbuffers.Offset) {
-  builder.addFieldStruct(0, entityTransformOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {DgnFB.BRepType} brepType
- */
-static addBrepType(builder: flatbuffers.Builder, brepType: DgnFB.BRepType) {
-  builder.addFieldInt8(1, brepType, DgnFB.BRepType.Solid);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} entityDataOffset
- */
-static addEntityData(builder: flatbuffers.Builder, entityDataOffset: flatbuffers.Offset) {
-  builder.addFieldOffset(2, entityDataOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {Array.<number>} data
- * @returns {flatbuffers.Offset}
- */
-static createEntityDataVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
-  builder.startVector(1, data.length, 1);
-  for (let i = data.length - 1; i >= 0; i--) {
-    builder.addInt8(data[i]);
+export namespace DgnFB {
+  export enum BRepType {
+    Solid = 0,
+    Sheet = 1,
+    Wire = 2
   }
-  return builder.endVector();
 };
 
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} numElems
- */
-static startEntityDataVector(builder: flatbuffers.Builder, numElems: number) {
-  builder.startVector(1, numElems, 1);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} symbologyOffset
- */
-static addSymbology(builder: flatbuffers.Builder, symbologyOffset: flatbuffers.Offset) {
-  builder.addFieldOffset(3, symbologyOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} numElems
- */
-static startSymbologyVector(builder: flatbuffers.Builder, numElems: number) {
-  builder.startVector(40, numElems, 8);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} symbologyIndexOffset
- */
-static addSymbologyIndex(builder: flatbuffers.Builder, symbologyIndexOffset: flatbuffers.Offset) {
-  builder.addFieldOffset(4, symbologyIndexOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} numElems
- */
-static startSymbologyIndexVector(builder: flatbuffers.Builder, numElems: number) {
-  builder.startVector(8, numElems, 4);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @returns {flatbuffers.Offset}
- */
-static endBRepData(builder: flatbuffers.Builder): flatbuffers.Offset {
-  const offset = builder.endObject();
-  return offset;
-};
-
-}
-}
 /**
  * @constructor
  */
-export namespace DgnFB{
-export class OCBRepData {
-  /**
-   * @type {flatbuffers.ByteBuffer}
-   */
-  bb: flatbuffers.ByteBuffer;
+export namespace DgnFB {
+  export class DPoint3d {
+    /**
+     * @type {flatbuffers.ByteBuffer}
+     */
+    bb: flatbuffers.ByteBuffer;
 
-  /**
-   * @type {number}
-   */
-  bb_pos: number = 0;
-/**
- * @param {number} i
- * @param {flatbuffers.ByteBuffer} bb
- * @returns {OCBRepData}
- */
-__init(i: number, bb: flatbuffers.ByteBuffer): OCBRepData {
-  this.bb_pos = i;
-  this.bb = bb;
-  return this;
-};
+    /**
+     * @type {number}
+     */
+    bb_pos: number = 0;
+    /**
+     * @param {number} i
+     * @param {flatbuffers.ByteBuffer} bb
+     * @returns {DPoint3d}
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): DPoint3d {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    };
 
-/**
- * @param {flatbuffers.ByteBuffer} bb
- * @param {OCBRepData=} obj
- * @returns {OCBRepData}
- */
-static getRootAsOCBRepData(bb: flatbuffers.ByteBuffer, obj?: OCBRepData): OCBRepData {
-  return (obj || new OCBRepData ()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+    /**
+     * @returns {number}
+     */
+    x(): number {
+      return this.bb.readFloat64(this.bb_pos);
+    };
 
-/**
- * @returns {DgnFB.BRepType}
- */
-brepType(): DgnFB.BRepType {
-  const offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? /** @type {DgnFB.BRepType} */ (this.bb.readInt8(this.bb_pos + offset)) : DgnFB.BRepType.Solid;
-};
+    /**
+     * @returns {number}
+     */
+    y(): number {
+      return this.bb.readFloat64(this.bb_pos + 8);
+    };
 
-/**
- * @param {number} index
- * @returns {number}
- */
-entityData(index: number): number|null {
-  const offset = this.bb.__offset(this.bb_pos, 6);
-  return offset ? this.bb.readUint8(this.bb.__vector(this.bb_pos + offset) + index) : 0;
-};
+    /**
+     * @returns {number}
+     */
+    z(): number {
+      return this.bb.readFloat64(this.bb_pos + 16);
+    };
 
-/**
- * @returns {number}
- */
-entityDataLength(): number {
-  const offset = this.bb.__offset(this.bb_pos, 6);
-  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-};
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} x
+     * @param {number} y
+     * @param {number} z
+     * @returns {flatbuffers.Offset}
+     */
+    static createDPoint3d(builder: flatbuffers.Builder, x: number, y: number, z: number): flatbuffers.Offset {
+      builder.prep(8, 24);
+      builder.writeFloat64(z);
+      builder.writeFloat64(y);
+      builder.writeFloat64(x);
+      return builder.offset();
+    };
 
-/**
- * @returns {Uint8Array}
- */
-entityDataArray(): Uint8Array|null {
-  const offset = this.bb.__offset(this.bb_pos, 6);
-  return offset ? new Uint8Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- */
-static startOCBRepData(builder: flatbuffers.Builder) {
-  builder.startObject(2);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {DgnFB.BRepType} brepType
- */
-static addBrepType(builder: flatbuffers.Builder, brepType: DgnFB.BRepType) {
-  builder.addFieldInt8(0, brepType, DgnFB.BRepType.Solid);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} entityDataOffset
- */
-static addEntityData(builder: flatbuffers.Builder, entityDataOffset: flatbuffers.Offset) {
-  builder.addFieldOffset(1, entityDataOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {Array.<number>} data
- * @returns {flatbuffers.Offset}
- */
-static createEntityDataVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
-  builder.startVector(1, data.length, 1);
-  for (let i = data.length - 1; i >= 0; i--) {
-    builder.addInt8(data[i]);
   }
-  return builder.endVector();
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} numElems
- */
-static startEntityDataVector(builder: flatbuffers.Builder, numElems: number) {
-  builder.startVector(1, numElems, 1);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @returns {flatbuffers.Offset}
- */
-static endOCBRepData(builder: flatbuffers.Builder): flatbuffers.Offset {
-  const offset = builder.endObject();
-  return offset;
-};
-
-}
 }
 /**
  * @constructor
  */
-export namespace DgnFB{
-export class Image {
-  /**
-   * @type {flatbuffers.ByteBuffer}
-   */
-  bb: flatbuffers.ByteBuffer;
+export namespace DgnFB {
+  export class DPoint2d {
+    /**
+     * @type {flatbuffers.ByteBuffer}
+     */
+    bb: flatbuffers.ByteBuffer;
 
-  /**
-   * @type {number}
-   */
-  bb_pos: number = 0;
-/**
- * @param {number} i
- * @param {flatbuffers.ByteBuffer} bb
- * @returns {Image}
- */
-__init(i: number, bb: flatbuffers.ByteBuffer): Image {
-  this.bb_pos = i;
-  this.bb = bb;
-  return this;
-};
+    /**
+     * @type {number}
+     */
+    bb_pos: number = 0;
+    /**
+     * @param {number} i
+     * @param {flatbuffers.ByteBuffer} bb
+     * @returns {DPoint2d}
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): DPoint2d {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    };
 
-/**
- * @param {flatbuffers.ByteBuffer} bb
- * @param {Image=} obj
- * @returns {Image}
- */
-static getRootAsImage(bb: flatbuffers.ByteBuffer, obj?: Image): Image {
-  return (obj || new Image ()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+    /**
+     * @returns {number}
+     */
+    x(): number {
+      return this.bb.readFloat64(this.bb_pos);
+    };
 
-/**
- * @returns {number}
- */
-drawBorder(): number {
-  const offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
-};
+    /**
+     * @returns {number}
+     */
+    y(): number {
+      return this.bb.readFloat64(this.bb_pos + 8);
+    };
 
-/**
- * @returns {number}
- */
-useFillTint(): number {
-  const offset = this.bb.__offset(this.bb_pos, 6);
-  return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
-};
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} x
+     * @param {number} y
+     * @returns {flatbuffers.Offset}
+     */
+    static createDPoint2d(builder: flatbuffers.Builder, x: number, y: number): flatbuffers.Offset {
+      builder.prep(8, 16);
+      builder.writeFloat64(y);
+      builder.writeFloat64(x);
+      return builder.offset();
+    };
 
-/**
- * @param {DgnFB.DPoint3d=} obj
- * @returns {DgnFB.DPoint3d|null}
- */
-tileCorner0(obj?: DgnFB.DPoint3d): DgnFB.DPoint3d|null {
-  const offset = this.bb.__offset(this.bb_pos, 8);
-  return offset ? (obj || new DgnFB.DPoint3d()).__init(this.bb_pos + offset, this.bb) : null;
-};
-
-/**
- * @param {DgnFB.DPoint3d=} obj
- * @returns {DgnFB.DPoint3d|null}
- */
-tileCorner1(obj?: DgnFB.DPoint3d): DgnFB.DPoint3d|null {
-  const offset = this.bb.__offset(this.bb_pos, 10);
-  return offset ? (obj || new DgnFB.DPoint3d()).__init(this.bb_pos + offset, this.bb) : null;
-};
-
-/**
- * @param {DgnFB.DPoint3d=} obj
- * @returns {DgnFB.DPoint3d|null}
- */
-tileCorner2(obj?: DgnFB.DPoint3d): DgnFB.DPoint3d|null {
-  const offset = this.bb.__offset(this.bb_pos, 12);
-  return offset ? (obj || new DgnFB.DPoint3d()).__init(this.bb_pos + offset, this.bb) : null;
-};
-
-/**
- * @param {DgnFB.DPoint3d=} obj
- * @returns {DgnFB.DPoint3d|null}
- */
-tileCorner3(obj?: DgnFB.DPoint3d): DgnFB.DPoint3d|null {
-  const offset = this.bb.__offset(this.bb_pos, 14);
-  return offset ? (obj || new DgnFB.DPoint3d()).__init(this.bb_pos + offset, this.bb) : null;
-};
-
-/**
- * @returns {number}
- */
-width(): number {
-  const offset = this.bb.__offset(this.bb_pos, 16);
-  return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns {number}
- */
-height(): number {
-  const offset = this.bb.__offset(this.bb_pos, 18);
-  return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns {number}
- */
-format(): number {
-  const offset = this.bb.__offset(this.bb_pos, 20);
-  return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
-};
-
-/**
- * @param {number} index
- * @returns {number}
- */
-byteData(index: number): number|null {
-  const offset = this.bb.__offset(this.bb_pos, 22);
-  return offset ? this.bb.readUint8(this.bb.__vector(this.bb_pos + offset) + index) : 0;
-};
-
-/**
- * @returns {number}
- */
-byteDataLength(): number {
-  const offset = this.bb.__offset(this.bb_pos, 22);
-  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns {Uint8Array}
- */
-byteDataArray(): Uint8Array|null {
-  const offset = this.bb.__offset(this.bb_pos, 22);
-  return offset ? new Uint8Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- */
-static startImage(builder: flatbuffers.Builder) {
-  builder.startObject(10);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} drawBorder
- */
-static addDrawBorder(builder: flatbuffers.Builder, drawBorder: number) {
-  builder.addFieldInt8(0, drawBorder, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} useFillTint
- */
-static addUseFillTint(builder: flatbuffers.Builder, useFillTint: number) {
-  builder.addFieldInt8(1, useFillTint, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} tileCorner0Offset
- */
-static addTileCorner0(builder: flatbuffers.Builder, tileCorner0Offset: flatbuffers.Offset) {
-  builder.addFieldStruct(2, tileCorner0Offset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} tileCorner1Offset
- */
-static addTileCorner1(builder: flatbuffers.Builder, tileCorner1Offset: flatbuffers.Offset) {
-  builder.addFieldStruct(3, tileCorner1Offset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} tileCorner2Offset
- */
-static addTileCorner2(builder: flatbuffers.Builder, tileCorner2Offset: flatbuffers.Offset) {
-  builder.addFieldStruct(4, tileCorner2Offset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} tileCorner3Offset
- */
-static addTileCorner3(builder: flatbuffers.Builder, tileCorner3Offset: flatbuffers.Offset) {
-  builder.addFieldStruct(5, tileCorner3Offset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} width
- */
-static addWidth(builder: flatbuffers.Builder, width: number) {
-  builder.addFieldInt32(6, width, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} height
- */
-static addHeight(builder: flatbuffers.Builder, height: number) {
-  builder.addFieldInt32(7, height, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} format
- */
-static addFormat(builder: flatbuffers.Builder, format: number) {
-  builder.addFieldInt32(8, format, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} byteDataOffset
- */
-static addByteData(builder: flatbuffers.Builder, byteDataOffset: flatbuffers.Offset) {
-  builder.addFieldOffset(9, byteDataOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {Array.<number>} data
- * @returns {flatbuffers.Offset}
- */
-static createByteDataVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
-  builder.startVector(1, data.length, 1);
-  for (let i = data.length - 1; i >= 0; i--) {
-    builder.addInt8(data[i]);
   }
-  return builder.endVector();
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} numElems
- */
-static startByteDataVector(builder: flatbuffers.Builder, numElems: number) {
-  builder.startVector(1, numElems, 1);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @returns {flatbuffers.Offset}
- */
-static endImage(builder: flatbuffers.Builder): flatbuffers.Offset {
-  const offset = builder.endObject();
-  return offset;
-};
-
-}
 }
 /**
  * @constructor
  */
-export namespace DgnFB{
-export class GeometryPart {
-  /**
-   * @type {flatbuffers.ByteBuffer}
-   */
-  bb: flatbuffers.ByteBuffer;
+export namespace DgnFB {
+  export class DVec3d {
+    /**
+     * @type {flatbuffers.ByteBuffer}
+     */
+    bb: flatbuffers.ByteBuffer;
+
+    /**
+     * @type {number}
+     */
+    bb_pos: number = 0;
+    /**
+     * @param {number} i
+     * @param {flatbuffers.ByteBuffer} bb
+     * @returns {DVec3d}
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): DVec3d {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    };
+
+    /**
+     * @returns {number}
+     */
+    x(): number {
+      return this.bb.readFloat64(this.bb_pos);
+    };
+
+    /**
+     * @returns {number}
+     */
+    y(): number {
+      return this.bb.readFloat64(this.bb_pos + 8);
+    };
+
+    /**
+     * @returns {number}
+     */
+    z(): number {
+      return this.bb.readFloat64(this.bb_pos + 16);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} x
+     * @param {number} y
+     * @param {number} z
+     * @returns {flatbuffers.Offset}
+     */
+    static createDVec3d(builder: flatbuffers.Builder, x: number, y: number, z: number): flatbuffers.Offset {
+      builder.prep(8, 24);
+      builder.writeFloat64(z);
+      builder.writeFloat64(y);
+      builder.writeFloat64(x);
+      return builder.offset();
+    };
 
-  /**
-   * @type {number}
-   */
-  bb_pos: number = 0;
-/**
- * @param {number} i
- * @param {flatbuffers.ByteBuffer} bb
- * @returns {GeometryPart}
- */
-__init(i: number, bb: flatbuffers.ByteBuffer): GeometryPart {
-  this.bb_pos = i;
-  this.bb = bb;
-  return this;
-};
-
-/**
- * @param {flatbuffers.ByteBuffer} bb
- * @param {GeometryPart=} obj
- * @returns {GeometryPart}
- */
-static getRootAsGeometryPart(bb: flatbuffers.ByteBuffer, obj?: GeometryPart): GeometryPart {
-  return (obj || new GeometryPart ()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
-
-/**
- * @returns {flatbuffers.Long}
- */
-geomPartId(): flatbuffers.Long {
-  const offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? this.bb.readInt64(this.bb_pos + offset) : this.bb.createLong(0, 0);
-};
-
-/**
- * @param {DgnFB.DPoint3d=} obj
- * @returns {DgnFB.DPoint3d|null}
- */
-origin(obj?: DgnFB.DPoint3d): DgnFB.DPoint3d|null {
-  const offset = this.bb.__offset(this.bb_pos, 6);
-  return offset ? (obj || new DgnFB.DPoint3d()).__init(this.bb_pos + offset, this.bb) : null;
-};
-
-/**
- * @returns {number}
- */
-yaw(): number {
-  const offset = this.bb.__offset(this.bb_pos, 8);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @returns {number}
- */
-pitch(): number {
-  const offset = this.bb.__offset(this.bb_pos, 10);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @returns {number}
- */
-roll(): number {
-  const offset = this.bb.__offset(this.bb_pos, 12);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @returns {number}
- */
-scale(): number {
-  const offset = this.bb.__offset(this.bb_pos, 14);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 1.0;
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- */
-static startGeometryPart(builder: flatbuffers.Builder) {
-  builder.startObject(6);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Long} geomPartId
- */
-static addGeomPartId(builder: flatbuffers.Builder, geomPartId: flatbuffers.Long) {
-  builder.addFieldInt64(0, geomPartId, builder.createLong(0, 0));
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} originOffset
- */
-static addOrigin(builder: flatbuffers.Builder, originOffset: flatbuffers.Offset) {
-  builder.addFieldStruct(1, originOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} yaw
- */
-static addYaw(builder: flatbuffers.Builder, yaw: number) {
-  builder.addFieldFloat64(2, yaw, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} pitch
- */
-static addPitch(builder: flatbuffers.Builder, pitch: number) {
-  builder.addFieldFloat64(3, pitch, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} roll
- */
-static addRoll(builder: flatbuffers.Builder, roll: number) {
-  builder.addFieldFloat64(4, roll, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} scale
- */
-static addScale(builder: flatbuffers.Builder, scale: number) {
-  builder.addFieldFloat64(5, scale, 1.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @returns {flatbuffers.Offset}
- */
-static endGeometryPart(builder: flatbuffers.Builder): flatbuffers.Offset {
-  const offset = builder.endObject();
-  return offset;
-};
-
-}
-}
-/**
- * @constructor
- */
-export namespace DgnFB{
-export class BasicSymbology {
-  /**
-   * @type {flatbuffers.ByteBuffer}
-   */
-  bb: flatbuffers.ByteBuffer;
-
-  /**
-   * @type {number}
-   */
-  bb_pos: number = 0;
-/**
- * @param {number} i
- * @param {flatbuffers.ByteBuffer} bb
- * @returns {BasicSymbology}
- */
-__init(i: number, bb: flatbuffers.ByteBuffer): BasicSymbology {
-  this.bb_pos = i;
-  this.bb = bb;
-  return this;
-};
-
-/**
- * @param {flatbuffers.ByteBuffer} bb
- * @param {BasicSymbology=} obj
- * @returns {BasicSymbology}
- */
-static getRootAsBasicSymbology(bb: flatbuffers.ByteBuffer, obj?: BasicSymbology): BasicSymbology {
-  return (obj || new BasicSymbology ()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
-
-/**
- * @returns {flatbuffers.Long}
- */
-subCategoryId(): flatbuffers.Long {
-  const offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? this.bb.readInt64(this.bb_pos + offset) : this.bb.createLong(0, 0);
-};
-
-/**
- * @returns {number}
- */
-color(): number {
-  const offset = this.bb.__offset(this.bb_pos, 6);
-  return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns {number}
- */
-weight(): number {
-  const offset = this.bb.__offset(this.bb_pos, 8);
-  return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns {flatbuffers.Long}
- */
-lineStyleId(): flatbuffers.Long {
-  const offset = this.bb.__offset(this.bb_pos, 10);
-  return offset ? this.bb.readInt64(this.bb_pos + offset) : this.bb.createLong(0, 0);
-};
-
-/**
- * @returns {number}
- */
-transparency(): number {
-  const offset = this.bb.__offset(this.bb_pos, 12);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @returns {number}
- */
-displayPriority(): number {
-  const offset = this.bb.__offset(this.bb_pos, 14);
-  return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns {DgnFB.GeometryClass}
- */
-geomClass(): DgnFB.GeometryClass {
-  const offset = this.bb.__offset(this.bb_pos, 16);
-  return offset ? /** @type {DgnFB.GeometryClass} */ (this.bb.readInt8(this.bb_pos + offset)) : DgnFB.GeometryClass.Primary;
-};
-
-/**
- * @returns {number}
- */
-useColor(): number {
-  const offset = this.bb.__offset(this.bb_pos, 18);
-  return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns {number}
- */
-useWeight(): number {
-  const offset = this.bb.__offset(this.bb_pos, 20);
-  return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns {number}
- */
-useStyle(): number {
-  const offset = this.bb.__offset(this.bb_pos, 22);
-  return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- */
-static startBasicSymbology(builder: flatbuffers.Builder) {
-  builder.startObject(10);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Long} subCategoryId
- */
-static addSubCategoryId(builder: flatbuffers.Builder, subCategoryId: flatbuffers.Long) {
-  builder.addFieldInt64(0, subCategoryId, builder.createLong(0, 0));
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} color
- */
-static addColor(builder: flatbuffers.Builder, color: number) {
-  builder.addFieldInt32(1, color, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} weight
- */
-static addWeight(builder: flatbuffers.Builder, weight: number) {
-  builder.addFieldInt32(2, weight, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Long} lineStyleId
- */
-static addLineStyleId(builder: flatbuffers.Builder, lineStyleId: flatbuffers.Long) {
-  builder.addFieldInt64(3, lineStyleId, builder.createLong(0, 0));
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} transparency
- */
-static addTransparency(builder: flatbuffers.Builder, transparency: number) {
-  builder.addFieldFloat64(4, transparency, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} displayPriority
- */
-static addDisplayPriority(builder: flatbuffers.Builder, displayPriority: number) {
-  builder.addFieldInt32(5, displayPriority, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {DgnFB.GeometryClass} geomClass
- */
-static addGeomClass(builder: flatbuffers.Builder, geomClass: DgnFB.GeometryClass) {
-  builder.addFieldInt8(6, geomClass, DgnFB.GeometryClass.Primary);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} useColor
- */
-static addUseColor(builder: flatbuffers.Builder, useColor: number) {
-  builder.addFieldInt8(7, useColor, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} useWeight
- */
-static addUseWeight(builder: flatbuffers.Builder, useWeight: number) {
-  builder.addFieldInt8(8, useWeight, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} useStyle
- */
-static addUseStyle(builder: flatbuffers.Builder, useStyle: number) {
-  builder.addFieldInt8(9, useStyle, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @returns {flatbuffers.Offset}
- */
-static endBasicSymbology(builder: flatbuffers.Builder): flatbuffers.Offset {
-  const offset = builder.endObject();
-  return offset;
-};
-
-}
-}
-/**
- * @constructor
- */
-export namespace DgnFB{
-export class LineStyleModifiers {
-  /**
-   * @type {flatbuffers.ByteBuffer}
-   */
-  bb: flatbuffers.ByteBuffer;
-
-  /**
-   * @type {number}
-   */
-  bb_pos: number = 0;
-/**
- * @param {number} i
- * @param {flatbuffers.ByteBuffer} bb
- * @returns {LineStyleModifiers}
- */
-__init(i: number, bb: flatbuffers.ByteBuffer): LineStyleModifiers {
-  this.bb_pos = i;
-  this.bb = bb;
-  return this;
-};
-
-/**
- * @param {flatbuffers.ByteBuffer} bb
- * @param {LineStyleModifiers=} obj
- * @returns {LineStyleModifiers}
- */
-static getRootAsLineStyleModifiers(bb: flatbuffers.ByteBuffer, obj?: LineStyleModifiers): LineStyleModifiers {
-  return (obj || new LineStyleModifiers ()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
-
-/**
- * @returns {number}
- */
-modifiers(): number {
-  const offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns {number}
- */
-scale(): number {
-  const offset = this.bb.__offset(this.bb_pos, 6);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @returns {number}
- */
-dashScale(): number {
-  const offset = this.bb.__offset(this.bb_pos, 8);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @returns {number}
- */
-gapScale(): number {
-  const offset = this.bb.__offset(this.bb_pos, 10);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @returns {number}
- */
-startWidth(): number {
-  const offset = this.bb.__offset(this.bb_pos, 12);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @returns {number}
- */
-endWidth(): number {
-  const offset = this.bb.__offset(this.bb_pos, 14);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @returns {number}
- */
-distPhase(): number {
-  const offset = this.bb.__offset(this.bb_pos, 16);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @returns {number}
- */
-fractPhase(): number {
-  const offset = this.bb.__offset(this.bb_pos, 18);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @param {DgnFB.DPoint3d=} obj
- * @returns {DgnFB.DPoint3d|null}
- */
-normal(obj?: DgnFB.DPoint3d): DgnFB.DPoint3d|null {
-  const offset = this.bb.__offset(this.bb_pos, 20);
-  return offset ? (obj || new DgnFB.DPoint3d()).__init(this.bb_pos + offset, this.bb) : null;
-};
-
-/**
- * @returns {number}
- */
-yaw(): number {
-  const offset = this.bb.__offset(this.bb_pos, 22);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @returns {number}
- */
-pitch(): number {
-  const offset = this.bb.__offset(this.bb_pos, 24);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @returns {number}
- */
-roll(): number {
-  const offset = this.bb.__offset(this.bb_pos, 26);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- */
-static startLineStyleModifiers(builder: flatbuffers.Builder) {
-  builder.startObject(12);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} modifiers
- */
-static addModifiers(builder: flatbuffers.Builder, modifiers: number) {
-  builder.addFieldInt32(0, modifiers, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} scale
- */
-static addScale(builder: flatbuffers.Builder, scale: number) {
-  builder.addFieldFloat64(1, scale, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} dashScale
- */
-static addDashScale(builder: flatbuffers.Builder, dashScale: number) {
-  builder.addFieldFloat64(2, dashScale, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} gapScale
- */
-static addGapScale(builder: flatbuffers.Builder, gapScale: number) {
-  builder.addFieldFloat64(3, gapScale, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} startWidth
- */
-static addStartWidth(builder: flatbuffers.Builder, startWidth: number) {
-  builder.addFieldFloat64(4, startWidth, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} endWidth
- */
-static addEndWidth(builder: flatbuffers.Builder, endWidth: number) {
-  builder.addFieldFloat64(5, endWidth, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} distPhase
- */
-static addDistPhase(builder: flatbuffers.Builder, distPhase: number) {
-  builder.addFieldFloat64(6, distPhase, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} fractPhase
- */
-static addFractPhase(builder: flatbuffers.Builder, fractPhase: number) {
-  builder.addFieldFloat64(7, fractPhase, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} normalOffset
- */
-static addNormal(builder: flatbuffers.Builder, normalOffset: flatbuffers.Offset) {
-  builder.addFieldStruct(8, normalOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} yaw
- */
-static addYaw(builder: flatbuffers.Builder, yaw: number) {
-  builder.addFieldFloat64(9, yaw, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} pitch
- */
-static addPitch(builder: flatbuffers.Builder, pitch: number) {
-  builder.addFieldFloat64(10, pitch, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} roll
- */
-static addRoll(builder: flatbuffers.Builder, roll: number) {
-  builder.addFieldFloat64(11, roll, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @returns {flatbuffers.Offset}
- */
-static endLineStyleModifiers(builder: flatbuffers.Builder): flatbuffers.Offset {
-  const offset = builder.endObject();
-  return offset;
-};
-
-}
-}
-/**
- * @constructor
- */
-export namespace DgnFB{
-export class Material {
-  /**
-   * @type {flatbuffers.ByteBuffer}
-   */
-  bb: flatbuffers.ByteBuffer;
-
-  /**
-   * @type {number}
-   */
-  bb_pos: number = 0;
-/**
- * @param {number} i
- * @param {flatbuffers.ByteBuffer} bb
- * @returns {Material}
- */
-__init(i: number, bb: flatbuffers.ByteBuffer): Material {
-  this.bb_pos = i;
-  this.bb = bb;
-  return this;
-};
-
-/**
- * @param {flatbuffers.ByteBuffer} bb
- * @param {Material=} obj
- * @returns {Material}
- */
-static getRootAsMaterial(bb: flatbuffers.ByteBuffer, obj?: Material): Material {
-  return (obj || new Material ()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
-
-/**
- * @returns {number}
- */
-useMaterial(): number {
-  const offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns {flatbuffers.Long}
- */
-materialId(): flatbuffers.Long {
-  const offset = this.bb.__offset(this.bb_pos, 6);
-  return offset ? this.bb.readInt64(this.bb_pos + offset) : this.bb.createLong(0, 0);
-};
-
-/**
- * @param {DgnFB.DPoint3d=} obj
- * @returns {DgnFB.DPoint3d|null}
- */
-origin(obj?: DgnFB.DPoint3d): DgnFB.DPoint3d|null {
-  const offset = this.bb.__offset(this.bb_pos, 8);
-  return offset ? (obj || new DgnFB.DPoint3d()).__init(this.bb_pos + offset, this.bb) : null;
-};
-
-/**
- * @param {DgnFB.DPoint3d=} obj
- * @returns {DgnFB.DPoint3d|null}
- */
-size(obj?: DgnFB.DPoint3d): DgnFB.DPoint3d|null {
-  const offset = this.bb.__offset(this.bb_pos, 10);
-  return offset ? (obj || new DgnFB.DPoint3d()).__init(this.bb_pos + offset, this.bb) : null;
-};
-
-/**
- * @returns {number}
- */
-yaw(): number {
-  const offset = this.bb.__offset(this.bb_pos, 12);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @returns {number}
- */
-pitch(): number {
-  const offset = this.bb.__offset(this.bb_pos, 14);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @returns {number}
- */
-roll(): number {
-  const offset = this.bb.__offset(this.bb_pos, 16);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- */
-static startMaterial(builder: flatbuffers.Builder) {
-  builder.startObject(7);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} useMaterial
- */
-static addUseMaterial(builder: flatbuffers.Builder, useMaterial: number) {
-  builder.addFieldInt8(0, useMaterial, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Long} materialId
- */
-static addMaterialId(builder: flatbuffers.Builder, materialId: flatbuffers.Long) {
-  builder.addFieldInt64(1, materialId, builder.createLong(0, 0));
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} originOffset
- */
-static addOrigin(builder: flatbuffers.Builder, originOffset: flatbuffers.Offset) {
-  builder.addFieldStruct(2, originOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} sizeOffset
- */
-static addSize(builder: flatbuffers.Builder, sizeOffset: flatbuffers.Offset) {
-  builder.addFieldStruct(3, sizeOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} yaw
- */
-static addYaw(builder: flatbuffers.Builder, yaw: number) {
-  builder.addFieldFloat64(4, yaw, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} pitch
- */
-static addPitch(builder: flatbuffers.Builder, pitch: number) {
-  builder.addFieldFloat64(5, pitch, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} roll
- */
-static addRoll(builder: flatbuffers.Builder, roll: number) {
-  builder.addFieldFloat64(6, roll, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @returns {flatbuffers.Offset}
- */
-static endMaterial(builder: flatbuffers.Builder): flatbuffers.Offset {
-  const offset = builder.endObject();
-  return offset;
-};
-
-}
-}
-/**
- * @constructor
- */
-export namespace DgnFB{
-export class AreaFill {
-  /**
-   * @type {flatbuffers.ByteBuffer}
-   */
-  bb: flatbuffers.ByteBuffer;
-
-  /**
-   * @type {number}
-   */
-  bb_pos: number = 0;
-/**
- * @param {number} i
- * @param {flatbuffers.ByteBuffer} bb
- * @returns {AreaFill}
- */
-__init(i: number, bb: flatbuffers.ByteBuffer): AreaFill {
-  this.bb_pos = i;
-  this.bb = bb;
-  return this;
-};
-
-/**
- * @param {flatbuffers.ByteBuffer} bb
- * @param {AreaFill=} obj
- * @returns {AreaFill}
- */
-static getRootAsAreaFill(bb: flatbuffers.ByteBuffer, obj?: AreaFill): AreaFill {
-  return (obj || new AreaFill ()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
-
-/**
- * @returns {DgnFB.FillDisplay}
- */
-fill(): DgnFB.FillDisplay {
-  const offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? /** @type {DgnFB.FillDisplay} */ (this.bb.readInt8(this.bb_pos + offset)) : DgnFB.FillDisplay.None;
-};
-
-/**
- * @returns {number}
- */
-color(): number {
-  const offset = this.bb.__offset(this.bb_pos, 6);
-  return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns {number}
- */
-useColor(): number {
-  const offset = this.bb.__offset(this.bb_pos, 8);
-  return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns {number}
- */
-backgroundFill(): number {
-  const offset = this.bb.__offset(this.bb_pos, 10);
-  return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns {number}
- */
-transparency(): number {
-  const offset = this.bb.__offset(this.bb_pos, 12);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @returns {DgnFB.GradientMode}
- */
-mode(): DgnFB.GradientMode {
-  const offset = this.bb.__offset(this.bb_pos, 14);
-  return offset ? /** @type {DgnFB.GradientMode} */ (this.bb.readInt8(this.bb_pos + offset)) : DgnFB.GradientMode.None;
-};
-
-/**
- * @returns {number}
- */
-flags(): number {
-  const offset = this.bb.__offset(this.bb_pos, 16);
-  return offset ? this.bb.readUint16(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns {number}
- */
-angle(): number {
-  const offset = this.bb.__offset(this.bb_pos, 18);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @returns {number}
- */
-tint(): number {
-  const offset = this.bb.__offset(this.bb_pos, 20);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @returns {number}
- */
-shift(): number {
-  const offset = this.bb.__offset(this.bb_pos, 22);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @param {number} index
- * @returns {number}
- */
-colors(index: number): number|null {
-  const offset = this.bb.__offset(this.bb_pos, 24);
-  return offset ? this.bb.readUint32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
-};
-
-/**
- * @returns {number}
- */
-colorsLength(): number {
-  const offset = this.bb.__offset(this.bb_pos, 24);
-  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns {Uint32Array}
- */
-colorsArray(): Uint32Array|null {
-  const offset = this.bb.__offset(this.bb_pos, 24);
-  return offset ? new Uint32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-};
-
-/**
- * @param {number} index
- * @returns {number}
- */
-values(index: number): number|null {
-  const offset = this.bb.__offset(this.bb_pos, 26);
-  return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
-};
-
-/**
- * @returns {number}
- */
-valuesLength(): number {
-  const offset = this.bb.__offset(this.bb_pos, 26);
-  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns {Float64Array}
- */
-valuesArray(): Float64Array|null {
-  const offset = this.bb.__offset(this.bb_pos, 26);
-  return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- */
-static startAreaFill(builder: flatbuffers.Builder) {
-  builder.startObject(12);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {DgnFB.FillDisplay} fill
- */
-static addFill(builder: flatbuffers.Builder, fill: DgnFB.FillDisplay) {
-  builder.addFieldInt8(0, fill, DgnFB.FillDisplay.None);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} color
- */
-static addColor(builder: flatbuffers.Builder, color: number) {
-  builder.addFieldInt32(1, color, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} useColor
- */
-static addUseColor(builder: flatbuffers.Builder, useColor: number) {
-  builder.addFieldInt8(2, useColor, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} backgroundFill
- */
-static addBackgroundFill(builder: flatbuffers.Builder, backgroundFill: number) {
-  builder.addFieldInt8(3, backgroundFill, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} transparency
- */
-static addTransparency(builder: flatbuffers.Builder, transparency: number) {
-  builder.addFieldFloat64(4, transparency, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {DgnFB.GradientMode} mode
- */
-static addMode(builder: flatbuffers.Builder, mode: DgnFB.GradientMode) {
-  builder.addFieldInt8(5, mode, DgnFB.GradientMode.None);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} flags
- */
-static addFlags(builder: flatbuffers.Builder, flags: number) {
-  builder.addFieldInt16(6, flags, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} angle
- */
-static addAngle(builder: flatbuffers.Builder, angle: number) {
-  builder.addFieldFloat64(7, angle, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} tint
- */
-static addTint(builder: flatbuffers.Builder, tint: number) {
-  builder.addFieldFloat64(8, tint, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} shift
- */
-static addShift(builder: flatbuffers.Builder, shift: number) {
-  builder.addFieldFloat64(9, shift, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} colorsOffset
- */
-static addColors(builder: flatbuffers.Builder, colorsOffset: flatbuffers.Offset) {
-  builder.addFieldOffset(10, colorsOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {Array.<number>} data
- * @returns {flatbuffers.Offset}
- */
-static createColorsVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
-  builder.startVector(4, data.length, 4);
-  for (let i = data.length - 1; i >= 0; i--) {
-    builder.addInt32(data[i]);
   }
-  return builder.endVector();
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} numElems
- */
-static startColorsVector(builder: flatbuffers.Builder, numElems: number) {
-  builder.startVector(4, numElems, 4);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} valuesOffset
- */
-static addValues(builder: flatbuffers.Builder, valuesOffset: flatbuffers.Offset) {
-  builder.addFieldOffset(11, valuesOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {Array.<number>} data
- * @returns {flatbuffers.Offset}
- */
-static createValuesVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
-  builder.startVector(8, data.length, 8);
-  for (let i = data.length - 1; i >= 0; i--) {
-    builder.addFloat64(data[i]);
-  }
-  return builder.endVector();
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} numElems
- */
-static startValuesVector(builder: flatbuffers.Builder, numElems: number) {
-  builder.startVector(8, numElems, 8);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @returns {flatbuffers.Offset}
- */
-static endAreaFill(builder: flatbuffers.Builder): flatbuffers.Offset {
-  const offset = builder.endObject();
-  return offset;
-};
-
-}
 }
 /**
  * @constructor
  */
-export namespace DgnFB{
-export class DwgHatchDefLine {
-  /**
-   * @type {flatbuffers.ByteBuffer}
-   */
-  bb: flatbuffers.ByteBuffer;
+export namespace DgnFB {
+  export class RotMatrix {
+    /**
+     * @type {flatbuffers.ByteBuffer}
+     */
+    bb: flatbuffers.ByteBuffer;
 
-  /**
-   * @type {number}
-   */
-  bb_pos: number = 0;
-/**
- * @param {number} i
- * @param {flatbuffers.ByteBuffer} bb
- * @returns {DwgHatchDefLine}
- */
-__init(i: number, bb: flatbuffers.ByteBuffer): DwgHatchDefLine {
-  this.bb_pos = i;
-  this.bb = bb;
-  return this;
-};
+    /**
+     * @type {number}
+     */
+    bb_pos: number = 0;
+    /**
+     * @param {number} i
+     * @param {flatbuffers.ByteBuffer} bb
+     * @returns {RotMatrix}
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): RotMatrix {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    };
 
-/**
- * @param {flatbuffers.ByteBuffer} bb
- * @param {DwgHatchDefLine=} obj
- * @returns {DwgHatchDefLine}
- */
-static getRootAsDwgHatchDefLine(bb: flatbuffers.ByteBuffer, obj?: DwgHatchDefLine): DwgHatchDefLine {
-  return (obj || new DwgHatchDefLine ()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+    /**
+     * @returns {number}
+     */
+    x00(): number {
+      return this.bb.readFloat64(this.bb_pos);
+    };
 
-/**
- * @returns {number}
- */
-angle(): number {
-  const offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
+    /**
+     * @returns {number}
+     */
+    x01(): number {
+      return this.bb.readFloat64(this.bb_pos + 8);
+    };
 
-/**
- * @param {DgnFB.DPoint2d=} obj
- * @returns {DgnFB.DPoint2d|null}
- */
-through(obj?: DgnFB.DPoint2d): DgnFB.DPoint2d|null {
-  const offset = this.bb.__offset(this.bb_pos, 6);
-  return offset ? (obj || new DgnFB.DPoint2d()).__init(this.bb_pos + offset, this.bb) : null;
-};
+    /**
+     * @returns {number}
+     */
+    x02(): number {
+      return this.bb.readFloat64(this.bb_pos + 16);
+    };
 
-/**
- * @param {DgnFB.DPoint2d=} obj
- * @returns {DgnFB.DPoint2d|null}
- */
-offset(obj?: DgnFB.DPoint2d): DgnFB.DPoint2d|null {
-  const offset = this.bb.__offset(this.bb_pos, 8);
-  return offset ? (obj || new DgnFB.DPoint2d()).__init(this.bb_pos + offset, this.bb) : null;
-};
+    /**
+     * @returns {number}
+     */
+    x10(): number {
+      return this.bb.readFloat64(this.bb_pos + 24);
+    };
 
-/**
- * @param {number} index
- * @returns {number}
- */
-dashes(index: number): number|null {
-  const offset = this.bb.__offset(this.bb_pos, 10);
-  return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
-};
+    /**
+     * @returns {number}
+     */
+    x11(): number {
+      return this.bb.readFloat64(this.bb_pos + 32);
+    };
 
-/**
- * @returns {number}
- */
-dashesLength(): number {
-  const offset = this.bb.__offset(this.bb_pos, 10);
-  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-};
+    /**
+     * @returns {number}
+     */
+    x12(): number {
+      return this.bb.readFloat64(this.bb_pos + 40);
+    };
 
-/**
- * @returns {Float64Array}
- */
-dashesArray(): Float64Array|null {
-  const offset = this.bb.__offset(this.bb_pos, 10);
-  return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-};
+    /**
+     * @returns {number}
+     */
+    x20(): number {
+      return this.bb.readFloat64(this.bb_pos + 48);
+    };
 
-/**
- * @param {flatbuffers.Builder} builder
- */
-static startDwgHatchDefLine(builder: flatbuffers.Builder) {
-  builder.startObject(4);
-};
+    /**
+     * @returns {number}
+     */
+    x21(): number {
+      return this.bb.readFloat64(this.bb_pos + 56);
+    };
 
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} angle
- */
-static addAngle(builder: flatbuffers.Builder, angle: number) {
-  builder.addFieldFloat64(0, angle, 0.0);
-};
+    /**
+     * @returns {number}
+     */
+    x22(): number {
+      return this.bb.readFloat64(this.bb_pos + 64);
+    };
 
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} throughOffset
- */
-static addThrough(builder: flatbuffers.Builder, throughOffset: flatbuffers.Offset) {
-  builder.addFieldStruct(1, throughOffset, 0);
-};
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} x00
+     * @param {number} x01
+     * @param {number} x02
+     * @param {number} x10
+     * @param {number} x11
+     * @param {number} x12
+     * @param {number} x20
+     * @param {number} x21
+     * @param {number} x22
+     * @returns {flatbuffers.Offset}
+     */
+    static createRotMatrix(builder: flatbuffers.Builder, x00: number, x01: number, x02: number, x10: number, x11: number, x12: number, x20: number, x21: number, x22: number): flatbuffers.Offset {
+      builder.prep(8, 72);
+      builder.writeFloat64(x22);
+      builder.writeFloat64(x21);
+      builder.writeFloat64(x20);
+      builder.writeFloat64(x12);
+      builder.writeFloat64(x11);
+      builder.writeFloat64(x10);
+      builder.writeFloat64(x02);
+      builder.writeFloat64(x01);
+      builder.writeFloat64(x00);
+      return builder.offset();
+    };
 
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} offsetOffset
- */
-static addOffset(builder: flatbuffers.Builder, offsetOffset: flatbuffers.Offset) {
-  builder.addFieldStruct(2, offsetOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} dashesOffset
- */
-static addDashes(builder: flatbuffers.Builder, dashesOffset: flatbuffers.Offset) {
-  builder.addFieldOffset(3, dashesOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {Array.<number>} data
- * @returns {flatbuffers.Offset}
- */
-static createDashesVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
-  builder.startVector(8, data.length, 8);
-  for (let i = data.length - 1; i >= 0; i--) {
-    builder.addFloat64(data[i]);
   }
-  return builder.endVector();
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} numElems
- */
-static startDashesVector(builder: flatbuffers.Builder, numElems: number) {
-  builder.startVector(8, numElems, 8);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @returns {flatbuffers.Offset}
- */
-static endDwgHatchDefLine(builder: flatbuffers.Builder): flatbuffers.Offset {
-  const offset = builder.endObject();
-  return offset;
-};
-
-}
 }
 /**
  * @constructor
  */
-export namespace DgnFB{
-export class AreaPattern {
-  /**
-   * @type {flatbuffers.ByteBuffer}
-   */
-  bb: flatbuffers.ByteBuffer;
+export namespace DgnFB {
+  export class Transform {
+    /**
+     * @type {flatbuffers.ByteBuffer}
+     */
+    bb: flatbuffers.ByteBuffer;
 
-  /**
-   * @type {number}
-   */
-  bb_pos: number = 0;
-/**
- * @param {number} i
- * @param {flatbuffers.ByteBuffer} bb
- * @returns {AreaPattern}
- */
-__init(i: number, bb: flatbuffers.ByteBuffer): AreaPattern {
-  this.bb_pos = i;
-  this.bb = bb;
-  return this;
-};
+    /**
+     * @type {number}
+     */
+    bb_pos: number = 0;
+    /**
+     * @param {number} i
+     * @param {flatbuffers.ByteBuffer} bb
+     * @returns {Transform}
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): Transform {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    };
 
-/**
- * @param {flatbuffers.ByteBuffer} bb
- * @param {AreaPattern=} obj
- * @returns {AreaPattern}
- */
-static getRootAsAreaPattern(bb: flatbuffers.ByteBuffer, obj?: AreaPattern): AreaPattern {
-  return (obj || new AreaPattern ()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+    /**
+     * @returns {number}
+     */
+    x00(): number {
+      return this.bb.readFloat64(this.bb_pos);
+    };
 
-/**
- * @param {DgnFB.DPoint3d=} obj
- * @returns {DgnFB.DPoint3d|null}
- */
-origin(obj?: DgnFB.DPoint3d): DgnFB.DPoint3d|null {
-  const offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? (obj || new DgnFB.DPoint3d()).__init(this.bb_pos + offset, this.bb) : null;
-};
+    /**
+     * @returns {number}
+     */
+    x01(): number {
+      return this.bb.readFloat64(this.bb_pos + 8);
+    };
 
-/**
- * @param {DgnFB.RotMatrix=} obj
- * @returns {DgnFB.RotMatrix|null}
- */
-rotation(obj?: DgnFB.RotMatrix): DgnFB.RotMatrix|null {
-  const offset = this.bb.__offset(this.bb_pos, 6);
-  return offset ? (obj || new DgnFB.RotMatrix()).__init(this.bb_pos + offset, this.bb) : null;
-};
+    /**
+     * @returns {number}
+     */
+    x02(): number {
+      return this.bb.readFloat64(this.bb_pos + 16);
+    };
 
-/**
- * @returns {number}
- */
-space1(): number {
-  const offset = this.bb.__offset(this.bb_pos, 8);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
+    /**
+     * @returns {number}
+     */
+    tx(): number {
+      return this.bb.readFloat64(this.bb_pos + 24);
+    };
 
-/**
- * @returns {number}
- */
-space2(): number {
-  const offset = this.bb.__offset(this.bb_pos, 10);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
+    /**
+     * @returns {number}
+     */
+    x10(): number {
+      return this.bb.readFloat64(this.bb_pos + 32);
+    };
 
-/**
- * @returns {number}
- */
-angle1(): number {
-  const offset = this.bb.__offset(this.bb_pos, 12);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
+    /**
+     * @returns {number}
+     */
+    x11(): number {
+      return this.bb.readFloat64(this.bb_pos + 40);
+    };
 
-/**
- * @returns {number}
- */
-angle2(): number {
-  const offset = this.bb.__offset(this.bb_pos, 14);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
+    /**
+     * @returns {number}
+     */
+    x12(): number {
+      return this.bb.readFloat64(this.bb_pos + 48);
+    };
 
-/**
- * @returns {number}
- */
-scale(): number {
-  const offset = this.bb.__offset(this.bb_pos, 16);
-  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
+    /**
+     * @returns {number}
+     */
+    ty(): number {
+      return this.bb.readFloat64(this.bb_pos + 56);
+    };
 
-/**
- * @returns {number}
- */
-color(): number {
-  const offset = this.bb.__offset(this.bb_pos, 18);
-  return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
-};
+    /**
+     * @returns {number}
+     */
+    x20(): number {
+      return this.bb.readFloat64(this.bb_pos + 64);
+    };
 
-/**
- * @returns {number}
- */
-weight(): number {
-  const offset = this.bb.__offset(this.bb_pos, 20);
-  return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
-};
+    /**
+     * @returns {number}
+     */
+    x21(): number {
+      return this.bb.readFloat64(this.bb_pos + 72);
+    };
 
-/**
- * @returns {number}
- */
-useColor(): number {
-  const offset = this.bb.__offset(this.bb_pos, 22);
-  return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
-};
+    /**
+     * @returns {number}
+     */
+    x22(): number {
+      return this.bb.readFloat64(this.bb_pos + 80);
+    };
 
-/**
- * @returns {number}
- */
-useWeight(): number {
-  const offset = this.bb.__offset(this.bb_pos, 24);
-  return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
-};
+    /**
+     * @returns {number}
+     */
+    tz(): number {
+      return this.bb.readFloat64(this.bb_pos + 88);
+    };
 
-/**
- * @returns {number}
- */
-invisibleBoundary(): number {
-  const offset = this.bb.__offset(this.bb_pos, 26);
-  return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
-};
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} x00
+     * @param {number} x01
+     * @param {number} x02
+     * @param {number} tx
+     * @param {number} x10
+     * @param {number} x11
+     * @param {number} x12
+     * @param {number} ty
+     * @param {number} x20
+     * @param {number} x21
+     * @param {number} x22
+     * @param {number} tz
+     * @returns {flatbuffers.Offset}
+     */
+    static createTransform(builder: flatbuffers.Builder, x00: number, x01: number, x02: number, tx: number, x10: number, x11: number, x12: number, ty: number, x20: number, x21: number, x22: number, tz: number): flatbuffers.Offset {
+      builder.prep(8, 96);
+      builder.writeFloat64(tz);
+      builder.writeFloat64(x22);
+      builder.writeFloat64(x21);
+      builder.writeFloat64(x20);
+      builder.writeFloat64(ty);
+      builder.writeFloat64(x12);
+      builder.writeFloat64(x11);
+      builder.writeFloat64(x10);
+      builder.writeFloat64(tx);
+      builder.writeFloat64(x02);
+      builder.writeFloat64(x01);
+      builder.writeFloat64(x00);
+      return builder.offset();
+    };
 
-/**
- * @returns {number}
- */
-snappable(): number {
-  const offset = this.bb.__offset(this.bb_pos, 28);
-  return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns {flatbuffers.Long}
- */
-symbolId(): flatbuffers.Long {
-  const offset = this.bb.__offset(this.bb_pos, 30);
-  return offset ? this.bb.readInt64(this.bb_pos + offset) : this.bb.createLong(0, 0);
-};
-
-/**
- * @param {number} index
- * @param {DgnFB.DwgHatchDefLine=} obj
- * @returns {DgnFB.DwgHatchDefLine}
- */
-defLine(index: number, obj?: DgnFB.DwgHatchDefLine): DgnFB.DwgHatchDefLine|null {
-  const offset = this.bb.__offset(this.bb_pos, 32);
-  return offset ? (obj || new DgnFB.DwgHatchDefLine()).__init(this.bb.__indirect(this.bb.__vector(this.bb_pos + offset) + index * 4), this.bb) : null;
-};
-
-/**
- * @returns {number}
- */
-defLineLength(): number {
-  const offset = this.bb.__offset(this.bb_pos, 32);
-  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- */
-static startAreaPattern(builder: flatbuffers.Builder) {
-  builder.startObject(15);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} originOffset
- */
-static addOrigin(builder: flatbuffers.Builder, originOffset: flatbuffers.Offset) {
-  builder.addFieldStruct(0, originOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} rotationOffset
- */
-static addRotation(builder: flatbuffers.Builder, rotationOffset: flatbuffers.Offset) {
-  builder.addFieldStruct(1, rotationOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} space1
- */
-static addSpace1(builder: flatbuffers.Builder, space1: number) {
-  builder.addFieldFloat64(2, space1, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} space2
- */
-static addSpace2(builder: flatbuffers.Builder, space2: number) {
-  builder.addFieldFloat64(3, space2, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} angle1
- */
-static addAngle1(builder: flatbuffers.Builder, angle1: number) {
-  builder.addFieldFloat64(4, angle1, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} angle2
- */
-static addAngle2(builder: flatbuffers.Builder, angle2: number) {
-  builder.addFieldFloat64(5, angle2, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} scale
- */
-static addScale(builder: flatbuffers.Builder, scale: number) {
-  builder.addFieldFloat64(6, scale, 0.0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} color
- */
-static addColor(builder: flatbuffers.Builder, color: number) {
-  builder.addFieldInt32(7, color, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} weight
- */
-static addWeight(builder: flatbuffers.Builder, weight: number) {
-  builder.addFieldInt32(8, weight, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} useColor
- */
-static addUseColor(builder: flatbuffers.Builder, useColor: number) {
-  builder.addFieldInt8(9, useColor, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} useWeight
- */
-static addUseWeight(builder: flatbuffers.Builder, useWeight: number) {
-  builder.addFieldInt8(10, useWeight, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} invisibleBoundary
- */
-static addInvisibleBoundary(builder: flatbuffers.Builder, invisibleBoundary: number) {
-  builder.addFieldInt8(11, invisibleBoundary, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} snappable
- */
-static addSnappable(builder: flatbuffers.Builder, snappable: number) {
-  builder.addFieldInt8(12, snappable, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Long} symbolId
- */
-static addSymbolId(builder: flatbuffers.Builder, symbolId: flatbuffers.Long) {
-  builder.addFieldInt64(13, symbolId, builder.createLong(0, 0));
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} defLineOffset
- */
-static addDefLine(builder: flatbuffers.Builder, defLineOffset: flatbuffers.Offset) {
-  builder.addFieldOffset(14, defLineOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {Array.<flatbuffers.Offset>} data
- * @returns {flatbuffers.Offset}
- */
-static createDefLineVector(builder: flatbuffers.Builder, data: flatbuffers.Offset[]): flatbuffers.Offset {
-  builder.startVector(4, data.length, 4);
-  for (let i = data.length - 1; i >= 0; i--) {
-    builder.addOffset(data[i]);
   }
-  return builder.endVector();
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} numElems
- */
-static startDefLineVector(builder: flatbuffers.Builder, numElems: number) {
-  builder.startVector(4, numElems, 4);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @returns {flatbuffers.Offset}
- */
-static endAreaPattern(builder: flatbuffers.Builder): flatbuffers.Offset {
-  const offset = builder.endObject();
-  return offset;
-};
-
 }
+/**
+ * @constructor
+ */
+export namespace DgnFB {
+  export class FaceSymbology {
+    /**
+     * @type {flatbuffers.ByteBuffer}
+     */
+    bb: flatbuffers.ByteBuffer;
+
+    /**
+     * @type {number}
+     */
+    bb_pos: number = 0;
+    /**
+     * @param {number} i
+     * @param {flatbuffers.ByteBuffer} bb
+     * @returns {FaceSymbology}
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): FaceSymbology {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    };
+
+    /**
+     * @returns {number}
+     */
+    useColor(): number {
+      return this.bb.readUint8(this.bb_pos);
+    };
+
+    /**
+     * @returns {number}
+     */
+    useMaterial(): number {
+      return this.bb.readUint8(this.bb_pos + 1);
+    };
+
+    /**
+     * @returns {number}
+     */
+    color(): number {
+      return this.bb.readUint32(this.bb_pos + 4);
+    };
+
+    /**
+     * @returns {flatbuffers.Long}
+     */
+    materialId(): flatbuffers.Long {
+      return this.bb.readInt64(this.bb_pos + 8);
+    };
+
+    /**
+     * @returns {number}
+     */
+    transparency(): number {
+      return this.bb.readFloat64(this.bb_pos + 16);
+    };
+
+    /**
+     * @param {DgnFB.DPoint2d=} obj
+     * @returns {DgnFB.DPoint2d|null}
+     */
+    uv(obj?: DgnFB.DPoint2d): DgnFB.DPoint2d | null {
+      return (obj || new DgnFB.DPoint2d()).__init(this.bb_pos + 24, this.bb);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} useColor
+     * @param {number} useMaterial
+     * @param {number} color
+     * @param {flatbuffers.Long} materialId
+     * @param {number} transparency
+     * @param {number} uv_x
+     * @param {number} uv_y
+     * @returns {flatbuffers.Offset}
+     */
+    static createFaceSymbology(builder: flatbuffers.Builder, useColor: number, useMaterial: number, color: number, materialId: flatbuffers.Long, transparency: number, uv_x: number, uv_y: number): flatbuffers.Offset {
+      builder.prep(8, 40);
+      builder.prep(8, 16);
+      builder.writeFloat64(uv_y);
+      builder.writeFloat64(uv_x);
+      builder.writeFloat64(transparency);
+      builder.writeInt64(materialId);
+      builder.writeInt32(color);
+      builder.pad(2);
+      builder.writeInt8(useMaterial);
+      builder.writeInt8(useColor);
+      return builder.offset();
+    };
+
+  }
+}
+/**
+ * @constructor
+ */
+export namespace DgnFB {
+  export class FaceSymbologyIndex {
+    /**
+     * @type {flatbuffers.ByteBuffer}
+     */
+    bb: flatbuffers.ByteBuffer;
+
+    /**
+     * @type {number}
+     */
+    bb_pos: number = 0;
+    /**
+     * @param {number} i
+     * @param {flatbuffers.ByteBuffer} bb
+     * @returns {FaceSymbologyIndex}
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): FaceSymbologyIndex {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    };
+
+    /**
+     * @returns {number}
+     */
+    faceIndex(): number {
+      return this.bb.readUint32(this.bb_pos);
+    };
+
+    /**
+     * @returns {number}
+     */
+    symbIndex(): number {
+      return this.bb.readUint32(this.bb_pos + 4);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} faceIndex
+     * @param {number} symbIndex
+     * @returns {flatbuffers.Offset}
+     */
+    static createFaceSymbologyIndex(builder: flatbuffers.Builder, faceIndex: number, symbIndex: number): flatbuffers.Offset {
+      builder.prep(4, 8);
+      builder.writeInt32(symbIndex);
+      builder.writeInt32(faceIndex);
+      return builder.offset();
+    };
+
+  }
+}
+/**
+ * @constructor
+ */
+export namespace DgnFB {
+  export class PointPrimitive {
+    /**
+     * @type {flatbuffers.ByteBuffer}
+     */
+    bb: flatbuffers.ByteBuffer;
+
+    /**
+     * @type {number}
+     */
+    bb_pos: number = 0;
+    /**
+     * @param {number} i
+     * @param {flatbuffers.ByteBuffer} bb
+     * @returns {PointPrimitive}
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): PointPrimitive {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    };
+
+    /**
+     * @param {flatbuffers.ByteBuffer} bb
+     * @param {PointPrimitive=} obj
+     * @returns {PointPrimitive}
+     */
+    static getRootAsPointPrimitive(bb: flatbuffers.ByteBuffer, obj?: PointPrimitive): PointPrimitive {
+      return (obj || new PointPrimitive()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+    };
+
+    /**
+     * @param {number} index
+     * @param {DgnFB.DPoint3d=} obj
+     * @returns {DgnFB.DPoint3d}
+     */
+    coords(index: number, obj?: DgnFB.DPoint3d): DgnFB.DPoint3d | null {
+      const offset = this.bb.__offset(this.bb_pos, 4);
+      return offset ? (obj || new DgnFB.DPoint3d()).__init(this.bb.__vector(this.bb_pos + offset) + index * 24, this.bb) : null;
+    };
+
+    /**
+     * @returns {number}
+     */
+    coordsLength(): number {
+      const offset = this.bb.__offset(this.bb_pos, 4);
+      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {DgnFB.BoundaryType}
+     */
+    boundary(): DgnFB.BoundaryType {
+      const offset = this.bb.__offset(this.bb_pos, 6);
+      return offset ? /** @type {DgnFB.BoundaryType} */ (this.bb.readInt8(this.bb_pos + offset)) : DgnFB.BoundaryType.None;
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     */
+    static startPointPrimitive(builder: flatbuffers.Builder) {
+      builder.startObject(2);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} coordsOffset
+     */
+    static addCoords(builder: flatbuffers.Builder, coordsOffset: flatbuffers.Offset) {
+      builder.addFieldOffset(0, coordsOffset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} numElems
+     */
+    static startCoordsVector(builder: flatbuffers.Builder, numElems: number) {
+      builder.startVector(24, numElems, 8);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {DgnFB.BoundaryType} boundary
+     */
+    static addBoundary(builder: flatbuffers.Builder, boundary: DgnFB.BoundaryType) {
+      builder.addFieldInt8(1, boundary, DgnFB.BoundaryType.None);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @returns {flatbuffers.Offset}
+     */
+    static endPointPrimitive(builder: flatbuffers.Builder): flatbuffers.Offset {
+      const offset = builder.endObject();
+      return offset;
+    };
+
+  }
+}
+/**
+ * @constructor
+ */
+export namespace DgnFB {
+  export class PointPrimitive2d {
+    /**
+     * @type {flatbuffers.ByteBuffer}
+     */
+    bb: flatbuffers.ByteBuffer;
+
+    /**
+     * @type {number}
+     */
+    bb_pos: number = 0;
+    /**
+     * @param {number} i
+     * @param {flatbuffers.ByteBuffer} bb
+     * @returns {PointPrimitive2d}
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): PointPrimitive2d {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    };
+
+    /**
+     * @param {flatbuffers.ByteBuffer} bb
+     * @param {PointPrimitive2d=} obj
+     * @returns {PointPrimitive2d}
+     */
+    static getRootAsPointPrimitive2d(bb: flatbuffers.ByteBuffer, obj?: PointPrimitive2d): PointPrimitive2d {
+      return (obj || new PointPrimitive2d()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+    };
+
+    /**
+     * @param {number} index
+     * @param {DgnFB.DPoint2d=} obj
+     * @returns {DgnFB.DPoint2d}
+     */
+    coords(index: number, obj?: DgnFB.DPoint2d): DgnFB.DPoint2d | null {
+      const offset = this.bb.__offset(this.bb_pos, 4);
+      return offset ? (obj || new DgnFB.DPoint2d()).__init(this.bb.__vector(this.bb_pos + offset) + index * 16, this.bb) : null;
+    };
+
+    /**
+     * @returns {number}
+     */
+    coordsLength(): number {
+      const offset = this.bb.__offset(this.bb_pos, 4);
+      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {DgnFB.BoundaryType}
+     */
+    boundary(): DgnFB.BoundaryType {
+      const offset = this.bb.__offset(this.bb_pos, 6);
+      return offset ? /** @type {DgnFB.BoundaryType} */ (this.bb.readInt8(this.bb_pos + offset)) : DgnFB.BoundaryType.None;
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     */
+    static startPointPrimitive2d(builder: flatbuffers.Builder) {
+      builder.startObject(2);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} coordsOffset
+     */
+    static addCoords(builder: flatbuffers.Builder, coordsOffset: flatbuffers.Offset) {
+      builder.addFieldOffset(0, coordsOffset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} numElems
+     */
+    static startCoordsVector(builder: flatbuffers.Builder, numElems: number) {
+      builder.startVector(16, numElems, 8);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {DgnFB.BoundaryType} boundary
+     */
+    static addBoundary(builder: flatbuffers.Builder, boundary: DgnFB.BoundaryType) {
+      builder.addFieldInt8(1, boundary, DgnFB.BoundaryType.None);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @returns {flatbuffers.Offset}
+     */
+    static endPointPrimitive2d(builder: flatbuffers.Builder): flatbuffers.Offset {
+      const offset = builder.endObject();
+      return offset;
+    };
+
+  }
+}
+/**
+ * @constructor
+ */
+export namespace DgnFB {
+  export class ArcPrimitive {
+    /**
+     * @type {flatbuffers.ByteBuffer}
+     */
+    bb: flatbuffers.ByteBuffer;
+
+    /**
+     * @type {number}
+     */
+    bb_pos: number = 0;
+    /**
+     * @param {number} i
+     * @param {flatbuffers.ByteBuffer} bb
+     * @returns {ArcPrimitive}
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): ArcPrimitive {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    };
+
+    /**
+     * @param {flatbuffers.ByteBuffer} bb
+     * @param {ArcPrimitive=} obj
+     * @returns {ArcPrimitive}
+     */
+    static getRootAsArcPrimitive(bb: flatbuffers.ByteBuffer, obj?: ArcPrimitive): ArcPrimitive {
+      return (obj || new ArcPrimitive()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+    };
+
+    /**
+     * @param {DgnFB.DPoint3d=} obj
+     * @returns {DgnFB.DPoint3d|null}
+     */
+    center(obj?: DgnFB.DPoint3d): DgnFB.DPoint3d | null {
+      const offset = this.bb.__offset(this.bb_pos, 4);
+      return offset ? (obj || new DgnFB.DPoint3d()).__init(this.bb_pos + offset, this.bb) : null;
+    };
+
+    /**
+     * @param {DgnFB.DVec3d=} obj
+     * @returns {DgnFB.DVec3d|null}
+     */
+    vector0(obj?: DgnFB.DVec3d): DgnFB.DVec3d | null {
+      const offset = this.bb.__offset(this.bb_pos, 6);
+      return offset ? (obj || new DgnFB.DVec3d()).__init(this.bb_pos + offset, this.bb) : null;
+    };
+
+    /**
+     * @param {DgnFB.DVec3d=} obj
+     * @returns {DgnFB.DVec3d|null}
+     */
+    vector90(obj?: DgnFB.DVec3d): DgnFB.DVec3d | null {
+      const offset = this.bb.__offset(this.bb_pos, 8);
+      return offset ? (obj || new DgnFB.DVec3d()).__init(this.bb_pos + offset, this.bb) : null;
+    };
+
+    /**
+     * @returns {number}
+     */
+    start(): number {
+      const offset = this.bb.__offset(this.bb_pos, 10);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    sweep(): number {
+      const offset = this.bb.__offset(this.bb_pos, 12);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {DgnFB.BoundaryType}
+     */
+    boundary(): DgnFB.BoundaryType {
+      const offset = this.bb.__offset(this.bb_pos, 14);
+      return offset ? /** @type {DgnFB.BoundaryType} */ (this.bb.readInt8(this.bb_pos + offset)) : DgnFB.BoundaryType.None;
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     */
+    static startArcPrimitive(builder: flatbuffers.Builder) {
+      builder.startObject(6);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} centerOffset
+     */
+    static addCenter(builder: flatbuffers.Builder, centerOffset: flatbuffers.Offset) {
+      builder.addFieldStruct(0, centerOffset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} vector0Offset
+     */
+    static addVector0(builder: flatbuffers.Builder, vector0Offset: flatbuffers.Offset) {
+      builder.addFieldStruct(1, vector0Offset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} vector90Offset
+     */
+    static addVector90(builder: flatbuffers.Builder, vector90Offset: flatbuffers.Offset) {
+      builder.addFieldStruct(2, vector90Offset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} start
+     */
+    static addStart(builder: flatbuffers.Builder, start: number) {
+      builder.addFieldFloat64(3, start, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} sweep
+     */
+    static addSweep(builder: flatbuffers.Builder, sweep: number) {
+      builder.addFieldFloat64(4, sweep, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {DgnFB.BoundaryType} boundary
+     */
+    static addBoundary(builder: flatbuffers.Builder, boundary: DgnFB.BoundaryType) {
+      builder.addFieldInt8(5, boundary, DgnFB.BoundaryType.None);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @returns {flatbuffers.Offset}
+     */
+    static endArcPrimitive(builder: flatbuffers.Builder): flatbuffers.Offset {
+      const offset = builder.endObject();
+      return offset;
+    };
+
+  }
+}
+/**
+ * @constructor
+ */
+export namespace DgnFB {
+  export class BRepData {
+    /**
+     * @type {flatbuffers.ByteBuffer}
+     */
+    bb: flatbuffers.ByteBuffer;
+
+    /**
+     * @type {number}
+     */
+    bb_pos: number = 0;
+    /**
+     * @param {number} i
+     * @param {flatbuffers.ByteBuffer} bb
+     * @returns {BRepData}
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): BRepData {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    };
+
+    /**
+     * @param {flatbuffers.ByteBuffer} bb
+     * @param {BRepData=} obj
+     * @returns {BRepData}
+     */
+    static getRootAsBRepData(bb: flatbuffers.ByteBuffer, obj?: BRepData): BRepData {
+      return (obj || new BRepData()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+    };
+
+    /**
+     * @param {DgnFB.Transform=} obj
+     * @returns {DgnFB.Transform|null}
+     */
+    entityTransform(obj?: DgnFB.Transform): DgnFB.Transform | null {
+      const offset = this.bb.__offset(this.bb_pos, 4);
+      return offset ? (obj || new DgnFB.Transform()).__init(this.bb_pos + offset, this.bb) : null;
+    };
+
+    /**
+     * @returns {DgnFB.BRepType}
+     */
+    brepType(): DgnFB.BRepType {
+      const offset = this.bb.__offset(this.bb_pos, 6);
+      return offset ? /** @type {DgnFB.BRepType} */ (this.bb.readInt8(this.bb_pos + offset)) : DgnFB.BRepType.Solid;
+    };
+
+    /**
+     * @param {number} index
+     * @returns {number}
+     */
+    entityData(index: number): number | null {
+      const offset = this.bb.__offset(this.bb_pos, 8);
+      return offset ? this.bb.readUint8(this.bb.__vector(this.bb_pos + offset) + index) : 0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    entityDataLength(): number {
+      const offset = this.bb.__offset(this.bb_pos, 8);
+      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {Uint8Array}
+     */
+    entityDataArray(): Uint8Array | null {
+      const offset = this.bb.__offset(this.bb_pos, 8);
+      return offset ? new Uint8Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+    };
+
+    /**
+     * @param {number} index
+     * @param {DgnFB.FaceSymbology=} obj
+     * @returns {DgnFB.FaceSymbology}
+     */
+    symbology(index: number, obj?: DgnFB.FaceSymbology): DgnFB.FaceSymbology | null {
+      const offset = this.bb.__offset(this.bb_pos, 10);
+      return offset ? (obj || new DgnFB.FaceSymbology()).__init(this.bb.__vector(this.bb_pos + offset) + index * 40, this.bb) : null;
+    };
+
+    /**
+     * @returns {number}
+     */
+    symbologyLength(): number {
+      const offset = this.bb.__offset(this.bb_pos, 10);
+      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @param {number} index
+     * @param {DgnFB.FaceSymbologyIndex=} obj
+     * @returns {DgnFB.FaceSymbologyIndex}
+     */
+    symbologyIndex(index: number, obj?: DgnFB.FaceSymbologyIndex): DgnFB.FaceSymbologyIndex | null {
+      const offset = this.bb.__offset(this.bb_pos, 12);
+      return offset ? (obj || new DgnFB.FaceSymbologyIndex()).__init(this.bb.__vector(this.bb_pos + offset) + index * 8, this.bb) : null;
+    };
+
+    /**
+     * @returns {number}
+     */
+    symbologyIndexLength(): number {
+      const offset = this.bb.__offset(this.bb_pos, 12);
+      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     */
+    static startBRepData(builder: flatbuffers.Builder) {
+      builder.startObject(5);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} entityTransformOffset
+     */
+    static addEntityTransform(builder: flatbuffers.Builder, entityTransformOffset: flatbuffers.Offset) {
+      builder.addFieldStruct(0, entityTransformOffset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {DgnFB.BRepType} brepType
+     */
+    static addBrepType(builder: flatbuffers.Builder, brepType: DgnFB.BRepType) {
+      builder.addFieldInt8(1, brepType, DgnFB.BRepType.Solid);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} entityDataOffset
+     */
+    static addEntityData(builder: flatbuffers.Builder, entityDataOffset: flatbuffers.Offset) {
+      builder.addFieldOffset(2, entityDataOffset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {Array.<number>} data
+     * @returns {flatbuffers.Offset}
+     */
+    static createEntityDataVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
+      builder.startVector(1, data.length, 1);
+      for (let i = data.length - 1; i >= 0; i--) {
+        builder.addInt8(data[i]);
+      }
+      return builder.endVector();
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} numElems
+     */
+    static startEntityDataVector(builder: flatbuffers.Builder, numElems: number) {
+      builder.startVector(1, numElems, 1);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} symbologyOffset
+     */
+    static addSymbology(builder: flatbuffers.Builder, symbologyOffset: flatbuffers.Offset) {
+      builder.addFieldOffset(3, symbologyOffset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} numElems
+     */
+    static startSymbologyVector(builder: flatbuffers.Builder, numElems: number) {
+      builder.startVector(40, numElems, 8);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} symbologyIndexOffset
+     */
+    static addSymbologyIndex(builder: flatbuffers.Builder, symbologyIndexOffset: flatbuffers.Offset) {
+      builder.addFieldOffset(4, symbologyIndexOffset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} numElems
+     */
+    static startSymbologyIndexVector(builder: flatbuffers.Builder, numElems: number) {
+      builder.startVector(8, numElems, 4);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @returns {flatbuffers.Offset}
+     */
+    static endBRepData(builder: flatbuffers.Builder): flatbuffers.Offset {
+      const offset = builder.endObject();
+      return offset;
+    };
+
+  }
+}
+/**
+ * @constructor
+ */
+export namespace DgnFB {
+  export class OCBRepData {
+    /**
+     * @type {flatbuffers.ByteBuffer}
+     */
+    bb: flatbuffers.ByteBuffer;
+
+    /**
+     * @type {number}
+     */
+    bb_pos: number = 0;
+    /**
+     * @param {number} i
+     * @param {flatbuffers.ByteBuffer} bb
+     * @returns {OCBRepData}
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): OCBRepData {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    };
+
+    /**
+     * @param {flatbuffers.ByteBuffer} bb
+     * @param {OCBRepData=} obj
+     * @returns {OCBRepData}
+     */
+    static getRootAsOCBRepData(bb: flatbuffers.ByteBuffer, obj?: OCBRepData): OCBRepData {
+      return (obj || new OCBRepData()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+    };
+
+    /**
+     * @returns {DgnFB.BRepType}
+     */
+    brepType(): DgnFB.BRepType {
+      const offset = this.bb.__offset(this.bb_pos, 4);
+      return offset ? /** @type {DgnFB.BRepType} */ (this.bb.readInt8(this.bb_pos + offset)) : DgnFB.BRepType.Solid;
+    };
+
+    /**
+     * @param {number} index
+     * @returns {number}
+     */
+    entityData(index: number): number | null {
+      const offset = this.bb.__offset(this.bb_pos, 6);
+      return offset ? this.bb.readUint8(this.bb.__vector(this.bb_pos + offset) + index) : 0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    entityDataLength(): number {
+      const offset = this.bb.__offset(this.bb_pos, 6);
+      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {Uint8Array}
+     */
+    entityDataArray(): Uint8Array | null {
+      const offset = this.bb.__offset(this.bb_pos, 6);
+      return offset ? new Uint8Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     */
+    static startOCBRepData(builder: flatbuffers.Builder) {
+      builder.startObject(2);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {DgnFB.BRepType} brepType
+     */
+    static addBrepType(builder: flatbuffers.Builder, brepType: DgnFB.BRepType) {
+      builder.addFieldInt8(0, brepType, DgnFB.BRepType.Solid);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} entityDataOffset
+     */
+    static addEntityData(builder: flatbuffers.Builder, entityDataOffset: flatbuffers.Offset) {
+      builder.addFieldOffset(1, entityDataOffset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {Array.<number>} data
+     * @returns {flatbuffers.Offset}
+     */
+    static createEntityDataVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
+      builder.startVector(1, data.length, 1);
+      for (let i = data.length - 1; i >= 0; i--) {
+        builder.addInt8(data[i]);
+      }
+      return builder.endVector();
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} numElems
+     */
+    static startEntityDataVector(builder: flatbuffers.Builder, numElems: number) {
+      builder.startVector(1, numElems, 1);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @returns {flatbuffers.Offset}
+     */
+    static endOCBRepData(builder: flatbuffers.Builder): flatbuffers.Offset {
+      const offset = builder.endObject();
+      return offset;
+    };
+
+  }
+}
+/**
+ * @constructor
+ */
+export namespace DgnFB {
+  export class Image {
+    /**
+     * @type {flatbuffers.ByteBuffer}
+     */
+    bb: flatbuffers.ByteBuffer;
+
+    /**
+     * @type {number}
+     */
+    bb_pos: number = 0;
+    /**
+     * @param {number} i
+     * @param {flatbuffers.ByteBuffer} bb
+     * @returns {Image}
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): Image {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    };
+
+    /**
+     * @param {flatbuffers.ByteBuffer} bb
+     * @param {Image=} obj
+     * @returns {Image}
+     */
+    static getRootAsImage(bb: flatbuffers.ByteBuffer, obj?: Image): Image {
+      return (obj || new Image()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+    };
+
+    /**
+     * @returns {number}
+     */
+    drawBorder(): number {
+      const offset = this.bb.__offset(this.bb_pos, 4);
+      return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    useFillTint(): number {
+      const offset = this.bb.__offset(this.bb_pos, 6);
+      return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @param {DgnFB.DPoint3d=} obj
+     * @returns {DgnFB.DPoint3d|null}
+     */
+    tileCorner0(obj?: DgnFB.DPoint3d): DgnFB.DPoint3d | null {
+      const offset = this.bb.__offset(this.bb_pos, 8);
+      return offset ? (obj || new DgnFB.DPoint3d()).__init(this.bb_pos + offset, this.bb) : null;
+    };
+
+    /**
+     * @param {DgnFB.DPoint3d=} obj
+     * @returns {DgnFB.DPoint3d|null}
+     */
+    tileCorner1(obj?: DgnFB.DPoint3d): DgnFB.DPoint3d | null {
+      const offset = this.bb.__offset(this.bb_pos, 10);
+      return offset ? (obj || new DgnFB.DPoint3d()).__init(this.bb_pos + offset, this.bb) : null;
+    };
+
+    /**
+     * @param {DgnFB.DPoint3d=} obj
+     * @returns {DgnFB.DPoint3d|null}
+     */
+    tileCorner2(obj?: DgnFB.DPoint3d): DgnFB.DPoint3d | null {
+      const offset = this.bb.__offset(this.bb_pos, 12);
+      return offset ? (obj || new DgnFB.DPoint3d()).__init(this.bb_pos + offset, this.bb) : null;
+    };
+
+    /**
+     * @param {DgnFB.DPoint3d=} obj
+     * @returns {DgnFB.DPoint3d|null}
+     */
+    tileCorner3(obj?: DgnFB.DPoint3d): DgnFB.DPoint3d | null {
+      const offset = this.bb.__offset(this.bb_pos, 14);
+      return offset ? (obj || new DgnFB.DPoint3d()).__init(this.bb_pos + offset, this.bb) : null;
+    };
+
+    /**
+     * @returns {number}
+     */
+    width(): number {
+      const offset = this.bb.__offset(this.bb_pos, 16);
+      return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    height(): number {
+      const offset = this.bb.__offset(this.bb_pos, 18);
+      return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    format(): number {
+      const offset = this.bb.__offset(this.bb_pos, 20);
+      return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @param {number} index
+     * @returns {number}
+     */
+    byteData(index: number): number | null {
+      const offset = this.bb.__offset(this.bb_pos, 22);
+      return offset ? this.bb.readUint8(this.bb.__vector(this.bb_pos + offset) + index) : 0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    byteDataLength(): number {
+      const offset = this.bb.__offset(this.bb_pos, 22);
+      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {Uint8Array}
+     */
+    byteDataArray(): Uint8Array | null {
+      const offset = this.bb.__offset(this.bb_pos, 22);
+      return offset ? new Uint8Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     */
+    static startImage(builder: flatbuffers.Builder) {
+      builder.startObject(10);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} drawBorder
+     */
+    static addDrawBorder(builder: flatbuffers.Builder, drawBorder: number) {
+      builder.addFieldInt8(0, drawBorder, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} useFillTint
+     */
+    static addUseFillTint(builder: flatbuffers.Builder, useFillTint: number) {
+      builder.addFieldInt8(1, useFillTint, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} tileCorner0Offset
+     */
+    static addTileCorner0(builder: flatbuffers.Builder, tileCorner0Offset: flatbuffers.Offset) {
+      builder.addFieldStruct(2, tileCorner0Offset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} tileCorner1Offset
+     */
+    static addTileCorner1(builder: flatbuffers.Builder, tileCorner1Offset: flatbuffers.Offset) {
+      builder.addFieldStruct(3, tileCorner1Offset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} tileCorner2Offset
+     */
+    static addTileCorner2(builder: flatbuffers.Builder, tileCorner2Offset: flatbuffers.Offset) {
+      builder.addFieldStruct(4, tileCorner2Offset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} tileCorner3Offset
+     */
+    static addTileCorner3(builder: flatbuffers.Builder, tileCorner3Offset: flatbuffers.Offset) {
+      builder.addFieldStruct(5, tileCorner3Offset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} width
+     */
+    static addWidth(builder: flatbuffers.Builder, width: number) {
+      builder.addFieldInt32(6, width, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} height
+     */
+    static addHeight(builder: flatbuffers.Builder, height: number) {
+      builder.addFieldInt32(7, height, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} format
+     */
+    static addFormat(builder: flatbuffers.Builder, format: number) {
+      builder.addFieldInt32(8, format, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} byteDataOffset
+     */
+    static addByteData(builder: flatbuffers.Builder, byteDataOffset: flatbuffers.Offset) {
+      builder.addFieldOffset(9, byteDataOffset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {Array.<number>} data
+     * @returns {flatbuffers.Offset}
+     */
+    static createByteDataVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
+      builder.startVector(1, data.length, 1);
+      for (let i = data.length - 1; i >= 0; i--) {
+        builder.addInt8(data[i]);
+      }
+      return builder.endVector();
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} numElems
+     */
+    static startByteDataVector(builder: flatbuffers.Builder, numElems: number) {
+      builder.startVector(1, numElems, 1);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @returns {flatbuffers.Offset}
+     */
+    static endImage(builder: flatbuffers.Builder): flatbuffers.Offset {
+      const offset = builder.endObject();
+      return offset;
+    };
+
+  }
+}
+/**
+ * @constructor
+ */
+export namespace DgnFB {
+  export class GeometryPart {
+    /**
+     * @type {flatbuffers.ByteBuffer}
+     */
+    bb: flatbuffers.ByteBuffer;
+
+    /**
+     * @type {number}
+     */
+    bb_pos: number = 0;
+    /**
+     * @param {number} i
+     * @param {flatbuffers.ByteBuffer} bb
+     * @returns {GeometryPart}
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): GeometryPart {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    };
+
+    /**
+     * @param {flatbuffers.ByteBuffer} bb
+     * @param {GeometryPart=} obj
+     * @returns {GeometryPart}
+     */
+    static getRootAsGeometryPart(bb: flatbuffers.ByteBuffer, obj?: GeometryPart): GeometryPart {
+      return (obj || new GeometryPart()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+    };
+
+    /**
+     * @returns {flatbuffers.Long}
+     */
+    geomPartId(): flatbuffers.Long {
+      const offset = this.bb.__offset(this.bb_pos, 4);
+      return offset ? this.bb.readInt64(this.bb_pos + offset) : this.bb.createLong(0, 0);
+    };
+
+    /**
+     * @param {DgnFB.DPoint3d=} obj
+     * @returns {DgnFB.DPoint3d|null}
+     */
+    origin(obj?: DgnFB.DPoint3d): DgnFB.DPoint3d | null {
+      const offset = this.bb.__offset(this.bb_pos, 6);
+      return offset ? (obj || new DgnFB.DPoint3d()).__init(this.bb_pos + offset, this.bb) : null;
+    };
+
+    /**
+     * @returns {number}
+     */
+    yaw(): number {
+      const offset = this.bb.__offset(this.bb_pos, 8);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    pitch(): number {
+      const offset = this.bb.__offset(this.bb_pos, 10);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    roll(): number {
+      const offset = this.bb.__offset(this.bb_pos, 12);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    scale(): number {
+      const offset = this.bb.__offset(this.bb_pos, 14);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 1.0;
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     */
+    static startGeometryPart(builder: flatbuffers.Builder) {
+      builder.startObject(6);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Long} geomPartId
+     */
+    static addGeomPartId(builder: flatbuffers.Builder, geomPartId: flatbuffers.Long) {
+      builder.addFieldInt64(0, geomPartId, builder.createLong(0, 0));
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} originOffset
+     */
+    static addOrigin(builder: flatbuffers.Builder, originOffset: flatbuffers.Offset) {
+      builder.addFieldStruct(1, originOffset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} yaw
+     */
+    static addYaw(builder: flatbuffers.Builder, yaw: number) {
+      builder.addFieldFloat64(2, yaw, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} pitch
+     */
+    static addPitch(builder: flatbuffers.Builder, pitch: number) {
+      builder.addFieldFloat64(3, pitch, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} roll
+     */
+    static addRoll(builder: flatbuffers.Builder, roll: number) {
+      builder.addFieldFloat64(4, roll, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} scale
+     */
+    static addScale(builder: flatbuffers.Builder, scale: number) {
+      builder.addFieldFloat64(5, scale, 1.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @returns {flatbuffers.Offset}
+     */
+    static endGeometryPart(builder: flatbuffers.Builder): flatbuffers.Offset {
+      const offset = builder.endObject();
+      return offset;
+    };
+
+  }
+}
+/**
+ * @constructor
+ */
+export namespace DgnFB {
+  export class BasicSymbology {
+    /**
+     * @type {flatbuffers.ByteBuffer}
+     */
+    bb: flatbuffers.ByteBuffer;
+
+    /**
+     * @type {number}
+     */
+    bb_pos: number = 0;
+    /**
+     * @param {number} i
+     * @param {flatbuffers.ByteBuffer} bb
+     * @returns {BasicSymbology}
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): BasicSymbology {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    };
+
+    /**
+     * @param {flatbuffers.ByteBuffer} bb
+     * @param {BasicSymbology=} obj
+     * @returns {BasicSymbology}
+     */
+    static getRootAsBasicSymbology(bb: flatbuffers.ByteBuffer, obj?: BasicSymbology): BasicSymbology {
+      return (obj || new BasicSymbology()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+    };
+
+    /**
+     * @returns {flatbuffers.Long}
+     */
+    subCategoryId(): flatbuffers.Long {
+      const offset = this.bb.__offset(this.bb_pos, 4);
+      return offset ? this.bb.readInt64(this.bb_pos + offset) : this.bb.createLong(0, 0);
+    };
+
+    /**
+     * @returns {number}
+     */
+    color(): number {
+      const offset = this.bb.__offset(this.bb_pos, 6);
+      return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    weight(): number {
+      const offset = this.bb.__offset(this.bb_pos, 8);
+      return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {flatbuffers.Long}
+     */
+    lineStyleId(): flatbuffers.Long {
+      const offset = this.bb.__offset(this.bb_pos, 10);
+      return offset ? this.bb.readInt64(this.bb_pos + offset) : this.bb.createLong(0, 0);
+    };
+
+    /**
+     * @returns {number}
+     */
+    transparency(): number {
+      const offset = this.bb.__offset(this.bb_pos, 12);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    displayPriority(): number {
+      const offset = this.bb.__offset(this.bb_pos, 14);
+      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {DgnFB.GeometryClass}
+     */
+    geomClass(): DgnFB.GeometryClass {
+      const offset = this.bb.__offset(this.bb_pos, 16);
+      return offset ? /** @type {DgnFB.GeometryClass} */ (this.bb.readInt8(this.bb_pos + offset)) : DgnFB.GeometryClass.Primary;
+    };
+
+    /**
+     * @returns {number}
+     */
+    useColor(): number {
+      const offset = this.bb.__offset(this.bb_pos, 18);
+      return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    useWeight(): number {
+      const offset = this.bb.__offset(this.bb_pos, 20);
+      return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    useStyle(): number {
+      const offset = this.bb.__offset(this.bb_pos, 22);
+      return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     */
+    static startBasicSymbology(builder: flatbuffers.Builder) {
+      builder.startObject(10);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Long} subCategoryId
+     */
+    static addSubCategoryId(builder: flatbuffers.Builder, subCategoryId: flatbuffers.Long) {
+      builder.addFieldInt64(0, subCategoryId, builder.createLong(0, 0));
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} color
+     */
+    static addColor(builder: flatbuffers.Builder, color: number) {
+      builder.addFieldInt32(1, color, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} weight
+     */
+    static addWeight(builder: flatbuffers.Builder, weight: number) {
+      builder.addFieldInt32(2, weight, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Long} lineStyleId
+     */
+    static addLineStyleId(builder: flatbuffers.Builder, lineStyleId: flatbuffers.Long) {
+      builder.addFieldInt64(3, lineStyleId, builder.createLong(0, 0));
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} transparency
+     */
+    static addTransparency(builder: flatbuffers.Builder, transparency: number) {
+      builder.addFieldFloat64(4, transparency, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} displayPriority
+     */
+    static addDisplayPriority(builder: flatbuffers.Builder, displayPriority: number) {
+      builder.addFieldInt32(5, displayPriority, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {DgnFB.GeometryClass} geomClass
+     */
+    static addGeomClass(builder: flatbuffers.Builder, geomClass: DgnFB.GeometryClass) {
+      builder.addFieldInt8(6, geomClass, DgnFB.GeometryClass.Primary);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} useColor
+     */
+    static addUseColor(builder: flatbuffers.Builder, useColor: number) {
+      builder.addFieldInt8(7, useColor, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} useWeight
+     */
+    static addUseWeight(builder: flatbuffers.Builder, useWeight: number) {
+      builder.addFieldInt8(8, useWeight, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} useStyle
+     */
+    static addUseStyle(builder: flatbuffers.Builder, useStyle: number) {
+      builder.addFieldInt8(9, useStyle, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @returns {flatbuffers.Offset}
+     */
+    static endBasicSymbology(builder: flatbuffers.Builder): flatbuffers.Offset {
+      const offset = builder.endObject();
+      return offset;
+    };
+
+  }
+}
+/**
+ * @constructor
+ */
+export namespace DgnFB {
+  export class LineStyleModifiers {
+    /**
+     * @type {flatbuffers.ByteBuffer}
+     */
+    bb: flatbuffers.ByteBuffer;
+
+    /**
+     * @type {number}
+     */
+    bb_pos: number = 0;
+    /**
+     * @param {number} i
+     * @param {flatbuffers.ByteBuffer} bb
+     * @returns {LineStyleModifiers}
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): LineStyleModifiers {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    };
+
+    /**
+     * @param {flatbuffers.ByteBuffer} bb
+     * @param {LineStyleModifiers=} obj
+     * @returns {LineStyleModifiers}
+     */
+    static getRootAsLineStyleModifiers(bb: flatbuffers.ByteBuffer, obj?: LineStyleModifiers): LineStyleModifiers {
+      return (obj || new LineStyleModifiers()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+    };
+
+    /**
+     * @returns {number}
+     */
+    modifiers(): number {
+      const offset = this.bb.__offset(this.bb_pos, 4);
+      return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    scale(): number {
+      const offset = this.bb.__offset(this.bb_pos, 6);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    dashScale(): number {
+      const offset = this.bb.__offset(this.bb_pos, 8);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    gapScale(): number {
+      const offset = this.bb.__offset(this.bb_pos, 10);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    startWidth(): number {
+      const offset = this.bb.__offset(this.bb_pos, 12);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    endWidth(): number {
+      const offset = this.bb.__offset(this.bb_pos, 14);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    distPhase(): number {
+      const offset = this.bb.__offset(this.bb_pos, 16);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    fractPhase(): number {
+      const offset = this.bb.__offset(this.bb_pos, 18);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @param {DgnFB.DPoint3d=} obj
+     * @returns {DgnFB.DPoint3d|null}
+     */
+    normal(obj?: DgnFB.DPoint3d): DgnFB.DPoint3d | null {
+      const offset = this.bb.__offset(this.bb_pos, 20);
+      return offset ? (obj || new DgnFB.DPoint3d()).__init(this.bb_pos + offset, this.bb) : null;
+    };
+
+    /**
+     * @returns {number}
+     */
+    yaw(): number {
+      const offset = this.bb.__offset(this.bb_pos, 22);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    pitch(): number {
+      const offset = this.bb.__offset(this.bb_pos, 24);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    roll(): number {
+      const offset = this.bb.__offset(this.bb_pos, 26);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     */
+    static startLineStyleModifiers(builder: flatbuffers.Builder) {
+      builder.startObject(12);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} modifiers
+     */
+    static addModifiers(builder: flatbuffers.Builder, modifiers: number) {
+      builder.addFieldInt32(0, modifiers, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} scale
+     */
+    static addScale(builder: flatbuffers.Builder, scale: number) {
+      builder.addFieldFloat64(1, scale, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} dashScale
+     */
+    static addDashScale(builder: flatbuffers.Builder, dashScale: number) {
+      builder.addFieldFloat64(2, dashScale, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} gapScale
+     */
+    static addGapScale(builder: flatbuffers.Builder, gapScale: number) {
+      builder.addFieldFloat64(3, gapScale, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} startWidth
+     */
+    static addStartWidth(builder: flatbuffers.Builder, startWidth: number) {
+      builder.addFieldFloat64(4, startWidth, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} endWidth
+     */
+    static addEndWidth(builder: flatbuffers.Builder, endWidth: number) {
+      builder.addFieldFloat64(5, endWidth, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} distPhase
+     */
+    static addDistPhase(builder: flatbuffers.Builder, distPhase: number) {
+      builder.addFieldFloat64(6, distPhase, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} fractPhase
+     */
+    static addFractPhase(builder: flatbuffers.Builder, fractPhase: number) {
+      builder.addFieldFloat64(7, fractPhase, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} normalOffset
+     */
+    static addNormal(builder: flatbuffers.Builder, normalOffset: flatbuffers.Offset) {
+      builder.addFieldStruct(8, normalOffset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} yaw
+     */
+    static addYaw(builder: flatbuffers.Builder, yaw: number) {
+      builder.addFieldFloat64(9, yaw, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} pitch
+     */
+    static addPitch(builder: flatbuffers.Builder, pitch: number) {
+      builder.addFieldFloat64(10, pitch, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} roll
+     */
+    static addRoll(builder: flatbuffers.Builder, roll: number) {
+      builder.addFieldFloat64(11, roll, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @returns {flatbuffers.Offset}
+     */
+    static endLineStyleModifiers(builder: flatbuffers.Builder): flatbuffers.Offset {
+      const offset = builder.endObject();
+      return offset;
+    };
+
+  }
+}
+/**
+ * @constructor
+ */
+export namespace DgnFB {
+  export class Material {
+    /**
+     * @type {flatbuffers.ByteBuffer}
+     */
+    bb: flatbuffers.ByteBuffer;
+
+    /**
+     * @type {number}
+     */
+    bb_pos: number = 0;
+    /**
+     * @param {number} i
+     * @param {flatbuffers.ByteBuffer} bb
+     * @returns {Material}
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): Material {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    };
+
+    /**
+     * @param {flatbuffers.ByteBuffer} bb
+     * @param {Material=} obj
+     * @returns {Material}
+     */
+    static getRootAsMaterial(bb: flatbuffers.ByteBuffer, obj?: Material): Material {
+      return (obj || new Material()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+    };
+
+    /**
+     * @returns {number}
+     */
+    useMaterial(): number {
+      const offset = this.bb.__offset(this.bb_pos, 4);
+      return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {flatbuffers.Long}
+     */
+    materialId(): flatbuffers.Long {
+      const offset = this.bb.__offset(this.bb_pos, 6);
+      return offset ? this.bb.readInt64(this.bb_pos + offset) : this.bb.createLong(0, 0);
+    };
+
+    /**
+     * @param {DgnFB.DPoint3d=} obj
+     * @returns {DgnFB.DPoint3d|null}
+     */
+    origin(obj?: DgnFB.DPoint3d): DgnFB.DPoint3d | null {
+      const offset = this.bb.__offset(this.bb_pos, 8);
+      return offset ? (obj || new DgnFB.DPoint3d()).__init(this.bb_pos + offset, this.bb) : null;
+    };
+
+    /**
+     * @param {DgnFB.DPoint3d=} obj
+     * @returns {DgnFB.DPoint3d|null}
+     */
+    size(obj?: DgnFB.DPoint3d): DgnFB.DPoint3d | null {
+      const offset = this.bb.__offset(this.bb_pos, 10);
+      return offset ? (obj || new DgnFB.DPoint3d()).__init(this.bb_pos + offset, this.bb) : null;
+    };
+
+    /**
+     * @returns {number}
+     */
+    yaw(): number {
+      const offset = this.bb.__offset(this.bb_pos, 12);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    pitch(): number {
+      const offset = this.bb.__offset(this.bb_pos, 14);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    roll(): number {
+      const offset = this.bb.__offset(this.bb_pos, 16);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     */
+    static startMaterial(builder: flatbuffers.Builder) {
+      builder.startObject(7);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} useMaterial
+     */
+    static addUseMaterial(builder: flatbuffers.Builder, useMaterial: number) {
+      builder.addFieldInt8(0, useMaterial, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Long} materialId
+     */
+    static addMaterialId(builder: flatbuffers.Builder, materialId: flatbuffers.Long) {
+      builder.addFieldInt64(1, materialId, builder.createLong(0, 0));
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} originOffset
+     */
+    static addOrigin(builder: flatbuffers.Builder, originOffset: flatbuffers.Offset) {
+      builder.addFieldStruct(2, originOffset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} sizeOffset
+     */
+    static addSize(builder: flatbuffers.Builder, sizeOffset: flatbuffers.Offset) {
+      builder.addFieldStruct(3, sizeOffset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} yaw
+     */
+    static addYaw(builder: flatbuffers.Builder, yaw: number) {
+      builder.addFieldFloat64(4, yaw, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} pitch
+     */
+    static addPitch(builder: flatbuffers.Builder, pitch: number) {
+      builder.addFieldFloat64(5, pitch, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} roll
+     */
+    static addRoll(builder: flatbuffers.Builder, roll: number) {
+      builder.addFieldFloat64(6, roll, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @returns {flatbuffers.Offset}
+     */
+    static endMaterial(builder: flatbuffers.Builder): flatbuffers.Offset {
+      const offset = builder.endObject();
+      return offset;
+    };
+
+  }
+}
+/**
+ * @constructor
+ */
+export namespace DgnFB {
+  export class AreaFill {
+    /**
+     * @type {flatbuffers.ByteBuffer}
+     */
+    bb: flatbuffers.ByteBuffer;
+
+    /**
+     * @type {number}
+     */
+    bb_pos: number = 0;
+    /**
+     * @param {number} i
+     * @param {flatbuffers.ByteBuffer} bb
+     * @returns {AreaFill}
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): AreaFill {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    };
+
+    /**
+     * @param {flatbuffers.ByteBuffer} bb
+     * @param {AreaFill=} obj
+     * @returns {AreaFill}
+     */
+    static getRootAsAreaFill(bb: flatbuffers.ByteBuffer, obj?: AreaFill): AreaFill {
+      return (obj || new AreaFill()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+    };
+
+    /**
+     * @returns {DgnFB.FillDisplay}
+     */
+    fill(): DgnFB.FillDisplay {
+      const offset = this.bb.__offset(this.bb_pos, 4);
+      return offset ? /** @type {DgnFB.FillDisplay} */ (this.bb.readInt8(this.bb_pos + offset)) : DgnFB.FillDisplay.None;
+    };
+
+    /**
+     * @returns {number}
+     */
+    color(): number {
+      const offset = this.bb.__offset(this.bb_pos, 6);
+      return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    useColor(): number {
+      const offset = this.bb.__offset(this.bb_pos, 8);
+      return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    backgroundFill(): number {
+      const offset = this.bb.__offset(this.bb_pos, 10);
+      return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    transparency(): number {
+      const offset = this.bb.__offset(this.bb_pos, 12);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {DgnFB.GradientMode}
+     */
+    mode(): DgnFB.GradientMode {
+      const offset = this.bb.__offset(this.bb_pos, 14);
+      return offset ? /** @type {DgnFB.GradientMode} */ (this.bb.readInt8(this.bb_pos + offset)) : DgnFB.GradientMode.None;
+    };
+
+    /**
+     * @returns {number}
+     */
+    flags(): number {
+      const offset = this.bb.__offset(this.bb_pos, 16);
+      return offset ? this.bb.readUint16(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    angle(): number {
+      const offset = this.bb.__offset(this.bb_pos, 18);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    tint(): number {
+      const offset = this.bb.__offset(this.bb_pos, 20);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    shift(): number {
+      const offset = this.bb.__offset(this.bb_pos, 22);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @param {number} index
+     * @returns {number}
+     */
+    colors(index: number): number | null {
+      const offset = this.bb.__offset(this.bb_pos, 24);
+      return offset ? this.bb.readUint32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    colorsLength(): number {
+      const offset = this.bb.__offset(this.bb_pos, 24);
+      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {Uint32Array}
+     */
+    colorsArray(): Uint32Array | null {
+      const offset = this.bb.__offset(this.bb_pos, 24);
+      return offset ? new Uint32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+    };
+
+    /**
+     * @param {number} index
+     * @returns {number}
+     */
+    values(index: number): number | null {
+      const offset = this.bb.__offset(this.bb_pos, 26);
+      return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    valuesLength(): number {
+      const offset = this.bb.__offset(this.bb_pos, 26);
+      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {Float64Array}
+     */
+    valuesArray(): Float64Array | null {
+      const offset = this.bb.__offset(this.bb_pos, 26);
+      return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     */
+    static startAreaFill(builder: flatbuffers.Builder) {
+      builder.startObject(12);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {DgnFB.FillDisplay} fill
+     */
+    static addFill(builder: flatbuffers.Builder, fill: DgnFB.FillDisplay) {
+      builder.addFieldInt8(0, fill, DgnFB.FillDisplay.None);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} color
+     */
+    static addColor(builder: flatbuffers.Builder, color: number) {
+      builder.addFieldInt32(1, color, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} useColor
+     */
+    static addUseColor(builder: flatbuffers.Builder, useColor: number) {
+      builder.addFieldInt8(2, useColor, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} backgroundFill
+     */
+    static addBackgroundFill(builder: flatbuffers.Builder, backgroundFill: number) {
+      builder.addFieldInt8(3, backgroundFill, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} transparency
+     */
+    static addTransparency(builder: flatbuffers.Builder, transparency: number) {
+      builder.addFieldFloat64(4, transparency, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {DgnFB.GradientMode} mode
+     */
+    static addMode(builder: flatbuffers.Builder, mode: DgnFB.GradientMode) {
+      builder.addFieldInt8(5, mode, DgnFB.GradientMode.None);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} flags
+     */
+    static addFlags(builder: flatbuffers.Builder, flags: number) {
+      builder.addFieldInt16(6, flags, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} angle
+     */
+    static addAngle(builder: flatbuffers.Builder, angle: number) {
+      builder.addFieldFloat64(7, angle, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} tint
+     */
+    static addTint(builder: flatbuffers.Builder, tint: number) {
+      builder.addFieldFloat64(8, tint, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} shift
+     */
+    static addShift(builder: flatbuffers.Builder, shift: number) {
+      builder.addFieldFloat64(9, shift, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} colorsOffset
+     */
+    static addColors(builder: flatbuffers.Builder, colorsOffset: flatbuffers.Offset) {
+      builder.addFieldOffset(10, colorsOffset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {Array.<number>} data
+     * @returns {flatbuffers.Offset}
+     */
+    static createColorsVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
+      builder.startVector(4, data.length, 4);
+      for (let i = data.length - 1; i >= 0; i--) {
+        builder.addInt32(data[i]);
+      }
+      return builder.endVector();
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} numElems
+     */
+    static startColorsVector(builder: flatbuffers.Builder, numElems: number) {
+      builder.startVector(4, numElems, 4);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} valuesOffset
+     */
+    static addValues(builder: flatbuffers.Builder, valuesOffset: flatbuffers.Offset) {
+      builder.addFieldOffset(11, valuesOffset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {Array.<number>} data
+     * @returns {flatbuffers.Offset}
+     */
+    static createValuesVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
+      builder.startVector(8, data.length, 8);
+      for (let i = data.length - 1; i >= 0; i--) {
+        builder.addFloat64(data[i]);
+      }
+      return builder.endVector();
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} numElems
+     */
+    static startValuesVector(builder: flatbuffers.Builder, numElems: number) {
+      builder.startVector(8, numElems, 8);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @returns {flatbuffers.Offset}
+     */
+    static endAreaFill(builder: flatbuffers.Builder): flatbuffers.Offset {
+      const offset = builder.endObject();
+      return offset;
+    };
+
+  }
+}
+/**
+ * @constructor
+ */
+export namespace DgnFB {
+  export class DwgHatchDefLine {
+    /**
+     * @type {flatbuffers.ByteBuffer}
+     */
+    bb: flatbuffers.ByteBuffer;
+
+    /**
+     * @type {number}
+     */
+    bb_pos: number = 0;
+    /**
+     * @param {number} i
+     * @param {flatbuffers.ByteBuffer} bb
+     * @returns {DwgHatchDefLine}
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): DwgHatchDefLine {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    };
+
+    /**
+     * @param {flatbuffers.ByteBuffer} bb
+     * @param {DwgHatchDefLine=} obj
+     * @returns {DwgHatchDefLine}
+     */
+    static getRootAsDwgHatchDefLine(bb: flatbuffers.ByteBuffer, obj?: DwgHatchDefLine): DwgHatchDefLine {
+      return (obj || new DwgHatchDefLine()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+    };
+
+    /**
+     * @returns {number}
+     */
+    angle(): number {
+      const offset = this.bb.__offset(this.bb_pos, 4);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @param {DgnFB.DPoint2d=} obj
+     * @returns {DgnFB.DPoint2d|null}
+     */
+    through(obj?: DgnFB.DPoint2d): DgnFB.DPoint2d | null {
+      const offset = this.bb.__offset(this.bb_pos, 6);
+      return offset ? (obj || new DgnFB.DPoint2d()).__init(this.bb_pos + offset, this.bb) : null;
+    };
+
+    /**
+     * @param {DgnFB.DPoint2d=} obj
+     * @returns {DgnFB.DPoint2d|null}
+     */
+    offset(obj?: DgnFB.DPoint2d): DgnFB.DPoint2d | null {
+      const offset = this.bb.__offset(this.bb_pos, 8);
+      return offset ? (obj || new DgnFB.DPoint2d()).__init(this.bb_pos + offset, this.bb) : null;
+    };
+
+    /**
+     * @param {number} index
+     * @returns {number}
+     */
+    dashes(index: number): number | null {
+      const offset = this.bb.__offset(this.bb_pos, 10);
+      return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    dashesLength(): number {
+      const offset = this.bb.__offset(this.bb_pos, 10);
+      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {Float64Array}
+     */
+    dashesArray(): Float64Array | null {
+      const offset = this.bb.__offset(this.bb_pos, 10);
+      return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     */
+    static startDwgHatchDefLine(builder: flatbuffers.Builder) {
+      builder.startObject(4);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} angle
+     */
+    static addAngle(builder: flatbuffers.Builder, angle: number) {
+      builder.addFieldFloat64(0, angle, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} throughOffset
+     */
+    static addThrough(builder: flatbuffers.Builder, throughOffset: flatbuffers.Offset) {
+      builder.addFieldStruct(1, throughOffset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} offsetOffset
+     */
+    static addOffset(builder: flatbuffers.Builder, offsetOffset: flatbuffers.Offset) {
+      builder.addFieldStruct(2, offsetOffset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} dashesOffset
+     */
+    static addDashes(builder: flatbuffers.Builder, dashesOffset: flatbuffers.Offset) {
+      builder.addFieldOffset(3, dashesOffset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {Array.<number>} data
+     * @returns {flatbuffers.Offset}
+     */
+    static createDashesVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
+      builder.startVector(8, data.length, 8);
+      for (let i = data.length - 1; i >= 0; i--) {
+        builder.addFloat64(data[i]);
+      }
+      return builder.endVector();
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} numElems
+     */
+    static startDashesVector(builder: flatbuffers.Builder, numElems: number) {
+      builder.startVector(8, numElems, 8);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @returns {flatbuffers.Offset}
+     */
+    static endDwgHatchDefLine(builder: flatbuffers.Builder): flatbuffers.Offset {
+      const offset = builder.endObject();
+      return offset;
+    };
+
+  }
+}
+/**
+ * @constructor
+ */
+export namespace DgnFB {
+  export class AreaPattern {
+    /**
+     * @type {flatbuffers.ByteBuffer}
+     */
+    bb: flatbuffers.ByteBuffer;
+
+    /**
+     * @type {number}
+     */
+    bb_pos: number = 0;
+    /**
+     * @param {number} i
+     * @param {flatbuffers.ByteBuffer} bb
+     * @returns {AreaPattern}
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): AreaPattern {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    };
+
+    /**
+     * @param {flatbuffers.ByteBuffer} bb
+     * @param {AreaPattern=} obj
+     * @returns {AreaPattern}
+     */
+    static getRootAsAreaPattern(bb: flatbuffers.ByteBuffer, obj?: AreaPattern): AreaPattern {
+      return (obj || new AreaPattern()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+    };
+
+    /**
+     * @param {DgnFB.DPoint3d=} obj
+     * @returns {DgnFB.DPoint3d|null}
+     */
+    origin(obj?: DgnFB.DPoint3d): DgnFB.DPoint3d | null {
+      const offset = this.bb.__offset(this.bb_pos, 4);
+      return offset ? (obj || new DgnFB.DPoint3d()).__init(this.bb_pos + offset, this.bb) : null;
+    };
+
+    /**
+     * @param {DgnFB.RotMatrix=} obj
+     * @returns {DgnFB.RotMatrix|null}
+     */
+    rotation(obj?: DgnFB.RotMatrix): DgnFB.RotMatrix | null {
+      const offset = this.bb.__offset(this.bb_pos, 6);
+      return offset ? (obj || new DgnFB.RotMatrix()).__init(this.bb_pos + offset, this.bb) : null;
+    };
+
+    /**
+     * @returns {number}
+     */
+    space1(): number {
+      const offset = this.bb.__offset(this.bb_pos, 8);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    space2(): number {
+      const offset = this.bb.__offset(this.bb_pos, 10);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    angle1(): number {
+      const offset = this.bb.__offset(this.bb_pos, 12);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    angle2(): number {
+      const offset = this.bb.__offset(this.bb_pos, 14);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    scale(): number {
+      const offset = this.bb.__offset(this.bb_pos, 16);
+      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    color(): number {
+      const offset = this.bb.__offset(this.bb_pos, 18);
+      return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    weight(): number {
+      const offset = this.bb.__offset(this.bb_pos, 20);
+      return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    useColor(): number {
+      const offset = this.bb.__offset(this.bb_pos, 22);
+      return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    useWeight(): number {
+      const offset = this.bb.__offset(this.bb_pos, 24);
+      return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    invisibleBoundary(): number {
+      const offset = this.bb.__offset(this.bb_pos, 26);
+      return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {number}
+     */
+    snappable(): number {
+      const offset = this.bb.__offset(this.bb_pos, 28);
+      return offset ? this.bb.readUint8(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @returns {flatbuffers.Long}
+     */
+    symbolId(): flatbuffers.Long {
+      const offset = this.bb.__offset(this.bb_pos, 30);
+      return offset ? this.bb.readInt64(this.bb_pos + offset) : this.bb.createLong(0, 0);
+    };
+
+    /**
+     * @param {number} index
+     * @param {DgnFB.DwgHatchDefLine=} obj
+     * @returns {DgnFB.DwgHatchDefLine}
+     */
+    defLine(index: number, obj?: DgnFB.DwgHatchDefLine): DgnFB.DwgHatchDefLine | null {
+      const offset = this.bb.__offset(this.bb_pos, 32);
+      return offset ? (obj || new DgnFB.DwgHatchDefLine()).__init(this.bb.__indirect(this.bb.__vector(this.bb_pos + offset) + index * 4), this.bb) : null;
+    };
+
+    /**
+     * @returns {number}
+     */
+    defLineLength(): number {
+      const offset = this.bb.__offset(this.bb_pos, 32);
+      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     */
+    static startAreaPattern(builder: flatbuffers.Builder) {
+      builder.startObject(15);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} originOffset
+     */
+    static addOrigin(builder: flatbuffers.Builder, originOffset: flatbuffers.Offset) {
+      builder.addFieldStruct(0, originOffset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} rotationOffset
+     */
+    static addRotation(builder: flatbuffers.Builder, rotationOffset: flatbuffers.Offset) {
+      builder.addFieldStruct(1, rotationOffset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} space1
+     */
+    static addSpace1(builder: flatbuffers.Builder, space1: number) {
+      builder.addFieldFloat64(2, space1, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} space2
+     */
+    static addSpace2(builder: flatbuffers.Builder, space2: number) {
+      builder.addFieldFloat64(3, space2, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} angle1
+     */
+    static addAngle1(builder: flatbuffers.Builder, angle1: number) {
+      builder.addFieldFloat64(4, angle1, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} angle2
+     */
+    static addAngle2(builder: flatbuffers.Builder, angle2: number) {
+      builder.addFieldFloat64(5, angle2, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} scale
+     */
+    static addScale(builder: flatbuffers.Builder, scale: number) {
+      builder.addFieldFloat64(6, scale, 0.0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} color
+     */
+    static addColor(builder: flatbuffers.Builder, color: number) {
+      builder.addFieldInt32(7, color, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} weight
+     */
+    static addWeight(builder: flatbuffers.Builder, weight: number) {
+      builder.addFieldInt32(8, weight, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} useColor
+     */
+    static addUseColor(builder: flatbuffers.Builder, useColor: number) {
+      builder.addFieldInt8(9, useColor, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} useWeight
+     */
+    static addUseWeight(builder: flatbuffers.Builder, useWeight: number) {
+      builder.addFieldInt8(10, useWeight, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} invisibleBoundary
+     */
+    static addInvisibleBoundary(builder: flatbuffers.Builder, invisibleBoundary: number) {
+      builder.addFieldInt8(11, invisibleBoundary, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} snappable
+     */
+    static addSnappable(builder: flatbuffers.Builder, snappable: number) {
+      builder.addFieldInt8(12, snappable, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Long} symbolId
+     */
+    static addSymbolId(builder: flatbuffers.Builder, symbolId: flatbuffers.Long) {
+      builder.addFieldInt64(13, symbolId, builder.createLong(0, 0));
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {flatbuffers.Offset} defLineOffset
+     */
+    static addDefLine(builder: flatbuffers.Builder, defLineOffset: flatbuffers.Offset) {
+      builder.addFieldOffset(14, defLineOffset, 0);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {Array.<flatbuffers.Offset>} data
+     * @returns {flatbuffers.Offset}
+     */
+    static createDefLineVector(builder: flatbuffers.Builder, data: flatbuffers.Offset[]): flatbuffers.Offset {
+      builder.startVector(4, data.length, 4);
+      for (let i = data.length - 1; i >= 0; i--) {
+        builder.addOffset(data[i]);
+      }
+      return builder.endVector();
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @param {number} numElems
+     */
+    static startDefLineVector(builder: flatbuffers.Builder, numElems: number) {
+      builder.startVector(4, numElems, 4);
+    };
+
+    /**
+     * @param {flatbuffers.Builder} builder
+     * @returns {flatbuffers.Offset}
+     */
+    static endAreaPattern(builder: flatbuffers.Builder): flatbuffers.Offset {
+      const offset = builder.endObject();
+      return offset;
+    };
+
+  }
 }

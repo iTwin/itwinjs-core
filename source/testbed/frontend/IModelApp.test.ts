@@ -5,18 +5,16 @@ import { assert } from "chai";
 import { IModelApp, iModelApp } from "../../frontend/IModelApp";
 import { AccuDraw } from "../../frontend/AccuDraw";
 import { IdleTool } from "../../frontend/tools/IdleTool";
-import { ToolGroup, Tool } from "../../frontend/tools/Tool";
+import { I18NNamespace } from "../../frontend/Localization";
+import { Tool } from "../../frontend/tools/Tool";
 import { RotateTool, PanTool } from "../../frontend/tools/ViewTool";
-
-// tslint:disable:no-string-literal
+import { SelectionTool } from "../../frontend/tools/SelectTool";
 
 /** class to simulate overriding the default AccuDraw */
-class TestAccuDraw extends AccuDraw {
-}
+class TestAccuDraw extends AccuDraw { }
 
 /** class to simulate overriding the Idle tool */
-class TestIdleTool extends IdleTool {
-}
+class TestIdleTool extends IdleTool { }
 
 let testVal1: string;
 let testVal2: string;
@@ -27,23 +25,32 @@ class TestImmediate extends Tool {
   constructor(val1: string, val2: string) { testVal1 = val1; testVal2 = val2; super(); }
 }
 
-class TestRotateTool extends RotateTool {
-}
+class TestRotateTool extends RotateTool { }
+class TestSelectTool extends SelectionTool { }
 
 class TestApp extends IModelApp {
+  public testNamespace: I18NNamespace;
+
   protected onStartup() {
     this._accuDraw = new TestAccuDraw();
 
-    const group = new ToolGroup("TestApp");
-    TestIdleTool.register(group);
-    TestImmediate.register(group);
-    TestRotateTool.register(group);
+    this.testNamespace = iModelApp.i18N.registerNamespace("TestApp");
+    TestImmediate.register(this.testNamespace);
+    TestIdleTool.register();
+    TestRotateTool.register();
+    TestSelectTool.register();
     this.features.setGate("feature2", { a: true, b: false });
     this.features.setGate("feature5", { val: { str1: "string1", doNot: false } });
   }
+
+  protected supplyI18NOptions() {
+    return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" };
+  }
 }
 
-describe("IModelApp", () => {
+// tslint:disable:space-before-function-paren
+// tslint:disable-next-line:only-arrow-functions
+describe("IModelApp", function () {
   before(async () => {
     TestApp.startup();
   });
@@ -71,9 +78,18 @@ describe("IModelApp", () => {
     iModelApp.features.setGate("feat3.sub1.val.a", true);
     iModelApp.features.setGate("feat3.sub1.val.b", { yes: true });
     assert.isFalse(iModelApp.features.check("feat2"));
-    assert.equal(iModelApp.features.check("feat3.sub1.nothere", "hello"), "hello");
+    assert.equal(iModelApp.features.check("feat3.sub1.notHere", "hello"), "hello");
     assert.isTrue(iModelApp.features.check("feat3.sub1.val.a"));
     assert.isTrue(iModelApp.features.check("feat3.sub1.val.b.yes"));
   });
 
+  it("Should get localized name for tools", async () => {
+    const thisApp = iModelApp as TestApp;
+    await thisApp.testNamespace.readFinished;  // we must wait for the localization read to finish.
+    assert.equal(TestImmediate.getKeyin(), "Localized TestImmediate Keyin");
+    assert.isTrue(iModelApp.tools.run("Select"));
+    const select = iModelApp.toolAdmin.activePrimitiveTool as TestSelectTool;
+    assert.instanceOf(select, TestSelectTool, "test select tool is active");
+    assert.equal(select.keyin, "Select Elements", "keyin comes from superclass");
+  });
 });

@@ -4,17 +4,54 @@
 
 // Ordered list of render passes which produce a rendered frame.
 export const enum RenderPass {
-  None = 0xff,
-  Background = 0,
-  OpaqueLinear,       // Linear geometry that is opaque and needs to be written to the pick data buffers
-  OpaquePlanar,       // Planar surface geometry that is opaque and needs to be written to the pick data buffers
-  OpaqueGeneral,      // All other opaque geometry (including point clouds and reality meshes) which are not written to the pick data buffers
-  Translucent,
-  HiddenEdge,
-  Hilite,
-  WorldOverlay,
-  ViewOverlay,
-  COUNT,
+    None = 0xff,
+    Background = 0,
+    OpaqueLinear,       // Linear geometry that is opaque and needs to be written to the pick data buffers
+    OpaquePlanar,       // Planar surface geometry that is opaque and needs to be written to the pick data buffers
+    OpaqueGeneral,      // All other opaque geometry (including point clouds and reality meshes) which are not written to the pick data buffers
+    Translucent,
+    HiddenEdge,
+    Hilite,
+    WorldOverlay,
+    ViewOverlay,
+    COUNT,
+}
+
+// Describes the type of geometry rendered by a ShaderProgram.
+export const enum GeometryType {
+    IndexedTriangles,
+    IndexedPoints,
+    ArrayedPoints,
+  }
+
+// Reserved texture units for specific sampler variables, to avoid conflicts between shader components which each have their own textures.
+export const enum TextureUnit {
+    // For shaders which know exactly which textures will be used
+    Zero = 0,
+    One = 1,
+    Two = 2,
+    Three = 3,
+    Four = 4,
+    Five = 5,
+    Six = 6,
+    Seven = 7, // Last one available for GLES2
+
+    NonUniformColor = Zero,
+    FeatureSymbology = One,
+    MeshTexture = Two,
+    LineCode = Two,
+    Point = Two,
+    ElementId = Three,
+
+    PickElementId0 = Four,
+    PickElementId1 = Five,
+    PickDepthAndOrder = Six,
+
+    // WIP - Image lighting (won't work if device limited to 8 textures).
+    IBLDiffuse  = 8,
+    IBLSpecular = 9,
+    BRDFLUT = 10,
+    EnvironmentMap = 11,
 }
 
 // Defines the order in which primitives are rendered within a GLESList. This is chiefly
@@ -84,3 +121,5 @@ export const enum OvrFlags {
 
     Rgba = Rgb | Alpha,
 }
+
+export const enum IsTranslucent { No, Yes, Maybe }

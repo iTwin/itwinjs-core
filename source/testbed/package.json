@@ -4,17 +4,19 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run copy:frontendpublic  && npm run copy:testpublic",
     "clean": "rimraf lib",
     "start": "floss --debug --path lib/testbed/frontend/index.js",
     "pretest": "npm run build",
-    "test": "floss --path lib/testbed/frontend/index.js"
+    "test": "floss --path lib/testbed/frontend/index.js",
+    "copy:frontendpublic": "cpx ../frontend/public/**/* ./lib/testbed/backend/public",
+    "copy:testpublic": "cpx ../test/public/**/* ./lib/testbed/backend/public"
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "^1.3.3",
+    "@bentley/bentleyjs-core": "^1.4.5",
     "@bentley/geometry-core": "^3.0.1",
-    "@bentley/imodeljs-clients": "^1.0.47",
+    "@bentley/imodeljs-clients": "^1.1.3",
     "@bentley/imodeljs-electronaddon": "~6.0.0",
     "@bentley/imodeljs-nodeaddonapi": "~6.0.0",
     "body-parser": "^1.18.2",
@@ -23,6 +25,9 @@
     "express": "^4.16.2",
     "floss": "^2.1.3",
     "fs-extra": "^4.0.3",
+    "i18next": "^10.2.2",
+    "i18next-browser-languagedetector": "^2.1.0",
+    "i18next-xhr-backend": "^1.5.1",
     "save": "^2.3.2",
     "webpack": "^3.10.0"
   },
