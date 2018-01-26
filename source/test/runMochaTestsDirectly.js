@@ -23,7 +23,22 @@ function mobileReporter(runner) {
 mocha.setup({ui: 'bdd', reporter: mobileReporter}); // puts 'describe', 'it', etc. into global
 debugger;
 require("./IModelTestUtils.js");
-//require("./Category.test.js");
-//require("./ECSqlStatement.test.js");
+// Passing tests:
+require("./Category.test.js");
+require("./ECSqlStatement.test.js");
 require("./ClassRegistry.test.js");
+require("./ECDb.test.js");
+require("./ElementAspect.test.js");
+require("./GeometryStream.test.js");
+require("./IModel.test.js");
+require("./Promise.test.js");
+require("./Render.test.js");
+require("./ViewState.test.js");
+
+
+// Nothing that needs XHR will work
+// require("./BriefcaseManager.test.js");
+// require("./ChangeSummary.test.js");
+// require("./IModelConnection.test.js");
+// require("./SampleCode.test.js");
 mocha.run();
