@@ -30,6 +30,15 @@ export namespace GL {
     DefaultDst = Zero,
   }
 
+  export enum Buffer {
+    ArrayBuffer = WebGLRenderingContext.ARRAY_BUFFER,
+    ElementArrayBuffer = WebGLRenderingContext.ELEMENT_ARRAY_BUFFER,
+    // WebGL 2 has more buffer options
+    ArrayBufferBinding = WebGLRenderingContext.ARRAY_BUFFER_BINDING,
+    ElementArrayBufferBinding = WebGLRenderingContext.ELEMENT_ARRAY_BUFFER_BINDING,
+    BufferSize = WebGLRenderingContext.BUFFER_SIZE,
+  }
+
   /* Stenciling commented out for now since it is not used */
   // export enum StencilOperation {
   //   Keep = WebGLRenderingContext.KEEP,
