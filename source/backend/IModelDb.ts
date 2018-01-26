@@ -447,11 +447,10 @@ export class IModelDb extends IModel {
       this.loadMetaData(metaData.baseClasses[0]);
   }
 
-  // !!! TEST FUNCTION
-  /**
-   * Execute a test known to exist using the id recognized by the addon's test execution handler
+  /** TESTING ONLY - Execute a test known to exist using the id recognized by the addon's test execution handler
    * @param id The id of the test you wish to execute
    * @param params A JSON string that should all of the data/parameters the test needs to function correctly
+   * @hidden
    */
   public executeTestById(testId: number, params: any): any {
     if (!this.briefcaseEntry)

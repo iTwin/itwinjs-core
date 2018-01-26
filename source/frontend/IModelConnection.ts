@@ -99,9 +99,9 @@ export class IModelConnection extends IModel {
    * Update the project extents of this iModel.
    * @param newExtents The new project extents as an AxisAlignedBox3d
    */
-  public updateProjectExtents(newExtents: AxisAlignedBox3d): void {
+  public async updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void> {
     Logger.logInfo("IModelConnection.updateProjectExtents", () => ({ iModelId: this.iModelToken.iModelId, newExtents }));
-    IModelGateway.getProxy().updateProjectExtents(this.iModelToken, newExtents);
+    await IModelGateway.getProxy().updateProjectExtents(this.iModelToken, newExtents);
   }
 
   /**
@@ -121,8 +121,8 @@ export class IModelConnection extends IModel {
    * @param params A JSON string containing all parameters the test requires
    * @hidden
    */
-  public executeTestById(id: number, params: any): any {
-    return IModelGateway.getProxy().executeTestById(this.iModelToken, id, params);
+  public async executeTestById(id: number, params: any): Promise<any> {
+    return await IModelGateway.getProxy().executeTestById(this.iModelToken, id, params);
   }
 }
 
