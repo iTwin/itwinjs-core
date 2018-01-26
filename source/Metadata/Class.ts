@@ -56,7 +56,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
     let inheritedProperty;
 
     if (this.baseClass) {
-      inheritedProperty = (await this.baseClass).getProperty<T>(name);
+      inheritedProperty = await (await this.baseClass).getProperty<T>(name);
       if (!inheritedProperty)
         return inheritedProperty;
     }

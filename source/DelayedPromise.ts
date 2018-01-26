@@ -22,7 +22,7 @@ export class DelayedPromise<T> implements Promise<T> {
 
   /**
    * Constructs a DelayedPromise object.
-   * @param onfulfilled The asynchronous callback to execute when as soon as this DelayedPromise should be "started".
+   * @param startCallback The asynchronous callback to execute when as soon as this DelayedPromise should be "started".
    */
   constructor(startCallback: () => Promise<T>) {
     let pending: Promise<T> | undefined;
