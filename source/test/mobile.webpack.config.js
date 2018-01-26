@@ -30,21 +30,15 @@ module.exports = {
       {
         test: /imodeljs-nodeaddon$/,
         use: 'null-loader'
-      },
-      {
-        test: path.resolve(__dirname, '../backend/IModelJsFs.js'),
-        use: 'null-loader'
-      },
-      {
-        test: /fs\-extra/,
-        use: 'null-loader'
       }
 
     ]
   },
   externals: {
     "@bentley/imodeljs-mobile": "require('@bentley/imodeljs-mobile')",
-    "IModelJsFs": "IModelJsFs",
+    "IModelJsFs": "{IModelJsFs: IModelJsFs}",
+    "./IModelJsFs": "{IModelJsFs: IModelJsFs}",
+    "../backend/IModelJsFs": "{IModelJsFs: IModelJsFs}",
     "fs": "IModelJsFs",
     "fs-extra": "IModelJsFs"
   },
