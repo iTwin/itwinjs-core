@@ -17,7 +17,7 @@ import { IModelDb } from "./IModelDb";
 
 import * as fs from "fs";
 import * as path from "path";
-import * as os from "os";
+import { KnownLocations } from "./KnownLocations";
 
 /** The ID assigned to a briefcase by iModelHub, or one of the special values that identify special kinds of iModels */
 export class BriefcaseId {
@@ -198,7 +198,7 @@ export class BriefcaseManager {
   private static cache?: BriefcaseCache;
 
   /** The path where the cache of briefcases are stored. */
-  public static cacheDir = path.join(os.tmpdir(), "Bentley/IModelJs/cache/imodels");
+  public static cacheDir = path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/imodels");
 
   /** Get the local path of the root folder storing the imodel seed file, change sets and briefcases */
   private static getIModelPath(iModelId: string): string {
