@@ -34,10 +34,12 @@ module.exports = {
 
     ]
   },
+  exclude: [
+    path.resolve(__dirname, '../backend/IModelJsFs.js'),
+  ],
   externals: {
     "@bentley/imodeljs-mobile": "require('@bentley/imodeljs-mobile')",
-    "fs": "IModelJsFs",
-    "fs-extra": "IModelJsFs"
+    "IModelJsFs": "IModelJsFs"
   },
   stats: {
     warnings: false

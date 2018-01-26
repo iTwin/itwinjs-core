@@ -3,29 +3,30 @@
  *--------------------------------------------------------------------------------------------*/
 import { ECDb } from "../backend/ECDb";
 import { Guid } from "@bentley/bentleyjs-core/lib/Id";
-import * as fs from "fs-extra";
+import { IModelJsFs } from "../backend/IModelJsFs";
+import * as path from "path";
 
 export class ECDbTestHelper {
 
   public static createECDb(outDir: string, fileName: string, schemaXml?: string): ECDb {
-  if (!fs.existsSync(outDir))
-    fs.mkdirSync(outDir);
+  if (!IModelJsFs.existsSync(outDir))
+    IModelJsFs.mkdirSync(outDir);
 
-  const path = outDir + fileName;
-  if (fs.existsSync(path))
-    fs.removeSync(path);
+  const outpath = path.join(outDir, fileName);
+  if (IModelJsFs.existsSync(outpath))
+    IModelJsFs.unlinkSync(outpath);
 
   const ecdb = new ECDb();
-  ecdb.createDb(path);
+  ecdb.createDb(outpath);
 
   if (!schemaXml)
     return ecdb;
 
-  const schemaPath = outDir + Guid.createValue() + ".ecschema.xml";
-  if (fs.existsSync(schemaPath))
-    fs.removeSync(schemaPath);
+  const schemaPath = path.join(outDir, Guid.createValue() + ".ecschema.xml");
+  if (IModelJsFs.existsSync(schemaPath))
+    IModelJsFs.unlinkSync(schemaPath);
 
-  fs.writeFileSync(schemaPath, schemaXml);
+  IModelJsFs.writeFileSync(schemaPath, schemaXml);
 
   ecdb.importSchema(schemaPath);
   return ecdb;

@@ -15,7 +15,7 @@ import { NodeAddonRegistry } from "./NodeAddonRegistry";
 import { AddonDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { IModelDb } from "./IModelDb";
 
-import * as fs from "fs";
+import { IModelJsFs } from "./IModelJsFs";
 import * as path from "path";
 import { KnownLocations } from "./KnownLocations";
 
@@ -504,25 +504,25 @@ export class BriefcaseManager {
 
   /** Downloads the briefcase seed file */
   private static async downloadSeedFile(seedUrl: string, seedPathname: string): Promise<void> {
-    if (fs.existsSync(seedPathname))
+    if (IModelJsFs.existsSync(seedPathname))
       return;
 
     BriefcaseManager.makeDirectoryRecursive(path.dirname(seedPathname)); // todo: move this to IModel Hub Client
     await BriefcaseManager.hubClient!.downloadFile(seedUrl, seedPathname)
       .catch(() => {
         assert(false, "Could not download seed file");
-        if (fs.existsSync(seedPathname))
-          fs.unlinkSync(seedPathname); // Just in case there was a partial download, delete the file
+        if (IModelJsFs.existsSync(seedPathname))
+          IModelJsFs.unlinkSync(seedPathname); // Just in case there was a partial download, delete the file
         return Promise.reject(new IModelError(BriefcaseStatus.CannotDownload));
       });
   }
 
   /** Create a directory, recursively setting up the path as necessary */
   private static makeDirectoryRecursive(dirPath: string) {
-    if (fs.existsSync(dirPath))
+    if (IModelJsFs.existsSync(dirPath))
       return;
     BriefcaseManager.makeDirectoryRecursive(path.dirname(dirPath));
-    fs.mkdirSync(dirPath);
+    IModelJsFs.mkdirSync(dirPath);
   }
 
   /** Deletes a briefcase from the local disk (if it exists) */
@@ -591,7 +591,7 @@ export class BriefcaseManager {
     const changeSetsPath: string = BriefcaseManager.getChangeSetsPath(iModelId);
     for (const changeSet of changeSets) {
       const changeSetPathname = path.join(changeSetsPath, changeSet.fileName);
-      if (!fs.existsSync(changeSetPathname))
+      if (!IModelJsFs.existsSync(changeSetPathname))
         changeSetsToDownload.push(changeSet);
     }
 
@@ -668,19 +668,19 @@ export class BriefcaseManager {
   }
 
   private static deleteFolderRecursive(folderPath: string) {
-    if (!fs.existsSync(folderPath))
+    if (!IModelJsFs.existsSync(folderPath))
       return;
     try {
-      fs.readdirSync(folderPath).forEach((file) => {
+      IModelJsFs.readdirSync(folderPath).forEach((file) => {
         const curPath = folderPath + "/" + file;
-        if (fs.lstatSync(curPath).isDirectory()) {
+        if (IModelJsFs.lstatSync(curPath)!.isDirectory) {
           BriefcaseManager.deleteFolderRecursive(curPath);
         } else {
           // delete file
-          fs.unlinkSync(curPath);
+          IModelJsFs.unlinkSync(curPath);
         }
       });
-      fs.rmdirSync(folderPath);
+      IModelJsFs.rmdirSync(folderPath);
     } catch (err) {
       return; // todo: This seems to fail sometimes for no reason
     }
@@ -688,7 +688,7 @@ export class BriefcaseManager {
 
   /** Purge all briefcases and reset the briefcase manager */
   public static purgeAll() {
-    if (fs.existsSync(BriefcaseManager.cacheDir))
+    if (IModelJsFs.existsSync(BriefcaseManager.cacheDir))
       BriefcaseManager.deleteFolderRecursive(BriefcaseManager.cacheDir);
 
     BriefcaseManager.cache = undefined;
@@ -786,7 +786,7 @@ export class BriefcaseManager {
     changeSet.parentId = changeSetToken.parentId;
     changeSet.containsSchemaChanges = changeSetToken.containsSchemaChanges;
     changeSet.seedFileId = briefcase.fileId!;
-    changeSet.fileSize = fs.statSync(changeSetToken.pathname).size.toString();
+    changeSet.fileSize = IModelJsFs.lstatSync(changeSetToken.pathname)!.size.toString();
 
     await BriefcaseManager.hubClient!.uploadChangeSet(accessToken, briefcase.iModelId, changeSet, changeSetToken.pathname);
 

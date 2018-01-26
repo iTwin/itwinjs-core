@@ -13,8 +13,9 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { using } from "@bentley/bentleyjs-core/lib/Disposable";
 import * as path from "path";
-import * as fs from "fs";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { IModelJsFs } from "./IModelJsFs";
+import { KnownLocations } from "./KnownLocations";
 
 /** Equivalent of the ECEnumeration OpCode in the ECDbChange ECSchema */
 export enum ChangeOpCode {
@@ -74,13 +75,13 @@ export class ChangeSummaryManager {
       return;
 
     const changesCacheFilePath: string = BriefcaseManager.buildChangeSummaryFilePath(iModel.briefcaseEntry.iModelId);
-    if (!fs.existsSync(changesCacheFilePath)) {
+    if (!IModelJsFs.existsSync(changesCacheFilePath)) {
       using (new ECDb(), (changesFile) => {
         ChangeSummaryManager.createChangesFile(iModel, changesFile, changesCacheFilePath);
       });
     }
 
-    assert(fs.existsSync(changesCacheFilePath));
+    assert(IModelJsFs.existsSync(changesCacheFilePath));
     const res: DbResult = iModel.briefcaseEntry.nativeDb!.attachChangeCache(changesCacheFilePath);
     if (res !== DbResult.BE_SQLITE_OK)
       throw new IModelError(res, `Failed to attach Changes cache file to ${iModel.briefcaseEntry.pathname}.`);
@@ -174,7 +175,7 @@ export class ChangeSummaryManager {
 
     const changesFile = new ECDb();
     const changesPath: string = BriefcaseManager.buildChangeSummaryFilePath(iModel.briefcaseEntry.iModelId);
-    if (fs.existsSync(changesPath)) {
+    if (IModelJsFs.existsSync(changesPath)) {
       changesFile.openDb(changesPath, OpenMode.ReadWrite);
       return changesFile;
     }
@@ -197,7 +198,7 @@ export class ChangeSummaryManager {
   }
 
   private static getExtendedSchemaPath(): string {
-    return __dirname + "/assets/IModelChange.01.00.ecschema.xml";
+    return path.join(KnownLocations.assetsDir, "IModelChange.01.00.ecschema.xml");
   }
 
   private static isSummaryAlreadyExtracted(changesFile: ECDb, changeSetId: string): boolean {

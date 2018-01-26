@@ -7,6 +7,7 @@ import { assert } from "chai";
 import { TestData } from "./TestData";
 import * as webpack from "webpack";
 import * as path from "path";
+import { IModelJsFs } from "../../backend/IModelJsFs";
 
 TestbedConfig.initializeGatewayConfig();
 TestbedConfig.gatewayConfig.protocol.openAPIPathPrefix = () => `http://localhost:${TestbedConfig.serverPort}`;
@@ -37,8 +38,7 @@ describe("Testbed", () => {
   }).timeout(99999);
 });
 
-const fs = remote.require("fs");
-for (const entry of fs.readdirSync(__dirname)) {
+for (const entry of IModelJsFs.readdirSync(__dirname)) {
   if (entry.indexOf(".test.js") !== -1 && entry.indexOf(".test.js.map") === -1) {
     const entryPath = `${__dirname}/${entry}`;
 

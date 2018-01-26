@@ -2,7 +2,6 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 // import * as fs from "fs";
-import * as fs from "fs-extra";
 import * as path from "path";
 import { expect, assert } from "chai";
 import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -15,6 +14,7 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { using } from "@bentley/bentleyjs-core/lib/Disposable";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { IModelJsFs } from "../backend/IModelJsFs";
 
 describe("ChangeSummary", () => {
   let accessToken: AccessToken;
@@ -28,13 +28,13 @@ describe("ChangeSummary", () => {
     testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "TestModel");
 
     // Recreate briefcases if it's a TMR. todo: Figure a better way to prevent bleeding briefcase ids
-    shouldDeleteAllBriefcases = !fs.existsSync(BriefcaseManager.cacheDir);
+    shouldDeleteAllBriefcases = !IModelJsFs.existsSync(BriefcaseManager.cacheDir);
     if (shouldDeleteAllBriefcases)
       await IModelTestUtils.deleteAllBriefcases(accessToken, testIModelId);
 
     const changesPath: string = BriefcaseManager.buildChangeSummaryFilePath(testIModelId);
-    if (fs.existsSync(changesPath))
-      fs.removeSync(changesPath);
+    if (IModelJsFs.existsSync(changesPath))
+      IModelJsFs.unlinkSync(changesPath);
   });
 
   it("Attach ChangeCache file to readwrite briefcase", async () => {
@@ -63,7 +63,7 @@ describe("ChangeSummary", () => {
       });
 
       const expectedCachePath: string = path.join(BriefcaseManager.cacheDir, testIModelId, testIModelId.concat(".bim.ecchanges"));
-      expect(fs.existsSync(expectedCachePath));
+      expect(IModelJsFs.existsSync(expectedCachePath));
     } finally {
       await iModel.close(accessToken);
     }
@@ -93,7 +93,7 @@ describe("ChangeSummary", () => {
       });
 
       const expectedCachePath: string = path.join(BriefcaseManager.cacheDir, testIModelId, testIModelId.concat(".bim.ecchanges"));
-      expect(fs.existsSync(expectedCachePath));
+      expect(IModelJsFs.existsSync(expectedCachePath));
     } finally {
     await iModel.close(accessToken);
   }
@@ -170,8 +170,8 @@ describe("ChangeSummary", () => {
     assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
     const outDir = KnownTestLocations.outputDir;
-    if (!fs.existsSync(outDir))
-      fs.mkdirSync(outDir);
+    if (!IModelJsFs.existsSync(outDir))
+      IModelJsFs.mkdirSync(outDir);
 
     const changeSummaries = new Array<ChangeSummary>();
     iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.ChangeSummary ORDER BY ECInstanceId", (stmt) => {
@@ -183,9 +183,9 @@ describe("ChangeSummary", () => {
     });
 
     for (const changeSummary of changeSummaries) {
-      const filePath = outDir + "imodelid_" + testIModelId + "_changesummaryid_" + changeSummary.id + ".changesummary.json";
-      if (fs.existsSync(filePath))
-        fs.removeSync(filePath);
+      const filePath = path.join(outDir, "imodelid_" + testIModelId + "_changesummaryid_" + changeSummary.id + ".changesummary.json");
+      if (IModelJsFs.existsSync(filePath))
+        IModelJsFs.unlinkSync(filePath);
 
       const content = {id: changeSummary.id, changeSet: changeSummary.changeSet, instanceChanges: new Array<InstanceChange>()};
       iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId", (stmt) => {
@@ -198,7 +198,7 @@ describe("ChangeSummary", () => {
         }
       });
 
-      fs.writeFileSync(filePath, JSON.stringify(content));
+      IModelJsFs.writeFileSync(filePath, JSON.stringify(content));
     }
   });
 });
