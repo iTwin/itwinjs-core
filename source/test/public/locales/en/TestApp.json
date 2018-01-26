@@ -1,9 +1,9 @@
 {
-  "ToolDefinitions": {
+  "tools": {
     "Test": {
       "Immediate": {
-        "Keyin": "Localized TestImmediate Keyin",
-        "Description": "Test of an Immediate Command"
+        "keyin": "Localized TestImmediate Keyin",
+        "description": "Test of an Immediate Command"
       }
     }
   }

@@ -82,9 +82,9 @@ describe("Static Properties", () => {
     assert.equal(Derived.staticProperty, "derived"); // Derived's staticProperty is now different
     assert.equal(Base.sqlName, "s.base");
     const d = new Derived();
-    assert.equal(Object.getPrototypeOf(d).constructor.staticProperty, "derived"); // Instances of Derived see Derived.staticProperty
+    assert.equal((d.constructor as any).staticProperty, "derived"); // Instances of Derived see Derived.staticProperty
     const b = new Base();
-    assert.equal(Object.getPrototypeOf(b).constructor.staticProperty, "base"); // Instances of Base see Base.staticProperty
+    assert.equal((b.constructor as any).staticProperty, "base"); // Instances of Base see Base.staticProperty
   });
 
 });
