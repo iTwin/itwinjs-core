@@ -197,7 +197,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * Tools need to call SaveChanges to commit any elements they have added/changes they have made.
    * This helper method supplies the tool name for the undo string to iModel.saveChanges.
    */
-  public saveChanges(): Promise<void> { return this.iModel.saveChanges(Object.getPrototypeOf(this).constructor.getLocalizedToolName()); }
+  public saveChanges(): Promise<void> { return this.iModel.saveChanges(this.toolId); }
 
   // //! Ensures that any locks and/or codes required for the operation are obtained from iModelServer before making any changes to the iModel.
   // //! Default implementation invokes _PopulateRequest() and forwards request to server.

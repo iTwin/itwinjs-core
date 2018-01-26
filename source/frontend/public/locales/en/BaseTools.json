@@ -1,66 +1,61 @@
 {
-  "ToolDefinitions": {
+  "tools": {
     "View": {
       "Pan": {
-        "Keyin": "Pan View",
-        "Description": "Moves origin of view",
-        "Flyover": "Pan View",
+        "keyin": "Pan View",
+        "description": "Moves origin of view",
+        "flyover": "Pan View",
         "Prompt": "Click and drag to pan view."
       },
       "Rotate": {
-        "Keyin": "Rotate View",
-        "Description": "Rotates View about specified point",
-        "Flyover": "Rotate About Point",
+        "keyin": "Rotate View",
+        "description": "Rotates View about specified point",
+        "flyover": "Rotate About Point",
         "Prompt": "Click and drag to move view around rotation point. Change rotation point by moving crosshair."
       },
       "Zoom": {
-        "Keyin": "Zoom",
-        "Description": "Changes view magnification",
-        "Flyover": "Zoom About Point",
+        "keyin": "Zoom",
+        "description": "Changes view magnification",
+        "flyover": "Zoom About Point",
         "Prompt": "Click to zoom view."
       },
       "Look": {
-        "Keyin": "Walk",
-        "Description": "Look around the design",
-        "Flyover": "Look Around",
+        "keyin": "Walk",
+        "description": "Look around the design",
+        "flyover": "Look Around",
         "Prompt": "Click and drag to look around."
       },
       "WindowArea": {
-        "Keyin": "Window Area",
-        "Description": "Select viewing area",
-        "Flyover": " Window Area",
+        "keyin": "Window Area",
+        "description": "Select viewing area",
+        "flyover": " Window Area",
         "Prompt": "Click and drag to define viewing area."
       },
       "Scroll": {
-        "Keyin": "Scroll View",
-        "Description": "Scrolls view",
-        "Flyover": "Scroll"
+        "keyin": "Scroll View",
+        "description": "Scrolls view",
+        "flyover": "Scroll",
+        "Prompt": "Click to start scrolling view."
       },
       "Fit": {
-        "Keyin": "Fit View",
-        "Description": "Displays entire model",
-        "Flyover": "Fit View",
+        "keyin": "Fit View",
+        "description": "Displays entire model",
+        "flyover": "Fit View",
         "Prompt": "Select view to fit",
         "Model": {
-          "Keyin": "Fit Model",
-          "Description": "Fit all graphics in the chosen model"
+          "keyin": "Fit Model",
+          "description": "Fit all graphics in the chosen model"
         }
-      }
+      },
+      "SelectView": "Select view",
+      "Navigate": "Click and drag to navigate view. Hold Shift to change elevation. Hold Ctrl to look around."
     },
-    "SelectTool": {
-      "Keyin": "Select",
-      "Description": "Selects Element for inspection or manipulation",
-      "Flyover": "Select Element",
+    "Select": {
+      "keyin": "Select Elements",
+      "description": "Selects Element for inspection or manipulation",
+      "flyover": "Select Elements",
       "Prompt": "Click or drag to selection elements."
     }
-  },
-  "CommonPrompts": {
-    "SelectView": "Select view",
-    "WindowArea": "Click and drag to zoom into area defined by the rectangle.",
-    "RotateDrag": "Click and drag to move view around rotation point.",
-    "Navigate": "Click and drag to navigate view. Hold Shift to change elevation. Hold Ctrl to look around.",
-    "Scroll": "Click to start scrolling view.",
-    "SelectViewToFit": "Select view to fit"
   },
   "ViewUndo": {
     "NoPreviousViewOps": "No previous viewing operations",

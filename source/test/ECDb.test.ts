@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
+import * as path from "path";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -10,9 +11,10 @@ import { ECDb } from "../backend/ECDb";
 import { ECSqlInsertResult } from "../backend/ECSqlStatement";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { using } from "@bentley/bentleyjs-core/lib/Disposable";
+import { KnownTestLocations } from "./KnownTestLocations";
 
 describe("ECDb", () => {
-  const _outDir = __dirname + "/output/";
+  const _outDir = KnownTestLocations.outputDir;
 
   it("should be able to create a new ECDb", () => {
     using (ECDbTestHelper.createECDb(_outDir, "create.ecdb"), (ecdb) => {
@@ -29,7 +31,7 @@ describe("ECDb", () => {
 
   it("should be able to open an ECDb", () => {
     const fileName: string = "open.ecdb";
-    const ecdbPath: string = _outDir + fileName;
+    const ecdbPath: string = path.join(_outDir, fileName);
     using (ECDbTestHelper.createECDb(_outDir, fileName), (testECDb) => {
       assert.isTrue(testECDb.isOpen());
       });
@@ -42,7 +44,7 @@ describe("ECDb", () => {
 
   it("should be able to import a schema", () => {
     const fileName: string = "schemaimport.ecdb";
-    const ecdbPath: string = _outDir + fileName;
+    const ecdbPath: string = path.join(_outDir, fileName);
     let id: Id64;
     using (ECDbTestHelper.createECDb(_outDir, fileName,
     `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">

@@ -1,5 +1,5 @@
 "use strict";
-debugger;
+
 // Run selected backend mocha tests programmatically. We do this in the mobile platform.
 require("mocha"); // puts the symbol "mocha" in global.
 require("chai"); // puts 'assert', etc. into global
@@ -9,17 +9,21 @@ function mobileReporter(runner) {
     var failures = 0;
     runner.on('pass', function (test) {
         passes++;
-        console_log('pass: %s', test.fullTitle());
+        console_log("pass: " + test.fullTitle());
     });
     runner.on('fail', function (test, err) {
         failures++;
-        console_log('fail: %s -- error: %s', test.fullTitle(), err.message);
+        console_log("fail: " + test.fullTitle() + " -- error: " + err.message);
     });
     runner.on('end', function () {
-        console_log('end: %d/%d', passes, passes + failures);
+        console_log("end: " + passes + " / " + (passes+failures));
         // process.exit(failures);
     });
 }
 mocha.setup({ui: 'bdd', reporter: mobileReporter}); // puts 'describe', 'it', etc. into global
-require("./Category.test.js");
+debugger;
+require("./IModelTestUtils.js");
+//require("./Category.test.js");
+//require("./ECSqlStatement.test.js");
+require("./ClassRegistry.test.js");
 mocha.run();

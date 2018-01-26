@@ -6,6 +6,7 @@ module.exports = {
     path: path.resolve(__dirname, "./lib/test/mobile"),
     filename: "runMochaTestsDirectly.js"
   },
+  target: "webworker",
   devtool: "source-map",
   module: {
     rules:[
@@ -29,12 +30,23 @@ module.exports = {
       {
         test: /imodeljs-nodeaddon$/,
         use: 'null-loader'
+      },
+      {
+        test: path.resolve(__dirname, '../backend/IModelJsFs.js'),
+        use: 'null-loader'
+      },
+      {
+        test: /fs\-extra/,
+        use: 'null-loader'
       }
 
     ]
   },
-  node: {
-    "fs": "empty"
+  externals: {
+    "@bentley/imodeljs-mobile": "require('@bentley/imodeljs-mobile')",
+    "IModelJsFs": "IModelJsFs",
+    "fs": "IModelJsFs",
+    "fs-extra": "IModelJsFs"
   },
   stats: {
     warnings: false

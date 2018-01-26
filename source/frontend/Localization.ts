@@ -76,10 +76,10 @@ export class I18N {
         for (const thisError of errorList) {
           if (!thisError.includes(name))
             continue;
-          locales = locales.filter ((thisLocale) => {
-            return(!thisError.includes(thisLocale));
-            });
-          }
+          locales = locales.filter((thisLocale) => {
+            return (!thisError.includes(thisLocale));
+          });
+        }
         // if we removed every locale from the array, it wasn't loaded.
         if (locales.length > 0)
           resolve();

@@ -28,7 +28,7 @@ import { Placement3d, ElementAlignedBox3d } from "../common/geometry/Primitives"
 import { GeometricElement3dProps } from "../common/ElementProps";
 
 import * as path from "path";
-import * as os from "os";
+import { KnownTestLocations } from "./KnownTestLocations";
 
 describe("GeometricPrimitive", () => {
   it("should be able to create GeometricPrimitives from various geometry", () => {
@@ -372,7 +372,7 @@ describe("GeometryBuilder", () => {
       numSurfacePts: pts.length,
       polyPts: polyPoints,
       numPolyPts: polyPoints.length,
-      outFileName: path.join(os.tmpdir(), "myDb.bim"),
+      outFileName: path.join(KnownTestLocations.outputDir, "myDb.bim"),
     };
 
     const cppResult = imodel.executeTestById(4, json);
@@ -387,7 +387,7 @@ describe("GeometryBuilder", () => {
       numSurfacePts: pts.length,
       polyPts: polyPoints,
       numPolyPts: polyPoints.length,
-      outFileName: path.join(os.tmpdir(), "testDb.bim"),
+      outFileName: path.join(KnownTestLocations.outputDir, "testDb.bim"),
     };
     const cppResult = imodel.executeTestById(5, json);
     assert.isTrue(cppResult.hasOwnProperty("geom"), "Successfully obtained geometry stream back from C++");

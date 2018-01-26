@@ -1,7 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import * as fs from "fs";
 import * as path from "path";
 import { expect, assert } from "chai";
 import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -19,6 +18,8 @@ import { SpatialCategory } from "../backend/Category";
 import { Appearance } from "../common/SubCategoryAppearance";
 import { ColorDef } from "../common/ColorDef";
 import { IModel } from "../common/IModel";
+import { KnownTestLocations } from "./KnownTestLocations";
+import { IModelJsFs } from "../backend/IModelJsFs";
 
 describe("BriefcaseManager", () => {
   let accessToken: AccessToken;
@@ -48,7 +49,7 @@ describe("BriefcaseManager", () => {
     iModelLocalReadWritePath = path.join(BriefcaseManager.cacheDir, testIModelId, "readWrite");
 
     // Recreate briefcases if it's a TMR. todo: Figure a better way to prevent bleeding briefcase ids
-    shouldDeleteAllBriefcases = !fs.existsSync(BriefcaseManager.cacheDir);
+    shouldDeleteAllBriefcases = !IModelJsFs.existsSync(BriefcaseManager.cacheDir);
     if (shouldDeleteAllBriefcases)
       await IModelTestUtils.deleteAllBriefcases(accessToken, testIModelId);
 
@@ -60,8 +61,8 @@ describe("BriefcaseManager", () => {
     assert.exists(iModel);
     assert(iModel.iModelToken.openMode === OpenMode.Readonly);
 
-    expect(fs.existsSync(iModelLocalReadonlyPath));
-    const files = fs.readdirSync(iModelLocalReadonlyPath);
+    expect(IModelJsFs.existsSync(iModelLocalReadonlyPath));
+    const files = IModelJsFs.readdirSync(iModelLocalReadonlyPath);
     expect(files.length).greaterThan(0);
 
     iModel.close(accessToken);
@@ -72,8 +73,8 @@ describe("BriefcaseManager", () => {
     assert.exists(iModel);
     assert(iModel.iModelToken.openMode === OpenMode.ReadWrite);
 
-    expect(fs.existsSync(iModelLocalReadWritePath));
-    const files = fs.readdirSync(iModelLocalReadWritePath);
+    expect(IModelJsFs.existsSync(iModelLocalReadWritePath));
+    const files = IModelJsFs.readdirSync(iModelLocalReadWritePath);
     expect(files.length).greaterThan(0);
 
     iModel.close(accessToken);
@@ -83,7 +84,7 @@ describe("BriefcaseManager", () => {
     const iModel0: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId);
     assert.exists(iModel0);
 
-    const briefcases = fs.readdirSync(iModelLocalReadonlyPath);
+    const briefcases = IModelJsFs.readdirSync(iModelLocalReadonlyPath);
     expect(briefcases.length).greaterThan(0);
 
     const iModels = new Array<IModelConnection>();
@@ -93,19 +94,19 @@ describe("BriefcaseManager", () => {
       iModels.push(iModel);
     }
 
-    const briefcases2 = fs.readdirSync(iModelLocalReadonlyPath);
+    const briefcases2 = IModelJsFs.readdirSync(iModelLocalReadonlyPath);
     expect(briefcases2.length).equals(briefcases.length);
     const diff = briefcases2.filter((item) => briefcases.indexOf(item) < 0);
     expect(diff.length).equals(0);
   });
 
   it("should reuse closed briefcases in ReadWrite mode", async () => {
-    const files = fs.readdirSync(iModelLocalReadWritePath);
+    const files = IModelJsFs.readdirSync(iModelLocalReadWritePath);
 
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite); // Note: No frontend support for ReadWrite open yet
     assert.exists(iModel);
 
-    const files2 = fs.readdirSync(iModelLocalReadWritePath);
+    const files2 = IModelJsFs.readdirSync(iModelLocalReadWritePath);
     expect(files2.length).equals(files.length);
     const diff = files2.filter((item) => files.indexOf(item) < 0);
     expect(diff.length).equals(0);
@@ -186,7 +187,7 @@ describe("BriefcaseManager", () => {
     }
 
     // Create a new iModel on the Hub (by uploading a seed file)
-    const pathname = path.join(__dirname, "assets", iModelName + ".bim");
+    const pathname = path.join(KnownTestLocations.assetsDir, iModelName + ".bim");
     const rwIModelId: string = await BriefcaseManager.uploadIModel(accessToken, testProjectId, pathname);
     assert.isNotEmpty(rwIModelId);
 

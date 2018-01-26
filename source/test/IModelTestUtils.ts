@@ -1,7 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import * as fs from "fs-extra";
 import { assert } from "chai";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
@@ -18,11 +17,12 @@ import { DefinitionModel, Model } from "../backend/Model";
 import { SpatialCategory } from "../backend/Category";
 import { Appearance } from "../common/SubCategoryAppearance";
 import { Configuration } from "../common/Configuration";
+import { IModelJsFs, IModelJsFsStats } from "../backend/IModelJsFs";
+import { KnownTestLocations } from "./KnownTestLocations";
+import * as path from "path";
 
 // Initialize the gateway classes used by tests
 Gateway.initialize(IModelGateway);
-
-declare const __dirname: string;
 
 // Initialize the Node addon used by tests
 NodeAddonRegistry.loadAndRegisterStandardAddon();
@@ -99,9 +99,9 @@ export class IModelTestUtils {
   }
 
   private static getStat(name: string) {
-    let stat: fs.Stats | undefined;
+    let stat: IModelJsFsStats | undefined;
     try {
-      stat = fs.statSync(name);
+      stat = IModelJsFs.lstatSync(name);
     } catch (err) {
       stat = undefined;
     }
@@ -109,19 +109,19 @@ export class IModelTestUtils {
   }
 
   public static openIModel(filename: string, opts?: IModelTestUtilsOpenOptions): IModelDb {
-    const destPath = __dirname + "/output";
-    if (!fs.existsSync(destPath))
-      fs.mkdirSync(destPath);
+    const destPath = KnownTestLocations.outputDir;
+    if (!IModelJsFs.existsSync(destPath))
+      IModelJsFs.mkdirSync(destPath);
 
     if (opts === undefined)
       opts = {};
 
-    const srcName = __dirname + "/assets/" + filename;
-    const dbName = destPath + "/" + (opts.copyFilename ? opts.copyFilename! : filename);
+    const srcName = path.join(KnownTestLocations.assetsDir, filename);
+    const dbName = path.join(destPath, (opts.copyFilename ? opts.copyFilename! : filename));
     const srcStat = IModelTestUtils.getStat(srcName);
     const destStat = IModelTestUtils.getStat(dbName);
-    if (!srcStat || !destStat || srcStat.mtime.getTime() !== destStat.mtime.getTime()) {
-      fs.copySync(srcName, dbName, { preserveTimestamps: true });
+    if (!srcStat || !destStat || srcStat.mtimeMs !== destStat.mtimeMs) {
+      IModelJsFs.copySync(srcName, dbName, { preserveTimestamps: true });
     }
 
     const iModel: IModelDb = IModelDb.openStandalone(dbName, opts.openMode, opts.enableTransactions); // could throw Error

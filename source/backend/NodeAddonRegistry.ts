@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelError, IModelStatus } from "../common/IModelError";
+import { KnownLocations } from "./KnownLocations";
 
 /** Class that holds the singleton addon instance that was loaded by the app for this iModelJs session. It is up to the app to load the addon. */
 export class NodeAddonRegistry {
@@ -57,13 +58,14 @@ export class NodeAddonRegistry {
 
   /** Load and register the standard addon. */
   public static loadAndRegisterStandardAddon() {
+
+    if (KnownLocations.imodeljsMobile !== undefined) {
+      // We are running in imodeljs (our mobile platform)
+      NodeAddonRegistry.registerAddon(require("@bentley/imodeljs-mobile"));
+      return;
+    }
+
     if (typeof (process) === "undefined") {
-      // We are not running in node or electron.
-      if (require("@bentley/imodeljs-services-tier-utilities") !== undefined) {
-        // We are running in imodeljs (our mobile platform)
-        NodeAddonRegistry.registerAddon(require("@bentley/imodeljs-mobile")); // special addon name is recognized by the mobile platform's loader.
-        return;
-      }
       // We are running in an unknown platform.
       throw new IModelError(IModelStatus.NotFound);
     }
