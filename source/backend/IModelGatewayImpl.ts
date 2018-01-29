@@ -61,7 +61,7 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
     return true; // NEEDS_WORK: Promise<void> seems to crash the transport layer.
   }
 
-  public async executeQuery(iModelToken: IModelToken, sql: string, bindings?: any): Promise<string[]> {
+  public async executeQuery(iModelToken: IModelToken, sql: string, bindings?: any[] | object): Promise<string[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const rows: any[] = iModelDb.executeQuery(sql, bindings);
     Logger.logInfo("IModelDbRemoting.executeQuery", () => ({ sql, numRows: rows.length }));

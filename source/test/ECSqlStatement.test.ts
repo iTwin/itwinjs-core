@@ -522,4 +522,5 @@ describe("ECSqlStatement", () => {
       assert.equal(rowCount, 2); });
     });
   });
+
 });

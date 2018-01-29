@@ -19,7 +19,7 @@ import { KnownTestLocations } from "./KnownTestLocations";
 /* spell-checker: disable */
 
 // Note: This will be relative to root imodeljs-core directory for VS Code debugging, but relative to the test directory for running in console
-const bimFileLocation = path.join(KnownTestLocations.assetsDir, "test.bim");
+const iModelLocation = path.join(KnownTestLocations.assetsDir, "test.bim");
 
 // Given a ViewDefinition, return a ViewState that defines the members of that ViewDefinition
 function convertViewDefToViewState(imodel: IModelDb, view: SpatialViewDefinition): SpatialViewState {
@@ -63,7 +63,7 @@ describe("ViewState", () => {
   // Includes some usable objects for basic testing purposes
   before(() => {
     // Pull down flat view known to exist from bim file
-    imodel = IModelDb.openStandalone(bimFileLocation, OpenMode.Readonly);
+    imodel = IModelDb.openStandalone(iModelLocation, OpenMode.Readonly);
     const viewRows: any[] = imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + SpatialViewDefinition.sqlName);
     assert.exists(viewRows, "Should find some views");
     const viewId = new Id64(viewRows[0].elementId);
@@ -166,7 +166,7 @@ describe("ViewState", () => {
         dsId: flatView.displayStyleId.value,
         csId: flatView.categorySelectorId.value,
         msId: flatView.modelSelectorId.value,
-        path: bimFileLocation,
+        path: iModelLocation,
       });
     nativeResultJSON = imodel.constructEntity(nativeResultJSON).toJSON();
     const viewStateJSON = (convertViewDefToViewState(imodel, flatView)).toJSON();
@@ -195,7 +195,7 @@ describe("ViewState", () => {
         dsId: flatView.displayStyleId.value,
         csId: flatView.categorySelectorId.value,
         msId: flatView.modelSelectorId.value,
-        path: bimFileLocation,
+        path: iModelLocation,
       });
     cppFlatViewStateJSON = imodel.constructEntity(cppFlatViewStateJSON).toJSON();
     assert.isTrue(jsonCompare.compare(tsFlatViewStateJSON, cppFlatViewStateJSON), "Native side ViewState 'lookAtVolume' test 1 matches TS");
@@ -219,7 +219,7 @@ describe("ViewState", () => {
         dsId: flatView.displayStyleId.value,
         csId: flatView.categorySelectorId.value,
         msId: flatView.modelSelectorId.value,
-        path: bimFileLocation,
+        path: iModelLocation,
       });
     cppFlatViewStateJSON = imodel.constructEntity(cppFlatViewStateJSON).toJSON();
     // in native C++, yawpitchroll will be defined, even though it is technically not valid (did not conform to certain bounds)
@@ -241,7 +241,7 @@ describe("ViewState", () => {
         dsId: flatView.displayStyleId.value,
         csId: flatView.categorySelectorId.value,
         msId: flatView.modelSelectorId.value,
-        path: bimFileLocation,
+        path: iModelLocation,
       });
     cppCamViewStateJSON = imodel.constructEntity(cppCamViewStateJSON).toJSON();
     assert.isTrue(jsonCompare.compare(tsCamViewStateJSON, cppCamViewStateJSON), "Native side ViewState 'lookAtVolume' test 3 matches TS");
@@ -265,7 +265,7 @@ describe("ViewState", () => {
         dsId: flatView.displayStyleId.value,
         csId: flatView.categorySelectorId.value,
         msId: flatView.modelSelectorId.value,
-        path: bimFileLocation,
+        path: iModelLocation,
       });
     cppCamViewStateJSON = imodel.constructEntity(cppCamViewStateJSON).toJSON();
     assert.isTrue(jsonCompare.compare(tsCamViewStateJSON, cppCamViewStateJSON), "Native side ViewState 'lookAtVolume' test 4 matches TS");
@@ -292,7 +292,7 @@ describe("ViewState", () => {
         dsId: flatView.displayStyleId.value,
         csId: flatView.categorySelectorId.value,
         msId: flatView.modelSelectorId.value,
-        path: bimFileLocation,
+        path: iModelLocation,
       });
 
     cppFlatViewStateJSON = imodel.constructEntity(cppFlatViewStateJSON).toJSON();
@@ -321,7 +321,7 @@ describe("ViewState", () => {
         dsId: flatView.displayStyleId.value,
         csId: flatView.categorySelectorId.value,
         msId: flatView.modelSelectorId.value,
-        path: bimFileLocation,
+        path: iModelLocation,
       });
     cppCamViewStateJSON = imodel.constructEntity(cppCamViewStateJSON).toJSON();
     assert.isTrue(jsonCompare.compare(tsCamViewStateJSON, cppCamViewStateJSON), "Native side ViewState 'rotate & lookat' test 2 matches TS");
@@ -345,7 +345,7 @@ describe("ViewState", () => {
         dsId: flatView.displayStyleId.value,
         csId: flatView.categorySelectorId.value,
         msId: flatView.modelSelectorId.value,
-        path: bimFileLocation,
+        path: iModelLocation,
       });
 
     cppCamViewStateJSON = imodel.constructEntity(cppCamViewStateJSON).toJSON();
