@@ -5,7 +5,7 @@
 import ECClass from "Metadata/Class";
 import MixinClass from "Metadata/MixinClass";
 import RelationshipClass from "Metadata/RelationshipClass";
-import { EntityClassInterface, PropertyInterface, SchemaInterface, RelationshipClassInterface } from "Interfaces";
+import { EntityClassInterface, PropertyInterface, SchemaInterface, RelationshipClassInterface, LazyLoadedMixin } from "Interfaces";
 import { ECClassModifier, RelatedInstanceDirection, SchemaChildType, parseStrengthDirection, SchemaChildKey } from "ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "Exception";
 import { NavigationProperty } from "Metadata/Property";
@@ -16,16 +16,15 @@ import { DelayedPromiseWithProps } from "DelayedPromise";
  */
 export default class EntityClass extends ECClass implements EntityClassInterface {
   public key: SchemaChildKey.EntityClass;
-  private _mixins?: MixinClass[];
+  private _mixins?: LazyLoadedMixin[];
 
   constructor(schema: SchemaInterface, name: string, modifier?: ECClassModifier) {
     super(schema, name, modifier);
     this.key.type = SchemaChildType.EntityClass;
   }
 
-  // FIXME!
-  set mixins(mixins: MixinClass[]) { this._mixins = mixins; }
-  get mixins(): MixinClass[] {
+  set mixins(mixins: LazyLoadedMixin[]) { this._mixins = mixins; }
+  get mixins(): LazyLoadedMixin[] {
     if (!this._mixins)
       return [];
     return this._mixins;
@@ -40,11 +39,11 @@ export default class EntityClass extends ECClass implements EntityClassInterface
       this._mixins = [];
 
     if (Array.isArray(mixin)) {
-      this._mixins.concat(mixin);
+      this._mixins.concat(mixin.map((m) => new DelayedPromiseWithProps(m.key, async () => m)));
       return;
     }
 
-    this._mixins.push(mixin);
+    this._mixins.push(new DelayedPromiseWithProps(mixin.key, async () => mixin));
     return;
   }
 
@@ -56,7 +55,7 @@ export default class EntityClass extends ECClass implements EntityClassInterface
     let inheritedProperty = await super.getInheritedProperty(name);
 
     if (!inheritedProperty && this._mixins) {
-      const mixinProps = await Promise.all(this._mixins.map(async (mixin) => mixin.getProperty(name)));
+      const mixinProps = await Promise.all(this._mixins.map(async (mixin) => (await mixin).getProperty(name)));
       mixinProps.some((prop) => {
         inheritedProperty = prop;
         return inheritedProperty !== undefined;
@@ -110,9 +109,7 @@ export default class EntityClass extends ECClass implements EntityClassInterface
       if (!tempMixin)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `TODO: Fix this message`);
 
-      if (!this._mixins)
-        this._mixins = [];
-      this._mixins.push(tempMixin);
+      this.addMixin(tempMixin);
     };
 
     const loadAllMixins = (mixinFullNames: string[]) => Promise.all(mixinFullNames.map((name) => loadMixin(name)));

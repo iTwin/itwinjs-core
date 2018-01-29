@@ -30,7 +30,7 @@ describe("entity class", () => {
       const entityClass = new EntityClass(schema, "TestClass");
       await entityClass.createPrimitiveProperty("PrimProp");
       entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
-      entityClass.mixins = [mixin];
+      entityClass.mixins = [ new DelayedPromiseWithProps(mixin.key, async () => mixin) ];
 
       expect(await entityClass.getProperty("MixinPrimProp")).to.be.undefined;
       expect(await entityClass.getProperty("MixinPrimProp", true)).equal(mixinPrimProp);
@@ -103,7 +103,7 @@ describe("entity class", () => {
 
       assert.isDefined(entityClass.mixins);
       expect(entityClass.mixins!.length).equal(1);
-      assert.isTrue(entityClass.mixins![0] === mixinClass);
+      assert.isTrue(await entityClass.mixins![0] === mixinClass);
 
       assert.isDefined(await mixinClass!.appliesTo);
       assert.isTrue(entityClass === await mixinClass!.appliesTo);

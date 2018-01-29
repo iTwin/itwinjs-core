@@ -99,7 +99,7 @@ export interface ECClassInterface extends SchemaChildInterface, ECClassProps {
 }
 
 export interface EntityClassProps extends ECClassProps {
-  mixin?: LazyLoadedMixin[];
+  mixins?: LazyLoadedMixin[];
 }
 
 export interface EntityClassInterface extends ECClassInterface, EntityClassProps {
