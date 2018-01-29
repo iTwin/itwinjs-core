@@ -88,13 +88,13 @@ describe("IModelConnection", () => {
     let rows = await iModel.executeQuery("SELECT ECInstanceId,Model,LastMod,CodeValue,FederationGuid,Origin FROM bis.GeometricElement3d LIMIT 1");
     assert.equal(rows.length, 1);
     let expectedRow = rows[0];
-    let actualRows = await iModel.executeQuery("SELECT 1 FROM bis.Element WHERE ECInstanceId=? AND Model=? AND LastMod=? AND CodeValue=? AND FederationGuid=? AND Origin=?", 
+    let actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement3d WHERE ECInstanceId=? AND Model=? AND LastMod=? AND CodeValue=? AND FederationGuid=? AND Origin=?",
         [new Id64(expectedRow.id), new NavigationValue(expectedRow.model.id), new DateTime(expectedRow.lastMod), expectedRow.codeValue,
         new Blob(expectedRow.federationGuid), new Point3d(expectedRow.origin.x, expectedRow.origin.y, expectedRow.origin.z)]);
     assert.equal(actualRows.length, 1);
     assert.equal(actualRows[0], 1);
 
-    actualRows = await iModel.executeQuery("SELECT 1 FROM bis.Element WHERE ECInstanceId=:id AND Model=:model AND LastMod=:lastmode AND CodeValue=:codevalue AND FederationGuid=:fedguid AND Origin=:origin", 
+    actualRows = await iModel.executeQuery("SELECT 1 FROM bis.Element WHERE ECInstanceId=:id AND Model=:model AND LastMod=:lastmode AND CodeValue=:codevalue AND FederationGuid=:fedguid AND Origin=:origin",
       {id: new Id64(expectedRow.id), model: new NavigationValue(expectedRow.model.id), lastmod: new DateTime(expectedRow.lastMod),
       codevalue: expectedRow.codeValue, fedguid: new Blob(expectedRow.federationGuid), origin: new Point3d(expectedRow.origin.x, expectedRow.origin.y, expectedRow.origin.z)});
     assert.equal(actualRows.length, 1);
