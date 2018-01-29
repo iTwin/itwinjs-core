@@ -43,17 +43,12 @@ class TestApp extends IModelApp {
     this.features.setGate("feature5", { val: { str1: "string1", doNot: false } });
   }
 
-  protected supplyI18NOptions() {
-    return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" };
-  }
+  protected supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
 }
 
-// tslint:disable:space-before-function-paren
-// tslint:disable-next-line:only-arrow-functions
-describe("IModelApp", function () {
-  before(async () => {
-    TestApp.startup();
-  });
+describe("IModelApp", () => {
+  before(() => TestApp.startup());
+  after(() => TestApp.shutdown());
 
   it("TestApp should override correctly", () => {
     assert.instanceOf(iModelApp, TestApp, "test app instance is valid");
@@ -78,7 +73,7 @@ describe("IModelApp", function () {
     iModelApp.features.setGate("feat3.sub1.val.a", true);
     iModelApp.features.setGate("feat3.sub1.val.b", { yes: true });
     assert.isFalse(iModelApp.features.check("feat2"));
-    assert.equal(iModelApp.features.check("feat3.sub1.notHere", "hello"), "hello");
+    assert.equal(iModelApp.features.check("feat3.sub1.notHere", "hello"), "hello", "undefined features should use default value");
     assert.isTrue(iModelApp.features.check("feat3.sub1.val.a"));
     assert.isTrue(iModelApp.features.check("feat3.sub1.val.b.yes"));
   });

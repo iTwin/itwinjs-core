@@ -16,8 +16,7 @@ import { SpatialViewDefinitionProps } from "../../common/ElementProps";
 import { PanTool } from "../../frontend/tools/ViewTool";
 import { CompassMode } from "../../frontend/AccuDraw";
 
-/* tslint:disable: no-console */
-const bimFileLocation = path.join(__dirname, "../../../../test/lib/test/assets/test.bim");
+const iModelLocation = path.join(__dirname, "../../../../test/lib/test/assets/test.bim");
 
 /** Class with scope limited to this file, used for creating a Viewport without a canvas */
 class TestViewport extends Viewport {
@@ -32,14 +31,10 @@ class TestViewport extends Viewport {
 }
 
 class TestIModelApp extends IModelApp {
-  protected onStartup() {
-    super.onStartup();
-  }
-  protected supplyI18NOptions() {
-    return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" };
-  }
+  protected supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
 }
 
+// tslint:disable:only-arrow-functions
 // tslint:disable:only-arrow-functions
 // tslint:disable-next-line:space-before-function-paren
 describe("Viewport", function () {
@@ -47,7 +42,6 @@ describe("Viewport", function () {
   let categorySelectorState: CategorySelectorState;
   let displayStyleState: DisplayStyle3dState;
   let modelSelectorState: ModelSelectorState;
-
   let viewStateXYFlat: SpatialViewState;
   let viewStateXZFlat: SpatialViewState;
   let viewStateXYZ: SpatialViewState;
@@ -56,42 +50,32 @@ describe("Viewport", function () {
   before(async () => {   // Create a ViewState to load into a Viewport
     mocha.timeout(99999);
     TestIModelApp.startup();
-    assert.instanceOf(iModelApp, TestIModelApp);
 
-    imodel = await IModelConnection.openStandalone(bimFileLocation);
+    imodel = await IModelConnection.openStandalone(iModelLocation);
     const spatialViewProps = (await imodel.elements.getElementProps([new Id64("0x34")]))[0] as SpatialViewDefinitionProps;
 
     // Set up supporting ViewState classes
     categorySelectorState = new CategorySelectorState(
       {
         categories: ["test0"],
-        model: new Id64("0x64"),
-        code: {
-          spec: new Id64("0x12"),
-          scope: "Hello World",
-        },
-        id: new Id64("0x67"),
+        model: "0x64",
+        code: { spec: "0x12", scope: "Hello World" },
+        id: "0x67",
         classFullName: "CategorySelector",
       }, imodel);
     displayStyleState = new DisplayStyle3dState(
       {
-        model: new Id64("0x64"),
-        code: {
-          spec: new Id64("0x12"),
-          scope: "Hello World",
-        },
-        id: new Id64("0x112"),
+        model: "0x64",
+        code: { spec: "0x12", scope: "Hello World" },
+        id: "0x112",
         classFullName: "DisplayStyle3d",
       }, imodel);
     modelSelectorState = new ModelSelectorState(
       {
         models: ["test0"],
-        model: new Id64("0x64"),
-        code: {
-          spec: new Id64("0x12"),
-          scope: "Hello World",
-        },
-        id: new Id64("0x22"),
+        model: "0x64",
+        code: { spec: "0x12", scope: "Hello World" },
+        id: "0x22",
         classFullName: "ModelSelector",
       }, imodel);
 
@@ -119,6 +103,7 @@ describe("Viewport", function () {
 
   after(async () => {
     await imodel.closeStandalone();
+    IModelApp.shutdown();
   });
 
   it("should obtain equal viewport from round-trip setup using frustum", () => {

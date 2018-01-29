@@ -174,7 +174,7 @@ export class IModelDbLinkTableRelationships {
   /**
    * Create a new instance of a LinkTableRelationship.
    * @param props The properties of the new LinkTableRelationship.
-   * @throws [[IModelError]] if there is a problem creating the inkTableRelationship.
+   * @throws [[IModelError]] if there is a problem creating the LinkTableRelationship.
    */
   public createInstance(elProps: LinkTableRelationshipProps): LinkTableRelationship {
     const rel: LinkTableRelationship = this._iModel.constructEntity(elProps) as LinkTableRelationship;

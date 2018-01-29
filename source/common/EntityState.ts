@@ -11,7 +11,7 @@ import { ElementProps, RelatedElement } from "./ElementProps";
 import { Code } from "./Code";
 
 /** the constructor for an EntityState (for cloning). */
-export interface EntityStateCtor extends FunctionConstructor {
+interface EntityStateCtor extends FunctionConstructor {
   new(args: EntityProps, iModel: IModel, state?: EntityState): EntityState;
 }
 
