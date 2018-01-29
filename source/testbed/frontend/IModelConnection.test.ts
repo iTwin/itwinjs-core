@@ -78,4 +78,5 @@ describe("IModelConnection", () => {
 
     await iModel.close(TestData.accessToken);
   }).timeout(99999);
+
 });

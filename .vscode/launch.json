@@ -35,7 +35,12 @@
       "sourceMaps": true,
       "outFiles": [
         "${workspaceRoot}/source/testbed/lib/**/*.js"
-      ]
+      ],
+      "env": {
+        "IMODELJS_TESTBED_FILTER": "",
+        "IMODELJS_TESTBED_SKIP_TESTDATA": "",
+        "IMODELJS_TESTBED_SKIP_WEBPACK_TESTS": ""
+      }
     },
     {
       "name": "_Testbed (frontend)",

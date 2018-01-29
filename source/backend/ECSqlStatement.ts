@@ -184,7 +184,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Binds a struct property value to the specified ECSQL parameter
    *  @param param Index (1-based) or name of the parameter
-   *  @param val Struct value
+   *  @param val Struct value. The struct value is an object composed of pairs of a struct member property name and its value
+   * (of one of the supported types)
    */
   public bindStruct(param: number | string, value: object): void {
     using(this.getBinder(param), (binder) => ECSqlBindingHelper.bindStruct(binder, value));
@@ -192,14 +193,14 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Binds a array value to the specified ECSQL parameter
    *  @param param Index (1-based) or name of the parameter
-   *  @param val Array value
+   *  @param val Array value. The array value is an array of values of the supported types
    */
   public bindArray(param: number | string, value: any[]): void {
     using(this.getBinder(param), (binder) => ECSqlBindingHelper.bindArray(binder, value));
   }
 
   /** Bind values to all parameters in the statement.
-   * @param values The values to bind to the parameters. Pass an array if the placeholders are positional.
+   * @param values The values to bind to the parameters. Pass an array if the parameters are positional.
    * Pass an object of the values keyed on the parameter name for named parameters
    * The values in either the array or object must match the respective types of the parameter. See the bindXXX
    * methods for each type.
@@ -209,6 +210,9 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
       for (let i = 0; i < values.length; i++) {
         const paramIndex: number = i + 1;
         const paramValue: any = values[i];
+        if (paramValue === undefined || paramValue === null)
+          continue;
+
         using (this.getBinder(paramIndex),
           (binder) => ECSqlBindingHelper.bindValue(binder, paramValue));
       }
@@ -218,6 +222,9 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     for (const entry of Object.entries(values)) {
         const paramName: string = entry[0];
         const paramValue: any = entry[1];
+        if (paramValue === undefined || paramValue === null)
+        continue;
+
         using (this.getBinder(paramName),
           (binder) => ECSqlBindingHelper.bindValue(binder, paramValue));
     }
