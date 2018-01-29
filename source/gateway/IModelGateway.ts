@@ -64,12 +64,19 @@ export abstract class IModelGateway extends Gateway {
 
   /** Execute a query against the iModel.
    * @param iModelToken The token which identifies the iModel.
-   * @param sql The ECSql to execute
-   * @param bindings Optional values to bind to placeholders in the statement.
+   * @param ecsql The ECSQL to execute
+   * @param bindings The values to bind to the parameters (if the ECSQL has any).
+   * Pass an array if the parameters are positional. Pass an object of the values keyed on the parameter name
+   * for named parameters.
+   * The values in either the array or object must match the respective types of the parameters.
+   * Supported types:
+   * boolean, Blob, DateTime, NavigationValue, number, XY, XYZ, string
+   * For struct parameters pass an object with key value pairs of struct property name and values of the supported types
+   * For array parameters pass an array of the supported types.
    * @returns All rows as an array or an empty array if nothing was selected
-   * @throws [[IModelError]] if the ECSql is invalid
+   * @throws [[IModelError]] if the ECSQL is invalid
    */
-  public async executeQuery(_iModelToken: IModelToken, _sql: string, _bindings?: any): Promise<any[]> {
+  public async executeQuery(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object): Promise<any[]> {
     return this.forward.apply(this, arguments);
   }
 
