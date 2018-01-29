@@ -4,13 +4,14 @@
 
 import SchemaChild from "Metadata/SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "Exception";
-import { PrimitiveType, SchemaChildType } from "ECObjects";
+import { PrimitiveType, SchemaChildType, SchemaChildKey } from "ECObjects";
 import { EnumerationInterface, EnumeratorProps, SchemaInterface } from "Interfaces";
 
 /**
  * A Typescript class representation of an ECEnumeration.
  */
 export default class Enumeration extends SchemaChild implements EnumerationInterface {
+  public key: SchemaChildKey.Enumeration;
   public type: PrimitiveType.Integer | PrimitiveType.String;
   public isStrict: boolean;
   public enumerators: Enumerator[];
@@ -60,8 +61,8 @@ export default class Enumeration extends SchemaChild implements EnumerationInter
   /**
    * Populates this Enumeration with the values from the provided.
    */
-  public fromJson(jsonObj: any) {
-    super.fromJson(jsonObj);
+  public async fromJson(jsonObj: any) {
+    await super.fromJson(jsonObj);
 
     if (jsonObj.isStrict) {
       if (typeof(jsonObj.isStrict) !== "boolean")

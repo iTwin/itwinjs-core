@@ -24,7 +24,7 @@ export default abstract class SchemaChild implements SchemaChildInterface {
 
   get fullName() { return this.key.schemaKey ? `${this.key.schemaKey}.${this.name}` : this.name; }
 
-  public fromJson(jsonObj: any): void {
+  public async fromJson(jsonObj: any): Promise<void> {
     if (jsonObj.name) this.name = jsonObj.name;
     if (jsonObj.description) this.description = jsonObj.description;
     if (jsonObj.label) this.label = jsonObj.label;

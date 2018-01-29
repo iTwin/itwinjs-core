@@ -8,51 +8,14 @@ import { SchemaKey, SchemaMatchType, SchemaChildKey } from "ECObjects";
 
 export class SchemaMap extends Array<SchemaInterface> { }
 
-class LazyMap<T, S> extends Map<T, S> {
-
-  constructor() {
-    super();
-    this[Symbol.iterator] = this.entries;
-  }
-
-  public entries() {
-    const next = super.entries();
-
-    return {
-      next: () => {
-        const n = next.next();
-        if (n.value)
-          n.value[1] = this[n.value[0]];
-        return n;
-      },
-    };
-  }
-
-  public addProperty(name: T, getter: () => {}) {
-    Object.defineProperty(this, name, { get: getter });
-    this.set(name, null);
-  }
-
-  public get(name: T) {
-    return this[name];
-  }
-
-  public forEach(cb) {
-    for (const kv of this)
-      cb(kv[1], kv[0], this);
-  }
-}
-
 /**
  * The interface defines what is needed to be a ISchemaLocater, which are used in a SchemaContext.
  */
 export interface ISchemaLocater {
-  getSchemaSync<T extends SchemaInterface>(schemaKey: SchemaKey, matchType: SchemaMatchType): T | undefined;
   getSchema<T extends SchemaInterface>(schemaKey: SchemaKey, matchType: SchemaMatchType): Promise<T | undefined>;
 }
 
 export interface ISchemaChildLocater {
-  getSchemaChildSync<T extends SchemaChildInterface>(schemaChildKey: SchemaChildKey): T | undefined;
   getSchemaChild<T extends SchemaChildInterface>(schemaChildKey: SchemaChildKey): Promise<T | undefined>;
 }
 
@@ -236,24 +199,21 @@ export class SchemaContext implements ISchemaLocater, ISchemaChildLocater {
    * Adds the schema to this context
    * @param schema The schema to add to this context
    */
-  public addSchemaSync(schema: SchemaInterface) {
+  public async addSchema(schema: SchemaInterface) {
     this.knownSchemas.addSchemaSync(schema);
   }
 
-  // public addSchemaChild(schemaChild: SchemaChildInterface) {
-  //   // TODO
-  // }
 
   /**
    * Adds the given SchemaChild to the the SchemaContext by locating the schema, with the best match of SchemaMatchType.Exact, and
    * @param schemaChild The SchemaChild to add
    */
-  public addSchemaChildSync(schemaChild: SchemaChildInterface) {
-    const schema = this.getSchemaSync(schemaChild.key.schemaKey, SchemaMatchType.Exact);
+  public async addSchemaChild(schemaChild: SchemaChildInterface) {
+    const schema = await this.getSchema(schemaChild.key.schemaKey, SchemaMatchType.Exact);
     if (!schema)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to add the schema child ${schemaChild.name} to the schema ${schemaChild.key.schemaKey.toString()} because the schema could not be located.`);
 
-    schema.addChild(schemaChild);
+    await schema.addChild(schemaChild);
     return;
   }
 
@@ -270,42 +230,17 @@ export class SchemaContext implements ISchemaLocater, ISchemaChildLocater {
 
     const potentialSchemas = (await Promise.all(listOfPromises)).filter((schema) => schema !== undefined ) as T[];
     if (potentialSchemas.length === 0)
-      return Promise.resolve(undefined);
+      return undefined;
 
     // TODO figure out the best result based on match type... For now just returning the first found
-    return Promise.resolve(potentialSchemas[0]);
-  }
-
-  /**
-   *
-   * @param schemaKey
-   * @param matchType
-   */
-  public getSchemaSync<T extends SchemaInterface>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): T | undefined {
-    let foundSchema;
-
-    this._locaters.forEach((locater) => {
-      foundSchema = locater.getSchemaSync(schemaKey, matchType);
-      if (foundSchema)
-        return;
-    });
-
-    return foundSchema;
+    return potentialSchemas[0];
   }
 
   public async getSchemaChild<T extends SchemaChildInterface>(schemaChildKey: SchemaChildKey): Promise<T | undefined> {
     const schema = await this.getSchema(schemaChildKey.schemaKey, SchemaMatchType.Latest);
     if (!schema)
-      return Promise.resolve(undefined);
-
-    return Promise.resolve(schema.getChild<T>(schemaChildKey.name, false));
-  }
-
-  public getSchemaChildSync<T extends SchemaChildInterface>(schemaChildKey: SchemaChildKey): T | undefined {
-    const schema = this.getSchemaSync(schemaChildKey.schemaKey, SchemaMatchType.Latest);
-    if (!schema)
       return undefined;
 
-    return schema.getChildSync<T>(schemaChildKey.name, false);
+    return schema.getChild<T>(schemaChildKey.name, false);
   }
 }

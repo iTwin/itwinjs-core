@@ -4,20 +4,49 @@
 
 import Enumeration from "Metadata/Enumeration";
 import SchemaChild from "Metadata/SchemaChild";
-import { ECClassInterface, PropertyInterface, SchemaInterface } from "Interfaces";
+import { ECClassInterface, PropertyInterface, SchemaInterface, LazyLoadedECClass, LazyLoadedProperty, StructClassInterface, SchemaChildInterface, EnumerationInterface } from "Interfaces";
 import { ECClassModifier, parseClassModifier, PrimitiveType, parsePrimitiveType, SchemaChildKey } from "ECObjects";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "Metadata/CustomAttribute";
 import { ECObjectsError, ECObjectsStatus } from "Exception";
-import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty, ECProperty } from "Metadata/Property";
-import { DelayedPromise, DelayedPromiseWithProps } from "DelayedPromise";
+import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty } from "Metadata/Property";
+import { DelayedPromiseWithProps } from "DelayedPromise";
+
+function createLazyLoadedChild<T extends SchemaChildInterface>(c: T) {
+  return new DelayedPromiseWithProps(c.key as T["key"], async () => c);
+}
+
+async function loadStructType(structType: string | StructClassInterface | undefined, schema: SchemaInterface) {
+  let correctType: StructClassInterface | undefined;
+  if (typeof(structType) === "string")
+    correctType = await schema.getChild<StructClass>(structType, false);
+  else
+    correctType = structType as StructClassInterface | undefined;
+
+  if (!correctType)
+    throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
+
+  return correctType;
+}
+
+async function loadPrimitiveType(primitiveType: string | PrimitiveType | EnumerationInterface | undefined, schema: SchemaInterface) {
+  if (typeof(primitiveType) === "undefined")
+    return PrimitiveType.Integer;
+
+  if (typeof(primitiveType) === "string") {
+    const enumType = await schema.getChild<Enumeration>(primitiveType, false);
+    return enumType || parsePrimitiveType(primitiveType);
+  }
+
+  return primitiveType;
+}
 
 /**
  * A common abstract class for all of the ECClass types.
  */
 export default abstract class ECClass extends SchemaChild implements CustomAttributeContainerProps, ECClassInterface {
   public modifier: ECClassModifier;
-  public baseClass?: Readonly<SchemaChildKey> & DelayedPromise<ECClassInterface>;
-  public properties?: ECProperty[];
+  public baseClass?: LazyLoadedECClass;
+  public properties?: LazyLoadedProperty[];
   public customAttributes?: CustomAttributeSet;
 
   constructor(schema: SchemaInterface, name: string, modifier?: ECClassModifier) {
@@ -33,13 +62,25 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * Searches, case-insensitive, for a local ECProperty with the name provided.
    * @param name
    */
+  protected addProperty<T extends PropertyInterface>(prop: T): T {
+    if (!this.properties)
+      this.properties = [];
+
+    this.properties.push(new DelayedPromiseWithProps({name: prop.name}, async () => prop));
+    return prop;
+  }
+
+  /**
+   * Searches, case-insensitive, for a local ECProperty with the name provided.
+   * @param name
+   */
   public async getProperty<T extends PropertyInterface>(name: string, includeInherited: boolean = false): Promise<T | undefined> {
-    let foundProp: PropertyInterface | undefined;
+    let foundProp: LazyLoadedProperty | undefined;
 
     if (this.properties) {
       foundProp = this.properties.find((prop) => prop.name.toLowerCase() === name.toLowerCase());
       if (foundProp)
-        return foundProp as T;
+        return (await foundProp) as T;
     }
 
     if (includeInherited)
@@ -70,23 +111,13 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
    * @throws ECObjectsStatus DuplicateProperty: thrown if a property with the same name already exists in the class.
    */
-  public createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): PrimitiveProperty {
-    if (this.getProperty(name))
+  public async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | EnumerationInterface): Promise<PrimitiveProperty> {
+    if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
-    let correctType: PrimitiveType | undefined;
-    if (primitiveType && typeof(primitiveType) === "string")
-      correctType = parsePrimitiveType(primitiveType);
-    else
-      correctType = primitiveType as PrimitiveType | undefined;
-
-    const primProp = new PrimitiveProperty(name, correctType);
-
-    if (!this.properties)
-      this.properties = [];
-    this.properties.push(primProp);
-
-    return primProp;
+    const propType = await loadPrimitiveType(primitiveType, this.schema);
+    const lazyPropType = (typeof(propType) === "number") ? propType : createLazyLoadedChild(propType);
+    return this.addProperty(new PrimitiveProperty(name, lazyPropType));
   }
 
   /**
@@ -94,23 +125,13 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param name The name of property to create.
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
    */
-  public createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): PrimitiveArrayProperty {
-    if (this.getProperty(name))
+  public async createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | EnumerationInterface): Promise<PrimitiveArrayProperty> {
+    if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
-    let correctType: Enumeration | PrimitiveType | undefined;
-    if (primitiveType && typeof(primitiveType) === "string")
-      correctType = parsePrimitiveType(primitiveType);
-    else
-      correctType = primitiveType as PrimitiveType | undefined;
-
-    const primArrProp = new PrimitiveArrayProperty(name, correctType);
-
-    if (!this.properties)
-      this.properties = [];
-    this.properties.push(primArrProp);
-
-    return primArrProp;
+    const propType = await loadPrimitiveType(primitiveType, this.schema);
+    const lazyPropType = (typeof(propType) === "number") ? propType : createLazyLoadedChild(propType);
+    return this.addProperty(new PrimitiveArrayProperty(name, lazyPropType));
   }
 
   /**
@@ -118,26 +139,12 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param name The name of property to create.
    * @param structType The struct type of property to create.
    */
-  public createStructProperty(name: string, structType: string | StructClass): StructProperty {
-    if (this.getProperty(name))
+  public async createStructProperty(name: string, structType: string | StructClassInterface): Promise<StructProperty> {
+    if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
-    let correctType: StructClass | undefined;
-    if (typeof(structType) === "string" && this.schema) {
-      correctType = this.schema.getChildSync<StructClass>(structType, false);
-    } else
-      correctType = structType as StructClass;
-
-    if (!correctType)
-      throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
-
-    const structProp = new StructProperty(name, correctType);
-
-    if (!this.properties)
-      this.properties = [];
-    this.properties.push(structProp);
-
-    return structProp;
+    const lazyStructClass = createLazyLoadedChild(await loadStructType(structType, this.schema));
+    return this.addProperty(new StructProperty(name, lazyStructClass));
   }
 
   /**
@@ -145,33 +152,19 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param name
    * @param type
    */
-  public createStructArrayProperty(name: string, structType: string | StructClass): StructArrayProperty {
-    if (this.getProperty(name))
+  public async createStructArrayProperty(name: string, structType: string | StructClassInterface): Promise<StructArrayProperty> {
+    if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
-    let correctType: StructClass | undefined;
-    if (typeof(structType) === "string" && this.schema) {
-      correctType = this.schema.getChildSync<StructClass>(structType, false);
-    } else
-      correctType = structType as StructClass;
-
-    if (!correctType)
-      throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
-
-    const structProp = new StructArrayProperty(name, correctType);
-
-    if (!this.properties)
-      this.properties = [];
-    this.properties.push(structProp);
-
-    return structProp;
+    const lazyStructClass = createLazyLoadedChild(await loadStructType(structType, this.schema));
+    return this.addProperty(new StructArrayProperty(name, lazyStructClass));
   }
 
   /**
    *
    * @param jsonObj
    */
-  public fromJson(jsonObj: any): void {
+  public async fromJson(jsonObj: any): Promise<void> {
     super.fromJson(jsonObj);
 
     if (jsonObj.modifier)
@@ -181,16 +174,11 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
       if (typeof(jsonObj.baseClass) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The base class of ${this.name} is not a string type.`);
 
-      const baseClassKey = new SchemaChildKey(jsonObj.baseClass, undefined, this.schema.schemaKey);
-      const loadBaseClass = async () => {
-        const baseClass = await this.schema.getChild<ECClassInterface>(baseClassKey.name, false);
-        if (!baseClass)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+      const baseClass = await this.schema.getChild<ECClassInterface>(jsonObj.baseClass, true);
+      if (!baseClass)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
-        return baseClass;
-      };
-
-      this.baseClass = new DelayedPromiseWithProps<SchemaChildKey, ECClassInterface>(baseClassKey, loadBaseClass);
+      this.baseClass = createLazyLoadedChild(baseClass);
     }
   }
 }
@@ -198,4 +186,6 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
 /**
  * A Typescript class representation of an ECStructClass.
  */
-export class StructClass extends ECClass implements ECClassInterface { }
+export class StructClass extends ECClass implements StructClassInterface {
+  public readonly key: SchemaChildKey.StructClass;
+}

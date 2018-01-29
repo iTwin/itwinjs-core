@@ -544,6 +544,17 @@ export class SchemaChildKey {
   }
 }
 
+export namespace SchemaChildKey {
+  export type EntityClass = SchemaChildKey & { type: SchemaChildType.EntityClass };
+  export type Mixin = SchemaChildKey & { type: SchemaChildType.MixinClass };
+  export type StructClass = SchemaChildKey & { type: SchemaChildType.StructClass };
+  export type CustomAttributeClass = SchemaChildKey & { type: SchemaChildType.CustomAttributeClass };
+  export type RelationshipClass = SchemaChildKey & { type: SchemaChildType.RelationshipClass };
+  export type Enumeration = SchemaChildKey & { type: SchemaChildType.Enumeration };
+  export type KindOfQuantity = SchemaChildKey & { type: SchemaChildType.KindOfQuantity };
+  export type PropertyCategory = SchemaChildKey & { type: SchemaChildType.PropertyCategory };
+}
+
 const UINT_MAX = 4294967295;
 
 /**

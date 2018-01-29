@@ -3,14 +3,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { PropertyInterface, ECClassInterface, PrimitivePropertyInterface, StructPropertyInterface,
-  NavigationPropertyInterface, PrimitiveArrayPropertyInterface, StructArrayPropertyInterface } from "Interfaces";
+  NavigationPropertyInterface, PrimitiveArrayPropertyInterface, StructArrayPropertyInterface, LazyLoadedPropertyCategory, LazyLoadedKindOfQuantity, LazyLoadedEnumeration, LazyLoadedStructClass, LazyLoadedRelationshipClass } from "Interfaces";
 import { ECName, PrimitiveType, RelatedInstanceDirection } from "ECObjects";
-import PropertyCategory from "Metadata/PropertyCategory";
 import { ECObjectsError, ECObjectsStatus } from "Exception";
-import KindOfQuantity from "Metadata/KindOfQuantity";
-import Enumeration from "Metadata/Enumeration";
-import { StructClass } from "Metadata/Class";
-import RelationshipClass from "Metadata/RelationshipClass";
 
 /**
  * A common abstract class for all ECProperty types.
@@ -23,7 +18,7 @@ export abstract class ECProperty implements PropertyInterface {
   public isReadOnly: boolean;
   public priority: number;
   public inherited?: boolean;
-  public category?: PropertyCategory;
+  public category?: LazyLoadedPropertyCategory;
 
   constructor(name: string) {
     this.name = name;
@@ -53,14 +48,14 @@ export abstract class ECProperty implements PropertyInterface {
  *
  */
 export class PrimitiveProperty extends ECProperty implements PrimitivePropertyInterface {
-  public kindOfQuantity?: KindOfQuantity;
-  public type: PrimitiveType | Enumeration;
+  public kindOfQuantity?: LazyLoadedKindOfQuantity;
+  public type: PrimitiveType | LazyLoadedEnumeration;
   public minLength: number;
   public maxLength: number;
   public minValue: number;
   public maxValue: number;
 
-  constructor(name: string, type?: PrimitiveType | Enumeration) {
+  constructor(name: string, type?: PrimitiveType | LazyLoadedEnumeration) {
     super(name);
 
     if (type)
@@ -112,12 +107,12 @@ export class PrimitiveArrayProperty extends PrimitiveProperty implements Primiti
  *
  */
 export class StructProperty extends ECProperty implements StructPropertyInterface {
-  public type: StructClass;
+  public type: LazyLoadedStructClass;
 
-  constructor(name: string, type: StructClass) {
+  constructor(name: string, type: LazyLoadedStructClass) {
     super(name);
 
-    this.type = type as StructClass; // TODO: See how this error is handled.
+    this.type = type; // TODO: See how this error is handled.
   }
 
   public fromJson(jsonObj: any): void {
@@ -139,10 +134,10 @@ export class StructArrayProperty extends StructProperty implements StructArrayPr
  *
  */
 export class NavigationProperty extends ECProperty implements NavigationPropertyInterface {
-  public relationship: RelationshipClass;
+  public relationship: LazyLoadedRelationshipClass;
   public direction: RelatedInstanceDirection;
 
-  constructor(name: string, relationship: RelationshipClass, direction?: RelatedInstanceDirection) {
+  constructor(name: string, relationship: LazyLoadedRelationshipClass, direction?: RelatedInstanceDirection) {
     super(name);
 
     this.relationship = relationship;

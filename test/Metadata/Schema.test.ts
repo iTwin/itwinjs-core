@@ -55,37 +55,37 @@ describe("schema test", () => {
   });
 
   describe("create schema children", () => {
-    it("should succeed for entity class", () => {
+    it("should succeed for entity class", async () => {
       const testSchema = new ECSchema("TestSchema", 1, 1, 1);
-      testSchema.createEntityClass("TestEntity");
+      await testSchema.createEntityClass("TestEntity");
 
-      expect(testSchema.getClass("TestEntity")).instanceof(ECClass);
-      expect(testSchema.getClass<EntityClass>("TestEntity")).instanceof(EntityClass);
+      expect(await testSchema.getClass("TestEntity")).instanceof(ECClass);
+      expect(await testSchema.getClass<EntityClass>("TestEntity")).instanceof(EntityClass);
     });
 
-    it("should succeed for mixin class", () => {
+    it("should succeed for mixin class", async () => {
       const testSchema = new ECSchema("TestSchema", 1, 2, 3);
-      testSchema.createMixinClass("TestMixin");
+      await testSchema.createMixinClass("TestMixin");
 
-      expect(testSchema.getClass("TestMixin")).instanceof(ECClass);
-      expect(testSchema.getClass<MixinClass>("TestMixin")).instanceof(MixinClass);
+      expect(await testSchema.getClass("TestMixin")).instanceof(ECClass);
+      expect(await testSchema.getClass<MixinClass>("TestMixin")).instanceof(MixinClass);
     });
 
-    it("should succeed for struct class", () => {
+    it("should succeed for struct class", async () => {
       const testSchema = new ECSchema("TestSchema", 1, 2, 3);
-      testSchema.createStructClass("TestStruct");
+      await testSchema.createStructClass("TestStruct");
 
-      expect(testSchema.getClass("TestStruct")).instanceof(ECClass);
-      expect(testSchema.getClass<StructClass>("TestStruct")).instanceof(StructClass);
+      expect(await testSchema.getClass("TestStruct")).instanceof(ECClass);
+      expect(await testSchema.getClass<StructClass>("TestStruct")).instanceof(StructClass);
     });
 
-    it("should succeed with case-insentive search", () => {
+    it("should succeed with case-insentive search", async () => {
       const testSchema = new ECSchema("TestSchema", 1, 0, 0);
-      testSchema.createEntityClass("testEntity");
+      await testSchema.createEntityClass("testEntity");
 
-      expect(testSchema.getClass("TESTENTITY")).not.undefined;
-      expect(testSchema.getClass("TestEntity")).not.undefined;
-      expect(testSchema.getClass("testEntity")).not.undefined;
+      expect(await testSchema.getClass("TESTENTITY")).not.undefined;
+      expect(await testSchema.getClass("TestEntity")).not.undefined;
+      expect(await testSchema.getClass("testEntity")).not.undefined;
     });
   });
 

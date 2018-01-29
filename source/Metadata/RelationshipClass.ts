@@ -3,17 +3,21 @@
 *--------------------------------------------------------------------------------------------*/
 
 import ECClass from "Metadata/Class";
-import EntityClass from "Metadata/EntityClass";
 import { ECClassModifier, RelatedInstanceDirection, RelationshipEnd, RelationshipMultiplicity, SchemaChildType, StrengthType,
-        parseStrength, parseStrengthDirection } from "ECObjects";
-import { EntityClassInterface, RelationshipClassInterface, RelationshipConstraintInterface, SchemaInterface } from "Interfaces";
+        parseStrength, parseStrengthDirection, SchemaChildKey } from "ECObjects";
+import { EntityClassInterface, RelationshipClassInterface, RelationshipConstraintInterface, SchemaInterface, LazyLoadedRelationshipConstraintClass, MixinInterface } from "Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "Exception";
 import { NavigationProperty } from "Metadata/Property";
+import { DelayedPromiseWithProps } from "DelayedPromise";
+
+type AnyConstraintClass = EntityClassInterface | MixinInterface | RelationshipClassInterface;
 
 /**
  * A Typescript class representation of a ECRelationshipClass.
  */
 export default class RelationshipClass extends ECClass implements RelationshipClassInterface {
+  public schema: SchemaInterface;
+  public readonly key: SchemaChildKey.RelationshipClass;
   public strength: StrengthType;
   public strengthDirection: RelatedInstanceDirection;
   public readonly source: RelationshipConstraintInterface;
@@ -37,39 +41,34 @@ export default class RelationshipClass extends ECClass implements RelationshipCl
    * @param relationship
    * @param direction
    */
-  public createNavigationProperty(name: string, relationship: string | RelationshipClass, direction?: string | RelatedInstanceDirection): NavigationProperty {
-    if (this.getProperty(name))
+  public async createNavigationProperty(name: string, relationship: string | RelationshipClassInterface, direction?: string | RelatedInstanceDirection): Promise<NavigationProperty> {
+    if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
-    let resolvedRelationship: RelationshipClass | undefined;
-    if (typeof(relationship) === "string" && this.schema)
-      resolvedRelationship = this.schema.getChildSync<RelationshipClass>(relationship, false);
+    let resolvedRelationship: RelationshipClassInterface | undefined;
+    if (typeof(relationship) === "string")
+      resolvedRelationship = await this.schema.getChild<RelationshipClass>(relationship, false);
     else
-      resolvedRelationship = relationship as RelationshipClass;
+      resolvedRelationship = relationship;
 
     if (!resolvedRelationship)
-      throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid StructClass.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);
 
     if (!direction)
       direction = RelatedInstanceDirection.Forward;
     else if (typeof(direction) === "string")
       direction = parseStrengthDirection(direction);
 
-    const navProp = new NavigationProperty(name, resolvedRelationship, direction);
-
-    if (!this.properties)
-      this.properties = [];
-    this.properties.push(navProp);
-
-    return navProp;
+    const lazyRelationship = new DelayedPromiseWithProps(resolvedRelationship.key, async () => resolvedRelationship!);
+    return this.addProperty(new NavigationProperty(name, lazyRelationship, direction));
   }
 
   /**
    *
    * @param jsonObj
    */
-  public fromJson(jsonObj: any): void {
-    super.fromJson(jsonObj);
+  public async fromJson(jsonObj: any): Promise<void> {
+    await super.fromJson(jsonObj);
 
     if (jsonObj.strength) this.strength = parseStrength(jsonObj.strength);
     if (jsonObj.strengthDirection) this.strengthDirection = parseStrengthDirection(jsonObj.strengthDirection);
@@ -80,13 +79,13 @@ export default class RelationshipClass extends ECClass implements RelationshipCl
  * A Typescript class representation of a ECRelationshipConstraint.
  */
 export class RelationshipConstraint implements RelationshipConstraintInterface {
-  private _abstractConstraint: EntityClass | RelationshipClass;
+  private _abstractConstraint?: LazyLoadedRelationshipConstraintClass;
   public relationshipClass: RelationshipClass;
   public relationshipEnd: RelationshipEnd;
   public multiplicity?: RelationshipMultiplicity;
   public polymorphic?: boolean;
   public roleLabel?: string;
-  public constraintClasses?: EntityClass[] | RelationshipClass[];
+  public constraintClasses?: LazyLoadedRelationshipConstraintClass[];
 
   constructor(relClass: RelationshipClass, relEnd: RelationshipEnd) {
     this.relationshipEnd = relEnd;
@@ -95,7 +94,7 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
     this.relationshipClass = relClass;
   }
 
-  get abstractConstraint(): EntityClass | RelationshipClass {
+  get abstractConstraint(): LazyLoadedRelationshipConstraintClass | undefined {
     if (this._abstractConstraint)
       return this._abstractConstraint;
 
@@ -105,7 +104,7 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
     return this._abstractConstraint;
   }
 
-  set abstractConstraint(abstractConstraint: EntityClass | RelationshipClass) {
+  set abstractConstraint(abstractConstraint: LazyLoadedRelationshipConstraintClass | undefined) {
     this._abstractConstraint = abstractConstraint;
   }
 
@@ -118,29 +117,23 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
    * Adds the provided class as a constraint class to this constraint.
    * @param constraint The class to add as a constraint class.
    */
-  public addClass(constraint: EntityClassInterface | RelationshipClassInterface): void {
-    const areEntityConstraints = undefined !== this.constraintClasses as EntityClass[];
-
-    if (areEntityConstraints && (undefined === constraint as EntityClass))
+  public addClass(constraint: EntityClassInterface | MixinInterface | RelationshipClassInterface): void {
+    // Ensure we don't start mixing constraint class types
+    if (this.constraintClasses && this.constraintClasses.length > 0 && this.constraintClasses[0].type !== constraint.key.type)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-
-    // TODO: Handle relationship constraints
 
     if (!this.constraintClasses)
       this.constraintClasses = [];
 
-    if (areEntityConstraints)
-      (this.constraintClasses as EntityClass[]).push(constraint as EntityClass);
-    else
-      (this.constraintClasses as RelationshipClass[]).push(constraint as RelationshipClass);
-
+    // TODO: Handle relationship constraints
+    this.constraintClasses.push(new DelayedPromiseWithProps(constraint.key, async () => constraint));
   }
 
   /**
    * Populates this object with the provided json object.
    * @param jsonObj The json representation of an ECRelationshipConstraint using the ECSchemaJson format.
    */
-  public fromJson(jsonObj: any): void {
+  public async fromJson(jsonObj: any) {
     if (jsonObj.roleLabel) this.roleLabel = jsonObj.roleLabel;
     if (jsonObj.polymorphic) this.polymorphic = jsonObj.polymorphic;
 
@@ -151,43 +144,32 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
       this.multiplicity = multTmp;
     }
 
-    // Declare variable here
-    let relClassSchema: SchemaInterface | undefined;
+    const relClassSchema = this.relationshipClass.schema;
 
     if (jsonObj.abstractConstraint) {
       if (typeof(jsonObj.abstractConstraint) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
-      relClassSchema = this.relationshipClass.schema;
-      if (relClassSchema) {
-        const tempAbstractConstraint = relClassSchema.getChildSync<ECClass>(jsonObj.abstractConstraint, false);
-        if (!tempAbstractConstraint)
+      const tempAbstractConstraint = await relClassSchema.getChild<AnyConstraintClass>(jsonObj.abstractConstraint, false);
+      if (!tempAbstractConstraint)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
-        this.abstractConstraint = tempAbstractConstraint as EntityClass === null ?
-                                tempAbstractConstraint as RelationshipClass :
-                                tempAbstractConstraint as EntityClass;
-      }
+      this.abstractConstraint = new DelayedPromiseWithProps(tempAbstractConstraint.key, async () => tempAbstractConstraint);
     }
 
     if (jsonObj.constraintClasses) {
       if (!Array.isArray(jsonObj.constraintClasses))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
-      if (!relClassSchema)
-        relClassSchema = this.relationshipClass.schema;
-
-      jsonObj.constraintClasses.forEach((constraintClass: string) => {
-        if (relClassSchema) {
-          const tempConstraintClass = relClassSchema.getChildSync<ECClass>(constraintClass, false);
+      const loadEachConstraint = async (constraintClassName: string) => {
+          const tempConstraintClass = await relClassSchema.getChild<AnyConstraintClass>(constraintClassName, false);
           if (!tempConstraintClass)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
-          this.addClass(tempConstraintClass as EntityClass === null ?
-                        tempConstraintClass as RelationshipClass :
-                        tempConstraintClass as EntityClass);
-        }
-      });
+          return tempConstraintClass;
+      };
+      const constraintClasses = await Promise.all<AnyConstraintClass>(jsonObj.constraintClasses.map(loadEachConstraint));
+      constraintClasses.forEach((constraintClass: AnyConstraintClass) => this.addClass(constraintClass));
     }
   }
 }

@@ -5,23 +5,25 @@
 import ECClass from "Metadata/Class";
 import MixinClass from "Metadata/MixinClass";
 import RelationshipClass from "Metadata/RelationshipClass";
-import { EntityClassInterface, PropertyInterface, SchemaInterface } from "Interfaces";
-import { ECClassModifier, RelatedInstanceDirection, SchemaChildType, parseStrengthDirection } from "ECObjects";
+import { EntityClassInterface, PropertyInterface, SchemaInterface, RelationshipClassInterface } from "Interfaces";
+import { ECClassModifier, RelatedInstanceDirection, SchemaChildType, parseStrengthDirection, SchemaChildKey } from "ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "Exception";
 import { NavigationProperty } from "Metadata/Property";
+import { DelayedPromiseWithProps } from "DelayedPromise";
 
 /**
  * A Typescript class representation of an ECEntityClass.
  */
 export default class EntityClass extends ECClass implements EntityClassInterface {
+  public key: SchemaChildKey.EntityClass;
   private _mixins?: MixinClass[];
 
   constructor(schema: SchemaInterface, name: string, modifier?: ECClassModifier) {
     super(schema, name, modifier);
-
     this.key.type = SchemaChildType.EntityClass;
   }
 
+  // FIXME!
   set mixins(mixins: MixinClass[]) { this._mixins = mixins; }
   get mixins(): MixinClass[] {
     if (!this._mixins)
@@ -50,17 +52,18 @@ export default class EntityClass extends ECClass implements EntityClassInterface
    * Searches the base class, if one exists, first then any mixins that exist for the property with the name provided.
    * @param name The name of the property to find.
    */
-  public getInheritedProperty<T extends PropertyInterface>(name: string): T | undefined {
-    let inheritedProperty = super.getInheritedProperty(name);
+  public async getInheritedProperty<T extends PropertyInterface>(name: string): Promise<T | undefined> {
+    let inheritedProperty = await super.getInheritedProperty(name);
 
     if (!inheritedProperty && this._mixins) {
-      this._mixins.some((mixin) => {
-        inheritedProperty = mixin.getProperty(name);
+      const mixinProps = await Promise.all(this._mixins.map(async (mixin) => mixin.getProperty(name)));
+      mixinProps.some((prop) => {
+        inheritedProperty = prop;
         return inheritedProperty !== undefined;
       });
     }
 
-    return inheritedProperty as T;
+    return inheritedProperty as T | undefined;
   }
 
   /**
@@ -69,46 +72,41 @@ export default class EntityClass extends ECClass implements EntityClassInterface
    * @param relationship
    * @param direction
    */
-  public createNavigationProperty(name: string, relationship: string | RelationshipClass, direction?: string | RelatedInstanceDirection): NavigationProperty {
-    if (this.getProperty(name))
+  public async createNavigationProperty(name: string, relationship: string | RelationshipClassInterface, direction?: string | RelatedInstanceDirection): Promise<NavigationProperty> {
+    if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
-    let resolvedRelationship: RelationshipClass | undefined;
-    if (typeof(relationship) === "string" && this.schema)
-      resolvedRelationship = this.schema.getChildSync<RelationshipClass>(relationship, false);
+    let resolvedRelationship: RelationshipClassInterface | undefined;
+    if (typeof(relationship) === "string")
+      resolvedRelationship = await this.schema.getChild<RelationshipClass>(relationship, false);
     else
-      resolvedRelationship = relationship as RelationshipClass;
+      resolvedRelationship = relationship;
 
     if (!resolvedRelationship)
-      throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid StructClass.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);
 
     if (!direction)
       direction = RelatedInstanceDirection.Forward;
     else if (typeof(direction) === "string")
       direction = parseStrengthDirection(direction);
 
-    const navProp = new NavigationProperty(name, resolvedRelationship, direction);
-
-    if (!this.properties)
-      this.properties = [];
-    this.properties.push(navProp);
-
-    return navProp;
+    const lazyRelationship = new DelayedPromiseWithProps(resolvedRelationship.key, async () => resolvedRelationship!);
+    return this.addProperty(new NavigationProperty(name, lazyRelationship, direction));
   }
 
   /**
    *
    * @param jsonObj
    */
-  public fromJson(jsonObj: any): void {
-    super.fromJson(jsonObj);
+  public async fromJson(jsonObj: any): Promise<void> {
+    await super.fromJson(jsonObj);
 
-    const loadMixin = (mixinFullName: string) => {
+    const loadMixin = async (mixinFullName: string) => {
       // TODO: Fix
       if (!this.schema)
         throw new ECObjectsError(ECObjectsStatus.ECOBJECTS_ERROR_BASE, `TODO: Fix this message`);
 
-      const tempMixin = this.schema.getChildSync<MixinClass>(mixinFullName, false);
+      const tempMixin = await this.schema.getChild<MixinClass>(mixinFullName, false);
       if (!tempMixin)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `TODO: Fix this message`);
 
@@ -117,14 +115,14 @@ export default class EntityClass extends ECClass implements EntityClassInterface
       this._mixins.push(tempMixin);
     };
 
+    const loadAllMixins = (mixinFullNames: string[]) => Promise.all(mixinFullNames.map((name) => loadMixin(name)));
+
     if (jsonObj.mixin) {
-      if (typeof(jsonObj.mixin) === "string") {
-        loadMixin(jsonObj.mixin);
-      } else if (Array.isArray(jsonObj.mixin)) {
-        jsonObj.mixin.forEach((mixinName: string) => {
-          loadMixin(mixinName);
-        });
-      } else
+      if (typeof(jsonObj.mixin) === "string")
+        await loadMixin(jsonObj.mixin);
+      else if (Array.isArray(jsonObj.mixin))
+        await loadAllMixins(jsonObj.mixin);
+      else
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Mixin on ECEntityClass ${this.name} is an invalid type. It must be of Json type string or an array of strings.`);
     }
   }

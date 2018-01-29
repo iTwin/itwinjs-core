@@ -19,7 +19,7 @@ describe("relationship multiplicity", () => {
 
 describe("relationship", () => {
   describe("deserialization", () => {
-    it("succeed with fully defined relationship", () => {
+    it("succeed with fully defined relationship", async () => {
       const schemaJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
@@ -56,15 +56,15 @@ describe("relationship", () => {
         },
       };
 
-      const schema = ECSchema.fromJson(schemaJson);
+      const schema = await ECSchema.fromJson(schemaJson);
       assert.isDefined(schema);
 
-      const sourceEntity = schema.getClass<EntityClass>("TestSourceEntity");
+      const sourceEntity = await schema.getClass<EntityClass>("TestSourceEntity");
       assert.isDefined(sourceEntity);
-      const targetEntity = schema.getClass<EntityClass>("TestTargetEntity");
+      const targetEntity = await schema.getClass<EntityClass>("TestTargetEntity");
       assert.isDefined(targetEntity);
 
-      const relClass = schema.getClass<RelationshipClass>("TestRelClass");
+      const relClass = await schema.getClass<RelationshipClass>("TestRelClass");
       assert.isDefined(relClass);
       expect(relClass!.strength).equal(StrengthType.Embedding);
       expect(relClass!.strengthDirection).equal(RelatedInstanceDirection.Backward);
@@ -75,7 +75,7 @@ describe("relationship", () => {
       assert.isTrue(relClass!.source!.multiplicity!.equals(RelationshipMultiplicity.zeroMany));
       assert.isDefined(relClass!.source!.constraintClasses);
       expect(relClass!.source!.constraintClasses!.length).equal(1);
-      assert.isTrue(relClass!.source!.constraintClasses![0] === sourceEntity);
+      assert.isTrue(await relClass!.source!.constraintClasses![0] === sourceEntity);
 
       assert.isDefined(relClass!.target);
       expect(relClass!.target!.polymorphic).equal(true);
@@ -83,7 +83,7 @@ describe("relationship", () => {
       assert.isTrue(relClass!.target!.multiplicity!.equals(RelationshipMultiplicity.zeroMany));
       assert.isDefined(relClass!.target!.constraintClasses);
       expect(relClass!.target!.constraintClasses!.length).equal(1);
-      assert.isTrue(relClass!.target!.constraintClasses![0] === targetEntity);
+      assert.isTrue(await relClass!.target!.constraintClasses![0] === targetEntity);
     });
   });
 });
