@@ -776,7 +776,7 @@ describe("iModel", () => {
 
   });
 
-  it("should set navigation properties", () => {
+  it("should set EC properties of various types", () => {
 
     const testImodel: IModelDb = imodel1;
     try {
@@ -820,6 +820,7 @@ describe("iModel", () => {
       // The second one should point to the first.
       elementProps.id = new Id64();
       elementProps.relatedElement = id1;      // use the short id-only format
+      elementProps.longProp = 4294967295;     // make sure that we can save values in the range 0 ... UINT_MAX
 
       id2 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps));
       assert.isTrue(id2.isValid());
@@ -832,6 +833,7 @@ describe("iModel", () => {
       assert.isTrue("relatedElement" in el2);
       assert.isTrue("id" in el2.relatedElement);
       assert.deepEqual(el2.relatedElement.id, id1);
+      assert.equal(el2.longProp, 4294967295);
 
       // Even though I didn't set it, the platform knows the relationship class and reports it.
       assert.isTrue("relClassName" in el2.relatedElement);
