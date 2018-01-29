@@ -27,28 +27,29 @@ export class HilitedSet {
 
 /** the set of currently selected elements for an iModel */
 export class SelectionSet {
-  public readonly selected = new Set<string>();
+  public readonly elements = new Set<string>();
   public readonly onChanged = new BeEvent<(iModel: IModelConnection, evType: SelectEventType, ids?: Set<string>) => void>();
   public constructor(public iModel: IModelConnection) { }
 
   private sendChangedEvent(evType: SelectEventType, ids?: Set<string>) { this.onChanged.raiseEvent(this.iModel, evType, ids); }
-  /**
-   * Get the number of entries in the current selection set.
-   * @return count of entries in current selection set.
-   */
-  public get numSelected() { return this.selected.size; }
+
+  /** Get the number of entries in this selection set. */
+  public get size() { return this.elements.size; }
 
   /** Check whether there are any selected elements. */
-  public isActive() { return this.numSelected === 0; }
+  public isActive() { return this.size !== 0; }
+
+  /** return true if elemId is in this SelectionSet */
+  public has(elemId: string) { return this.elements.has(elemId); }
 
   /** Query whether an element is in the selection set. */
-  public isSelected(elemId?: Id64): boolean { return !!elemId && this.selected.has(elemId.value); }
+  public isSelected(elemId?: Id64): boolean { return !!elemId && this.elements.has(elemId.value); }
 
   /** Clear current selection set. */
   public emptyAll(): void {
     if (!this.isActive())
       return;
-    this.selected.clear();
+    this.elements.clear();
     this.sendChangedEvent(SelectEventType.Clear);
   }
 
@@ -57,12 +58,12 @@ export class SelectionSet {
    * @returns true if any elements were added.
    */
   public add(elem: IdArg, sendEvent = true): boolean {
-    const oldSize = this.selected.size;
+    const oldSize = this.elements.size;
     elem = Id64.toIdSet(elem);
-    elem.forEach((id) => this.selected.add(id));
-    const changed = oldSize !== this.selected.size;
+    elem.forEach((id) => this.elements.add(id));
+    const changed = oldSize !== this.elements.size;
     if (sendEvent && changed)
-      this.sendChangedEvent(0 /* Add */, elem);
+      this.sendChangedEvent(SelectEventType.Add, elem);
     return changed;
   }
 
@@ -71,10 +72,10 @@ export class SelectionSet {
    * @returns true if any elements were removed.
    */
   public remove(elem: IdArg, sendEvent = true): boolean {
-    const oldSize = this.selected.size;
+    const oldSize = this.elements.size;
     elem = Id64.toIdSet(elem);
-    elem.forEach((id) => this.selected.delete(id));
-    const changed = oldSize !== this.selected.size;
+    elem.forEach((id) => this.elements.delete(id));
+    const changed = oldSize !== this.elements.size;
     if (sendEvent && changed)
       this.sendChangedEvent(SelectEventType.Remove, elem);
     return changed;
@@ -90,14 +91,14 @@ export class SelectionSet {
   public invert(elem: IdArg): boolean {
     const elementsToAdd = new Set<string>();
     const elementsToRemove = new Set<string>();
-    Id64.toIdSet(elem).forEach((id) => { if (this.selected.has(id)) elementsToRemove.add(id); else elementsToAdd.add(id); });
+    Id64.toIdSet(elem).forEach((id) => { if (this.elements.has(id)) elementsToRemove.add(id); else elementsToAdd.add(id); });
     return this.addAndRemove(elementsToAdd, elementsToRemove);
   }
 
   /** Change selection set to be the supplied element or set of elements */
   public replace(elem: IdArg): void {
-    this.selected.clear();
+    this.elements.clear();
     this.add(elem, false);
-    this.sendChangedEvent(SelectEventType.Replace, this.selected);
+    this.sendChangedEvent(SelectEventType.Replace, this.elements);
   }
 }
