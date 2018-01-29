@@ -57,7 +57,7 @@ for (const entry of IModelJsFs.readdirSync(__dirname)) {
           const compiler = webpack({
             entry: entryPath, node: {
               fs: "empty",
-            }
+            },
           });
           compiler.plugin("should-emit", () => false);
           compiler.run((err: Error, stats: webpack.Stats) => {
