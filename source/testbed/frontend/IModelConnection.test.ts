@@ -81,7 +81,7 @@ describe("IModelConnection", () => {
     await iModel.close(TestData.accessToken);
   }).timeout(99999);
 
-  it("Parametrized ECSQL", async () => {
+  /*it.skip("Parametrized ECSQL", async () => {
     const iModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
     assert.exists(iModel);
 
@@ -121,5 +121,5 @@ describe("IModelConnection", () => {
       {id: new Id64(expectedRow.id), origin: new Point2d(expectedRow.origin.x, expectedRow.origin.y)});
     assert.equal(actualRows.length, 1);
     assert.equal(actualRows[0], 1);
-  });
+  });*/
 });

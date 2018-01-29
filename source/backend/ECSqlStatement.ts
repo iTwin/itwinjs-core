@@ -210,6 +210,9 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
       for (let i = 0; i < values.length; i++) {
         const paramIndex: number = i + 1;
         const paramValue: any = values[i];
+        if (paramValue === undefined || paramValue === null)
+          continue;
+
         using (this.getBinder(paramIndex),
           (binder) => ECSqlBindingHelper.bindValue(binder, paramValue));
       }
@@ -219,6 +222,9 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     for (const entry of Object.entries(values)) {
         const paramName: string = entry[0];
         const paramValue: any = entry[1];
+        if (paramValue === undefined || paramValue === null)
+        continue;
+
         using (this.getBinder(paramName),
           (binder) => ECSqlBindingHelper.bindValue(binder, paramValue));
     }
