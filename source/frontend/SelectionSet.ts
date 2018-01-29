@@ -10,17 +10,19 @@ export const enum SelectEventType { Add, Remove, Replace, Clear }
 export type IdArg = Id64 | Id64Set | string[];
 
 export class HilitedSet {
-  public readonly hilited = new Set<string>();
+  public readonly elements = new Set<string>();
   public constructor(public iModel: IModelConnection) { }
   public setHilite(arg: IdArg, onOff: boolean) {
-    Id64.toIdSet(arg).forEach((id) => onOff ? this.hilited.add(id) : this.hilited.delete(id));
+    Id64.toIdSet(arg).forEach((id) => onOff ? this.elements.add(id) : this.elements.delete(id));
     iModelApp.viewManager.onSelectionSetChanged(this.iModel);
   }
   public clearAll() {
-    this.hilited.clear();
+    this.elements.clear();
     iModelApp.viewManager.onSelectionSetChanged(this.iModel);
   }
-  public isHilited(id: Id64) { return this.hilited.has(id.value); }
+  public has(id: string) { return this.elements.has(id); }
+  public isHilited(id: Id64) { return this.elements.has(id.value); }
+  public get size() { return this.elements.size; }
 }
 
 /** the set of currently selected elements for an iModel */

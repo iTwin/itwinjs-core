@@ -99,10 +99,7 @@ export class ElementAgenda {
   /** whether elements are flagged as hilited when added to the agenda. */
   public hiliteOnAdd = true;
   public hilitedState = HilitedState.Unknown;
-  public iModel?: IModelConnection;
-
-  /** Populate an IdSet from this agenda. */
-  public getElementIdSet(ids: Id64Set) { this.elements.forEach((id) => ids.add(id)); }
+  public constructor(public iModel: IModelConnection) { }
 
   /**
    * Get the source for this ElementAgenda, if applicable. The "source" is merely an indication of what the collection of elements
@@ -114,11 +111,12 @@ export class ElementAgenda {
   /** Set the source for this ElementAgenda. */
   public setSource(val: ModifyElementSource) { if (this.groupMarks.length > 0) this.groupMarks[this.groupMarks.length - 1].source = val; }
 
-  public isEmpty() { return this.elements.length > 0; }
-  public getCount() { return this.elements.length; }
+  public isEmpty() { return this.length === 0; }
+  public getCount() { return this.length; }
+  public get length() { return this.elements.length; }
 
   /** Calls ClearHilite and empties this ElementAgenda. */
-  public clear() { this.clearHilite(); this.elements.length = 0; this.groupMarks.length = 0; this.iModel = undefined; }
+  public clear() { this.clearHilite(); this.elements.length = 0; this.groupMarks.length = 0; }
 
   /** clear hilite on any currently hilited entries */
   private clearHilite() {
@@ -131,7 +129,7 @@ export class ElementAgenda {
 
   private setEntriesHiliteState(onOff: boolean, groupStart = 0, groupEnd = 0) {
     const group = (0 === groupEnd) ? this.elements : this.elements.filter((_id, index) => index >= groupStart && index < groupEnd);
-    this.iModel!.hilited.setHilite(group, onOff);
+    this.iModel.hilited.setHilite(group, onOff);
   }
 
   /** Calls ClearHilite and removes the last group of elements added to this ElementAgenda. */
@@ -142,7 +140,7 @@ export class ElementAgenda {
     }
     const group = this.groupMarks.pop()!;
     if (HilitedState.No !== this.hilitedState)
-      this.setEntriesHiliteState(false, group.start, this.elements.length); // make sure removed entries aren't left hilited...
+      this.setEntriesHiliteState(false, group.start, this.length); // make sure removed entries aren't left hilited...
     this.elements.splice(group.start);
   }
 
@@ -155,25 +153,20 @@ export class ElementAgenda {
     this.hilitedState = HilitedState.Yes;
   }
 
-  public hasValue(id: string) { return this.elements.some((entry) => id === entry); }
+  public has(id: string) { return this.elements.some((entry) => id === entry); }
 
   /** Return true if elementId is already in this ElementAgenda. */
-  public find(id: Id64) { return this.hasValue(id.value); }
+  public find(id: Id64) { return this.has(id.value); }
 
   /** Add elements to this ElementAgenda. */
-  public add(arg: IdArg, iModel: IModelConnection) {
-    if (!this.iModel)
-      this.iModel = iModel;
-    else if (this.iModel !== iModel)
-      return false;
-
-    const groupStart = this.elements.length;
-    Id64.toIdSet(arg).forEach((id) => { if (!this.hasValue(id)) this.elements.push(id); });
-    if (groupStart === this.elements.length)
+  public add(arg: IdArg) {
+    const groupStart = this.length;
+    Id64.toIdSet(arg).forEach((id) => { if (!this.has(id)) this.elements.push(id); });
+    if (groupStart === this.length)
       return false;
     this.groupMarks.push({ start: groupStart, source: ModifyElementSource.Unknown });
     if (HilitedState.No !== this.hilitedState)
-      this.setEntriesHiliteState(this.hiliteOnAdd, groupStart, this.elements.length);
+      this.setEntriesHiliteState(this.hiliteOnAdd, groupStart, this.length);
     return true;
   }
 
@@ -239,8 +232,8 @@ export class ElementAgenda {
     return true;
   }
 
-  public remove(arg: IdArg, iModel: IModelConnection) {
-    if (this.iModel !== iModel || 0 === this.elements.length)
+  public remove(arg: IdArg) {
+    if (0 === this.length)
       return false;
 
     const elSet = Id64.toIdSet(arg);
@@ -261,14 +254,9 @@ export class ElementAgenda {
   }
 
   /** Add elements not currently in the ElementAgenda and remove elements currently in the ElementAgenda. */
-  public invert(arg: IdArg, iModel: IModelConnection) {
-    if (!this.iModel)
-      this.iModel = iModel;
-    else if (this.iModel !== iModel)
-      return false;
-
-    if (0 === this.elements.length)
-      return this.add(arg, iModel);
+  public invert(arg: IdArg) {
+    if (0 === this.length)
+      return this.add(arg);
 
     const elSet = Id64.toIdSet(arg);
     if (elSet.size === 0)
@@ -276,7 +264,7 @@ export class ElementAgenda {
 
     const adds: string[] = [];
     const removes: string[] = [];
-    elSet.forEach((id) => { if (this.hasValue(id)) removes.push(id); else adds.push(id); });
+    elSet.forEach((id) => { if (this.has(id)) removes.push(id); else adds.push(id); });
     if (adds.length === 0 && removes.length === 0)
       return false;
 
@@ -288,12 +276,12 @@ export class ElementAgenda {
     removes.forEach((id) => this.removeOne(id));
 
     if (adds.length > 0) {
-      const groupStart = this.elements.length;
+      const groupStart = this.length;
       adds.forEach((id) => this.elements.push(id));
       this.groupMarks.push({ start: groupStart, source: ModifyElementSource.Unknown });
 
       if (HilitedState.No !== this.hilitedState)
-        this.setEntriesHiliteState(this.hiliteOnAdd, groupStart, this.elements.length); // make sure added entries are hilited (when not also removing)...
+        this.setEntriesHiliteState(this.hiliteOnAdd, groupStart, this.length); // make sure added entries are hilited (when not also removing)...
     }
 
     if (needClearHilite)

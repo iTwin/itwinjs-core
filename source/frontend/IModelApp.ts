@@ -14,6 +14,7 @@ import { FeatureGates } from "../common/FeatureGates";
 import * as selectTool from "./tools/SelectTool";
 import * as viewTool from "./tools/ViewTool";
 import * as idleTool from "./tools/IdleTool";
+import { IModelError, IModelStatus } from "../common/IModelError";
 
 /** Global access to the IModelApp. Initialized by calling IModelApp.startup(). */
 export let iModelApp: IModelApp;
@@ -60,6 +61,9 @@ export class IModelApp {
    * ```
    */
   public static startup() {
+    if (iModelApp !== undefined)
+      throw new IModelError(IModelStatus.AlreadyLoaded, "startup may only be called once");
+
     iModelApp = new this(); // this will create an instance of the appropriate subclass of IModelApp (that calls this static method)
 
     // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
@@ -88,6 +92,7 @@ export class IModelApp {
     iModelApp._tentativePoint.onInitialized();
   }
 
+  public static shutdown() { (iModelApp as any) = undefined; }
   /**
    * Implement this method to register your app's tools, override implementation of managers, and initialize your app-specific members.
    * @note The default tools will already be registered, so if you register tools with the same toolId, your tools will override the defaults.
