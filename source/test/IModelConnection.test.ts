@@ -6,7 +6,7 @@ import { IModelConnection } from "../frontend/IModelConnection";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 
-describe("IModelConnection", () => {
+describe.skip("IModelConnection", () => {
   // todo: These tests need a better location
   let accessToken: AccessToken;
   let testProjectId: string;
