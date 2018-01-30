@@ -100,7 +100,7 @@ describe("Viewport", function () {
     IModelApp.shutdown();
   });
 
-  it("Viewport", () => {
+  it.only("Viewport", () => {
     for (const viewState of [viewStateXYFlat, viewStateXZFlat, viewStateXYZ]) {
       const viewport = new TestViewport(viewState);
 
@@ -136,16 +136,15 @@ describe("Viewport", function () {
       }
     }
 
-    // assert that a ViewState with eye backed up to infinity produces a "flat view"
-    const flatViewWithCamera = viewStateXYZ.clone<SpatialViewState>();
-    flatViewWithCamera.setEyePoint({ x: 0, y: 0, z: Number.MAX_VALUE });
-    flatViewWithCamera.setFocusDistance(1000);
-
-    const vp = new TestViewport(flatViewWithCamera);
-    assert.isTrue(Math.abs(vp.frustFraction - 1) < 1.0e-4);
+    const view1 = viewStateXYZ.clone<SpatialViewState>();
+    const vp = new TestViewport(view1);
 
     assert.isFalse(vp.isRedoPossible, "no redo");
     assert.isFalse(vp.isUndoPossible, "no undo");
+    assert.isTrue(vp.isCameraOn(), "camera is on");
+    view1.turnCameraOff();
+    vp.synchWithView(true);
+    assert.isTrue(vp.isUndoPossible, "undo should now be possible");
 
     const pan = iModelApp.tools.create("View.Pan", vp) as PanTool;
     assert.instanceOf(pan, PanTool);

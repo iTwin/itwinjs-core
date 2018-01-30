@@ -7,7 +7,7 @@ import { Id64Props } from "@bentley/bentleyjs-core/lib/Id";
 export interface EntityProps {
   classFullName: string;
   [propName: string]: any;
-  id: Id64Props;
+  id?: Id64Props;
 }
 
 /** Interface for capturing input to query functions. */

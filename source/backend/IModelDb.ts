@@ -1160,7 +1160,8 @@ export class IModelDbModels {
       throw new IModelError(error, "", Logger.logWarning);
 
     // Discard from the cache, to make sure that the next fetch see the updated version.
-    this._loaded.delete(model.id.toString());
+    if (model.id)
+      this._loaded.delete(model.id.toString());
   }
 
   /** Delete an existing model.
@@ -1322,7 +1323,8 @@ export class IModelDbElements {
       throw new IModelError(error, "", Logger.logWarning);
 
     // Discard from the cache, to make sure that the next fetch see the updated version.
-    this._loaded.delete(props.id.toString());
+    if (props.id)
+      this._loaded.delete(props.id.toString());
   }
 
   /**

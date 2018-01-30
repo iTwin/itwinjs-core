@@ -194,8 +194,8 @@ export class Viewport {
   public flashUpdateTime: BeTimePoint;  // time the current flash started
   public flashIntensity: number;        // current flash intensity from [0..1]
   public flashDuration: number;         // the length of time that the flash intensity will increase (in seconds)
-  private flashedElem?: string;
-  public lastFlashedElem?: string;
+  private flashedElem?: string;         // id of currently flashed element
+  public lastFlashedElem?: string;      // id of last flashed element
   private _viewCmdTargetCenter?: Point3d;
   public frustFraction: number = 1.0;
   public maxUndoSteps = 20;
@@ -214,7 +214,7 @@ export class Viewport {
   public isSnapAdjustmentRequired(): boolean { return iModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
   public isContextRotationRequired(): boolean { return iModelApp.toolAdmin.acsContextLock; }
 
-  constructor(public canvas?: HTMLCanvasElement, private _view?: ViewState) { this.setCursor(); }
+  constructor(public canvas?: HTMLCanvasElement, private _view?: ViewState) { this.setCursor(); if (_view) this.saveViewUndo(); }
 
   /** Get the ClientRect of the canvas for this Viewport. */
   public getClientRect(): ClientRect { return this.canvas!.getBoundingClientRect(); }
@@ -666,6 +666,9 @@ export class Viewport {
   }
 
   private saveViewUndo(): void {
+    if (!this._view)
+      return;
+
     const curr = this.view.clone<ViewState>();
     if (!this.currentBaseline) {
       this.currentBaseline = curr;
