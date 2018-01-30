@@ -6,5 +6,13 @@
         "description": "Test of an Immediate Command"
       }
     }
+  },
+  "TrivialTests": {
+    "Test1": "Localized Trivial Test 1",
+    "Test2": "Localized Trivial Test 2"
+  },
+  "SubstitutionTests": {
+    "Test1": "Substitute {{varA}} and {{varB}}",
+    "Test2": "Reverse substitute {{varB}} and {{varA}}"
   }
 }

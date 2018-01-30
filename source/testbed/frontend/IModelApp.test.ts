@@ -82,9 +82,27 @@ describe("IModelApp", () => {
     const thisApp = iModelApp as TestApp;
     await thisApp.testNamespace.readFinished;  // we must wait for the localization read to finish.
     assert.equal(TestImmediate.getKeyin(), "Localized TestImmediate Keyin");
+    // here we are testing to make sure we can override the Select command but the keyin comes from the superclass.
     assert.isTrue(iModelApp.tools.run("Select"));
     const select = iModelApp.toolAdmin.activePrimitiveTool as TestSelectTool;
     assert.instanceOf(select, TestSelectTool, "test select tool is active");
     assert.equal(select.keyin, "Select Elements", "keyin comes from superclass");
   });
+
+  it("Should do trivial localizations", () => {
+    // we have "TrivialTest.Test1" as the key in TestApp.json
+    assert.equal(iModelApp.i18N.translate("TestApp:TrivialTests.Test1"), "Localized Trivial Test 1");
+    assert.equal(iModelApp.i18N.translate("TestApp:TrivialTests.Test2"), "Localized Trivial Test 2");
+  });
+
+  it("Should return the key for localization keys that are missing", () => {
+    // there is no key for TrivialTest.Test3
+    assert.equal(iModelApp.i18N.translate("TestApp:TrivialTests.Test3"), "TrivialTests.Test3");
+  });
+
+  it("Should properly substitute the  values in localized strings with interpolations", () => {
+    assert.equal(iModelApp.i18N.translate("TestApp:SubstitutionTests.Test1", { varA: "Variable1", varB: "Variable2" }), "Substitute Variable1 and Variable2");
+    assert.equal(iModelApp.i18N.translate("TestApp:SubstitutionTests.Test2", { varA: "Variable1", varB: "Variable2" }), "Reverse substitute Variable2 and Variable1");
+  });
+
 });
