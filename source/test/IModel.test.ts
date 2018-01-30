@@ -512,7 +512,7 @@ describe("iModel", () => {
     };
 
     const element = testImodel.elements.createElement(props);
-    assert.equal(element.intProperty, 0, "long property should be zero");
+    assert.equal(element.intProperty, 0, "int property should be zero");
   });
 
   function checkElementMetaData(obj: EntityMetaData) {
