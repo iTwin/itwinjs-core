@@ -8,7 +8,6 @@ import { TestData } from "./TestData";
 import * as webpack from "webpack";
 import * as path from "path";
 import { IModelJsFs } from "../../backend/IModelJsFs";
-import * as minimatch from "minimatch";
 
 TestbedConfig.initializeGatewayConfig();
 TestbedConfig.gatewayConfig.protocol.openAPIPathPrefix = () => `http://localhost:${TestbedConfig.serverPort}`;
@@ -34,51 +33,41 @@ describe("Testbed", () => {
     req.send();
   });
 
-  if (!process.env.IMODELJS_TESTBED_SKIP_TESTDATA) {
-    it("TestData should load", async () => {
-      await TestData.load();
-    }).timeout(99999);
-  }
+  it("TestData should load", async () => {
+    await TestData.load();
+  }).timeout(99999);
 });
 
 for (const entry of IModelJsFs.readdirSync(__dirname)) {
-  const filter = process.env.IMODELJS_TESTBED_FILTER;
-  if (filter) {
-    if (!minimatch(entry, filter, { nocase: true }))
-      continue;
-  }
-
   if (entry.indexOf(".test.js") !== -1 && entry.indexOf(".test.js.map") === -1) {
     const entryPath = `${__dirname}/${entry}`;
 
-    if (!process.env.IMODELJS_TESTBED_SKIP_WEBPACK_TESTS) {
-      describe(entry, () => {
-        it("should be compatible with webpack", (done) => {
-          const compiler = webpack({
-            entry: entryPath, node: {
-              fs: "empty",
-            },
-          });
-          compiler.plugin("should-emit", () => false);
-          compiler.run((err: Error, stats: webpack.Stats) => {
-            if (err)
-              console.error(err.stack || err);
+    describe(entry, () => {
+      it("should be compatible with webpack", (done) => {
+        const compiler = webpack({
+          entry: entryPath, node: {
+            fs: "empty",
+          },
+        });
+        compiler.plugin("should-emit", () => false);
+        compiler.run((err: Error, stats: webpack.Stats) => {
+          if (err)
+            console.error(err.stack || err);
 
-            if (stats.hasErrors() || stats.hasWarnings()) {
-              const info = stats.toJson();
-              console.error(...info.errors);
-              console.warn(...info.warnings);
-            }
+          if (stats.hasErrors() || stats.hasWarnings()) {
+            const info = stats.toJson();
+            console.error(...info.errors);
+            console.warn(...info.warnings);
+          }
 
-            assert.isNull(err);
-            assert.isFalse(stats.hasErrors());
-            assert.isFalse(stats.hasWarnings());
-            done();
-          });
-        }).timeout(99999);
-      });
-    }
+          assert.isNull(err);
+          assert.isFalse(stats.hasErrors());
+          assert.isFalse(stats.hasWarnings());
+          done();
+        });
+      }).timeout(99999);
+    });
 
-    setTimeout(() => require(entryPath));
+    require(entryPath);
   }
 }
