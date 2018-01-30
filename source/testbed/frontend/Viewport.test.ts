@@ -100,7 +100,7 @@ describe("Viewport", function () {
     IModelApp.shutdown();
   });
 
-  it.only("Viewport", () => {
+  it("Viewport", () => {
     for (const viewState of [viewStateXYFlat, viewStateXZFlat, viewStateXYZ]) {
       const viewport = new TestViewport(viewState);
 
