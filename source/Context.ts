@@ -102,7 +102,7 @@ export class SchemaCache implements ISchemaLocater {
    */
   public async getSchema<T extends SchemaInterface>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<T | undefined> {
     if (this.count === 0)
-      return Promise.resolve(undefined);
+      return undefined;
 
     const findFunc = (schema: SchemaInterface) => {
       return schema.schemaKey.matches(schemaKey, matchType);
@@ -111,9 +111,9 @@ export class SchemaCache implements ISchemaLocater {
     const foundSchema = this._schema.find(findFunc);
 
     if (!foundSchema)
-      return Promise.resolve(undefined);
+      return undefined;
 
-    return Promise.resolve(foundSchema as T);
+    return foundSchema as T;
   }
 
   /**
@@ -151,8 +151,8 @@ export class SchemaCache implements ISchemaLocater {
       return Promise.reject("");
 
     this._schema.splice(indx, 1);
-    return Promise.resolve();
-    }
+    return;
+  }
 
   /**
    * Removes the schema which matches the provided SchemaKey.
@@ -222,18 +222,13 @@ export class SchemaContext implements ISchemaLocater, ISchemaChildLocater {
    * @param schemaKey
    */
   public async getSchema<T extends SchemaInterface>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<T | undefined> {
-    const listOfPromises: Array<Promise<T | undefined>> = [];
+    for (const locater of this._locaters) {
+      const schema = await locater.getSchema<T>(schemaKey, matchType);
+      if (schema)
+        return schema;
+    }
 
-    this._locaters.forEach((locater) => {
-      listOfPromises.push(locater.getSchema(schemaKey, matchType));
-    });
-
-    const potentialSchemas = (await Promise.all(listOfPromises)).filter((schema) => schema !== undefined ) as T[];
-    if (potentialSchemas.length === 0)
-      return undefined;
-
-    // TODO figure out the best result based on match type... For now just returning the first found
-    return potentialSchemas[0];
+    return undefined;
   }
 
   public async getSchemaChild<T extends SchemaChildInterface>(schemaChildKey: SchemaChildKey): Promise<T | undefined> {
