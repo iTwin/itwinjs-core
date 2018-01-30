@@ -5,7 +5,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "tsc && npm run copy:frontendpublic  && npm run copy:testpublic",
-    "clean": "rimraf lib",
+    "clean": "rimraf lib && rimraf backend/lib && rimraf frontend/lib",
     "start": "floss --debug --path lib/testbed/frontend/index.js",
     "pretest": "npm run build",
     "test": "floss --path lib/testbed/frontend/index.js",
