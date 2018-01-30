@@ -494,6 +494,30 @@ describe("iModel", () => {
     }
   });
 
+  it.only("should set auto-handled number property", () => {
+    const testImodel: IModelDb = imodel1;
+    try {
+      testImodel.getMetaData("TestBim:TestPhysicalObject");
+    } catch (err) {
+      const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
+      testImodel.importSchema(schemaPathname); // will throw an exception if import fails
+      assert.isTrue(testImodel.getMetaData("TestBim:TestPhysicalObject") !== undefined);
+    }
+
+    const props: GeometricElementProps = {
+      classFullName: "TestBim:TestPhysicalObject",
+      model: new Id64(),
+      id: new Id64(),
+      code: Code.createEmpty(),
+      category: new Id64(),
+      federationGuid: new Guid(true),
+      intProperty: 0,
+    };
+
+    const element = testImodel.elements.createElement(props);
+    expect(element.intProperty).equal(0);
+  });
+
   function checkElementMetaData(obj: EntityMetaData) {
     assert.isNotNull(obj);
     assert.equal(obj.ecclass, "BisCore:Element");
