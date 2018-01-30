@@ -41,8 +41,8 @@ export class I18N {
       .changeLanguage(isDevelopment ? "en-pseudo" : undefined as any, undefined);
   }
 
-  public translate(key: string): string {
-    return this.i18n.t(key);
+  public translate(key: string | string[], options?: i18next.TranslationOptions): any {
+    return this.i18n.t(key, options);
   }
 
   public loadNamespace(name: string, i18nCallback: any) {
@@ -83,7 +83,7 @@ export class I18N {
         if (locales.length > 0)
           resolve();
         else
-          throw new IModelError(-1, "The resource for namespace" + name + "could not be loaded");
+          throw new IModelError(-1, "The resource for namespace " + name + " could not be loaded");
       });
     });
     const thisNamespace: I18NNamespace = new I18NNamespace(name, theReadPromise);
