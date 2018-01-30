@@ -214,7 +214,7 @@ export class Viewport {
   public isSnapAdjustmentRequired(): boolean { return iModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
   public isContextRotationRequired(): boolean { return iModelApp.toolAdmin.acsContextLock; }
 
-  constructor(public canvas?: HTMLCanvasElement, private _view?: ViewState) { this.setCursor(); if (_view) this.saveViewUndo(); }
+  constructor(public canvas?: HTMLCanvasElement, private _view?: ViewState) { this.setCursor(); this.saveViewUndo(); }
 
   /** Get the ClientRect of the canvas for this Viewport. */
   public getClientRect(): ClientRect { return this.canvas!.getBoundingClientRect(); }

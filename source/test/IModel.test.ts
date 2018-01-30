@@ -494,7 +494,7 @@ describe("iModel", () => {
     }
   });
 
-  it("should set auto-handled number property", () => {
+  it("should set auto-handled number property with value of zero", () => {
     const testImodel: IModelDb = imodel1;
     try {
       testImodel.getMetaData("TestBim:TestPhysicalObject");

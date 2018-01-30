@@ -50,7 +50,7 @@ export class IModelDb extends IModel {
   private readonly statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private _codeSpecs: CodeSpecs;
   private _classMetaDataRegistry: MetaDataRegistry;
-  private _conc: ConcurrencyControl;
+  private _concurrency: ConcurrencyControl;
 
   /** @hidden */
   public briefcaseEntry?: BriefcaseEntry;
@@ -348,9 +348,9 @@ export class IModelDb extends IModel {
 
   /** Get access to the ConcurrencyControl for this IModel. */
   public get concurrencyControl(): ConcurrencyControl {
-    if (this._conc === undefined)
-      this._conc = new ConcurrencyControl(this);
-    return this._conc;
+    if (this._concurrency === undefined)
+      this._concurrency = new ConcurrencyControl(this);
+    return this._concurrency;
   }
 
   /** Get access to the CodeSpecs in this IModel. */
@@ -639,18 +639,18 @@ export class ConcurrencyControl {
       return undefined;
 
     const bySpecId: Map<string, any> = new Map();
-    for (const creq of reqAny.Codes) {
-      let byScope: Map<string, MultiCode> | undefined = bySpecId.get(creq.Id);
+    for (const cReq of reqAny.Codes) {
+      let byScope: Map<string, MultiCode> | undefined = bySpecId.get(cReq.Id);
       if (byScope === undefined)
-        bySpecId.set(creq.Id, (byScope = new Map()));
+        bySpecId.set(cReq.Id, (byScope = new Map()));
 
-      let thisReq: MultiCode | undefined = byScope.get(creq.Scope);
+      let thisReq: MultiCode | undefined = byScope.get(cReq.Scope);
       if (thisReq === undefined) {
-        thisReq = this.buildCodeRequest(briefcaseEntry, creq.Id, creq.Scope);
-        byScope.set(creq.Scope, (thisReq = thisReq));
+        thisReq = this.buildCodeRequest(briefcaseEntry, cReq.Id, cReq.Scope);
+        byScope.set(cReq.Scope, (thisReq = thisReq));
       }
 
-      thisReq.values.push(creq.Name);
+      thisReq.values.push(cReq.Name);
     }
 
     return bySpecId;
@@ -687,18 +687,18 @@ export class ConcurrencyControl {
 
     /*
     const bySpecId: Map<string, any> = new Map();
-    for (const creq of reqAny.Locks) {
-      let byScope: Map<string, MultiCode> | undefined = bySpecId.get(creq.Id);
+    for (const cReq of reqAny.Locks) {
+      let byScope: Map<string, MultiCode> | undefined = bySpecId.get(cReq.Id);
       if (byScope === undefined)
-        bySpecId.set(creq.Id, (byScope = new Map()));
+        bySpecId.set(cReq.Id, (byScope = new Map()));
 
-      let thisReq: MultiCode | undefined = byScope.get(creq.Scope);
+      let thisReq: MultiCode | undefined = byScope.get(cReq.Scope);
       if (thisReq === undefined) {
-        thisReq = this.buildCodeRequest(briefcaseEntry, creq.Id, creq.Scope);
-        byScope.set(creq.Scope, (thisReq = thisReq));
+        thisReq = this.buildCodeRequest(briefcaseEntry, cReq.Id, cReq.Scope);
+        byScope.set(cReq.Scope, (thisReq = thisReq));
       }
 
-      thisReq.values.push(creq.Name);
+      thisReq.values.push(cReq.Name);
     }
 
     return bySpecId;
@@ -973,8 +973,8 @@ export namespace ConcurrencyControl {
 
   /** Specifies an optimistic concurrency policy.
    * Optimistic concurrency allows entities to be modified in the IModelDb without first acquiring locks. Allows codes to be used in the IModelDb without first acquiring them.
-   * This creates the possibility that other apps may have uploaded changesets to iModelHub that overlap with local changes.
-   * In that case, overlapping changes are merged when changesets are downloaded from iModelHub.
+   * This creates the possibility that other apps may have uploaded changeSets to iModelHub that overlap with local changes.
+   * In that case, overlapping changes are merged when changeSets are downloaded from iModelHub.
    * A ConflictResolutionPolicy is then applied in cases where an overlapping change conflict with a local change.
    */
   export class OptimisticPolicy {
