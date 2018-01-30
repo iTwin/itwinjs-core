@@ -508,11 +508,11 @@ describe("iModel", () => {
       classFullName: "TestBim:TestPhysicalObject",
       model: new Id64(),
       category: new Id64(),
-      longProp: 0,
+      intProperty: 0,
     };
 
     const element = testImodel.elements.createElement(props);
-    assert.equal(element.longProp, 0, "long property should be zero");
+    assert.equal(element.intProperty, 0, "long property should be zero");
   });
 
   function checkElementMetaData(obj: EntityMetaData) {
