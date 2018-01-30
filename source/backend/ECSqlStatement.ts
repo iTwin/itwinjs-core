@@ -47,7 +47,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   }
 
   /** Prepare this statement prior to first use.
-   * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSql syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
+   * @throws [[IModelError]] if the statement cannot be prepared. Normally, prepare fails due to ECSql syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
    */
   public prepare(db: AddonDgnDb | AddonECDb, statement: string): void {
     if (this.isPrepared())
@@ -263,9 +263,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Step this INSERT statement and returns status and the ECInstanceId of the newly
    * created instance.
-   * @return Object containing the status of the step. If successful, it contains
-   * DbResult.BE_SQLITE_DONE and the ECInstanceId of the newly created instance.
-   * In case of failure it contains the error DbResult code.
+   * @returns Returns the generated ECInstanceId in case of success and the status of the step
+   * call.
    */
   public stepForInsert(): ECSqlInsertResult {
     const r: {status: DbResult, id: string} = this._stmt!.stepForInsert();
@@ -338,7 +337,7 @@ class ECSqlBindingHelper {
    * @param binder Parameter Binder to bind to
    * @param val Primitive value to be bound. Must be of one of these types:
    *  null | undefined, boolean, number, string, DateTime, Blob, Id64, XY, XYZ, NavigationValue
-   * @throws IModelError in case of errors
+   * @throws [[IModelError]] in case of errors
    */
   public static bindPrimitive(binder: AddonECSqlBinder, val: any): void {
     const stat: DbResult | undefined = ECSqlBindingHelper.tryBindPrimitiveTypes(binder, val);
@@ -352,7 +351,7 @@ class ECSqlBindingHelper {
   /** Binds the specified object to the specified struct binder
    * @param binder Struct parameter binder to bind to
    * @param val Value to be bound. Must be an Object with members of the supported types
-   * @throws IModelError in case of errors
+   * @throws [[IModelError]] in case of errors
    */
   public static bindStruct(binder: AddonECSqlBinder, val: object): void {
     if (val === null || val === undefined) {
@@ -374,7 +373,7 @@ class ECSqlBindingHelper {
   /** Binds the specified array to the specified array binder
    * @param binder Array parameter binder to bind to
    * @param val Value to be bound. Must be an Array with elements of the supported types
-   * @throws IModelError in case of errors
+   * @throws [[IModelError]] in case of errors
    */
   public static bindArray(binder: AddonECSqlBinder, val: any[]): void {
     if (val === null || val === undefined) {
@@ -392,7 +391,7 @@ class ECSqlBindingHelper {
   }
 
   /** tries to interpret the passed value as known leaf types (primitives and navigation values).
-   *  @return undefined if the value wasn't a primitive. DbResult if it was a primitive and was bound to the binder
+   *  @returns Returns undefined if the value wasn't a primitive. DbResult if it was a primitive and was bound to the binder
    */
   private static tryBindPrimitiveTypes(binder: AddonECSqlBinder, val: any): DbResult | undefined {
     if (val === undefined || val === null)

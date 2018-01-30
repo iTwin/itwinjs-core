@@ -53,7 +53,7 @@ export class ChangeSummaryManager {
 
   /** Determines whether the Changes cache file is attached to the specified iModel or not
    * @param iModel iModel to check whether a Changes cache file is attached
-   * @return true if the Changes cache file is attached to the iModel. false otherwise
+   * @returns Returns true if the Changes cache file is attached to the iModel. false otherwise
    */
   public static isChangeCacheAttached(iModel: IModelDb): boolean {
     if (iModel == null || iModel.nativeDb == null)
@@ -231,8 +231,8 @@ export class ChangeSummaryManager {
   /** Queries the ChangeSummary for the specified change summary id
    * @param iModel iModel
    * @param changeSummaryId ECInstanceId of the ChangeSummary (see ECDbChange.ChangeSummary ECClass)
-   * @return ChangeSummary object
-   * @throws IModelError if change summary does not exist for the specified id, or if the
+   * @returns Returns the requested ChangeSummary object
+   * @throws [[IModelError]] If change summary does not exist for the specified id, or if the
    * change cache file hasn't been attached, or in case of other errors.
    */
   public static queryChangeSummary(iModel: IModelDb, changeSummaryId: Id64): ChangeSummary {
@@ -252,8 +252,8 @@ export class ChangeSummaryManager {
   /** Queries the InstanceChange for the specified instance change id
    * @param iModel iModel
    * @param instanceChangeId ECInstanceId of the InstanceChange (see ECDbChange.InstanceChange ECClass)
-   * @return InstanceChange object
-   * @throws IModelError if instance change does not exist for the specified id, or if the
+   * @returns Returns the requested InstanceChange object
+   * @throws [[IModelError]] if instance change does not exist for the specified id, or if the
    * change cache file hasn't been attached, or in case of other errors.
    */
   public static queryInstanceChange(iModel: IModelDb, instanceChangeId: Id64): InstanceChange {
