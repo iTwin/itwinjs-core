@@ -9,6 +9,8 @@ import { Model2dState } from "../../common/EntityState";
 import { ModelProps } from "../../common/ModelProps";
 import { CategorySelectorState, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, ModelSelectorState, OrthographicViewState, ViewState } from "../../common/ViewState";
 import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "../../frontend/IModelConnection";
+import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { DateTime, Blob, NavigationValue } from "../../common/ECSqlBindingValues";
 import { TestData } from "./TestData";
 
 describe("IModelConnection", () => {
@@ -79,4 +81,45 @@ describe("IModelConnection", () => {
     await iModel.close(TestData.accessToken);
   }).timeout(99999);
 
+  it.skip("Parametrized ECSQL", async () => {
+    const iModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
+    assert.exists(iModel);
+
+    let rows = await iModel.executeQuery("SELECT ECInstanceId,Model,LastMod,CodeValue,FederationGuid,Origin FROM bis.GeometricElement3d LIMIT 1");
+    assert.equal(rows.length, 1);
+    let expectedRow = rows[0];
+    let actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement3d WHERE ECInstanceId=? AND Model=? AND LastMod=? AND CodeValue=? AND FederationGuid=? AND Origin=?",
+        [new Id64(expectedRow.id), new NavigationValue(expectedRow.model.id), new DateTime(expectedRow.lastMod), expectedRow.codeValue,
+        new Blob(expectedRow.federationGuid), new Point3d(expectedRow.origin.x, expectedRow.origin.y, expectedRow.origin.z)]);
+    assert.equal(actualRows.length, 1);
+    assert.equal(actualRows[0], 1);
+
+    actualRows = await iModel.executeQuery("SELECT 1 FROM bis.Element WHERE ECInstanceId=:id AND Model=:model AND LastMod=:lastmode AND CodeValue=:codevalue AND FederationGuid=:fedguid AND Origin=:origin",
+      {id: new Id64(expectedRow.id), model: new NavigationValue(expectedRow.model.id), lastmod: new DateTime(expectedRow.lastMod),
+      codevalue: expectedRow.codeValue, fedguid: new Blob(expectedRow.federationGuid), origin: new Point3d(expectedRow.origin.x, expectedRow.origin.y, expectedRow.origin.z)});
+    assert.equal(actualRows.length, 1);
+    assert.equal(actualRows[0], 1);
+
+    // single parameter query
+    actualRows = await iModel.executeQuery("SELECT 1 FROM bis.Element WHERE LastMod=?", [new DateTime(expectedRow.lastMod)]);
+    assert.isTrue(actualRows.length >= 1);
+
+    actualRows = await iModel.executeQuery("SELECT 1 FROM bis.Element WHERE LastMod=:lastmod", {lastmod: new DateTime(expectedRow.lastMod)});
+    assert.isTrue(actualRows.length >= 1);
+
+    // New query with point2d parameter
+    rows = await iModel.executeQuery("SELECT ECInstanceId,Origin FROM bis.GeometricElement2d LIMIT 1");
+    assert.equal(rows.length, 1);
+
+    expectedRow = rows[0];
+    actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement2d WHERE ECInstanceId=? AND Origin=?",
+              [new Id64(expectedRow.id), new Point2d(expectedRow.origin.x, expectedRow.origin.y)]);
+    assert.equal(actualRows.length, 1);
+    assert.equal(actualRows[0], 1);
+
+    actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement2d WHERE ECInstanceId=:id AND Origin=:origin",
+      {id: new Id64(expectedRow.id), origin: new Point2d(expectedRow.origin.x, expectedRow.origin.y)});
+    assert.equal(actualRows.length, 1);
+    assert.equal(actualRows[0], 1);
+  });
 });
