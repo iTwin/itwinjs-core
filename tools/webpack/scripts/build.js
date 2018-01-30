@@ -62,7 +62,6 @@ exports.handler = async (argv) => {
   }
 
   function isDirectory (directoryName) {
-    console.log ("isDirectory: this.bentleyDir is ", this.bentleyDir, " directoryName is ", directoryName);
     return (fs.statSync(path.resolve (this.bentleyDir, directoryName)).isDirectory());
   }
 
@@ -72,11 +71,9 @@ exports.handler = async (argv) => {
     const subDirectoryNames = fs.readdirSync(bentleyDir).filter(isDirectory, { bentleyDir: paths.appBentleyNodeModules });
     for (const thisSubDir of subDirectoryNames) {
       const fullDirName = path.resolve (bentleyDir, thisSubDir );
-      console.log ("looking in ", fullDirName);
       const testDir = path.resolve (fullDirName, "public");
       try {
         if (fs.statSync(testDir).isDirectory()) {
-          console.log ("copying directory", testDir);
           fs.copySync (testDir, paths.appLibPublic, { dereference: true, preserveTimestamps: true, overwrite: false, errorOnExist: true});
 
         }
