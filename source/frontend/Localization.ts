@@ -30,7 +30,6 @@ export class I18N {
     // if in a development environment, set to pseudo-localize, otherwise detect from browser.
     const isDevelopment: boolean = process.env.NODE_ENV === "development";
     if (isDevelopment) {
-      initOptions.lng = "en-pseudo";
       initOptions.debug = true;
     } else {
       this.i18n = this.i18n.use(i18nextBrowserLanguageDetector);
@@ -39,7 +38,7 @@ export class I18N {
     // call the changeLanguage method right away, before any calls to I18NNamespace.register. Otherwise, the call doesn't happen until the deferred load of the default namespace
     this.i18n.use(i18nextXHRBackend)
       .init(initOptions, renderFunction)
-      .changeLanguage(undefined as any, undefined);
+      .changeLanguage(isDevelopment ? "en-pseudo" : undefined as any, undefined);
   }
 
   public translate(key: string): string {
