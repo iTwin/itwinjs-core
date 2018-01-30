@@ -12,7 +12,7 @@ import Enumeration from "Metadata/Enumeration";
 import KindOfQuantity from "Metadata/KindOfQuantity";
 import PropertyCategory from "Metadata/PropertyCategory";
 import SchemaReadHelper from "Deserialization/Helper";
-import { ECVersion, SchemaChildKey, SchemaKey, ECClassModifier, SchemaMatchType } from "ECObjects";
+import { ECVersion, SchemaChildKey, SchemaKey, ECClassModifier } from "ECObjects";
 import { SchemaInterface, SchemaChildInterface } from "Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "Exception";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "Metadata/CustomAttribute";
@@ -155,33 +155,39 @@ export default class ECSchema implements SchemaInterface, CustomAttributeContain
   }
 
   public getChildByKeySync<T extends SchemaChildInterface>(key: SchemaChildKey, includeReferences?: boolean): T | undefined {
-    let foundChild;
-    if (this.schemaKey.matches(key.schemaKey, SchemaMatchType.Exact)) {
-      // Check the already loaded children
-      foundChild = this._children.find((child) => key.compareByName(child.name));
-      if (!foundChild)
-        return foundChild; // undefined
+    key;
+    includeReferences;
+    // TODO: Deprecate?
+    // let foundChild;
+    // if (this.schemaKey.matches(key.schemaKey, SchemaMatchType.Exact)) {
+    //   // Check the already loaded children
+    //   foundChild = this._children.find((child) => key.compareByName(child.name));
+    //   if (!foundChild)
+    //     return foundChild; // undefined
 
-      if (this._context)
-        foundChild = this._context.getSchemaChildSync(key);
-    } else if (includeReferences) {
-      // Given that the child should be located in a ref schema we need to actually ask that ref schema instead of looking in the context.
-      // We do not want to accidentally load a child that matches but is not in a ref schema.
+    //   if (this._context)
+    //     foundChild = this._context.getSchemaChild(key);
+    // } else if (includeReferences) {
+    //   // Given that the child should be located in a ref schema we need to actually ask that ref schema instead of looking in the context.
+    //   // We do not want to accidentally load a child that matches but is not in a ref schema.
 
-      let refSchema;
-      if (key.schemaKey) {
-        refSchema = this.references.find((schema) => key.schemaKey.compareByName(schema.schemaKey.name));
-        if (refSchema)
-          foundChild = refSchema.getChildByKeySync()
-      }
+    //   let refSchema;
+    //   if (key.schemaKey) {
+    //     refSchema = this.references.find((schema) => key.schemaKey.compareByName(schema.schemaKey.name));
+    //     if (refSchema)
+    //       foundChild = refSchema.getChildByKeySync()
+    //   }
 
-    }
+    // }
 
-    return foundChild ? foundChild as T : foundChild;
+    return undefined; // foundChild ? foundChild as T : foundChild;
   }
 
   public getChildSync<T extends SchemaChildInterface>(name: string, includeReference?: boolean): T | undefined {
-    
+    name;
+    includeReference;
+    // TODO: Deprecate?
+    return undefined;
   }
 
   /**
@@ -189,7 +195,7 @@ export default class ECSchema implements SchemaInterface, CustomAttributeContain
    * @param child
    */
   public async addChild<T extends SchemaChildInterface>(child: T): Promise<void> {
-    if (undefined !== this.getChild(child.name, false))
+    if (undefined !== await this.getChild(child.name, false))
       throw new ECObjectsError(ECObjectsStatus.DuplicateChild, `The SchemaChild ${child.name} cannot be added to the schema ${this.name} because it already exists`);
 
     this._children.push(child);
@@ -287,14 +293,14 @@ export default class ECSchema implements SchemaInterface, CustomAttributeContain
   //// Static Methods /////
   /////////////////////////
 
-  public static fromJson(jsonObj: object | string, context?: SchemaContext): ECSchema {
+  public static async fromJson(jsonObj: object | string, context?: SchemaContext): Promise<ECSchema> {
     let schema: ECSchema = new ECSchema();
 
     if (context) {
       const reader = new SchemaReadHelper(context);
-      schema = reader.readSchema(schema, jsonObj);
+      schema = await reader.readSchema(schema, jsonObj);
     } else
-      schema = SchemaReadHelper.to<ECSchema>(schema, jsonObj);
+      schema = await SchemaReadHelper.to<ECSchema>(schema, jsonObj);
 
     return schema;
   }

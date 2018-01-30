@@ -4,13 +4,14 @@
 
 import ECClass from "Metadata//Class";
 import { CustomAttributeClassInterface, SchemaInterface } from "Interfaces";
-import { CustomAttributeContainerType, ECClassModifier, SchemaChildType, parseCustomAttributeContainerType } from "ECObjects";
+import { CustomAttributeContainerType, ECClassModifier, SchemaChildType, parseCustomAttributeContainerType, SchemaChildKey } from "ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "Exception";
 
 /**
  * A Typescript class representation of an ECCustomAttributeClass.
  */
 export default class CustomAttributeClass extends ECClass implements CustomAttributeClassInterface {
+  public key: SchemaChildKey.CustomAttributeClass;
   public containerType: CustomAttributeContainerType;
 
   constructor(schema: SchemaInterface, name: string, modifier?: ECClassModifier) {
@@ -19,8 +20,8 @@ export default class CustomAttributeClass extends ECClass implements CustomAttri
     this.key.type = SchemaChildType.CustomAttributeClass;
   }
 
-  public fromJson(jsonObj: any): void {
-    super.fromJson(jsonObj);
+  public async fromJson(jsonObj: any): Promise<void> {
+    await super.fromJson(jsonObj);
 
     if (!jsonObj.appliesTo)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Custom Attribute class ${this.name} is missing the required 'appliesTo' property.`);

@@ -4,10 +4,11 @@
 
 import SchemaChild from "Metadata/SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "Exception";
-import { SchemaChildType } from "ECObjects";
-import { SchemaInterface } from "Interfaces";
+import { SchemaChildType, SchemaChildKey } from "ECObjects";
+import { SchemaInterface, PropertyCategoryInterface } from "Interfaces";
 
-export default class PropertyCategory extends SchemaChild {
+export default class PropertyCategory extends SchemaChild implements PropertyCategoryInterface {
+  public key: SchemaChildKey.PropertyCategory;
   public priority: number;
 
   constructor(schema: SchemaInterface, name: string) {
@@ -16,8 +17,8 @@ export default class PropertyCategory extends SchemaChild {
     this.key.type = SchemaChildType.PropertyCategory;
   }
 
-  public fromJson(jsonObj: any) {
-    super.fromJson(jsonObj);
+  public async fromJson(jsonObj: any) {
+    await super.fromJson(jsonObj);
 
     if (jsonObj.priority) {
       if (typeof(jsonObj.priority) !== "number")

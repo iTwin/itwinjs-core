@@ -10,35 +10,42 @@ import MixinClass from "../../source/Metadata/MixinClass";
 import RelationshipClass from "../../source/Metadata/RelationshipClass";
 import { ECClassModifier } from "../../source/ECObjects";
 import { NavigationProperty } from "../../source/Metadata/Property";
+import { DelayedPromiseWithProps } from "DelayedPromise";
 
 describe("entity class", () => {
   describe("get inherited properties", () => {
-    it("from mixins", () => {
-      const baseClass = new EntityClass("TestBase");
-      const basePrimProp = baseClass.createPrimitiveProperty("BasePrimProp");
+    let schema: ECSchema;
 
-      const mixin = new MixinClass("TestMixin");
-      const mixinPrimProp = mixin.createPrimitiveProperty("MixinPrimProp");
+    beforeEach(() => {
+      schema = new ECSchema("TestSchema", 1, 0, 0);
+    });
 
-      const entityClass = new EntityClass("TestClass");
-      entityClass.createPrimitiveProperty("PrimProp");
-      entityClass.baseClass = baseClass;
-      entityClass.mixins = [mixin];
+    it("from mixins", async () => {
+      const baseClass = new EntityClass(schema, "TestBase");
+      const basePrimProp = await baseClass.createPrimitiveProperty("BasePrimProp");
 
-      expect(entityClass.getProperty("MixinPrimProp")).to.be.undefined;
-      expect(entityClass.getProperty("MixinPrimProp", true)).equal(mixinPrimProp);
-      expect(entityClass.getInheritedProperty("MixinPrimProp")).equal(mixinPrimProp);
+      const mixin = new MixinClass(schema, "TestMixin");
+      const mixinPrimProp = await mixin.createPrimitiveProperty("MixinPrimProp");
 
-      expect(entityClass.getProperty("BasePrimProp")).to.be.undefined;
-      expect(entityClass.getProperty("BasePrimProp", false)).to.be.undefined;
-      expect(entityClass.getProperty("BasePrimProp", true)).equal(basePrimProp);
-      expect(entityClass.getInheritedProperty("BasePrimProp")).equal(basePrimProp);
-      expect(entityClass.getInheritedProperty("PrimProp")).to.be.undefined;
+      const entityClass = new EntityClass(schema, "TestClass");
+      await entityClass.createPrimitiveProperty("PrimProp");
+      entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
+      entityClass.mixins = [ new DelayedPromiseWithProps(mixin.key, async () => mixin) ];
+
+      expect(await entityClass.getProperty("MixinPrimProp")).to.be.undefined;
+      expect(await entityClass.getProperty("MixinPrimProp", true)).equal(mixinPrimProp);
+      expect(await entityClass.getInheritedProperty("MixinPrimProp")).equal(mixinPrimProp);
+
+      expect(await entityClass.getProperty("BasePrimProp")).to.be.undefined;
+      expect(await entityClass.getProperty("BasePrimProp", false)).to.be.undefined;
+      expect(await entityClass.getProperty("BasePrimProp", true)).equal(basePrimProp);
+      expect(await entityClass.getInheritedProperty("BasePrimProp")).equal(basePrimProp);
+      expect(await entityClass.getInheritedProperty("PrimProp")).to.be.undefined;
     });
   });
 
   describe("deserialization", () => {
-    it("succeed with fully defined", () => {
+    it("succeed with fully defined", async () => {
       const schemaJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
@@ -53,11 +60,11 @@ describe("entity class", () => {
         },
       };
 
-      const ecschema = ECSchema.fromJson(schemaJson);
-      const testClass = ecschema.getClass<ECClass>("testEntityClass");
+      const ecschema = await ECSchema.fromJson(schemaJson);
+      const testClass = await ecschema.getClass<ECClass>("testEntityClass");
       assert.isDefined(testClass);
 
-      const testEntity = ecschema.getClass<EntityClass>("testEntityClass");
+      const testEntity = await ecschema.getClass<EntityClass>("testEntityClass");
       assert.isDefined(testEntity);
 
       expect(testEntity!.name).equal("testEntityClass");
@@ -66,7 +73,7 @@ describe("entity class", () => {
       expect(testEntity!.modifier).equal(ECClassModifier.None);
     });
 
-    it("with mixin", () => {
+    it("with mixin", async () => {
       const schemaJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
@@ -83,26 +90,26 @@ describe("entity class", () => {
         },
       };
 
-      const ecschema = ECSchema.fromJson(schemaJson);
+      const ecschema = await ECSchema.fromJson(schemaJson);
       assert.isDefined(ecschema);
 
-      const testClass = ecschema.getClass("testClass");
+      const testClass = await ecschema.getClass("testClass");
       assert.isDefined(testClass);
       assert.isTrue(testClass instanceof EntityClass);
       const entityClass = testClass as EntityClass;
 
-      const mixinClass = ecschema.getClass<MixinClass>("testMixin");
+      const mixinClass = await ecschema.getClass<MixinClass>("testMixin");
       assert.isDefined(mixinClass);
 
       assert.isDefined(entityClass.mixins);
       expect(entityClass.mixins!.length).equal(1);
-      assert.isTrue(entityClass.mixins![0] === mixinClass);
+      assert.isTrue(await entityClass.mixins![0] === mixinClass);
 
-      assert.isDefined(mixinClass!.appliesTo);
-      assert.isTrue(entityClass === mixinClass!.appliesTo);
+      assert.isDefined(await mixinClass!.appliesTo);
+      assert.isTrue(entityClass === await mixinClass!.appliesTo);
     });
 
-    it("with multiple mixins", () => {
+    it("with multiple mixins", async () => {
       const schemaJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
@@ -126,11 +133,11 @@ describe("entity class", () => {
         },
       };
 
-      const ecschema = ECSchema.fromJson(schemaJson);
+      const ecschema = await ECSchema.fromJson(schemaJson);
       assert.isDefined(ecschema);
     });
 
-    it("with base class", () => {
+    it("with base class", async () => {
       const schemaJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
@@ -146,22 +153,22 @@ describe("entity class", () => {
         },
       };
 
-      const ecSchema = ECSchema.fromJson(schemaJson);
+      const ecSchema = await ECSchema.fromJson(schemaJson);
       assert.isDefined(ecSchema);
 
-      const testEntity = ecSchema.getClass<EntityClass>("testClass");
+      const testEntity = await ecSchema.getClass<EntityClass>("testClass");
       assert.isDefined(testEntity);
 
-      const testBaseEntity = ecSchema.getClass<EntityClass>("baseClass");
+      const testBaseEntity = await ecSchema.getClass<EntityClass>("baseClass");
       assert.isDefined(testBaseEntity);
 
-      assert.isDefined(testEntity!.baseClass);
-      assert.isTrue(typeof(testEntity!.baseClass) === "object");
+      assert.isDefined(await testEntity!.baseClass);
+      assert.isTrue(typeof(await testEntity!.baseClass) === "object");
 
-      assert.isTrue(testEntity!.baseClass === testBaseEntity);
+      assert.isTrue(await testEntity!.baseClass === testBaseEntity);
     });
 
-    it("with navigation property", () => {
+    it("with navigation property", async () => {
       const schemaJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
@@ -205,18 +212,18 @@ describe("entity class", () => {
         },
       };
 
-      const schema = ECSchema.fromJson(schemaJson);
+      const schema = await ECSchema.fromJson(schemaJson);
       assert.isDefined(schema);
 
-      const entityClass = schema.getClass<EntityClass>("TestClass");
+      const entityClass = await schema.getClass<EntityClass>("TestClass");
       assert.isDefined(entityClass);
 
-      const navProp = entityClass!.getProperty<NavigationProperty>("testNavProp");
+      const navProp = await entityClass!.getProperty<NavigationProperty>("testNavProp");
       assert.isDefined(navProp);
 
-      const relClass = schema.getClass<RelationshipClass>("NavPropRelationship");
+      const relClass = await schema.getClass<RelationshipClass>("NavPropRelationship");
 
-      assert.isTrue(navProp!.relationship === relClass);
+      assert.isTrue(await navProp!.relationship === relClass);
     });
   });
 });

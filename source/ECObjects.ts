@@ -40,11 +40,11 @@ export const enum PrimitiveType {
 }
 
 /**
- * Parses the given string into one of the 11 primitive types.
+ * Tries to parse the given string as one of the 11 primitive types.
  * @param type The primitive type string to parse.
- * @throws ECObjectsStatus InvalidPrimitiveType if the provided string is not a valid PrimitiveType.
+ * @returns A valid PrimitiveType if successfully parsed, or undefined if the provided string is not a valid PrimitiveType.  
  */
-export function parsePrimitiveType(type: string): PrimitiveType {
+export function tryParsePrimitiveType(type: string): PrimitiveType | undefined {
   if (/^binary$/i.test(type))
     return PrimitiveType.Binary;
   else if (/^bool$/i.test(type) || /^boolean$/i.test(type))
@@ -66,7 +66,20 @@ export function parsePrimitiveType(type: string): PrimitiveType {
   else if (/^Bentley\.Geometry\.Common\.IGeometry$/i.test(type))
     return PrimitiveType.IGeometry;
 
-  throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, `The string '${type}' is not one of the 10 supported primitive types.`);
+  return undefined;
+}
+
+/**
+ * Parses the given string into one of the 11 primitive types.
+ * @param type The primitive type string to parse.
+ * @throws ECObjectsStatus InvalidPrimitiveType if the provided string is not a valid PrimitiveType.
+ */
+export function parsePrimitiveType(type: string): PrimitiveType {
+  const primitiveType = tryParsePrimitiveType(type);
+  if (primitiveType === undefined)
+    throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, `The string '${type}' is not one of the 10 supported primitive types.`);
+
+  return primitiveType;
 }
 
 /**
@@ -542,6 +555,17 @@ export class SchemaChildKey {
 
     return true;
   }
+}
+
+export namespace SchemaChildKey {
+  export type EntityClass = SchemaChildKey & { type: SchemaChildType.EntityClass };
+  export type Mixin = SchemaChildKey & { type: SchemaChildType.MixinClass };
+  export type StructClass = SchemaChildKey & { type: SchemaChildType.StructClass };
+  export type CustomAttributeClass = SchemaChildKey & { type: SchemaChildType.CustomAttributeClass };
+  export type RelationshipClass = SchemaChildKey & { type: SchemaChildType.RelationshipClass };
+  export type Enumeration = SchemaChildKey & { type: SchemaChildType.Enumeration };
+  export type KindOfQuantity = SchemaChildKey & { type: SchemaChildType.KindOfQuantity };
+  export type PropertyCategory = SchemaChildKey & { type: SchemaChildType.PropertyCategory };
 }
 
 const UINT_MAX = 4294967295;

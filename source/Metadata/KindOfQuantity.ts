@@ -5,7 +5,7 @@
 import SchemaChild from "Metadata/SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "Exception";
 import { KindOfQuantityInterface, FormatUnitSpecInterface, SchemaInterface } from "Interfaces";
-import { SchemaChildType } from "ECObjects";
+import { SchemaChildType, SchemaChildKey } from "ECObjects";
 
 export class FormatUnitSpec implements FormatUnitSpecInterface {
   public unit: string;
@@ -16,6 +16,7 @@ export class FormatUnitSpec implements FormatUnitSpecInterface {
  * A Typescript class representation of a KindOfQuantity.
  */
 export default class KindOfQuantity extends SchemaChild implements KindOfQuantityInterface {
+  public key: SchemaChildKey.KindOfQuantity;
   public precision: number;
   public presentationUnits: FormatUnitSpec[];
   public persistenceUnit: FormatUnitSpec;
@@ -30,8 +31,8 @@ export default class KindOfQuantity extends SchemaChild implements KindOfQuantit
     return this.presentationUnits.length === 0 ? undefined : this.presentationUnits[0];
   }
 
-  public fromJson(jsonObj: any) {
-    super.fromJson(jsonObj);
+  public async fromJson(jsonObj: any) {
+    await super.fromJson(jsonObj);
 
     if (jsonObj.precision) {
       if (typeof(jsonObj.precision) !== "number")
