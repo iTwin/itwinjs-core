@@ -32,7 +32,7 @@ describe("class", () => {
       expect(await entityClass.getInheritedProperty("PrimProp")).to.be.undefined;
     });
 
-    it("case-insentive search", async () => {
+    it("case-insensitive search", async () => {
       const entityClass = new EntityClass(schema, "TestClass");
       const primProp = await entityClass.createPrimitiveProperty("TestProp");
 

@@ -79,7 +79,7 @@ describe("schema test", () => {
       expect(await testSchema.getClass<StructClass>("TestStruct")).instanceof(StructClass);
     });
 
-    it("should succeed with case-insentive search", async () => {
+    it("should succeed with case-insensitive search", async () => {
       const testSchema = new ECSchema("TestSchema", 1, 0, 0);
       await testSchema.createEntityClass("testEntity");
 
