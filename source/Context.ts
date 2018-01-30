@@ -203,7 +203,6 @@ export class SchemaContext implements ISchemaLocater, ISchemaChildLocater {
     this.knownSchemas.addSchemaSync(schema);
   }
 
-
   /**
    * Adds the given SchemaChild to the the SchemaContext by locating the schema, with the best match of SchemaMatchType.Exact, and
    * @param schemaChild The SchemaChild to add

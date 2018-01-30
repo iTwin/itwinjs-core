@@ -42,7 +42,7 @@ export const enum PrimitiveType {
 /**
  * Tries to parse the given string as one of the 11 primitive types.
  * @param type The primitive type string to parse.
- * @returns A valid PrimitiveType if successfully parsed, or undefined if the provided string is not a valid PrimitiveType.  
+ * @returns A valid PrimitiveType if successfully parsed, or undefined if the provided string is not a valid PrimitiveType.
  */
 export function tryParsePrimitiveType(type: string): PrimitiveType | undefined {
   if (/^binary$/i.test(type))
