@@ -26,7 +26,7 @@ describe("LUTParams", () => {
   });
 });
 
-describe.only("FeatureDimension getFeatureName", () => {
+describe("FeatureDimension getFeatureName", () => {
   it("should return correct string name for corresponding FeatureDimension type", () => {
     assert.isTrue(getFeatureName(FeatureDimension.kEmpty) === "Empty", "Empty");
     assert.isTrue(getFeatureName(FeatureDimension.kSingleUniform) === "Single/Uniform", "Single/Uniform");
