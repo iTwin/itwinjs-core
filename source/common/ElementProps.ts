@@ -29,13 +29,7 @@ export class RelatedElement implements RelatedElementProps {
   public readonly id: Id64;
   public readonly relClassName?: string;
   constructor(props: RelatedElementProps) { this.id = Id64.fromJSON(props.id); this.relClassName = props.relClassName; }
-  public static fromJSON(json?: any): RelatedElement | undefined {
-    return json ? new RelatedElement(json) : undefined;
-  }
-
-  public static isRelatedElement(obj: any): obj is RelatedElement {
-    return obj.id !== undefined;
-  }
+  public static fromJSON(json?: RelatedElementProps): RelatedElement | undefined { return json ? new RelatedElement(json) : undefined; }
 }
 
 /** A RelatedElement that describes the type definition of an element. */
@@ -126,7 +120,7 @@ export interface ViewDefinitionProps extends ElementProps {
 /** properties of a camera */
 export interface CameraProps {
   lens: AngleProps;
-  focusDistance: number;
+  focusDist: number; // NOTE: this is abbreviated, do not change!
   eye: XYZProps;
 }
 

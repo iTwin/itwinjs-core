@@ -128,20 +128,20 @@ export class PropertyMetaData {
     this.extendedType = jsonObj.extendedType;
     this.description = jsonObj.description;
     this.displayLabel = jsonObj.displayLabel;
-    if (null != jsonObj.minimumValue)
+    if (undefined !== jsonObj.minimumValue)
       this.minimumValue = jsonObj.minimumValue;
-    if (null != jsonObj.maximumValue)
+    if (undefined !== jsonObj.maximumValue)
       this.maximumValue = jsonObj.maximumValue;
-    if (null != jsonObj.minimumLength)
+    if (undefined !== jsonObj.minimumLength)
       this.minimumLength = jsonObj.minimumLength;
-    if (null != jsonObj.maximumLength)
+    if (undefined !== jsonObj.maximumLength)
       this.maximumLength = jsonObj.maximumLength;
     this.readOnly = jsonObj.readOnly;
     this.kindOfQuantity = jsonObj.kindOfQuantity;
     this.isCustomHandled = jsonObj.isCustomHandled;
-    if (null != jsonObj.minOccurs)
+    if (undefined !== jsonObj.minOccurs)
       this.minOccurs = jsonObj.minOccurs;
-    if (null != jsonObj.maxOccurs)
+    if (undefined !== jsonObj.maxOccurs)
       this.maxOccurs = jsonObj.maxOccurs;
     this.direction = jsonObj.direction;
     this.relationshipClass = jsonObj.relationshipClass;
@@ -150,7 +150,7 @@ export class PropertyMetaData {
 
   /** create a typed value, or array of values, from a factory and an input object */
   private createValueOrArray(func: FactoryFunc, jsonObj: any) {
-    if (null == this.minOccurs)
+    if (undefined === this.minOccurs)
       return func(jsonObj); // not an array
 
     const val: any = [];
@@ -160,10 +160,10 @@ export class PropertyMetaData {
 
   /** construct a single property from an input object according to this metadata */
   public createProperty(jsonObj: any): any {
-    if (!jsonObj)
+    if (jsonObj === undefined)
       return undefined;
 
-    if (this.primitiveType) {
+    if (undefined !== this.primitiveType) {
       switch (this.primitiveType) {
         case PrimitiveTypeCode.Boolean:
         case PrimitiveTypeCode.Double:
@@ -178,11 +178,8 @@ export class PropertyMetaData {
           return this.createValueOrArray(Point3d.fromJSON, jsonObj);
       }
     }
-    if (null != this.direction) { // the presence of this means it's a navigation property
-      if (RelatedElement.isRelatedElement(jsonObj))
-        return RelatedElement.fromJSON(jsonObj);
-      return Id64.fromJSON(jsonObj);
-    }
+    if (this.direction !== undefined)  // the presence of this means it's a navigation property
+      return jsonObj.id !== undefined ? new RelatedElement(jsonObj) : Id64.fromJSON(jsonObj);
 
     return jsonObj;
   }

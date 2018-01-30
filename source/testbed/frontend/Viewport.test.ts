@@ -2,9 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { Point3d, Vector3d, YawPitchRollAngles, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
-import { DisplayStyle3dState, ModelSelectorState, SpatialViewState, CategorySelectorState, ViewState, Camera } from "../../common/ViewState";
+import { Point3d, YawPitchRollAngles, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
+import { SpatialViewState, CategorySelectorState, ViewState, Camera } from "../../common/ViewState";
 import { Frustum } from "../../common/Frustum";
 import { IModelConnection } from "../../frontend/IModelConnection";
 import { Viewport, ViewRect, CoordSystem } from "../../frontend/Viewport";
@@ -15,18 +14,15 @@ import * as path from "path";
 import { SpatialViewDefinitionProps } from "../../common/ElementProps";
 import { PanTool } from "../../frontend/tools/ViewTool";
 import { CompassMode } from "../../frontend/AccuDraw";
+import { DisplayStyle3dState } from "../../common/DisplayStyleState";
+import { ModelSelectorState } from "../../common/ModelSelectorState";
 
 const iModelLocation = path.join(__dirname, "../../../../test/lib/test/assets/test.bim");
 
 /** Class with scope limited to this file, used for creating a Viewport without a canvas */
 class TestViewport extends Viewport {
-  public constructor(viewState: ViewState) {
-    super(undefined, viewState);
-    this.setupFromView();
-  }
-
-  /** Needed since we don't have a canvas */
-  private clientRect = new ViewRect(0, 0, 1000, 1000);
+  public constructor(viewState: ViewState) { super(undefined, viewState); this.setupFromView(); }
+  private clientRect = new ViewRect(0, 0, 1000, 1000);  // Needed since we don't have a canvas
   public getClientRect(): ClientRect { return this.clientRect; }
 }
 
@@ -34,7 +30,6 @@ class TestIModelApp extends IModelApp {
   protected supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
 }
 
-// tslint:disable:only-arrow-functions
 // tslint:disable:only-arrow-functions
 // tslint:disable-next-line:space-before-function-paren
 describe("Viewport", function () {
@@ -45,14 +40,14 @@ describe("Viewport", function () {
   let viewStateXYFlat: SpatialViewState;
   let viewStateXZFlat: SpatialViewState;
   let viewStateXYZ: SpatialViewState;
-
   const mocha = this;
+
   before(async () => {   // Create a ViewState to load into a Viewport
     mocha.timeout(99999);
     TestIModelApp.startup();
 
     imodel = await IModelConnection.openStandalone(iModelLocation);
-    const spatialViewProps = (await imodel.elements.getElementProps([new Id64("0x34")]))[0] as SpatialViewDefinitionProps;
+    const spatialViewProps = (await imodel.elements.getElementProps("0x34"))[0] as SpatialViewDefinitionProps;
 
     // Set up supporting ViewState classes
     categorySelectorState = new CategorySelectorState(
@@ -80,24 +75,23 @@ describe("Viewport", function () {
       }, imodel);
 
     // Set up 3 separate ViewState classes
-    spatialViewProps.origin = Point3d.create(-5, -5, 0);
-    spatialViewProps.extents = Vector3d.create(10, 10, 1);
+    spatialViewProps.origin = { x: -5, y: -5, z: 0 };
+    spatialViewProps.extents = { x: 10, y: 10, z: 1 };
     spatialViewProps.angles = YawPitchRollAngles.createDegrees(0, 0, 0);
-    const camera = new Camera();
-    camera.setLensAngle(Angle.createDegrees(50));
-    camera.setEyePoint(Point3d.create(5, 5, 50));
-    camera.setFocusDistance(49);
+    const camera = new Camera({ lens: { degrees: 50 }, eye: { x: 5, y: 5, z: 50 }, focusDist: 49 });
     spatialViewProps.camera = camera;
     spatialViewProps.cameraOn = false;
     viewStateXYFlat = new SpatialViewState(spatialViewProps, imodel, categorySelectorState, displayStyleState, modelSelectorState);
 
-    spatialViewProps.origin = Point3d.create(-5, 1, -5);
+    spatialViewProps.origin = { x: -5, y: 1, z: -5 };
     spatialViewProps.angles = YawPitchRollAngles.createDegrees(0, 0, -90);
+    spatialViewProps.cameraOn = false;
     viewStateXZFlat = new SpatialViewState(spatialViewProps, imodel, categorySelectorState, displayStyleState, modelSelectorState);
 
-    spatialViewProps.origin = Point3d.create(-5, -5, 0);
+    spatialViewProps.origin = { x: -5, y: -5, z: 0 };
     spatialViewProps.angles = YawPitchRollAngles.createDegrees(0, 0, 0);
-    camera.setEyePoint(Point3d.create(5, 5, 20));
+    camera.setEyePoint({ x: 5, y: 5, z: 20 });
+    spatialViewProps.cameraOn = true;
     viewStateXYZ = new SpatialViewState(spatialViewProps, imodel, categorySelectorState, displayStyleState, modelSelectorState);
   });
 
@@ -106,15 +100,12 @@ describe("Viewport", function () {
     IModelApp.shutdown();
   });
 
-  it("should obtain equal viewport from round-trip setup using frustum", () => {
+  it("Viewport", () => {
     for (const viewState of [viewStateXYFlat, viewStateXZFlat, viewStateXYZ]) {
       const viewport = new TestViewport(viewState);
+
       const newViewState = viewport.view.clone<SpatialViewState>();
       let frustumWorld: Frustum;
-
-      const pan = iModelApp.tools.create("View.Pan", viewport) as PanTool | undefined;
-      assert.instanceOf(pan, PanTool);
-      assert.equal(pan!.viewport, viewport);
 
       if (viewState.isCameraOn()) {
         frustumWorld = viewport.getFrustum(CoordSystem.World, true);
@@ -126,8 +117,8 @@ describe("Viewport", function () {
           6, 324, 5,
           -54, 0, 0.99999999,
         ));
-        newViewState.setOrigin(Point3d.create(1, -1000, 1000));
-        newViewState.setExtents(Vector3d.create(5, -134, 413));
+        newViewState.setOrigin({ x: 1, y: -1000, z: 1000 });
+        newViewState.setExtents({ x: 5, y: -134, z: 413 });
       }
 
       newViewState.setupFromFrustum(frustumWorld);
@@ -147,11 +138,20 @@ describe("Viewport", function () {
 
     // assert that a ViewState with eye backed up to infinity produces a "flat view"
     const flatViewWithCamera = viewStateXYZ.clone<SpatialViewState>();
-    flatViewWithCamera.setEyePoint(Point3d.create(0, 0, Number.MAX_VALUE));
-    flatViewWithCamera.setFocusDistance(10000);
-    const port = new TestViewport(flatViewWithCamera);
-    assert.isTrue(Math.abs(port.frustFraction - 1) < 1.0e-4);
-  }).timeout(99999);
+    flatViewWithCamera.setEyePoint({ x: 0, y: 0, z: Number.MAX_VALUE });
+    flatViewWithCamera.setFocusDistance(1000);
+
+    const vp = new TestViewport(flatViewWithCamera);
+    assert.isTrue(Math.abs(vp.frustFraction - 1) < 1.0e-4);
+
+    assert.isFalse(vp.isRedoPossible, "no redo");
+    assert.isFalse(vp.isUndoPossible, "no undo");
+
+    const pan = iModelApp.tools.create("View.Pan", vp) as PanTool;
+    assert.instanceOf(pan, PanTool);
+    assert.equal(pan.viewport, vp);
+
+  });
 
   it("AccuDraw should work properly", () => {
     const viewport = new TestViewport(viewStateXYFlat);
@@ -193,5 +193,5 @@ describe("Cartographic tests", () => {
     const ny2 = Cartographic.fromEcef(ecefNY);
     assert.isTrue(newYork.equalsEpsilon(ny2!, 0.01));
 
-  }).timeout(99999);
+  });
 });

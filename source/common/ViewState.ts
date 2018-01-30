@@ -3,19 +3,19 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { Vector3d, Vector2d, Point3d, Point2d, Range3d, RotMatrix, Transform, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
+import { Vector3d, Vector2d, Point3d, Point2d, Range3d, RotMatrix, Transform, YawPitchRollAngles, XYAndZ } from "@bentley/geometry-core/lib/PointVector";
 import { AxisOrder, Angle, Geometry } from "@bentley/geometry-core/lib/Geometry";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { ClipVector } from "@bentley/geometry-core/lib/numerics/ClipVector";
-import { Light, LightType } from "./Lighting";
-import { ViewFlags, HiddenLine } from "./Render";
-import { ColorDef, ColorRgb } from "./ColorDef";
 import { IModel } from "./IModel";
 import { AxisAlignedBox3d } from "./geometry/Primitives";
 import { Frustum, Npc } from "./Frustum";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState, Model2dState } from "./EntityState";
-import { ElementProps, ModelSelectorProps, CategorySelectorProps, ViewDefinitionProps, ViewDefinition3dProps, SpatialViewDefinitionProps, ViewDefinition2dProps, CameraProps } from "./ElementProps";
+import { CategorySelectorProps, ViewDefinitionProps, ViewDefinition3dProps, SpatialViewDefinitionProps, ViewDefinition2dProps, CameraProps } from "./ElementProps";
+import { DisplayStyleState, DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
+import { ColorDef } from "./ColorDef";
+import { ModelSelectorState } from "./ModelSelectorState";
 
 export const enum GridOrientationType {
   View = 0,
@@ -62,187 +62,6 @@ export const standardViewMatrices = [
 ];
 standardViewMatrices.forEach((view) => Object.freeze(view));
 Object.freeze(standardViewMatrices);
-
-/** A DisplayStyle defines the parameters for 'styling' the contents of a View */
-export abstract class DisplayStyleState extends ElementState {
-  private _viewFlags: ViewFlags;
-  private _background: ColorDef;
-
-  constructor(props: ElementProps, iModel: IModel) {
-    super(props, iModel);
-    this.viewFlags = ViewFlags.fromJSON(this.getStyle("viewflags"));
-    this._background = ColorDef.fromJSON(this.getStyle("backgroundColor"));
-  }
-
-  public get viewFlags(): ViewFlags { return this._viewFlags; }
-  public set viewFlags(flags: ViewFlags) { this._viewFlags = flags; this.setStyle("viewflags", flags); }
-
-  public getStyles(): any { const p = this.jsonProperties as any; if (!p.styles) p.styles = new Object(); return p.styles; }
-  public getStyle(name: string): any {
-    const style: object = this.getStyles()[name];
-    return style ? style : {};
-  }
-  /** change the value of a style on this DisplayStyle */
-  public setStyle(name: string, value: any): void { this.getStyles()[name] = value; }
-
-  /** Remove a Style from this DisplayStyle. */
-  public removeStyle(name: string) { delete this.getStyles()[name]; }
-
-  /** Get the background color for this DisplayStyle */
-  public get backgroundColor(): ColorDef { return this._background; }
-  public set backgroundColor(val: ColorDef) { this._background = val; this.setStyle("backgroundColor", val); }
-
-  public getMonochromeColor(): ColorDef { return ColorDef.fromJSON(this.getStyle("monochromeColor")); }
-  public setMonochromeColor(val: ColorDef): void { this.setStyle("monochromeColor", val); }
-}
-
-/** A DisplayStyle for 2d views */
-export class DisplayStyle2dState extends DisplayStyleState {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
-}
-
-/** A circle drawn at a Z elevation, whose diameter is the the XY diagonal of the project extents */
-export class GroundPlane {
-  public display: boolean = false;
-  public elevation: number = 0.0;  // the Z height to draw the ground plane
-  public aboveColor: ColorDef;     // the color to draw the ground plane if the view shows the ground from above
-  public belowColor: ColorDef;     // the color to draw the ground plane if the view shows the ground from below
-
-  public constructor(ground: any) {
-    ground = ground ? ground : {};
-    this.display = JsonUtils.asBool(ground.display, false);
-    this.elevation = JsonUtils.asDouble(ground.elevation, -.01);
-    this.aboveColor = ground.aboveColor ? ColorDef.fromJSON(ground.aboveColor) : new ColorDef(ColorRgb.darkGreen);
-    this.belowColor = ground.belowColor ? ColorDef.fromJSON(ground.belowColor) : new ColorDef(ColorRgb.darkBrown);
-  }
-}
-
-/** the SkyBox is a draws in the background of spatial views to provide context. */
-export class SkyBox {
-  public display: boolean = false;
-  public twoColor: boolean = false;
-  public jpegFile: string;              // the name of a jpeg file with a spherical skybox
-  public zenithColor: ColorDef;         // if no jpeg file, the color of the zenith part of the sky gradient (shown when looking straight up.)
-  public nadirColor: ColorDef;          // if no jpeg file, the color of the nadir part of the ground gradient (shown when looking straight down.)
-  public groundColor: ColorDef;         // if no jpeg file, the color of the ground part of the ground gradient
-  public skyColor: ColorDef;            // if no jpeg file, the color of the sky part of the sky gradient
-  public groundExponent: number = 4.0;  // if no jpeg file, the cutoff between ground and nadir
-  public skyExponent: number = 4.0;     // if no jpeg file, the cutoff between sky and zenith
-
-  public constructor(sky: any) {
-    sky = sky ? sky : {};
-    this.display = JsonUtils.asBool(sky.display, false);
-    this.twoColor = JsonUtils.asBool(sky.twoColor, false);
-    this.jpegFile = JsonUtils.asString(sky.file);
-    this.groundExponent = JsonUtils.asDouble(sky.groundExponent, 4.0);
-    this.skyExponent = JsonUtils.asDouble(sky.skyExponent, 4.0);
-    this.groundColor = sky.groundColor ? ColorDef.fromJSON(sky.groundColor) : ColorDef.from(120, 143, 125);
-    this.zenithColor = sky.zenithColor ? ColorDef.fromJSON(sky.zenithColor) : ColorDef.from(54, 117, 255);
-    this.nadirColor = sky.nadirColor ? ColorDef.fromJSON(sky.nadirColor) : ColorDef.from(40, 15, 0);
-    this.skyColor = sky.skyColor ? ColorDef.fromJSON(sky.skyColor) : ColorDef.from(143, 205, 255);
-  }
-
-  public toJSON(): any {
-    const val: any = {};
-    if (this.display)
-      val.display = true;
-    if (this.twoColor)
-      val.twoColor = true;
-    if (this.jpegFile !== "")
-      val.jpegFile = this.jpegFile;
-    if (this.groundExponent !== 4.0)
-      val.groundExponent = this.groundExponent;
-    if (this.skyExponent !== 4.0)
-      val.skyExponent = this.groundExponent;
-
-    val.groundColor = this.groundColor;
-    val.zenithColor = this.zenithColor;
-    val.nadirColor = this.nadirColor;
-    val.skyColor = this.skyColor;
-    return val;
-  }
-}
-
-/** the skyBox, groundPlane, etc. for a 3d view  */
-export class Environment {
-  public readonly sky: SkyBox;
-  public readonly ground: GroundPlane;
-  public constructor(json: any) {
-    this.sky = new SkyBox(json.sky);
-    this.ground = new GroundPlane(json.ground);
-  }
-}
-
-/** A DisplayStyle for 3d views */
-export class DisplayStyle3dState extends DisplayStyleState {
-  public constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
-  public getHiddenLineParams(): HiddenLine.Params { return new HiddenLine.Params(this.getStyle("hline")); }
-  public setHiddenLineParams(params: HiddenLine.Params) { this.setStyle("hline", params); }
-
-  /** change one of the scene light specifications (Ambient, Flash, or Portrait) for this display style */
-  public setSceneLight(light: Light) {
-    if (!light.isValid())
-      return;
-
-    const sceneLights = this.getStyle("sceneLights");
-    switch (light.lightType) {
-      case LightType.Ambient:
-        sceneLights.ambient = light;
-        break;
-
-      case LightType.Flash:
-        sceneLights.flash = light;
-        break;
-
-      case LightType.Portrait:
-        sceneLights.portrait = light;
-        break;
-    }
-    this.setStyle("sceneLights", sceneLights);
-  }
-
-  /** change the light specification and direction of the solar light for this display style */
-  public setSolarLight(light: Light, direction: Vector3d) {
-    const sceneLights = this.getStyle("sceneLights");
-    if (light.lightType !== LightType.Solar || !light.isValid()) {
-      delete sceneLights.sunDir;
-    } else {
-      sceneLights.sun = light;
-      sceneLights.sunDir = direction;
-    }
-    this.setStyle("sceneLights", sceneLights);
-  }
-
-  public getEnvironment() { return new Environment(this.getStyle("environment")); }
-  public setEnvironment(env: Environment) { this.setStyle("environment", env); }
-
-  public setSceneBrightness(fstop: number): void { fstop = Math.max(-3.0, Math.min(fstop, 3.0)); this.getStyle("sceneLights").fstop = fstop; }
-  public getSceneBrightness(): number { return JsonUtils.asDouble(this.getStyle("sceneLights").fstop, 0.0); }
-}
-
-/** A list of GeometricModels for a SpatialViewDefinition. */
-export class ModelSelectorState extends ElementState {
-  public readonly models: Set<string> = new Set<string>();
-  constructor(props: ModelSelectorProps, iModel: IModel) {
-    super(props, iModel);
-    if (props.models)
-      props.models.forEach((model) => this.models.add(model));
-  }
-
-  /** Get the name of this ModelSelector */
-  public getName(): string { return this.code.getValue(); }
-
-  public toJSON(): ModelSelectorProps {
-    const val: any = super.toJSON();
-    val.models = [];
-    this.models.forEach((model) => val.models.push(model));
-    return val;
-  }
-
-  public addModel(id: Id64) { this.models.add(id.value); }
-  public dropModel(id: Id64): boolean { return this.models.delete(id.value); }
-  public containsModel(modelId: Id64): boolean { return this.models.has(modelId.value); }
-}
 
 /** A list of Categories to be displayed in a view. */
 export class CategorySelectorState extends ElementState {
@@ -315,8 +134,11 @@ export class MarginPercent {
  */
 export abstract class ViewState extends ElementState {
   public static getClassFullName(): string { return this.schemaName + ":ViewDefinition"; }
+  public description?: string;
+
   protected constructor(props: ViewDefinitionProps, iModel: IModel, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
     super(props, iModel);
+    this.description = props.description;
     if (categorySelector instanceof ViewState) { // from clone, 3rd argument is source ViewState
       this.categorySelector = categorySelector.categorySelector;
       this.displayStyle = categorySelector.displayStyle;
@@ -327,6 +149,8 @@ export abstract class ViewState extends ElementState {
     const json = super.toJSON() as ViewDefinitionProps;
     json.categorySelectorId = this.categorySelector.id;
     json.displayStyleId = this.displayStyle.id;
+    if (undefined !== this.description)
+      json.description = this.description;
     return json;
   }
 
@@ -741,32 +565,31 @@ export abstract class ViewState extends ElementState {
  */
 export class Camera implements CameraProps {
   public readonly lens: Angle;
-  public focusDistance: number;
+  public focusDist: number;
   public readonly eye: Point3d;
 
   public static isValidLensAngle(val: Angle) { return val.radians > (Math.PI / 8.0) && val.radians < Math.PI; }
-  public invalidateFocus() { this.focusDistance = 0.0; }
-  public isFocusValid() { return this.focusDistance > 0.0 && this.focusDistance < 1.0e14; }
-  public getFocusDistance() { return this.focusDistance; }
-  public setFocusDistance(dist: number) { this.focusDistance = dist; }
+  public invalidateFocus() { this.focusDist = 0.0; }
+  public isFocusValid() { return this.focusDist > 0.0 && this.focusDist < 1.0e14; }
+  public getFocusDistance() { return this.focusDist; }
+  public setFocusDistance(dist: number) { this.focusDist = dist; }
   public isLensValid() { return Camera.isValidLensAngle(this.lens); }
   public validateLens() { if (!this.isLensValid()) this.lens.setFrom(Angle.createRadians(Math.PI / 2.0)); }
   public getLensAngle() { return this.lens; }
   public setLensAngle(angle: Angle) { this.lens.setFrom(angle); }
   public getEyePoint() { return this.eye; }
-  public setEyePoint(pt: Point3d) { this.eye.setFrom(pt); }
+  public setEyePoint(pt: XYAndZ) { this.eye.setFrom(pt); }
   public isValid() { return this.isLensValid() && this.isFocusValid(); }
-  public equals(other: Camera) { return this.lens === other.lens && this.focusDistance === other.focusDistance && this.eye.isExactEqual(other.eye); }
+  public equals(other: Camera) { return this.lens === other.lens && this.focusDist === other.focusDist && this.eye.isExactEqual(other.eye); }
   public clone() { return new Camera(this); }
   public copyFrom(rhs: Camera) {
     this.lens.setFrom(rhs.lens);
-    this.focusDistance = rhs.focusDistance;
+    this.focusDist = rhs.focusDist;
     this.eye.setFrom(rhs.eye);
   }
-  public constructor(json?: any) {
-    json = json ? json : {};
+  public constructor(json: CameraProps) {
     this.lens = Angle.fromJSON(json.lens);
-    this.focusDistance = JsonUtils.asDouble(json.focusDist);
+    this.focusDist = JsonUtils.asDouble(json.focusDist);
     this.eye = Point3d.fromJSON(json.eye);
   }
 }
@@ -859,8 +682,8 @@ export abstract class ViewState3d extends ViewState {
   public getOrigin(): Point3d { return this.origin; }
   public getExtents(): Vector3d { return this.extents; }
   public getRotation(): RotMatrix { return this.rotation; }
-  public setOrigin(origin: Point3d) { this.origin.setFrom(origin); }
-  public setExtents(extents: Vector3d) { this.extents.setFrom(extents); }
+  public setOrigin(origin: XYAndZ) { this.origin.setFrom(origin); }
+  public setExtents(extents: XYAndZ) { this.extents.setFrom(extents); }
   public setRotation(rot: RotMatrix) { this.rotation.setFrom(rot); }
   protected enableCamera(): void { this.cameraOn = true; }
   public supportsCamera(): boolean { return true; }
@@ -1115,7 +938,7 @@ export abstract class ViewState3d extends ViewState {
       return;
     }
 
-    const focusDist = camera.focusDistance;
+    const focusDist = camera.focusDist;
     if (focusDist > frontDist && focusDist < backDist)
       return;
 
@@ -1123,7 +946,7 @@ export abstract class ViewState3d extends ViewState {
     camera.setFocusDistance((extents.z / 2.0) + frontDist);
 
     // moving the focus plane means we have to adjust the origin and delta too (they're on the focus plane, see diagram above)
-    const ratio = camera.focusDistance / focusDist;
+    const ratio = camera.focusDist / focusDist;
     extents.x *= ratio;
     extents.y *= ratio;
     camera.eye.plus3Scaled(rot.rowZ(), -backDist, rot.rowX(), -0.5 * extents.x, rot.rowY(), -0.5 * extents.y, this.origin); // this centers the camera too
@@ -1148,7 +971,7 @@ export abstract class ViewState3d extends ViewState {
    * @note This method is generally for internal use only. Moving the eyePoint arbitrarily can result in skewed or illegal perspectives.
    * The most common method for user-level camera positioning is #lookAt.
    */
-  public setEyePoint(pt: Point3d): void { this.camera.setEyePoint(pt); }
+  public setEyePoint(pt: XYAndZ): void { this.camera.setEyePoint(pt); }
 
   /** Set the focus distance for this view.
    *  @note Changing the focus distance changes the plane on which the delta.x and delta.y values lie. So, changing focus distance
@@ -1157,7 +980,7 @@ export abstract class ViewState3d extends ViewState {
   public setFocusDistance(dist: number): void { this.camera.setFocusDistance(dist); }
 
   /**  Get the distance from the eyePoint to the focus plane for this view. */
-  public getFocusDistance(): number { return this.camera.focusDistance; }
+  public getFocusDistance(): number { return this.camera.focusDist; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem3dState.createNew(acsName, this.iModel); }
 
 }

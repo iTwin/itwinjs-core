@@ -69,6 +69,7 @@
     "mixins",
     "mline",
     "monorepo",
+    "nodeaddonapi",
     "nullptr",
     "postupdate",
     "redoable",

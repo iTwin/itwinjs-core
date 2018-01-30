@@ -24,7 +24,7 @@ export class ECDb implements IDisposable {
    *  ECDb object.
    */
   public dispose(): void {
-    if (this._nativeDb == null)
+    if (this._nativeDb === undefined)
       return;
 
     this.closeDb();

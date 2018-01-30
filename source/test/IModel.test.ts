@@ -8,7 +8,6 @@ import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { Code, CodeSpec, CodeScopeSpec } from "../common/Code";
 import { EntityProps } from "../common/EntityProps";
-import { ModelSelectorState } from "../common/ViewState";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { Entity, EntityMetaData, PrimitiveTypeCode } from "../backend/Entity";
 import { Model, DictionaryModel } from "../backend/Model";
@@ -32,9 +31,9 @@ import { Appearance } from "../common/SubCategoryAppearance";
 import { ColorDef } from "../common/ColorDef";
 import { IModel } from "../common/IModel";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { ModelSelectorState } from "../common/ModelSelectorState";
 
-/* tslint:disable: no-console */
-/* spell-checker: disable */
+// spell-checker: disable
 
 describe("iModel", () => {
   let imodel1: IModelDb;
@@ -844,7 +843,7 @@ describe("iModel", () => {
       // Change el2 to point to itself.
       const el2: Element = testImodel.elements.getElement(id2);
       const el2Modified: Element = el2.copyForEdit<Element>();
-      el2Modified.relatedElement = {id: id2, relClassName: trelClassName}; // this time, use the long RelatedElement format.
+      el2Modified.relatedElement = { id: id2, relClassName: trelClassName }; // this time, use the long RelatedElement format.
       testImodel.elements.updateElement(el2Modified);
       // Test that el2 points to itself.
       const el2after: Element = testImodel.elements.getElement(id2);

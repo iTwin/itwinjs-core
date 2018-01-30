@@ -40,7 +40,7 @@ export class SelectionSet {
   public isActive() { return this.size !== 0; }
 
   /** return true if elemId is in this SelectionSet */
-  public has(elemId: string) { return this.elements.has(elemId); }
+  public has(elemId?: string) { return !!elemId && this.elements.has(elemId); }
 
   /** Query whether an element is in the selection set. */
   public isSelected(elemId?: Id64): boolean { return !!elemId && this.elements.has(elemId.value); }

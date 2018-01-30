@@ -51,6 +51,7 @@
         "mixins",
         "mline",
         "monorepo",
+        "nodeaddonapi",
         "nullptr",
         "Nums",
         "Obscurable",

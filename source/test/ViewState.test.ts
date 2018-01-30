@@ -6,7 +6,7 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
 import { Point3d, Vector3d, YawPitchRollAngles, Range3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { DisplayStyle3dState, ModelSelectorState, SpatialViewState, CategorySelectorState, ViewStatus, Camera, MarginPercent, standardView } from "../common/ViewState";
+import { SpatialViewState, CategorySelectorState, ViewStatus, Camera, MarginPercent, standardView } from "../common/ViewState";
 import { IModelDb } from "../backend/IModelDb";
 import { DisplayStyle3d, SpatialViewDefinition } from "../backend/ViewDefinition";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -14,9 +14,10 @@ import * as path from "path";
 import { AuxCoordSystemSpatialState } from "../common/AuxCoordSys";
 import { CategorySelectorProps, ModelSelectorProps } from "../common/ElementProps";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { DisplayStyle3dState } from "../common/DisplayStyleState";
+import { ModelSelectorState } from "../common/ModelSelectorState";
 
-/* tslint:disable: no-console */
-/* spell-checker: disable */
+// spell-checker: disable
 
 // Note: This will be relative to root imodeljs-core directory for VS Code debugging, but relative to the test directory for running in console
 const iModelLocation = path.join(KnownTestLocations.assetsDir, "test.bim");
@@ -75,12 +76,13 @@ describe("ViewState", () => {
     const modSelState = new ModelSelectorState((imodel.elements.getElementProps(flatView.modelSelectorId)) as ModelSelectorProps, imodel);
     cameraViewState = new SpatialViewState({
       classFullName: "BisCore:SpatialViewDefinition",
-      id: new Id64("0x34"),
+      id: "0x34",
       modelSelectorId: modSelState.id.value,
       categorySelectorId: catSelState.id.value,
-      model: new Id64("0x10"),
+      model: "0x10",
+      description: "",
       code: {
-        spec: new Id64("0x1c"),
+        spec: "0x1c",
         scope: "0x10",
         value: "A Views - View 1",
       },
@@ -91,7 +93,7 @@ describe("ViewState", () => {
       camera: new Camera(
         {
           lens: 30,
-          focusDistance: 50,
+          focusDist: 50,
           eye: {
             x: 5,
             y: 5,
@@ -158,7 +160,7 @@ describe("ViewState", () => {
   });
 
   // C++ Tests:
-  it("ViewState creation parallels C++", () => {
+  it("ViewState creation", () => {
     // compare the extracted view with that in native C++
     let nativeResultJSON = imodel.executeTestById(1,
       {
@@ -170,11 +172,10 @@ describe("ViewState", () => {
       });
     nativeResultJSON = imodel.constructEntity(nativeResultJSON).toJSON();
     const viewStateJSON = (convertViewDefToViewState(imodel, flatView)).toJSON();
-    viewStateJSON.description = undefined;    // Currently does not appear if not explicitly specified in TS
-    assert.deepEqual(viewStateJSON, nativeResultJSON, "Native side ViewState creation matches TS");
+    assert.deepEqual(viewStateJSON, nativeResultJSON, "ViewState creation matches");
   });
 
-  it("view volume adjustments should match that of adjustments in C++", () => {
+  it("view volume adjustments", () => {
     // Flat view test #1
     const tsFlatViewState = convertViewDefToViewState(imodel, flatView);
     tsFlatViewState.setOrigin(Point3d.create(-5, -5, 0));
@@ -186,7 +187,6 @@ describe("ViewState", () => {
 
     tsFlatViewState.lookAtVolume(Range3d.createXYZXYZ(10, 20, 0.5, 35, 21, 2));
     let tsFlatViewStateJSON = tsFlatViewState.toJSON();
-    (tsFlatViewStateJSON as any).description = undefined;  // Currently does not appear if not explicitly specified in TS
 
     let cppFlatViewStateJSON = imodel.executeTestById(2,
       {
@@ -198,7 +198,7 @@ describe("ViewState", () => {
         path: iModelLocation,
       });
     cppFlatViewStateJSON = imodel.constructEntity(cppFlatViewStateJSON).toJSON();
-    assert.isTrue(jsonCompare.compare(tsFlatViewStateJSON, cppFlatViewStateJSON), "Native side ViewState 'lookAtVolume' test 1 matches TS");
+    assert.deepEqual(tsFlatViewStateJSON, cppFlatViewStateJSON, "lookAtVolume matches");
 
     // Flat view test #2
     tsFlatViewState.setOrigin(Point3d.create(100, 1000, -2));
@@ -210,7 +210,6 @@ describe("ViewState", () => {
 
     tsFlatViewState.lookAtVolume(Range3d.createXYZXYZ(-1000, -10, 6, -5, 0, 0), 1.8, new MarginPercent(1, 1, 2, 2));
     tsFlatViewStateJSON = tsFlatViewState.toJSON();
-    (tsFlatViewStateJSON as any).description = undefined;  // Currently does not appear if not explicitly specified in TS
 
     cppFlatViewStateJSON = imodel.executeTestById(2,
       {
@@ -225,14 +224,13 @@ describe("ViewState", () => {
     // in native C++, yawpitchroll will be defined, even though it is technically not valid (did not conform to certain bounds)
     cppFlatViewStateJSON.angles = undefined;
 
-    assert.isTrue(jsonCompare.compare(tsFlatViewStateJSON, cppFlatViewStateJSON), "Native side ViewState 'lookAtVolume' test 2 matches TS");
+    assert.deepEqual(tsFlatViewStateJSON, cppFlatViewStateJSON, "lookAtVolume test 2 matches");
 
     // Camera view test #1
     const tsCamViewState = cameraViewState.clone<SpatialViewState>();
 
     tsCamViewState.lookAtVolume(Range3d.createXYZXYZ(0.1, 0.1, 0.1, 10, 20, 30));
     let tsCamViewStateJSON = tsCamViewState.toJSON();
-    (tsCamViewStateJSON as any).description = undefined;  // Currently does not appear if not explicitly specified in TS
 
     let cppCamViewStateJSON = imodel.executeTestById(2,
       {
@@ -244,7 +242,7 @@ describe("ViewState", () => {
         path: iModelLocation,
       });
     cppCamViewStateJSON = imodel.constructEntity(cppCamViewStateJSON).toJSON();
-    assert.isTrue(jsonCompare.compare(tsCamViewStateJSON, cppCamViewStateJSON), "Native side ViewState 'lookAtVolume' test 3 matches TS");
+    assert.deepEqual(tsCamViewStateJSON, cppCamViewStateJSON, "lookAtVolume test 3 matches");
 
     // Camera view test #2
     tsCamViewState.setOrigin(Point3d.create(100, 1000, -2));
@@ -256,7 +254,6 @@ describe("ViewState", () => {
 
     tsCamViewState.lookAtVolume(Range3d.createXYZXYZ(-1000, -10, 6, -5, 0, 0), 1.2, new MarginPercent(1, 2, 3, 4));
     tsCamViewStateJSON = tsCamViewState.toJSON();
-    (tsCamViewStateJSON as any).description = undefined;  // Currently does not appear if not explicitly specified in TS
 
     cppCamViewStateJSON = imodel.executeTestById(2,
       {
@@ -268,10 +265,10 @@ describe("ViewState", () => {
         path: iModelLocation,
       });
     cppCamViewStateJSON = imodel.constructEntity(cppCamViewStateJSON).toJSON();
-    assert.isTrue(jsonCompare.compare(tsCamViewStateJSON, cppCamViewStateJSON), "Native side ViewState 'lookAtVolume' test 4 matches TS");
+    assert.isTrue(jsonCompare.compare(tsCamViewStateJSON, cppCamViewStateJSON), "lookAtVolume test 4 matches");
   });
 
-  it("rotation and 'lookAt' results should match C++", async () => {
+  it("rotation and 'lookAt' results should work", async () => {
     // Flat view test
     const tsFlatViewState = convertViewDefToViewState(imodel, flatView);
     tsFlatViewState.setOrigin(Point3d.create(-5, -5, 0));
@@ -283,7 +280,6 @@ describe("ViewState", () => {
 
     tsFlatViewState.rotateCameraLocal(Angle.createRadians(1.28), Vector3d.create(2, 5, 7), undefined);
     const tsFlatViewStateJSON = tsFlatViewState.toJSON();
-    tsFlatViewStateJSON.description = undefined;  // Currently does not appear if not explicitly specified in TS
 
     let cppFlatViewStateJSON = imodel.executeTestById(3,
       {
@@ -299,7 +295,7 @@ describe("ViewState", () => {
     // in native C++, yawpitchroll will be defined, even though it is technically not valid (did not conform to certain bounds)
     cppFlatViewStateJSON.angles = undefined;
 
-    assert.isTrue(jsonCompare.compare(tsFlatViewStateJSON, cppFlatViewStateJSON), "Native side ViewState 'rotate & lookat' test 1 matches TS");
+    assert.isTrue(jsonCompare.compare(tsFlatViewStateJSON, cppFlatViewStateJSON), "'rotate & lookat' test 1 matches");
 
     // Camera view test
     const tsCamViewState = cameraViewState.clone<SpatialViewState>();
@@ -312,7 +308,6 @@ describe("ViewState", () => {
 
     tsCamViewState.rotateCameraLocal(Angle.createRadians(1.6788888), Vector3d.create(-1, 6, 3), Point3d.create(1, 2, 3));
     let tsCamViewStateJSON = tsCamViewState.toJSON();
-    (tsCamViewStateJSON as any).description = undefined;    // Currently does not appear if not explicitly specified in TS
 
     let cppCamViewStateJSON = imodel.executeTestById(3,
       {
@@ -324,7 +319,7 @@ describe("ViewState", () => {
         path: iModelLocation,
       });
     cppCamViewStateJSON = imodel.constructEntity(cppCamViewStateJSON).toJSON();
-    assert.isTrue(jsonCompare.compare(tsCamViewStateJSON, cppCamViewStateJSON), "Native side ViewState 'rotate & lookat' test 2 matches TS");
+    assert.isTrue(jsonCompare.compare(tsCamViewStateJSON, cppCamViewStateJSON), "'rotate & lookat' test 2 matches");
 
     // Camera view test (using lookAtUsingLensAngle)
     tsCamViewState.setOrigin(Point3d.create(100, 23, -18));
@@ -336,7 +331,6 @@ describe("ViewState", () => {
 
     tsCamViewState.lookAtUsingLensAngle(Point3d.create(8, 6, 7), Point3d.create(100, -67, 5), Vector3d.create(1.001, 2.200, -3.999), Angle.createDegrees(27.897), 100.89, 101.23);
     tsCamViewStateJSON = tsCamViewState.toJSON();
-    (tsCamViewStateJSON as any).description = undefined;    // Currently does not appear if not explicitly specified in TS
 
     cppCamViewStateJSON = imodel.executeTestById(3,
       {
@@ -352,6 +346,6 @@ describe("ViewState", () => {
 
     // in native C++, yawpitchroll will be defined, even though it is technically not valid (did not conform to certain bounds)
     cppCamViewStateJSON.angles = undefined;
-    assert.isTrue(jsonCompare.compare(tsCamViewStateJSON, cppCamViewStateJSON), "Native side ViewState 'rotate & lookat' test 2 matches TS");
+    assert.isTrue(jsonCompare.compare(tsCamViewStateJSON, cppCamViewStateJSON), "'rotate & lookat' test 3 matches");
   });
 });

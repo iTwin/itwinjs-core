@@ -69,7 +69,7 @@ export class IModelDb extends IModel {
 
   private static create(briefcaseEntry: BriefcaseEntry, contextId?: string): IModelDb {
     if (briefcaseEntry.iModelDb)
-      return briefcaseEntry.iModelDb; // If there's an imodeldb already associated with the briefcase, that should be reused.
+      return briefcaseEntry.iModelDb; // If there's an IModelDb already associated with the briefcase, that should be reused.
     const iModelToken = IModelToken.create(briefcaseEntry.iModelId, briefcaseEntry.changeSetId, briefcaseEntry.openMode, briefcaseEntry.userId, contextId);
     const props = JSON.parse(briefcaseEntry.nativeDb.getIModelProps()) as IModelProps;
     const name = props.rootSubject ? props.rootSubject.name : path.basename(briefcaseEntry.pathname);
@@ -822,11 +822,11 @@ export class ConcurrencyControl {
           // Query the state of all codes in this spec and scope
           const multiCodes = await this.queryCodeStates(accessToken, new Id64(specId), scopeId);
           for (const multiCode of multiCodes) {
-              if (multiCode.state !== CodeState.Available) {
-                if (ConcurrencyControl.anyFound(multiCode.values, thisReq.values)) {
-                  return false;
-                }
+            if (multiCode.state !== CodeState.Available) {
+              if (ConcurrencyControl.anyFound(multiCode.values, thisReq.values)) {
+                return false;
               }
+            }
           }
         }
       }
@@ -1065,7 +1065,7 @@ export class IModelDbModels {
       throw this._iModel._newNotOpenError();
 
     // Must go get the model from the iModel. Start by requesting the model's data.
-    const {error, result: json} = this._iModel.briefcaseEntry.nativeDb.getModel(JSON.stringify({ id: modelId }));
+    const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getModel(JSON.stringify({ id: modelId }));
     if (error)
       throw new IModelError(error.status, error.message, Logger.logWarning);
 
@@ -1086,7 +1086,7 @@ export class IModelDbModels {
       throw this._iModel._newNotOpenError();
 
     // Must go get the model from the iModel. Start by requesting the model's data.
-    const {error, result: json} = this._iModel.briefcaseEntry.nativeDb.getModel(JSON.stringify({ id: modelIdStr }));
+    const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getModel(JSON.stringify({ id: modelIdStr }));
     if (error)
       throw new IModelError(error.status, error.message, Logger.logWarning);
 
@@ -1198,7 +1198,7 @@ export class IModelDbElements {
       throw this._iModel._newNotOpenError();
 
     // Must go get the element from the iModel. Start by requesting the element's data.
-    const {error, result: json} = this._iModel.briefcaseEntry.nativeDb.getElement(JSON.stringify(opts));
+    const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getElement(JSON.stringify(opts));
     if (error)
       throw new IModelError(error.status, error.message, Logger.logWarning);
     const props = JSON.parse(json!) as ElementProps;
@@ -1211,7 +1211,7 @@ export class IModelDbElements {
       throw this._iModel._newNotOpenError();
 
     // Must go get the element from the iModel. Start by requesting the element's data.
-    const {error, result: json} = this._iModel.briefcaseEntry.nativeDb.getElement(JSON.stringify({ id: elementIdStr }));
+    const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getElement(JSON.stringify({ id: elementIdStr }));
     if (error)
       throw new IModelError(error.status, error.message, Logger.logWarning);
     return json!;

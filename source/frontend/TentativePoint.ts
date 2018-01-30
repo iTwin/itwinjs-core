@@ -2,7 +2,6 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { Viewport } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
@@ -87,9 +86,8 @@ export class TentativePoint {
     this.isActive = true;
   }
 
-  public clearElementFromHitList(element: Id64): void {
-    if (element.isValid())
-      this.snapPaths.removeHitsFrom(element);
+  public clearElementFromHitList(element: string): void {
+    this.snapPaths.removeHitsFrom(element);
   }
 
   public getHitAndList(holder: HitListHolder): SnapDetail | undefined {
@@ -243,7 +241,7 @@ export class TentativePoint {
       const snap = this.snapPaths.getHit(iSnapDetail)! as SnapDetail;
       const snapElem = snap.elementId;
 
-      if (!snapElem || !snapElem.isValid())
+      if (!snapElem)
         continue;
 
       let foundAny = false;
@@ -251,7 +249,7 @@ export class TentativePoint {
         const otherSnap = this.snapPaths.getHit(jSnapDetail)! as SnapDetail;
 
         if (otherSnap.getAdjustedPoint().isExactEqual(snap.getAdjustedPoint())) {
-          if (Id64.areEqual(snapElem, otherSnap.elementId)) {
+          if (snapElem === otherSnap.elementId) {
             this.snapPaths.setHit(jSnapDetail, undefined);
             foundAny = true;
           }
