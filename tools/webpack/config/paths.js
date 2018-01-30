@@ -107,6 +107,9 @@ module.exports = {
   appLcovReport: path.resolve(baseConfig.appCoverage, "lcov-report/index.html"),
   appCoberturaReport: path.resolve(baseConfig.appCoverage, "cobertura-coverage.xml"),
 
-  // Note that this will *still* overwrite any of the above paths 
+  // node_modules
+  appBentleyNodeModules: path.resolve(baseConfig.appNodeModules, "@bentley"),
+
+  // Note that this will *still*overwrite any of the above paths 
   ...baseConfig,
 };
