@@ -20,9 +20,6 @@ import { ViewTool } from "./tools/ViewTool";
 import { PrimitiveTool } from "./tools/PrimitiveTool";
 import { iModelApp } from "./IModelApp";
 
-// tslint:disable:one-variable-per-declaration
-// tslint:disable:no-conditional-assignment
-
 export const enum AccuDrawFlags {
   SetModePolar = 1,
   SetModeRect = 1 << 1,

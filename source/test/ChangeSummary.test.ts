@@ -12,6 +12,7 @@ import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { IModelDb } from "../backend/IModelDb";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelTestUtils } from "./IModelTestUtils";
+import { ChangeSet } from "@bentley/imodeljs-clients";
 import { using } from "@bentley/bentleyjs-core/lib/Disposable";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelJsFs } from "../backend/IModelJsFs";
@@ -142,6 +143,147 @@ describe("ChangeSummary", () => {
         assert.equal(rowCount, 3);
 
       });
+
+    } finally {
+      await iModel.close(accessToken);
+    }
+  });
+
+  it("Extract ChangeSummary for single changeset", async () => {
+    const latestVersion: IModelVersion = IModelVersion.latest();
+    const changesetId: string = await latestVersion.evaluateChangeSet(accessToken, testIModelId);
+    const changesFilePath: string = BriefcaseManager.buildChangeSummaryFilePath(testIModelId);
+    if (IModelJsFs.existsSync(changesFilePath))
+      IModelJsFs.removeSync(changesFilePath);
+
+    // now extract change summary for that one changeset
+    await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, testIModelId, changesetId, changesetId);
+    assert.isTrue(IModelJsFs.existsSync(changesFilePath));
+
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, latestVersion);
+    try {
+      assert.exists(iModel);
+      ChangeSummaryManager.attachChangeCache(iModel);
+      assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
+
+      const changeSummaryId: Id64 = iModel.withPreparedStatement("SELECT ECInstanceId FROM change.ChangeSummary", (myStmt) => {
+        assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
+        const row: any = myStmt.getRow();
+        assert.isDefined(row.id);
+        const id = new Id64(row.id);
+        assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
+        return id;
+        });
+
+      iModel.withPreparedStatement("SELECT WsgId, Summary FROM imodelchange.ChangeSet", (myStmt) => {
+        assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
+        const row: any = myStmt.getRow();
+        assert.isDefined(row.wsgId);
+        assert.equal(row.wsgId, changesetId);
+        assert.isDefined(row.summary);
+        assert.equal(row.summary.id, changeSummaryId.value);
+        assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
+        });
+    } finally {
+      await iModel.close(accessToken);
+    }
+  });
+
+  it("Subsequent ChangeSummary extractions", async () => {
+    const changesFilePath: string = BriefcaseManager.buildChangeSummaryFilePath(testIModelId);
+    if (IModelJsFs.existsSync(changesFilePath))
+      IModelJsFs.removeSync(changesFilePath);
+
+    const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
+    assert.equal(changeSets.length, 3);
+    // first extraction: just first changeset
+    const firstChangesetId: string = changeSets[0].id;
+
+    // now extract change summary for that one changeset
+    await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, testIModelId, firstChangesetId, firstChangesetId);
+    assert.isTrue(IModelJsFs.existsSync(changesFilePath));
+
+    let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
+    try {
+      assert.exists(iModel);
+      ChangeSummaryManager.attachChangeCache(iModel);
+      assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
+
+      const changeSummaryId: Id64 = iModel.withPreparedStatement("SELECT ECInstanceId FROM change.ChangeSummary", (myStmt) => {
+        assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
+        const row: any = myStmt.getRow();
+        assert.isDefined(row.id);
+        const id = new Id64(row.id);
+        assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
+        return id;
+        });
+
+      iModel.withPreparedStatement("SELECT WsgId, Summary FROM imodelchange.ChangeSet", (myStmt) => {
+        assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
+        const row: any = myStmt.getRow();
+        assert.isDefined(row.wsgId);
+        assert.equal(row.wsgId, firstChangesetId);
+        assert.isDefined(row.summary);
+        assert.equal(row.summary.id, changeSummaryId.value);
+        assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
+        });
+    } finally {
+      await iModel.close(accessToken);
+    }
+
+    // now do second extraction for last changeset
+    const lastChangesetId: string = changeSets[changeSets.length - 1].id;
+
+    await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, testIModelId, lastChangesetId, lastChangesetId);
+    assert.isTrue(IModelJsFs.existsSync(changesFilePath));
+
+    iModel = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
+    try {
+      assert.exists(iModel);
+      ChangeSummaryManager.attachChangeCache(iModel);
+      assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
+
+      iModel.withPreparedStatement("SELECT cset.WsgId changesetId FROM change.ChangeSummary csum JOIN imodelchange.ChangeSet cset ON csum.ECInstanceId=cset.Summary.Id ORDER BY csum.ECInstanceId", (myStmt) => {
+        let rowCount: number = 0;
+        while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
+          rowCount++;
+          const row: any = myStmt.getRow();
+          assert.isDefined(row.changesetId);
+          if (rowCount === 1)
+            assert.equal(row.changesetId, firstChangesetId);
+          else if (rowCount === 2)
+            assert.equal(row.changesetId, lastChangesetId);
+        }
+        assert.equal(rowCount, 2);
+        });
+    } finally {
+      await iModel.close(accessToken);
+    }
+  });
+
+  it("Extract ChangeSummaries for already downloaded changesets", async () => {
+    await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, testIModelId);
+    const changesFilePath: string = BriefcaseManager.buildChangeSummaryFilePath(testIModelId);
+    const csetPath: string = BriefcaseManager.getChangeSetsPath(testIModelId);
+    // delete changes file before extracting again with already downloaded changesets
+    if (IModelJsFs.existsSync(changesFilePath))
+      IModelJsFs.removeSync(changesFilePath);
+
+    const lastChangesetId: string = await IModelVersion.latest().evaluateChangeSet(accessToken, testIModelId);
+    assert.isTrue(IModelJsFs.existsSync(path.join(csetPath, lastChangesetId + ".cs")));
+
+    // now extract again where changesets were already downloaded
+    await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, testIModelId);
+
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
+    assert.exists(iModel);
+    try {
+      ChangeSummaryManager.attachChangeCache(iModel);
+      assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
+
+      const rows: any[] = iModel.executeQuery("SELECT count(*) csumcount FROM change.ChangeSummary csum JOIN imodelchange.ChangeSet cset ON csum.ECInstanceId=cset.Summary.Id");
+      assert.equal(rows.length, 1);
+      assert.equal(rows[0].csumcount, "0x3");
 
     } finally {
       await iModel.close(accessToken);

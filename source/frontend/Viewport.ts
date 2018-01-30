@@ -105,7 +105,7 @@ class Animator {
   }
 }
 
-export const enum RemoveMe { Yes, No }
+export const enum RemoveMe { No, Yes }
 
 /**
  * An interface for an object that animates a viewport.
@@ -194,8 +194,8 @@ export class Viewport {
   public flashUpdateTime: BeTimePoint;  // time the current flash started
   public flashIntensity: number;        // current flash intensity from [0..1]
   public flashDuration: number;         // the length of time that the flash intensity will increase (in seconds)
-  private flashedElem?: Id64;
-  public lastFlashedElem?: Id64;
+  private flashedElem?: string;
+  public lastFlashedElem?: string;
   private _viewCmdTargetCenter?: Point3d;
   public frustFraction: number = 1.0;
   public maxUndoSteps = 20;
@@ -238,8 +238,8 @@ export class Viewport {
   /** change the cursor for this Viewport */
   public setCursor(cursor: BeCursor = BeCursor.Default) { if (this.canvas) this.canvas.style.cursor = cursor; }
 
-  public setFlashed(id: Id64 | undefined, duration: number): void {
-    if (!Id64.areEqual(id, this.flashedElem)) {
+  public setFlashed(id: string | undefined, duration: number): void {
+    if (id !== this.flashedElem) {
       this.lastFlashedElem = this.flashedElem;
       this.flashedElem = id;
     }
@@ -609,7 +609,7 @@ export class Viewport {
       const eyeToOrigin = Vector3d.createStartEnd(camera.eye, inOrigin); // vector from origin on backplane to eye
       this.toView(eyeToOrigin);                            // align with view coordinates.
 
-      const focusDistance = camera.focusDistance;
+      const focusDistance = camera.focusDist;
       let zDelta = delta.z;
       let zBack = eyeToOrigin.z;              // Distance from eye to backplane.
       let zFront = zBack + zDelta;            // Distance from eye to frontplane.

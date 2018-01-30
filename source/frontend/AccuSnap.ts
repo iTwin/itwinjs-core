@@ -2,7 +2,6 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Point3d, Point2d, XAndY } from "@bentley/geometry-core/lib/PointVector";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Viewport } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
 import { LocateFailureValue, SnapStatus, LocateAction, LocateResponse, HitListHolder, TestHitStatus, SnapType } from "./ElementLocateManager";
@@ -211,7 +210,6 @@ export class AccuSnap {
       return;
 
     hit.draw(context);
-    viewport.setFlashed(hit.elementId, 0.25);
     this.setIsFlashed(viewport);
   }
 
@@ -892,16 +890,16 @@ export class AccuSnap {
     this.errorIcon.decorateViewport(context);
   }
 
-  private clearElemFromHitList(element: Id64) {
-    if (this.aSnapHits && element.isValid())
+  private clearElemFromHitList(element: string) {
+    if (this.aSnapHits)
       this.aSnapHits.removeHitsFrom(element);
   }
 
-  public clearIfElement(element: Id64): void {
+  public clearIfElement(element: string): void {
     this.clearElemFromHitList(element);
 
     const hit = this.currHit;
-    if (hit && Id64.areEqual(hit.elementId, element)) {
+    if (hit && hit.elementId === element) {
       this.destroy();
     }
   }

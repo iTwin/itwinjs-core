@@ -43,17 +43,12 @@ class TestApp extends IModelApp {
     this.features.setGate("feature5", { val: { str1: "string1", doNot: false } });
   }
 
-  protected supplyI18NOptions() {
-    return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" };
-  }
+  protected supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
 }
 
-// tslint:disable:space-before-function-paren
-// tslint:disable-next-line:only-arrow-functions
-describe("IModelApp", function () {
-  before(async () => {
-    TestApp.startup();
-  });
+describe("IModelApp", () => {
+  before(() => TestApp.startup());
+  after(() => TestApp.shutdown());
 
   it("TestApp should override correctly", () => {
     assert.instanceOf(iModelApp, TestApp, "test app instance is valid");
@@ -78,7 +73,7 @@ describe("IModelApp", function () {
     iModelApp.features.setGate("feat3.sub1.val.a", true);
     iModelApp.features.setGate("feat3.sub1.val.b", { yes: true });
     assert.isFalse(iModelApp.features.check("feat2"));
-    assert.equal(iModelApp.features.check("feat3.sub1.notHere", "hello"), "hello");
+    assert.equal(iModelApp.features.check("feat3.sub1.notHere", "hello"), "hello", "undefined features should use default value");
     assert.isTrue(iModelApp.features.check("feat3.sub1.val.a"));
     assert.isTrue(iModelApp.features.check("feat3.sub1.val.b.yes"));
   });
@@ -87,9 +82,27 @@ describe("IModelApp", function () {
     const thisApp = iModelApp as TestApp;
     await thisApp.testNamespace.readFinished;  // we must wait for the localization read to finish.
     assert.equal(TestImmediate.getKeyin(), "Localized TestImmediate Keyin");
+    // here we are testing to make sure we can override the Select command but the keyin comes from the superclass.
     assert.isTrue(iModelApp.tools.run("Select"));
     const select = iModelApp.toolAdmin.activePrimitiveTool as TestSelectTool;
     assert.instanceOf(select, TestSelectTool, "test select tool is active");
     assert.equal(select.keyin, "Select Elements", "keyin comes from superclass");
   });
+
+  it("Should do trivial localizations", () => {
+    // we have "TrivialTest.Test1" as the key in TestApp.json
+    assert.equal(iModelApp.i18N.translate("TestApp:TrivialTests.Test1"), "Localized Trivial Test 1");
+    assert.equal(iModelApp.i18N.translate("TestApp:TrivialTests.Test2"), "Localized Trivial Test 2");
+  });
+
+  it("Should return the key for localization keys that are missing", () => {
+    // there is no key for TrivialTest.Test3
+    assert.equal(iModelApp.i18N.translate("TestApp:TrivialTests.Test3"), "TrivialTests.Test3");
+  });
+
+  it("Should properly substitute the  values in localized strings with interpolations", () => {
+    assert.equal(iModelApp.i18N.translate("TestApp:SubstitutionTests.Test1", { varA: "Variable1", varB: "Variable2" }), "Substitute Variable1 and Variable2");
+    assert.equal(iModelApp.i18N.translate("TestApp:SubstitutionTests.Test2", { varA: "Variable1", varB: "Variable2" }), "Reverse substitute Variable2 and Variable1");
+  });
+
 });

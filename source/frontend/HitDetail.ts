@@ -203,12 +203,12 @@ export class HitDetail {
   public elemTopo?: ElemTopology; // details about the topology of the element.
   public hitDescription: string;
   public subSelectionMode = SubSelectionMode.None; // segment hilite/flash mode.
-  public constructor(public viewport: Viewport, public sheetViewport: Viewport | undefined, public elementId: Id64 | undefined, public readonly testPoint: Point3d, public locateSource: HitSource, public readonly geomDetail: GeomDetail) { }
+  public constructor(public viewport: Viewport, public sheetViewport: Viewport | undefined, public elementId: string | undefined, public readonly testPoint: Point3d, public locateSource: HitSource, public readonly geomDetail: GeomDetail) { }
 
   public isSnapDetail(): this is SnapDetail { return false; }
   public getHitType(): HitDetailType { return HitDetailType.Hit; }
   public isSameHit(otherHit?: HitDetail): boolean {
-    if (!otherHit || Id64.areEqual(this.elementId, otherHit.elementId)) return false;
+    if (!otherHit || this.elementId === otherHit.elementId) return false;
     if (!this.elemTopo && !otherHit.elemTopo) return true;
     if (this.elemTopo && !otherHit.elemTopo) return false;
     return this.elemTopo!.isEqual(otherHit.elemTopo!);
@@ -341,13 +341,13 @@ export class HitList {
   }
 
   /** search through list and remove any hits that contain a specified element id. */
-  public removeHitsFrom(element: Id64): boolean {
+  public removeHitsFrom(element: string): boolean {
     let removedOne = false;
 
     // walk backwards through list so we don't have to worry about what happens on remove
     for (let i = this.size() - 1; i >= 0; i--) {
       const thisHit = this.hits[i];
-      if (thisHit && Id64.areEqual(element, thisHit.elementId))
+      if (thisHit && element === thisHit.elementId)
         removedOne = true;
       this.removeHit(i);
     }

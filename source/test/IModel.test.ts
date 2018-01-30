@@ -8,7 +8,6 @@ import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { Code, CodeSpec, CodeScopeSpec } from "../common/Code";
 import { EntityProps } from "../common/EntityProps";
-import { ModelSelectorState } from "../common/ViewState";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { Entity, EntityMetaData, PrimitiveTypeCode } from "../backend/Entity";
 import { Model, DictionaryModel } from "../backend/Model";
@@ -32,9 +31,9 @@ import { Appearance } from "../common/SubCategoryAppearance";
 import { ColorDef } from "../common/ColorDef";
 import { IModel } from "../common/IModel";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { ModelSelectorState } from "../common/ModelSelectorState";
 
-/* tslint:disable: no-console */
-/* spell-checker: disable */
+// spell-checker: disable
 
 describe("iModel", () => {
   let imodel1: IModelDb;
@@ -800,7 +799,7 @@ describe("iModel", () => {
 
   });
 
-  it("should set navigation properties", () => {
+  it("should set EC properties of various types", () => {
 
     const testImodel: IModelDb = imodel1;
     try {
@@ -844,6 +843,7 @@ describe("iModel", () => {
       // The second one should point to the first.
       elementProps.id = new Id64();
       elementProps.relatedElement = id1;      // use the short id-only format
+      elementProps.longProp = 4294967295;     // make sure that we can save values in the range 0 ... UINT_MAX
 
       id2 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps));
       assert.isTrue(id2.isValid());
@@ -856,6 +856,7 @@ describe("iModel", () => {
       assert.isTrue("relatedElement" in el2);
       assert.isTrue("id" in el2.relatedElement);
       assert.deepEqual(el2.relatedElement.id, id1);
+      assert.equal(el2.longProp, 4294967295);
 
       // Even though I didn't set it, the platform knows the relationship class and reports it.
       assert.isTrue("relClassName" in el2.relatedElement);
@@ -866,7 +867,7 @@ describe("iModel", () => {
       // Change el2 to point to itself.
       const el2: Element = testImodel.elements.getElement(id2);
       const el2Modified: Element = el2.copyForEdit<Element>();
-      el2Modified.relatedElement = {id: id2, relClassName: trelClassName}; // this time, use the long RelatedElement format.
+      el2Modified.relatedElement = { id: id2, relClassName: trelClassName }; // this time, use the long RelatedElement format.
       testImodel.elements.updateElement(el2Modified);
       // Test that el2 points to itself.
       const el2after: Element = testImodel.elements.getElement(id2);

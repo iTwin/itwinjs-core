@@ -35,11 +35,7 @@ export const enum SelectionMode {
   Remove,
 }
 
-export const enum ManipulatorPreference {
-  Disabled = 0,
-  Placement = 1,
-  Geometry = 2,
-}
+export const enum ManipulatorPreference { Disabled, Placement, Geometry }
 
 export class SelectionTool extends PrimitiveTool {
   public static hidden = true;
@@ -173,7 +169,7 @@ export class SelectionTool extends PrimitiveTool {
     let currHit = iModelApp.locateManager.currHit;
     if (currHit && currHit.elementId) {
       const selSet = this.iModel.selectionSet;
-      if (1 !== selSet.numSelected || selSet.isSelected(currHit.elementId))
+      if (1 !== selSet.size || selSet.has(currHit.elementId))
         currHit = undefined;
     }
 
@@ -422,11 +418,11 @@ export class SelectionTool extends PrimitiveTool {
       return false; // NEEDS_WORK: Navigator is now opening files for write. I thought they should sub-class and override _WantElementDrag...we'll need a different check here when Navigator adds the selection method/mode tool settings...
 
     // Allow drag move of previously selected elements only to minimize conflict with drag select...
-    if (0 === this.iModel.selectionSet.numSelected)
+    if (0 === this.iModel.selectionSet.size)
       return false;
 
     const hit = iModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, SubSelectionMode.None, false); // Don't want add/remove mode filtering...
-    if (!hit || !this.iModel.selectionSet.isSelected(hit.elementId))
+    if (!hit || !this.iModel.selectionSet.has(hit.elementId))
       return false;
 
     if (this.iModel.isReadonly()) // NOTE: Don't need to check GetFilteredElementIds, this should be sufficient to know we have at least 1 element...
@@ -739,7 +735,7 @@ export class SelectionTool extends PrimitiveTool {
     }
 
     if (!ev.isControlKey) {
-      if (0 !== this.iModel.selectionSet.numSelected) {
+      if (0 !== this.iModel.selectionSet.size) {
         if (this.wantSelectionClearOnMiss(ev))
           this.iModel.selectionSet.emptyAll();
       } else if (this.manipulator) {
@@ -780,7 +776,7 @@ export class SelectionTool extends PrimitiveTool {
 
     // Check for overlapping hits...
     const lastHit = SelectionMode.Remove === this.getSelectionMode() ? undefined : iModelApp.locateManager.currHit;
-    if (lastHit && this.iModel.selectionSet.isSelected(lastHit.elementId)) {
+    if (lastHit && this.iModel.selectionSet.has(lastHit.elementId)) {
       const autoHit = iModelApp.accuSnap.currHit;
 
       // Play nice w/auto-locate, only remove previous hit if not currently auto-locating or over previous hit...
@@ -815,7 +811,7 @@ export class SelectionTool extends PrimitiveTool {
     if (!elementId)
       return true; // Don't reject transients...
 
-    const isSelected = this.iModel.selectionSet.isSelected(elementId);
+    const isSelected = this.iModel.selectionSet.has(elementId);
     return (SelectionMode.Add === mode ? !isSelected : isSelected);
   }
 

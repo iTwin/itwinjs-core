@@ -53,7 +53,7 @@ export class ChangeSummaryManager {
 
   /** Determines whether the Changes cache file is attached to the specified iModel or not
    * @param iModel iModel to check whether a Changes cache file is attached
-   * @return true if the Changes cache file is attached to the iModel. false otherwise
+   * @returns Returns true if the Changes cache file is attached to the iModel. false otherwise
    */
   public static isChangeCacheAttached(iModel: IModelDb): boolean {
     if (iModel == null || iModel.nativeDb == null)
@@ -88,31 +88,36 @@ export class ChangeSummaryManager {
   }
 
   /** Extracts change summaries from the specified range of changesets
-   * @param startChangeSetId  Changeset Id of the starting changeset to extract from. If undefined, the first changeset of the iModel
-   * is used.
-   * @param endChangeSetId  Changeset Id of the end changeset to extract from. If undefined, the latest changeset of the iModel
-   * is used.
+   * @param startChangeSetId  Changeset Id of the starting changeset to extract from (including this changeset).
+   * If undefined, the first changeset of the iModel is used.
+   * @param endChangeSetId  Changeset Id of the end changeset to extract from (including this changeset).
+   * If undefined, the latest changeset of the iModel is used.
    * @throws [[IModelError]]
    */
   public static async extractChangeSummaries(accessToken: AccessToken, projectId: string, iModelId: string,
     startChangeSetId?: string, endChangeSetId?: string): Promise<void> {
 
-    let startVersion: IModelVersion = IModelVersion.first();
+    await BriefcaseManager.initialize(accessToken);
+
     let endVersion: IModelVersion = IModelVersion.latest();
-
-    if (startChangeSetId)
-      startVersion = IModelVersion.asOfChangeSet(startChangeSetId);
-
-    startChangeSetId = await startVersion.evaluateChangeSet(accessToken, iModelId);
-
-    if (endChangeSetId)
+    if (endChangeSetId !== undefined)
       endVersion = IModelVersion.asOfChangeSet(endChangeSetId);
 
     endChangeSetId = await endVersion.evaluateChangeSet(accessToken, iModelId);
 
-    await BriefcaseManager.initialize(accessToken);
-    const changeSets: ChangeSet[] = await BriefcaseManager.downloadChangeSets(accessToken, iModelId, endChangeSetId, startChangeSetId);
-    const changeSetsFolder: string = BriefcaseManager.getChangeSetsPath(iModelId);
+    // If we want to download changesets that includes startChangeSetId, we need to pass its parent.
+    // So determine the parent changeset id first (WIP: Isn't there an easier way to achieve that?)
+    let startParentChangeSetId: string | undefined;
+    if (startChangeSetId !== undefined) {
+      const startChangeSet: ChangeSet = await BriefcaseManager.hubClient!.getChangeSet(accessToken, iModelId, false, startChangeSetId);
+      if (startChangeSet === null || startChangeSet === undefined)
+        throw new IModelError(IModelStatus.BadArg, `Start ChangeSet ${startChangeSetId} not found on the hub for iModel ${iModelId}.`);
+
+      startParentChangeSetId = startChangeSet.parentId;
+    }
+
+    // Downloads the required changesets (if they haven't been downloaded before)
+    const changeSets: ChangeSet[] = await BriefcaseManager.downloadChangeSets(accessToken, iModelId, endChangeSetId, startParentChangeSetId);
 
     // to create the cache file we need the corresponding iModel as the changes cache file stores information
     // about the imodel it belongs to.
@@ -130,7 +135,7 @@ export class ChangeSummaryManager {
 
     assert(changesFile.isOpen());
     const userInfoCache = new Map<string, string>();
-
+    const changeSetsFolder: string = BriefcaseManager.getChangeSetsPath(iModelId);
     for (const changeSet of changeSets) {
       const version: IModelVersion = IModelVersion.asOfChangeSet(changeSet.wsgId);
       const iModel: IModelDb = await IModelDb.open(accessToken, projectId, iModelId, OpenMode.Readonly, version);
@@ -226,8 +231,8 @@ export class ChangeSummaryManager {
   /** Queries the ChangeSummary for the specified change summary id
    * @param iModel iModel
    * @param changeSummaryId ECInstanceId of the ChangeSummary (see ECDbChange.ChangeSummary ECClass)
-   * @return ChangeSummary object
-   * @throws IModelError if change summary does not exist for the specified id, or if the
+   * @returns Returns the requested ChangeSummary object
+   * @throws [[IModelError]] If change summary does not exist for the specified id, or if the
    * change cache file hasn't been attached, or in case of other errors.
    */
   public static queryChangeSummary(iModel: IModelDb, changeSummaryId: Id64): ChangeSummary {
@@ -247,8 +252,8 @@ export class ChangeSummaryManager {
   /** Queries the InstanceChange for the specified instance change id
    * @param iModel iModel
    * @param instanceChangeId ECInstanceId of the InstanceChange (see ECDbChange.InstanceChange ECClass)
-   * @return InstanceChange object
-   * @throws IModelError if instance change does not exist for the specified id, or if the
+   * @returns Returns the requested InstanceChange object
+   * @throws [[IModelError]] if instance change does not exist for the specified id, or if the
    * change cache file hasn't been attached, or in case of other errors.
    */
   public static queryInstanceChange(iModel: IModelDb, instanceChangeId: Id64): InstanceChange {

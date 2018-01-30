@@ -69,7 +69,7 @@ export class IModelDb extends IModel {
 
   private static create(briefcaseEntry: BriefcaseEntry, contextId?: string): IModelDb {
     if (briefcaseEntry.iModelDb)
-      return briefcaseEntry.iModelDb; // If there's an imodeldb already associated with the briefcase, that should be reused.
+      return briefcaseEntry.iModelDb; // If there's an IModelDb already associated with the briefcase, that should be reused.
     const iModelToken = IModelToken.create(briefcaseEntry.iModelId, briefcaseEntry.changeSetId, briefcaseEntry.openMode, briefcaseEntry.userId, contextId);
     const props = JSON.parse(briefcaseEntry.nativeDb.getIModelProps()) as IModelProps;
     const name = props.rootSubject ? props.rootSubject.name : path.basename(briefcaseEntry.pathname);
@@ -205,11 +205,18 @@ export class IModelDb extends IModel {
 
   /** Execute a query against this IModelDb.
    * @param ecsql The ECSql statement to execute
-   * @param bindings Optional values to bind to placeholders in the statement.
+   * @param bindings The values to bind to the parameters (if the ECSQL has any).
+   * Pass an array if the parameters are positional. Pass an object of the values keyed on the parameter name
+   * for named parameters.
+   * The values in either the array or object must match the respective types of the parameters.
+   * Supported types:
+   * boolean, Blob, DateTime, NavigationValue, number, XY, XYZ, string
+   * For struct parameters pass an object with key value pairs of struct property name and values of the supported types
+   * For array parameters pass an array of the supported types.
    * @returns all rows as an array or an empty array if nothing was selected
    * @throws [[IModelError]] If the statement is invalid
    */
-  public executeQuery(ecsql: string, bindings?: any[] | Map<string, any>): any[] {
+  public executeQuery(ecsql: string, bindings?: any[] | object): any[] {
     return this.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {
       if (bindings)
         stmt.bindValues(bindings);
@@ -815,11 +822,11 @@ export class ConcurrencyControl {
           // Query the state of all codes in this spec and scope
           const multiCodes = await this.queryCodeStates(accessToken, new Id64(specId), scopeId);
           for (const multiCode of multiCodes) {
-              if (multiCode.state !== CodeState.Available) {
-                if (ConcurrencyControl.anyFound(multiCode.values, thisReq.values)) {
-                  return false;
-                }
+            if (multiCode.state !== CodeState.Available) {
+              if (ConcurrencyControl.anyFound(multiCode.values, thisReq.values)) {
+                return false;
               }
+            }
           }
         }
       }
@@ -1058,7 +1065,7 @@ export class IModelDbModels {
       throw this._iModel._newNotOpenError();
 
     // Must go get the model from the iModel. Start by requesting the model's data.
-    const {error, result: json} = this._iModel.briefcaseEntry.nativeDb.getModel(JSON.stringify({ id: modelId }));
+    const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getModel(JSON.stringify({ id: modelId }));
     if (error)
       throw new IModelError(error.status, error.message, Logger.logWarning);
 
@@ -1079,7 +1086,7 @@ export class IModelDbModels {
       throw this._iModel._newNotOpenError();
 
     // Must go get the model from the iModel. Start by requesting the model's data.
-    const {error, result: json} = this._iModel.briefcaseEntry.nativeDb.getModel(JSON.stringify({ id: modelIdStr }));
+    const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getModel(JSON.stringify({ id: modelIdStr }));
     if (error)
       throw new IModelError(error.status, error.message, Logger.logWarning);
 
@@ -1191,7 +1198,7 @@ export class IModelDbElements {
       throw this._iModel._newNotOpenError();
 
     // Must go get the element from the iModel. Start by requesting the element's data.
-    const {error, result: json} = this._iModel.briefcaseEntry.nativeDb.getElement(JSON.stringify(opts));
+    const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getElement(JSON.stringify(opts));
     if (error)
       throw new IModelError(error.status, error.message, Logger.logWarning);
     const props = JSON.parse(json!) as ElementProps;
@@ -1204,7 +1211,7 @@ export class IModelDbElements {
       throw this._iModel._newNotOpenError();
 
     // Must go get the element from the iModel. Start by requesting the element's data.
-    const {error, result: json} = this._iModel.briefcaseEntry.nativeDb.getElement(JSON.stringify({ id: elementIdStr }));
+    const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getElement(JSON.stringify({ id: elementIdStr }));
     if (error)
       throw new IModelError(error.status, error.message, Logger.logWarning);
     return json!;

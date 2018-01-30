@@ -47,7 +47,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   }
 
   /** Prepare this statement prior to first use.
-   * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSql syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
+   * @throws [[IModelError]] if the statement cannot be prepared. Normally, prepare fails due to ECSql syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
    */
   public prepare(db: AddonDgnDb | AddonECDb, statement: string): void {
     if (this.isPrepared())
@@ -184,7 +184,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Binds a struct property value to the specified ECSQL parameter
    *  @param param Index (1-based) or name of the parameter
-   *  @param val Struct value
+   *  @param val Struct value. The struct value is an object composed of pairs of a struct member property name and its value
+   * (of one of the supported types)
    */
   public bindStruct(param: number | string, value: object): void {
     using(this.getBinder(param), (binder) => ECSqlBindingHelper.bindStruct(binder, value));
@@ -192,14 +193,14 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Binds a array value to the specified ECSQL parameter
    *  @param param Index (1-based) or name of the parameter
-   *  @param val Array value
+   *  @param val Array value. The array value is an array of values of the supported types
    */
   public bindArray(param: number | string, value: any[]): void {
     using(this.getBinder(param), (binder) => ECSqlBindingHelper.bindArray(binder, value));
   }
 
   /** Bind values to all parameters in the statement.
-   * @param values The values to bind to the parameters. Pass an array if the placeholders are positional.
+   * @param values The values to bind to the parameters. Pass an array if the parameters are positional.
    * Pass an object of the values keyed on the parameter name for named parameters
    * The values in either the array or object must match the respective types of the parameter. See the bindXXX
    * methods for each type.
@@ -209,6 +210,9 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
       for (let i = 0; i < values.length; i++) {
         const paramIndex: number = i + 1;
         const paramValue: any = values[i];
+        if (paramValue === undefined || paramValue === null)
+          continue;
+
         using (this.getBinder(paramIndex),
           (binder) => ECSqlBindingHelper.bindValue(binder, paramValue));
       }
@@ -218,6 +222,9 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     for (const entry of Object.entries(values)) {
         const paramName: string = entry[0];
         const paramValue: any = entry[1];
+        if (paramValue === undefined || paramValue === null)
+        continue;
+
         using (this.getBinder(paramName),
           (binder) => ECSqlBindingHelper.bindValue(binder, paramValue));
     }
@@ -256,9 +263,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Step this INSERT statement and returns status and the ECInstanceId of the newly
    * created instance.
-   * @return Object containing the status of the step. If successful, it contains
-   * DbResult.BE_SQLITE_DONE and the ECInstanceId of the newly created instance.
-   * In case of failure it contains the error DbResult code.
+   * @returns Returns the generated ECInstanceId in case of success and the status of the step
+   * call.
    */
   public stepForInsert(): ECSqlInsertResult {
     const r: {status: DbResult, id: string} = this._stmt!.stepForInsert();
@@ -331,7 +337,7 @@ class ECSqlBindingHelper {
    * @param binder Parameter Binder to bind to
    * @param val Primitive value to be bound. Must be of one of these types:
    *  null | undefined, boolean, number, string, DateTime, Blob, Id64, XY, XYZ, NavigationValue
-   * @throws IModelError in case of errors
+   * @throws [[IModelError]] in case of errors
    */
   public static bindPrimitive(binder: AddonECSqlBinder, val: any): void {
     const stat: DbResult | undefined = ECSqlBindingHelper.tryBindPrimitiveTypes(binder, val);
@@ -345,7 +351,7 @@ class ECSqlBindingHelper {
   /** Binds the specified object to the specified struct binder
    * @param binder Struct parameter binder to bind to
    * @param val Value to be bound. Must be an Object with members of the supported types
-   * @throws IModelError in case of errors
+   * @throws [[IModelError]] in case of errors
    */
   public static bindStruct(binder: AddonECSqlBinder, val: object): void {
     if (val === null || val === undefined) {
@@ -367,7 +373,7 @@ class ECSqlBindingHelper {
   /** Binds the specified array to the specified array binder
    * @param binder Array parameter binder to bind to
    * @param val Value to be bound. Must be an Array with elements of the supported types
-   * @throws IModelError in case of errors
+   * @throws [[IModelError]] in case of errors
    */
   public static bindArray(binder: AddonECSqlBinder, val: any[]): void {
     if (val === null || val === undefined) {
@@ -385,7 +391,7 @@ class ECSqlBindingHelper {
   }
 
   /** tries to interpret the passed value as known leaf types (primitives and navigation values).
-   *  @return undefined if the value wasn't a primitive. DbResult if it was a primitive and was bound to the binder
+   *  @returns Returns undefined if the value wasn't a primitive. DbResult if it was a primitive and was bound to the binder
    */
   private static tryBindPrimitiveTypes(binder: AddonECSqlBinder, val: any): DbResult | undefined {
     if (val === undefined || val === null)

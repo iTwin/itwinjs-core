@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-// tslint:disable:one-variable-per-declaration
 // tslint:disable:variable-name
+// spell-checker: disable
 
 export const ColorRgb: any = {
   aliceblue: 0xF0F8FF,

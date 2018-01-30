@@ -46,8 +46,9 @@ for (const entry of IModelJsFs.readdirSync(__dirname)) {
       it("should be compatible with webpack", (done) => {
         const compiler = webpack({
           entry: entryPath, node: {
-          fs: "empty",
-        }});
+            fs: "empty",
+          },
+        });
         compiler.plugin("should-emit", () => false);
         compiler.run((err: Error, stats: webpack.Stats) => {
           if (err)
@@ -67,6 +68,6 @@ for (const entry of IModelJsFs.readdirSync(__dirname)) {
       }).timeout(99999);
     });
 
-    setTimeout(() => require(entryPath));
+    require(entryPath);
   }
 }
