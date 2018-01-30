@@ -210,7 +210,6 @@ export class AccuSnap {
       return;
 
     hit.draw(context);
-    viewport.setFlashed(hit.elementId, 0.25);
     this.setIsFlashed(viewport);
   }
 

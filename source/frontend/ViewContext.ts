@@ -89,8 +89,8 @@ export class RenderContext extends ViewContext {
 export class DecorateContext extends RenderContext {
   private readonly decorations = new Decorations();
 
-  public drawSheetHit(_hit: HitDetail): void { }
-  public drawNormalHit(_hit: HitDetail): void { }
+  public drawSheetHit(hit: HitDetail): void { hit.viewport.setFlashed(hit.elementId, 0.25); } // NEEDSWORK
+  public drawNormalHit(hit: HitDetail): void { hit.viewport.setFlashed(hit.elementId, 0.25); } // NEEDSWORK
   public drawHit(hit: HitDetail): void {
     const sheetVp = hit.sheetViewport;
     return (sheetVp && hit.viewport === this.viewport) ? this.drawSheetHit(hit) : this.drawNormalHit(hit);
