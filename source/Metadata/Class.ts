@@ -4,8 +4,8 @@
 
 import Enumeration from "Metadata/Enumeration";
 import SchemaChild from "Metadata/SchemaChild";
-import { ECClassInterface, PropertyInterface, SchemaInterface, LazyLoadedECClass, LazyLoadedProperty, StructClassInterface, SchemaChildInterface, EnumerationInterface } from "Interfaces";
-import { ECClassModifier, parseClassModifier, PrimitiveType, parsePrimitiveType, SchemaChildKey } from "ECObjects";
+import { ECClassInterface, PropertyInterface, SchemaInterface, LazyLoadedECClass, LazyLoadedProperty, StructClassInterface, SchemaChildInterface } from "Interfaces";
+import { ECClassModifier, parseClassModifier, PrimitiveType, SchemaChildKey, tryParsePrimitiveType } from "ECObjects";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "Metadata/CustomAttribute";
 import { ECObjectsError, ECObjectsStatus } from "Exception";
 import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty } from "Metadata/Property";
@@ -15,12 +15,12 @@ function createLazyLoadedChild<T extends SchemaChildInterface>(c: T) {
   return new DelayedPromiseWithProps(c.key as T["key"], async () => c);
 }
 
-async function loadStructType(structType: string | StructClassInterface | undefined, schema: SchemaInterface) {
-  let correctType: StructClassInterface | undefined;
+async function loadStructType(structType: string | StructClass | undefined, schema: SchemaInterface) {
+  let correctType: StructClass | undefined;
   if (typeof(structType) === "string")
     correctType = await schema.getChild<StructClass>(structType, false);
   else
-    correctType = structType as StructClassInterface | undefined;
+    correctType = structType as StructClass | undefined;
 
   if (!correctType)
     throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
@@ -28,13 +28,16 @@ async function loadStructType(structType: string | StructClassInterface | undefi
   return correctType;
 }
 
-async function loadPrimitiveType(primitiveType: string | PrimitiveType | EnumerationInterface | undefined, schema: SchemaInterface) {
-  if (typeof(primitiveType) === "undefined")
+async function loadPrimitiveType(primitiveType: string | PrimitiveType | Enumeration | undefined, schema: SchemaInterface) {
+  if (primitiveType === undefined)
     return PrimitiveType.Integer;
 
   if (typeof(primitiveType) === "string") {
-    const enumType = await schema.getChild<Enumeration>(primitiveType, false);
-    return enumType || parsePrimitiveType(primitiveType);
+    const resolvedType = tryParsePrimitiveType(primitiveType) || await schema.getChild<Enumeration>(primitiveType, false);
+    if (resolvedType === undefined)
+      throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
+
+    return resolvedType;
   }
 
   return primitiveType;
@@ -59,8 +62,9 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
   }
 
   /**
-   * Searches, case-insensitive, for a local ECProperty with the name provided.
-   * @param name
+   * Convenience method for adding an already loaded ECProperty used by create*Property methods.
+   * @param prop The property to add.
+   * @returns The property that was added.
    */
   protected addProperty<T extends PropertyInterface>(prop: T): T {
     if (!this.properties)
@@ -111,7 +115,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
    * @throws ECObjectsStatus DuplicateProperty: thrown if a property with the same name already exists in the class.
    */
-  public async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | EnumerationInterface): Promise<PrimitiveProperty> {
+  public async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<PrimitiveProperty> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
@@ -125,7 +129,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param name The name of property to create.
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
    */
-  public async createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | EnumerationInterface): Promise<PrimitiveArrayProperty> {
+  public async createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<PrimitiveArrayProperty> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
@@ -139,7 +143,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param name The name of property to create.
    * @param structType The struct type of property to create.
    */
-  public async createStructProperty(name: string, structType: string | StructClassInterface): Promise<StructProperty> {
+  public async createStructProperty(name: string, structType: string | StructClass): Promise<StructProperty> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
@@ -152,7 +156,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param name
    * @param type
    */
-  public async createStructArrayProperty(name: string, structType: string | StructClassInterface): Promise<StructArrayProperty> {
+  public async createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
