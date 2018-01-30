@@ -7,7 +7,7 @@ import { SchemaInterface, SchemaChildInterface, EntityClassInterface, MixinInter
         KindOfQuantityInterface, PropertyInterface, AnyClassType, StructClassInterface } from "Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "Exception";
 import { SchemaContext } from "Context";
-import { ECVersion, SchemaKey, parsePrimitiveType, relationshipEndToString, SchemaChildKey, SchemaChildType } from "ECObjects";
+import { ECVersion, SchemaKey, relationshipEndToString, SchemaChildKey, SchemaChildType, tryParsePrimitiveType } from "ECObjects";
 import SchemaChild from "Metadata/SchemaChild";
 
 /**
@@ -33,7 +33,7 @@ export default class SchemaReadHelper {
 
   /**
    * Populates the given schema object with the information presented in the schemaJson provided. If present, uses the provided context to resolve any references within the schema.
-   * Otherwise, those references will be unresovled.
+   * Otherwise, those references will be unresolved.
    * @param schema The schema object to populate. Must be an extension of the DeserializableSchemaInterface.
    * @param schemaJson An object, or string representing that object, that follows the SchemaJson format.
    */
@@ -323,11 +323,8 @@ export default class SchemaReadHelper {
         if (typeof(propertyJson.typeName) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${classObj.name}.${propName} has an invalid 'typeName' property. It should be of type 'string'.`);
 
-        try {
-          parsePrimitiveType(propertyJson.typeName);
-        } catch (err) { // Catch the error since the type should now be assumed to be an ECEnumeration
+        if (undefined === tryParsePrimitiveType(propertyJson.typeName))
           await this.findSchemaChild(propertyJson.typeName);
-        }
       }
     };
 
