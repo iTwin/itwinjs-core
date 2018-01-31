@@ -6,7 +6,7 @@ import { EntityProps } from "./EntityProps";
 import { IModel } from "./IModel";
 import { ModelProps, GeometricModel2dProps } from "./ModelProps";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { Range2d } from "@bentley/geometry-core/lib/PointVector";
+import { Range2d } from "@bentley/geometry-core/lib/Range";
 import { ElementProps, RelatedElement } from "./ElementProps";
 import { Code } from "./Code";
 

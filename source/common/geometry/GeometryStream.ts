@@ -2,7 +2,9 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { Point2d, Point3d, Vector3d, Transform, Range3d, YawPitchRollAngles, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
+import { Point2d, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
+import { Transform,  RotMatrix } from "@bentley/geometry-core/lib/transform";
+import { Range3d } from "@bentley/geometry-core/lib/Range";
 import { CurveCollection, Loop } from "@bentley/geometry-core/lib/curve/CurveChain";
 import { BSplineSurface3d } from "@bentley/geometry-core/lib/bspline/BSplineSurface";
 import { GeometryQuery, CurvePrimitive } from "@bentley/geometry-core/lib/curve/CurvePrimitive";

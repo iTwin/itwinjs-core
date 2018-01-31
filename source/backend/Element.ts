@@ -2,7 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
-import { Transform, Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { Transform } from "@bentley/geometry-core/lib/Transform";
 import { Code, CodeSpecNames } from "../common/Code";
 import { Placement3d, Placement2d, AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { GeometryStream, GeometryBuilder } from "../common/geometry/GeometryStream";

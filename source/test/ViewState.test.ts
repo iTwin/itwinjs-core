@@ -4,7 +4,9 @@
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
-import { Point3d, Vector3d, YawPitchRollAngles, Range3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
+import { Range3d } from "@bentley/geometry-core/lib/Range";
+import { RotMatrix } from "@bentley/geometry-core/lib/Transform";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { SpatialViewState, ViewStatus, Camera, MarginPercent, StandardView } from "../common/ViewState";
 import { IModelDb } from "../backend/IModelDb";
