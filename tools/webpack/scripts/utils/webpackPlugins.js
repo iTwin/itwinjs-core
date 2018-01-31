@@ -46,10 +46,15 @@ class CopyNativeAddonsPlugin {
       const packageLock = require(paths.appPackageLockJson);
       const dir = path.resolve(paths.appNodeModules, "**/*.node");
       const matches = glob.sync(dir)
-
-      matches.push("@bentley/imodeljs-nodeaddon");
-      matches.push("@bentley/imodeljs-nodeaddonapi");
-      matches.push("@bentley/imodeljs-electronaddon");
+      
+      // Also copy any modules excluded from the bundle via the "externals" webpack config option
+      const externals = compiler.options.externals;
+      if (typeof(externals) === "object") {
+        if (Array.isArray(externals))
+          matches.push(...externals.filter((ext) => typeof(ext) === "string"));
+        else
+          matches.push(...Object.keys(externals));
+      }
 
       for (const match of matches) {
         const nativeDependency = pathToPackageName(match);
