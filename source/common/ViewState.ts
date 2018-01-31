@@ -12,10 +12,11 @@ import { AxisAlignedBox3d } from "./geometry/Primitives";
 import { Frustum, Npc } from "./Frustum";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState, Model2dState } from "./EntityState";
-import { CategorySelectorProps, ViewDefinitionProps, ViewDefinition3dProps, SpatialViewDefinitionProps, ViewDefinition2dProps, CameraProps } from "./ElementProps";
+import { ViewDefinitionProps, ViewDefinition3dProps, SpatialViewDefinitionProps, ViewDefinition2dProps, CameraProps } from "./ElementProps";
 import { DisplayStyleState, DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
 import { ColorDef } from "./ColorDef";
 import { ModelSelectorState } from "./ModelSelectorState";
+import { CategorySelectorState } from "./CategorySelectorState";
 
 export const enum GridOrientationType {
   View = 0,
@@ -28,17 +29,18 @@ export const enum GridOrientationType {
 
 export const enum StandardViewId {
   NotStandard = -1,
-  Top = 1,
-  Bottom = 2,
-  Left = 3,
-  Right = 4,
-  Front = 5,
-  Back = 6,
-  Iso = 7,
-  RightIso = 8,
+  Top = 0,
+  Bottom = 1,
+  Left = 2,
+  Right = 3,
+  Front = 4,
+  Back = 5,
+  Iso = 6,
+  RightIso = 7,
 }
 
-export const standardView = {
+// tslint:disable-next-line:variable-name
+export const StandardView = {
   Top: RotMatrix.identity,
   Bottom: RotMatrix.createRowValues(1, 0, 0, 0, -1, 0, 0, 0, -1),
   Left: RotMatrix.createRowValues(0, -1, 0, 0, 0, 1, -1, 0, 0),
@@ -54,46 +56,14 @@ export const standardView = {
     -0.408248290463863, 0.40824829046386302, 0.81649658092772603,
     0.577350269189626, -0.57735026918962573, 0.57735026918962573),
 };
-Object.freeze(standardView);
+Object.freeze(StandardView);
 
-export const standardViewMatrices = [
-  standardView.Top, standardView.Bottom, standardView.Left, standardView.Right,
-  standardView.Front, standardView.Back, standardView.Iso, standardView.RightIso,
+const standardViewMatrices = [
+  StandardView.Top, StandardView.Bottom, StandardView.Left, StandardView.Right,
+  StandardView.Front, StandardView.Back, StandardView.Iso, StandardView.RightIso,
 ];
 standardViewMatrices.forEach((view) => Object.freeze(view));
 Object.freeze(standardViewMatrices);
-
-/** A list of Categories to be displayed in a view. */
-export class CategorySelectorState extends ElementState {
-  public categories: Set<string> = new Set<string>();
-  constructor(props: CategorySelectorProps, iModel: IModel) {
-    super(props, iModel);
-    if (props.categories)
-      props.categories.forEach((cat) => this.categories.add(cat));
-  }
-
-  public toJSON(): CategorySelectorProps {
-    const val = super.toJSON() as CategorySelectorProps;
-    val.categories = [];
-    this.categories.forEach((cat) => val.categories.push(cat));
-    return val;
-  }
-
-  /** Get the name of this CategorySelector */
-  public getName(): string { return this.code.getValue(); }
-
-  /** Determine whether this CategorySelector includes the specified category */
-  public isCategoryViewed(categoryId: Id64): boolean { return this.categories.has(categoryId.value); }
-
-  /**  Add a category to this CategorySelector */
-  public addCategory(id: Id64): void { this.categories.add(id.value); }
-
-  /** Drop a category from this CategorySelector */
-  public dropCategory(id: Id64): boolean { return this.categories.delete(id.value); }
-
-  /** Add or Drop a category to this CategorySelector */
-  public changeCategoryDisplay(categoryId: Id64, add: boolean): void { if (add) this.addCategory(categoryId); else this.dropCategory(categoryId); }
-}
 
 export const enum ViewStatus {
   Success = 0,
@@ -119,12 +89,12 @@ export const enum ViewStatus {
  * Values mean "percent of view" and must be between 0 and .25.
  */
 export class MarginPercent {
-  private static limitMargin(val: number) { return (val < 0.0) ? 0.0 : (val > .25) ? .25 : val; }
   constructor(public left: number, public top: number, public right: number, public bottom: number) {
-    this.left = MarginPercent.limitMargin(left);
-    this.top = MarginPercent.limitMargin(top);
-    this.right = MarginPercent.limitMargin(right);
-    this.bottom = MarginPercent.limitMargin(bottom);
+    const limitMargin = (val: number) => (val < 0.0) ? 0.0 : (val > .25) ? .25 : val;
+    this.left = limitMargin(left);
+    this.top = limitMargin(top);
+    this.right = limitMargin(right);
+    this.bottom = limitMargin(bottom);
   }
 }
 
@@ -140,10 +110,12 @@ export abstract class ViewState extends ElementState {
     super(props, iModel);
     this.description = props.description;
     if (categorySelector instanceof ViewState) { // from clone, 3rd argument is source ViewState
-      this.categorySelector = categorySelector.categorySelector;
-      this.displayStyle = categorySelector.displayStyle;
+      this.categorySelector = categorySelector.categorySelector.clone();
+      this.displayStyle = categorySelector.displayStyle.clone();
     }
   }
+
+  public equals(other: ViewState): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
 
   public toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
@@ -153,6 +125,9 @@ export abstract class ViewState extends ElementState {
       json.description = this.description;
     return json;
   }
+
+  /** Get the name of this ViewDefinition */
+  public get name(): string { return this.code.getValue(); }
 
   public get backgroundColor(): ColorDef { return this.displayStyle.backgroundColor; }
 
@@ -184,6 +159,10 @@ export abstract class ViewState extends ElementState {
    *  @note rot must be ortho-normal. For 2d views, only the rotation angle about the z axis is used.
    */
   public abstract setRotation(viewRot: RotMatrix): void;
+
+  public static getStandardViewMatrix(id: StandardViewId): RotMatrix { if (id < StandardViewId.Top || id > StandardViewId.RightIso) id = StandardViewId.Top; return standardViewMatrices[id]; }
+
+  public setStandardRotation(id: StandardViewId) { this.setRotation(ViewState.getStandardViewMatrix(id)); }
 
   /**  Get the target point of the view. If there is no camera, center is returned. */
   public getTargetPoint(result?: Point3d): Point3d { return this.getCenter(result); }
@@ -304,9 +283,6 @@ export abstract class ViewState extends ElementState {
 
     return error;
   }
-
-  /** Get the name of this ViewDefinition */
-  public get name(): string { return this.code.getValue(); }
 
   /** Get the current value of a view detail */
   public getDetail(name: string): any { const v = this.getDetails()[name]; return v ? v : {}; }
@@ -569,12 +545,13 @@ export class Camera implements CameraProps {
   public readonly eye: Point3d;
 
   public static isValidLensAngle(val: Angle) { return val.radians > (Math.PI / 8.0) && val.radians < Math.PI; }
+  public static validateLensAngle(val: Angle) { if (!this.isValidLensAngle(val)) val.setRadians(Math.PI / 2.0); }
   public invalidateFocus() { this.focusDist = 0.0; }
   public isFocusValid() { return this.focusDist > 0.0 && this.focusDist < 1.0e14; }
   public getFocusDistance() { return this.focusDist; }
   public setFocusDistance(dist: number) { this.focusDist = dist; }
   public isLensValid() { return Camera.isValidLensAngle(this.lens); }
-  public validateLens() { if (!this.isLensValid()) this.lens.setFrom(Angle.createRadians(Math.PI / 2.0)); }
+  public validateLens() { Camera.validateLensAngle(this.lens); }
   public getLensAngle() { return this.lens; }
   public setLensAngle(angle: Angle) { this.lens.setFrom(angle); }
   public getEyePoint() { return this.eye; }
@@ -992,9 +969,11 @@ export class SpatialViewState extends ViewState3d {
   constructor(props: SpatialViewDefinitionProps, iModel: IModel, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, public modelSelector: ModelSelectorState) {
     super(props, iModel, arg3, displayStyle);
     if (arg3 instanceof SpatialViewState) { // from clone
-      this.modelSelector = arg3.modelSelector;
+      this.modelSelector = arg3.modelSelector.clone();
     }
   }
+  public equals(other: SpatialViewState): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
+
   public static getClassFullName(): string { return this.schemaName + ":SpatialViewDefinition"; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
   public getViewedExtents(): AxisAlignedBox3d { return this.iModel.projectExtents; }

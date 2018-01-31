@@ -4,7 +4,7 @@
 import { Vector3d, XYZ, Point3d, Range3d, RotMatrix, Transform, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ } from "@bentley/geometry-core/lib/PointVector";
 import { Map4d, Point4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { AxisOrder, Angle, AngleSweep } from "@bentley/geometry-core/lib/Geometry";
-import { ViewState, ViewStatus, MarginPercent, GridOrientationType } from "../common/ViewState";
+import { ViewState, ViewStatus, MarginPercent, GridOrientationType, Camera } from "../common/ViewState";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { ElementAlignedBox2d, Placement2d, Placement3d } from "../common/geometry/Primitives";
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core/lib/Time";
@@ -395,10 +395,15 @@ export class Viewport {
     return npcZ;
   }
 
-  public turnCameraOn(lensAngle: Angle): ViewStatus {
+  public turnCameraOn(lensAngle?: Angle): ViewStatus {
     const view = this.view;
     if (!view.is3d())
       return ViewStatus.InvalidViewport;
+
+    if (!lensAngle)
+      lensAngle = view.camera.lens;
+
+    Camera.validateLensAngle(lensAngle);
 
     if (view.isCameraOn())
       return view.lookAtUsingLensAngle(view.getEyePoint(), view.getTargetPoint(), view.getYVector(), lensAngle);
@@ -669,13 +674,12 @@ export class Viewport {
     if (!this._view)
       return;
 
-    const curr = this.view.clone<ViewState>();
     if (!this.currentBaseline) {
-      this.currentBaseline = curr;
+      this.currentBaseline = this.view.clone<ViewState>();
       return;
     }
 
-    if (curr.equals(this.currentBaseline))
+    if (this.view.equals(this.currentBaseline))
       return; // nothing changed
 
     if (this.backStack.length >= this.maxUndoSteps)
@@ -685,12 +689,11 @@ export class Viewport {
     this.forwardStack.length = 0;
 
     // now update our baseline to match the current settings.
-    this.currentBaseline = curr;
+    this.currentBaseline = this.view.clone<ViewState>();
   }
 
   public synchWithView(saveInUndo: boolean): void {
     this.setupFromView();
-
     if (saveInUndo)
       this.saveViewUndo();
   }

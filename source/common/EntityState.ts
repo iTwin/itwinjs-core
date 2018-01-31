@@ -39,7 +39,7 @@ export class EntityState implements EntityProps {
     return val;
   }
 
-  public equals<T extends EntityState>(other: T): boolean { return JSON.stringify(this.toJSON()) === JSON.stringify(other.toJSON()); }
+  public equals(other: EntityState): boolean { return JSON.stringify(this.toJSON()) === JSON.stringify(other.toJSON()); }
 
   /** Make an independent copy of this EntityState */
   public clone<T extends EntityState>() { return new (this.constructor as EntityStateCtor)(this.toJSON(), this.iModel, this) as T; }

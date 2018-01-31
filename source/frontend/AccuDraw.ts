@@ -5,7 +5,7 @@ import { Point3d, Vector3d, RotMatrix, Point2d, Transform } from "@bentley/geome
 import { Viewport } from "./Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { Geometry } from "@bentley/geometry-core/lib/Geometry";
-import { StandardViewId, standardViewMatrices } from "../common/ViewState";
+import { StandardViewId, ViewState } from "../common/ViewState";
 import { CoordinateLockOverrides } from "./tools/ToolAdmin";
 import { ColorDef, ColorRgb } from "../common/ColorDef";
 import { BeButtonEvent, CoordSource, BeModifierKey } from "./tools/Tool";
@@ -1261,11 +1261,8 @@ export class AccuDraw {
   }
 
   public static getStandardRotation(nStandard: StandardViewId, vp: Viewport | undefined, useACS: boolean, out?: RotMatrix): RotMatrix {
-    if (nStandard < StandardViewId.Top || nStandard > StandardViewId.RightIso)
-      nStandard = StandardViewId.Top;
-
     const rMatrix = out ? out : new RotMatrix();
-    rMatrix.setFrom(standardViewMatrices[nStandard]);
+    rMatrix.setFrom(ViewState.getStandardViewMatrix(nStandard));
     const useVp = vp ? vp : iModelApp.viewManager.selectedView;
     if (!useACS || !useVp)
       return rMatrix;

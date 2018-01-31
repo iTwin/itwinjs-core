@@ -255,9 +255,7 @@ describe("iModel", () => {
     };
 
     const selector = new ModelSelectorState(props, imodel1);
-    selector.addModel(new Id64([2, 1]));
-    selector.addModel(new Id64([2, 1]));
-    selector.addModel(new Id64([2, 3]));
+    selector.addModels([new Id64([2, 1]), new Id64([2, 1]), new Id64([2, 3])]);
     assert.equal(selector.models.size, 3);
     const out = selector.toJSON();
     assert.isArray(out.models);

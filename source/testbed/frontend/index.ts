@@ -17,7 +17,10 @@ TestbedConfig.ipc = ipcRenderer;
 remote.getCurrentWindow().setTitle(TestbedConfig.gatewayParams.info.title);
 remote.require(path.join(__dirname, "../backend/index"));
 
-describe("Testbed", () => {
+// tslint:disable:only-arrow-functions
+// tslint:disable:space-before-function-paren
+describe("Testbed", function () {
+  this.timeout(99999);
   it("Server should be accessible", (done) => {
     const info = TestbedConfig.gatewayParams.info;
 
@@ -35,14 +38,15 @@ describe("Testbed", () => {
 
   it("TestData should load", async () => {
     await TestData.load();
-  }).timeout(99999);
+  });
 });
 
 for (const entry of IModelJsFs.readdirSync(__dirname)) {
   if (entry.indexOf(".test.js") !== -1 && entry.indexOf(".test.js.map") === -1) {
     const entryPath = `${__dirname}/${entry}`;
 
-    describe(entry, () => {
+    describe(entry, function () {
+      this.timeout(99999);
       it("should be compatible with webpack", (done) => {
         const compiler = webpack({
           entry: entryPath, node: {
@@ -65,7 +69,7 @@ for (const entry of IModelJsFs.readdirSync(__dirname)) {
           assert.isFalse(stats.hasWarnings());
           done();
         });
-      }).timeout(99999);
+      });
     });
 
     require(entryPath);

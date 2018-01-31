@@ -7,13 +7,14 @@ import { CodeSpec, CodeSpecNames } from "../../common/Code";
 import { ElementProps, ViewDefinitionProps } from "../../common/ElementProps";
 import { Model2dState } from "../../common/EntityState";
 import { ModelProps } from "../../common/ModelProps";
-import { CategorySelectorState, DrawingViewState, OrthographicViewState, ViewState } from "../../common/ViewState";
+import { DrawingViewState, OrthographicViewState, ViewState } from "../../common/ViewState";
 import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "../../frontend/IModelConnection";
 import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { DateTime, Blob, NavigationValue } from "../../common/ECSqlBindingValues";
 import { TestData } from "./TestData";
 import { ModelSelectorState } from "../../common/ModelSelectorState";
 import { DisplayStyle3dState, DisplayStyle2dState } from "../../common/DisplayStyleState";
+import { CategorySelectorState } from "../../common/CategorySelectorState";
 
 // spell-checker: disable
 
@@ -60,7 +61,7 @@ describe("IModelConnection", () => {
 
     let viewDefinitionProps: ViewDefinitionProps[] = await iModel.views.queryViewDefinitionProps("BisCore.OrthographicViewDefinition");
     assert.isAtLeast(viewDefinitionProps.length, 1);
-    let viewState: ViewState = await iModel.views.loadViewState(new Id64(viewDefinitionProps[0].id));
+    let viewState: ViewState = await iModel.views.loadView(viewDefinitionProps[0].id!);
     assert.exists(viewState);
     assert.equal(viewState.classFullName, OrthographicViewState.getClassFullName());
     assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.getClassFullName());
@@ -72,7 +73,7 @@ describe("IModelConnection", () => {
 
     viewDefinitionProps = await iModel.views.queryViewDefinitionProps("BisCore.DrawingViewDefinition");
     assert.isAtLeast(viewDefinitionProps.length, 1);
-    viewState = await iModel.views.loadViewState(new Id64(viewDefinitionProps[0].id));
+    viewState = await iModel.views.loadView(viewDefinitionProps[0].id!);
     assert.exists(viewState);
     assert.equal(viewState.classFullName, DrawingViewState.getClassFullName());
     assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.getClassFullName());

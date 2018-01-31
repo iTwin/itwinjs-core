@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64Set } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64, Id64Arg } from "@bentley/bentleyjs-core/lib/Id";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
@@ -14,11 +14,12 @@ import { IModelError, IModelStatus } from "../common/IModelError";
 import { ModelProps } from "../common/ModelProps";
 import { IModelGateway } from "../gateway/IModelGateway";
 import { IModelVersion } from "../common/IModelVersion";
-import { CategorySelectorState, DrawingViewState, OrthographicViewState, SheetViewState, SpatialViewState, ViewState, ViewState2d } from "../common/ViewState";
+import { DrawingViewState, OrthographicViewState, SheetViewState, SpatialViewState, ViewState, ViewState2d } from "../common/ViewState";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { HilitedSet, SelectionSet } from "./SelectionSet";
 import { DisplayStyle3dState, DisplayStyle2dState } from "../common/DisplayStyleState";
 import { ModelSelectorState } from "../common/ModelSelectorState";
+import { CategorySelectorState } from "../common/CategorySelectorState";
 
 /** A connection to an iModel database hosted on the backend. */
 export class IModelConnection extends IModel {
@@ -166,7 +167,7 @@ export class IModelConnectionElements {
   public get rootSubjectId(): Id64 { return new Id64("0x1"); }
 
   /** Ask the backend for a batch of [[ElementProps]] given a list of element ids. */
-  public async getElementProps(arg: Id64[] | Id64 | Id64Set | string[] | string): Promise<ElementProps[]> {
+  public async getElementProps(arg: Id64Arg): Promise<ElementProps[]> {
     let idArray: string[] = [];
     if (Array.isArray(arg)) {
       if (arg.length > 0) {
@@ -269,9 +270,9 @@ export class IModelConnectionViews {
     return viewDefinitionProps;
   }
 
-  /** Load a [[ViewState]] object from the specified [[ViewDefinition]] identifier. */
-  public async loadViewState(viewDefinitionId: Id64): Promise<ViewState> {
-    const viewStateData: any = await IModelGateway.getProxy().getViewStateData(this._iModel.iModelToken, viewDefinitionId.toString());
+  /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
+  public async loadView(viewDefinitionId: Id64 | string): Promise<ViewState> {
+    const viewStateData: any = await IModelGateway.getProxy().getViewStateData(this._iModel.iModelToken, typeof viewDefinitionId === "string" ? viewDefinitionId : viewDefinitionId.value);
     const categorySelectorState = new CategorySelectorState(viewStateData.categorySelectorProps, this._iModel);
 
     switch (viewStateData.viewDefinitionProps.classFullName) {

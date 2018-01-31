@@ -6,7 +6,7 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
 import { Point3d, Vector3d, YawPitchRollAngles, Range3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { SpatialViewState, CategorySelectorState, ViewStatus, Camera, MarginPercent, standardView } from "../common/ViewState";
+import { SpatialViewState, ViewStatus, Camera, MarginPercent, StandardView } from "../common/ViewState";
 import { IModelDb } from "../backend/IModelDb";
 import { DisplayStyle3d, SpatialViewDefinition } from "../backend/ViewDefinition";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -16,6 +16,7 @@ import { CategorySelectorProps, ModelSelectorProps } from "../common/ElementProp
 import { KnownTestLocations } from "./KnownTestLocations";
 import { DisplayStyle3dState } from "../common/DisplayStyleState";
 import { ModelSelectorState } from "../common/ModelSelectorState";
+import { CategorySelectorState } from "../common/CategorySelectorState";
 
 // spell-checker: disable
 
@@ -155,8 +156,8 @@ describe("ViewState", () => {
     assert.instanceOf(acs, AuxCoordSystemSpatialState);
     acs.setOrigin({ x: 1, y: 1 });
     assert.isTrue(acs.getOrigin().isExactEqual({ x: 1, y: 1, z: 0 }));
-    acs.setRotation(standardView.Iso);
-    assert.isTrue(acs.getRotation().isExactEqual(standardView.Iso));
+    acs.setRotation(StandardView.Iso);
+    assert.isTrue(acs.getRotation().isExactEqual(StandardView.Iso));
   });
 
   // C++ Tests:

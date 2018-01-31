@@ -21,6 +21,9 @@ export abstract class DisplayStyleState extends ElementState {
     this._background = ColorDef.fromJSON(this.getStyle("backgroundColor"));
   }
 
+  /** Get the name of this DisplayStyle */
+  public get name(): string { return this.code.getValue(); }
+
   public get viewFlags(): ViewFlags { return this._viewFlags; }
   public set viewFlags(flags: ViewFlags) { this._viewFlags = flags; this.setStyle("viewflags", flags); }
 
