@@ -2,7 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { Point2d, Point3d, RotMatrix, Transform, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
+import { Point2d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
+import { RotMatrix, Transform} from "@bentley/geometry-core/lib/Transform";
 import { Geometry } from "@bentley/geometry-core/lib/Geometry";
 import { ColorDef } from "../ColorDef";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";

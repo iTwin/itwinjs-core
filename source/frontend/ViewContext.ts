@@ -3,7 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { Viewport } from "./Viewport";
 import { Sprite } from "./Sprites";
-import { Point3d, Vector3d, RotMatrix, Point2d, Transform } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, Vector3d, Point2d} from "@bentley/geometry-core/lib/PointVector";
+import { RotMatrix, Transform} from "@bentley/geometry-core/lib/Transform";
 import { HitDetail, SnapMode, SnapDetail } from "./HitDetail";
 import { DecorationList, GraphicList, Decorations, Graphic, GraphicType, GraphicBuilder } from "../common/Render";
 import { ACSDisplayOptions, AuxCoordSystemState } from "../common/AuxCoordSys";

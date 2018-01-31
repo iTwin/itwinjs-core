@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { Transform } from "@bentley/geometry-core/lib/PointVector";
+import { Transform } from "@bentley/geometry-core/lib/Transform";
 import { LineStyleInfo } from "./LineStyle";
 import { GradientSymb } from "./GradientPattern";
 import { PatternParams } from "./AreaPattern";

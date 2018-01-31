@@ -4,7 +4,8 @@
 import { ViewState } from "./ViewState";
 import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps } from "./ElementProps";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { Point3d, RotMatrix, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY } from "@bentley/geometry-core/lib/PointVector";
+import { RotMatrix } from "@bentley/geometry-core/lib/Transform";
 import { IModel } from "./IModel";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Code, CodeSpecNames } from "./Code";

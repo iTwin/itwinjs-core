@@ -2,7 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Point3d, YawPitchRollAngles, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
+import { RotMatrix } from "@bentley/geometry-core/lib/Transform";
 import { SpatialViewState, CategorySelectorState, ViewState, Camera } from "../../common/ViewState";
 import { Frustum } from "../../common/Frustum";
 import { IModelConnection } from "../../frontend/IModelConnection";
