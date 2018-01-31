@@ -70,6 +70,33 @@ class CopyAssetsPlugin {
   }
 }
 
+// Merges the contents of the @bentley packages we depend on with the public folder.
+function isDirectory (directoryName) {
+  return (fs.statSync(path.resolve (this.bentleyDir, directoryName)).isDirectory());
+}
+class CopyBentleyDependencyPublicFoldersPlugin {
+
+  apply(compiler) {
+    compiler.plugin("environment", () => {
+      const bentleyDir = paths.appBentleyNodeModules;
+      // go through all node_modules/@bentley directories. If there's a "public" folder, copy its contents
+      const subDirectoryNames = fs.readdirSync(bentleyDir).filter(isDirectory, { bentleyDir: paths.appBentleyNodeModules });
+      for (const thisSubDir of subDirectoryNames) {
+        const fullDirName = path.resolve (bentleyDir, thisSubDir );
+        const testDir = path.resolve (fullDirName, "public");
+        try {
+          if (fs.statSync(testDir).isDirectory()) {
+            fs.copySync (testDir, paths.appLibPublic, { dereference: true, preserveTimestamps: true, overwrite: false, errorOnExist: true});
+    
+          }
+        } catch (_err) {
+          // do nothing.
+        }
+      }
+    });
+  }
+}
+
 class BanFrontendImportsPlugin extends BanImportsPlugin {
   constructor() {
     super("BACKEND", "FRONTEND", paths.appSrcFrontend, /imodeljs-frontend/);
@@ -87,4 +114,5 @@ module.exports = {
   BanBackendImportsPlugin,
   CopyNativeAddonsPlugin,
   CopyAssetsPlugin,
+  CopyBentleyDependencyPublicFoldersPlugin
 };

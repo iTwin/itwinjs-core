@@ -61,28 +61,6 @@ exports.handler = async (argv) => {
     });
   }
 
-  function isDirectory (directoryName) {
-    return (fs.statSync(path.resolve (this.bentleyDir, directoryName)).isDirectory());
-  }
-
-  function copyBentleyDependencyPublicFolders() {
-    const bentleyDir = paths.appBentleyNodeModules;
-    // go through all node_modules/@bentley directories. If there's a "public" folder, copy its contents
-    const subDirectoryNames = fs.readdirSync(bentleyDir).filter(isDirectory, { bentleyDir: paths.appBentleyNodeModules });
-    for (const thisSubDir of subDirectoryNames) {
-      const fullDirName = path.resolve (bentleyDir, thisSubDir );
-      const testDir = path.resolve (fullDirName, "public");
-      try {
-        if (fs.statSync(testDir).isDirectory()) {
-          fs.copySync (testDir, paths.appLibPublic, { dereference: true, preserveTimestamps: true, overwrite: false, errorOnExist: true});
-
-        }
-      } catch (_err) {
-        // do nothing.
-      }
-    }    
-  }
-
   const measureFileSizesBeforeBuild = FileSizeReporter.measureFileSizesBeforeBuild;
   const printFileSizesAfterBuild = FileSizeReporter.printFileSizesAfterBuild;
 
@@ -106,8 +84,6 @@ exports.handler = async (argv) => {
   // Merge with the public folder
   copyPublicFolder();
 
-  // Merge the contents of the @bentley packages we depend on with the public folder.
-  copyBentleyDependencyPublicFolders();
   
   // Start the webpack backend build
   if (argv.only !== "frontend") {
