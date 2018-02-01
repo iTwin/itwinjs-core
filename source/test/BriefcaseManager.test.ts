@@ -174,7 +174,7 @@ describe("BriefcaseManager", () => {
     iModel.close(accessToken);
   });
 
-  it.only("should write to briefcase with optimistic concurrency", async () => {
+  it("should write to briefcase with optimistic concurrency", async () => {
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "ReadWriteTest";
     const iModels: HubIModel[] = await IModelTestUtils.hubClient.getIModels(accessToken, testProjectId, {
