@@ -34,8 +34,5 @@
   },
   "//devDependencies": "NOTE: all devDependencies should be recorded in the top-level package.json only",
   "devDependencies": {
-    "@types/i18next": "^8.4.2",
-    "@types/i18next-browser-languagedetector": "^2.0.1",
-    "@types/i18next-xhr-backend": "^1.4.1"
   }
 }
