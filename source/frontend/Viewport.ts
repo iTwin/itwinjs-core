@@ -2,8 +2,8 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ } from "@bentley/geometry-core/lib/PointVector";
-import {  Range3d} from "@bentley/geometry-core/lib/Range";
-import {  RotMatrix, Transform} from "@bentley/geometry-core/lib/Transform";
+import { Range3d } from "@bentley/geometry-core/lib/Range";
+import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
 import { Map4d, Point4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { AxisOrder, Angle, AngleSweep } from "@bentley/geometry-core/lib/Geometry";
 import { ViewState, ViewStatus, MarginPercent, GridOrientationType, Camera } from "../common/ViewState";
@@ -43,12 +43,14 @@ export class DepthRangeNpc {
   public middle(): number { return this.minimum + ((this.maximum - this.minimum) / 2.0); }
 }
 
-/** Enumeration of possible coordinate system types */
+/** Coordinate system types */
 export const enum CoordSystem {
-  Screen = 0,  // Coordinates are relative to the origin of the screen
-  View = 1,    // Coordinates are relative to the origin of the view
-  Npc = 2,     // Coordinates are relative to normalized plane coordinates.
-  World = 3,   // Coordinates are relative to the world coordinate system for the physical elements in the iModel
+  /** Coordinates are relative to the origin of the view */
+  View,
+  /** Coordinates are relative to normalized plane coordinates. */
+  Npc,
+  /** Coordinates are relative to the world coordinate system for the physical elements in the iModel */
+  World,
 }
 
 /** object to animate frustum transition of a viewport */
@@ -501,7 +503,7 @@ export class Viewport {
     this.backStack.length = 0;
   }
 
-  /** Set up this Viewport from its ViewState */
+  /** Establish the parameters of this Viewport from the current information in its ViewState */
   public setupFromView(): ViewStatus {
     const view = this.view;
     if (!view)
@@ -596,7 +598,7 @@ export class Viewport {
     return ViewStatus.Success;
   }
 
-  /** compute the root-to-npc map given an origin and delta. View orientation and camera comes from member variables. */
+  /** Compute the root-to-npc map given an origin and delta. View orientation and camera comes from member variables. */
   private rootToNpcFromViewDef(rootToNpc: Map4d, inOrigin: Point3d, delta: Vector3d): number | undefined {
     const view = this.view;
     const viewRot = this.rotMatrix;
@@ -672,72 +674,121 @@ export class Viewport {
     return frustFraction;
   }
 
+  /**
+   * Check whether the ViewState of this Viewport has changed since the last call to this function.
+   * If so, save a *clone* of the previous state in the view undo stack to permit View Undo.
+   */
   private saveViewUndo(): void {
     if (!this._view)
       return;
 
-    if (!this.currentBaseline) {
+    if (!this.currentBaseline) { // the first time we're called we need to establish the "baseline"
       this.currentBaseline = this.view.clone<ViewState>();
       return;
     }
 
-    if (this.view.equals(this.currentBaseline))
-      return; // nothing changed
+    if (this.view.equals(this.currentBaseline)) // this does a deep compare of the ViewState plus DisplayStyle, CategorySelector, and ModelSelector
+      return; // nothing changed, we're done
 
-    if (this.backStack.length >= this.maxUndoSteps)
-      this.backStack.shift();
+    if (this.backStack.length >= this.maxUndoSteps) // don't save more than max
+      this.backStack.shift(); // remove the oldest entry
 
-    this.backStack.push(this.currentBaseline);
-    this.forwardStack.length = 0;
+    this.backStack.push(this.currentBaseline); // save previous state
+    this.forwardStack.length = 0; // not possible to do redo now
 
-    // now update our baseline to match the current settings.
-    this.currentBaseline = this.view.clone<ViewState>();
+    this.currentBaseline = this.view.clone<ViewState>(); // now update our baseline to match the current state
   }
 
+  /** Call setupFrom view on this Viewport. Optionally, save previous state in view undo stack */
   public synchWithView(saveInUndo: boolean): void {
     this.setupFromView();
     if (saveInUndo)
       this.saveViewUndo();
   }
 
+  /** Convert an array of points from CoordSystem.View to CoordSystem.Npc */
   public viewToNpcArray(pts: Point3d[]): void {
     const corners = this.getViewCorners();
     const scrToNpcTran = Transform.createIdentity();
     Transform.initFromRange(corners.low, corners.high, undefined, scrToNpcTran);
     scrToNpcTran.multiplyPoint3dArrayInPlace(pts);
   }
-
+  /** Convert an array of points from CoordSystem.Npc to CoordSystem.View */
   public npcToViewArray(pts: Point3d[]): void {
     const corners = this.getViewCorners();
     const npcToSrcTran = Transform.createIdentity();
     Transform.initFromRange(corners.low, corners.high, npcToSrcTran, undefined);
     npcToSrcTran.multiplyPoint3dArrayInPlace(pts);
   }
-
+  /**
+   * Convert a point from CoordSystem.View to CoordSystem.Npc
+   * @param pt the point to convert
+   * @param out optional location for result. If undefined, a new Point3d is created.
+   */
   public viewToNpc(pt: Point3d, out?: Point3d): Point3d {
     const corners = this.getViewCorners();
     const scrToNpcTran = Transform.createIdentity();
     Transform.initFromRange(corners.low, corners.high, undefined, scrToNpcTran);
     return scrToNpcTran.multiplyPoint(pt, out);
   }
-
+  /**
+   * Convert a point from CoordSystem.Npc to CoordSystem.View
+   * @param pt the point to convert
+   * @param out optional location for result. If undefined, a new Point3d is created.
+   */
   public npcToView(pt: Point3d, out?: Point3d): Point3d {
     const corners = this.getViewCorners();
     const scrToNpcTran = Transform.createIdentity();
     Transform.initFromRange(corners.low, corners.high, scrToNpcTran, undefined);
     return scrToNpcTran.multiplyPoint(pt, out);
   }
+  /** Convert an array of points from CoordSystem.World to CoordSystem.Npc */
   public worldToNpcArray(pts: Point3d[]): void { this.rootToNpc.transform0.multiplyPoint3dArrayQuietNormalize(pts); }
+  /** Convert an array of points from CoordSystem.Npc to CoordSystem.World */
   public npcToWorldArray(pts: Point3d[]): void { this.rootToNpc.transform1.multiplyPoint3dArrayQuietNormalize(pts); }
+  /** Convert an array of points from CoordSystem.World to CoordSystem.View */
   public worldToViewArray(pts: Point3d[]): void { this.rootToView.transform0.multiplyPoint3dArrayQuietNormalize(pts); }
+  /** Convert an array of points from CoordSystem.World to CoordSystem.View, as Point4ds */
   public worldToView4dArray(worldPts: Point3d[], viewPts: Point4d[]): void { this.rootToView.transform0.multiplyPoint3dArray(worldPts, viewPts); }
+  /** Convert an array of points from CoordSystem.View to CoordSystem.World */
   public viewToWorldArray(pts: Point3d[]) { this.rootToView.transform1.multiplyPoint3dArrayQuietNormalize(pts); }
+  /** Convert an array of points from CoordSystem.View as Point4ds to CoordSystem.World */
   public view4dToWorldArray(viewPts: Point4d[], worldPts: Point3d[]): void { this.rootToView.transform1.multiplyPoint4dArrayQuietRenormalize(viewPts, worldPts); }
+  /**
+   * Convert a point from CoordSystem.World to CoordSystem.Npc
+   * @param pt the point to convert
+   * @param out optional location for result. If undefined, a new Point3d is created.
+   */
   public worldToNpc(pt: Point3d, out?: Point3d): Point3d { return this.rootToNpc.transform0.multiplyPoint3dQuietNormalize(pt, out); }
+  /**
+   * Convert a point from CoordSystem.Npc to CoordSystem.World
+   * @param pt the point to convert
+   * @param out optional location for result. If undefined, a new Point3d is created.
+   */
   public npcToWorld(pt: Point3d, out?: Point3d): Point3d { return this.rootToNpc.transform1.multiplyPoint3dQuietNormalize(pt, out); }
+  /**
+   * Convert a point from CoordSystem.World to CoordSystem.View
+   * @param pt the point to convert
+   * @param out optional location for result. If undefined, a new Point3d is created.
+   */
   public worldToView(input: Point3d, out?: Point3d): Point3d { return this.rootToView.transform0.multiplyPoint3dQuietNormalize(input, out); }
+  /**
+   * Convert a point from CoordSystem.World to CoordSystem.View as Point4d
+   * @param input the point to convert
+   * @param out optional location for result. If undefined, a new Point4d is created.
+   */
   public worldToView4d(input: Point3d, out?: Point4d): Point4d { return this.rootToView.transform0.multiplyPoint3d(input, 1.0, out); }
+  /**
+   * Convert a point from CoordSystem.View to CoordSystem.World
+   * @param pt the point to convert
+   * @param out optional location for result. If undefined, a new Point3d is created.
+   */
   public viewToWorld(input: Point3d, out?: Point3d): Point3d { return this.rootToView.transform1.multiplyPoint3dQuietNormalize(input, out); }
+  /**
+   * Convert a point from CoordSystem.View as a Point4d to CoordSystem.View
+   * @param input the point to convert
+   * @param out optional location for result. If undefined, a new Point3d is created.
+   */
   public view4dToWorld(input: Point4d, out?: Point3d): Point3d { return this.rootToView.transform1.multiplyXYZWQuietRenormalize(input.x, input.y, input.z, input.w, out); }
 
   /** Converts inches to pixels based on screen DPI.
@@ -1046,7 +1097,7 @@ export class Viewport {
     const startFrust = this.getFrustum();
     this._view = val.clone<ViewState>();
     this.synchWithView(false);
-    //    this._changeFov = true;
+    // this._changeFov = true;
     this.animateFrustumChange(startFrust!, this.getFrustum()!, animationTime);
   }
 
@@ -1184,7 +1235,6 @@ export class Viewport {
     this.view4dToWorldArray(viewPts, worldPts);
 
     switch (coordSys) {
-      case CoordSystem.Screen:
       case CoordSystem.View:
         this.worldToViewArray(worldPts);
         break;
@@ -1265,6 +1315,7 @@ export class Viewport {
     context.addViewOverlay(graphic.finish()!);
   }
 
+  /** @hidden */
   public drawLocateCursor(context: DecorateContext, pt: Point3d, aperture: number, isLocateCircleOn: boolean, hit?: HitDetail): void {
     if (hit)
       Viewport.drawLocateHitDetail(context, aperture, hit);
@@ -1273,6 +1324,7 @@ export class Viewport {
       Viewport.drawLocateCircle(context, aperture, pt);
   }
 
+  /** Get a color that will contrast to the current background color of this Viewport. Either Black or White depending on which will have the most contrast. */
   public getContrastToBackgroundColor(): ColorDef {
     const bgColor = this.view.backgroundColor.getColors();
     const invert = ((bgColor.r + bgColor.g + bgColor.b) > (255 * 3) / 2);

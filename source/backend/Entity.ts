@@ -224,7 +224,7 @@ export class EntityMetaData {
   public static forEach(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean) {
     const meta = iModel.classMetaDataRegistry.find(classFullName);
     if (meta === undefined) {
-      throw ClassRegistry.makeMetaDataNotFoundError();
+      throw ClassRegistry.makeMetaDataNotFoundError(classFullName);
     }
 
     for (const propName in meta.properties) {

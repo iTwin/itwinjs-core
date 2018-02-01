@@ -406,7 +406,7 @@ export class IModelDb extends IModel {
     try {
       entity = ClassRegistry.createInstance(props, this);
     } catch (err) {
-      if (!ClassRegistry.isClassNotFoundError(err) && !ClassRegistry.isMetaDataNotFoundError(err)) {
+      if (!ClassRegistry.isNotFoundError(err)) {
         Logger.logError(err.toString());
         throw err;
       }
@@ -427,7 +427,7 @@ export class IModelDb extends IModel {
       this.loadMetaData(classFullName);
       metadata = this.classMetaDataRegistry.find(classFullName);
       if (metadata === undefined)
-        throw ClassRegistry.makeMetaDataNotFoundError(); // do not log
+        throw ClassRegistry.makeMetaDataNotFoundError(classFullName); // do not log
     }
     return metadata;
   }
