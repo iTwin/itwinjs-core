@@ -10,7 +10,7 @@ import { ModelProps } from "../../common/ModelProps";
 import { DrawingViewState, OrthographicViewState, ViewState } from "../../common/ViewState";
 import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "../../frontend/IModelConnection";
 import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { DateTime, Blob, NavigationValue } from "../../common/ECSqlBindingValues";
+import { DateTime, Blob, NavigationBindingValue } from "../../common/ECSqlTypes";
 import { TestData } from "./TestData";
 import { ModelSelectorState } from "../../common/ModelSelectorState";
 import { DisplayStyle3dState, DisplayStyle2dState } from "../../common/DisplayStyleState";
@@ -83,6 +83,8 @@ describe("IModelConnection", () => {
     assert.instanceOf(viewState.displayStyle, DisplayStyle2dState);
     assert.instanceOf((viewState as DrawingViewState).baseModel, Model2dState);
 
+    assert.exists(iModel.projectExtents);
+
     await iModel.close(TestData.accessToken);
   }).timeout(99999);
 
@@ -94,14 +96,14 @@ describe("IModelConnection", () => {
     assert.equal(rows.length, 1);
     let expectedRow = rows[0];
     let actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement3d WHERE ECInstanceId=? AND Model=? AND LastMod=? AND CodeValue=? AND FederationGuid=? AND Origin=?",
-      [new Id64(expectedRow.id), new NavigationValue(expectedRow.model.id), new DateTime(expectedRow.lastMod), expectedRow.codeValue,
+      [new Id64(expectedRow.id), new NavigationBindingValue(expectedRow.model.id), new DateTime(expectedRow.lastMod), expectedRow.codeValue,
       new Blob(expectedRow.federationGuid), new Point3d(expectedRow.origin.x, expectedRow.origin.y, expectedRow.origin.z)]);
     assert.equal(actualRows.length, 1);
     assert.equal(actualRows[0], 1);
 
     actualRows = await iModel.executeQuery("SELECT 1 FROM bis.Element WHERE ECInstanceId=:id AND Model=:model AND LastMod=:lastmode AND CodeValue=:codevalue AND FederationGuid=:fedguid AND Origin=:origin",
       {
-        id: new Id64(expectedRow.id), model: new NavigationValue(expectedRow.model.id), lastmod: new DateTime(expectedRow.lastMod),
+        id: new Id64(expectedRow.id), model: new NavigationBindingValue(expectedRow.model.id), lastmod: new DateTime(expectedRow.lastMod),
         codevalue: expectedRow.codeValue, fedguid: new Blob(expectedRow.federationGuid), origin: new Point3d(expectedRow.origin.x, expectedRow.origin.y, expectedRow.origin.z),
       });
     assert.equal(actualRows.length, 1);

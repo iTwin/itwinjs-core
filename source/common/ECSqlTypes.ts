@@ -3,7 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
-/** A DateTime value which can be bound to an ECSQL parameter
+/** An ECSQL DateTime value.
+ * It is returned from ECSQL SELECT for date time properties or expressions.
+ * It is also used to bind a date time value to a date time ECSQL parameter.
  */
 export class DateTime {
   /** Contructor
@@ -12,9 +14,20 @@ export class DateTime {
    public constructor(public isoString: string) {}
 }
 
-/** A Navigation property value which can be bound to an ECSQL parameter
+/** An ECSQL Navigation value.
+ * It is returned from ECSQL SELECT for navigation properties.
  */
 export class NavigationValue {
+  /** Contructor
+   * @param navId ECInstanceId of the related instance
+   * @param relClassName Fully qualified class name of the relationship backing the Navigation property
+   */
+   public constructor(public navId: Id64, public relClassName?: string) {}
+}
+
+/** An ECSQL Navigation value which can be bound to a navigation property ECSQL parameter
+ */
+export class NavigationBindingValue extends NavigationValue {
   /** Contructor
    * @param navId ECInstanceId of the related instance
    * @param relClassName Fully qualified class name of the relationship backing the Navigation property
@@ -22,10 +35,12 @@ export class NavigationValue {
    * if other ECDb files are attached to the primary one. In case a schema exists in more than one of the files,
    * pass the table space to disambiguate.
    */
-   public constructor(public navId: Id64, public relClassName?: string, public relClassTableSpace?: string) {}
+   public constructor(public navId: Id64, public relClassName?: string, public relClassTableSpace?: string) { super(navId, relClassName); }
 }
 
-/** A BLOB value which can be bound to an ECSQL parameter
+/** An ECSQL Blob value.
+ * It is returned from ECSQL SELECT for Blob properties or expressions.
+ * It is also used to bind a Blob value to a Blob ECSQL parameter.
  */
 export class Blob {
   /** Contructor
