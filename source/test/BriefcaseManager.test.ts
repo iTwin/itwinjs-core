@@ -8,7 +8,6 @@ import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState } fro
 import { IModelVersion } from "../common/IModelVersion";
 import { BriefcaseManager } from "../backend/BriefcaseManager";
 import { IModelDb, ConcurrencyControl } from "../backend/IModelDb";
-import { IModelConnection } from "../frontend/IModelConnection";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Code } from "../common/Code";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
@@ -57,7 +56,7 @@ describe("BriefcaseManager", () => {
   });
 
   it("should be able to open an IModel from the Hub in Readonly mode", async () => {
-    const iModel: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId);
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
     assert.exists(iModel);
     assert(iModel.iModelToken.openMode === OpenMode.Readonly);
 
@@ -81,15 +80,15 @@ describe("BriefcaseManager", () => {
   });
 
   it("should reuse open briefcases in Readonly mode", async () => {
-    const iModel0: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId);
+    const iModel0: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId);
     assert.exists(iModel0);
 
     const briefcases = IModelJsFs.readdirSync(iModelLocalReadonlyPath);
     expect(briefcases.length).greaterThan(0);
 
-    const iModels = new Array<IModelConnection>();
+    const iModels = new Array<IModelDb>();
     for (let ii = 0; ii < 5; ii++) {
-      const iModel: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId);
+      const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId);
       assert.exists(iModel);
       iModels.push(iModel);
     }
@@ -118,10 +117,10 @@ describe("BriefcaseManager", () => {
     const versionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
 
     for (const [changeSetIndex, versionName] of versionNames.entries()) {
-      const iModelFromVersion: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.asOfChangeSet(testChangeSets[changeSetIndex].wsgId));
+      const iModelFromVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.asOfChangeSet(testChangeSets[changeSetIndex].wsgId));
       assert.exists(iModelFromVersion);
 
-      const iModelFromChangeSet: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.named(versionName));
+      const iModelFromChangeSet: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.named(versionName));
       assert.exists(iModelFromChangeSet);
     }
   });
@@ -146,7 +145,7 @@ describe("BriefcaseManager", () => {
     assert(devIModelId);
     const devChangeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, devIModelId, false);
     expect(devChangeSets.length).equals(0); // needs change sets
-    const devIModel: IModelConnection = await IModelConnection.open(accessToken, devProjectId, devIModelId, OpenMode.Readonly, IModelVersion.latest());
+    const devIModel: IModelDb = await IModelDb.open(accessToken, devProjectId, devIModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.exists(devIModel);
 
     IModelTestUtils.setIModelHubDeployConfig("QA");
@@ -156,7 +155,7 @@ describe("BriefcaseManager", () => {
     assert(qaIModelId);
     const qaChangeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, qaIModelId, false);
     expect(qaChangeSets.length).greaterThan(0);
-    const qaIModel: IModelConnection = await IModelConnection.open(accessToken, qaProjectId, qaIModelId, OpenMode.Readonly, IModelVersion.latest());
+    const qaIModel: IModelDb = await IModelDb.open(accessToken, qaProjectId, qaIModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.exists(qaIModel);
   });
 
