@@ -33,6 +33,5 @@
     "js-base64": "^2.4.0"
   },
   "//devDependencies": "NOTE: all devDependencies should be recorded in the top-level package.json only",
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }
