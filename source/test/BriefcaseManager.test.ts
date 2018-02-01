@@ -21,7 +21,7 @@ import { IModel } from "../common/IModel";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelJsFs } from "../backend/IModelJsFs";
 
-describe.skip("BriefcaseManager", () => {
+describe("BriefcaseManager", () => {
   let accessToken: AccessToken;
   let testProjectId: string;
   let testIModelId: string;
