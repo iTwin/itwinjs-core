@@ -174,6 +174,10 @@ export abstract class PrimitiveTool extends InteractiveTool {
     if (0 !== (iModelApp.toolAdmin.toolState.coordLockOvr & CoordinateLockOverrides.ACS))
       return true;
 
+    // We know the tool isn't doing a locate, we don't know what it will do with this point. Minimize erroneous filtering by restricting the check to when AccuSnap is tool enable (not user enabled)...
+    if (!iModelApp.accuSnap.isSnapEnabled())
+      return true;
+
     const extents = iModel.projectExtents;
     if (extents.containsPoint(ev.point))
       return true;
