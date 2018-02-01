@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { ECSqlInsertResult } from "../backend/ECSqlStatement";
-import { DateTime, Blob, NavigationValue } from "../common/ECSqlBindingValues";
+import { DateTime, Blob, NavigationBindingValue } from "../common/ECSqlTypes";
 import { ECDb } from "../backend/ECDb";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
@@ -407,7 +407,7 @@ describe("ECSqlStatement", () => {
     const childIds = new Array<Id64>();
     ecdb.withPreparedStatement("INSERT INTO test.Child(Name,Parent) VALUES(?,?)", (stmt) => {
       stmt.bindString(1, "Child 1");
-      stmt.bindNavigation(2, new NavigationValue(parentId, "Test.ParentHasChildren"));
+      stmt.bindNavigation(2, new NavigationBindingValue(parentId, "Test.ParentHasChildren"));
       let res: ECSqlInsertResult = stmt.stepForInsert();
       assert.equal(res.status, DbResult.BE_SQLITE_DONE);
       assert.isDefined(res.id);
@@ -416,7 +416,7 @@ describe("ECSqlStatement", () => {
       stmt.reset();
       stmt.clearBindings();
 
-      stmt.bindValues(["Child 2", new NavigationValue(parentId, "Test.ParentHasChildren")]);
+      stmt.bindValues(["Child 2", new NavigationBindingValue(parentId, "Test.ParentHasChildren")]);
       res = stmt.stepForInsert();
       assert.equal(res.status, DbResult.BE_SQLITE_DONE);
       assert.isDefined(res.id);
@@ -425,7 +425,7 @@ describe("ECSqlStatement", () => {
 
     ecdb.withPreparedStatement("INSERT INTO test.Child(Name,Parent) VALUES(:name,:parent)", (stmt) => {
       stmt.bindString("name", "Child 3");
-      stmt.bindNavigation("parent", new NavigationValue(parentId, "Test.ParentHasChildren"));
+      stmt.bindNavigation("parent", new NavigationBindingValue(parentId, "Test.ParentHasChildren"));
       let res: ECSqlInsertResult = stmt.stepForInsert();
       assert.equal(res.status, DbResult.BE_SQLITE_DONE);
       assert.isDefined(res.id);
@@ -434,7 +434,7 @@ describe("ECSqlStatement", () => {
       stmt.reset();
       stmt.clearBindings();
 
-      stmt.bindValues({name: "Child 4", parent: new NavigationValue(parentId, "Test.ParentHasChildren")});
+      stmt.bindValues({name: "Child 4", parent: new NavigationBindingValue(parentId, "Test.ParentHasChildren")});
       res = stmt.stepForInsert();
       assert.equal(res.status, DbResult.BE_SQLITE_DONE);
       assert.isDefined(res.id);

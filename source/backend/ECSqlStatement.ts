@@ -5,7 +5,7 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelError } from "../common/IModelError";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { DateTime, Blob, NavigationValue } from "../common/ECSqlBindingValues";
+import { DateTime, Blob, NavigationValue, NavigationBindingValue } from "../common/ECSqlTypes";
 import { XAndY, XY, XYAndZ, XYZ } from "@bentley/geometry-core/lib/PointVector";
 import { BindingUtility, BindingValue } from "./BindingUtility";
 import { using, IDisposable } from "@bentley/bentleyjs-core/lib/Disposable";
@@ -178,7 +178,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    *  @param param Index (1-based) or name of the parameter
    *  @param val Navigation property value
    */
-  public bindNavigation(param: number | string, val: NavigationValue): void {
+  public bindNavigation(param: number | string, val: NavigationBindingValue): void {
     using(this.getBinder(param), (binder) => binder.bindNavigation(val.navId.value, val.relClassName, val.relClassTableSpace));
     }
 
@@ -428,12 +428,16 @@ class ECSqlBindingHelper {
     if (val instanceof XY)
       return binder.bindPoint2d(val.x, val.y);
 
-    if (val instanceof NavigationValue)
+    if (val instanceof NavigationBindingValue)
       return binder.bindNavigation(val.navId.value, val.relClassName, val.relClassTableSpace);
+
+    if (val instanceof NavigationValue)
+      return binder.bindNavigation(val.navId.value, val.relClassName);
 
     return undefined;
   }
 }
+
 export class CachedECSqlStatement {
   public statement: ECSqlStatement;
   public useCount: number;

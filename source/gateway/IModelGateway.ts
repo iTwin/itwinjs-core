@@ -10,7 +10,7 @@ import { IModelVersion } from "../common/IModelVersion";
 import { Gateway } from "../common/Gateway";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { DateTime, Blob, NavigationValue} from "../common/ECSqlBindingValues";
+import { DateTime, Blob, NavigationValue, NavigationBindingValue} from "../common/ECSqlTypes";
 import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
 
 /** The iModel core gateway definition.
@@ -29,6 +29,7 @@ export abstract class IModelGateway extends Gateway {
     DateTime,
     Blob,
     NavigationValue,
+    NavigationBindingValue,
     Point2d,
     Point3d ]
 
