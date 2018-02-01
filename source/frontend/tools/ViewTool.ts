@@ -384,7 +384,7 @@ export abstract class ViewManip extends ViewTool {
     if (vp) {
       vp.synchWithView(true);
       if (restorePrevious)
-        vp.applyPrevious(BeDuration.fromSeconds(0));
+        vp.doUndo(BeDuration.fromSeconds(0));
       vp.invalidateDecorations();
     }
 

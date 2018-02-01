@@ -5,7 +5,7 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ } from "@bentley/geometry-core/lib/PointVector";
 import { Range3d } from "@bentley/geometry-core/lib/Range";
-import { RotMatrix, Transform} from "@bentley/geometry-core/lib/Transform";
+import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
 import { AxisOrder, Angle, Geometry } from "@bentley/geometry-core/lib/Geometry";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { ClipVector } from "@bentley/geometry-core/lib/numerics/ClipVector";
@@ -19,6 +19,7 @@ import { DisplayStyleState, DisplayStyle3dState, DisplayStyle2dState } from "./D
 import { ColorDef } from "./ColorDef";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 export const enum GridOrientationType {
   View = 0,
@@ -179,7 +180,8 @@ export abstract class ViewState extends ElementState {
    * Initialize the origin, extents, and rotation of this ViewDefinition from an existing Frustum
    * @param frustum the input Frustum.
    */
-  public setupFromFrustum(frustum: Frustum): ViewStatus {
+  public setupFromFrustum(inFrustum: Frustum): ViewStatus {
+    const frustum = inFrustum.clone(); // make sure we don't modify input frustum
     frustum.fixPointOrder();
     const frustPts = frustum.points;
     const viewOrg = frustPts[Npc.LeftBottomRear];
@@ -590,6 +592,7 @@ export abstract class ViewState3d extends ViewState {
     this.origin = Point3d.fromJSON(props.origin);
     this.extents = Vector3d.fromJSON(props.extents);
     this.rotation = YawPitchRollAngles.fromJSON(props.angles).toRotMatrix();
+    assert(this.rotation.isRigid());
     this.camera = new Camera(props.camera);
   }
 
@@ -599,6 +602,7 @@ export abstract class ViewState3d extends ViewState {
     val.origin = this.origin;
     val.extents = this.extents;
     val.angles = YawPitchRollAngles.createFromRotMatrix(this.rotation);
+    assert(undefined !== val.angles, "rotMatrix is illegal");
     val.camera = this.camera;
     return val;
   }

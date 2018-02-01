@@ -114,18 +114,21 @@ export class Frustum {
     frustum.initFromRange(range);
     return frustum;
   }
-
-  /** make sure the frustum point order does not include mirroring. If so, reverse the order. */
-  public fixPointOrder() {
+  public hasMirror(): boolean {
     const pts = this.points;
     const u = pts[Npc._000].vectorTo(pts[Npc._001]);
     const v = pts[Npc._000].vectorTo(pts[Npc._010]);
     const w = pts[Npc._000].vectorTo(pts[Npc._100]);
+    return (u.tripleProduct(v, w) > 0);
+  }
 
-    if (u.tripleProduct(v, w) <= 0)
+  /** make sure the frustum point order does not include mirroring. If so, reverse the order. */
+  public fixPointOrder() {
+    if (!this.hasMirror())
       return;
 
     // frustum has mirroring, reverse points
+    const pts = this.points;
     for (let i = 0; i < 8; i += 2) {
       const tmpPoint = pts[i];
       pts[i] = pts[i + 1];
