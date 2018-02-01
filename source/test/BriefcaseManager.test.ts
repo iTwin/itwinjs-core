@@ -174,7 +174,7 @@ describe("BriefcaseManager", () => {
     iModel.close(accessToken);
   });
 
-  it("should write to briefcase with optimistic concurrency", async () => {
+  it.only("should write to briefcase with optimistic concurrency", async () => {
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "ReadWriteTest";
     const iModels: HubIModel[] = await IModelTestUtils.hubClient.getIModels(accessToken, testProjectId, {
@@ -231,7 +231,7 @@ describe("BriefcaseManager", () => {
     const category = rwIModel.elements.getElement(spatialCategoryId);
     assert.isTrue(category.code.value !== undefined);
     const codeStates: MultiCode[] = await rwIModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope);
-    const foundCode: MultiCode[] = codeStates.filter((cs) => cs.values.includes(category.code.value!) && (cs.state === CodeState.Reserved));
+    const foundCode: MultiCode[] = codeStates.filter((cs) => cs.values!.includes(category.code.value!) && (cs.state === CodeState.Reserved));
     assert.equal(foundCode.length, 1);
 
       /* NEEDS WORK - query just this one code

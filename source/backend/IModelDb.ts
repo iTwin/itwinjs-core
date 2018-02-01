@@ -651,7 +651,7 @@ export class ConcurrencyControl {
         byScope.set(cReq.Scope, (thisReq = thisReq));
       }
 
-      thisReq.values.push(cReq.Name);
+      thisReq.values!.push(cReq.Name);
     }
 
     return bySpecId;
@@ -674,7 +674,7 @@ export class ConcurrencyControl {
         byScope.set(code.scope, (thisReq = thisReq));
       }
 
-      thisReq.values.push(code.value);
+      thisReq.values!.push(code.value);
     }
 
     return bySpecId;
@@ -824,7 +824,7 @@ export class ConcurrencyControl {
           const multiCodes = await this.queryCodeStates(accessToken, new Id64(specId), scopeId);
           for (const multiCode of multiCodes) {
             if (multiCode.state !== CodeState.Available) {
-              if (ConcurrencyControl.anyFound(multiCode.values, thisReq.values)) {
+              if (ConcurrencyControl.anyFound(multiCode.values!, thisReq.values)) {
                 return false;
               }
             }
