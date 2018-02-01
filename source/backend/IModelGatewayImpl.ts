@@ -94,13 +94,13 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
   }
 
   public async queryElementIds(iModelToken: IModelToken, params: EntityQueryParams): Promise<string[]> {
+    const iModelDb: IModelDb = IModelDb.find(iModelToken);
     let sql: string = "SELECT ECInstanceId AS id FROM " + params.from;
     if (params.where) sql += " WHERE " + params.where;
     if (params.orderBy) sql += " ORDER BY " + params.orderBy;
-    if (params.limit) sql += " LIMIT " + params.limit;
     if (params.offset) sql += " OFFSET " + params.offset;
+    sql += (params.limit) ? ` LIMIT ${params.limit}` : ` LIMIT ${iModelDb.defaultLimit}`;
 
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const statement: ECSqlStatement = iModelDb.getPreparedStatement(sql);
     const elementIds: string[] = [];
     for (const row of statement)

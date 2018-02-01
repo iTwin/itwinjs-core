@@ -47,6 +47,7 @@ export class IModelDb extends IModel {
   public readonly elements: IModelDbElements;
   public readonly views: IModelDbViews;
   public readonly linkTableRelationships: IModelDbLinkTableRelationships;
+  public readonly defaultLimit = 1000;
   private readonly statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private _codeSpecs: CodeSpecs;
   private _classMetaDataRegistry: MetaDataRegistry;
@@ -1423,6 +1424,7 @@ export class IModelDbViews {
     let sql: string = "SELECT ECInstanceId AS id FROM " + className;
     if (!wantPrivate)
       sql += " WHERE IsPrivate=FALSE";
+    sql += ` LIMIT ${this._iModel.defaultLimit}`; // limit number of returned view definitions
 
     const viewIds: Id64[] = [];
     const statement: ECSqlStatement = this._iModel.getPreparedStatement(sql);
