@@ -24,8 +24,8 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/bentleyjs-core": "^1.4.7",
-    "@bentley/geometry-core": "^4.0.1",
+    "@bentley/bentleyjs-core": "^2.0.1",
+    "@bentley/geometry-core": "^4.0.4",
     "@bentley/imodeljs-clients": "^1.1.3",
     "i18next": "^10.2.2",
     "i18next-browser-languagedetector": "^2.1.0",
