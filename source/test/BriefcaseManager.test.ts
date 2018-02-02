@@ -21,6 +21,19 @@ import { IModel } from "../common/IModel";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelJsFs } from "../backend/IModelJsFs";
 
+class Timer {
+  private label: string;
+  constructor(label: string) {
+    // tslint:disable-next-line:no-console
+    console.time(this.label = "\t" + label);
+  }
+
+  public end() {
+    // tslint:disable-next-line:no-console
+    console.timeEnd(this.label);
+  }
+}
+
 describe("BriefcaseManager", () => {
   let accessToken: AccessToken;
   let testProjectId: string;
@@ -81,18 +94,22 @@ describe("BriefcaseManager", () => {
   });
 
   it("should reuse open briefcases in Readonly mode", async () => {
+    let timer = new Timer("open briefcase first time");
     const iModel0: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId);
     assert.exists(iModel0);
+    timer.end();
 
     const briefcases = IModelJsFs.readdirSync(iModelLocalReadonlyPath);
     expect(briefcases.length).greaterThan(0);
 
+    timer = new Timer("open briefcase 5 more times");
     const iModels = new Array<IModelConnection>();
     for (let ii = 0; ii < 5; ii++) {
       const iModel: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId);
       assert.exists(iModel);
       iModels.push(iModel);
     }
+    timer.end();
 
     const briefcases2 = IModelJsFs.readdirSync(iModelLocalReadonlyPath);
     expect(briefcases2.length).equals(briefcases.length);
@@ -176,6 +193,7 @@ describe("BriefcaseManager", () => {
   });
 
   it("should write to briefcase with optimistic concurrency", async () => {
+    let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "ReadWriteTest";
     const iModels: HubIModel[] = await IModelTestUtils.hubClient.getIModels(accessToken, testProjectId, {
@@ -185,14 +203,21 @@ describe("BriefcaseManager", () => {
     for (const iModelTemp of iModels) {
       await IModelTestUtils.hubClient.deleteIModel(accessToken, testProjectId, iModelTemp.wsgId);
     }
+    timer.end();
 
     // Create a new iModel on the Hub (by uploading a seed file)
+    timer = new Timer("create iModel");
     const pathname = path.join(KnownTestLocations.assetsDir, iModelName + ".bim");
     const rwIModelId: string = await BriefcaseManager.uploadIModel(accessToken, testProjectId, pathname);
     assert.isNotEmpty(rwIModelId);
+    timer.end();
 
     // Acquire a briefcase from iModelHub
+    timer = new Timer("download iModelDb");
     const rwIModel: IModelDb = await IModelDb.open(accessToken, testProjectId, rwIModelId, OpenMode.ReadWrite);
+    timer.end();
+
+    timer = new Timer("make local changes");
 
     // Turn on optimistic concurrency control. This allows the app to modify elements, models, etc. without first acquiring locks.
     // Later, when the app downloads and merges changeSets from the Hub into the briefcase, BriefcaseManager will merge changes and handle conflicts.
@@ -214,6 +239,10 @@ describe("BriefcaseManager", () => {
     const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
     const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+
+    timer.end();
+
+    timer = new Timer("check/reserve/check Codes");
 
     // iModel.concurrencyControl should have recorded the codes that are required by the new elements.
     assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests());
@@ -243,6 +272,10 @@ describe("BriefcaseManager", () => {
     assert.equal(codeStates2[0].values[0], category.code.value!);
     */
 
+    timer.end();
+
+    timer = new Timer("make more local changes");
+
     // Create a couple of physical elements.
     const elid1 = rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
     rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
@@ -254,8 +287,14 @@ describe("BriefcaseManager", () => {
     rwIModel.elements.getElement(elid1); // throws if elid1 is not found
     rwIModel.elements.getElement(spatialCategoryId); // throws if spatialCategoryId is not found
 
+    timer.end();
+
+    timer = new Timer("pullmergepush");
+
     // Push the changes to the hub
     await rwIModel.pushChanges(accessToken);
+
+    timer.end();
 
     // Open a readonly copy of the iModel
     const roIModel: IModelDb = await IModelDb.open(accessToken, testProjectId, rwIModelId, OpenMode.Readonly, IModelVersion.latest());
