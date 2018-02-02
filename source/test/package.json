@@ -22,15 +22,15 @@
   ],
   "dependencies": {
     "@bentley/bentleyjs-core": "^2.0.1",
-    "@bentley/geometry-core": "^4.0.7",
+    "@bentley/geometry-core": "^4.0.8",
     "@bentley/imodeljs-clients": "^2.0.1",
-    "@bentley/imodeljs-nodeaddon": "~6.0.1",
     "@bentley/imodeljs-electronaddon": "~6.0.1",
+    "@bentley/imodeljs-nodeaddon": "~6.0.1",
     "@bentley/imodeljs-nodeaddonapi": "~6.0.1",
+    "fs-extra": "^4.0.3",
     "i18next": "^10.2.2",
     "i18next-browser-languagedetector": "^2.1.0",
     "i18next-xhr-backend": "^1.5.1",
-    "fs-extra": "^4.0.3",
     "js-base64": "^2.4.0"
   },
   "//devDependencies": "NOTE: all devDependencies should be recorded in the top-level package.json only",
