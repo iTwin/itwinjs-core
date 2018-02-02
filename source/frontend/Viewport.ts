@@ -256,8 +256,8 @@ export class Viewport {
   public getAuxCoordOrigin(result?: Point3d) { return this._auxCoordSystem ? this._auxCoordSystem.getOrigin(result) : Point3d.createZero(result); }
 
   private static copyOutput = (from: XYZ, to?: XYZ) => { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; };
-  public toView(from: XYZ, to?: XYZ) { this.rotMatrix.multiply3dInPlace(Viewport.copyOutput(from, to)); }
-  public fromView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyTranspose3dInPlace(Viewport.copyOutput(from, to)); }
+  public toView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyVectorInPlace(Viewport.copyOutput(from, to)); }
+  public fromView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyTransposeVectorInPlace(Viewport.copyOutput(from, to)); }
 
   /** adjust the front and back planes to encompass the entire viewed volume */
   private adjustZPlanes(origin: Point3d, delta: Vector3d): void {
@@ -275,24 +275,24 @@ export class Viewport {
     extFrust.multiply(viewTransform);
     extents = extFrust.toRange();
 
-    this.rotMatrix.multiply3dInPlace(origin);       // put origin in view coordinates
+    this.rotMatrix.multiplyVectorInPlace(origin);       // put origin in view coordinates
     origin.z = extents.low.z;           // set origin to back of viewed extents
     delta.z = extents.high.z - origin.z; // and delta to front of viewed extents
-    this.rotMatrix.multiplyTranspose3dInPlace(origin);
+    this.rotMatrix.multiplyTransposeVectorInPlace(origin);
 
     if (!view.isCameraOn())
       return;
 
     // if the camera is on, we need to make sure that the viewed volume is not behind the eye
     const eyeOrg = view.camera.getEyePoint().minus(origin);
-    this.rotMatrix.multiply3dInPlace(eyeOrg);
+    this.rotMatrix.multiplyVectorInPlace(eyeOrg);
 
     // if the distance from the eye to origin in less than 1 meter, move the origin away from the eye. Usually, this means
     // that the camera is outside the viewed extents and pointed away from it. There's nothing to see anyway.
     if (eyeOrg.z < 1.0) {
-      this.rotMatrix.multiply3dInPlace(origin);
+      this.rotMatrix.multiplyVectorInPlace(origin);
       origin.z -= (2.0 - eyeOrg.z);
-      this.rotMatrix.multiplyTranspose3dInPlace(origin);
+      this.rotMatrix.multiplyTransposeVectorInPlace(origin);
       delta.z = 1.0;
       return;
     }
@@ -588,13 +588,16 @@ export class Viewport {
     this.viewDelta.setFrom(delta);
 
     const frustFraction = this.rootToNpcFromViewDef(this.rootToNpc, origin, delta);
-    if (!frustFraction)
+    if (frustFraction === undefined)
       return ViewStatus.InvalidViewport;
 
     this.frustFraction = frustFraction;
     this.rootToView.setFrom(this.calcNpcToView().multiplyMapMap(this.rootToNpc));
 
     this.onViewChanged.raiseEvent(this);
+    if (this.getFrustum().hasMirror())
+      throw new Error("mirror");
+
     return ViewStatus.Success;
   }
 
@@ -1037,33 +1040,25 @@ export class Viewport {
   /**
    * Reverses the most recent change to the Viewport from the undo stack.
    */
-  public applyPrevious(animationTime: BeDuration) {
-    const size = this.backStack.length;
-    if (0 === size)
+  public doUndo(animationTime?: BeDuration) {
+    if (0 === this.backStack.length)
       return;
 
     this.forwardStack.push(this.currentBaseline!);
-    this.currentBaseline = this.backStack[size - 1];
-    this.backStack.pop();
-
+    this.currentBaseline = this.backStack.pop()!;
     this.applyViewState(this.currentBaseline, animationTime);
-    // this.historyApplied.raiseEvent(true);
   }
 
   /**
    * Re-applies the most recently un-done change to the Viewport from the redo stack
    */
-  public applyNext(animationTime: BeDuration) {
-    const size = this.forwardStack.length;
-    if (0 === size)
+  public doRedo(animationTime?: BeDuration) {
+    if (0 === this.forwardStack.length)
       return;
 
     this.backStack.push(this.currentBaseline!);
-    this.currentBaseline = this.forwardStack[size - 1];
-    this.forwardStack.pop();
-
+    this.currentBaseline = this.forwardStack.pop()!;
     this.applyViewState(this.currentBaseline, animationTime);
-    // this.historyApplied.raiseEvent(false);
   }
 
   public animate() {
@@ -1084,8 +1079,8 @@ export class Viewport {
     this.animator = animator;
   }
 
-  public animateFrustumChange(start: Frustum, end: Frustum, animationTime: BeDuration) {
-    if (0.0 >= animationTime.milliseconds) {
+  public animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration) {
+    if (!animationTime || 0.0 >= animationTime.milliseconds) {
       this.setupFromFrustum(end);
       return;
     }
@@ -1093,12 +1088,11 @@ export class Viewport {
     this.setAnimator(new Animator(animationTime, this, start, end));
   }
 
-  public applyViewState(val: ViewState, animationTime: BeDuration) {
+  public applyViewState(val: ViewState, animationTime?: BeDuration) {
     const startFrust = this.getFrustum();
     this._view = val.clone<ViewState>();
     this.synchWithView(false);
-    // this._changeFov = true;
-    this.animateFrustumChange(startFrust!, this.getFrustum()!, animationTime);
+    this.animateFrustumChange(startFrust, this.getFrustum(), animationTime);
   }
 
   public pickEntity(_mousePos: Point3d, _radius: number, _result?: Point3d): Point3d | undefined {

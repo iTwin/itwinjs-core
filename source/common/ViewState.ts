@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ } from "@bentley/geometry-core/lib/PointVector";
+import { Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY } from "@bentley/geometry-core/lib/PointVector";
 import { Range3d } from "@bentley/geometry-core/lib/Range";
-import { RotMatrix, Transform} from "@bentley/geometry-core/lib/Transform";
+import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
 import { AxisOrder, Angle, Geometry } from "@bentley/geometry-core/lib/Geometry";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { ClipVector } from "@bentley/geometry-core/lib/numerics/ClipVector";
@@ -19,6 +19,7 @@ import { DisplayStyleState, DisplayStyle3dState, DisplayStyle2dState } from "./D
 import { ColorDef } from "./ColorDef";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 export const enum GridOrientationType {
   View = 0,
@@ -179,7 +180,8 @@ export abstract class ViewState extends ElementState {
    * Initialize the origin, extents, and rotation of this ViewDefinition from an existing Frustum
    * @param frustum the input Frustum.
    */
-  public setupFromFrustum(frustum: Frustum): ViewStatus {
+  public setupFromFrustum(inFrustum: Frustum): ViewStatus {
+    const frustum = inFrustum.clone(); // make sure we don't modify input frustum
     frustum.fixPointOrder();
     const frustPts = frustum.points;
     const viewOrg = frustPts[Npc.LeftBottomRear];
@@ -466,7 +468,7 @@ export abstract class ViewState extends ElementState {
     newOrigin.y -= (newDelta.y - origNewDelta.y) / 2.0;
     newOrigin.z -= (newDelta.z - origNewDelta.z) / 2.0;
 
-    viewRot.multiplyTranspose3dInPlace(newOrigin);
+    viewRot.multiplyTransposeVectorInPlace(newOrigin);
     this.setOrigin(newOrigin);
 
     if (!this.is3d())
@@ -590,6 +592,7 @@ export abstract class ViewState3d extends ViewState {
     this.origin = Point3d.fromJSON(props.origin);
     this.extents = Vector3d.fromJSON(props.extents);
     this.rotation = YawPitchRollAngles.fromJSON(props.angles).toRotMatrix();
+    assert(this.rotation.isRigid());
     this.camera = new Camera(props.camera);
   }
 
@@ -599,6 +602,7 @@ export abstract class ViewState3d extends ViewState {
     val.origin = this.origin;
     val.extents = this.extents;
     val.angles = YawPitchRollAngles.createFromRotMatrix(this.rotation);
+    assert(undefined !== val.angles, "rotMatrix is illegal");
     val.camera = this.camera;
     return val;
   }
@@ -709,12 +713,13 @@ export abstract class ViewState3d extends ViewState {
    * @e If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
    * adjusted when the Viewport is synchronized from this view.
    */
-  public lookAt(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, newExtents?: Vector2d, frontDistance?: number, backDistance?: number): ViewStatus {
+  public lookAt(eyePoint: XYAndZ, targetPoint: XYAndZ, upVector: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number): ViewStatus {
+    const eye = new Point3d(eyePoint.x, eyePoint.y, eyePoint.z);
     const yVec = upVector.normalize();
     if (!yVec) // up vector zero length?
       return ViewStatus.InvalidUpVector;
 
-    const zVec = targetPoint.vectorTo(eyePoint); // z defined by direction from eye to target
+    const zVec = Vector3d.createStartEnd(eye, targetPoint); // z defined by direction from eye to target
     const focusDist = zVec.normalizeWithLength(zVec).mag; // set focus at target point
     const minFrontDist = this.minimumFrontDistance();
 
@@ -761,7 +766,7 @@ export abstract class ViewState3d extends ViewState {
 
     // The origin is defined as the lower left of the view rectangle on the focus plane, projected to the back plane.
     // Start at eye point, and move to center of back plane, then move left half of width. and down half of height
-    const origin = eyePoint.plus3Scaled(zVec, -backDistance!, xVec, -0.5 * delta.x, yVec, -0.5 * delta.y);
+    const origin = eye.plus3Scaled(zVec, -backDistance!, xVec, -0.5 * delta.x, yVec, -0.5 * delta.y);
 
     this.setEyePoint(eyePoint);
     this.setRotation(rotation);
@@ -785,8 +790,7 @@ export abstract class ViewState3d extends ViewState {
    * @note The aspect ratio of the view remains unchanged.
    */
   public lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number): ViewStatus {
-    const zVec = Vector3d.createStartEnd(targetPoint, eyePoint);
-    const focusDist = zVec.magnitude();   // Set focus at target point
+    const focusDist = eyePoint.vectorTo(targetPoint).magnitude();   // Set focus at target point
 
     if (focusDist <= Constant.oneMillimeter)       // eye and target are too close together
       return ViewStatus.InvalidTargetPoint;
@@ -795,7 +799,7 @@ export abstract class ViewState3d extends ViewState {
       return ViewStatus.InvalidLens;
 
     const extent = 2.0 * Math.tan(fov.radians / 2.0) * focusDist;
-    const delta = Vector2d.create(this.getExtents().x, this.getExtents().y);
+    const delta = Vector2d.create(this.extents.x, this.extents.y);
     const longAxis = Math.max(delta.x, delta.y);
     delta.scale(extent / longAxis, delta);
 

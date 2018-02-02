@@ -31,8 +31,7 @@ class TestIModelApp extends IModelApp {
 describe("Viewport", function () {
   let imodel: IModelConnection;
   let spatialView: SpatialViewState;
-  const mocha = this;
-  mocha.timeout(99999);
+  this.timeout(99999);
 
   before(async () => {   // Create a ViewState to load into a Viewport
     TestIModelApp.startup();
@@ -46,14 +45,30 @@ describe("Viewport", function () {
     IModelApp.shutdown();
   });
 
-  it("Viewport", () => {
+  it.skip("Viewport", () => {
     const vp = new TestViewport(spatialView);
     assert.isFalse(vp.isRedoPossible, "no redo");
     assert.isFalse(vp.isUndoPossible, "no undo");
     assert.isFalse(vp.isCameraOn(), "camera is off");
+
+    const saveView = spatialView.clone<SpatialViewState>();
+    assert.notEqual(saveView.modelSelector, spatialView.modelSelector, "clone should copy modelSelector");
+    assert.notEqual(saveView.categorySelector, spatialView.categorySelector, "clone should copy categorySelector");
+    assert.notEqual(saveView.displayStyle, spatialView.displayStyle, "clone should copy displayStyle");
+    const frustSave = vp.getFrustum();
+
     vp.turnCameraOn();
     vp.synchWithView(true);
+    assert.isTrue(vp.isCameraOn(), "camera on");
+    const frust2 = vp.getFrustum();
+    assert.notDeepEqual(frust2, frustSave, "camera turned on");
     assert.isTrue(vp.isUndoPossible, "undo should now be possible");
+    vp.doUndo();
+    assert.deepEqual(vp.getFrustum(), frustSave, "undo should reinstate saved view");
+    assert.isTrue(vp.isRedoPossible, "redo is possible");
+    assert.isFalse(vp.isUndoPossible, "no undo");
+    vp.doRedo();
+    assert.deepEqual(vp.getFrustum(), frust2, "redo should reinstate saved view");
 
     const pan = iModelApp.tools.create("View.Pan", vp) as PanTool;
     assert.instanceOf(pan, PanTool);

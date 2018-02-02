@@ -93,7 +93,7 @@ export class IModelTestUtils {
     const promises = new Array<Promise<void>>();
     const briefcases = await IModelTestUtils.hubClient.getBriefcases(accessToken, iModelId);
     briefcases.forEach((briefcase: Briefcase) => {
-      promises.push(IModelTestUtils.hubClient.deleteBriefcase(accessToken, iModelId, briefcase.briefcaseId));
+      promises.push(IModelTestUtils.hubClient.deleteBriefcase(accessToken, iModelId, briefcase.briefcaseId!));
     });
     await Promise.all(promises);
   }

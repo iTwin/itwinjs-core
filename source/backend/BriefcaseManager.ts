@@ -319,7 +319,7 @@ export class BriefcaseManager {
       return 0; // the first version
     try {
       const changeSet: ChangeSet = await BriefcaseManager.hubClient!.getChangeSet(accessToken, iModelId, false, changeSetId);
-      return +changeSet.index;
+      return +changeSet.index!;
     } catch (err) {
       assert(false, "Could not determine index of change set");
       return -1;
@@ -338,7 +338,7 @@ export class BriefcaseManager {
       changeSetIndex = 0; // First version
     } else {
       const changeSet: ChangeSet = await BriefcaseManager.getChangeSetFromId(accessToken, iModelId, changeSetId);
-      changeSetIndex = changeSet ? +changeSet.index : 0;
+      changeSetIndex = changeSet ? +changeSet.index! : 0;
     }
 
     let briefcase = BriefcaseManager.findCachedBriefcase(accessToken, iModelId, openMode, changeSetIndex);
@@ -420,7 +420,7 @@ export class BriefcaseManager {
     // For read-write cases...
 
     // first prefer any briefcase that's been acquired by the user, and with changeSetIndex = requiredChangeSetIndex
-    const requiredUserId = accessToken.getUserProfile().userId;
+    const requiredUserId = accessToken.getUserProfile()!.userId;
     briefcase = briefcases.find((entry: BriefcaseEntry): boolean => {
       return entry.userId === requiredUserId && entry.changeSetIndex === requiredChangeSetIndex;
     });
@@ -448,21 +448,21 @@ export class BriefcaseManager {
     const downloadUrl = seedFile.downloadUrl!;
 
     const briefcase = new BriefcaseEntry();
-    briefcase.changeSetId = seedFile.mergedChangeSetId;
+    briefcase.changeSetId = seedFile.mergedChangeSetId!;
     briefcase.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, iModelId, briefcase.changeSetId);
     briefcase.iModelId = iModelId;
     briefcase.isOpen = false;
     briefcase.openMode = openMode;
-    briefcase.userId = accessToken.getUserProfile().userId;
+    briefcase.userId = accessToken.getUserProfile()!.userId;
 
     let downloadToPathname: string;
     if (openMode === OpenMode.Readonly) {
-      downloadToPathname = BriefcaseManager.buildReadOnlyPath(iModelId, iModel.name);
+      downloadToPathname = BriefcaseManager.buildReadOnlyPath(iModelId, iModel.name!);
       briefcase.briefcaseId = BriefcaseId.Standalone;
     } else {
       const hubBriefcase: HubBriefcase = await BriefcaseManager.acquireBriefcase(accessToken, iModelId);
-      downloadToPathname = BriefcaseManager.buildReadWritePath(iModelId, +hubBriefcase.briefcaseId, iModel.name);
-      briefcase.briefcaseId = hubBriefcase.briefcaseId;
+      downloadToPathname = BriefcaseManager.buildReadWritePath(iModelId, +hubBriefcase.briefcaseId!, iModel.name!);
+      briefcase.briefcaseId = hubBriefcase.briefcaseId!;
       briefcase.fileId = hubBriefcase.fileId;
     }
     briefcase.pathname = downloadToPathname;
@@ -590,7 +590,7 @@ export class BriefcaseManager {
     const changeSetsToDownload = new Array<ChangeSet>();
     const changeSetsPath: string = BriefcaseManager.getChangeSetsPath(iModelId);
     for (const changeSet of changeSets) {
-      const changeSetPathname = path.join(changeSetsPath, changeSet.fileName);
+      const changeSetPathname = path.join(changeSetsPath, changeSet.fileName!);
       if (!IModelJsFs.existsSync(changeSetPathname))
         changeSetsToDownload.push(changeSet);
     }
@@ -704,8 +704,8 @@ export class BriefcaseManager {
   private static buildChangeSetTokens(changeSets: ChangeSet[], changeSetsPath: string): ChangeSetToken[] {
     const changeSetTokens = new Array<ChangeSetToken>();
     changeSets.forEach((changeSet: ChangeSet) => {
-      const changeSetPathname = path.join(changeSetsPath, changeSet.fileName);
-      changeSetTokens.push(new ChangeSetToken(changeSet.wsgId, changeSet.parentId, +changeSet.index, changeSetPathname, changeSet.containsSchemaChanges));
+      const changeSetPathname = path.join(changeSetsPath, changeSet.fileName!);
+      changeSetTokens.push(new ChangeSetToken(changeSet.wsgId, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.containsSchemaChanges!));
     });
     return changeSetTokens;
   }
@@ -724,7 +724,7 @@ export class BriefcaseManager {
 
   private static updateVersion(briefcase: BriefcaseEntry, changeSet: ChangeSet) {
     briefcase.changeSetId = changeSet.wsgId;
-    briefcase.changeSetIndex = +changeSet.index;
+    briefcase.changeSetIndex = +changeSet.index!;
   }
 
   /**
