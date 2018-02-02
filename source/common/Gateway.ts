@@ -41,6 +41,12 @@ export abstract class Gateway {
   /** The name of the marshaling type identification property.  */
   public static MARSHALING_NAME_PROPERTY = "__$__";
 
+  /** The name of the marshaling custom JSON representation property.  */
+  public static MARSHALING_CUSTOM_JSON_PROPERTY = "__JSON__";
+
+  /** The name of the marshaling undefined members property.  */
+  public static MARSHALING_UNDEFINED_MEMBERS_PROPERTY = "__undefined__";
+
   /** Returns the gateway proxy instance for the frontend. */
   public static getProxyForGateway<T extends Gateway>(definition: GatewayDefinition<T>): T {
     const instance = Registry.instance.proxies.get(definition.name) as T;
@@ -123,13 +129,33 @@ export abstract class Gateway {
   }
 
   /** JSON.stringify replacer callback that marshals JavaScript class instances. */
-  public static marshal(_key: string, value: any) {
-    if (typeof (value) === "object" && value !== null && value.constructor !== Array && value.constructor !== Object) {
-      const name = `${marshalingScope}_${value.constructor.name}`;
+  public static marshal(this: any, key: string, value: any) {
+    let originalValue = value;
+    let wasCustomized = false;
+    if (this[key] !== value && (typeof (value) !== "object" || value === null || Array.isArray(value))) {
+      wasCustomized = true;
+      originalValue = this[key];
+    }
+
+    if (typeof (originalValue) === "object" && originalValue !== null && !Array.isArray(originalValue) && originalValue.constructor !== Object) {
+      const name = `${marshalingScope}_${originalValue.constructor.name}`;
       if (!Registry.instance.types.has(name))
         throw new IModelError(BentleyStatus.ERROR, `Class "${name}" is not registered for gateway type marshaling.`);
 
-      value[Gateway.MARSHALING_NAME_PROPERTY] = name;
+      if (wasCustomized) {
+        return { [Gateway.MARSHALING_NAME_PROPERTY]: name, [Gateway.MARSHALING_CUSTOM_JSON_PROPERTY]: value };
+      } else {
+        value[Gateway.MARSHALING_NAME_PROPERTY] = name;
+
+        const undefineds = [];
+        for (const prop in value) {
+          if (value.hasOwnProperty(prop) && value[prop] === undefined)
+            undefineds.push(prop);
+        }
+
+        if (undefineds.length)
+          value[Gateway.MARSHALING_UNDEFINED_MEMBERS_PROPERTY] = undefineds;
+      }
     }
 
     return value;
@@ -144,12 +170,30 @@ export abstract class Gateway {
       if (!type)
         throw new IModelError(BentleyStatus.ERROR, `Class "${name}" is not registered for gateway type marshaling.`);
 
-      const descriptors: { [index: string]: PropertyDescriptor } = {};
-      const props = Object.keys(value);
-      for (const prop of props)
-        descriptors[prop] = Object.getOwnPropertyDescriptor(value, prop) as PropertyDescriptor;
+      const customJSON = value[Gateway.MARSHALING_CUSTOM_JSON_PROPERTY];
+      if (customJSON) {
+        const typeFromJSON = (type as any).fromJSON;
+        if (typeFromJSON)
+          return typeFromJSON(customJSON);
+        else
+          return new (type as any)(customJSON);
+      } else {
+        const undefineds = value[Gateway.MARSHALING_UNDEFINED_MEMBERS_PROPERTY];
+        if (undefineds)
+          delete value[Gateway.MARSHALING_UNDEFINED_MEMBERS_PROPERTY];
 
-      return Object.create(type.prototype, descriptors);
+        const descriptors: { [index: string]: PropertyDescriptor } = {};
+        const props = Object.keys(value);
+        for (const prop of props)
+          descriptors[prop] = Object.getOwnPropertyDescriptor(value, prop) as PropertyDescriptor;
+
+        if (undefineds) {
+          for (const prop of undefineds)
+            descriptors[prop] = { configurable: true, enumerable: true, writable: true, value: undefined };
+        }
+
+        return Object.create(type.prototype, descriptors);
+      }
     }
 
     return value;
