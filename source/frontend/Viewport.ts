@@ -256,8 +256,8 @@ export class Viewport {
   public getAuxCoordOrigin(result?: Point3d) { return this._auxCoordSystem ? this._auxCoordSystem.getOrigin(result) : Point3d.createZero(result); }
 
   private static copyOutput = (from: XYZ, to?: XYZ) => { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; };
-  public toView(from: XYZ, to?: XYZ) { this.rotMatrix.multiply3dInPlace(Viewport.copyOutput(from, to)); }
-  public fromView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyTranspose3dInPlace(Viewport.copyOutput(from, to)); }
+  public toView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyVectorInPlace(Viewport.copyOutput(from, to)); }
+  public fromView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyTransposeVectorInPlace(Viewport.copyOutput(from, to)); }
 
   /** adjust the front and back planes to encompass the entire viewed volume */
   private adjustZPlanes(origin: Point3d, delta: Vector3d): void {
@@ -275,24 +275,24 @@ export class Viewport {
     extFrust.multiply(viewTransform);
     extents = extFrust.toRange();
 
-    this.rotMatrix.multiply3dInPlace(origin);       // put origin in view coordinates
+    this.rotMatrix.multiplyVectorInPlace(origin);       // put origin in view coordinates
     origin.z = extents.low.z;           // set origin to back of viewed extents
     delta.z = extents.high.z - origin.z; // and delta to front of viewed extents
-    this.rotMatrix.multiplyTranspose3dInPlace(origin);
+    this.rotMatrix.multiplyTransposeVectorInPlace(origin);
 
     if (!view.isCameraOn())
       return;
 
     // if the camera is on, we need to make sure that the viewed volume is not behind the eye
     const eyeOrg = view.camera.getEyePoint().minus(origin);
-    this.rotMatrix.multiply3dInPlace(eyeOrg);
+    this.rotMatrix.multiplyVectorInPlace(eyeOrg);
 
     // if the distance from the eye to origin in less than 1 meter, move the origin away from the eye. Usually, this means
     // that the camera is outside the viewed extents and pointed away from it. There's nothing to see anyway.
     if (eyeOrg.z < 1.0) {
-      this.rotMatrix.multiply3dInPlace(origin);
+      this.rotMatrix.multiplyVectorInPlace(origin);
       origin.z -= (2.0 - eyeOrg.z);
-      this.rotMatrix.multiplyTranspose3dInPlace(origin);
+      this.rotMatrix.multiplyTransposeVectorInPlace(origin);
       delta.z = 1.0;
       return;
     }

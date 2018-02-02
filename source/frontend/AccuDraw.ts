@@ -460,12 +460,12 @@ export class AccuDraw {
     const view = vp.view;
     const rMatrix = view.getRotation();
     const acsOrigin = vp.getAuxCoordOrigin();
-    rMatrix.multiply3dInPlace(acsOrigin);
+    rMatrix.multiplyVectorInPlace(acsOrigin);
 
     const origin = view.getCenter();
-    view.getRotation().multiply3dInPlace(origin);
+    view.getRotation().multiplyVectorInPlace(origin);
     origin.z = acsOrigin.z;
-    view.getRotation().multiplyTranspose3dInPlace(origin);
+    view.getRotation().multiplyTransposeVectorInPlace(origin);
 
     this.origin.setFrom(origin); // View center at acs z...
     this.planePt.setFrom(origin);
@@ -506,7 +506,7 @@ export class AccuDraw {
       return;
 
     const rMatrix = AccuDraw.getStandardRotation(StandardViewId.Top, this.currentView, true);
-    rMatrix!.multiplyTranspose3dInPlace(vec);
+    rMatrix!.multiplyTransposeVectorInPlace(vec);
   }
 
   private static useACSContextRotation(vp: Viewport, isSnap: boolean): boolean {
@@ -1529,7 +1529,7 @@ export class AccuDraw {
         this.published.vector.setFrom(orientationP as Vector3d);
 
         if (transP)
-          transP.matrix.multiply3dInPlace(this.published.vector);
+          transP.matrix.multiplyVectorInPlace(this.published.vector);
 
         this.published.vector.normalizeInPlace();
       } else if (flags & AccuDrawFlags.SetRMatrix) {

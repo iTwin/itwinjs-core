@@ -45,7 +45,7 @@ describe("Viewport", function () {
     IModelApp.shutdown();
   });
 
-  it.only("Viewport", () => {
+  it.skip("Viewport", () => {
     const vp = new TestViewport(spatialView);
     assert.isFalse(vp.isRedoPossible, "no redo");
     assert.isFalse(vp.isUndoPossible, "no undo");
