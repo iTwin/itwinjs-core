@@ -23,7 +23,7 @@ export class HubTestUtils {
     const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient("QA")).getToken(TestConfig.email, TestConfig.password);
     this.accessToken = await (new ImsDelegationSecureTokenClient("QA")).getToken(authToken);
 
-    this.testUserProfile = this.accessToken.getUserProfile();
+    this.testUserProfile = this.accessToken.getUserProfile()!;
     this.testProject = await this.getTestProject(this.accessToken);
     this.testIModel = await this.getTestIModel(this.accessToken, this.testProject);
     this.testBriefcase = await this.getTestBriefcase(this.accessToken, this.testIModel);
@@ -64,7 +64,7 @@ export class HubTestUtils {
     const briefcase = briefcases[0];
     assert.isDefined(briefcase);
     assert.isDefined(briefcase.userId);
-    assert.isAtLeast(briefcase.userId.length, 1);
+    assert.isAtLeast(briefcase.userId!.length, 1);
     expect(briefcase.userId).equals(this.testUserProfile.userId);
 
     return briefcase;

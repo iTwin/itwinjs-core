@@ -197,7 +197,7 @@ describe("ChangeSummary", () => {
     const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
     assert.equal(changeSets.length, 3);
     // first extraction: just first changeset
-    const firstChangesetId: string = changeSets[0].id;
+    const firstChangesetId: string = changeSets[0].id!;
 
     // now extract change summary for that one changeset
     await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, testIModelId, firstChangesetId, firstChangesetId);
@@ -232,7 +232,7 @@ describe("ChangeSummary", () => {
     }
 
     // now do second extraction for last changeset
-    const lastChangesetId: string = changeSets[changeSets.length - 1].id;
+    const lastChangesetId: string = changeSets[changeSets.length - 1].id!;
 
     await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, testIModelId, lastChangesetId, lastChangesetId);
     assert.isTrue(IModelJsFs.existsSync(changesFilePath));
