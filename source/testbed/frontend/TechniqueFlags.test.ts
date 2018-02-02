@@ -5,7 +5,7 @@ import { assert, expect } from "chai";
 import { FeatureDimension, FeatureDimensions, LUTDimension, FeatureIndexType } from "../../frontend/render/FeatureDimensions";
 import { TechniqueFlags, Mode, WithClipVolume } from "../../frontend/render/TechniqueFlags";
 
-describe.only("TechniqueFlags", () => {
+describe("TechniqueFlags", () => {
   it("constructor should correctly set member variables", () => {
     let techFlags = new TechniqueFlags();
     assert.isFalse(techFlags.monochrome, "default constructor sets monochrome to false");
