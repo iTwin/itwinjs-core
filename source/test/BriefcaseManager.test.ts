@@ -241,11 +241,14 @@ describe("BriefcaseManager", () => {
 
     timer.end();
 
-    timer = new Timer("check/reserve/check Codes");
+    timer = new Timer("query Codes I");
 
     // iModel.concurrencyControl should have recorded the codes that are required by the new elements.
     assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests());
     assert.isTrue(await rwIModel.concurrencyControl.areAvailable(accessToken));
+
+    timer.end();
+    timer = new Timer("reserve Codes");
 
     // Reserve all of the codes that are required by the new model and category.
     try {
@@ -255,6 +258,9 @@ describe("BriefcaseManager", () => {
           assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
       }
     }
+
+    timer.end();
+    timer = new Timer("query Codes II");
 
     // Verify that the codes are reserved.
     const category = rwIModel.elements.getElement(spatialCategoryId);
