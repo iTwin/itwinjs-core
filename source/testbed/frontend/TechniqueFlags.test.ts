@@ -5,7 +5,7 @@ import { assert, expect } from "chai";
 import { FeatureDimension, FeatureDimensions, LUTDimension, FeatureIndexType } from "../../frontend/render/FeatureDimensions";
 import { TechniqueFlags, Mode, WithClipVolume } from "../../frontend/render/TechniqueFlags";
 
-describe("TechniqueFlags", () => {
+describe.only("TechniqueFlags", () => {
   it("constructor should correctly set member variables", () => {
     let techFlags = new TechniqueFlags();
     assert.isFalse(techFlags.monochrome, "default constructor sets monochrome to false");
@@ -87,8 +87,18 @@ describe("TechniqueFlags", () => {
   });
   it("setHilite works as expected", () => {
     const techFlags = new TechniqueFlags();
+
+    // mix up member values to ensure they reset properly
+    techFlags.monochrome = true;
+    techFlags.translucent = true;
+    techFlags.colorDimension = LUTDimension.NonUniform;
+
     techFlags.setHilite();
     assert.isTrue(techFlags.isHilite);
+    assert.isFalse(techFlags.isTranslucent);
+    assert.isFalse(techFlags.isMonochrome);
+    assert.isTrue(techFlags.isHilite);
+    assert.isTrue(techFlags.isUniformColor);
   });
   it("forHilite works as expected", () => {
     const techFlags = TechniqueFlags.forHilite(FeatureDimensions.singleUniform(), WithClipVolume.Yes);
