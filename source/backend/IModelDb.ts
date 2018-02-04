@@ -92,11 +92,11 @@ export class IModelDb extends IModel {
 
   /**
    * Open an iModel from the iModelHub
-   * @param accessToken
-   * @param contextId
-   * @param iModelId
-   * @param openMode
-   * @param version
+   * @param accessToken Delegation token of the authorized user.
+   * @param contextId Id of the Connect Project or Asset containing the iModel
+   * @param iModelId Id of the iModel
+   * @param openMode Open mode
+   * @param version Version of the iModel to open
    */
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(accessToken, contextId, iModelId, openMode, version);
@@ -114,7 +114,11 @@ export class IModelDb extends IModel {
     this.clearBriefcaseEntry();
   }
 
-  /** Close this iModel, if it is currently open. */
+  /**
+   * Close this iModel, if it is currently open.
+   * @param accessToken Delegation token of the authorized user.
+   * @param keepBriefcase Hint to discard or keep the briefcase for potential future use.
+   */
   public async close(accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
     if (!this.briefcaseEntry)
       return;
@@ -281,7 +285,12 @@ export class IModelDb extends IModel {
     this.concurrencyControl.onSavedChanges();
   }
 
-  /** Pull and Merge changes from the iModelHub */
+  /**
+   * Pull and Merge changes from the iModelHub
+   * @param accessToken Delegation token of the authorized user.
+   * @param version Version to pull and merge to.
+   * @throws [[IModelError]] If the pull and merge fails.
+   */
   public async pullAndMergeChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
     if (!this.briefcaseEntry)
       throw this._newNotOpenError();
@@ -289,7 +298,11 @@ export class IModelDb extends IModel {
     return BriefcaseManager.pullAndMergeChanges(accessToken, this.briefcaseEntry, version);
   }
 
-  /** Push changes to the iModelHub */
+  /**
+   * Push changes to the iModelHub
+   * @param accessToken Delegation token of the authorized user.
+   * @throws [[IModelError]] If the pull and merge fails.
+   */
   public async pushChanges(accessToken: AccessToken): Promise<void> {
     if (!this.briefcaseEntry)
       throw this._newNotOpenError();
@@ -297,15 +310,31 @@ export class IModelDb extends IModel {
     return BriefcaseManager.pushChanges(accessToken, this.briefcaseEntry);
   }
 
-  // public async reverseChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-  //   if (!this._iModel.briefcaseEntry)
-  //     return Promise.reject(this._iModel._newNotOpenError());
-  // }
+  /**
+   * Reverse a previously merged set of changes
+   * @param accessToken Delegation token of the authorized user.
+   * @param version Version to reverse changes to.
+   * @throws [[IModelError]] If the reversal fails.
+   */
+  public async reverseChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    if (!this.briefcaseEntry)
+      throw this._newNotOpenError();
 
-  // public async reinstateChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-  //   if (!this._iModel.briefcaseEntry)
-  //     return Promise.reject(this._iModel._newNotOpenError());
-  // }
+    return BriefcaseManager.reverseChanges(accessToken, this.briefcaseEntry, version);
+  }
+
+  /**
+   * Reinstate a previously reversed set of changes
+   * @param accessToken Delegation token of the authorized user.
+   * @param version Version to reinstate changes to.
+   * @throws [[IModelError]] If the reinstate fails.
+   */
+  public async reinstateChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    if (!this.briefcaseEntry)
+      throw this._newNotOpenError();
+
+    return BriefcaseManager.reinstateChanges(accessToken, this.briefcaseEntry, version);
+  }
 
   /**
    * Abandon pending changes to this iModel

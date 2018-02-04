@@ -38,10 +38,17 @@ describe("BriefcaseManager", () => {
   let testProjectId: string;
   let testIModelId: string;
   let testChangeSets: ChangeSet[];
+  const testVersionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
+  const testElementCounts = [80, 81, 82];
   let iModelLocalReadonlyPath: string;
   let iModelLocalReadWritePath: string;
 
   let shouldDeleteAllBriefcases: boolean = false;
+  const getElementCount = (iModel: IModelDb): number => {
+    const rows: any[] = iModel.executeQuery("SELECT COUNT(*) AS cnt FROM bis.Element");
+    const count = +(rows[0].cnt);
+    return count;
+  };
 
   before(async () => {
     let startTime = new Date().getTime();
@@ -60,7 +67,7 @@ describe("BriefcaseManager", () => {
     iModelLocalReadonlyPath = path.join(BriefcaseManager.cacheDir, testIModelId, "readOnly");
     iModelLocalReadWritePath = path.join(BriefcaseManager.cacheDir, testIModelId, "readWrite");
 
-    // Recreate briefcases if it's a TMR. todo: Figure a better way to prevent bleeding briefcase ids
+    // Recreate briefcases if the cache has been cleaned. todo: Figure a better way to prevent bleeding briefcase ids
     shouldDeleteAllBriefcases = !IModelJsFs.existsSync(BriefcaseManager.cacheDir);
     if (shouldDeleteAllBriefcases)
       await IModelTestUtils.deleteAllBriefcases(accessToken, testIModelId);
@@ -131,14 +138,15 @@ describe("BriefcaseManager", () => {
   });
 
   it("should open briefcases of specific versions in Readonly mode", async () => {
-    const versionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
-
-    for (const [changeSetIndex, versionName] of versionNames.entries()) {
-      const iModelFromVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.asOfChangeSet(testChangeSets[changeSetIndex].wsgId));
+    for (const [arrayIndex, versionName] of testVersionNames.entries()) {
+      const iModelFromVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.asOfChangeSet(testChangeSets[arrayIndex].wsgId));
       assert.exists(iModelFromVersion);
 
       const iModelFromChangeSet: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.named(versionName));
       assert.exists(iModelFromChangeSet);
+
+      const elementCount = getElementCount(iModelFromVersion);
+      assert.equal(elementCount, testElementCounts[arrayIndex]);
     }
   });
 
@@ -174,6 +182,26 @@ describe("BriefcaseManager", () => {
     expect(qaChangeSets.length).greaterThan(0);
     const qaIModel: IModelDb = await IModelDb.open(accessToken, qaProjectId, qaIModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.exists(qaIModel);
+  });
+
+  // Enable after next addon build > 6.0.1
+  it.skip("should be able to reverse and reinstate changes", async () => {
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
+
+    let arrayIndex: number;
+    for (arrayIndex = testVersionNames.length - 1; arrayIndex >= 0; arrayIndex--) {
+      await iModel.reverseChanges(accessToken, IModelVersion.named(testVersionNames[arrayIndex]));
+      assert.equal(testElementCounts[arrayIndex], getElementCount(iModel));
+    }
+
+    await iModel.reverseChanges(accessToken, IModelVersion.first());
+
+    for (arrayIndex = 0; arrayIndex < testVersionNames.length; arrayIndex++) {
+      await iModel.reinstateChanges(accessToken, IModelVersion.named(testVersionNames[arrayIndex]));
+      assert.equal(testElementCounts[arrayIndex], getElementCount(iModel));
+    }
+
+    await iModel.reinstateChanges(accessToken, IModelVersion.latest());
   });
 
   it("should build concurrency control request", async () => {
@@ -340,13 +368,4 @@ describe("BriefcaseManager", () => {
     iModel.close(accessToken);
   });
 
-  // should open the same iModel+Latest+UserId combination in ReadOnly and ReadWrite connections
-  // should open the same iModel+Latest+UserId combination in ReadWrite and ReadWrite connections
-  // should not re-download previously downloaded seed files and change sets.
-  // should not reuse open briefcases for different versions in Readonly mode
-  // should reuse closed briefcases for newer versions
-  // should not reuse closed briefcases for older versions
-  // should delete closed briefcases if necessary
-  // should reuse briefcases between users in readonly mode
-  // should not reuse briefcases between users in readWrite mode
 });
