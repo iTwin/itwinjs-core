@@ -78,10 +78,20 @@ export class IModelDb extends IModel {
     return iModelDb;
   }
 
-  /** Create a standalone local Db */
+  /**
+   * Create a standalone local Db
+   * @param pathname The pathname of the iModel
+   * @param rootSubjectName Name of the root subject.
+   * @param rootSubjectDescription Description of the root subject.
+   */
   public static createStandalone(pathname: string, rootSubjectName: string, rootSubjectDescription?: string): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(pathname, rootSubjectName, rootSubjectDescription);
     Logger.logInfo("IModelDb.createStandalone", () => ({ pathname }));
+    return IModelDb.createIModelDb(briefcaseEntry);
+  }
+
+  public static async create(accessToken: AccessToken, contextId: string, hubName: string, rootSubjectName: string, hubDescription?: string, rootSubjectDescription?: string): Promise<IModelDb> {
+    const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.create(accessToken, contextId, hubName, rootSubjectName, hubDescription, rootSubjectDescription);
     return IModelDb.createIModelDb(briefcaseEntry);
   }
 

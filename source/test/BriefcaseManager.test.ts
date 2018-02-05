@@ -17,7 +17,6 @@ import { SpatialCategory } from "../backend/Category";
 import { Appearance } from "../common/SubCategoryAppearance";
 import { ColorDef } from "../common/ColorDef";
 import { IModel } from "../common/IModel";
-import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelJsFs } from "../backend/IModelJsFs";
 
 class Timer {
@@ -233,14 +232,9 @@ describe("BriefcaseManager", () => {
 
     // Create a new iModel on the Hub (by uploading a seed file)
     timer = new Timer("create iModel");
-    const pathname = path.join(KnownTestLocations.assetsDir, iModelName + ".bim");
-    const rwIModelId: string = await BriefcaseManager.uploadIModel(accessToken, testProjectId, pathname);
+    const rwIModel: IModelDb = await IModelDb.create(accessToken, testProjectId, "ReadWriteTest", "TestSubject");
+    const rwIModelId = rwIModel.iModelToken.iModelId;
     assert.isNotEmpty(rwIModelId);
-    timer.end();
-
-    // Acquire a briefcase from iModelHub
-    timer = new Timer("download iModelDb");
-    const rwIModel: IModelDb = await IModelDb.open(accessToken, testProjectId, rwIModelId, OpenMode.ReadWrite);
     timer.end();
 
     timer = new Timer("make local changes");

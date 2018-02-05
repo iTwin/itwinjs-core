@@ -908,6 +908,34 @@ export class BriefcaseManager {
     briefcase.changeSetIndex = +changeSet.index!;
   }
 
+  /** Create a standalone iModel from the local disk */
+  public static async create(accessToken: AccessToken, projectId: string, hubName: string, rootSubjectName: string, hubDescription?: string, rootSubjectDescription?: string): Promise<BriefcaseEntry> {
+    BriefcaseManager.initialize();
+
+    const nativeDb: AddonDgnDb = new (NodeAddonRegistry.getAddon()).AddonDgnDb();
+
+    const scratchDir = path.join(BriefcaseManager.cacheDir, "scratch");
+    if (!IModelJsFs.existsSync(scratchDir))
+      IModelJsFs.mkdirSync(scratchDir);
+
+    const pathname = path.join(scratchDir, hubName + ".bim");
+    if (IModelJsFs.existsSync(pathname))
+      IModelJsFs.unlinkSync(pathname); // Note: Cannot create two files with the same name at the same time with multiple async calls.
+
+    let res: DbResult = nativeDb.createDgnDb(pathname, rootSubjectName, rootSubjectDescription);
+    if (DbResult.BE_SQLITE_OK !== res)
+      throw new IModelError(res);
+
+    res = nativeDb.saveChanges();
+    if (DbResult.BE_SQLITE_OK !== res)
+      throw new IModelError(res);
+
+    nativeDb.closeDgnDb();
+
+    const iModelId: string = await BriefcaseManager.uploadIModel(accessToken, projectId, pathname, hubName, hubDescription);
+    return BriefcaseManager.open(accessToken, projectId, iModelId, OpenMode.ReadWrite, IModelVersion.latest());
+  }
+
   /** Pushes a new iModel to the Hub */
   public static async uploadIModel(accessToken: AccessToken, projectId: string, pathname: string, hubName?: string, hubDescription?: string, timeOutInMilliseconds: number = 2 * 60 * 1000): Promise<string> {
     await BriefcaseManager.initialize();
