@@ -12,11 +12,13 @@ export const enum Mode {
 }
 
 export class TechniqueFlags {
-  public featureDimensions: FeatureDimensions = FeatureDimensions.empty();
-  public mode: Mode = Mode.kMode_Normal;
-  public monochrome: boolean = false;
-  public clipVolume: boolean = false;
-  public featureOverrides: boolean = false;
+  public featureDimensions: FeatureDimensions;
+  public mode: Mode;
+  public monochrome: boolean;
+  public clipVolume: boolean;
+  public featureOverrides: boolean;
+  public translucent: boolean;
+  public colorDimension: LUTDimension;
 
   public get featureDimensionType(): FeatureDimension { return this.featureDimensions.getValue(); }
   public get isMonochrome(): boolean { return this.monochrome; }
@@ -34,10 +36,19 @@ export class TechniqueFlags {
   public get descriptors(): Array<string | undefined> { return [this.colorStr, this.translucentStr, this.monochromeStr, this.hiliteStr, this.clipVolumeStr, this.featureOverrideStr].filter(Boolean); }
   public get description(): string { return this.descriptors.join("; "); }
 
-  constructor(public colorDimension: LUTDimension = LUTDimension.Uniform, public translucent: boolean = false) {}
+  constructor(colorDimension?: LUTDimension, translucent?: boolean) { this.init(undefined, undefined, undefined, colorDimension, translucent); }
+
+  private init(dims?: FeatureDimensions, mode?: Mode, clipVolume?: WithClipVolume, colorDimension?: LUTDimension, translucent?: boolean) {
+    this.colorDimension = !!colorDimension ? colorDimension : LUTDimension.Uniform;
+    this.featureDimensions = !!dims ? dims : FeatureDimensions.empty();
+    this.translucent = !!translucent ? translucent : false;
+    this.monochrome = this.featureOverrides = false;
+    this.clipVolume = !!clipVolume ? clipVolume === WithClipVolume.Yes : false;
+    this.mode = !!mode ? mode : Mode.kMode_Normal;
+  }
 
   public setFeatureDimensions(type: FeatureIndexType, dim: LUTDimension): void { this.featureDimensions.init(dim, type); }
-  public setHilite(): void { this.mode = Mode.kMode_Hilite; }
+  public setHilite(): void { this.init(this.featureDimensions, Mode.kMode_Hilite, this.clipVolume ? WithClipVolume.Yes : WithClipVolume.No); }
   public static forHilite(dims: FeatureDimensions, withClipVolume: WithClipVolume, techniqueFlags: TechniqueFlags = new TechniqueFlags() ): TechniqueFlags {
     // The hilite shader simply generates a silhouette...the other flags are superfluous.
     techniqueFlags.featureDimensions = dims;
