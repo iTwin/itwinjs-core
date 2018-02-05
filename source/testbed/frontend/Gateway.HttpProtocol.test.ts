@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Gateway } from "../../common/Gateway";
+import { GatewayHttpProtocol } from "../../gateway/GatewayHttpProtocol";
 import { TestGateway, TestOp1Params } from "../common/TestGateway";
 import { assert } from "chai";
 import { TestbedConfig } from "../common/TestbedConfig";
@@ -12,8 +13,8 @@ describe("Gateway.HttpProtocol", () => {
     let pendingsReceived = 0;
 
     const configuration = Gateway.getProxyForGateway(TestGateway).configuration;
-    const protocol = configuration.protocol as Gateway.HttpProtocol;
-    const listener = protocol.pendingOperationRequestListeners.push((request: Gateway.HttpProtocol.PendingOperationRequest) => {
+    const protocol = configuration.protocol as GatewayHttpProtocol;
+    const listener = protocol.pendingOperationRequestListeners.push((request: GatewayHttpProtocol.PendingOperationRequest) => {
       if (request.applicationData === undefined) {
         request.applicationData = 0;
         return;
