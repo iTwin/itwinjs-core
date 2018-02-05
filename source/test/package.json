@@ -22,7 +22,7 @@
   ],
   "dependencies": {
     "@bentley/bentleyjs-core": "^2.0.1",
-    "@bentley/geometry-core": "^4.0.8",
+    "@bentley/geometry-core": "^4.2.0",
     "@bentley/imodeljs-clients": "^2.0.1",
     "@bentley/imodeljs-electronaddon": "~6.1.0",
     "@bentley/imodeljs-nodeaddon": "~6.1.0",
