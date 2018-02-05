@@ -199,7 +199,7 @@ export class PatternParams {
 
     transform.multiplyPoint(this._origin);
     this._rMatrix.multiplyMatrixMatrix(transform.matrix, this._rMatrix);
-    const normalized = RotMatrix.createPerpendicularUnitColumnsFromRotMatrix(this._rMatrix);
+    const normalized = RotMatrix.createRigidFromRotMatrix(this._rMatrix);
     if (normalized)
       this._rMatrix.setFrom(normalized);
   }

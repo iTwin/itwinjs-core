@@ -482,7 +482,7 @@ export class Viewport {
       return;
     const r = this.rotMatrix.transpose();
     r.setColumn(2, zUp);
-    RotMatrix.createPerpendicularUnitColumnsFromRotMatrix(r, AxisOrder.ZXY, r);
+    RotMatrix.createRigidFromRotMatrix(r, AxisOrder.ZXY, r);
     r.transpose(this.rotMatrix);
   }
 
@@ -1263,7 +1263,7 @@ export class Viewport {
     const pt = hit.getHitPoint();
     const radius = (2.5 * aperture) * vp.getPixelSizeAtPoint(pt);
     const normal = hit.geomDetail.normal;
-    const rMatrix = RotMatrix.createHeadsUpTriad(normal);
+    const rMatrix = RotMatrix.createRigidHeadsUp(normal);
     color.setAlpha(100);
     colorFill.setAlpha(200);
 
