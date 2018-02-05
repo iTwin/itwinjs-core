@@ -23,4 +23,10 @@ describe("Gateway", () => {
     const date2 = await TestGateway.getProxy().op3(date1);
     assert.strictEqual(date1.getTime(), date2.getTime());
   });
+
+  it.skip("support Map", async () => {
+    const map1 = new Map();
+    const map2 = await TestGateway.getProxy().op4(map1);
+    map2;
+  });
 });
