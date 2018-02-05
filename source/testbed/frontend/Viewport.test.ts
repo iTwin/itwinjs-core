@@ -13,7 +13,7 @@ import * as path from "path";
 import { PanTool } from "../../frontend/tools/ViewTool";
 import { CompassMode } from "../../frontend/AccuDraw";
 
-const iModelLocation = path.join(__dirname, "../../../../test/lib/test/assets/test.bim");
+const iModelLocation = path.join(__dirname, "../../../../backend/lib/backend/test/assets/test.bim");
 
 /** Class with scope limited to this file, used for creating a Viewport without a canvas */
 class TestViewport extends Viewport {

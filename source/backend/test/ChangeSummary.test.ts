@@ -6,16 +6,16 @@ import * as path from "path";
 import { expect, assert } from "chai";
 import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { IModelVersion } from "../common/IModelVersion";
-import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../backend/ChangeSummaryManager";
-import { BriefcaseManager } from "../backend/BriefcaseManager";
-import { IModelDb } from "../backend/IModelDb";
+import { IModelVersion } from "../../common/IModelVersion";
+import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../ChangeSummaryManager";
+import { BriefcaseManager } from "../BriefcaseManager";
+import { IModelDb } from "../IModelDb";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ChangeSet } from "@bentley/imodeljs-clients";
 import { using } from "@bentley/bentleyjs-core/lib/Disposable";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { IModelJsFs } from "../backend/IModelJsFs";
+import { IModelJsFs } from "../IModelJsFs";
 
 describe("ChangeSummary", () => {
   let accessToken: AccessToken;

@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import {KnownLocations as PlatformKnownLocations} from "../backend/KnownLocations";
+import {KnownLocations as PlatformKnownLocations} from "../KnownLocations";
 
 export class KnownTestLocations {
 

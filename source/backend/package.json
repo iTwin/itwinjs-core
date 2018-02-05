@@ -7,7 +7,10 @@
     "build": "tsc && npm run copy:assets",
     "clean": "rimraf lib",
     "copy:assets": "cpx ./assets/**/* ./lib/backend/assets",
-    "test": "echo \"Error: run tests from the '../test' directory.\" && exit 1"
+    "copy:test-assets": "cpx ./test/assets/**/* ./lib/backend/test/assets",
+    "pretest": "npm run copy:test-assets && npm run build",
+    "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/backend/test\"",
+    "webpackformobile": "cpx ./test/runMochaTestsDirectly.js ./lib/backend/test && webpack --target=webworker --config ./test/mobile.webpack.config.js"
   },
   "repository": {},
   "keywords": [

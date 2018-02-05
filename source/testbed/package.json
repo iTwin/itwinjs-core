@@ -10,7 +10,7 @@
     "pretest": "npm run build",
     "test": "floss --path lib/testbed/frontend/index.js",
     "copy:frontendpublic": "cpx ../frontend/public/**/* ./lib/testbed/backend/public",
-    "copy:testpublic": "cpx ../test/public/**/* ./lib/testbed/backend/public"
+    "copy:testpublic": "cpx ./public/**/* ./lib/testbed/backend/public"
   },
   "repository": {},
   "dependencies": {

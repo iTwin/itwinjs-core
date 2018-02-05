@@ -8,17 +8,17 @@ import { Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/li
 import { Range3d } from "@bentley/geometry-core/lib/Range";
 import { RotMatrix } from "@bentley/geometry-core/lib/Transform";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { SpatialViewState, ViewStatus, Camera, MarginPercent, StandardView } from "../common/ViewState";
-import { IModelDb } from "../backend/IModelDb";
-import { DisplayStyle3d, SpatialViewDefinition } from "../backend/ViewDefinition";
+import { SpatialViewState, ViewStatus, Camera, MarginPercent, StandardView } from "../../common/ViewState";
+import { IModelDb } from "../IModelDb";
+import { DisplayStyle3d, SpatialViewDefinition } from "../ViewDefinition";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import * as path from "path";
-import { AuxCoordSystemSpatialState } from "../common/AuxCoordSys";
-import { CategorySelectorProps, ModelSelectorProps } from "../common/ElementProps";
+import { AuxCoordSystemSpatialState } from "../../common/AuxCoordSys";
+import { CategorySelectorProps, ModelSelectorProps } from "../../common/ElementProps";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { DisplayStyle3dState } from "../common/DisplayStyleState";
-import { ModelSelectorState } from "../common/ModelSelectorState";
-import { CategorySelectorState } from "../common/CategorySelectorState";
+import { DisplayStyle3dState } from "../../common/DisplayStyleState";
+import { ModelSelectorState } from "../../common/ModelSelectorState";
+import { CategorySelectorState } from "../../common/CategorySelectorState";
 
 // spell-checker: disable
 
