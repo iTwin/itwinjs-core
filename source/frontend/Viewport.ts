@@ -719,9 +719,8 @@ export class Viewport {
   /** Convert an array of points from CoordSystem.Npc to CoordSystem.View */
   public npcToViewArray(pts: Point3d[]): void {
     const corners = this.getViewCorners();
-    const npcToSrcTran = Transform.createIdentity();
-    Transform.initFromRange(corners.low, corners.high, npcToSrcTran, undefined);
-    npcToSrcTran.multiplyPoint3dArrayInPlace(pts);
+    for (const p of pts)
+      corners.fractionToPoint (p.x, p.y, p.z, p);
   }
   /**
    * Convert a point from CoordSystem.View to CoordSystem.Npc
@@ -741,9 +740,7 @@ export class Viewport {
    */
   public npcToView(pt: Point3d, out?: Point3d): Point3d {
     const corners = this.getViewCorners();
-    const scrToNpcTran = Transform.createIdentity();
-    Transform.initFromRange(corners.low, corners.high, scrToNpcTran, undefined);
-    return scrToNpcTran.multiplyPoint(pt, out);
+    return corners.fractionToPoint (pt.x, pt.y, pt.z, out);
   }
   /** Convert an array of points from CoordSystem.World to CoordSystem.Npc */
   public worldToNpcArray(pts: Point3d[]): void { this.rootToNpc.transform0.multiplyPoint3dArrayQuietNormalize(pts); }
