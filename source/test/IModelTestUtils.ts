@@ -108,6 +108,22 @@ export class IModelTestUtils {
     return stat;
   }
 
+  public static createStandaloneIModel(filename: string, rootSubjectName: string): IModelDb {
+    const destPath = KnownTestLocations.outputDir;
+    if (!IModelJsFs.existsSync(destPath))
+      IModelJsFs.mkdirSync(destPath);
+
+    const pathname = path.join(destPath, filename);
+    if (IModelJsFs.existsSync(pathname))
+      IModelJsFs.unlinkSync(pathname);
+
+    const iModel: IModelDb = IModelDb.createStandalone(pathname, rootSubjectName);
+
+    assert.isNotNull(iModel);
+    assert.isTrue(IModelJsFs.existsSync(pathname));
+    return iModel!;
+  }
+
   public static openIModel(filename: string, opts?: IModelTestUtilsOpenOptions): IModelDb {
     const destPath = KnownTestLocations.outputDir;
     if (!IModelJsFs.existsSync(destPath))

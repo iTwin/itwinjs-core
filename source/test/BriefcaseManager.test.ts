@@ -6,7 +6,7 @@ import { expect, assert } from "chai";
 import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "../common/IModelVersion";
-import { BriefcaseManager } from "../backend/BriefcaseManager";
+import { BriefcaseManager, KeepBriefcase } from "../backend/BriefcaseManager";
 import { IModelDb, ConcurrencyControl } from "../backend/IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Code } from "../common/Code";
@@ -184,8 +184,7 @@ describe("BriefcaseManager", () => {
     assert.exists(qaIModel);
   });
 
-  // Enable after next addon build > 6.0.1
-  it.skip("should be able to reverse and reinstate changes", async () => {
+  it("should be able to reverse and reinstate changes", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
 
     let arrayIndex: number;
@@ -333,7 +332,7 @@ describe("BriefcaseManager", () => {
     const roIModel: IModelDb = await IModelDb.open(accessToken, testProjectId, rwIModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.exists(roIModel);
 
-    rwIModel.close(accessToken);
+    rwIModel.close(accessToken, KeepBriefcase.No);
     roIModel.close(accessToken);
   });
 
@@ -366,6 +365,11 @@ describe("BriefcaseManager", () => {
     iModel.saveChanges("inserted generic objects");
 
     iModel.close(accessToken);
+  });
+
+  it("should be able to create a standalone IModel", async () => {
+    const iModel: IModelDb = IModelTestUtils.createStandaloneIModel("TestStandalone.bim", "TestSubject");
+    iModel.closeStandalone();
   });
 
 });
