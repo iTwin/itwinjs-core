@@ -1,9 +1,9 @@
 const path = require ("path");
 
 module.exports = {
-  entry: "./lib/test/runMochaTestsDirectly.js",
+  entry: "./lib/backend/test/runMochaTestsDirectly.js",
   output: {
-    path: path.resolve(__dirname, "./lib/test/mobile"),
+    path: path.resolve(__dirname, "../lib/backend/test/mobile"),
     filename: "runMochaTestsDirectly.js"
   },
   target: "webworker",

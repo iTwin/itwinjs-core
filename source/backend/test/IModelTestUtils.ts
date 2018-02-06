@@ -6,18 +6,18 @@ import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
 import { ConnectClient, Project, IModelHubClient, Briefcase, DeploymentEnv } from "@bentley/imodeljs-clients";
-import { Code } from "../common/Code";
-import { Gateway } from "../common/Gateway";
-import { Element, InformationPartitionElement } from "../backend/Element";
-import { IModelDb } from "../backend/IModelDb";
-import { NodeAddonRegistry } from "../backend/NodeAddonRegistry";
-import { IModelGateway } from "../gateway/IModelGateway";
-import { ElementProps, GeometricElementProps } from "../common/ElementProps";
-import { DefinitionModel, Model } from "../backend/Model";
-import { SpatialCategory } from "../backend/Category";
-import { Appearance } from "../common/SubCategoryAppearance";
-import { Configuration } from "../common/Configuration";
-import { IModelJsFs, IModelJsFsStats } from "../backend/IModelJsFs";
+import { Code } from "../../common/Code";
+import { Gateway } from "../../common/Gateway";
+import { Element, InformationPartitionElement } from "../Element";
+import { IModelDb } from "../IModelDb";
+import { NodeAddonRegistry } from "../NodeAddonRegistry";
+import { IModelGateway } from "../../gateway/IModelGateway";
+import { ElementProps, GeometricElementProps } from "../../common/ElementProps";
+import { DefinitionModel, Model } from "../Model";
+import { SpatialCategory } from "../Category";
+import { Appearance } from "../../common/SubCategoryAppearance";
+import { Configuration } from "../../common/Configuration";
+import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
 import { KnownTestLocations } from "./KnownTestLocations";
 import * as path from "path";
 
@@ -93,7 +93,7 @@ export class IModelTestUtils {
     const promises = new Array<Promise<void>>();
     const briefcases = await IModelTestUtils.hubClient.getBriefcases(accessToken, iModelId);
     briefcases.forEach((briefcase: Briefcase) => {
-      promises.push(IModelTestUtils.hubClient.deleteBriefcase(accessToken, iModelId, briefcase.briefcaseId));
+      promises.push(IModelTestUtils.hubClient.deleteBriefcase(accessToken, iModelId, briefcase.briefcaseId!));
     });
     await Promise.all(promises);
   }
@@ -106,6 +106,22 @@ export class IModelTestUtils {
       stat = undefined;
     }
     return stat;
+  }
+
+  public static createStandaloneIModel(filename: string, rootSubjectName: string): IModelDb {
+    const destPath = KnownTestLocations.outputDir;
+    if (!IModelJsFs.existsSync(destPath))
+      IModelJsFs.mkdirSync(destPath);
+
+    const pathname = path.join(destPath, filename);
+    if (IModelJsFs.existsSync(pathname))
+      IModelJsFs.unlinkSync(pathname);
+
+    const iModel: IModelDb = IModelDb.createStandalone(pathname, rootSubjectName);
+
+    assert.isNotNull(iModel);
+    assert.isTrue(IModelJsFs.existsSync(pathname));
+    return iModel!;
   }
 
   public static openIModel(filename: string, opts?: IModelTestUtilsOpenOptions): IModelDb {

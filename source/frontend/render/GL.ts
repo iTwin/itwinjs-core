@@ -128,4 +128,27 @@ export namespace GL {
     MirroredRepeat = WebGLRenderingContext.MIRRORED_REPEAT,
     ClampToEdge = WebGLRenderingContext.CLAMP_TO_EDGE,
   }
+
+  export enum TextureInternalFormat {
+    Rgb = WebGLRenderingContext.RGB,
+    Rgba = WebGLRenderingContext.RGBA,
+    DepthStencil = WebGLRenderingContext.DEPTH_STENCIL,
+    Luminance = WebGLRenderingContext.LUMINANCE,
+    DepthComponent = WebGLRenderingContext.DEPTH_COMPONENT,
+  }
+
+  export enum TextureFormat {
+    Rgb = WebGLRenderingContext.RGB,
+    Rgba = WebGLRenderingContext.RGBA,
+    DepthStencil = WebGLRenderingContext.DEPTH_STENCIL,
+    Luminance = WebGLRenderingContext.LUMINANCE,
+    DepthComponent = WebGLRenderingContext.DEPTH_COMPONENT,
+  }
+
+  export enum TextureDataType {
+    Float = WebGLRenderingContext.FLOAT,
+    UnsignedByte = WebGLRenderingContext.UNSIGNED_BYTE,
+//    UnsignedInt24_8 = WebGLRenderingContext.UNSIGNED_INT_24_8,
+    UnsignedInt = WebGLRenderingContext.UNSIGNED_INT,
+    }
 }

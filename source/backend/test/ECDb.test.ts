@@ -7,8 +7,8 @@ import * as path from "path";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { ECDb } from "../backend/ECDb";
-import { ECSqlInsertResult } from "../backend/ECSqlStatement";
+import { ECDb } from "../ECDb";
+import { ECSqlInsertResult } from "../ECSqlStatement";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { using } from "@bentley/bentleyjs-core/lib/Disposable";
 import { KnownTestLocations } from "./KnownTestLocations";

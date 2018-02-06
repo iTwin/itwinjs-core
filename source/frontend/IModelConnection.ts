@@ -51,7 +51,7 @@ export class IModelConnection extends IModel {
     if (!changeSetId)
       changeSetId = "0"; // The first version is arbitrarily setup to have changeSetId = "0" since it's required by the gateway API.
 
-    const iModelToken = IModelToken.create(iModelId, changeSetId, openMode, accessToken.getUserProfile().userId, contextId);
+    const iModelToken = IModelToken.create(iModelId, changeSetId, openMode, accessToken.getUserProfile()!.userId, contextId);
     let openResponse: IModel;
     if (openMode === OpenMode.ReadWrite)
       openResponse = await IModelGateway.getProxy().openForWrite(accessToken, iModelToken);

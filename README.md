@@ -12,13 +12,14 @@ It can be used to build:
 imodeljs-core is the name of the overall git repository.
 The source code is organized according to where it can run:
 
-| Directory        | Design Requirements |
-|------------------|---------------------|
-| source/backend/  | Designed for backend requirements. Runs in a standalone JavaScript engine (Node in this case). May have file system and Node dependencies  |
-| source/frontend/ | Designed for frontend requirements. Must be able to run in a web browser. Cannot have file system or Node dependencies. |
-| source/common/   | Design to run either in frontend or backend. Must adhere to frontend restrictions. |
-| source/gateway/  | Configures how the frontend talks to the backend. This source code is used by both the frontend and backend. |
-| source/test/     | Specific for unit tests. The test framework puts the frontend and backend together in a single executable. |
+| Directory            | Design Requirements |
+|----------------------|---------------------|
+| source/backend/      | Designed for backend requirements. Runs in a standalone JavaScript engine (Node in this case). May have file system and Node dependencies  |
+| source/backend/test/ | Specific for unit tests. The test framework puts the frontend and backend together in a single executable. |
+| source/frontend/     | Designed for frontend requirements. Must be able to run in a web browser. Cannot have file system or Node dependencies. |
+| source/common/       | Design to run either in frontend or backend. Must adhere to frontend restrictions. |
+| source/gateway/      | Configures how the frontend talks to the backend. This source code is used by both the frontend and backend. |
+| source/testbed/      | Used for testing the frontend, but includes a test backend and test gateway |
 
 ## Prerequisites
 
@@ -83,9 +84,6 @@ The list below describes each of the packages:
 * `source/frontend/package.json`
   * Controls the version number for and dependencies of **@bentley/imodeljs-frontend**
   * Controls the frontend package dependencies (but not devDependencies)
-* `source/test/package.json`
-  * Private, not published
-  * Controls the test dependencies (but not devDependencies)
 
 ### Installing dependencies and devDependencies
 
@@ -98,7 +96,6 @@ After a successful install, you will notice multiple **node_modules** directorie
 | node_modules/                 | Overall devDependencies |
 | source/backend/node_modules/  | Backend dependencies    |
 | source/frontend/node_modules/ | Frontend dependencies   |
-| source/test/node_modules/     | Test dependencies       |
 
 Note that there will also be a `package.json` and `package-lock.json` that corresponds with each node_modules directory.
 
@@ -121,7 +118,6 @@ Therefore, a separate command had to be introduced.
 |----------------------|-------------------|
 | source/backend/lib/  | imodeljs-backend  |
 | source/frontend/lib/ | imodeljs-frontend |
-| source/test/lib/     | Not published     |
 
 Note that imodeljs-core/source/common/ is built into both the **imodeljs-backend** and **imodeljs-frontend** packages.
 

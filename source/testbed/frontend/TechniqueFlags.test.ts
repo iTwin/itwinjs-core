@@ -87,8 +87,18 @@ describe("TechniqueFlags", () => {
   });
   it("setHilite works as expected", () => {
     const techFlags = new TechniqueFlags();
+
+    // mix up member values to ensure they reset properly
+    techFlags.monochrome = true;
+    techFlags.translucent = true;
+    techFlags.colorDimension = LUTDimension.NonUniform;
+
     techFlags.setHilite();
     assert.isTrue(techFlags.isHilite);
+    assert.isFalse(techFlags.isTranslucent);
+    assert.isFalse(techFlags.isMonochrome);
+    assert.isTrue(techFlags.isHilite);
+    assert.isTrue(techFlags.isUniformColor);
   });
   it("forHilite works as expected", () => {
     const techFlags = TechniqueFlags.forHilite(FeatureDimensions.singleUniform(), WithClipVolume.Yes);

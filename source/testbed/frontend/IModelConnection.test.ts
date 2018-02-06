@@ -83,6 +83,8 @@ describe("IModelConnection", () => {
     assert.instanceOf(viewState.displayStyle, DisplayStyle2dState);
     assert.instanceOf((viewState as DrawingViewState).baseModel, Model2dState);
 
+    assert.exists(iModel.projectExtents);
+
     await iModel.close(TestData.accessToken);
   }).timeout(99999);
 

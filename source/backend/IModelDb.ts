@@ -47,6 +47,7 @@ export class IModelDb extends IModel {
   public readonly elements: IModelDbElements;
   public readonly views: IModelDbViews;
   public readonly linkTableRelationships: IModelDbLinkTableRelationships;
+  public readonly defaultLimit = 1000;
   private readonly statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private _codeSpecs: CodeSpecs;
   private _classMetaDataRegistry: MetaDataRegistry;
@@ -67,7 +68,7 @@ export class IModelDb extends IModel {
     this.linkTableRelationships = new IModelDbLinkTableRelationships(this);
   }
 
-  private static create(briefcaseEntry: BriefcaseEntry, contextId?: string): IModelDb {
+  private static createIModelDb(briefcaseEntry: BriefcaseEntry, contextId?: string): IModelDb {
     if (briefcaseEntry.iModelDb)
       return briefcaseEntry.iModelDb; // If there's an IModelDb already associated with the briefcase, that should be reused.
     const iModelToken = IModelToken.create(briefcaseEntry.iModelId, briefcaseEntry.changeSetId, briefcaseEntry.openMode, briefcaseEntry.userId, contextId);
@@ -75,6 +76,23 @@ export class IModelDb extends IModel {
     const name = props.rootSubject ? props.rootSubject.name : path.basename(briefcaseEntry.pathname);
     const iModelDb = new IModelDb(briefcaseEntry, iModelToken, name, props);
     return iModelDb;
+  }
+
+  /**
+   * Create a standalone local Db
+   * @param pathname The pathname of the iModel
+   * @param rootSubjectName Name of the root subject.
+   * @param rootSubjectDescription Description of the root subject.
+   */
+  public static createStandalone(pathname: string, rootSubjectName: string, rootSubjectDescription?: string): IModelDb {
+    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(pathname, rootSubjectName, rootSubjectDescription);
+    Logger.logInfo("IModelDb.createStandalone", () => ({ pathname }));
+    return IModelDb.createIModelDb(briefcaseEntry);
+  }
+
+  public static async create(accessToken: AccessToken, contextId: string, hubName: string, rootSubjectName: string, hubDescription?: string, rootSubjectDescription?: string): Promise<IModelDb> {
+    const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.create(accessToken, contextId, hubName, rootSubjectName, hubDescription, rootSubjectDescription);
+    return IModelDb.createIModelDb(briefcaseEntry);
   }
 
   /** Open the iModel from a local file
@@ -86,21 +104,21 @@ export class IModelDb extends IModel {
   public static openStandalone(pathname: string, openMode: OpenMode = OpenMode.ReadWrite, enableTransactions: boolean = false): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(pathname, openMode, enableTransactions);
     Logger.logInfo("IModelDb.openStandalone", () => ({ pathname, openMode }));
-    return IModelDb.create(briefcaseEntry);
+    return IModelDb.createIModelDb(briefcaseEntry);
   }
 
   /**
    * Open an iModel from the iModelHub
-   * @param accessToken
-   * @param contextId
-   * @param iModelId
-   * @param openMode
-   * @param version
+   * @param accessToken Delegation token of the authorized user.
+   * @param contextId Id of the Connect Project or Asset containing the iModel
+   * @param iModelId Id of the iModel
+   * @param openMode Open mode
+   * @param version Version of the iModel to open
    */
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(accessToken, contextId, iModelId, openMode, version);
     Logger.logInfo("IModelDb.open", () => ({ iModelId, openMode }));
-    return IModelDb.create(briefcaseEntry, contextId);
+    return IModelDb.createIModelDb(briefcaseEntry, contextId);
   }
 
   /**
@@ -113,7 +131,11 @@ export class IModelDb extends IModel {
     this.clearBriefcaseEntry();
   }
 
-  /** Close this iModel, if it is currently open. */
+  /**
+   * Close this iModel, if it is currently open.
+   * @param accessToken Delegation token of the authorized user.
+   * @param keepBriefcase Hint to discard or keep the briefcase for potential future use.
+   */
   public async close(accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
     if (!this.briefcaseEntry)
       return;
@@ -280,7 +302,12 @@ export class IModelDb extends IModel {
     this.concurrencyControl.onSavedChanges();
   }
 
-  /** Pull and Merge changes from the iModelHub */
+  /**
+   * Pull and Merge changes from the iModelHub
+   * @param accessToken Delegation token of the authorized user.
+   * @param version Version to pull and merge to.
+   * @throws [[IModelError]] If the pull and merge fails.
+   */
   public async pullAndMergeChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
     if (!this.briefcaseEntry)
       throw this._newNotOpenError();
@@ -288,7 +315,11 @@ export class IModelDb extends IModel {
     return BriefcaseManager.pullAndMergeChanges(accessToken, this.briefcaseEntry, version);
   }
 
-  /** Push changes to the iModelHub */
+  /**
+   * Push changes to the iModelHub
+   * @param accessToken Delegation token of the authorized user.
+   * @throws [[IModelError]] If the pull and merge fails.
+   */
   public async pushChanges(accessToken: AccessToken): Promise<void> {
     if (!this.briefcaseEntry)
       throw this._newNotOpenError();
@@ -296,15 +327,31 @@ export class IModelDb extends IModel {
     return BriefcaseManager.pushChanges(accessToken, this.briefcaseEntry);
   }
 
-  // public async reverseChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-  //   if (!this._iModel.briefcaseEntry)
-  //     return Promise.reject(this._iModel._newNotOpenError());
-  // }
+  /**
+   * Reverse a previously merged set of changes
+   * @param accessToken Delegation token of the authorized user.
+   * @param version Version to reverse changes to.
+   * @throws [[IModelError]] If the reversal fails.
+   */
+  public async reverseChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    if (!this.briefcaseEntry)
+      throw this._newNotOpenError();
 
-  // public async reinstateChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-  //   if (!this._iModel.briefcaseEntry)
-  //     return Promise.reject(this._iModel._newNotOpenError());
-  // }
+    return BriefcaseManager.reverseChanges(accessToken, this.briefcaseEntry, version);
+  }
+
+  /**
+   * Reinstate a previously reversed set of changes
+   * @param accessToken Delegation token of the authorized user.
+   * @param version Version to reinstate changes to.
+   * @throws [[IModelError]] If the reinstate fails.
+   */
+  public async reinstateChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    if (!this.briefcaseEntry)
+      throw this._newNotOpenError();
+
+    return BriefcaseManager.reinstateChanges(accessToken, this.briefcaseEntry, version);
+  }
 
   /**
    * Abandon pending changes to this iModel
@@ -650,7 +697,7 @@ export class ConcurrencyControl {
         byScope.set(cReq.Scope, (thisReq = thisReq));
       }
 
-      thisReq.values.push(cReq.Name);
+      thisReq.values!.push(cReq.Name);
     }
 
     return bySpecId;
@@ -673,7 +720,7 @@ export class ConcurrencyControl {
         byScope.set(code.scope, (thisReq = thisReq));
       }
 
-      thisReq.values.push(code.value);
+      thisReq.values!.push(code.value);
     }
 
     return bySpecId;
@@ -823,7 +870,7 @@ export class ConcurrencyControl {
           const multiCodes = await this.queryCodeStates(accessToken, new Id64(specId), scopeId);
           for (const multiCode of multiCodes) {
             if (multiCode.state !== CodeState.Available) {
-              if (ConcurrencyControl.anyFound(multiCode.values, thisReq.values)) {
+              if (ConcurrencyControl.anyFound(multiCode.values!, thisReq.values)) {
                 return false;
               }
             }
@@ -1423,6 +1470,7 @@ export class IModelDbViews {
     let sql: string = "SELECT ECInstanceId AS id FROM " + className;
     if (!wantPrivate)
       sql += " WHERE IsPrivate=FALSE";
+    sql += ` LIMIT ${this._iModel.defaultLimit}`; // limit number of returned view definitions
 
     const viewIds: Id64[] = [];
     const statement: ECSqlStatement = this._iModel.getPreparedStatement(sql);

@@ -1,13 +1,16 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.36.0",
+  "version": "0.42.0",
   "description": "iModelJs backend components",
   "license": "UNLICENSED",
   "scripts": {
     "build": "tsc && npm run copy:assets",
     "clean": "rimraf lib",
     "copy:assets": "cpx ./assets/**/* ./lib/backend/assets",
-    "test": "echo \"Error: run tests from the '../test' directory.\" && exit 1"
+    "copy:test-assets": "cpx ./test/assets/**/* ./lib/backend/test/assets",
+    "pretest": "npm run copy:test-assets && npm run build",
+    "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/backend/test\"",
+    "webpackformobile": "cpx ./test/runMochaTestsDirectly.js ./lib/backend/test && webpack --target=webworker --config ./test/mobile.webpack.config.js"
   },
   "repository": {},
   "keywords": [
@@ -25,12 +28,12 @@
     "NOTE: must use ~ range to depend on the addon api -- that is, must lock onto a minor version."
   ],
   "dependencies": {
-    "@bentley/bentleyjs-core": "^1.4.7",
-    "@bentley/geometry-core": "^4.0.1",
-    "@bentley/imodeljs-clients": "^1.1.3",
-    "@bentley/imodeljs-nodeaddonapi": "~6.0.0",
-    "@bentley/imodeljs-nodeaddon": "~6.0.0",
-    "@bentley/imodeljs-electronaddon": "~6.0.0",
+    "@bentley/bentleyjs-core": "^2.0.1",
+    "@bentley/geometry-core": "^4.2.0",
+    "@bentley/imodeljs-clients": "^2.0.1",
+    "@bentley/imodeljs-electronaddon": "~6.1.0",
+    "@bentley/imodeljs-nodeaddon": "~6.1.0",
+    "@bentley/imodeljs-nodeaddonapi": "~6.1.0",
     "fs-extra": "^4.0.3",
     "js-base64": "^2.4.0"
   },

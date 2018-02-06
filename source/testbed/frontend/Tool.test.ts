@@ -10,7 +10,7 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { ModifyElementSource } from "../../frontend/tools/PrimitiveTool";
 import { SelectEventType } from "../../frontend/SelectionSet";
 
-const iModelLocation = path.join(__dirname, "../../../../test/lib/test/assets/test.bim");
+const iModelLocation = path.join(__dirname, "../../../../backend/lib/backend/test/assets/test.bim");
 
 class TestIModelApp extends IModelApp {
   protected supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }

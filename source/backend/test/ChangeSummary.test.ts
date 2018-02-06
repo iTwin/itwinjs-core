@@ -6,18 +6,18 @@ import * as path from "path";
 import { expect, assert } from "chai";
 import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { IModelVersion } from "../common/IModelVersion";
-import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../backend/ChangeSummaryManager";
-import { BriefcaseManager } from "../backend/BriefcaseManager";
-import { IModelDb } from "../backend/IModelDb";
+import { IModelVersion } from "../../common/IModelVersion";
+import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../ChangeSummaryManager";
+import { BriefcaseManager } from "../BriefcaseManager";
+import { IModelDb } from "../IModelDb";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ChangeSet } from "@bentley/imodeljs-clients";
 import { using } from "@bentley/bentleyjs-core/lib/Disposable";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { IModelJsFs } from "../backend/IModelJsFs";
+import { IModelJsFs } from "../IModelJsFs";
 
-describe.skip("ChangeSummary", () => {
+describe("ChangeSummary", () => {
   let accessToken: AccessToken;
   let testProjectId: string;
   let testIModelId: string;
@@ -197,7 +197,7 @@ describe.skip("ChangeSummary", () => {
     const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
     assert.equal(changeSets.length, 3);
     // first extraction: just first changeset
-    const firstChangesetId: string = changeSets[0].id;
+    const firstChangesetId: string = changeSets[0].id!;
 
     // now extract change summary for that one changeset
     await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, testIModelId, firstChangesetId, firstChangesetId);
@@ -232,7 +232,7 @@ describe.skip("ChangeSummary", () => {
     }
 
     // now do second extraction for last changeset
-    const lastChangesetId: string = changeSets[changeSets.length - 1].id;
+    const lastChangesetId: string = changeSets[changeSets.length - 1].id!;
 
     await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, testIModelId, lastChangesetId, lastChangesetId);
     assert.isTrue(IModelJsFs.existsSync(changesFilePath));
