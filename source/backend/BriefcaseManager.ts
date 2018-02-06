@@ -248,6 +248,7 @@ export class BriefcaseManager {
    *      {
    *        "pathname": "path to imodel",
    *        "parentChangeSetId": "Id of parent change set",
+   *        "reversedChangeSetId": "Id of change set Db was reversed to, if any",
    *        "briefcaseId": "Id of brief case. Standalone if it's a readonly standalone briefcase.",
    *        "readOnly": true or false
    *      },
@@ -658,7 +659,32 @@ export class BriefcaseManager {
 
     BriefcaseManager.cache!.addBriefcase(briefcase);
     return briefcase;
-}
+  }
+
+  /** Create a standalone iModel from the local disk */
+  public static createStandalone(pathname: string, rootSubjectName: string, rootSubjectDescription?: string): BriefcaseEntry {
+    BriefcaseManager.initialize();
+
+    const nativeDb: AddonDgnDb = new (NodeAddonRegistry.getAddon()).AddonDgnDb();
+
+    const res: DbResult = nativeDb.createDgnDb(pathname, rootSubjectName, rootSubjectDescription);
+    if (DbResult.BE_SQLITE_OK !== res)
+      throw new IModelError(res);
+
+    nativeDb.setBriefcaseId(BriefcaseId.Standalone);
+
+    const briefcase = new BriefcaseEntry();
+    briefcase.briefcaseId = BriefcaseId.Standalone;
+    briefcase.changeSetId = "";
+    briefcase.iModelId = nativeDb.getDbGuid();
+    briefcase.isOpen = true;
+    briefcase.openMode = OpenMode.ReadWrite;
+    briefcase.pathname = pathname;
+    briefcase.nativeDb = nativeDb;
+
+    BriefcaseManager.cache!.addBriefcase(briefcase);
+    return briefcase;
+  }
 
   /** Close the standalone briefcase */
   public static closeStandalone(briefcase: BriefcaseEntry) {
@@ -815,10 +841,12 @@ export class BriefcaseManager {
           briefcase.reversedChangeSetIndex = targetChangeSetIndex;
           briefcase.reversedChangeSetId = targetChangeSetId;
         }
+        assert(briefcase.nativeDb.getReversedChangeSetId() === briefcase.reversedChangeSetId);
         break;
       case ChangeSetProcessOption.Reverse:
         briefcase.reversedChangeSetIndex = targetChangeSetIndex;
         briefcase.reversedChangeSetId = targetChangeSetId;
+        assert(briefcase.nativeDb.getReversedChangeSetId() === briefcase.reversedChangeSetId);
         break;
       default:
         assert(false, "Unknown change set process option");
@@ -878,6 +906,34 @@ export class BriefcaseManager {
     BriefcaseManager.finishCreateChangeSet(briefcase);
     briefcase.changeSetId = changeSet.wsgId;
     briefcase.changeSetIndex = +changeSet.index!;
+  }
+
+  /** Create a standalone iModel from the local disk */
+  public static async create(accessToken: AccessToken, projectId: string, hubName: string, rootSubjectName: string, hubDescription?: string, rootSubjectDescription?: string): Promise<BriefcaseEntry> {
+    BriefcaseManager.initialize();
+
+    const nativeDb: AddonDgnDb = new (NodeAddonRegistry.getAddon()).AddonDgnDb();
+
+    const scratchDir = path.join(BriefcaseManager.cacheDir, "scratch");
+    if (!IModelJsFs.existsSync(scratchDir))
+      IModelJsFs.mkdirSync(scratchDir);
+
+    const pathname = path.join(scratchDir, hubName + ".bim");
+    if (IModelJsFs.existsSync(pathname))
+      IModelJsFs.unlinkSync(pathname); // Note: Cannot create two files with the same name at the same time with multiple async calls.
+
+    let res: DbResult = nativeDb.createDgnDb(pathname, rootSubjectName, rootSubjectDescription);
+    if (DbResult.BE_SQLITE_OK !== res)
+      throw new IModelError(res);
+
+    res = nativeDb.saveChanges();
+    if (DbResult.BE_SQLITE_OK !== res)
+      throw new IModelError(res);
+
+    nativeDb.closeDgnDb();
+
+    const iModelId: string = await BriefcaseManager.uploadIModel(accessToken, projectId, pathname, hubName, hubDescription);
+    return BriefcaseManager.open(accessToken, projectId, iModelId, OpenMode.ReadWrite, IModelVersion.latest());
   }
 
   /** Pushes a new iModel to the Hub */

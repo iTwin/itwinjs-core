@@ -21,4 +21,8 @@ export class TestGatewayImpl extends Gateway implements TestGateway {
   public async op3(date: Date): Promise<Date> {
     return date;
   }
+
+  public async op4(map: Map<any, any>): Promise<Map<any, any>> {
+    return map;
+  }
 }

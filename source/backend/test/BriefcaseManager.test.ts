@@ -6,18 +6,17 @@ import { expect, assert } from "chai";
 import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState } from "@bentley/imodeljs-clients";
 import { Code } from "../../common/Code";
-import { ColorDef } from "../../common/ColorDef";
-import { IModel } from "../../common/IModel";
 import { IModelVersion } from "../../common/IModelVersion";
-import { Appearance } from "../../common/SubCategoryAppearance";
-import { BriefcaseManager } from "../BriefcaseManager";
+import { BriefcaseManager, KeepBriefcase } from "../BriefcaseManager";
 import { IModelDb, ConcurrencyControl } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Element } from "../Element";
 import { DictionaryModel } from "../Model";
 import { SpatialCategory } from "../Category";
-import { KnownTestLocations } from "./KnownTestLocations";
+import { Appearance } from "../../common/SubCategoryAppearance";
+import { ColorDef } from "../../common/ColorDef";
+import { IModel } from "../../common/IModel";
 import { IModelJsFs } from "../IModelJsFs";
 
 class Timer {
@@ -184,8 +183,7 @@ describe("BriefcaseManager", () => {
     assert.exists(qaIModel);
   });
 
-  // Enable after next addon build > 6.0.1
-  it.skip("should be able to reverse and reinstate changes", async () => {
+  it("should be able to reverse and reinstate changes", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
 
     let arrayIndex: number;
@@ -234,14 +232,9 @@ describe("BriefcaseManager", () => {
 
     // Create a new iModel on the Hub (by uploading a seed file)
     timer = new Timer("create iModel");
-    const pathname = path.join(KnownTestLocations.assetsDir, iModelName + ".bim");
-    const rwIModelId: string = await BriefcaseManager.uploadIModel(accessToken, testProjectId, pathname);
+    const rwIModel: IModelDb = await IModelDb.create(accessToken, testProjectId, "ReadWriteTest", "TestSubject");
+    const rwIModelId = rwIModel.iModelToken.iModelId;
     assert.isNotEmpty(rwIModelId);
-    timer.end();
-
-    // Acquire a briefcase from iModelHub
-    timer = new Timer("download iModelDb");
-    const rwIModel: IModelDb = await IModelDb.open(accessToken, testProjectId, rwIModelId, OpenMode.ReadWrite);
     timer.end();
 
     timer = new Timer("make local changes");
@@ -333,7 +326,7 @@ describe("BriefcaseManager", () => {
     const roIModel: IModelDb = await IModelDb.open(accessToken, testProjectId, rwIModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.exists(roIModel);
 
-    rwIModel.close(accessToken);
+    rwIModel.close(accessToken, KeepBriefcase.No);
     roIModel.close(accessToken);
   });
 
@@ -366,6 +359,11 @@ describe("BriefcaseManager", () => {
     iModel.saveChanges("inserted generic objects");
 
     iModel.close(accessToken);
+  });
+
+  it("should be able to create a standalone IModel", async () => {
+    const iModel: IModelDb = IModelTestUtils.createStandaloneIModel("TestStandalone.bim", "TestSubject");
+    iModel.closeStandalone();
   });
 
 });

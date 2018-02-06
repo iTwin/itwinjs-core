@@ -68,7 +68,7 @@ export class IModelDb extends IModel {
     this.linkTableRelationships = new IModelDbLinkTableRelationships(this);
   }
 
-  private static create(briefcaseEntry: BriefcaseEntry, contextId?: string): IModelDb {
+  private static createIModelDb(briefcaseEntry: BriefcaseEntry, contextId?: string): IModelDb {
     if (briefcaseEntry.iModelDb)
       return briefcaseEntry.iModelDb; // If there's an IModelDb already associated with the briefcase, that should be reused.
     const iModelToken = IModelToken.create(briefcaseEntry.iModelId, briefcaseEntry.changeSetId, briefcaseEntry.openMode, briefcaseEntry.userId, contextId);
@@ -76,6 +76,23 @@ export class IModelDb extends IModel {
     const name = props.rootSubject ? props.rootSubject.name : path.basename(briefcaseEntry.pathname);
     const iModelDb = new IModelDb(briefcaseEntry, iModelToken, name, props);
     return iModelDb;
+  }
+
+  /**
+   * Create a standalone local Db
+   * @param pathname The pathname of the iModel
+   * @param rootSubjectName Name of the root subject.
+   * @param rootSubjectDescription Description of the root subject.
+   */
+  public static createStandalone(pathname: string, rootSubjectName: string, rootSubjectDescription?: string): IModelDb {
+    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(pathname, rootSubjectName, rootSubjectDescription);
+    Logger.logInfo("IModelDb.createStandalone", () => ({ pathname }));
+    return IModelDb.createIModelDb(briefcaseEntry);
+  }
+
+  public static async create(accessToken: AccessToken, contextId: string, hubName: string, rootSubjectName: string, hubDescription?: string, rootSubjectDescription?: string): Promise<IModelDb> {
+    const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.create(accessToken, contextId, hubName, rootSubjectName, hubDescription, rootSubjectDescription);
+    return IModelDb.createIModelDb(briefcaseEntry);
   }
 
   /** Open the iModel from a local file
@@ -87,7 +104,7 @@ export class IModelDb extends IModel {
   public static openStandalone(pathname: string, openMode: OpenMode = OpenMode.ReadWrite, enableTransactions: boolean = false): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(pathname, openMode, enableTransactions);
     Logger.logInfo("IModelDb.openStandalone", () => ({ pathname, openMode }));
-    return IModelDb.create(briefcaseEntry);
+    return IModelDb.createIModelDb(briefcaseEntry);
   }
 
   /**
@@ -101,7 +118,7 @@ export class IModelDb extends IModel {
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(accessToken, contextId, iModelId, openMode, version);
     Logger.logInfo("IModelDb.open", () => ({ iModelId, openMode }));
-    return IModelDb.create(briefcaseEntry, contextId);
+    return IModelDb.createIModelDb(briefcaseEntry, contextId);
   }
 
   /**

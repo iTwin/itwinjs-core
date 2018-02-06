@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { IModelError } from "../common/IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
-import { Gateway } from "../common/Gateway";
+import { GatewayHttpProtocol } from "./GatewayHttpProtocol";
 import { IModelToken } from "../common/IModel";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 
@@ -20,7 +20,7 @@ export interface HttpServerResponse {
 }
 
 /** An http protocol for Bentley cloud gateway deployments. */
-export abstract class BentleyCloudGatewayProtocol extends Gateway.HttpProtocol {
+export abstract class BentleyCloudGatewayProtocol extends GatewayHttpProtocol {
   /** An optional prefix for gateway operation paths. */
   public openAPIPathPrefix = () => "";
 
@@ -52,7 +52,7 @@ export abstract class BentleyCloudGatewayProtocol extends Gateway.HttpProtocol {
   }
 
   /** Returns the operation specified by an OpenAPI gateway path. */
-  public getOperationFromOpenAPIPath(path: string): Gateway.HttpProtocol.GatewayOperationIdentifier {
+  public getOperationFromOpenAPIPath(path: string): GatewayHttpProtocol.GatewayOperationIdentifier {
     const components = path.split("/");
     if (components.length !== 12)
       throw new IModelError(BentleyStatus.ERROR, "Invalid path.");
@@ -62,7 +62,7 @@ export abstract class BentleyCloudGatewayProtocol extends Gateway.HttpProtocol {
   }
 
   /** Generates an OpenAPI path for a gateway operation. */
-  protected generateOpenAPIPathForOperation(operation: Gateway.HttpProtocol.GatewayOperationIdentifier, request: Gateway.HttpProtocol.OperationRequest | undefined) {
+  protected generateOpenAPIPathForOperation(operation: GatewayHttpProtocol.GatewayOperationIdentifier, request: GatewayHttpProtocol.OperationRequest | undefined) {
     const prefix = this.openAPIPathPrefix();
     const info = this.openAPIInfo();
 
@@ -75,7 +75,7 @@ export abstract class BentleyCloudGatewayProtocol extends Gateway.HttpProtocol {
   }
 
   /** Returns the OpenAPI path parameters for a gateway operation. */
-  protected supplyOpenAPIPathParametersForOperation(_identifier: Gateway.HttpProtocol.GatewayOperationIdentifier): Gateway.HttpProtocol.OpenAPIParameter[] {
+  protected supplyOpenAPIPathParametersForOperation(_identifier: GatewayHttpProtocol.GatewayOperationIdentifier): GatewayHttpProtocol.OpenAPIParameter[] {
     return [
       { name: "contextId", in: "path", required: true, schema: { type: "string" } },
       { name: "iModelId", in: "path", required: true, schema: { type: "string" } },
@@ -89,7 +89,7 @@ export abstract class BentleyCloudGatewayProtocol extends Gateway.HttpProtocol {
   }
 
   /** Whether a pending gateway operation request remains pending with the current response. */
-  protected isPendingRequestPending(_request: Gateway.HttpProtocol.PendingOperationRequest, responseStatus: number) {
+  protected isPendingRequestPending(_request: GatewayHttpProtocol.PendingOperationRequest, responseStatus: number) {
     return responseStatus === 202;
   }
 }
