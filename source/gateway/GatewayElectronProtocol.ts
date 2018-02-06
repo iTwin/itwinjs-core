@@ -1,7 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Gateway, GatewayDefinition, GatewayProtocol, GatewayConfiguration } from "../common/Gateway";
+import { Gateway, GatewayDefinition } from "../common/Gateway";
+import { GatewayProtocol } from "./GatewayProtocol";
+import { GatewayConfiguration } from "./GatewayConfiguration";
 import { IModelError } from "../common/IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 
@@ -35,7 +37,7 @@ export class GatewayElectronProtocol extends GatewayProtocol {
 
   /** Returns deserialized gateway operation request parameters. */
   public deserializeOperationRequestParameters(request: string): any[] {
-    return JSON.parse(request, Gateway.unmarshal);
+    return this.deserializeOperationValue(request);
   }
 
   /** Returns a serialized gateway operation result. */
@@ -76,7 +78,7 @@ export class GatewayElectronProtocol extends GatewayProtocol {
 
   /** Returns a deserialized gateway operation result. */
   protected deserializeOperationResult(response: string): any {
-    return JSON.parse(response, Gateway.unmarshal);
+    return this.deserializeOperationValue(response);
   }
 
   /** Constructs an electron protocol. */
