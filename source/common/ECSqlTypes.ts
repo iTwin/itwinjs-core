@@ -85,7 +85,7 @@ export enum ECSqlSystemProperty {
   PointZ }
 
 /** Utility to format ECProperties according to the iModelJs formatting rules. */
-export class ECJsonNames {
+export class ECJsNames {
   /** Formats the specified ECProperty according to the iModelJs formatting rules.
    *  @remarks Formatting rules:
    *    * System properties:
@@ -106,7 +106,7 @@ export class ECJsonNames {
    */
   public static toJsName(ecProperty: ECSqlSystemProperty | string): string {
     if (typeof(ecProperty) === "string")
-      return ECJsonNames.lowerFirstChar(ecProperty);
+      return ECJsNames.lowerFirstChar(ecProperty);
 
     switch (ecProperty) {
       case ECSqlSystemProperty.ECInstanceId:

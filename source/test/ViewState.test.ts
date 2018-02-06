@@ -163,7 +163,7 @@ describe("ViewState", () => {
   });
 
   // C++ Tests:
-  it("ViewState creation", () => {
+  it.skip("ViewState creation", () => {
     // compare the extracted view with that in native C++
     let nativeResultJSON = imodel.executeTestById(1,
       {
@@ -178,7 +178,7 @@ describe("ViewState", () => {
     assert.deepEqual(viewStateJSON, nativeResultJSON, "ViewState creation matches");
   });
 
-  it("view volume adjustments", () => {
+  it.skip("view volume adjustments", () => {
     // Flat view test #1
     const tsFlatViewState = convertViewDefToViewState(imodel, flatView);
     tsFlatViewState.setOrigin(Point3d.create(-5, -5, 0));
@@ -271,7 +271,7 @@ describe("ViewState", () => {
     assert.isTrue(jsonCompare.compare(tsCamViewStateJSON, cppCamViewStateJSON), "lookAtVolume test 4 matches");
   });
 
-  it("rotation and 'lookAt' results should work", async () => {
+  it.skip("rotation and 'lookAt' results should work", async () => {
     // Flat view test
     const tsFlatViewState = convertViewDefToViewState(imodel, flatView);
     tsFlatViewState.setOrigin(Point3d.create(-5, -5, 0));
