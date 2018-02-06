@@ -1,7 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Gateway, GatewayDefinition, GatewayConfiguration } from "../common/Gateway";
+import { Gateway, GatewayDefinition } from "../common/Gateway";
+import { GatewayConfiguration } from "./GatewayConfiguration";
 import { GatewayHttpProtocol } from "./GatewayHttpProtocol";
 import { BentleyCloudGatewayProtocol } from "./BentleyCloudGatewayProtocol";
 
