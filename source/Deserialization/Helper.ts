@@ -350,11 +350,7 @@ export default class SchemaReadHelper {
         return this.loadProperty(structArrProp, propertyJson);
 
       case "NavigationProperty":
-        const canHaveNavProperty = (c: AnyClassType): c is EntityClassInterface | RelationshipClassInterface => {
-          return (c.key.type === SchemaChildType.EntityClass || c.key.type === SchemaChildType.RelationshipClass);
-        };
-
-        if (!canHaveNavProperty(classObj))
+        if (classObj.type !== SchemaChildType.EntityClass && classObj.type !== SchemaChildType.RelationshipClass)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson);
 
         if (!propertyJson.relationshipName)

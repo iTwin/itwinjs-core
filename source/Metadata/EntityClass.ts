@@ -16,6 +16,7 @@ import { DelayedPromiseWithProps } from "../DelayedPromise";
  */
 export default class EntityClass extends ECClass implements EntityClassInterface {
   public key: SchemaChildKey.EntityClass;
+  public readonly type: SchemaChildType.EntityClass;
   private _mixins?: LazyLoadedMixin[];
 
   constructor(schema: SchemaInterface, name: string, modifier?: ECClassModifier) {

@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ECClassModifier, CustomAttributeContainerType, PrimitiveType, RelationshipMultiplicity, RelationshipEnd,
-  StrengthType, RelatedInstanceDirection, SchemaKey, SchemaChildKey, PropertyType } from "./ECObjects";
+  StrengthType, RelatedInstanceDirection, SchemaKey, SchemaChildKey, PropertyType, SchemaChildType } from "./ECObjects";
 import { CustomAttributeContainerProps } from "./Metadata/CustomAttribute";
 import { DelayedPromise } from "./DelayedPromise";
 
@@ -79,6 +79,7 @@ export interface SchemaSyncInterface extends SchemaInterface  {
 export interface SchemaChildProps {
   readonly schema: SchemaInterface;
   readonly key: SchemaChildKey;
+  readonly type: SchemaChildType;
   readonly name: string;
   label?: string;
   description?: string;
@@ -109,19 +110,19 @@ export interface EntityClassProps extends ECClassProps {
 }
 
 export interface EntityClassInterface extends ECClassInterface, EntityClassProps {
-  readonly key: SchemaChildKey.EntityClass;
+  readonly type: SchemaChildType.EntityClass;
   /* async */ createNavigationProperty(name: string, relationship: string | RelationshipClassInterface, direction?: string | RelatedInstanceDirection): Promise<NavigationPropertyInterface>;
 }
 
 export interface StructClassInterface extends ECClassInterface, ECClassProps {
-  readonly key: SchemaChildKey.StructClass;
+  readonly type: SchemaChildType.StructClass;
 }
 
 export interface MixinProps extends EntityClassProps {
   appliesTo?: LazyLoadedEntityClass;
 }
 export interface MixinInterface extends ECClassInterface, MixinProps {
-  readonly key: SchemaChildKey.Mixin;
+  readonly type: SchemaChildType.MixinClass;
 }
 
 export interface RelationshipClassProps extends ECClassProps {
@@ -132,7 +133,7 @@ export interface RelationshipClassProps extends ECClassProps {
 }
 
 export interface RelationshipClassInterface extends ECClassInterface, RelationshipClassProps {
-  readonly key: SchemaChildKey.RelationshipClass;
+  readonly type: SchemaChildType.RelationshipClass;
   /* async */ createNavigationProperty(name: string, relationship: string | RelationshipClassInterface, direction?: string | RelatedInstanceDirection): Promise<NavigationPropertyInterface>;
 }
 
@@ -152,15 +153,15 @@ export interface CustomAttributeClassProps extends ECClassProps {
   containerType: CustomAttributeContainerType;
 }
 export interface CustomAttributeClassInterface extends ECClassInterface, CustomAttributeClassProps {
-  readonly key: SchemaChildKey.CustomAttributeClass;
+  readonly type: SchemaChildType.CustomAttributeClass;
 }
 
 export interface EnumerationProps extends SchemaChildProps {
   isStrict: boolean;
-  type: PrimitiveType.Integer | PrimitiveType.String;
+  primitiveType: PrimitiveType.Integer | PrimitiveType.String;
 }
 export interface EnumerationInterface extends SchemaChildInterface, EnumerationProps {
-  readonly key: SchemaChildKey.Enumeration;
+  readonly type: SchemaChildType.Enumeration;
 }
 
 export interface EnumeratorProps {
@@ -180,14 +181,14 @@ export interface KindOfQuantityProps extends SchemaChildProps {
   precision: number;
 }
 export interface KindOfQuantityInterface extends SchemaChildInterface, KindOfQuantityProps {
-  readonly key: SchemaChildKey.KindOfQuantity;
+  readonly type: SchemaChildType.KindOfQuantity;
 }
 
 export interface PropertyCategoryProps extends SchemaChildProps {
   priority: number;
 }
 export interface PropertyCategoryInterface extends SchemaChildInterface, PropertyCategoryProps {
-  readonly key: SchemaChildKey.PropertyCategory;
+  readonly type: SchemaChildType.PropertyCategory;
 }
 
 export interface ECPropertyProps {

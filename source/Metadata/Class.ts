@@ -5,7 +5,7 @@
 import Enumeration from "./Enumeration";
 import SchemaChild from "./SchemaChild";
 import { ECClassInterface, SchemaInterface, StructClassInterface, SchemaChildInterface, AnyPrimitiveECProperty, AnyPrimitiveArrayECProperty } from "../Interfaces";
-import { ECClassModifier, parseClassModifier, PrimitiveType, SchemaChildKey, tryParsePrimitiveType } from "../ECObjects";
+import { ECClassModifier, parseClassModifier, PrimitiveType, SchemaChildKey, SchemaChildType, tryParsePrimitiveType } from "../ECObjects";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty, EnumerationProperty, EnumerationArrayProperty, AnyProperty } from "./Property";
@@ -205,4 +205,10 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
  */
 export class StructClass extends ECClass implements StructClassInterface {
   public readonly key: SchemaChildKey.StructClass;
+  public readonly type: SchemaChildType.StructClass;
+
+  constructor(schema: SchemaInterface, name: string, modifier?: ECClassModifier) {
+    super(schema, name, modifier);
+    this.key.type = SchemaChildType.StructClass;
+  }
 }

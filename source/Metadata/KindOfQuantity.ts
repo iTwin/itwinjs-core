@@ -17,13 +17,13 @@ export class FormatUnitSpec implements FormatUnitSpecInterface {
  */
 export default class KindOfQuantity extends SchemaChild implements KindOfQuantityInterface {
   public key: SchemaChildKey.KindOfQuantity;
+  public readonly type: SchemaChildType.KindOfQuantity;
   public precision: number;
   public presentationUnits: FormatUnitSpec[];
   public persistenceUnit: FormatUnitSpec;
 
   constructor(schema: SchemaInterface, name: string) {
     super(schema, name);
-
     this.key.type = SchemaChildType.KindOfQuantity;
   }
 

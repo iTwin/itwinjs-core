@@ -14,11 +14,11 @@ import { DelayedPromiseWithProps } from "../DelayedPromise";
  */
 export default class MixinClass extends ECClass implements MixinInterface {
   public readonly key: SchemaChildKey.Mixin;
+  public readonly type: SchemaChildType.MixinClass;
   public appliesTo: LazyLoadedEntityClass;
 
   constructor(schema: SchemaInterface, name: string) {
     super(schema, name, ECClassModifier.Abstract);
-
     this.key.type = SchemaChildType.MixinClass;
   }
 

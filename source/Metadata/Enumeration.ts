@@ -12,7 +12,8 @@ import { EnumerationInterface, EnumeratorProps, SchemaInterface } from "../Inter
  */
 export default class Enumeration extends SchemaChild implements EnumerationInterface {
   public key: SchemaChildKey.Enumeration;
-  public type: PrimitiveType.Integer | PrimitiveType.String;
+  public readonly type: SchemaChildType.Enumeration;
+  public primitiveType: PrimitiveType.Integer | PrimitiveType.String;
   public isStrict: boolean;
   public enumerators: Enumerator[];
 
@@ -21,7 +22,7 @@ export default class Enumeration extends SchemaChild implements EnumerationInter
 
     this.key.type = SchemaChildType.Enumeration;
 
-    this.type = PrimitiveType.Integer;
+    this.primitiveType = PrimitiveType.Integer;
     this.isStrict = true;
     this.enumerators = [];
   }
@@ -40,8 +41,8 @@ export default class Enumeration extends SchemaChild implements EnumerationInter
    * @param label The label to be used
    */
   public createEnumerator(value: string | number, label?: string) {
-    if ((typeof(value) === "string" && this.type !== PrimitiveType.String) ||
-        (typeof(value) === "number" && this.type !== PrimitiveType.Integer))
+    if ((typeof(value) === "string" && this.primitiveType !== PrimitiveType.String) ||
+        (typeof(value) === "number" && this.primitiveType !== PrimitiveType.Integer))
       throw new ECObjectsError(ECObjectsStatus.InvalidEnumValue, `The value`);
 
     this.enumerators.push(new Enumerator(value, label));
@@ -72,9 +73,9 @@ export default class Enumeration extends SchemaChild implements EnumerationInter
 
     if (jsonObj.backingTypeName) {
       if (/int/i.test(jsonObj.backingTypeName))
-        this.type = PrimitiveType.Integer;
+        this.primitiveType = PrimitiveType.Integer;
       else if (/string/i.test(jsonObj.backingTypeName))
-        this.type = PrimitiveType.String;
+        this.primitiveType = PrimitiveType.String;
     }
 
     if (jsonObj.enumerators) {
@@ -86,7 +87,7 @@ export default class Enumeration extends SchemaChild implements EnumerationInter
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator that is missing the required attribute 'value'.`);
         else if (typeof(enumerator.value) !== "string" && typeof(enumerator.value) !== "number")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'value' attribute.
-                                                                    The value attribute must be of type ${this.type === PrimitiveType.Integer ? "'number'" : "'string'"}.`);
+                                                                    The value attribute must be of type ${this.primitiveType === PrimitiveType.Integer ? "'number'" : "'string'"}.`);
         // Need to check if the Enumerator exists
         let newEnum = this.getEnumerator(enumerator.value);
         if (!newEnum)
@@ -112,6 +113,6 @@ export class Enumerator implements EnumeratorProps {
 
   constructor(public value: number | string, public label?: string) { }
 
-  get isInt() { return this.enumeration.type === PrimitiveType.Integer; }
-  get isString() { return this.enumeration.type === PrimitiveType.String; }
+  get isInt() { return this.enumeration.primitiveType === PrimitiveType.Integer; }
+  get isString() { return this.enumeration.primitiveType === PrimitiveType.String; }
 }

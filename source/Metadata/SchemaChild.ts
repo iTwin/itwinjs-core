@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { SchemaInterface, SchemaChildInterface } from "../Interfaces";
-import { ECVersion, SchemaChildKey, SchemaKey } from "../ECObjects";
+import { ECVersion, SchemaChildKey, SchemaKey, SchemaChildType } from "../ECObjects";
 
 /**
  * An abstract class that supplies all of the common parts of a SchemaChild.
@@ -18,6 +18,8 @@ export default abstract class SchemaChild implements SchemaChildInterface {
     this.key = new SchemaChildKey(name);
     this.schema = schema;
   }
+
+  public get type(): SchemaChildType { return this.key.type; }
 
   get name() { return this.key.name; }
   set name(name: string) { this.key.name = name; }

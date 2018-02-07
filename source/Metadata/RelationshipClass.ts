@@ -18,6 +18,7 @@ type AnyConstraintClass = EntityClassInterface | MixinInterface | RelationshipCl
 export default class RelationshipClass extends ECClass implements RelationshipClassInterface {
   public schema: SchemaInterface;
   public readonly key: SchemaChildKey.RelationshipClass;
+  public readonly type: SchemaChildType.RelationshipClass;
   public strength: StrengthType;
   public strengthDirection: RelatedInstanceDirection;
   public readonly source: RelationshipConstraintInterface;
