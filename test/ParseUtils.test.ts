@@ -4,7 +4,7 @@
 
 import { expect } from "chai";
 import { parsePrimitiveType, PrimitiveType, tryParsePrimitiveType } from "../source/ECObjects";
-import { ECObjectsError } from "Exception";
+import { ECObjectsError } from "../source/Exception";
 
 describe("Test parse utils", () => {
   it("primitive types", () => {

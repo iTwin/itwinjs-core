@@ -2,13 +2,13 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import ECClass from "Metadata/Class";
+import ECClass from "./Class";
 import { ECClassModifier, RelatedInstanceDirection, RelationshipEnd, RelationshipMultiplicity, SchemaChildType, StrengthType,
-        parseStrength, parseStrengthDirection, SchemaChildKey } from "ECObjects";
-import { EntityClassInterface, RelationshipClassInterface, RelationshipConstraintInterface, SchemaInterface, LazyLoadedRelationshipConstraintClass, MixinInterface } from "Interfaces";
-import { ECObjectsError, ECObjectsStatus } from "Exception";
-import { NavigationProperty } from "Metadata/Property";
-import { DelayedPromiseWithProps } from "DelayedPromise";
+        parseStrength, parseStrengthDirection, SchemaChildKey } from "../ECObjects";
+import { EntityClassInterface, RelationshipClassInterface, RelationshipConstraintInterface, SchemaInterface, LazyLoadedRelationshipConstraintClass, MixinInterface } from "../Interfaces";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { NavigationProperty } from "./Property";
+import { DelayedPromiseWithProps } from "../DelayedPromise";
 
 type AnyConstraintClass = EntityClassInterface | MixinInterface | RelationshipClassInterface;
 

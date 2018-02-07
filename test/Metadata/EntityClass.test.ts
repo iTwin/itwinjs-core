@@ -10,7 +10,7 @@ import MixinClass from "../../source/Metadata/MixinClass";
 import RelationshipClass from "../../source/Metadata/RelationshipClass";
 import { ECClassModifier } from "../../source/ECObjects";
 import { NavigationProperty } from "../../source/Metadata/Property";
-import { DelayedPromiseWithProps } from "DelayedPromise";
+import { DelayedPromiseWithProps } from "../../source/DelayedPromise";
 
 describe("entity class", () => {
   describe("get inherited properties", () => {

@@ -2,10 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import SchemaChild from "Metadata/SchemaChild";
-import { ECObjectsError, ECObjectsStatus } from "Exception";
-import { SchemaChildType, SchemaChildKey } from "ECObjects";
-import { SchemaInterface, PropertyCategoryInterface } from "Interfaces";
+import SchemaChild from "./SchemaChild";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { SchemaChildType, SchemaChildKey } from "../ECObjects";
+import { SchemaInterface, PropertyCategoryInterface } from "../Interfaces";
 
 export default class PropertyCategory extends SchemaChild implements PropertyCategoryInterface {
   public key: SchemaChildKey.PropertyCategory;

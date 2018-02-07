@@ -3,9 +3,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { PropertyInterface, ECClassInterface, PrimitivePropertyInterface, StructPropertyInterface,
-  NavigationPropertyInterface, PrimitiveArrayPropertyInterface, StructArrayPropertyInterface, LazyLoadedPropertyCategory, LazyLoadedKindOfQuantity, LazyLoadedEnumeration, LazyLoadedStructClass, LazyLoadedRelationshipClass } from "Interfaces";
-import { ECName, PrimitiveType, RelatedInstanceDirection } from "ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "Exception";
+  NavigationPropertyInterface, PrimitiveArrayPropertyInterface, StructArrayPropertyInterface, LazyLoadedPropertyCategory, LazyLoadedKindOfQuantity, LazyLoadedEnumeration, LazyLoadedStructClass, LazyLoadedRelationshipClass } from "../Interfaces";
+import { ECName, PrimitiveType, RelatedInstanceDirection } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
 
 /**
  * A common abstract class for all ECProperty types.

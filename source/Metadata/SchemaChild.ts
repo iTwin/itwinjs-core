@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaInterface, SchemaChildInterface } from "Interfaces";
-import { ECVersion, SchemaChildKey, SchemaKey } from "ECObjects";
+import { SchemaInterface, SchemaChildInterface } from "../Interfaces";
+import { ECVersion, SchemaChildKey, SchemaKey } from "../ECObjects";
 
 /**
  * An abstract class that supplies all of the common parts of a SchemaChild.

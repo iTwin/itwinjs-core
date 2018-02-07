@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { ECObjectsError, ECObjectsStatus } from "Exception";
-import ECStringConstants from "Constants";
+import { ECObjectsError, ECObjectsStatus } from "./Exception";
+import ECStringConstants from "./Constants";
 
 export const enum ECClassModifier {
   None,

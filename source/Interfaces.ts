@@ -3,9 +3,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ECClassModifier, CustomAttributeContainerType, PrimitiveType, RelationshipMultiplicity, RelationshipEnd,
-        StrengthType, RelatedInstanceDirection, SchemaKey, SchemaChildKey } from "ECObjects";
-import { CustomAttributeContainerProps } from "Metadata/CustomAttribute";
-import { DelayedPromise } from "DelayedPromise";
+        StrengthType, RelatedInstanceDirection, SchemaKey, SchemaChildKey } from "./ECObjects";
+import { CustomAttributeContainerProps } from "./Metadata/CustomAttribute";
+import { DelayedPromise } from "./DelayedPromise";
 
 export interface SchemaProps extends CustomAttributeContainerProps {
   readonly schemaKey: SchemaKey;

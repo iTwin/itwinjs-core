@@ -2,10 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import SchemaChild from "Metadata/SchemaChild";
-import { ECObjectsError, ECObjectsStatus } from "Exception";
-import { PrimitiveType, SchemaChildType, SchemaChildKey } from "ECObjects";
-import { EnumerationInterface, EnumeratorProps, SchemaInterface } from "Interfaces";
+import SchemaChild from "./SchemaChild";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { PrimitiveType, SchemaChildType, SchemaChildKey } from "../ECObjects";
+import { EnumerationInterface, EnumeratorProps, SchemaInterface } from "../Interfaces";
 
 /**
  * A Typescript class representation of an ECEnumeration.

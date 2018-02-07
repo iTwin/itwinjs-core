@@ -2,14 +2,14 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import ECClass from "Metadata/Class";
-import MixinClass from "Metadata/MixinClass";
-import RelationshipClass from "Metadata/RelationshipClass";
-import { EntityClassInterface, PropertyInterface, SchemaInterface, RelationshipClassInterface, LazyLoadedMixin } from "Interfaces";
-import { ECClassModifier, RelatedInstanceDirection, SchemaChildType, parseStrengthDirection, SchemaChildKey } from "ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "Exception";
-import { NavigationProperty } from "Metadata/Property";
-import { DelayedPromiseWithProps } from "DelayedPromise";
+import ECClass from "./Class";
+import MixinClass from "./MixinClass";
+import RelationshipClass from "./RelationshipClass";
+import { EntityClassInterface, PropertyInterface, SchemaInterface, RelationshipClassInterface, LazyLoadedMixin } from "../Interfaces";
+import { ECClassModifier, RelatedInstanceDirection, SchemaChildType, parseStrengthDirection, SchemaChildKey } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { NavigationProperty } from "./Property";
+import { DelayedPromiseWithProps } from "../DelayedPromise";
 
 /**
  * A Typescript class representation of an ECEntityClass.

@@ -2,10 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import SchemaChild from "Metadata/SchemaChild";
-import { ECObjectsError, ECObjectsStatus } from "Exception";
-import { KindOfQuantityInterface, FormatUnitSpecInterface, SchemaInterface } from "Interfaces";
-import { SchemaChildType, SchemaChildKey } from "ECObjects";
+import SchemaChild from "./SchemaChild";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { KindOfQuantityInterface, FormatUnitSpecInterface, SchemaInterface } from "../Interfaces";
+import { SchemaChildType, SchemaChildKey } from "../ECObjects";
 
 export class FormatUnitSpec implements FormatUnitSpecInterface {
   public unit: string;

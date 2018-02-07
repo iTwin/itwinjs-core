@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import ECSchema from "../../source/Metadata/Schema";
 import EntityClass from "../../source/Metadata/EntityClass";
 import { SchemaContext } from "../../source/Context";
-import { DelayedPromiseWithProps } from "DelayedPromise";
+import { DelayedPromiseWithProps } from "../../source/DelayedPromise";
 
 describe("class", () => {
   let schema: ECSchema;

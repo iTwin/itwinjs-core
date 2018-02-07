@@ -2,9 +2,9 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaInterface, SchemaChildInterface } from "Interfaces";
-import { ECObjectsError, ECObjectsStatus } from "Exception";
-import { SchemaKey, SchemaMatchType, SchemaChildKey } from "ECObjects";
+import { SchemaInterface, SchemaChildInterface } from "./Interfaces";
+import { ECObjectsError, ECObjectsStatus } from "./Exception";
+import { SchemaKey, SchemaMatchType, SchemaChildKey } from "./ECObjects";
 
 export class SchemaMap extends Array<SchemaInterface> { }
 

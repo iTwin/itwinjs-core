@@ -2,14 +2,14 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import Enumeration from "Metadata/Enumeration";
-import SchemaChild from "Metadata/SchemaChild";
-import { ECClassInterface, PropertyInterface, SchemaInterface, LazyLoadedECClass, LazyLoadedProperty, StructClassInterface, SchemaChildInterface } from "Interfaces";
-import { ECClassModifier, parseClassModifier, PrimitiveType, SchemaChildKey, tryParsePrimitiveType } from "ECObjects";
-import { CustomAttributeContainerProps, CustomAttributeSet } from "Metadata/CustomAttribute";
-import { ECObjectsError, ECObjectsStatus } from "Exception";
-import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty } from "Metadata/Property";
-import { DelayedPromiseWithProps } from "DelayedPromise";
+import Enumeration from "./Enumeration";
+import SchemaChild from "./SchemaChild";
+import { ECClassInterface, PropertyInterface, SchemaInterface, LazyLoadedECClass, LazyLoadedProperty, StructClassInterface, SchemaChildInterface } from "../Interfaces";
+import { ECClassModifier, parseClassModifier, PrimitiveType, SchemaChildKey, tryParsePrimitiveType } from "../ECObjects";
+import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty } from "./Property";
+import { DelayedPromiseWithProps } from "../DelayedPromise";
 
 function createLazyLoadedChild<T extends SchemaChildInterface>(c: T) {
   return new DelayedPromiseWithProps(c.key as T["key"], async () => c);

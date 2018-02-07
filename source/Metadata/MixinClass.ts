@@ -2,12 +2,12 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import ECClass from "Metadata/Class";
-import EntityClass from "Metadata/EntityClass";
-import { MixinInterface, SchemaInterface, LazyLoadedEntityClass } from "Interfaces";
-import { ECClassModifier, SchemaChildType, SchemaChildKey } from "ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "Exception";
-import { DelayedPromiseWithProps } from "DelayedPromise";
+import ECClass from "./Class";
+import EntityClass from "./EntityClass";
+import { MixinInterface, SchemaInterface, LazyLoadedEntityClass } from "../Interfaces";
+import { ECClassModifier, SchemaChildType, SchemaChildKey } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { DelayedPromiseWithProps } from "../DelayedPromise";
 
 /**
  * A Typescript class representation of a Mixin.
