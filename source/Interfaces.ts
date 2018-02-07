@@ -50,7 +50,7 @@ export interface SchemaInterface extends SchemaProps {
   /* async */ createPropertyCategory(name: string): Promise<PropertyCategoryInterface>;
   /* async */ addReference(refSchema: SchemaInterface): Promise<void>;
   /* async */ getReference<T extends SchemaInterface>(refSchemaName: string): Promise<T | undefined>;
-  fromJson(obj: any): void;
+  /* async */ fromJson(obj: any): Promise<void>;
 }
 
 export interface SchemaSyncInterface extends SchemaInterface  {
@@ -141,7 +141,7 @@ export interface RelationshipConstraintProps extends CustomAttributeContainerPro
 }
 
 export interface RelationshipConstraintInterface extends RelationshipConstraintProps {
-  fromJson(obj: any): void;
+  /* async */ fromJson(obj: any): Promise<void>;
 }
 
 export interface CustomAttributeClassProps extends ECClassProps {
@@ -198,7 +198,7 @@ export interface ECPropertyProps {
 }
 
 export interface PropertyInterface extends ECPropertyProps {
-  fromJson(obj: any): void;
+  /* async */ fromJson(obj: any): Promise<void>;
 }
 
 export interface PrimitivePropertyProps extends ECPropertyProps {

@@ -23,7 +23,7 @@ export default class MixinClass extends ECClass implements MixinInterface {
   }
 
   public async fromJson(jsonObj: any): Promise<void> {
-    super.fromJson(jsonObj);
+    await super.fromJson(jsonObj);
 
     if (jsonObj.appliesTo) {
       // TODO: Fix

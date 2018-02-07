@@ -133,7 +133,7 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
    * Populates this object with the provided json object.
    * @param jsonObj The json representation of an ECRelationshipConstraint using the ECSchemaJson format.
    */
-  public async fromJson(jsonObj: any) {
+  public async fromJson(jsonObj: any): Promise<void> {
     if (jsonObj.roleLabel) this.roleLabel = jsonObj.roleLabel;
     if (jsonObj.polymorphic) this.polymorphic = jsonObj.polymorphic;
 

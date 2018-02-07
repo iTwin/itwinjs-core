@@ -169,7 +169,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param jsonObj
    */
   public async fromJson(jsonObj: any): Promise<void> {
-    super.fromJson(jsonObj);
+    await super.fromJson(jsonObj);
 
     if (jsonObj.modifier)
       this.modifier = parseClassModifier(jsonObj.modifier);

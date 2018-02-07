@@ -29,7 +29,7 @@ export abstract class ECProperty implements PropertyInterface {
     this._name = new ECName(name);
   }
 
-  public fromJson(jsonObj: any) {
+  public async fromJson(jsonObj: any): Promise<void> {
     if (!jsonObj.name)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
     this.name = jsonObj.name;
@@ -64,8 +64,8 @@ export class PrimitiveProperty extends ECProperty implements PrimitivePropertyIn
       this.type = PrimitiveType.Integer;
   }
 
-  public fromJson(jsonObj: any): void {
-    super.fromJson(jsonObj);
+  public async fromJson(jsonObj: any): Promise<void> {
+    await super.fromJson(jsonObj);
 
     if (jsonObj.minLength) {
       if (typeof(jsonObj.minLength) !== "number")
@@ -115,8 +115,8 @@ export class StructProperty extends ECProperty implements StructPropertyInterfac
     this.type = type; // TODO: See how this error is handled.
   }
 
-  public fromJson(jsonObj: any): void {
-    super.fromJson(jsonObj);
+  public async fromJson(jsonObj: any): Promise<void> {
+    await super.fromJson(jsonObj);
 
     // TODO: typeName
   }
@@ -148,8 +148,8 @@ export class NavigationProperty extends ECProperty implements NavigationProperty
       this.direction = RelatedInstanceDirection.Forward;
   }
 
-  public fromJson(jsonObj: any): void {
-    super.fromJson(jsonObj);
+  public async fromJson(jsonObj: any): Promise<void> {
+    await super.fromJson(jsonObj);
   }
 }
 

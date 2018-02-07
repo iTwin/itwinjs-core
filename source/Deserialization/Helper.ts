@@ -51,7 +51,7 @@ export default class SchemaReadHelper {
     this._itemToRead = typeof schemaJson === "string" ? JSON.parse(schemaJson) : schemaJson;
 
     // Loads all of the properties on the SchemaInterface object
-    schema.fromJson(this._itemToRead);
+    await schema.fromJson(this._itemToRead);
 
     this._schema = schema;
 
@@ -389,6 +389,6 @@ export default class SchemaReadHelper {
 
     // TODO Load CustomAttributeClasses
 
-    prop.fromJson(propertyJson);
+    await prop.fromJson(propertyJson);
   }
 }

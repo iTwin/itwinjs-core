@@ -273,7 +273,7 @@ export default class ECSchema implements SchemaInterface, CustomAttributeContain
    *
    * @param jsonObj
    */
-  public fromJson(jsonObj: any): void {
+  public async fromJson(jsonObj: any): Promise<void> {
     if (!jsonObj.$schema || jsonObj.$schema !== SCHEMAURL3_1)
       throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl);
 
