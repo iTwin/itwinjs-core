@@ -523,4 +523,256 @@ describe("ECSqlStatement", () => {
     });
   });
 
+  it("GetRow with Primitives", () => {
+    using (ECDbTestHelper.createECDb(_outDir, "getprimitives.ecdb",
+    `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+      <ECEntityClass typeName="Foo" modifier="Sealed">
+        <ECProperty propertyName="Bl" typeName="binary"/>
+        <ECProperty propertyName="Bo" typeName="boolean"/>
+        <ECProperty propertyName="D" typeName="double"/>
+        <ECProperty propertyName="Dt" typeName="dateTime"/>
+        <ECProperty propertyName="G" typeName="Bentley.Geometry.Common.IGeometry"/>
+        <ECProperty propertyName="I" typeName="int"/>
+        <ECProperty propertyName="L" typeName="long"/>
+        <ECProperty propertyName="P2d" typeName="Point2d"/>
+        <ECProperty propertyName="P3d" typeName="Point3d"/>
+        <ECProperty propertyName="S" typeName="string"/>
+      </ECEntityClass>
+      </ECSchema>`), (ecdb) => {
+      assert.isTrue(ecdb.isOpen());
+
+      const blobVal = new Blob("SGVsbG8gd29ybGQNCg==");
+      const boolVal: boolean = true;
+      const doubleVal: number = 3.5;
+      const dtVal = new DateTime("2018-01-23T12:24:00.000");
+      const intVal: number = 3;
+      const p2dVal = new Point2d(1, 2);
+      const p3dVal = new Point3d(1, 2, 3);
+      const strVal: string = "Hello world";
+
+      const id: Id64 = ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl,Bo,D,Dt,I,P2d,P3d,S) VALUES(?,?,?,?,?,?,?,?)", (stmt) => {
+        stmt.bindBlob(1, blobVal);
+        stmt.bindBoolean(2, boolVal);
+        stmt.bindDouble(3, doubleVal);
+        stmt.bindDateTime(4, dtVal);
+        stmt.bindInt(5, intVal);
+        stmt.bindPoint2d(6, p2dVal);
+        stmt.bindPoint3d(7, p3dVal);
+        stmt.bindString(8, strVal);
+        const res: ECSqlInsertResult = stmt.stepForInsert();
+        assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+        return res.id!;
+      });
+
+      ecdb.withPreparedStatement("SELECT ECInstanceId, ECClassId, Bl,Bo,D,Dt,I,P2d,P3d,S FROM test.Foo WHERE ECInstanceId=?", (stmt) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row = stmt.getRow_new();
+          assert.equal(row.id.value, id.value);
+          assert.equal(row.className, "Test.Foo");
+          assert.equal(row.bl.base64, blobVal.base64);
+          assert.equal(row.bo, boolVal);
+          assert.equal(row.d, doubleVal);
+          assert.equal(row.dt.isoString, dtVal.isoString);
+          assert.equal(row.i, intVal);
+          assert.equal(row.p2d.x, p2dVal.x);
+          assert.equal(row.p2d.y, p2dVal.y);
+          assert.equal(row.p3d.x, p3dVal.x);
+          assert.equal(row.p3d.y, p3dVal.y);
+          assert.equal(row.p3d.z, p3dVal.z);
+          assert.equal(row.s, strVal);
+        });
+
+      ecdb.withPreparedStatement("SELECT Bl AS Blobby, I+10, Lower(S), Upper(S) CapitalS FROM test.Foo WHERE ECInstanceId=?", (stmt) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row = stmt.getRow_new();
+          assert.equal(row.blobby.base64, blobVal.base64);
+          assert.equal(row["[I] + 10"], intVal + 10);
+          assert.equal(row["lower([S])"], strVal.toLowerCase());
+          assert.equal(row.capitalS, strVal.toUpperCase());
+        });
+
+      const testSchemaId: Id64 = ecdb.withPreparedStatement("SELECT ECInstanceId FROM meta.ECSchemaDef WHERE Name='Test'", (stmt) => {
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row = stmt.getRow_new();
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+          return row.id;
+        });
+
+      const fooClassId: Id64 = ecdb.withPreparedStatement("SELECT ECInstanceId FROM meta.ECClassDef WHERE Name='Foo'", (stmt) => {
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row = stmt.getRow_new();
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+          return row.id;
+        });
+
+      ecdb.withPreparedStatement("SELECT s.ECInstanceId, c.ECInstanceId, c.Name, s.Name FROM meta.ECClassDef c JOIN meta.ECSchemaDef s ON c.Schema.Id=s.ECInstanceId WHERE s.Name='Test' AND c.Name='Foo'", (stmt) => {
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row = stmt.getRow_new();
+          assert.equal(row.id.value, testSchemaId.value);
+          assert.equal(row.id_1.value, fooClassId.value);
+        });
+
+      });
+    });
+
+  it("GetRow with NavigationProperties and Relationships", () => {
+    using (ECDbTestHelper.createECDb(_outDir, "getnavandrels.ecdb",
+        `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECEntityClass typeName="Parent" modifier="Sealed">
+          <ECProperty propertyName="Code" typeName="string"/>
+        </ECEntityClass>
+        <ECEntityClass typeName="Child" modifier="Sealed">
+          <ECProperty propertyName="Name" typeName="string"/>
+          <ECNavigationProperty propertyName="Parent" relationshipName="ParentHasChildren" direction="backward"/>
+        </ECEntityClass>
+        <ECRelationshipClass typeName="ParentHasChildren" modifier="None" strength="embedding">
+          <Source multiplicity="(0..1)" roleLabel="has" polymorphic="false">
+              <Class class="Parent"/>
+          </Source>
+          <Target multiplicity="(0..*)" roleLabel="has" polymorphic="false">
+              <Class class="Child"/>
+          </Target>
+        </ECRelationshipClass>
+        </ECSchema>`), (ecdb) => {
+      assert.isTrue(ecdb.isOpen());
+
+      const parentId: Id64 = ecdb.withPreparedStatement("INSERT INTO test.Parent(Code) VALUES('Parent 1')", (stmt) => {
+        const res: ECSqlInsertResult = stmt.stepForInsert();
+        assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+        assert.isDefined(res.id);
+        return res.id!;
+      });
+
+      const childIds = new Array<Id64>();
+      ecdb.withPreparedStatement("INSERT INTO test.Child(Name,Parent) VALUES(?,?)", (stmt) => {
+        stmt.bindString(1, "Child 1");
+        stmt.bindNavigation(2, new NavigationBindingValue(parentId, "Test.ParentHasChildren"));
+        let res: ECSqlInsertResult = stmt.stepForInsert();
+        assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+        assert.isDefined(res.id);
+        childIds.push(res.id!);
+
+        stmt.reset();
+        stmt.clearBindings();
+
+        stmt.bindValues(["Child 2", new NavigationBindingValue(parentId, "Test.ParentHasChildren")]);
+        res = stmt.stepForInsert();
+        assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+        assert.isDefined(res.id);
+        childIds.push(res.id!);
+      });
+
+      ecdb.withPreparedStatement("SELECT Name,Parent FROM test.Child ORDER BY Name", (stmt) => {
+        let rowCount: number = 0;
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          rowCount++;
+          const row = stmt.getRow_new();
+          assert.equal(row.name, "Child " + rowCount);
+          assert.equal(row.parent.id.value, parentId.value);
+          assert.equal(row.parent.relClassName, "Test.ParentHasChildren");
+        }
+        assert.equal(rowCount, 2);
+        });
+
+      ecdb.withPreparedStatement("SELECT Name,Parent.Id,Parent.RelECClassId, Parent.Id parentid, Parent.RelECClassId parentRelClassId FROM test.Child ORDER BY Name", (stmt) => {
+          let rowCount: number = 0;
+          while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+            rowCount++;
+            const row = stmt.getRow_new();
+            assert.equal(row.name, "Child " + rowCount);
+            assert.equal(row["parent.id"].value, parentId.value);
+            assert.equal(row["parent.relClassName"], "Test.ParentHasChildren");
+            assert.equal(typeof(row.parentid), "number");
+            assert.equal(typeof(row.parentRelClassId), "number");
+          }
+          assert.equal(rowCount, 2);
+        });
+
+      ecdb.withPreparedStatement("SELECT ECInstanceId,ECClassId,SourceECInstanceId,SourceECClassId,TargetECInstanceId,TargetECClassId FROM test.ParentHasChildren WHERE TargetECInstanceId=?", (stmt) => {
+        const childId: Id64 = childIds[0];
+        stmt.bindId(1, childId);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+        const row = stmt.getRow_new();
+        assert.equal(row.id.value, childId.value);
+        assert.equal(row.className, "Test.ParentHasChildren");
+        assert.equal(row.sourceId.value, parentId.value);
+        assert.equal(row.sourceClassName, "Test.Parent");
+        assert.equal(row.targetId.value, childId.value);
+        assert.equal(row.targetClassName, "Test.Child");
+      });
+    });
+
+  });
+
+  it("getRow with Structs", () => {
+    using (ECDbTestHelper.createECDb(_outDir, "getstructs.ecdb",
+    `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+      <ECStructClass typeName="MyStruct" modifier="Sealed">
+        <ECProperty propertyName="Bl" typeName="binary"/>
+        <ECProperty propertyName="Bo" typeName="boolean"/>
+        <ECProperty propertyName="D" typeName="double"/>
+        <ECProperty propertyName="Dt" typeName="dateTime"/>
+        <ECProperty propertyName="G" typeName="Bentley.Geometry.Common.IGeometry"/>
+        <ECProperty propertyName="I" typeName="int"/>
+        <ECProperty propertyName="L" typeName="long"/>
+        <ECProperty propertyName="P2d" typeName="Point2d"/>
+        <ECProperty propertyName="P3d" typeName="Point3d"/>
+        <ECProperty propertyName="S" typeName="string"/>
+      </ECStructClass>
+      <ECEntityClass typeName="Foo" modifier="Sealed">
+        <ECStructProperty propertyName="Struct" typeName="MyStruct"/>
+      </ECEntityClass>
+      </ECSchema>`), (ecdb) => {
+      assert.isTrue(ecdb.isOpen());
+
+      const structVal = {bl: new Blob("SGVsbG8gd29ybGQNCg=="), bo : true, d : 3.5, dt: new DateTime("2018-01-23T12:24:00.000"),
+                          i: 3, p2d: new Point2d(1, 2), p3d: new Point3d(1, 2, 3), s: "Hello World"};
+
+      const id: Id64 = ecdb.withPreparedStatement("INSERT INTO test.Foo(Struct) VALUES(?)", (stmt) => {
+          stmt.bindStruct(1, structVal);
+          const res: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          return res.id!;
+        });
+
+      ecdb.withPreparedStatement("SELECT Struct FROM test.Foo WHERE ECInstanceId=?", (stmt) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row: any = stmt.getRow_new();
+          assert.equal(row.struct.bl.base64, structVal.bl.base64);
+          assert.equal(row.struct.bo, structVal.bo);
+          assert.equal(row.struct.d, structVal.d);
+          assert.equal(row.struct.dt.isoString, structVal.dt.isoString);
+          assert.equal(row.struct.i, structVal.i);
+          assert.equal(row.struct.p2d.x, structVal.p2d.x);
+          assert.equal(row.struct.p2d.y, structVal.p2d.y);
+          assert.equal(row.struct.p3d.x, structVal.p3d.x);
+          assert.equal(row.struct.p3d.y, structVal.p3d.y);
+          assert.equal(row.struct.p3d.z, structVal.p3d.z);
+          assert.equal(row.struct.s, structVal.s);
+        });
+
+      ecdb.withPreparedStatement("SELECT Struct.Bl, Struct.Bo, Struct.D, Struct.Dt, Struct.I, Struct.P2d, Struct.P3d, Struct.S FROM test.Foo WHERE ECInstanceId=?", (stmt) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row: any = stmt.getRow_new();
+          assert.equal(row["struct.Bl"].base64, structVal.bl.base64);
+          assert.equal(row["struct.Bo"], structVal.bo);
+          assert.equal(row["struct.D"], structVal.d);
+          assert.equal(row["struct.Dt"].isoString, structVal.dt.isoString);
+          assert.equal(row["struct.I"], structVal.i);
+          assert.equal(row["struct.P2d"].x, structVal.p2d.x);
+          assert.equal(row["struct.P2d"].y, structVal.p2d.y);
+          assert.equal(row["struct.P3d"].x, structVal.p3d.x);
+          assert.equal(row["struct.P3d"].y, structVal.p3d.y);
+          assert.equal(row["struct.P3d"].z, structVal.p3d.z);
+          assert.equal(row["struct.S"], structVal.s);
+        });
+
+      });
+  });
+
 });
