@@ -5,10 +5,10 @@
 import ECClass from "./Class";
 import MixinClass from "./MixinClass";
 import RelationshipClass from "./RelationshipClass";
-import { EntityClassInterface, SchemaInterface, RelationshipClassInterface, LazyLoadedMixin, AnyECProperty } from "../Interfaces";
+import { EntityClassInterface, SchemaInterface, RelationshipClassInterface, LazyLoadedMixin } from "../Interfaces";
 import { ECClassModifier, RelatedInstanceDirection, SchemaChildType, parseStrengthDirection, SchemaChildKey } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { NavigationProperty } from "./Property";
+import { NavigationProperty, AnyProperty } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 
 /**
@@ -51,18 +51,18 @@ export default class EntityClass extends ECClass implements EntityClassInterface
    * Searches the base class, if one exists, first then any mixins that exist for the property with the name provided.
    * @param name The name of the property to find.
    */
-  public async getInheritedProperty<T extends AnyECProperty>(name: string): Promise<T | undefined> {
+  public async getInheritedProperty(name: string): Promise<AnyProperty | undefined> {
     let inheritedProperty = await super.getInheritedProperty(name);
 
     if (!inheritedProperty && this._mixins) {
       const mixinProps = await Promise.all(this._mixins.map(async (mixin) => (await mixin).getProperty(name)));
       mixinProps.some((prop) => {
-        inheritedProperty = prop;
+        inheritedProperty = prop as AnyProperty;
         return inheritedProperty !== undefined;
       });
     }
 
-    return inheritedProperty as T | undefined;
+    return inheritedProperty as AnyProperty | undefined;
   }
 
   /**

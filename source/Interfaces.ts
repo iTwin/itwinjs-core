@@ -97,7 +97,7 @@ export interface ECClassProps extends SchemaChildProps {
 }
 
 export interface ECClassInterface extends SchemaChildInterface, ECClassProps {
-  /* async */ getProperty<T extends AnyECProperty>(name: string): Promise<T | undefined>;
+  /* async */ getProperty(name: string): Promise<AnyECProperty | undefined>;
   /* async */ createPrimitiveProperty(name: string, type?: string | PrimitiveType | EnumerationInterface): Promise<AnyPrimitiveECProperty>;
   /* async */ createPrimitiveArrayProperty(name: string, type?: string | PrimitiveType | EnumerationInterface): Promise<AnyPrimitiveArrayECProperty>;
   /* async */ createStructProperty(name: string, type: string | StructClassInterface): Promise<StructPropertyInterface>;
