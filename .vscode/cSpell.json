@@ -17,6 +17,7 @@
         "BENTLEYCONFIG",
         "bentleyjs",
         "bspline",
+        "changeset",
         "codespec",
         "coord",
         "crosshair",
