@@ -43,11 +43,11 @@ BisCore.registerSchema();
 
 /** Represents a physical copy (briefcase) of an iModel that can be accessed as a file. */
 export class IModelDb extends IModel {
+  public static readonly defaultLimit = 1000;
   public readonly models: IModelDbModels;
   public readonly elements: IModelDbElements;
   public readonly views: IModelDbViews;
   public readonly linkTableRelationships: IModelDbLinkTableRelationships;
-  public readonly defaultLimit = 1000;
   private readonly statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private _codeSpecs: CodeSpecs;
   private _classMetaDataRegistry: MetaDataRegistry;
@@ -245,6 +245,8 @@ export class IModelDb extends IModel {
       const rows: any[] = [];
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
         rows.push(stmt.getRow());
+        if (rows.length >= IModelDb.defaultLimit)
+          break; // don't let a "rogue" query consume too many resources
       }
       return rows;
     });
@@ -1470,7 +1472,7 @@ export class IModelDbViews {
     let sql: string = "SELECT ECInstanceId AS id FROM " + className;
     if (!wantPrivate)
       sql += " WHERE IsPrivate=FALSE";
-    sql += ` LIMIT ${this._iModel.defaultLimit}`; // limit number of returned view definitions
+    sql += ` LIMIT ${IModelDb.defaultLimit}`; // limit number of returned view definitions
 
     const viewIds: Id64[] = [];
     const statement: ECSqlStatement = this._iModel.getPreparedStatement(sql);

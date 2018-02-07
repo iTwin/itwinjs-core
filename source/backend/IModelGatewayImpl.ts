@@ -99,7 +99,7 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
     if (params.where) sql += " WHERE " + params.where;
     if (params.orderBy) sql += " ORDER BY " + params.orderBy;
     if (params.offset) sql += " OFFSET " + params.offset;
-    sql += (params.limit) ? ` LIMIT ${params.limit}` : ` LIMIT ${iModelDb.defaultLimit}`;
+    sql += (params.limit) ? ` LIMIT ${params.limit}` : ` LIMIT ${IModelDb.defaultLimit}`;
 
     const statement: ECSqlStatement = iModelDb.getPreparedStatement(sql);
     const elementIds: string[] = [];
