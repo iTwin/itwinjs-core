@@ -33,7 +33,7 @@ export class DelayedPromise<T> implements Promise<T> {
   }
 
   // We need this in order to fulfill the Promise interface defined in lib.es2015.symbol.wellknown.d.ts
-  public readonly [Symbol.toStringTag] = "Promise";
+  public readonly [Symbol.toStringTag]: "Promise" = "Promise";
 
   /**
    * Explicitly starts the asynchronous operation behind this DelayedPromise (if it hasn't started already).
