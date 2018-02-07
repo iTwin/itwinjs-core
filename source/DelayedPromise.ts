@@ -16,13 +16,13 @@
  * However, since a property defined as a DelayedPromise will not start simply by being accessed,
  * additional (non-lazily-loaded) "nested" properties can be added.
  *
- * [!alert text="*Remember:* Unlike regular Promises in JavaScript, DelayedPromise represent processes that **may not** already be happening." kind="warning"]
+ * [!alert text="*Remember:* Unlike regular Promises in JavaScript, DelayedPromises represent processes that **may not** already be happening." kind="warning"]
  */
 export class DelayedPromise<T> implements Promise<T> {
 
   /**
    * Constructs a DelayedPromise object.
-   * @param startCallback The asynchronous callback to execute when as soon as this DelayedPromise should be "started".
+   * @param startCallback The asynchronous callback to execute when this DelayedPromise should be "started".
    */
   constructor(startCallback: () => Promise<T>) {
     let pending: Promise<T> | undefined;
