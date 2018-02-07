@@ -486,26 +486,27 @@ class ECSqlValueHelper {
     const colInfo: AddonECSqlColumnInfo = ecsqlValue.getColumnInfo();
     let propName: string;
 
-    const colPropName: string = colInfo.getPropertyName();
+    const colAccessString: string = colInfo.getAccessString();
+
     // only top-level system properties need to be treated separately. For other system properties
     // we need the full access string to be returned
     if (colInfo.isSystemProperty()) {
-      if (colPropName === "ECInstanceId")
+      if (colAccessString === "ECInstanceId")
         propName = ECJsNames.toJsName(ECSqlSystemProperty.ECInstanceId);
-      else if (colPropName === "ECClassId")
+      else if (colAccessString === "ECClassId")
         propName = ECJsNames.toJsName(ECSqlSystemProperty.ECClassId);
-      else if (colPropName === "SourceECInstanceId")
+      else if (colAccessString === "SourceECInstanceId")
         propName = ECJsNames.toJsName(ECSqlSystemProperty.SourceECInstanceId);
-      else if (colPropName === "TargetECInstanceId")
+      else if (colAccessString === "TargetECInstanceId")
         propName = ECJsNames.toJsName(ECSqlSystemProperty.TargetECInstanceId);
-      else if (colPropName === "SourceECClassId")
+      else if (colAccessString === "SourceECClassId")
         propName = ECJsNames.toJsName(ECSqlSystemProperty.SourceECClassId);
-      else if (colPropName === "TargetECClassId")
+      else if (colAccessString === "TargetECClassId")
         propName = ECJsNames.toJsName(ECSqlSystemProperty.TargetECClassId);
       else {
         // now handle nested system props: output them with full access string, but
         // replace the system portion of it
-        const accessStringTokens: string[] = colInfo.getPropertyPath().split(".");
+        const accessStringTokens: string[] = colAccessString.split(".");
         const tokenCount: number = accessStringTokens.length;
         const leafToken: string = accessStringTokens[tokenCount - 1];
         propName = ECJsNames.toJsName(accessStringTokens[0] + ".");
@@ -525,15 +526,11 @@ class ECSqlValueHelper {
           propName += ECJsNames.toJsName(ECSqlSystemProperty.PointZ);
         else {
           assert(false, "Unhandled ECSQL system property type");
-          throw new IModelError(BentleyStatus.ERROR, "Unhandled ECSQL system property: " + colInfo.getPropertyPath());
+          throw new IModelError(BentleyStatus.ERROR, "Unhandled ECSQL system property: " + colInfo.getAccessString());
         }
       }
-    } else {
-      if (colInfo.isGeneratedProperty())
-        propName = ECJsNames.toJsName(colPropName);
-      else
-        propName = ECJsNames.toJsName(colInfo.getPropertyPath());
-    }
+    } else
+        propName = ECJsNames.toJsName(colAccessString);
 
     // now check duplicates. If there are, append a numeric suffix to the duplicates
     assert(propName !== undefined);
@@ -609,16 +606,18 @@ class ECSqlValueHelper {
         return new Blob(ecsqlValue.getBlob());
       case ECSqlValueType.Boolean:
         return ecsqlValue.getBoolean();
-      case ECSqlValueType.ClassId:
-        return ecsqlValue.getClassNameForClassId();
       case ECSqlValueType.DateTime:
         return new DateTime(ecsqlValue.getDateTime());
       case ECSqlValueType.Double:
         return ecsqlValue.getDouble();
       case ECSqlValueType.Geometry:
         return JSON.parse(ecsqlValue.getGeometry());
-      case ECSqlValueType.Id:
+      case ECSqlValueType.Id: {
+        if (colInfo.isSystemProperty() && colInfo.getPropertyName().endsWith("ECClassId"))
+          return ecsqlValue.getClassNameForClassId();
+
         return new Id64(ecsqlValue.getId());
+      }
       case ECSqlValueType.Int:
         return ecsqlValue.getInt();
       case ECSqlValueType.Int64:

@@ -4,16 +4,47 @@
 import { assert } from "chai";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { ECSqlInsertResult } from "../ECSqlStatement";
-import { DateTime, Blob, NavigationBindingValue } from "../../common/ECSqlTypes";
+import { DateTime, Blob, NavigationValue, NavigationBindingValue } from "../../common/ECSqlTypes";
 import { ECDb } from "../ECDb";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { using } from "@bentley/bentleyjs-core/lib/Disposable";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { ElementAspectProps } from "../../common/ElementProps";
 
 describe("ECSqlStatement", () => {
   const _outDir = KnownTestLocations.outputDir;
+
+  it.skip("Test", () => { 
+    const row2: any = {element: {id: new Id64("0x12"), relClassName: "Foo"}};
+    const obj2: ElementAspectProps = row2;
+    obj2.element = new Id64("0x13");
+    console.log(obj2);
+    const row: any = {element: new NavigationValue(new Id64("0x12"), "Foo")};
+    const obj: ElementAspectProps = row;
+    obj.element = new Id64("0x13");
+    console.log(obj);
+  });
+
+  it("ECSqlTypes validation", () => {
+    const row: any = {id: "0x1"};
+    const dt = new DateTime(row.doesNotExist);
+    assert.isUndefined(dt.isoString);
+    assert.isFalse(dt.isValid());
+
+    const blob = new Blob(row.doesNotExist);
+    assert.isUndefined(blob.base64);
+    assert.isFalse(blob.isValid());
+
+    const navVal = new NavigationValue(row.doesNotExist);
+    assert.isUndefined(navVal.id);
+    assert.isFalse(navVal.isValid());
+
+    const navBindingVal = new NavigationBindingValue(row.doesNotExist);
+    assert.isUndefined(navBindingVal.id);
+    assert.isFalse(navBindingVal.isValid());
+  });
 
   it("Bind Ids", () => {
     using (ECDbTestHelper.createECDb(_outDir, "bindids.ecdb"), (ecdb) => {
@@ -34,8 +65,8 @@ describe("ECSqlStatement", () => {
       ecdbToVerify.withPreparedStatement("SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=?", (stmt) => {
         stmt.bindId(1, expectedId);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-        const row = stmt.getRow();
-        assert.equal(row.id, expectedECInstanceId.toString());
+        const row = stmt.getRow_new();
+        assert.equal(row.id.value, expectedECInstanceId.value);
         assert.equal(row.className, "ECDbFileInfo.ExternalFileInfo");
         assert.equal(row.name, expectedECInstanceId.getLow().toString() + ".txt");
         });
@@ -119,11 +150,11 @@ describe("ECSqlStatement", () => {
       ecdb.withPreparedStatement("SELECT Bl,Bo,D,Dt,I,P2d,P3d,S,Struct.Bl s_bl,Struct.Bo s_bo,Struct.D s_d,Struct.Dt s_dt,Struct.I s_i,Struct.P2d s_p2d,Struct.P3d s_p3d,Struct.S s_s FROM test.Foo WHERE ECInstanceId=?", (stmt) => {
         stmt.bindId(1, expectedId);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-        const row = stmt.getRow();
-        assert.equal(row.bl, blobVal.base64);
+        const row = stmt.getRow_new();
+        assert.equal(row.bl.base64, blobVal.base64);
         assert.equal(row.bo, boolVal);
         assert.equal(row.d, doubleVal);
-        assert.equal(row.dt, dtVal.isoString);
+        assert.equal(row.dt.isoString, dtVal.isoString);
         assert.equal(row.i, intVal);
         assert.equal(row.p2d.x, p2dVal.x);
         assert.equal(row.p2d.y, p2dVal.y);
@@ -132,10 +163,10 @@ describe("ECSqlStatement", () => {
         assert.equal(row.p3d.z, p3dVal.z);
         assert.equal(row.s, strVal);
 
-        assert.equal(row.s_bl, blobVal.base64);
+        assert.equal(row.s_bl.base64, blobVal.base64);
         assert.equal(row.s_bo, boolVal);
         assert.equal(row.s_d, doubleVal);
-        assert.equal(row.s_dt, dtVal.isoString);
+        assert.equal(row.s_dt.isoString, dtVal.isoString);
         assert.equal(row.s_i, intVal);
         assert.equal(row.s_p2d.x, p2dVal.x);
         assert.equal(row.s_p2d.y, p2dVal.y);
@@ -245,11 +276,11 @@ describe("ECSqlStatement", () => {
         ecdb.withPreparedStatement("SELECT Struct FROM test.Foo WHERE ECInstanceId=?", (stmt) => {
           stmt.bindId(1, expectedId);
           assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-          const row = stmt.getRow();
-          assert.equal(row.struct.bl, structVal.bl.base64);
+          const row = stmt.getRow_new();
+          assert.equal(row.struct.bl.base64, structVal.bl.base64);
           assert.equal(row.struct.bo, structVal.bo);
           assert.equal(row.struct.d, structVal.d);
-          assert.equal(row.struct.dt, structVal.dt.isoString);
+          assert.equal(row.struct.dt.isoString, structVal.dt.isoString);
           assert.equal(row.struct.i, structVal.i);
           assert.equal(row.struct.p2d.x, structVal.p2d.x);
           assert.equal(row.struct.p2d.y, structVal.p2d.y);
@@ -317,7 +348,7 @@ describe("ECSqlStatement", () => {
         ecdb.withPreparedStatement("SELECT I_Array, Dt_Array, Addresses FROM test.Foo WHERE ECInstanceId=?", (stmt) => {
         stmt.bindId(1, expectedId);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-        const row = stmt.getRow();
+        const row = stmt.getRow_new();
 
         // don't know why assert.equal doesn't work on arrays directly
         assert.equal(row.i_Array.length, intArray.length);
@@ -327,7 +358,7 @@ describe("ECSqlStatement", () => {
 
         assert.equal(row.dt_Array.length, dtArray.length);
         for (let i = 0; i < dtArray.length; i++) {
-          assert.equal(row.dt_Array[i], dtArray[i].isoString);
+          assert.equal(row.dt_Array[i].isoString, dtArray[i].isoString);
         }
 
         assert.equal(row.addresses.length, addressArray.length);
@@ -445,9 +476,9 @@ describe("ECSqlStatement", () => {
       let rowCount: number = 0;
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         rowCount++;
-        const row = stmt.getRow();
+        const row = stmt.getRow_new();
         assert.equal(row.name, "Child " + rowCount);
-        assert.equal(row.parent.id, parentId.toString());
+        assert.equal(row.parent.id.value, parentId.value);
         assert.equal(row.parent.relClassName, "Test.ParentHasChildren");
       }
       assert.equal(rowCount, 4);
@@ -506,11 +537,11 @@ describe("ECSqlStatement", () => {
       let rowCount = 0;
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         rowCount++;
-        const row = stmt.getRow();
+        const row = stmt.getRow_new();
         if (rowCount === 1)
-          assert.equal(row.id, id1.value);
+          assert.equal(row.id.value, id1.value);
         else
-          assert.equal(row.id, id2.value);
+          assert.equal(row.id.value, id2.value);
 
         assert.equal(row.className, "Test.Person");
         assert.equal(row.name, "Mary Miller");
@@ -676,7 +707,7 @@ describe("ECSqlStatement", () => {
         assert.equal(rowCount, 2);
         });
 
-      ecdb.withPreparedStatement("SELECT Name,Parent.Id,Parent.RelECClassId, Parent.Id parentid, Parent.RelECClassId parentRelClassId FROM test.Child ORDER BY Name", (stmt) => {
+      ecdb.withPreparedStatement("SELECT Name,Parent.Id,Parent.RelECClassId, Parent.Id myParentid, Parent.RelECClassId myParentRelClassId FROM test.Child ORDER BY Name", (stmt) => {
           let rowCount: number = 0;
           while (stmt.step() === DbResult.BE_SQLITE_ROW) {
             rowCount++;
@@ -684,8 +715,8 @@ describe("ECSqlStatement", () => {
             assert.equal(row.name, "Child " + rowCount);
             assert.equal(row["parent.id"].value, parentId.value);
             assert.equal(row["parent.relClassName"], "Test.ParentHasChildren");
-            assert.equal(typeof(row.parentid), "number");
-            assert.equal(typeof(row.parentRelClassId), "number");
+            assert.equal(row.myParentid, parentId.value);
+            assert.isTrue(row.myParentRelClassId.isValid());
           }
           assert.equal(rowCount, 2);
         });
@@ -701,6 +732,19 @@ describe("ECSqlStatement", () => {
         assert.equal(row.sourceClassName, "Test.Parent");
         assert.equal(row.targetId.value, childId.value);
         assert.equal(row.targetClassName, "Test.Child");
+      });
+
+      ecdb.withPreparedStatement("SELECT ECInstanceId as MyId,ECClassId as MyClassId,SourceECInstanceId As MySourceId,SourceECClassId As MySourceClassId,TargetECInstanceId As MyTargetId,TargetECClassId As MyTargetClassId FROM test.ParentHasChildren WHERE TargetECInstanceId=?", (stmt) => {
+        const childId: Id64 = childIds[0];
+        stmt.bindId(1, childId);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+        const row = stmt.getRow_new();
+        assert.equal(row.myId.value, childId.value);
+        assert.isTrue(row.myClassId.isValid());
+        assert.equal(row.mySourceId.value, parentId.value);
+        assert.isTrue(row.mySourceClassId.isValid());
+        assert.equal(row.myTargetId.value, childId.value);
+        assert.isTrue(row.myTargetClassId.isValid());
       });
     });
 

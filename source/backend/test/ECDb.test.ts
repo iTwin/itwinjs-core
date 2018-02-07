@@ -71,7 +71,7 @@ describe("ECDb", () => {
       ecdb.withPreparedStatement("SELECT Name, Age FROM test.Person WHERE ECInstanceId=?", (stmt) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-        const row = stmt.getRow();
+        const row = stmt.getRow_new();
         assert.equal(row.name, "Mary");
         assert.equal(row.age, 45);
         });

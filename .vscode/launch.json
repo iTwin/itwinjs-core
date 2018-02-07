@@ -12,7 +12,7 @@
       "cwd": "${workspaceFolder}",
       "args": [
         "--packageRoot=${workspaceFolder}",
-        "--testDir=${workspaceFolder}/source/test/lib/test",
+        "--testDir=${workspaceFolder}/source/backend/lib/backend/test/",
         "--debug"
       ],
       "port": 9229,

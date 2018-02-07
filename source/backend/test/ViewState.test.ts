@@ -57,7 +57,7 @@ function convertViewDefToViewState(imodel: IModelDb, view: SpatialViewDefinition
   return new SpatialViewState(view.toJSON(), imodel, catSelState, dStyleState, modSelState);
 }
 
-describe.skip("ViewState", () => {
+describe("ViewState", () => {
   // The imodel as well as some basic objects usable for testing purposes in which data contents does not matter
   let imodel: IModelDb;
   let flatView: SpatialViewDefinition;

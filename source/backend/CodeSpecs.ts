@@ -23,7 +23,7 @@ export class CodeSpecs {
       stmt.bindString(1, name);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
           throw new IModelError(IModelStatus.NotFound);
-      return new Id64(stmt.getRow().id);
+      return stmt.getRow_new().id;
     });
   }
 
@@ -92,7 +92,7 @@ export class CodeSpecs {
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
         throw new IModelError(IModelStatus.InvalidId);
 
-      const row: any = stmt.getRow();
+      const row: any = stmt.getRow_new();
       return new CodeSpec(this._imodel, id, row.name, JSON.parse(row.jsonProperties));
     });
   }

@@ -1327,7 +1327,7 @@ export class IModelDbElements {
       stmt.bindString(3, code.value!);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
         return undefined;
-      return new Id64(stmt.getRow().id);
+      return stmt.getRow_new().id;
     });
   }
 

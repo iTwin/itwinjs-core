@@ -575,7 +575,7 @@ describe("iModel", () => {
     checkClassHasHandlerMetaData(metaData);
   });
 
-  it("should exercise ECSqlStatement (backend only)", () => {
+  it.only("should exercise ECSqlStatement (backend only)", () => {
     // Reject an invalid statement
     try {
       imodel2.prepareStatement("select no_such_property, codeValue from bis.element");
@@ -600,11 +600,11 @@ describe("iModel", () => {
       // Verify that we get a bunch of rows with the expected shape
       let count = 0;
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
-        const row = stmt.getRow();
+        const row = stmt.getRow_new();
         assert.isNotNull(row);
         assert.isObject(row);
         assert.isTrue(row.id !== undefined);
-        assert.isString(row.id);
+        assert.isTrue(row.id instanceof Id64);
         lastId = row.id;
         if (row.codeValue !== undefined)
           firstCodeValue = row.codeValue;
@@ -641,9 +641,9 @@ describe("iModel", () => {
       let count = 0;
       while (DbResult.BE_SQLITE_ROW === stmt3.step()) {
         count = count + 1;
-        const row = stmt3.getRow();
+        const row = stmt3.getRow_new();
         // Verify that we got the row that we asked for
-        assert.isTrue(idToFind.equals(new Id64(row.id)));
+        assert.isTrue(idToFind.equals(row.id));
       }
       // Verify that we got the row that we asked for
       assert.equal(count, 1);
@@ -656,7 +656,7 @@ describe("iModel", () => {
       let count = 0;
       while (DbResult.BE_SQLITE_ROW === stmt4.step()) {
         count = count + 1;
-        const row = stmt4.getRow();
+        const row = stmt4.getRow_new();
         // Verify that we got the row that we asked for
         assert.equal(row.codeValue, codeValueToFind);
       }
@@ -943,9 +943,8 @@ describe("iModel", () => {
 
     ifperfimodel.withPreparedStatement("select count(*) as [count] from DgnPlatformTest.ImodelJsTestElement", (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
-      const row = stmt.getRow();
-      const expectedCountAsHex = "0X" + elementCount.toString(16).toUpperCase();
-      assert.equal(row.count, expectedCountAsHex);
+      const row = stmt.getRow_new();
+      assert.equal(row.count, elementCount);
     });
 
     // tslint:disable-next-line:no-console

@@ -9,20 +9,19 @@ import { IModelError } from "./IModelError";
 export enum ECSqlValueType {
   Blob = 1,
   Boolean = 2,
-  ClassId = 3,
-  DateTime = 4,
-  Double = 5,
-  Geometry = 6,
-  Id = 7,
-  Int = 8,
-  Int64 = 9,
-  Point2d = 10,
-  Point3d = 11,
-  String = 12,
-  Navigation = 13,
-  Struct = 14,
-  PrimitiveArray = 15,
-  StructArray = 16}
+  DateTime = 3,
+  Double = 4,
+  Geometry = 5,
+  Id = 6,
+  Int = 7,
+  Int64 = 8,
+  Point2d = 9,
+  Point3d = 10,
+  String = 11,
+  Navigation = 12,
+  Struct = 13,
+  PrimitiveArray = 14,
+  StructArray = 15}
 
 /** An ECSQL DateTime value.
  * It is returned from ECSQL SELECT for date time properties or expressions.
@@ -33,6 +32,8 @@ export class DateTime {
    * @param isoString ISO 8601 formatted date time string
    */
    public constructor(public isoString: string) {}
+
+   public isValid(): boolean { return this.isoString !== undefined && this.isoString.length > 0; }
 }
 
 /** An ECSQL Navigation value.
@@ -44,6 +45,7 @@ export class NavigationValue {
    * @param relClassName Fully qualified class name of the relationship backing the Navigation property
    */
    public constructor(public id: Id64, public relClassName?: string) {}
+   public isValid(): boolean { return this.id !== undefined && this.id!.isValid(); }
 }
 
 /** An ECSQL Navigation value which can be bound to a navigation property ECSQL parameter
@@ -68,6 +70,8 @@ export class Blob {
    * @param value BLOB formatted as Base64 string
    */
    public constructor(public base64: string) {}
+
+   public isValid(): boolean { return this.base64 !== undefined; }
 }
 
 /** Defines the ECSQL system properties. */
