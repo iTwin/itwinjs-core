@@ -11,21 +11,9 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { using } from "@bentley/bentleyjs-core/lib/Disposable";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { ElementAspectProps } from "../../common/ElementProps";
 
 describe("ECSqlStatement", () => {
   const _outDir = KnownTestLocations.outputDir;
-
-  it.skip("Test", () => { 
-    const row2: any = {element: {id: new Id64("0x12"), relClassName: "Foo"}};
-    const obj2: ElementAspectProps = row2;
-    obj2.element = new Id64("0x13");
-    console.log(obj2);
-    const row: any = {element: new NavigationValue(new Id64("0x12"), "Foo")};
-    const obj: ElementAspectProps = row;
-    obj.element = new Id64("0x13");
-    console.log(obj);
-  });
 
   it("ECSqlTypes validation", () => {
     const row: any = {id: "0x1"};
