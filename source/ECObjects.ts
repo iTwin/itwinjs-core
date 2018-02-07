@@ -4,6 +4,7 @@
 
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 import ECStringConstants from "./Constants";
+export { PropertyType, PropTypeId } from "./PropertyTypes";
 
 export const enum ECClassModifier {
   None,
@@ -80,39 +81,6 @@ export function parsePrimitiveType(type: string): PrimitiveType {
     throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, `The string '${type}' is not one of the 10 supported primitive types.`);
 
   return primitiveType;
-}
-
-/**
- *
- */
-export const enum Type {
-  Struct = 0x02,
-  Struct_Array = 0x02 | 0x04,
-  Navigation = 0x08,
-  Binary = 0x101,
-  Binary_Array = 0x101 | 0x04,
-  Boolean = 0x201,
-  Boolean_Array = 0x201 | 0x04,
-  DateTime = 0x301,
-  DateTime_Array = 0x301 | 0x04,
-  Double = 0x401,
-  Double_Array = 0x401 | 0x04,
-  Integer = 0x501,
-  Integer_Array = 0x501 | 0x04,
-  Integer_Enumeration = 0x501 | 0x10,
-  Integer_Enumeration_Array = 0x501 | 0x10 | 0x04,
-  Long = 0x601,
-  Long_Array = 0x601 | 0x04,
-  Point2d = 0x701,
-  Point2d_Array = 0x701 | 0x04,
-  Point3d = 0x801,
-  Point3d_Array = 0x801 | 0x04,
-  String = 0x901,
-  String_Array = 0x901 | 0x04,
-  String_Enumeration = 0x901 | 0x10,
-  String_Enumeration_Array = 0x901 | 0x10 | 0x04,
-  IGeometry = 0xA01,
-  IGeometry_Array = 0xA01 | 0x04,
 }
 
 /**
@@ -566,6 +534,7 @@ export namespace SchemaChildKey {
   export type Enumeration = SchemaChildKey & { type: SchemaChildType.Enumeration };
   export type KindOfQuantity = SchemaChildKey & { type: SchemaChildType.KindOfQuantity };
   export type PropertyCategory = SchemaChildKey & { type: SchemaChildType.PropertyCategory };
+  export type Any = EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass | Enumeration | KindOfQuantity | PropertyCategory;
 }
 
 const UINT_MAX = 4294967295;

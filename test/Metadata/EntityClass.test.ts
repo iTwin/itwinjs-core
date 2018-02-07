@@ -223,7 +223,7 @@ describe("entity class", () => {
 
       const relClass = await schema.getClass<RelationshipClass>("NavPropRelationship");
 
-      assert.isTrue(await navProp!.relationship === relClass);
+      assert.isTrue(await navProp!.relationshipClass === relClass);
     });
   });
 });

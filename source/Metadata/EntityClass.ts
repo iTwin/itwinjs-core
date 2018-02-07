@@ -5,7 +5,7 @@
 import ECClass from "./Class";
 import MixinClass from "./MixinClass";
 import RelationshipClass from "./RelationshipClass";
-import { EntityClassInterface, PropertyInterface, SchemaInterface, RelationshipClassInterface, LazyLoadedMixin } from "../Interfaces";
+import { EntityClassInterface, SchemaInterface, RelationshipClassInterface, LazyLoadedMixin, AnyECProperty } from "../Interfaces";
 import { ECClassModifier, RelatedInstanceDirection, SchemaChildType, parseStrengthDirection, SchemaChildKey } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { NavigationProperty } from "./Property";
@@ -51,7 +51,7 @@ export default class EntityClass extends ECClass implements EntityClassInterface
    * Searches the base class, if one exists, first then any mixins that exist for the property with the name provided.
    * @param name The name of the property to find.
    */
-  public async getInheritedProperty<T extends PropertyInterface>(name: string): Promise<T | undefined> {
+  public async getInheritedProperty<T extends AnyECProperty>(name: string): Promise<T | undefined> {
     let inheritedProperty = await super.getInheritedProperty(name);
 
     if (!inheritedProperty && this._mixins) {

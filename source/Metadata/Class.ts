@@ -4,11 +4,11 @@
 
 import Enumeration from "./Enumeration";
 import SchemaChild from "./SchemaChild";
-import { ECClassInterface, PropertyInterface, SchemaInterface, LazyLoadedECClass, LazyLoadedProperty, StructClassInterface, SchemaChildInterface } from "../Interfaces";
+import { ECClassInterface, SchemaInterface, LazyLoadedECClass, LazyLoadedProperty, StructClassInterface, SchemaChildInterface, AnyECProperty, AnyPrimitiveECProperty, AnyPrimitiveArrayECProperty } from "../Interfaces";
 import { ECClassModifier, parseClassModifier, PrimitiveType, SchemaChildKey, tryParsePrimitiveType } from "../ECObjects";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty } from "./Property";
+import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty, EnumerationProperty, EnumerationArrayProperty } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 
 function createLazyLoadedChild<T extends SchemaChildInterface>(c: T) {
@@ -66,7 +66,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param prop The property to add.
    * @returns The property that was added.
    */
-  protected addProperty<T extends PropertyInterface>(prop: T): T {
+  protected addProperty<T extends AnyECProperty>(prop: T): T {
     if (!this.properties)
       this.properties = [];
 
@@ -78,7 +78,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * Searches, case-insensitive, for a local ECProperty with the name provided.
    * @param name
    */
-  public async getProperty<T extends PropertyInterface>(name: string, includeInherited: boolean = false): Promise<T | undefined> {
+  public async getProperty<T extends AnyECProperty>(name: string, includeInherited: boolean = false): Promise<T | undefined> {
     let foundProp: LazyLoadedProperty | undefined;
 
     if (this.properties) {
@@ -97,7 +97,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * Searches the base class, if one exists, for the property with the name provided.
    * @param name The name of the inherited property to find.
    */
-  public async getInheritedProperty<T extends PropertyInterface>(name: string): Promise<T | undefined> {
+  public async getInheritedProperty<T extends AnyECProperty>(name: string): Promise<T | undefined> {
     let inheritedProperty;
 
     if (this.baseClass) {
@@ -115,13 +115,18 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
    * @throws ECObjectsStatus DuplicateProperty: thrown if a property with the same name already exists in the class.
    */
-  public async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<PrimitiveProperty> {
+  public async createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
+  public async createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
+  public async createPrimitiveProperty(name: string, primitiveType?: string): Promise<AnyPrimitiveECProperty>;
+  public async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<AnyPrimitiveECProperty> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = await loadPrimitiveType(primitiveType, this.schema);
-    const lazyPropType = (typeof(propType) === "number") ? propType : createLazyLoadedChild(propType);
-    return this.addProperty(new PrimitiveProperty(name, lazyPropType));
+    if (typeof(propType) === "number")
+      return this.addProperty(new PrimitiveProperty(name, propType));
+
+    return this.addProperty(new EnumerationProperty(name, createLazyLoadedChild(propType)));
   }
 
   /**
@@ -129,13 +134,18 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param name The name of property to create.
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
    */
-  public async createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<PrimitiveArrayProperty> {
+  public async createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveArrayProperty>;
+  public async createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
+  public async createPrimitiveArrayProperty(name: string, primitiveType?: string): Promise<AnyPrimitiveArrayECProperty>;
+  public async createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<AnyPrimitiveArrayECProperty> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = await loadPrimitiveType(primitiveType, this.schema);
-    const lazyPropType = (typeof(propType) === "number") ? propType : createLazyLoadedChild(propType);
-    return this.addProperty(new PrimitiveArrayProperty(name, lazyPropType));
+    if (typeof(propType) === "number")
+      return this.addProperty(new PrimitiveArrayProperty(name, propType));
+
+    return this.addProperty(new EnumerationArrayProperty(name, createLazyLoadedChild(propType)));
   }
 
   /**

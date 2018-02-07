@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ECClassModifier, CustomAttributeContainerType, PrimitiveType, RelationshipMultiplicity, RelationshipEnd,
-        StrengthType, RelatedInstanceDirection, SchemaKey, SchemaChildKey } from "./ECObjects";
+  StrengthType, RelatedInstanceDirection, SchemaKey, SchemaChildKey, PropertyType } from "./ECObjects";
 import { CustomAttributeContainerProps } from "./Metadata/CustomAttribute";
 import { DelayedPromise } from "./DelayedPromise";
 
@@ -17,7 +17,7 @@ export interface SchemaProps extends CustomAttributeContainerProps {
 }
 
 export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<SchemaInterface>;
-export type LazyLoadedProperty = Readonly<{ name: string }> & DelayedPromise<PropertyInterface>;
+export type LazyLoadedProperty = Readonly<{ name: string }> & DelayedPromise<AnyECProperty>;
 
 export type LazyLoadedSchemaChild<T extends SchemaChildInterface> = Readonly<T["key"]> & DelayedPromise<T>;
 export type LazyLoadedECClass = LazyLoadedSchemaChild<ECClassInterface>;
@@ -34,10 +34,19 @@ export type LazyLoadedRelationshipConstraintClass = Readonly<SchemaChildKey> & D
 export type AnyClassType = EntityClassInterface | MixinInterface | StructClassInterface | CustomAttributeClassInterface | RelationshipClassInterface;
 export type AnySchemaChildType = AnyClassType | EnumerationInterface | KindOfQuantityInterface | PropertyCategoryInterface;
 
+export type AnyPrimitiveECProperty = PrimitivePropertyInterface | EnumerationPropertyInterface;
+export type AnyPrimitiveArrayECProperty = PrimitiveArrayPropertyInterface | EnumerationArrayPropertyInterface;
+export type AnyArrayECProperty = AnyPrimitiveArrayECProperty | StructArrayPropertyInterface;
+export type AnyECProperty = AnyPrimitiveECProperty | StructPropertyInterface | NavigationPropertyInterface | AnyArrayECProperty;
+
+export interface JsonDeserializable {
+  /* async */ fromJson(obj: any): Promise<void>;
+}
+
 /**
  * Extends the properties that are defined on a Schema to add the methods that are available on any class that implements this interface.
  */
-export interface SchemaInterface extends SchemaProps {
+export interface SchemaInterface extends SchemaProps, JsonDeserializable {
   /* async */ getChild<T extends SchemaChildInterface>(name: string, includeReference?: boolean): Promise<T | undefined>;
   /* async */ addChild<T extends SchemaChildInterface>(child: T): Promise<void>;
   /* async */ createEntityClass(name: string): Promise<EntityClassInterface>;
@@ -50,7 +59,6 @@ export interface SchemaInterface extends SchemaProps {
   /* async */ createPropertyCategory(name: string): Promise<PropertyCategoryInterface>;
   /* async */ addReference(refSchema: SchemaInterface): Promise<void>;
   /* async */ getReference<T extends SchemaInterface>(refSchemaName: string): Promise<T | undefined>;
-  /* async */ fromJson(obj: any): Promise<void>;
 }
 
 export interface SchemaSyncInterface extends SchemaInterface  {
@@ -76,9 +84,7 @@ export interface SchemaChildProps {
   description?: string;
 }
 
-export interface SchemaChildInterface extends SchemaChildProps {
-  /* async */ fromJson(obj: any): Promise<void>;
-}
+export interface SchemaChildInterface extends SchemaChildProps, JsonDeserializable {}
 
 export interface SchemaChildSyncInterface extends SchemaChildInterface {
   readonly schema: SchemaSyncInterface;
@@ -91,9 +97,9 @@ export interface ECClassProps extends SchemaChildProps {
 }
 
 export interface ECClassInterface extends SchemaChildInterface, ECClassProps {
-  /* async */ getProperty<T extends PropertyInterface>(name: string): Promise<T | undefined>;
-  /* async */ createPrimitiveProperty(name: string, type?: string | PrimitiveType | EnumerationInterface): Promise<PrimitivePropertyInterface>;
-  /* async */ createPrimitiveArrayProperty(name: string, type?: string | PrimitiveType | EnumerationInterface): Promise<PrimitiveArrayPropertyInterface>;
+  /* async */ getProperty<T extends AnyECProperty>(name: string): Promise<T | undefined>;
+  /* async */ createPrimitiveProperty(name: string, type?: string | PrimitiveType | EnumerationInterface): Promise<AnyPrimitiveECProperty>;
+  /* async */ createPrimitiveArrayProperty(name: string, type?: string | PrimitiveType | EnumerationInterface): Promise<AnyPrimitiveArrayECProperty>;
   /* async */ createStructProperty(name: string, type: string | StructClassInterface): Promise<StructPropertyInterface>;
   /* async */ createStructArrayProperty(name: string, type: string | StructClassInterface): Promise<StructArrayPropertyInterface>;
 }
@@ -140,9 +146,7 @@ export interface RelationshipConstraintProps extends CustomAttributeContainerPro
   constraintClasses?: LazyLoadedRelationshipConstraintClass[];
 }
 
-export interface RelationshipConstraintInterface extends RelationshipConstraintProps {
-  /* async */ fromJson(obj: any): Promise<void>;
-}
+export interface RelationshipConstraintInterface extends RelationshipConstraintProps, JsonDeserializable {}
 
 export interface CustomAttributeClassProps extends ECClassProps {
   containerType: CustomAttributeContainerType;
@@ -197,12 +201,17 @@ export interface ECPropertyProps {
   kindOfQuantity?: LazyLoadedKindOfQuantity;
 }
 
-export interface PropertyInterface extends ECPropertyProps {
-  /* async */ fromJson(obj: any): Promise<void>;
+export interface ArrayPropertyProps {
+  minOccurs?: number;
+  maxOccurs?: number;
 }
 
-export interface PrimitivePropertyProps extends ECPropertyProps {
-  type: PrimitiveType | LazyLoadedEnumeration;
+export interface NavigationPropertyProps {
+  readonly relationshipClass: LazyLoadedRelationshipClass;
+  direction: RelatedInstanceDirection;
+}
+
+export interface PrimitiveBackedPropertyProps {
   extendedTypeName?: string;
   minValue?: number;
   maxValue?: number;
@@ -210,23 +219,23 @@ export interface PrimitivePropertyProps extends ECPropertyProps {
   maxLength?: number;
 }
 
-export interface PrimitivePropertyInterface extends PropertyInterface, PrimitivePropertyProps { }
-
-export interface StructPropertyProps extends ECPropertyProps {
-  type: LazyLoadedStructClass;
-}
-export interface StructPropertyInterface extends PropertyInterface, StructPropertyProps { }
-
-export interface ArrayPropertyProps {
-  minOccurs?: number;
-  maxOccurs?: number;
+export interface PrimitivePropertyProps extends PrimitiveBackedPropertyProps {
+  readonly primitiveType: PrimitiveType;
 }
 
-export interface PrimitiveArrayPropertyInterface extends PrimitivePropertyInterface, ArrayPropertyProps { }
-export interface StructArrayPropertyInterface extends StructPropertyInterface, ArrayPropertyProps { }
-
-export interface NavigationPropertyProps extends ECPropertyProps {
-  relationship: LazyLoadedRelationshipClass;
-  direction: RelatedInstanceDirection;
+export interface EnumerationPropertyProps extends PrimitiveBackedPropertyProps {
+  readonly enumeration: LazyLoadedEnumeration;
 }
-export interface NavigationPropertyInterface extends PropertyInterface, NavigationPropertyProps { }
+
+export type PropertyInterface<T extends PropertyType.Any> = ECPropertyProps & JsonDeserializable & Readonly<T>;
+export type ArrayPropertyInterface<T extends PropertyType.Any> = PropertyInterface<T> & ArrayPropertyProps;
+
+// tslint:disable:no-empty-interface
+export interface PrimitivePropertyInterface extends PropertyInterface<PropertyType.Primitive>, PrimitivePropertyProps {}
+export interface EnumerationPropertyInterface extends PropertyInterface<PropertyType.Enumeration>, EnumerationPropertyProps {}
+export interface StructPropertyInterface extends PropertyInterface<PropertyType.Struct> {}
+export interface NavigationPropertyInterface extends PropertyInterface<PropertyType.Navigation>, NavigationPropertyProps {}
+export interface PrimitiveArrayPropertyInterface extends ArrayPropertyInterface<PropertyType.PrimitiveArray>, PrimitivePropertyProps {}
+export interface EnumerationArrayPropertyInterface extends ArrayPropertyInterface<PropertyType.EnumerationArray>, EnumerationPropertyProps {}
+export interface StructArrayPropertyInterface extends ArrayPropertyInterface<PropertyType.StructArray> {}
+// tslint:enable:no-empty-interface

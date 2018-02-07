@@ -4,7 +4,7 @@
 
 import { SchemaInterface, SchemaChildInterface, EntityClassInterface, MixinInterface,
         RelationshipClassInterface, RelationshipConstraintInterface, CustomAttributeClassInterface,
-        KindOfQuantityInterface, PropertyInterface, AnyClassType, StructClassInterface } from "../Interfaces";
+        KindOfQuantityInterface, AnyClassType, StructClassInterface, AnyECProperty } from "../Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaContext } from "../Context";
 import { ECVersion, SchemaKey, relationshipEndToString, SchemaChildKey, SchemaChildType, tryParsePrimitiveType } from "../ECObjects";
@@ -372,7 +372,7 @@ export default class SchemaReadHelper {
     }
   }
 
-  private async loadProperty<T extends PropertyInterface>(prop: T, propertyJson: any): Promise<void> {
+  private async loadProperty<T extends AnyECProperty>(prop: T, propertyJson: any): Promise<void> {
     if (propertyJson.category) {
       if (typeof(propertyJson.category) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${prop.class.name}.${prop.name} has an invalid 'category' property. It should be of type 'string'.`);
