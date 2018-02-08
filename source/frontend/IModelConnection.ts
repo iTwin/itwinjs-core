@@ -70,7 +70,11 @@ export class IModelConnection extends IModel {
   public async close(accessToken: AccessToken): Promise<void> {
     if (!this.iModelToken)
       return;
-    await IModelGateway.getProxy().close(accessToken, this.iModelToken);
+    try {
+      await IModelGateway.getProxy().close(accessToken, this.iModelToken);
+    } finally {
+      (this.token as any) = undefined; // prevent closed connection from being reused
+    }
   }
 
   /** Ask the backend to open a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend.
@@ -86,7 +90,11 @@ export class IModelConnection extends IModel {
   public async closeStandalone(): Promise<void> {
     if (!this.iModelToken)
       return;
-    await IModelGateway.getProxy().closeStandalone(this.iModelToken);
+    try {
+      await IModelGateway.getProxy().closeStandalone(this.iModelToken);
+    } finally {
+      (this.token as any) = undefined; // prevent closed connection from being reused
+    }
   }
 
   /** Execute a query against the iModel.
