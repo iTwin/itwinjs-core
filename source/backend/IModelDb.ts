@@ -119,7 +119,7 @@ export class IModelDb extends IModel {
    */
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(accessToken, contextId, iModelId, openMode, version);
-    Logger.logTrace(loggingCategory, "IModelDb.open", loggingCategory, () => ({ iModelId, openMode }));
+    Logger.logTrace(loggingCategory, "IModelDb.open", () => ({ iModelId, openMode }));
     return IModelDb.createIModelDb(briefcaseEntry, contextId);
   }
 
@@ -222,7 +222,7 @@ export class IModelDb extends IModel {
       return val;
     } catch (err) {
       this.releasePreparedStatement(stmt);
-      Logger.logError(err.toString());
+      Logger.logError(loggingCategory, err.toString());
       throw err;
     }
   }
