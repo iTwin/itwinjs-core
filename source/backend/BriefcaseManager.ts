@@ -297,9 +297,13 @@ export class BriefcaseManager {
         const briefcase = new BriefcaseEntry();
         briefcase.iModelId = iModelId;
         briefcase.changeSetId = localBriefcase.parentChangeSetId;
-        briefcase.briefcaseId = localBriefcase.briefcaseId;
         briefcase.pathname = localBriefcase.pathname;
         briefcase.openMode = localBriefcase.readOnly ? OpenMode.Readonly : OpenMode.ReadWrite;
+
+        briefcase.briefcaseId = localBriefcase.briefcaseId;
+        assert(!localBriefcase.readOnly || localBriefcase.briefcaseId === BriefcaseId.Standalone);
+        assert(localBriefcase.readOnly || localBriefcase.briefcaseId !== BriefcaseId.Standalone);
+
         briefcase.isOpen = false;
         if (localBriefcase.reversedChangeSetId !== undefined)
           briefcase.reversedChangeSetId = localBriefcase.reversedChangeSetId;
@@ -320,11 +324,18 @@ export class BriefcaseManager {
           briefcase.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, iModelId, briefcase.changeSetId);
           if (briefcase.reversedChangeSetId !== undefined)
             briefcase.reversedChangeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, iModelId, briefcase.reversedChangeSetId);
-          // briefcase.nativeDb = undefined;
-          BriefcaseManager.cache.addBriefcase(briefcase);
         } catch (error) {
           // The iModel is unreachable on the hub - deployment configuration is different, imodel was removed, the current user does not have access
           Logger.logWarning(`Unable to find briefcase ${briefcase.iModelId}:${briefcase.briefcaseId} on the Hub. Deleting it`);
+          await BriefcaseManager.deleteBriefcase(accessToken, briefcase);
+          continue;
+        }
+
+        try {
+          // briefcase.nativeDb = undefined;
+          BriefcaseManager.cache.addBriefcase(briefcase);
+        } catch (error) {
+          Logger.logWarning(`Briefcase ${briefcase.iModelId}:${briefcase.briefcaseId} already exists in cache! Deleting duplicate at path ${briefcase.pathname} from disk.`);
           await BriefcaseManager.deleteBriefcase(accessToken, briefcase);
           continue;
         }
@@ -369,12 +380,16 @@ export class BriefcaseManager {
       return briefcase;
     }
 
+    const isNewBriefcase: boolean = !briefcase;
     if (!briefcase)
       briefcase = await BriefcaseManager.createBriefcase(accessToken, projectId, iModelId, openMode);
     else if (!briefcase.isOpen)
       BriefcaseManager.openBriefcase(briefcase);
 
     await BriefcaseManager.pullAndMergeChanges(accessToken, briefcase, IModelVersion.asOfChangeSet(changeSetId));
+
+    if (isNewBriefcase)
+      BriefcaseManager.cache!.addBriefcase(briefcase);
 
     return briefcase;
   }
@@ -502,7 +517,6 @@ export class BriefcaseManager {
     briefcase.nativeDb = nativeDb;
     briefcase.isOpen = true;
 
-    BriefcaseManager.cache!.addBriefcase(briefcase);
     return briefcase;
   }
 
