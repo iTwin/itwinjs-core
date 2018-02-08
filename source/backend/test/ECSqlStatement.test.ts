@@ -614,6 +614,27 @@ describe("ECSqlStatement", () => {
           assert.equal(row.id_1.value, fooClassId.value);
         });
 
+      ecdb.withPreparedStatement("SELECT count(*) cnt FROM meta.ECSchemaDef", (stmt) => {
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row = stmt.getRow_new();
+          assert.isDefined(row.cnt);
+          assert.equal(typeof(row.cnt), "number");
+          assert.equal(row.cnt, 6);
+        });
+
+      ecdb.withPreparedStatement("SELECT 1 FROM meta.ECSchemaDef LIMIT 1", (stmt) => {
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row = stmt.getRow_new();
+          assert.equal(typeof(row["1"]), "number");
+          assert.equal(row["1"], 1);
+        });
+
+      ecdb.withPreparedStatement("SELECT NULL FROM meta.ECSchemaDef LIMIT 1", (stmt) => {
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row = stmt.getRow_new();
+          assert.equal(Object.entries(row).length, 0);
+        });
+
       });
     });
 
