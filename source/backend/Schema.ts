@@ -32,7 +32,7 @@ export class Schemas {
   public static registerSchema(schema: Schema) {
     const key = schema.name.toLowerCase();
     if (Schemas.getRegisteredSchema(key))
-      throw new IModelError(IModelStatus.DuplicateName, "Schema \"" + key + "\" is already registered", Logger.logWarning);
+      throw new IModelError(IModelStatus.DuplicateName, "Schema \"" + key + "\" is already registered", Logger.logWarning, "imodeljs-backend.Schemas");
     Schemas._registeredSchemas[key] = schema;
   }
 

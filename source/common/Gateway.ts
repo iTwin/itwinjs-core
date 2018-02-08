@@ -110,7 +110,7 @@ export abstract class Gateway {
   public async invoke<T>(operation: string, ...parameters: any[]): Promise<T> {
     const implementation = (this as any)[operation];
     if (!implementation || typeof (implementation) !== "function")
-      throw new IModelError(BentleyStatus.ERROR, `Gateway class "${this.constructor.name}" does not implement operation "${operation}".`, Logger.logError);
+      throw new IModelError(BentleyStatus.ERROR, `Gateway class "${this.constructor.name}" does not implement operation "${operation}".`, Logger.logError, "imodeljs-backend.Gateway");
 
     return await implementation.call(this, ...parameters);
   }
