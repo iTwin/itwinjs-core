@@ -217,7 +217,7 @@ describe("BriefcaseManager", () => {
     iModel.close(accessToken);
   });
 
-  it("should write to briefcase with optimistic concurrency", async () => {
+  it.skip("should write to briefcase with optimistic concurrency", async () => {
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "ReadWriteTest";
