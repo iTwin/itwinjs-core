@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { ECSqlInsertResult } from "../ECSqlStatement";
-import { DateTime, Blob, NavigationValue, NavigationBindingValue } from "../../common/ECSqlTypes";
+import { DateTime, Blob, NavigationBindingValue } from "../../common/ECSqlTypes";
 import { ECDb } from "../ECDb";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
@@ -14,25 +14,6 @@ import { KnownTestLocations } from "./KnownTestLocations";
 
 describe("ECSqlStatement", () => {
   const _outDir = KnownTestLocations.outputDir;
-
-  it("ECSqlTypes validation", () => {
-    const row: any = {id: "0x1"};
-    const dt = new DateTime(row.doesNotExist);
-    assert.isUndefined(dt.isoString);
-    assert.isFalse(dt.isValid());
-
-    const blob = new Blob(row.doesNotExist);
-    assert.isUndefined(blob.base64);
-    assert.isFalse(blob.isValid());
-
-    const navVal = new NavigationValue(row.doesNotExist);
-    assert.isUndefined(navVal.id);
-    assert.isFalse(navVal.isValid());
-
-    const navBindingVal = new NavigationBindingValue(row.doesNotExist);
-    assert.isUndefined(navBindingVal.id);
-    assert.isFalse(navBindingVal.isValid());
-  });
 
   it("Bind Ids", () => {
     using (ECDbTestHelper.createECDb(_outDir, "bindids.ecdb"), (ecdb) => {

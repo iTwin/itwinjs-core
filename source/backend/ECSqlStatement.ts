@@ -293,7 +293,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
         const propName: string = ECSqlValueHelper.determineResultRowPropertyName(duplicatePropNames, ecsqlValue);
         const val: any = ECSqlValueHelper.getValue(ecsqlValue);
-        Object.defineProperty(row, propName, {enumerable: true, configurable: false, writable: false, value: val});
+        Object.defineProperty(row, propName, {enumerable: true, configurable: true, writable: true, value: val});
         });
       }
 
@@ -562,8 +562,8 @@ class ECSqlValueHelper {
         const memberVal = ECSqlValueHelper.getValue(memberECSqlVal);
         Object.defineProperty(structVal, memberName, {
           enumerable: true,
-          configurable: false,
-          writable: false,
+          configurable: true,
+          writable: true,
           value: memberVal});
         });
       }

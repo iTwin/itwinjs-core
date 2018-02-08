@@ -575,7 +575,7 @@ describe("iModel", () => {
     checkClassHasHandlerMetaData(metaData);
   });
 
-  it.only("should exercise ECSqlStatement (backend only)", () => {
+  it("should exercise ECSqlStatement (backend only)", () => {
     // Reject an invalid statement
     try {
       imodel2.prepareStatement("select no_such_property, codeValue from bis.element");
