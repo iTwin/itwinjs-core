@@ -34,7 +34,8 @@
     "docs": "node node_modules/@bentley/bentleyjs-tools/scripts/docs.js --baseUrl=source/testbed/node_modules --includes=source/backend/lib/backend/test/extract --excludes=testbed,assets --out=source/testbed/lib/docs --json=source/testbed/lib/docs/json/file.json",
     "extract": "node node_modules/@bentley/bentleyjs-tools/scripts/extract.js --extractFrom=source/backend/test --out=source/backend/lib/backend/test/extract",
     "test": "npm run test:backend && npm run test:frontend",
-    "test:backend": "cd source/backend && npm run test",
+    "pretest:backend": "cd source/backend && npm run pretest",
+    "test:backend": "node node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot \"./\" --testDir=\"./source/backend/lib/backend/test\"",
     "test:backendwebpackformobile": "cd source/backend/test && npm run webpackformobile",
     "test:frontend": "cd source/testbed && npm run test",
     "test:tsnode": "node node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode --packageRoot \"./\" --testDir=\"./source/backend/test\" --tscPaths",
@@ -57,7 +58,7 @@
   "dependencies": {},
   "//devDependencies": "NOTE: These are the union of all devDependencies for source/frontend, source/backend, and source/testbed",
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "^2.1.0",
+    "@bentley/bentleyjs-tools": "^2.2.0",
     "@types/chai": "^4.0.8",
     "@types/flatbuffers": "^1.6.5",
     "@types/fs-extra": "^4.0.7",
