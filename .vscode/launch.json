@@ -26,7 +26,7 @@
       "runtimeExecutable": "${workspaceFolder}\\source\\testbed\\node_modules\\.bin\\electron",
       "runtimeArgs": [
         "${workspaceFolder}/source/testbed/node_modules/floss/electron/index.js",
-        "{\"debug\":true, \"noDevTools\":true, \"path\":\"lib/testbed/frontend/index.js\"}",
+        "{\"debug\":true, \"noDevTools\":true, \"path\":\"lib/testbed/frontend/index.js\", \"grep\":\"\", \"fgrep\":\"\"}",
         "--debug-brk=5858",
         "--remote-debugging-port=9223"
       ],
