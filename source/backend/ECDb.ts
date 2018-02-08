@@ -10,6 +10,8 @@ import { IDisposable } from "@bentley/bentleyjs-core/lib/Disposable";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
+const loggingCategory = "imodeljs-backend.ECDb";
+
 /** Allows performing CRUD operations in an ECDb */
 export class ECDb implements IDisposable {
   private _nativeDb: AddonECDb | undefined;
@@ -108,7 +110,7 @@ export class ECDb implements IDisposable {
       return val;
     } catch (err) {
       this._statementCache.release(stmt);
-      Logger.logError(err.toString());
+      Logger.logError(loggingCategory, err.toString());
       throw err;
     }
   }

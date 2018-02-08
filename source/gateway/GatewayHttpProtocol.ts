@@ -8,6 +8,8 @@ import { IModelError } from "../common/IModelError";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 
+const loggingCategory = "imodeljs-backend.GatewayHttpProtocol";
+
 /** The HTTP application protocol. */
 export abstract class GatewayHttpProtocol extends GatewayProtocol {
   private _pending: GatewayHttpProtocol.PendingOperationRequest[] = [];
@@ -82,14 +84,14 @@ export abstract class GatewayHttpProtocol extends GatewayProtocol {
       const connection = this.generateConnectionForOperationRequest();
       const method = this.supplyHttpVerbForOperation(identifier);
       connection.open(method, path, true);
-      Logger.logInfo("Gateway.frontend.request", () => ({ method, path }));
+      Logger.logTrace(loggingCategory, "Gateway.frontend.request", () => ({ method, path }));
 
       connection.addEventListener("load", () => {
         if (!request.active)
           return;
 
         const status = connection.status;
-        Logger.logInfo("Gateway.frontend.response", () => ({ method, path, status }));
+        Logger.logTrace(loggingCategory, "Gateway.frontend.response", () => ({ method, path, status }));
 
         if (this.canResolvePendingRequest(request, status)) {
           const result = this.deserializeOperationResult(connection.responseText);
@@ -110,7 +112,7 @@ export abstract class GatewayHttpProtocol extends GatewayProtocol {
         if (!request.active)
           return;
 
-        Logger.logInfo("Gateway.frontend.connectionError", () => ({ method, path }));
+        Logger.logInfo(loggingCategory, "Gateway.frontend.connectionError", () => ({ method, path }));
         request.reject(new IModelError(BentleyStatus.ERROR, "Connection error."));
       });
 
@@ -118,7 +120,7 @@ export abstract class GatewayHttpProtocol extends GatewayProtocol {
         if (!request.active)
           return;
 
-        Logger.logInfo("Gateway.frontend.connectionAborted", () => ({ method, path }));
+        Logger.logInfo(loggingCategory, "Gateway.frontend.connectionAborted", () => ({ method, path }));
         request.reject(new IModelError(BentleyStatus.ERROR, "Connection aborted."));
       });
 

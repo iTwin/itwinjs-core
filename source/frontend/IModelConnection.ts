@@ -21,6 +21,8 @@ import { DisplayStyle3dState, DisplayStyle2dState } from "../common/DisplayStyle
 import { ModelSelectorState } from "../common/ModelSelectorState";
 import { CategorySelectorState } from "../common/CategorySelectorState";
 
+const loggingCategory = "imodeljs-backend.IModelConnection";
+
 /** A connection to an iModel database hosted on the backend. */
 export class IModelConnection extends IModel {
   /** Get access to the [[Model]] entities in this IModel */
@@ -58,7 +60,7 @@ export class IModelConnection extends IModel {
     else
       openResponse = await IModelGateway.getProxy().openForRead(accessToken, iModelToken);
 
-    Logger.logInfo("IModelConnection.open", () => ({ iModelId, openMode, changeSetId }));
+    Logger.logTrace(loggingCategory, "IModelConnection.open", () => ({ iModelId, openMode, changeSetId }));
 
     // todo: Setup userId if it's a readWrite open - this is necessary to reopen the same exact briefcase at the backend
     return IModelConnection.create(openResponse);
@@ -76,7 +78,7 @@ export class IModelConnection extends IModel {
    */
   public static async openStandalone(fileName: string, openMode = OpenMode.Readonly): Promise<IModelConnection> {
     const openResponse: IModel = await IModelGateway.getProxy().openStandalone(fileName, openMode);
-    Logger.logInfo("IModelConnection.openStandalone", () => ({ fileName, openMode }));
+    Logger.logTrace(loggingCategory, "IModelConnection.openStandalone", () => ({ fileName, openMode }));
     return IModelConnection.create(openResponse);
   }
 
@@ -101,7 +103,7 @@ export class IModelConnection extends IModel {
    * @throws [[IModelError]] if the ECSQL is invalid
    */
   public async executeQuery(ecsql: string, bindings?: any[] | object): Promise<any[]> {
-    Logger.logInfo("IModelConnection.executeQuery", () => ({ iModelId: this.iModelToken.iModelId, ecsql, bindings }));
+    Logger.logTrace(loggingCategory, "IModelConnection.executeQuery", () => ({ iModelId: this.iModelToken.iModelId, ecsql, bindings }));
     return await IModelGateway.getProxy().executeQuery(this.iModelToken, ecsql, bindings);
   }
 
@@ -110,7 +112,7 @@ export class IModelConnection extends IModel {
    * @param newExtents The new project extents as an AxisAlignedBox3d
    */
   public async updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void> {
-    Logger.logInfo("IModelConnection.updateProjectExtents", () => ({ iModelId: this.iModelToken.iModelId, newExtents }));
+    Logger.logTrace(loggingCategory, "IModelConnection.updateProjectExtents", () => ({ iModelId: this.iModelToken.iModelId, newExtents }));
     await IModelGateway.getProxy().updateProjectExtents(this.iModelToken, newExtents);
   }
 
@@ -120,7 +122,7 @@ export class IModelConnection extends IModel {
    * @throws [[IModelError]] if there is a problem saving changes.
    */
   public async saveChanges(description?: string): Promise<void> {
-    Logger.logInfo("IModelConnection.saveChanges", () => ({ iModelId: this.iModelToken.iModelId, description }));
+    Logger.logTrace(loggingCategory, "IModelConnection.saveChanges", () => ({ iModelId: this.iModelToken.iModelId, description }));
     return await IModelGateway.getProxy().saveChanges(this.iModelToken, description);
   }
 
@@ -227,12 +229,12 @@ export class IModelConnectionCodeSpecs {
    */
   public async getCodeSpecById(codeSpecId: Id64): Promise<CodeSpec> {
     if (!codeSpecId.isValid())
-      return Promise.reject(new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, () => ({ codeSpecId })));
+      return Promise.reject(new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggingCategory, () => ({ codeSpecId })));
 
     await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
     const found: CodeSpec | undefined = this._loaded.find((codeSpec: CodeSpec) => codeSpec.id.equals(codeSpecId));
     if (!found)
-      return Promise.reject(new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning));
+      return Promise.reject(new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggingCategory));
 
     return found;
   }
@@ -246,7 +248,7 @@ export class IModelConnectionCodeSpecs {
     await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
     const found: CodeSpec | undefined = this._loaded.find((codeSpec: CodeSpec) => codeSpec.name === name);
     if (!found)
-      return Promise.reject(new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning));
+      return Promise.reject(new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggingCategory));
 
     return found;
   }
@@ -302,7 +304,7 @@ export class IModelConnectionViews {
         return new SheetViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, baseModelState);
       }
       default:
-        return Promise.reject(new IModelError(IModelStatus.WrongClass, "Invalid ViewState subclass", Logger.logError, () => viewStateData));
+        return Promise.reject(new IModelError(IModelStatus.WrongClass, "Invalid ViewState subclass", Logger.logError, loggingCategory, () => viewStateData));
     }
   }
 }

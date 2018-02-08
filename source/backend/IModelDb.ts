@@ -35,6 +35,8 @@ import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { NodeAddonRegistry } from "./NodeAddonRegistry";
 import { RequestQueryOptions } from "@bentley/imodeljs-clients/lib";
 
+const loggingCategory = "imodeljs-backend.IModelDb";
+
 // Register the backend implementation of IModelGateway
 IModelGatewayImpl.register();
 
@@ -86,7 +88,7 @@ export class IModelDb extends IModel {
    */
   public static createStandalone(pathname: string, rootSubjectName: string, rootSubjectDescription?: string): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(pathname, rootSubjectName, rootSubjectDescription);
-    Logger.logInfo("IModelDb.createStandalone", () => ({ pathname }));
+    // Logger.logTrace(loggingCategory, "IModelDb.createStandalone", loggingCategory, () => ({ pathname }));
     return IModelDb.createIModelDb(briefcaseEntry);
   }
 
@@ -103,7 +105,7 @@ export class IModelDb extends IModel {
    */
   public static openStandalone(pathname: string, openMode: OpenMode = OpenMode.ReadWrite, enableTransactions: boolean = false): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(pathname, openMode, enableTransactions);
-    Logger.logInfo("IModelDb.openStandalone", () => ({ pathname, openMode }));
+    // Logger.logTrace(loggingCategory, "IModelDb.openStandalone", loggingCategory, () => ({ pathname, openMode }));
     return IModelDb.createIModelDb(briefcaseEntry);
   }
 
@@ -117,7 +119,7 @@ export class IModelDb extends IModel {
    */
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(accessToken, contextId, iModelId, openMode, version);
-    Logger.logInfo("IModelDb.open", () => ({ iModelId, openMode }));
+    Logger.logTrace(loggingCategory, "IModelDb.open", loggingCategory, () => ({ iModelId, openMode }));
     return IModelDb.createIModelDb(briefcaseEntry, contextId);
   }
 
@@ -183,7 +185,7 @@ export class IModelDb extends IModel {
    * @hidden
    */
   public _newNotOpenError(): IModelError {
-    return new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, () => ({ iModelId: this.iModelToken.iModelId }));
+    return new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, loggingCategory, () => ({ iModelId: this.iModelToken.iModelId }));
   }
 
   /** Get a prepared ECSql statement - may require preparing the statement, if not found in the cache.
@@ -374,7 +376,7 @@ export class IModelDb extends IModel {
 
     const stat = this.briefcaseEntry.nativeDb.importSchema(schemaFileName);
     if (DbResult.BE_SQLITE_OK !== stat)
-      throw new IModelError(stat, "Error importing schema", Logger.logError, () => ({ schemaFileName }));
+      throw new IModelError(stat, "Error importing schema", Logger.logError, loggingCategory, () => ({ schemaFileName }));
   }
 
   /** Find an already open IModelDb. Used by the remoting logic.
@@ -383,7 +385,7 @@ export class IModelDb extends IModel {
   public static find(iModelToken: IModelToken): IModelDb {
     const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
     if (!briefcaseEntry)
-      throw new IModelError(IModelStatus.NotFound, undefined, Logger.logError, () => ({ iModelId: iModelToken.iModelId }));
+      throw new IModelError(IModelStatus.NotFound, undefined, Logger.logError, loggingCategory, () => ({ iModelId: iModelToken.iModelId }));
     assert(!!briefcaseEntry.iModelDb);
     return briefcaseEntry.iModelDb!;
   }
@@ -416,7 +418,7 @@ export class IModelDb extends IModel {
 
     const { error, result: idHexStr } = this.briefcaseEntry.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.specScopeType, codeSpec.scopeReq);
     if (error)
-      throw new IModelError(error.status, "Problem inserting CodeSpec", Logger.logWarning);
+      throw new IModelError(error.status, "Problem inserting CodeSpec", Logger.logWarning, loggingCategory);
 
     return new Id64(idHexStr);
   }
@@ -428,7 +430,7 @@ export class IModelDb extends IModel {
 
     const { error, result: idHexStr } = this.briefcaseEntry.nativeDb.getElementPropertiesForDisplay(elementId);
     if (error)
-      throw new IModelError(error.status, error.message, Logger.logError, () => ({ iModelId: this.token.iModelId, elementId }));
+      throw new IModelError(error.status, error.message, Logger.logError, loggingCategory, () => ({ iModelId: this.token.iModelId, elementId }));
 
     return idHexStr!;
   }
@@ -456,7 +458,7 @@ export class IModelDb extends IModel {
       entity = ClassRegistry.createInstance(props, this);
     } catch (err) {
       if (!ClassRegistry.isNotFoundError(err)) {
-        Logger.logError(err.toString());
+        Logger.logError(loggingCategory, err.toString());
         throw err;
       }
 
@@ -490,11 +492,11 @@ export class IModelDb extends IModel {
       return;
     const className = classFullName.split(":");
     if (className.length !== 2)
-      throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, () => ({ iModelId: this.token.iModelId, classFullName }));
+      throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, loggingCategory, () => ({ iModelId: this.token.iModelId, classFullName }));
 
     const { error, result: metaDataJson } = this.briefcaseEntry.nativeDb.getECClassMetaData(className[0], className[1]);
     if (error)
-      throw new IModelError(error.status, undefined, Logger.logError, () => ({ iModelId: this.token.iModelId, classFullName }));
+      throw new IModelError(error.status, undefined, Logger.logError, loggingCategory, () => ({ iModelId: this.token.iModelId, classFullName }));
 
     const metaData = new EntityMetaData(JSON.parse(metaDataJson!));
     this.classMetaDataRegistry.add(classFullName, metaData);
@@ -1116,7 +1118,7 @@ export class IModelDbModels {
     // Must go get the model from the iModel. Start by requesting the model's data.
     const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getModel(JSON.stringify({ id: modelId }));
     if (error)
-      throw new IModelError(error.status, error.message, Logger.logWarning);
+      throw new IModelError(error.status, error.message, Logger.logWarning, loggingCategory);
 
     const props = JSON.parse(json!) as ModelProps;
     props.iModel = this._iModel;
@@ -1137,7 +1139,7 @@ export class IModelDbModels {
     // Must go get the model from the iModel. Start by requesting the model's data.
     const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getModel(JSON.stringify({ id: modelIdStr }));
     if (error)
-      throw new IModelError(error.status, error.message, Logger.logWarning);
+      throw new IModelError(error.status, error.message, Logger.logWarning, loggingCategory);
 
     return json!;
   }
@@ -1149,7 +1151,7 @@ export class IModelDbModels {
   public getSubModel(modeledElementId: Id64 | Guid | Code): Model {
     const modeledElement: Element = this._iModel.elements.getElement(modeledElementId);
     if (modeledElement.id.equals(this._iModel.elements.rootSubjectId))
-      throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model", Logger.logWarning);
+      throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model", Logger.logWarning, loggingCategory);
 
     return this.getModel(modeledElement.id);
   }
@@ -1181,12 +1183,12 @@ export class IModelDbModels {
 
     if (model.isPersistent()) {
       assert(false);
-      throw new IModelError(IModelStatus.WriteError, "Cannot insert a model marked as persistent. Call copyForEdit.", Logger.logError);
+      throw new IModelError(IModelStatus.WriteError, "Cannot insert a model marked as persistent. Call copyForEdit.", Logger.logError, loggingCategory);
     }
 
     const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.insertModel(JSON.stringify(model));
     if (error)
-      throw new IModelError(error.status, "Problem inserting model", Logger.logWarning);
+      throw new IModelError(error.status, "Problem inserting model", Logger.logWarning, loggingCategory);
 
     return model.id = new Id64(JSON.parse(json!).id);
   }
@@ -1201,12 +1203,12 @@ export class IModelDbModels {
 
     if ((model.isPersistent !== undefined) && model.isPersistent()) {
       assert(false);
-      throw new IModelError(IModelStatus.WriteError, "Cannot update a model marked as persistent. Call copyForEdit.", Logger.logError);
+      throw new IModelError(IModelStatus.WriteError, "Cannot update a model marked as persistent. Call copyForEdit.", Logger.logError, loggingCategory);
     }
 
     const error: IModelStatus = this._iModel.briefcaseEntry.nativeDb.updateModel(JSON.stringify(model));
     if (error !== IModelStatus.Success)
-      throw new IModelError(error, "", Logger.logWarning);
+      throw new IModelError(error, "", Logger.logWarning, loggingCategory);
 
     // Discard from the cache, to make sure that the next fetch see the updated version.
     if (model.id)
@@ -1223,7 +1225,7 @@ export class IModelDbModels {
 
     const error: IModelStatus = this._iModel.briefcaseEntry.nativeDb.deleteModel(model.id.toString());
     if (error !== IModelStatus.Success)
-      throw new IModelError(error, "", Logger.logWarning);
+      throw new IModelError(error, "", Logger.logWarning, loggingCategory);
 
     // Discard from the cache
     this._loaded.delete(model.id.toString());
@@ -1250,7 +1252,7 @@ export class IModelDbElements {
     // Must go get the element from the iModel. Start by requesting the element's data.
     const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getElement(JSON.stringify(opts));
     if (error)
-      throw new IModelError(error.status, error.message, Logger.logWarning);
+      throw new IModelError(error.status, error.message, Logger.logWarning, loggingCategory);
     const props = JSON.parse(json!) as ElementProps;
     props.iModel = this._iModel;
     return props;
@@ -1263,7 +1265,7 @@ export class IModelDbElements {
     // Must go get the element from the iModel. Start by requesting the element's data.
     const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getElement(JSON.stringify({ id: elementIdStr }));
     if (error)
-      throw new IModelError(error.status, error.message, Logger.logWarning);
+      throw new IModelError(error.status, error.message, Logger.logWarning, loggingCategory);
     return json!;
   }
 
@@ -1293,7 +1295,7 @@ export class IModelDbElements {
     if (elementId instanceof Id64) return this._getElementProps({ id: elementId });
     if (elementId instanceof Guid) return this._getElementProps({ federationGuid: elementId.value });
     if (elementId instanceof Code) return this._getElementProps({ code: elementId });
-    throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, () => ({ elementId }));
+    throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, loggingCategory, () => ({ elementId }));
   }
 
   /**
@@ -1305,7 +1307,7 @@ export class IModelDbElements {
     if (elementId instanceof Id64) return this._doGetElement({ id: elementId });
     if (elementId instanceof Guid) return this._doGetElement({ federationGuid: elementId.value });
     if (elementId instanceof Code) return this._doGetElement({ code: elementId });
-    throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, () => ({ elementId }));
+    throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, loggingCategory, () => ({ elementId }));
   }
 
   /**
@@ -1354,7 +1356,7 @@ export class IModelDbElements {
 
     const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.insertElement(JSON.stringify(elProps));
     if (error)
-      throw new IModelError(error.status, "Problem inserting element", Logger.logWarning);
+      throw new IModelError(error.status, "Problem inserting element", Logger.logWarning, loggingCategory);
 
     return new Id64(JSON.parse(json!).id);
   }
@@ -1369,7 +1371,7 @@ export class IModelDbElements {
 
     const error: IModelStatus = this._iModel.briefcaseEntry.nativeDb.updateElement(JSON.stringify(props));
     if (error !== IModelStatus.Success)
-      throw new IModelError(error, "", Logger.logWarning);
+      throw new IModelError(error, "", Logger.logWarning, loggingCategory);
 
     // Discard from the cache, to make sure that the next fetch see the updated version.
     if (props.id)
@@ -1387,7 +1389,7 @@ export class IModelDbElements {
 
     const error: IModelStatus = this._iModel.briefcaseEntry.nativeDb.deleteElement(id.toString());
     if (error !== IModelStatus.Success)
-      throw new IModelError(error, "", Logger.logWarning);
+      throw new IModelError(error, "", Logger.logWarning, loggingCategory);
 
     // Discard from the cache
     this._loaded.delete(id.toString());
@@ -1419,7 +1421,7 @@ export class IModelDbElements {
     const name = aspectClassName.split(":");
     const rows: any[] = this._iModel.executeQuery("SELECT * FROM [" + name[0] + "].[" + name[1] + "] WHERE Element.Id=?", [elementId]);
     if (rows.length === 0)
-      throw new IModelError(IModelStatus.NotFound, undefined, Logger.logWarning);
+      throw new IModelError(IModelStatus.NotFound, undefined, Logger.logWarning, loggingCategory);
 
     const aspects: ElementAspect[] = [];
     for (const row of rows) {
