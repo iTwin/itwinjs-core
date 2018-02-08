@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
+import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
@@ -20,6 +21,8 @@ import { Configuration } from "../../common/Configuration";
 import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
 import { KnownTestLocations } from "./KnownTestLocations";
 import * as path from "path";
+
+// Logger.initializeToConsole();
 
 // Initialize the gateway classes used by tests
 Gateway.initialize(IModelGateway);
