@@ -5,7 +5,7 @@ const path = require('path');
 const {app, BrowserWindow, ipcMain} = require('electron');
 
 // Path to the html render
-const htmlPath = path.join(__dirname, 'node_modules/floss/electron/index.html');
+const htmlPath = path.join(__dirname, 'index.html');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -63,6 +63,15 @@ function createWindow() {
 
     // and load the index.html of the app.
     mainWindow.loadURL('file://' + htmlPath);
+
+    // don't show the dev tools if you're not in headless mode. this is to
+    // avoid having breakpoints and "pause on caught / uncaught exceptions" halting
+    // the runtime.  plus, if you're in headless mode, having the devtools open is probably
+    // not very useful anyway
+    if(args.debug && !args.noDevTools) {
+        // Open the DevTools.
+        mainWindow.webContents.openDevTools('bottom');
+    }
 
     mainWindow.webContents.on('did-finish-load', function() {
         mainWindow.webContents.send('ping', JSON.stringify(args));

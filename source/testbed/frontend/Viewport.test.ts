@@ -31,7 +31,6 @@ class TestIModelApp extends IModelApp {
 describe("Viewport", function () {
   let imodel: IModelConnection;
   let spatialView: SpatialViewState;
-  this.timeout(99999);
 
   before(async () => {   // Create a ViewState to load into a Viewport
     TestIModelApp.startup();

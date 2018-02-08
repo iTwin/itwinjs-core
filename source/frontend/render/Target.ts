@@ -114,8 +114,8 @@ export class GLESClips {
         this.clips[i * 4 + 2] = dir.z;
 
         // Transform distance of clip plane
-        const pos: Vector3d = norm.scale (planes[i].distance);
-        const xFormPos: Point3d = viewMatrix.multiplyPoint (pos.cloneAsPoint3d());
+        const pos: Point3d = norm.scale (planes[i].distance).cloneAsPoint3d ();
+        const xFormPos: Point3d = viewMatrix.multiplyPoint (pos);
         this.clips[i * 4 + 3] = -dir.dotProductXYZ (xFormPos.x, xFormPos.y, xFormPos.z);
       }
     }

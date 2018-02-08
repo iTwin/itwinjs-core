@@ -21,6 +21,8 @@ import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
 import { KnownTestLocations } from "./KnownTestLocations";
 import * as path from "path";
 
+// Logger.initializeToConsole();
+
 // Initialize the gateway classes used by tests
 Gateway.initialize(IModelGateway);
 

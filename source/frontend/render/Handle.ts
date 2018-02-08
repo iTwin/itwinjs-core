@@ -95,7 +95,7 @@ export class BufferHandle extends Handle {
     size = gl.getBufferParameter(target, GL.Buffer.BufferSize);
     if (size !== expectedSize) {
       this.invalidate(gl);
-      Logger.logError("Cannot generate buffer of size " + expectedSize);
+      Logger.logError("Handle", "Cannot generate buffer of size " + expectedSize);
     }
   }
 

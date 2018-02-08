@@ -19,6 +19,8 @@ import { IModelJsFs } from "./IModelJsFs";
 import * as path from "path";
 import { KnownLocations } from "./KnownLocations";
 
+const loggingCategory = "imodeljs-backend.BriefcaseManager";
+
 /** The ID assigned to a briefcase by iModelHub, or one of the special values that identify special kinds of iModels */
 export class BriefcaseId {
   private value: number;
@@ -116,7 +118,7 @@ class BriefcaseCache {
     const existingBriefcase = this.findBriefcaseByToken({ iModelId: briefcase.iModelId, changeSetId: briefcase.changeSetId, userId: briefcase.userId, openMode: briefcase.openMode });
     if (!!existingBriefcase) {
       // Note: Perhaps this was a merge gone bad?
-      Logger.logError(`Briefcase for iModel with iModelId=${briefcase.iModelId}, changeSetId=${briefcase.changeSetId} and userId=${briefcase.userId} already exists in the cache.`);
+      Logger.logError(loggingCategory, `Briefcase for iModel with iModelId=${briefcase.iModelId}, changeSetId=${briefcase.changeSetId} and userId=${briefcase.userId} already exists in the cache.`);
       throw new IModelError(DbResult.BE_SQLITE_ERROR);
     }
 
@@ -275,7 +277,7 @@ export class BriefcaseManager {
     if (BriefcaseManager.cache) {
       if (BriefcaseManager.hubClient!.deploymentEnv === Configuration.iModelHubDeployConfig)
         return;
-      Logger.logWarning("Detected change of configuration: re-initializing Briefcase cache!");
+      Logger.logWarning(loggingCategory, "Detected change of configuration: re-initializing Briefcase cache!");
     }
 
     const startTime = new Date().getTime();
@@ -326,7 +328,7 @@ export class BriefcaseManager {
             briefcase.reversedChangeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, iModelId, briefcase.reversedChangeSetId);
         } catch (error) {
           // The iModel is unreachable on the hub - deployment configuration is different, imodel was removed, the current user does not have access
-          Logger.logWarning(`Unable to find briefcase ${briefcase.iModelId}:${briefcase.briefcaseId} on the Hub. Deleting it`);
+          Logger.logWarning(loggingCategory, `Unable to find briefcase ${briefcase.iModelId}:${briefcase.briefcaseId} on the Hub. Deleting it`);
           await BriefcaseManager.deleteBriefcase(accessToken, briefcase);
           continue;
         }
@@ -574,7 +576,7 @@ export class BriefcaseManager {
 
     await BriefcaseManager.hubClient!.deleteBriefcase(accessToken, briefcase.iModelId, briefcase.briefcaseId)
       .catch(() => {
-        Logger.logError("Could not delete the acquired briefcase"); // Could well be that the current user does not have the appropriate access
+        Logger.logError(loggingCategory, "Could not delete the acquired briefcase"); // Could well be that the current user does not have the appropriate access
       });
   }
 
