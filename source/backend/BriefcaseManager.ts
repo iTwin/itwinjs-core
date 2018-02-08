@@ -337,7 +337,7 @@ export class BriefcaseManager {
           // briefcase.nativeDb = undefined;
           BriefcaseManager.cache.addBriefcase(briefcase);
         } catch (error) {
-          Logger.logWarning(`Briefcase ${briefcase.iModelId}:${briefcase.briefcaseId} already exists in cache! Deleting duplicate at path ${briefcase.pathname} from disk.`);
+          Logger.logWarning(loggingCategory, `Briefcase ${briefcase.iModelId}:${briefcase.briefcaseId} already exists in cache! Deleting duplicate at path ${briefcase.pathname} from disk.`);
           await BriefcaseManager.deleteBriefcase(accessToken, briefcase);
           continue;
         }
