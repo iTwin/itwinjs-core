@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 const program = require("commander");
-const floss = require("floss");
+const floss = require("../floss");
 
 program
   .version("0.1.0")

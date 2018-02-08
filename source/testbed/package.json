@@ -21,7 +21,6 @@
     "commander": "^2.14.1",
     "electron": "1.6.11",
     "express": "^4.16.2",
-    "floss": "./floss",
     "fs-extra": "^4.0.3",
     "i18next": "^10.2.2",
     "i18next-browser-languagedetector": "^2.1.0",

@@ -2,8 +2,8 @@
 
 const Mocha = require('mocha');
 const chai = require('chai');
-const sinon = require('sinon');
-const sinonChai = require('sinon-chai');
+//const sinon = require('sinon');
+//const sinonChai = require('sinon-chai');
 const pathNode = require('path');
 const fs = require('fs');
 const resolve = require('resolve');
@@ -15,11 +15,11 @@ require('mocha/mocha');
 require('chai/chai');
 
 global.chai = chai;
-global.sinon = sinon;
+//global.sinon = sinon;
 global.should = chai.should;
 global.assert = chai.assert;
 global.expect = chai.expect;
-global.chai.use(sinonChai);
+//global.chai.use(sinonChai);
 
 const globalLoggers = {};
 
