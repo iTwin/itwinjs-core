@@ -20,10 +20,8 @@ class TestIModelApp extends IModelApp {
 // tslint:disable-next-line:space-before-function-paren
 describe("Tools", function () {
   let imodel: IModelConnection;
-  const mocha = this;
 
   before(async () => {
-    mocha.timeout(99999);
     TestIModelApp.startup();
     imodel = await IModelConnection.openStandalone(iModelLocation);
   });
