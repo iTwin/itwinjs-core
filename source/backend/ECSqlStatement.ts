@@ -9,7 +9,6 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { ECSqlValueType, DateTime, Blob, NavigationValue, NavigationBindingValue, ECSqlSystemProperty, ECJsNames } from "../common/ECSqlTypes";
 import { Point2d, Point3d, XAndY, XY, XYAndZ, XYZ } from "@bentley/geometry-core/lib/PointVector";
 import { ECDb } from "./ECDb";
-import { BindingUtility, BindingValue } from "./BindingUtility";
 import { using, IDisposable } from "@bentley/bentleyjs-core/lib/Disposable";
 import { NodeAddonRegistry } from "./NodeAddonRegistry";
 import { AddonECSqlStatement, AddonECSqlBinder, AddonECSqlValue, AddonECSqlColumnInfo, AddonECDb, AddonDgnDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
@@ -243,19 +242,6 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     const stat: DbResult = this._stmt!.clearBindings();
     if (stat !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat);
-  }
-
-  /** Bind values to placeholders. @deprecated Use bindValues instead or the other bindXXX methods
-   * @param bindings  The values to set for placeholders. Pass an array if the placeholders are positional. Pass an 'any' object
-   * for named placeholders, where the properties of the object match the names of the placeholders in the statement.
-   * @throws IModelError in case the binding fails. This will normally happen only if the type of a value does not match and cannot be converted to the type required for the corresponding property in the statement.
-   */
-  public bindValues_Depr(bindings: BindingValue[] | Map<string, BindingValue> | any): void {
-    const ecBindings = BindingUtility.preProcessBindings(bindings);
-    const bindingsStr = JSON.stringify(ecBindings);
-    const nativeError = this._stmt!.bindValues(bindingsStr);
-    if (nativeError.status !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(nativeError.status, nativeError.message);
   }
 
   /** Step this statement to the next matching row. */
