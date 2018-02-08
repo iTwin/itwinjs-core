@@ -1,8 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelError } from "../common/IModelError";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { GatewayHttpProtocol } from "./GatewayHttpProtocol";
 import { IModelToken } from "../common/IModel";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
@@ -54,32 +52,33 @@ export abstract class BentleyCloudGatewayProtocol extends GatewayHttpProtocol {
   /** Returns the operation specified by an OpenAPI gateway path. */
   public getOperationFromOpenAPIPath(path: string): GatewayHttpProtocol.GatewayOperationIdentifier {
     const components = path.split("/");
-    if (components.length !== 12)
-      throw new IModelError(BentleyStatus.ERROR, "Invalid path.");
-
-    const [gateway, version, operation] = components.slice(-3);
+    const operationComponent: string = components.slice(-1)[0];
+    const [gateway, version, operation] = operationComponent.split("-");
     return { gateway, version, operation };
   }
 
   /** Generates an OpenAPI path for a gateway operation. */
   protected generateOpenAPIPathForOperation(operation: GatewayHttpProtocol.GatewayOperationIdentifier, request: GatewayHttpProtocol.OperationRequest | undefined) {
     const prefix = this.openAPIPathPrefix();
-    const info = this.openAPIInfo();
+    const appInfo = this.openAPIInfo();
+    const appMode = 1; // WIP: need to determine appMode from iModelToken - hard-coded to 1 which means "milestone review" for now...
 
     const token = request ? request.findParameterOfType(IModelToken) : undefined;
     const contextId = (token && token.contextId) ? encodeURIComponent(token.contextId) : "{contextId}";
     const iModelId = (token && token.iModelId) ? encodeURIComponent(token.iModelId) : "{iModelId}";
     const changeSetId = (token && token.changeSetId) ? encodeURIComponent(token.changeSetId) : "{changeSetId}";
 
-    return `${prefix}/${info.title}/${info.version}/context/${contextId}/imodel/${iModelId}/changeset/${changeSetId}/${operation.gateway}/${operation.version}/${operation.operation}`;
+    // WIP: if appMode === 2 (WorkGroupEdit) then changeset should not be included
+    return `${prefix}/${appInfo.title}/${appInfo.version}/mode/${appMode}/context/${contextId}/imodel/${iModelId}/changeset/${changeSetId}/${operation.gateway}-${operation.version}-${operation.operation}`;
   }
 
   /** Returns the OpenAPI path parameters for a gateway operation. */
   protected supplyOpenAPIPathParametersForOperation(_identifier: GatewayHttpProtocol.GatewayOperationIdentifier): GatewayHttpProtocol.OpenAPIParameter[] {
     return [
+      { name: "modeId", in: "path", required: true, schema: { type: "string" } },
       { name: "contextId", in: "path", required: true, schema: { type: "string" } },
       { name: "iModelId", in: "path", required: true, schema: { type: "string" } },
-      { name: "changeSetId", in: "path", required: true, schema: { type: "string" } },
+      { name: "changeSetId", in: "path", required: false, schema: { type: "string" } },
     ];
   }
 
