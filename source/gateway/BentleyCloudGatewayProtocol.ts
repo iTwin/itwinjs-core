@@ -5,6 +5,8 @@ import { GatewayHttpProtocol } from "./GatewayHttpProtocol";
 import { IModelToken } from "../common/IModel";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 
+const loggingCategory = "imodeljs-backend.BentleyCloudGatewayProtocol";
+
 /** An http server request object. */
 export interface HttpServerRequest {
   body: any;
@@ -28,17 +30,17 @@ export abstract class BentleyCloudGatewayProtocol extends GatewayHttpProtocol {
     const path = req.path;
 
     try {
-      Logger.logInfo("BentleyCloudGatewayProtocol.backend.request", () => ({ method, path }));
+      Logger.logTrace(loggingCategory, "BentleyCloudGatewayProtocol.backend.request", () => ({ method, path }));
       const operationIdentifier = this.getOperationFromOpenAPIPath(path);
       const operationParameters = this.deserializeOperationRequestParameters(req.body, path);
       const operationResult = await this.lookupGatewayImplementation(operationIdentifier).invoke(operationIdentifier.operation, ...operationParameters);
       const operationResponse = this.serializeOperationResult(operationIdentifier, operationResult);
       const status = 200;
-      Logger.logInfo("BentleyCloudGatewayProtocol.backend.response", () => ({ method, path, status }));
+      Logger.logTrace(loggingCategory, "BentleyCloudGatewayProtocol.backend.response", () => ({ method, path, status }));
       res.status(status).send(operationResponse);
     } catch (e) {
       const status = 500;
-      Logger.logInfo("BentleyCloudGatewayProtocol.backend.error", () => ({ method, path, status }));
+      Logger.logInfo(loggingCategory, "BentleyCloudGatewayProtocol.backend.error", () => ({ method, path, status }));
       res.status(status).send(e.toString());
     }
   }

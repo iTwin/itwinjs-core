@@ -86,7 +86,7 @@ describe("IModelConnection", () => {
     assert.exists(iModel.projectExtents);
 
     await iModel.close(TestData.accessToken);
-  }).timeout(99999);
+  });
 
   it.only("Parameterized ECSQL", async () => {
     await TestData.load();

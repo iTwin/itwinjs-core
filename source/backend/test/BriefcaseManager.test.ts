@@ -137,6 +137,9 @@ describe("BriefcaseManager", () => {
   });
 
   it("should open briefcases of specific versions in Readonly mode", async () => {
+    const iModelFirstVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.first());
+    assert.exists(iModelFirstVersion);
+
     for (const [arrayIndex, versionName] of testVersionNames.entries()) {
       const iModelFromVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.asOfChangeSet(testChangeSets[arrayIndex].wsgId));
       assert.exists(iModelFromVersion);
@@ -147,6 +150,9 @@ describe("BriefcaseManager", () => {
       const elementCount = getElementCount(iModelFromVersion);
       assert.equal(elementCount, testElementCounts[arrayIndex]);
     }
+
+    const iModelLatestVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
+    assert.exists(iModelLatestVersion);
   });
 
   it("should open a briefcase of an iModel with no versions", async () => {
@@ -217,7 +223,7 @@ describe("BriefcaseManager", () => {
     iModel.close(accessToken);
   });
 
-  it("should write to briefcase with optimistic concurrency", async () => {
+  it.skip("should write to briefcase with optimistic concurrency", async () => {
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "ReadWriteTest";

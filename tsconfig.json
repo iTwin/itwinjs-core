@@ -5,7 +5,7 @@
     "rootDirs": [
       "source"
     ],
-    "baseUrl": "./source/testbed/node_modules",
+    "baseUrl": "./source/backend/node_modules",
     "types": [
       "mocha",
       "node"

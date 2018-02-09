@@ -12,7 +12,7 @@
       "cwd": "${workspaceFolder}",
       "args": [
         "--packageRoot=${workspaceFolder}",
-        "--testDir=${workspaceFolder}/source/backend/lib/backend/test/",
+        "--testDir=${workspaceFolder}/source/backend/lib/backend/test",
         "--debug"
       ],
       "port": 9229,
@@ -25,8 +25,8 @@
       "cwd": "${workspaceFolder}/source/testbed/",
       "runtimeExecutable": "${workspaceFolder}\\source\\testbed\\node_modules\\.bin\\electron",
       "runtimeArgs": [
-        "${workspaceFolder}/source/testbed/index.js",
-        "{\"debug\":true, \"path\":\"lib/testbed/frontend/index.js\"}",
+        "${workspaceFolder}/source/testbed/floss/electron/index.js",
+        "{\"debug\":true, \"noDevTools\":true, \"path\":\"lib/testbed/frontend/index.js\", \"grep\":\"\", \"fgrep\":\"\"}",
         "--debug-brk=5858",
         "--remote-debugging-port=9223"
       ],
