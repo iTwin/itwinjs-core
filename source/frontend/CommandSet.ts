@@ -5,17 +5,10 @@ import { iModelApp } from "./IModelApp";
 import { Tool } from "./tools/Tool";
 import * as Fuse from "fuse.js";
 
-export type CommandFunction = ((args?: string) => boolean);
-export type CommandDispatcher = typeof Tool | CommandFunction;
-export type CommandMap = Map<string, CommandDispatcher>;
-
-export interface CommandProvider {
-  getCommands(): CommandMap;
-}
+export type CommandMap = Map<string, typeof Tool>;
 
 export class CommandSet {
-  private commandProviders: CommandProvider[];
-  private allCommands: CommandMap[];
+  private allCommands: CommandMap;
   private fuseOptions: Fuse.FuseOptions;
 
   constructor() {
@@ -30,66 +23,40 @@ export class CommandSet {
       includeScore: true,
       keys: ["tags"],
     };
-    this.allCommands = new Array<CommandMap>();
-    this.commandProviders = new Array<CommandProvider>();
+    this.allCommands = new Map<string, typeof Tool>();
   }
 
   // get an iterator of the CommandMap
-  public async getAllCommands(): Promise<CommandMap[]> {
-    this.allCommands[0] = await iModelApp.tools.getKeyinMap();
-
-    for (let iProvider: number = 0; iProvider < this.commandProviders.length; iProvider++) {
-      const thisProvider: CommandProvider = this.commandProviders[iProvider];
-
-      if (thisProvider)
-        this.allCommands[iProvider + 1] = thisProvider.getCommands();
-      else
-        this.allCommands[iProvider + 1] = undefined as any;
-    }
+  public async getAllCommands(): Promise<CommandMap> {
+    this.allCommands = await iModelApp.tools.getKeyinMap();
     return this.allCommands;
   }
 
-  // register a command provider with the CommandSet
-  public registerCommandProvider(provider: CommandProvider): void {
-    if (!this.commandProviders.includes(provider)) {
-      this.commandProviders.push(provider);
-    }
-  }
-
-  public async findPartialMatches(keyin: string): Promise<void> {
-    const commandLists: CommandMap[] = await this.getAllCommands();
-    const fuse = new Fuse(commandLists, this.fuseOptions);
+  public async findPartialMatches(keyin: string): Promise<SearchResults | undefined> {
+    const commandMap: CommandMap = await this.getAllCommands();
+    const fuse = new Fuse([...commandMap.keys()], this.fuseOptions);
     let searchResults: SearchResults = new SearchResults([]);
     if (keyin.length > 0) {
       searchResults = new SearchResults(fuse.search(keyin));
       searchResults.dump();
-    }
-  }
-
-  public async findExactMatch(keyin: string): Promise<CommandDispatcher | undefined> {
-    const commandLists: CommandMap[] = await (this.getAllCommands());
-    for (const commandList of commandLists) {
-      const found: CommandDispatcher | undefined = commandList.get(keyin);
-      if (found)
-        return found;
+      return searchResults;
     }
     return undefined;
   }
 
+  public async findExactMatch(keyin: string): Promise<typeof Tool | undefined> {
+    const commandMap: CommandMap = await (this.getAllCommands());
+    return commandMap.get(keyin);
+  }
+
   public async executeExactMatch(keyin: string, args?: string): Promise<boolean> {
-    const found: CommandDispatcher | undefined = await this.findExactMatch(keyin);
+    const found: typeof Tool | undefined = await this.findExactMatch(keyin);
     return (found) ? this.runCommand(found, args) : false;
   }
 
-  public runCommand(command: CommandDispatcher, args?: string): boolean {
+  public runCommand(tool: typeof Tool, _args?: string): boolean {
     // test to see if we command a Tool class object or a Tool subclass class object.
-    if ((command.prototype instanceof Tool) || (command === Tool)) {
-      const thisTool: typeof Tool = command as typeof Tool;
-      return iModelApp.tools.run(thisTool.toolId);
-    } else {
-      const thisCommandFunction: CommandFunction = command as CommandFunction;
-      return thisCommandFunction(args);
-    }
+    return iModelApp.tools.run(tool.toolId);
   }
 }
 

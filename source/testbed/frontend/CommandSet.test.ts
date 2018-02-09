@@ -1,8 +1,8 @@
 import { assert } from "chai";
-import { CommandMap, CommandProvider, CommandDispatcher } from "../../frontend/CommandSet";
 import { iModelApp, IModelApp } from "../../frontend/IModelApp";
 import { Tool } from "../../frontend/tools/Tool";
 import { I18NNamespace } from "../../frontend/Localization";
+import { SearchResults } from "../../frontend/CommandSet";
 
 // these are later set by executing the TestImmediate tool.
 let testVal1: string;
@@ -32,8 +32,9 @@ class TestCommandApp extends IModelApp {
 
 function SetupCommandSetTests() {
   TestCommandApp.startup();
-  const newProvider = new TestCommandProvider();
-  iModelApp.commandSet.registerCommandProvider(newProvider);
+  CreateTestTools();
+  // const newProvider = new TestCommandProvider();
+  // iModelApp.commandSet.registerCommandProvider(newProvider);
 }
 
 describe("CommandSet", () => {
@@ -41,7 +42,7 @@ describe("CommandSet", () => {
   after(() => TestCommandApp.shutdown());
 
   it("Should find Select tool", async () => {
-    const command: CommandDispatcher | undefined = await iModelApp.commandSet.findExactMatch("Select Elements");
+    const command: typeof Tool | undefined = await iModelApp.commandSet.findExactMatch("Select Elements");
     assert.isDefined(command, "Found Select Elements Command");
     if (command) {
       assert.isTrue(command.prototype instanceof Tool);
@@ -57,15 +58,40 @@ describe("CommandSet", () => {
   });
 
   it("Should find the MicroStation inputmanager training command", async () => {
-    const command: CommandDispatcher | undefined = await iModelApp.commandSet.findExactMatch("inputmanager training");
+    const command: typeof Tool | undefined = await iModelApp.commandSet.findExactMatch("inputmanager training");
     assert.isDefined(command, "Found inputmanager training command");
     if (command) {
       assert.isTrue(iModelApp.commandSet.runCommand(command));
       assert.equal(lastCommand, "inputmanager training");
     }
   });
+
+  it("Should find some partial matches for plac", async () => {
+    const searchResults: SearchResults | undefined = await iModelApp.commandSet.findPartialMatches("plac");
+    // tslint:disable-next-line:no-console
+    console.log("Matches for 'plac':", searchResults);
+  });
 });
 
+function registerTestClass(id: string, keyin: string, ns: I18NNamespace) {
+  (class extends Tool {
+    public static toolId = id; public static myKeyin = keyin;
+    public static getKeyin(): string { return this.myKeyin; }
+    public run(): boolean { lastCommand = this.keyin; return true; }
+  }).register(ns);
+}
+
+function CreateTestTools(): void {
+  const testCommandEntries: any = JSON.parse(testCommandsString);
+  const ns: I18NNamespace = (iModelApp as TestCommandApp).testNamespace;
+  for (const thisEntry of testCommandEntries) {
+    // create a tool id by concatenating the words of the keyin.
+    const toolId: string = thisEntry.commandString.replace(" ", ".");
+    registerTestClass(toolId, thisEntry.commandString, ns);
+  }
+}
+
+/* ---------------
 class TestCommandFunction {
   constructor(public commandName: string) {
   }
@@ -95,7 +121,7 @@ class TestCommandProvider implements CommandProvider {
     return this.commands;
   }
 }
-
+-----------------------*/
 const testCommandsString: string = '[\
     {\
       "commandString": "update"\
