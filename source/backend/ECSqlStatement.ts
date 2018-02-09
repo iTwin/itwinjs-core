@@ -291,7 +291,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     if (DbResult.BE_SQLITE_ROW === this.step()) {
       return {
         done: false,
-        value: this.getRow(),
+        value: this.getRow_new(),
       };
     } else {
       return {

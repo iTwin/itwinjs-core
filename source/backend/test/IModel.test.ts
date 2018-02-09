@@ -274,7 +274,7 @@ describe("iModel", () => {
     assert.isArray(rows);
     assert.isAtLeast(rows.length, 1);
     assert.exists(rows[0].id);
-    assert.notEqual(rows[0].id, "");
+    assert.notEqual(rows[0].id.value, "");
   });
 
   it("ElementPropertyFormatter should format", () => {
@@ -292,10 +292,10 @@ describe("iModel", () => {
   });
 
   it("should be some categories", () => {
-    const categoryRows: any[] = imodel1.executeQuery("SELECT EcInstanceId as elementId FROM " + Category.sqlName);
+    const categoryRows: any[] = imodel1.executeQuery("SELECT EcInstanceId FROM " + Category.sqlName);
     assert.exists(categoryRows, "Should have some Category ids");
     for (const categoryRow of categoryRows!) {
-      const categoryId: Id64 = new Id64(categoryRow.elementId);
+      const categoryId: Id64 = categoryRow.id;
       const category = imodel1.elements.getElement(categoryId);
       assert.isTrue(category instanceof Category, "Should be instance of Category");
       if (!category)
@@ -314,11 +314,11 @@ describe("iModel", () => {
       }
 
       // get the subcategories
-      const queryString: string = "SELECT ECInstanceId as elementId FROM " + SubCategory.sqlName + " WHERE Parent.Id=?";
+      const queryString: string = "SELECT ECInstanceId FROM " + SubCategory.sqlName + " WHERE Parent.Id=?";
       const subCategoryRows: any[] = imodel1.executeQuery(queryString, [categoryId]);
       assert.exists(subCategoryRows, "Should have at least one SubCategory");
       for (const subCategoryRow of subCategoryRows) {
-        const subCategoryId = new Id64(subCategoryRow.elementId);
+        const subCategoryId: Id64 = subCategoryRow.id;
         const subCategory = imodel1.elements.getElement(subCategoryId);
         assert.isTrue(subCategory instanceof SubCategory);
         if (subCategory instanceof SubCategory) {
@@ -329,10 +329,10 @@ describe("iModel", () => {
   });
 
   it("should be some 2d elements", () => {
-    const drawingGraphicRows: any[] = imodel2.executeQuery("SELECT ECInstanceId as elementId FROM BisCore.DrawingGraphic");
+    const drawingGraphicRows: any[] = imodel2.executeQuery("SELECT ECInstanceId FROM BisCore.DrawingGraphic");
     assert.exists(drawingGraphicRows, "Should have some Drawing Graphics");
     for (const drawingGraphicRow of drawingGraphicRows!) {
-      const drawingGraphicId: Id64 = new Id64(drawingGraphicRow.elementId);
+      const drawingGraphicId: Id64 = drawingGraphicRow.id;
       const drawingGraphic = imodel2.elements.getElement(drawingGraphicId);
       assert.exists(drawingGraphic);
       assert.isTrue(drawingGraphic.constructor.name === "DrawingGraphic", "Should be instance of DrawingGraphic");
@@ -371,11 +371,11 @@ describe("iModel", () => {
   });
 
   it("should be children of RootSubject", () => {
-    const queryString: string = "SELECT ECInstanceId as modelId FROM " + Model.sqlName + " WHERE ParentModel.Id=" + imodel2.models.repositoryModelId;
+    const queryString: string = "SELECT ECInstanceId FROM " + Model.sqlName + " WHERE ParentModel.Id=" + imodel2.models.repositoryModelId;
     const modelRows: any[] = imodel2.executeQuery(queryString);
     assert.exists(modelRows, "Should have at least one model within rootSubject");
     for (const modelRow of modelRows) {
-      const modelId = new Id64(modelRow.modelId);
+      const modelId: Id64 = modelRow.id;
       const model = imodel2.models.getModel(modelId);
       assert.exists(model, "Model should exist");
       assert.isTrue(model instanceof Model);
@@ -414,7 +414,7 @@ describe("iModel", () => {
     assert.exists(rows);
     assert.isArray(rows);
     assert.notEqual(rows.length, 0);
-    assert.notEqual(rows[0].ecinstanceid, "");
+    assert.isTrue(rows[0].id.isValid());
   });
 
   /* TBD
@@ -604,8 +604,8 @@ describe("iModel", () => {
         assert.isNotNull(row);
         assert.isObject(row);
         assert.isTrue(row.id !== undefined);
-        assert.isTrue(row.id instanceof Id64);
-        lastId = row.id;
+        assert.isTrue(row.id.isValid());
+        lastId = row.id.value;
         if (row.codeValue !== undefined)
           firstCodeValue = row.codeValue;
         count = count + 1;
@@ -623,8 +623,8 @@ describe("iModel", () => {
         assert.isNotNull(row);
         assert.isObject(row);
         assert.isTrue(row.id !== undefined);
-        assert.isString(row.id);
-        lastIterId = row.id;
+        assert.isTrue(row.id.isValid());
+        lastIterId = row.id.value;
         iteratorCount = iteratorCount + 1;
         if (row.codeValue !== undefined)
           firstCodeValueIter = row.codeValue;

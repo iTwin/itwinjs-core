@@ -238,7 +238,7 @@ export class IModelDbLinkTableRelationships {
         stmt.bindId(1, criteria);
         if (DbResult.BE_SQLITE_ROW !== stmt.step())
           throw new IModelError(IModelStatus.NotFound);
-        return stmt.getRow() as LinkTableRelationshipProps;
+        return stmt.getRow_new() as LinkTableRelationshipProps;
       });
 
     }
@@ -251,7 +251,7 @@ export class IModelDbLinkTableRelationships {
         stmt.bindId(2, st.targetId);
         if (DbResult.BE_SQLITE_ROW !== stmt.step())
           throw new IModelError(IModelStatus.NotFound);
-        return stmt.getRow() as LinkTableRelationshipProps;
+        return stmt.getRow_new() as LinkTableRelationshipProps;
       });
     }
 

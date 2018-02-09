@@ -244,7 +244,7 @@ export class IModelDb extends IModel {
         stmt.bindValues(bindings);
       const rows: any[] = [];
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
-        rows.push(stmt.getRow());
+        rows.push(stmt.getRow_new());
         if (rows.length >= IModelDb.defaultLimit)
           break; // don't let a "rogue" query consume too many resources
       }
@@ -1401,7 +1401,7 @@ export class IModelDbElements {
     const rows: any[] = this._iModel.executeQuery("SELECT ECInstanceId as id FROM " + Element.sqlName + " WHERE Parent.Id=?", [elementId]);
     const childIds: Id64[] = [];
     for (const row of rows) {
-      childIds.push(new Id64(row.id));
+      childIds.push(row.id);
     }
     return childIds;
   }

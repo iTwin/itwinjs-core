@@ -68,9 +68,9 @@ describe("ViewState", () => {
   before(() => {
     // Pull down flat view known to exist from bim file
     imodel = IModelDb.openStandalone(iModelLocation, OpenMode.Readonly);
-    const viewRows: any[] = imodel.executeQuery("SELECT EcInstanceId as elementId FROM " + SpatialViewDefinition.sqlName);
+    const viewRows: any[] = imodel.executeQuery("SELECT ECInstanceId FROM " + SpatialViewDefinition.sqlName);
     assert.exists(viewRows, "Should find some views");
-    const viewId = new Id64(viewRows[0].elementId);
+    const viewId: Id64 = viewRows[0].id;
     flatView = imodel.elements.getElement(viewId) as SpatialViewDefinition;
 
     // Set up ViewState with camera turned on

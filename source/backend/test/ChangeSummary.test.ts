@@ -281,7 +281,7 @@ describe("ChangeSummary", () => {
 
       const rows: any[] = iModel.executeQuery("SELECT count(*) csumcount FROM change.ChangeSummary csum JOIN imodelchange.ChangeSet cset ON csum.ECInstanceId=cset.Summary.Id");
       assert.equal(rows.length, 1);
-      assert.equal(rows[0].csumcount, "0x3");
+      assert.equal(rows[0].csumcount, 3);
 
     } finally {
       await iModel.close(accessToken);
