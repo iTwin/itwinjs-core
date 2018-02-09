@@ -6,15 +6,15 @@ import { Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/li
 import { Range3d } from "@bentley/geometry-core/lib/Range";
 import { RotMatrix } from "@bentley/geometry-core/lib/Transform";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { SpatialViewState, ViewStatus, StandardView, StandardViewId, MarginPercent } from "../common/ViewState";
-import { IModelDb } from "../backend/IModelDb";
-import { SpatialViewDefinition } from "../backend/ViewDefinition";
+import { SpatialViewState, ViewStatus, StandardView, StandardViewId, MarginPercent } from "../../common/ViewState";
+import { IModelDb } from "../IModelDb";
+import { SpatialViewDefinition } from "../ViewDefinition";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import * as path from "path";
-import { AuxCoordSystemSpatialState } from "../common/AuxCoordSys";
+import { AuxCoordSystemSpatialState } from "../../common/AuxCoordSys";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { ModelSelectorState } from "../common/ModelSelectorState";
-import { CategorySelectorState } from "../common/CategorySelectorState";
+import { ModelSelectorState } from "../../common/ModelSelectorState";
+import { CategorySelectorState } from "../../common/CategorySelectorState";
 import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
 
 // spell-checker: disable
@@ -22,7 +22,7 @@ import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompar
 // Note: This will be relative to root imodeljs-core directory for VS Code debugging, but relative to the test directory for running in console
 const iModelLocation = path.join(KnownTestLocations.assetsDir, "test.bim");
 
-describe.only("ViewState", () => {
+describe("ViewState", () => {
   // The imodel as well as some basic objects usable for testing purposes in which data contents does not matter
   let imodel: IModelDb;
   let viewState: SpatialViewState;
@@ -87,10 +87,11 @@ describe.only("ViewState", () => {
     assert.isTrue(val, str);
 
   };
-  // const compareJson12 = (obj1: any, obj2: any, str: string) => { assert.deepEqual(cycleJson(obj1), cycleJson(obj2), str); };
+  // const compareJson = (obj1: any, obj2: any, str: string) => { assert.deepEqual(cycleJson(obj1), cycleJson(obj2), str); };
 
   // C++ Tests:
-  it("view volume adjustments", () => {
+  // pending
+  it.skip("view volume adjustments", () => {
     // Flat view test #1
     const testParams: any = {
       margin: new MarginPercent(0, 0, 0, 0),
@@ -142,11 +143,13 @@ describe.only("ViewState", () => {
     compareJson(viewState, cppView, "LookAtVolume 2");
   });
 
-  it("rotateCamareaLocal should work", async () => {
+  // pending
+  it.skip("rotateCameraLocal should work", async () => {
     const testParams: any = {
       view: viewState,
       angle: 1.28,
       axis: Vector3d.create(2, 5, 7),
+      about: undefined,
     };
 
     viewState.setOrigin(Point3d.create(-5, -5, 0));
@@ -155,74 +158,44 @@ describe.only("ViewState", () => {
     viewState.setLensAngle(Angle.createDegrees(50));
     viewState.setFocusDistance(49);
     viewState.setEyePoint(Point3d.create(5, 5, 50));
-    const cppView = imodel.executeTest("rotateCameraLocal", testParams);
-    viewState.rotateCameraLocal(Angle.createRadians(testParams.angle), testParams.axis);
-    compareJson(viewState, cppView, "RotateCameraLocal");
-    // let cppFlatViewStateJSON = imodel.executeTestById(3,
-    //   {
-    //     testMode: 0,
-    //     id: flatView.id.value,
-    //     dsId: flatView.displayStyleId.value,
-    //     csId: flatView.categorySelectorId.value,
-    //     msId: flatView.modelSelectorId.value,
-    //     path: iModelLocation,
-    //   });
+    let cppView = imodel.executeTest("rotateCameraLocal", testParams);
+    viewState.rotateCameraLocal(Angle.createRadians(testParams.angle), testParams.axis, testParams.about);
+    compareJson(viewState, cppView, "RotateCameraLocal 1");
 
-    // cppFlatViewStateJSON = imodel.constructEntity(cppFlatViewStateJSON).toJSON();
-    // // in native C++, yawpitchroll will be defined, even though it is technically not valid (did not conform to certain bounds)
-    // cppFlatViewStateJSON.angles = undefined;
+    viewState.setOrigin(Point3d.create(100, 23, -18));
+    viewState.setExtents(Vector3d.create(55, 0.01, 23));
+    viewState.setRotation(YawPitchRollAngles.createDegrees(23, 65, 2).toRotMatrix());
+    viewState.setLensAngle(Angle.createDegrees(11));
+    viewState.setFocusDistance(191);
+    viewState.setEyePoint(Point3d.create(-64, 120, 500));
+    testParams.angle = 1.6788888;
+    testParams.axis = Vector3d.create(-1, 6, 3);
+    testParams.about = Point3d.create(1, 2, 3);
+    cppView = imodel.executeTest("rotateCameraLocal", testParams);
+    viewState.rotateCameraLocal(Angle.createRadians(testParams.angle), testParams.axis, testParams.about);
+    compareJson(viewState, cppView, "RotateCameraLocal 2");
+  });
 
-    // assert.isTrue(jsonCompare.compare(tsFlatViewStateJSON, cppFlatViewStateJSON), "'rotate & lookat' test 1 matches");
+  // pending
+  it.skip("lookAtUsingLensAngle should work", async () => {
+    const testParams: any = {
+      view: viewState,
+      eye: Point3d.create(8, 6, 7),
+      target: Point3d.create(100, -67, 5),
+      up: Vector3d.create(1.001, 2.200, -3.999),
+      lens: Angle.createDegrees(27.897),
+      front: 100.89,
+      back: 101.23,
+    };
 
-    // // Camera view test
-    // const tsCamViewState = cameraViewState.clone<SpatialViewState>();
-    // tsCamViewState.setOrigin(Point3d.create(100, 23, -18));
-    // tsCamViewState.setExtents(Vector3d.create(55, 0.01, 23));
-    // tsCamViewState.setRotation(YawPitchRollAngles.createDegrees(23, 65, 2).toRotMatrix());
-    // tsCamViewState.setLensAngle(Angle.createDegrees(11));
-    // tsCamViewState.setFocusDistance(191);
-    //   tsCamViewState.setEyePoint(Point3d.create(-64, 120, 500));
-
-    //   tsCamViewState.rotateCameraLocal(Angle.createRadians(1.6788888), Vector3d.create(-1, 6, 3), Point3d.create(1, 2, 3));
-    //   let tsCamViewStateJSON = tsCamViewState.toJSON();
-
-    //   let cppCamViewStateJSON = imodel.executeTestById(3,
-    //     {
-    //       testMode: 1,
-    //       id: flatView.id.value,
-    //       dsId: flatView.displayStyleId.value,
-    //       csId: flatView.categorySelectorId.value,
-    //       msId: flatView.modelSelectorId.value,
-    //       path: iModelLocation,
-    //     });
-    //   cppCamViewStateJSON = imodel.constructEntity(cppCamViewStateJSON).toJSON();
-    //   assert.isTrue(jsonCompare.compare(tsCamViewStateJSON, cppCamViewStateJSON), "'rotate & lookat' test 2 matches");
-
-    //   // Camera view test (using lookAtUsingLensAngle)
-    //   tsCamViewState.setOrigin(Point3d.create(100, 23, -18));
-    //   tsCamViewState.setExtents(Vector3d.create(55, 0.01, 23));
-    //   tsCamViewState.setRotation(YawPitchRollAngles.createDegrees(23, 65, 2).toRotMatrix());
-    //   tsCamViewState.setLensAngle(Angle.createDegrees(11));
-    //   tsCamViewState.setFocusDistance(191);
-    //   tsCamViewState.setEyePoint(Point3d.create(-64, 120, 500));
-
-    //   tsCamViewState.lookAtUsingLensAngle(Point3d.create(8, 6, 7), Point3d.create(100, -67, 5), Vector3d.create(1.001, 2.200, -3.999), Angle.createDegrees(27.897), 100.89, 101.23);
-    //   tsCamViewStateJSON = tsCamViewState.toJSON();
-
-    //   cppCamViewStateJSON = imodel.executeTestById(3,
-    //     {
-    //       testMode: 2,
-    //       id: flatView.id.value,
-    //       dsId: flatView.displayStyleId.value,
-    //       csId: flatView.categorySelectorId.value,
-    //       msId: flatView.modelSelectorId.value,
-    //       path: iModelLocation,
-    //     });
-
-    //   cppCamViewStateJSON = imodel.constructEntity(cppCamViewStateJSON).toJSON();
-
-    //   // in native C++, yawpitchroll will be defined, even though it is technically not valid (did not conform to certain bounds)
-    //   cppCamViewStateJSON.angles = undefined;
-    //   assert.isTrue(jsonCompare.compare(tsCamViewStateJSON, cppCamViewStateJSON), "'rotate & lookat' test 3 matches");
+    viewState.setOrigin(Point3d.create(100, 23, -18));
+    viewState.setExtents(Vector3d.create(55, 0.01, 23));
+    viewState.setRotation(YawPitchRollAngles.createDegrees(23, 65, 2).toRotMatrix());
+    viewState.setLensAngle(Angle.createDegrees(11));
+    viewState.setFocusDistance(191);
+    viewState.setEyePoint(Point3d.create(-64, 120, 500));
+    const cppView = imodel.executeTest("lookAtUsingLensAngle", testParams);
+    viewState.lookAtUsingLensAngle(testParams.eye, testParams.target, testParams.up, testParams.lens, testParams.front, testParams.back);
+    compareJson(viewState, cppView, "lookAtUsingLensAngle");
   });
 });

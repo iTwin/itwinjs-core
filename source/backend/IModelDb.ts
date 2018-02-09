@@ -515,11 +515,13 @@ export class IModelDb extends IModel {
    * @param params parameters for the test
    * @hidden
    */
-  public executeTest(testName: string, params: any): any {
+  public executeTest(_testName: string, _params: any): any {
     if (!this.briefcaseEntry)
       throw this._newNotOpenError();
 
-    return JSON.parse(this.briefcaseEntry.nativeDb.executeTest(testName, JSON.stringify(params)));
+    // The following line is commented out until a build of the addon that has this method completes
+    // return JSON.parse(this.briefcaseEntry.nativeDb.executeTest(testName, JSON.stringify(params)));
+    return undefined;
   }
 }
 

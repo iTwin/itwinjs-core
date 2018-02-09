@@ -721,7 +721,7 @@ export abstract class ViewState3d extends ViewState {
     if (!yVec) // up vector zero length?
       return ViewStatus.InvalidUpVector;
 
-    const zVec = Vector3d.createStartEnd(eye, targetPoint); // z defined by direction from eye to target
+    const zVec = Vector3d.createStartEnd(targetPoint, eye); // z defined by direction from eye to target
     const focusDist = zVec.normalizeWithLength(zVec).mag; // set focus at target point
     const minFrontDist = this.minimumFrontDistance();
 

@@ -141,8 +141,8 @@ export class IModelConnection extends IModel {
    * @param params A JSON string containing all parameters the test requires
    * @hidden
    */
-  public async executeTestById(id: number, params: any): Promise<any> {
-    return await IModelGateway.getProxy().executeTestById(this.iModelToken, id, params);
+  public async executeTest(testName: string, params: any): Promise<any> {
+    return await IModelGateway.getProxy().executeTest(this.iModelToken, testName, params);
   }
 }
 
@@ -211,7 +211,7 @@ export class IModelConnectionElements {
 /** The collection of [[CodeSpec]] entities for an [[IModelConnection]]. */
 export class IModelConnectionCodeSpecs {
   private _iModel: IModelConnection;
-  private _loaded: CodeSpec[];
+  private _loaded?: CodeSpec[];
 
   /** @hidden */
   constructor(imodel: IModelConnection) {
@@ -240,7 +240,7 @@ export class IModelConnectionCodeSpecs {
       return Promise.reject(new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggingCategory, () => ({ codeSpecId })));
 
     await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
-    const found: CodeSpec | undefined = this._loaded.find((codeSpec: CodeSpec) => codeSpec.id.equals(codeSpecId));
+    const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.id.equals(codeSpecId));
     if (!found)
       return Promise.reject(new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggingCategory));
 
@@ -254,7 +254,7 @@ export class IModelConnectionCodeSpecs {
    */
   public async getCodeSpecByName(name: string): Promise<CodeSpec> {
     await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
-    const found: CodeSpec | undefined = this._loaded.find((codeSpec: CodeSpec) => codeSpec.name === name);
+    const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.name === name);
     if (!found)
       return Promise.reject(new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggingCategory));
 

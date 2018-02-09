@@ -34,7 +34,6 @@ export abstract class Element extends Entity implements ElementProps {
   /** constructor for Element. */
   constructor(props: ElementProps, iModel: IModelDb) {
     super(props, iModel);
-    this.id = Id64.fromJSON(props.id);
     this.code = Code.fromJSON(props.code);
     this.model = Id64.fromJSON(props.model);
     this.parent = RelatedElement.fromJSON(props.parent);
@@ -234,7 +233,7 @@ export class TextAnnotation3d extends GraphicalElement3d {
 }
 
 export class ViewAttachment extends GraphicalElement2d implements ViewAttachmentProps {
-  public view: Id64;
+  public view?: Id64;
   public constructor(props: ViewAttachmentProps, iModel: IModelDb) { super(props, iModel); }
 }
 
@@ -569,8 +568,8 @@ export abstract class RoleElement extends Element {
 }
 
 export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoordSystemProps {
-  public type: number;
-  public description: string;
+  public type = 0;
+  public description?: string;
   public constructor(props: AuxCoordSystemProps, iModel: IModelDb) { super(props, iModel); }
 }
 
@@ -578,8 +577,8 @@ export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoo
  * A 2d coordinate system.
  */
 export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2dProps {
-  public origin: Point2d;
-  public angle: number;
+  public origin?: Point2d;
+  public angle = 0;
   public constructor(props: AuxCoordSystem2dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
@@ -587,10 +586,10 @@ export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2d
  * A 3d coordinate system.
  */
 export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3dProps {
-  public origin: Point3d;
-  public yaw: number;
-  public pitch: number;
-  public roll: number;
+  public origin?: Point3d;
+  public yaw = 0;
+  public pitch = 0;
+  public roll = 0;
   public constructor(props: AuxCoordSystem3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
@@ -605,7 +604,7 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
  * The spatial location of a light source
  */
 export class LightLocation extends SpatialLocationElement implements LightLocationProps {
-  public enabled: boolean;
+  public enabled = false;
   constructor(props: LightLocationProps, iModel: IModelDb) { super(props, iModel); }
 }
 
