@@ -108,10 +108,12 @@ export class MarginPercent {
 export abstract class ViewState extends ElementState {
   public static getClassFullName(): string { return this.schemaName + ":ViewDefinition"; }
   public description?: string;
+  public isPrivate?: boolean;
 
   protected constructor(props: ViewDefinitionProps, iModel: IModel, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
     super(props, iModel);
     this.description = props.description;
+    this.isPrivate = props.isPrivate;
     if (categorySelector instanceof ViewState) { // from clone, 3rd argument is source ViewState
       this.categorySelector = categorySelector.categorySelector.clone();
       this.displayStyle = categorySelector.displayStyle.clone();
@@ -124,8 +126,8 @@ export abstract class ViewState extends ElementState {
     const json = super.toJSON() as ViewDefinitionProps;
     json.categorySelectorId = this.categorySelector.id;
     json.displayStyleId = this.displayStyle.id;
-    if (undefined !== this.description)
-      json.description = this.description;
+    json.isPrivate = this.isPrivate;
+    json.description = this.description;
     return json;
   }
 

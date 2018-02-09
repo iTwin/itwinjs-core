@@ -13,7 +13,7 @@ import { DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import {
   ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
   ViewAttachmentProps, SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,
-  InformationPartitionElementProps, AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, LightLocationProps,
+  InformationPartitionElementProps, AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, LightLocationProps, DefinitionElementProps,
 } from "../common/ElementProps";
 
 /**
@@ -76,10 +76,10 @@ export abstract class Element extends Entity implements ElementProps {
   /** remove a set of JSON user properties, specified by namespace, from this Element */
   public removeUserProperties(nameSpace: string) { delete this.getAllUserProperties()[nameSpace]; }
 
- /**
-  * Add a request for locks, code reservations, and anything else that would be needed in order to carry out the specified operation.
-  * @param opcode The operation that will be performed on the element.
-  */
+  /**
+   * Add a request for locks, code reservations, and anything else that would be needed in order to carry out the specified operation.
+   * @param opcode The operation that will be performed on the element.
+   */
   public buildConcurrencyControlRequest(opcode: DbOpcode): void {
     this.iModel.concurrencyControl.buildRequestForElement(this, opcode);
   }
@@ -382,8 +382,14 @@ export abstract class InformationRecordElement extends InformationContentElement
 /**
  * A Definition Element holds configuration - related information that is meant to be referenced / shared.
  */
-export abstract class DefinitionElement extends InformationContentElement {
-  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
+export abstract class DefinitionElement extends InformationContentElement implements DefinitionElementProps {
+  public isPrivate: boolean;
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); this.isPrivate = props.isPrivate; }
+  public toJSON(): DefinitionElementProps {
+    const val = super.toJSON() as DefinitionElementProps;
+    val.isPrivate = this.isPrivate;
+    return val;
+  }
 }
 
 /**

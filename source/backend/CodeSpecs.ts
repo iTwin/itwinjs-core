@@ -13,16 +13,14 @@ export class CodeSpecs {
   private _imodel: IModelDb;
   private _loadedCodeSpecs: CodeSpec[] = [];
 
-  constructor(imodel: IModelDb) {
-    this._imodel = imodel;
-  }
+  constructor(imodel: IModelDb) { this._imodel = imodel; }
 
   /** Look up the Id of the CodeSpec with the specified name. */
   public queryCodeSpecId(name: string): Id64 {
     return this._imodel.withPreparedStatement("SELECT ECInstanceId as id FROM BisCore.CodeSpec WHERE Name=?", (stmt: ECSqlStatement) => {
       stmt.bindString(1, name);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
-          throw new IModelError(IModelStatus.NotFound);
+        throw new IModelError(IModelStatus.NotFound);
       return new Id64(stmt.getRow().id);
     });
   }

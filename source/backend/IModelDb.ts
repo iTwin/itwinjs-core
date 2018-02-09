@@ -34,6 +34,11 @@ import { IModelDbLinkTableRelationships, LinkTableRelationship } from "./LinkTab
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { NodeAddonRegistry } from "./NodeAddonRegistry";
 import { RequestQueryOptions } from "@bentley/imodeljs-clients/lib";
+import { CategorySelectorState } from "../common/CategorySelectorState";
+import { ViewState, SpatialViewState, OrthographicViewState, ViewState2d, DrawingViewState, SheetViewState } from "../common/ViewState";
+import { DisplayStyle3dState, DisplayStyle2dState } from "../common/DisplayStyleState";
+import { ModelSelectorState } from "../common/ModelSelectorState";
+import { Model2dState } from "../common/EntityState";
 
 // Register the backend implementation of IModelGateway
 IModelGatewayImpl.register();
@@ -49,9 +54,9 @@ export class IModelDb extends IModel {
   public readonly linkTableRelationships: IModelDbLinkTableRelationships;
   public readonly defaultLimit = 1000;
   private readonly statementCache: ECSqlStatementCache = new ECSqlStatementCache();
-  private _codeSpecs: CodeSpecs;
-  private _classMetaDataRegistry: MetaDataRegistry;
-  private _concurrency: ConcurrencyControl;
+  private _codeSpecs?: CodeSpecs;
+  private _classMetaDataRegistry?: MetaDataRegistry;
+  private _concurrency?: ConcurrencyControl;
 
   /** @hidden */
   public briefcaseEntry?: BriefcaseEntry;
@@ -455,19 +460,16 @@ export class IModelDb extends IModel {
       this.loadMetaData(metaData.baseClasses[0]);
   }
 
-  /** TESTING ONLY - Execute a test known to exist using the id recognized by the addon's test execution handler
-   * @param id The id of the test you wish to execute
-   * @param params A JSON string that should all of the data/parameters the test needs to function correctly
+  /** TESTING ONLY - Execute a test from native code
+   * @param testName The name of the test
+   * @param params parameters for the test
    * @hidden
    */
-  public executeTestById(testId: number, params: any): any {
+  public executeTest(testName: string, params: any): any {
     if (!this.briefcaseEntry)
       throw this._newNotOpenError();
 
-    const retVal: string = this.briefcaseEntry.nativeDb.executeTestById(testId, JSON.stringify(params));
-    if (retVal.length === 0)
-      return {};
-    return JSON.parse(retVal);
+    return JSON.parse(this.briefcaseEntry.nativeDb.executeTest(testName, JSON.stringify(params)));
   }
 }
 
@@ -483,8 +485,8 @@ export class IModelDb extends IModel {
 export class ConcurrencyControl {
   private _pendingRequest: ConcurrencyControl.Request;
   private _imodel: IModelDb;
-  private _codes: ConcurrencyControl.Codes;
-  private _policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy;
+  private _codes?: ConcurrencyControl.Codes;
+  private _policy?: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy;
 
   constructor(im: IModelDb) {
     this._imodel = im;
@@ -991,8 +993,8 @@ export namespace ConcurrencyControl {
 
   /** Thrown when iModelHub denies or cannot process a request. */
   export class RequestError extends IModelError {
-    public unavailableCodes: MultiCode[];
-    public unavailableLocks: MultiCode[];
+    public unavailableCodes: MultiCode[] = [];
+    public unavailableLocks: MultiCode[] = [];
   }
 
   /** Code manager */
@@ -1435,5 +1437,55 @@ export class IModelDbViews {
       this._iModel.releasePreparedStatement(statement);
     }
     return viewIds.map((viewId: Id64) => this._iModel.elements.getElementProps(viewId) as ViewDefinitionProps);
+  }
+
+  public getViewStateData(viewDefinitionId: string): any {
+    const viewStateData: any = {};
+    const elements = this._iModel.elements;
+    viewStateData.viewDefinitionProps = elements.getElementProps(new Id64(viewDefinitionId)) as ViewDefinitionProps;
+    viewStateData.categorySelectorProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.categorySelectorId));
+    viewStateData.displayStyleProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.displayStyleId));
+    if (viewStateData.viewDefinitionProps.baseModelId)
+      viewStateData.baseModelProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.baseModelId));
+    if (viewStateData.viewDefinitionProps.modelSelectorId)
+      viewStateData.modelSelectorProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.modelSelectorId));
+    return viewStateData;
+  }
+
+  /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
+  public loadView(viewDefinitionId: Id64 | string): ViewState {
+
+    const viewStateData = this.getViewStateData(typeof viewDefinitionId === "string" ? viewDefinitionId : viewDefinitionId.value);
+    const categorySelectorState = new CategorySelectorState(viewStateData.categorySelectorProps, this._iModel);
+
+    switch (viewStateData.viewDefinitionProps.classFullName) {
+      case SpatialViewState.getClassFullName(): {
+        const displayStyleState = new DisplayStyle3dState(viewStateData.displayStyleProps, this._iModel);
+        const modelSelectorState = new ModelSelectorState(viewStateData.modelSelectorProps, this._iModel);
+        return new SpatialViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, modelSelectorState);
+      }
+      case OrthographicViewState.getClassFullName(): {
+        const displayStyleState = new DisplayStyle3dState(viewStateData.displayStyleProps, this._iModel);
+        const modelSelectorState = new ModelSelectorState(viewStateData.modelSelectorProps, this._iModel);
+        return new OrthographicViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, modelSelectorState);
+      }
+      case ViewState2d.getClassFullName(): {
+        const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
+        const baseModelState = new Model2dState(viewStateData.baseModelProps, this._iModel);
+        return new ViewState2d(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, baseModelState);
+      }
+      case DrawingViewState.getClassFullName(): {
+        const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
+        const baseModelState = new Model2dState(viewStateData.baseModelProps, this._iModel);
+        return new DrawingViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, baseModelState);
+      }
+      case SheetViewState.getClassFullName(): {
+        const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
+        const baseModelState = new Model2dState(viewStateData.baseModelProps, this._iModel);
+        return new SheetViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, baseModelState);
+      }
+      default:
+        throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState subclass");
+    }
   }
 }

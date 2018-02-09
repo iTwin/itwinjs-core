@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { IModelApp, iModelApp } from "../../frontend/IModelApp"; // must be first import!
+import { Tool } from "../../frontend/tools/Tool";
 import { assert } from "chai";
-import { IModelApp, iModelApp } from "../../frontend/IModelApp";
 import { AccuDraw } from "../../frontend/AccuDraw";
 import { IdleTool } from "../../frontend/tools/IdleTool";
 import { I18NNamespace } from "../../frontend/Localization";
-import { Tool } from "../../frontend/tools/Tool";
 import { RotateTool, PanTool } from "../../frontend/tools/ViewTool";
 import { SelectionTool } from "../../frontend/tools/SelectTool";
 

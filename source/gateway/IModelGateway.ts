@@ -129,7 +129,7 @@ export abstract class IModelGateway extends Gateway {
   }
 
   /** For unit test execution only. */
-  public async executeTestById(_iModelToken: IModelToken, _id: number, _params: any): Promise<any> {
+  public async executeTest(_iModelToken: IModelToken, _testName: string, _params: any): Promise<any> {
     return this.forward.apply(this, arguments);
   }
 

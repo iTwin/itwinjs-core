@@ -76,7 +76,7 @@ export class GeometryStreamEntryId {
   private _index: number;     // Index into top-level GeometryStream
   private _partIndex: number; // Index into part GeometryStream
 
-  private constructor() {
+  public constructor() {
     this._partId = new Id64();
     this._index = 0;
     this._partIndex = 0;
@@ -135,7 +135,7 @@ export class Operation {
   // If signature is included, the signature will be held in data, and flatbuffer contents in data1, otherwise, all data lies in data
   public data: Uint8Array;
   public data1: Uint8Array | undefined;
-  public data1Position: number;
+  public data1Position = 0;
 
   private constructor(opCode: OpCode, data: Uint8Array, data1?: Uint8Array, data1Position?: number) {
     this.opCode = opCode;
@@ -177,12 +177,12 @@ export class Operation {
 
 class CurrentState {
   // public imodel: IModel;
-  public geomParams: GeometryParams;
+  public geomParams?: GeometryParams;
   public sourceToWorld: Transform;
   public geomToSource: Transform;
   public geomToWorld: Transform;
-  public geometry: GeometricPrimitive;
-  public geomStreamEntryId: GeometryStreamEntryId;
+  public geometry?: GeometricPrimitive;
+  public geomStreamEntryId?: GeometryStreamEntryId;
   public localRange: Range3d;
 
   public constructor(/*imodel: IModel*/) {
@@ -200,7 +200,7 @@ class CurrentState {
 export class GSCollection {
   private data: Uint8Array | undefined;   // Pointer to the Uint8Array in the writer
   private dataOffset: number; // Our current position in the data array (always points to the index of an opCode)
-  private egOp: Operation;    // The data stored in the last block
+  private egOp?: Operation;    // The data stored in the last block
   private state: CurrentState;  // Current state of the data (not yet in use)
 
   public get operation() { return this.egOp; }
@@ -1874,8 +1874,8 @@ export class GeometryBuilder {
   private _isPartCreate: boolean = false;
   private _is3d: boolean = false;
   private _appendAsSubGraphics: boolean = false;
-  private _placement3d: Placement3d;
-  private _placement2d: Placement2d;
+  private _placement3d?: Placement3d;
+  private _placement2d?: Placement2d;
   private _elParams: GeometryParams;
   private _elParamsModified: GeometryParams | undefined;
   private _writer: GSWriter;
@@ -1978,7 +1978,7 @@ export class GeometryBuilder {
         return nullptr;
     */
 
-    const origin = Point3d.createFrom(transform.getTranslation());
+    const origin = transform.getOrigin();
     const rMatrix = transform.matrix;
     const angles = YawPitchRollAngles.createDegrees(0, 0, 0);
     const retVal = YawPitchRollAngles.createFromRotMatrix(rMatrix, angles);
