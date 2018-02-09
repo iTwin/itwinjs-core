@@ -4,7 +4,7 @@
 
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 import ECStringConstants from "./Constants";
-export { PropertyType, PropTypeId } from "./PropertyTypes";
+export { PropertyType } from "./PropertyTypes";
 
 export const enum ECClassModifier {
   None,

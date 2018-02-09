@@ -8,24 +8,14 @@ import { ECClassInterface, PrimitivePropertyInterface, StructPropertyInterface,
   LazyLoadedRelationshipClass, EnumerationPropertyInterface, EnumerationArrayPropertyInterface, ECPropertyProps } from "../Interfaces";
 import { ECName, PrimitiveType, RelatedInstanceDirection } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { PropertyType } from "../PropertyTypes";
+import { PropertyType, PropertyTypeUtils } from "../PropertyTypes";
 
 /**
  * A common abstract class for all ECProperty types.
  */
-export abstract class ECProperty<T extends PropertyType.Any> implements ECPropertyProps {
+export abstract class ECProperty implements ECPropertyProps {
   private _name: ECName;
-  protected _type: T;
-
-  // These next five properties are a bit weird and require some explanation:
-  //   Without using mapped types (`: T["..."]`), the types of these properties (I think because PropertyType.Any is a union type)
-  //   would collapse into `boolean`. However, we need these getters to *preserve* their original (literal) types (`true` or `false`).
-  //   Thus, we need to explicitly declare that these properties have the mapped type.
-  public get isArray(): T["isArray"] { return this._type.isArray; }
-  public get isPrimitive(): T["isPrimitive"]  { return this._type.isPrimitive; }
-  public get isStruct(): T["isStruct"]  { return this._type.isStruct; }
-  public get isNavigation(): T["isNavigation"]  { return this._type.isNavigation; }
-  public get isEnumeration(): T["isEnumeration"]  { return this._type.isEnumeration; }
+  protected _type: PropertyType;
 
   public class: ECClassInterface;
   public description: string;
@@ -35,10 +25,16 @@ export abstract class ECProperty<T extends PropertyType.Any> implements ECProper
   public inherited?: boolean;
   public category?: LazyLoadedPropertyCategory;
 
-  constructor(name: string, type: T) {
+  constructor(name: string, type: PropertyType) {
     this.name = name;
     this._type = type;
   }
+
+  public isArray(): this is AnyArrayProperty { return PropertyTypeUtils.isArray(this._type); }
+  public isPrimitive(): this is AnyPrimitiveProperty { return PropertyTypeUtils.isPrimitive(this._type); }
+  public isStruct(): this is AnyStructProperty { return PropertyTypeUtils.isStruct(this._type); }
+  public isEnumeration(): this is AnyEnumerationProperty { return PropertyTypeUtils.isEnumeration(this._type); }
+  public isNavigation(): this is NavigationProperty { return PropertyTypeUtils.isNavigation(this._type); }
 
   get name() { return this._name.name; }
   set name(name: string) {
@@ -60,21 +56,15 @@ export abstract class ECProperty<T extends PropertyType.Any> implements ECProper
   }
 }
 
-export type AnyECPrimitivePropertyType = PropertyType.Primitive | PropertyType.Enumeration | PropertyType.PrimitiveArray | PropertyType.EnumerationArray;
-
 /**
  *
  */
-export abstract class PrimitiveOrEnumPropertyBase<T extends AnyECPrimitivePropertyType> extends ECProperty<T> {
+export abstract class PrimitiveOrEnumPropertyBase extends ECProperty {
   public kindOfQuantity?: LazyLoadedKindOfQuantity;
   public minLength: number;
   public maxLength: number;
   public minValue: number;
   public maxValue: number;
-
-  constructor(name: string, type: T) {
-    super(name, type);
-  }
 
   public async fromJson(jsonObj: any): Promise<void> {
     await super.fromJson(jsonObj);
@@ -107,59 +97,30 @@ export abstract class PrimitiveOrEnumPropertyBase<T extends AnyECPrimitiveProper
   }
 }
 
-export abstract class PrimitivePropertyBase<T extends PropertyType.Primitive | PropertyType.PrimitiveArray> extends PrimitiveOrEnumPropertyBase<T> {
-  public get primitiveType() { return this._type.primitiveType; }
-
-  constructor(name: string, type: T) {
-    super(name, type);
-  }
-}
-
-export abstract class EnumerationPropertyBase<T extends PropertyType.Enumeration | PropertyType.EnumerationArray> extends PrimitiveOrEnumPropertyBase<T> {
-  public get enumeration(): LazyLoadedEnumeration { return this._type.enumeration; }
-
-  constructor(name: string, type: T) {
-    super(name, type);
-  }
-}
-
-export class PrimitiveProperty extends PrimitivePropertyBase<PropertyType.Primitive> implements PrimitivePropertyInterface {
+export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase implements PrimitivePropertyInterface {
+  public get primitiveType(): PrimitiveType { return PropertyTypeUtils.getPrimitiveType(this._type); }
 
   constructor(name: string, primitiveType: PrimitiveType = PrimitiveType.Integer) {
-    const type = PropertyType.createPrimitive(primitiveType);
-    super(name, type);
+    super(name, PropertyTypeUtils.fromPrimitiveType(primitiveType));
   }
 }
 
-export class PrimitiveArrayProperty extends PrimitivePropertyBase<PropertyType.PrimitiveArray> implements PrimitiveArrayPropertyInterface {
-  public minOccurs: number = 0;
-  public maxOccurs: number;
-
-  constructor(name: string, primitiveType: PrimitiveType = PrimitiveType.Integer) {
-    super(name, PropertyType.createPrimitiveArray(primitiveType));
-  }
-}
-
-export class EnumerationProperty extends EnumerationPropertyBase<PropertyType.Enumeration> implements EnumerationPropertyInterface {
-  constructor(name: string, type: LazyLoadedEnumeration) {
-    super(name, PropertyType.createEnumeration(type));
-  }
-}
-
-export class EnumerationArrayProperty extends EnumerationPropertyBase<PropertyType.EnumerationArray> implements EnumerationArrayPropertyInterface {
-  public minOccurs: number = 0;
-  public maxOccurs: number;
+export class EnumerationProperty extends PrimitiveOrEnumPropertyBase implements EnumerationPropertyInterface {
+  public enumeration: LazyLoadedEnumeration;
 
   constructor(name: string, type: LazyLoadedEnumeration) {
-    super(name, PropertyType.createEnumerationArray(type));
+    // TODO: Should we allow specifying the backing type?
+    super(name, PropertyType.Integer_Enumeration);
+    this.enumeration = type;
   }
 }
 
-export abstract class StructPropertyBase<T extends PropertyType.Struct | PropertyType.StructArray> extends ECProperty<T> {
-  public get structClass(): LazyLoadedStructClass { return this._type.structClass; }
+export class StructProperty extends ECProperty implements StructPropertyInterface {
+  public structClass: LazyLoadedStructClass;
 
-  constructor(name: string, type: T) {
-    super(name, type);
+  constructor(name: string, type: LazyLoadedStructClass) {
+    super(name, PropertyType.Struct);
+    this.structClass = type;
   }
 
   public async fromJson(jsonObj: any): Promise<void> {
@@ -169,29 +130,15 @@ export abstract class StructPropertyBase<T extends PropertyType.Struct | Propert
   }
 }
 
-export class StructProperty extends StructPropertyBase<PropertyType.Struct> implements StructPropertyInterface {
-  constructor(name: string, type: LazyLoadedStructClass) {
-    super(name, PropertyType.createStruct(type));
-  }
-}
-
-export class StructArrayProperty extends StructPropertyBase<PropertyType.StructArray> implements StructArrayPropertyInterface {
-  public minOccurs: number = 0;
-  public maxOccurs: number;
-
-  constructor(name: string, type: LazyLoadedStructClass) {
-    super(name, PropertyType.createStructArray(type));
-  }
-}
-
-export class NavigationProperty extends ECProperty<PropertyType.Navigation> implements NavigationPropertyInterface {
-  public get relationshipClass(): LazyLoadedRelationshipClass { return this._type.relationshipClass; }
+export class NavigationProperty extends ECProperty implements NavigationPropertyInterface {
+  public relationshipClass: LazyLoadedRelationshipClass;
   public direction: RelatedInstanceDirection;
 
   constructor(name: string, relationship: LazyLoadedRelationshipClass, direction?: RelatedInstanceDirection) {
-    super(name, PropertyType.createNavigation(relationship));
+    super(name, PropertyType.Navigation);
+    this.relationshipClass = relationship;
 
-    if (direction)
+    if (direction !== undefined)
       this.direction = direction;
     else
       this.direction = RelatedInstanceDirection.Forward;
@@ -202,4 +149,32 @@ export class NavigationProperty extends ECProperty<PropertyType.Navigation> impl
   }
 }
 
-export type AnyProperty = PrimitiveProperty | PrimitiveArrayProperty | EnumerationProperty | EnumerationArrayProperty | StructProperty | StructArrayProperty | NavigationProperty;
+export type Constructor<T> = new(...args: any[]) => T;
+
+export interface ArrayProperty {
+  minOccurs: number;
+  maxOccurs: number;
+}
+
+// tslint:disable-next-line:variable-name
+const ArrayProperty = <T extends Constructor<ECProperty>>(Base: T) => {
+  return class extends Base {
+    public minOccurs: number = 0;
+    public maxOccurs: number;
+
+    constructor(...args: any[]) {
+      super(...args);
+      this._type = PropertyTypeUtils.asArray(this._type);
+    }
+  } as typeof Base & Constructor<ArrayProperty>;
+};
+
+export class PrimitiveArrayProperty extends ArrayProperty(PrimitiveProperty) implements PrimitiveArrayPropertyInterface {}
+export class EnumerationArrayProperty extends ArrayProperty(EnumerationProperty) implements EnumerationArrayPropertyInterface {}
+export class StructArrayProperty extends ArrayProperty(StructProperty) implements StructArrayPropertyInterface {}
+
+export type AnyArrayProperty = PrimitiveArrayProperty | EnumerationArrayProperty | StructArrayProperty;
+export type AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty;
+export type AnyEnumerationProperty = EnumerationProperty | EnumerationArrayProperty;
+export type AnyStructProperty = StructProperty | StructArrayProperty;
+export type AnyProperty = AnyPrimitiveProperty | AnyEnumerationProperty | AnyStructProperty | NavigationProperty;

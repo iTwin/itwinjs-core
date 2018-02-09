@@ -1,5 +1,4 @@
-import { LazyLoadedEnumeration, LazyLoadedStructClass, LazyLoadedRelationshipClass } from "./Interfaces";
-import { PrimitiveType, SchemaChildType } from "./ECObjects";
+import { PrimitiveType } from "./ECObjects";
 
 const enum PropertyFlags {
   Primitive = 0x01,
@@ -12,7 +11,7 @@ const enum PropertyFlags {
 /**
  *
  */
-export const enum PropTypeId {
+export const enum PropertyType {
   Struct = 0x02, // PropertyFlags.Struct
   Struct_Array = 0x06, // PropertyFlags.Struct | PropertyFlags.Array
   Navigation = 0x08, // PropertyFlags.Navigation
@@ -42,133 +41,13 @@ export const enum PropTypeId {
   IGeometry_Array = 0xA05, // PrimitiveType.IGeometry | PropertyFlags.Array
 }
 
-export type AnyStructPropTypeId = PropTypeId.Struct | PropTypeId.Struct_Array;
-export type AnyEnumerationPropTypeId = PropTypeId.Integer_Enumeration | PropTypeId.Integer_Enumeration_Array | PropTypeId.String_Enumeration | PropTypeId.String_Enumeration_Array;
-export type AnyPrimitivePropTypeId = PropTypeId.Binary | PropTypeId.Binary_Array
-  | PropTypeId.Boolean | PropTypeId.Boolean_Array
-  | PropTypeId.DateTime | PropTypeId.DateTime_Array
-  | PropTypeId.Double | PropTypeId.Double_Array
-  | PropTypeId.Integer | PropTypeId.Integer_Array
-  | PropTypeId.Long | PropTypeId.Long_Array
-  | PropTypeId.Point2d | PropTypeId.Point2d_Array
-  | PropTypeId.Point3d | PropTypeId.Point3d_Array
-  | PropTypeId.String | PropTypeId.String_Array
-  | PropTypeId.IGeometry | PropTypeId.IGeometry_Array;
-
-class PropertyTypeImpl {
-  protected _typeId: PropTypeId;
-  public enumeration?: LazyLoadedEnumeration;
-  public relationshipClass?: LazyLoadedRelationshipClass;
-  public structClass?: LazyLoadedStructClass;
-
-  constructor(typeId: PropTypeId, relatedType?: LazyLoadedEnumeration | LazyLoadedRelationshipClass | LazyLoadedStructClass) {
-    this._typeId = typeId;
-
-    if (relatedType) {
-      switch (relatedType.type) {
-        case SchemaChildType.Enumeration: this.enumeration = relatedType; return;
-        case SchemaChildType.StructClass: this.structClass = relatedType; return;
-        case SchemaChildType.RelationshipClass: this.relationshipClass = relatedType; return;
-      }
-    }
-  }
-
-  public get isArray() { return (this._typeId === (PropertyFlags.Array | this._typeId)); }
-  public get isPrimitive() { return (this._typeId === (PropertyFlags.Primitive | this._typeId)); }
-  public get isStruct() { return (this._typeId === (PropertyFlags.Struct | this._typeId)); }
-  public get isNavigation() { return (this._typeId === (PropertyFlags.Navigation | this._typeId)); }
-  public get isEnumeration() { return (this._typeId === (PropertyFlags.Enumeration | this._typeId)); }
-  public get primitiveType(): PrimitiveType { return (0xFF01 & this._typeId); }
-}
-
-export interface NotArray {
-  readonly isArray: false;
-}
-
-export interface IsArray {
-  readonly isArray: true;
-}
-
-export interface PrimitivePropertyType {
-  readonly isPrimitive: true;
-  readonly isStruct: false;
-  readonly isEnumeration: false;
-  readonly isNavigation: false;
-  readonly primitiveType: PrimitiveType;
-}
-
-export interface EnumerationPropertyType {
-  readonly isPrimitive: false;
-  readonly isStruct: false;
-  readonly isEnumeration: true;
-  readonly isNavigation: false;
-  enumeration: LazyLoadedEnumeration;
-}
-
-export interface StructPropertyType {
-  readonly isPrimitive: false;
-  readonly isStruct: true;
-  readonly isEnumeration: false;
-  readonly isNavigation: false;
-  structClass: LazyLoadedStructClass;
-}
-
-export interface NavigationPropertyType {
-  readonly isPrimitive: false;
-  readonly isStruct: false;
-  readonly isEnumeration: false;
-  readonly isNavigation: true;
-  relationshipClass: LazyLoadedRelationshipClass;
-}
-
-export namespace PropertyType {
-
-  export type Primitive = PrimitivePropertyType & NotArray;
-  export type Enumeration = EnumerationPropertyType & NotArray;
-  export type Struct = StructPropertyType & NotArray;
-  export type Navigation = NavigationPropertyType & NotArray;
-
-  export type PrimitiveArray = PrimitivePropertyType & IsArray;
-  export type EnumerationArray = EnumerationPropertyType & IsArray;
-  export type StructArray = StructPropertyType & IsArray;
-
-  export type Any = Primitive | Enumeration | Struct | Navigation | PrimitiveArray | EnumerationArray | StructArray;
-
-  export function createFromTypeId(typeId: AnyPrimitivePropTypeId): PropertyType.Primitive;
-  export function createFromTypeId(typeId: AnyEnumerationPropTypeId, enumeration: LazyLoadedEnumeration): PropertyType.Enumeration;
-  export function createFromTypeId(typeId: AnyStructPropTypeId, structClass: LazyLoadedStructClass): PropertyType.Struct;
-  export function createFromTypeId(typeId: PropTypeId.Navigation, relationshipClass: LazyLoadedRelationshipClass): PropertyType.Navigation;
-  export function createFromTypeId(typeId: PropTypeId, relatedType?: LazyLoadedEnumeration | LazyLoadedRelationshipClass | LazyLoadedStructClass): PropertyType.Any {
-    return new PropertyTypeImpl(typeId, relatedType) as PropertyType.Any;
-  }
-
-  export function createPrimitive(primitiveType: PrimitiveType): PropertyType.Primitive {
-    return new PropertyTypeImpl(primitiveType | 0) as PropertyType.Primitive;
-  }
-
-  export function createEnumeration(enumeration: LazyLoadedEnumeration): PropertyType.Enumeration {
-    // TODO: Should we allow specifying the backing type?
-    return new PropertyTypeImpl(PropTypeId.Integer_Enumeration, enumeration) as PropertyType.Enumeration;
-  }
-
-  export function createStruct(structClass: LazyLoadedStructClass): PropertyType.Struct {
-    return new PropertyTypeImpl(PropTypeId.Struct, structClass) as PropertyType.Struct;
-  }
-
-  export function createNavigation(relationshipClass: LazyLoadedRelationshipClass): PropertyType.Navigation {
-    return new PropertyTypeImpl(PropTypeId.Navigation, relationshipClass) as PropertyType.Navigation;
-  }
-
-  export function createPrimitiveArray(primitiveType: PrimitiveType): PropertyType.PrimitiveArray {
-    return new PropertyTypeImpl(primitiveType | PropertyFlags.Array) as PropertyType.PrimitiveArray;
-  }
-
-  export function createEnumerationArray(enumeration: LazyLoadedEnumeration): PropertyType.EnumerationArray {
-    // TODO: Should we allow specifying the backing type?
-    return new PropertyTypeImpl(PropTypeId.Integer_Enumeration_Array, enumeration) as PropertyType.EnumerationArray;
-  }
-
-  export function createStructArray(structClass: LazyLoadedStructClass): PropertyType.StructArray {
-    return new PropertyTypeImpl(PropTypeId.Struct_Array, structClass) as PropertyType.StructArray;
-  }
+export namespace PropertyTypeUtils {
+  export function isArray(t: PropertyType) { return (t === (PropertyFlags.Array | t)); }
+  export function isPrimitive(t: PropertyType) { return (t === (PropertyFlags.Primitive | t)); }
+  export function isStruct(t: PropertyType) { return (t === (PropertyFlags.Struct | t)); }
+  export function isNavigation(t: PropertyType) { return (t === (PropertyFlags.Navigation | t)); }
+  export function isEnumeration(t: PropertyType) { return (t === (PropertyFlags.Enumeration | t)); }
+  export function asArray(t: PropertyType): PropertyType { return t | PropertyFlags.Array; }
+  export function getPrimitiveType(t: PropertyType): PrimitiveType { return (0xFF01 & t); }
+  export function fromPrimitiveType(t: PrimitiveType): PropertyType { return t | 0; }
 }

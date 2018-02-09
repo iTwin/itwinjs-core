@@ -4,7 +4,7 @@
 
 import Enumeration from "./Enumeration";
 import SchemaChild from "./SchemaChild";
-import { ECClassInterface, SchemaInterface, StructClassInterface, SchemaChildInterface, AnyPrimitiveECProperty, AnyPrimitiveArrayECProperty } from "../Interfaces";
+import { ECClassInterface, SchemaInterface, StructClassInterface, SchemaChildInterface } from "../Interfaces";
 import { ECClassModifier, parseClassModifier, PrimitiveType, SchemaChildKey, SchemaChildType, tryParsePrimitiveType } from "../ECObjects";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
@@ -120,8 +120,8 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    */
   public async createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
   public async createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
-  public async createPrimitiveProperty(name: string, primitiveType?: string): Promise<AnyPrimitiveECProperty>;
-  public async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<AnyPrimitiveECProperty> {
+  public async createPrimitiveProperty(name: string, primitiveType?: string): Promise<AnyProperty>;
+  public async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<AnyProperty> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
@@ -139,8 +139,8 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    */
   public async createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveArrayProperty>;
   public async createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
-  public async createPrimitiveArrayProperty(name: string, primitiveType?: string): Promise<AnyPrimitiveArrayECProperty>;
-  public async createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<AnyPrimitiveArrayECProperty> {
+  public async createPrimitiveArrayProperty(name: string, primitiveType?: string): Promise<AnyProperty>;
+  public async createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<AnyProperty> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
