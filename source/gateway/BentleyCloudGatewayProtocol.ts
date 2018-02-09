@@ -38,10 +38,13 @@ export abstract class BentleyCloudGatewayProtocol extends GatewayHttpProtocol {
       const status = 200;
       Logger.logTrace(loggingCategory, "BentleyCloudGatewayProtocol.backend.response", () => ({ method, path, status }));
       res.status(status).send(operationResponse);
-    } catch (e) {
+    } catch (error) {
       const status = 500;
-      Logger.logInfo(loggingCategory, "BentleyCloudGatewayProtocol.backend.error", () => ({ method, path, status }));
-      res.status(status).send(e.toString());
+      Logger.logInfo(loggingCategory, "BentleyCloudGatewayProtocol.backend.error", () => ({ method, path, status, error }));
+      const errstr = (error instanceof Error) ? error.toString()
+                   : error.hasOwnMember("message") ? error.message
+                   : JSON.stringify(error);
+      res.status(status).send(errstr);
     }
   }
 
