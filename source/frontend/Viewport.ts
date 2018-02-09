@@ -195,9 +195,9 @@ export class Viewport {
   public readonly rootToNpc = Map4d.createIdentity();
   private readonly viewCorners: Range3d = new Range3d();
   private animator?: Animator;
-  public flashUpdateTime: BeTimePoint;  // time the current flash started
-  public flashIntensity: number;        // current flash intensity from [0..1]
-  public flashDuration: number;         // the length of time that the flash intensity will increase (in seconds)
+  public flashUpdateTime?: BeTimePoint;  // time the current flash started
+  public flashIntensity = 0;        // current flash intensity from [0..1]
+  public flashDuration = 0;         // the length of time that the flash intensity will increase (in seconds)
   private flashedElem?: string;         // id of currently flashed element
   public lastFlashedElem?: string;      // id of last flashed element
   private _viewCmdTargetCenter?: Point3d;
@@ -720,7 +720,7 @@ export class Viewport {
   public npcToViewArray(pts: Point3d[]): void {
     const corners = this.getViewCorners();
     for (const p of pts)
-      corners.fractionToPoint (p.x, p.y, p.z, p);
+      corners.fractionToPoint(p.x, p.y, p.z, p);
   }
   /**
    * Convert a point from CoordSystem.View to CoordSystem.Npc
@@ -740,7 +740,7 @@ export class Viewport {
    */
   public npcToView(pt: Point3d, out?: Point3d): Point3d {
     const corners = this.getViewCorners();
-    return corners.fractionToPoint (pt.x, pt.y, pt.z, out);
+    return corners.fractionToPoint(pt.x, pt.y, pt.z, out);
   }
   /** Convert an array of points from CoordSystem.World to CoordSystem.Npc */
   public worldToNpcArray(pts: Point3d[]): void { this.rootToNpc.transform0.multiplyPoint3dArrayQuietNormalize(pts); }

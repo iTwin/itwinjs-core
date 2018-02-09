@@ -15,25 +15,25 @@ export class LineCode {
   }
   public static valueFromLinePixels(pixels: LinePixels): number {
     switch (pixels) {
-        case LinePixels.Code0: return 0;
-        case LinePixels.Code1: return 1;
-        case LinePixels.Code2: return 2;
-        case LinePixels.Code3: return 3;
-        case LinePixels.Code4: return 4;
-        case LinePixels.Code5: return 5;
-        case LinePixels.Code6: return 6;
-        case LinePixels.Code7: return 7;
-        case LinePixels.HiddenLine: return 8;
-        case LinePixels.Invisible: return 9;
-        default: return 0;
+      case LinePixels.Code0: return 0;
+      case LinePixels.Code1: return 1;
+      case LinePixels.Code2: return 2;
+      case LinePixels.Code3: return 3;
+      case LinePixels.Code4: return 4;
+      case LinePixels.Code5: return 5;
+      case LinePixels.Code6: return 6;
+      case LinePixels.Code7: return 7;
+      case LinePixels.HiddenLine: return 8;
+      case LinePixels.Invisible: return 9;
+      default: return 0;
     }
   }
 }
 
 export class EdgeOverrides {
-  public color: FloatPreMulRgba = new FloatPreMulRgba();
-  public lineCode: LineCode = new LineCode();
-  public weight: number = 0;
+  public readonly color = new FloatPreMulRgba();
+  public readonly lineCode = new LineCode();
+  public weight = 0;
   public flags: OvrFlags = OvrFlags.None;
   public anyOverridden(): boolean { return this.flags !== OvrFlags.None; }
   public isOverridden(flags: OvrFlags): boolean { return (flags & this.flags) === flags; }
@@ -46,12 +46,14 @@ export class EdgeOverrides {
     if (style.width !== 0) {
       this.flags |= OvrFlags.Weight;
       this.weight = style.width;
+    } else {
+      this.weight = 0;
     }
     if (style.pattern !== LinePixels.Invalid) {
       this.flags |= OvrFlags.LineCode;
-      this.lineCode = new LineCode(style.pattern);
+      this.lineCode.value = style.pattern;
     }
     if (forceOpaque)
-        this.flags |= OvrFlags.Alpha;
+      this.flags |= OvrFlags.Alpha;
   }
 }
