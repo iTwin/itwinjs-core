@@ -12,11 +12,11 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
  */
 export default class CustomAttributeClass extends ECClass implements CustomAttributeClassInterface {
   public key: SchemaChildKey.CustomAttributeClass;
+  public readonly type: SchemaChildType.CustomAttributeClass;
   public containerType: CustomAttributeContainerType;
 
   constructor(schema: SchemaInterface, name: string, modifier?: ECClassModifier) {
     super(schema, name, modifier);
-
     this.key.type = SchemaChildType.CustomAttributeClass;
   }
 

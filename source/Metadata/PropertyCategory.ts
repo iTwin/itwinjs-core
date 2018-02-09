@@ -9,11 +9,11 @@ import { SchemaInterface, PropertyCategoryInterface } from "../Interfaces";
 
 export default class PropertyCategory extends SchemaChild implements PropertyCategoryInterface {
   public key: SchemaChildKey.PropertyCategory;
+  public readonly type: SchemaChildType.PropertyCategory;
   public priority: number;
 
   constructor(schema: SchemaInterface, name: string) {
     super(schema, name);
-
     this.key.type = SchemaChildType.PropertyCategory;
   }
 

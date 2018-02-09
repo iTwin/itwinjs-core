@@ -4,12 +4,15 @@
 
 import Enumeration from "./Enumeration";
 import SchemaChild from "./SchemaChild";
-import { ECClassInterface, PropertyInterface, SchemaInterface, LazyLoadedECClass, LazyLoadedProperty, StructClassInterface, SchemaChildInterface } from "../Interfaces";
-import { ECClassModifier, parseClassModifier, PrimitiveType, SchemaChildKey, tryParsePrimitiveType } from "../ECObjects";
+import { ECClassInterface, SchemaInterface, StructClassInterface, SchemaChildInterface, AnyPrimitiveECProperty, AnyPrimitiveArrayECProperty } from "../Interfaces";
+import { ECClassModifier, parseClassModifier, PrimitiveType, SchemaChildKey, SchemaChildType, tryParsePrimitiveType } from "../ECObjects";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty } from "./Property";
+import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty, EnumerationProperty, EnumerationArrayProperty, AnyProperty } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
+
+export type LazyProperty = DelayedPromiseWithProps<{name: string}, AnyProperty>;
+export type LazyECClass = DelayedPromiseWithProps<SchemaChildKey, ECClass>;
 
 function createLazyLoadedChild<T extends SchemaChildInterface>(c: T) {
   return new DelayedPromiseWithProps(c.key as T["key"], async () => c);
@@ -48,8 +51,8 @@ async function loadPrimitiveType(primitiveType: string | PrimitiveType | Enumera
  */
 export default abstract class ECClass extends SchemaChild implements CustomAttributeContainerProps, ECClassInterface {
   public modifier: ECClassModifier;
-  public baseClass?: LazyLoadedECClass;
-  public properties?: LazyLoadedProperty[];
+  public baseClass?: LazyECClass;
+  public properties?: LazyProperty[];
   public customAttributes?: CustomAttributeSet;
 
   constructor(schema: SchemaInterface, name: string, modifier?: ECClassModifier) {
@@ -66,7 +69,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param prop The property to add.
    * @returns The property that was added.
    */
-  protected addProperty<T extends PropertyInterface>(prop: T): T {
+  protected addProperty<T extends AnyProperty>(prop: T): T {
     if (!this.properties)
       this.properties = [];
 
@@ -78,17 +81,17 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * Searches, case-insensitive, for a local ECProperty with the name provided.
    * @param name
    */
-  public async getProperty<T extends PropertyInterface>(name: string, includeInherited: boolean = false): Promise<T | undefined> {
-    let foundProp: LazyLoadedProperty | undefined;
+  public async getProperty(name: string, includeInherited: boolean = false): Promise<AnyProperty | undefined> {
+    let foundProp: LazyProperty | undefined;
 
     if (this.properties) {
       foundProp = this.properties.find((prop) => prop.name.toLowerCase() === name.toLowerCase());
       if (foundProp)
-        return (await foundProp) as T;
+        return (await foundProp);
     }
 
     if (includeInherited)
-      return this.getInheritedProperty<T>(name);
+      return this.getInheritedProperty(name);
 
     return undefined;
   }
@@ -97,11 +100,11 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * Searches the base class, if one exists, for the property with the name provided.
    * @param name The name of the inherited property to find.
    */
-  public async getInheritedProperty<T extends PropertyInterface>(name: string): Promise<T | undefined> {
+  public async getInheritedProperty(name: string): Promise<AnyProperty | undefined> {
     let inheritedProperty;
 
     if (this.baseClass) {
-      inheritedProperty = await (await this.baseClass).getProperty<T>(name);
+      inheritedProperty = await (await this.baseClass).getProperty(name);
       if (!inheritedProperty)
         return inheritedProperty;
     }
@@ -115,13 +118,18 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
    * @throws ECObjectsStatus DuplicateProperty: thrown if a property with the same name already exists in the class.
    */
-  public async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<PrimitiveProperty> {
+  public async createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
+  public async createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
+  public async createPrimitiveProperty(name: string, primitiveType?: string): Promise<AnyPrimitiveECProperty>;
+  public async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<AnyPrimitiveECProperty> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = await loadPrimitiveType(primitiveType, this.schema);
-    const lazyPropType = (typeof(propType) === "number") ? propType : createLazyLoadedChild(propType);
-    return this.addProperty(new PrimitiveProperty(name, lazyPropType));
+    if (typeof(propType) === "number")
+      return this.addProperty(new PrimitiveProperty(name, propType));
+
+    return this.addProperty(new EnumerationProperty(name, createLazyLoadedChild(propType)));
   }
 
   /**
@@ -129,13 +137,18 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param name The name of property to create.
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
    */
-  public async createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<PrimitiveArrayProperty> {
+  public async createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveArrayProperty>;
+  public async createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
+  public async createPrimitiveArrayProperty(name: string, primitiveType?: string): Promise<AnyPrimitiveArrayECProperty>;
+  public async createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<AnyPrimitiveArrayECProperty> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = await loadPrimitiveType(primitiveType, this.schema);
-    const lazyPropType = (typeof(propType) === "number") ? propType : createLazyLoadedChild(propType);
-    return this.addProperty(new PrimitiveArrayProperty(name, lazyPropType));
+    if (typeof(propType) === "number")
+      return this.addProperty(new PrimitiveArrayProperty(name, propType));
+
+    return this.addProperty(new EnumerationArrayProperty(name, createLazyLoadedChild(propType)));
   }
 
   /**
@@ -178,7 +191,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
       if (typeof(jsonObj.baseClass) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The base class of ${this.name} is not a string type.`);
 
-      const baseClass = await this.schema.getChild<ECClassInterface>(jsonObj.baseClass, true);
+      const baseClass = await this.schema.getChild<ECClass>(jsonObj.baseClass, true);
       if (!baseClass)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
@@ -192,4 +205,10 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
  */
 export class StructClass extends ECClass implements StructClassInterface {
   public readonly key: SchemaChildKey.StructClass;
+  public readonly type: SchemaChildType.StructClass;
+
+  constructor(schema: SchemaInterface, name: string, modifier?: ECClassModifier) {
+    super(schema, name, modifier);
+    this.key.type = SchemaChildType.StructClass;
+  }
 }

@@ -9,7 +9,6 @@ import EntityClass from "../../source/Metadata/EntityClass";
 import MixinClass from "../../source/Metadata/MixinClass";
 import RelationshipClass from "../../source/Metadata/RelationshipClass";
 import { ECClassModifier } from "../../source/ECObjects";
-import { NavigationProperty } from "../../source/Metadata/Property";
 import { DelayedPromiseWithProps } from "../../source/DelayedPromise";
 
 describe("entity class", () => {
@@ -218,12 +217,14 @@ describe("entity class", () => {
       const entityClass = await schema.getClass<EntityClass>("TestClass");
       assert.isDefined(entityClass);
 
-      const navProp = await entityClass!.getProperty<NavigationProperty>("testNavProp");
+      const navProp = await entityClass!.getProperty("testNavProp");
       assert.isDefined(navProp);
-
-      const relClass = await schema.getClass<RelationshipClass>("NavPropRelationship");
-
-      assert.isTrue(await navProp!.relationship === relClass);
+      if (navProp && navProp.isNavigation) {
+        const relClass = await schema.getClass<RelationshipClass>("NavPropRelationship");
+        assert.isTrue(await navProp.relationshipClass === relClass);
+      } else {
+        assert.fail();
+      }
     });
   });
 });
