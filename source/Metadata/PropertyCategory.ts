@@ -4,11 +4,10 @@
 
 import SchemaChild from "./SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { SchemaChildType, SchemaChildKey } from "../ECObjects";
+import { SchemaChildType } from "../ECObjects";
 import { SchemaInterface, PropertyCategoryInterface } from "../Interfaces";
 
 export default class PropertyCategory extends SchemaChild implements PropertyCategoryInterface {
-  public key: SchemaChildKey.PropertyCategory;
   public readonly type: SchemaChildType.PropertyCategory;
   public priority: number;
 

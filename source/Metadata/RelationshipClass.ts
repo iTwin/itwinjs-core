@@ -4,7 +4,7 @@
 
 import ECClass from "./Class";
 import { ECClassModifier, RelatedInstanceDirection, RelationshipEnd, RelationshipMultiplicity, SchemaChildType, StrengthType,
-        parseStrength, parseStrengthDirection, SchemaChildKey } from "../ECObjects";
+        parseStrength, parseStrengthDirection } from "../ECObjects";
 import { EntityClassInterface, RelationshipClassInterface, RelationshipConstraintInterface, SchemaInterface, LazyLoadedRelationshipConstraintClass, MixinInterface } from "../Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { NavigationProperty } from "./Property";
@@ -17,7 +17,6 @@ type AnyConstraintClass = EntityClassInterface | MixinInterface | RelationshipCl
  */
 export default class RelationshipClass extends ECClass implements RelationshipClassInterface {
   public schema: SchemaInterface;
-  public readonly key: SchemaChildKey.RelationshipClass;
   public readonly type: SchemaChildType.RelationshipClass;
   public strength: StrengthType;
   public strengthDirection: RelatedInstanceDirection;

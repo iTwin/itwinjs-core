@@ -4,14 +4,13 @@
 
 import SchemaChild from "./SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { PrimitiveType, SchemaChildType, SchemaChildKey } from "../ECObjects";
+import { PrimitiveType, SchemaChildType } from "../ECObjects";
 import { EnumerationInterface, EnumeratorProps, SchemaInterface } from "../Interfaces";
 
 /**
  * A Typescript class representation of an ECEnumeration.
  */
 export default class Enumeration extends SchemaChild implements EnumerationInterface {
-  public key: SchemaChildKey.Enumeration;
   public readonly type: SchemaChildType.Enumeration;
   public primitiveType: PrimitiveType.Integer | PrimitiveType.String;
   public isStrict: boolean;

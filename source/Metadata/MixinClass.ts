@@ -5,7 +5,7 @@
 import ECClass from "./Class";
 import EntityClass from "./EntityClass";
 import { MixinInterface, SchemaInterface, LazyLoadedEntityClass } from "../Interfaces";
-import { ECClassModifier, SchemaChildType, SchemaChildKey } from "../ECObjects";
+import { ECClassModifier, SchemaChildType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 
@@ -13,7 +13,6 @@ import { DelayedPromiseWithProps } from "../DelayedPromise";
  * A Typescript class representation of a Mixin.
  */
 export default class MixinClass extends ECClass implements MixinInterface {
-  public readonly key: SchemaChildKey.Mixin;
   public readonly type: SchemaChildType.MixinClass;
   public appliesTo: LazyLoadedEntityClass;
 

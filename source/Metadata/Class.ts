@@ -15,7 +15,7 @@ export type LazyProperty = DelayedPromiseWithProps<{name: string}, AnyProperty>;
 export type LazyECClass = DelayedPromiseWithProps<SchemaChildKey, ECClass>;
 
 function createLazyLoadedChild<T extends SchemaChildInterface>(c: T) {
-  return new DelayedPromiseWithProps(c.key as T["key"], async () => c);
+  return new DelayedPromiseWithProps(c.key, async () => c);
 }
 
 async function loadStructType(structType: string | StructClass | undefined, schema: SchemaInterface) {
@@ -204,7 +204,6 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
  * A Typescript class representation of an ECStructClass.
  */
 export class StructClass extends ECClass implements StructClassInterface {
-  public readonly key: SchemaChildKey.StructClass;
   public readonly type: SchemaChildType.StructClass;
 
   constructor(schema: SchemaInterface, name: string, modifier?: ECClassModifier) {

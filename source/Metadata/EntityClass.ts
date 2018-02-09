@@ -6,7 +6,7 @@ import ECClass from "./Class";
 import MixinClass from "./MixinClass";
 import RelationshipClass from "./RelationshipClass";
 import { EntityClassInterface, SchemaInterface, RelationshipClassInterface, LazyLoadedMixin } from "../Interfaces";
-import { ECClassModifier, RelatedInstanceDirection, SchemaChildType, parseStrengthDirection, SchemaChildKey } from "../ECObjects";
+import { ECClassModifier, RelatedInstanceDirection, SchemaChildType, parseStrengthDirection } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { NavigationProperty, AnyProperty } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
@@ -15,7 +15,6 @@ import { DelayedPromiseWithProps } from "../DelayedPromise";
  * A Typescript class representation of an ECEntityClass.
  */
 export default class EntityClass extends ECClass implements EntityClassInterface {
-  public key: SchemaChildKey.EntityClass;
   public readonly type: SchemaChildType.EntityClass;
   private _mixins?: LazyLoadedMixin[];
 

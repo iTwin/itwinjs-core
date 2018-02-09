@@ -4,14 +4,13 @@
 
 import ECClass from "./Class";
 import { CustomAttributeClassInterface, SchemaInterface } from "../Interfaces";
-import { CustomAttributeContainerType, ECClassModifier, SchemaChildType, parseCustomAttributeContainerType, SchemaChildKey } from "../ECObjects";
+import { CustomAttributeContainerType, ECClassModifier, SchemaChildType, parseCustomAttributeContainerType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 
 /**
  * A Typescript class representation of an ECCustomAttributeClass.
  */
 export default class CustomAttributeClass extends ECClass implements CustomAttributeClassInterface {
-  public key: SchemaChildKey.CustomAttributeClass;
   public readonly type: SchemaChildType.CustomAttributeClass;
   public containerType: CustomAttributeContainerType;
 
