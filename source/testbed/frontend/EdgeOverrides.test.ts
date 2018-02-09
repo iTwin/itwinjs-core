@@ -73,7 +73,7 @@ describe("EdgeOverrides", () => {
     assert.isTrue(override.isOverridden(OvrFlags.Rgba), "if style's ovrColor is true, then flags contains Rgba"); //tslint:disable-line
     assert.isFalse(override.isOverridden(OvrFlags.Weight), "if style's weight is 0, then flags does not contain Weight");//tslint:disable-line
     assert.isTrue(override.color.equals(color), "if style's ovrColor is true, then color is equivalent to style's color as FlatPreMulRgba");
-    assert.isTrue(0.0 === override.weight, "if style's width is 0, weight is 0");
+    assert.isTrue(override.weight === style.width, "style's width is equivalent to the weight");
     assert.isTrue(override.isOverridden(OvrFlags.Alpha), "if forceOpaque is true, then flags contains Alpha");//tslint:disable-line
     assert.isTrue(override.isOverridden(OvrFlags.LineCode), "if style's pattern is valid, then flags contain LineCode");//tslint:disable-line
     assert.isTrue(override.lineCode.value === new LineCode(style.pattern).value, "if style's pattern is valid, then lineCode is equivalent to its pattern as LineCode");

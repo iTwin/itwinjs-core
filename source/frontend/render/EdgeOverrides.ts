@@ -39,15 +39,13 @@ export class EdgeOverrides {
   public isOverridden(flags: OvrFlags): boolean { return (flags & this.flags) === flags; }
   public init(style: HiddenLine.Style, forceOpaque: boolean): void {
     this.flags &= OvrFlags.None;
+    this.weight = style.width;
     if (style.ovrColor) {
       this.flags |= OvrFlags.Rgba;
       this.color.initFromColorDef(style.color);
     }
     if (style.width !== 0) {
       this.flags |= OvrFlags.Weight;
-      this.weight = style.width;
-    } else {
-      this.weight = 0;
     }
     if (style.pattern !== LinePixels.Invalid) {
       this.flags |= OvrFlags.LineCode;
