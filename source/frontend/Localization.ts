@@ -90,6 +90,14 @@ export class I18N {
     this.namespaceRegistry.set(name, thisNamespace);
     return thisNamespace;
   }
+
+  public waitForAllRead(): Promise<void[]> {
+    const namespacePromises = new Array<Promise<void>>();
+    for (const thisNamespace of this.namespaceRegistry.values()) {
+      namespacePromises.push(thisNamespace.readFinished);
+    }
+    return Promise.all(namespacePromises);
+  }
 }
 
 export class I18NNamespace {

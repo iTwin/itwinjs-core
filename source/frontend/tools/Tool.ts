@@ -457,6 +457,7 @@ export abstract class InteractiveTool extends Tool {
  */
 export class ToolRegistry {
   public map: Map<string, typeof Tool> = new Map<string, typeof Tool>();
+  private _keyinMap: Map<string, typeof Tool> | undefined = undefined;
   public unRegister(toolId: string) { this.map.delete(toolId); }
 
   /**
@@ -475,6 +476,9 @@ export class ToolRegistry {
       throw new IModelError(-1, "Tools must have a namespace");
 
     this.map.set(toolClass.toolId, toolClass);
+
+    // throw away the current _keyinMap and produce a new one when asked.
+    this._keyinMap = undefined;
   }
 
   /**
@@ -496,6 +500,15 @@ export class ToolRegistry {
   /** Look up a tool by toolId */
   public find(toolId: string): typeof Tool | undefined { return this.map.get(toolId); }
 
+  /** Look up a tool by its keyin */
+  public findByKeyin(keyin: string): typeof Tool | undefined {
+    for (const thisTool of this.map.values()) {
+      if (thisTool.getKeyin() === keyin)
+        return thisTool;
+    }
+    return undefined;
+  }
+
   /**
    * Look up a tool by toolId and, if found, create an instance with the supplied arguments.
    * @param toolId the toolId of the tool
@@ -516,5 +529,20 @@ export class ToolRegistry {
   public run(toolId: string, ...args: any[]): boolean {
     const tool = this.create(toolId, ...args);
     return !!tool && tool.run();
+  }
+
+  public async getKeyinMap(): Promise<Map<string, typeof Tool>> {
+    if (this._keyinMap) return this._keyinMap;
+    const thePromise: Promise<Map<string, typeof Tool>> = new Promise<Map<string, typeof Tool>>((resolve: any, reject: any) => {
+      iModelApp.i18N.waitForAllRead().then(() => {
+        this._keyinMap = new Map<string, typeof Tool>();
+        for (const thisTool of this.map.values()) {
+          const keyinString = thisTool.getKeyin();
+          this._keyinMap!.set(keyinString, thisTool);
+        }
+        resolve(this._keyinMap);
+      }, () => { reject(); });
+    });
+    return thePromise;
   }
 }

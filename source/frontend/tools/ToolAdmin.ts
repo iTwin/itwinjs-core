@@ -4,14 +4,14 @@
 import { Point3d, Point2d, XAndY, Vector3d } from "@bentley/geometry-core/lib/PointVector";
 import { ViewStatus } from "../../common/ViewState";
 import { Viewport } from "../Viewport";
-import { IdleTool } from "./IdleTool";
-import { ViewTool, ViewToolSettings, InputCollector } from "./ViewTool";
-import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
-import { BeEvent, BeEventList } from "@bentley/bentleyjs-core/lib/BeEvent";
 import {
   BeModifierKey, BeButtonState, BeButton, BeGestureEvent, Tool, BeButtonEvent, CoordSource, GestureInfo,
   BeCursor, BeWheelEvent, InputSource, BeVirtualKey, InteractiveTool,
 } from "./Tool";
+import { IdleTool } from "./IdleTool";
+import { ViewTool, ViewToolSettings, InputCollector } from "./ViewTool";
+import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
+import { BeEvent, BeEventList } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { DecorateContext } from "../ViewContext";
 import { TentativeOrAccuSnap, AccuSnapToolState } from "../AccuSnap";
