@@ -13,7 +13,7 @@ import * as path from "path";
 import { PanTool } from "../../frontend/tools/ViewTool";
 import { CompassMode } from "../../frontend/AccuDraw";
 
-const iModelLocation = path.join(__dirname, "../../../../test/lib/test/assets/test.bim");
+const iModelLocation = path.join(__dirname, "../../../../backend/lib/backend/test/assets/test.bim");
 
 /** Class with scope limited to this file, used for creating a Viewport without a canvas */
 class TestViewport extends Viewport {
@@ -31,7 +31,6 @@ class TestIModelApp extends IModelApp {
 describe("Viewport", function () {
   let imodel: IModelConnection;
   let spatialView: SpatialViewState;
-  this.timeout(99999);
 
   before(async () => {   // Create a ViewState to load into a Viewport
     TestIModelApp.startup();

@@ -194,7 +194,7 @@ export abstract class ViewState extends ElementState {
     const frustumY = Vector3d.createFrom(frustPts[Npc.LeftTopRear].minus(viewOrg));
     const frustumZ = Vector3d.createFrom(frustPts[Npc.LeftBottomFront].minus(viewOrg));
 
-    const frustMatrix = RotMatrix.createPerpendicularUnitColumns(frustumX, frustumY, AxisOrder.XYZ);
+    const frustMatrix = RotMatrix.createRigidFromColumns(frustumX, frustumY, AxisOrder.XYZ);
     if (!frustMatrix)
       return ViewStatus.InvalidWindow;
 

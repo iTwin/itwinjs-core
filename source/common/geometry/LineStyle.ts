@@ -111,7 +111,7 @@ export class LineStyleParams {
       const rTmp = this.rMatrix.inverse();
       if (rTmp) {
         rTmp.multiplyMatrixMatrix(transform.matrix, rTmp);
-        RotMatrix.createPerpendicularUnitColumnsFromRotMatrix(rTmp, AxisOrder.XYZ, rTmp);
+        RotMatrix.createRigidFromRotMatrix(rTmp, AxisOrder.XYZ, rTmp);
         const rTmpInverse = rTmp.inverse();
         if (rTmpInverse)
           this.rMatrix.setFrom(rTmpInverse);

@@ -20,7 +20,6 @@ remote.require(path.join(__dirname, "../backend/index"));
 // tslint:disable:only-arrow-functions
 // tslint:disable:space-before-function-paren
 describe("Testbed", function () {
-  this.timeout(99999);
   it("Server should be accessible", (done) => {
     const info = TestbedConfig.gatewayParams.info;
 
@@ -46,7 +45,6 @@ for (const entry of IModelJsFs.readdirSync(__dirname)) {
     const entryPath = `${__dirname}/${entry}`;
 
     describe(entry, function () {
-      this.timeout(99999);
       it("should be compatible with webpack", (done) => {
         const compiler = webpack({
           entry: entryPath, node: {

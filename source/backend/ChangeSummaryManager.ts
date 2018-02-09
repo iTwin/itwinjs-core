@@ -139,16 +139,13 @@ export class ChangeSummaryManager {
     for (const changeSet of changeSets) {
       const version: IModelVersion = IModelVersion.asOfChangeSet(changeSet.wsgId);
       const iModel: IModelDb = await IModelDb.open(accessToken, projectId, iModelId, OpenMode.Readonly, version);
-      const nativeIModelDb = iModel.nativeDb;
-      if (nativeIModelDb == null)
-        throw new IModelError(IModelStatus.WrongIModel);
-
       try {
 
         if (ChangeSummaryManager.isSummaryAlreadyExtracted(changesFile, changeSet.wsgId)) {
           continue;
         }
 
+        const nativeIModelDb = iModel.nativeDb;
         const changeSetFilePath: string = path.join(changeSetsFolder, changeSet.fileName!);
         const stat: ErrorStatusOrResult<DbResult, string> = nativeIModelDb.extractChangeSummary(changesFile.nativeDb, changeSetFilePath);
         if (stat.error != null && stat.error!.status !== DbResult.BE_SQLITE_OK)
@@ -245,7 +242,7 @@ export class ChangeSummaryManager {
         throw new IModelError(DbResult.BE_SQLITE_ERROR, `No ChangeSet information found for ChangeSummary ${changeSummaryId.value}.`);
 
       const row = stmt.getRow();
-      return {id: changeSummaryId, changeSet: {wsgId: row.wsgId, parentWsgId: row.parentWsgId, pushDate: row.pushDate, author: row.author}};
+      return {id: changeSummaryId, changeSet: {wsgId: row.wsgId, parentWsgId: row.parentWsgId, pushDate: new DateTime(row.pushDate), author: row.author}};
       });
   }
 

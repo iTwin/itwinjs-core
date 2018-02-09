@@ -4,3 +4,5 @@
 .npmignore
 tsconfig.json
 tslint.json
+test
+lib/backend/test

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "0.39.0",
+  "version": "0.45.0",
   "description": "iModelJs frontend components",
   "license": "UNLICENSED",
   "scripts": {
@@ -24,8 +24,8 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/bentleyjs-core": "^2.0.1",
-    "@bentley/geometry-core": "^4.0.7",
+    "@bentley/bentleyjs-core": "^5.1.0",
+    "@bentley/geometry-core": "^4.2.0",
     "@bentley/imodeljs-clients": "^2.0.1",
     "i18next": "^10.2.2",
     "i18next-browser-languagedetector": "^2.1.0",

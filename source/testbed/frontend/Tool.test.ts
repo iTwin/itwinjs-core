@@ -10,7 +10,7 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { ModifyElementSource } from "../../frontend/tools/PrimitiveTool";
 import { SelectEventType } from "../../frontend/SelectionSet";
 
-const iModelLocation = path.join(__dirname, "../../../../test/lib/test/assets/test.bim");
+const iModelLocation = path.join(__dirname, "../../../../backend/lib/backend/test/assets/test.bim");
 
 class TestIModelApp extends IModelApp {
   protected supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
@@ -20,10 +20,8 @@ class TestIModelApp extends IModelApp {
 // tslint:disable-next-line:space-before-function-paren
 describe("Tools", function () {
   let imodel: IModelConnection;
-  const mocha = this;
 
   before(async () => {
-    mocha.timeout(99999);
     TestIModelApp.startup();
     imodel = await IModelConnection.openStandalone(iModelLocation);
   });

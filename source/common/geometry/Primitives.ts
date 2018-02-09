@@ -379,7 +379,7 @@ export class GeometricPrimitive {
 
     // NOTE: Ensure rotation is squared up and normalized (ComputePrincipalAreaMoments/GetEntityTransform is scaled)...
     const rMatrix = localToWorld.matrix;
-    RotMatrix.createPerpendicularUnitColumns(rMatrix.columnX(), rMatrix.columnY(), AxisOrder.XYZ, rMatrix);
+    RotMatrix.createRigidFromColumns(rMatrix.columnX(), rMatrix.columnY(), AxisOrder.XYZ, rMatrix);
 
     return true;
   }

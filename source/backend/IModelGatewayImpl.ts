@@ -16,6 +16,8 @@ import { IModelDb } from "../backend/IModelDb";
 import { IModelGateway } from "../gateway/IModelGateway";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 
+const loggingCategory = "imodeljs-backend.IModelGatewayImpl";
+
 /** The backend implementation of IModelGateway.
  * @hidden
  */
@@ -63,7 +65,7 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
   public async executeQuery(iModelToken: IModelToken, sql: string, bindings?: any[] | object): Promise<string[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const rows: any[] = iModelDb.executeQuery(sql, bindings);
-    Logger.logInfo("IModelDbRemoting.executeQuery", () => ({ sql, numRows: rows.length }));
+    Logger.logTrace(loggingCategory, "IModelDbRemoting.executeQuery", () => ({ sql, numRows: rows.length }));
     return rows;
   }
 
@@ -98,7 +100,7 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
     if (params.where) sql += " WHERE " + params.where;
     if (params.orderBy) sql += " ORDER BY " + params.orderBy;
     if (params.offset) sql += " OFFSET " + params.offset;
-    sql += (params.limit) ? ` LIMIT ${params.limit}` : ` LIMIT ${iModelDb.defaultLimit}`;
+    sql += (params.limit) ? ` LIMIT ${params.limit}` : ` LIMIT ${IModelDb.defaultLimit}`;
 
     const statement: ECSqlStatement = iModelDb.getPreparedStatement(sql);
     const elementIds: string[] = [];
@@ -106,7 +108,7 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
       elementIds.push(row.id);
 
     iModelDb.releasePreparedStatement(statement);
-    Logger.logInfo("IModelDbRemoting.queryElementIds", () => ({ sql, numElements: elementIds.length }));
+    Logger.logTrace(loggingCategory, "IModelDbRemoting.queryElementIds", () => ({ sql, numElements: elementIds.length }));
     return elementIds;
   }
 
@@ -143,7 +145,7 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
       codeSpecs.push({ id: row.id, name: row.name, jsonProperties: JSON.parse(row.jsonProperties) });
 
     iModelDb.releasePreparedStatement(statement);
-    Logger.logInfo("IModelDbRemoting.getAllCodeSpecs", () => ({ numCodeSpecs: codeSpecs.length }));
+    Logger.logTrace(loggingCategory, "IModelDbRemoting.getAllCodeSpecs", () => ({ numCodeSpecs: codeSpecs.length }));
     return codeSpecs;
   }
 

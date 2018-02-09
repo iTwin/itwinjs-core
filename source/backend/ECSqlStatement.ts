@@ -3,14 +3,15 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { IModelError } from "../common/IModelError";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { DateTime, Blob, NavigationValue, NavigationBindingValue } from "../common/ECSqlTypes";
-import { XAndY, XY, XYAndZ, XYZ } from "@bentley/geometry-core/lib/PointVector";
-import { BindingUtility, BindingValue } from "./BindingUtility";
+import { ECSqlValueType, DateTime, Blob, NavigationValue, NavigationBindingValue, ECSqlSystemProperty, ECJsNames } from "../common/ECSqlTypes";
+import { Point2d, Point3d, XAndY, XY, XYAndZ, XYZ } from "@bentley/geometry-core/lib/PointVector";
+import { ECDb } from "./ECDb";
 import { using, IDisposable } from "@bentley/bentleyjs-core/lib/Disposable";
 import { NodeAddonRegistry } from "./NodeAddonRegistry";
-import { AddonECSqlStatement, AddonECSqlBinder, AddonECDb, AddonDgnDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
+import { AddonECSqlStatement, AddonECSqlBinder, AddonECSqlValue, AddonECSqlColumnInfo, AddonECDb, AddonDgnDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { StatusCodeWithMessage } from "@bentley/bentleyjs-core/lib/BentleyError";
 
 /** The result of an ECSQL INSERT statement as returned from ECSqlStatement.stepForInsert.
@@ -179,7 +180,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    *  @param val Navigation property value
    */
   public bindNavigation(param: number | string, val: NavigationBindingValue): void {
-    using(this.getBinder(param), (binder) => binder.bindNavigation(val.navId.value, val.relClassName, val.relClassTableSpace));
+    using(this.getBinder(param), (binder) => binder.bindNavigation(val.id.value, val.relClassName, val.relClassTableSpace));
     }
 
   /** Binds a struct property value to the specified ECSQL parameter
@@ -243,19 +244,6 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
       throw new IModelError(stat);
   }
 
-  /** Bind values to placeholders. @deprecated Use bindValues instead or the other bindXXX methods
-   * @param bindings  The values to set for placeholders. Pass an array if the placeholders are positional. Pass an 'any' object
-   * for named placeholders, where the properties of the object match the names of the placeholders in the statement.
-   * @throws IModelError in case the binding fails. This will normally happen only if the type of a value does not match and cannot be converted to the type required for the corresponding property in the statement.
-   */
-  public bindValues_Depr(bindings: BindingValue[] | Map<string, BindingValue> | any): void {
-    const ecBindings = BindingUtility.preProcessBindings(bindings);
-    const bindingsStr = JSON.stringify(ecBindings);
-    const nativeError = this._stmt!.bindValues(bindingsStr);
-    if (nativeError.status !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(nativeError.status, nativeError.message);
-  }
-
   /** Step this statement to the next matching row. */
   public step(): DbResult {
     return this._stmt!.step();
@@ -278,6 +266,27 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   public getRow(): any {
     return JSON.parse(this._stmt!.getRow());
   }
+
+  /** @hidden Needs to wait for respective add-on build before it can be used.
+   * Get the current row.
+   */
+  public getRow_new(): any {
+    const colCount: number = this._stmt!.getColumnCount();
+    const row: object = {};
+    const duplicatePropNames = new Map<string, number>();
+    for (let i = 0; i < colCount; i++) {
+      using (this._stmt!.getValue(i), (ecsqlValue) => {
+        if (ecsqlValue.isNull())
+          return;
+
+        const propName: string = ECSqlValueHelper.determineResultRowPropertyName(duplicatePropNames, ecsqlValue);
+        const val: any = ECSqlValueHelper.getValue(ecsqlValue);
+        Object.defineProperty(row, propName, {enumerable: true, configurable: true, writable: true, value: val});
+        });
+      }
+
+    return row;
+    }
 
   /** Calls step when called as an iterator. */
   public next(): IteratorResult<any> {
@@ -429,13 +438,208 @@ class ECSqlBindingHelper {
       return binder.bindPoint2d(val.x, val.y);
 
     if (val instanceof NavigationBindingValue)
-      return binder.bindNavigation(val.navId.value, val.relClassName, val.relClassTableSpace);
+      return binder.bindNavigation(val.id.value, val.relClassName, val.relClassTableSpace);
 
     if (val instanceof NavigationValue)
-      return binder.bindNavigation(val.navId.value, val.relClassName);
+      return binder.bindNavigation(val.id.value, val.relClassName);
 
     return undefined;
   }
+}
+
+class ECSqlValueHelper {
+
+  public static getValue(ecsqlValue: AddonECSqlValue): any {
+    if (ecsqlValue.isNull())
+      return undefined;
+
+    const dataType: ECSqlValueType = ecsqlValue.getColumnInfo().getType() as ECSqlValueType;
+    switch (dataType) {
+      case ECSqlValueType.Struct:
+        return ECSqlValueHelper.getStructValue(ecsqlValue);
+
+      case ECSqlValueType.Navigation:
+      return ECSqlValueHelper.getNavigationValue(ecsqlValue);
+
+      case ECSqlValueType.PrimitiveArray:
+      case ECSqlValueType.StructArray:
+      return ECSqlValueHelper.getArrayValue(ecsqlValue);
+
+      default:
+        return ECSqlValueHelper.getPrimitiveValue(ecsqlValue);
+    }
+  }
+
+  public static determineResultRowPropertyName(duplicatePropNames: Map<string, number>, ecsqlValue: AddonECSqlValue): string {
+    const colInfo: AddonECSqlColumnInfo = ecsqlValue.getColumnInfo();
+    let propName: string;
+
+    const colAccessString: string = colInfo.getAccessString();
+
+    // only top-level system properties need to be treated separately. For other system properties
+    // we need the full access string to be returned
+    if (colInfo.isSystemProperty()) {
+      if (colAccessString === "ECInstanceId")
+        propName = ECJsNames.toJsName(ECSqlSystemProperty.ECInstanceId);
+      else if (colAccessString === "ECClassId")
+        propName = ECJsNames.toJsName(ECSqlSystemProperty.ECClassId);
+      else if (colAccessString === "SourceECInstanceId")
+        propName = ECJsNames.toJsName(ECSqlSystemProperty.SourceECInstanceId);
+      else if (colAccessString === "TargetECInstanceId")
+        propName = ECJsNames.toJsName(ECSqlSystemProperty.TargetECInstanceId);
+      else if (colAccessString === "SourceECClassId")
+        propName = ECJsNames.toJsName(ECSqlSystemProperty.SourceECClassId);
+      else if (colAccessString === "TargetECClassId")
+        propName = ECJsNames.toJsName(ECSqlSystemProperty.TargetECClassId);
+      else {
+        // now handle nested system props: output them with full access string, but
+        // replace the system portion of it
+        const accessStringTokens: string[] = colAccessString.split(".");
+        const tokenCount: number = accessStringTokens.length;
+        const leafToken: string = accessStringTokens[tokenCount - 1];
+        propName = ECJsNames.toJsName(accessStringTokens[0] + ".");
+        for (let j = 1; j < tokenCount - 1; j++) {
+          propName += accessStringTokens[j] + ".";
+        }
+
+        if (leafToken === "Id")
+          propName += ECJsNames.toJsName(ECSqlSystemProperty.NavigationId);
+        else if (leafToken === "RelECClassId")
+          propName += ECJsNames.toJsName(ECSqlSystemProperty.NavigationRelClassId);
+        else if (leafToken === "X")
+          propName += ECJsNames.toJsName(ECSqlSystemProperty.PointX);
+        else if (leafToken === "Y")
+          propName += ECJsNames.toJsName(ECSqlSystemProperty.PointY);
+        else if (leafToken === "Z")
+          propName += ECJsNames.toJsName(ECSqlSystemProperty.PointZ);
+        else {
+          assert(false, "Unhandled ECSQL system property type");
+          throw new IModelError(BentleyStatus.ERROR, "Unhandled ECSQL system property: " + colInfo.getAccessString());
+        }
+      }
+    } else
+        propName = ECJsNames.toJsName(colAccessString);
+
+    // now check duplicates. If there are, append a numeric suffix to the duplicates
+    assert(propName !== undefined);
+    let suffix: number | undefined = duplicatePropNames.get(propName);
+    if (suffix === undefined)
+      duplicatePropNames.set(propName, 0);
+    else {
+      suffix++;
+      duplicatePropNames.set(propName, suffix);
+      propName += "_" + suffix;
+    }
+
+    return propName;
+  }
+
+  private static getStructValue(ecsqlValue: AddonECSqlValue): any {
+    if (ecsqlValue.isNull())
+      return undefined;
+
+    const structVal: object = {};
+    using (ecsqlValue.getStructIterator(), (it) => {
+      while (it.moveNext()) {
+        using (it.getCurrent(), (memberECSqlVal) => {
+        if (memberECSqlVal.isNull())
+          return;
+
+        assert(!memberECSqlVal.getColumnInfo().isGeneratedProperty());
+        const memberName: string = ECJsNames.toJsName(memberECSqlVal.getColumnInfo().getPropertyName());
+        const memberVal = ECSqlValueHelper.getValue(memberECSqlVal);
+        Object.defineProperty(structVal, memberName, {
+          enumerable: true,
+          configurable: true,
+          writable: true,
+          value: memberVal});
+        });
+      }
+    });
+    return structVal;
+  }
+
+  private static getArrayValue(ecsqlValue: AddonECSqlValue): any {
+    if (ecsqlValue.isNull())
+      return undefined;
+
+    const arrayVal: any[] = [];
+    using (ecsqlValue.getArrayIterator(), (it) => {
+      while (it.moveNext()) {
+        using (it.getCurrent(), (memberECSqlVal) => {
+        const memberVal = ECSqlValueHelper.getValue(memberECSqlVal);
+        arrayVal.push(memberVal);
+        });
+      }
+    });
+
+    return arrayVal;
+  }
+
+  private static getNavigationValue(ecsqlValue: AddonECSqlValue): any {
+    if (ecsqlValue.isNull())
+      return undefined;
+
+    const rawVal: {id: string, relClassName?: string} = ecsqlValue.getNavigation();
+    return new NavigationValue(new Id64(rawVal.id), rawVal.relClassName);
+  }
+
+  private static getPrimitiveValue(ecsqlValue: AddonECSqlValue): any {
+    if (ecsqlValue.isNull())
+      return undefined;
+
+    const colInfo: AddonECSqlColumnInfo = ecsqlValue.getColumnInfo();
+    switch (colInfo.getType()) {
+      case ECSqlValueType.Blob:
+        return new Blob(ecsqlValue.getBlob());
+      case ECSqlValueType.Boolean:
+        return ecsqlValue.getBoolean();
+      case ECSqlValueType.DateTime:
+        return new DateTime(ecsqlValue.getDateTime());
+      case ECSqlValueType.Double:
+        return ecsqlValue.getDouble();
+      case ECSqlValueType.Geometry:
+        return JSON.parse(ecsqlValue.getGeometry());
+      case ECSqlValueType.Id: {
+        if (colInfo.isSystemProperty() && colInfo.getPropertyName().endsWith("ECClassId"))
+          return ecsqlValue.getClassNameForClassId();
+
+        return new Id64(ecsqlValue.getId());
+      }
+      case ECSqlValueType.Int:
+        return ecsqlValue.getInt();
+      case ECSqlValueType.Int64:
+        return ecsqlValue.getInt64();
+      case ECSqlValueType.Point2d: {
+        const rawPoint: {x: number, y: number} = ecsqlValue.getPoint2d();
+        return new Point2d(rawPoint.x, rawPoint.y);
+      }
+      case ECSqlValueType.Point3d: {
+        const rawPoint: {x: number, y: number, z: number} = ecsqlValue.getPoint3d();
+        return new Point3d(rawPoint.x, rawPoint.y, rawPoint.z);
+      }
+      case ECSqlValueType.String:
+        return ecsqlValue.getString();
+      default:
+       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unsupported type ${ecsqlValue.getColumnInfo().getType()} of the ECSQL Value`);
+    }
+  }
+
+  public static queryClassName(ecdb: ECDb, classId: Id64, tableSpace?: string): string {
+    if (tableSpace === undefined)
+      tableSpace = "main";
+
+    return ecdb.withPreparedStatement("SELECT s.Name schemaName, c.Name className FROM [" + tableSpace
+      + "].meta.ECSchemaDef s, JOIN [" + tableSpace + "].meta.ECClassDef c ON s.ECInstanceId=c.SchemaId WHERE c.ECInstanceId=?", (stmt) => {
+      stmt.bindId(1, classId);
+      if (stmt.step() !== DbResult.BE_SQLITE_ROW)
+        throw new IModelError(DbResult.BE_SQLITE_ERROR, "No class found with ECClassId " + classId.value + " in table space " + tableSpace + ".");
+
+      const row: any = stmt.getRow_new();
+      return row.schemaName + "." + row.className;
+    });
+  }
+
 }
 
 export class CachedECSqlStatement {
