@@ -267,7 +267,9 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     return JSON.parse(this._stmt!.getRow());
   }
 
-  /** Get the current row. */
+  /** @hidden Needs to wait for respective add-on build before it can be used.
+   * Get the current row.
+   */
   public getRow_new(): any {
     const colCount: number = this._stmt!.getColumnCount();
     const row: object = {};
@@ -291,7 +293,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     if (DbResult.BE_SQLITE_ROW === this.step()) {
       return {
         done: false,
-        value: this.getRow_new(),
+        value: this.getRow(),
       };
     } else {
       return {

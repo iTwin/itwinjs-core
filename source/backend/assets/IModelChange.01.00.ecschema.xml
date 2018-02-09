@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <ECSchema schemaName="IModelChange" alias="imodelchange" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
-  <ECSchemaReference name="ECDbChange" version="01.01" alias="change"/>
+  <ECSchemaReference name="ECDbChange" version="01.00" alias="change"/>
   <ECSchemaReference name="CoreCustomAttributes" version="01.00.00" alias="CoreCA"/>
 
   <ECEntityClass typeName="ChangeSet" modifier="Sealed">

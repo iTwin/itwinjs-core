@@ -52,14 +52,14 @@ describe("ChangeSummary", () => {
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
       iModel.withPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
-        const row: any = myStmt.getRow_new();
+        const row: any = myStmt.getRow();
         assert.equal(row.csumcount, 0);
       });
 
       // verify the extended schema was imported into the changes file
       iModel.withPreparedStatement("SELECT count(*) as csumcount FROM imodelchange.ChangeSet", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
-        const row: any = myStmt.getRow_new();
+        const row: any = myStmt.getRow();
         assert.equal(row.csumcount, 0);
       });
 
@@ -82,14 +82,14 @@ describe("ChangeSummary", () => {
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
       iModel.withPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
-        const row: any = myStmt.getRow_new();
+        const row: any = myStmt.getRow();
         assert.equal(row.csumcount, 0);
       });
 
       // verify the extended schema was imported into the changes file
       iModel.withPreparedStatement("SELECT count(*) as csumcount FROM imodelchange.ChangeSet", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
-        const row: any = myStmt.getRow_new();
+        const row: any = myStmt.getRow();
         assert.equal(row.csumcount, 0);
       });
 
@@ -122,8 +122,8 @@ describe("ChangeSummary", () => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
           rowCount++;
-          const row: any = myStmt.getRow_new();
-          changeSummaryIds.push(row.id);
+          const row: any = myStmt.getRow();
+          changeSummaryIds.push(new Id64(row.id));
           assert.equal(row.className, "ECDbChange.ChangeSummary");
           assert.isUndefined(row.extendedProperties, "ChangeSummary.ExtendedProperties is not expected to be populated when change summaries are extracted.");
         }
@@ -134,9 +134,9 @@ describe("ChangeSummary", () => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
           rowCount++;
-          const row: any = myStmt.getRow_new();
+          const row: any = myStmt.getRow();
           assert.equal(row.className, "IModelChange.ChangeSet");
-          assert.equal(row.summary.id.value, changeSummaryIds[rowCount - 1].value);
+          assert.equal(row.summary.id, changeSummaryIds[rowCount - 1].value);
           assert.equal(row.summary.relClassName, "IModelChange.ChangeSummaryIsExtractedFromChangeset");
         }
 
@@ -168,19 +168,19 @@ describe("ChangeSummary", () => {
 
       const changeSummaryId: Id64 = iModel.withPreparedStatement("SELECT ECInstanceId FROM change.ChangeSummary", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
-        const row: any = myStmt.getRow_new();
+        const row: any = myStmt.getRow();
         assert.isDefined(row.id);
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
-        return row.id;
+        return new Id64(row.id);
         });
 
       iModel.withPreparedStatement("SELECT WsgId, Summary FROM imodelchange.ChangeSet", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
-        const row: any = myStmt.getRow_new();
+        const row: any = myStmt.getRow();
         assert.isDefined(row.wsgId);
         assert.equal(row.wsgId, changesetId);
         assert.isDefined(row.summary);
-        assert.equal(row.summary.id.value, changeSummaryId.value);
+        assert.equal(row.summary.id, changeSummaryId.value);
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
         });
     } finally {
@@ -210,19 +210,19 @@ describe("ChangeSummary", () => {
 
       const changeSummaryId: Id64 = iModel.withPreparedStatement("SELECT ECInstanceId FROM change.ChangeSummary", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
-        const row: any = myStmt.getRow_new();
+        const row: any = myStmt.getRow();
         assert.isDefined(row.id);
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
-        return row.id;
+        return new Id64(row.id);
         });
 
       iModel.withPreparedStatement("SELECT WsgId, Summary FROM imodelchange.ChangeSet", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
-        const row: any = myStmt.getRow_new();
+        const row: any = myStmt.getRow();
         assert.isDefined(row.wsgId);
         assert.equal(row.wsgId, firstChangesetId);
         assert.isDefined(row.summary);
-        assert.equal(row.summary.id.value, changeSummaryId.value);
+        assert.equal(row.summary.id, changeSummaryId.value);
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
         });
     } finally {
@@ -245,7 +245,7 @@ describe("ChangeSummary", () => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
           rowCount++;
-          const row: any = myStmt.getRow_new();
+          const row: any = myStmt.getRow();
           assert.isDefined(row.changesetId);
           if (rowCount === 1)
             assert.equal(row.changesetId, firstChangesetId);
@@ -316,14 +316,14 @@ describe("ChangeSummary", () => {
     const changeSummaries = new Array<ChangeSummary>();
     iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.ChangeSummary ORDER BY ECInstanceId", (stmt) => {
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        const row = stmt.getRow_new();
-        const csum: ChangeSummary = ChangeSummaryManager.queryChangeSummary(iModel, row.id);
+        const row = stmt.getRow();
+        const csum: ChangeSummary = ChangeSummaryManager.queryChangeSummary(iModel, new Id64(row.id));
         changeSummaries.push(csum);
       }
     });
 
     for (const changeSummary of changeSummaries) {
-      const filePath = path.join(outDir, "imodelid_" + testIModelId + "_changesummaryid_" + changeSummary.id + ".changesummary.json");
+      const filePath = path.join(outDir, "imodelid_" + testIModelId + "_changesummaryid_" + changeSummary.id.value + ".changesummary.json");
       if (IModelJsFs.existsSync(filePath))
         IModelJsFs.unlinkSync(filePath);
 
@@ -331,9 +331,9 @@ describe("ChangeSummary", () => {
       iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId", (stmt) => {
         stmt.bindId(1, changeSummary.id);
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-          const row = stmt.getRow_new();
+          const row = stmt.getRow();
 
-          const instanceChange: InstanceChange = ChangeSummaryManager.queryInstanceChange(iModel, row.id);
+          const instanceChange: InstanceChange = ChangeSummaryManager.queryInstanceChange(iModel, new Id64(row.id));
           content.instanceChanges.push(instanceChange);
         }
       });

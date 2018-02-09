@@ -88,7 +88,7 @@ describe("IModelConnection", () => {
     await iModel.close(TestData.accessToken);
   });
 
-  it.only("Parameterized ECSQL", async () => {
+  it("Parameterized ECSQL", async () => {
     await TestData.load();
     const iModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
     assert.exists(iModel);
@@ -96,14 +96,14 @@ describe("IModelConnection", () => {
     let rows = await iModel.executeQuery("SELECT ECInstanceId,Model,LastMod,CodeValue,FederationGuid,Origin FROM bis.GeometricElement3d LIMIT 1");
     assert.equal(rows.length, 1);
     let expectedRow = rows[0];
-    const expectedId: Id64 = expectedRow.id;
+    const expectedId = new Id64(expectedRow.id);
     assert.isTrue(expectedId.isValid());
-    const expectedModelId = new NavigationValue(expectedRow.model.id, expectedRow.model.relClassName);
+    const expectedModelId = new NavigationValue(new Id64(expectedRow.model.id), expectedRow.model.relClassName);
     assert.isTrue(expectedModelId.isValid());
-    const expectedLastMod: DateTime = expectedRow.lastMod;
+    const expectedLastMod = new DateTime(expectedRow.lastMod);
     assert.isTrue(expectedLastMod.isValid());
-    const expectedFedGuid: Blob | undefined = expectedRow.federationGuid !== undefined ? expectedRow.federationGuid : undefined;
-    const expectedOrigin: Point3d = expectedRow.origin;
+    const expectedFedGuid: Blob | undefined = expectedRow.federationGuid !== undefined ? new Blob(expectedRow.federationGuid) : undefined;
+    const expectedOrigin = new Point3d(expectedRow.origin.x, expectedRow.origin.y, expectedRow.origin.z);
 
     let actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement3d WHERE ECInstanceId=? AND Model=? OR (LastMod=? AND CodeValue=? AND FederationGuid=? AND Origin=?)",
       [expectedId, expectedModelId, expectedLastMod, expectedRow.codeValue,
@@ -118,10 +118,10 @@ describe("IModelConnection", () => {
     assert.equal(actualRows.length, 1);
 
     // single parameter query
-    actualRows = await iModel.executeQuery("SELECT 1 FROM bis.Element WHERE LastMod=?", [new DateTime(expectedRow.lastMod)]);
+    actualRows = await iModel.executeQuery("SELECT 1 FROM bis.Element WHERE LastMod=?", [expectedLastMod]);
     assert.isTrue(actualRows.length >= 1);
 
-    actualRows = await iModel.executeQuery("SELECT 1 FROM bis.Element WHERE LastMod=:lastmod", { lastmod: new DateTime(expectedRow.lastMod) });
+    actualRows = await iModel.executeQuery("SELECT 1 FROM bis.Element WHERE LastMod=:lastmod", { lastmod: expectedLastMod });
     assert.isTrue(actualRows.length >= 1);
 
     // New query with point2d parameter

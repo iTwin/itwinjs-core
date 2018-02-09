@@ -70,7 +70,7 @@ describe("ViewState", () => {
     imodel = IModelDb.openStandalone(iModelLocation, OpenMode.Readonly);
     const viewRows: any[] = imodel.executeQuery("SELECT ECInstanceId FROM " + SpatialViewDefinition.sqlName);
     assert.exists(viewRows, "Should find some views");
-    const viewId: Id64 = viewRows[0].id;
+    const viewId: Id64 = new Id64(viewRows[0].id);
     flatView = imodel.elements.getElement(viewId) as SpatialViewDefinition;
 
     // Set up ViewState with camera turned on

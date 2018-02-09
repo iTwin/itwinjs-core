@@ -292,10 +292,10 @@ describe("iModel", () => {
   });
 
   it("should be some categories", () => {
-    const categoryRows: any[] = imodel1.executeQuery("SELECT EcInstanceId FROM " + Category.sqlName);
+    const categoryRows: any[] = imodel1.executeQuery("SELECT ECInstanceId FROM " + Category.sqlName);
     assert.exists(categoryRows, "Should have some Category ids");
     for (const categoryRow of categoryRows!) {
-      const categoryId: Id64 = categoryRow.id;
+      const categoryId = new Id64(categoryRow.id);
       const category = imodel1.elements.getElement(categoryId);
       assert.isTrue(category instanceof Category, "Should be instance of Category");
       if (!category)
@@ -318,7 +318,7 @@ describe("iModel", () => {
       const subCategoryRows: any[] = imodel1.executeQuery(queryString, [categoryId]);
       assert.exists(subCategoryRows, "Should have at least one SubCategory");
       for (const subCategoryRow of subCategoryRows) {
-        const subCategoryId: Id64 = subCategoryRow.id;
+        const subCategoryId = new Id64(subCategoryRow.id);
         const subCategory = imodel1.elements.getElement(subCategoryId);
         assert.isTrue(subCategory instanceof SubCategory);
         if (subCategory instanceof SubCategory) {
@@ -332,7 +332,7 @@ describe("iModel", () => {
     const drawingGraphicRows: any[] = imodel2.executeQuery("SELECT ECInstanceId FROM BisCore.DrawingGraphic");
     assert.exists(drawingGraphicRows, "Should have some Drawing Graphics");
     for (const drawingGraphicRow of drawingGraphicRows!) {
-      const drawingGraphicId: Id64 = drawingGraphicRow.id;
+      const drawingGraphicId = new Id64(drawingGraphicRow.id);
       const drawingGraphic = imodel2.elements.getElement(drawingGraphicId);
       assert.exists(drawingGraphic);
       assert.isTrue(drawingGraphic.constructor.name === "DrawingGraphic", "Should be instance of DrawingGraphic");
@@ -375,7 +375,7 @@ describe("iModel", () => {
     const modelRows: any[] = imodel2.executeQuery(queryString);
     assert.exists(modelRows, "Should have at least one model within rootSubject");
     for (const modelRow of modelRows) {
-      const modelId: Id64 = modelRow.id;
+      const modelId = new Id64(modelRow.id);
       const model = imodel2.models.getModel(modelId);
       assert.exists(model, "Model should exist");
       assert.isTrue(model instanceof Model);
@@ -414,7 +414,7 @@ describe("iModel", () => {
     assert.exists(rows);
     assert.isArray(rows);
     assert.notEqual(rows.length, 0);
-    assert.isTrue(rows[0].id.isValid());
+    assert.notEqual(rows[0].id, "");
   });
 
   /* TBD
@@ -600,12 +600,12 @@ describe("iModel", () => {
       // Verify that we get a bunch of rows with the expected shape
       let count = 0;
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
-        const row = stmt.getRow_new();
+        const row = stmt.getRow();
         assert.isNotNull(row);
         assert.isObject(row);
         assert.isTrue(row.id !== undefined);
-        assert.isTrue(row.id.isValid());
-        lastId = row.id.value;
+        assert.isString(row.id);
+        lastId = row.id;
         if (row.codeValue !== undefined)
           firstCodeValue = row.codeValue;
         count = count + 1;
@@ -623,8 +623,8 @@ describe("iModel", () => {
         assert.isNotNull(row);
         assert.isObject(row);
         assert.isTrue(row.id !== undefined);
-        assert.isTrue(row.id.isValid());
-        lastIterId = row.id.value;
+        assert.isString(row.id);
+        lastIterId = row.id;
         iteratorCount = iteratorCount + 1;
         if (row.codeValue !== undefined)
           firstCodeValueIter = row.codeValue;
@@ -641,9 +641,9 @@ describe("iModel", () => {
       let count = 0;
       while (DbResult.BE_SQLITE_ROW === stmt3.step()) {
         count = count + 1;
-        const row = stmt3.getRow_new();
+        const row = stmt3.getRow();
         // Verify that we got the row that we asked for
-        assert.isTrue(idToFind.equals(row.id));
+        assert.isTrue(idToFind.equals(new Id64(row.id)));
       }
       // Verify that we got the row that we asked for
       assert.equal(count, 1);
@@ -656,7 +656,7 @@ describe("iModel", () => {
       let count = 0;
       while (DbResult.BE_SQLITE_ROW === stmt4.step()) {
         count = count + 1;
-        const row = stmt4.getRow_new();
+        const row = stmt4.getRow();
         // Verify that we got the row that we asked for
         assert.equal(row.codeValue, codeValueToFind);
       }
@@ -943,7 +943,7 @@ describe("iModel", () => {
 
     ifperfimodel.withPreparedStatement("select count(*) as [count] from DgnPlatformTest.ImodelJsTestElement", (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
-      const row = stmt.getRow_new();
+      const row = stmt.getRow();
       assert.equal(row.count, elementCount);
     });
 
