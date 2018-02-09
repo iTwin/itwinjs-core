@@ -14,7 +14,7 @@ export const enum PolylineParam {
   kNoneAdjWt = 32 * 3,
 }
 
-export class PolyLineParamVertex {
+export class PolylineParamVertex {
   public point: Point3d;
   public prevPoint: Point3d;
   public nextPoint: Point3d;

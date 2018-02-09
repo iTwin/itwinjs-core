@@ -9,7 +9,7 @@ import { OvrFlags } from "./RenderFlags";
 // See Render::LinePixels.
 export class LineCode {
   public value: number;
-  public static count: number = 10;
+  public static count = 10;
   constructor(pixels: LinePixels = LinePixels.Solid) {
     this.value = LineCode.valueFromLinePixels(pixels);
   }
@@ -52,6 +52,8 @@ export class EdgeOverrides {
     if (style.pattern !== LinePixels.Invalid) {
       this.flags |= OvrFlags.LineCode;
       this.lineCode.value = style.pattern;
+    } else {
+      this.lineCode.value = 0;
     }
     if (forceOpaque)
       this.flags |= OvrFlags.Alpha;
