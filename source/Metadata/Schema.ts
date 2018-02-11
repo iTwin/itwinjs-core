@@ -1,16 +1,21 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
-import { ECVersion, SchemaKey, ECClassModifier } from "../ECObjects";
-import { SchemaInterface, SchemaChildInterface } from "../Interfaces";
-import { ECClass, MixinClass, EntityClass, StructClass, CustomAttributeClass, RelationshipClass } from "./Class";
+
+import ECClass, { StructClass } from "./Class";
+import CustomAttributeClass from "./CustomAttributeClass";
+import MixinClass from "./MixinClass";
+import EntityClass from "./EntityClass";
+import RelationshipClass from "./RelationshipClass";
 import SchemaChild from "./SchemaChild";
-import { Enumeration } from "./Enumeration";
+import Enumeration from "./Enumeration";
 import KindOfQuantity from "./KindOfQuantity";
 import PropertyCategory from "./PropertyCategory";
 import SchemaReadHelper from "../Deserialization/Helper";
+import { ECVersion, SchemaChildKey, SchemaKey, ECClassModifier } from "../ECObjects";
+import { SchemaInterface, SchemaChildInterface } from "../Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { ICustomAttributeContainer, CustomAttributeSet } from "./CustomAttribute";
+import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { SchemaContext } from "../Context";
 
 const SCHEMAURL3_1 = "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema";
@@ -18,201 +23,107 @@ const SCHEMAURL3_1 = "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecsche
 /**
  *
  */
-export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
-  private _immutable: boolean = false;
-  public schemaKey: SchemaKey;
+export default class ECSchema implements SchemaInterface, CustomAttributeContainerProps {
+  private _context?: SchemaContext;
+  public readonly schemaKey: SchemaKey;
   public alias: string;
   public label?: string;
   public description?: string;
   public customAttributes?: CustomAttributeSet;
-  public references?: SchemaInterface[];
-  private _children?: SchemaChildInterface[];
+  public readonly references: SchemaInterface[];
+  private readonly _children: SchemaChildInterface[];
 
-  constructor(name?: string, readVersion?: number, writeVersion?: number, minorVersion?: number) {
+  constructor(name?: string, readVersion?: number, writeVersion?: number, minorVersion?: number, context?: SchemaContext) {
     this.schemaKey = new SchemaKey(name, readVersion, writeVersion, minorVersion);
+    this.references = [];
+    this._children = [];
+    this._context = context;
   }
 
-  get name() { if (this.schemaKey) return this.schemaKey.name; }
-  set name(name: string) {
-    if (this._immutable)
-      throw new ECObjectsError(ECObjectsStatus.ImmutableSchema);
+  get name() { return this.schemaKey.name; }
+  set name(name: string) { this.schemaKey.name = name; }
 
-    if (!this.schemaKey)
-      this.schemaKey = new SchemaKey();
+  get readVersion() { return this.schemaKey.readVersion; }
+  set readVersion(version: number) { this.schemaKey.readVersion = version; }
 
-    this.schemaKey.name = name;
-  }
+  get writeVersion() { return this.schemaKey.writeVersion; }
+  set writeVersion(version: number) { this.schemaKey.writeVersion = version; }
 
-  get readVersion() { if (this.schemaKey) return this.schemaKey.readVersion; }
-  set readVersion(version: number) {
-    if (this._immutable)
-      throw new ECObjectsError(ECObjectsStatus.ImmutableSchema);
-
-    if (!this.schemaKey)
-      this.schemaKey = new SchemaKey();
-
-    this.schemaKey.readVersion = version;
-  }
-
-  get writeVersion() { if (this.schemaKey) return this.schemaKey.writeVersion; }
-  set writeVersion(version: number) {
-    if (this._immutable)
-      throw new ECObjectsError(ECObjectsStatus.ImmutableSchema);
-
-    if (!this.schemaKey)
-      this.schemaKey = new SchemaKey();
-
-    this.schemaKey.writeVersion = version;
-  }
-
-  get minorVersion() { if (this.schemaKey) return this.schemaKey.minorVersion; }
-  set minorVersion(version: number) {
-    if (this._immutable)
-      throw new ECObjectsError(ECObjectsStatus.ImmutableSchema);
-
-    if (!this.schemaKey)
-      this.schemaKey = new SchemaKey();
-
-    this.schemaKey.minorVersion = version;
-  }
+  get minorVersion() { return this.schemaKey.minorVersion; }
+  set minorVersion(version: number) { this.schemaKey.minorVersion = version; }
 
   /**
-   *
+   * Creates a EntityClass with the provided name in this schema.
    * @param name
    * @param modifier
    */
-  public createEntityClass(name: string, modifier?: ECClassModifier): EntityClass {
-    const newEntity = new EntityClass(name);
-
-    if (modifier)
-      newEntity.modifier = modifier;
-
-    if (!this._children)
-      this._children = [];
-    this._children.push(newEntity);
-
-    newEntity.setSchema(this);
-
-    return newEntity;
-  }
+  public async createEntityClass(name: string, modifier?: ECClassModifier): Promise<EntityClass> { return this.createClass<EntityClass>(EntityClass, name, modifier); }
+  public createEntityClassSync(name: string, modifier?: ECClassModifier): EntityClass { return this.createClass<EntityClass>(EntityClass, name, modifier); }
 
   /**
-   *
+   * Creates a MixinClass with the provided name in this schema.
    * @param name
    */
-  public createMixinClass(name: string): MixinClass {
-    const newMixin = new MixinClass(name);
-
-    if (!this._children)
-      this._children = [];
-    this._children.push(newMixin);
-
-    newMixin.setSchema(this);
-
-    return newMixin;
-  }
+  public async createMixinClass(name: string): Promise<MixinClass> { return this.createClass<MixinClass>(MixinClass, name); }
+  public createMixinClassSync(name: string): MixinClass { return this.createClass<MixinClass>(MixinClass, name); }
 
   /**
-   *
+   * Creates a StructClass with the provided name in this schema.
    * @param name
    * @param modifier
    */
-  public createStructClass(name: string, modifier?: ECClassModifier): StructClass {
-    const newStruct = new StructClass(name);
-
-    if (modifier)
-    newStruct.modifier = modifier;
-
-    if (!this._children)
-      this._children = [];
-    this._children.push(newStruct);
-
-    newStruct.setSchema(this);
-
-    return newStruct;
-  }
+  public async createStructClass(name: string, modifier?: ECClassModifier): Promise<StructClass> { return this.createClass<StructClass>(StructClass, name, modifier); }
+  public createStructClassSync(name: string, modifier?: ECClassModifier): StructClass { return this.createClass<StructClass>(StructClass, name, modifier); }
 
   /**
-   *
+   * Creates a CustomAttributeClass with the provided name in this schema.
    * @param name
    * @param modifier
    */
-  public createCustomAttributeClass(name: string, modifier?: ECClassModifier): CustomAttributeClass {
-    const newCAClass = new CustomAttributeClass(name);
-
-    if (modifier)
-      newCAClass.modifier = modifier;
-
-    if (!this._children)
-      this._children = [];
-    this._children.push(newCAClass);
-
-    newCAClass.setSchema(this);
-
-    return newCAClass;
-  }
+  public async createCustomAttributeClass(name: string, modifier?: ECClassModifier): Promise<CustomAttributeClass> { return this.createClass<CustomAttributeClass>(CustomAttributeClass, name, modifier); }
+  public createCustomAttributeClassSync(name: string, modifier?: ECClassModifier): CustomAttributeClass { return this.createClass<CustomAttributeClass>(CustomAttributeClass, name, modifier); }
 
   /**
-   *
+   * Creates a RelationshipClass with the provided name in this schema.
+   * @param name
+   * @param modifier
    */
-  public createRelationshipClass(name: string, modifier?: ECClassModifier): RelationshipClass {
-    const newRelClass = new RelationshipClass(name);
-
-    if (modifier)
-      newRelClass.modifier = modifier;
-
-    if (!this._children)
-      this._children = [];
-    this._children.push(newRelClass);
-
-    newRelClass.setSchema(this);
-
-    return newRelClass;
-  }
+  public async createRelationshipClass(name: string, modifier?: ECClassModifier): Promise<RelationshipClass> { return this.createClass<RelationshipClass>(RelationshipClass, name, modifier); }
+  public createRelationshipClassSync(name: string, modifier?: ECClassModifier): RelationshipClass { return this.createClass<RelationshipClass>(RelationshipClass, name, modifier); }
 
   /**
-   *
+   * Creates an Enumeration with the provided name in this schema.
    * @param name
    */
-  public createEnumeration(name: string): Enumeration {
-    const newEnum = new Enumeration(name);
-
-    if (!this._children)
-      this._children = [];
-    this._children.push(newEnum);
-
-    newEnum.setSchema(this);
-    return newEnum;
-  }
+  public async createEnumeration(name: string): Promise<Enumeration> { return this.createChild<Enumeration>(Enumeration, name); }
+  public createEnumerationSync(name: string): Enumeration { return this.createChild<Enumeration>(Enumeration, name); }
 
   /**
-   *
+   * Creates an KindOfQuantity with the provided name in this schema.
    * @param name
    */
-  public createKindOfQuantity(name: string) {
-    const newKoQ = new KindOfQuantity(name);
-
-    if (!this._children)
-      this._children = [];
-    this._children.push(newKoQ);
-
-    newKoQ.setSchema(this);
-    return newKoQ;
-  }
+  public async createKindOfQuantity(name: string): Promise<KindOfQuantity> { return this.createChild<KindOfQuantity>(KindOfQuantity, name); }
+  public createKindOfQuantitySync(name: string): KindOfQuantity { return this.createChild<KindOfQuantity>(KindOfQuantity, name); }
 
   /**
-   *
+   * Creates an PropertyCategory with the provided name in this schema.
    * @param name
    */
-  public createPropertyCategory(name: string) {
-    const newPropCat = new PropertyCategory(name);
+  public async createPropertyCategory(name: string): Promise<PropertyCategory> { return this.createChild<PropertyCategory>(PropertyCategory, name); }
+  public createPropertyCategorySync(name: string): PropertyCategory { return this.createChild<PropertyCategory>(PropertyCategory, name); }
 
-    if (!this._children)
-      this._children = [];
-    this._children.push(newPropCat);
+  // This method is private at the moment, but there is really no reason it can't be public... Need to make sure this is the way we want to handle this
+  private createClass<T extends ECClass>(type: (new (schema: SchemaInterface, name: string) => T), name: string, modifier?: ECClassModifier): T {
+    const child = this.createChild(type, name);
+    if (modifier) child.modifier = modifier;
+    return child;
+  }
 
-    newPropCat.setSchema(this);
-    return newPropCat;
+  // This method is private at the moment, but there is really no reason it can't be public... Need to make sure this is the way we want to handle this
+  private createChild<T extends SchemaChildInterface>(type: (new (schema: SchemaInterface, name: string) => T), name: string): T {
+    const child = new type(this, name);
+    this.addChild(child);
+    return child;
   }
 
   /**
@@ -220,40 +131,96 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
    * If the name is a full name, it will search in the reference schema matching the name.
    * @param name The name of the schema child to search for.
    */
-  public getChild<T extends SchemaChildInterface>(name: string): T | undefined {
+  public async getChild<T extends SchemaChildInterface>(name: string, includeReference?: boolean): Promise<T | undefined> {
     const [schemaName, childName] = SchemaChild.parseFullName(name);
 
     let foundChild;
     if (!schemaName || schemaName.toLowerCase() === this.name.toLowerCase()) {
-      if (!this._children)
-      return undefined;
-
-      // Do case-insensitive search
+      // Case-insensitive search
       foundChild = this._children.find((child) => child.name.toLowerCase() === childName.toLowerCase());
-    } else {
-      const refSchema = this.getReference(schemaName);
+      if (!foundChild && this._context) {
+        // this._context.
+      }
+
+    } else if (includeReference) {
+      const refSchema = await this.getReference(schemaName);
       if (!refSchema)
         return undefined;
 
       // Since we are only passing the childName to the reference schema it will not check its own referenced schemas.
-      foundChild = refSchema.getChild<T>(childName);
+      foundChild = refSchema.getChild<T>(childName, includeReference);
     }
 
-    return foundChild ? foundChild as T : foundChild;
+    return Promise.resolve(foundChild ? foundChild as T : foundChild);
+  }
+
+  public getChildByKeySync<T extends SchemaChildInterface>(key: SchemaChildKey, includeReferences?: boolean): T | undefined {
+    key;
+    includeReferences;
+    // TODO: Deprecate?
+    // let foundChild;
+    // if (this.schemaKey.matches(key.schemaKey, SchemaMatchType.Exact)) {
+    //   // Check the already loaded children
+    //   foundChild = this._children.find((child) => key.compareByName(child.name));
+    //   if (!foundChild)
+    //     return foundChild; // undefined
+
+    //   if (this._context)
+    //     foundChild = this._context.getSchemaChild(key);
+    // } else if (includeReferences) {
+    //   // Given that the child should be located in a ref schema we need to actually ask that ref schema instead of looking in the context.
+    //   // We do not want to accidentally load a child that matches but is not in a ref schema.
+
+    //   let refSchema;
+    //   if (key.schemaKey) {
+    //     refSchema = this.references.find((schema) => key.schemaKey.compareByName(schema.schemaKey.name));
+    //     if (refSchema)
+    //       foundChild = refSchema.getChildByKeySync()
+    //   }
+
+    // }
+
+    return undefined; // foundChild ? foundChild as T : foundChild;
+  }
+
+  public getChildSync<T extends SchemaChildInterface>(name: string, includeReference?: boolean): T | undefined {
+    name;
+    includeReference;
+    // TODO: Deprecate?
+    return undefined;
+  }
+
+  /**
+   *
+   * @param child
+   */
+  public async addChild<T extends SchemaChildInterface>(child: T): Promise<void> {
+    if (undefined !== await this.getChild(child.name, false))
+      throw new ECObjectsError(ECObjectsStatus.DuplicateChild, `The SchemaChild ${child.name} cannot be added to the schema ${this.name} because it already exists`);
+
+    this._children.push(child);
+    return Promise.resolve();
+  }
+
+  public addChildSync<T extends SchemaChildInterface>(child: T): void {
+    if (undefined !== this.getChildSync(child.name))
+      throw new ECObjectsError(ECObjectsStatus.DuplicateChild, `The SchemaChild ${child.name} cannot be added to the schema ${this.name} because it already exists`);
+
+    this._children.push(child);
   }
 
   /**
    * Searches the current schema for a class with a name matching, case-insensitive, the provided name.
    * @param name The name of the class to return.
    */
-  public getClass<T extends ECClass>(name: string): T | undefined {
-    return this.getChild<T>(name);
-  }
+  public getClass<T extends ECClass>(name: string): Promise<T | undefined> { return this.getChild<T>(name); }
+
+  public getClassSync<T extends ECClass>(name: string): T | undefined { return this.getChildSync<T>(name); }
 
   /**
    *
    */
-  public getChildren<T extends SchemaChildInterface>(): T[] {
+  public getChildren<T extends SchemaChild>(): T[] {
     if (!this._children)
       return [];
 
@@ -279,26 +246,34 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
    *
    * @param refSchema
    */
-  public addReference(refSchema: SchemaInterface): void {
+  public async addReference(refSchema: SchemaInterface): Promise<void> {
     // TODO validation of reference schema. For now just adding
-    if (!this.references)
-      this.references = [];
     this.references.push(refSchema);
   }
 
-  public getReference<T extends SchemaInterface>(refSchemaName: string): T | undefined {
-    if (!this.references)
+  public addReferenceSync(refSchema: SchemaInterface): void {
+    if (refSchema) { }
+
+    throw new Error("Not implemented");
+  }
+
+  public async getReference<T extends SchemaInterface>(refSchemaName: string): Promise<T | undefined> {
+    if (this.references.length === 0)
       return undefined;
+
     return this.references.find((ref) => ref.schemaKey.name.toLowerCase() === refSchemaName.toLowerCase()) as T;
+  }
+
+  public getReferenceSync<T extends SchemaInterface>(refSchemaName: string): T | undefined {
+    if (refSchemaName) { }
+    throw new Error("Not implemented");
   }
 
   /**
    *
    * @param jsonObj
    */
-  public fromJson(jsonObj: any): void {
-    if (this._immutable) throw new ECObjectsError(ECObjectsStatus.ImmutableSchema);
-
+  public async fromJson(jsonObj: any): Promise<void> {
     if (!jsonObj.$schema || jsonObj.$schema !== SCHEMAURL3_1)
       throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl);
 
@@ -318,14 +293,14 @@ export class ECSchema  implements SchemaInterface, ICustomAttributeContainer {
   //// Static Methods /////
   /////////////////////////
 
-  public static fromJson(jsonObj: object | string, context?: SchemaContext): ECSchema {
+  public static async fromJson(jsonObj: object | string, context?: SchemaContext): Promise<ECSchema> {
     let schema: ECSchema = new ECSchema();
 
     if (context) {
       const reader = new SchemaReadHelper(context);
-      schema = reader.readSchema(schema, jsonObj);
+      schema = await reader.readSchema(schema, jsonObj);
     } else
-      schema = SchemaReadHelper.to<ECSchema>(schema, jsonObj);
+      schema = await SchemaReadHelper.to<ECSchema>(schema, jsonObj);
 
     return schema;
   }

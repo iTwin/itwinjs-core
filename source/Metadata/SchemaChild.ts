@@ -1,77 +1,50 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaInterface, SchemaChildInterface, SchemaChildKeyInterface } from "../Interfaces";
-import { ECVersion, SchemaChildKey, SchemaKey } from "../ECObjects";
-import { SchemaContext } from "../Context";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { SchemaInterface, SchemaChildInterface } from "../Interfaces";
+import { ECVersion, SchemaChildKey, SchemaKey, SchemaChildType } from "../ECObjects";
 
 /**
  * An abstract class that supplies all of the common parts of a SchemaChild.
  */
 export default abstract class SchemaChild implements SchemaChildInterface {
-  // This is a pointer back to the parent schema
-  private _schema?: SchemaInterface;
-  public key: SchemaChildKeyInterface;
+  public readonly schema: SchemaInterface;
+  public key: SchemaChildKey;
   public description?: string;
   public label?: string;
 
-  constructor(name: string) {
+  constructor(schema: SchemaInterface, name: string) {
     this.key = new SchemaChildKey(name);
+    this.schema = schema;
   }
+
+  public get type(): SchemaChildType { return this.key.type; }
 
   get name() { return this.key.name; }
   set name(name: string) { this.key.name = name; }
 
-  /**
-   * Returns the schema containing this SchemaChild.
-   *
-   * If the Schema has already been linked to the schema A SchemaContext is necessary if the Schema is undefined currenhas not been added
-   * to its
-   * @param context If provided will be used to get the schema
-   */
-  public getSchema(context?: SchemaContext): SchemaInterface | undefined {
-    if (this._schema)
-      return this._schema;
+  get fullName() { return this.key.schemaKey ? `${this.key.schemaKey}.${this.name}` : this.name; }
 
-    if (context && this.key.schema)
-      return context.locateSchemaSync(this.key.schema as SchemaKey);
-
-    return this._schema;
-  }
-
-  public setSchema(schema: SchemaInterface) {
-    // TODO: Need to validate that the provided schema matches whatever the existing SchemaKey says.
-
-    if (this._schema && this._schema !== schema)
-      throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `This schemaChild ${this.name} is already contained within a schema.`);
-    this._schema = schema;
-  }
-
-  get schema() { return this._schema; }
-
-  get fullName() { return this.key.schema ? `${this.key.schema}.${this.name}` : this.name; }
-
-  public fromJson(jsonObj: any): void {
+  public async fromJson(jsonObj: any): Promise<void> {
     if (jsonObj.name) this.name = jsonObj.name;
     if (jsonObj.description) this.description = jsonObj.description;
     if (jsonObj.label) this.label = jsonObj.label;
 
     if (jsonObj.schema) {
-      if (!this.key.schema)
-        this.key.schema = new SchemaKey();
-      this.key.schema.name = jsonObj.schema;
+      if (!this.key.schemaKey)
+        this.key.schemaKey = new SchemaKey();
+      this.key.schemaKey.name = jsonObj.schema;
     }
 
     if (jsonObj.schemaVersion) {
-      if (!this.key.schema)
-        this.key.schema = new SchemaKey();
+      if (!this.key.schemaKey)
+        this.key.schemaKey = new SchemaKey();
 
-      if (!this.key.schema.version)
-        this.key.schema.version = new ECVersion();
+      if (!this.key.schemaKey.version)
+        this.key.schemaKey.version = new ECVersion();
 
-      this.key.schema.version.fromString(jsonObj.version);
+      this.key.schemaKey.version.fromString(jsonObj.version);
     }
   }
 

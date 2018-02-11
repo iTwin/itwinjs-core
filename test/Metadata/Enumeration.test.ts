@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { ECSchema } from "../../source/Metadata/Schema";
-import { Enumeration } from "../../source/Metadata/Enumeration";
+import ECSchema from "../../source/Metadata/Schema";
+import Enumeration from "../../source/Metadata/Enumeration";
 
 describe("enumeration", () => {
   describe("deserialization", () => {
-    it("minimum values", () => {
+    it("minimum values", async () => {
       const testSchema = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
@@ -24,8 +24,8 @@ describe("enumeration", () => {
         },
       };
 
-      const ecSchema = ECSchema.fromJson(testSchema);
-      const testEnum = ecSchema.getChild<Enumeration>("testEnum");
+      const ecSchema = await ECSchema.fromJson(testSchema);
+      const testEnum = await ecSchema.getChild<Enumeration>("testEnum");
       assert.isDefined(testEnum);
 
       if (!testEnum)
@@ -36,7 +36,7 @@ describe("enumeration", () => {
       expect(testEnum.isStrict).equal(true);
     });
 
-    it("with enumerators", () => {
+    it("with enumerators", async () => {
       const testSchema = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
@@ -55,8 +55,8 @@ describe("enumeration", () => {
         },
       };
 
-      const ecSchema = ECSchema.fromJson(testSchema);
-      const testEnum = ecSchema.getChild<Enumeration>("testEnum");
+      const ecSchema = await ECSchema.fromJson(testSchema);
+      const testEnum = await ecSchema.getChild<Enumeration>("testEnum");
       assert.isDefined(testEnum);
     });
   });

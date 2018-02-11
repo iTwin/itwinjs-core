@@ -1,9 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaKeyInterface, SchemaChildKeyInterface } from "./Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
+import ECStringConstants from "./Constants";
+export { PropertyType } from "./PropertyTypes";
 
 export const enum ECClassModifier {
   None,
@@ -40,11 +41,11 @@ export const enum PrimitiveType {
 }
 
 /**
- * Parses the given string into one of the 11 primitive types.
+ * Tries to parse the given string as one of the 11 primitive types.
  * @param type The primitive type string to parse.
- * @throws ECObjectsStatus InvalidPrimitiveType if the provided string is not a valid PrimitiveType.
+ * @returns A valid PrimitiveType if successfully parsed, or undefined if the provided string is not a valid PrimitiveType.
  */
-export function parsePrimitiveType(type: string): PrimitiveType {
+export function tryParsePrimitiveType(type: string): PrimitiveType | undefined {
   if (/^binary$/i.test(type))
     return PrimitiveType.Binary;
   else if (/^bool$/i.test(type) || /^boolean$/i.test(type))
@@ -66,40 +67,20 @@ export function parsePrimitiveType(type: string): PrimitiveType {
   else if (/^Bentley\.Geometry\.Common\.IGeometry$/i.test(type))
     return PrimitiveType.IGeometry;
 
-  throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, `The string '${type}' is not one of the 10 supported primitive types.`);
+  return undefined;
 }
 
 /**
- *
+ * Parses the given string into one of the 11 primitive types.
+ * @param type The primitive type string to parse.
+ * @throws ECObjectsStatus InvalidPrimitiveType if the provided string is not a valid PrimitiveType.
  */
-export const enum Type {
-  Struct = 0x02,
-  Struct_Array = 0x02 | 0x04,
-  Navigation = 0x08,
-  Binary = 0x101,
-  Binary_Array = 0x101 | 0x04,
-  Boolean = 0x201,
-  Boolean_Array = 0x201 | 0x04,
-  DateTime = 0x301,
-  DateTime_Array = 0x301 | 0x04,
-  Double = 0x401,
-  Double_Array = 0x401 | 0x04,
-  Integer = 0x501,
-  Integer_Array = 0x501 | 0x04,
-  Integer_Enumeration = 0x501 | 0x10,
-  Integer_Enumeration_Array = 0x501 | 0x10 | 0x04,
-  Long = 0x601,
-  Long_Array = 0x601 | 0x04,
-  Point2d = 0x701,
-  Point2d_Array = 0x701 | 0x04,
-  Point3d = 0x801,
-  Point3d_Array = 0x801 | 0x04,
-  String = 0x901,
-  String_Array = 0x901 | 0x04,
-  String_Enumeration = 0x901 | 0x10,
-  String_Enumeration_Array = 0x901 | 0x10 | 0x04,
-  IGeometry = 0xA01,
-  IGeometry_Array = 0xA01 | 0x04,
+export function parsePrimitiveType(type: string): PrimitiveType {
+  const primitiveType = tryParsePrimitiveType(type);
+  if (primitiveType === undefined)
+    throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, `The string '${type}' is not one of the 10 supported primitive types.`);
+
+  return primitiveType;
 }
 
 /**
@@ -224,7 +205,7 @@ export function containerTypeToString(type: CustomAttributeContainerType): strin
   };
 
   if (testContainerTypeValue(CustomAttributeContainerType.Any, type))
-    return "Any";
+    return ECStringConstants.CONTAINERTYPE_ANY;
 
   const setOrAppend = (str: string, val: string) => {
     if (str.length === 0)
@@ -241,37 +222,37 @@ export function containerTypeToString(type: CustomAttributeContainerType): strin
     setOrAppend(containerType, "AnyClass");
   else {
     if (testContainerTypeValue(CustomAttributeContainerType.EntityClass, type))
-      setOrAppend(containerType, "EntityClass");
+      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_ENTITYCLASS);
     if (testContainerTypeValue(CustomAttributeContainerType.CustomAttributeClass, type))
-      setOrAppend(containerType, "CustomAttributeClass");
+      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_CUSTOMATTRIBUTECLASS);
     if (testContainerTypeValue(CustomAttributeContainerType.StructClass, type))
-      setOrAppend(containerType, "StructClass");
+      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_STRUCTCLASS);
     if (testContainerTypeValue(CustomAttributeContainerType.RelationshipClass, type))
-      setOrAppend(containerType, "RelationshipClass");
+      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_RELATIONSHIPCLASS);
   }
 
   if (testContainerTypeValue(CustomAttributeContainerType.AnyProperty, type))
-    setOrAppend(containerType, "AnyProperty");
+    setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_ANYPROPERTY);
   else {
     if (testContainerTypeValue(CustomAttributeContainerType.PrimitiveProperty, type))
-      setOrAppend(containerType, "PrimitiveProperty");
+      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_PRIMITIVEPROPERTY);
     if (testContainerTypeValue(CustomAttributeContainerType.StructProperty, type))
-      setOrAppend(containerType, "StructProperty");
+      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_STRUCTPROPERTY);
     if (testContainerTypeValue(CustomAttributeContainerType.PrimitiveArrayProperty, type))
-      setOrAppend(containerType, "PrimitiveArrayProperty");
+      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_ARRAYPROPERTY);
     if (testContainerTypeValue(CustomAttributeContainerType.StructArrayProperty, type))
-      setOrAppend(containerType, "StructArrayProperty");
+      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_STRUCTARRAYPROPERTY);
     if (testContainerTypeValue(CustomAttributeContainerType.NavigationProperty, type))
-      setOrAppend(containerType, "NavigationProperty");
+      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_NAVIGATIONPROPERTY);
   }
 
   if (testContainerTypeValue(CustomAttributeContainerType.AnyRelationshipConstraint, type))
-    setOrAppend(containerType, "AnyRelationshipConstraint");
+    setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_ANYRELATIONSHIPCONSTRAINT);
   else {
     if (testContainerTypeValue(CustomAttributeContainerType.SourceRelationshipConstraint, type))
-      setOrAppend(containerType, "SourceRelationshipConstraint");
+      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_SOURCERELATIONSHIPCONSTRAINT);
     if (testContainerTypeValue(CustomAttributeContainerType.TargetRelationshipConstraint, type))
-      setOrAppend(containerType, "TargetRelationshipConstraint");
+      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_TARGETRELATIONSHIPCONSTRAINT);
   }
 
   return containerType;
@@ -283,6 +264,13 @@ export function containerTypeToString(type: CustomAttributeContainerType): strin
 export const enum RelationshipEnd {
   Source = 0,
   Target = 1,
+}
+
+export function relationshipEndToString(end: RelationshipEnd): string {
+  if (end === RelationshipEnd.Source)
+    return ECStringConstants.RELATIONSHIP_END_SOURCE;
+  else
+    return ECStringConstants.RELATIONSHIP_END_TARGET;
 }
 
 export const enum StrengthType {
@@ -406,11 +394,11 @@ export class ECName {
 /**
  * The SchemaKey object contains
  */
-export class SchemaKey implements SchemaKeyInterface {
+export class SchemaKey {
   private _name: ECName;
   public version: ECVersion;
   public checksum: number;
-  // TODO: need to add a hash
+  // TODO: need to add a checksum
 
   constructor(name?: string, readVersion?: number, writeVersion?: number, minorVersion?: number) {
     if (name)
@@ -455,7 +443,7 @@ export class SchemaKey implements SchemaKeyInterface {
    * @param rhs The SchemaKey to compare with
    * @param matchType The match type to use for comparison.
    */
-  public matches(rhs: SchemaKeyInterface, matchType: SchemaMatchType = SchemaMatchType.Identical): boolean {
+  public matches(rhs: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Identical): boolean {
     switch (matchType) {
       case SchemaMatchType.Identical:
         if (this.checksum && rhs.checksum)
@@ -490,16 +478,16 @@ export class SchemaKey implements SchemaKeyInterface {
 /**
  *
  */
-export class SchemaChildKey implements SchemaChildKeyInterface {
+export class SchemaChildKey {
   private _name: ECName;
   public type: SchemaChildType;
-  public schema: SchemaKeyInterface;
-  // TODO: Possibly add checksum
+  public schemaKey: SchemaKey;
+  // TODO: Need a checksum
 
-  constructor(name?: string, type?: SchemaChildType, schema?: SchemaKeyInterface) {
+  constructor(name?: string, type?: SchemaChildType, schema?: SchemaKey) {
     if (name) this.name = name;
     if (type) this.type = type;
-    if (schema) this.schema = schema;
+    if (schema) this.schemaKey = schema;
   }
 
   get name() { return this._name.name; }
@@ -507,7 +495,7 @@ export class SchemaChildKey implements SchemaChildKeyInterface {
     this._name = new ECName(name);
   }
 
-  get schemaName() { return this.schema.name; }
+  get schemaName() { return this.schemaKey.name; }
 
   /*
    * Compares two schema names and returns whether or not they match. Comparison is case-sensitive.
@@ -522,15 +510,15 @@ export class SchemaChildKey implements SchemaChildKeyInterface {
    * Checks whether this SchemaChildKey matches the one provided.
    * @param rhs The SchemaChildKey to compare to this.
    */
-  // TODO: Possibly need to add a match type
-  public matches(rhs: SchemaChildKeyInterface): boolean {
+  // TODO: Need to add a match type
+  public matches(rhs: SchemaChildKey): boolean {
     if (rhs.name !== this.name)
       return false;
 
     if (rhs.type && this.type && rhs.type !== this.type)
       return false;
 
-    if (rhs.schema && this.schema && !rhs.schema.matches(this.schema, SchemaMatchType.Latest))
+    if (rhs.schemaKey && this.schemaKey && !rhs.schemaKey.matches(this.schemaKey, SchemaMatchType.Latest))
       return false;
 
     return true;

@@ -1,15 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { ECSchema } from "../../source/Metadata/Schema";
+import ECSchema from "../../source/Metadata/Schema";
 import { ECObjectsError } from "../../source/Exception";
 import KindOfQuantity from "../../source/Metadata/KindOfQuantity";
 
 describe("KindOfQuantity", () => {
   describe("deserialization", () => {
-    it("fully defined", () => {
+    it("fully defined", async () => {
       const testSchema = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
@@ -36,10 +36,10 @@ describe("KindOfQuantity", () => {
         },
       };
 
-      const ecSchema = ECSchema.fromJson(testSchema);
+      const ecSchema = await ECSchema.fromJson(testSchema);
       assert.isDefined(ecSchema);
 
-      const testChild = ecSchema.getChild("testKoQ");
+      const testChild = await ecSchema.getChild("testKoQ");
       assert.isDefined(testChild);
       assert.isTrue(testChild instanceof KindOfQuantity);
 
@@ -57,7 +57,7 @@ describe("KindOfQuantity", () => {
       assert.isTrue(testKoQ.presentationUnits[0] === testKoQ.defaultPresentationUnit);
     });
 
-    it("should throw when precision is not a number", () => {
+    it("should throw when precision is not a number", async () => {
       const testSchema = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
@@ -70,7 +70,7 @@ describe("KindOfQuantity", () => {
         },
       };
 
-      expect(() => { ECSchema.fromJson(testSchema); }).to.throw(ECObjectsError);
+      await expect(ECSchema.fromJson(testSchema)).to.be.rejectedWith(ECObjectsError);
     });
   });
 });

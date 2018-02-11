@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
 import SchemaChild from "./SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { KindOfQuantityInterface, FormatUnitSpecInterface } from "../Interfaces";
+import { KindOfQuantityInterface, FormatUnitSpecInterface, SchemaInterface } from "../Interfaces";
 import { SchemaChildType } from "../ECObjects";
 
 export class FormatUnitSpec implements FormatUnitSpecInterface {
@@ -16,13 +16,13 @@ export class FormatUnitSpec implements FormatUnitSpecInterface {
  * A Typescript class representation of a KindOfQuantity.
  */
 export default class KindOfQuantity extends SchemaChild implements KindOfQuantityInterface {
+  public readonly type: SchemaChildType.KindOfQuantity;
   public precision: number;
   public presentationUnits: FormatUnitSpec[];
   public persistenceUnit: FormatUnitSpec;
 
-  constructor(name: string) {
-    super(name);
-
+  constructor(schema: SchemaInterface, name: string) {
+    super(schema, name);
     this.key.type = SchemaChildType.KindOfQuantity;
   }
 
@@ -30,8 +30,8 @@ export default class KindOfQuantity extends SchemaChild implements KindOfQuantit
     return this.presentationUnits.length === 0 ? undefined : this.presentationUnits[0];
   }
 
-  public fromJson(jsonObj: any) {
-    super.fromJson(jsonObj);
+  public async fromJson(jsonObj: any) {
+    await super.fromJson(jsonObj);
 
     if (jsonObj.precision) {
       if (typeof(jsonObj.precision) !== "number")

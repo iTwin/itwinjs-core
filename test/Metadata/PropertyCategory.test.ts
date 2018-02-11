@@ -1,15 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { ECSchema } from "../../source/Metadata/Schema";
+import ECSchema from "../../source/Metadata/Schema";
 import { ECObjectsError } from "../../source/Exception";
 import PropertyCategory from "../../source/Metadata/PropertyCategory";
 
 describe("PropertyCategory", () => {
   describe("deserialization", () => {
-    it("fully defined ", () => {
+    it("fully defined ", async () => {
       const testSchema = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
@@ -22,10 +22,10 @@ describe("PropertyCategory", () => {
         },
       };
 
-      const ecSchema = ECSchema.fromJson(testSchema);
+      const ecSchema = await ECSchema.fromJson(testSchema);
       assert.isDefined(ecSchema);
 
-      const child = ecSchema.getChild("testPropCategory");
+      const child = await ecSchema.getChild("testPropCategory");
       assert.isDefined(child);
       assert.isTrue(child instanceof PropertyCategory);
 
@@ -34,7 +34,7 @@ describe("PropertyCategory", () => {
       expect(propCat.priority).equal(5);
     });
 
-    it("should throw when priority is not a number", () => {
+    it("should throw when priority is not a number", async () => {
       const testSchema = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
@@ -47,7 +47,7 @@ describe("PropertyCategory", () => {
         },
       };
 
-      expect(() => { ECSchema.fromJson(testSchema); }).to.throw(ECObjectsError);
+      await expect(ECSchema.fromJson(testSchema)).to.be.rejectedWith(ECObjectsError);
     });
   });
 });

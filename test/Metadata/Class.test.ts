@@ -1,58 +1,65 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
 
-import { ECSchema } from "../../source/Metadata/Schema";
-import { ECClass, EntityClass } from "../../source/Metadata/Class";
+import ECSchema from "../../source/Metadata/Schema";
+import EntityClass from "../../source/Metadata/EntityClass";
 import { SchemaContext } from "../../source/Context";
+import { DelayedPromiseWithProps } from "../../source/DelayedPromise";
 
 describe("class", () => {
+  let schema: ECSchema;
+
   describe("get properties", () => {
-    it("inherited properties from base class", () => {
-      const baseClass = new EntityClass("TestBase");
-      const basePrimProp = baseClass.createPrimitiveProperty("BasePrimProp");
-
-      const entityClass = new EntityClass("TestClass");
-      entityClass.createPrimitiveProperty("PrimProp");
-      entityClass.baseClass = baseClass;
-
-      expect(entityClass.getProperty("BasePrimProp")).to.be.undefined;
-      expect(entityClass.getProperty("BasePrimProp", false)).to.be.undefined;
-      expect(entityClass.getProperty("BasePrimProp", true)).equal(basePrimProp);
-      expect(entityClass.getInheritedProperty("BasePrimProp")).equal(basePrimProp);
-      expect(entityClass.getInheritedProperty("PrimProp")).to.be.undefined;
+    beforeEach(() => {
+      schema = new ECSchema("TestSchema", 1, 0, 0);
     });
 
-    it("case-insentive search", () => {
-      const entityClass = new EntityClass("TestClass");
-      const primProp = entityClass.createPrimitiveProperty("TestProp");
+    it("inherited properties from base class", async () => {
+      const baseClass = new EntityClass(schema, "TestBase");
+      const basePrimProp = await baseClass.createPrimitiveProperty("BasePrimProp");
 
-      expect(entityClass.getProperty("TESTPROP")).equal(primProp);
-      expect(entityClass.getProperty("testprop")).equal(primProp);
-      expect(entityClass.getProperty("tEsTpRoP")).equal(primProp);
+      const entityClass = new EntityClass(schema, "TestClass");
+      await entityClass.createPrimitiveProperty("PrimProp");
+      entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
+
+      expect(await entityClass.getProperty("BasePrimProp")).to.be.undefined;
+      expect(await entityClass.getProperty("BasePrimProp", false)).to.be.undefined;
+      expect(await entityClass.getProperty("BasePrimProp", true)).equal(basePrimProp);
+      expect(await entityClass.getInheritedProperty("BasePrimProp")).equal(basePrimProp);
+      expect(await entityClass.getInheritedProperty("PrimProp")).to.be.undefined;
     });
 
-    it("case-insensitive inherited property search", () => {
-      const baseClass = new EntityClass("BaseClass");
-      const primProp = baseClass.createPrimitiveProperty("TestProp");
+    it("case-insensitive search", async () => {
+      const entityClass = new EntityClass(schema, "TestClass");
+      const primProp = await entityClass.createPrimitiveProperty("TestProp");
 
-      const entityClass = new EntityClass("TestClass");
-      entityClass.baseClass = baseClass;
+      expect(await entityClass.getProperty("TESTPROP")).equal(primProp);
+      expect(await entityClass.getProperty("testprop")).equal(primProp);
+      expect(await entityClass.getProperty("tEsTpRoP")).equal(primProp);
+    });
 
-      expect(entityClass.getProperty("TESTPROP", true)).equal(primProp);
-      expect(entityClass.getProperty("testprop", true)).equal(primProp);
-      expect(entityClass.getProperty("tEsTpRoP", true)).equal(primProp);
+    it("case-insensitive inherited property search", async () => {
+      const baseClass = new EntityClass(schema, "BaseClass");
+      const primProp = await baseClass.createPrimitiveProperty("TestProp");
 
-      expect(entityClass.getInheritedProperty("TESTPROP")).equal(primProp);
-      expect(entityClass.getInheritedProperty("testprop")).equal(primProp);
-      expect(entityClass.getInheritedProperty("tEsTpRoP")).equal(primProp);
+      const entityClass = new EntityClass(schema, "TestClass");
+      entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
+
+      expect(await entityClass.getProperty("TESTPROP", true)).equal(primProp);
+      expect(await entityClass.getProperty("testprop", true)).equal(primProp);
+      expect(await entityClass.getProperty("tEsTpRoP", true)).equal(primProp);
+
+      expect(await entityClass.getInheritedProperty("TESTPROP")).equal(primProp);
+      expect(await entityClass.getInheritedProperty("testprop")).equal(primProp);
+      expect(await entityClass.getInheritedProperty("tEsTpRoP")).equal(primProp);
     });
   });
 
   describe("deserialization", () => {
-    it("class with base class", () => {
+    it("class with base class", async () => {
       const schemaJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
@@ -68,21 +75,19 @@ describe("class", () => {
         },
       };
 
-      const ecschema = ECSchema.fromJson(schemaJson);
-      assert.isDefined(ecschema);
+      schema = await ECSchema.fromJson(schemaJson);
+      assert.isDefined(schema);
 
-      let testClass = ecschema.getClass("testClass");
+      const testClass = await schema.getClass<EntityClass>("testClass");
       assert.isDefined(testClass);
-      testClass = testClass as ECClass;
-      assert.isDefined(testClass.baseClass);
+      assert.isDefined(await testClass!.baseClass);
 
-      const baseClass = ecschema.getClass("testBaseClass");
+      const baseClass = await schema.getClass<EntityClass>("testBaseClass");
       assert.isDefined(baseClass);
-
-      assert.isTrue(baseClass === testClass.baseClass);
+      assert.isTrue(baseClass === await testClass!.baseClass);
     });
 
-    it("class with base class in reference schema", () => {
+    it("class with base class in reference schema", async () => {
       const schemaJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
@@ -102,23 +107,23 @@ describe("class", () => {
       };
 
       const refSchema = new ECSchema("RefSchema", 1, 0, 5);
-      const refBaseClass = refSchema.createEntityClass("BaseClassInRef");
+      const refBaseClass = await refSchema.createEntityClass("BaseClassInRef");
 
       const context = new SchemaContext();
-      context.addSchemaSync(refSchema);
+      await context.addSchema(refSchema);
 
-      const schema = ECSchema.fromJson(schemaJson, context);
+      schema = await ECSchema.fromJson(schemaJson, context);
 
-      const testClass = schema.getClass("testClass");
+      const testClass = await schema.getClass<EntityClass>("testClass");
 
       assert.isDefined(testClass);
-      assert.isDefined(testClass!.baseClass);
-      assert.isTrue(testClass!.baseClass === refBaseClass);
+      assert.isDefined(await testClass!.baseClass);
+      assert.isTrue(await testClass!.baseClass === refBaseClass);
     });
 
     // Used to test that all property types are deserialized correctly. For failure and other tests look at the property
     // specific test files.
-    it("with properties", () => {
+    it("with properties", async () => {
       const schemaJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
@@ -153,19 +158,19 @@ describe("class", () => {
         },
       };
 
-      const ecSchema = ECSchema.fromJson(schemaJson);
+      const ecSchema = await ECSchema.fromJson(schemaJson);
       assert.isDefined(ecSchema);
 
-      const testEntity = ecSchema.getClass<EntityClass>("testClass");
+      const testEntity = await ecSchema.getClass("testClass");
       assert.isDefined(testEntity);
 
-      const testPrimProp = testEntity!.getProperty("testPrimProp");
+      const testPrimProp = await testEntity!.getProperty("testPrimProp");
       assert.isDefined(testPrimProp);
-      const testPrimArrProp = testEntity!.getProperty("testPrimArrProp");
+      const testPrimArrProp = await testEntity!.getProperty("testPrimArrProp");
       assert.isDefined(testPrimArrProp);
-      const testStructProp = testEntity!.getProperty("testStructProp");
+      const testStructProp = await testEntity!.getProperty("testStructProp");
       assert.isDefined(testStructProp);
-      const testStructArrProp = testEntity!.getProperty("testStructArrProp");
+      const testStructArrProp = await testEntity!.getProperty("testStructArrProp");
       assert.isDefined(testStructArrProp);
     });
   });

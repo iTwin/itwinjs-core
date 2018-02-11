@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { ECSchema } from "../../source/Metadata/Schema";
+import ECSchema from "../../source/Metadata/Schema";
 import { SchemaContext } from "../../source/Context";
 import { ECObjectsError } from "../../source/Exception";
 
 describe("schema deserialization", () => {
-  it("should succeed from json string", () => {
+  it("should succeed from json string", async () => {
     const schemaString = JSON.stringify({
       $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
       name: "TestSchema",
@@ -17,7 +17,7 @@ describe("schema deserialization", () => {
       label: "This is a test label",
     });
 
-    const ecschema = ECSchema.fromJson(schemaString);
+    const ecschema = await ECSchema.fromJson(schemaString);
     expect(ecschema.name).equal("TestSchema");
     expect(ecschema.readVersion).equal(1);
     expect(ecschema.writeVersion).equal(2);
@@ -26,7 +26,7 @@ describe("schema deserialization", () => {
     expect(ecschema.label).equal("This is a test label");
   });
 
-  it("should succeed with name and version", () => {
+  it("should succeed with name and version", async () => {
     const schemaJson = {
       $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
       name: "TestSchema",
@@ -35,7 +35,7 @@ describe("schema deserialization", () => {
       label: "This is a test label",
     };
 
-    const ecschema = ECSchema.fromJson(schemaJson);
+    const ecschema = await ECSchema.fromJson(schemaJson);
     expect(ecschema.name).equal("TestSchema");
     expect(ecschema.readVersion).equal(1);
     expect(ecschema.writeVersion).equal(2);
@@ -44,24 +44,24 @@ describe("schema deserialization", () => {
     expect(ecschema.label).equal("This is a test label");
   });
 
-  it("should fail with invalid version", () => {
+  it("should fail with invalid version", async () => {
     const schemaJson = {
       $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
       name: "TestSchema",
       version: "1.100.0",
     };
 
-    expect(() => {ECSchema.fromJson(schemaJson); }).to.throw(ECObjectsError);
+    await expect(ECSchema.fromJson(schemaJson)).to.be.rejectedWith(ECObjectsError);
   });
 
-  it("should fail with invalid schema name", () => {
+  it("should fail with invalid schema name", async () => {
     const schemaJson = {
       $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
       name: "0TestSchema",
       version: "1.0.0",
     };
 
-    expect(() => {ECSchema.fromJson(schemaJson); }).to.throw(ECObjectsError);
+    await expect(ECSchema.fromJson(schemaJson)).to.be.rejectedWith(ECObjectsError);
   });
 
   describe("with schema reference", () => {
@@ -77,12 +77,12 @@ describe("schema deserialization", () => {
       ],
     };
 
-    it("should succeed when referenced schema is already in the schema context", () => {
+    it("should succeed when referenced schema is already in the schema context", async () => {
       const refSchema = new ECSchema("RefSchema", 1, 0, 5);
       const context = new SchemaContext();
-      context.addSchemaSync(refSchema);
+      await context.addSchema(refSchema);
 
-      const schema = ECSchema.fromJson(schemaJson, context);
+      const schema = await ECSchema.fromJson(schemaJson, context);
       assert.exists(schema);
 
       if (!schema.references)
@@ -94,9 +94,9 @@ describe("schema deserialization", () => {
       assert.isTrue(schema.references[0] === refSchema);
     });
 
-    it("should throw if the referenced schema cannot be found", () => {
+    it("should throw if the referenced schema cannot be found", async () => {
       const context = new SchemaContext();
-      expect(() => {ECSchema.fromJson(schemaJson, context); }).to.throw(ECObjectsError);
+      await expect(ECSchema.fromJson(schemaJson, context)).to.be.rejectedWith(ECObjectsError);
     });
   });
 });

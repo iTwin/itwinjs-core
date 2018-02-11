@@ -1,14 +1,8 @@
 {
   "extends": "./node_modules/@bentley/bentleyjs-tools/tsconfig-base.json",
   "compilerOptions": {
-    "baseUrl": "./source",
-    "outDir": "./lib",
-    "paths": {
-      "*": [
-        "@types/*",
-        "*"
-      ]
-    }
+    "baseUrl": ".",
+    "outDir": "./lib"
   },
   "include": [
     "source/**/*.ts"

@@ -1,22 +1,23 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
 import SchemaChild from "./SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaChildType } from "../ECObjects";
+import { SchemaInterface, PropertyCategoryInterface } from "../Interfaces";
 
-export default class PropertyCategory extends SchemaChild {
+export default class PropertyCategory extends SchemaChild implements PropertyCategoryInterface {
+  public readonly type: SchemaChildType.PropertyCategory;
   public priority: number;
 
-  constructor(name: string) {
-    super(name);
-
+  constructor(schema: SchemaInterface, name: string) {
+    super(schema, name);
     this.key.type = SchemaChildType.PropertyCategory;
   }
 
-  public fromJson(jsonObj: any) {
-    super.fromJson(jsonObj);
+  public async fromJson(jsonObj: any) {
+    await super.fromJson(jsonObj);
 
     if (jsonObj.priority) {
       if (typeof(jsonObj.priority) !== "number")

@@ -1,108 +1,128 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { ECVersion, ECClassModifier, CustomAttributeContainerType, PrimitiveType, SchemaMatchType,
-      RelationshipMultiplicity, StrengthType, RelatedInstanceDirection, SchemaChildType } from "./ECObjects";
-import { SchemaContext } from "./Context";
+import { ECClassModifier, CustomAttributeContainerType, PrimitiveType, RelationshipMultiplicity, RelationshipEnd,
+  StrengthType, RelatedInstanceDirection, SchemaKey, SchemaChildKey, SchemaChildType } from "./ECObjects";
+import { CustomAttributeContainerProps } from "./Metadata/CustomAttribute";
+import { DelayedPromise } from "./DelayedPromise";
 
-export interface SchemaKeyInterface {
-  name: string;
-  version: ECVersion;
-  readVersion: number;
-  writeVersion: number;
-  minorVersion: number;
-  checksum: number;
-  matches(rhs: SchemaKeyInterface, matchType: SchemaMatchType): boolean;
-}
-
-/**
- * The properties that make up a SchemaChildKey.
- */
-export interface SchemaChildKeyProps {
-  name: string;
-  type?: SchemaChildType;
-  schema?: SchemaKeyInterface;
-}
-
-/**
- * The SchemaChildKey serves as a container of all the important information contained within a SchemaChild. It can be used as
- * a way to identify and thus search for a specific SchemaChild.
- */
-export interface SchemaChildKeyInterface extends SchemaChildKeyProps {
-  matches(rhs: SchemaChildKeyInterface): boolean;
-}
-
-export interface SchemaProps {
-  schemaKey: SchemaKeyInterface;
-  alias: string;
+export interface SchemaProps extends CustomAttributeContainerProps {
+  readonly schemaKey: SchemaKey;
+  alias?: string;
   label?: string;
   description?: string;
   references?: SchemaInterface[];
   children?: SchemaChildInterface[];
 }
 
+export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<SchemaInterface>;
+export type LazyLoadedProperty = Readonly<{ name: string }> & DelayedPromise<PropertyInterface>;
+
+export type LazyLoadedSchemaChild<T extends SchemaChildInterface> = Readonly<T["key"]> & DelayedPromise<T>;
+export type LazyLoadedECClass = LazyLoadedSchemaChild<ECClassInterface>;
+export type LazyLoadedEntityClass = LazyLoadedSchemaChild<EntityClassInterface>;
+export type LazyLoadedMixin = LazyLoadedSchemaChild<MixinInterface>;
+export type LazyLoadedStructClass = LazyLoadedSchemaChild<StructClassInterface>;
+export type LazyLoadedCustomAttributeClass = LazyLoadedSchemaChild<CustomAttributeClassInterface>;
+export type LazyLoadedRelationshipClass = LazyLoadedSchemaChild<RelationshipClassInterface>;
+export type LazyLoadedEnumeration = LazyLoadedSchemaChild<EnumerationInterface>;
+export type LazyLoadedKindOfQuantity = LazyLoadedSchemaChild<KindOfQuantityInterface>;
+export type LazyLoadedPropertyCategory = LazyLoadedSchemaChild<PropertyCategoryInterface>;
+export type LazyLoadedRelationshipConstraintClass = Readonly<SchemaChildKey> & DelayedPromise<EntityClassInterface | MixinInterface | RelationshipClassInterface>;
+
+export type AnyClassType = EntityClassInterface | MixinInterface | StructClassInterface | CustomAttributeClassInterface | RelationshipClassInterface;
+export type AnySchemaChildType = AnyClassType | EnumerationInterface | KindOfQuantityInterface | PropertyCategoryInterface;
+
+export interface JsonDeserializable {
+  /* async */ fromJson(obj: any): Promise<void>;
+}
+
 /**
  * Extends the properties that are defined on a Schema to add the methods that are available on any class that implements this interface.
  */
-export interface SchemaInterface extends SchemaProps {
-  getChild<T extends SchemaChildInterface>(name: string): T | undefined;
-  createEntityClass(name: string): EntityClassInterface;
-  createMixinClass(name: string): MixinInterface;
-  createStructClass(name: string): StructClassInterface;
-  createCustomAttributeClass(name: string): CustomAttributeClassInterface;
-  createRelationshipClass(name: string): RelationshipClassInterface;
-  createKindOfQuantity(name: string): KindOfQuantityInterface;
-  createEnumeration(name: string): EnumerationInterface;
-  createPropertyCategory(name: string): PropertyCategoryInterface;
-  addReference(refSchema: SchemaInterface): void;
-  getReference<T extends SchemaInterface>(refSchemaName: string): T | undefined;
-  fromJson(obj: any): void;
+export interface SchemaInterface extends SchemaProps, JsonDeserializable {
+  /* async */ getChild<T extends SchemaChildInterface>(name: string, includeReference?: boolean): Promise<T | undefined>;
+  /* async */ addChild<T extends SchemaChildInterface>(child: T): Promise<void>;
+  /* async */ createEntityClass(name: string): Promise<EntityClassInterface>;
+  /* async */ createMixinClass(name: string): Promise<MixinInterface>;
+  /* async */ createStructClass(name: string): Promise<StructClassInterface>;
+  /* async */ createCustomAttributeClass(name: string): Promise<CustomAttributeClassInterface>;
+  /* async */ createRelationshipClass(name: string): Promise<RelationshipClassInterface>;
+  /* async */ createKindOfQuantity(name: string): Promise<KindOfQuantityInterface>;
+  /* async */ createEnumeration(name: string): Promise<EnumerationInterface>;
+  /* async */ createPropertyCategory(name: string): Promise<PropertyCategoryInterface>;
+  /* async */ addReference(refSchema: SchemaInterface): Promise<void>;
+  /* async */ getReference<T extends SchemaInterface>(refSchemaName: string): Promise<T | undefined>;
+}
+
+export interface SchemaSyncInterface extends SchemaInterface  {
+  getChildSync<T extends SchemaChildInterface>(name: string, includeReference?: boolean): T | undefined;
+  addChildSync<T extends SchemaChildInterface>(child: T): void;
+  createEntityClassSync(name: string): EntityClassInterface;
+  createMixinClassSync(name: string): MixinInterface;
+  createStructClassSync(name: string): StructClassInterface;
+  createCustomAttributeClassSync(name: string): CustomAttributeClassInterface;
+  createRelationshipClassSync(name: string): RelationshipClassInterface;
+  createKindOfQuantitySync(name: string): KindOfQuantityInterface;
+  createEnumerationSync(name: string): EnumerationInterface;
+  createPropertyCategorySync(name: string): PropertyCategoryInterface;
+  addReferenceSync(refSchema: SchemaSyncInterface): void;
+  getReferenceSync<T extends SchemaSyncInterface>(refSchemaName: string): T | undefined;
 }
 
 export interface SchemaChildProps {
-  key: SchemaChildKeyInterface;
-  name: string;
+  readonly schema: SchemaInterface;
+  readonly key: SchemaChildKey;
+  readonly type: SchemaChildType;
+  readonly name: string;
   label?: string;
   description?: string;
 }
 
-export interface SchemaChildInterface extends SchemaChildProps {
-  getSchema(context?: SchemaContext): SchemaInterface | undefined;
-  fromJson(obj: any): void;
+export interface SchemaChildInterface extends SchemaChildProps, JsonDeserializable {}
+
+export interface SchemaChildSyncInterface extends SchemaChildInterface {
+  readonly schema: SchemaSyncInterface;
 }
 
 export interface ECClassProps extends SchemaChildProps {
   modifier: ECClassModifier;
-  baseClass?: string | ECClassInterface; // string should be a ECFullName
-  properties?: PropertyInterface[];
+  baseClass?: LazyLoadedECClass;
+  properties?: LazyLoadedProperty[];
 }
 
 export interface ECClassInterface extends SchemaChildInterface, ECClassProps {
-  getProperty<T extends PropertyInterface>(name: string): T | undefined;
-  createPrimitiveProperty(name: string, type?: string | PrimitiveType): PrimitivePropertyInterface;
-  createPrimitiveArrayProperty(name: string, type?: string | PrimitiveType): PrimitiveArrayPropertyInteface;
-  createStructProperty(name: string, type?: string | SchemaChildInterface): StructPropertyInterface; // TODO: Need to make type only StructInterface
-  createStructArrayProperty(name: string, type?: string | SchemaChildInterface): StructArrayPropertyInterface; // TODO: Need to make type only StructInterface
+  /* async */ getProperty(name: string): Promise<PropertyInterface | undefined>;
+  /* async */ createPrimitiveProperty(name: string, type: PrimitiveType): Promise<PrimitivePropertyInterface>;
+  /* async */ createPrimitiveProperty(name: string, type: EnumerationInterface): Promise<EnumerationPropertyInterface>;
+  /* async */ createPrimitiveProperty(name: string, type?: string): Promise<PropertyInterface>;
+  /* async */ createPrimitiveArrayProperty(name: string, type: PrimitiveType): Promise<PrimitiveArrayPropertyInterface>;
+  /* async */ createPrimitiveArrayProperty(name: string, type: EnumerationInterface): Promise<EnumerationArrayPropertyInterface>;
+  /* async */ createPrimitiveArrayProperty(name: string, type?: string): Promise<ArrayPropertyInterface>;
+  /* async */ createStructProperty(name: string, type: string | StructClassInterface): Promise<StructPropertyInterface>;
+  /* async */ createStructArrayProperty(name: string, type: string | StructClassInterface): Promise<StructArrayPropertyInterface>;
 }
 
 export interface EntityClassProps extends ECClassProps {
-  mixin?: string[] | MixinInterface[]; // string should be an ECFullName
+  mixins?: LazyLoadedMixin[];
 }
 
 export interface EntityClassInterface extends ECClassInterface, EntityClassProps {
-  createNavigationProperty(name: string, relationship: string | RelationshipClassInterface, direction: string | RelatedInstanceDirection): NavigationPropertyInterface;
+  readonly type: SchemaChildType.EntityClass;
+  /* async */ createNavigationProperty(name: string, relationship: string | RelationshipClassInterface, direction?: string | RelatedInstanceDirection): Promise<NavigationPropertyInterface>;
 }
 
-export interface StructClassInterface extends ECClassInterface, ECClassProps { }
+export interface StructClassInterface extends ECClassInterface, ECClassProps {
+  readonly type: SchemaChildType.StructClass;
+}
 
 export interface MixinProps extends EntityClassProps {
-  appliesTo?: string | EntityClassInterface; // string should be an ECFullName
+  appliesTo?: LazyLoadedEntityClass;
 }
-
-// Normally we don't want empty interfaces because they don't add anything, but it is being used here to define one interface
-// that contains the properties from MixinProps and the method signatures from ECClassInterface.
-export interface MixinInterface extends ECClassInterface, MixinProps { }
+export interface MixinInterface extends ECClassInterface, MixinProps {
+  readonly type: SchemaChildType.MixinClass;
+}
 
 export interface RelationshipClassProps extends ECClassProps {
   strength: StrengthType;
@@ -112,37 +132,36 @@ export interface RelationshipClassProps extends ECClassProps {
 }
 
 export interface RelationshipClassInterface extends ECClassInterface, RelationshipClassProps {
-  createNavigationProperty(name: string, relationship: string | RelationshipClassInterface, direction: string | RelatedInstanceDirection): NavigationPropertyInterface;
+  readonly type: SchemaChildType.RelationshipClass;
+  /* async */ createNavigationProperty(name: string, relationship: string | RelationshipClassInterface, direction?: string | RelatedInstanceDirection): Promise<NavigationPropertyInterface>;
 }
 
-export interface RelationshipConstraintProps {
+export interface RelationshipConstraintProps extends CustomAttributeContainerProps {
+  relationshipEnd: RelationshipEnd;
   relClass?: RelationshipClassInterface;
   multiplicity?: RelationshipMultiplicity;
   roleLabel?: string;
   polymorphic?: boolean;
-  abstractConstraint?: EntityClassInterface | RelationshipClassInterface;
-  // customAttributes: object[];  // TODO: Fix this
-  constraintClasses?: EntityClassInterface[] | RelationshipClassInterface[];
+  abstractConstraint?: LazyLoadedRelationshipConstraintClass;
+  constraintClasses?: LazyLoadedRelationshipConstraintClass[];
 }
 
-export interface RelationshipConstraintInterface extends RelationshipConstraintProps {
-  fromJson(obj: any): void;
-}
+export interface RelationshipConstraintInterface extends RelationshipConstraintProps, JsonDeserializable {}
 
 export interface CustomAttributeClassProps extends ECClassProps {
   containerType: CustomAttributeContainerType;
 }
-
-export interface CustomAttributeClassInterface extends ECClassInterface, CustomAttributeClassProps { }
+export interface CustomAttributeClassInterface extends ECClassInterface, CustomAttributeClassProps {
+  readonly type: SchemaChildType.CustomAttributeClass;
+}
 
 export interface EnumerationProps extends SchemaChildProps {
   isStrict: boolean;
-  type: PrimitiveType.Integer | PrimitiveType.String;
+  primitiveType: PrimitiveType.Integer | PrimitiveType.String;
 }
-
-// Normally we don't want empty interfaces because they don't add anything, but it is being used here to define one interface
-// that contains the properties from EnumerationProps and method signatures from SchemaChildInterface.
-export interface EnumerationInterface extends SchemaChildInterface, EnumerationProps { }
+export interface EnumerationInterface extends SchemaChildInterface, EnumerationProps {
+  readonly type: SchemaChildType.Enumeration;
+}
 
 export interface EnumeratorProps {
   enumeration: EnumerationInterface;
@@ -160,32 +179,39 @@ export interface KindOfQuantityProps extends SchemaChildProps {
   presentationUnits: FormatUnitSpecInterface[];
   precision: number;
 }
-
-// Normally we don't want empty interfaces because they don't add anything, but it is being used here to define one interface
-// that contains the properties from KindOfQuantityProps and method signatures from SchemaChildInterface.
-export interface KindOfQuantityInterface extends SchemaChildInterface, KindOfQuantityProps { }
+export interface KindOfQuantityInterface extends SchemaChildInterface, KindOfQuantityProps {
+  readonly type: SchemaChildType.KindOfQuantity;
+}
 
 export interface PropertyCategoryProps extends SchemaChildProps {
   priority: number;
 }
+export interface PropertyCategoryInterface extends SchemaChildInterface, PropertyCategoryProps {
+  readonly type: SchemaChildType.PropertyCategory;
+}
 
-// Normally we don't want empty interfaces because they don't add anything, but it is being used here to define one interface
-// that contains the properties from PropertyCategoryProps and method signatures from SchemaChildInterface.
-export interface PropertyCategoryInterface extends SchemaChildInterface, PropertyCategoryProps { }
-
-export interface PropertyInterface {
+export interface ECPropertyProps {
   name: string; // Probably should be an ECName
+  class: ECClassInterface;
   description?: string;
   label?: string;
   readOnly?: boolean;
   priority?: number;
-  category?: SchemaChildInterface; // Should be a PropertyCategoryInterface
-  kindOfQuantity?: any; // Should be KindOfQuantity interface
-  fromJson(obj: any): void;
+  category?: LazyLoadedPropertyCategory;
+  kindOfQuantity?: LazyLoadedKindOfQuantity;
 }
 
-export interface PrimitivePropertyInterface extends PropertyInterface {
-  type: PrimitiveType | EnumerationInterface;
+export interface ArrayPropertyProps {
+  minOccurs?: number;
+  maxOccurs?: number;
+}
+
+export interface NavigationPropertyProps {
+  relationshipClass: LazyLoadedRelationshipClass;
+  direction: RelatedInstanceDirection;
+}
+
+export interface PrimitiveBackedPropertyProps {
   extendedTypeName?: string;
   minValue?: number;
   maxValue?: number;
@@ -193,19 +219,27 @@ export interface PrimitivePropertyInterface extends PropertyInterface {
   maxLength?: number;
 }
 
-export interface StructPropertyInterface extends PropertyInterface {
-  type: SchemaChildInterface; // Should be a StructClassInterface
+export interface PrimitivePropertyProps extends PrimitiveBackedPropertyProps {
+  primitiveType: PrimitiveType;
 }
 
-export interface ArrayPropertyInterface {
-  minOccurs?: number;
-  maxOccurs?: number;
+export interface EnumerationPropertyProps extends PrimitiveBackedPropertyProps {
+  enumeration: LazyLoadedEnumeration;
 }
 
-export interface PrimitiveArrayPropertyInteface extends PrimitivePropertyInterface, ArrayPropertyInterface { }
-export interface StructArrayPropertyInterface extends StructPropertyInterface, ArrayPropertyInterface { }
-
-export interface NavigationPropertyInterface extends PropertyInterface {
-  relationship: RelationshipClassInterface;
-  direction: RelatedInstanceDirection;
+export interface StructPropertyProps {
+  structClass: LazyLoadedStructClass;
 }
+
+export type PropertyInterface = ECPropertyProps & JsonDeserializable;
+export type ArrayPropertyInterface = PropertyInterface & ArrayPropertyProps;
+
+// tslint:disable:no-empty-interface
+export interface PrimitivePropertyInterface extends PropertyInterface, PrimitivePropertyProps {}
+export interface EnumerationPropertyInterface extends PropertyInterface, EnumerationPropertyProps {}
+export interface StructPropertyInterface extends PropertyInterface, StructPropertyProps {}
+export interface NavigationPropertyInterface extends PropertyInterface, NavigationPropertyProps {}
+export interface PrimitiveArrayPropertyInterface extends ArrayPropertyInterface, PrimitivePropertyProps {}
+export interface EnumerationArrayPropertyInterface extends ArrayPropertyInterface, EnumerationPropertyProps {}
+export interface StructArrayPropertyInterface extends ArrayPropertyInterface {}
+// tslint:enable:no-empty-interface
