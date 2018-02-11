@@ -57,7 +57,8 @@
     ],
     "reporter": [
       "text-summary",
-      "lcov"
+      "lcov",
+      "cobertura"
     ],
     "report-dir": "./lib/test/coverage"
   }
