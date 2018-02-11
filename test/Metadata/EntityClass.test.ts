@@ -219,7 +219,7 @@ describe("entity class", () => {
 
       const navProp = await entityClass!.getProperty("testNavProp");
       assert.isDefined(navProp);
-      if (navProp && navProp.isNavigation) {
+      if (navProp && navProp.isNavigation()) {
         const relClass = await schema.getClass<RelationshipClass>("NavPropRelationship");
         assert.isTrue(await navProp.relationshipClass === relClass);
       } else {
