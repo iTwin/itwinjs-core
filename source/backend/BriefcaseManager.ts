@@ -909,14 +909,10 @@ export class BriefcaseManager {
   }
 
   /** Make a description of the changeset by combining all local txn comments. */
-  private static wipAddonTxnMgr: boolean = false;
   public static describeChangeSet(briefcase: BriefcaseEntry, endTxnId?: IModelDb.TxnId): string {
     const dgndb = briefcase.nativeDb!;
 
-    if (!BriefcaseManager.wipAddonTxnMgr) {
-      return "TBD";
-    }
-
+    /*
     if (endTxnId === undefined)
       endTxnId = dgndb.txnManagerGetCurrentTxnId();
     const txnId = dgndb.txnManagerQueryFirstTxnId();
@@ -927,6 +923,8 @@ export class BriefcaseManager {
         accum.concat(txnDesc);
       }
     return accum;
+    */
+    return "";
   }
 
   /** Push local changes to the hub
