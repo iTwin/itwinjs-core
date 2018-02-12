@@ -21,6 +21,13 @@ import { KnownLocations } from "./KnownLocations";
 
 const loggingCategory = "imodeljs-backend.BriefcaseManager";
 
+export namespace IModelDb {
+  /** Identifies a transaction that is local to a specific IModelDb. */
+  export interface TxnId {
+    readonly _id: string;
+  }
+}
+
 /** The ID assigned to a briefcase by iModelHub, or one of the special values that identify special kinds of iModels */
 export class BriefcaseId {
   private value: number;
@@ -108,6 +115,9 @@ export class BriefcaseEntry {
   /** Event called when the version of the briefcase has been updated */
   public readonly onVersionUpdated = new BeEvent<() => void>();
 }
+
+/** The signature of a function that can supply a description of local Txns in the specified briefcase up to and includign the specified endTxnId. */
+export type ChangeSetDescriber = (briefcase: BriefcaseEntry, endTxnId: IModelDb.TxnId) => string;
 
 /** In-memory cache of briefcases */
 class BriefcaseCache {
@@ -902,8 +912,33 @@ export class BriefcaseManager {
       throw new IModelError(result);
   }
 
-  /** Push local changes to the hub */
-  public static async pushChanges(accessToken: AccessToken, briefcase: BriefcaseEntry): Promise<void> {
+  /** Make a description of the changeset by combining all local txn comments. */
+  private static wipAddonTxnMgr: boolean = false;
+  public static describeChangeSet(briefcase: BriefcaseEntry, endTxnId?: IModelDb.TxnId): string {
+    const dgndb = briefcase.nativeDb!;
+
+    if (!BriefcaseManager.wipAddonTxnMgr) {
+      return "TBD";
+    }
+
+    if (endTxnId === undefined)
+      endTxnId = dgndb.txnManagerGetCurrentTxnId();
+    const txnId = dgndb.txnManagerQueryFirstTxnId();
+    const accum = "";
+    while (dgndb.txnManagerIsTxnIdValid(txnId)) {
+      const txnDesc = dgndb.txnManagerGetTxnDescription(txnId);
+      if (txnDesc.length !== 0)
+        accum.concat(txnDesc);
+      }
+    return accum;
+  }
+
+  /** Push local changes to the hub
+   * @param accessToken The access token of the account that has write access to the iModel. This may be a service account.
+   * @param briefcase Identifies the IModelDb that contains the pending changes.
+   * @param describer Optional A function that can supply a description of the changeset that is to be pushed. If not supplied, the combined descriptions of all local Txn are used.
+   */
+  public static async pushChanges(accessToken: AccessToken, briefcase: BriefcaseEntry, describer: ChangeSetDescriber = BriefcaseManager.describeChangeSet): Promise<void> {
 
     await BriefcaseManager.pullAndMergeChanges(accessToken, briefcase, IModelVersion.latest());
 
@@ -916,6 +951,7 @@ export class BriefcaseManager {
     changeSet.containsSchemaChanges = changeSetToken.containsSchemaChanges;
     changeSet.seedFileId = briefcase.fileId!;
     changeSet.fileSize = IModelJsFs.lstatSync(changeSetToken.pathname)!.size.toString();
+    changeSet.description = describer(briefcase, briefcase.nativeDb!.txnManagerGetCurrentTxnId());
 
     await BriefcaseManager.hubClient!.uploadChangeSet(accessToken, briefcase.iModelId, changeSet, changeSetToken.pathname);
 
