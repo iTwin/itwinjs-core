@@ -525,16 +525,16 @@ export class SchemaChildKey {
   }
 }
 
-const UINT_MAX = 4294967295;
+const INT32_MAX = 2147483647;
 
 /**
  *
  */
 export class RelationshipMultiplicity {
   public static readonly zeroOne = new RelationshipMultiplicity(0, 1);
-  public static readonly zeroMany = new RelationshipMultiplicity(0, UINT_MAX);
+  public static readonly zeroMany = new RelationshipMultiplicity(0, INT32_MAX);
   public static readonly oneOne = new RelationshipMultiplicity(1, 1);
-  public static readonly oneMany = new RelationshipMultiplicity(1, UINT_MAX);
+  public static readonly oneMany = new RelationshipMultiplicity(1, INT32_MAX);
 
   public lowerLimit: number;
   public upperLimit: number;
@@ -550,14 +550,14 @@ export class RelationshipMultiplicity {
       return undefined;
 
     const lowerLimit = parseInt(matches[1], undefined);
-    const upperLimit = matches[2] === "*" ? UINT_MAX : parseInt(matches[2], undefined);
+    const upperLimit = matches[2] === "*" ? INT32_MAX : parseInt(matches[2], undefined);
     if (0 === lowerLimit && 1 === upperLimit)
       return RelationshipMultiplicity.zeroOne;
-    else if (0 === lowerLimit && UINT_MAX === upperLimit)
+    else if (0 === lowerLimit && INT32_MAX === upperLimit)
       return RelationshipMultiplicity.zeroMany;
     else if (1 === lowerLimit && 1 === upperLimit)
       return RelationshipMultiplicity.oneOne;
-    else if (1 === lowerLimit && UINT_MAX === upperLimit)
+    else if (1 === lowerLimit && INT32_MAX === upperLimit)
       return RelationshipMultiplicity.oneMany;
 
     return new RelationshipMultiplicity(lowerLimit, upperLimit);
