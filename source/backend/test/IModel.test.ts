@@ -604,8 +604,8 @@ describe("iModel", () => {
         assert.isNotNull(row);
         assert.isObject(row);
         assert.isTrue(row.id !== undefined);
-        assert.isString(row.id);
-        lastId = row.id;
+        assert.isTrue(row.id.isValid());
+        lastId = row.id.value;
         if (row.codeValue !== undefined)
           firstCodeValue = row.codeValue;
         count = count + 1;
@@ -623,8 +623,8 @@ describe("iModel", () => {
         assert.isNotNull(row);
         assert.isObject(row);
         assert.isTrue(row.id !== undefined);
-        assert.isString(row.id);
-        lastIterId = row.id;
+        assert.isTrue(row.id.isValid());
+        lastIterId = row.id.value;
         iteratorCount = iteratorCount + 1;
         if (row.codeValue !== undefined)
           firstCodeValueIter = row.codeValue;
@@ -643,7 +643,7 @@ describe("iModel", () => {
         count = count + 1;
         const row = stmt3.getRow();
         // Verify that we got the row that we asked for
-        assert.isTrue(idToFind.equals(new Id64(row.id)));
+        assert.isTrue(idToFind.equals(row.id));
       }
       // Verify that we got the row that we asked for
       assert.equal(count, 1);

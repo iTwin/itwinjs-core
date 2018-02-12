@@ -242,7 +242,7 @@ export class ChangeSummaryManager {
         throw new IModelError(DbResult.BE_SQLITE_ERROR, `No ChangeSet information found for ChangeSummary ${changeSummaryId.value}.`);
 
       const row = stmt.getRow();
-      return {id: changeSummaryId, changeSet: {wsgId: row.wsgId, parentWsgId: row.parentWsgId, pushDate: new DateTime(row.pushDate), author: row.author}};
+      return {id: changeSummaryId, changeSet: {wsgId: row.wsgId, parentWsgId: row.parentWsgId, pushDate: row.pushDate, author: row.author}};
       });
   }
 
@@ -266,11 +266,11 @@ export class ChangeSummaryManager {
           throw new IModelError(DbResult.BE_SQLITE_ERROR, `No InstanceChange found for id ${instanceChangeId.value}.`);
 
         const row = stmt.getRow();
-        const changedInstanceId = new Id64(row.changedInstanceId);
+        const changedInstanceId = row.changedInstanceId;
         const changedInstanceClassName: string = row.changedInstanceSchemaName + "." + row.changedInstanceClassName;
         const op: ChangeOpCode = row.opCode as ChangeOpCode;
 
-        return { id: instanceChangeId, summaryId: new Id64(row.summaryId), changedInstance: {id: changedInstanceId, className: changedInstanceClassName},
+        return { id: instanceChangeId, summaryId: row.summaryId, changedInstance: {id: changedInstanceId, className: changedInstanceClassName},
                 opCode: op, isIndirect: row.isIndirect, changedProperties: {before: undefined, after: undefined}};
       });
 
