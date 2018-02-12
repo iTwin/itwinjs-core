@@ -4,7 +4,7 @@
 import { GatewayDefinition, Gateway } from "@bentley/imodeljs-backend/lib/common/Gateway";
 
 export default class TestGatewayConfiguration extends Gateway.Configuration {
-  public gateways: () => GatewayDefinition[];
+  public gateways: () => GatewayDefinition[] = () => [];
   public protocol: Gateway.DirectProtocol = new Gateway.DirectProtocol(this);
 
   /** IMO all of this should be done in the Gateway code itself, but for now... */

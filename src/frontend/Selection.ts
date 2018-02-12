@@ -328,7 +328,7 @@ export abstract class SelectionHandler implements IDisposable {
   private _manager: SelectionManager;
   private _inSelect: boolean;
   private _disposables: DisposableList;
-  public connection: Connection;
+  public connection: Connection | null = null;
   public name: string;
 
   /** Constructor.
@@ -387,6 +387,9 @@ export abstract class SelectionHandler implements IDisposable {
     if (this._inSelect)
       return;
 
+    if (!this.connection)
+      return;
+
     return this._manager.addToSelection(this.connection, this.name, isSubSelection, items, this.supplySelectionExtendedData());
   }
 
@@ -396,6 +399,9 @@ export abstract class SelectionHandler implements IDisposable {
    */
   public removeFromSelection(isSubSelection: boolean, items: SelectedItem[]): void {
     if (this._inSelect)
+      return;
+
+    if (!this.connection)
       return;
 
     return this._manager.removeFromSelection(this.connection, this.name, isSubSelection, items, this.supplySelectionExtendedData());
@@ -409,6 +415,9 @@ export abstract class SelectionHandler implements IDisposable {
     if (this._inSelect)
       return;
 
+    if (!this.connection)
+      return;
+
     return this._manager.replaceSelection(this.connection, this.name, isSubSelection, items, this.supplySelectionExtendedData());
   }
 
@@ -417,6 +426,9 @@ export abstract class SelectionHandler implements IDisposable {
    */
   public clearSelection(isSubSelection: boolean): void {
     if (this._inSelect)
+      return;
+
+    if (!this.connection)
       return;
 
     return this._manager.clearSelection(this.connection, this.name, isSubSelection, this.supplySelectionExtendedData());

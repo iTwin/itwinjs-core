@@ -11,11 +11,11 @@ export default abstract class ContentDataProvider {
   private _manager: ECPresentationManager;
   private _rulesetId: string;
   private _displayType: string;
-  private _configuredDescriptorPromise: Promise<content.Descriptor | null> | null;
-  private _descriptorPromise: Promise<content.Descriptor | null> | null;
-  private _descriptor: content.Descriptor | null;
-  private _contentSetSizePromise: Promise<number> | null;
-  private _contentPromise: Promise<content.Content> | null;
+  private _configuredDescriptorPromise: Promise<content.Descriptor | null> | null = null;
+  private _descriptorPromise: Promise<content.Descriptor | null> | null = null;
+  private _descriptor: content.Descriptor | null = null;
+  private _contentSetSizePromise: Promise<number> | null = null;
+  private _contentPromise: Promise<content.Content> | null = null;
   private _imodelToken: IModelToken;
 
   /** Constructor.
@@ -28,7 +28,6 @@ export default abstract class ContentDataProvider {
     this._rulesetId = rulesetId;
     this._displayType = displayType;
     this._imodelToken = imodelToken;
-    this._descriptor = null;
     this.invalidateCache();
   }
 
@@ -43,6 +42,7 @@ export default abstract class ContentDataProvider {
    * selection changes.
    */
   protected invalidateCache(): void {
+    this._configuredDescriptorPromise = null;
     this._descriptorPromise = null;
     this._descriptor = null;
     this.invalidateContentCache(true);

@@ -385,6 +385,7 @@ export class Descriptor {
     this._sortingField = null;
     this._sortDirection = SortDirection.Ascending;
     this._contentFlags = contentFlags;
+    this._filterExpression = null;
   }
 
   /** Get the preferred display type which this descriptor is created for. */

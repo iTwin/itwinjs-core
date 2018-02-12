@@ -120,12 +120,11 @@ class Page {
 class PageContainer {
   private _pageSize: number;
   private _maxPages: number;
-  private _pages: Page[];
+  private _pages: Page[] = [];
 
   constructor(pageSize: number, maxPages: number) {
     this._pageSize = pageSize;
     this._maxPages = maxPages;
-    this.invalidatePages();
   }
 
   public get pageSize() { return this._pageSize; }
@@ -210,15 +209,17 @@ class PageContainer {
 }
 
 export default class TableViewDataProvider extends ContentDataProvider {
-  private _sortColumnKey: string | null;
-  private _sortDirection: SortDirection;
-  private _filterExpression: string | null;
+  private _sortColumnKey: string | null = null;
+  private _sortDirection: SortDirection = SortDirection.Ascending;
+  private _filterExpression: string | null = null;
   private _pages: PageContainer;
   private _keys: InstanceKey[];
 
   /** Constructor. */
   constructor(manager: ECPresentationManager, imodelToken: IModelToken, rulesetId: string, pageSize: number = 20, cachedPagesCount: number = 5) {
+
     super(manager, imodelToken, rulesetId, content.DefaultContentDisplayTypes.GRID);
+
     this._pages = new PageContainer(pageSize, cachedPagesCount);
     this._keys = [];
   }

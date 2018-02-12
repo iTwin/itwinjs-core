@@ -15,7 +15,7 @@ export interface State {
 
 export default class IModelSelector extends React.Component<Props, State> {
 
-  public static readonly DEFAULT_IMODEL_ID = "02d587b8-6d14-4af9-9194-2c4a4a3fd88e";
+  public static readonly DEFAULT_IMODEL_ID = "a783226f-835b-4559-b175-3e8102faa561";
 
   private _imodelIdInput: HTMLInputElement | null = null;
 

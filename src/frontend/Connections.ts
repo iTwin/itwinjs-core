@@ -38,6 +38,8 @@ export class ConnectionManagerImpl implements ConnectionManager {
   /** Constructor. */
   constructor() {
     this._connections = new Array<Connection>();
+    this.connectionOpened = new ConnectionEvent();
+    this.connectionClosed = new ConnectionEvent();
   }
 
   public registerConnection(connection: Connection): void {
