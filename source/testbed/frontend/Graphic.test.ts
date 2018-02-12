@@ -177,7 +177,7 @@ describe("Graphic", () => {
     assert.isTrue (PolylineParam.kNoneAdjWt + PolylineParam.kNegateAlong + PolylineParam.kNegatePerp === p1,
       "GetParam(false,true,false,true) should return kNoneAdjWt + kNegateAlong + PolylineParam.kNegatePerp if !isSegmentStart and !isPolylineStartOrEnd");
     p1 = ppv.GetParam (false, true, false, false);
-    
+
     assert.isTrue (PolylineParam.kMiterInsideOnly + PolylineParam.kNegateAlong === p1,
       "GetParam(false,true,false,false) should return kMiterInsideOnly + kNegateAlong if !isSegmentStart and !isPolylineStartOrEnd");
     p1 = ppv.GetParam (true, true, false, false);
