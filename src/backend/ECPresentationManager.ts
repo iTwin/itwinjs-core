@@ -148,9 +148,10 @@ export interface NodeAddonDefinition {
 }
 
 const createAddonImpl = () => {
+  const nativeAddon = (NodeAddonRegistry.getAddon()).AddonECPresentationManager;
   // note the implementation is constructed here to make ECPresentationManager
   // usable without loading the actual addon (if addon is set to something other)
-  return class extends (NodeAddonRegistry.getAddon()).NodeAddonECPresentationManager implements NodeAddonDefinition {
+  return class extends nativeAddon implements NodeAddonDefinition {
     public handleRequest(db: any, options: string): string {
       return super.handleRequest(db, options);
     }
@@ -160,7 +161,7 @@ const createAddonImpl = () => {
     public getImodelAddon(token: IModelToken): any {
       const imodel = IModelDb.find(token);
       if (!imodel || !imodel.nativeDb)
-        throw new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, () => ({ iModelId: token.iModelId }));
+        throw new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, undefined, () => ({ iModelId: token.iModelId }));
       return imodel.nativeDb;
     }
   };

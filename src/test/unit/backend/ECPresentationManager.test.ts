@@ -5,7 +5,6 @@ import { assert } from "chai";
 import * as moq from "typemoq";
 import ECPresentationManager, { NodeAddonDefinition, NodeAddonRequestTypes } from "@bentley/ecpresentation-backend/lib/backend/ECPresentationManager";
 import * as addonTypes from "@bentley/ecpresentation-backend/lib/backend/AddonResponses";
-import { NodeAddonLoader } from "@bentley/imodeljs-nodeaddon/NodeAddonLoader";
 import { NodeAddonRegistry } from "@bentley/imodeljs-backend/lib/backend/NodeAddonRegistry";
 import { IModelToken } from "@bentley/imodeljs-backend/lib/common/IModel";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -20,9 +19,9 @@ import { NavNode, /*, NavNodeKeyPath, NavNodePathElement*/ NavNodeKey } from "@b
 describe("ECPresentationManager", () => {
 
   it("uses default addon implementation if not overridden", () => {
-    NodeAddonRegistry.registerAddon(NodeAddonLoader.loadAddon());
+    NodeAddonRegistry.loadAndRegisterStandardAddon();
     const manager = new ECPresentationManager();
-    assert.instanceOf(manager.getAddon(), NodeAddonRegistry.getAddon().NodeAddonECPresentationManager);
+    assert.instanceOf(manager.getAddon(), NodeAddonRegistry.getAddon().AddonECPresentationManager);
   });
 
   it("uses addon implementation supplied through props", () => {
