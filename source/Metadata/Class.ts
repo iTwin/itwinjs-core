@@ -9,14 +9,14 @@ import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttri
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty, EnumerationProperty, EnumerationArrayProperty, ECProperty } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
-import ECSchema from "./Schema";
+import Schema from "./Schema";
 import { LazyLoadedECClass, LazyLoadedProperty } from "../Interfaces";
 
 function createLazyLoadedChild<T extends SchemaChild>(c: T) {
   return new DelayedPromiseWithProps(c.key, async () => c);
 }
 
-async function loadStructType(structType: string | StructClass | undefined, schema: ECSchema) {
+async function loadStructType(structType: string | StructClass | undefined, schema: Schema) {
   let correctType: StructClass | undefined;
   if (typeof(structType) === "string")
     correctType = await schema.getChild<StructClass>(structType, false);
@@ -29,7 +29,7 @@ async function loadStructType(structType: string | StructClass | undefined, sche
   return correctType;
 }
 
-async function loadPrimitiveType(primitiveType: string | PrimitiveType | Enumeration | undefined, schema: ECSchema) {
+async function loadPrimitiveType(primitiveType: string | PrimitiveType | Enumeration | undefined, schema: Schema) {
   if (primitiveType === undefined)
     return PrimitiveType.Integer;
 
@@ -53,7 +53,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
   public properties?: LazyLoadedProperty[];
   public customAttributes?: CustomAttributeSet;
 
-  constructor(schema: ECSchema, name: string, modifier?: ECClassModifier) {
+  constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name);
 
     if (modifier)
@@ -204,7 +204,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
 export class StructClass extends ECClass {
   public readonly type: SchemaChildType.StructClass;
 
-  constructor(schema: ECSchema, name: string, modifier?: ECClassModifier) {
+  constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name, modifier);
     this.key.type = SchemaChildType.StructClass;
   }

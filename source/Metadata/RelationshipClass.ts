@@ -11,7 +11,7 @@ import { NavigationProperty } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import EntityClass from "./EntityClass";
 import MixinClass from "./MixinClass";
-import ECSchema from "./Schema";
+import Schema from "./Schema";
 
 type AnyConstraintClass = EntityClass | MixinClass | RelationshipClass;
 
@@ -19,14 +19,14 @@ type AnyConstraintClass = EntityClass | MixinClass | RelationshipClass;
  * A Typescript class representation of a ECRelationshipClass.
  */
 export default class RelationshipClass extends ECClass {
-  public schema: ECSchema;
+  public schema: Schema;
   public readonly type: SchemaChildType.RelationshipClass;
   public strength: StrengthType;
   public strengthDirection: RelatedInstanceDirection;
   public readonly source: RelationshipConstraint;
   public readonly target: RelationshipConstraint;
 
-  constructor(schema: ECSchema, name: string, strength?: StrengthType, strengthDirection?: RelatedInstanceDirection, modifier?: ECClassModifier) {
+  constructor(schema: Schema, name: string, strength?: StrengthType, strengthDirection?: RelatedInstanceDirection, modifier?: ECClassModifier) {
     super(schema, name, modifier);
 
     this.key.type = SchemaChildType.RelationshipClass;

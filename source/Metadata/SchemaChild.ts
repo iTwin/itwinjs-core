@@ -3,18 +3,18 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ECVersion, SchemaChildKey, SchemaKey, SchemaChildType } from "../ECObjects";
-import ECSchema from "./Schema";
+import Schema from "./Schema";
 
 /**
  * An abstract class that supplies all of the common parts of a SchemaChild.
  */
 export default abstract class SchemaChild {
-  public readonly schema: ECSchema;
+  public readonly schema: Schema;
   public key: SchemaChildKey;
   public description?: string;
   public label?: string;
 
-  constructor(schema: ECSchema, name: string) {
+  constructor(schema: Schema, name: string) {
     this.key = new SchemaChildKey(name);
     this.schema = schema;
   }

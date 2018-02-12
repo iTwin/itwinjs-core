@@ -3,7 +3,7 @@ export * from "./Constants";
 export * from "./Context";
 export * from "./Interfaces";
 export * from "./DelayedPromise";
-export { Schema as ECSchema } from "./Metadata/Schema";
+export { default as Schema } from "./Metadata/Schema";
 export { default as SchemaChild } from "./Metadata/SchemaChild";
 export { default as ECClass, StructClass } from "./Metadata/Class";
 export { default as EntityClass } from "./Metadata/EntityClass";

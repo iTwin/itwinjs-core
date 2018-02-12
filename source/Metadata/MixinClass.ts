@@ -8,7 +8,7 @@ import { LazyLoadedEntityClass } from "../Interfaces";
 import { ECClassModifier, SchemaChildType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
-import ECSchema from "./Schema";
+import Schema from "./Schema";
 
 /**
  * A Typescript class representation of a Mixin.
@@ -17,7 +17,7 @@ export default class MixinClass extends ECClass {
   public readonly type: SchemaChildType.MixinClass;
   public appliesTo: LazyLoadedEntityClass;
 
-  constructor(schema: ECSchema, name: string) {
+  constructor(schema: Schema, name: string) {
     super(schema, name, ECClassModifier.Abstract);
     this.key.type = SchemaChildType.MixinClass;
   }

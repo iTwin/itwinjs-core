@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import ECSchema from "../../source/Metadata/Schema";
+import Schema from "../../source/Metadata/Schema";
 import { ECObjectsError } from "../../source/Exception";
 import PropertyCategory from "../../source/Metadata/PropertyCategory";
 
@@ -22,7 +22,7 @@ describe("PropertyCategory", () => {
         },
       };
 
-      const ecSchema = await ECSchema.fromJson(testSchema);
+      const ecSchema = await Schema.fromJson(testSchema);
       assert.isDefined(ecSchema);
 
       const child = await ecSchema.getChild("testPropCategory");
@@ -47,7 +47,7 @@ describe("PropertyCategory", () => {
         },
       };
 
-      await expect(ECSchema.fromJson(testSchema)).to.be.rejectedWith(ECObjectsError);
+      await expect(Schema.fromJson(testSchema)).to.be.rejectedWith(ECObjectsError);
     });
   });
 });

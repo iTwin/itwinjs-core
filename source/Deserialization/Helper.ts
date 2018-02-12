@@ -5,7 +5,7 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaContext } from "../Context";
 import { ECVersion, SchemaKey, relationshipEndToString, SchemaChildKey, SchemaChildType, tryParsePrimitiveType } from "../ECObjects";
 import SchemaChild from "../Metadata/SchemaChild";
-import ECSchema from "../Metadata/Schema";
+import Schema from "../Metadata/Schema";
 import EntityClass from "../Metadata/EntityClass";
 import { StructClass } from "../Metadata/Class";
 import MixinClass from "../Metadata/MixinClass";
@@ -24,7 +24,7 @@ export default class SchemaReadHelper {
 
   // This is a cache of the schema we are loading. It also exists within the _context but in order
   // to not have to go back to the context every time if we don't have to this cache has been added.
-  private _schema: ECSchema;
+  private _schema: Schema;
 
   private _itemToRead: any; // This will be the json object of the Schema or SchemaChild to deserialize. Not sure if this is the best option.. Going to leave it for now.
 
@@ -42,7 +42,7 @@ export default class SchemaReadHelper {
    * @param schema The schema object to populate. Must be an extension of the DeserializableSchema.
    * @param schemaJson An object, or string representing that object, that follows the SchemaJson format.
    */
-  public static to<T extends ECSchema>(schema: T, schemaJson: object | string): Promise<T> {
+  public static to<T extends Schema>(schema: T, schemaJson: object | string): Promise<T> {
     const helper = new SchemaReadHelper();
     return helper.readSchema(schema, schemaJson);
   }
@@ -52,7 +52,7 @@ export default class SchemaReadHelper {
    * @param schema The Schema to populate
    * @param schemaJson The JSON to use to populate the Schema.
    */
-  public async readSchema<T extends ECSchema>(schema: T, schemaJson: object | string): Promise<T> {
+  public async readSchema<T extends Schema>(schema: T, schemaJson: object | string): Promise<T> {
     this._itemToRead = typeof schemaJson === "string" ? JSON.parse(schemaJson) : schemaJson;
 
     // Loads all of the properties on the Schema object
@@ -130,7 +130,7 @@ export default class SchemaReadHelper {
    * @param schemaChildJson The JSON to populate the SchemaChild with.
    * @param name The name of the SchemaChild, only needed if the SchemaChild is being loaded outside the context of a Schema.
    */
-  private async loadSchemaChild(schema: ECSchema, schemaChildJson: any, name?: string) {
+  private async loadSchemaChild(schema: Schema, schemaChildJson: any, name?: string) {
     const childName = (schemaChildJson.name) ? schemaChildJson.name : name;
     if (!childName)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson);

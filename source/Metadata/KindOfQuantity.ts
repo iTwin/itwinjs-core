@@ -5,7 +5,7 @@
 import SchemaChild from "./SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaChildType } from "../ECObjects";
-import ECSchema from "./Schema";
+import Schema from "./Schema";
 
 export class FormatUnitSpec {
   public unit: string;
@@ -21,7 +21,7 @@ export default class KindOfQuantity extends SchemaChild {
   public presentationUnits: FormatUnitSpec[];
   public persistenceUnit: FormatUnitSpec;
 
-  constructor(schema: ECSchema, name: string) {
+  constructor(schema: Schema, name: string) {
     super(schema, name);
     this.key.type = SchemaChildType.KindOfQuantity;
   }

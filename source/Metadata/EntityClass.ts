@@ -10,7 +10,7 @@ import { ECClassModifier, RelatedInstanceDirection, SchemaChildType, parseStreng
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { NavigationProperty, AnyProperty } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
-import ECSchema from "./Schema";
+import Schema from "./Schema";
 
 /**
  * A Typescript class representation of an ECEntityClass.
@@ -19,7 +19,7 @@ export default class EntityClass extends ECClass {
   public readonly type: SchemaChildType.EntityClass;
   private _mixins?: LazyLoadedMixin[];
 
-  constructor(schema: ECSchema, name: string, modifier?: ECClassModifier) {
+  constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name, modifier);
     this.key.type = SchemaChildType.EntityClass;
   }

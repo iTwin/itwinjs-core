@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import ECSchema from "../../source/Metadata/Schema";
+import Schema from "../../source/Metadata/Schema";
 import EntityClass from "../../source/Metadata/EntityClass";
 import MixinClass from "../../source/Metadata/MixinClass";
 
@@ -30,7 +30,7 @@ describe("mixin", () => {
         },
       };
 
-      const schema = await ECSchema.fromJson(testSchema);
+      const schema = await Schema.fromJson(testSchema);
       assert.isDefined(schema);
 
       const entity = await schema.getChild<EntityClass>("TestEntity");

@@ -22,14 +22,14 @@ const SCHEMAURL3_1 = "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecsche
 /**
  *
  */
-export default class ECSchema implements CustomAttributeContainerProps {
+export default class Schema implements CustomAttributeContainerProps {
   private _context?: SchemaContext;
   public readonly schemaKey: SchemaKey;
   public alias: string;
   public label?: string;
   public description?: string;
   public customAttributes?: CustomAttributeSet;
-  public readonly references: ECSchema[];
+  public readonly references: Schema[];
   private readonly _children: SchemaChild[];
 
   constructor(name?: string, readVersion?: number, writeVersion?: number, minorVersion?: number, context?: SchemaContext) {
@@ -112,14 +112,14 @@ export default class ECSchema implements CustomAttributeContainerProps {
   public createPropertyCategorySync(name: string): PropertyCategory { return this.createChild<PropertyCategory>(PropertyCategory, name); }
 
   // This method is private at the moment, but there is really no reason it can't be public... Need to make sure this is the way we want to handle this
-  private createClass<T extends ECClass>(type: (new (schema: ECSchema, name: string) => T), name: string, modifier?: ECClassModifier): T {
+  private createClass<T extends ECClass>(type: (new (schema: Schema, name: string) => T), name: string, modifier?: ECClassModifier): T {
     const child = this.createChild(type, name);
     if (modifier) child.modifier = modifier;
     return child;
   }
 
   // This method is private at the moment, but there is really no reason it can't be public... Need to make sure this is the way we want to handle this
-  private createChild<T extends SchemaChild>(type: (new (schema: ECSchema, name: string) => T), name: string): T {
+  private createChild<T extends SchemaChild>(type: (new (schema: Schema, name: string) => T), name: string): T {
     const child = new type(this, name);
     this.addChild(child);
     return child;
@@ -245,25 +245,25 @@ export default class ECSchema implements CustomAttributeContainerProps {
    *
    * @param refSchema
    */
-  public async addReference(refSchema: ECSchema): Promise<void> {
+  public async addReference(refSchema: Schema): Promise<void> {
     // TODO validation of reference schema. For now just adding
     this.references.push(refSchema);
   }
 
-  public addReferenceSync(refSchema: ECSchema): void {
+  public addReferenceSync(refSchema: Schema): void {
     if (refSchema) { }
 
     throw new Error("Not implemented");
   }
 
-  public async getReference<T extends ECSchema>(refSchemaName: string): Promise<T | undefined> {
+  public async getReference<T extends Schema>(refSchemaName: string): Promise<T | undefined> {
     if (this.references.length === 0)
       return undefined;
 
     return this.references.find((ref) => ref.schemaKey.name.toLowerCase() === refSchemaName.toLowerCase()) as T;
   }
 
-  public getReferenceSync<T extends ECSchema>(refSchemaName: string): T | undefined {
+  public getReferenceSync<T extends Schema>(refSchemaName: string): T | undefined {
     if (refSchemaName) { }
     throw new Error("Not implemented");
   }
@@ -292,14 +292,14 @@ export default class ECSchema implements CustomAttributeContainerProps {
   //// Static Methods /////
   /////////////////////////
 
-  public static async fromJson(jsonObj: object | string, context?: SchemaContext): Promise<ECSchema> {
-    let schema: ECSchema = new ECSchema();
+  public static async fromJson(jsonObj: object | string, context?: SchemaContext): Promise<Schema> {
+    let schema: Schema = new Schema();
 
     if (context) {
       const reader = new SchemaReadHelper(context);
       schema = await reader.readSchema(schema, jsonObj);
     } else
-      schema = await SchemaReadHelper.to<ECSchema>(schema, jsonObj);
+      schema = await SchemaReadHelper.to<Schema>(schema, jsonObj);
 
     return schema;
   }

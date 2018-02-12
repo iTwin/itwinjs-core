@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import ECSchema from "../../source/Metadata/Schema";
+import Schema from "../../source/Metadata/Schema";
 import { ECObjectsError } from "../../source/Exception";
 import KindOfQuantity from "../../source/Metadata/KindOfQuantity";
 
@@ -36,7 +36,7 @@ describe("KindOfQuantity", () => {
         },
       };
 
-      const ecSchema = await ECSchema.fromJson(testSchema);
+      const ecSchema = await Schema.fromJson(testSchema);
       assert.isDefined(ecSchema);
 
       const testChild = await ecSchema.getChild("testKoQ");
@@ -70,7 +70,7 @@ describe("KindOfQuantity", () => {
         },
       };
 
-      await expect(ECSchema.fromJson(testSchema)).to.be.rejectedWith(ECObjectsError);
+      await expect(Schema.fromJson(testSchema)).to.be.rejectedWith(ECObjectsError);
     });
   });
 });

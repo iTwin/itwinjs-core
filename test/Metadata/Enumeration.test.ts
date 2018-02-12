@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import ECSchema from "../../source/Metadata/Schema";
+import Schema from "../../source/Metadata/Schema";
 import Enumeration from "../../source/Metadata/Enumeration";
 
 describe("enumeration", () => {
@@ -24,7 +24,7 @@ describe("enumeration", () => {
         },
       };
 
-      const ecSchema = await ECSchema.fromJson(testSchema);
+      const ecSchema = await Schema.fromJson(testSchema);
       const testEnum = await ecSchema.getChild<Enumeration>("testEnum");
       assert.isDefined(testEnum);
 
@@ -55,7 +55,7 @@ describe("enumeration", () => {
         },
       };
 
-      const ecSchema = await ECSchema.fromJson(testSchema);
+      const ecSchema = await Schema.fromJson(testSchema);
       const testEnum = await ecSchema.getChild<Enumeration>("testEnum");
       assert.isDefined(testEnum);
     });

@@ -4,7 +4,7 @@
 
 import { SchemaKey, SchemaChildKey } from "./ECObjects";
 import { DelayedPromise } from "./DelayedPromise";
-import ECSchema from "./Metadata/Schema";
+import Schema from "./Metadata/Schema";
 import SchemaChild from "./Metadata/SchemaChild";
 import { ECProperty } from "./Metadata/Property";
 import ECClass, { StructClass } from "./Metadata/Class";
@@ -16,7 +16,7 @@ import Enumeration from "./Metadata/Enumeration";
 import KindOfQuantity from "./Metadata/KindOfQuantity";
 import PropertyCategory from "./Metadata/PropertyCategory";
 
-export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<ECSchema>;
+export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<Schema>;
 export type LazyLoadedProperty = Readonly<{ name: string }> & DelayedPromise<ECProperty>;
 
 export type LazyLoadedSchemaChild<T extends SchemaChild> = Readonly<T["key"]> & DelayedPromise<T>;

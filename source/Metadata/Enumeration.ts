@@ -5,7 +5,7 @@
 import SchemaChild from "./SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PrimitiveType, SchemaChildType } from "../ECObjects";
-import ECSchema from "./Schema";
+import Schema from "./Schema";
 
 /**
  * A Typescript class representation of an ECEnumeration.
@@ -16,7 +16,7 @@ export default class Enumeration extends SchemaChild {
   public isStrict: boolean;
   public enumerators: Enumerator[];
 
-  constructor(schema: ECSchema, name: string) {
+  constructor(schema: Schema, name: string) {
     super(schema, name);
 
     this.key.type = SchemaChildType.Enumeration;
