@@ -262,15 +262,16 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     return new ECSqlInsertResult(r.status);
   }
 
-  /** Get the current row. */
-  public getRow(): any {
+  /** @deprecated Use getRow instead.
+   *  Get the current row.
+   */
+  public getRow_depr(): any {
     return JSON.parse(this._stmt!.getRow());
   }
 
-  /** @hidden Needs to wait for respective add-on build before it can be used.
-   * Get the current row.
+  /** Get the current row.
    */
-  public getRow_new(): any {
+  public getRow(): any {
     const colCount: number = this._stmt!.getColumnCount();
     const row: object = {};
     const duplicatePropNames = new Map<string, number>();
@@ -635,7 +636,7 @@ class ECSqlValueHelper {
       if (stmt.step() !== DbResult.BE_SQLITE_ROW)
         throw new IModelError(DbResult.BE_SQLITE_ERROR, "No class found with ECClassId " + classId.value + " in table space " + tableSpace + ".");
 
-      const row: any = stmt.getRow_new();
+      const row: any = stmt.getRow();
       return row.schemaName + "." + row.className;
     });
   }

@@ -164,13 +164,9 @@ class BriefcaseCache {
       if (openMode === OpenMode.Readonly)
         return briefcase.changeSetId === changeSetId;
 
-      return briefcase.changeSetId === changeSetId && briefcase.userId === userId;
+      return briefcase.changeSetId === changeSetId && briefcase.userId === userId && openMode === briefcase.openMode;
     });
 
-    if (!foundBriefcase)
-      return undefined;
-
-    assert(foundBriefcase.openMode === openMode, "Error locating the briefcase with the correct mode");
     return foundBriefcase;
   }
 

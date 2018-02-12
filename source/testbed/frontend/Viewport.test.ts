@@ -45,15 +45,16 @@ describe("Viewport", function () {
   });
 
   it.skip("Viewport", () => {
-    const vp = new TestViewport(spatialView);
+    const vpView = spatialView.clone<SpatialViewState>();
+    const vp = new TestViewport(vpView);
     assert.isFalse(vp.isRedoPossible, "no redo");
     assert.isFalse(vp.isUndoPossible, "no undo");
     assert.isFalse(vp.isCameraOn(), "camera is off");
 
-    const saveView = spatialView.clone<SpatialViewState>();
-    assert.notEqual(saveView.modelSelector, spatialView.modelSelector, "clone should copy modelSelector");
-    assert.notEqual(saveView.categorySelector, spatialView.categorySelector, "clone should copy categorySelector");
-    assert.notEqual(saveView.displayStyle, spatialView.displayStyle, "clone should copy displayStyle");
+    const saveView = vpView.clone<SpatialViewState>();
+    assert.notEqual(saveView.modelSelector, vpView.modelSelector, "clone should copy modelSelector");
+    assert.notEqual(saveView.categorySelector, vpView.categorySelector, "clone should copy categorySelector");
+    assert.notEqual(saveView.displayStyle, vpView.displayStyle, "clone should copy displayStyle");
     const frustSave = vp.getFrustum();
 
     vp.turnCameraOn();
@@ -76,7 +77,8 @@ describe("Viewport", function () {
   });
 
   it("AccuDraw should work properly", () => {
-    const viewport = new TestViewport(spatialView);
+    const vpView = spatialView.clone<SpatialViewState>();
+    const viewport = new TestViewport(vpView);
     const accudraw = iModelApp.accuDraw;
     assert.isTrue(accudraw.isEnabled(), "Accudraw should be enabled");
     const pt = new Point3d(1, 1, 1);
