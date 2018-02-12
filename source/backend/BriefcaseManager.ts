@@ -909,22 +909,38 @@ export class BriefcaseManager {
   }
 
   /** Make a description of the changeset by combining all local txn comments. */
-  public static describeChangeSet(_briefcase: BriefcaseEntry, _endTxnId?: IModelDb.TxnId): string {
-    /*
+  public static describeChangeSet(briefcase: BriefcaseEntry, endTxnId?: IModelDb.TxnId): string {
     const dgndb = briefcase.nativeDb!;
 
     if (endTxnId === undefined)
       endTxnId = dgndb.txnManagerGetCurrentTxnId();
-    const txnId = dgndb.txnManagerQueryFirstTxnId();
-    const accum = "";
+
+    const accum = [];
+    const seen = new Set<string>();
+
+    let txnId = dgndb.txnManagerQueryFirstTxnId();
+
     while (dgndb.txnManagerIsTxnIdValid(txnId)) {
-      const txnDesc = dgndb.txnManagerGetTxnDescription(txnId);
-      if (txnDesc.length !== 0)
-        accum.concat(txnDesc);
+
+      const txnDescStr = dgndb.txnManagerGetTxnDescription(txnId);
+
+      if ((txnDescStr.length === 0) || seen.has(txnDescStr))
+        continue;
+
+      let txnDesc: any;
+      try {
+        txnDesc = JSON.parse(txnDescStr);
+      } catch (err) {
+        txnDesc = {description: txnDescStr};
       }
-    return accum;
-    */
-    return "";
+
+      accum.push(txnDesc);
+
+      seen.add(txnDesc);
+      txnId = dgndb.txnManagerQueryNextTxnId(txnId);
+      }
+
+    return JSON.stringify(accum);
   }
 
   /** Push local changes to the hub
@@ -932,7 +948,7 @@ export class BriefcaseManager {
    * @param briefcase Identifies the IModelDb that contains the pending changes.
    * @param describer Optional A function that can supply a description of the changeset that is to be pushed. If not supplied, the combined descriptions of all local Txn are used.
    */
-  public static async pushChanges(accessToken: AccessToken, briefcase: BriefcaseEntry, _describer: ChangeSetDescriber = BriefcaseManager.describeChangeSet): Promise<void> {
+  public static async pushChanges(accessToken: AccessToken, briefcase: BriefcaseEntry, describer: ChangeSetDescriber = BriefcaseManager.describeChangeSet): Promise<void> {
 
     await BriefcaseManager.pullAndMergeChanges(accessToken, briefcase, IModelVersion.latest());
 
@@ -945,7 +961,7 @@ export class BriefcaseManager {
     changeSet.containsSchemaChanges = changeSetToken.containsSchemaChanges;
     changeSet.seedFileId = briefcase.fileId!;
     changeSet.fileSize = IModelJsFs.lstatSync(changeSetToken.pathname)!.size.toString();
-    // changeSet.description = describer(briefcase, briefcase.nativeDb!.txnManagerGetCurrentTxnId());
+    changeSet.description = describer(briefcase, briefcase.nativeDb!.txnManagerGetCurrentTxnId());
 
     await BriefcaseManager.hubClient!.uploadChangeSet(accessToken, briefcase.iModelId, changeSet, changeSetToken.pathname);
 
