@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { IModelGateway } from "../../gateway/IModelGateway";
 import { BentleyCloudGatewayConfiguration } from "../../gateway/BentleyCloudGatewayConfiguration";
-import { GatewayElectronConfiguration } from "../../gateway/GatewayElectronProtocol"
+import { GatewayElectronConfiguration } from "../../gateway/GatewayElectronProtocol";
 import { TestGateway } from "../common/TestGateway";
 
 export class TestbedConfig {
