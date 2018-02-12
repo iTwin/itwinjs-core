@@ -909,10 +909,10 @@ export class BriefcaseManager {
   }
 
   /** Make a description of the changeset by combining all local txn comments. */
-  public static describeChangeSet(briefcase: BriefcaseEntry, endTxnId?: IModelDb.TxnId): string {
+  public static describeChangeSet(_briefcase: BriefcaseEntry, _endTxnId?: IModelDb.TxnId): string {
+    /*
     const dgndb = briefcase.nativeDb!;
 
-    /*
     if (endTxnId === undefined)
       endTxnId = dgndb.txnManagerGetCurrentTxnId();
     const txnId = dgndb.txnManagerQueryFirstTxnId();
@@ -932,7 +932,7 @@ export class BriefcaseManager {
    * @param briefcase Identifies the IModelDb that contains the pending changes.
    * @param describer Optional A function that can supply a description of the changeset that is to be pushed. If not supplied, the combined descriptions of all local Txn are used.
    */
-  public static async pushChanges(accessToken: AccessToken, briefcase: BriefcaseEntry, describer: ChangeSetDescriber = BriefcaseManager.describeChangeSet): Promise<void> {
+  public static async pushChanges(accessToken: AccessToken, briefcase: BriefcaseEntry, _describer: ChangeSetDescriber = BriefcaseManager.describeChangeSet): Promise<void> {
 
     await BriefcaseManager.pullAndMergeChanges(accessToken, briefcase, IModelVersion.latest());
 
@@ -945,7 +945,7 @@ export class BriefcaseManager {
     changeSet.containsSchemaChanges = changeSetToken.containsSchemaChanges;
     changeSet.seedFileId = briefcase.fileId!;
     changeSet.fileSize = IModelJsFs.lstatSync(changeSetToken.pathname)!.size.toString();
-    changeSet.description = describer(briefcase, briefcase.nativeDb!.txnManagerGetCurrentTxnId());
+    // changeSet.description = describer(briefcase, briefcase.nativeDb!.txnManagerGetCurrentTxnId());
 
     await BriefcaseManager.hubClient!.uploadChangeSet(accessToken, briefcase.iModelId, changeSet, changeSetToken.pathname);
 
