@@ -2,22 +2,20 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { ECClassInterface, PrimitivePropertyInterface, StructPropertyInterface,
-  NavigationPropertyInterface, PrimitiveArrayPropertyInterface, StructArrayPropertyInterface,
-  LazyLoadedPropertyCategory, LazyLoadedKindOfQuantity, LazyLoadedEnumeration, LazyLoadedStructClass,
-  LazyLoadedRelationshipClass, EnumerationPropertyInterface, EnumerationArrayPropertyInterface, ECPropertyProps } from "../Interfaces";
+import { LazyLoadedPropertyCategory, LazyLoadedKindOfQuantity, LazyLoadedEnumeration, LazyLoadedStructClass, LazyLoadedRelationshipClass } from "../Interfaces";
 import { ECName, PrimitiveType, RelatedInstanceDirection } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PropertyType, PropertyTypeUtils } from "../PropertyTypes";
+import ECClass from "./Class";
 
 /**
  * A common abstract class for all ECProperty types.
  */
-export abstract class ECProperty implements ECPropertyProps {
-  private _name: ECName;
+export abstract class ECProperty {
+  protected _name: ECName;
   protected _type: PropertyType;
 
-  public class: ECClassInterface;
+  public class: ECClass;
   public description: string;
   public label: string;
   public isReadOnly: boolean;
@@ -97,7 +95,7 @@ export abstract class PrimitiveOrEnumPropertyBase extends ECProperty {
   }
 }
 
-export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase implements PrimitivePropertyInterface {
+export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
   public get primitiveType(): PrimitiveType { return PropertyTypeUtils.getPrimitiveType(this._type); }
 
   constructor(name: string, primitiveType: PrimitiveType = PrimitiveType.Integer) {
@@ -105,7 +103,7 @@ export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase implements Pr
   }
 }
 
-export class EnumerationProperty extends PrimitiveOrEnumPropertyBase implements EnumerationPropertyInterface {
+export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
   public enumeration: LazyLoadedEnumeration;
 
   constructor(name: string, type: LazyLoadedEnumeration) {
@@ -115,7 +113,7 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase implements 
   }
 }
 
-export class StructProperty extends ECProperty implements StructPropertyInterface {
+export class StructProperty extends ECProperty {
   public structClass: LazyLoadedStructClass;
 
   constructor(name: string, type: LazyLoadedStructClass) {
@@ -130,7 +128,7 @@ export class StructProperty extends ECProperty implements StructPropertyInterfac
   }
 }
 
-export class NavigationProperty extends ECProperty implements NavigationPropertyInterface {
+export class NavigationProperty extends ECProperty {
   public relationshipClass: LazyLoadedRelationshipClass;
   public direction: RelatedInstanceDirection;
 
@@ -169,9 +167,9 @@ const ArrayProperty = <T extends Constructor<ECProperty>>(Base: T) => {
   } as typeof Base & Constructor<ArrayProperty>;
 };
 
-export class PrimitiveArrayProperty extends ArrayProperty(PrimitiveProperty) implements PrimitiveArrayPropertyInterface {}
-export class EnumerationArrayProperty extends ArrayProperty(EnumerationProperty) implements EnumerationArrayPropertyInterface {}
-export class StructArrayProperty extends ArrayProperty(StructProperty) implements StructArrayPropertyInterface {}
+export class PrimitiveArrayProperty extends ArrayProperty(PrimitiveProperty) {}
+export class EnumerationArrayProperty extends ArrayProperty(EnumerationProperty) {}
+export class StructArrayProperty extends ArrayProperty(StructProperty) {}
 
 export type AnyArrayProperty = PrimitiveArrayProperty | EnumerationArrayProperty | StructArrayProperty;
 export type AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty;

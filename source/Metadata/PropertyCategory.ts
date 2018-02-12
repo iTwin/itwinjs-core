@@ -5,13 +5,13 @@
 import SchemaChild from "./SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaChildType } from "../ECObjects";
-import { SchemaInterface, PropertyCategoryInterface } from "../Interfaces";
+import ECSchema from "./Schema";
 
-export default class PropertyCategory extends SchemaChild implements PropertyCategoryInterface {
+export default class PropertyCategory extends SchemaChild {
   public readonly type: SchemaChildType.PropertyCategory;
   public priority: number;
 
-  constructor(schema: SchemaInterface, name: string) {
+  constructor(schema: ECSchema, name: string) {
     super(schema, name);
     this.key.type = SchemaChildType.PropertyCategory;
   }

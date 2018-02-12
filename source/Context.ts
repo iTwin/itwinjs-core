@@ -2,34 +2,35 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaInterface, SchemaChildInterface } from "./Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 import { SchemaKey, SchemaMatchType, SchemaChildKey } from "./ECObjects";
+import ECSchema from "./Metadata/Schema";
+import SchemaChild from "./Metadata/SchemaChild";
 
-export class SchemaMap extends Array<SchemaInterface> { }
+export class SchemaMap extends Array<ECSchema> { }
 
 /**
  * The interface defines what is needed to be a ISchemaLocater, which are used in a SchemaContext.
  */
 export interface ISchemaLocater {
-  getSchema<T extends SchemaInterface>(schemaKey: SchemaKey, matchType: SchemaMatchType): Promise<T | undefined>;
+  getSchema<T extends ECSchema>(schemaKey: SchemaKey, matchType: SchemaMatchType): Promise<T | undefined>;
 }
 
 export interface ISchemaChildLocater {
-  getSchemaChild<T extends SchemaChildInterface>(schemaChildKey: SchemaChildKey): Promise<T | undefined>;
+  getSchemaChild<T extends SchemaChild>(schemaChildKey: SchemaChildKey): Promise<T | undefined>;
 }
 
-// export class SchemaChildReturn<T extends SchemaChildInterface> {
-//   private readonly _parent: SchemaChildInterface;
+// export class SchemaChildReturn<T extends SchemaChild> {
+//   private readonly _parent: SchemaChild;
 //   private _thisChild: T | undefined;
 //   public key: SchemaChildKey;
 
-//   constructor(key: SchemaChildKey, parentChild: SchemaChildInterface) {
+//   constructor(key: SchemaChildKey, parentChild: SchemaChild) {
 //     this._parent = parentChild;
 //     this.key = key;
 //   }
 
-//   public async get<S extends SchemaChildInterface>(): Promise<S> {
+//   public async get<S extends SchemaChild>(): Promise<S> {
 //     if (this._thisChild)
 //       Promise.resolve(this._thisChild);
 
@@ -45,7 +46,7 @@ export interface ISchemaChildLocater {
 //     if (!schema.references || schema.references.length === 0)
 //       return Promise.reject("");
 
-//     const foundSchema = schema.references.find((tempSchema: SchemaInterface) => {
+//     const foundSchema = schema.references.find((tempSchema: ECSchema) => {
 //       return tempSchema.schemaKey.matches(this.key.schemaKey, SchemaMatchType.Latest);
 //     });
 
@@ -76,7 +77,7 @@ export class SchemaCache implements ISchemaLocater {
    * Adds a schema to the cache. Does not allow for duplicate schemas, checks using SchemaMatchType.Latest.
    * @param schema The schema to add to the cache.
    */
-  public async addSchema<T extends SchemaInterface>(schema: T) {
+  public async addSchema<T extends ECSchema>(schema: T) {
     if (await this.getSchema<T>(schema.schemaKey))
       return Promise.reject(new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`));
 
@@ -88,7 +89,7 @@ export class SchemaCache implements ISchemaLocater {
    * Adds a schema to the cache. Does not allow for duplicate schemas, checks using SchemaMatchType.Latest.
    * @param schema The schema to add to the cache.
    */
-  public addSchemaSync<T extends SchemaInterface>(schema: T) {
+  public addSchemaSync<T extends ECSchema>(schema: T) {
     if (this.getSchemaSync<T>(schema.schemaKey))
       throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
 
@@ -100,11 +101,11 @@ export class SchemaCache implements ISchemaLocater {
    * @param schemaKey The SchemaKey describing the schema to get from the cache.
    * @param matchType The match type to use when locating the schema
    */
-  public async getSchema<T extends SchemaInterface>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<T | undefined> {
+  public async getSchema<T extends ECSchema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<T | undefined> {
     if (this.count === 0)
       return undefined;
 
-    const findFunc = (schema: SchemaInterface) => {
+    const findFunc = (schema: ECSchema) => {
       return schema.schemaKey.matches(schemaKey, matchType);
     };
 
@@ -121,11 +122,11 @@ export class SchemaCache implements ISchemaLocater {
    * @param schemaKey
    * @param matchType
    */
-  public getSchemaSync<T extends SchemaInterface>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): T | undefined {
+  public getSchemaSync<T extends ECSchema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): T | undefined {
     if (this.count === 0)
       return undefined;
 
-    const findFunc = (schema: SchemaInterface) => {
+    const findFunc = (schema: ECSchema) => {
       return schema.schemaKey.matches(schemaKey, matchType);
     };
 
@@ -142,7 +143,7 @@ export class SchemaCache implements ISchemaLocater {
    * @param schemaKey The schema key of the schema to remove.
    */
   public async removeSchema(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<void> {
-    const findFunc = (schema: SchemaInterface) => {
+    const findFunc = (schema: ECSchema) => {
       return schema.schemaKey.matches(schemaKey, matchType);
     };
 
@@ -160,7 +161,7 @@ export class SchemaCache implements ISchemaLocater {
    * @param matchType
    */
   public removeSchemaSync(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest) {
-    const findFunc = (schema: SchemaInterface) => {
+    const findFunc = (schema: ECSchema) => {
       return schema.schemaKey.matches(schemaKey, matchType);
     };
 
@@ -199,7 +200,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaChildLocater {
    * Adds the schema to this context
    * @param schema The schema to add to this context
    */
-  public async addSchema(schema: SchemaInterface) {
+  public async addSchema(schema: ECSchema) {
     this.knownSchemas.addSchemaSync(schema);
   }
 
@@ -207,7 +208,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaChildLocater {
    * Adds the given SchemaChild to the the SchemaContext by locating the schema, with the best match of SchemaMatchType.Exact, and
    * @param schemaChild The SchemaChild to add
    */
-  public async addSchemaChild(schemaChild: SchemaChildInterface) {
+  public async addSchemaChild(schemaChild: SchemaChild) {
     const schema = await this.getSchema(schemaChild.key.schemaKey, SchemaMatchType.Exact);
     if (!schema)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to add the schema child ${schemaChild.name} to the schema ${schemaChild.key.schemaKey.toString()} because the schema could not be located.`);
@@ -220,7 +221,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaChildLocater {
    *
    * @param schemaKey
    */
-  public async getSchema<T extends SchemaInterface>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<T | undefined> {
+  public async getSchema<T extends ECSchema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<T | undefined> {
     for (const locater of this._locaters) {
       const schema = await locater.getSchema<T>(schemaKey, matchType);
       if (schema)
@@ -230,7 +231,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaChildLocater {
     return undefined;
   }
 
-  public async getSchemaChild<T extends SchemaChildInterface>(schemaChildKey: SchemaChildKey): Promise<T | undefined> {
+  public async getSchemaChild<T extends SchemaChild>(schemaChildKey: SchemaChildKey): Promise<T | undefined> {
     const schema = await this.getSchema(schemaChildKey.schemaKey, SchemaMatchType.Latest);
     if (!schema)
       return undefined;

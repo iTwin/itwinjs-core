@@ -6,7 +6,7 @@ import * as chai from "chai";
 const assert = chai.assert;
 const expect = chai.expect;
 
-import * as chaiAsPromised from "chai-as-promised"
+import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
 
 import ECSchema from "../../source/Metadata/Schema";
@@ -65,7 +65,7 @@ describe("Schema Context", () => {
     await cache2.addSchema(schema2);
     expect(await context.getSchema(schema2.schemaKey, SchemaMatchType.Exact)).to.equal(schema2);
 
-    // We should still get TestSchema 1.0.5 for SchemaMatchType.Latest, since cache was added _before_ cache2 
+    // We should still get TestSchema 1.0.5 for SchemaMatchType.Latest, since cache was added _before_ cache2
     expect(await context.getSchema(schema2.schemaKey)).to.equal(schema);
   });
 });

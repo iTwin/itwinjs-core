@@ -5,18 +5,18 @@
 import SchemaChild from "./SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PrimitiveType, SchemaChildType } from "../ECObjects";
-import { EnumerationInterface, EnumeratorProps, SchemaInterface } from "../Interfaces";
+import ECSchema from "./Schema";
 
 /**
  * A Typescript class representation of an ECEnumeration.
  */
-export default class Enumeration extends SchemaChild implements EnumerationInterface {
+export default class Enumeration extends SchemaChild {
   public readonly type: SchemaChildType.Enumeration;
   public primitiveType: PrimitiveType.Integer | PrimitiveType.String;
   public isStrict: boolean;
   public enumerators: Enumerator[];
 
-  constructor(schema: SchemaInterface, name: string) {
+  constructor(schema: ECSchema, name: string) {
     super(schema, name);
 
     this.key.type = SchemaChildType.Enumeration;
@@ -107,7 +107,7 @@ export default class Enumeration extends SchemaChild implements EnumerationInter
 /**
  * A Typescript class representation of an ECEnumerator.
  */
-export class Enumerator implements EnumeratorProps {
+export class Enumerator {
   public enumeration: Enumeration;
 
   constructor(public value: number | string, public label?: string) { }

@@ -2,19 +2,19 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaInterface, SchemaChildInterface } from "../Interfaces";
 import { ECVersion, SchemaChildKey, SchemaKey, SchemaChildType } from "../ECObjects";
+import ECSchema from "./Schema";
 
 /**
  * An abstract class that supplies all of the common parts of a SchemaChild.
  */
-export default abstract class SchemaChild implements SchemaChildInterface {
-  public readonly schema: SchemaInterface;
+export default abstract class SchemaChild {
+  public readonly schema: ECSchema;
   public key: SchemaChildKey;
   public description?: string;
   public label?: string;
 
-  constructor(schema: SchemaInterface, name: string) {
+  constructor(schema: ECSchema, name: string) {
     this.key = new SchemaChildKey(name);
     this.schema = schema;
   }

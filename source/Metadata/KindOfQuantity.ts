@@ -4,10 +4,10 @@
 
 import SchemaChild from "./SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { KindOfQuantityInterface, FormatUnitSpecInterface, SchemaInterface } from "../Interfaces";
 import { SchemaChildType } from "../ECObjects";
+import ECSchema from "./Schema";
 
-export class FormatUnitSpec implements FormatUnitSpecInterface {
+export class FormatUnitSpec {
   public unit: string;
   public format: string;
 }
@@ -15,13 +15,13 @@ export class FormatUnitSpec implements FormatUnitSpecInterface {
 /**
  * A Typescript class representation of a KindOfQuantity.
  */
-export default class KindOfQuantity extends SchemaChild implements KindOfQuantityInterface {
+export default class KindOfQuantity extends SchemaChild {
   public readonly type: SchemaChildType.KindOfQuantity;
   public precision: number;
   public presentationUnits: FormatUnitSpec[];
   public persistenceUnit: FormatUnitSpec;
 
-  constructor(schema: SchemaInterface, name: string) {
+  constructor(schema: ECSchema, name: string) {
     super(schema, name);
     this.key.type = SchemaChildType.KindOfQuantity;
   }

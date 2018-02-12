@@ -6,7 +6,7 @@ import * as chai from "chai";
 const assert = chai.assert;
 const expect = chai.expect;
 
-import * as chaiAsPromised from "chai-as-promised"
+import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
 
 import { SchemaCache } from "../../source/Context";

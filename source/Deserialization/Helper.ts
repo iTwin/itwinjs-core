@@ -1,14 +1,19 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
-
-import { SchemaInterface, SchemaChildInterface, EntityClassInterface, MixinInterface,
-        RelationshipClassInterface, RelationshipConstraintInterface, CustomAttributeClassInterface,
-        KindOfQuantityInterface, AnyClassType, StructClassInterface, PropertyInterface } from "../Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaContext } from "../Context";
 import { ECVersion, SchemaKey, relationshipEndToString, SchemaChildKey, SchemaChildType, tryParsePrimitiveType } from "../ECObjects";
 import SchemaChild from "../Metadata/SchemaChild";
+import ECSchema from "../Metadata/Schema";
+import EntityClass from "../Metadata/EntityClass";
+import { StructClass } from "../Metadata/Class";
+import MixinClass from "../Metadata/MixinClass";
+import CustomAttributeClass from "../Metadata/CustomAttributeClass";
+import RelationshipClass, { RelationshipConstraint } from "../Metadata/RelationshipClass";
+import KindOfQuantity from "../Metadata/KindOfQuantity";
+import { AnyClassType } from "../Interfaces";
+import { ECProperty } from "../Metadata/Property";
 
 /**
  * The purpose of this class is to properly order the deserialization of ECSchemas and SchemaChildren from the JSON formats.
@@ -19,7 +24,7 @@ export default class SchemaReadHelper {
 
   // This is a cache of the schema we are loading. It also exists within the _context but in order
   // to not have to go back to the context every time if we don't have to this cache has been added.
-  private _schema: SchemaInterface;
+  private _schema: ECSchema;
 
   private _itemToRead: any; // This will be the json object of the Schema or SchemaChild to deserialize. Not sure if this is the best option.. Going to leave it for now.
 
@@ -34,10 +39,10 @@ export default class SchemaReadHelper {
   /**
    * Populates the given schema object with the information presented in the schemaJson provided. If present, uses the provided context to resolve any references within the schema.
    * Otherwise, those references will be unresolved.
-   * @param schema The schema object to populate. Must be an extension of the DeserializableSchemaInterface.
+   * @param schema The schema object to populate. Must be an extension of the DeserializableSchema.
    * @param schemaJson An object, or string representing that object, that follows the SchemaJson format.
    */
-  public static to<T extends SchemaInterface>(schema: T, schemaJson: object | string): Promise<T> {
+  public static to<T extends ECSchema>(schema: T, schemaJson: object | string): Promise<T> {
     const helper = new SchemaReadHelper();
     return helper.readSchema(schema, schemaJson);
   }
@@ -47,10 +52,10 @@ export default class SchemaReadHelper {
    * @param schema The Schema to populate
    * @param schemaJson The JSON to use to populate the Schema.
    */
-  public async readSchema<T extends SchemaInterface>(schema: T, schemaJson: object | string): Promise<T> {
+  public async readSchema<T extends ECSchema>(schema: T, schemaJson: object | string): Promise<T> {
     this._itemToRead = typeof schemaJson === "string" ? JSON.parse(schemaJson) : schemaJson;
 
-    // Loads all of the properties on the SchemaInterface object
+    // Loads all of the properties on the Schema object
     await schema.fromJson(this._itemToRead);
 
     this._schema = schema;
@@ -81,7 +86,7 @@ export default class SchemaReadHelper {
     return schema;
   }
 
-  // public readSchemaChild<T extends SchemaChildInterface>(schemaChild: T, childJson: object | string): T {
+  // public readSchemaChild<T extends SchemaChild>(schemaChild: T, childJson: object | string): T {
   //   this._itemToRead = typeof childJson === "string" ? JSON.parse(childJson) : childJson;
 
   // }
@@ -125,7 +130,7 @@ export default class SchemaReadHelper {
    * @param schemaChildJson The JSON to populate the SchemaChild with.
    * @param name The name of the SchemaChild, only needed if the SchemaChild is being loaded outside the context of a Schema.
    */
-  private async loadSchemaChild(schema: SchemaInterface, schemaChildJson: any, name?: string) {
+  private async loadSchemaChild(schema: ECSchema, schemaChildJson: any, name?: string) {
     const childName = (schemaChildJson.name) ? schemaChildJson.name : name;
     if (!childName)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson);
@@ -135,35 +140,35 @@ export default class SchemaReadHelper {
 
     switch (schemaChildJson.schemaChildType) {
       case "EntityClass":
-        const entityClass: EntityClassInterface = await schema.createEntityClass(childName);
+        const entityClass: EntityClass = await schema.createEntityClass(childName);
         await this.loadEntityClass(entityClass, schemaChildJson);
         break;
       case "StructClass":
-        const structClass: StructClassInterface = await schema.createStructClass(childName);
+        const structClass: StructClass = await schema.createStructClass(childName);
         await this.loadClass(structClass, schemaChildJson);
         break;
       case "Mixin":
-        const mixin: MixinInterface = await schema.createMixinClass(childName);
+        const mixin: MixinClass = await schema.createMixinClass(childName);
         await this.loadMixin(mixin, schemaChildJson);
         break;
       case "CustomAttributeClass":
-        const caClass: CustomAttributeClassInterface = await schema.createCustomAttributeClass(childName);
+        const caClass: CustomAttributeClass = await schema.createCustomAttributeClass(childName);
         await this.loadClass(caClass, schemaChildJson);
         break;
       case "RelationshipClass":
-        const relClass: RelationshipClassInterface = await schema.createRelationshipClass(childName);
+        const relClass: RelationshipClass = await schema.createRelationshipClass(childName);
         await this.loadRelationshipClass(relClass, schemaChildJson);
         break;
       case "KindOfQuantity":
-        const koq: KindOfQuantityInterface = await schema.createKindOfQuantity(childName);
+        const koq: KindOfQuantity = await schema.createKindOfQuantity(childName);
         await koq.fromJson(schemaChildJson);
         break;
       case "PropertyCategory":
-        const propCategory: SchemaChildInterface = await schema.createPropertyCategory(childName);
+        const propCategory: SchemaChild = await schema.createPropertyCategory(childName);
         await propCategory.fromJson(schemaChildJson);
         break;
       case "Enumeration":
-        const enumeration: SchemaChildInterface = await schema.createEnumeration(childName);
+        const enumeration: SchemaChild = await schema.createEnumeration(childName);
         await enumeration.fromJson(schemaChildJson);
         break;
       // NOTE: we are being permissive here and allowing unknown types to silently fail. Not sure if we want to hard fail or just do a basic deserialization
@@ -241,7 +246,7 @@ export default class SchemaReadHelper {
     await classObj.fromJson(classJson);
   }
 
-  private async loadEntityClass(entity: EntityClassInterface, entityJson: any): Promise<void> {
+  private async loadEntityClass(entity: EntityClass, entityJson: any): Promise<void> {
     // Load Mixin classes first
     if (entityJson.mixin) {
       if (typeof(entityJson.mixin) === "string") {
@@ -256,7 +261,7 @@ export default class SchemaReadHelper {
     await this.loadClass(entity, entityJson);
   }
 
-  private async loadMixin(mixin: MixinInterface, mixinJson: any): Promise<void> {
+  private async loadMixin(mixin: MixinClass, mixinJson: any): Promise<void> {
     if (mixinJson.appliesTo) {
       if (typeof(mixinJson.appliesTo) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Mixin ${mixin.name} has an invalid 'appliesTo' property. It should be of type 'string'.`);
@@ -266,7 +271,7 @@ export default class SchemaReadHelper {
     await this.loadClass(mixin, mixinJson);
   }
 
-  private async loadRelationshipClass(rel: RelationshipClassInterface, relJson: any): Promise<void> {
+  private async loadRelationshipClass(rel: RelationshipClass, relJson: any): Promise<void> {
     if (!relJson.source)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${rel.name} is missing the required source constraint.`);
 
@@ -280,17 +285,17 @@ export default class SchemaReadHelper {
     await this.loadClass(rel, relJson);
   }
 
-  private async loadRelationshipConstraint(relConstraint: RelationshipConstraintInterface, relConstraintJson: any): Promise<void> {
+  private async loadRelationshipConstraint(relConstraint: RelationshipConstraint, relConstraintJson: any): Promise<void> {
     if (relConstraintJson.abstractConstraint) {
       if (typeof(relConstraintJson.abstractConstraint) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${relationshipEndToString(relConstraint.relationshipEnd)} Constraint of ${relConstraint.relClass!.name} has an invalid 'abstractConstraint' property. It should be of type 'string'.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${relationshipEndToString(relConstraint.relationshipEnd)} Constraint of ${relConstraint.relationshipClass!.name} has an invalid 'abstractConstraint' property. It should be of type 'string'.`);
 
       await this.findSchemaChild(relConstraintJson.abstractConstraint);
     }
 
     if (relConstraintJson.constraintClasses) {
       if (!Array.isArray(relConstraintJson.constraintClasses))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${relationshipEndToString(relConstraint.relationshipEnd)} Constraint of ${relConstraint.relClass!.name} has an invalid 'constraintClasses' property. It should be of type 'array'.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${relationshipEndToString(relConstraint.relationshipEnd)} Constraint of ${relConstraint.relationshipClass!.name} has an invalid 'constraintClasses' property. It should be of type 'array'.`);
 
       for (const constraintClass of relConstraintJson.constraintClasses) {
         await this.findSchemaChild(constraintClass);
@@ -368,7 +373,7 @@ export default class SchemaReadHelper {
     }
   }
 
-  private async loadProperty<T extends PropertyInterface>(prop: T, propertyJson: any): Promise<void> {
+  private async loadProperty<T extends ECProperty>(prop: T, propertyJson: any): Promise<void> {
     if (propertyJson.category) {
       if (typeof(propertyJson.category) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${prop.class.name}.${prop.name} has an invalid 'category' property. It should be of type 'string'.`);
