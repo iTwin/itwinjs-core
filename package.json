@@ -3,7 +3,8 @@
   "version": "0.0.5-beta",
   "description": "ECObjects core concepts in typescript",
   "license": "UNLICENSED",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "typings": "lib/index",
   "repository": {
     "type": "git",
     "url": "http://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/ec-js"
