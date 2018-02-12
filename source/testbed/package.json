@@ -21,16 +21,16 @@
     "commander": "^2.14.1",
     "electron": "1.6.11",
     "express": "^4.16.2",
+    "flatbuffers": "^1.8.0",
     "fs-extra": "^4.0.3",
     "i18next": "^10.2.2",
     "i18next-browser-languagedetector": "^2.1.0",
     "i18next-xhr-backend": "^1.5.1",
+    "js-base64": "^2.4.0",
     "save": "^2.3.2",
     "webpack": "^3.10.0"
   },
-  "devDependencies": {
-    "@types/body-parser": "^1.16.8",
-    "@types/express": "^4.11.1",
-    "@types/webpack": "^3.8.1"
-  }
+  "//devDependencies": [
+    "NOTE: all devDependencies should be recorded in the top-level package.json only"
+  ]
 }
