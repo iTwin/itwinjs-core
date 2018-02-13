@@ -52,6 +52,8 @@ export enum GatewayMarshalingDirective {
   JSON = "__JSON__",
   Undefined = "__undefined__",
   Map = "__map__",
+  Set = "__set__",
+  Unregistered = "__unregistered__",
 }
 
 /** An application protocol for a gateway. */
@@ -82,6 +84,10 @@ export abstract class GatewayProtocol {
 
   /** JSON.stringify replacer callback that marshals JavaScript class instances. */
   private static marshal(this: any, key: string, value: any) {
+    if (key === GatewayMarshalingDirective.Name || key === GatewayMarshalingDirective.Undefined || key === GatewayMarshalingDirective.Unregistered) {
+      delete this[key];
+    }
+
     let originalValue = value;
     let custom = false;
     if (this[key] !== value && (typeof (value) !== "object" || value === null || Array.isArray(value))) {
@@ -91,13 +97,13 @@ export abstract class GatewayProtocol {
 
     if (typeof (originalValue) === "object" && originalValue !== null && !Array.isArray(originalValue) && originalValue.constructor !== Object) {
       const name = `${GatewayProtocol.marshalingScope}_${originalValue.constructor.name}`;
-      if (!registry.types.has(name))
-        throw new IModelError(BentleyStatus.ERROR, `Class "${name}" is not registered for gateway type marshaling.`);
+      const unregistered = !registry.types.has(name);
 
       if (custom) {
         return {
           [GatewayMarshalingDirective.Name]: name,
           [GatewayMarshalingDirective.JSON]: value,
+          [GatewayMarshalingDirective.Unregistered]: unregistered,
         };
       } else {
         if (value instanceof Map) {
@@ -105,9 +111,18 @@ export abstract class GatewayProtocol {
           return {
             [GatewayMarshalingDirective.Name]: name,
             [GatewayMarshalingDirective.Map]: elements,
+            [GatewayMarshalingDirective.Unregistered]: unregistered,
+          };
+        } else if (value instanceof Set) {
+          const elements = Array.from(value);
+          return {
+            [GatewayMarshalingDirective.Name]: name,
+            [GatewayMarshalingDirective.Set]: elements,
+            [GatewayMarshalingDirective.Unregistered]: unregistered,
           };
         } else {
           value[GatewayMarshalingDirective.Name] = name;
+          value[GatewayMarshalingDirective.Unregistered] = unregistered;
 
           const undefineds = [];
           for (const prop in value) {
@@ -129,21 +144,29 @@ export abstract class GatewayProtocol {
     if (typeof (value) === "object" && value !== null && value[GatewayMarshalingDirective.Name]) {
       const name = value[GatewayMarshalingDirective.Name];
       delete value[GatewayMarshalingDirective.Name];
+
+      delete value[GatewayMarshalingDirective.Unregistered]; // may use this information later
+
       const type = registry.types.get(name);
-      if (!type)
-        throw new IModelError(BentleyStatus.ERROR, `Class "${name}" is not registered for gateway type marshaling.`);
 
       const customJSON = value[GatewayMarshalingDirective.JSON];
       if (customJSON) {
-        const typeFromJSON = (type as any).fromJSON;
-        if (typeFromJSON)
-          return typeFromJSON(customJSON);
-        else
-          return new (type as any)(customJSON);
+        if (type) {
+          const typeFromJSON = (type as any).fromJSON;
+          if (typeFromJSON)
+            return typeFromJSON(customJSON);
+          else
+            return new (type as any)(customJSON);
+        } else {
+          return customJSON;
+        }
       } else {
         const mapInit = value[GatewayMarshalingDirective.Map];
+        const setInit = value[GatewayMarshalingDirective.Set];
         if (mapInit) {
           return new Map(mapInit);
+        } else if (setInit) {
+          return new Set(setInit);
         } else {
           const undefineds = value[GatewayMarshalingDirective.Undefined];
           if (undefineds)
@@ -159,7 +182,7 @@ export abstract class GatewayProtocol {
               descriptors[prop] = { configurable: true, enumerable: true, writable: true, value: undefined };
           }
 
-          return Object.create(type.prototype, descriptors);
+          return Object.create(type ? type.prototype : Object.prototype, descriptors);
         }
       }
     }
