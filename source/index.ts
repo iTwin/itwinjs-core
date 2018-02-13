@@ -13,4 +13,4 @@ export { default as CustomAttributeClass } from "./Metadata/CustomAttributeClass
 export { default as Enumeration, Enumerator } from "./Metadata/Enumeration";
 export { default as KindOfQuantity } from "./Metadata/KindOfQuantity";
 export { default as PropertyCategory } from "./Metadata/PropertyCategory";
-export { ECProperty } from "./Metadata/Property";
+export * from "./Metadata/Property";
