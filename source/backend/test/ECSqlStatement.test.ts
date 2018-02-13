@@ -294,8 +294,8 @@ describe("ECSqlStatement", () => {
     });
   });
 
-  it("Bind Arrays", () => {
-    using (ECDbTestHelper.createECDb(_outDir, "bindstructs.ecdb",
+  it.only("Bind Arrays", () => {
+    using (ECDbTestHelper.createECDb(_outDir, "bindarrays.ecdb",
     `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
       <ECStructClass typeName="Location" modifier="Sealed">
         <ECProperty propertyName="City" typeName="string"/>
@@ -807,6 +807,91 @@ describe("ECSqlStatement", () => {
         });
 
       });
+  });
+
+  it("HexStr SQL function", () => {
+    using (ECDbTestHelper.createECDb(_outDir, "hexstrfunction.ecdb",
+    `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+       <ECEntityClass typeName="Foo" modifier="Sealed">
+        <ECProperty propertyName="Bl" typeName="binary"/>
+        <ECProperty propertyName="Bo" typeName="boolean"/>
+        <ECProperty propertyName="D" typeName="double"/>
+        <ECProperty propertyName="Dt" typeName="dateTime"/>
+        <ECProperty propertyName="G" typeName="Bentley.Geometry.Common.IGeometry"/>
+        <ECProperty propertyName="I" typeName="int"/>
+        <ECProperty propertyName="L" typeName="long"/>
+        <ECProperty propertyName="P2d" typeName="Point2d"/>
+        <ECProperty propertyName="P3d" typeName="Point3d"/>
+        <ECProperty propertyName="S" typeName="string"/>
+       </ECEntityClass>
+      </ECSchema>`), (ecdb) => {
+      assert.isTrue(ecdb.isOpen());
+
+      const expectedRow = {bl: new Blob("SGVsbG8gd29ybGQNCg=="), bo : true, d : 3.5, dt: new DateTime("2018-01-23T12:24:00.000"),
+                          i: 3, l: 12312312312312, p2d: new Point2d(1, 2), p3d: new Point3d(1, 2, 3), s: "Hello World"};
+
+      const id: Id64 = ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl,Bo,D,Dt,I,L,P2d,P3d,S) VALUES(:bl,:bo,:d,:dt,:i,:l,:p2d,:p3d,:s)", (stmt) => {
+          stmt.bindValues(expectedRow);
+          const res: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          return res.id!;
+        });
+
+      ecdb.withPreparedStatement("SELECT I, HexStr(I) hex FROM test.Foo WHERE ECInstanceId=?", (stmt) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row: any = stmt.getRow();
+          assert.equal(row.i,  expectedRow.i);
+          assert.equal(row.hex, "0x3");
+        });
+
+      ecdb.withPreparedStatement("SELECT L, HexStr(L) hex FROM test.Foo WHERE ECInstanceId=?", (stmt) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row: any = stmt.getRow();
+          assert.equal(row.l,  expectedRow.l);
+          assert.equal(row.hex, "0xb32af0071f8");
+        });
+
+      ecdb.withPreparedStatement("SELECT Bl, HexStr(Bl) hex FROM test.Foo WHERE ECInstanceId=?", (stmt) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ERROR);
+        });
+
+      ecdb.withPreparedStatement("SELECT Bo, HexStr(Bo) hex FROM test.Foo WHERE ECInstanceId=?", (stmt) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row: any = stmt.getRow();
+          assert.equal(row.bo,  expectedRow.bo);
+          assert.equal(row.hex, "0x1");
+        });
+
+      ecdb.withPreparedStatement("SELECT D, HexStr(D) hex FROM test.Foo WHERE ECInstanceId=?", (stmt) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ERROR);
+        });
+
+      ecdb.withPreparedStatement("SELECT Dt, HexStr(Dt) hex FROM test.Foo WHERE ECInstanceId=?", (stmt) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ERROR);
+        });
+
+      // SQL functions cannot take points. So here preparation already fails
+      assert.throw(() => ecdb.withPreparedStatement("SELECT P2d, HexStr(P2d) hex FROM test.Foo WHERE ECInstanceId=?", () => {
+        assert.fail();
+      }));
+
+      // SQL functions cannot take points. So here preparation already fails
+      assert.throw(() => ecdb.withPreparedStatement("SELECT P3d, HexStr(P3d) hex FROM test.Foo WHERE ECInstanceId=?", () => {
+        assert.fail();
+       }));
+
+      ecdb.withPreparedStatement("SELECT S, HexStr(S) hex FROM test.Foo WHERE ECInstanceId=?", (stmt) => {
+        stmt.bindId(1, id);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_ERROR);
+     });
+    });
   });
 
 });

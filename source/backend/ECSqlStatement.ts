@@ -409,7 +409,7 @@ class ECSqlBindingHelper {
 
     if (typeof(val) === "number") {
       if (Number.isInteger(val))
-        return binder.bindInt(val);
+        return binder.bindInt(val); // need to call bindInt64 once new addon with ECDb fixes is available
 
       return binder.bindDouble(val);
     }
@@ -646,6 +646,11 @@ class ECSqlValueHelper {
 export class CachedECSqlStatement {
   public statement: ECSqlStatement;
   public useCount: number;
+
+  public constructor(stmt: ECSqlStatement) {
+    this.statement = stmt;
+    this.useCount = 1;
+  }
 }
 
 export class ECSqlStatementCache {
@@ -655,6 +660,7 @@ export class ECSqlStatementCache {
   constructor(maxCount: number = 20) {
     this.maxCount = maxCount;
   }
+
   public add(str: string, stmt: ECSqlStatement): void {
 
     assert(!stmt.isShared(), "when you add a statement to the cache, the cache takes ownership of it. You can't add a statement that is already being shared in some other way");
@@ -664,10 +670,8 @@ export class ECSqlStatementCache {
     if (existing !== undefined) {
       assert(existing.useCount > 0, "you should only add a statement if all existing copies of it are in use.");
     }
-    const cs = new CachedECSqlStatement();
-    cs.statement = stmt;
+    const cs = new CachedECSqlStatement(stmt);
     cs.statement.setIsShared(true);
-    cs.useCount = 1;
     this.statements.set(str, cs);
   }
 
