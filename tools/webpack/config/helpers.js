@@ -14,12 +14,10 @@ const paths = require("./paths");
 const createDevToolModuleFilename = (info) => {
   // default:
   // return `webpack:///${info.resourcePath}?${info.loaders}`
-  let resourcePath = info.resourcePath;
-  const tildePos = resourcePath.indexOf("~");
+  const tildePos = info.resourcePath.indexOf("~");
   if (-1 !== tildePos)
-    resourcePath = `./${resourcePath.substr(tildePos)}`;
-
-  return `webpack:///${resourcePath}`;
+    return `webpack:///./${info.resourcePath.substr(tildePos)}`;
+  return info.absoluteResourcePath;
 };
 
 /** Creates a list of include paths for app source and all its @bentley dependencies */
