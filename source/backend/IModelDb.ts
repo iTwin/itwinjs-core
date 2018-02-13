@@ -42,6 +42,9 @@ import { Model2dState } from "../common/EntityState";
 
 const loggingCategory = "imodeljs-backend.IModelDb";
 
+/** The signature of a function that can supply a description of local Txns in the specified briefcase up to and includign the specified endTxnId. */
+export type ChangeSetDescriber = (endTxnId: TxnManager.TxnId) => string;
+
 // Register the backend implementation of IModelGateway
 IModelGatewayImpl.register();
 
@@ -59,6 +62,7 @@ export class IModelDb extends IModel {
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
   private _concurrency?: ConcurrencyControl;
+  private _txnManager?: TxnManager;
 
   /** @hidden */
   public briefcaseEntry?: BriefcaseEntry;
@@ -302,6 +306,8 @@ export class IModelDb extends IModel {
     if (!this.briefcaseEntry)
       throw this._newNotOpenError();
 
+    // TODO: this.Txns.onSaveChanges => validation, rules, indirect changes, etc.
+
     this.concurrencyControl.onSaveChanges();
 
     const stat = this.briefcaseEntry.nativeDb.saveChanges(description);
@@ -327,13 +333,16 @@ export class IModelDb extends IModel {
   /**
    * Push changes to the iModelHub
    * @param accessToken Delegation token of the authorized user.
+   * @param describer A function that returns a description of the changeset. Defaults to the combination of the descriptions of all local Txns.
    * @throws [[IModelError]] If the pull and merge fails.
    */
-  public async pushChanges(accessToken: AccessToken): Promise<void> {
+  public async pushChanges(accessToken: AccessToken, describer?: ChangeSetDescriber): Promise<void> {
     if (!this.briefcaseEntry)
       throw this._newNotOpenError();
 
-    return BriefcaseManager.pushChanges(accessToken, this.briefcaseEntry);
+    const description = describer ? describer(this.Txns.getCurrentTxnId()) : this.Txns.describeChangeSet();
+
+    return BriefcaseManager.pushChanges(accessToken, this.briefcaseEntry, description);
   }
 
   /**
@@ -407,6 +416,13 @@ export class IModelDb extends IModel {
     if (this._concurrency === undefined)
       this._concurrency = new ConcurrencyControl(this);
     return this._concurrency;
+  }
+
+  /** Get the TxnManager for this IModelDb. */
+  public get Txns(): TxnManager {
+    if (this._txnManager === undefined)
+      this._txnManager = new TxnManager(this);
+    return this._txnManager;
   }
 
   /** Get access to the CodeSpecs in this IModel. */
@@ -1539,5 +1555,87 @@ export class IModelDbViews {
       default:
         throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState subclass");
     }
+  }
+}
+
+/**
+ * Local Txns in an IModelDb. Local Txns persist only until [[IModelDb.pushChanges]] is called.
+ */
+export class TxnManager {
+  private _iModel: IModelDb;
+
+  constructor(iModel: IModelDb) {
+    this._iModel = iModel;
+  }
+
+  /** Get the ID of the first transaction, if any. */
+  public queryFirstTxnId(): TxnManager.TxnId {
+    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerQueryFirstTxnId();
+  }
+
+  /** Get the successor of the specified TxnId */
+  public queryNextTxnId(txnId: TxnManager.TxnId): TxnManager.TxnId {
+    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerQueryNextTxnId(txnId);
+  }
+
+  /** Get the predecessor of the specified TxnId */
+  public queryPreviousTxnId(txnId: TxnManager.TxnId): TxnManager.TxnId {
+    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerQueryPreviousTxnId(txnId);
+  }
+
+  /** Get the ID of the current (tip) transaction.  */
+  public getCurrentTxnId(): TxnManager.TxnId {
+    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerGetCurrentTxnId();
+  }
+
+  /** Get the description that was supplied when the specified transaction was saved. */
+  public getTxnDescription(txnId: TxnManager.TxnId): string {
+    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerGetTxnDescription(txnId);
+  }
+
+  /** Test if a TxnId is valid */
+  public isTxnIdValid(txnId: TxnManager.TxnId): boolean {
+    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerIsTxnIdValid(txnId);
+  }
+
+  /** Make a description of the changeset by combining all local txn comments. */
+  public describeChangeSet(endTxnId?: TxnManager.TxnId): string {
+
+    if (endTxnId === undefined)
+      endTxnId = this.getCurrentTxnId();
+
+    const accum = [];
+    const seen = new Set<string>();
+
+    let txnId = this.queryFirstTxnId();
+
+    while (this.isTxnIdValid(txnId)) {
+
+      const txnDescStr = this.getTxnDescription(txnId);
+
+      if ((txnDescStr.length === 0) || seen.has(txnDescStr))
+        continue;
+
+      let txnDesc: any;
+      try {
+        txnDesc = JSON.parse(txnDescStr);
+      } catch (err) {
+        txnDesc = {description: txnDescStr};
+      }
+
+      accum.push(txnDesc);
+
+      seen.add(txnDesc);
+      txnId = this.queryNextTxnId(txnId);
+      }
+
+    return JSON.stringify(accum);
+  }
+}
+
+export namespace TxnManager {
+  /** Identifies a transaction that is local to a specific IModelDb. */
+  export interface TxnId {
+    readonly _id: string;
   }
 }
