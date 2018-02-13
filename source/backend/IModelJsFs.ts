@@ -52,6 +52,11 @@ export class IModelJsFs {
     fs.writeFileSync(fn, str, { flag: wflag } );
   }
 
+  /** Reads a file into a buffer */
+  public static readFileSync(fn: string, opts?: any): Buffer {
+    return fs.readFileSync(fn, opts);
+  }
+
   /** Make a copy of a file */
   public static copySync(fn: string, fnout: string, opts?: any): void {
     fs.copySync(fn, fnout, opts);
