@@ -61,7 +61,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * Prepare this statement prior to first use.
    * @param db The DgnDb or ECDb to prepare the statement against
    * @param ecsql The ECSQL statement string to prepare
-   * @throws [[IModelError]] if the ECSQL statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or references to tables or properties that do not exist. 
+   * @throws [[IModelError]] if the ECSQL statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or references to tables or properties that do not exist.
    * The error.message property will provide details.
    */
   public prepare(db: AddonDgnDb | AddonECDb, ecsql: string): void {
