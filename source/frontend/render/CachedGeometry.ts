@@ -11,7 +11,7 @@ export class FeatureIndices {
   public uniform: number = 0;
   public nonUniform: BufferHandle | undefined = undefined;
 
-  public constructor(src: FeatureIndex, numVerts: number, gl: WebGLRenderingContext) {
+  public constructor(gl: WebGLRenderingContext, src: FeatureIndex, numVerts?: number) {
     this.type = src.type;
     switch (this.type) {
       case FeatureIndexType.kUniform:
@@ -22,10 +22,11 @@ export class FeatureIndices {
         this.nonUniform = new BufferHandle();
         this.nonUniform.init(gl);
 
-        // WebGL doesn't support integers as vertex attributes. Use float.
         assert(undefined !== src.featureIDs);
-        if (undefined !== src.featureIDs) {
+        assert(undefined !== numVerts);
+        if (undefined !== src.featureIDs && undefined !== numVerts) {
           assert(src.featureIDs.length >= numVerts);
+          // WebGL doesn't support integers as vertex attributes. Use float.
           const ab = new ArrayBuffer(numVerts * 4);
           const featureIDs: Float32Array = new Float32Array(ab);
           for (let i = 0; i < src.featureIDs.length; ++i) {
@@ -37,6 +38,6 @@ export class FeatureIndices {
     }
   }
 
-  public IsEmpty(): boolean { return FeatureIndexType.kEmpty === this.type; }
-  public IsUniform(): boolean { return FeatureIndexType.kUniform === this.type; }
+  public isEmpty(): boolean { return FeatureIndexType.kEmpty === this.type; }
+  public isUniform(): boolean { return FeatureIndexType.kUniform === this.type; }
 }
