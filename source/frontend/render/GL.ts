@@ -39,6 +39,12 @@ export namespace GL {
     BufferSize = WebGLRenderingContext.BUFFER_SIZE,
   }
 
+  export enum BufferUsage {
+    DynamicDraw = WebGLRenderingContext.DYNAMIC_DRAW,
+    StaticDraw = WebGLRenderingContext.STATIC_DRAW,
+    StreamDraw = WebGLRenderingContext.STREAM_DRAW,
+  }
+
   /* Stenciling commented out for now since it is not used */
   // export enum StencilOperation {
   //   Keep = WebGLRenderingContext.KEEP,
