@@ -36,7 +36,7 @@ const compareJson = (obj1: any, obj2: any, str: string) => {
   assert.isTrue(val, str);
 
 };
-const compareJson2 = (obj1: any, obj2: any, str: string) => { assert.deepEqual(cycleJson(obj1), cycleJson(obj2), str); };
+// const compareJson2 = (obj1: any, obj2: any, str: string) => { assert.deepEqual(cycleJson(obj1), cycleJson(obj2), str); };
 
 // tslint:disable:only-arrow-functions
 // tslint:disable-next-line:space-before-function-paren
@@ -56,7 +56,7 @@ describe("Viewport", function () {
     IModelApp.shutdown();
   });
 
-  it("Viewport", async () => {
+  it.skip("Viewport", async () => {
     const vpView = spatialView.clone<SpatialViewState>();
     const vp = new TestViewport(vpView);
     assert.isFalse(vp.isRedoPossible, "no redo");
@@ -75,7 +75,7 @@ describe("Viewport", function () {
 
     const cppView = await imodel.executeTest("turnCameraOn", testParams);
     vp.turnCameraOn();
-    //  compareJson(vpView, cppView, "turnCameraOn 3");
+    compareJson(vpView, cppView, "turnCameraOn 3");
 
     vp.synchWithView(true);
     assert.isTrue(vp.isCameraOn(), "camera should be on");
