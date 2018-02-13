@@ -14,7 +14,7 @@
   overflow-y: auto;
 }
 
-.PropertiesWidget .ContentContainer table  {
+.PropertiesWidget .ContentContainer table {
   width: 100%;
   table-layout: fixed;
 }
@@ -29,5 +29,6 @@
 .PropertiesWidget .ContentContainer td.PropertyValue {
   text-align: left;
   width: 50%;
+  font-size: 90%;
   overflow: hidden;
 }

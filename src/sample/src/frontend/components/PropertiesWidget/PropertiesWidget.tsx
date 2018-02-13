@@ -13,7 +13,7 @@ import "./PropertiesWidget.css";
 export interface Props {
   imodel: IModelConnection;
   rulesetId?: string;
-  selectedNode?: TreeNodeItem;
+  selectedNodes: TreeNodeItem[];
 }
 export default class PropertiesWidget extends React.Component<Props> {
   constructor(props: Props, context?: any) {
@@ -25,7 +25,7 @@ export default class PropertiesWidget extends React.Component<Props> {
       <div className="PropertiesWidget">
         <h3>Properties</h3>
         <div className="ContentContainer">
-          <PropertyPane imodelToken={this.props.imodel.iModelToken} rulesetId={this.props.rulesetId} selectedNode={this.props.selectedNode} />
+          <PropertyPane imodelToken={this.props.imodel.iModelToken} rulesetId={this.props.rulesetId} selectedNodes={this.props.selectedNodes} />
         </div>
       </div>
     );
@@ -35,7 +35,7 @@ export default class PropertiesWidget extends React.Component<Props> {
 interface PropertyPaneProps {
   imodelToken: IModelToken;
   rulesetId?: string;
-  selectedNode?: TreeNodeItem;
+  selectedNodes: TreeNodeItem[];
 }
 interface PropertyDisplayInfo {
   label: string;
@@ -56,38 +56,46 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
       this._dataProvider = new PropertyPaneDataProvider(this._presentationManager, props.imodelToken, props.rulesetId);
   }
   public componentWillMount() {
-    this.fetchProperties(this.props.imodelToken, this.props.selectedNode);
+    this.fetchProperties(this.props.imodelToken, this.props.selectedNodes);
   }
   public componentWillReceiveProps(newProps: PropertyPaneProps) {
     if (newProps.rulesetId !== this.props.rulesetId)
       this._dataProvider = (newProps.rulesetId) ? new PropertyPaneDataProvider(this._presentationManager, newProps.imodelToken, newProps.rulesetId) : undefined;
-    if (newProps.imodelToken !== this.props.imodelToken || newProps.selectedNode !== this.props.selectedNode)
-      this.fetchProperties(newProps.imodelToken, newProps.selectedNode);
+    if (newProps.imodelToken !== this.props.imodelToken || !this.areSelectedNodesEqual(newProps.selectedNodes))
+      this.fetchProperties(newProps.imodelToken, newProps.selectedNodes);
   }
-  private createRecordDisplayValueString(record: PropertyRecord): string {
-    switch (record.property.typename) {
-      case "point2d":
-      case "point3d":
-        return JSON.stringify(record.displayValue);
-      default:
-        return record.displayValue ? record.displayValue.toString() : "";
+  private areSelectedNodesEqual(newSelection: TreeNodeItem[]) {
+    if (newSelection.length !== this.props.selectedNodes.length)
+      return false;
+    for (const newItem of newSelection) {
+      for (const oldItem of this.props.selectedNodes) {
+        if (newItem !== oldItem)
+          return false;
+      }
     }
+    return true;
   }
-  private async fetchProperties(_imodelToken: IModelToken, selectedNode?: TreeNodeItem) {
-    if (!selectedNode || !this._dataProvider) {
+  private createRecordDisplayValue(value: any): string {
+    if (!value)
+      return "";
+    if (typeof(value) === "string")
+      return value;
+    if (typeof(value) === "object" || Array.isArray(value))
+      return JSON.stringify(value);
+    return value.toString();
+  }
+  private async fetchProperties(_imodelToken: IModelToken, selectedNodes: TreeNodeItem[]) {
+    if (0 === selectedNodes.length || !this._dataProvider) {
       this.setState({});
       return;
     }
 
-    const key = selectedNode.extendedData.node.key;
-    if (!key.classId || !key.instanceId) {
-      this.setState({});
-      return;
-    }
+    const keys: InstanceKey[] = selectedNodes.map((item: TreeNodeItem) => {
+      return item.extendedData.node.key;
+    });
 
     try {
-      const instanceKey: InstanceKey = { classId: key.classId, instanceId: key.instanceId };
-      this._dataProvider.keys = [instanceKey];
+      this._dataProvider.keys = keys;
       const records: PropertyDisplayInfo[] = [];
       const categoryCount = await this._dataProvider.getCategoryCount();
       for (let i = 0; i < categoryCount; ++i) {
@@ -100,7 +108,7 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
         for (const property of properties) {
           records.push({
             label: property.property.displayLabel,
-            value: this.createRecordDisplayValueString(property),
+            value: this.createRecordDisplayValue(property.displayValue),
           });
         }
         this.setState({ records });
@@ -112,7 +120,7 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
     }
   }
   public render() {
-    if (!this.props.selectedNode)
+    if (!this.props.selectedNodes || 0 === this.props.selectedNodes.length)
       return (<div className="NoProperties">Nothing selected</div>);
     if (!this.state.records || 0 === this.state.records.length)
       return (<div className="NoProperties">No Properties</div>);

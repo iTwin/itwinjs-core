@@ -26,7 +26,7 @@ export interface ColumnDescription {
 export interface CellItem {
   key: string;
   value: any;
-  displayValue: string | null;
+  displayValue: any;
   isDisabled: boolean;
   isBold: boolean;
   isItalic: boolean;

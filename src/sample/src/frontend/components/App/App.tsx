@@ -3,6 +3,7 @@ import { IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend/IModel
 import { TreeNodeItem } from "@bentley/ecpresentation-frontend/lib/frontend/Controls/TreeDataProvider";
 import IModelSelector from "../IModelSelector/IModelSelector";
 import PropertiesWidget from "../PropertiesWidget/PropertiesWidget";
+import GridWidget from "../GridWidget/GridWidget";
 import TreeWidget from "../TreeWidget/TreeWidget";
 
 import "./App.css";
@@ -10,14 +11,14 @@ import "./App.css";
 export interface State {
   imodel?: IModelConnection;
   currentRulesetId?: string;
-  selectedNode?: TreeNodeItem;
+  selectedNodes: TreeNodeItem[];
 }
 
 export default class App extends React.Component<{}, State> {
 
   constructor(props?: any, context?: any) {
     super(props, context);
-    this.state = {};
+    this.state = { selectedNodes: [] };
   }
 
   // tslint:disable-next-line:naming-convention
@@ -26,15 +27,20 @@ export default class App extends React.Component<{}, State> {
   }
 
   // tslint:disable-next-line:naming-convention
-  private onTreeNodeSelected = (node: TreeNodeItem | undefined, rulesetId: string | undefined) => {
-    this.setState({ ...this.state, selectedNode: node, currentRulesetId: rulesetId });
+  private onTreeNodesSelected = (nodes: TreeNodeItem[], rulesetId: string | undefined) => {
+    this.setState({ ...this.state, selectedNodes: nodes, currentRulesetId: rulesetId });
   }
 
   private renderIModelComponents(imodel: IModelConnection) {
     return (
       <div className="Content">
-        <TreeWidget imodel={imodel} onTreeNodeSelected={this.onTreeNodeSelected} />
-        <PropertiesWidget imodel={imodel} rulesetId={this.state.currentRulesetId} selectedNode={this.state.selectedNode} />
+        <div className="Content-Top">
+        <TreeWidget imodel={imodel} onTreeNodesSelected={this.onTreeNodesSelected} />
+          <PropertiesWidget imodel={imodel} rulesetId={this.state.currentRulesetId} selectedNodes={this.state.selectedNodes} />
+        </div>
+        <div className="Content-Bottom">
+          <GridWidget imodel={imodel} rulesetId={this.state.currentRulesetId} selectedNodes={this.state.selectedNodes} />
+        </div>
       </div>
     );
   }

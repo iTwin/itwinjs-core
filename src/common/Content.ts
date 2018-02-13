@@ -443,25 +443,24 @@ export class Descriptor {
   /** Get field index. -1 if the field doesn't exist in this descriptor. */
   public getFieldIndex(field: Field): number { return this.fields.indexOf(field); }
 
-  /** Get indexes of fields that were removed from the descriptor. */
-  public getHiddenFieldIndexes(): number[] {
+  /** Get names of fields that were removed from the descriptor. */
+  public getHiddenFieldNames(): string[] {
     if (this._actualFields.length >= this._originalFields.length)
       return [];
 
-    const indexes: number[] = [];
-    for (let originalFieldIndex = 0; originalFieldIndex < this._originalFields.length; ++originalFieldIndex) {
-      const originalField = this._originalFields[originalFieldIndex];
+    const names: string[] = [];
+    for (const originalField of this._originalFields) {
       let contains = false;
       for (const actualField of this._actualFields) {
-        if (actualField.name === originalField.name && actualField.description === originalField.description) {
+        if (actualField.name === originalField.name) {
           contains = true;
           break;
         }
       }
       if (!contains)
-        indexes.push(originalFieldIndex);
+        names.push(originalField.name);
     }
-    return indexes;
+    return names;
   }
 }
 

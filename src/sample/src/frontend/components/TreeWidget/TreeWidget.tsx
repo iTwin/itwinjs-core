@@ -12,7 +12,7 @@ export interface TreeData extends TreeNodeItem {
 }
 export interface Props {
   imodel: IModelConnection;
-  onTreeNodeSelected?: (node: TreeNodeItem | undefined, rulesetId: string | undefined) => void;
+  onTreeNodesSelected?: (nodes: TreeNodeItem[], rulesetId: string | undefined) => void;
 }
 export interface State {
   treeData: TreeData[];
@@ -62,13 +62,19 @@ export default class TreeWidget extends React.Component<Props, State> {
 
   // tslint:disable-next-line:naming-convention
   private onNodeSelected = (selectedKeys: string[]) => {
-    if (!this.props.onTreeNodeSelected)
+    if (!this.props.onTreeNodesSelected)
       return;
     if (0 === selectedKeys.length) {
-      this.props.onTreeNodeSelected(undefined, undefined);
+      this.props.onTreeNodesSelected([], undefined);
     } else {
-      const item = this._items.get(selectedKeys[0]);
-      this.props.onTreeNodeSelected(item, this._dataProvider!.rulesetId);
+      const self = this;
+      const selectedItems: TreeNodeItem[] = [];
+      for (const key of selectedKeys) {
+        const item = self._items.get(key);
+        if (item)
+          selectedItems.push(item);
+      }
+      this.props.onTreeNodesSelected(selectedItems, this._dataProvider!.rulesetId);
     }
   }
 
@@ -94,7 +100,7 @@ export default class TreeWidget extends React.Component<Props, State> {
       <div className="TreeWidget">
         <h3>Tree Widget</h3>
         <RulesetSelector availableRulesets={["Items", "Classes"]} onRulesetSelected={this.onRulesetIdChanged} />
-        <Tree loadData={this.loadChildNodes} showIcon={false} checkable={false} autoExpandParent={false} onSelect={this.onNodeSelected}>
+        <Tree loadData={this.loadChildNodes} multiple={true} showIcon={false} checkable={false} autoExpandParent={false} onSelect={this.onNodeSelected}>
           {treeNodes}
         </Tree>
       </div>

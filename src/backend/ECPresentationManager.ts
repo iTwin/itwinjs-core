@@ -77,11 +77,11 @@ export default class ECPresentationManager implements ECPInterface {
   }
 
   public async getNodePaths(_token: IModelToken, _paths: NavNodeKeyPath[], _markedIndex: number, _options: object): Promise<NavNodePathElement[]> {
-    return [];
+    throw new Error("Not implemented.");
   }
 
   public async getFilteredNodesPaths(_token: IModelToken, _filterText: string, _options: object): Promise<NavNodePathElement[]> {
-    return [];
+    throw new Error("Not implemented.");
   }
 
   public async getContentDescriptor(token: IModelToken, displayType: string, keys: ec.InstanceKeysList, selection: content.SelectionInfo | null, options: object): Promise<content.Descriptor | null> {
@@ -94,30 +94,43 @@ export default class ECPresentationManager implements ECPInterface {
     return this.request(token, params, Conversion.createContentDescriptor);
   }
 
-  public async getContentSetSize(token: IModelToken, _descriptor: content.Descriptor, keys: ec.InstanceKeysList, options: object): Promise<number> {
-    const params = this.createRequestParams(NodeAddonRequestTypes.GetContent, {
+  public async getContentSetSize(token: IModelToken, descriptor: content.Descriptor, keys: ec.InstanceKeysList, options: object): Promise<number> {
+    const params = this.createRequestParams(NodeAddonRequestTypes.GetContentSetSize, {
       keys,
+      descriptorOverrides: this.createDescriptorOverrides(descriptor),
       options,
     });
     return this.request(token, params);
   }
 
-  public async getContent(token: IModelToken, _descriptor: content.Descriptor, keys: ec.InstanceKeysList, pageOptions: PageOptions, options: object): Promise<content.Content> {
+  public async getContent(token: IModelToken, descriptor: content.Descriptor, keys: ec.InstanceKeysList, pageOptions: PageOptions, options: object): Promise<content.Content> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetContent, {
       keys,
+      descriptorOverrides: this.createDescriptorOverrides(descriptor),
       pageOptions,
       options,
     });
     return this.request(token, params, Conversion.createContent);
   }
 
+  private createDescriptorOverrides(descriptor: content.Descriptor): object {
+    return {
+      displayType: descriptor.preferredDisplayType,
+      hiddenFieldNames: descriptor.getHiddenFieldNames(),
+      sortingFieldName: descriptor.sortingField ? descriptor.sortingField.name : undefined,
+      sortDirection: descriptor.sortDirection,
+      contentFlags: descriptor.contentFlags,
+      filterExpression: descriptor.filterExpression,
+    };
+  }
+
   public async getDistinctValues(_token: IModelToken, _displayType: string, _fieldName: string, _maximumValueCount: number, _options: object): Promise<string[]> {
-    return [];
+    throw new Error("Not implemented.");
   }
 
   public async saveValueChange(_token: IModelToken, _instancesInfo: ChangedECInstanceInfo[], _propertyAccessor: string, _value: any, _options: object): Promise<ECInstanceChangeResult[]> {
     // note: should probably handle this in typescript rather than forwarding to node addon
-    return [];
+    throw new Error("Not implemented.");
   }
 
   private request(token: IModelToken, params: string, responseHandler?: (response: any) => any) {
@@ -291,7 +304,6 @@ namespace Conversion {
       const itemValueKeys = new Array<content.PropertyValueKeys>();
       const propertyKeysArr = fieldValueKeysResp[field.name];
       if (!propertyKeysArr) {
-        assert(false, "Property-based fields should always have property value keys");
         continue;
       }
       for (const propertyKeys of propertyKeysArr) {

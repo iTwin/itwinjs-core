@@ -1,0 +1,30 @@
+.GridWidget {
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid black;
+  padding: 5px;
+}
+
+.GridWidget h3 {
+  margin: 0;
+}
+
+.GridWidget .ContentContainer {
+  overflow-y: auto;
+}
+
+.GridWidget .ContentContainer table {
+  width: 100%;
+  table-layout: fixed;
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+
+.GridWidget .ContentContainer table th {
+  border: 1px solid grey;
+}
+
+.GridWidget .ContentContainer table td {
+  border: 1px solid grey;
+  font-size: 90%;
+}
