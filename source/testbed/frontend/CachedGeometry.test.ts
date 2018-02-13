@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-// import { GL } from "../../frontend/render/GL";
-// import { Handle, BufferHandle } from "../../frontend/render/Handle";
+import { GL } from "../../frontend/render/GL";
+import { BufferHandle } from "../../frontend/render/Handle";
 import { FeatureIndexType, FeatureIndex } from "../../frontend/render/FeatureIndex";
 import { FeatureIndices } from "../../frontend/render/CachedGeometry";
 
@@ -50,15 +50,24 @@ describe("FeatureIndices", () => {
     assert.isTrue(uniformData === fIndices.uniform, "FeatureIndices created with uniform data should return it");
 
     // Test NonUniform FeatureIndices
+    const numVerts = 10;
     const nonUniformData: number[] = [];
-    for (let i = 0; i < 10; ++i) {
-      nonUniformData[i] = 10 - i;
+    for (let i = 0; i < numVerts; ++i) {
+      nonUniformData[i] = numVerts - i;
     }
     const fIndex3 = new FeatureIndex();
     fIndex3.type = FeatureIndexType.kNonUniform;
     fIndex3.featureIDs = new Uint32Array(nonUniformData);
-    fIndices = new FeatureIndices(gl, fIndex3, 10);
+    fIndices = new FeatureIndices(gl, fIndex3, numVerts);
     assert.isFalse(fIndices.isEmpty(), "FeatureIndices created with nonuniform data should not be empty");
     assert.isFalse(fIndices.isUniform(), "FeatureIndices created with nonuniform data should not be uniform");
+    if (undefined !== fIndices.nonUniform) {
+      fIndices.nonUniform.bind(gl, GL.Buffer.ArrayBuffer);
+      const size = gl.getBufferParameter(GL.Buffer.ArrayBuffer, GL.Buffer.BufferSize);
+      assert.isTrue(numVerts * 4 === size, "nonUniform FeatureIndices for " + numVerts + " vertices should result in buffer of size " + (numVerts * 4));
+      const usage = gl.getBufferParameter(GL.Buffer.ArrayBuffer, GL.Buffer.BufferUsage);
+      assert.isTrue(GL.BufferUsage.StaticDraw === usage, "nonUniform FeatureIndices should result in buffer with usage of StaticDraw");
+      BufferHandle.unBind(gl, GL.Buffer.ArrayBuffer);
+    }
   });
 });
