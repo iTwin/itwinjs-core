@@ -16,6 +16,7 @@ import { KnownTestLocations } from "./KnownTestLocations";
 import { ModelSelectorState } from "../../common/ModelSelectorState";
 import { CategorySelectorState } from "../../common/CategorySelectorState";
 import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
+import { DisplayStyle3dState } from "../../common/DisplayStyleState";
 
 // spell-checker: disable
 
@@ -78,20 +79,31 @@ describe("ViewState", () => {
     assert.isTrue(acs.getRotation().isExactEqual(StandardView.Iso));
   });
 
-  const cycleJson = (obj: any) => JSON.parse(JSON.stringify(obj));
-  const compareJson = (obj1: any, obj2: any, str: string) => {
+  // const cycleJson = (obj: any) => JSON.parse(JSON.stringify(obj));
+  // const compareJson = (obj1: any, obj2: any, str: string) => {
+  //   const compare = new DeepCompare();
+  //   const v1 = cycleJson(obj1);
+  //   const v2 = cycleJson(obj2);
+  //   const val = compare.compare(v1, v2);
+  //   if (!val)
+  //     assert.isUndefined(compare.errorTracker, str);
+  //   assert.isTrue(val, str);
+
+  // };
+  const compareView = (v1: SpatialViewState, v2: SpatialViewDefinition, str: string) => {
     const compare = new DeepCompare();
-    const val = compare.compare(cycleJson(obj1), cycleJson(obj2));
+    const v2State = new SpatialViewState(v2, v1.iModel, v1.categorySelector, v1.displayStyle as DisplayStyle3dState, v1.modelSelector);
+    const val = compare.compare(v1, v2State);
     if (!val)
       assert.isUndefined(compare.errorTracker, str);
     assert.isTrue(val, str);
-
   };
+
   // const compareJson = (obj1: any, obj2: any, str: string) => { assert.deepEqual(cycleJson(obj1), cycleJson(obj2), str); };
 
   // C++ Tests:
   // pending
-  it.skip("view volume adjustments", () => {
+  it.only("view volume adjustments", () => {
     // Flat view test #1
     const testParams: any = {
       margin: new MarginPercent(0, 0, 0, 0),
@@ -112,7 +124,7 @@ describe("ViewState", () => {
 
     let cppView = imodel.executeTest("lookAtVolume", testParams);
     viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, testParams.margin);
-    compareJson(viewState, cppView, "LookAtVolume 1");
+    compareView(viewState, cppView, "LookAtVolume 1");
 
     // LookAtVolume test #3
     viewState.setOrigin(Point3d.create(100, 1000, -2));
@@ -126,7 +138,7 @@ describe("ViewState", () => {
     testParams.aspectRatio = 1.2;
     cppView = imodel.executeTest("lookAtVolume", testParams);
     viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, testParams.margin);
-    compareJson(viewState, cppView, "LookAtVolume 3");
+    compareView(viewState, cppView, "LookAtVolume 3");
 
     // LookAtVolume test #2
     viewState.setOrigin(Point3d.create(100, 1000, -2));
@@ -140,11 +152,11 @@ describe("ViewState", () => {
     testParams.margin = new MarginPercent(0, 0, 0, 0);
     cppView = imodel.executeTest("lookAtVolume", testParams);
     viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, testParams.margin);
-    compareJson(viewState, cppView, "LookAtVolume 2");
+    compareView(viewState, cppView, "LookAtVolume 2");
   });
 
   // pending
-  it.skip("rotateCameraLocal should work", async () => {
+  it("rotateCameraLocal should work", () => {
     const testParams: any = {
       view: viewState,
       angle: 1.28,
@@ -160,7 +172,7 @@ describe("ViewState", () => {
     viewState.setEyePoint(Point3d.create(5, 5, 50));
     let cppView = imodel.executeTest("rotateCameraLocal", testParams);
     viewState.rotateCameraLocal(Angle.createRadians(testParams.angle), testParams.axis, testParams.about);
-    compareJson(viewState, cppView, "RotateCameraLocal 1");
+    compareView(viewState, cppView, "RotateCameraLocal 1");
 
     viewState.setOrigin(Point3d.create(100, 23, -18));
     viewState.setExtents(Vector3d.create(55, 0.01, 23));
@@ -173,11 +185,11 @@ describe("ViewState", () => {
     testParams.about = Point3d.create(1, 2, 3);
     cppView = imodel.executeTest("rotateCameraLocal", testParams);
     viewState.rotateCameraLocal(Angle.createRadians(testParams.angle), testParams.axis, testParams.about);
-    compareJson(viewState, cppView, "RotateCameraLocal 2");
+    compareView(viewState, cppView, "RotateCameraLocal 2");
   });
 
   // pending
-  it.skip("lookAtUsingLensAngle should work", async () => {
+  it("lookAtUsingLensAngle should work", () => {
     const testParams: any = {
       view: viewState,
       eye: Point3d.create(8, 6, 7),
@@ -196,6 +208,6 @@ describe("ViewState", () => {
     viewState.setEyePoint(Point3d.create(-64, 120, 500));
     const cppView = imodel.executeTest("lookAtUsingLensAngle", testParams);
     viewState.lookAtUsingLensAngle(testParams.eye, testParams.target, testParams.up, testParams.lens, testParams.front, testParams.back);
-    compareJson(viewState, cppView, "lookAtUsingLensAngle");
+    compareView(viewState, cppView, "lookAtUsingLensAngle");
   });
 });

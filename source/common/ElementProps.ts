@@ -16,7 +16,7 @@ export interface RelatedElementProps {
 
 /** The properties that define an Element */
 export interface ElementProps extends EntityProps {
-  model: Id64Props;
+  model?: Id64Props;
   code?: CodeProps;
   parent?: RelatedElementProps;
   federationGuid?: GuidProps;
