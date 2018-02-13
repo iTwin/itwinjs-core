@@ -294,7 +294,7 @@ describe("ECSqlStatement", () => {
     });
   });
 
-  it.only("Bind Arrays", () => {
+  it("Bind Arrays", () => {
     using (ECDbTestHelper.createECDb(_outDir, "bindarrays.ecdb",
     `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
       <ECStructClass typeName="Location" modifier="Sealed">
