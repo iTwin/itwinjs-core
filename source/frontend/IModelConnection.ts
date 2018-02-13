@@ -98,16 +98,53 @@ export class IModelConnection extends IModel {
   }
 
   /** Execute a query against the iModel.
+   *
+   * ## Row Format
+   * The returned rows are formatted as JavaScript objects where every SELECT clause item becomes a property in the JavaScript object.
+   *
+   * ### Property names
+   * If the ECSQL select clause item
+   *  * is an [ECSQL system property]([[ECSqlSystemProperty]]), the property name is as described here: [[ECJsonNames.toJsName]]
+   *  * has a column alias, the alias, with the first character lowered, becomes the property name.
+   *  * has no alias, the ECSQL select clause item, with the first character lowered, becomes the property name.
+   *
+   * ### Property value types
+   * The resulting types of the returned property values are these:
+   *
+   * | ECSQL type | JavaScript Type |
+   * | ---------- | --------------- |
+   * | Boolean    | boolean       |
+   * | Blob       | [[Blob]]      |
+   * | Double     | number        |
+   * | DateTime   | [[DateTime]]  |
+   * | Id system properties | [[Id64]] |
+   * | Integer    | number        |
+   * | Int64      | number        |
+   * | Point2d    | [[Point2d]]   |
+   * | Point3d    | [[Point3d]]   |
+   * | String     | string        |
+   * | Navigation | [[NavigationValue]] |
+   * | Struct     | JS object with properties of the types in this table |
+   * | Array      | array of the types in this table |
+   *
+   * ### Examples
+   * | ECSQL | Row |
+   * | ----- | --- |
+   * | SELECT ECInstanceId,ECClassId,Parent,LastMod,FederationGuid,UserLabel FROM bis.Element | `{id:Id64,className:string,parent:NavigationValue,lastMod:DateTime,federationGuid:Blob,userLabel:string}` |
+   * | SELECT s.ECInstanceId schemaId, c.ECInstanceId classId FROM meta.ECSchemaDef s JOIN meta.ECClassDef c ON s.ECInstanceId=c.Schema.Id | `{schemaId:Id64, classId:Id64}` |
+   * | SELECT count(*) FROM bis.Element | `{"count(*)":number}` |
+   * | SELECT count(*) cnt FROM bis.Element | `{cnt:number}` |
+   *
    * @param ecsql The ECSQL to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).
    * Pass an array if the parameters are positional. Pass an object of the values keyed on the parameter name
    * for named parameters.
    * The values in either the array or object must match the respective types of the parameters.
    * Supported types:
-   * boolean, Blob, DateTime, NavigationBindingValue, number, XY, XYZ, string
+   * boolean, [[Blob]],  [[DateTime]], [[NavigationBindingValue]], number, [[XY]], [[XYZ]], string
    * For struct parameters pass an object with key value pairs of struct property name and values of the supported types
    * For array parameters pass an array of the supported types.
-   * @returns All rows as an array or an empty array if nothing was selected
+   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows
    * @throws [[IModelError]] if the ECSQL is invalid
    */
   public async executeQuery(ecsql: string, bindings?: any[] | object): Promise<any[]> {
