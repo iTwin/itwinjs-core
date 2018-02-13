@@ -103,7 +103,7 @@ describe("ViewState", () => {
 
   // C++ Tests:
   // pending
-  it.only("view volume adjustments", () => {
+  it("view volume adjustments", () => {
     // Flat view test #1
     const testParams: any = {
       margin: new MarginPercent(0, 0, 0, 0),
@@ -155,7 +155,6 @@ describe("ViewState", () => {
     compareView(viewState, cppView, "LookAtVolume 2");
   });
 
-  // pending
   it("rotateCameraLocal should work", () => {
     const testParams: any = {
       view: viewState,
@@ -188,7 +187,6 @@ describe("ViewState", () => {
     compareView(viewState, cppView, "RotateCameraLocal 2");
   });
 
-  // pending
   it("lookAtUsingLensAngle should work", () => {
     const testParams: any = {
       view: viewState,
