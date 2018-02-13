@@ -25,4 +25,12 @@ export class TestGatewayImpl extends Gateway implements TestGateway {
   public async op4(map: Map<any, any>): Promise<Map<any, any>> {
     return map;
   }
+
+  public async op5(set: Set<any>): Promise<Set<any>> {
+    return set;
+  }
+
+  public async op6(data: { x: number, y: number }): Promise<{ x: number, y: number }> {
+    return data;
+  }
 }

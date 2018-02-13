@@ -8,7 +8,6 @@ import { Map4d, Point4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { AxisOrder, Angle, AngleSweep } from "@bentley/geometry-core/lib/Geometry";
 import { ViewState, ViewStatus, MarginPercent, GridOrientationType, Camera } from "../common/ViewState";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
-import { ElementAlignedBox2d, Placement2d, Placement3d } from "../common/geometry/Primitives";
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core/lib/Time";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { BeButtonEvent, BeCursor } from "./tools/Tool";
@@ -26,13 +25,17 @@ import { LegacyMath } from "../common/LegacyMath";
 import { Frustum, Npc, NpcCorners, NpcCenter } from "../common/Frustum";
 import { Placement3dProps, Placement2dProps } from "../common/ElementProps";
 import { iModelApp } from "./IModelApp";
+import { Placement2d, Placement3d } from "../common/geometry/Primitives";
 
 /** A rectangle in view coordinates. */
-export class ViewRect extends ElementAlignedBox2d {
-  public constructor(left: number = 0, bottom: number = 0, right: number = 0, top: number = 0) { super(left, bottom, right, top); }
+export class ViewRect {
+  public constructor(public left: number = 0, public bottom: number = 0, public right: number = 0, public top: number = 0) { }
+  public isNull(): boolean { return this.right < this.left || this.top < this.bottom; }
+  public get width() { return this.right - this.left; }
+  public get height() { return this.top - this.bottom; }
   public get aspect() { return this.isNull() ? 1.0 : this.width / this.height; }
   public get area() { return this.isNull() ? 0 : this.width * this.height; }
-  public init(left: number = 0, bottom: number = 0, right: number = 1, top: number = 1) { this.low.x = left, this.low.y = bottom, this.high.x = right, this.high.y = top; }
+  public init(left: number = 0, bottom: number = 0, right: number = 1, top: number = 1) { this.left = left, this.bottom = bottom, this.right = right, this.top = top; }
   public initFromPoint(low: XAndY, high: XAndY): void { this.init(low.x, low.y, high.x, high.y); }
   public initFromRange(input: LowAndHighXY): void { this.initFromPoint(input.low, input.high); }
 }
@@ -438,8 +441,8 @@ export class Viewport {
   private getViewCorners(): Range3d {
     const corners = this.viewCorners;
     const viewRect = this.viewRect;
-    corners.high.x = viewRect.high.x;
-    corners.low.y = viewRect.high.y;    // y's are swapped on the screen!
+    corners.high.x = viewRect.right;
+    corners.low.y = viewRect.top;    // y's are swapped on the screen!
     corners.low.x = 0;
     corners.high.y = 0;
     corners.low.z = -32767;
@@ -488,7 +491,7 @@ export class Viewport {
 
   private readonly _viewRange: ViewRect = new ViewRect();
   /** get the rectangle of this Viewport in ViewCoordinates. */
-  public get viewRect(): ViewRect { const r = this._viewRange; const rect = this.getClientRect(); r.high.x = rect.width; r.high.y = rect.height; return r; }
+  public get viewRect(): ViewRect { const r = this._viewRange; const rect = this.getClientRect(); r.right = rect.width; r.top = rect.height; return r; }
 
   /** True if an undoable viewing operation exists on the stack */
   public get isUndoPossible(): boolean { return 0 < this.backStack.length; }
@@ -595,9 +598,6 @@ export class Viewport {
     this.rootToView.setFrom(this.calcNpcToView().multiplyMapMap(this.rootToNpc));
 
     this.onViewChanged.raiseEvent(this);
-    if (this.getFrustum().hasMirror())
-      throw new Error("mirror");
-
     return ViewStatus.Success;
   }
 

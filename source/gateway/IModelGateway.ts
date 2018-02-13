@@ -11,7 +11,9 @@ import { Gateway } from "../common/Gateway";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { DateTime, Blob, NavigationValue, NavigationBindingValue } from "../common/ECSqlTypes";
-import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { Point2d, Point3d, Vector2d, Vector3d } from "@bentley/geometry-core/lib/PointVector";
+import { Code } from "../common/Code";
+import { Camera } from "../common/ViewState";
 
 /** The iModel core gateway definition.
  * @hidden
@@ -32,7 +34,11 @@ export abstract class IModelGateway extends Gateway {
     NavigationBindingValue,
     Point2d,
     Point3d,
+    Vector2d,
+    Vector3d,
     Date,
+    Code,
+    Camera,
   ]
 
   /** Returns the IModelGatewayProxy instance for the frontend. */

@@ -26,6 +26,7 @@ export abstract class TestGateway extends Gateway {
     Id64,
     Date,
     Map,
+    Set,
   ]
 
   public static getProxy(): TestGateway {
@@ -45,6 +46,14 @@ export abstract class TestGateway extends Gateway {
   }
 
   public async op4(_map: Map<any, any>): Promise<Map<any, any>> {
+    return this.forward.apply(this, arguments);
+  }
+
+  public async op5(_set: Set<any>): Promise<Set<any>> {
+    return this.forward.apply(this, arguments);
+  }
+
+  public async op6(_data: { x: number, y: number }): Promise<{ x: number, y: number }> {
     return this.forward.apply(this, arguments);
   }
 }
