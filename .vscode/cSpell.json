@@ -15,6 +15,7 @@
         "ecpresentation",
         "ecproperties",
         "ecproperty",
+        "electronaddon",
         "frontend",
         "hexa",
         "IFNULL",
@@ -23,12 +24,16 @@
         "imodels",
         "lcov",
         "nodeaddon",
+        "nodeaddonapi",
         "performant",
         "ruleset",
         "rulesets",
         "selectable",
+        "struct",
         "structs",
-        "typemoq"
+        "typemoq",
+        "VSTS",
+        "winx"
     ],
     // flagWords - list of words to be always considered incorrect
     // This is useful for offensive words and common spelling errors.

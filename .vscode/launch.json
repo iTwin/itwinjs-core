@@ -67,9 +67,10 @@
       "request": "launch",
       "name": "Web: Server (backend)",
       "protocol": "inspector",
-      "program": "${workspaceFolder}/src/sample/node_modules/@bentley/imodeljs-react-scripts/scripts/start",
+      "program": "${workspaceFolder}/src/sample/node_modules/@bentley/imodeljs-react-scripts/bin/imodeljs-react-scripts",
       "cwd": "${workspaceFolder}/src/sample",
       "args": [
+        "start",
         "--noElectron",
         "--debug=41016"
       ],
@@ -90,7 +91,7 @@
       "webRoot": "${workspaceFolder}/src/sample",
       "sourceMapPathOverrides": {
         // map sources from node_modules to our source directory
-        "webpack:///./~/@bentley/ecpresentation-frontend/*": "${workspaceFolder}/src/frontend/*",
+        "webpack:///../frontend/*": "${workspaceFolder}/src/frontend/*",
         // below are default values taken from https://github.com/Microsoft/vscode-chrome-debug
         "webpack:///./~/*": "${webRoot}/node_modules/*",
         "webpack:///./*":   "${webRoot}/*",

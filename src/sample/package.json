@@ -44,7 +44,7 @@
   },
   "devDependencies": {
     "@bentley/bentleyjs-tools": "^1.0.58",
-    "@bentley/imodeljs-react-scripts": "^3.0.0-alpha18",
+    "@bentley/imodeljs-react-scripts": "^3.0.0-alpha22",
     "@types/body-parser": "latest",
     "@types/bunyan": "^1.8.4",
     "@types/electron-devtools-installer": "^2.0.2",

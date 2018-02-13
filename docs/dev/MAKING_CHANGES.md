@@ -33,7 +33,7 @@ You can make multiple local commits before pushing the changes.
 ## Pushing the changes
 
 To get your code reviewed by ECPresentation team, use
-[pull requests](./PULL_REQUESTS.md). If the code is already reviewed 
+[pull requests](./PULL_REQUESTS.md). If the code is already reviewed
 by other means, use `git push`.
 
 ## Publishing changes
