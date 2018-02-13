@@ -61,6 +61,7 @@ export abstract class ECProperty implements ECPropertyProps {
  */
 export abstract class PrimitiveOrEnumPropertyBase extends ECProperty {
   public kindOfQuantity?: LazyLoadedKindOfQuantity;
+  public extendedTypeName?: string;
   public minLength: number;
   public maxLength: number;
   public minValue: number;
@@ -91,6 +92,12 @@ export abstract class PrimitiveOrEnumPropertyBase extends ECProperty {
       if (typeof(jsonObj.minLength) !== "number")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
       this.maxValue = jsonObj.maxValue;
+    }
+
+    if (jsonObj.extendedTypeName) {
+      if (typeof(jsonObj.extendedTypeName) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+      this.extendedTypeName = jsonObj.extendedTypeName;
     }
 
     // TODO: KoQ
