@@ -18,7 +18,7 @@ import { StatusCodeWithMessage } from "@bentley/bentleyjs-core/lib/BentleyError"
  *
  *  If the step was successful, the ECSqlInsertResult contains
  *  [[DbResult.BE_SQLITE_DONE]] and the ECInstanceId of the newly created instance.
- *  In case of failure it contains the error [[DbResult]] code.
+ *  In case of failure it contains the [[DbResult]] error code.
  */
 export class ECSqlInsertResult {
   public constructor(public status: DbResult, public id?: Id64) {}
@@ -261,11 +261,11 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   }
 
   /** Step this statement to the next row.
-   * @returns For **ECSQL SELECT** statements returns
+   * @returns For **ECSQL SELECT** statements the method returns
    *  * [[DbResult.BE_SQLITE_ROW]] if the statement now points successfully to the next row.
    *  * [[DbResult.BE_SQLITE_DONE]] if the statement has no more rows.
    *  * Error status in case of errors.
-   *  For **ECSQL INSERT, UPDATE, DELETE** statements returns
+   *  For **ECSQL INSERT, UPDATE, DELETE** statements the method returns
    *  * [[DbResult.BE_SQLITE_DONE]] if the statement has been executed successfully.
    *  * Error status in case of errors.
    */
@@ -276,7 +276,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   /** Step this INSERT statement and returns status and the ECInstanceId of the newly
    * created instance.
    * @returns Returns the generated ECInstanceId in case of success and the status of the step
-   * call.
+   * call. In case of error, the respective error code is returned.
    */
   public stepForInsert(): ECSqlInsertResult {
     const r: {status: DbResult, id: string} = this._stmt!.stepForInsert();

@@ -257,6 +257,8 @@ describe("BriefcaseManager", () => {
 
     assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests());
 
+    rwIModel.saveChanges(JSON.stringify({userid: "user1", description: "changed a userLabel"}));  // save it, to show that saveChanges will accumulate local txn descriptions
+
     // Create a new physical model.
     let newModelId: Id64;
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
@@ -314,7 +316,7 @@ describe("BriefcaseManager", () => {
 
     // Commit the local changes to a local transaction in the briefcase.
     // (Note that this ends the bulk operation automatically, so there's no need to call endBulkOperation.)
-    rwIModel.saveChanges("inserted generic objects");
+    rwIModel.saveChanges(JSON.stringify({userid: "user1", description: "inserted generic objects"}));
 
     rwIModel.elements.getElement(elid1); // throws if elid1 is not found
     rwIModel.elements.getElement(spatialCategoryId); // throws if spatialCategoryId is not found

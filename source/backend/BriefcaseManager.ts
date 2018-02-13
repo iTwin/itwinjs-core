@@ -898,8 +898,12 @@ export class BriefcaseManager {
       throw new IModelError(result);
   }
 
-  /** Push local changes to the hub */
-  public static async pushChanges(accessToken: AccessToken, briefcase: BriefcaseEntry): Promise<void> {
+  /** Push local changes to the hub
+   * @param accessToken The access token of the account that has write access to the iModel. This may be a service account.
+   * @param briefcase Identifies the IModelDb that contains the pending changes.
+   * @param description a description of the changeset that is to be pushed.
+   */
+  public static async pushChanges(accessToken: AccessToken, briefcase: BriefcaseEntry, description: string): Promise<void> {
 
     await BriefcaseManager.pullAndMergeChanges(accessToken, briefcase, IModelVersion.latest());
 
@@ -912,6 +916,7 @@ export class BriefcaseManager {
     changeSet.containsSchemaChanges = changeSetToken.containsSchemaChanges;
     changeSet.seedFileId = briefcase.fileId!;
     changeSet.fileSize = IModelJsFs.lstatSync(changeSetToken.pathname)!.size.toString();
+    changeSet.description = description;
 
     await BriefcaseManager.hubClient!.uploadChangeSet(accessToken, briefcase.iModelId, changeSet, changeSetToken.pathname);
 
