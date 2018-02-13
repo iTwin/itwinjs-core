@@ -99,7 +99,7 @@ export class IModelDb extends IModel {
 
   public static async create(accessToken: AccessToken, contextId: string, hubName: string, rootSubjectName: string, hubDescription?: string, rootSubjectDescription?: string): Promise<IModelDb> {
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.create(accessToken, contextId, hubName, rootSubjectName, hubDescription, rootSubjectDescription);
-    return IModelDb.createIModelDb(briefcaseEntry);
+    return IModelDb.createIModelDb(briefcaseEntry, contextId);
   }
 
   /** Open the iModel from a local file
@@ -1331,7 +1331,7 @@ export class IModelDbElements {
       stmt.bindString(3, code.value!);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
         return undefined;
-      return new Id64(stmt.getRow().id);
+      return stmt.getRow().id;
     });
   }
 

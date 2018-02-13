@@ -10,7 +10,8 @@ import * as path from "path";
 import { IModelJsFs } from "../../backend/IModelJsFs";
 
 TestbedConfig.initializeGatewayConfig();
-TestbedConfig.gatewayConfig.protocol.openAPIPathPrefix = () => `http://localhost:${TestbedConfig.serverPort}`;
+if (TestbedConfig.gatewayConfig)
+  TestbedConfig.gatewayConfig.protocol.openAPIPathPrefix = () => `http://localhost:${TestbedConfig.serverPort}`;
 
 const { ipcRenderer, remote } = require("electron");
 TestbedConfig.ipc = ipcRenderer;
@@ -20,20 +21,22 @@ remote.require(path.join(__dirname, "../backend/index"));
 // tslint:disable:only-arrow-functions
 // tslint:disable:space-before-function-paren
 describe("Testbed", function () {
-  it("Server should be accessible", (done) => {
-    const info = TestbedConfig.gatewayParams.info;
+  if (TestbedConfig.gatewayConfig) {
+    it("Server should be accessible", (done) => {
+      const info = TestbedConfig.gatewayParams.info;
 
-    const req = new XMLHttpRequest();
-    req.open("GET", `http://localhost:${TestbedConfig.serverPort}${TestbedConfig.swaggerURI}`);
-    req.addEventListener("load", () => {
-      assert.equal(200, req.status);
-      const desc = JSON.parse(req.responseText);
-      assert(desc.info.title === info.title && desc.info.version === info.version);
-      done();
+      const req = new XMLHttpRequest();
+      req.open("GET", `http://localhost:${TestbedConfig.serverPort}${TestbedConfig.swaggerURI}`);
+      req.addEventListener("load", () => {
+        assert.equal(200, req.status);
+        const desc = JSON.parse(req.responseText);
+        assert(desc.info.title === info.title && desc.info.version === info.version);
+        done();
+      });
+
+      req.send();
     });
-
-    req.send();
-  });
+  }
 
   it("TestData should load", async () => {
     await TestData.load();

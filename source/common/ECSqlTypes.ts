@@ -24,7 +24,8 @@ export enum ECSqlValueType {
   StructArray = 15}
 
 /** An ECSQL DateTime value.
- * It is returned from ECSQL SELECT for date time properties or expressions.
+ *
+ * It is returned from ECSQL SELECT statements for date time properties or expressions.
  * It is also used to bind a date time value to a date time ECSQL parameter.
  */
 export class DateTime {
@@ -37,7 +38,8 @@ export class DateTime {
 }
 
 /** An ECSQL Navigation value.
- * It is returned from ECSQL SELECT for navigation properties.
+ *
+ * It is returned from ECSQL SELECT statements for navigation properties.
  */
 export class NavigationValue {
   /** Contructor
@@ -91,22 +93,24 @@ export enum ECSqlSystemProperty {
 /** Utility to format ECProperties according to the iModelJs formatting rules. */
 export class ECJsNames {
   /** Formats the specified ECProperty according to the iModelJs formatting rules.
-   *  @remarks Formatting rules:
-   *    * System properties:
-   *        - [[ECSqlSystemProperty.ECInstanceId]]: id
-   *        - [[ECSqlSystemProperty.ECClassId]]: className
-   *        - [[ECSqlSystemProperty.SourceECInstanceId]]: sourceId
-   *        - [[ECSqlSystemProperty.SourceECClassId]]: sourceClassName
-   *        - [[ECSqlSystemProperty.TargetECInstanceId]]: targetId
-   *        - [[ECSqlSystemProperty.TargetECClassId]]: targetClassName
-   *        - [[ECSqlSystemProperty.NavigationId]]: id
-   *        - [[ECSqlSystemProperty.NavigationRelClassId]]: relClassName
-   *        - [[ECSqlSystemProperty.PointX]]: x
-   *        - [[ECSqlSystemProperty.PointY]]: y
-   *        - [[ECSqlSystemProperty.PointZ]]: z
-   *    * Ordinary properties: first character is lowered.
-   *  @param ecProperty Either the property name as defined in the ECSchema for regular ECProperties.
-   *         Or an ECSqlSystemProperty value for ECSQL system properties
+   *
+   * ### Formatting rules:
+   *  * System properties:
+   *    - [[ECSqlSystemProperty.ECInstanceId]]: id
+   *    - [[ECSqlSystemProperty.ECClassId]]: className
+   *    - [[ECSqlSystemProperty.SourceECInstanceId]]: sourceId
+   *    - [[ECSqlSystemProperty.SourceECClassId]]: sourceClassName
+   *    - [[ECSqlSystemProperty.TargetECInstanceId]]: targetId
+   *    - [[ECSqlSystemProperty.TargetECClassId]]: targetClassName
+   *    - [[ECSqlSystemProperty.NavigationId]]: id
+   *    - [[ECSqlSystemProperty.NavigationRelClassId]]: relClassName
+   *    - [[ECSqlSystemProperty.PointX]]: x
+   *    - [[ECSqlSystemProperty.PointY]]: y
+   *    - [[ECSqlSystemProperty.PointZ]]: z
+   *  * Ordinary properties: first character is lowered.
+   *
+   * @param ecProperty Either the property name as defined in the ECSchema for regular ECProperties.
+   *         Or an [[ECSqlSystemProperty]] value for ECSQL system properties
    */
   public static toJsName(ecProperty: ECSqlSystemProperty | string): string {
     if (typeof(ecProperty) === "string")
