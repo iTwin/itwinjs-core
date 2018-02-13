@@ -66,6 +66,7 @@ export class Frustum {
   public toRange(range?: Range3d): Range3d { range = range ? range : new Range3d(); Range3d.createArray(this.points, range); return range; }
   public clone(result?: Frustum): Frustum { result = result ? result : new Frustum(); result.setFrom(this); return result; }
   public setFrom(other: Frustum) { for (let i = 0; i < 8; ++i) { this.points[i].setFrom(other.points[i]); } }
+  public isSame(other: Frustum): boolean { for (let i = 0; i < 8; ++i) { if (!this.points[i].isAlmostEqual(other.points[i])) return false; } return true; }
   public scaleAboutCenter(scale: number): void {
     const orig = this.clone();
     const f = 0.5 * (1.0 + scale);

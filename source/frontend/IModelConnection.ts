@@ -134,16 +134,13 @@ export class IModelConnection extends IModel {
     return await IModelGateway.getProxy().saveChanges(this.iModelToken, description);
   }
 
-  // !!! TESTING METHOD
   /**
-   * Execute a test known to exist using the id recognized by the addon's test execution handler
-   * @param id The id of the test to execute
+   * Execute a test by name
+   * @param testName The name of the test to execute
    * @param params A JSON string containing all parameters the test requires
    * @hidden
    */
-  public async executeTest(testName: string, params: any): Promise<any> {
-    return await IModelGateway.getProxy().executeTest(this.iModelToken, testName, params);
-  }
+  public async executeTest(testName: string, params: any): Promise<any> { return IModelGateway.getProxy().executeTest(this.iModelToken, testName, params); }
 }
 
 /** The collection of models for an [[IModelConnection]]. */
