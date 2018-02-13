@@ -14,18 +14,28 @@ import { NodeAddonRegistry } from "./NodeAddonRegistry";
 import { AddonECSqlStatement, AddonECSqlBinder, AddonECSqlValue, AddonECSqlColumnInfo, AddonECDb, AddonDgnDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { StatusCodeWithMessage } from "@bentley/bentleyjs-core/lib/BentleyError";
 
-/** The result of an ECSQL INSERT statement as returned from ECSqlStatement.stepForInsert.
+/** The result of an **ECSQL INSERT** statement as returned from [[ECSqlStatement.stepForInsert]].
+ *
  *  If the step was successful, the ECSqlInsertResult contains
- * DbResult.BE_SQLITE_DONE and the ECInstanceId of the newly created instance.
- * In case of failure it contains the error DbResult code.
+ *  [[DbResult.BE_SQLITE_DONE]] and the ECInstanceId of the newly created instance.
+ *  In case of failure it contains the error [[DbResult]] code.
  */
 export class ECSqlInsertResult {
   public constructor(public status: DbResult, public id?: Id64) {}
 }
 
-/** An ECSql Statement. A statement must be prepared before it can be executed. See prepare. A statement may contain placeholders that must be filled
- * in before use. See bindValues. A prepared statement can be stepped through all matching rows by calling step. ECSqlStatement is-a iterator, so that you
- * can step through its results by using standard iteration syntax, such as "for in".
+/** An ECSQL Statement.
+ *
+ * A statement must be prepared before it can be executed. See [[IModelDb.withPreparedStatement]] or
+ * [[ECDb.withPreparedStatement]].
+ *
+ * A statement may contain parameters that must be filled in before use by calling [[ECSqlStatement.bindValues]]
+ * or the other **bindXXX** methods.
+ *
+ * Once prepared (and parameters are bound, if any), the statement is executed by calling [[ECSqlStatement.step]].
+ * In case of an **ECSQL SELECT** statement, the current row can be retrieved by [[ECSqlStatement.getRow]].
+ * Alternatively, query results of an **ECSQL SELECT** statement can be stepped through by using
+ * standard iteration syntax, such as "for of".
  */
 export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   private _stmt: AddonECSqlStatement | undefined;
@@ -47,23 +57,29 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     return this._stmt !== undefined;
   }
 
-  /** Prepare this statement prior to first use.
-   * @throws [[IModelError]] if the statement cannot be prepared. Normally, prepare fails due to ECSql syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
+  /** @hidden used internally only
+   * Prepare this statement prior to first use.
+   * @param db The DgnDb or ECDb to prepare the statement against
+   * @param ecsql The ECSQL statement string to prepare
+   * @throws [[IModelError]] if the ECSQL statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or references to tables or properties that do not exist. 
+   * The error.message property will provide details.
    */
-  public prepare(db: AddonDgnDb | AddonECDb, statement: string): void {
+  public prepare(db: AddonDgnDb | AddonECDb, ecsql: string): void {
     if (this.isPrepared())
-      throw new Error("statement is already prepared");
+      throw new Error("ECSqlStatement is already prepared");
     this._stmt = new (NodeAddonRegistry.getAddon()).AddonECSqlStatement();
-    const stat: StatusCodeWithMessage<DbResult> = this._stmt!.prepare(db, statement);
+    const stat: StatusCodeWithMessage<DbResult> = this._stmt!.prepare(db, ecsql);
     if (stat.status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat.status, stat.message);
   }
 
-  /** Reset this statement so that the next call to step will return the first row, if any. */
-  public reset(): DbResult {
+  /** Reset this statement so that the next call to step will return the first row, if any.
+   */
+  public reset(): void {
     if (!this._stmt)
-      throw new Error("statement is not prepared");
-    return this._stmt.reset();
+      throw new Error("ECSqlStatement is not prepared");
+
+    this._stmt.reset();
   }
 
   /** Call this function when finished with this statement. This releases the native resources held by the statement.
@@ -71,7 +87,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    */
   public dispose(): void {
     if (this.isShared())
-      throw new Error("you can't dispose a statement that is shared with others (e.g., in a cache)");
+      throw new Error("you can't dispose an ECSqlStatement that is shared with others (e.g., in a cache)");
     if (!this.isPrepared())
       return;
     this._stmt!.dispose(); // Tell the peer JS object to free its native resources immediately
@@ -80,19 +96,19 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     assert(!this.isPrepared()); // leaves the statement in the un-prepared state
   }
 
-  /** Binds null to the specified ECSQL parameter
-   *  @param param Index (1-based) or name of the parameter
+  /** Binds null to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
    */
-  public bindNull(param: number | string): void {
-    using(this.getBinder(param), (binder) => binder.bindNull());
+  public bindNull(parameter: number | string): void {
+    using(this.getBinder(parameter), (binder) => binder.bindNull());
   }
 
-  /** Binds a BLOB value to the specified ECSQL parameter
-   *  @param param Index (1-based) or name of the parameter
-   *  @param val BLOB value, either as Blob object, or as Base64 string
+  /** Binds a BLOB value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val BLOB value, either as Blob object, or as Base64 string
    */
-  public bindBlob(param: number | string, val: Blob | string): void {
-    using(this.getBinder(param), (binder) => {
+  public bindBlob(parameter: number | string, val: Blob | string): void {
+    using(this.getBinder(parameter), (binder) => {
       let base64Str: string;
       if (typeof(val) === "string")
         base64Str = val;
@@ -103,20 +119,20 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     });
   }
 
-  /** Binds a boolean value to the specified ECSQL parameter
-   *  @param param Index (1-based) or name of the parameter
-   *  @param val Boolean value
+  /** Binds a boolean value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val Boolean value
    */
-  public bindBoolean(param: number | string, val: boolean): void {
-    using(this.getBinder(param), (binder) => binder.bindBoolean(val));
+  public bindBoolean(parameter: number | string, val: boolean): void {
+    using(this.getBinder(parameter), (binder) => binder.bindBoolean(val));
   }
 
-  /** Binds a DateTime value to the specified ECSQL parameter
-   *  @param param Index (1-based) or name of the parameter
-   *  @param val DateTime value, either passed as DateTime object or as ISO 8601 string
+  /** Binds a DateTime value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val DateTime value, either passed as DateTime object or as ISO 8601 string
    */
-  public bindDateTime(param: number | string, val: DateTime | string): void {
-    using(this.getBinder(param), (binder) => {
+  public bindDateTime(parameter: number | string, val: DateTime | string): void {
+    using(this.getBinder(parameter), (binder) => {
       let isoString: string;
       if (typeof(val) === "string")
         isoString = val;
@@ -127,77 +143,77 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     });
   }
 
-  /** Binds a double value to the specified ECSQL parameter
-   *  @param param Index (1-based) or name of the parameter
-   *  @param val Double value
+  /** Binds a double value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val Double value
    */
-  public bindDouble(param: number | string, val: number): void {
-    using(this.getBinder(param), (binder) => binder.bindDouble(val));
+  public bindDouble(parameter: number | string, val: number): void {
+    using(this.getBinder(parameter), (binder) => binder.bindDouble(val));
   }
 
-  /** Binds an Id value to the specified ECSQL parameter
-   *  @param param Index (1-based) or name of the parameter
-   *  @param val Id value
+  /** Binds an Id value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val Id value
    */
-  public bindId(param: number | string, val: Id64): void {
-    using(this.getBinder(param), (binder) => binder.bindId(val.value));
+  public bindId(parameter: number | string, val: Id64): void {
+    using(this.getBinder(parameter), (binder) => binder.bindId(val.value));
    }
 
-  /** Binds an integer value to the specified ECSQL parameter
-   *  @param param Index (1-based) or name of the parameter
-   *  @param val Integer value
+  /** Binds an integer value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val Integer value
    */
-  public bindInt(param: number | string, val: number): void {
-    using(this.getBinder(param), (binder) => binder.bindInt(val));
+  public bindInt(parameter: number | string, val: number): void {
+    using(this.getBinder(parameter), (binder) => binder.bindInt(val));
   }
 
-  /** Binds an Point2d value to the specified ECSQL parameter
-   *  @param param Index (1-based) or name of the parameter
-   *  @param val Point2d value
+  /** Binds an Point2d value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val Point2d value
    */
-  public bindPoint2d(param: number | string, val: XAndY): void {
-    using(this.getBinder(param), (binder) => binder.bindPoint2d(val.x, val.y));
+  public bindPoint2d(parameter: number | string, val: XAndY): void {
+    using(this.getBinder(parameter), (binder) => binder.bindPoint2d(val.x, val.y));
   }
 
-  /** Binds an Point3d value to the specified ECSQL parameter
-   *  @param param Index (1-based) or name of the parameter
-   *  @param val Point3d value
+  /** Binds an Point3d value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val Point3d value
    */
-  public bindPoint3d(param: number | string, val: XYAndZ): void {
-    using(this.getBinder(param), (binder) => binder.bindPoint3d(val.x, val.y, val.z));
+  public bindPoint3d(parameter: number | string, val: XYAndZ): void {
+    using(this.getBinder(parameter), (binder) => binder.bindPoint3d(val.x, val.y, val.z));
   }
 
-  /** Binds an string to the specified ECSQL parameter
-   *  @param param Index (1-based) or name of the parameter
-   *  @param val String value
+  /** Binds an string to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val String value
    */
-  public bindString(param: number | string, val: string): void {
-    using(this.getBinder(param), (binder) => binder.bindString(val));
+  public bindString(parameter: number | string, val: string): void {
+    using(this.getBinder(parameter), (binder) => binder.bindString(val));
   }
 
-  /** Binds a navigation property value to the specified ECSQL parameter
-   *  @param param Index (1-based) or name of the parameter
-   *  @param val Navigation property value
+  /** Binds a navigation property value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val Navigation property value
    */
-  public bindNavigation(param: number | string, val: NavigationBindingValue): void {
-    using(this.getBinder(param), (binder) => binder.bindNavigation(val.id.value, val.relClassName, val.relClassTableSpace));
+  public bindNavigation(parameter: number | string, val: NavigationBindingValue): void {
+    using(this.getBinder(parameter), (binder) => binder.bindNavigation(val.id.value, val.relClassName, val.relClassTableSpace));
     }
 
-  /** Binds a struct property value to the specified ECSQL parameter
-   *  @param param Index (1-based) or name of the parameter
-   *  @param val Struct value. The struct value is an object composed of pairs of a struct member property name and its value
+  /** Binds a struct property value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val Struct value. The struct value is an object composed of pairs of a struct member property name and its value
    * (of one of the supported types)
    */
-  public bindStruct(param: number | string, value: object): void {
-    using(this.getBinder(param), (binder) => ECSqlBindingHelper.bindStruct(binder, value));
+  public bindStruct(parameter: number | string, val: object): void {
+    using(this.getBinder(parameter), (binder) => ECSqlBindingHelper.bindStruct(binder, val));
   }
 
-  /** Binds a array value to the specified ECSQL parameter
-   *  @param param Index (1-based) or name of the parameter
-   *  @param val Array value. The array value is an array of values of the supported types
+  /** Binds an array value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val Array value. The array value is an array of values of the supported types
    */
-  public bindArray(param: number | string, value: any[]): void {
-    using(this.getBinder(param), (binder) => ECSqlBindingHelper.bindArray(binder, value));
+  public bindArray(parameter: number | string, val: any[]): void {
+    using(this.getBinder(parameter), (binder) => ECSqlBindingHelper.bindArray(binder, val));
   }
 
   /** Bind values to all parameters in the statement.
@@ -236,7 +252,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   }
 
   /** Clear any bindings that were previously set on this statement.
-   * @throws IModelError in case of errors
+   * @throws [[IModelError]] in case of errors
    */
   public clearBindings(): void {
     const stat: DbResult = this._stmt!.clearBindings();
@@ -244,7 +260,15 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
       throw new IModelError(stat);
   }
 
-  /** Step this statement to the next matching row. */
+  /** Step this statement to the next row.
+   * @returns For **ECSQL SELECT** statements returns
+   *  * [[DbResult.BE_SQLITE_ROW]] if the statement now points successfully to the next row.
+   *  * [[DbResult.BE_SQLITE_DONE]] if the statement has no more rows.
+   *  * Error status in case of errors.
+   *  For **ECSQL INSERT, UPDATE, DELETE** statements returns
+   *  * [[DbResult.BE_SQLITE_DONE]] if the statement has been executed successfully.
+   *  * Error status in case of errors.
+   */
   public step(): DbResult {
     return this._stmt!.step();
   }
@@ -262,16 +286,43 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     return new ECSqlInsertResult(r.status);
   }
 
-  /** @deprecated Use getRow instead.
-   *  Get the current row.
-   */
-  public getRow_depr(): any {
-    return JSON.parse(this._stmt!.getRow());
-  }
-
   /** Get the current row.
+   * The returned row is formatted as JavaScript object where every SELECT clause item becomes a property in the JavaScript object.
+   *
+   * ### Property names
+   * If the ECSQL select clause item
+   *  * is an [ECSQL system property]([[ECSqlSystemProperty]]), the property name is as described here: [[ECJsonNames.toJsName]]
+   *  * has a column alias, the alias, with the first character lowered, becomes the property name.
+   *  * has no alias, the ECSQL select clause item, with the first character lowered, becomes the property name.
+   *
+   * ### Property value types
+   * The resulting types of the returned property values are these:
+   *
+   * | ECSQL type | JavaScript Type |
+   * | ---------- | --------------- |
+   * | Boolean    | boolean       |
+   * | Blob       | [[Blob]]      |
+   * | Double     | number        |
+   * | DateTime   | [[DateTime]]  |
+   * | Id system properties | [[Id64]] |
+   * | Integer    | number        |
+   * | Int64      | number        |
+   * | Point2d    | [[Point2d]]   |
+   * | Point3d    | [[Point3d]]   |
+   * | String     | string        |
+   * | Navigation | [[NavigationValue]] |
+   * | Struct     | JS object with properties of the types in this table |
+   * | Array      | array of the types in this table |
+   *
+   * ### Examples
+   * | ECSQL | Row |
+   * | ----- | --- |
+   * | SELECT ECInstanceId,ECClassId,Parent,LastMod,FederationGuid,UserLabel FROM bis.Element | `{id:Id64,className:string,parent:NavigationValue,lastMod:DateTime,federationGuid:Blob,userLabel:string}` |
+   * | SELECT s.ECInstanceId schemaId, c.ECInstanceId classId FROM meta.ECSchemaDef s JOIN meta.ECClassDef c ON s.ECInstanceId=c.Schema.Id | `{schemaId:Id64, classId:Id64}` |
+   * | SELECT count(*) FROM bis.Element | `{"count(*)":number}` |
+   * | SELECT count(*) cnt FROM bis.Element | `{cnt:number}` |
    */
-  public getRow(): any {
+   public getRow(): any {
     const colCount: number = this._stmt!.getColumnCount();
     const row: object = {};
     const duplicatePropNames = new Map<string, number>();
@@ -288,6 +339,13 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
     return row;
     }
+
+  /** @deprecated Use [[ECSqlStatement.getRow]] instead.
+   * Get the current row.
+   */
+  public getRow_depr(): any {
+    return JSON.parse(this._stmt!.getRow());
+  }
 
   /** Calls step when called as an iterator. */
   public next(): IteratorResult<any> {
