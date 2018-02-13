@@ -12,6 +12,7 @@ import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import * as path from "path";
 import { PanTool } from "../../frontend/tools/ViewTool";
 import { CompassMode } from "../../frontend/AccuDraw";
+import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
 
 const iModelLocation = path.join(__dirname, "../../../../backend/lib/backend/test/assets/test.bim");
 
@@ -25,6 +26,17 @@ class TestViewport extends Viewport {
 class TestIModelApp extends IModelApp {
   protected supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
 }
+
+const cycleJson = (obj: any) => JSON.parse(JSON.stringify(obj));
+const compareJson = (obj1: any, obj2: any, str: string) => {
+  const compare = new DeepCompare();
+  const val = compare.compare(cycleJson(obj1), cycleJson(obj2));
+  if (!val)
+    assert.isUndefined(compare.errorTracker, str);
+  assert.isTrue(val, str);
+
+};
+// const compareJson2 = (obj1: any, obj2: any, str: string) => { assert.deepEqual(cycleJson(obj1), cycleJson(obj2), str); };
 
 // tslint:disable:only-arrow-functions
 // tslint:disable-next-line:space-before-function-paren
@@ -44,7 +56,7 @@ describe("Viewport", function () {
     IModelApp.shutdown();
   });
 
-  it.skip("Viewport", () => {
+  it.skip("Viewport", async () => {
     const vpView = spatialView.clone<SpatialViewState>();
     const vp = new TestViewport(vpView);
     assert.isFalse(vp.isRedoPossible, "no redo");
@@ -57,23 +69,31 @@ describe("Viewport", function () {
     assert.notEqual(saveView.displayStyle, vpView.displayStyle, "clone should copy displayStyle");
     const frustSave = vp.getFrustum();
 
+    const clientRect = vp.getClientRect();
+    const testParams: any = { view: vpView, rect: { left: clientRect.left, bottom: clientRect.bottom, right: clientRect.right, top: clientRect.top } };
+    vpView.camera.validateLens();
+
+    const cppView = await imodel.executeTest("turnCameraOn", testParams);
     vp.turnCameraOn();
+    compareJson(vpView, cppView, "turnCameraOn 3");
+
     vp.synchWithView(true);
-    assert.isTrue(vp.isCameraOn(), "camera on");
+    assert.isTrue(vp.isCameraOn(), "camera should be on");
     const frust2 = vp.getFrustum();
-    assert.notDeepEqual(frust2, frustSave, "camera turned on");
+    assert.isFalse(frust2.isSame(frustSave), "turning camera on changes frustum");
     assert.isTrue(vp.isUndoPossible, "undo should now be possible");
     vp.doUndo();
-    assert.deepEqual(vp.getFrustum(), frustSave, "undo should reinstate saved view");
+    assert.isTrue(vp.getFrustum().isSame(frustSave), "undo should reinstate saved view");
     assert.isTrue(vp.isRedoPossible, "redo is possible");
     assert.isFalse(vp.isUndoPossible, "no undo");
     vp.doRedo();
-    assert.deepEqual(vp.getFrustum(), frust2, "redo should reinstate saved view");
+    assert.isTrue(vp.getFrustum().isSame(frust2), "redo should reinstate saved view");
+    assert.isFalse(vp.isRedoPossible, "after redo, redo is not possible");
+    assert.isTrue(vp.isUndoPossible, "after redo, undo is possible");
 
     const pan = iModelApp.tools.create("View.Pan", vp) as PanTool;
     assert.instanceOf(pan, PanTool);
     assert.equal(pan.viewport, vp);
-
   });
 
   it("AccuDraw should work properly", () => {

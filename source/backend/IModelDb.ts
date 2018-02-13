@@ -103,7 +103,7 @@ export class IModelDb extends IModel {
 
   public static async create(accessToken: AccessToken, contextId: string, hubName: string, rootSubjectName: string, hubDescription?: string, rootSubjectDescription?: string): Promise<IModelDb> {
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.create(accessToken, contextId, hubName, rootSubjectName, hubDescription, rootSubjectDescription);
-    return IModelDb.createIModelDb(briefcaseEntry);
+    return IModelDb.createIModelDb(briefcaseEntry, contextId);
   }
 
   /** Open the iModel from a local file
@@ -243,10 +243,11 @@ export class IModelDb extends IModel {
    * for named parameters.
    * The values in either the array or object must match the respective types of the parameters.
    * Supported types:
-   * boolean, Blob, DateTime, NavigationBindingValue, number, XY, XYZ, string
+   * boolean, [[Blob]],  [[DateTime]], [[NavigationBindingValue]], number, [[XY]], [[XYZ]], string
    * For struct parameters pass an object with key value pairs of struct property name and values of the supported types
    * For array parameters pass an array of the supported types.
-   * @returns all rows as an array or an empty array if nothing was selected
+   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
+   * See [[ECSqlStatement.getRow]] for details about the format of the returned rows.
    * @throws [[IModelError]] If the statement is invalid
    */
   public executeQuery(ecsql: string, bindings?: any[] | object): any[] {
@@ -531,13 +532,11 @@ export class IModelDb extends IModel {
    * @param params parameters for the test
    * @hidden
    */
-  public executeTest(_testName: string, _params: any): any {
+  public executeTest(testName: string, params: any): any {
     if (!this.briefcaseEntry)
       throw this._newNotOpenError();
 
-    // The following line is commented out until a build of the addon that has this method completes
-    // return JSON.parse(this.briefcaseEntry.nativeDb.executeTest(testName, JSON.stringify(params)));
-    return undefined;
+    return JSON.parse(this.briefcaseEntry.nativeDb.executeTest(testName, JSON.stringify(params)));
   }
 }
 

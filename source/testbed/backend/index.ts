@@ -29,20 +29,22 @@ TestbedConfig.initializeGatewayConfig();
 // tslint:disable-next-line:no-var-requires
 NodeAddonRegistry.loadAndRegisterStandardAddon();
 
-const app = express();
-app.use(bodyParser.text());
-app.use(express.static(__dirname + "/public"));
-app.get(TestbedConfig.swaggerURI, (req, res) => TestbedConfig.gatewayConfig.protocol.handleOpenApiDescriptionRequest(req, res));
+if (TestbedConfig.gatewayConfig) {
+  const app = express();
+  app.use(bodyParser.text());
+  app.use(express.static(__dirname + "/public"));
+  app.get(TestbedConfig.swaggerURI, (req, res) => TestbedConfig.gatewayConfig.protocol.handleOpenApiDescriptionRequest(req, res));
 
-app.post("*", (req, res) => {
-  if (pendingResponseQuota && pendingsSent < pendingResponseQuota) {
-    ++pendingsSent;
-    res.status(202).send(`Pending Response #${pendingsSent}`);
-    return;
-  }
+  app.post("*", (req, res) => {
+    if (pendingResponseQuota && pendingsSent < pendingResponseQuota) {
+      ++pendingsSent;
+      res.status(202).send(`Pending Response #${pendingsSent}`);
+      return;
+    }
 
-  pendingsSent = 0;
-  TestbedConfig.gatewayConfig.protocol.handleOperationPostRequest(req, res);
-});
+    pendingsSent = 0;
+    TestbedConfig.gatewayConfig.protocol.handleOperationPostRequest(req, res);
+  });
 
-app.listen(TestbedConfig.serverPort);
+  app.listen(TestbedConfig.serverPort);
+}

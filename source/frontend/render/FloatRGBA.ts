@@ -5,9 +5,9 @@ import { ColorDef } from "../../common/ColorDef";
 
 /** An RGB color. */
 export class FloatRgb {
-  public red: number;
-  public green: number;
-  public blue: number;
+  public red = 0;
+  public green = 0;
+  public blue = 0;
 
   /** Create a FloatRgb using a ColorDef.
    * @param def A ColorDef used to create a new FloatRgb.
@@ -32,10 +32,10 @@ export class FloatRgb {
 
 /** An RGBA color. */
 export class FloatRgba {
-  public red: number;
-  public green: number;
-  public blue: number;
-  public alpha: number;
+  public red = 0;
+  public green = 0;
+  public blue = 0;
+  public alpha = 0;
 
   /** Return whether or not the FloatRgba is translucent.
    * @returns if the FloatRgba has translucency.
@@ -127,10 +127,10 @@ export class FloatRgba {
 
 /** An RGBA color with pre-multiplied alpha applied. */
 export class FloatPreMulRgba {
-  public red: number;
-  public green: number;
-  public blue: number;
-  public alpha: number;
+  public red = 0;
+  public green = 0;
+  public blue = 0;
+  public alpha = 0;
 
   /** Return whether or not the FloatPreMulRgba is translucent.
    * @returns if the FloatPreMulRgba has translucency.
@@ -155,7 +155,7 @@ export class FloatPreMulRgba {
   public initFromRgba(rgba: FloatRgba): void {
     this.red = rgba.red * rgba.alpha;
     this.green = rgba.green * rgba.alpha;
-    this.blue  = rgba.blue * rgba.alpha;
+    this.blue = rgba.blue * rgba.alpha;
     this.alpha = rgba.alpha;
 
     // if defined DEBUG_PREMUL_RGBA

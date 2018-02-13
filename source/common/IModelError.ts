@@ -16,3 +16,10 @@ export class IModelError extends BentleyError {
     super(errorNumber, message, log, category, getMetaData);
   }
 }
+
+export class ServerError extends IModelError {
+  public constructor(errorNumber: number, message?: string, log?: LogFunction) {
+    super(errorNumber, message, log);
+    this.name = "Server error: " + errorNumber;
+  }
+}

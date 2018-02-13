@@ -10,5 +10,8 @@
       "mocha",
       "node"
     ]
-  }
+  },
+  "exclude": [
+    "node_modules"
+  ]
 }
