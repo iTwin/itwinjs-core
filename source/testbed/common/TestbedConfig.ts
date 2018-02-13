@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { IModelGateway } from "../../gateway/IModelGateway";
 import { BentleyCloudGatewayConfiguration } from "../../gateway/BentleyCloudGatewayConfiguration";
+import { GatewayElectronConfiguration } from "../../gateway/GatewayElectronProtocol";
 import { TestGateway } from "../common/TestGateway";
 
 export class TestbedConfig {
@@ -11,9 +12,15 @@ export class TestbedConfig {
   public static swaggerURI = "/v3/swagger.json";
   public static gatewayConfig: BentleyCloudGatewayConfiguration;
   public static ipc: any;
+  public static useIPC = false;
 
   public static initializeGatewayConfig() {
-    TestbedConfig.gatewayConfig = BentleyCloudGatewayConfiguration.initialize(TestbedConfig.gatewayParams, [IModelGateway, TestGateway]);
+    const gateways = [IModelGateway, TestGateway];
+
+    if (TestbedConfig.useIPC)
+      GatewayElectronConfiguration.initialize({}, gateways);
+    else
+      TestbedConfig.gatewayConfig = BentleyCloudGatewayConfiguration.initialize(TestbedConfig.gatewayParams, gateways);
   }
 
   public static sendToMainSync(msg: TestbedIpcMessage) {
