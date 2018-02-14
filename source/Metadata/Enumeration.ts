@@ -5,6 +5,7 @@
 import SchemaChild from "./SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PrimitiveType, SchemaChildType } from "../ECObjects";
+import { SchemaChildVisitor } from "../Interfaces";
 import Schema from "./Schema";
 
 /**
@@ -101,6 +102,11 @@ export default class Enumeration extends SchemaChild {
         this.enumerators.push(newEnum);
       });
     }
+  }
+
+  public async accept(visitor: SchemaChildVisitor) {
+    if (visitor.visitEnumeration)
+      await visitor.visitEnumeration(this);
   }
 }
 

@@ -5,6 +5,7 @@
 import SchemaChild from "./SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaChildType } from "../ECObjects";
+import { SchemaChildVisitor } from "../Interfaces";
 import Schema from "./Schema";
 
 export class FormatUnitSpec {
@@ -44,5 +45,10 @@ export default class KindOfQuantity extends SchemaChild {
 
     if (jsonObj.persistenceUnit)
       this.persistenceUnit = jsonObj.persistenceUnit as FormatUnitSpec;
+  }
+
+  public async accept(visitor: SchemaChildVisitor) {
+    if (visitor.visitKindOfQuantity)
+      await visitor.visitKindOfQuantity(this);
   }
 }

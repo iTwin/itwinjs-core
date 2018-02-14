@@ -14,7 +14,7 @@ import RelationshipClass, { RelationshipConstraint } from "../Metadata/Relations
 import KindOfQuantity from "../Metadata/KindOfQuantity";
 import { AnyClassType } from "../Interfaces";
 import { ECProperty } from "../Metadata/Property";
-import { SchemaDeserializationVisitor } from "source";
+import { SchemaDeserializationVisitor, AnySchemaChildType } from "source";
 
 /**
  * The purpose of this class is to properly order the deserialization of ECSchemas and SchemaChildren from the JSON formats.
@@ -148,47 +148,46 @@ export default class SchemaReadHelper {
     if (!schemaChildJson.schemaChildType)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaChild ${childName} is missing the required schemaChildType property.`);
 
+    let schemaChild: AnySchemaChildType | undefined;
+
     switch (schemaChildJson.schemaChildType) {
       case "EntityClass":
-        const entityClass = await schema.createEntityClass(childName);
-        await this.loadEntityClass(entityClass, schemaChildJson);
+        schemaChild = await schema.createEntityClass(childName);
+        await this.loadEntityClass(schemaChild, schemaChildJson);
         break;
       case "StructClass":
-        const structClass = await schema.createStructClass(childName);
-        await this.loadClass(structClass, schemaChildJson);
+        schemaChild = await schema.createStructClass(childName);
+        await this.loadClass(schemaChild, schemaChildJson);
         break;
       case "Mixin":
-        const mixin = await schema.createMixinClass(childName);
-        await this.loadMixin(mixin, schemaChildJson);
+        schemaChild = await schema.createMixinClass(childName);
+        await this.loadMixin(schemaChild, schemaChildJson);
         break;
       case "CustomAttributeClass":
-        const caClass = await schema.createCustomAttributeClass(childName);
-        await this.loadClass(caClass, schemaChildJson);
+        schemaChild = await schema.createCustomAttributeClass(childName);
+        await this.loadClass(schemaChild, schemaChildJson);
         break;
       case "RelationshipClass":
-        const relClass = await schema.createRelationshipClass(childName);
-        await this.loadRelationshipClass(relClass, schemaChildJson);
+        schemaChild = await schema.createRelationshipClass(childName);
+        await this.loadRelationshipClass(schemaChild, schemaChildJson);
         break;
       case "KindOfQuantity":
-        const koq = await schema.createKindOfQuantity(childName);
-        await koq.fromJson(schemaChildJson);
-        if (this._visitor && this._visitor.visitKindOfQuantity)
-          await this._visitor.visitKindOfQuantity(koq);
+        schemaChild = await schema.createKindOfQuantity(childName);
+        await schemaChild.fromJson(schemaChildJson);
         break;
       case "PropertyCategory":
-        const propCategory = await schema.createPropertyCategory(childName);
-        await propCategory.fromJson(schemaChildJson);
-        if (this._visitor && this._visitor.visitPropertyCategory)
-          await this._visitor.visitPropertyCategory(propCategory);
+        schemaChild = await schema.createPropertyCategory(childName);
+        await schemaChild.fromJson(schemaChildJson);
         break;
       case "Enumeration":
-        const enumeration = await schema.createEnumeration(childName);
-        await enumeration.fromJson(schemaChildJson);
-        if (this._visitor && this._visitor.visitEnumeration)
-          await this._visitor.visitEnumeration(enumeration);
+        schemaChild = await schema.createEnumeration(childName);
+        await schemaChild.fromJson(schemaChildJson);
         break;
       // NOTE: we are being permissive here and allowing unknown types to silently fail. Not sure if we want to hard fail or just do a basic deserialization
     }
+
+    if (schemaChild && this._visitor)
+      schemaChild.accept(this._visitor);
   }
 
   /**
@@ -260,8 +259,6 @@ export default class SchemaReadHelper {
     }
 
     await classObj.fromJson(classJson);
-    if (this._visitor && this._visitor.visitClass)
-      await this._visitor.visitClass(classObj);
   }
 
   private async loadEntityClass(entity: EntityClass, entityJson: any): Promise<void> {

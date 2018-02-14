@@ -3,6 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ECVersion, SchemaChildKey, SchemaKey, SchemaChildType } from "../ECObjects";
+import { SchemaChildVisitor } from "../Interfaces";
 import Schema from "./Schema";
 
 /**
@@ -62,4 +63,6 @@ export default abstract class SchemaChild {
 
     return [matches[1], matches[2]];
   }
+
+  public abstract async accept(visitor: SchemaChildVisitor): Promise<void>;
 }
