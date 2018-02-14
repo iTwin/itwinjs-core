@@ -22,15 +22,15 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "^5.2.0",
-    "@bentley/imodeljs-frontend": "^0.44.2"
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^5.2.0",
-    "@bentley/imodeljs-frontend": "^0.44.2"
+    "@bentley/imodeljs-frontend": "^0.44.0"
   },
   "devDependencies": {
+    "@bentley/bentleyjs-core": "^5.2.0",
     "@bentley/bentleyjs-tools": "^2.2.0",
+    "@bentley/imodeljs-frontend": "^0.44.0",
     "@types/flatbuffers": "^1.6.5",
     "node-replace": "^0.3.3",
     "rimraf": "^2.6.2",
