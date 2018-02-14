@@ -19,7 +19,7 @@ import PropertyCategory from "./Metadata/PropertyCategory";
 export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<Schema>;
 export type LazyLoadedProperty = Readonly<{ name: string }> & DelayedPromise<ECProperty>;
 
-export type LazyLoadedSchemaChild<T extends SchemaChild> = Readonly<T["key"]> & DelayedPromise<T>;
+export type LazyLoadedSchemaChild<T extends SchemaChild> = Readonly<SchemaChildKey> & DelayedPromise<T>;
 export type LazyLoadedECClass = LazyLoadedSchemaChild<ECClass>;
 export type LazyLoadedEntityClass = LazyLoadedSchemaChild<EntityClass>;
 export type LazyLoadedMixin = LazyLoadedSchemaChild<MixinClass>;
@@ -29,7 +29,7 @@ export type LazyLoadedRelationshipClass = LazyLoadedSchemaChild<RelationshipClas
 export type LazyLoadedEnumeration = LazyLoadedSchemaChild<Enumeration>;
 export type LazyLoadedKindOfQuantity = LazyLoadedSchemaChild<KindOfQuantity>;
 export type LazyLoadedPropertyCategory = LazyLoadedSchemaChild<PropertyCategory>;
-export type LazyLoadedRelationshipConstraintClass = Readonly<SchemaChildKey> & DelayedPromise<EntityClass | MixinClass | RelationshipClass>;
+export type LazyLoadedRelationshipConstraintClass = LazyLoadedSchemaChild<EntityClass | MixinClass | RelationshipClass>;
 
 export type AnyClassType = EntityClass | MixinClass | StructClass | CustomAttributeClass | RelationshipClass;
 export type AnySchemaChildType = AnyClassType | Enumeration | KindOfQuantity | PropertyCategory;
