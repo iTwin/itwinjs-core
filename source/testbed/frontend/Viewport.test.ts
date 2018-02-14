@@ -18,7 +18,7 @@ import { DisplayStyle3dState } from "../../common/DisplayStyleState";
 
 const iModelLocation = path.join(__dirname, "../../../../backend/lib/backend/test/assets/test.bim");
 
-/** Class with scope limited to this file, used for creating a Viewport without a canvas */
+/** For creating a Viewport without a canvas */
 class TestViewport extends Viewport {
   public constructor(viewState: ViewState) { super(undefined, viewState); this.setupFromView(); }
   private clientRect = new ViewRect(0, 0, 1000, 1000);  // Needed since we don't have a canvas
@@ -32,7 +32,7 @@ class TestIModelApp extends IModelApp {
 const compareView = (v1: SpatialViewState, v2: SpatialViewDefinitionProps, str: string) => {
   const compare = new DeepCompare();
   const v2State = new SpatialViewState(v2, v1.iModel, v1.categorySelector, v1.displayStyle as DisplayStyle3dState, v1.modelSelector);
-  const val = compare.compare(v1, v2State, 1e-06);
+  const val = compare.compare(v1, v2State, .01);
   assert.isTrue(val, str);
 };
 
@@ -44,7 +44,7 @@ describe("Viewport", () => {
     TestIModelApp.startup();
     imodel = await IModelConnection.openStandalone(iModelLocation);
     spatialView = await imodel.views.loadView("0x34") as SpatialViewState;
-    spatialView.setStandardRotation(StandardViewId.Top);
+    spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
   after(async () => {
@@ -131,6 +131,5 @@ describe("Cartographic tests", () => {
     assert.isTrue(ecefNY.isAlmostEqual({ x: 1138577.8226437706, y: 3972262.6507547107, z: 4842118.181650281 }), "new york");
     const ny2 = Cartographic.fromEcef(ecefNY);
     assert.isTrue(newYork.equalsEpsilon(ny2!, 0.01));
-
   });
 });

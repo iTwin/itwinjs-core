@@ -104,8 +104,6 @@ describe("iModel", () => {
       assert.instanceOf(error, Error);
       assert.instanceOf(error, IModelError);
       assert.equal(error.errorNumber, IModelStatus.NotFound);
-      assert.equal(error.name, "IModelStatus.NotFound");
-      assert.isTrue(error.toString().startsWith("IModelStatus.NotFound"));
     }
 
     const subCat = imodel1.elements.getElement(new Id64("0x2e"));
@@ -191,7 +189,6 @@ describe("iModel", () => {
       assert.isTrue(error instanceof Error);
       assert.isTrue(error instanceof IModelError);
       assert.equal(error.errorNumber, IModelStatus.NotFound);
-      assert.equal(error.name, "IModelStatus.NotFound");
     }
 
     const childIds: Id64[] = imodel1.elements.queryChildren(rootSubject.id);
