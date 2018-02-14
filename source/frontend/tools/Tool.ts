@@ -181,13 +181,13 @@ export class BeButtonEvent {
   private readonly _rawPoint: Point3d = new Point3d();
   private readonly _viewPoint: Point3d = new Point3d();
   public viewport?: Viewport;
-  public coordsFrom: CoordSource;   // how were the coordinate values in point generated?
-  public keyModifiers: BeModifierKey;
-  public isDoubleClick: boolean;
-  public isDown: boolean;
-  public button: BeButton;
-  public inputSource: InputSource;
-  public actualInputSource: InputSource;
+  public coordsFrom = CoordSource.User;   // how were the coordinate values in point generated?
+  public keyModifiers = BeModifierKey.None;
+  public isDoubleClick = false;
+  public isDown = false;
+  public button = BeButton.Data;
+  public inputSource = InputSource.Unknown;
+  public actualInputSource = InputSource.Unknown;
 
   public get point() { return this._point; }
   public set point(pt: Point3d) { this._point.setFrom(pt); }
@@ -238,18 +238,18 @@ export class BeButtonEvent {
 
 /** Describes a "gesture" input originating from a touch-input device. */
 export class GestureInfo {
-  public gestureId: GestureId;
-  public numberTouches: number;
-  public previousNumberTouches: number;    // Only meaningful for GestureId::SingleFingerMove and GestureId::MultiFingerMove
+  public gestureId = GestureId.None;
+  public numberTouches = 0;
+  public previousNumberTouches = 0;    // Only meaningful for GestureId::SingleFingerMove and GestureId::MultiFingerMove
   public touches: Point2d[] = [new Point2d(), new Point2d(), new Point2d()];
   public ptsLocation: Point2d = new Point2d();    // Location of centroid
-  public distance: number;                 // Only meaningful on motion with multiple touches
-  public isEndGesture: boolean;
-  public isFromMouse: boolean;
+  public distance = 0;                 // Only meaningful on motion with multiple touches
+  public isEndGesture = false;
+  public isFromMouse = false;
 
   public getViewPoint(vp: Viewport) {
     const screenRect = vp.viewRect;
-    return new Point3d(this.ptsLocation.x - screenRect.low.x, this.ptsLocation.y - screenRect.low.y, 0.0);
+    return new Point3d(this.ptsLocation.x - screenRect.left, this.ptsLocation.y - screenRect.bottom, 0.0);
   }
 
   public init(gestureId: GestureId, centerX: number, centerY: number, distance: number, touchPoints: XAndY[], isEnding: boolean, isFromMouse: boolean, prevNumTouches: number) {
@@ -330,6 +330,7 @@ export class Tool {
   public static namespace: I18NNamespace;
   protected static _keyin?: string; // localized (fetched only once, first time needed).
 
+  public constructor(..._args: any[]) { }
   /**
    * Register this Tool class with the ToolRegistry.
    * @param namespace optional namespace to supply to ToolRegistry.register. If undefined, use namespace from superclass.
@@ -360,7 +361,7 @@ export class Tool {
    * run this instance of a Tool. Subclasses should override to perform their action.
    * @returns true if the tool executed successfully.
    */
-  public run(..._args: any[]): boolean { return true; }
+  public run(..._arg: any[]): boolean { return true; }
 }
 
 /**

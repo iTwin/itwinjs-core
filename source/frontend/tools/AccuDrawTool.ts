@@ -8,7 +8,8 @@ import { BeButtonEvent } from "./Tool";
 import { DecorateContext } from "../ViewContext";
 import { InputCollector } from "./ViewTool";
 import { LegacyMath } from "../../common/LegacyMath";
-import { Vector3d, Point3d, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
+import { Vector3d, Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { RotMatrix } from "@bentley/geometry-core/lib/Transform";
 import { Geometry, Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Viewport } from "../Viewport";
 import { AuxCoordSystemState } from "../../common/AuxCoordSys";
@@ -136,7 +137,7 @@ export class AccuDrawShortcuts {
       return;
 
     const rMatrix = accudraw.getRotation();
-    rMatrix.multiply3dInPlace(accudraw.vector);
+    rMatrix.multiplyVectorInPlace(accudraw.vector);
     const angleMatrix = RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createRadians(-angle))!;
     rMatrix.multiplyMatrixMatrix(angleMatrix, rMatrix); // NEEDS_WORK - verify order
     accudraw.axes.fromRotMatrix(rMatrix);

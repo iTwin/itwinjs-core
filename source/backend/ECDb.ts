@@ -10,7 +10,9 @@ import { IDisposable } from "@bentley/bentleyjs-core/lib/Disposable";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
-/** Allows performing CRUD operations in an ECDb */
+const loggingCategory = "imodeljs-backend.ECDb";
+
+/** An ECDb file */
 export class ECDb implements IDisposable {
   private _nativeDb: AddonECDb | undefined;
   private readonly _statementCache: ECSqlStatementCache;
@@ -33,22 +35,22 @@ export class ECDb implements IDisposable {
   }
 
   /** Create an ECDb
-   * @param pathname  The pathname of the Db.
+   * @param pathName The path to the ECDb file to create.
    * @throws [[IModelError]] if the operation failed.
    */
-  public createDb(pathname: string): void {
-    const status = this.nativeDb.createDb(pathname);
+  public createDb(pathName: string): void {
+    const status = this.nativeDb.createDb(pathName);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to created ECDb");
   }
 
   /** Open the ECDb.
-   * @param pathname The pathname of the Db
-   * @param openMode  Open mode
+   * @param pathName The path to the ECDb file to open
+   * @param openMode Open mode
    * @throws [[IModelError]] if the operation failed.
    */
-  public openDb(pathname: string, openMode: OpenMode = OpenMode.Readonly): void {
-    const status = this.nativeDb.openDb(pathname, openMode);
+  public openDb(pathName: string, openMode: OpenMode = OpenMode.Readonly): void {
+    const status = this.nativeDb.openDb(pathName, openMode);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to open ECDb");
   }
@@ -86,19 +88,22 @@ export class ECDb implements IDisposable {
       throw new IModelError(status, "Failed to abandon changes");
   }
 
-  /** Import a schema. If the import was successful, the database is automatically saved to disk.
+  /** Import a schema.
+   *
+   * If the import was successful, the database is automatically saved to disk.
+   * @param pathName Path to ECSchema XML file to import.
    * @throws [[IModelError]] if the database is not open or if the operation failed.
    */
-  public importSchema(pathname: string): void {
-    const status = this.nativeDb.importSchema(pathname);
+  public importSchema(pathName: string): void {
+    const status = this.nativeDb.importSchema(pathName);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to import schema");
   }
 
   /** Use a prepared statement. This function takes care of preparing the statement and then releasing it.
-   * @param ecsql The ECSql statement to execute
-   * @param cb the callback to invoke on the prepared statement
-   * @return the value returned by cb
+   * @param ecsql The ECSQL statement to execute
+   * @param cb The callback to invoke on the prepared statement
+   * @returns Returns the value returned by cb
    */
   public withPreparedStatement<T>(ecsql: string, cb: (stmt: ECSqlStatement) => T): T {
     const stmt = this.getPreparedStatement(ecsql);
@@ -108,15 +113,16 @@ export class ECDb implements IDisposable {
       return val;
     } catch (err) {
       this._statementCache.release(stmt);
-      Logger.logError(err.toString());
+      Logger.logError(loggingCategory, err.toString());
       throw err;
     }
   }
 
-  /** Get a prepared ECSql statement - may require preparing the statement, if not found in the cache.
-   * @param ecsql The ECSql statement to prepare
-   * @return the prepared statement
-   * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSql syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
+  /** Get a prepared ECSQL statement - may require preparing the statement, if not found in the cache.
+   * @param ecsql The ECSQL statement to prepare
+   * @returns Returns the prepared statement
+   * @throws [[IModelError]] if the statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or
+   * references to tables or properties that do not exist. The error.message property will provide details.
    */
   private getPreparedStatement(ecsql: string): ECSqlStatement {
     const cachedStmt = this._statementCache.find(ecsql);
@@ -133,8 +139,8 @@ export class ECDb implements IDisposable {
     this._statementCache.add(ecsql, stmt);
     return stmt;
   }
-  /** Prepare an ECSql statement.
-   * @param ecsql The ECSql statement to prepare
+  /** Prepare an ECSQL statement.
+   * @param ecsql The ECSQL statement to prepare
    * @throws [[IModelError]] if there is a problem preparing the statement.
    */
   public prepareStatement(ecsql: string): ECSqlStatement {

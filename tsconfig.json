@@ -5,10 +5,13 @@
     "rootDirs": [
       "source"
     ],
-    "baseUrl": "./source/test/node_modules",
+    "baseUrl": "./source/backend/node_modules",
     "types": [
       "mocha",
       "node"
     ]
-  }
+  },
+  "exclude": [
+    "node_modules"
+  ]
 }

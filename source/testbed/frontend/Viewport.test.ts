@@ -2,24 +2,23 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Point3d, YawPitchRollAngles, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
-import { SpatialViewState, CategorySelectorState, ViewState, Camera } from "../../common/ViewState";
-import { Frustum } from "../../common/Frustum";
+import { Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { SpatialViewState, ViewState, StandardViewId } from "../../common/ViewState";
 import { IModelConnection } from "../../frontend/IModelConnection";
-import { Viewport, ViewRect, CoordSystem } from "../../frontend/Viewport";
+import { Viewport, ViewRect } from "../../frontend/Viewport";
 import { IModelApp, iModelApp } from "../../frontend/IModelApp";
 import { Cartographic } from "../../common/geometry/Cartographic";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import * as path from "path";
-import { SpatialViewDefinitionProps } from "../../common/ElementProps";
 import { PanTool } from "../../frontend/tools/ViewTool";
 import { CompassMode } from "../../frontend/AccuDraw";
+import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
+import { SpatialViewDefinitionProps } from "../../common/ElementProps";
 import { DisplayStyle3dState } from "../../common/DisplayStyleState";
-import { ModelSelectorState } from "../../common/ModelSelectorState";
 
-const iModelLocation = path.join(__dirname, "../../../../test/lib/test/assets/test.bim");
+const iModelLocation = path.join(__dirname, "../../../../backend/lib/backend/test/assets/test.bim");
 
-/** Class with scope limited to this file, used for creating a Viewport without a canvas */
+/** For creating a Viewport without a canvas */
 class TestViewport extends Viewport {
   public constructor(viewState: ViewState) { super(undefined, viewState); this.setupFromView(); }
   private clientRect = new ViewRect(0, 0, 1000, 1000);  // Needed since we don't have a canvas
@@ -30,130 +29,72 @@ class TestIModelApp extends IModelApp {
   protected supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
 }
 
-// tslint:disable:only-arrow-functions
-// tslint:disable-next-line:space-before-function-paren
-describe("Viewport", function () {
+const compareView = (v1: SpatialViewState, v2: SpatialViewDefinitionProps, str: string) => {
+  const compare = new DeepCompare();
+  const v2State = new SpatialViewState(v2, v1.iModel, v1.categorySelector, v1.displayStyle as DisplayStyle3dState, v1.modelSelector);
+  const val = compare.compare(v1, v2State, .01);
+  assert.isTrue(val, str);
+};
+
+describe("Viewport", () => {
   let imodel: IModelConnection;
-  let categorySelectorState: CategorySelectorState;
-  let displayStyleState: DisplayStyle3dState;
-  let modelSelectorState: ModelSelectorState;
-  let viewStateXYFlat: SpatialViewState;
-  let viewStateXZFlat: SpatialViewState;
-  let viewStateXYZ: SpatialViewState;
-  const mocha = this;
+  let spatialView: SpatialViewState;
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    mocha.timeout(99999);
     TestIModelApp.startup();
-
     imodel = await IModelConnection.openStandalone(iModelLocation);
-    const spatialViewProps = (await imodel.elements.getElementProps("0x34"))[0] as SpatialViewDefinitionProps;
-
-    // Set up supporting ViewState classes
-    categorySelectorState = new CategorySelectorState(
-      {
-        categories: ["test0"],
-        model: "0x64",
-        code: { spec: "0x12", scope: "Hello World" },
-        id: "0x67",
-        classFullName: "CategorySelector",
-      }, imodel);
-    displayStyleState = new DisplayStyle3dState(
-      {
-        model: "0x64",
-        code: { spec: "0x12", scope: "Hello World" },
-        id: "0x112",
-        classFullName: "DisplayStyle3d",
-      }, imodel);
-    modelSelectorState = new ModelSelectorState(
-      {
-        models: ["test0"],
-        model: "0x64",
-        code: { spec: "0x12", scope: "Hello World" },
-        id: "0x22",
-        classFullName: "ModelSelector",
-      }, imodel);
-
-    // Set up 3 separate ViewState classes
-    spatialViewProps.origin = { x: -5, y: -5, z: 0 };
-    spatialViewProps.extents = { x: 10, y: 10, z: 1 };
-    spatialViewProps.angles = YawPitchRollAngles.createDegrees(0, 0, 0);
-    const camera = new Camera({ lens: { degrees: 50 }, eye: { x: 5, y: 5, z: 50 }, focusDist: 49 });
-    spatialViewProps.camera = camera;
-    spatialViewProps.cameraOn = false;
-    viewStateXYFlat = new SpatialViewState(spatialViewProps, imodel, categorySelectorState, displayStyleState, modelSelectorState);
-
-    spatialViewProps.origin = { x: -5, y: 1, z: -5 };
-    spatialViewProps.angles = YawPitchRollAngles.createDegrees(0, 0, -90);
-    spatialViewProps.cameraOn = false;
-    viewStateXZFlat = new SpatialViewState(spatialViewProps, imodel, categorySelectorState, displayStyleState, modelSelectorState);
-
-    spatialViewProps.origin = { x: -5, y: -5, z: 0 };
-    spatialViewProps.angles = YawPitchRollAngles.createDegrees(0, 0, 0);
-    camera.setEyePoint({ x: 5, y: 5, z: 20 });
-    spatialViewProps.cameraOn = true;
-    viewStateXYZ = new SpatialViewState(spatialViewProps, imodel, categorySelectorState, displayStyleState, modelSelectorState);
+    spatialView = await imodel.views.loadView("0x34") as SpatialViewState;
+    spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
   after(async () => {
-    await imodel.closeStandalone();
+    if (imodel) await imodel.closeStandalone();
     IModelApp.shutdown();
   });
 
-  it("Viewport", () => {
-    for (const viewState of [viewStateXYFlat, viewStateXZFlat, viewStateXYZ]) {
-      const viewport = new TestViewport(viewState);
-
-      const newViewState = viewport.view.clone<SpatialViewState>();
-      let frustumWorld: Frustum;
-
-      if (viewState.isCameraOn()) {
-        frustumWorld = viewport.getFrustum(CoordSystem.World, true);
-      } else {
-        frustumWorld = viewport.getFrustum(CoordSystem.World, false);
-        // "Dirty up the data"
-        newViewState.setRotation(RotMatrix.createRowValues(
-          5, 342, 34,
-          6, 324, 5,
-          -54, 0, 0.99999999,
-        ));
-        newViewState.setOrigin({ x: 1, y: -1000, z: 1000 });
-        newViewState.setExtents({ x: 5, y: -134, z: 413 });
-      }
-
-      newViewState.setupFromFrustum(frustumWorld);
-
-      if (viewport.frustFraction === 1) {   // Dealing with flat box, data has been "dirtied," check it was replaced correctly
-        assert.isTrue(newViewState.origin.isAlmostEqual(viewport.view.getOrigin()), "ViewState created from old ViewState's frustum has same origin");
-        assert.isTrue(newViewState.extents.isAlmostEqual(viewport.view.getExtents()), "ViewState created from old ViewState's frustum has same extents");
-        assert.isTrue(newViewState.rotation.isAlmostEqual(viewport.view.getRotation()), "ViewState created from old ViewState's frustum has same rotation");
-      } else {  // Camera angle adjusted our view
-        const backFrac = newViewState.getBackDistance();
-        const frontFrac = newViewState.getFrontDistance();
-        const frustFraction = frontFrac / backFrac;
-        // !!! Note: Tolerance is extremely low currently...
-        assert.isTrue(Math.abs(viewport.frustFraction - frustFraction) < 1.0e-2, "Planes correctly conform to the found frustFraction");
-      }
-    }
-
-    const view1 = viewStateXYZ.clone<SpatialViewState>();
-    const vp = new TestViewport(view1);
-
+  it.skip("Viewport", async () => {
+    const vpView = spatialView.clone<SpatialViewState>();
+    const vp = new TestViewport(vpView);
     assert.isFalse(vp.isRedoPossible, "no redo");
     assert.isFalse(vp.isUndoPossible, "no undo");
-    assert.isTrue(vp.isCameraOn(), "camera is on");
-    view1.turnCameraOff();
+    assert.isFalse(vp.isCameraOn(), "camera is off");
+
+    const saveView = vpView.clone<SpatialViewState>();
+    assert.notEqual(saveView.modelSelector, vpView.modelSelector, "clone should copy modelSelector");
+    assert.notEqual(saveView.categorySelector, vpView.categorySelector, "clone should copy categorySelector");
+    assert.notEqual(saveView.displayStyle, vpView.displayStyle, "clone should copy displayStyle");
+    const frustSave = vp.getFrustum();
+
+    const clientRect = vp.getClientRect();
+    const testParams: any = { view: vpView, rect: { left: clientRect.left, bottom: clientRect.bottom, right: clientRect.right, top: clientRect.top } };
+    vpView.camera.validateLens();
+
+    const cppView = await imodel.executeTest("turnCameraOn", testParams);
+    vp.turnCameraOn();
+    compareView(vpView, cppView, "turnCameraOn 3");
+
     vp.synchWithView(true);
+    assert.isTrue(vp.isCameraOn(), "camera should be on");
+    const frust2 = vp.getFrustum();
+    assert.isFalse(frust2.isSame(frustSave), "turning camera on changes frustum");
     assert.isTrue(vp.isUndoPossible, "undo should now be possible");
+    vp.doUndo();
+    assert.isTrue(vp.getFrustum().isSame(frustSave), "undo should reinstate saved view");
+    assert.isTrue(vp.isRedoPossible, "redo is possible");
+    assert.isFalse(vp.isUndoPossible, "no undo");
+    vp.doRedo();
+    assert.isTrue(vp.getFrustum().isSame(frust2), "redo should reinstate saved view");
+    assert.isFalse(vp.isRedoPossible, "after redo, redo is not possible");
+    assert.isTrue(vp.isUndoPossible, "after redo, undo is possible");
 
     const pan = iModelApp.tools.create("View.Pan", vp) as PanTool;
     assert.instanceOf(pan, PanTool);
     assert.equal(pan.viewport, vp);
-
   });
 
   it("AccuDraw should work properly", () => {
-    const viewport = new TestViewport(viewStateXYFlat);
+    const vpView = spatialView.clone<SpatialViewState>();
+    const viewport = new TestViewport(vpView);
     const accudraw = iModelApp.accuDraw;
     assert.isTrue(accudraw.isEnabled(), "Accudraw should be enabled");
     const pt = new Point3d(1, 1, 1);
@@ -166,7 +107,6 @@ describe("Viewport", function () {
     accudraw.setCompassMode(CompassMode.Polar);
     assert.equal(accudraw.getCompassMode(), CompassMode.Polar, "polar mode");
   });
-
 });
 
 describe("Cartographic tests", () => {
@@ -191,6 +131,5 @@ describe("Cartographic tests", () => {
     assert.isTrue(ecefNY.isAlmostEqual({ x: 1138577.8226437706, y: 3972262.6507547107, z: 4842118.181650281 }), "new york");
     const ny2 = Cartographic.fromEcef(ecefNY);
     assert.isTrue(newYork.equalsEpsilon(ny2!, 0.01));
-
   });
 });

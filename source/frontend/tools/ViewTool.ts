@@ -3,7 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import { BeButtonEvent, BeCursor, BeWheelEvent, CoordSource, BeGestureEvent, GestureInfo, InteractiveTool } from "./Tool";
 import { Viewport, CoordSystem, ViewRect } from "../Viewport";
-import { Point3d, Vector3d, RotMatrix, Transform, YawPitchRollAngles, Range3d, Point2d, Vector2d } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d } from "@bentley/geometry-core/lib/PointVector";
+import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
+import { Range3d } from "@bentley/geometry-core/lib/Range";
 import { Frustum, NpcCenter, Npc } from "../../common/Frustum";
 import { MarginPercent, ViewStatus, ViewState3d } from "../../common/ViewState";
 import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
@@ -382,7 +384,7 @@ export abstract class ViewManip extends ViewTool {
     if (vp) {
       vp.synchWithView(true);
       if (restorePrevious)
-        vp.applyPrevious(BeDuration.fromSeconds(0));
+        vp.doUndo(BeDuration.fromSeconds(0));
       vp.invalidateDecorations();
     }
 
@@ -589,7 +591,7 @@ export abstract class ViewManip extends ViewTool {
     if (!vp)
       return false;
     const testPtView = vp.worldToView(testPt);
-    const frustum = vp.getFrustum(CoordSystem.Screen, false, scratchFrustum);
+    const frustum = vp.getFrustum(CoordSystem.View, false, scratchFrustum);
 
     const screenRange = scratchPoint3d1;
     screenRange.x = frustum.points[Npc._000].distance(frustum.points[Npc._100]);
@@ -697,7 +699,7 @@ export abstract class ViewManip extends ViewTool {
   protected synchViewBallInfo(initialSetup: boolean): void {
     if (!this.viewport)
       return;
-    const frustum = this.viewport.getFrustum(CoordSystem.Screen, false, scratchFrustum);
+    const frustum = this.viewport.getFrustum(CoordSystem.View, false, scratchFrustum);
     const screenRange = scratchPoint3d1;
     screenRange.set(
       frustum.points[Npc._000].distance(frustum.points[Npc._100]),

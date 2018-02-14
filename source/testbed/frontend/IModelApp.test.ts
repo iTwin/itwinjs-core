@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { IModelApp, iModelApp } from "../../frontend/IModelApp"; // must be first import!
+import { Tool } from "../../frontend/tools/Tool";
 import { assert } from "chai";
-import { IModelApp, iModelApp } from "../../frontend/IModelApp";
 import { AccuDraw } from "../../frontend/AccuDraw";
 import { IdleTool } from "../../frontend/tools/IdleTool";
 import { I18NNamespace } from "../../frontend/Localization";
-import { Tool } from "../../frontend/tools/Tool";
 import { RotateTool, PanTool } from "../../frontend/tools/ViewTool";
 import { SelectionTool } from "../../frontend/tools/SelectTool";
 
@@ -39,6 +39,11 @@ class TestApp extends IModelApp {
     TestIdleTool.register();
     TestRotateTool.register();
     TestSelectTool.register();
+
+    // register an anonymous class with the toolId "Null.Tool"
+    const testNull = class extends Tool { public static toolId = "Null.Tool"; public run() { testVal1 = "fromNullTool"; return true; } };
+    testNull.register(this.testNamespace);
+
     this.features.setGate("feature2", { a: true, b: false });
     this.features.setGate("feature5", { val: { str1: "string1", doNot: false } });
   }
@@ -68,6 +73,9 @@ describe("IModelApp", () => {
     assert.equal(iModelApp.features.check("feature5.val.str1"), "string1");
     const feature5 = iModelApp.features.check("feature5");
     assert.equal(feature5.val.str1, "string1");
+
+    assert.isTrue(iModelApp.tools.run("Null.Tool"), "run null");
+    assert.equal(testVal1, "fromNullTool");
 
     iModelApp.features.setGate("feat2", false);
     iModelApp.features.setGate("feat3.sub1.val.a", true);

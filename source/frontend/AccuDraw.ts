@@ -1,11 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Point3d, Vector3d, RotMatrix, Point2d, Transform } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, Vector3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
+import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
 import { Viewport } from "./Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { Geometry } from "@bentley/geometry-core/lib/Geometry";
-import { StandardViewId, standardViewMatrices } from "../common/ViewState";
+import { StandardViewId, ViewState } from "../common/ViewState";
 import { CoordinateLockOverrides } from "./tools/ToolAdmin";
 import { ColorDef, ColorRgb } from "../common/ColorDef";
 import { BeButtonEvent, CoordSource, BeModifierKey } from "./tools/Tool";
@@ -459,12 +460,12 @@ export class AccuDraw {
     const view = vp.view;
     const rMatrix = view.getRotation();
     const acsOrigin = vp.getAuxCoordOrigin();
-    rMatrix.multiply3dInPlace(acsOrigin);
+    rMatrix.multiplyVectorInPlace(acsOrigin);
 
     const origin = view.getCenter();
-    view.getRotation().multiply3dInPlace(origin);
+    view.getRotation().multiplyVectorInPlace(origin);
     origin.z = acsOrigin.z;
-    view.getRotation().multiplyTranspose3dInPlace(origin);
+    view.getRotation().multiplyTransposeVectorInPlace(origin);
 
     this.origin.setFrom(origin); // View center at acs z...
     this.planePt.setFrom(origin);
@@ -505,7 +506,7 @@ export class AccuDraw {
       return;
 
     const rMatrix = AccuDraw.getStandardRotation(StandardViewId.Top, this.currentView, true);
-    rMatrix!.multiplyTranspose3dInPlace(vec);
+    rMatrix!.multiplyTransposeVectorInPlace(vec);
   }
 
   private static useACSContextRotation(vp: Viewport, isSnap: boolean): boolean {
@@ -1261,11 +1262,8 @@ export class AccuDraw {
   }
 
   public static getStandardRotation(nStandard: StandardViewId, vp: Viewport | undefined, useACS: boolean, out?: RotMatrix): RotMatrix {
-    if (nStandard < StandardViewId.Top || nStandard > StandardViewId.RightIso)
-      nStandard = StandardViewId.Top;
-
     const rMatrix = out ? out : new RotMatrix();
-    rMatrix.setFrom(standardViewMatrices[nStandard]);
+    rMatrix.setFrom(ViewState.getStandardViewMatrix(nStandard));
     const useVp = vp ? vp : iModelApp.viewManager.selectedView;
     if (!useACS || !useVp)
       return rMatrix;
@@ -1531,7 +1529,7 @@ export class AccuDraw {
         this.published.vector.setFrom(orientationP as Vector3d);
 
         if (transP)
-          transP.matrix.multiply3dInPlace(this.published.vector);
+          transP.matrix.multiplyVectorInPlace(this.published.vector);
 
         this.published.vector.normalizeInPlace();
       } else if (flags & AccuDrawFlags.SetRMatrix) {

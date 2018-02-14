@@ -10,8 +10,10 @@ import { IModelVersion } from "../common/IModelVersion";
 import { Gateway } from "../common/Gateway";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { DateTime, Blob, NavigationValue} from "../common/ECSqlBindingValues";
-import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { DateTime, Blob, NavigationValue, NavigationBindingValue } from "../common/ECSqlTypes";
+import { Point2d, Point3d, Vector2d, Vector3d } from "@bentley/geometry-core/lib/PointVector";
+import { Code } from "../common/Code";
+import { Camera } from "../common/ViewState";
 
 /** The iModel core gateway definition.
  * @hidden
@@ -29,8 +31,15 @@ export abstract class IModelGateway extends Gateway {
     DateTime,
     Blob,
     NavigationValue,
+    NavigationBindingValue,
     Point2d,
-    Point3d ]
+    Point3d,
+    Vector2d,
+    Vector3d,
+    Date,
+    Code,
+    Camera,
+  ]
 
   /** Returns the IModelGatewayProxy instance for the frontend. */
   public static getProxy(): IModelGateway {
@@ -70,7 +79,7 @@ export abstract class IModelGateway extends Gateway {
    * for named parameters.
    * The values in either the array or object must match the respective types of the parameters.
    * Supported types:
-   * boolean, Blob, DateTime, NavigationValue, number, XY, XYZ, string
+   * boolean, [[Blob]],  [[DateTime]], [[NavigationBindingValue]], number, [[XY]], [[XYZ]], string
    * For struct parameters pass an object with key value pairs of struct property name and values of the supported types
    * For array parameters pass an array of the supported types.
    * @returns All rows as an array or an empty array if nothing was selected
@@ -126,7 +135,7 @@ export abstract class IModelGateway extends Gateway {
   }
 
   /** For unit test execution only. */
-  public async executeTestById(_iModelToken: IModelToken, _id: number, _params: any): Promise<any> {
+  public async executeTest(_iModelToken: IModelToken, _testName: string, _params: any): Promise<any> {
     return this.forward.apply(this, arguments);
   }
 

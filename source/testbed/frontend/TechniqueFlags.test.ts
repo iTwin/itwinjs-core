@@ -2,7 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { FeatureDimension, FeatureDimensions, LUTDimension, FeatureIndexType } from "../../frontend/render/FeatureDimensions";
+import { FeatureDimension, FeatureDimensions, LUTDimension } from "../../frontend/render/FeatureDimensions";
+import { FeatureIndexType } from "../../frontend/render/FeatureIndex";
 import { TechniqueFlags, Mode, WithClipVolume } from "../../frontend/render/TechniqueFlags";
 
 describe("TechniqueFlags", () => {
@@ -87,8 +88,18 @@ describe("TechniqueFlags", () => {
   });
   it("setHilite works as expected", () => {
     const techFlags = new TechniqueFlags();
+
+    // mix up member values to ensure they reset properly
+    techFlags.monochrome = true;
+    techFlags.translucent = true;
+    techFlags.colorDimension = LUTDimension.NonUniform;
+
     techFlags.setHilite();
     assert.isTrue(techFlags.isHilite);
+    assert.isFalse(techFlags.isTranslucent);
+    assert.isFalse(techFlags.isMonochrome);
+    assert.isTrue(techFlags.isHilite);
+    assert.isTrue(techFlags.isUniformColor);
   });
   it("forHilite works as expected", () => {
     const techFlags = TechniqueFlags.forHilite(FeatureDimensions.singleUniform(), WithClipVolume.Yes);

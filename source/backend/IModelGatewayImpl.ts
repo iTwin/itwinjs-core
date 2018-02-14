@@ -1,7 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { ViewDefinitionProps } from "../common/ElementProps";
@@ -16,6 +15,8 @@ import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { IModelDb } from "../backend/IModelDb";
 import { IModelGateway } from "../gateway/IModelGateway";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
+
+const loggingCategory = "imodeljs-backend.IModelGatewayImpl";
 
 /** The backend implementation of IModelGateway.
  * @hidden
@@ -64,7 +65,7 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
   public async executeQuery(iModelToken: IModelToken, sql: string, bindings?: any[] | object): Promise<string[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const rows: any[] = iModelDb.executeQuery(sql, bindings);
-    Logger.logInfo("IModelDbRemoting.executeQuery", () => ({ sql, numRows: rows.length }));
+    Logger.logTrace(loggingCategory, "IModelDbRemoting.executeQuery", () => ({ sql, numRows: rows.length }));
     return rows;
   }
 
@@ -94,20 +95,20 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
   }
 
   public async queryElementIds(iModelToken: IModelToken, params: EntityQueryParams): Promise<string[]> {
+    const iModelDb: IModelDb = IModelDb.find(iModelToken);
     let sql: string = "SELECT ECInstanceId AS id FROM " + params.from;
     if (params.where) sql += " WHERE " + params.where;
     if (params.orderBy) sql += " ORDER BY " + params.orderBy;
-    if (params.limit) sql += " LIMIT " + params.limit;
     if (params.offset) sql += " OFFSET " + params.offset;
+    sql += (params.limit) ? ` LIMIT ${params.limit}` : ` LIMIT ${IModelDb.defaultLimit}`;
 
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const statement: ECSqlStatement = iModelDb.getPreparedStatement(sql);
     const elementIds: string[] = [];
     for (const row of statement)
       elementIds.push(row.id);
 
     iModelDb.releasePreparedStatement(statement);
-    Logger.logInfo("IModelDbRemoting.queryElementIds", () => ({ sql, numElements: elementIds.length }));
+    Logger.logTrace(loggingCategory, "IModelDbRemoting.queryElementIds", () => ({ sql, numElements: elementIds.length }));
     return elementIds;
   }
 
@@ -144,7 +145,7 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
       codeSpecs.push({ id: row.id, name: row.name, jsonProperties: JSON.parse(row.jsonProperties) });
 
     iModelDb.releasePreparedStatement(statement);
-    Logger.logInfo("IModelDbRemoting.getAllCodeSpecs", () => ({ numCodeSpecs: codeSpecs.length }));
+    Logger.logTrace(loggingCategory, "IModelDbRemoting.getAllCodeSpecs", () => ({ numCodeSpecs: codeSpecs.length }));
     return codeSpecs;
   }
 
@@ -156,9 +157,9 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
   }
 
   // !!! TESTING METHOD
-  public async executeTestById(iModelToken: IModelToken, id: number, params: any): Promise<any> {
+  public async executeTest(iModelToken: IModelToken, testName: string, params: any): Promise<any> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    return iModelDb.executeTestById(id, params);
+    return iModelDb.executeTest(testName, params);
   }
 
   /** Query for the array of ViewDefinitions of the specified class and matching the specified IsPrivate setting. */
@@ -170,14 +171,6 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
   /** Get the ViewState data for the specified ViewDefinition */
   public async getViewStateData(iModelToken: IModelToken, viewDefinitionId: string): Promise<any> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    const viewStateData: any = {};
-    viewStateData.viewDefinitionProps = iModelDb.elements.getElementProps(new Id64(viewDefinitionId)) as ViewDefinitionProps;
-    viewStateData.categorySelectorProps = iModelDb.elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.categorySelectorId));
-    viewStateData.displayStyleProps = iModelDb.elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.displayStyleId));
-    if (viewStateData.viewDefinitionProps.baseModelId)
-      viewStateData.baseModelProps = iModelDb.elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.baseModelId));
-    if (viewStateData.viewDefinitionProps.modelSelectorId)
-      viewStateData.modelSelectorProps = iModelDb.elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.modelSelectorId));
-    return viewStateData;
+    return iModelDb.views.getViewStateData(viewDefinitionId);
   }
 }

@@ -34,6 +34,16 @@ import { IModelDbLinkTableRelationships, LinkTableRelationship } from "./LinkTab
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { NodeAddonRegistry } from "./NodeAddonRegistry";
 import { RequestQueryOptions } from "@bentley/imodeljs-clients/lib";
+import { CategorySelectorState } from "../common/CategorySelectorState";
+import { ViewState, SpatialViewState, OrthographicViewState, ViewState2d, DrawingViewState, SheetViewState } from "../common/ViewState";
+import { DisplayStyle3dState, DisplayStyle2dState } from "../common/DisplayStyleState";
+import { ModelSelectorState } from "../common/ModelSelectorState";
+import { Model2dState } from "../common/EntityState";
+
+const loggingCategory = "imodeljs-backend.IModelDb";
+
+/** The signature of a function that can supply a description of local Txns in the specified briefcase up to and including the specified endTxnId. */
+export type ChangeSetDescriber = (endTxnId: TxnManager.TxnId) => string;
 
 // Register the backend implementation of IModelGateway
 IModelGatewayImpl.register();
@@ -43,14 +53,16 @@ BisCore.registerSchema();
 
 /** Represents a physical copy (briefcase) of an iModel that can be accessed as a file. */
 export class IModelDb extends IModel {
+  public static readonly defaultLimit = 1000;
   public readonly models: IModelDbModels;
   public readonly elements: IModelDbElements;
   public readonly views: IModelDbViews;
   public readonly linkTableRelationships: IModelDbLinkTableRelationships;
   private readonly statementCache: ECSqlStatementCache = new ECSqlStatementCache();
-  private _codeSpecs: CodeSpecs;
-  private _classMetaDataRegistry: MetaDataRegistry;
-  private _concurrency: ConcurrencyControl;
+  private _codeSpecs?: CodeSpecs;
+  private _classMetaDataRegistry?: MetaDataRegistry;
+  private _concurrency?: ConcurrencyControl;
+  private _txnManager?: TxnManager;
 
   /** @hidden */
   public briefcaseEntry?: BriefcaseEntry;
@@ -67,7 +79,7 @@ export class IModelDb extends IModel {
     this.linkTableRelationships = new IModelDbLinkTableRelationships(this);
   }
 
-  private static create(briefcaseEntry: BriefcaseEntry, contextId?: string): IModelDb {
+  private static createIModelDb(briefcaseEntry: BriefcaseEntry, contextId?: string): IModelDb {
     if (briefcaseEntry.iModelDb)
       return briefcaseEntry.iModelDb; // If there's an IModelDb already associated with the briefcase, that should be reused.
     const iModelToken = IModelToken.create(briefcaseEntry.iModelId, briefcaseEntry.changeSetId, briefcaseEntry.openMode, briefcaseEntry.userId, contextId);
@@ -75,6 +87,23 @@ export class IModelDb extends IModel {
     const name = props.rootSubject ? props.rootSubject.name : path.basename(briefcaseEntry.pathname);
     const iModelDb = new IModelDb(briefcaseEntry, iModelToken, name, props);
     return iModelDb;
+  }
+
+  /**
+   * Create a standalone local Db
+   * @param pathname The pathname of the iModel
+   * @param rootSubjectName Name of the root subject.
+   * @param rootSubjectDescription Description of the root subject.
+   */
+  public static createStandalone(pathname: string, rootSubjectName: string, rootSubjectDescription?: string): IModelDb {
+    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(pathname, rootSubjectName, rootSubjectDescription);
+    // Logger.logTrace(loggingCategory, "IModelDb.createStandalone", loggingCategory, () => ({ pathname }));
+    return IModelDb.createIModelDb(briefcaseEntry);
+  }
+
+  public static async create(accessToken: AccessToken, contextId: string, hubName: string, rootSubjectName: string, hubDescription?: string, rootSubjectDescription?: string): Promise<IModelDb> {
+    const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.create(accessToken, contextId, hubName, rootSubjectName, hubDescription, rootSubjectDescription);
+    return IModelDb.createIModelDb(briefcaseEntry, contextId);
   }
 
   /** Open the iModel from a local file
@@ -85,22 +114,21 @@ export class IModelDb extends IModel {
    */
   public static openStandalone(pathname: string, openMode: OpenMode = OpenMode.ReadWrite, enableTransactions: boolean = false): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(pathname, openMode, enableTransactions);
-    Logger.logInfo("IModelDb.openStandalone", () => ({ pathname, openMode }));
-    return IModelDb.create(briefcaseEntry);
+    return IModelDb.createIModelDb(briefcaseEntry);
   }
 
   /**
    * Open an iModel from the iModelHub
-   * @param accessToken
-   * @param contextId
-   * @param iModelId
-   * @param openMode
-   * @param version
+   * @param accessToken Delegation token of the authorized user.
+   * @param contextId Id of the Connect Project or Asset containing the iModel
+   * @param iModelId Id of the iModel
+   * @param openMode Open mode
+   * @param version Version of the iModel to open
    */
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(accessToken, contextId, iModelId, openMode, version);
-    Logger.logInfo("IModelDb.open", () => ({ iModelId, openMode }));
-    return IModelDb.create(briefcaseEntry, contextId);
+    Logger.logTrace(loggingCategory, "IModelDb.open", () => ({ iModelId, openMode }));
+    return IModelDb.createIModelDb(briefcaseEntry, contextId);
   }
 
   /**
@@ -113,7 +141,11 @@ export class IModelDb extends IModel {
     this.clearBriefcaseEntry();
   }
 
-  /** Close this iModel, if it is currently open. */
+  /**
+   * Close this iModel, if it is currently open.
+   * @param accessToken Delegation token of the authorized user.
+   * @param keepBriefcase Hint to discard or keep the briefcase for potential future use.
+   */
   public async close(accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
     if (!this.briefcaseEntry)
       return;
@@ -161,7 +193,7 @@ export class IModelDb extends IModel {
    * @hidden
    */
   public _newNotOpenError(): IModelError {
-    return new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, () => ({ iModelId: this.iModelToken.iModelId }));
+    return new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, loggingCategory, () => ({ iModelId: this.iModelToken.iModelId }));
   }
 
   /** Get a prepared ECSql statement - may require preparing the statement, if not found in the cache.
@@ -198,7 +230,7 @@ export class IModelDb extends IModel {
       return val;
     } catch (err) {
       this.releasePreparedStatement(stmt);
-      Logger.logError(err.toString());
+      Logger.logError(loggingCategory, err.toString());
       throw err;
     }
   }
@@ -210,10 +242,11 @@ export class IModelDb extends IModel {
    * for named parameters.
    * The values in either the array or object must match the respective types of the parameters.
    * Supported types:
-   * boolean, Blob, DateTime, NavigationValue, number, XY, XYZ, string
+   * boolean, [[Blob]],  [[DateTime]], [[NavigationBindingValue]], number, [[XY]], [[XYZ]], string
    * For struct parameters pass an object with key value pairs of struct property name and values of the supported types
    * For array parameters pass an array of the supported types.
-   * @returns all rows as an array or an empty array if nothing was selected
+   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
+   * See [[ECSqlStatement.getRow]] for details about the format of the returned rows.
    * @throws [[IModelError]] If the statement is invalid
    */
   public executeQuery(ecsql: string, bindings?: any[] | object): any[] {
@@ -223,6 +256,8 @@ export class IModelDb extends IModel {
       const rows: any[] = [];
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
         rows.push(stmt.getRow());
+        if (rows.length >= IModelDb.defaultLimit)
+          break; // don't let a "rogue" query consume too many resources
       }
       return rows;
     });
@@ -271,6 +306,8 @@ export class IModelDb extends IModel {
     if (!this.briefcaseEntry)
       throw this._newNotOpenError();
 
+    // TODO: this.Txns.onSaveChanges => validation, rules, indirect changes, etc.
+
     this.concurrencyControl.onSaveChanges();
 
     const stat = this.briefcaseEntry.nativeDb.saveChanges(description);
@@ -280,7 +317,12 @@ export class IModelDb extends IModel {
     this.concurrencyControl.onSavedChanges();
   }
 
-  /** Pull and Merge changes from the iModelHub */
+  /**
+   * Pull and Merge changes from the iModelHub
+   * @param accessToken Delegation token of the authorized user.
+   * @param version Version to pull and merge to.
+   * @throws [[IModelError]] If the pull and merge fails.
+   */
   public async pullAndMergeChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
     if (!this.briefcaseEntry)
       throw this._newNotOpenError();
@@ -288,23 +330,46 @@ export class IModelDb extends IModel {
     return BriefcaseManager.pullAndMergeChanges(accessToken, this.briefcaseEntry, version);
   }
 
-  /** Push changes to the iModelHub */
-  public async pushChanges(accessToken: AccessToken): Promise<void> {
+  /**
+   * Push changes to the iModelHub
+   * @param accessToken Delegation token of the authorized user.
+   * @param describer A function that returns a description of the changeset. Defaults to the combination of the descriptions of all local Txns.
+   * @throws [[IModelError]] If the pull and merge fails.
+   */
+  public async pushChanges(accessToken: AccessToken, describer?: ChangeSetDescriber): Promise<void> {
     if (!this.briefcaseEntry)
       throw this._newNotOpenError();
 
-    return BriefcaseManager.pushChanges(accessToken, this.briefcaseEntry);
+    const description = describer ? describer(this.Txns.getCurrentTxnId()) : this.Txns.describeChangeSet();
+
+    return BriefcaseManager.pushChanges(accessToken, this.briefcaseEntry, description);
   }
 
-  // public async reverseChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-  //   if (!this._iModel.briefcaseEntry)
-  //     return Promise.reject(this._iModel._newNotOpenError());
-  // }
+  /**
+   * Reverse a previously merged set of changes
+   * @param accessToken Delegation token of the authorized user.
+   * @param version Version to reverse changes to.
+   * @throws [[IModelError]] If the reversal fails.
+   */
+  public async reverseChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    if (!this.briefcaseEntry)
+      throw this._newNotOpenError();
 
-  // public async reinstateChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-  //   if (!this._iModel.briefcaseEntry)
-  //     return Promise.reject(this._iModel._newNotOpenError());
-  // }
+    return BriefcaseManager.reverseChanges(accessToken, this.briefcaseEntry, version);
+  }
+
+  /**
+   * Reinstate a previously reversed set of changes
+   * @param accessToken Delegation token of the authorized user.
+   * @param version Version to reinstate changes to.
+   * @throws [[IModelError]] If the reinstate fails.
+   */
+  public async reinstateChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    if (!this.briefcaseEntry)
+      throw this._newNotOpenError();
+
+    return BriefcaseManager.reinstateChanges(accessToken, this.briefcaseEntry, version);
+  }
 
   /**
    * Abandon pending changes to this iModel
@@ -325,7 +390,7 @@ export class IModelDb extends IModel {
 
     const stat = this.briefcaseEntry.nativeDb.importSchema(schemaFileName);
     if (DbResult.BE_SQLITE_OK !== stat)
-      throw new IModelError(stat, "Error importing schema", Logger.logError, () => ({ schemaFileName }));
+      throw new IModelError(stat, "Error importing schema", Logger.logError, loggingCategory, () => ({ schemaFileName }));
   }
 
   /** Find an already open IModelDb. Used by the remoting logic.
@@ -334,7 +399,7 @@ export class IModelDb extends IModel {
   public static find(iModelToken: IModelToken): IModelDb {
     const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
     if (!briefcaseEntry)
-      throw new IModelError(IModelStatus.NotFound, undefined, Logger.logError, () => ({ iModelId: iModelToken.iModelId }));
+      throw new IModelError(IModelStatus.NotFound, undefined, Logger.logError, loggingCategory, () => ({ iModelId: iModelToken.iModelId }));
     assert(!!briefcaseEntry.iModelDb);
     return briefcaseEntry.iModelDb!;
   }
@@ -353,6 +418,13 @@ export class IModelDb extends IModel {
     return this._concurrency;
   }
 
+  /** Get the TxnManager for this IModelDb. */
+  public get Txns(): TxnManager {
+    if (this._txnManager === undefined)
+      this._txnManager = new TxnManager(this);
+    return this._txnManager;
+  }
+
   /** Get access to the CodeSpecs in this IModel. */
   public get codeSpecs(): CodeSpecs {
     if (this._codeSpecs === undefined)
@@ -367,7 +439,7 @@ export class IModelDb extends IModel {
 
     const { error, result: idHexStr } = this.briefcaseEntry.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.specScopeType, codeSpec.scopeReq);
     if (error)
-      throw new IModelError(error.status, "Problem inserting CodeSpec", Logger.logWarning);
+      throw new IModelError(error.status, "Problem inserting CodeSpec", Logger.logWarning, loggingCategory);
 
     return new Id64(idHexStr);
   }
@@ -379,7 +451,7 @@ export class IModelDb extends IModel {
 
     const { error, result: idHexStr } = this.briefcaseEntry.nativeDb.getElementPropertiesForDisplay(elementId);
     if (error)
-      throw new IModelError(error.status, error.message, Logger.logError, () => ({ iModelId: this.token.iModelId, elementId }));
+      throw new IModelError(error.status, error.message, Logger.logError, loggingCategory, () => ({ iModelId: this.token.iModelId, elementId }));
 
     return idHexStr!;
   }
@@ -406,8 +478,8 @@ export class IModelDb extends IModel {
     try {
       entity = ClassRegistry.createInstance(props, this);
     } catch (err) {
-      if (!ClassRegistry.isClassNotFoundError(err) && !ClassRegistry.isMetaDataNotFoundError(err)) {
-        Logger.logError(err.toString());
+      if (!ClassRegistry.isNotFoundError(err)) {
+        Logger.logError(loggingCategory, err.toString());
         throw err;
       }
 
@@ -427,7 +499,7 @@ export class IModelDb extends IModel {
       this.loadMetaData(classFullName);
       metadata = this.classMetaDataRegistry.find(classFullName);
       if (metadata === undefined)
-        throw ClassRegistry.makeMetaDataNotFoundError(); // do not log
+        throw ClassRegistry.makeMetaDataNotFoundError(classFullName); // do not log
     }
     return metadata;
   }
@@ -441,11 +513,11 @@ export class IModelDb extends IModel {
       return;
     const className = classFullName.split(":");
     if (className.length !== 2)
-      throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, () => ({ iModelId: this.token.iModelId, classFullName }));
+      throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, loggingCategory, () => ({ iModelId: this.token.iModelId, classFullName }));
 
     const { error, result: metaDataJson } = this.briefcaseEntry.nativeDb.getECClassMetaData(className[0], className[1]);
     if (error)
-      throw new IModelError(error.status, undefined, Logger.logError, () => ({ iModelId: this.token.iModelId, classFullName }));
+      throw new IModelError(error.status, undefined, Logger.logError, loggingCategory, () => ({ iModelId: this.token.iModelId, classFullName }));
 
     const metaData = new EntityMetaData(JSON.parse(metaDataJson!));
     this.classMetaDataRegistry.add(classFullName, metaData);
@@ -454,19 +526,16 @@ export class IModelDb extends IModel {
       this.loadMetaData(metaData.baseClasses[0]);
   }
 
-  /** TESTING ONLY - Execute a test known to exist using the id recognized by the addon's test execution handler
-   * @param id The id of the test you wish to execute
-   * @param params A JSON string that should all of the data/parameters the test needs to function correctly
+  /** TESTING ONLY - Execute a test from native code
+   * @param testName The name of the test
+   * @param params parameters for the test
    * @hidden
    */
-  public executeTestById(testId: number, params: any): any {
+  public executeTest(testName: string, params: any): any {
     if (!this.briefcaseEntry)
       throw this._newNotOpenError();
 
-    const retVal: string = this.briefcaseEntry.nativeDb.executeTestById(testId, JSON.stringify(params));
-    if (retVal.length === 0)
-      return {};
-    return JSON.parse(retVal);
+    return JSON.parse(this.briefcaseEntry.nativeDb.executeTest(testName, JSON.stringify(params)));
   }
 }
 
@@ -482,8 +551,8 @@ export class IModelDb extends IModel {
 export class ConcurrencyControl {
   private _pendingRequest: ConcurrencyControl.Request;
   private _imodel: IModelDb;
-  private _codes: ConcurrencyControl.Codes;
-  private _policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy;
+  private _codes?: ConcurrencyControl.Codes;
+  private _policy?: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy;
 
   constructor(im: IModelDb) {
     this._imodel = im;
@@ -650,7 +719,7 @@ export class ConcurrencyControl {
         byScope.set(cReq.Scope, (thisReq = thisReq));
       }
 
-      thisReq.values.push(cReq.Name);
+      thisReq.values!.push(cReq.Name);
     }
 
     return bySpecId;
@@ -673,7 +742,7 @@ export class ConcurrencyControl {
         byScope.set(code.scope, (thisReq = thisReq));
       }
 
-      thisReq.values.push(code.value);
+      thisReq.values!.push(code.value);
     }
 
     return bySpecId;
@@ -823,7 +892,7 @@ export class ConcurrencyControl {
           const multiCodes = await this.queryCodeStates(accessToken, new Id64(specId), scopeId);
           for (const multiCode of multiCodes) {
             if (multiCode.state !== CodeState.Available) {
-              if (ConcurrencyControl.anyFound(multiCode.values, thisReq.values)) {
+              if (ConcurrencyControl.anyFound(multiCode.values!, thisReq.values)) {
                 return false;
               }
             }
@@ -990,8 +1059,8 @@ export namespace ConcurrencyControl {
 
   /** Thrown when iModelHub denies or cannot process a request. */
   export class RequestError extends IModelError {
-    public unavailableCodes: MultiCode[];
-    public unavailableLocks: MultiCode[];
+    public unavailableCodes: MultiCode[] = [];
+    public unavailableLocks: MultiCode[] = [];
   }
 
   /** Code manager */
@@ -1067,7 +1136,7 @@ export class IModelDbModels {
     // Must go get the model from the iModel. Start by requesting the model's data.
     const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getModel(JSON.stringify({ id: modelId }));
     if (error)
-      throw new IModelError(error.status, error.message, Logger.logWarning);
+      throw new IModelError(error.status, error.message, Logger.logWarning, loggingCategory);
 
     const props = JSON.parse(json!) as ModelProps;
     props.iModel = this._iModel;
@@ -1088,7 +1157,7 @@ export class IModelDbModels {
     // Must go get the model from the iModel. Start by requesting the model's data.
     const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getModel(JSON.stringify({ id: modelIdStr }));
     if (error)
-      throw new IModelError(error.status, error.message, Logger.logWarning);
+      throw new IModelError(error.status, error.message, Logger.logWarning, loggingCategory);
 
     return json!;
   }
@@ -1100,7 +1169,7 @@ export class IModelDbModels {
   public getSubModel(modeledElementId: Id64 | Guid | Code): Model {
     const modeledElement: Element = this._iModel.elements.getElement(modeledElementId);
     if (modeledElement.id.equals(this._iModel.elements.rootSubjectId))
-      throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model", Logger.logWarning);
+      throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model", Logger.logWarning, loggingCategory);
 
     return this.getModel(modeledElement.id);
   }
@@ -1132,12 +1201,12 @@ export class IModelDbModels {
 
     if (model.isPersistent()) {
       assert(false);
-      throw new IModelError(IModelStatus.WriteError, "Cannot insert a model marked as persistent. Call copyForEdit.", Logger.logError);
+      throw new IModelError(IModelStatus.WriteError, "Cannot insert a model marked as persistent. Call copyForEdit.", Logger.logError, loggingCategory);
     }
 
     const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.insertModel(JSON.stringify(model));
     if (error)
-      throw new IModelError(error.status, "Problem inserting model", Logger.logWarning);
+      throw new IModelError(error.status, "Problem inserting model", Logger.logWarning, loggingCategory);
 
     return model.id = new Id64(JSON.parse(json!).id);
   }
@@ -1152,12 +1221,12 @@ export class IModelDbModels {
 
     if ((model.isPersistent !== undefined) && model.isPersistent()) {
       assert(false);
-      throw new IModelError(IModelStatus.WriteError, "Cannot update a model marked as persistent. Call copyForEdit.", Logger.logError);
+      throw new IModelError(IModelStatus.WriteError, "Cannot update a model marked as persistent. Call copyForEdit.", Logger.logError, loggingCategory);
     }
 
     const error: IModelStatus = this._iModel.briefcaseEntry.nativeDb.updateModel(JSON.stringify(model));
     if (error !== IModelStatus.Success)
-      throw new IModelError(error, "", Logger.logWarning);
+      throw new IModelError(error, "", Logger.logWarning, loggingCategory);
 
     // Discard from the cache, to make sure that the next fetch see the updated version.
     if (model.id)
@@ -1174,7 +1243,7 @@ export class IModelDbModels {
 
     const error: IModelStatus = this._iModel.briefcaseEntry.nativeDb.deleteModel(model.id.toString());
     if (error !== IModelStatus.Success)
-      throw new IModelError(error, "", Logger.logWarning);
+      throw new IModelError(error, "", Logger.logWarning, loggingCategory);
 
     // Discard from the cache
     this._loaded.delete(model.id.toString());
@@ -1201,7 +1270,7 @@ export class IModelDbElements {
     // Must go get the element from the iModel. Start by requesting the element's data.
     const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getElement(JSON.stringify(opts));
     if (error)
-      throw new IModelError(error.status, error.message, Logger.logWarning);
+      throw new IModelError(error.status, error.message, Logger.logWarning, loggingCategory);
     const props = JSON.parse(json!) as ElementProps;
     props.iModel = this._iModel;
     return props;
@@ -1214,7 +1283,7 @@ export class IModelDbElements {
     // Must go get the element from the iModel. Start by requesting the element's data.
     const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getElement(JSON.stringify({ id: elementIdStr }));
     if (error)
-      throw new IModelError(error.status, error.message, Logger.logWarning);
+      throw new IModelError(error.status, error.message, Logger.logWarning, loggingCategory);
     return json!;
   }
 
@@ -1244,7 +1313,7 @@ export class IModelDbElements {
     if (elementId instanceof Id64) return this._getElementProps({ id: elementId });
     if (elementId instanceof Guid) return this._getElementProps({ federationGuid: elementId.value });
     if (elementId instanceof Code) return this._getElementProps({ code: elementId });
-    throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, () => ({ elementId }));
+    throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, loggingCategory, () => ({ elementId }));
   }
 
   /**
@@ -1256,7 +1325,7 @@ export class IModelDbElements {
     if (elementId instanceof Id64) return this._doGetElement({ id: elementId });
     if (elementId instanceof Guid) return this._doGetElement({ federationGuid: elementId.value });
     if (elementId instanceof Code) return this._doGetElement({ code: elementId });
-    throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, () => ({ elementId }));
+    throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, loggingCategory, () => ({ elementId }));
   }
 
   /**
@@ -1272,13 +1341,13 @@ export class IModelDbElements {
     if (code.value === undefined) {
       throw new IModelError(IModelStatus.InvalidCode);
     }
-    return this._iModel.withPreparedStatement("SELECT ecinstanceid as id FROM " + Element.sqlName + " WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?", (stmt: ECSqlStatement) => {
+    return this._iModel.withPreparedStatement("SELECT ECInstanceId FROM " + Element.sqlName + " WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?", (stmt: ECSqlStatement) => {
       stmt.bindId(1, code.spec);
       stmt.bindId(2, new Id64(code.scope));
       stmt.bindString(3, code.value!);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
         return undefined;
-      return new Id64(stmt.getRow().id);
+      return stmt.getRow().id;
     });
   }
 
@@ -1305,7 +1374,7 @@ export class IModelDbElements {
 
     const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.insertElement(JSON.stringify(elProps));
     if (error)
-      throw new IModelError(error.status, "Problem inserting element", Logger.logWarning);
+      throw new IModelError(error.status, "Problem inserting element", Logger.logWarning, loggingCategory);
 
     return new Id64(JSON.parse(json!).id);
   }
@@ -1320,7 +1389,7 @@ export class IModelDbElements {
 
     const error: IModelStatus = this._iModel.briefcaseEntry.nativeDb.updateElement(JSON.stringify(props));
     if (error !== IModelStatus.Success)
-      throw new IModelError(error, "", Logger.logWarning);
+      throw new IModelError(error, "", Logger.logWarning, loggingCategory);
 
     // Discard from the cache, to make sure that the next fetch see the updated version.
     if (props.id)
@@ -1338,7 +1407,7 @@ export class IModelDbElements {
 
     const error: IModelStatus = this._iModel.briefcaseEntry.nativeDb.deleteElement(id.toString());
     if (error !== IModelStatus.Success)
-      throw new IModelError(error, "", Logger.logWarning);
+      throw new IModelError(error, "", Logger.logWarning, loggingCategory);
 
     // Discard from the cache
     this._loaded.delete(id.toString());
@@ -1349,7 +1418,7 @@ export class IModelDbElements {
    * @throws [[IModelError]]
    */
   public queryChildren(elementId: Id64): Id64[] {
-    const rows: any[] = this._iModel.executeQuery("SELECT ECInstanceId as id FROM " + Element.sqlName + " WHERE Parent.Id=?", [elementId]);
+    const rows: any[] = this._iModel.executeQuery("SELECT ECInstanceId FROM " + Element.sqlName + " WHERE Parent.Id=?", [elementId]);
     const childIds: Id64[] = [];
     for (const row of rows) {
       childIds.push(new Id64(row.id));
@@ -1370,7 +1439,7 @@ export class IModelDbElements {
     const name = aspectClassName.split(":");
     const rows: any[] = this._iModel.executeQuery("SELECT * FROM [" + name[0] + "].[" + name[1] + "] WHERE Element.Id=?", [elementId]);
     if (rows.length === 0)
-      throw new IModelError(IModelStatus.NotFound, undefined, Logger.logWarning);
+      throw new IModelError(IModelStatus.NotFound, undefined, Logger.logWarning, loggingCategory);
 
     const aspects: ElementAspect[] = [];
     for (const row of rows) {
@@ -1423,6 +1492,7 @@ export class IModelDbViews {
     let sql: string = "SELECT ECInstanceId AS id FROM " + className;
     if (!wantPrivate)
       sql += " WHERE IsPrivate=FALSE";
+    sql += ` LIMIT ${IModelDb.defaultLimit}`; // limit number of returned view definitions
 
     const viewIds: Id64[] = [];
     const statement: ECSqlStatement = this._iModel.getPreparedStatement(sql);
@@ -1433,5 +1503,137 @@ export class IModelDbViews {
       this._iModel.releasePreparedStatement(statement);
     }
     return viewIds.map((viewId: Id64) => this._iModel.elements.getElementProps(viewId) as ViewDefinitionProps);
+  }
+
+  public getViewStateData(viewDefinitionId: string): any {
+    const viewStateData: any = {};
+    const elements = this._iModel.elements;
+    viewStateData.viewDefinitionProps = elements.getElementProps(new Id64(viewDefinitionId)) as ViewDefinitionProps;
+    viewStateData.categorySelectorProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.categorySelectorId));
+    viewStateData.displayStyleProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.displayStyleId));
+    if (viewStateData.viewDefinitionProps.baseModelId)
+      viewStateData.baseModelProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.baseModelId));
+    if (viewStateData.viewDefinitionProps.modelSelectorId)
+      viewStateData.modelSelectorProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.modelSelectorId));
+    return viewStateData;
+  }
+
+  /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
+  public loadView(viewDefinitionId: Id64 | string): ViewState {
+
+    const viewStateData = this.getViewStateData(typeof viewDefinitionId === "string" ? viewDefinitionId : viewDefinitionId.value);
+    const categorySelectorState = new CategorySelectorState(viewStateData.categorySelectorProps, this._iModel);
+
+    switch (viewStateData.viewDefinitionProps.classFullName) {
+      case SpatialViewState.getClassFullName(): {
+        const displayStyleState = new DisplayStyle3dState(viewStateData.displayStyleProps, this._iModel);
+        const modelSelectorState = new ModelSelectorState(viewStateData.modelSelectorProps, this._iModel);
+        return new SpatialViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, modelSelectorState);
+      }
+      case OrthographicViewState.getClassFullName(): {
+        const displayStyleState = new DisplayStyle3dState(viewStateData.displayStyleProps, this._iModel);
+        const modelSelectorState = new ModelSelectorState(viewStateData.modelSelectorProps, this._iModel);
+        return new OrthographicViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, modelSelectorState);
+      }
+      case ViewState2d.getClassFullName(): {
+        const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
+        const baseModelState = new Model2dState(viewStateData.baseModelProps, this._iModel);
+        return new ViewState2d(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, baseModelState);
+      }
+      case DrawingViewState.getClassFullName(): {
+        const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
+        const baseModelState = new Model2dState(viewStateData.baseModelProps, this._iModel);
+        return new DrawingViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, baseModelState);
+      }
+      case SheetViewState.getClassFullName(): {
+        const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
+        const baseModelState = new Model2dState(viewStateData.baseModelProps, this._iModel);
+        return new SheetViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, baseModelState);
+      }
+      default:
+        throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState subclass");
+    }
+  }
+}
+
+/**
+ * Local Txns in an IModelDb. Local Txns persist only until [[IModelDb.pushChanges]] is called.
+ */
+export class TxnManager {
+  private _iModel: IModelDb;
+
+  constructor(iModel: IModelDb) {
+    this._iModel = iModel;
+  }
+
+  /** Get the ID of the first transaction, if any. */
+  public queryFirstTxnId(): TxnManager.TxnId {
+    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerQueryFirstTxnId();
+  }
+
+  /** Get the successor of the specified TxnId */
+  public queryNextTxnId(txnId: TxnManager.TxnId): TxnManager.TxnId {
+    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerQueryNextTxnId(txnId);
+  }
+
+  /** Get the predecessor of the specified TxnId */
+  public queryPreviousTxnId(txnId: TxnManager.TxnId): TxnManager.TxnId {
+    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerQueryPreviousTxnId(txnId);
+  }
+
+  /** Get the ID of the current (tip) transaction.  */
+  public getCurrentTxnId(): TxnManager.TxnId {
+    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerGetCurrentTxnId();
+  }
+
+  /** Get the description that was supplied when the specified transaction was saved. */
+  public getTxnDescription(txnId: TxnManager.TxnId): string {
+    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerGetTxnDescription(txnId);
+  }
+
+  /** Test if a TxnId is valid */
+  public isTxnIdValid(txnId: TxnManager.TxnId): boolean {
+    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerIsTxnIdValid(txnId);
+  }
+
+  /** Make a description of the changeset by combining all local txn comments. */
+  public describeChangeSet(endTxnId?: TxnManager.TxnId): string {
+
+    if (endTxnId === undefined)
+      endTxnId = this.getCurrentTxnId();
+
+    const accum = [];
+    const seen = new Set<string>();
+
+    let txnId = this.queryFirstTxnId();
+
+    while (this.isTxnIdValid(txnId)) {
+
+      const txnDescStr = this.getTxnDescription(txnId);
+
+      if ((txnDescStr.length === 0) || seen.has(txnDescStr))
+        continue;
+
+      let txnDesc: any;
+      try {
+        txnDesc = JSON.parse(txnDescStr);
+      } catch (err) {
+        txnDesc = { description: txnDescStr };
+      }
+
+      accum.push(txnDesc);
+
+      seen.add(txnDesc);
+      txnId = this.queryNextTxnId(txnId);
+    }
+
+    return JSON.stringify(accum);
+  }
+}
+
+export namespace TxnManager {
+  /** Identifies a transaction that is local to a specific IModelDb. */
+  export interface TxnId {
+    readonly _id: string;
   }
 }

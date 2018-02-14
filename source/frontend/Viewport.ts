@@ -1,12 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Vector3d, XYZ, Point3d, Range3d, RotMatrix, Transform, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ } from "@bentley/geometry-core/lib/PointVector";
+import { Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ } from "@bentley/geometry-core/lib/PointVector";
+import { Range3d } from "@bentley/geometry-core/lib/Range";
+import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
 import { Map4d, Point4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { AxisOrder, Angle, AngleSweep } from "@bentley/geometry-core/lib/Geometry";
-import { ViewState, ViewStatus, MarginPercent, GridOrientationType } from "../common/ViewState";
+import { ViewState, ViewStatus, MarginPercent, GridOrientationType, Camera } from "../common/ViewState";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
-import { ElementAlignedBox2d, Placement2d, Placement3d } from "../common/geometry/Primitives";
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core/lib/Time";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { BeButtonEvent, BeCursor } from "./tools/Tool";
@@ -24,13 +25,17 @@ import { LegacyMath } from "../common/LegacyMath";
 import { Frustum, Npc, NpcCorners, NpcCenter } from "../common/Frustum";
 import { Placement3dProps, Placement2dProps } from "../common/ElementProps";
 import { iModelApp } from "./IModelApp";
+import { Placement2d, Placement3d } from "../common/geometry/Primitives";
 
 /** A rectangle in view coordinates. */
-export class ViewRect extends ElementAlignedBox2d {
-  public constructor(left: number = 0, bottom: number = 0, right: number = 0, top: number = 0) { super(left, bottom, right, top); }
+export class ViewRect {
+  public constructor(public left: number = 0, public bottom: number = 0, public right: number = 0, public top: number = 0) { }
+  public isNull(): boolean { return this.right < this.left || this.top < this.bottom; }
+  public get width() { return this.right - this.left; }
+  public get height() { return this.top - this.bottom; }
   public get aspect() { return this.isNull() ? 1.0 : this.width / this.height; }
   public get area() { return this.isNull() ? 0 : this.width * this.height; }
-  public init(left: number = 0, bottom: number = 0, right: number = 1, top: number = 1) { this.low.x = left, this.low.y = bottom, this.high.x = right, this.high.y = top; }
+  public init(left: number = 0, bottom: number = 0, right: number = 1, top: number = 1) { this.left = left, this.bottom = bottom, this.right = right, this.top = top; }
   public initFromPoint(low: XAndY, high: XAndY): void { this.init(low.x, low.y, high.x, high.y); }
   public initFromRange(input: LowAndHighXY): void { this.initFromPoint(input.low, input.high); }
 }
@@ -41,12 +46,14 @@ export class DepthRangeNpc {
   public middle(): number { return this.minimum + ((this.maximum - this.minimum) / 2.0); }
 }
 
-/** Enumeration of possible coordinate system types */
+/** Coordinate system types */
 export const enum CoordSystem {
-  Screen = 0,  // Coordinates are relative to the origin of the screen
-  View = 1,    // Coordinates are relative to the origin of the view
-  Npc = 2,     // Coordinates are relative to normalized plane coordinates.
-  World = 3,   // Coordinates are relative to the world coordinate system for the physical elements in the iModel
+  /** Coordinates are relative to the origin of the view */
+  View,
+  /** Coordinates are relative to normalized plane coordinates. */
+  Npc,
+  /** Coordinates are relative to the world coordinate system for the physical elements in the iModel */
+  World,
 }
 
 /** object to animate frustum transition of a viewport */
@@ -191,9 +198,9 @@ export class Viewport {
   public readonly rootToNpc = Map4d.createIdentity();
   private readonly viewCorners: Range3d = new Range3d();
   private animator?: Animator;
-  public flashUpdateTime: BeTimePoint;  // time the current flash started
-  public flashIntensity: number;        // current flash intensity from [0..1]
-  public flashDuration: number;         // the length of time that the flash intensity will increase (in seconds)
+  public flashUpdateTime?: BeTimePoint;  // time the current flash started
+  public flashIntensity = 0;        // current flash intensity from [0..1]
+  public flashDuration = 0;         // the length of time that the flash intensity will increase (in seconds)
   private flashedElem?: string;         // id of currently flashed element
   public lastFlashedElem?: string;      // id of last flashed element
   private _viewCmdTargetCenter?: Point3d;
@@ -252,8 +259,8 @@ export class Viewport {
   public getAuxCoordOrigin(result?: Point3d) { return this._auxCoordSystem ? this._auxCoordSystem.getOrigin(result) : Point3d.createZero(result); }
 
   private static copyOutput = (from: XYZ, to?: XYZ) => { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; };
-  public toView(from: XYZ, to?: XYZ) { this.rotMatrix.multiply3dInPlace(Viewport.copyOutput(from, to)); }
-  public fromView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyTranspose3dInPlace(Viewport.copyOutput(from, to)); }
+  public toView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyVectorInPlace(Viewport.copyOutput(from, to)); }
+  public fromView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyTransposeVectorInPlace(Viewport.copyOutput(from, to)); }
 
   /** adjust the front and back planes to encompass the entire viewed volume */
   private adjustZPlanes(origin: Point3d, delta: Vector3d): void {
@@ -271,24 +278,24 @@ export class Viewport {
     extFrust.multiply(viewTransform);
     extents = extFrust.toRange();
 
-    this.rotMatrix.multiply3dInPlace(origin);       // put origin in view coordinates
+    this.rotMatrix.multiplyVectorInPlace(origin);       // put origin in view coordinates
     origin.z = extents.low.z;           // set origin to back of viewed extents
     delta.z = extents.high.z - origin.z; // and delta to front of viewed extents
-    this.rotMatrix.multiplyTranspose3dInPlace(origin);
+    this.rotMatrix.multiplyTransposeVectorInPlace(origin);
 
     if (!view.isCameraOn())
       return;
 
     // if the camera is on, we need to make sure that the viewed volume is not behind the eye
     const eyeOrg = view.camera.getEyePoint().minus(origin);
-    this.rotMatrix.multiply3dInPlace(eyeOrg);
+    this.rotMatrix.multiplyVectorInPlace(eyeOrg);
 
     // if the distance from the eye to origin in less than 1 meter, move the origin away from the eye. Usually, this means
     // that the camera is outside the viewed extents and pointed away from it. There's nothing to see anyway.
     if (eyeOrg.z < 1.0) {
-      this.rotMatrix.multiply3dInPlace(origin);
+      this.rotMatrix.multiplyVectorInPlace(origin);
       origin.z -= (2.0 - eyeOrg.z);
-      this.rotMatrix.multiplyTranspose3dInPlace(origin);
+      this.rotMatrix.multiplyTransposeVectorInPlace(origin);
       delta.z = 1.0;
       return;
     }
@@ -395,10 +402,15 @@ export class Viewport {
     return npcZ;
   }
 
-  public turnCameraOn(lensAngle: Angle): ViewStatus {
+  public turnCameraOn(lensAngle?: Angle): ViewStatus {
     const view = this.view;
     if (!view.is3d())
       return ViewStatus.InvalidViewport;
+
+    if (!lensAngle)
+      lensAngle = view.camera.lens;
+
+    Camera.validateLensAngle(lensAngle);
 
     if (view.isCameraOn())
       return view.lookAtUsingLensAngle(view.getEyePoint(), view.getTargetPoint(), view.getYVector(), lensAngle);
@@ -429,8 +441,8 @@ export class Viewport {
   private getViewCorners(): Range3d {
     const corners = this.viewCorners;
     const viewRect = this.viewRect;
-    corners.high.x = viewRect.high.x;
-    corners.low.y = viewRect.high.y;    // y's are swapped on the screen!
+    corners.high.x = viewRect.right;
+    corners.low.y = viewRect.top;    // y's are swapped on the screen!
     corners.low.x = 0;
     corners.high.y = 0;
     corners.low.z = -32767;
@@ -473,13 +485,13 @@ export class Viewport {
       return;
     const r = this.rotMatrix.transpose();
     r.setColumn(2, zUp);
-    RotMatrix.createPerpendicularUnitColumnsFromRotMatrix(r, AxisOrder.ZXY, r);
+    RotMatrix.createRigidFromRotMatrix(r, AxisOrder.ZXY, r);
     r.transpose(this.rotMatrix);
   }
 
   private readonly _viewRange: ViewRect = new ViewRect();
   /** get the rectangle of this Viewport in ViewCoordinates. */
-  public get viewRect(): ViewRect { const r = this._viewRange; const rect = this.getClientRect(); r.high.x = rect.width; r.high.y = rect.height; return r; }
+  public get viewRect(): ViewRect { const r = this._viewRange; const rect = this.getClientRect(); r.right = rect.width; r.top = rect.height; return r; }
 
   /** True if an undoable viewing operation exists on the stack */
   public get isUndoPossible(): boolean { return 0 < this.backStack.length; }
@@ -494,7 +506,7 @@ export class Viewport {
     this.backStack.length = 0;
   }
 
-  /** Set up this Viewport from its ViewState */
+  /** Establish the parameters of this Viewport from the current information in its ViewState */
   public setupFromView(): ViewStatus {
     const view = this.view;
     if (!view)
@@ -579,7 +591,7 @@ export class Viewport {
     this.viewDelta.setFrom(delta);
 
     const frustFraction = this.rootToNpcFromViewDef(this.rootToNpc, origin, delta);
-    if (!frustFraction)
+    if (frustFraction === undefined)
       return ViewStatus.InvalidViewport;
 
     this.frustFraction = frustFraction;
@@ -589,7 +601,7 @@ export class Viewport {
     return ViewStatus.Success;
   }
 
-  /** compute the root-to-npc map given an origin and delta. View orientation and camera comes from member variables. */
+  /** Compute the root-to-npc map given an origin and delta. View orientation and camera comes from member variables. */
   private rootToNpcFromViewDef(rootToNpc: Map4d, inOrigin: Point3d, delta: Vector3d): number | undefined {
     const view = this.view;
     const viewRot = this.rotMatrix;
@@ -665,74 +677,118 @@ export class Viewport {
     return frustFraction;
   }
 
+  /**
+   * Check whether the ViewState of this Viewport has changed since the last call to this function.
+   * If so, save a *clone* of the previous state in the view undo stack to permit View Undo.
+   */
   private saveViewUndo(): void {
     if (!this._view)
       return;
 
-    const curr = this.view.clone<ViewState>();
-    if (!this.currentBaseline) {
-      this.currentBaseline = curr;
+    if (!this.currentBaseline) { // the first time we're called we need to establish the "baseline"
+      this.currentBaseline = this.view.clone<ViewState>();
       return;
     }
 
-    if (curr.equals(this.currentBaseline))
-      return; // nothing changed
+    if (this.view.equals(this.currentBaseline)) // this does a deep compare of the ViewState plus DisplayStyle, CategorySelector, and ModelSelector
+      return; // nothing changed, we're done
 
-    if (this.backStack.length >= this.maxUndoSteps)
-      this.backStack.shift();
+    if (this.backStack.length >= this.maxUndoSteps) // don't save more than max
+      this.backStack.shift(); // remove the oldest entry
 
-    this.backStack.push(this.currentBaseline);
-    this.forwardStack.length = 0;
+    this.backStack.push(this.currentBaseline); // save previous state
+    this.forwardStack.length = 0; // not possible to do redo now
 
-    // now update our baseline to match the current settings.
-    this.currentBaseline = curr;
+    this.currentBaseline = this.view.clone<ViewState>(); // now update our baseline to match the current state
   }
 
+  /** Call setupFrom view on this Viewport. Optionally, save previous state in view undo stack */
   public synchWithView(saveInUndo: boolean): void {
     this.setupFromView();
-
     if (saveInUndo)
       this.saveViewUndo();
   }
 
+  /** Convert an array of points from CoordSystem.View to CoordSystem.Npc */
   public viewToNpcArray(pts: Point3d[]): void {
     const corners = this.getViewCorners();
     const scrToNpcTran = Transform.createIdentity();
     Transform.initFromRange(corners.low, corners.high, undefined, scrToNpcTran);
     scrToNpcTran.multiplyPoint3dArrayInPlace(pts);
   }
-
+  /** Convert an array of points from CoordSystem.Npc to CoordSystem.View */
   public npcToViewArray(pts: Point3d[]): void {
     const corners = this.getViewCorners();
-    const npcToSrcTran = Transform.createIdentity();
-    Transform.initFromRange(corners.low, corners.high, npcToSrcTran, undefined);
-    npcToSrcTran.multiplyPoint3dArrayInPlace(pts);
+    for (const p of pts)
+      corners.fractionToPoint(p.x, p.y, p.z, p);
   }
-
+  /**
+   * Convert a point from CoordSystem.View to CoordSystem.Npc
+   * @param pt the point to convert
+   * @param out optional location for result. If undefined, a new Point3d is created.
+   */
   public viewToNpc(pt: Point3d, out?: Point3d): Point3d {
     const corners = this.getViewCorners();
     const scrToNpcTran = Transform.createIdentity();
     Transform.initFromRange(corners.low, corners.high, undefined, scrToNpcTran);
     return scrToNpcTran.multiplyPoint(pt, out);
   }
-
+  /**
+   * Convert a point from CoordSystem.Npc to CoordSystem.View
+   * @param pt the point to convert
+   * @param out optional location for result. If undefined, a new Point3d is created.
+   */
   public npcToView(pt: Point3d, out?: Point3d): Point3d {
     const corners = this.getViewCorners();
-    const scrToNpcTran = Transform.createIdentity();
-    Transform.initFromRange(corners.low, corners.high, scrToNpcTran, undefined);
-    return scrToNpcTran.multiplyPoint(pt, out);
+    return corners.fractionToPoint(pt.x, pt.y, pt.z, out);
   }
+  /** Convert an array of points from CoordSystem.World to CoordSystem.Npc */
   public worldToNpcArray(pts: Point3d[]): void { this.rootToNpc.transform0.multiplyPoint3dArrayQuietNormalize(pts); }
+  /** Convert an array of points from CoordSystem.Npc to CoordSystem.World */
   public npcToWorldArray(pts: Point3d[]): void { this.rootToNpc.transform1.multiplyPoint3dArrayQuietNormalize(pts); }
+  /** Convert an array of points from CoordSystem.World to CoordSystem.View */
   public worldToViewArray(pts: Point3d[]): void { this.rootToView.transform0.multiplyPoint3dArrayQuietNormalize(pts); }
+  /** Convert an array of points from CoordSystem.World to CoordSystem.View, as Point4ds */
   public worldToView4dArray(worldPts: Point3d[], viewPts: Point4d[]): void { this.rootToView.transform0.multiplyPoint3dArray(worldPts, viewPts); }
+  /** Convert an array of points from CoordSystem.View to CoordSystem.World */
   public viewToWorldArray(pts: Point3d[]) { this.rootToView.transform1.multiplyPoint3dArrayQuietNormalize(pts); }
+  /** Convert an array of points from CoordSystem.View as Point4ds to CoordSystem.World */
   public view4dToWorldArray(viewPts: Point4d[], worldPts: Point3d[]): void { this.rootToView.transform1.multiplyPoint4dArrayQuietRenormalize(viewPts, worldPts); }
+  /**
+   * Convert a point from CoordSystem.World to CoordSystem.Npc
+   * @param pt the point to convert
+   * @param out optional location for result. If undefined, a new Point3d is created.
+   */
   public worldToNpc(pt: Point3d, out?: Point3d): Point3d { return this.rootToNpc.transform0.multiplyPoint3dQuietNormalize(pt, out); }
+  /**
+   * Convert a point from CoordSystem.Npc to CoordSystem.World
+   * @param pt the point to convert
+   * @param out optional location for result. If undefined, a new Point3d is created.
+   */
   public npcToWorld(pt: Point3d, out?: Point3d): Point3d { return this.rootToNpc.transform1.multiplyPoint3dQuietNormalize(pt, out); }
+  /**
+   * Convert a point from CoordSystem.World to CoordSystem.View
+   * @param pt the point to convert
+   * @param out optional location for result. If undefined, a new Point3d is created.
+   */
   public worldToView(input: Point3d, out?: Point3d): Point3d { return this.rootToView.transform0.multiplyPoint3dQuietNormalize(input, out); }
+  /**
+   * Convert a point from CoordSystem.World to CoordSystem.View as Point4d
+   * @param input the point to convert
+   * @param out optional location for result. If undefined, a new Point4d is created.
+   */
   public worldToView4d(input: Point3d, out?: Point4d): Point4d { return this.rootToView.transform0.multiplyPoint3d(input, 1.0, out); }
+  /**
+   * Convert a point from CoordSystem.View to CoordSystem.World
+   * @param pt the point to convert
+   * @param out optional location for result. If undefined, a new Point3d is created.
+   */
   public viewToWorld(input: Point3d, out?: Point3d): Point3d { return this.rootToView.transform1.multiplyPoint3dQuietNormalize(input, out); }
+  /**
+   * Convert a point from CoordSystem.View as a Point4d to CoordSystem.View
+   * @param input the point to convert
+   * @param out optional location for result. If undefined, a new Point3d is created.
+   */
   public view4dToWorld(input: Point4d, out?: Point3d): Point3d { return this.rootToView.transform1.multiplyXYZWQuietRenormalize(input.x, input.y, input.z, input.w, out); }
 
   /** Converts inches to pixels based on screen DPI.
@@ -981,33 +1037,25 @@ export class Viewport {
   /**
    * Reverses the most recent change to the Viewport from the undo stack.
    */
-  public applyPrevious(animationTime: BeDuration) {
-    const size = this.backStack.length;
-    if (0 === size)
+  public doUndo(animationTime?: BeDuration) {
+    if (0 === this.backStack.length)
       return;
 
     this.forwardStack.push(this.currentBaseline!);
-    this.currentBaseline = this.backStack[size - 1];
-    this.backStack.pop();
-
+    this.currentBaseline = this.backStack.pop()!;
     this.applyViewState(this.currentBaseline, animationTime);
-    // this.historyApplied.raiseEvent(true);
   }
 
   /**
    * Re-applies the most recently un-done change to the Viewport from the redo stack
    */
-  public applyNext(animationTime: BeDuration) {
-    const size = this.forwardStack.length;
-    if (0 === size)
+  public doRedo(animationTime?: BeDuration) {
+    if (0 === this.forwardStack.length)
       return;
 
     this.backStack.push(this.currentBaseline!);
-    this.currentBaseline = this.forwardStack[size - 1];
-    this.forwardStack.pop();
-
+    this.currentBaseline = this.forwardStack.pop()!;
     this.applyViewState(this.currentBaseline, animationTime);
-    // this.historyApplied.raiseEvent(false);
   }
 
   public animate() {
@@ -1028,8 +1076,8 @@ export class Viewport {
     this.animator = animator;
   }
 
-  public animateFrustumChange(start: Frustum, end: Frustum, animationTime: BeDuration) {
-    if (0.0 >= animationTime.milliseconds) {
+  public animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration) {
+    if (!animationTime || 0.0 >= animationTime.milliseconds) {
       this.setupFromFrustum(end);
       return;
     }
@@ -1037,12 +1085,11 @@ export class Viewport {
     this.setAnimator(new Animator(animationTime, this, start, end));
   }
 
-  public applyViewState(val: ViewState, animationTime: BeDuration) {
+  public applyViewState(val: ViewState, animationTime?: BeDuration) {
     const startFrust = this.getFrustum();
     this._view = val.clone<ViewState>();
     this.synchWithView(false);
-    //    this._changeFov = true;
-    this.animateFrustumChange(startFrust!, this.getFrustum()!, animationTime);
+    this.animateFrustumChange(startFrust, this.getFrustum(), animationTime);
   }
 
   public pickEntity(_mousePos: Point3d, _radius: number, _result?: Point3d): Point3d | undefined {
@@ -1179,7 +1226,6 @@ export class Viewport {
     this.view4dToWorldArray(viewPts, worldPts);
 
     switch (coordSys) {
-      case CoordSystem.Screen:
       case CoordSystem.View:
         this.worldToViewArray(worldPts);
         break;
@@ -1217,7 +1263,7 @@ export class Viewport {
     const pt = hit.getHitPoint();
     const radius = (2.5 * aperture) * vp.getPixelSizeAtPoint(pt);
     const normal = hit.geomDetail.normal;
-    const rMatrix = RotMatrix.createHeadsUpTriad(normal);
+    const rMatrix = RotMatrix.createRigidHeadsUp(normal);
     color.setAlpha(100);
     colorFill.setAlpha(200);
 
@@ -1260,6 +1306,7 @@ export class Viewport {
     context.addViewOverlay(graphic.finish()!);
   }
 
+  /** @hidden */
   public drawLocateCursor(context: DecorateContext, pt: Point3d, aperture: number, isLocateCircleOn: boolean, hit?: HitDetail): void {
     if (hit)
       Viewport.drawLocateHitDetail(context, aperture, hit);
@@ -1268,6 +1315,7 @@ export class Viewport {
       Viewport.drawLocateCircle(context, aperture, pt);
   }
 
+  /** Get a color that will contrast to the current background color of this Viewport. Either Black or White depending on which will have the most contrast. */
   public getContrastToBackgroundColor(): ColorDef {
     const bgColor = this.view.backgroundColor.getColors();
     const invert = ((bgColor.r + bgColor.g + bgColor.b) > (255 * 3) / 2);

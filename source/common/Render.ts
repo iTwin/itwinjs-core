@@ -9,7 +9,10 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { DgnFB } from "./geometry/ElementGraphicsSchema";
 import { IModel } from "./IModel";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { Transform, Point3d, Point2d, Range3d, Range2d } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, Point2d} from "@bentley/geometry-core/lib/PointVector";
+import { Transform } from "@bentley/geometry-core/lib/Transform";
+import { Range3d, Range2d } from "@bentley/geometry-core/lib/Range";
+
 import { PatternParams } from "./geometry/AreaPattern";
 import { LineStyleInfo } from "./geometry/LineStyle";
 import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";

@@ -8,8 +8,8 @@ import {
   BeModifierKey, BeButtonState, BeButton, BeGestureEvent, Tool, BeButtonEvent, CoordSource, GestureInfo,
   BeCursor, BeWheelEvent, InputSource, BeVirtualKey, InteractiveTool,
 } from "./Tool";
-import { IdleTool } from "./IdleTool";
 import { ViewTool, ViewToolSettings, InputCollector } from "./ViewTool";
+import { IdleTool } from "./IdleTool";
 import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
 import { BeEvent, BeEventList } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { PrimitiveTool } from "./PrimitiveTool";

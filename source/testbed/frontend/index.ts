@@ -10,39 +10,44 @@ import * as path from "path";
 import { IModelJsFs } from "../../backend/IModelJsFs";
 
 TestbedConfig.initializeGatewayConfig();
-TestbedConfig.gatewayConfig.protocol.openAPIPathPrefix = () => `http://localhost:${TestbedConfig.serverPort}`;
+if (TestbedConfig.gatewayConfig)
+  TestbedConfig.gatewayConfig.protocol.openAPIPathPrefix = () => `http://localhost:${TestbedConfig.serverPort}`;
 
 const { ipcRenderer, remote } = require("electron");
 TestbedConfig.ipc = ipcRenderer;
 remote.getCurrentWindow().setTitle(TestbedConfig.gatewayParams.info.title);
 remote.require(path.join(__dirname, "../backend/index"));
 
-describe("Testbed", () => {
-  it("Server should be accessible", (done) => {
-    const info = TestbedConfig.gatewayParams.info;
+// tslint:disable:only-arrow-functions
+// tslint:disable:space-before-function-paren
+describe("Testbed", function () {
+  if (TestbedConfig.gatewayConfig) {
+    it("Server should be accessible", (done) => {
+      const info = TestbedConfig.gatewayParams.info;
 
-    const req = new XMLHttpRequest();
-    req.open("GET", `http://localhost:${TestbedConfig.serverPort}${TestbedConfig.swaggerURI}`);
-    req.addEventListener("load", () => {
-      assert.equal(200, req.status);
-      const desc = JSON.parse(req.responseText);
-      assert(desc.info.title === info.title && desc.info.version === info.version);
-      done();
+      const req = new XMLHttpRequest();
+      req.open("GET", `http://localhost:${TestbedConfig.serverPort}${TestbedConfig.swaggerURI}`);
+      req.addEventListener("load", () => {
+        assert.equal(200, req.status);
+        const desc = JSON.parse(req.responseText);
+        assert(desc.info.title === info.title && desc.info.version === info.version);
+        done();
+      });
+
+      req.send();
     });
-
-    req.send();
-  });
+  }
 
   it("TestData should load", async () => {
     await TestData.load();
-  }).timeout(99999);
+  });
 });
 
 for (const entry of IModelJsFs.readdirSync(__dirname)) {
   if (entry.indexOf(".test.js") !== -1 && entry.indexOf(".test.js.map") === -1) {
     const entryPath = `${__dirname}/${entry}`;
 
-    describe(entry, () => {
+    describe(entry, function () {
       it("should be compatible with webpack", (done) => {
         const compiler = webpack({
           entry: entryPath, node: {
@@ -65,7 +70,7 @@ for (const entry of IModelJsFs.readdirSync(__dirname)) {
           assert.isFalse(stats.hasWarnings());
           done();
         });
-      }).timeout(99999);
+      });
     });
 
     require(entryPath);

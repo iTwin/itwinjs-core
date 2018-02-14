@@ -10,87 +10,81 @@ import { Schema, Schemas } from "./Schema";
 
 /** The mapping between a class name (schema.class) and its constructor function  */
 export class ClassRegistry {
-  private static classMap: Map<string, typeof Entity> = new Map<string, typeof Entity>();
-
-  private static getKey(schemaName: string, className: string) {
-    return (schemaName + ":" + className).toLowerCase();
-  }
+  private static classMap = new Map<string, typeof Entity>();
+  private static getKey(schemaName: string, className: string) { return (schemaName + ":" + className).toLowerCase(); }
   public static lookupClass(name: string) { return this.classMap.get(name.toLowerCase()); }
 
-  /** Check if the specified Error is a class-not-found error */
-  public static isClassNotFoundError(err: any) {
-    return (err instanceof IModelError) && ((err as IModelError).errorNumber === IModelStatus.NotFound);
-  }
-
-  /** Check if the specified Error is a metadata-not-found error */
-  public static isMetaDataNotFoundError(err: any) {
-    return (err instanceof IModelError) && ((err as IModelError).errorNumber === IModelStatus.NotFound);
-  }
+  /** Check if the specified Error is a not-found error */
+  public static isNotFoundError(err: any) { return (err instanceof IModelError) && (err.errorNumber === IModelStatus.NotFound); }
 
   /** Construct a class-not-found exception */
-  public static makeClassNotFoundError(): IModelError { return new IModelError(IModelStatus.NotFound); }
+  public static makeClassNotFoundError(className: string): IModelError { return new IModelError(IModelStatus.NotFound, "class " + className + "not found"); }
 
   /** Construct a metadata-not-found exception */
-  public static makeMetaDataNotFoundError(): IModelError {
-    return new IModelError(IModelStatus.NotFound);
-  }
+  public static makeMetaDataNotFoundError(className: string): IModelError { return new IModelError(IModelStatus.NotFound, "metadata not found for" + className); }
 
-  /** Called by IModelDb and others as part of constructing entities.
-   * @throws IModelError if the required constructor or class metadata is not in the cache.
+  /**
+   * Construct an instance of an Entity class, given its EntityProps.
+   * @throws IModelError if the class or class metadata is not available.
    * @hidden
    */
   public static createInstance(props: EntityProps, iModel: IModelDb): Entity {
     if (!props.classFullName)
-      throw new IModelError(IModelStatus.BadArg);
+      throw new IModelError(IModelStatus.BadArg, "props must have a classFullName member");
 
-    let ctor = ClassRegistry.classMap.get(props.classFullName.toLowerCase());
-    if (!ctor) {
-      ctor = ClassRegistry.generateClass(props.classFullName, iModel);
-      if (!ctor)
-        throw ClassRegistry.makeClassNotFoundError();
+    let entityClass = this.classMap.get(props.classFullName.toLowerCase());
+    if (!entityClass) {
+      entityClass = this.generateClass(props.classFullName, iModel);
+      if (!entityClass)
+        throw this.makeClassNotFoundError(props.classFullName);
     }
 
-    return new ctor(props, iModel);
+    return new entityClass(props, iModel);
   }
 
+  public static register(entityClass: typeof Entity) { this.classMap.set(this.getKey(entityClass.schema.name, entityClass.name), entityClass); }
   public static registerSchema(schema: Schema) { Schemas.registerSchema(schema); }
   public static getRegisteredSchema(domainName: string) { return Schemas.getRegisteredSchema(domainName); }
   public static getSchemaBaseClass() { return Schema; }
 
-  private static generateProxySchema(schemaName: string): string {
-    return "class " + schemaName + " extends ClassRegistry.getSchemaBaseClass(){} ClassRegistry.registerSchema(" + schemaName + ");";
+  private static generateProxySchema(schemaName: string): typeof Schema {
+    const schemaClass = class extends Schema { };
+    // the above line creates an "anonymous" class. We rely on the "constructor.name" property to be eponymous with the Schema name.
+    // this is the (only) way to change that readonly property.
+    Object.defineProperty(schemaClass, "name", { get: () => schemaName });
+    this.registerSchema(schemaClass); // register the class before we return it.
+    return schemaClass;
   }
 
-  /** Generate a JS class from an Entity metadata
+  /**
+   * Generate a JavaScript class from Entity metadata.
    * @param entityMetaData The Entity metadata
    */
-  private static generateClassFromMetaData(entityMetaData: EntityMetaData): string {
+  private static generateClassForEntity(entityMetaData: EntityMetaData): typeof Entity {
     const name = entityMetaData.ecclass.split(":");
-    const schema = name[0];
+    const schemaName = name[0];
     const className = name[1];
-    // static properties
-    const classStaticProps = className + ".schema = ClassRegistry.getRegisteredSchema('" + schema + "');";
 
-    // extends
-    let classExtends = "";
-    if (entityMetaData.baseClasses.length !== 0) {
-      classExtends = "extends ClassRegistry.lookupClass(entityMetaData.baseClasses[0])";
-    }
-
-    // constructor -- all classes derived from Entity (Element) just defer to super. They don't set any of their own
-    // properties. That is because the base class uses the class metadata to detect and set all auto-handled properties.
-    // Therefore, none of these derived classes need constructors. The one generated by JS is sufficient.
+    if (entityMetaData.baseClasses.length === 0) // metadata must contain a superclass
+      throw new IModelError(IModelStatus.BadArg, "class " + name + " has no superclass");
 
     // make sure schema exists
-    const domainDef = Schemas.getRegisteredSchema(schema) ? "" : ClassRegistry.generateProxySchema(schema);
+    let schema = Schemas.getRegisteredSchema(schemaName);
+    if (!schema)
+      schema = this.generateProxySchema(schemaName); // no schema found, create it too
 
-    // The class as a whole
-    return domainDef + "class " + className + " " + classExtends + " { } " + classStaticProps;
-  }
+    // this method relies on the caller having previously created/registered all superclasses
+    const superclass = this.lookupClass(entityMetaData.baseClasses[0]);
+    if (!superclass)
+      throw new IModelError(IModelStatus.NotFound, "cannot find superclass for class " + name);
 
-  public static register(ctor: typeof Entity) {
-    const key = ClassRegistry.getKey(ctor.schema.name, ctor.name);
-    ClassRegistry.classMap.set(key, ctor);
+    const generatedClass = class extends superclass { };
+    // the above line creates an "anonymous" class. We rely on the "constructor.name" property to be eponymous with the EcClass name.
+    Object.defineProperty(generatedClass, "name", { get: () => className });  // this is the (only) way to change that readonly property.
+
+    generatedClass.schema = schema; // save the schema property
+    this.register(generatedClass); // register it before returning
+    return generatedClass;
   }
 
   /** Register all of the classes that derive from Entity, that are found in a given module
@@ -105,44 +99,28 @@ export class ClassRegistry {
       const thisClass = moduleObj[thisMember];
       if (thisClass.prototype instanceof Entity) {
         thisClass.schema = schema;
-        ClassRegistry.register(thisClass);
+        this.register(thisClass);
       }
     }
   }
 
-  /** This function fetches the specified Entity from the imodel, generates a JS class for it, and registers the generated
+  /**
+   * This function fetches the specified Entity from the imodel, generates a JavaScript class for it, and registers the generated
    * class. This function also ensures that all of the base classes of the Entity exist and are registered.
    */
   private static generateClass(classFullName: string, iModel: IModelDb): typeof Entity {
-
     const metadata: EntityMetaData | undefined = iModel.classMetaDataRegistry.find(classFullName);
     if (metadata === undefined || metadata.ecclass === undefined)
-      throw ClassRegistry.makeMetaDataNotFoundError();
+      throw this.makeMetaDataNotFoundError(classFullName);
 
     // Make sure that we have all base classes registered.
     // This recurses. I have to know that the super class is defined and registered before defining a derived class.
     if (metadata!.baseClasses && metadata.baseClasses.length !== 0) {
-      ClassRegistry.getClass(metadata.baseClasses[0], iModel);
+      this.getClass(metadata.baseClasses[0], iModel);
     }
 
     // Now we can generate the class from the classDef.
-    return ClassRegistry.generateClassForEntity(metadata);
-  }
-
-  /** This function generates a JS class for the specified Entity and registers it. It is up to the caller
-   * to make sure that all superclasses are already registered.
-   */
-  public static generateClassForEntity(entityMetaData: EntityMetaData): typeof Entity {
-    const name = entityMetaData.ecclass.split(":");
-    // Generate and register this class
-    const jsDef = ClassRegistry.generateClassFromMetaData(entityMetaData) + " ClassRegistry.register(" + name[1] + "); ";
-
-    // tslint:disable-next-line:no-eval NOTE: eval is OK here, because we just generated the expression
-    eval(jsDef);
-
-    const ctor = ClassRegistry.lookupClass(entityMetaData.ecclass)!;
-    assert(!!ctor);
-    return ctor;
+    return this.generateClassForEntity(metadata);
   }
 
   /** Get the class for the specified Entity.
@@ -153,24 +131,16 @@ export class ClassRegistry {
    */
   public static getClass(fullName: string, iModel: IModelDb): typeof Entity {
     const key = fullName.toLowerCase();
-    if (!ClassRegistry.classMap.has(key)) {
-      return ClassRegistry.generateClass(fullName, iModel);
+    if (!this.classMap.has(key)) {
+      return this.generateClass(fullName, iModel);
     }
-    const ctor = ClassRegistry.classMap.get(key);
+    const ctor = this.classMap.get(key);
     assert(!!ctor);
 
     if (!ctor)
-      throw ClassRegistry.makeClassNotFoundError();
+      throw this.makeClassNotFoundError(fullName);
 
     return ctor!;
-  }
-
-  /** Check if the class for the specified Entity is in the registry.
-   * @param schemaName The name of the schema
-   * @param className The name of the class
-   */
-  public static isClassRegistered(schemaName: string, className: string): boolean {
-    return ClassRegistry.classMap.has(ClassRegistry.getKey(schemaName, className));
   }
 }
 

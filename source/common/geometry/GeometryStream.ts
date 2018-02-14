@@ -2,7 +2,9 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { Point2d, Point3d, Vector3d, Transform, Range3d, YawPitchRollAngles, RotMatrix } from "@bentley/geometry-core/lib/PointVector";
+import { Point2d, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
+import { Transform, RotMatrix } from "@bentley/geometry-core/lib/Transform";
+import { Range3d } from "@bentley/geometry-core/lib/Range";
 import { CurveCollection, Loop } from "@bentley/geometry-core/lib/curve/CurveChain";
 import { BSplineSurface3d } from "@bentley/geometry-core/lib/bspline/BSplineSurface";
 import { GeometryQuery, CurvePrimitive } from "@bentley/geometry-core/lib/curve/CurvePrimitive";
@@ -74,7 +76,7 @@ export class GeometryStreamEntryId {
   private _index: number;     // Index into top-level GeometryStream
   private _partIndex: number; // Index into part GeometryStream
 
-  private constructor() {
+  public constructor() {
     this._partId = new Id64();
     this._index = 0;
     this._partIndex = 0;
@@ -133,7 +135,7 @@ export class Operation {
   // If signature is included, the signature will be held in data, and flatbuffer contents in data1, otherwise, all data lies in data
   public data: Uint8Array;
   public data1: Uint8Array | undefined;
-  public data1Position: number;
+  public data1Position = 0;
 
   private constructor(opCode: OpCode, data: Uint8Array, data1?: Uint8Array, data1Position?: number) {
     this.opCode = opCode;
@@ -175,12 +177,12 @@ export class Operation {
 
 class CurrentState {
   // public imodel: IModel;
-  public geomParams: GeometryParams;
+  public geomParams?: GeometryParams;
   public sourceToWorld: Transform;
   public geomToSource: Transform;
   public geomToWorld: Transform;
-  public geometry: GeometricPrimitive;
-  public geomStreamEntryId: GeometryStreamEntryId;
+  public geometry?: GeometricPrimitive;
+  public geomStreamEntryId?: GeometryStreamEntryId;
   public localRange: Range3d;
 
   public constructor(/*imodel: IModel*/) {
@@ -198,7 +200,7 @@ class CurrentState {
 export class GSCollection {
   private data: Uint8Array | undefined;   // Pointer to the Uint8Array in the writer
   private dataOffset: number; // Our current position in the data array (always points to the index of an opCode)
-  private egOp: Operation;    // The data stored in the last block
+  private egOp?: Operation;    // The data stored in the last block
   private state: CurrentState;  // Current state of the data (not yet in use)
 
   public get operation() { return this.egOp; }
@@ -257,7 +259,7 @@ export class GSCollection {
 
   // public get imodel() { return this.state.imodel; }   // imodel used to create collector...
   public get geometryParams() { return this.state.geomParams; }   // Returns GeometryParams for current GeometricPrimitive...
-  public get geometryPartId() { return this.state.geomStreamEntryId.geometryPartId; }   // Returns invalid id if not a DgnGeometryPart reference...
+  public get geometryPartId() { return this.state.geomStreamEntryId!.geometryPartId; }   // Returns invalid id if not a DgnGeometryPart reference...
   public get geometryStreamEntryId() { return this.state.geomStreamEntryId; }   // Returns primitive id for current GeometricPrimitive...
   public get subgraphicLocalRange() { return this.state.localRange; }   // Returns local range for geometry that was appended with GeometryBuilder.SetAppendAsSubGraphics enabled
   // public get geometryPartRef() {}
@@ -270,7 +272,7 @@ export class GSCollection {
   }
   public getGeometry(): GeometricPrimitive | undefined {
     const gsReader = new GSReader(/*this.state.imodel */);
-    const result = gsReader.dgnGetGeometricPrimitive(this.egOp);
+    const result = gsReader.dgnGetGeometricPrimitive(this.egOp!);
     if (!result)
       return undefined;
     this.state.geometry = result;
@@ -287,29 +289,29 @@ export class GSCollection {
    *  GeometryStream using the instance specific GeometryParams and part geometry to world transform as established by the parent GeometrySource.
    */
   public setNestedIteratorContext(collection: GSCollection) {
-    this.state.geomParams = collection.state.geomParams.clone();
-    this.state.geomStreamEntryId = collection.state.geomStreamEntryId.clone();
+    this.state.geomParams = collection.state.geomParams!.clone();
+    this.state.geomStreamEntryId = collection.state.geomStreamEntryId!.clone();
     this.state.sourceToWorld = collection.state.sourceToWorld.clone();
     this.state.geomToSource = collection.state.geomToSource.clone();
   }
 
   /** Check Geometry type to avoid creating GeometricPrimitive for undesired types */
   public getEntryType() {
-    switch (this.egOp.opCode) {
+    switch (this.egOp!.opCode) {
       case OpCode.GeometryPartInstance:
         return EntryType.GeometryPart;
       case OpCode.PointPrimitive: {
-        const buffer = new flatbuffers.ByteBuffer(this.egOp.data);
+        const buffer = new flatbuffers.ByteBuffer(this.egOp!.data);
         const ppfb = DgnFB.PointPrimitive.getRootAsPointPrimitive(buffer);
         return (DgnFB.BoundaryType.Closed === ppfb.boundary()) ? EntryType.CurveVector : EntryType.CurvePrimitive;
       }
       case OpCode.PointPrimitive2d: {
-        const buffer = new flatbuffers.ByteBuffer(this.egOp.data);
+        const buffer = new flatbuffers.ByteBuffer(this.egOp!.data);
         const ppfb = DgnFB.PointPrimitive2d.getRootAsPointPrimitive2d(buffer);
         return (DgnFB.BoundaryType.Closed === ppfb.boundary()) ? EntryType.CurveVector : EntryType.CurvePrimitive;
       }
       case OpCode.ArcPrimitive: {
-        const buffer = new flatbuffers.ByteBuffer(this.egOp.data);
+        const buffer = new flatbuffers.ByteBuffer(this.egOp!.data);
         const ppfb = DgnFB.ArcPrimitive.getRootAsArcPrimitive(buffer);
         return (DgnFB.BoundaryType.Closed === ppfb.boundary()) ? EntryType.CurveVector : EntryType.CurvePrimitive;
       }
@@ -339,22 +341,22 @@ export class GSCollection {
   }
 
   public isCurve() {    // open and unstructured curves check that avoids creating GeometricPrimitive when possible
-    switch (this.egOp.opCode) {
+    switch (this.egOp!.opCode) {
       case OpCode.PointPrimitive:
         {
-          const buffer = new flatbuffers.ByteBuffer(this.egOp.data);
+          const buffer = new flatbuffers.ByteBuffer(this.egOp!.data);
           const ppfb = DgnFB.PointPrimitive.getRootAsPointPrimitive(buffer);
           return DgnFB.BoundaryType.Open === ppfb.boundary();
         }
       case OpCode.PointPrimitive2d:
         {
-          const buffer = new flatbuffers.ByteBuffer(this.egOp.data);
+          const buffer = new flatbuffers.ByteBuffer(this.egOp!.data);
           const ppfb = DgnFB.PointPrimitive2d.getRootAsPointPrimitive2d(buffer);
           return DgnFB.BoundaryType.Open === ppfb.boundary();
         }
       case OpCode.ArcPrimitive:
         {
-          const buffer = new flatbuffers.ByteBuffer(this.egOp.data);
+          const buffer = new flatbuffers.ByteBuffer(this.egOp!.data);
           const ppfb = DgnFB.ArcPrimitive.getRootAsArcPrimitive(buffer);
           return DgnFB.BoundaryType.Open === ppfb.boundary();
         }
@@ -373,6 +375,8 @@ export class GSCollection {
   }
 
   public isSurface() {    // closed curve, planar region, surface, and open mesh check that avoids creating GeometricPrimitive when possible
+    if (!this.egOp)
+      return false;
     switch (this.egOp.opCode) {
       case OpCode.PointPrimitive:
         {
@@ -441,7 +445,7 @@ export class GSCollection {
   }
 
   public isSolid() {    // solid and volumetric mesh check that avoids creating GeometricPrimitive when possible
-    switch (this.egOp.opCode) {
+    switch (this.egOp!.opCode) {
       case OpCode.SolidPrimitive:
         {
           const geom = this.getGeometry();
@@ -1872,8 +1876,8 @@ export class GeometryBuilder {
   private _isPartCreate: boolean = false;
   private _is3d: boolean = false;
   private _appendAsSubGraphics: boolean = false;
-  private _placement3d: Placement3d;
-  private _placement2d: Placement2d;
+  private _placement3d?: Placement3d;
+  private _placement2d?: Placement2d;
   private _elParams: GeometryParams;
   private _elParamsModified: GeometryParams | undefined;
   private _writer: GSWriter;
@@ -1883,9 +1887,9 @@ export class GeometryBuilder {
   /** Whether builder is creating a 2d or 3d GeometryStream */
   public get is3d() { return this._is3d; }
   /** Current Placement2d as of last call to Append when creating a 2d GeometryStream */
-  public get placement2d() { return this._placement2d; }
+  public get placement2d() { return this._placement2d!; }
   /** Current Placement3d as of last call to Append when creating a 3d GeometryStream */
-  public get placement3d() { return this._placement3d; }
+  public get placement3d() { return this._placement3d!; }
   /** Current GeometryParams as of last call to Append */
   public get geometryParams() { return this._elParams; }
   /** Current size (in bytes) of the GeometryStream being constructed */
@@ -1976,7 +1980,7 @@ export class GeometryBuilder {
         return nullptr;
     */
 
-    const origin = transform.getTranslation();
+    const origin = transform.getOrigin();
     const rMatrix = transform.matrix;
     const angles = YawPitchRollAngles.createDegrees(0, 0, 0);
     const retVal = YawPitchRollAngles.createFromRotMatrix(rMatrix, angles);
@@ -2158,8 +2162,8 @@ export class GeometryBuilder {
         return false;
 
       if (this._is3d) {
-        this._placement3d.origin = origin;
-        this._placement3d.angles = angles;
+        this.placement3d.origin.setFrom(origin);
+        this.placement3d.angles.setFrom(angles);
       } else {
         if (origin.z !== 0.0)
           return false;
@@ -2167,15 +2171,15 @@ export class GeometryBuilder {
           const tmpAngles = YawPitchRollAngles.createDegrees(0.0, angles.pitch.degrees, angles.roll.degrees);
           localToWorld.multiplyTransformTransform(Transform.createOriginAndMatrix(Point3d.create(), tmpAngles.toRotMatrix()), localToWorld);
         }
-        this._placement2d.origin = Point2d.create();
-        this._placement3d.angles = angles;
+        this.placement2d.origin = Point2d.create();
+        this.placement3d.angles = angles;
       }
 
       this._havePlacement = true;
     } else if (this._is3d) {
-      localToWorld = this._placement3d.getTransform();
+      localToWorld = this.placement3d.getTransform();
     } else {
-      localToWorld = this._placement2d.getTransform();
+      localToWorld = this.placement2d.getTransform();
     }
 
     if (localToWorld.isIdentity())
@@ -2252,10 +2256,10 @@ export class GeometryBuilder {
     }
 
     if (this._is3d) {
-      this._placement3d.bbox.extendRange(localRange);
+      this.placement3d.bbox.extendRange(localRange);
     } else {
-      this._placement2d.bbox.extendPoint(Point2d.create(localRange.low.x, localRange.low.y));
-      this._placement2d.bbox.extendPoint(Point2d.create(localRange.high.x, localRange.high.y));
+      this.placement2d.bbox.extendPoint(Point2d.create(localRange.low.x, localRange.low.y));
+      this.placement2d.bbox.extendPoint(Point2d.create(localRange.high.x, localRange.high.y));
     }
 
     let allowPatGradnt = false;
@@ -2389,7 +2393,7 @@ export class GeometryBuilder {
 
         // Note: Must defer applying transform until placement is computed from first geometric primitive...
         if (this._havePlacement) {
-          const localToWorld = (this._is3d ? this._placement3d.getTransform() : this._placement2d.getTransform());
+          const localToWorld = (this._is3d ? this.placement3d.getTransform() : this.placement2d.getTransform());
           const worldToLocal = localToWorld.inverse();
           if (!worldToLocal)
             return false;

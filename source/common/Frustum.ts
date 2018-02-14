@@ -1,7 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Vector3d, Point3d, Range3d, Transform, LowAndHighXYZ, LowAndHighXY } from "@bentley/geometry-core/lib/PointVector";
+import { Vector3d, Point3d, LowAndHighXYZ, LowAndHighXY } from "@bentley/geometry-core/lib/PointVector";
+import { Range3d } from "@bentley/geometry-core/lib/Range";
+import { Transform } from "@bentley/geometry-core/lib/Transform";
 import { Geometry } from "@bentley/geometry-core/lib/Geometry";
 import { Map4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 
@@ -64,6 +66,7 @@ export class Frustum {
   public toRange(range?: Range3d): Range3d { range = range ? range : new Range3d(); Range3d.createArray(this.points, range); return range; }
   public clone(result?: Frustum): Frustum { result = result ? result : new Frustum(); result.setFrom(this); return result; }
   public setFrom(other: Frustum) { for (let i = 0; i < 8; ++i) { this.points[i].setFrom(other.points[i]); } }
+  public isSame(other: Frustum): boolean { for (let i = 0; i < 8; ++i) { if (!this.points[i].isAlmostEqual(other.points[i])) return false; } return true; }
   public scaleAboutCenter(scale: number): void {
     const orig = this.clone();
     const f = 0.5 * (1.0 + scale);
@@ -112,18 +115,21 @@ export class Frustum {
     frustum.initFromRange(range);
     return frustum;
   }
-
-  /** make sure the frustum point order does not include mirroring. If so, reverse the order. */
-  public fixPointOrder() {
+  public hasMirror(): boolean {
     const pts = this.points;
     const u = pts[Npc._000].vectorTo(pts[Npc._001]);
     const v = pts[Npc._000].vectorTo(pts[Npc._010]);
     const w = pts[Npc._000].vectorTo(pts[Npc._100]);
+    return (u.tripleProduct(v, w) > 0);
+  }
 
-    if (u.tripleProduct(v, w) <= 0)
+  /** make sure the frustum point order does not include mirroring. If so, reverse the order. */
+  public fixPointOrder() {
+    if (!this.hasMirror())
       return;
 
     // frustum has mirroring, reverse points
+    const pts = this.points;
     for (let i = 0; i < 8; i += 2) {
       const tmpPoint = pts[i];
       pts[i] = pts[i + 1];

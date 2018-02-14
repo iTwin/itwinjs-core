@@ -47,6 +47,7 @@ export class Entity implements EntityProps {
 
   constructor(props: EntityProps, iModel: IModelDb) {
     this.iModel = iModel;
+    this.id = Id64.fromJSON(props.id);
     // copy all auto-handled properties from input to the object being constructed
     this.forEachProperty((propName: string, meta: PropertyMetaData) => this[propName] = meta.createProperty(props[propName]));
   }
@@ -114,7 +115,7 @@ export class PropertyMetaData {
   public readOnly?: boolean;
   public kindOfQuantity?: string;
   public isCustomHandled?: boolean;
-  public isCustomHandledOrphan: boolean;
+  public isCustomHandledOrphan?: boolean;
   public minOccurs?: number;
   public maxOccurs?: number;
   public direction?: string;
@@ -224,7 +225,7 @@ export class EntityMetaData {
   public static forEach(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean) {
     const meta = iModel.classMetaDataRegistry.find(classFullName);
     if (meta === undefined) {
-      throw ClassRegistry.makeMetaDataNotFoundError();
+      throw ClassRegistry.makeMetaDataNotFoundError(classFullName);
     }
 
     for (const propName in meta.properties) {

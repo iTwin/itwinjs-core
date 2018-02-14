@@ -1,11 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64Set } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64, Id64Arg } from "@bentley/bentleyjs-core/lib/Id";
 import { ModifyElementSource } from "./PrimitiveTool";
 import { IModelConnection } from "../IModelConnection";
-
-export type IdArg = Id64 | Id64Set | string[];
 
 /** The requested source for the elements to modify. */
 export const enum ElemSource {
@@ -159,7 +157,7 @@ export class ElementAgenda {
   public find(id: Id64) { return this.has(id.value); }
 
   /** Add elements to this ElementAgenda. */
-  public add(arg: IdArg) {
+  public add(arg: Id64Arg) {
     const groupStart = this.length;
     Id64.toIdSet(arg).forEach((id) => { if (!this.has(id)) this.elements.push(id); });
     if (groupStart === this.length)
@@ -232,7 +230,7 @@ export class ElementAgenda {
     return true;
   }
 
-  public remove(arg: IdArg) {
+  public remove(arg: Id64Arg) {
     if (0 === this.length)
       return false;
 
@@ -254,7 +252,7 @@ export class ElementAgenda {
   }
 
   /** Add elements not currently in the ElementAgenda and remove elements currently in the ElementAgenda. */
-  public invert(arg: IdArg) {
+  public invert(arg: Id64Arg) {
     if (0 === this.length)
       return this.add(arg);
 

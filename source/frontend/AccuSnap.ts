@@ -99,7 +99,7 @@ export class AccuSnap {
   private setNeedsFlash(view: Viewport) { this.needFlash.add(view); this.clearIsFlashed(view); view.invalidateDecorations(); }
   private setIsFlashed(view: Viewport) { this.areFlashed.add(view); }
   private clearIsFlashed(view: Viewport) { this.areFlashed.delete(view); }
-  private isSnapEnabled(): boolean { return this.toolState.enabled; }
+  public isSnapEnabled(): boolean { return this.toolState.enabled; }
   private getUserEnabled(): boolean { return this.settings.enableFlag; }
   public userWantsSnaps(): boolean { return this.getUserEnabled(); }
   private static toSnapDetail(hit?: HitDetail): SnapDetail | undefined { return (hit && hit.isSnapDetail()) ? hit : undefined; }

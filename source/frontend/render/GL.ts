@@ -37,6 +37,13 @@ export namespace GL {
     ArrayBufferBinding = WebGLRenderingContext.ARRAY_BUFFER_BINDING,
     ElementArrayBufferBinding = WebGLRenderingContext.ELEMENT_ARRAY_BUFFER_BINDING,
     BufferSize = WebGLRenderingContext.BUFFER_SIZE,
+    BufferUsage = WebGLRenderingContext.BUFFER_USAGE,
+  }
+
+  export enum BufferUsage {
+    DynamicDraw = WebGLRenderingContext.DYNAMIC_DRAW,
+    StaticDraw = WebGLRenderingContext.STATIC_DRAW,
+    StreamDraw = WebGLRenderingContext.STREAM_DRAW,
   }
 
   /* Stenciling commented out for now since it is not used */
@@ -128,4 +135,27 @@ export namespace GL {
     MirroredRepeat = WebGLRenderingContext.MIRRORED_REPEAT,
     ClampToEdge = WebGLRenderingContext.CLAMP_TO_EDGE,
   }
+
+  export enum TextureInternalFormat {
+    Rgb = WebGLRenderingContext.RGB,
+    Rgba = WebGLRenderingContext.RGBA,
+    DepthStencil = WebGLRenderingContext.DEPTH_STENCIL,
+    Luminance = WebGLRenderingContext.LUMINANCE,
+    DepthComponent = WebGLRenderingContext.DEPTH_COMPONENT,
+  }
+
+  export enum TextureFormat {
+    Rgb = WebGLRenderingContext.RGB,
+    Rgba = WebGLRenderingContext.RGBA,
+    DepthStencil = WebGLRenderingContext.DEPTH_STENCIL,
+    Luminance = WebGLRenderingContext.LUMINANCE,
+    DepthComponent = WebGLRenderingContext.DEPTH_COMPONENT,
+  }
+
+  export enum TextureDataType {
+    Float = WebGLRenderingContext.FLOAT,
+    UnsignedByte = WebGLRenderingContext.UNSIGNED_BYTE,
+//    UnsignedInt24_8 = WebGLRenderingContext.UNSIGNED_INT_24_8,
+    UnsignedInt = WebGLRenderingContext.UNSIGNED_INT,
+    }
 }

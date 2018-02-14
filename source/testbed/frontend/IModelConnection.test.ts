@@ -7,13 +7,14 @@ import { CodeSpec, CodeSpecNames } from "../../common/Code";
 import { ElementProps, ViewDefinitionProps } from "../../common/ElementProps";
 import { Model2dState } from "../../common/EntityState";
 import { ModelProps } from "../../common/ModelProps";
-import { CategorySelectorState, DrawingViewState, OrthographicViewState, ViewState } from "../../common/ViewState";
+import { DrawingViewState, OrthographicViewState, ViewState } from "../../common/ViewState";
 import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "../../frontend/IModelConnection";
-import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { DateTime, Blob, NavigationValue } from "../../common/ECSqlBindingValues";
+import { Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { DateTime, Blob, NavigationValue } from "../../common/ECSqlTypes";
 import { TestData } from "./TestData";
 import { ModelSelectorState } from "../../common/ModelSelectorState";
 import { DisplayStyle3dState, DisplayStyle2dState } from "../../common/DisplayStyleState";
+import { CategorySelectorState } from "../../common/CategorySelectorState";
 
 // spell-checker: disable
 
@@ -60,7 +61,7 @@ describe("IModelConnection", () => {
 
     let viewDefinitionProps: ViewDefinitionProps[] = await iModel.views.queryViewDefinitionProps("BisCore.OrthographicViewDefinition");
     assert.isAtLeast(viewDefinitionProps.length, 1);
-    let viewState: ViewState = await iModel.views.loadViewState(new Id64(viewDefinitionProps[0].id));
+    let viewState: ViewState = await iModel.views.loadView(viewDefinitionProps[0].id!);
     assert.exists(viewState);
     assert.equal(viewState.classFullName, OrthographicViewState.getClassFullName());
     assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.getClassFullName());
@@ -72,7 +73,7 @@ describe("IModelConnection", () => {
 
     viewDefinitionProps = await iModel.views.queryViewDefinitionProps("BisCore.DrawingViewDefinition");
     assert.isAtLeast(viewDefinitionProps.length, 1);
-    viewState = await iModel.views.loadViewState(new Id64(viewDefinitionProps[0].id));
+    viewState = await iModel.views.loadView(viewDefinitionProps[0].id!);
     assert.exists(viewState);
     assert.equal(viewState.classFullName, DrawingViewState.getClassFullName());
     assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.getClassFullName());
@@ -82,35 +83,45 @@ describe("IModelConnection", () => {
     assert.instanceOf(viewState.displayStyle, DisplayStyle2dState);
     assert.instanceOf((viewState as DrawingViewState).baseModel, Model2dState);
 
-    await iModel.close(TestData.accessToken);
-  }).timeout(99999);
+    assert.exists(iModel.projectExtents);
 
-  it.skip("Parameterized ECSQL", async () => {
+    await iModel.close(TestData.accessToken);
+  });
+
+  it("Parameterized ECSQL", async () => {
+    await TestData.load();
     const iModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
     assert.exists(iModel);
 
     let rows = await iModel.executeQuery("SELECT ECInstanceId,Model,LastMod,CodeValue,FederationGuid,Origin FROM bis.GeometricElement3d LIMIT 1");
     assert.equal(rows.length, 1);
     let expectedRow = rows[0];
-    let actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement3d WHERE ECInstanceId=? AND Model=? AND LastMod=? AND CodeValue=? AND FederationGuid=? AND Origin=?",
-      [new Id64(expectedRow.id), new NavigationValue(expectedRow.model.id), new DateTime(expectedRow.lastMod), expectedRow.codeValue,
-      new Blob(expectedRow.federationGuid), new Point3d(expectedRow.origin.x, expectedRow.origin.y, expectedRow.origin.z)]);
-    assert.equal(actualRows.length, 1);
-    assert.equal(actualRows[0], 1);
+    const expectedId: Id64 = expectedRow.id;
+    assert.isTrue(expectedId.isValid());
+    const expectedModelId: NavigationValue = expectedRow.model;
+    assert.isTrue(expectedModelId.isValid());
+    const expectedLastMod: DateTime = expectedRow.lastMod;
+    assert.isTrue(expectedLastMod.isValid());
+    const expectedFedGuid: Blob | undefined = expectedRow.federationGuid !== undefined ? expectedRow.federationGuid : undefined;
+    const expectedOrigin: Point3d = expectedRow.origin;
 
-    actualRows = await iModel.executeQuery("SELECT 1 FROM bis.Element WHERE ECInstanceId=:id AND Model=:model AND LastMod=:lastmode AND CodeValue=:codevalue AND FederationGuid=:fedguid AND Origin=:origin",
+    let actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement3d WHERE ECInstanceId=? AND Model=? OR (LastMod=? AND CodeValue=? AND FederationGuid=? AND Origin=?)",
+      [expectedId, expectedModelId, expectedLastMod, expectedRow.codeValue,
+        expectedFedGuid, expectedOrigin]);
+    assert.equal(actualRows.length, 1);
+
+    actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement3d WHERE ECInstanceId=:id AND Model=:model OR (LastMod=:lastmod AND CodeValue=:codevalue AND FederationGuid=:fedguid AND Origin=:origin)",
       {
-        id: new Id64(expectedRow.id), model: new NavigationValue(expectedRow.model.id), lastmod: new DateTime(expectedRow.lastMod),
-        codevalue: expectedRow.codeValue, fedguid: new Blob(expectedRow.federationGuid), origin: new Point3d(expectedRow.origin.x, expectedRow.origin.y, expectedRow.origin.z),
+        id: expectedId, model: expectedModelId, lastmod: expectedLastMod,
+        codevalue: expectedRow.codeValue, fedguid: expectedFedGuid, origin: expectedOrigin,
       });
     assert.equal(actualRows.length, 1);
-    assert.equal(actualRows[0], 1);
 
     // single parameter query
-    actualRows = await iModel.executeQuery("SELECT 1 FROM bis.Element WHERE LastMod=?", [new DateTime(expectedRow.lastMod)]);
+    actualRows = await iModel.executeQuery("SELECT 1 FROM bis.Element WHERE LastMod=?", [expectedLastMod]);
     assert.isTrue(actualRows.length >= 1);
 
-    actualRows = await iModel.executeQuery("SELECT 1 FROM bis.Element WHERE LastMod=:lastmod", { lastmod: new DateTime(expectedRow.lastMod) });
+    actualRows = await iModel.executeQuery("SELECT 1 FROM bis.Element WHERE LastMod=:lastmod", { lastmod: expectedLastMod });
     assert.isTrue(actualRows.length >= 1);
 
     // New query with point2d parameter
@@ -119,13 +130,13 @@ describe("IModelConnection", () => {
 
     expectedRow = rows[0];
     actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement2d WHERE ECInstanceId=? AND Origin=?",
-      [new Id64(expectedRow.id), new Point2d(expectedRow.origin.x, expectedRow.origin.y)]);
+      [expectedRow.id, expectedRow.origin]);
     assert.equal(actualRows.length, 1);
-    assert.equal(actualRows[0], 1);
 
     actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement2d WHERE ECInstanceId=:id AND Origin=:origin",
-      { id: new Id64(expectedRow.id), origin: new Point2d(expectedRow.origin.x, expectedRow.origin.y) });
+      { id: expectedRow.id, origin: expectedRow.origin });
     assert.equal(actualRows.length, 1);
-    assert.equal(actualRows[0], 1);
-  });
+
+    await iModel.close(TestData.accessToken);
+  }).timeout(99999);
 });

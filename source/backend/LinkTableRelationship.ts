@@ -11,6 +11,8 @@ import { DbOpcode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
+const loggingCategory = "imodeljs-backend.LinkTableRelationship";
+
 /** Properties that are common to all types of link table ECRelationships */
 export interface LinkTableRelationshipProps extends EntityProps {
   sourceId: Id64Props;
@@ -195,7 +197,7 @@ export class IModelDbLinkTableRelationships {
 
     const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.insertLinkTableRelationship(JSON.stringify(props));
     if (error)
-      throw new IModelError(error.status, "Problem inserting relationship instance", Logger.logWarning);
+      throw new IModelError(error.status, "Problem inserting relationship instance", Logger.logWarning, loggingCategory);
 
     props.id = new Id64(json);
     return props.id;
@@ -212,7 +214,7 @@ export class IModelDbLinkTableRelationships {
 
     const error: DbResult = this._iModel.briefcaseEntry.nativeDb.updateLinkTableRelationship(JSON.stringify(props));
     if (error !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(error, "", Logger.logWarning);
+      throw new IModelError(error, "", Logger.logWarning, loggingCategory);
   }
 
   /**
@@ -226,7 +228,7 @@ export class IModelDbLinkTableRelationships {
 
     const error: DbResult = this._iModel.briefcaseEntry.nativeDb.deleteLinkTableRelationship(JSON.stringify(props));
     if (error !== DbResult.BE_SQLITE_DONE)
-      throw new IModelError(error, "", Logger.logWarning);
+      throw new IModelError(error, "", Logger.logWarning, loggingCategory);
   }
 
   /** get the props of a relationship instance */
