@@ -33,3 +33,42 @@ export type LazyLoadedRelationshipConstraintClass = Readonly<SchemaChildKey> & D
 
 export type AnyClassType = EntityClass | MixinClass | StructClass | CustomAttributeClass | RelationshipClass;
 export type AnySchemaChildType = AnyClassType | Enumeration | KindOfQuantity | PropertyCategory;
+
+export interface SchemaDeserializationVisitor {
+  /**
+   * Called after a schema and all its references are deserialized,
+   * but _before_ any of its children or custom attributes have been deserialized.
+   * @param schema a partially-loaded Schema
+   */
+  visitEmptySchema?: (schema: Schema) => void;
+
+  /**
+   * Called after an Enumeration and all its Enumerators have been deserialized.
+   * @param enumeration a fully-loaded Enumeration
+   */
+  visitEnumeration?: (enumeration: Enumeration) => void;
+
+  /**
+   * Called after a KindOfQuantity has been deserialized.
+   * @param koq a fully-loaded KindOfQuantity
+   */
+  visitKindOfQuantity?: (koq: KindOfQuantity) => void;
+
+  /**
+   * Called after a PropertyCategory has been deserialized.
+   * @param category a fully-loaded PropertyCategory
+   */
+  visitPropertyCategory?: (category: PropertyCategory) => void;
+
+  /**
+   * Called after an ECClass and its baseClass, properties, and custom attributes have been deserialized.
+   * @param ecClass a fully-loaded ECClass
+   */
+  visitClass?: (ecClass: AnyClassType) => void;
+
+  /**
+   * Called after a schema and all its references, children, and custom attributes have been deserialized,
+   * @param schema a fully-loaded Schema
+   */
+  visitFullSchema?: (schema: Schema) => void;
+}
