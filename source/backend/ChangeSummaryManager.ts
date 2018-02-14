@@ -16,6 +16,9 @@ import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { IModelJsFs } from "./IModelJsFs";
 import { KnownLocations } from "./KnownLocations";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core/lib/Logger";
+
+const loggingCategory = "imodeljs-backend.ChangeSummaryManager";
 
 /** Equivalent of the ECEnumeration OpCode in the ECDbChange ECSchema */
 export enum ChangeOpCode {
@@ -88,6 +91,119 @@ export class ChangeSummaryManager {
   }
 
   /** Extracts change summaries from the specified range of changesets
+   * @param accessToken Delegation token of the authorized user.
+   * @param contextId Id of the Connect Project or Asset containing the iModel
+   * @param iModelId Id of the iModel
+   * @param startChangeSetId Changeset Id of the starting changeset to extract from (including this changeset).
+   * If undefined, the first changeset of the iModel is used.
+   * @param endChangeSetId Changeset Id of the end changeset to extract from (including this changeset).
+   * If undefined, the latest changeset of the iModel is used.
+   * @throws [[IModelError]]
+   */
+  public static async extractChangeSummaries_new(accessToken: AccessToken, contextId: string, iModelId: string,
+    startChangeSetId?: string, endChangeSetId?: string): Promise<void> {
+
+    const startTime: number = new Date().getTime();
+
+    const endVersion: IModelVersion = endChangeSetId === undefined ? IModelVersion.latest() : IModelVersion.asOfChangeSet(endChangeSetId);
+    // TODO: open the imodel readonly and in exclusive ownership as we go back in history. Needs changes in BriefcaseManager.
+    const iModel: IModelDb = await IModelDb.open(accessToken, contextId, iModelId, OpenMode.ReadWrite, endVersion);
+    if (iModel === undefined || iModel.nativeDb === undefined)
+      throw new IModelError(IModelStatus.BadArg);
+
+    const changeSetInfos: ChangeSet[] = await this.retrieveChangeSetInfos(accessToken, iModelId, startChangeSetId, endChangeSetId);
+
+    const changesFile: ECDb = ChangeSummaryManager.openOrCreateChangesFile(iModel);
+    if (changesFile === undefined || changesFile.nativeDb === undefined)
+      throw new IModelError(IModelStatus.BadArg);
+
+    try {
+      const changeSetsFolder: string = BriefcaseManager.getChangeSetsPath(iModelId);
+      const userInfoCache = new Map<string, string>();
+
+      let isFirst: boolean = true;
+      // extract summaries from end changeset through start changeset, so that we only have to go back in history
+      for (const changeSetInfo of changeSetInfos.reverse()) {
+        const currentChangeSetId: string = changeSetInfo.wsgId;
+
+        if (!isFirst) // don't reverse change for first changeset as the imodel was already opened at that revision
+          await iModel.reverseChanges(accessToken, IModelVersion.asOfChangeSet(currentChangeSetId));
+
+        isFirst = false;
+
+        if (ChangeSummaryManager.isSummaryAlreadyExtracted(changesFile, currentChangeSetId))
+          continue;
+
+        const changeSetFilePath: string = path.join(changeSetsFolder, changeSetInfo.fileName!);
+        const stat: ErrorStatusOrResult<DbResult, string> = iModel.nativeDb.extractChangeSummary(changesFile.nativeDb, changeSetFilePath);
+        if (stat.error != null && stat.error!.status !== DbResult.BE_SQLITE_OK)
+          throw new IModelError(stat.error!.status);
+
+        const changeSummaryId = new Id64(stat.result!);
+
+        let userEmail: string | undefined; // undefined means that no user information is stored along with changeset
+        if (changeSetInfo.userCreated !== undefined) {
+          const userId: string = changeSetInfo.userCreated!;
+          const foundUserEmail: string | undefined = userInfoCache.get(userId);
+          if (foundUserEmail === undefined) {
+            const userInfo: UserInfo = await BriefcaseManager.hubClient!.getUserInfo(accessToken, iModelId, userId);
+            userEmail = userInfo.email;
+            // in the cache, add empty e-mail to mark that this user has already been looked up
+            userInfoCache.set(userId, userEmail !== undefined ? userEmail : "");
+          } else
+            userEmail = foundUserEmail.length !== 0 ? foundUserEmail : undefined;
+        }
+
+        ChangeSummaryManager.addExtendedInfos(changesFile, changeSummaryId, currentChangeSetId, changeSetInfo.parentId, changeSetInfo.pushDate !== undefined ? new DateTime(changeSetInfo.pushDate!) : undefined, userEmail);
+        }
+
+      changesFile.saveChanges();
+
+    } finally {
+      changesFile.dispose();
+      await iModel.close(accessToken);
+
+      if (Logger.isEnabled(loggingCategory, LogLevel.TRACE)) {
+        const duration: number = new Date().getTime() - startTime;
+        const startChangesetIdStr: string = startChangeSetId !== undefined ? startChangeSetId : "first";
+        const endChangesetIdStr: string = endChangeSetId !== undefined ? endChangeSetId : "latest";
+        Logger.logTrace(loggingCategory, `Extracted ChangeSummaries for iModel ${iModelId} from changeset ${startChangesetIdStr} through ${endChangesetIdStr} [${duration} msec].`);
+      }
+    }
+  }
+
+  private static async retrieveChangeSetInfos(accessToken: AccessToken, iModelId: string, startChangeSetId?: string, endChangeSetId?: string): Promise<ChangeSet[]> {
+    const changeSetInfos: ChangeSet[] = await BriefcaseManager.hubClient!.getChangeSets(accessToken, iModelId, false, startChangeSetId);
+
+    // getChangeSets does not retrieve the specified from-changeset itself, but only its direct child. So we must retrieve the from-changeset
+    // ourselves first
+    if (startChangeSetId !== undefined) {
+      const startChangeSetInfo: ChangeSet = await BriefcaseManager.hubClient!.getChangeSet(accessToken, iModelId, false, startChangeSetId);
+      changeSetInfos.unshift(startChangeSetInfo);
+    }
+
+    if (endChangeSetId === undefined)
+      return changeSetInfos;
+
+    let endChangeSetIx: number = -1;
+    for (let i = 0; i < changeSetInfos.length; i++) {
+      if (changeSetInfos[i].wsgId === endChangeSetId) {
+        endChangeSetIx = i;
+        break;
+      }
+    }
+
+    if (endChangeSetIx < 0) {
+      const errorMsg: string = startChangeSetId !== undefined ? `Invalid ChangeSet ${endChangeSetId} for iModel ${iModelId}. It does not exist.` :
+      `Invalid ChangeSet ${endChangeSetId} for iModel ${iModelId}. It either does not exist or it is not a successor of the start changeset ${startChangeSetId}.`;
+      throw new IModelError(IModelStatus.BadArg, errorMsg);
+    }
+
+    const deleteIx: number = endChangeSetIx + 1;
+    return changeSetInfos.splice(deleteIx, changeSetInfos.length - deleteIx);
+  }
+
+  /** Extracts change summaries from the specified range of changesets
    * @param startChangeSetId  Changeset Id of the starting changeset to extract from (including this changeset).
    * If undefined, the first changeset of the iModel is used.
    * @param endChangeSetId  Changeset Id of the end changeset to extract from (including this changeset).
@@ -152,7 +268,7 @@ export class ChangeSummaryManager {
           throw new IModelError(stat.error!.status);
 
         assert(stat.result != null);
-        const changeSummaryId: string = stat.result!;
+        const changeSummaryId = new Id64(stat.result!);
 
         let userEmail: string | undefined = userInfoCache.get(changeSet.userCreated!);
         if (userEmail == null) {
@@ -161,7 +277,7 @@ export class ChangeSummaryManager {
           userInfoCache.set(changeSet.userCreated!, userEmail);
         }
 
-        ChangeSummaryManager.addExtendedInfos(changesFile, changeSummaryId, changeSet.wsgId, changeSet.parentId!, changeSet.pushDate!, userEmail);
+        ChangeSummaryManager.addExtendedInfos(changesFile, changeSummaryId, changeSet.wsgId, changeSet.parentId, changeSet.pushDate !== undefined ? new DateTime(changeSet.pushDate) : undefined, userEmail);
       } finally {
         await iModel.close(accessToken);
       }
@@ -211,14 +327,20 @@ export class ChangeSummaryManager {
       });
   }
 
-  private static addExtendedInfos(changesFile: ECDb, changeSummaryId: string, changesetWsgId: string, changesetParentWsgId: string, changesetPushDate: string, changeSetAuthor: string): void {
+  private static addExtendedInfos(changesFile: ECDb, changeSummaryId: Id64, changesetWsgId: string, changesetParentWsgId?: string, changesetPushDate?: DateTime, changeSetAuthor?: string): void {
     changesFile.withPreparedStatement("INSERT INTO imodelchange.ChangeSet(Summary.Id,WsgId,ParentWsgId,PushDate,Author) VALUES(?,?,?,?,?)",
       (stmt) => {
-        stmt.bindId(1, new Id64(changeSummaryId));
+        stmt.bindId(1, changeSummaryId);
         stmt.bindString(2, changesetWsgId);
-        stmt.bindString(3, changesetParentWsgId);
-        stmt.bindDateTime(4, new DateTime(changesetPushDate));
-        stmt.bindString(5, changeSetAuthor);
+        if (changesetParentWsgId !== undefined)
+          stmt.bindString(3, changesetParentWsgId);
+
+        if (changesetPushDate !== undefined)
+          stmt.bindDateTime(4, changesetPushDate);
+
+        if (changeSetAuthor !== undefined)
+          stmt.bindString(5, changeSetAuthor);
+
         const r: DbResult = stmt.step();
         if (r !== DbResult.BE_SQLITE_DONE)
           throw new IModelError(r, "Failed to add changeset information to extracted change summary " + changeSummaryId);
