@@ -4,7 +4,7 @@
 
 import { assert, expect } from "chai";
 
-import ECSchema from "../../source/Metadata/Schema";
+import Schema from "../../source/Metadata/Schema";
 import ECClass from "../../source/Metadata/Class";
 import EntityClass from "../../source/Metadata/EntityClass";
 import MixinClass from "../../source/Metadata/MixinClass";
@@ -15,7 +15,7 @@ import { SchemaKey, SchemaMatchType } from "../../source/ECObjects";
 describe("schema test", () => {
   describe("api creation of schema", () => {
     it("with only the essentials", () => {
-      const testSchema = new ECSchema("TestSchemaCreation", 10, 99, 15);
+      const testSchema = new Schema("TestSchemaCreation", 10, 99, 15);
       assert.equal(testSchema.name, "TestSchemaCreation");
       assert.equal(testSchema.readVersion, 10);
       assert.equal(testSchema.writeVersion, 99);
@@ -23,7 +23,7 @@ describe("schema test", () => {
     });
 
     it("with setting properties", () => {
-      const testSchema = new ECSchema("TestSchema", 1, 0, 2);
+      const testSchema = new Schema("TestSchema", 1, 0, 2);
       testSchema.alias = "ts";
       assert.isDefined(testSchema.alias);
       assert.equal(testSchema.alias, "ts");
@@ -34,13 +34,13 @@ describe("schema test", () => {
     });
 
     it("with invalid version numbers should fail", () => {
-      expect(() => {new ECSchema("NewSchemaWithInvalidReadVersion", 123, 4, 5); }).to.throw(ECObjectsError);
-      expect(() => {new ECSchema("NewSchemaWithInvalidWriteVersion", 12, 345, 6); }).to.throw(ECObjectsError);
-      expect(() => {new ECSchema("NewSchemaWithInvalidMinorVersion", 12, 34, 567); }).to.throw(ECObjectsError);
+      expect(() => {new Schema("NewSchemaWithInvalidReadVersion", 123, 4, 5); }).to.throw(ECObjectsError);
+      expect(() => {new Schema("NewSchemaWithInvalidWriteVersion", 12, 345, 6); }).to.throw(ECObjectsError);
+      expect(() => {new Schema("NewSchemaWithInvalidMinorVersion", 12, 34, 567); }).to.throw(ECObjectsError);
     });
 
     it("should throw when attempting to change the version to an invalid version", () => {
-      const testSchema = new ECSchema("TestSchema", 1, 1, 1);
+      const testSchema = new Schema("TestSchema", 1, 1, 1);
       expect(() => {testSchema.readVersion = 123; }).to.throw(ECObjectsError);
       expect(testSchema.readVersion).equal(1);
       expect(() => {testSchema.writeVersion = 123; }).to.throw(ECObjectsError);
@@ -56,7 +56,7 @@ describe("schema test", () => {
 
   describe("create schema children", () => {
     it("should succeed for entity class", async () => {
-      const testSchema = new ECSchema("TestSchema", 1, 1, 1);
+      const testSchema = new Schema("TestSchema", 1, 1, 1);
       await testSchema.createEntityClass("TestEntity");
 
       expect(await testSchema.getClass("TestEntity")).instanceof(ECClass);
@@ -64,7 +64,7 @@ describe("schema test", () => {
     });
 
     it("should succeed for mixin class", async () => {
-      const testSchema = new ECSchema("TestSchema", 1, 2, 3);
+      const testSchema = new Schema("TestSchema", 1, 2, 3);
       await testSchema.createMixinClass("TestMixin");
 
       expect(await testSchema.getClass("TestMixin")).instanceof(ECClass);
@@ -72,7 +72,7 @@ describe("schema test", () => {
     });
 
     it("should succeed for struct class", async () => {
-      const testSchema = new ECSchema("TestSchema", 1, 2, 3);
+      const testSchema = new Schema("TestSchema", 1, 2, 3);
       await testSchema.createStructClass("TestStruct");
 
       expect(await testSchema.getClass("TestStruct")).instanceof(ECClass);
@@ -80,7 +80,7 @@ describe("schema test", () => {
     });
 
     it("should succeed with case-insensitive search", async () => {
-      const testSchema = new ECSchema("TestSchema", 1, 0, 0);
+      const testSchema = new Schema("TestSchema", 1, 0, 0);
       await testSchema.createEntityClass("testEntity");
 
       expect(await testSchema.getClass("TESTENTITY")).not.undefined;

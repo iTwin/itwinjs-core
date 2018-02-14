@@ -4,10 +4,11 @@
 
 import SchemaChild from "./SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { KindOfQuantityInterface, FormatUnitSpecInterface, SchemaInterface } from "../Interfaces";
 import { SchemaChildType } from "../ECObjects";
+import { SchemaChildVisitor } from "../Interfaces";
+import Schema from "./Schema";
 
-export class FormatUnitSpec implements FormatUnitSpecInterface {
+export class FormatUnitSpec {
   public unit: string;
   public format: string;
 }
@@ -15,13 +16,13 @@ export class FormatUnitSpec implements FormatUnitSpecInterface {
 /**
  * A Typescript class representation of a KindOfQuantity.
  */
-export default class KindOfQuantity extends SchemaChild implements KindOfQuantityInterface {
+export default class KindOfQuantity extends SchemaChild {
   public readonly type: SchemaChildType.KindOfQuantity;
   public precision: number;
   public presentationUnits: FormatUnitSpec[];
   public persistenceUnit: FormatUnitSpec;
 
-  constructor(schema: SchemaInterface, name: string) {
+  constructor(schema: Schema, name: string) {
     super(schema, name);
     this.key.type = SchemaChildType.KindOfQuantity;
   }
@@ -44,5 +45,10 @@ export default class KindOfQuantity extends SchemaChild implements KindOfQuantit
 
     if (jsonObj.persistenceUnit)
       this.persistenceUnit = jsonObj.persistenceUnit as FormatUnitSpec;
+  }
+
+  public async accept(visitor: SchemaChildVisitor) {
+    if (visitor.visitKindOfQuantity)
+      await visitor.visitKindOfQuantity(this);
   }
 }

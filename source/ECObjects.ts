@@ -429,6 +429,19 @@ export class SchemaKey {
 
   public toString() { return `${this.name}.${this.readVersion}.${this.writeVersion}.${this.minorVersion}`; }
 
+  public static parseString(fullName: string) {
+    const keyPieces = fullName.split (".");
+    if (keyPieces.length !== 4) {
+      throw new ECObjectsError (ECObjectsStatus.InvalidECName);
+    }
+
+    const schemaName = keyPieces[0];
+    const readVer = Number (keyPieces[1]);
+    const writeVer = Number (keyPieces[2]);
+    const minorVer = Number (keyPieces[3]);
+    return new SchemaKey(schemaName, readVer, writeVer, minorVer);
+  }
+
   /*
    * Compares two schema names and returns whether or not they match. Comparison is case-sensitive.
    */

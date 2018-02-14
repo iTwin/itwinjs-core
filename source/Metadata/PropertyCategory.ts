@@ -5,13 +5,14 @@
 import SchemaChild from "./SchemaChild";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaChildType } from "../ECObjects";
-import { SchemaInterface, PropertyCategoryInterface } from "../Interfaces";
+import { SchemaChildVisitor } from "../Interfaces";
+import Schema from "./Schema";
 
-export default class PropertyCategory extends SchemaChild implements PropertyCategoryInterface {
+export default class PropertyCategory extends SchemaChild {
   public readonly type: SchemaChildType.PropertyCategory;
   public priority: number;
 
-  constructor(schema: SchemaInterface, name: string) {
+  constructor(schema: Schema, name: string) {
     super(schema, name);
     this.key.type = SchemaChildType.PropertyCategory;
   }
@@ -24,5 +25,10 @@ export default class PropertyCategory extends SchemaChild implements PropertyCat
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The PropertyCategory ${this.name} has an invalid 'priority' attribute. It should be of type 'number'.`);
       this.priority = jsonObj.priority;
     }
+  }
+
+  public async accept(visitor: SchemaChildVisitor) {
+    if (visitor.visitPropertyCategory)
+      await visitor.visitPropertyCategory(this);
   }
 }

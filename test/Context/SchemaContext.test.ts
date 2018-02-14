@@ -6,17 +6,17 @@ import * as chai from "chai";
 const assert = chai.assert;
 const expect = chai.expect;
 
-import * as chaiAsPromised from "chai-as-promised"
+import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
 
-import ECSchema from "../../source/Metadata/Schema";
+import Schema from "../../source/Metadata/Schema";
 import { SchemaKey, SchemaMatchType } from "../../source/ECObjects";
 import { SchemaContext, SchemaCache } from "../../source/Context";
 import { ECObjectsError } from "../../source/Exception";
 
 describe("Schema Context", () => {
   it("should succeed locating added schema", async () => {
-    const schema = new ECSchema("TestSchema", 1, 5, 9);
+    const schema = new Schema("TestSchema", 1, 5, 9);
 
     const context = new SchemaContext();
     await context.addSchema(schema);
@@ -40,8 +40,8 @@ describe("Schema Context", () => {
   it("does not allow duplicate schemas", async () => {
     const context = new SchemaContext();
 
-    const schema = new ECSchema("TestSchema", 1, 0, 5);
-    const schema2 = new ECSchema("TestSchema", 1, 0, 5);
+    const schema = new Schema("TestSchema", 1, 0, 5);
+    const schema2 = new Schema("TestSchema", 1, 0, 5);
 
     await context.addSchema(schema);
     await expect(context.addSchema(schema2)).to.be.rejectedWith(ECObjectsError);
@@ -51,7 +51,7 @@ describe("Schema Context", () => {
     const context = new SchemaContext();
 
     const cache = new SchemaCache();
-    const schema = new ECSchema("TestSchema", 1, 0, 5);
+    const schema = new Schema("TestSchema", 1, 0, 5);
     await cache.addSchema(schema);
 
     context.addLocater(cache);
@@ -61,11 +61,11 @@ describe("Schema Context", () => {
     // Check if the schema is found if it is added to the cache after the cache is added as a locater
     const cache2 = new SchemaCache();
     context.addLocater(cache2);
-    const schema2 = new ECSchema("TestSchema", 1, 0, 10);
+    const schema2 = new Schema("TestSchema", 1, 0, 10);
     await cache2.addSchema(schema2);
     expect(await context.getSchema(schema2.schemaKey, SchemaMatchType.Exact)).to.equal(schema2);
 
-    // We should still get TestSchema 1.0.5 for SchemaMatchType.Latest, since cache was added _before_ cache2 
+    // We should still get TestSchema 1.0.5 for SchemaMatchType.Latest, since cache was added _before_ cache2
     expect(await context.getSchema(schema2.schemaKey)).to.equal(schema);
   });
 });

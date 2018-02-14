@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import ECSchema from "../../source/Metadata/Schema";
+import Schema from "../../source/Metadata/Schema";
 import EntityClass from "../../source/Metadata/EntityClass";
 import RelationshipClass from "../../source/Metadata/RelationshipClass";
 import { RelationshipMultiplicity, StrengthType, RelatedInstanceDirection } from "../../source/ECObjects";
@@ -56,7 +56,7 @@ describe("relationship", () => {
         },
       };
 
-      const schema = await ECSchema.fromJson(schemaJson);
+      const schema = await Schema.fromJson(schemaJson);
       assert.isDefined(schema);
 
       const sourceEntity = await schema.getClass<EntityClass>("TestSourceEntity");

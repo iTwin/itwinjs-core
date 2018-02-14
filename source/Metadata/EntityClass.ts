@@ -5,20 +5,21 @@
 import ECClass from "./Class";
 import MixinClass from "./MixinClass";
 import RelationshipClass from "./RelationshipClass";
-import { EntityClassInterface, SchemaInterface, RelationshipClassInterface, LazyLoadedMixin } from "../Interfaces";
+import { LazyLoadedMixin } from "../Interfaces";
 import { ECClassModifier, RelatedInstanceDirection, SchemaChildType, parseStrengthDirection } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { NavigationProperty, AnyProperty } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
+import Schema from "./Schema";
 
 /**
  * A Typescript class representation of an ECEntityClass.
  */
-export default class EntityClass extends ECClass implements EntityClassInterface {
+export default class EntityClass extends ECClass {
   public readonly type: SchemaChildType.EntityClass;
   private _mixins?: LazyLoadedMixin[];
 
-  constructor(schema: SchemaInterface, name: string, modifier?: ECClassModifier) {
+  constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name, modifier);
     this.key.type = SchemaChildType.EntityClass;
   }
@@ -71,11 +72,11 @@ export default class EntityClass extends ECClass implements EntityClassInterface
    * @param relationship
    * @param direction
    */
-  public async createNavigationProperty(name: string, relationship: string | RelationshipClassInterface, direction?: string | RelatedInstanceDirection): Promise<NavigationProperty> {
+  public async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction?: string | RelatedInstanceDirection): Promise<NavigationProperty> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
-    let resolvedRelationship: RelationshipClassInterface | undefined;
+    let resolvedRelationship: RelationshipClass | undefined;
     if (typeof(relationship) === "string")
       resolvedRelationship = await this.schema.getChild<RelationshipClass>(relationship, false);
     else

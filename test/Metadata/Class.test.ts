@@ -4,17 +4,17 @@
 
 import { assert, expect } from "chai";
 
-import ECSchema from "../../source/Metadata/Schema";
+import Schema from "../../source/Metadata/Schema";
 import EntityClass from "../../source/Metadata/EntityClass";
 import { SchemaContext } from "../../source/Context";
 import { DelayedPromiseWithProps } from "../../source/DelayedPromise";
 
 describe("class", () => {
-  let schema: ECSchema;
+  let schema: Schema;
 
   describe("get properties", () => {
     beforeEach(() => {
-      schema = new ECSchema("TestSchema", 1, 0, 0);
+      schema = new Schema("TestSchema", 1, 0, 0);
     });
 
     it("inherited properties from base class", async () => {
@@ -75,7 +75,7 @@ describe("class", () => {
         },
       };
 
-      schema = await ECSchema.fromJson(schemaJson);
+      schema = await Schema.fromJson(schemaJson);
       assert.isDefined(schema);
 
       const testClass = await schema.getClass<EntityClass>("testClass");
@@ -106,13 +106,13 @@ describe("class", () => {
         },
       };
 
-      const refSchema = new ECSchema("RefSchema", 1, 0, 5);
+      const refSchema = new Schema("RefSchema", 1, 0, 5);
       const refBaseClass = await refSchema.createEntityClass("BaseClassInRef");
 
       const context = new SchemaContext();
       await context.addSchema(refSchema);
 
-      schema = await ECSchema.fromJson(schemaJson, context);
+      schema = await Schema.fromJson(schemaJson, context);
 
       const testClass = await schema.getClass<EntityClass>("testClass");
 
@@ -158,7 +158,7 @@ describe("class", () => {
         },
       };
 
-      const ecSchema = await ECSchema.fromJson(schemaJson);
+      const ecSchema = await Schema.fromJson(schemaJson);
       assert.isDefined(ecSchema);
 
       const testEntity = await ecSchema.getClass("testClass");

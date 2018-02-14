@@ -13,7 +13,6 @@ import KindOfQuantity from "./KindOfQuantity";
 import PropertyCategory from "./PropertyCategory";
 import SchemaReadHelper from "../Deserialization/Helper";
 import { ECVersion, SchemaChildKey, SchemaKey, ECClassModifier } from "../ECObjects";
-import { SchemaInterface, SchemaChildInterface } from "../Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { SchemaContext } from "../Context";
@@ -23,15 +22,15 @@ const SCHEMAURL3_1 = "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecsche
 /**
  *
  */
-export default class ECSchema implements SchemaInterface, CustomAttributeContainerProps {
+export default class Schema implements CustomAttributeContainerProps {
   private _context?: SchemaContext;
   public readonly schemaKey: SchemaKey;
   public alias: string;
   public label?: string;
   public description?: string;
   public customAttributes?: CustomAttributeSet;
-  public readonly references: SchemaInterface[];
-  private readonly _children: SchemaChildInterface[];
+  public readonly references: Schema[];
+  private readonly _children: SchemaChild[];
 
   constructor(name?: string, readVersion?: number, writeVersion?: number, minorVersion?: number, context?: SchemaContext) {
     this.schemaKey = new SchemaKey(name, readVersion, writeVersion, minorVersion);
@@ -113,17 +112,22 @@ export default class ECSchema implements SchemaInterface, CustomAttributeContain
   public createPropertyCategorySync(name: string): PropertyCategory { return this.createChild<PropertyCategory>(PropertyCategory, name); }
 
   // This method is private at the moment, but there is really no reason it can't be public... Need to make sure this is the way we want to handle this
-  private createClass<T extends ECClass>(type: (new (schema: SchemaInterface, name: string) => T), name: string, modifier?: ECClassModifier): T {
+  private createClass<T extends ECClass>(type: (new (schema: Schema, name: string) => T), name: string, modifier?: ECClassModifier): T {
     const child = this.createChild(type, name);
     if (modifier) child.modifier = modifier;
     return child;
   }
 
   // This method is private at the moment, but there is really no reason it can't be public... Need to make sure this is the way we want to handle this
-  private createChild<T extends SchemaChildInterface>(type: (new (schema: SchemaInterface, name: string) => T), name: string): T {
+  private createChild<T extends SchemaChild>(type: (new (schema: Schema, name: string) => T), name: string): T {
     const child = new type(this, name);
     this.addChild(child);
     return child;
+  }
+
+  private getLocalChild(name: string): SchemaChild| undefined {
+    // Case-insensitive search
+    return this._children.find((child) => child.name.toLowerCase() === name.toLowerCase());
   }
 
   /**
@@ -131,13 +135,13 @@ export default class ECSchema implements SchemaInterface, CustomAttributeContain
    * If the name is a full name, it will search in the reference schema matching the name.
    * @param name The name of the schema child to search for.
    */
-  public async getChild<T extends SchemaChildInterface>(name: string, includeReference?: boolean): Promise<T | undefined> {
+  public async getChild<T extends SchemaChild>(name: string, includeReference?: boolean): Promise<T | undefined> {
     const [schemaName, childName] = SchemaChild.parseFullName(name);
 
     let foundChild;
     if (!schemaName || schemaName.toLowerCase() === this.name.toLowerCase()) {
       // Case-insensitive search
-      foundChild = this._children.find((child) => child.name.toLowerCase() === childName.toLowerCase());
+      foundChild = this.getLocalChild(childName);
       if (!foundChild && this._context) {
         // this._context.
       }
@@ -154,7 +158,7 @@ export default class ECSchema implements SchemaInterface, CustomAttributeContain
     return Promise.resolve(foundChild ? foundChild as T : foundChild);
   }
 
-  public getChildByKeySync<T extends SchemaChildInterface>(key: SchemaChildKey, includeReferences?: boolean): T | undefined {
+  public getChildByKeySync<T extends SchemaChild>(key: SchemaChildKey, includeReferences?: boolean): T | undefined {
     key;
     includeReferences;
     // TODO: Deprecate?
@@ -183,7 +187,7 @@ export default class ECSchema implements SchemaInterface, CustomAttributeContain
     return undefined; // foundChild ? foundChild as T : foundChild;
   }
 
-  public getChildSync<T extends SchemaChildInterface>(name: string, includeReference?: boolean): T | undefined {
+  public getChildSync<T extends SchemaChild>(name: string, includeReference?: boolean): T | undefined {
     name;
     includeReference;
     // TODO: Deprecate?
@@ -194,16 +198,16 @@ export default class ECSchema implements SchemaInterface, CustomAttributeContain
    *
    * @param child
    */
-  public async addChild<T extends SchemaChildInterface>(child: T): Promise<void> {
-    if (undefined !== await this.getChild(child.name, false))
+  public async addChild<T extends SchemaChild>(child: T): Promise<void> {
+    if (undefined !== this.getLocalChild(child.name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateChild, `The SchemaChild ${child.name} cannot be added to the schema ${this.name} because it already exists`);
 
     this._children.push(child);
     return Promise.resolve();
   }
 
-  public addChildSync<T extends SchemaChildInterface>(child: T): void {
-    if (undefined !== this.getChildSync(child.name))
+  public addChildSync<T extends SchemaChild>(child: T): void {
+    if (undefined !== this.getLocalChild(child.name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateChild, `The SchemaChild ${child.name} cannot be added to the schema ${this.name} because it already exists`);
 
     this._children.push(child);
@@ -246,25 +250,25 @@ export default class ECSchema implements SchemaInterface, CustomAttributeContain
    *
    * @param refSchema
    */
-  public async addReference(refSchema: SchemaInterface): Promise<void> {
+  public async addReference(refSchema: Schema): Promise<void> {
     // TODO validation of reference schema. For now just adding
     this.references.push(refSchema);
   }
 
-  public addReferenceSync(refSchema: SchemaInterface): void {
+  public addReferenceSync(refSchema: Schema): void {
     if (refSchema) { }
 
     throw new Error("Not implemented");
   }
 
-  public async getReference<T extends SchemaInterface>(refSchemaName: string): Promise<T | undefined> {
+  public async getReference<T extends Schema>(refSchemaName: string): Promise<T | undefined> {
     if (this.references.length === 0)
       return undefined;
 
     return this.references.find((ref) => ref.schemaKey.name.toLowerCase() === refSchemaName.toLowerCase()) as T;
   }
 
-  public getReferenceSync<T extends SchemaInterface>(refSchemaName: string): T | undefined {
+  public getReferenceSync<T extends Schema>(refSchemaName: string): T | undefined {
     if (refSchemaName) { }
     throw new Error("Not implemented");
   }
@@ -293,14 +297,14 @@ export default class ECSchema implements SchemaInterface, CustomAttributeContain
   //// Static Methods /////
   /////////////////////////
 
-  public static async fromJson(jsonObj: object | string, context?: SchemaContext): Promise<ECSchema> {
-    let schema: ECSchema = new ECSchema();
+  public static async fromJson(jsonObj: object | string, context?: SchemaContext): Promise<Schema> {
+    let schema: Schema = new Schema();
 
     if (context) {
       const reader = new SchemaReadHelper(context);
       schema = await reader.readSchema(schema, jsonObj);
     } else
-      schema = await SchemaReadHelper.to<ECSchema>(schema, jsonObj);
+      schema = await SchemaReadHelper.to<Schema>(schema, jsonObj);
 
     return schema;
   }

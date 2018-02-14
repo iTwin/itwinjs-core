@@ -5,25 +5,28 @@
 import ECClass from "./Class";
 import { ECClassModifier, RelatedInstanceDirection, RelationshipEnd, RelationshipMultiplicity, SchemaChildType, StrengthType,
         parseStrength, parseStrengthDirection } from "../ECObjects";
-import { EntityClassInterface, RelationshipClassInterface, RelationshipConstraintInterface, SchemaInterface, LazyLoadedRelationshipConstraintClass, MixinInterface } from "../Interfaces";
+import { LazyLoadedRelationshipConstraintClass } from "../Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { NavigationProperty } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
+import EntityClass from "./EntityClass";
+import MixinClass from "./MixinClass";
+import Schema from "./Schema";
 
-type AnyConstraintClass = EntityClassInterface | MixinInterface | RelationshipClassInterface;
+type AnyConstraintClass = EntityClass | MixinClass | RelationshipClass;
 
 /**
  * A Typescript class representation of a ECRelationshipClass.
  */
-export default class RelationshipClass extends ECClass implements RelationshipClassInterface {
-  public schema: SchemaInterface;
+export default class RelationshipClass extends ECClass {
+  public schema: Schema;
   public readonly type: SchemaChildType.RelationshipClass;
   public strength: StrengthType;
   public strengthDirection: RelatedInstanceDirection;
-  public readonly source: RelationshipConstraintInterface;
-  public readonly target: RelationshipConstraintInterface;
+  public readonly source: RelationshipConstraint;
+  public readonly target: RelationshipConstraint;
 
-  constructor(schema: SchemaInterface, name: string, strength?: StrengthType, strengthDirection?: RelatedInstanceDirection, modifier?: ECClassModifier) {
+  constructor(schema: Schema, name: string, strength?: StrengthType, strengthDirection?: RelatedInstanceDirection, modifier?: ECClassModifier) {
     super(schema, name, modifier);
 
     this.key.type = SchemaChildType.RelationshipClass;
@@ -41,11 +44,11 @@ export default class RelationshipClass extends ECClass implements RelationshipCl
    * @param relationship
    * @param direction
    */
-  public async createNavigationProperty(name: string, relationship: string | RelationshipClassInterface, direction?: string | RelatedInstanceDirection): Promise<NavigationProperty> {
+  public async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction?: string | RelatedInstanceDirection): Promise<NavigationProperty> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
-    let resolvedRelationship: RelationshipClassInterface | undefined;
+    let resolvedRelationship: RelationshipClass | undefined;
     if (typeof(relationship) === "string")
       resolvedRelationship = await this.schema.getChild<RelationshipClass>(relationship, false);
     else
@@ -78,7 +81,7 @@ export default class RelationshipClass extends ECClass implements RelationshipCl
 /**
  * A Typescript class representation of a ECRelationshipConstraint.
  */
-export class RelationshipConstraint implements RelationshipConstraintInterface {
+export class RelationshipConstraint implements RelationshipConstraint {
   private _abstractConstraint?: LazyLoadedRelationshipConstraintClass;
   public relationshipClass: RelationshipClass;
   public relationshipEnd: RelationshipEnd;
@@ -117,7 +120,7 @@ export class RelationshipConstraint implements RelationshipConstraintInterface {
    * Adds the provided class as a constraint class to this constraint.
    * @param constraint The class to add as a constraint class.
    */
-  public addClass(constraint: EntityClassInterface | MixinInterface | RelationshipClassInterface): void {
+  public addClass(constraint: EntityClass | MixinClass | RelationshipClass): void {
     // Ensure we don't start mixing constraint class types
     if (this.constraintClasses && this.constraintClasses.length > 0 && this.constraintClasses[0].type !== constraint.key.type)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);

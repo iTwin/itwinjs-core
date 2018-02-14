@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import ECSchema from "../../source/Metadata/Schema";
+import Schema from "../../source/Metadata/Schema";
 import ECClass from "../../source/Metadata/Class";
 import EntityClass from "../../source/Metadata/EntityClass";
 import MixinClass from "../../source/Metadata/MixinClass";
@@ -13,10 +13,10 @@ import { DelayedPromiseWithProps } from "../../source/DelayedPromise";
 
 describe("entity class", () => {
   describe("get inherited properties", () => {
-    let schema: ECSchema;
+    let schema: Schema;
 
     beforeEach(() => {
-      schema = new ECSchema("TestSchema", 1, 0, 0);
+      schema = new Schema("TestSchema", 1, 0, 0);
     });
 
     it("from mixins", async () => {
@@ -59,7 +59,7 @@ describe("entity class", () => {
         },
       };
 
-      const ecschema = await ECSchema.fromJson(schemaJson);
+      const ecschema = await Schema.fromJson(schemaJson);
       const testClass = await ecschema.getClass<ECClass>("testEntityClass");
       assert.isDefined(testClass);
 
@@ -89,7 +89,7 @@ describe("entity class", () => {
         },
       };
 
-      const ecschema = await ECSchema.fromJson(schemaJson);
+      const ecschema = await Schema.fromJson(schemaJson);
       assert.isDefined(ecschema);
 
       const testClass = await ecschema.getClass("testClass");
@@ -132,7 +132,7 @@ describe("entity class", () => {
         },
       };
 
-      const ecschema = await ECSchema.fromJson(schemaJson);
+      const ecschema = await Schema.fromJson(schemaJson);
       assert.isDefined(ecschema);
     });
 
@@ -152,7 +152,7 @@ describe("entity class", () => {
         },
       };
 
-      const ecSchema = await ECSchema.fromJson(schemaJson);
+      const ecSchema = await Schema.fromJson(schemaJson);
       assert.isDefined(ecSchema);
 
       const testEntity = await ecSchema.getClass<EntityClass>("testClass");
@@ -211,7 +211,7 @@ describe("entity class", () => {
         },
       };
 
-      const schema = await ECSchema.fromJson(schemaJson);
+      const schema = await Schema.fromJson(schemaJson);
       assert.isDefined(schema);
 
       const entityClass = await schema.getClass<EntityClass>("TestClass");
