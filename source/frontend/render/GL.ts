@@ -37,6 +37,7 @@ export namespace GL {
     ArrayBufferBinding = WebGLRenderingContext.ARRAY_BUFFER_BINDING,
     ElementArrayBufferBinding = WebGLRenderingContext.ELEMENT_ARRAY_BUFFER_BINDING,
     BufferSize = WebGLRenderingContext.BUFFER_SIZE,
+    BufferUsage = WebGLRenderingContext.BUFFER_USAGE,
   }
 
   export enum BufferUsage {

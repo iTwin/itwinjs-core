@@ -13,6 +13,8 @@ import * as path from "path";
 import { PanTool } from "../../frontend/tools/ViewTool";
 import { CompassMode } from "../../frontend/AccuDraw";
 import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
+import { SpatialViewDefinitionProps } from "../../common/ElementProps";
+import { DisplayStyle3dState } from "../../common/DisplayStyleState";
 
 const iModelLocation = path.join(__dirname, "../../../../backend/lib/backend/test/assets/test.bim");
 
@@ -27,20 +29,14 @@ class TestIModelApp extends IModelApp {
   protected supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
 }
 
-const cycleJson = (obj: any) => JSON.parse(JSON.stringify(obj));
-const compareJson = (obj1: any, obj2: any, str: string) => {
+const compareView = (v1: SpatialViewState, v2: SpatialViewDefinitionProps, str: string) => {
   const compare = new DeepCompare();
-  const val = compare.compare(cycleJson(obj1), cycleJson(obj2));
-  if (!val)
-    assert.isUndefined(compare.errorTracker, str);
+  const v2State = new SpatialViewState(v2, v1.iModel, v1.categorySelector, v1.displayStyle as DisplayStyle3dState, v1.modelSelector);
+  const val = compare.compare(v1, v2State, 1e-06);
   assert.isTrue(val, str);
-
 };
-// const compareJson2 = (obj1: any, obj2: any, str: string) => { assert.deepEqual(cycleJson(obj1), cycleJson(obj2), str); };
 
-// tslint:disable:only-arrow-functions
-// tslint:disable-next-line:space-before-function-paren
-describe("Viewport", function () {
+describe("Viewport", () => {
   let imodel: IModelConnection;
   let spatialView: SpatialViewState;
 
@@ -75,7 +71,7 @@ describe("Viewport", function () {
 
     const cppView = await imodel.executeTest("turnCameraOn", testParams);
     vp.turnCameraOn();
-    compareJson(vpView, cppView, "turnCameraOn 3");
+    compareView(vpView, cppView, "turnCameraOn 3");
 
     vp.synchWithView(true);
     assert.isTrue(vp.isCameraOn(), "camera should be on");

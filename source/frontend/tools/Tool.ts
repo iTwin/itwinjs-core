@@ -351,7 +351,7 @@ export class Tool {
    * run this instance of a Tool. Subclasses should override to perform their action.
    * @returns true if the tool executed successfully.
    */
-  public run(): boolean { return true; }
+  public run(..._arg: any[]): boolean { return true; }
 }
 
 /**

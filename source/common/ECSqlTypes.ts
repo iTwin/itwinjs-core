@@ -21,7 +21,8 @@ export enum ECSqlValueType {
   Navigation = 12,
   Struct = 13,
   PrimitiveArray = 14,
-  StructArray = 15}
+  StructArray = 15,
+}
 
 /** An ECSQL DateTime value.
  *
@@ -29,12 +30,12 @@ export enum ECSqlValueType {
  * It is also used to bind a date time value to a date time ECSQL parameter.
  */
 export class DateTime {
-  /** Contructor
+  /**
    * @param isoString ISO 8601 formatted date time string
    */
-   public constructor(public isoString: string) {}
+  public constructor(public isoString: string) { }
 
-   public isValid(): boolean { return this.isoString !== undefined && this.isoString.length > 0; }
+  public isValid(): boolean { return this.isoString !== undefined && this.isoString.length > 0; }
 }
 
 /** An ECSQL Navigation value.
@@ -42,25 +43,25 @@ export class DateTime {
  * It is returned from ECSQL SELECT statements for navigation properties.
  */
 export class NavigationValue {
-  /** Contructor
+  /**
    * @param id ECInstanceId of the related instance
    * @param relClassName Fully qualified class name of the relationship backing the Navigation property
    */
-   public constructor(public id: Id64, public relClassName?: string) {}
-   public isValid(): boolean { return this.id !== undefined && this.id!.isValid(); }
+  public constructor(public id: Id64, public relClassName?: string) { }
+  public isValid(): boolean { return this.id !== undefined && this.id!.isValid(); }
 }
 
 /** An ECSQL Navigation value which can be bound to a navigation property ECSQL parameter
  */
 export class NavigationBindingValue extends NavigationValue {
-  /** Contructor
+  /**
    * @param id ECInstanceId of the related instance
    * @param relClassName Fully qualified class name of the relationship backing the Navigation property
    * @param relClassTableSpace Table space where the relationship's schema is persisted. This is only required
    * if other ECDb files are attached to the primary one. In case a schema exists in more than one of the files,
    * pass the table space to disambiguate.
    */
-   public constructor(public id: Id64, public relClassName?: string, public relClassTableSpace?: string) { super(id, relClassName); }
+  public constructor(public id: Id64, public relClassName?: string, public relClassTableSpace?: string) { super(id, relClassName); }
 }
 
 /** An ECSQL Blob value.
@@ -68,12 +69,12 @@ export class NavigationBindingValue extends NavigationValue {
  * It is also used to bind a Blob value to a Blob ECSQL parameter.
  */
 export class Blob {
-  /** Contructor
+  /**
    * @param value BLOB formatted as Base64 string
    */
-   public constructor(public base64: string) {}
+  public constructor(public base64: string) { }
 
-   public isValid(): boolean { return this.base64 !== undefined; }
+  public isValid(): boolean { return this.base64 !== undefined; }
 }
 
 /** Defines the ECSQL system properties. */
@@ -88,7 +89,8 @@ export enum ECSqlSystemProperty {
   NavigationRelClassId,
   PointX,
   PointY,
-  PointZ }
+  PointZ,
+}
 
 /** Utility to format ECProperties according to the iModelJs formatting rules. */
 export class ECJsNames {
@@ -113,7 +115,7 @@ export class ECJsNames {
    *         Or an [[ECSqlSystemProperty]] value for ECSQL system properties
    */
   public static toJsName(ecProperty: ECSqlSystemProperty | string): string {
-    if (typeof(ecProperty) === "string")
+    if (typeof (ecProperty) === "string")
       return ECJsNames.lowerFirstChar(ecProperty);
 
     switch (ecProperty) {
@@ -139,7 +141,7 @@ export class ECJsNames {
       case ECSqlSystemProperty.PointZ:
         return "z";
       default:
-       throw new IModelError(BentleyStatus.ERROR, `Unknown ECSqlSystemProperty enum value ${ecProperty}.`);
+        throw new IModelError(BentleyStatus.ERROR, `Unknown ECSqlSystemProperty enum value ${ecProperty}.`);
     }
   }
 
