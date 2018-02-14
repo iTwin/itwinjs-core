@@ -7,7 +7,7 @@ import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState } from "@bentley/imodeljs-clients";
 import { Code } from "../../common/Code";
 import { IModelVersion } from "../../common/IModelVersion";
-import { BriefcaseManager, KeepBriefcase } from "../BriefcaseManager";
+import { KeepBriefcase } from "../BriefcaseManager";
 import { IModelDb, ConcurrencyControl } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
@@ -18,6 +18,7 @@ import { Appearance } from "../../common/SubCategoryAppearance";
 import { ColorDef } from "../../common/ColorDef";
 import { IModel } from "../../common/IModel";
 import { IModelJsFs } from "../IModelJsFs";
+import { iModelEngine } from "../IModelEngine";
 
 class Timer {
   private label: string;
@@ -39,6 +40,7 @@ describe("BriefcaseManager", () => {
   let testChangeSets: ChangeSet[];
   const testVersionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
   const testElementCounts = [80, 81, 82];
+
   let iModelLocalReadonlyPath: string;
   let iModelLocalReadWritePath: string;
 
@@ -63,11 +65,12 @@ describe("BriefcaseManager", () => {
     testChangeSets = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
     expect(testChangeSets.length).greaterThan(2);
 
-    iModelLocalReadonlyPath = path.join(BriefcaseManager.cacheDir, testIModelId, "readOnly");
-    iModelLocalReadWritePath = path.join(BriefcaseManager.cacheDir, testIModelId, "readWrite");
+    const cacheDir = iModelEngine.configuration.briefcaseCacheDir;
+    iModelLocalReadonlyPath = path.join(cacheDir, testIModelId, "readOnly");
+    iModelLocalReadWritePath = path.join(cacheDir, testIModelId, "readWrite");
 
     // Recreate briefcases if the cache has been cleaned. todo: Figure a better way to prevent bleeding briefcase ids
-    shouldDeleteAllBriefcases = !IModelJsFs.existsSync(BriefcaseManager.cacheDir);
+    shouldDeleteAllBriefcases = !IModelJsFs.existsSync(cacheDir);
     if (shouldDeleteAllBriefcases)
       await IModelTestUtils.deleteAllBriefcases(accessToken, testIModelId);
 
@@ -329,7 +332,7 @@ describe("BriefcaseManager", () => {
     timer.end();
 
     // Open a readonly copy of the iModel
-    const roIModel: IModelDb = await IModelDb.open(accessToken, testProjectId, rwIModelId, OpenMode.Readonly, IModelVersion.latest());
+    const roIModel: IModelDb = await IModelDb.open(accessToken, testProjectId, rwIModelId!, OpenMode.Readonly, IModelVersion.latest());
     assert.exists(roIModel);
 
     rwIModel.close(accessToken, KeepBriefcase.No);

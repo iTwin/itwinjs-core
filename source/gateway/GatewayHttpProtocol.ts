@@ -495,7 +495,7 @@ export namespace GatewayHttpProtocol {
     }
 
     /** Finds the first parameter of a given type if present. */
-    public findParameterOfType<T>(constructor: { new(): T }): T | undefined {
+    public findParameterOfType<T>(constructor: { new(...args: any[]): T }): T | undefined {
       for (const param of this.parameters) {
         if (param instanceof constructor)
           return param;

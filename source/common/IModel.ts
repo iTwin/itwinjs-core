@@ -3,29 +3,31 @@
  *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Point3d, XYZProps, TransformProps, Range3dProps } from "@bentley/geometry-core/lib/PointVector";
-import { Transform} from "@bentley/geometry-core/lib/Transform";
+import { Transform } from "@bentley/geometry-core/lib/Transform";
 import { AxisAlignedBox3d } from "./geometry/Primitives";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 /** A token that identifies a specific instance of an iModel to be operated on */
 export class IModelToken {
-  /** Guid of the iModel */
-  public iModelId: string;
-  /** Id of the last ChangeSet that was applied to the iModel */
-  public changeSetId: string;
-  /** Mode used to open the iModel */
-  public openMode: OpenMode;
-  /** Id of the user that's currently editing or viewing the iModel. May not be defined *only* if it's a standalone iModel */
-  public userId?: string;
-  /** Context (Project or Asset) in which the iModel exists. May not be defined *only* if it's a standalone iModel */
-  public contextId?: string;
 
   /** Constructor */
-  public static create(iModelId: string, changeSetId: string, openMode: OpenMode, userId?: string, contextId?: string): IModelToken {
-    const token = new IModelToken();
-    Object.assign(token, { iModelId, changeSetId, openMode, userId, contextId });
-    return token;
-  }
+  public constructor(
+    /** Key used for identifying the iModel on the backend */
+    public readonly pathKey?: string,
+    /** Flag set to true for standalone iModels */
+    public readonly isStandalone?: boolean,
+    /** Context (Project or Asset) in which the iModel exists. May not be defined *only* if it's a standalone iModel */
+    public readonly contextId?: string,
+    /** Guid of the iModel. May not be defined *only* if it's a standalone iModel */
+    public readonly iModelId?: string,
+    /** Id of the last ChangeSet that was applied to the iModel */
+    public changeSetId?: string,
+    /** Mode used to open the iModel */
+    public readonly openMode?: OpenMode,
+    /** Id of the user that's currently editing or viewing the iModel. May not be defined *only* if it's a standalone iModel */
+    public readonly userId?: string,
+  ) { }
+
 }
 
 export interface IModelProps {
@@ -38,11 +40,11 @@ export interface IModelProps {
 /** An abstract class representing an instance of an iModel. */
 export abstract class IModel implements IModelProps {
   /** Name of the iModel */
-  public readonly name: string;
-  public readonly rootSubject?: { name: string, description?: string };
-  public readonly projectExtents: AxisAlignedBox3d;
-  public readonly globalOrigin: Point3d;
-  public readonly ecefTrans?: Transform;
+  public name: string;
+  public rootSubject?: { name: string, description?: string };
+  public projectExtents: AxisAlignedBox3d;
+  public globalOrigin: Point3d;
+  public ecefTrans?: Transform;
 
   public toJSON(): any {
     const out: any = {};
@@ -62,8 +64,12 @@ export abstract class IModel implements IModelProps {
   public get iModelToken(): IModelToken { return this.token; }
 
   /** @hidden */
-  protected constructor(iModelToken: IModelToken, name: string, props: IModelProps) {
+  protected constructor(iModelToken: IModelToken) {
     this.token = iModelToken;
+  }
+
+  /** @hidden */
+  protected initialize(name: string, props: IModelProps) {
     this.name = name;
     this.rootSubject = props.rootSubject;
     this.projectExtents = AxisAlignedBox3d.fromJSON(props.projectExtents);

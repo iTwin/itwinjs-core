@@ -5,6 +5,7 @@ import * as express from "express";
 import * as bodyParser from "body-parser";
 import { IModelDb } from "../../backend/IModelDb";
 import { NodeAddonRegistry } from "../../backend/NodeAddonRegistry";
+import { IModelEngine } from "../../backend/IModelEngine";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
 import { TestGatewayImpl } from "./TestGatewayImpl";
 
@@ -28,6 +29,9 @@ TestbedConfig.initializeGatewayConfig();
 
 // tslint:disable-next-line:no-var-requires
 NodeAddonRegistry.loadAndRegisterStandardAddon();
+
+// Start the backend
+IModelEngine.startup();
 
 const app = express();
 app.use(bodyParser.text());

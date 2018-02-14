@@ -16,6 +16,7 @@ import { ChangeSet } from "@bentley/imodeljs-clients";
 import { using } from "@bentley/bentleyjs-core/lib/Disposable";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelJsFs } from "../IModelJsFs";
+import { iModelEngine } from "../IModelEngine";
 
 describe("ChangeSummary", () => {
   let accessToken: AccessToken;
@@ -29,7 +30,8 @@ describe("ChangeSummary", () => {
     testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "TestModel");
 
     // Recreate briefcases if it's a TMR. todo: Figure a better way to prevent bleeding briefcase ids
-    shouldDeleteAllBriefcases = !IModelJsFs.existsSync(BriefcaseManager.cacheDir);
+    const cacheDir = iModelEngine.configuration.briefcaseCacheDir;
+    shouldDeleteAllBriefcases = !IModelJsFs.existsSync(cacheDir);
     if (shouldDeleteAllBriefcases)
       await IModelTestUtils.deleteAllBriefcases(accessToken, testIModelId);
 
@@ -63,7 +65,8 @@ describe("ChangeSummary", () => {
         assert.equal(row.csumcount, 0);
       });
 
-      const expectedCachePath: string = path.join(BriefcaseManager.cacheDir, testIModelId, testIModelId.concat(".bim.ecchanges"));
+      const cacheDir = iModelEngine.configuration.briefcaseCacheDir;
+      const expectedCachePath: string = path.join(cacheDir, testIModelId, testIModelId.concat(".bim.ecchanges"));
       expect(IModelJsFs.existsSync(expectedCachePath));
     } finally {
       await iModel.close(accessToken);
@@ -93,7 +96,8 @@ describe("ChangeSummary", () => {
         assert.equal(row.csumcount, 0);
       });
 
-      const expectedCachePath: string = path.join(BriefcaseManager.cacheDir, testIModelId, testIModelId.concat(".bim.ecchanges"));
+      const cacheDir = iModelEngine.configuration.briefcaseCacheDir;
+      const expectedCachePath: string = path.join(cacheDir, testIModelId, testIModelId.concat(".bim.ecchanges"));
       expect(IModelJsFs.existsSync(expectedCachePath));
     } finally {
     await iModel.close(accessToken);
