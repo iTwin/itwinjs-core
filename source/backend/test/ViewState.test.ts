@@ -17,6 +17,7 @@ import { ModelSelectorState } from "../../common/ModelSelectorState";
 import { CategorySelectorState } from "../../common/CategorySelectorState";
 import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
 import { DisplayStyle3dState } from "../../common/DisplayStyleState";
+import { SpatialViewDefinitionProps } from "../../common/ElementProps";
 
 // spell-checker: disable
 
@@ -79,18 +80,7 @@ describe("ViewState", () => {
     assert.isTrue(acs.getRotation().isExactEqual(StandardView.Iso));
   });
 
-  // const cycleJson = (obj: any) => JSON.parse(JSON.stringify(obj));
-  // const compareJson = (obj1: any, obj2: any, str: string) => {
-  //   const compare = new DeepCompare();
-  //   const v1 = cycleJson(obj1);
-  //   const v2 = cycleJson(obj2);
-  //   const val = compare.compare(v1, v2);
-  //   if (!val)
-  //     assert.isUndefined(compare.errorTracker, str);
-  //   assert.isTrue(val, str);
-
-  // };
-  const compareView = (v1: SpatialViewState, v2: SpatialViewDefinition, str: string) => {
+  const compareView = (v1: SpatialViewState, v2: SpatialViewDefinitionProps, str: string) => {
     const compare = new DeepCompare();
     const v2State = new SpatialViewState(v2, v1.iModel, v1.categorySelector, v1.displayStyle as DisplayStyle3dState, v1.modelSelector);
     const val = compare.compare(v1, v2State);
@@ -99,10 +89,6 @@ describe("ViewState", () => {
     assert.isTrue(val, str);
   };
 
-  // const compareJson = (obj1: any, obj2: any, str: string) => { assert.deepEqual(cycleJson(obj1), cycleJson(obj2), str); };
-
-  // C++ Tests:
-  // pending
   it("view volume adjustments", () => {
     // Flat view test #1
     const testParams: any = {
