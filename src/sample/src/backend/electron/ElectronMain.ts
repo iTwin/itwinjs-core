@@ -9,8 +9,10 @@ import * as url from "url";
 // Initialize my application gateway configuration for the backend
 import { IModelGateway } from "@bentley/imodeljs-backend/lib/gateway/IModelGateway";
 import ECPresentationGateway from "@bentley/ecpresentation-backend/lib/common/ECPresentationGatewayDefinition";
+import SampleGateway from "../SampleGateway";
 import { BentleyCloudGatewayConfiguration } from "@bentley/imodeljs-backend/lib/gateway/BentleyCloudGatewayConfiguration";
-BentleyCloudGatewayConfiguration.initialize({ info: { title: "my-app", version: "v1.0" } }, [IModelGateway, ECPresentationGateway]);
+BentleyCloudGatewayConfiguration.initialize({ info: { title: "my-app", version: "v1.0" } },
+  [IModelGateway, ECPresentationGateway, SampleGateway]);
 
 const isDevBuild = (process.env.NODE_ENV === "development");
 let winRef: any;

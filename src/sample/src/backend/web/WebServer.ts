@@ -2,6 +2,7 @@ import * as express from "express";
 import * as bodyParser from "body-parser";
 import { IModelGateway } from "@bentley/imodeljs-backend/lib/gateway/IModelGateway";
 import ECPresentationGateway from "@bentley/ecpresentation-backend/lib/common/ECPresentationGatewayDefinition";
+import SampleGateway from "../SampleGateway";
 import { BentleyCloudGatewayConfiguration } from "@bentley/imodeljs-backend/lib/gateway/BentleyCloudGatewayConfiguration";
 
 declare namespace global {
@@ -10,7 +11,8 @@ declare namespace global {
 
 export function setupWebServer(app: express.Application) {
 
-  const gatewaysConfig = BentleyCloudGatewayConfiguration.initialize({ info: { title: "my-app", version: "v1.0" } }, [IModelGateway, ECPresentationGateway]);
+  const gatewaysConfig = BentleyCloudGatewayConfiguration.initialize({ info: { title: "my-app", version: "v1.0" } },
+    [IModelGateway, ECPresentationGateway, SampleGateway]);
 
   app.use(bodyParser.text());
 

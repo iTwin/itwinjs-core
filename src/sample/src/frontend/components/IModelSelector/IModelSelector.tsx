@@ -1,7 +1,6 @@
 import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend/IModelConnection";
 import { MyAppFrontend } from "../../api/MyAppFrontend";
-
 import "./IModelSelector.css";
 
 export interface Props {
@@ -9,44 +8,42 @@ export interface Props {
 }
 
 export interface State {
-  imodel?: IModelConnection;
+  availableImodels: string[];
+  activeImodel?: string;
   error?: any;
 }
 
 export default class IModelSelector extends React.Component<Props, State> {
 
-  public static readonly DEFAULT_IMODEL_ID = "a783226f-835b-4559-b175-3e8102faa561";
-
-  private _imodelIdInput: HTMLInputElement | null = null;
-
   constructor(props?: any, context?: any) {
     super(props, context);
-    this.state = {};
+    this.state = { availableImodels: [] };
+  }
+
+  public async componentWillMount() {
+    const imodels = await MyAppFrontend.getSampleImodels();
+    imodels.splice(0, 0, "");
+    this.setState({ availableImodels: imodels });
   }
 
   // tslint:disable-next-line:naming-convention
-  private onIModelIdChange = async (e: any) => {
-    const imodelId = e.target.value;
-    try {
-      await MyAppFrontend.openIModel(imodelId);
-      if (MyAppFrontend.iModel)
-        this.setState({ error: undefined, imodel: MyAppFrontend.iModel });
-      else
-        this.setState({ error: undefined, imodel: undefined });
-    } catch (e) {
-      this.setState({ imodel: undefined, error: e });
-    } finally {
-      this.props.onIModelSelected(MyAppFrontend.iModel);
+  private onImodelSelected = async (e: any) => {
+    if (MyAppFrontend.iModel)
+      MyAppFrontend.iModel.closeStandalone();  
+
+    let imodel: IModelConnection | undefined;
+    const imodelPath = e.target.value;
+    if (!imodelPath || "" === imodelPath) {
+      this.setState((prev: State) => ({ ...prev, imodel: undefined, error: undefined }));
+    } else {
+      try {
+        imodel = await MyAppFrontend.openIModel(imodelPath);
+        this.setState((prev: State) => ({ ...prev, activeImodel: imodelPath, error: undefined }));
+      } catch (e) {
+        this.setState((prev: State) => ({ ...prev, activeImodel: undefined, error: e }));
+      }
     }
-  }
-
-  // tslint:disable-next-line:naming-convention
-  private onUseButtonClicked = () => {
-    if (!this._imodelIdInput)
-      return;
-
-    this._imodelIdInput!.value = IModelSelector.DEFAULT_IMODEL_ID;
-    this.onIModelIdChange({ target: this._imodelIdInput });
+    this.props.onIModelSelected(imodel);
   }
 
   public render() {
@@ -56,9 +53,12 @@ export default class IModelSelector extends React.Component<Props, State> {
 
     return (
       <div className="IModelSelector">
-        Enter an iModel ID: <input onChange={this.onIModelIdChange} ref={(input) => { this._imodelIdInput = input; }} />
-        <code> (Hint: try <b>{IModelSelector.DEFAULT_IMODEL_ID}</b>) </code>
-        <button onClick={this.onUseButtonClicked}>Use</button>
+        Select an imodel:
+        <select onChange={this.onImodelSelected}>
+          {this.state.availableImodels.map((path: string) => (
+            <option key={path} value={path}>{path.split(/[\\/]/).pop()}</option>
+          ))}
+        </select>
         {error}
       </div>
     );
