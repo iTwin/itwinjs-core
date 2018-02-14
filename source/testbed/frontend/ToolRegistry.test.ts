@@ -2,7 +2,7 @@ import { assert } from "chai";
 import { iModelApp, IModelApp } from "../../frontend/IModelApp";
 import { Tool } from "../../frontend/tools/Tool";
 import { I18NNamespace } from "../../frontend/Localization";
-import { FuzzySearchResults } from "../../frontend/FuzzySearch";
+import { FuzzySearchResults, FuzzySearchResult } from "../../frontend/FuzzySearch";
 
 // these are later set by executing the TestImmediate tool.
 let testVal1: string;
@@ -35,7 +35,7 @@ function SetupToolRegistryTests() {
   CreateTestTools();
 }
 
-describe.only("ToolRegistry", () => {
+describe("ToolRegistry", () => {
   before(() => SetupToolRegistryTests());
   after(() => TestCommandApp.shutdown());
 
@@ -79,29 +79,54 @@ describe.only("ToolRegistry", () => {
   it("Should find some partial matches for cone plac", async () => {
     const searchResults: FuzzySearchResults<typeof Tool> | undefined = await iModelApp.tools.findPartialMatches("cone plac");
     // tslint:disable-next-line:no-console
-    showSearchResults("Matches for 'cone plac':", searchResults);
+    showSearchResultsUsingIndexApi("Matches for 'cone plac':", searchResults);
   });
 });
+
+function caretStringFromBoldMask(keyin: string, boldMask: boolean[]): string {
+  assert.isTrue(keyin.length === boldMask.length);
+  let boldString: string = boldMask[0] ? "^" : " ";
+  for (let index = 1; index < boldMask.length; index++) {
+    boldString = boldString.concat(boldMask[index] ? "^" : " ");
+  }
+  return boldString;
+}
 
 function showSearchResults(title: string, searchResults?: FuzzySearchResults<typeof Tool>) {
   // tslint:disable-next-line:no-console
   console.log(title);
   if (!searchResults)
     return;
-  for (let resultIndex = 0; resultIndex < searchResults.length; resultIndex++) {
-    const keyin = searchResults.getResult(resultIndex)!.keyin;
+  for (const thisResult of searchResults) {
+    const keyin = thisResult.getMatchedValue();
     // tslint:disable-next-line:no-console
     console.log(keyin);
     assert.isTrue(keyin.length > 0);
 
-    const boldMask: boolean[] = searchResults.getBoldMask(resultIndex)!;
-    assert.isTrue(keyin.length === boldMask.length);
-    let boldString: string = boldMask[0] ? "^" : " ";
-    for (let index = 1; index < boldMask.length; index++) {
-      boldString = boldString.concat(boldMask[index] ? "^" : " ");
-    }
+    const boldMask: boolean[] = thisResult.getBoldMask();
     // tslint:disable-next-line:no-console
-    console.log(boldString);
+    console.log(caretStringFromBoldMask(keyin, boldMask));
+  }
+}
+
+function showSearchResultsUsingIndexApi(title: string, searchResults?: FuzzySearchResults<typeof Tool>) {
+  // tslint:disable-next-line:no-console
+  console.log(title);
+  if (!searchResults)
+    return;
+  // tslint:disable-next-line:prefer-for-of
+  for (let resultIndex: number = 0; resultIndex < searchResults.length; resultIndex++) {
+    const thisResult: FuzzySearchResult<typeof Tool> | undefined = searchResults.getResult(resultIndex);
+    assert.isDefined(thisResult);
+
+    const keyin = thisResult!.getMatchedValue();
+    // tslint:disable-next-line:no-console
+    console.log(keyin);
+    assert.isTrue(keyin.length > 0);
+
+    const boldMask: boolean[] = thisResult!.getBoldMask();
+    // tslint:disable-next-line:no-console
+    console.log(caretStringFromBoldMask(keyin, boldMask));
   }
 }
 
