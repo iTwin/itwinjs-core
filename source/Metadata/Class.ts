@@ -182,14 +182,14 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
   public async fromJson(jsonObj: any): Promise<void> {
     await super.fromJson(jsonObj);
 
-    if (jsonObj.modifier !== undefined) {
+    if (undefined !== jsonObj.modifier) {
       if (typeof(jsonObj.modifier) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The modifier of ${this.name} is not a string type.`);
 
       this.modifier = parseClassModifier(jsonObj.modifier);
     }
 
-    if (jsonObj.baseClass !== undefined) {
+    if (undefined !== jsonObj.baseClass) {
       if (typeof(jsonObj.baseClass) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The base class of ${this.name} is not a string type.`);
 
