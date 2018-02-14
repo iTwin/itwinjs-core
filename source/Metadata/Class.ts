@@ -10,7 +10,7 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty, EnumerationProperty, EnumerationArrayProperty, ECProperty } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import Schema from "./Schema";
-import { LazyLoadedECClass, LazyLoadedProperty } from "../Interfaces";
+import { AnyClassType, LazyLoadedECClass, LazyLoadedProperty, SchemaChildVisitor } from "../Interfaces";
 
 function createLazyLoadedChild<T extends SchemaChild>(c: T) {
   return new DelayedPromiseWithProps(c.key, async () => c);
@@ -199,6 +199,11 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
 
       this.baseClass = createLazyLoadedChild(baseClass);
     }
+  }
+
+  public async accept(visitor: SchemaChildVisitor) {
+    if (visitor.visitClass)
+      await visitor.visitClass(this as AnyClassType);
   }
 }
 

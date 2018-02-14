@@ -14,6 +14,7 @@ import RelationshipClass, { RelationshipConstraint } from "../Metadata/Relations
 import KindOfQuantity from "../Metadata/KindOfQuantity";
 import { AnyClassType } from "../Interfaces";
 import { ECProperty } from "../Metadata/Property";
+import { SchemaDeserializationVisitor, AnySchemaChildType } from "source";
 
 /**
  * The purpose of this class is to properly order the deserialization of ECSchemas and SchemaChildren from the JSON formats.
@@ -21,6 +22,7 @@ import { ECProperty } from "../Metadata/Property";
  */
 export default class SchemaReadHelper {
   private _context: SchemaContext;
+  private _visitor?: SchemaDeserializationVisitor;
 
   // This is a cache of the schema we are loading. It also exists within the _context but in order
   // to not have to go back to the context every time if we don't have to this cache has been added.
@@ -28,12 +30,14 @@ export default class SchemaReadHelper {
 
   private _itemToRead: any; // This will be the json object of the Schema or SchemaChild to deserialize. Not sure if this is the best option.. Going to leave it for now.
 
-  constructor(context?: SchemaContext) {
+  constructor(context?: SchemaContext, visitor?: SchemaDeserializationVisitor) {
     if (context)
       this._context = context;
 
     if (!this._context)
       this._context = new SchemaContext();
+
+    this._visitor = visitor;
   }
 
   /**
@@ -42,8 +46,8 @@ export default class SchemaReadHelper {
    * @param schema The schema object to populate. Must be an extension of the DeserializableSchema.
    * @param schemaJson An object, or string representing that object, that follows the SchemaJson format.
    */
-  public static to<T extends Schema>(schema: T, schemaJson: object | string): Promise<T> {
-    const helper = new SchemaReadHelper();
+  public static to<T extends Schema>(schema: T, schemaJson: object | string, visitor?: SchemaDeserializationVisitor): Promise<T> {
+    const helper = new SchemaReadHelper(undefined, visitor);
     return helper.readSchema(schema, schemaJson);
   }
 
@@ -68,6 +72,9 @@ export default class SchemaReadHelper {
     if (this._itemToRead.references)
       await this.loadSchemaReferences(this._itemToRead.references);
 
+    if (this._visitor && this._visitor.visitEmptySchema)
+      await this._visitor.visitEmptySchema(schema);
+
     // Load all schema children
     if (this._itemToRead.children) {
       for (const childName in this._itemToRead.children) {
@@ -82,6 +89,9 @@ export default class SchemaReadHelper {
 
     if (this._itemToRead.customAttributes)
       await this.loadCustomAttributes(this._itemToRead.customAttributes);
+
+    if (this._visitor && this._visitor.visitFullSchema)
+      await this._visitor.visitFullSchema(schema);
 
     return schema;
   }
@@ -138,41 +148,46 @@ export default class SchemaReadHelper {
     if (!schemaChildJson.schemaChildType)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaChild ${childName} is missing the required schemaChildType property.`);
 
+    let schemaChild: AnySchemaChildType | undefined;
+
     switch (schemaChildJson.schemaChildType) {
       case "EntityClass":
-        const entityClass: EntityClass = await schema.createEntityClass(childName);
-        await this.loadEntityClass(entityClass, schemaChildJson);
+        schemaChild = await schema.createEntityClass(childName);
+        await this.loadEntityClass(schemaChild, schemaChildJson);
         break;
       case "StructClass":
-        const structClass: StructClass = await schema.createStructClass(childName);
-        await this.loadClass(structClass, schemaChildJson);
+        schemaChild = await schema.createStructClass(childName);
+        await this.loadClass(schemaChild, schemaChildJson);
         break;
       case "Mixin":
-        const mixin: MixinClass = await schema.createMixinClass(childName);
-        await this.loadMixin(mixin, schemaChildJson);
+        schemaChild = await schema.createMixinClass(childName);
+        await this.loadMixin(schemaChild, schemaChildJson);
         break;
       case "CustomAttributeClass":
-        const caClass: CustomAttributeClass = await schema.createCustomAttributeClass(childName);
-        await this.loadClass(caClass, schemaChildJson);
+        schemaChild = await schema.createCustomAttributeClass(childName);
+        await this.loadClass(schemaChild, schemaChildJson);
         break;
       case "RelationshipClass":
-        const relClass: RelationshipClass = await schema.createRelationshipClass(childName);
-        await this.loadRelationshipClass(relClass, schemaChildJson);
+        schemaChild = await schema.createRelationshipClass(childName);
+        await this.loadRelationshipClass(schemaChild, schemaChildJson);
         break;
       case "KindOfQuantity":
-        const koq: KindOfQuantity = await schema.createKindOfQuantity(childName);
-        await koq.fromJson(schemaChildJson);
+        schemaChild = await schema.createKindOfQuantity(childName);
+        await schemaChild.fromJson(schemaChildJson);
         break;
       case "PropertyCategory":
-        const propCategory: SchemaChild = await schema.createPropertyCategory(childName);
-        await propCategory.fromJson(schemaChildJson);
+        schemaChild = await schema.createPropertyCategory(childName);
+        await schemaChild.fromJson(schemaChildJson);
         break;
       case "Enumeration":
-        const enumeration: SchemaChild = await schema.createEnumeration(childName);
-        await enumeration.fromJson(schemaChildJson);
+        schemaChild = await schema.createEnumeration(childName);
+        await schemaChild.fromJson(schemaChildJson);
         break;
       // NOTE: we are being permissive here and allowing unknown types to silently fail. Not sure if we want to hard fail or just do a basic deserialization
     }
+
+    if (schemaChild && this._visitor)
+      schemaChild.accept(this._visitor);
   }
 
   /**
