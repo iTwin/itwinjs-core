@@ -48,7 +48,7 @@ describe("Viewport", () => {
   });
 
   after(async () => {
-    await imodel.closeStandalone();
+    if (imodel) await imodel.closeStandalone();
     IModelApp.shutdown();
   });
 

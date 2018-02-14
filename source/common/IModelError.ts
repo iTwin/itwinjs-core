@@ -20,6 +20,6 @@ export class IModelError extends BentleyError {
 export class ServerError extends IModelError {
   public constructor(errorNumber: number, message?: string, log?: LogFunction) {
     super(errorNumber, message, log);
-    this.name = "Server error: " + errorNumber;
+    this.name = "Server error (" + errorNumber + ")";
   }
 }

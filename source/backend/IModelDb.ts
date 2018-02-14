@@ -42,7 +42,7 @@ import { Model2dState } from "../common/EntityState";
 
 const loggingCategory = "imodeljs-backend.IModelDb";
 
-/** The signature of a function that can supply a description of local Txns in the specified briefcase up to and includign the specified endTxnId. */
+/** The signature of a function that can supply a description of local Txns in the specified briefcase up to and including the specified endTxnId. */
 export type ChangeSetDescriber = (endTxnId: TxnManager.TxnId) => string;
 
 // Register the backend implementation of IModelGateway
@@ -114,7 +114,6 @@ export class IModelDb extends IModel {
    */
   public static openStandalone(pathname: string, openMode: OpenMode = OpenMode.ReadWrite, enableTransactions: boolean = false): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(pathname, openMode, enableTransactions);
-    // Logger.logTrace(loggingCategory, "IModelDb.openStandalone", loggingCategory, () => ({ pathname, openMode }));
     return IModelDb.createIModelDb(briefcaseEntry);
   }
 
@@ -1619,14 +1618,14 @@ export class TxnManager {
       try {
         txnDesc = JSON.parse(txnDescStr);
       } catch (err) {
-        txnDesc = {description: txnDescStr};
+        txnDesc = { description: txnDescStr };
       }
 
       accum.push(txnDesc);
 
       seen.add(txnDesc);
       txnId = this.queryNextTxnId(txnId);
-      }
+    }
 
     return JSON.stringify(accum);
   }

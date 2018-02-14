@@ -713,7 +713,7 @@ describe("iModel", () => {
     let newModelId: Id64;
     [modeledElementId, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(testImodel, Code.createEmpty(), true);
 
-    const newModelPersist: Model = testImodel.models.getModel(newModelId);
+    const newModelPersist = testImodel.models.getModel(newModelId);
 
     // Check that it has the properties that we set.
     assert.equal(newModelPersist.classFullName, "BisCore:PhysicalModel");
@@ -796,7 +796,7 @@ describe("iModel", () => {
 
   it.skip("should set EC properties of various types", () => {
 
-    const testImodel: IModelDb = imodel1;
+    const testImodel = imodel1;
     try {
       testImodel.getMetaData("TestBim:TestPhysicalObject");
     } catch (err) {
@@ -810,8 +810,8 @@ describe("iModel", () => {
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(testImodel, Code.createEmpty(), true);
 
     // Find or create a SpatialCategory
-    const dictionary: DictionaryModel = testImodel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
-    let spatialCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
+    const dictionary = testImodel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
+    let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
     if (undefined === spatialCategoryId) {
       spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
     }
@@ -847,7 +847,7 @@ describe("iModel", () => {
 
     if (true) {
       // Test that el2 points to el1
-      const el2: Element = testImodel.elements.getElement(id2);
+      const el2 = testImodel.elements.getElement(id2);
       assert.equal(el2.classFullName, "TestBim:TestPhysicalObject");
       assert.isTrue("relatedElement" in el2);
       assert.isTrue("id" in el2.relatedElement);
@@ -861,8 +861,8 @@ describe("iModel", () => {
 
     if (true) {
       // Change el2 to point to itself.
-      const el2: Element = testImodel.elements.getElement(id2);
-      const el2Modified: Element = el2.copyForEdit<Element>();
+      const el2 = testImodel.elements.getElement(id2);
+      const el2Modified = el2.copyForEdit<Element>();
       el2Modified.relatedElement = { id: id2, relClassName: trelClassName }; // this time, use the long RelatedElement format.
       testImodel.elements.updateElement(el2Modified);
       // Test that el2 points to itself.
@@ -873,12 +873,12 @@ describe("iModel", () => {
 
     if (true) {
       // Now set the navigation property value to the same thing, using the short, id-only form
-      const el2: Element = testImodel.elements.getElement(id2);
-      const el2Modified: Element = el2.copyForEdit<Element>();
+      const el2 = testImodel.elements.getElement(id2);
+      const el2Modified = el2.copyForEdit<Element>();
       el2Modified.relatedElement = id1;
       testImodel.elements.updateElement(el2Modified);
       // Test that el2 points to el1 again.
-      const el2after: Element = testImodel.elements.getElement(id2);
+      const el2after = testImodel.elements.getElement(id2);
       assert.deepEqual(el2after.relatedElement.id, id1);
       // (the platform knows the relationship class and reports it.)
       assert.equal(el2after.relatedElement.relClassName.replace(".", ":"), trelClassName);
@@ -886,8 +886,8 @@ describe("iModel", () => {
 
     if (true) {
       // Test that we can null out the navigation property
-      const el2: Element = testImodel.elements.getElement(id2);
-      const el2Modified: Element = el2.copyForEdit<Element>();
+      const el2 = testImodel.elements.getElement(id2);
+      const el2Modified = el2.copyForEdit<Element>();
       el2Modified.relatedElement = null;
       testImodel.elements.updateElement(el2Modified);
       // Test that el2 has no relatedElement property value
