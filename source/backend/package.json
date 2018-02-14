@@ -28,7 +28,7 @@
     "NOTE: must use ~ range to depend on the addon api -- that is, must lock onto a minor version."
   ],
   "dependencies": {
-    "@bentley/bentleyjs-core": "^5.3.1",
+    "@bentley/bentleyjs-core": "^5.3.2",
     "@bentley/geometry-core": "^4.3.1",
     "@bentley/imodeljs-clients": "^2.0.1",
     "@bentley/imodeljs-electronaddon": "~7.2.0",
