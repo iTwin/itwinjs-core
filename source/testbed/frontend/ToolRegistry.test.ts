@@ -93,10 +93,12 @@ function caretStringFromBoldMask(keyin: string, boldMask: boolean[]): string {
 }
 
 function showSearchResults(title: string, searchResults?: FuzzySearchResults<typeof Tool>) {
-  // tslint:disable-next-line:no-console
-  console.log(title);
+  assert.isDefined(searchResults);
   if (!searchResults)
     return;
+  // tslint:disable-next-line:no-console
+  console.log(searchResults.length, title);
+
   for (const thisResult of searchResults) {
     const keyin = thisResult.getMatchedValue();
     // tslint:disable-next-line:no-console
@@ -110,10 +112,12 @@ function showSearchResults(title: string, searchResults?: FuzzySearchResults<typ
 }
 
 function showSearchResultsUsingIndexApi(title: string, searchResults?: FuzzySearchResults<typeof Tool>) {
-  // tslint:disable-next-line:no-console
-  console.log(title);
+  assert.isDefined(searchResults);
   if (!searchResults)
     return;
+  // tslint:disable-next-line:no-console
+  console.log(searchResults.length, title);
+
   // tslint:disable-next-line:prefer-for-of
   for (let resultIndex: number = 0; resultIndex < searchResults.length; resultIndex++) {
     const thisResult: FuzzySearchResult<typeof Tool> | undefined = searchResults.getResult(resultIndex);
