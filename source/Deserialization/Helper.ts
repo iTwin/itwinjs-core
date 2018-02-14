@@ -7,11 +7,8 @@ import { ECVersion, SchemaKey, relationshipEndToString, SchemaChildKey, SchemaCh
 import SchemaChild from "../Metadata/SchemaChild";
 import Schema from "../Metadata/Schema";
 import EntityClass from "../Metadata/EntityClass";
-import { StructClass } from "../Metadata/Class";
 import MixinClass from "../Metadata/MixinClass";
-import CustomAttributeClass from "../Metadata/CustomAttributeClass";
 import RelationshipClass, { RelationshipConstraint } from "../Metadata/RelationshipClass";
-import KindOfQuantity from "../Metadata/KindOfQuantity";
 import { AnyClassType } from "../Interfaces";
 import { ECProperty } from "../Metadata/Property";
 import { SchemaDeserializationVisitor, AnySchemaChildType } from "source";
