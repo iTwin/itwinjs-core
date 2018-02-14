@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { IModelApp, iModelApp } from "../../frontend/IModelApp"; // must be first import!
+import { Tool } from "../../frontend/tools/Tool";
 import { assert } from "chai";
-import { IModelApp, iModelApp } from "../../frontend/IModelApp";
 import { AccuDraw } from "../../frontend/AccuDraw";
 import { IdleTool } from "../../frontend/tools/IdleTool";
 import { I18NNamespace } from "../../frontend/Localization";
-import { Tool } from "../../frontend/tools/Tool";
 import { RotateTool, PanTool } from "../../frontend/tools/ViewTool";
 import { SelectionTool } from "../../frontend/tools/SelectTool";
 
@@ -89,7 +89,7 @@ describe("IModelApp", () => {
   it("Should get localized name for tools", async () => {
     const thisApp = iModelApp as TestApp;
     await thisApp.testNamespace.readFinished;  // we must wait for the localization read to finish.
-    assert.equal(TestImmediate.getKeyin(), "Localized TestImmediate Keyin");
+    assert.equal(TestImmediate.keyin, "Localized TestImmediate Keyin");
     // here we are testing to make sure we can override the Select command but the keyin comes from the superclass.
     assert.isTrue(iModelApp.tools.run("Select"));
     const select = iModelApp.toolAdmin.activePrimitiveTool as TestSelectTool;

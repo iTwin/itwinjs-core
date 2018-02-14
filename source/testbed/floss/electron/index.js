@@ -52,6 +52,8 @@ function createWindow() {
 
     // Create the browser window.
     mainWindow = new BrowserWindow(options);
+    if (!args.debug)
+        mainWindow.blur();
 
     ipcMain.on('mocha-done', function() {
         process.exit(0);

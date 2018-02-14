@@ -2,6 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { FeatureIndexType } from "./FeatureIndex";
 
 /** Describes the dimensionality of a texture used as a look-up table. */
 export const enum LUTDimension {
@@ -61,12 +62,6 @@ export function getFeatureName(dim: FeatureDimension): string | undefined {
     case FeatureDimension.kMultiple: return "Multiple";
     default: return undefined;
   }
-}
-
-export const enum FeatureIndexType {
-  kEmpty,
-  kUniform,
-  kNonUniform,
 }
 
 /** Describes the dimensionality of feature lookup based on the combination of:

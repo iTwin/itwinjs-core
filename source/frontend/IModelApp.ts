@@ -7,14 +7,14 @@ import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { TentativePoint } from "./TentativePoint";
-import { ToolRegistry } from "./tools/Tool";
 import { I18N, I18NNamespace, I18NOptions } from "./Localization";
 import { FeatureGates } from "../common/FeatureGates";
+import { ToolRegistry } from "./tools/Tool";
+import { IModelError, IModelStatus } from "../common/IModelError";
 
 import * as selectTool from "./tools/SelectTool";
 import * as viewTool from "./tools/ViewTool";
 import * as idleTool from "./tools/IdleTool";
-import { IModelError, IModelStatus } from "../common/IModelError";
 
 /** Global access to the IModelApp. Initialized by calling IModelApp.startup(). */
 export let iModelApp: IModelApp;
@@ -36,6 +36,7 @@ export class IModelApp {
   protected _locateManager?: ElementLocateManager;
   protected _tentativePoint?: TentativePoint;
   protected _i18N?: I18N;
+
   public readonly features = new FeatureGates();
   public readonly tools = new ToolRegistry();
 

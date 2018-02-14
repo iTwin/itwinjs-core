@@ -107,9 +107,13 @@ export class BufferHandle extends Handle {
     gl.bindBuffer(target, null);
   }
 
-  public bindData(gl: WebGLRenderingContext, target: number, size: number, usage: number) {
+  public bindData(gl: WebGLRenderingContext, target: number, size: number, usage: number, data?: ArrayBufferView | ArrayBuffer) {
     this.bind(gl, target);
-    this.setBufferData(gl, target, size, usage);
+    if (data) {
+      this.setBufferData(gl, target, data, usage);
+    } else {
+      this.setBufferData(gl, target, size, usage);
+    }
     this.verifySize(gl, target, size);
     BufferHandle.unBind(gl, target);
   }

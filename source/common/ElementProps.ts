@@ -16,7 +16,7 @@ export interface RelatedElementProps {
 
 /** The properties that define an Element */
 export interface ElementProps extends EntityProps {
-  model: Id64Props;
+  model?: Id64Props;
   code?: CodeProps;
   parent?: RelatedElementProps;
   federationGuid?: GuidProps;
@@ -92,11 +92,15 @@ export interface SheetProps extends ElementProps {
   sheetTemplate?: Id64Props;
 }
 
-export interface TypeDefinitionElementProps extends ElementProps {
+export interface DefinitionElementProps extends ElementProps {
+  isPrivate?: boolean;
+}
+
+export interface TypeDefinitionElementProps extends DefinitionElementProps {
   recipe?: RelatedElementProps;
 }
 
-export interface InformationPartitionElementProps extends ElementProps {
+export interface InformationPartitionElementProps extends DefinitionElementProps {
   description?: string;
 }
 
@@ -111,7 +115,7 @@ export interface CategorySelectorProps extends ElementProps {
 }
 
 /** Parameters used to construct a ViewDefinition */
-export interface ViewDefinitionProps extends ElementProps {
+export interface ViewDefinitionProps extends DefinitionElementProps {
   categorySelectorId: Id64Props;
   displayStyleId: Id64Props;
   description?: string;

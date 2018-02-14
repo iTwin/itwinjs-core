@@ -66,14 +66,14 @@ describe("EdgeOverrides", () => {
   });
   it("init properly sets member values", () => {
     let override = new EdgeOverrides();
-    let style = new HiddenLine.Style({ ovrColor: true, color: 0xf00d, width: 0, pattern: 0  });
+    let style = new HiddenLine.Style({ ovrColor: true, color: 0xf00d, width: 0, pattern: 0 });
     let color = new FloatPreMulRgba();
     override.init(style, true);
     color.initFromColorDef(style.color);
     assert.isTrue(override.isOverridden(OvrFlags.Rgba), "if style's ovrColor is true, then flags contains Rgba"); //tslint:disable-line
     assert.isFalse(override.isOverridden(OvrFlags.Weight), "if style's weight is 0, then flags does not contain Weight");//tslint:disable-line
     assert.isTrue(override.color.equals(color), "if style's ovrColor is true, then color is equivalent to style's color as FlatPreMulRgba");
-    assert.isUndefined(override.weight, "if style's weight is 0, weight is not set");
+    assert.isTrue(override.weight === style.width, "style's width is equivalent to the weight");
     assert.isTrue(override.isOverridden(OvrFlags.Alpha), "if forceOpaque is true, then flags contains Alpha");//tslint:disable-line
     assert.isTrue(override.isOverridden(OvrFlags.LineCode), "if style's pattern is valid, then flags contain LineCode");//tslint:disable-line
     assert.isTrue(override.lineCode.value === new LineCode(style.pattern).value, "if style's pattern is valid, then lineCode is equivalent to its pattern as LineCode");
@@ -88,7 +88,7 @@ describe("EdgeOverrides", () => {
     assert.isTrue(override.isOverridden(OvrFlags.Weight), "if style's width not equal to 0, then flags contain Weight");//tslint:disable-line
     assert.isTrue(override.weight === style.width, "if style's width isn't 0, then weight is equivalent to its width");
     assert.isFalse(override.isOverridden(OvrFlags.LineCode), "if style's pattern is invalid, then flags does not contains LineCode");//tslint:disable-line
-    assert.isUndefined(override.lineCode, "if style's pattern is invalid, then lineCode is not set");
+    assert.isTrue(LinePixels.Solid === override.lineCode.value, "if style's pattern is invalid, then lineCode is set to solid");
     assert.isFalse(override.isOverridden(OvrFlags.Alpha), "if forceOpaque is false then flags is not equal to Alpha");//tslint:disable-line
   });
 });

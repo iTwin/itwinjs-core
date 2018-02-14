@@ -1,9 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
-/* tslint:disable: no-console no-string-literal */
-
 import { assert } from "chai";
 import { SolidPrimitive } from "@bentley/geometry-core/lib/solid/SolidPrimitive";
 import { Path, ParityRegion } from "@bentley/geometry-core/lib/curve/CurveChain";
@@ -168,7 +165,7 @@ describe("GeometryStream", () => {
     const geometry: any[] = [];
     const gsReader = new GSReader();
     do {
-      const geom = gsReader.dgnGetGeometricPrimitive(iter.operation);
+      const geom = gsReader.dgnGetGeometricPrimitive(iter.operation!);
       if (geom)
         geometry.push(geom.data);
     } while (iter.nextOp());
@@ -222,7 +219,7 @@ describe("GeometryStream", () => {
       const geomArrayOut: Arc3d[] = [];
       do {
         const geomOut = Arc3d.createXY(Point3d.create(0, 0, 0), 1);
-        const success = gsReader.dgnGetArc3d(iterator.operation, geomOut);
+        const success = gsReader.dgnGetArc3d(iterator.operation!, geomOut);
         assert.isTrue(success !== undefined, "Expect Arc3d out");
         if (success) {
           geomArrayOut.push(geomOut);
@@ -253,7 +250,7 @@ describe("GeometryBuilder", () => {
     seedElement = imodel.elements.getElement(new Id64("0x1d"));
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
-    ellipse =  Arc3d.create(Point3d.create(1, 2, 3), Vector3d.create(0, 0, 2), Vector3d.create(0, 3, 0), AngleSweep.createStartEndRadians(0, 2 * Math.PI))!;
+    ellipse = Arc3d.create(Point3d.create(1, 2, 3), Vector3d.create(0, 0, 2), Vector3d.create(0, 3, 0), AngleSweep.createStartEndRadians(0, 2 * Math.PI))!;
     curveCollection = Sample.createSimpleParityRegions()[0];
     cylinder = Cone.createAxisPoints(Point3d.create(0, 0.34, 0), Point3d.create(0, 0, 1030.0), 1.5, 1.5, true)!;
     surface = Sample.createXYGridBsplineSurface(4, 6, 3, 4)!;
@@ -326,11 +323,11 @@ describe("GeometryBuilder", () => {
     let item: any;
     const elParams = GeometryParams.createDefaults();
     while (collection.isValid) {
-      if (collection.operation.isGeometryOp()) {
-        item = reader.dgnGetGeometricPrimitive(collection.operation);
+      if (collection.operation!.isGeometryOp()) {
+        item = reader.dgnGetGeometricPrimitive(collection.operation!);
         assert.isDefined(item, "Item extracted into GeometricPrimitive");
       } else {
-        item = reader.dgnGetGeometryParams(collection.operation, elParams);
+        item = reader.dgnGetGeometryParams(collection.operation!, elParams);
         assert.isTrue(item, "Item extracted into GeometryParams");
       }
       collection.nextOp();
@@ -353,7 +350,8 @@ describe("GeometryBuilder", () => {
     assert.isFalse(builder.appendSolidPrimitive(cylinder3d!), "3d SolidPrimitive is NOT appended using 2d builder");
   });
 
-  it("geometry stream built in JS should be deserialized properly in C++", () => {
+  // pending build of addon
+  it.skip("geometry stream built in JS should be deserialized properly in C++", () => {
     const builder = GeometryBuilder.createCategoryOrigin3d(seedElement.category, Point3d.create(0, 0, 0));
     assert.isDefined(builder, "Builder is successfully created");
     if (!builder)
@@ -375,12 +373,13 @@ describe("GeometryBuilder", () => {
       outFileName: path.join(KnownTestLocations.outputDir, "myDb.bim"),
     };
 
-    const cppResult = imodel.executeTestById(4, json);
+    const cppResult = imodel.executeTest("deserializeGeometryStream", json);
     const jsonCompare = new DeepCompare();
-    assert.isTrue(jsonCompare.compare({returnValue : true}, cppResult));
+    assert.isTrue(jsonCompare.compare({ returnValue: true }, cppResult));
   });
 
-  it("geometry stream built in C++ should be deserialized properly in TS", () => {
+  // pending build of addon
+  it.skip("geometry stream built in C++ should be deserialized properly in TS", () => {
     const pts = surface.copyPoints();
     const json: any = {
       bsurfacePts: pts,
@@ -389,14 +388,14 @@ describe("GeometryBuilder", () => {
       numPolyPts: polyPoints.length,
       outFileName: path.join(KnownTestLocations.outputDir, "testDb.bim"),
     };
-    const cppResult = imodel.executeTestById(5, json);
+    const cppResult = imodel.executeTest("buildKnownGeometryStream", json);
     assert.isTrue(cppResult.hasOwnProperty("geom"), "Successfully obtained geometry stream back from C++");
     const stream = GeometryStream.fromJSON(cppResult.geom);
     assert.isDefined(stream, "Geometry stream is defined");
     const collection = new GSCollection(stream!.geomStream);
     while (collection.isValid) {
-      const geomType = collection.operation.opCode;
-      if (!collection.operation.isGeometryOp()) {
+      const geomType = collection.operation!.opCode;
+      if (!collection.operation!.isGeometryOp()) {
         collection.nextOp();
         continue;
       }

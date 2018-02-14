@@ -9,6 +9,9 @@ import { LocateResponse } from "../ElementLocateManager";
 import { I18NNamespace } from "../Localization";
 import { iModelApp } from "../IModelApp";
 import { IModelError } from "../../common/IModelError";
+import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
+
+type CommandList = Array<typeof Tool>;
 
 export const enum BeButton {
   Data = 0,
@@ -178,13 +181,13 @@ export class BeButtonEvent {
   private readonly _rawPoint: Point3d = new Point3d();
   private readonly _viewPoint: Point3d = new Point3d();
   public viewport?: Viewport;
-  public coordsFrom: CoordSource;   // how were the coordinate values in point generated?
-  public keyModifiers: BeModifierKey;
-  public isDoubleClick: boolean;
-  public isDown: boolean;
-  public button: BeButton;
-  public inputSource: InputSource;
-  public actualInputSource: InputSource;
+  public coordsFrom = CoordSource.User;   // how were the coordinate values in point generated?
+  public keyModifiers = BeModifierKey.None;
+  public isDoubleClick = false;
+  public isDown = false;
+  public button = BeButton.Data;
+  public inputSource = InputSource.Unknown;
+  public actualInputSource = InputSource.Unknown;
 
   public get point() { return this._point; }
   public set point(pt: Point3d) { this._point.setFrom(pt); }
@@ -235,18 +238,18 @@ export class BeButtonEvent {
 
 /** Describes a "gesture" input originating from a touch-input device. */
 export class GestureInfo {
-  public gestureId: GestureId;
-  public numberTouches: number;
-  public previousNumberTouches: number;    // Only meaningful for GestureId::SingleFingerMove and GestureId::MultiFingerMove
+  public gestureId = GestureId.None;
+  public numberTouches = 0;
+  public previousNumberTouches = 0;    // Only meaningful for GestureId::SingleFingerMove and GestureId::MultiFingerMove
   public touches: Point2d[] = [new Point2d(), new Point2d(), new Point2d()];
   public ptsLocation: Point2d = new Point2d();    // Location of centroid
-  public distance: number;                 // Only meaningful on motion with multiple touches
-  public isEndGesture: boolean;
-  public isFromMouse: boolean;
+  public distance = 0;                 // Only meaningful on motion with multiple touches
+  public isEndGesture = false;
+  public isFromMouse = false;
 
   public getViewPoint(vp: Viewport) {
     const screenRect = vp.viewRect;
-    return new Point3d(this.ptsLocation.x - screenRect.low.x, this.ptsLocation.y - screenRect.low.y, 0.0);
+    return new Point3d(this.ptsLocation.x - screenRect.left, this.ptsLocation.y - screenRect.bottom, 0.0);
   }
 
   public init(gestureId: GestureId, centerX: number, centerY: number, distance: number, touchPoints: XAndY[], isEnding: boolean, isFromMouse: boolean, prevNumTouches: number) {
@@ -325,7 +328,9 @@ export class Tool {
   public static hidden = false;
   public static toolId = "";
   public static namespace: I18NNamespace;
+  protected static _keyin?: string; // localized (fetched only once, first time needed).
 
+  public constructor(..._args: any[]) { }
   /**
    * Register this Tool class with the ToolRegistry.
    * @param namespace optional namespace to supply to ToolRegistry.register. If undefined, use namespace from superclass.
@@ -336,7 +341,13 @@ export class Tool {
    * Get the localized keyin string for this Tool class. This returns the value of "tools." + this.toolId + ".keyin" from the
    * .json file for the current locale of its registered NameSpace (e.g. "en/MyApp.json")
    */
-  public static getKeyin(): string { return iModelApp.i18N.translate(this.namespace.name + ":tools." + this.toolId + ".keyin"); }
+  public static get keyin(): string {
+    if (!this._keyin) {
+      this._keyin = iModelApp.i18N.translate(this.namespace.name + ":tools." + this.toolId + ".keyin");
+    }
+    return this._keyin!;
+  }
+
   /**
    * Get the toolId string for this Tool class. This string is used to identify the Tool in the ToolRegistry and is used to localize
    * the keyin, description, etc. from the current locale.
@@ -344,13 +355,13 @@ export class Tool {
   public get toolId(): string { return (this.constructor as typeof Tool).toolId; }
 
   /** Get the localized keyin string from this Tool's class */
-  public get keyin(): string { return (this.constructor as typeof Tool).getKeyin(); }
+  public get keyin(): string { return (this.constructor as typeof Tool).keyin; }
 
   /**
    * run this instance of a Tool. Subclasses should override to perform their action.
    * @returns true if the tool executed successfully.
    */
-  public run(): boolean { return true; }
+  public run(..._arg: any[]): boolean { return true; }
 }
 
 /**
@@ -457,6 +468,12 @@ export abstract class InteractiveTool extends Tool {
  */
 export class ToolRegistry {
   public map: Map<string, typeof Tool> = new Map<string, typeof Tool>();
+  private _keyinList?: CommandList;
+
+  /**
+   * Register a Tool class. This establishes a connection between the toolId of the class and the class itself.
+   * @param toolId the toolId of a previously registered tool to unRegister.
+   */
   public unRegister(toolId: string) { this.map.delete(toolId); }
 
   /**
@@ -475,6 +492,9 @@ export class ToolRegistry {
       throw new IModelError(-1, "Tools must have a namespace");
 
     this.map.set(toolClass.toolId, toolClass);
+
+    // throw away the current _keyinList and produce a new one when asked.
+    this._keyinList = undefined;
   }
 
   /**
@@ -515,6 +535,43 @@ export class ToolRegistry {
    */
   public run(toolId: string, ...args: any[]): boolean {
     const tool = this.create(toolId, ...args);
-    return !!tool && tool.run();
+    return !!tool && tool.run(...args);
+  }
+
+  private async getKeyinList(): Promise<CommandList> {
+    if (this._keyinList) return this._keyinList;
+    const thePromise: Promise<CommandList> = new Promise<CommandList>((resolve: any, reject: any) => {
+      iModelApp.i18N.waitForAllRead().then(() => {
+        this._keyinList = new Array<typeof Tool>();
+        for (const thisTool of this.map.values()) {
+          this._keyinList!.push(thisTool);
+        }
+        resolve(this._keyinList);
+      }, () => { reject(); });
+    });
+    return thePromise;
+  }
+
+  public async findPartialMatches(keyin: string): Promise<FuzzySearchResults<typeof Tool>> {
+    const commandList: CommandList = await iModelApp.tools.getKeyinList();
+    const searcher: FuzzySearch<typeof Tool> = new FuzzySearch<typeof Tool>();
+    const searchResults: FuzzySearchResults<typeof Tool> = searcher.search(commandList, ["keyin"], keyin);
+    return searchResults;
+  }
+
+  public async executeExactMatch(keyin: string, ...args: any[]): Promise<boolean> {
+    const foundClass: typeof Tool | undefined = await this.findExactMatch(keyin);
+    if (!foundClass)
+      return false;
+    return new foundClass(...args).run(...args);
+  }
+
+  public async findExactMatch(keyin: string): Promise<typeof Tool | undefined> {
+    const commandList: CommandList = await iModelApp.tools.getKeyinList();
+    for (const thisTool of commandList) {
+      if (thisTool.keyin === keyin)
+        return thisTool;
+    }
+    return undefined;
   }
 }

@@ -4,11 +4,11 @@
 import { Gateway, GatewayDefinition } from "../common/Gateway";
 import { GatewayProtocol } from "./GatewayProtocol";
 import { GatewayConfiguration } from "./GatewayConfiguration";
-import { IModelError } from "../common/IModelError";
+import { ServerError } from "../common/IModelError";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 
 const loggingCategory = "imodeljs-backend.GatewayHttpProtocol";
+// tslint:disable:space-before-function-paren
 
 /** The HTTP application protocol. */
 export abstract class GatewayHttpProtocol extends GatewayProtocol {
@@ -101,10 +101,10 @@ export abstract class GatewayHttpProtocol extends GatewayProtocol {
           request.currentStatus = connection.responseText;
           this.reportPendingRequestStatus(request);
         } else if (this.shouldRejectPendingRequest(request, status)) {
-          const error = new IModelError(BentleyStatus.ERROR, `Server error: ${status} ${connection.responseText}`);
+          const error = new ServerError(status, connection.responseText);
           request.reject(error);
         } else {
-          throw new IModelError(BentleyStatus.ERROR, "Unhandled response.");
+          throw new ServerError(status, "Unhandled response.");
         }
       });
 
@@ -113,7 +113,7 @@ export abstract class GatewayHttpProtocol extends GatewayProtocol {
           return;
 
         Logger.logInfo(loggingCategory, "Gateway.frontend.connectionError", () => ({ method, path }));
-        request.reject(new IModelError(BentleyStatus.ERROR, "Connection error."));
+        request.reject(new ServerError(-1, "Connection error."));
       });
 
       connection.addEventListener("abort", () => {
@@ -121,7 +121,7 @@ export abstract class GatewayHttpProtocol extends GatewayProtocol {
           return;
 
         Logger.logInfo(loggingCategory, "Gateway.frontend.connectionAborted", () => ({ method, path }));
-        request.reject(new IModelError(BentleyStatus.ERROR, "Connection aborted."));
+        request.reject(new ServerError(-1, "Connection aborted."));
       });
 
       this.setOperationRequestHeaders(connection);
@@ -132,7 +132,7 @@ export abstract class GatewayHttpProtocol extends GatewayProtocol {
       if (!request.active)
         return;
 
-      request.reject(new IModelError(BentleyStatus.ERROR, e));
+      request.reject(e);
     }
   }
 
@@ -204,7 +204,7 @@ export abstract class GatewayHttpProtocol extends GatewayProtocol {
   }
 
   /** Cleanup handler for PendingOperationRequest. */
-  protected requestCleanupHandler = function(this: GatewayHttpProtocol, request: GatewayHttpProtocol.PendingOperationRequest) {
+  protected requestCleanupHandler = function (this: GatewayHttpProtocol, request: GatewayHttpProtocol.PendingOperationRequest) {
     for (; ;) {
       const i = this._pending.indexOf(request);
       if (i === -1)
@@ -218,7 +218,7 @@ export abstract class GatewayHttpProtocol extends GatewayProtocol {
   }.bind(this);
 
   /** Pending gateway operation request interval handler. */
-  protected pendingIntervalHandler = function(this: GatewayHttpProtocol) {
+  protected pendingIntervalHandler = function (this: GatewayHttpProtocol) {
     const now = new Date().getTime();
 
     for (let i = 0; i !== this._pending.length; ++i) {
@@ -271,7 +271,7 @@ export abstract class GatewayHttpProtocol extends GatewayProtocol {
     this.configuration.gateways().forEach((gateway) => {
       const name = this.obtainGatewayName(gateway);
       if (this.gatewayRegistry.has(name))
-        throw new IModelError(BentleyStatus.ERROR, `Gateway "${name}" is already registered within this protocol.`);
+        throw new ServerError(-1, `Gateway "${name}" is already registered within this protocol.`);
 
       this.gatewayRegistry.set(name, gateway);
     });
@@ -353,13 +353,13 @@ export namespace GatewayHttpProtocol {
 
     /** Cancels further connection attempts for this request and rejects the underlying operation promise. */
     public cancel() {
-      this.reject(new IModelError(BentleyStatus.ERROR, "Cancelled by application."));
+      this.reject(new ServerError(-1, "Cancelled by application."));
     }
 
     /** Resolves this request. */
     public resolve(value: any) {
       if (!this._active)
-        throw new IModelError(BentleyStatus.ERROR, "Request is not active.");
+        throw new ServerError(-1, "Request is not active.");
 
       this._active = false;
       this._cleanup(this);
@@ -369,7 +369,7 @@ export namespace GatewayHttpProtocol {
     /** Rejects this request. */
     public reject(reason: any) {
       if (!this._active)
-        throw new IModelError(BentleyStatus.ERROR, "Request is not active.");
+        throw new ServerError(-1, "Request is not active.");
 
       this._active = false;
       this._cleanup(this);

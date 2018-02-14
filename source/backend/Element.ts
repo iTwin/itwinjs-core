@@ -13,7 +13,7 @@ import { DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import {
   ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
   ViewAttachmentProps, SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,
-  InformationPartitionElementProps, AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, LightLocationProps,
+  InformationPartitionElementProps, AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, LightLocationProps, DefinitionElementProps,
 } from "../common/ElementProps";
 
 /**
@@ -34,7 +34,6 @@ export abstract class Element extends Entity implements ElementProps {
   /** constructor for Element. */
   constructor(props: ElementProps, iModel: IModelDb) {
     super(props, iModel);
-    this.id = Id64.fromJSON(props.id);
     this.code = Code.fromJSON(props.code);
     this.model = Id64.fromJSON(props.model);
     this.parent = RelatedElement.fromJSON(props.parent);
@@ -76,10 +75,10 @@ export abstract class Element extends Entity implements ElementProps {
   /** remove a set of JSON user properties, specified by namespace, from this Element */
   public removeUserProperties(nameSpace: string) { delete this.getAllUserProperties()[nameSpace]; }
 
- /**
-  * Add a request for locks, code reservations, and anything else that would be needed in order to carry out the specified operation.
-  * @param opcode The operation that will be performed on the element.
-  */
+  /**
+   * Add a request for locks, code reservations, and anything else that would be needed in order to carry out the specified operation.
+   * @param opcode The operation that will be performed on the element.
+   */
   public buildConcurrencyControlRequest(opcode: DbOpcode): void {
     this.iModel.concurrencyControl.buildRequestForElement(this, opcode);
   }
@@ -234,7 +233,7 @@ export class TextAnnotation3d extends GraphicalElement3d {
 }
 
 export class ViewAttachment extends GraphicalElement2d implements ViewAttachmentProps {
-  public view: Id64;
+  public view?: Id64;
   public constructor(props: ViewAttachmentProps, iModel: IModelDb) { super(props, iModel); }
 }
 
@@ -382,8 +381,14 @@ export abstract class InformationRecordElement extends InformationContentElement
 /**
  * A Definition Element holds configuration - related information that is meant to be referenced / shared.
  */
-export abstract class DefinitionElement extends InformationContentElement {
-  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
+export abstract class DefinitionElement extends InformationContentElement implements DefinitionElementProps {
+  public isPrivate: boolean;
+  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); this.isPrivate = props.isPrivate; }
+  public toJSON(): DefinitionElementProps {
+    const val = super.toJSON() as DefinitionElementProps;
+    val.isPrivate = this.isPrivate;
+    return val;
+  }
 }
 
 /**
@@ -563,8 +568,8 @@ export abstract class RoleElement extends Element {
 }
 
 export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoordSystemProps {
-  public type: number;
-  public description: string;
+  public type = 0;
+  public description?: string;
   public constructor(props: AuxCoordSystemProps, iModel: IModelDb) { super(props, iModel); }
 }
 
@@ -572,8 +577,8 @@ export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoo
  * A 2d coordinate system.
  */
 export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2dProps {
-  public origin: Point2d;
-  public angle: number;
+  public origin?: Point2d;
+  public angle = 0;
   public constructor(props: AuxCoordSystem2dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
@@ -581,10 +586,10 @@ export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2d
  * A 3d coordinate system.
  */
 export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3dProps {
-  public origin: Point3d;
-  public yaw: number;
-  public pitch: number;
-  public roll: number;
+  public origin?: Point3d;
+  public yaw = 0;
+  public pitch = 0;
+  public roll = 0;
   public constructor(props: AuxCoordSystem3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
@@ -599,7 +604,7 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
  * The spatial location of a light source
  */
 export class LightLocation extends SpatialLocationElement implements LightLocationProps {
-  public enabled: boolean;
+  public enabled = false;
   constructor(props: LightLocationProps, iModel: IModelDb) { super(props, iModel); }
 }
 

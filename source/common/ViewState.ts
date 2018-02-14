@@ -108,10 +108,12 @@ export class MarginPercent {
 export abstract class ViewState extends ElementState {
   public static getClassFullName(): string { return this.schemaName + ":ViewDefinition"; }
   public description?: string;
+  public isPrivate?: boolean;
 
   protected constructor(props: ViewDefinitionProps, iModel: IModel, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
     super(props, iModel);
     this.description = props.description;
+    this.isPrivate = props.isPrivate;
     if (categorySelector instanceof ViewState) { // from clone, 3rd argument is source ViewState
       this.categorySelector = categorySelector.categorySelector.clone();
       this.displayStyle = categorySelector.displayStyle.clone();
@@ -124,8 +126,8 @@ export abstract class ViewState extends ElementState {
     const json = super.toJSON() as ViewDefinitionProps;
     json.categorySelectorId = this.categorySelector.id;
     json.displayStyleId = this.displayStyle.id;
-    if (undefined !== this.description)
-      json.description = this.description;
+    json.isPrivate = this.isPrivate;
+    json.description = this.description;
     return json;
   }
 
@@ -719,7 +721,7 @@ export abstract class ViewState3d extends ViewState {
     if (!yVec) // up vector zero length?
       return ViewStatus.InvalidUpVector;
 
-    const zVec = Vector3d.createStartEnd(eye, targetPoint); // z defined by direction from eye to target
+    const zVec = Vector3d.createStartEnd(targetPoint, eye); // z defined by direction from eye to target
     const focusDist = zVec.normalizeWithLength(zVec).mag; // set focus at target point
     const minFrontDist = this.minimumFrontDistance();
 

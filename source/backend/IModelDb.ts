@@ -34,8 +34,16 @@ import { IModelDbLinkTableRelationships, LinkTableRelationship } from "./LinkTab
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { NodeAddonRegistry } from "./NodeAddonRegistry";
 import { RequestQueryOptions } from "@bentley/imodeljs-clients/lib";
+import { CategorySelectorState } from "../common/CategorySelectorState";
+import { ViewState, SpatialViewState, OrthographicViewState, ViewState2d, DrawingViewState, SheetViewState } from "../common/ViewState";
+import { DisplayStyle3dState, DisplayStyle2dState } from "../common/DisplayStyleState";
+import { ModelSelectorState } from "../common/ModelSelectorState";
+import { Model2dState } from "../common/EntityState";
 
 const loggingCategory = "imodeljs-backend.IModelDb";
+
+/** The signature of a function that can supply a description of local Txns in the specified briefcase up to and including the specified endTxnId. */
+export type ChangeSetDescriber = (endTxnId: TxnManager.TxnId) => string;
 
 // Register the backend implementation of IModelGateway
 IModelGatewayImpl.register();
@@ -54,6 +62,7 @@ export class IModelDb extends IModel {
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
   private _concurrency?: ConcurrencyControl;
+  private _txnManager?: TxnManager;
 
   /** @hidden */
   public briefcaseEntry?: BriefcaseEntry;
@@ -110,7 +119,6 @@ export class IModelDb extends IModel {
    */
   public static openStandalone(pathname: string, openMode: OpenMode = OpenMode.ReadWrite, enableTransactions: boolean = false): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(pathname, openMode, enableTransactions);
-    // Logger.logTrace(loggingCategory, "IModelDb.openStandalone", loggingCategory, () => ({ pathname, openMode }));
     return IModelDb.constructIModelDb(briefcaseEntry);
   }
 
@@ -125,7 +133,7 @@ export class IModelDb extends IModel {
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(accessToken, contextId, iModelId, openMode, version);
     Logger.logTrace(loggingCategory, "IModelDb.open", () => ({ iModelId, openMode }));
-    return IModelDb.constructIModelDb(briefcaseEntry);
+    return IModelDb.constructIModelDb(briefcaseEntry, contextId);
   }
 
   /**
@@ -239,10 +247,11 @@ export class IModelDb extends IModel {
    * for named parameters.
    * The values in either the array or object must match the respective types of the parameters.
    * Supported types:
-   * boolean, Blob, DateTime, NavigationBindingValue, number, XY, XYZ, string
+   * boolean, [[Blob]],  [[DateTime]], [[NavigationBindingValue]], number, [[XY]], [[XYZ]], string
    * For struct parameters pass an object with key value pairs of struct property name and values of the supported types
    * For array parameters pass an array of the supported types.
-   * @returns all rows as an array or an empty array if nothing was selected
+   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
+   * See [[ECSqlStatement.getRow]] for details about the format of the returned rows.
    * @throws [[IModelError]] If the statement is invalid
    */
   public executeQuery(ecsql: string, bindings?: any[] | object): any[] {
@@ -302,6 +311,8 @@ export class IModelDb extends IModel {
     if (!this.briefcaseEntry)
       throw this._newNotOpenError();
 
+    // TODO: this.Txns.onSaveChanges => validation, rules, indirect changes, etc.
+
     this.concurrencyControl.onSaveChanges();
 
     const stat = this.briefcaseEntry.nativeDb.saveChanges(description);
@@ -329,13 +340,16 @@ export class IModelDb extends IModel {
   /**
    * Push changes to the iModelHub
    * @param accessToken Delegation token of the authorized user.
+   * @param describer A function that returns a description of the changeset. Defaults to the combination of the descriptions of all local Txns.
    * @throws [[IModelError]] If the pull and merge fails.
    */
-  public async pushChanges(accessToken: AccessToken): Promise<void> {
+  public async pushChanges(accessToken: AccessToken, describer?: ChangeSetDescriber): Promise<void> {
     if (!this.briefcaseEntry)
       throw this._newNotOpenError();
 
-    return BriefcaseManager.pushChanges(accessToken, this.briefcaseEntry);
+    const description = describer ? describer(this.Txns.getCurrentTxnId()) : this.Txns.describeChangeSet();
+
+    return BriefcaseManager.pushChanges(accessToken, this.briefcaseEntry, description);
   }
 
   /**
@@ -411,6 +425,13 @@ export class IModelDb extends IModel {
     if (this._concurrency === undefined)
       this._concurrency = new ConcurrencyControl(this);
     return this._concurrency;
+  }
+
+  /** Get the TxnManager for this IModelDb. */
+  public get Txns(): TxnManager {
+    if (this._txnManager === undefined)
+      this._txnManager = new TxnManager(this);
+    return this._txnManager;
   }
 
   /** Get access to the CodeSpecs in this IModel. */
@@ -514,19 +535,16 @@ export class IModelDb extends IModel {
       this.loadMetaData(metaData.baseClasses[0]);
   }
 
-  /** TESTING ONLY - Execute a test known to exist using the id recognized by the addon's test execution handler
-   * @param id The id of the test you wish to execute
-   * @param params A JSON string that should all of the data/parameters the test needs to function correctly
+  /** TESTING ONLY - Execute a test from native code
+   * @param testName The name of the test
+   * @param params parameters for the test
    * @hidden
    */
-  public executeTestById(testId: number, params: any): any {
+  public executeTest(testName: string, params: any): any {
     if (!this.briefcaseEntry)
       throw this._newNotOpenError();
 
-    const retVal: string = this.briefcaseEntry.nativeDb.executeTestById(testId, JSON.stringify(params));
-    if (retVal.length === 0)
-      return {};
-    return JSON.parse(retVal);
+    return JSON.parse(this.briefcaseEntry.nativeDb.executeTest(testName, JSON.stringify(params)));
   }
 }
 
@@ -542,8 +560,8 @@ export class IModelDb extends IModel {
 export class ConcurrencyControl {
   private _pendingRequest: ConcurrencyControl.Request;
   private _imodel: IModelDb;
-  private _codes: ConcurrencyControl.Codes;
-  private _policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy;
+  private _codes?: ConcurrencyControl.Codes;
+  private _policy?: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy;
 
   constructor(im: IModelDb) {
     this._imodel = im;
@@ -1050,8 +1068,8 @@ export namespace ConcurrencyControl {
 
   /** Thrown when iModelHub denies or cannot process a request. */
   export class RequestError extends IModelError {
-    public unavailableCodes: MultiCode[];
-    public unavailableLocks: MultiCode[];
+    public unavailableCodes: MultiCode[] = [];
+    public unavailableLocks: MultiCode[] = [];
   }
 
   /** Code manager */
@@ -1338,7 +1356,7 @@ export class IModelDbElements {
       stmt.bindString(3, code.value!);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
         return undefined;
-      return new Id64(stmt.getRow().id);
+      return stmt.getRow().id;
     });
   }
 
@@ -1494,5 +1512,137 @@ export class IModelDbViews {
       this._iModel.releasePreparedStatement(statement);
     }
     return viewIds.map((viewId: Id64) => this._iModel.elements.getElementProps(viewId) as ViewDefinitionProps);
+  }
+
+  public getViewStateData(viewDefinitionId: string): any {
+    const viewStateData: any = {};
+    const elements = this._iModel.elements;
+    viewStateData.viewDefinitionProps = elements.getElementProps(new Id64(viewDefinitionId)) as ViewDefinitionProps;
+    viewStateData.categorySelectorProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.categorySelectorId));
+    viewStateData.displayStyleProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.displayStyleId));
+    if (viewStateData.viewDefinitionProps.baseModelId)
+      viewStateData.baseModelProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.baseModelId));
+    if (viewStateData.viewDefinitionProps.modelSelectorId)
+      viewStateData.modelSelectorProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.modelSelectorId));
+    return viewStateData;
+  }
+
+  /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
+  public loadView(viewDefinitionId: Id64 | string): ViewState {
+
+    const viewStateData = this.getViewStateData(typeof viewDefinitionId === "string" ? viewDefinitionId : viewDefinitionId.value);
+    const categorySelectorState = new CategorySelectorState(viewStateData.categorySelectorProps, this._iModel);
+
+    switch (viewStateData.viewDefinitionProps.classFullName) {
+      case SpatialViewState.getClassFullName(): {
+        const displayStyleState = new DisplayStyle3dState(viewStateData.displayStyleProps, this._iModel);
+        const modelSelectorState = new ModelSelectorState(viewStateData.modelSelectorProps, this._iModel);
+        return new SpatialViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, modelSelectorState);
+      }
+      case OrthographicViewState.getClassFullName(): {
+        const displayStyleState = new DisplayStyle3dState(viewStateData.displayStyleProps, this._iModel);
+        const modelSelectorState = new ModelSelectorState(viewStateData.modelSelectorProps, this._iModel);
+        return new OrthographicViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, modelSelectorState);
+      }
+      case ViewState2d.getClassFullName(): {
+        const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
+        const baseModelState = new Model2dState(viewStateData.baseModelProps, this._iModel);
+        return new ViewState2d(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, baseModelState);
+      }
+      case DrawingViewState.getClassFullName(): {
+        const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
+        const baseModelState = new Model2dState(viewStateData.baseModelProps, this._iModel);
+        return new DrawingViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, baseModelState);
+      }
+      case SheetViewState.getClassFullName(): {
+        const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
+        const baseModelState = new Model2dState(viewStateData.baseModelProps, this._iModel);
+        return new SheetViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, baseModelState);
+      }
+      default:
+        throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState subclass");
+    }
+  }
+}
+
+/**
+ * Local Txns in an IModelDb. Local Txns persist only until [[IModelDb.pushChanges]] is called.
+ */
+export class TxnManager {
+  private _iModel: IModelDb;
+
+  constructor(iModel: IModelDb) {
+    this._iModel = iModel;
+  }
+
+  /** Get the ID of the first transaction, if any. */
+  public queryFirstTxnId(): TxnManager.TxnId {
+    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerQueryFirstTxnId();
+  }
+
+  /** Get the successor of the specified TxnId */
+  public queryNextTxnId(txnId: TxnManager.TxnId): TxnManager.TxnId {
+    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerQueryNextTxnId(txnId);
+  }
+
+  /** Get the predecessor of the specified TxnId */
+  public queryPreviousTxnId(txnId: TxnManager.TxnId): TxnManager.TxnId {
+    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerQueryPreviousTxnId(txnId);
+  }
+
+  /** Get the ID of the current (tip) transaction.  */
+  public getCurrentTxnId(): TxnManager.TxnId {
+    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerGetCurrentTxnId();
+  }
+
+  /** Get the description that was supplied when the specified transaction was saved. */
+  public getTxnDescription(txnId: TxnManager.TxnId): string {
+    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerGetTxnDescription(txnId);
+  }
+
+  /** Test if a TxnId is valid */
+  public isTxnIdValid(txnId: TxnManager.TxnId): boolean {
+    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerIsTxnIdValid(txnId);
+  }
+
+  /** Make a description of the changeset by combining all local txn comments. */
+  public describeChangeSet(endTxnId?: TxnManager.TxnId): string {
+
+    if (endTxnId === undefined)
+      endTxnId = this.getCurrentTxnId();
+
+    const accum = [];
+    const seen = new Set<string>();
+
+    let txnId = this.queryFirstTxnId();
+
+    while (this.isTxnIdValid(txnId)) {
+
+      const txnDescStr = this.getTxnDescription(txnId);
+
+      if ((txnDescStr.length === 0) || seen.has(txnDescStr))
+        continue;
+
+      let txnDesc: any;
+      try {
+        txnDesc = JSON.parse(txnDescStr);
+      } catch (err) {
+        txnDesc = { description: txnDescStr };
+      }
+
+      accum.push(txnDesc);
+
+      seen.add(txnDesc);
+      txnId = this.queryNextTxnId(txnId);
+    }
+
+    return JSON.stringify(accum);
+  }
+}
+
+export namespace TxnManager {
+  /** Identifies a transaction that is local to a specific IModelDb. */
+  export interface TxnId {
+    readonly _id: string;
   }
 }

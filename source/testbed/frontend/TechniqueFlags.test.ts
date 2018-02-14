@@ -2,7 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { FeatureDimension, FeatureDimensions, LUTDimension, FeatureIndexType } from "../../frontend/render/FeatureDimensions";
+import { FeatureDimension, FeatureDimensions, LUTDimension } from "../../frontend/render/FeatureDimensions";
+import { FeatureIndexType } from "../../frontend/render/FeatureIndex";
 import { TechniqueFlags, Mode, WithClipVolume } from "../../frontend/render/TechniqueFlags";
 
 describe("TechniqueFlags", () => {
