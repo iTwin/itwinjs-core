@@ -125,6 +125,11 @@ export default class Schema implements CustomAttributeContainerProps {
     return child;
   }
 
+  private getLocalChild(name: string): SchemaChild| undefined {
+    // Case-insensitive search
+    return this._children.find((child) => child.name.toLowerCase() === name.toLowerCase());
+  }
+
   /**
    * Attempts to find a schema child with a name matching, case-insensitive, the provided name. It will look for the schema child in the context of this schema.
    * If the name is a full name, it will search in the reference schema matching the name.
@@ -136,7 +141,7 @@ export default class Schema implements CustomAttributeContainerProps {
     let foundChild;
     if (!schemaName || schemaName.toLowerCase() === this.name.toLowerCase()) {
       // Case-insensitive search
-      foundChild = this._children.find((child) => child.name.toLowerCase() === childName.toLowerCase());
+      foundChild = this.getLocalChild(childName);
       if (!foundChild && this._context) {
         // this._context.
       }
@@ -194,7 +199,7 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param child
    */
   public async addChild<T extends SchemaChild>(child: T): Promise<void> {
-    if (undefined !== await this.getChild(child.name, false))
+    if (undefined !== this.getLocalChild(child.name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateChild, `The SchemaChild ${child.name} cannot be added to the schema ${this.name} because it already exists`);
 
     this._children.push(child);
@@ -202,7 +207,7 @@ export default class Schema implements CustomAttributeContainerProps {
   }
 
   public addChildSync<T extends SchemaChild>(child: T): void {
-    if (undefined !== this.getChildSync(child.name))
+    if (undefined !== this.getLocalChild(child.name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateChild, `The SchemaChild ${child.name} cannot be added to the schema ${this.name} because it already exists`);
 
     this._children.push(child);
