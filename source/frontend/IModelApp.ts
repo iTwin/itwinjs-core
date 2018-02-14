@@ -8,7 +8,6 @@ import { AccuSnap } from "./AccuSnap";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { TentativePoint } from "./TentativePoint";
 import { ToolRegistry } from "./tools/Tool";
-import { CommandSet } from "./CommandSet";
 import { I18N, I18NNamespace, I18NOptions } from "./Localization";
 import { FeatureGates } from "../common/FeatureGates";
 
@@ -37,7 +36,6 @@ export class IModelApp {
   protected _locateManager?: ElementLocateManager;
   protected _tentativePoint?: TentativePoint;
   protected _i18N?: I18N;
-  protected _commandSet?: CommandSet;
 
   public readonly features = new FeatureGates();
   public readonly tools = new ToolRegistry();
@@ -49,7 +47,6 @@ export class IModelApp {
   public get locateManager(): ElementLocateManager { return this._locateManager!; }
   public get tentativePoint(): TentativePoint { return this._tentativePoint!; }
   public get i18N(): I18N { return this._i18N!; }
-  public get commandSet(): CommandSet { return this._commandSet!; }
 
   /**
    * This method must be called before any iModelJs services are used. Typically, an application will make a subclass of IModelApp
@@ -87,7 +84,6 @@ export class IModelApp {
     if (!iModelApp._accuSnap) iModelApp._accuSnap = new AccuSnap();
     if (!iModelApp._locateManager) iModelApp._locateManager = new ElementLocateManager();
     if (!iModelApp._tentativePoint) iModelApp._tentativePoint = new TentativePoint();
-    if (!iModelApp._commandSet) iModelApp._commandSet = new CommandSet();
 
     iModelApp._viewManager.onInitialized();
     iModelApp._toolAdmin.onInitialized();

@@ -2,7 +2,7 @@ import { assert } from "chai";
 import { iModelApp, IModelApp } from "../../frontend/IModelApp";
 import { Tool } from "../../frontend/tools/Tool";
 import { I18NNamespace } from "../../frontend/Localization";
-import { SearchResults } from "../../frontend/CommandSet";
+import { FuzzySearchResults } from "../../frontend/FuzzySearch";
 
 // these are later set by executing the TestImmediate tool.
 let testVal1: string;
@@ -30,53 +30,84 @@ class TestCommandApp extends IModelApp {
   protected supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
 }
 
-function SetupCommandSetTests() {
+function SetupToolRegistryTests() {
   TestCommandApp.startup();
   CreateTestTools();
-  // const newProvider = new TestCommandProvider();
-  // iModelApp.commandSet.registerCommandProvider(newProvider);
 }
 
-describe("CommandSet", () => {
-  before(() => SetupCommandSetTests());
+describe.only("ToolRegistry", () => {
+  before(() => SetupToolRegistryTests());
   after(() => TestCommandApp.shutdown());
 
   it("Should find Select tool", async () => {
-    const command: typeof Tool | undefined = await iModelApp.commandSet.findExactMatch("Select Elements");
+    const command: typeof Tool | undefined = await iModelApp.tools.findExactMatch("Select Elements");
     assert.isDefined(command, "Found Select Elements Command");
     if (command) {
       assert.isTrue(command.prototype instanceof Tool);
-      assert.isTrue(iModelApp.commandSet.runCommand(command));
+      assert.isTrue(iModelApp.tools.run(command.toolId));
     }
   });
 
   it("Should execute the TestImmediate command", async () => {
-    const cmdReturn: boolean = await iModelApp.commandSet.executeExactMatch("Localized TestImmediate Keyin");
+    const cmdReturn: boolean = await iModelApp.tools.executeExactMatch("Localized TestImmediate Keyin");
     assert.isTrue(cmdReturn);
     assert.equal(testVal1, "test1", "TestImmediate tool set values");
     assert.equal(testVal2, "test2");
   });
 
   it("Should find the MicroStation inputmanager training command", async () => {
-    const command: typeof Tool | undefined = await iModelApp.commandSet.findExactMatch("inputmanager training");
+    const command: typeof Tool | undefined = await iModelApp.tools.findExactMatch("inputmanager training");
     assert.isDefined(command, "Found inputmanager training command");
     if (command) {
-      assert.isTrue(iModelApp.commandSet.runCommand(command));
+      assert.isTrue(iModelApp.tools.run(command.toolId));
       assert.equal(lastCommand, "inputmanager training");
     }
   });
 
   it("Should find some partial matches for plac", async () => {
-    const searchResults: SearchResults | undefined = await iModelApp.commandSet.findPartialMatches("plac");
+    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await iModelApp.tools.findPartialMatches("plac");
     // tslint:disable-next-line:no-console
-    console.log("Matches for 'plac':", searchResults);
+    showSearchResults("Matches for 'plac':", searchResults);
+  });
+
+  it("Should find some partial matches for plce", async () => {
+    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await iModelApp.tools.findPartialMatches("plce");
+    // tslint:disable-next-line:no-console
+    showSearchResults("Matches for 'plce':", searchResults);
+  });
+
+  it("Should find some partial matches for cone plac", async () => {
+    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await iModelApp.tools.findPartialMatches("cone plac");
+    // tslint:disable-next-line:no-console
+    showSearchResults("Matches for 'cone plac':", searchResults);
   });
 });
 
+function showSearchResults(title: string, searchResults?: FuzzySearchResults<typeof Tool>) {
+  // tslint:disable-next-line:no-console
+  console.log(title);
+  if (!searchResults)
+    return;
+  for (let resultIndex = 0; resultIndex < searchResults.length; resultIndex++) {
+    const keyin = searchResults.getResult(resultIndex)!.keyin;
+    // tslint:disable-next-line:no-console
+    console.log(keyin);
+    assert.isTrue(keyin.length > 0);
+
+    const boldMask: boolean[] = searchResults.getBoldMask(resultIndex)!;
+    assert.isTrue(keyin.length === boldMask.length);
+    let boldString: string = boldMask[0] ? "^" : " ";
+    for (let index = 1; index < boldMask.length; index++) {
+      boldString = boldString.concat(boldMask[index] ? "^" : " ");
+    }
+    // tslint:disable-next-line:no-console
+    console.log(boldString);
+  }
+}
+
 function registerTestClass(id: string, keyin: string, ns: I18NNamespace) {
   (class extends Tool {
-    public static toolId = id; public static myKeyin = keyin;
-    public static getKeyin(): string { return this.myKeyin; }
+    public static toolId = id; protected static _keyin = keyin;
     public run(): boolean { lastCommand = this.keyin; return true; }
   }).register(ns);
 }
@@ -86,42 +117,11 @@ function CreateTestTools(): void {
   const ns: I18NNamespace = (iModelApp as TestCommandApp).testNamespace;
   for (const thisEntry of testCommandEntries) {
     // create a tool id by concatenating the words of the keyin.
-    const toolId: string = thisEntry.commandString.replace(" ", ".");
+    const toolId: string = thisEntry.commandString.replace(/ /g, ".");
     registerTestClass(toolId, thisEntry.commandString, ns);
   }
 }
 
-/* ---------------
-class TestCommandFunction {
-  constructor(public commandName: string) {
-  }
-
-  public dispatchFunc(args?: string): boolean {
-    // tslint:disable-next-line:no-console
-    console.log(this.commandName, args);
-    lastCommand = this.commandName;
-    return true;
-  }
-}
-
-class TestCommandProvider implements CommandProvider {
-  private commands: CommandMap;
-
-  constructor() {
-    const testCommandEntries: any = JSON.parse(testCommandsString);
-    this.commands = new Map<string, CommandDispatcher>();
-    for (const thisEntry of testCommandEntries) {
-      const thisCommand: TestCommandFunction = new TestCommandFunction(thisEntry.commandString);
-      const dispatchFunc = thisCommand.dispatchFunc;
-      this.commands.set(thisEntry.commandString, dispatchFunc.bind(thisCommand));
-    }
-  }
-
-  public getCommands(): CommandMap {
-    return this.commands;
-  }
-}
------------------------*/
 const testCommandsString: string = '[\
     {\
       "commandString": "update"\
