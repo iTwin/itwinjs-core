@@ -75,7 +75,7 @@ describe("ECSqlStatement", () => {
   });
 });
 
-  it("Bind Numbers", () => {
+  it.skip("Bind Numbers", () => {
   using (ECDbTestHelper.createECDb(_outDir, "bindnumbers.ecdb",
   `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
     <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -1169,7 +1169,7 @@ describe("ECSqlStatement", () => {
       });
   });
 
-  it("HexStr SQL function", () => {
+  it.skip("HexStr SQL function", () => {
     using (ECDbTestHelper.createECDb(_outDir, "hexstrfunction.ecdb",
     `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
        <ECEntityClass typeName="Foo" modifier="Sealed">

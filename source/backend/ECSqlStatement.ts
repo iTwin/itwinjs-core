@@ -164,7 +164,10 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param val Integer value as number, decimal string or hexadecimal string.
    */
   public bindInteger(parameter: number | string, val: number | string): void {
-    using(this.getBinder(parameter), (binder) => binder.bindInteger(val));
+    if (typeof(val) === "string")
+      throw new Error("Passing stringified numbers to bindInteger is only supported with next add-on version.");
+
+    using(this.getBinder(parameter), (binder) => binder.bindInt(val));
   }
 
   /** Binds an Point2d value to the specified ECSQL parameter.
@@ -467,7 +470,7 @@ class ECSqlBindingHelper {
 
     if (typeof(val) === "number") {
       if (Number.isInteger(val))
-        return binder.bindInteger(val);
+        return binder.bindInt(val);
 
       return binder.bindDouble(val);
     }
