@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "0.48.1",
+  "version": "0.49.0",
   "description": "iModelJs frontend components",
   "license": "UNLICENSED",
   "scripts": {
