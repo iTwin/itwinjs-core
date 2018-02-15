@@ -21,8 +21,10 @@ import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelEngine } from "../IModelEngine";
 import * as path from "path";
+// import { Logger, LogLevel } from "@bentley/bentleyjs-core/lib/Logger";
 
 // Logger.initializeToConsole();
+// Logger.setLevelDefault(LogLevel.ERROR);
 
 // Initialize the gateway classes used by tests
 Gateway.initialize(IModelGateway);

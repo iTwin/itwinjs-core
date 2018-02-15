@@ -275,7 +275,7 @@ export class BriefcaseManager {
   }
 
   /** Initialize the briefcase manager cache of in-memory briefcases (if necessary). */
-  public static async initCache(accessToken?: AccessToken): Promise<void> {
+  private static async initCache(accessToken?: AccessToken): Promise<void> {
     if (!BriefcaseManager.cache.isEmpty())
       return;
 
@@ -607,7 +607,7 @@ export class BriefcaseManager {
   }
 
   /** Downloads Change Sets in the specified range */
-  public static async downloadChangeSets(accessToken: AccessToken, iModelId: string, toChangeSetId?: string, fromChangeSetId?: string): Promise<ChangeSet[]> {
+  private static async downloadChangeSets(accessToken: AccessToken, iModelId: string, toChangeSetId?: string, fromChangeSetId?: string): Promise<ChangeSet[]> {
     const changeSets = await BriefcaseManager.getChangeSets(accessToken, iModelId, true /*includeDownloadLink*/, toChangeSetId, fromChangeSetId);
     if (changeSets.length === 0)
       return new Array<ChangeSet>();

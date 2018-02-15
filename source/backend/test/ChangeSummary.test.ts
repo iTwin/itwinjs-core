@@ -1,7 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-// import * as fs from "fs";
 import * as path from "path";
 import { expect, assert } from "chai";
 import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -154,8 +153,11 @@ describe("ChangeSummary", () => {
   });
 
   it("Extract ChangeSummary for single changeset", async () => {
-    const latestVersion: IModelVersion = IModelVersion.latest();
-    const changesetId: string = await latestVersion.evaluateChangeSet(accessToken, testIModelId);
+    const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
+    assert.equal(changeSets.length, 3);
+    // extract summary for second changeset
+    const changesetId: string = changeSets[1].wsgId;
+
     const changesFilePath: string = BriefcaseManager.buildChangeSummaryFilePath(testIModelId);
     if (IModelJsFs.existsSync(changesFilePath))
       IModelJsFs.removeSync(changesFilePath);
@@ -164,7 +166,7 @@ describe("ChangeSummary", () => {
     await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, testIModelId, changesetId, changesetId);
     assert.isTrue(IModelJsFs.existsSync(changesFilePath));
 
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, latestVersion);
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
     try {
       assert.exists(iModel);
       ChangeSummaryManager.attachChangeCache(iModel);
