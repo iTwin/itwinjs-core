@@ -155,7 +155,7 @@ class BriefcaseCache {
     const pathKey = briefcase.getPathKey();
 
     if (!this.briefcases.get(pathKey)) {
-      const msg =`Briefcase ${pathKey} not found in cache`;
+      const msg = `Briefcase ${pathKey} not found in cache`;
       Logger.logError(loggingCategory, msg);
       throw new IModelError(DbResult.BE_SQLITE_ERROR, msg);
     }
