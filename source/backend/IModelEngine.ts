@@ -1,4 +1,4 @@
-import { DeploymentEnv, AuthorizationToken } from "@bentley/imodeljs-clients";
+import { DeploymentEnv, AccessToken } from "@bentley/imodeljs-clients";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { IModelJsFs } from "./IModelJsFs";
 import * as path from "path";
@@ -21,10 +21,10 @@ export class IModelEngineConfiguration {
     this._briefcaseCacheDir = cacheDir.replace(/\/?$/, "/").normalize();
   }
 
-  /** Method that returns a valid authorization token for the service user. If defined, this is used for all Connect and iModelHub operations
+  /** Method that returns a valid access token for the service user. If defined, this is used for all Connect and iModelHub operations
    * instead of the one passed in from the front end.
    */
-  public getServiceUserAuthorizationToken: () => AuthorizationToken|undefined = () => undefined;
+  public getServiceUserAccessToken: () => AccessToken|undefined = () => undefined;
 }
 
 export class IModelEngine {
