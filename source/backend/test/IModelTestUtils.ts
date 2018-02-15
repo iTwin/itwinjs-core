@@ -19,6 +19,7 @@ import { Appearance } from "../../common/SubCategoryAppearance";
 import { Configuration } from "../../common/Configuration";
 import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { IModelEngine } from "../IModelEngine";
 import * as path from "path";
 
 // Logger.initializeToConsole();
@@ -28,6 +29,9 @@ Gateway.initialize(IModelGateway);
 
 // Initialize the Node addon used by tests
 NodeAddonRegistry.loadAndRegisterStandardAddon();
+
+// Start the backend
+IModelEngine.startup();
 
 export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;

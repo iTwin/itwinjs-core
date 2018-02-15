@@ -54,10 +54,10 @@ BisCore.registerSchema();
 /** Represents a physical copy (briefcase) of an iModel that can be accessed as a file. */
 export class IModelDb extends IModel {
   public static readonly defaultLimit = 1000;
-  public readonly models: IModelDbModels;
-  public readonly elements: IModelDbElements;
-  public readonly views: IModelDbViews;
-  public readonly linkTableRelationships: IModelDbLinkTableRelationships;
+  public models: IModelDbModels;  // tslint:disable-line
+  public elements: IModelDbElements; // tslint:disable-line
+  public views: IModelDbViews; // tslint:disable-line
+  public linkTableRelationships: IModelDbLinkTableRelationships; // tslint:disable-line
   private readonly statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
@@ -70,23 +70,28 @@ export class IModelDb extends IModel {
   /** Get the mode used to open this iModel */
   public get openMode(): OpenMode | undefined { return this.briefcaseEntry ? this.briefcaseEntry.openMode : undefined; }
 
-  private constructor(briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, name: string, props: IModelProps) {
-    super(iModelToken, name, props);
+  private constructor(briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken) {
+    super(iModelToken);
     this.setupBriefcaseEntry(briefcaseEntry);
+    this.initializeIModelDb();
+  }
+
+  private initializeIModelDb() {
+    const props = JSON.parse(this.briefcaseEntry!.nativeDb.getIModelProps()) as IModelProps;
+    const name = props.rootSubject ? props.rootSubject.name : path.basename(this.briefcaseEntry!.pathname);
+    super.initialize(name, props);
+
     this.models = new IModelDbModels(this);
     this.elements = new IModelDbElements(this);
     this.views = new IModelDbViews(this);
     this.linkTableRelationships = new IModelDbLinkTableRelationships(this);
   }
 
-  private static createIModelDb(briefcaseEntry: BriefcaseEntry, contextId?: string): IModelDb {
+  private static constructIModelDb(briefcaseEntry: BriefcaseEntry, contextId?: string): IModelDb {
     if (briefcaseEntry.iModelDb)
       return briefcaseEntry.iModelDb; // If there's an IModelDb already associated with the briefcase, that should be reused.
-    const iModelToken = IModelToken.create(briefcaseEntry.iModelId, briefcaseEntry.changeSetId, briefcaseEntry.openMode, briefcaseEntry.userId, contextId);
-    const props = JSON.parse(briefcaseEntry.nativeDb.getIModelProps()) as IModelProps;
-    const name = props.rootSubject ? props.rootSubject.name : path.basename(briefcaseEntry.pathname);
-    const iModelDb = new IModelDb(briefcaseEntry, iModelToken, name, props);
-    return iModelDb;
+    const iModelToken = new IModelToken (briefcaseEntry.getPathKey(), briefcaseEntry.isStandalone, contextId, briefcaseEntry.iModelId, briefcaseEntry.changeSetId, briefcaseEntry.openMode, briefcaseEntry.userId);
+    return new IModelDb(briefcaseEntry, iModelToken);
   }
 
   /**
@@ -98,12 +103,12 @@ export class IModelDb extends IModel {
   public static createStandalone(pathname: string, rootSubjectName: string, rootSubjectDescription?: string): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(pathname, rootSubjectName, rootSubjectDescription);
     // Logger.logTrace(loggingCategory, "IModelDb.createStandalone", loggingCategory, () => ({ pathname }));
-    return IModelDb.createIModelDb(briefcaseEntry);
+    return IModelDb.constructIModelDb(briefcaseEntry);
   }
 
   public static async create(accessToken: AccessToken, contextId: string, hubName: string, rootSubjectName: string, hubDescription?: string, rootSubjectDescription?: string): Promise<IModelDb> {
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.create(accessToken, contextId, hubName, rootSubjectName, hubDescription, rootSubjectDescription);
-    return IModelDb.createIModelDb(briefcaseEntry, contextId);
+    return IModelDb.constructIModelDb(briefcaseEntry, contextId);
   }
 
   /** Open the iModel from a local file
@@ -114,7 +119,7 @@ export class IModelDb extends IModel {
    */
   public static openStandalone(pathname: string, openMode: OpenMode = OpenMode.ReadWrite, enableTransactions: boolean = false): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(pathname, openMode, enableTransactions);
-    return IModelDb.createIModelDb(briefcaseEntry);
+    return IModelDb.constructIModelDb(briefcaseEntry);
   }
 
   /**
@@ -128,7 +133,7 @@ export class IModelDb extends IModel {
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(accessToken, contextId, iModelId, openMode, version);
     Logger.logTrace(loggingCategory, "IModelDb.open", () => ({ iModelId, openMode }));
-    return IModelDb.createIModelDb(briefcaseEntry, contextId);
+    return IModelDb.constructIModelDb(briefcaseEntry, contextId);
   }
 
   /**
@@ -327,7 +332,9 @@ export class IModelDb extends IModel {
     if (!this.briefcaseEntry)
       throw this._newNotOpenError();
 
-    return BriefcaseManager.pullAndMergeChanges(accessToken, this.briefcaseEntry, version);
+    await BriefcaseManager.pullAndMergeChanges(accessToken, this.briefcaseEntry, version);
+    this.token.changeSetId = this.briefcaseEntry.changeSetId;
+    this.initializeIModelDb();
   }
 
   /**
@@ -342,7 +349,9 @@ export class IModelDb extends IModel {
 
     const description = describer ? describer(this.Txns.getCurrentTxnId()) : this.Txns.describeChangeSet();
 
-    return BriefcaseManager.pushChanges(accessToken, this.briefcaseEntry, description);
+    await BriefcaseManager.pushChanges(accessToken, this.briefcaseEntry, description);
+    this.token.changeSetId = this.briefcaseEntry.changeSetId;
+    this.initializeIModelDb();
   }
 
   /**
@@ -355,7 +364,8 @@ export class IModelDb extends IModel {
     if (!this.briefcaseEntry)
       throw this._newNotOpenError();
 
-    return BriefcaseManager.reverseChanges(accessToken, this.briefcaseEntry, version);
+    await BriefcaseManager.reverseChanges(accessToken, this.briefcaseEntry, version);
+    this.initializeIModelDb();
   }
 
   /**
@@ -368,7 +378,8 @@ export class IModelDb extends IModel {
     if (!this.briefcaseEntry)
       throw this._newNotOpenError();
 
-    return BriefcaseManager.reinstateChanges(accessToken, this.briefcaseEntry, version);
+    await BriefcaseManager.reinstateChanges(accessToken, this.briefcaseEntry, version);
+    this.initializeIModelDb();
   }
 
   /**

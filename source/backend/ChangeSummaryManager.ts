@@ -213,7 +213,7 @@ export class ChangeSummaryManager {
   public static async extractChangeSummaries(accessToken: AccessToken, projectId: string, iModelId: string,
     startChangeSetId?: string, endChangeSetId?: string): Promise<void> {
 
-    await BriefcaseManager.initialize(accessToken);
+    await BriefcaseManager.initCache(accessToken);
 
     let endVersion: IModelVersion = IModelVersion.latest();
     if (endChangeSetId !== undefined)

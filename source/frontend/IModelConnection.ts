@@ -34,7 +34,8 @@ export class IModelConnection extends IModel {
   public readonly selectionSet: SelectionSet;
 
   private constructor(iModelToken: IModelToken, name: string, props: IModelProps) {
-    super(iModelToken, name, props);
+    super(iModelToken);
+    super.initialize(name, props);
     this.models = new IModelConnectionModels(this);
     this.elements = new IModelConnectionElements(this);
     this.codeSpecs = new IModelConnectionCodeSpecs(this);
@@ -53,7 +54,7 @@ export class IModelConnection extends IModel {
     if (!changeSetId)
       changeSetId = "0"; // The first version is arbitrarily setup to have changeSetId = "0" since it's required by the gateway API.
 
-    const iModelToken = IModelToken.create(iModelId, changeSetId, openMode, accessToken.getUserProfile()!.userId, contextId);
+    const iModelToken = new IModelToken(undefined, undefined, contextId, iModelId, changeSetId, openMode, accessToken.getUserProfile()!.userId);
     let openResponse: IModel;
     if (openMode === OpenMode.ReadWrite)
       openResponse = await IModelGateway.getProxy().openForWrite(accessToken, iModelToken);

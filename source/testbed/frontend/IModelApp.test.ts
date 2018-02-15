@@ -89,7 +89,7 @@ describe("IModelApp", () => {
   it("Should get localized name for tools", async () => {
     const thisApp = iModelApp as TestApp;
     await thisApp.testNamespace.readFinished;  // we must wait for the localization read to finish.
-    assert.equal(TestImmediate.getKeyin(), "Localized TestImmediate Keyin");
+    assert.equal(TestImmediate.keyin, "Localized TestImmediate Keyin");
     // here we are testing to make sure we can override the Select command but the keyin comes from the superclass.
     assert.isTrue(iModelApp.tools.run("Select"));
     const select = iModelApp.toolAdmin.activePrimitiveTool as TestSelectTool;
