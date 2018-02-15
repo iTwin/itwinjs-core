@@ -3,8 +3,8 @@
  * --------------------------------------------------------------------------------------------*/
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core/lib/Id";
 import { ElementState } from "./EntityState";
-import { IModel } from "./IModel";
-import { CategorySelectorProps } from "./ElementProps";
+import { IModel } from "../common/IModel";
+import { CategorySelectorProps } from "../common/ElementProps";
 
 /** A list of Categories to be displayed in a view. */
 export class CategorySelectorState extends ElementState {

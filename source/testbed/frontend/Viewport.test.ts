@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { SpatialViewState, ViewState, StandardViewId } from "../../common/ViewState";
+import { SpatialViewState, ViewState, StandardViewId } from "../../frontend/ViewState";
 import { IModelConnection } from "../../frontend/IModelConnection";
 import { Viewport, ViewRect } from "../../frontend/Viewport";
 import { IModelApp, iModelApp } from "../../frontend/IModelApp";
@@ -14,7 +14,7 @@ import { PanTool } from "../../frontend/tools/ViewTool";
 import { CompassMode } from "../../frontend/AccuDraw";
 import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
 import { SpatialViewDefinitionProps } from "../../common/ElementProps";
-import { DisplayStyle3dState } from "../../common/DisplayStyleState";
+import { DisplayStyle3dState } from "../../frontend/DisplayStyleState";
 
 const iModelLocation = path.join(__dirname, "../../../../backend/lib/backend/test/assets/test.bim");
 

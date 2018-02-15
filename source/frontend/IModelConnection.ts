@@ -8,18 +8,18 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import { CodeSpec } from "../common/Code";
 import { ElementProps, ViewDefinitionProps } from "../common/ElementProps";
 import { EntityQueryParams } from "../common/EntityProps";
-import { Model2dState } from "../common/EntityState";
 import { IModel, IModelToken, IModelProps } from "../common/IModel";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { ModelProps } from "../common/ModelProps";
 import { IModelGateway } from "../gateway/IModelGateway";
 import { IModelVersion } from "../common/IModelVersion";
-import { DrawingViewState, OrthographicViewState, SheetViewState, SpatialViewState, ViewState, ViewState2d } from "../common/ViewState";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { HilitedSet, SelectionSet } from "./SelectionSet";
-import { DisplayStyle3dState, DisplayStyle2dState } from "../common/DisplayStyleState";
-import { ModelSelectorState } from "../common/ModelSelectorState";
-import { CategorySelectorState } from "../common/CategorySelectorState";
+import { ViewState, SpatialViewState, OrthographicViewState, ViewState2d, DrawingViewState, SheetViewState } from "./ViewState";
+import { CategorySelectorState } from "./CategorySelectorState";
+import { DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
+import { ModelSelectorState } from "./ModelSelectorState";
+import { Model2dState } from "./ModelState";
 
 const loggingCategory = "imodeljs-backend.IModelConnection";
 
@@ -191,8 +191,8 @@ export class IModelConnectionModels {
   public get repositoryModelId(): Id64 { return new Id64("0x1"); }
 
   /** Ask the backend for a batch of [[ModelProps]] given a list of model ids. */
-  public async getModelProps(modelIds: Id64[]): Promise<ModelProps[]> {
-    const modelJsonArray = await IModelGateway.getProxy().getModelProps(this._iModel.iModelToken, modelIds.map((id: Id64) => id.value));
+  public async getModelProps(modelIds: Id64Arg): Promise<ModelProps[]> {
+    const modelJsonArray = await IModelGateway.getProxy().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds));
     const models: ModelProps[] = [];
     for (const modelJson of modelJsonArray)
       models.push(JSON.parse(modelJson) as ModelProps);

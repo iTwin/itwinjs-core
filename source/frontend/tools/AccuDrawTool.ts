@@ -12,10 +12,10 @@ import { Vector3d, Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { RotMatrix } from "@bentley/geometry-core/lib/Transform";
 import { Geometry, Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Viewport } from "../Viewport";
-import { AuxCoordSystemState } from "../../common/AuxCoordSys";
+import { AuxCoordSystemState } from "../../frontend/AuxCoordSys";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { SnapDetail, SnapHeat } from "../HitDetail";
-import { StandardViewId } from "../../common/ViewState";
+import { StandardViewId } from "../../frontend/ViewState";
 import { iModelApp } from "../IModelApp";
 
 /**
@@ -1280,7 +1280,7 @@ class RotateElementTool extends AccuDrawTool {
     const accudraw = iModelApp.accuDraw;
     const origin = accudraw.origin;
     const rMatrix = accudraw.getRotation();
-    const acs = context.viewport.getAuxCoordSystem().clone<AuxCoordSystemState>();
+    const acs = context.viewport!.getAuxCoordSystem().clone<AuxCoordSystemState>();
     acs.setOrigin(origin);
     acs.setRotation(rMatrix);
     // acsPtr -> Display(context, ACSDisplayOptions:: Active | ACSDisplayOptions:: Dynamics);
@@ -1341,7 +1341,7 @@ class DefineACSByPointsTool extends AccuDrawTool {
     iModelApp.toolAdmin.fillEventFromCursorLocation(ev);
     tmpPoints.push(ev.point);
 
-    const vp = context.viewport;
+    const vp = context.viewport!;
     if (!this.acs)
       this.acs = vp.getAuxCoordSystem().clone<AuxCoordSystemState>();
 

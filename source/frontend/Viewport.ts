@@ -6,13 +6,13 @@ import { Range3d } from "@bentley/geometry-core/lib/Range";
 import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
 import { Map4d, Point4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { AxisOrder, Angle, AngleSweep } from "@bentley/geometry-core/lib/Geometry";
-import { ViewState, ViewStatus, MarginPercent, GridOrientationType, Camera } from "../common/ViewState";
+import { ViewState, ViewStatus, MarginPercent, GridOrientationType, Camera } from "./ViewState";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core/lib/Time";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { BeButtonEvent, BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
-import { AuxCoordSystemState } from "../common/AuxCoordSys";
+import { AuxCoordSystemState } from "../frontend/AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
@@ -568,7 +568,7 @@ export class Viewport {
           const frontDist = eyeOrg.z - delta.z; // front distance is backDist - delta.z
 
           // allow ViewState to specify a minimum front dist, but in no case less than 6 inches
-          const minFrontDist = Math.max(15.2 * Constant.oneCentimeter, view.forceMinFrontDist());
+          const minFrontDist = Math.max(15.2 * Constant.oneCentimeter, view.forceMinFrontDist);
           if (frontDist < minFrontDist) {
             // camera is too close to front plane, move origin away from eye to maintain a minimum front distance.
             this.toView(origin);
@@ -1245,7 +1245,7 @@ export class Viewport {
   /** Show the surface normal for geometry under the cursor when snapping. */
   private static drawLocateHitDetail(context: DecorateContext, aperture: number, hit: HitDetail): void {
     // NEEDS_WORK: Need to decide the fate of this...when/if to show it, etc.
-    const vp = context.viewport;
+    const vp = context.viewport!;
     if (!vp.view.is3d())
       return; // Not valuable in 2d...
 
@@ -1288,7 +1288,7 @@ export class Viewport {
   /** draw a filled and outlined circle to represent the size of the location tolerance in the current view. */
   private static drawLocateCircle(context: DecorateContext, aperture: number, pt: Point3d): void {
     const radius = (aperture / 2.0) + .5;
-    const center = context.viewport.worldToView(pt);
+    const center = context.viewport!.worldToView(pt);
     const ellipse = Arc3d.createXYEllipse(center, radius, radius);
     const ellipse2 = Arc3d.createXYEllipse(center, radius + 1, radius + 1);
     const graphic = context.createViewOverlay();

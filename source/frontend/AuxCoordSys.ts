@@ -2,15 +2,15 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ViewState } from "./ViewState";
-import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps } from "./ElementProps";
+import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps } from "../common/ElementProps";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY } from "@bentley/geometry-core/lib/PointVector";
 import { RotMatrix } from "@bentley/geometry-core/lib/Transform";
-import { IModel } from "./IModel";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { Code, CodeSpecNames } from "./Code";
+import { Code, CodeSpecNames } from "../common/Code";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { ElementState } from "./EntityState";
+import { IModel } from "../common/IModel";
 
 export const enum ACSType {
   None = 0,

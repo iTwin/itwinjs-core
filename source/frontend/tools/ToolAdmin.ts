@@ -2,7 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Point3d, Point2d, XAndY, Vector3d } from "@bentley/geometry-core/lib/PointVector";
-import { ViewStatus } from "../../common/ViewState";
+import { ViewStatus } from "../../frontend/ViewState";
 import { Viewport } from "../Viewport";
 import {
   BeModifierKey, BeButtonState, BeButton, BeGestureEvent, Tool, BeButtonEvent, CoordSource, GestureInfo,
@@ -74,8 +74,8 @@ export class CurrentInputState {
   private _rawPoint: Point3d = new Point3d();
   private _uorPoint: Point3d = new Point3d();
   private _viewPoint: Point3d = new Point3d();
-  public qualifiers: BeModifierKey;
-  public motionTime: number;
+  public qualifiers = BeModifierKey.None;
+  public motionTime = 0;
   public viewport?: Viewport;
   public button: BeButtonState[] = [new BeButtonState(), new BeButtonState(), new BeButtonState()];
   public lastButton: BeButton = BeButton.Data;
@@ -368,15 +368,15 @@ export class ToolAdmin {
   private _viewCursor?: BeCursor;
   private viewTool?: ViewTool;
   private primitiveTool?: PrimitiveTool;
-  private _idleTool: IdleTool;
+  private _idleTool?: IdleTool;
   private inputCollector?: InputCollector;
   public saveCursor?: BeCursor;
-  public saveLocateCircle: boolean;
+  public saveLocateCircle = false;
   public defaultTool = "Select";
-  public gesturePending: boolean;
-  private modifierKeyWentDown: boolean;
-  private modifierKey: BeModifierKey;
-  private touchBridgeMode: boolean; // Flag indicating that touch events are being converted into mouse events for this tool
+  public gesturePending = false;
+  private modifierKeyWentDown = false;
+  private modifierKey = BeModifierKey.None;
+  private touchBridgeMode = false; // Flag indicating that touch events are being converted into mouse events for this tool
 
   /** Apply operation such as transform, copy or delete to all members of an assembly. */
   public assemblyLock = false;
@@ -388,7 +388,7 @@ export class ToolAdmin {
   public acsContextLock = false;
 
   public onInitialized() { this._idleTool = iModelApp.tools.create("Idle") as IdleTool; }
-  public get idleTool(): IdleTool { return this._idleTool; }
+  public get idleTool(): IdleTool { return this._idleTool!; }
   protected filterViewport(_vp: Viewport) { return false; }
   public isCurrentInputSourceMouse() { return this.currentInputState.inputSource === InputSource.Mouse; }
   public onInstallTool(tool: InteractiveTool) { this.currentInputState.clearKeyQualifiers(); return tool.onInstall(); }
@@ -403,7 +403,7 @@ export class ToolAdmin {
   public getInfoString(hit: HitDetail, delimiter: string): string {
     let tool = this.activeTool;
     if (!tool)
-      tool = this._idleTool;
+      tool = this.idleTool;
 
     return tool.getInfoString(hit, delimiter);
   }
@@ -446,7 +446,7 @@ export class ToolAdmin {
   public onWheelEvent(wheelEvent: BeWheelEvent): void {
     const activeTool = this.activeTool;
     if (!activeTool || !activeTool.onMouseWheel(wheelEvent))
-      this._idleTool.onMouseWheel(wheelEvent);
+      this.idleTool.onMouseWheel(wheelEvent);
   }
 
   private static scratchButtonEvent1 = new BeButtonEvent();
@@ -735,7 +735,7 @@ export class ToolAdmin {
     current.buttonDownTool = tool;
 
     if (!tool || !tool.onMiddleButtonDown(ev)) {
-      if (this._idleTool.onMiddleButtonDown(ev)) {
+      if (this.idleTool.onMiddleButtonDown(ev)) {
         // The active tool might have changed since the idle tool installs viewing tools.
         const activeTool = this.activeTool;
         if (activeTool !== tool)
@@ -777,7 +777,7 @@ export class ToolAdmin {
 
     current.changeButtonToDownPoint(ev);
     if (!tool || !tool.onMiddleButtonUp(ev))
-      this._idleTool.onMiddleButtonUp(ev);
+      this.idleTool.onMiddleButtonUp(ev);
 
     ev.reset();
   }
@@ -853,7 +853,7 @@ export class ToolAdmin {
     if (this.onGestureEvent(ev)) {
       const activeTool = this.activeTool;
       if (!activeTool || !activeTool.onEndGesture(ev))
-        this._idleTool.onEndGesture(ev);
+        this.idleTool.onEndGesture(ev);
 
       this.currentInputState.clearTouch();
     }
@@ -874,7 +874,7 @@ export class ToolAdmin {
     if (this.onGestureEvent(ev)) {
       const activeTool = this.activeTool;
       if (!activeTool || !activeTool.onSingleFingerMove(ev))
-        this._idleTool.onSingleFingerMove(ev);
+        this.idleTool.onSingleFingerMove(ev);
 
       current.onTouchMotionChange(gestureInfo.numberTouches, gestureInfo.touches);
     }
@@ -895,7 +895,7 @@ export class ToolAdmin {
     if (this.onGestureEvent(ev)) {
       const activeTool = this.activeTool;
       if (!activeTool || !activeTool.onMultiFingerMove(ev))
-        this._idleTool.onMultiFingerMove(ev);
+        this.idleTool.onMultiFingerMove(ev);
 
       current.onTouchMotionChange(gestureInfo.numberTouches, gestureInfo.touches);
     }
@@ -1093,7 +1093,7 @@ export class ToolAdmin {
     if (!this.cursorInView)
       return;
 
-    const viewport = context.viewport;
+    const viewport = context.viewport!;
     const ev = ToolAdmin.scratchButtonEvent1;
     this.fillEventFromCursorLocation(ev);
     if (ev.viewport !== viewport)

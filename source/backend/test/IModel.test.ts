@@ -15,14 +15,13 @@ import { Category, SubCategory, SpatialCategory } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
 import { BisCore } from "../BisCore";
 import { ECSqlStatement } from "../ECSqlStatement";
-import { GeometricElementProps, ModelSelectorProps, ViewDefinitionProps } from "../../common/ElementProps";
+import { GeometricElementProps, ViewDefinitionProps } from "../../common/ElementProps";
 import {
   Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
   LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject,
 } from "../Element";
 import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
 import { IModelDb } from "../IModelDb";
-import { ModelSelector } from "../ViewDefinition";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ModelProps } from "../../common/ModelProps";
 import { AxisAlignedBox3d } from "../../common/geometry/Primitives";
@@ -31,7 +30,6 @@ import { Appearance } from "../../common/SubCategoryAppearance";
 import { ColorDef } from "../../common/ColorDef";
 import { IModel } from "../../common/IModel";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { ModelSelectorState } from "../../common/ModelSelectorState";
 
 // spell-checker: disable
 
@@ -240,29 +238,6 @@ describe("iModel", () => {
     assert.exists(model);
     assert.isTrue(model instanceof geomModel!);
     testCopyAndJson(model!);
-  });
-
-  it("Model Selectors should hold models", () => {
-    const props: ModelSelectorProps = {
-      classFullName: BisCore.name + ":" + ModelSelector.name,
-      model: new Id64([1, 1]),
-      code: Code.createEmpty(),
-      id: new Id64(),
-      models: ["0x1"],
-    };
-
-    const selector = new ModelSelectorState(props, imodel1);
-    selector.addModels([new Id64([2, 1]), new Id64([2, 1]), new Id64([2, 3])]);
-    assert.equal(selector.models.size, 3);
-    const out = selector.toJSON();
-    assert.isArray(out.models);
-    assert.equal(out.models.length, 3);
-    out.iModel = imodel1;
-    const sel2 = imodel1.constructEntity(out);
-    assert.instanceOf(sel2, ModelSelector);
-    assert.equal(sel2.models.length, 3);
-    const sel3 = selector.clone();
-    assert.deepEqual(sel3, selector, "clone worked");
   });
 
   it("should produce an array of rows", () => {

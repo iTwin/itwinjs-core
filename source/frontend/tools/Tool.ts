@@ -449,7 +449,7 @@ export abstract class InteractiveTool extends Tool {
    * @note If you override this method, you may decide whether to call your superclass' implementation or not (it is not required).
    * The default implementation shows hit description
    */
-  public getInfoString(hit: HitDetail, _delimiter: string): string { return hit.hitDescription; }
+  public getInfoString(hit: HitDetail, _delimiter: string): string { return hit.hitDescription ? hit.hitDescription : ""; }
 }
 
 /**

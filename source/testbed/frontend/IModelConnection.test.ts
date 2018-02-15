@@ -5,16 +5,15 @@ import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { CodeSpec, CodeSpecNames } from "../../common/Code";
 import { ElementProps, ViewDefinitionProps } from "../../common/ElementProps";
-import { Model2dState } from "../../common/EntityState";
-import { ModelProps } from "../../common/ModelProps";
-import { DrawingViewState, OrthographicViewState, ViewState } from "../../common/ViewState";
+import { Model2dState } from "../../frontend/ModelState";
+import { DrawingViewState, OrthographicViewState, ViewState } from "../../frontend/ViewState";
 import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "../../frontend/IModelConnection";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { DateTime, Blob, NavigationValue } from "../../common/ECSqlTypes";
 import { TestData } from "./TestData";
-import { ModelSelectorState } from "../../common/ModelSelectorState";
-import { DisplayStyle3dState, DisplayStyle2dState } from "../../common/DisplayStyleState";
-import { CategorySelectorState } from "../../common/CategorySelectorState";
+import { ModelSelectorState } from "../../frontend/ModelSelectorState";
+import { DisplayStyle3dState, DisplayStyle2dState } from "../../frontend/DisplayStyleState";
+import { CategorySelectorState } from "../../frontend/CategorySelectorState";
 
 // spell-checker: disable
 
@@ -41,10 +40,10 @@ describe("IModelConnection", () => {
     const formatObjs: any[] = await iModel.elements.formatElements(queryElementIds);
     assert.isAtLeast(formatObjs.length, 1);
 
-    const modelIds: Id64[] = [iModel.models.repositoryModelId];
-    const modelProps: ModelProps[] = await iModel.models.getModelProps(modelIds);
+    const modelProps = await iModel.models.getModelProps(iModel.models.repositoryModelId);
     assert.exists(modelProps);
-    assert.equal(modelProps.length, modelIds.length);
+    assert.equal(modelProps.length, 1);
+    assert.equal(modelProps[0].id, iModel.models.repositoryModelId.value);
     assert.isTrue(iModel.models.repositoryModelId.equals(new Id64(modelProps[0].id)));
 
     const rows: any[] = await iModel.executeQuery("SELECT CodeValue AS code FROM BisCore.Category");

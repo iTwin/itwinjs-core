@@ -6,40 +6,30 @@ import { Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/li
 import { Range3d } from "@bentley/geometry-core/lib/Range";
 import { RotMatrix } from "@bentley/geometry-core/lib/Transform";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { SpatialViewState, ViewStatus, StandardView, StandardViewId, MarginPercent } from "../../common/ViewState";
-import { IModelDb } from "../IModelDb";
-import { SpatialViewDefinition } from "../ViewDefinition";
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { SpatialViewState, ViewStatus, StandardView, StandardViewId, MarginPercent } from "../../frontend/ViewState";
 import * as path from "path";
-import { AuxCoordSystemSpatialState } from "../../common/AuxCoordSys";
-import { KnownTestLocations } from "./KnownTestLocations";
-import { ModelSelectorState } from "../../common/ModelSelectorState";
-import { CategorySelectorState } from "../../common/CategorySelectorState";
+import { AuxCoordSystemSpatialState } from "../../frontend/AuxCoordSys";
+import { CategorySelectorState } from "../../frontend/CategorySelectorState";
 import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
-import { DisplayStyle3dState } from "../../common/DisplayStyleState";
 import { SpatialViewDefinitionProps } from "../../common/ElementProps";
+import { ModelSelectorState } from "../../frontend/ModelSelectorState";
+import { IModelConnection } from "../../frontend/IModelConnection";
+import { DisplayStyle3dState } from "../../frontend/DisplayStyleState";
 
-// spell-checker: disable
-
-// Note: This will be relative to root imodeljs-core directory for VS Code debugging, but relative to the test directory for running in console
-const iModelLocation = path.join(KnownTestLocations.assetsDir, "test.bim");
+const iModelLocation = path.join(__dirname, "../../../../backend/lib/backend/test/assets/test.bim");
 
 describe("ViewState", () => {
-  // The imodel as well as some basic objects usable for testing purposes in which data contents does not matter
-  let imodel: IModelDb;
+  let imodel: IModelConnection;
   let viewState: SpatialViewState;
 
-  // Includes some usable objects for basic testing purposes
-  before(() => {
-    // Pull down flat view known to exist from bim file
-    imodel = IModelDb.openStandalone(iModelLocation, OpenMode.Readonly);
-    const viewRows = imodel.views.queryViewDefinitionProps(SpatialViewDefinition.sqlName);
+  before(async () => {
+    imodel = await IModelConnection.openStandalone(iModelLocation);
+    const viewRows = await imodel.views.queryViewDefinitionProps(SpatialViewState.sqlName);
     assert.exists(viewRows, "Should find some views");
-    const flatView = viewRows[0] as SpatialViewDefinition;
-    viewState = imodel.views.loadView(flatView.id!) as SpatialViewState;
+    viewState = await imodel.views.loadView(viewRows[0].id!) as SpatialViewState;
   });
 
-  after(() => imodel.closeStandalone());
+  after(async () => { if (imodel) imodel.closeStandalone(); });
 
   it("should be able to create ViewState from SpatialViewDefinition", async () => {
     assert.equal(viewState.code.value, "A Views - View 1", "Code value is A Views - View 1");
@@ -89,8 +79,7 @@ describe("ViewState", () => {
     assert.isTrue(val, str);
   };
 
-  it("view volume adjustments", () => {
-    // Flat view test #1
+  it("view volume adjustments", async () => {
     const testParams: any = {
       margin: new MarginPercent(0, 0, 0, 0),
       aspectRatio: 1,
@@ -105,10 +94,7 @@ describe("ViewState", () => {
     viewState.setFocusDistance(49);
     viewState.setEyePoint(Point3d.create(5, 5, 50));
 
-    testParams.volume = Range3d.createXYZXYZ(10, 20, 0.5, 35, 21, 2);
-    testParams.view = viewState;
-
-    let cppView = imodel.executeTest("lookAtVolume", testParams);
+    let cppView: SpatialViewDefinitionProps = await imodel.executeTest("lookAtVolume", testParams);
     viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, testParams.margin);
     compareView(viewState, cppView, "LookAtVolume 1");
 
@@ -122,7 +108,7 @@ describe("ViewState", () => {
     testParams.volume = Range3d.createXYZXYZ(1000, -10, 6, -5, 0, 0);
     testParams.margin = new MarginPercent(.01, .02, .03, .04);
     testParams.aspectRatio = 1.2;
-    cppView = imodel.executeTest("lookAtVolume", testParams);
+    cppView = await imodel.executeTest("lookAtVolume", testParams);
     viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, testParams.margin);
     compareView(viewState, cppView, "LookAtVolume 3");
 
@@ -136,12 +122,12 @@ describe("ViewState", () => {
     testParams.volume = Range3d.createXYZXYZ(10, 20, 0.5, 35, 21, 2);
     testParams.aspectRatio = 1.0;
     testParams.margin = new MarginPercent(0, 0, 0, 0);
-    cppView = imodel.executeTest("lookAtVolume", testParams);
+    cppView = await imodel.executeTest("lookAtVolume", testParams);
     viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, testParams.margin);
     compareView(viewState, cppView, "LookAtVolume 2");
   });
 
-  it("rotateCameraLocal should work", () => {
+  it("rotateCameraLocal should work", async () => {
     const testParams: any = {
       view: viewState,
       angle: 1.28,
@@ -155,7 +141,7 @@ describe("ViewState", () => {
     viewState.setLensAngle(Angle.createDegrees(50));
     viewState.setFocusDistance(49);
     viewState.setEyePoint(Point3d.create(5, 5, 50));
-    let cppView = imodel.executeTest("rotateCameraLocal", testParams);
+    let cppView: SpatialViewDefinitionProps = await imodel.executeTest("rotateCameraLocal", testParams);
     viewState.rotateCameraLocal(Angle.createRadians(testParams.angle), testParams.axis, testParams.about);
     compareView(viewState, cppView, "RotateCameraLocal 1");
 
@@ -168,12 +154,12 @@ describe("ViewState", () => {
     testParams.angle = 1.6788888;
     testParams.axis = Vector3d.create(-1, 6, 3);
     testParams.about = Point3d.create(1, 2, 3);
-    cppView = imodel.executeTest("rotateCameraLocal", testParams);
+    cppView = await imodel.executeTest("rotateCameraLocal", testParams);
     viewState.rotateCameraLocal(Angle.createRadians(testParams.angle), testParams.axis, testParams.about);
     compareView(viewState, cppView, "RotateCameraLocal 2");
   });
 
-  it("lookAtUsingLensAngle should work", () => {
+  it("lookAtUsingLensAngle should work", async () => {
     const testParams: any = {
       view: viewState,
       eye: Point3d.create(8, 6, 7),
@@ -190,7 +176,7 @@ describe("ViewState", () => {
     viewState.setLensAngle(Angle.createDegrees(11));
     viewState.setFocusDistance(191);
     viewState.setEyePoint(Point3d.create(-64, 120, 500));
-    const cppView = imodel.executeTest("lookAtUsingLensAngle", testParams);
+    const cppView: SpatialViewDefinitionProps = await imodel.executeTest("lookAtUsingLensAngle", testParams);
     viewState.lookAtUsingLensAngle(testParams.eye, testParams.target, testParams.up, testParams.lens, testParams.front, testParams.back);
     compareView(viewState, cppView, "lookAtUsingLensAngle");
   });

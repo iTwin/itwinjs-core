@@ -7,7 +7,7 @@ import { Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d } from "@bentl
 import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
 import { Range3d } from "@bentley/geometry-core/lib/Range";
 import { Frustum, NpcCenter, Npc } from "../../common/Frustum";
-import { MarginPercent, ViewStatus, ViewState3d } from "../../common/ViewState";
+import { MarginPercent, ViewStatus, ViewState3d } from "../../frontend/ViewState";
 import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { AccuDrawFlags } from "../AccuDraw";
@@ -106,16 +106,11 @@ export abstract class ViewingToolHandle {
 }
 
 export class ViewHandleArray {
-  public handles: ViewingToolHandle[];
-  public viewport: Viewport;
-  public focus: number;
-  public focusDrag: boolean;
-  public hitHandleIndex: number;
-
-  constructor(public viewTool: ViewManip) {
-    this.handles = [];
-    this.empty();
-  }
+  public handles: ViewingToolHandle[] = [];
+  public focus = -1;
+  public focusDrag = false;
+  public hitHandleIndex = -1;
+  constructor(public viewTool: ViewManip) { }
 
   public empty() {
     this.focus = -1;
@@ -227,19 +222,19 @@ export abstract class ViewManip extends ViewTool {
   public viewHandles: ViewHandleArray;
   public frustumValid = false;
   public alwaysLeaveLastView = false;
-  public ballRadius: number = 0;          // screen coords
-  public lastPtScreen = new Point3d();
-  public targetCenterWorld = new Point3d();
-  public worldUpVector = new Vector3d();
-  public isDragging: boolean = false;
-  public isDragOperation: boolean = false;
-  public stoppedOverHandle: boolean = false;
-  public wantMotionStop: boolean = true;
-  public targetCenterValid: boolean = false;
-  public supportsOrientationEvents: boolean = true;
-  public nPts: number = 0;
-  public forcedHandle: ViewHandleType = ViewHandleType.None;
-  public lastFrustum: Frustum = new Frustum();
+  public ballRadius = 0;          // screen coords
+  public readonly lastPtScreen = new Point3d();
+  public readonly targetCenterWorld = new Point3d();
+  public readonly worldUpVector = new Vector3d();
+  public isDragging = false;
+  public isDragOperation = false;
+  public stoppedOverHandle = false;
+  public wantMotionStop = true;
+  public targetCenterValid = false;
+  public supportsOrientationEvents = true;
+  public nPts = 0;
+  public forcedHandle = ViewHandleType.None;
+  public readonly lastFrustum = new Frustum();
 
   constructor(viewport: Viewport | undefined, public handleMask: number, public isOneShot: boolean, public scrollOnNoMotion: boolean,
     public isDragOperationRequired: boolean = false) {
