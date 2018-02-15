@@ -29,7 +29,7 @@ class TestRotateTool extends RotateTool { }
 class TestSelectTool extends SelectionTool { }
 
 class TestApp extends IModelApp {
-  public testNamespace: I18NNamespace;
+  public testNamespace?: I18NNamespace;
 
   protected onStartup() {
     this._accuDraw = new TestAccuDraw();
@@ -88,7 +88,7 @@ describe("IModelApp", () => {
 
   it("Should get localized name for tools", async () => {
     const thisApp = iModelApp as TestApp;
-    await thisApp.testNamespace.readFinished;  // we must wait for the localization read to finish.
+    await thisApp.testNamespace!.readFinished;  // we must wait for the localization read to finish.
     assert.equal(TestImmediate.keyin, "Localized TestImmediate Keyin");
     // here we are testing to make sure we can override the Select command but the keyin comes from the superclass.
     assert.isTrue(iModelApp.tools.run("Select"));

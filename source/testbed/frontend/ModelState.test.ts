@@ -8,6 +8,7 @@ import { IModelConnection } from "../../frontend/IModelConnection";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Code } from "../../common/Code";
 import { ModelSelectorProps } from "../../common/ElementProps";
+import { DrawingModelState, SheetModelState, SpatialModelState } from "../../frontend/ModelState";
 
 const iModelLocation = path.join(__dirname, "../../../../backend/lib/backend/test/assets/CompatibilityTestSeed.bim");
 
@@ -37,8 +38,14 @@ describe("ModelState", () => {
   });
 
   it("should be able to load ModelState", async () => {
-    const model2d = await imodel.models.getModelProps("0x24");
-    assert.equal(model2d.length, 1);
+    const modelStates = await imodel.models.loadModels(["0x24", "0x28", "0x2c", "0x11", "0x34", "0x24", "nonsense"]);
+    assert.equal(modelStates.length, 5);
+    assert.instanceOf(modelStates[0], DrawingModelState);
+    assert.instanceOf(modelStates[1], SheetModelState);
+    assert.instanceOf(modelStates[2], DrawingModelState);
+    assert.instanceOf(modelStates[3], SpatialModelState);
+    assert.instanceOf(modelStates[4], DrawingModelState);
+    modelStates.forEach((model) => assert.deepEqual(model.clone(), model, "clone of ModelState should work"));
   });
 
 });

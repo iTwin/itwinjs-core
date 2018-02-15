@@ -81,12 +81,17 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const modelJsonArray: string[] = [];
     for (const modelId of modelIds) {
-      modelJsonArray.push(iModelDb.models.getModelJson(modelId));
+      try {
+        modelJsonArray.push(iModelDb.models.getModelJson(modelId));
+      } catch (error) {
+        if (modelIds.size === 1)
+          throw error; // if they're asking for more than one model, don't throw on error.
+      }
     }
     return modelJsonArray;
   }
 
-  public async getElementProps(iModelToken: IModelToken, elementIds: string[]): Promise<string[]> {
+  public async getElementProps(iModelToken: IModelToken, elementIds: Id64Set): Promise<string[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const elementProps: string[] = [];
     for (const elementId of elementIds) {
@@ -113,7 +118,7 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
     return elementIds;
   }
 
-  public async formatElements(iModelToken: IModelToken, elementIds: string[]): Promise<any[]> {
+  public async formatElements(iModelToken: IModelToken, elementIds: Id64Set): Promise<any[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const formatArray: any[] = [];
     for (const elementId of elementIds) {

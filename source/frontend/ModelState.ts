@@ -10,8 +10,9 @@ import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { IModel } from "../common/IModel";
 
 /** the state of a Model */
-export abstract class ModelState extends EntityState implements ModelProps {
+export class ModelState extends EntityState implements ModelProps {
   public readonly modeledElement: Id64;
+  public parentModel: Id64;
   public readonly jsonProperties: any;
   public readonly isPrivate: boolean;
   public readonly isTemplate: boolean;
@@ -19,6 +20,7 @@ export abstract class ModelState extends EntityState implements ModelProps {
   constructor(props: ModelProps, iModel: IModel) {
     super(props, iModel);
     this.modeledElement = Id64.fromJSON(props.modeledElement);
+    this.parentModel = Id64.fromJSON(props.parentModel)!;
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
   }
@@ -27,6 +29,7 @@ export abstract class ModelState extends EntityState implements ModelProps {
   public toJSON(): ModelProps {
     const val = super.toJSON() as ModelProps;
     val.modeledElement = this.modeledElement;
+    val.parentModel = this.parentModel;
     if (this.isPrivate)
       val.isPrivate = this.isPrivate;
     if (this.isTemplate)
@@ -36,12 +39,10 @@ export abstract class ModelState extends EntityState implements ModelProps {
   public getExtents(): AxisAlignedBox3d { return new AxisAlignedBox3d(); } // NEEDS_WORK
 }
 
-/** the state of a 3d Model */
-export class Model3dState extends ModelState {
-}
+export class GeometricModelState extends ModelState { }
 
-/** the state of a 2d Model */
-export class Model2dState extends ModelState implements GeometricModel2dProps {
+/** the state of a 2d Geometric Model */
+export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
   public readonly globalOrigin: Point2d;
   constructor(props: GeometricModel2dProps, iModel: IModel) {
     super(props, iModel);
@@ -54,3 +55,9 @@ export class Model2dState extends ModelState implements GeometricModel2dProps {
     return val;
   }
 }
+
+export class SpatialModelState extends GeometricModelState { }
+export class DrawingModelState extends GeometricModel2dState { }
+export class SectionDrawingModelState extends DrawingModelState { }
+export class SheetModelState extends GeometricModel2dState { }
+export class WebMercatorModel extends SpatialModelState { }

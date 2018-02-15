@@ -4,8 +4,7 @@
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { CodeSpec, CodeSpecNames } from "../../common/Code";
-import { ElementProps, ViewDefinitionProps } from "../../common/ElementProps";
-import { Model2dState } from "../../frontend/ModelState";
+import { ViewDefinitionProps } from "../../common/ElementProps";
 import { DrawingViewState, OrthographicViewState, ViewState } from "../../frontend/ViewState";
 import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "../../frontend/IModelConnection";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
@@ -31,13 +30,12 @@ describe("IModelConnection", () => {
     assert.exists(iModel.elements);
     assert.isTrue(iModel.elements instanceof IModelConnectionElements);
 
-    const elementIds: Id64[] = [iModel.elements.rootSubjectId];
-    const elementProps: ElementProps[] = await iModel.elements.getElementProps(elementIds);
-    assert.equal(elementProps.length, elementIds.length);
+    const elementProps = await iModel.elements.getElementProps(iModel.elements.rootSubjectId);
+    assert.equal(elementProps.length, 1);
     assert.isTrue(iModel.elements.rootSubjectId.equals(new Id64(elementProps[0].id)));
     assert.isTrue(iModel.models.repositoryModelId.equals(new Id64(elementProps[0].model)));
 
-    const queryElementIds: Id64[] = await iModel.elements.queryElementIds({ from: "BisCore.Category", limit: 20, offset: 0 });
+    const queryElementIds = await iModel.elements.queryElementIds({ from: "BisCore.Category", limit: 20, offset: 0 });
     assert.isAtLeast(queryElementIds.length, 1);
     assert.isTrue(queryElementIds[0] instanceof Id64);
 
@@ -84,8 +82,6 @@ describe("IModelConnection", () => {
     assert.instanceOf(viewState, DrawingViewState);
     assert.instanceOf(viewState.categorySelector, CategorySelectorState);
     assert.instanceOf(viewState.displayStyle, DisplayStyle2dState);
-    assert.instanceOf((viewState as DrawingViewState).baseModel, Model2dState);
-
     assert.exists(iModel.projectExtents);
 
     await iModel.close(TestData.accessToken);

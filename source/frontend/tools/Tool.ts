@@ -471,7 +471,7 @@ export class ToolRegistry {
   private _keyinList?: CommandList;
 
   /**
-   * Register a Tool class. This establishes a connection between the toolId of the class and the class itself.
+   * Un-register a Tool class.
    * @param toolId the toolId of a previously registered tool to unRegister.
    */
   public unRegister(toolId: string) { this.map.delete(toolId); }
@@ -530,7 +530,7 @@ export class ToolRegistry {
   /**
    * Look up a tool by toolId and, if found, create an instance with the supplied arguments and run it.
    * @param toolId toolId of the immediate tool
-   * @param args arguments to pass to the constructor.
+   * @param args arguments to pass to the constructor, and to run.
    * @return true if the tool was found and successfully run.
    */
   public run(toolId: string, ...args: any[]): boolean {
