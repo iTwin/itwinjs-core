@@ -51,6 +51,7 @@
         "lstyle",
         "mixins",
         "mline",
+        "modelid",
         "monorepo",
         "nodeaddonapi",
         "nullptr",
@@ -79,6 +80,7 @@
         "testbed",
         "tileset",
         "Topo",
+        "Txns",
         "underbar",
         "undoable",
         "Unexpanded",
@@ -93,6 +95,7 @@
         "viewports",
         "Wireframe",
         "XYZW",
+        "XYZXYZ",
         "zbuffer"
     ],
     // flagWords - list of words to be always considered incorrect

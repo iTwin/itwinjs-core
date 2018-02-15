@@ -34,11 +34,6 @@ import { IModelDbLinkTableRelationships, LinkTableRelationship } from "./LinkTab
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { NodeAddonRegistry } from "./NodeAddonRegistry";
 import { RequestQueryOptions } from "@bentley/imodeljs-clients/lib";
-import { CategorySelectorState } from "../common/CategorySelectorState";
-import { ViewState, SpatialViewState, OrthographicViewState, ViewState2d, DrawingViewState, SheetViewState } from "../common/ViewState";
-import { DisplayStyle3dState, DisplayStyle2dState } from "../common/DisplayStyleState";
-import { ModelSelectorState } from "../common/ModelSelectorState";
-import { Model2dState } from "../common/EntityState";
 import { iModelEngine } from "./IModelEngine";
 
 const loggingCategory = "imodeljs-backend.IModelDb";
@@ -1286,7 +1281,6 @@ export class IModelDbModels {
     // Discard from the cache
     this._loaded.delete(model.id.toString());
   }
-
 }
 
 /** The collection of elements in an [[IModelDb]]. */
@@ -1549,49 +1543,13 @@ export class IModelDbViews {
     viewStateData.viewDefinitionProps = elements.getElementProps(new Id64(viewDefinitionId)) as ViewDefinitionProps;
     viewStateData.categorySelectorProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.categorySelectorId));
     viewStateData.displayStyleProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.displayStyleId));
-    if (viewStateData.viewDefinitionProps.baseModelId)
+    if (viewStateData.viewDefinitionProps.baseModelId !== undefined)
       viewStateData.baseModelProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.baseModelId));
-    if (viewStateData.viewDefinitionProps.modelSelectorId)
+    if (viewStateData.viewDefinitionProps.modelSelectorId !== undefined)
       viewStateData.modelSelectorProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.modelSelectorId));
     return viewStateData;
   }
 
-  /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
-  public loadView(viewDefinitionId: Id64 | string): ViewState {
-
-    const viewStateData = this.getViewStateData(typeof viewDefinitionId === "string" ? viewDefinitionId : viewDefinitionId.value);
-    const categorySelectorState = new CategorySelectorState(viewStateData.categorySelectorProps, this._iModel);
-
-    switch (viewStateData.viewDefinitionProps.classFullName) {
-      case SpatialViewState.getClassFullName(): {
-        const displayStyleState = new DisplayStyle3dState(viewStateData.displayStyleProps, this._iModel);
-        const modelSelectorState = new ModelSelectorState(viewStateData.modelSelectorProps, this._iModel);
-        return new SpatialViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, modelSelectorState);
-      }
-      case OrthographicViewState.getClassFullName(): {
-        const displayStyleState = new DisplayStyle3dState(viewStateData.displayStyleProps, this._iModel);
-        const modelSelectorState = new ModelSelectorState(viewStateData.modelSelectorProps, this._iModel);
-        return new OrthographicViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, modelSelectorState);
-      }
-      case ViewState2d.getClassFullName(): {
-        const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
-        const baseModelState = new Model2dState(viewStateData.baseModelProps, this._iModel);
-        return new ViewState2d(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, baseModelState);
-      }
-      case DrawingViewState.getClassFullName(): {
-        const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
-        const baseModelState = new Model2dState(viewStateData.baseModelProps, this._iModel);
-        return new DrawingViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, baseModelState);
-      }
-      case SheetViewState.getClassFullName(): {
-        const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
-        const baseModelState = new Model2dState(viewStateData.baseModelProps, this._iModel);
-        return new SheetViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, baseModelState);
-      }
-      default:
-        throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState subclass");
-    }
-  }
 }
 
 /**
@@ -1640,15 +1598,12 @@ export class TxnManager {
     if (endTxnId === undefined)
       endTxnId = this.getCurrentTxnId();
 
-    const accum = [];
+    const changes = [];
     const seen = new Set<string>();
-
     let txnId = this.queryFirstTxnId();
 
     while (this.isTxnIdValid(txnId)) {
-
       const txnDescStr = this.getTxnDescription(txnId);
-
       if ((txnDescStr.length === 0) || seen.has(txnDescStr))
         continue;
 
@@ -1659,13 +1614,11 @@ export class TxnManager {
         txnDesc = { description: txnDescStr };
       }
 
-      accum.push(txnDesc);
-
+      changes.push(txnDesc);
       seen.add(txnDesc);
       txnId = this.queryNextTxnId(txnId);
     }
-
-    return JSON.stringify(accum);
+    return JSON.stringify(changes);
   }
 }
 

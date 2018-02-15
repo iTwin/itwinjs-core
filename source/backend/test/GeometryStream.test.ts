@@ -350,8 +350,10 @@ describe("GeometryBuilder", () => {
     assert.isFalse(builder.appendSolidPrimitive(cylinder3d!), "3d SolidPrimitive is NOT appended using 2d builder");
   });
 
+  // spell-checker: disable
+
   // pending build of addon
-  it.skip("geometry stream built in JS should be deserialized properly in C++", () => {
+  it("geometry stream built in JS should be deserialized properly in C++", () => {
     const builder = GeometryBuilder.createCategoryOrigin3d(seedElement.category, Point3d.create(0, 0, 0));
     assert.isDefined(builder, "Builder is successfully created");
     if (!builder)
@@ -379,7 +381,7 @@ describe("GeometryBuilder", () => {
   });
 
   // pending build of addon
-  it.skip("geometry stream built in C++ should be deserialized properly in TS", () => {
+  it("geometry stream built in C++ should be deserialized properly in TS", () => {
     const pts = surface.copyPoints();
     const json: any = {
       bsurfacePts: pts,

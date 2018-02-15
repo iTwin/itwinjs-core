@@ -201,7 +201,7 @@ export const enum HitDetailType {
 
 export class HitDetail {
   public elemTopo?: ElemTopology; // details about the topology of the element.
-  public hitDescription: string;
+  public hitDescription?: string;
   public subSelectionMode = SubSelectionMode.None; // segment hilite/flash mode.
   public constructor(public viewport: Viewport, public sheetViewport: Viewport | undefined, public elementId: string | undefined, public readonly testPoint: Point3d, public locateSource: HitSource, public readonly geomDetail: GeomDetail) { }
 
@@ -234,7 +234,7 @@ export class HitDetail {
 export class SnapDetail extends HitDetail {
   public heat = SnapHeat.None;
   public readonly screenPt = new Point2d();
-  public divisor: number;
+  public divisor?: number;
   public sprite?: Sprite;
   public snapMode: SnapMode;            // snap mode currently associated with this snap
   public originalSnapMode: SnapMode;    // snap mode used when snap was created, before constraint override was applied
@@ -296,7 +296,7 @@ export class IntersectDetail extends SnapDetail {
  */
 export class HitList {
   public hits: HitDetail[] = [];
-  public currHit: number;
+  public currHit = 0;
   public size(): number { return this.hits.length; }
   public clear(): void { this.hits.length = 0; }
   public empty(): void { this.clear(); this.resetCurrentHit(); }

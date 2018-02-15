@@ -250,7 +250,7 @@ export class SelectionTool extends PrimitiveTool {
   }
 
   protected drawControls(context: DecorateContext): boolean {
-    if (!this.manipulator || !this.manipulator.isDisplayedInView(context.viewport))
+    if (!this.manipulator || !this.manipulator.isDisplayedInView(context.viewport!))
       return false;
     this.manipulator.onDraw(context);
     return true;
@@ -543,7 +543,7 @@ export class SelectionTool extends PrimitiveTool {
 
     const white = ColorDef.from(255, 255, 255, 10);
     const black = ColorDef.from(0, 0, 0, 10);
-    const center = context.viewport.worldToView(ev.point);
+    const center = context.viewport!.worldToView(ev.point);
     const plusLoc = new Point2d(center.x + 10, center.y - 5);
     const graphic = context.createViewOverlay();
     graphic.setSymbology(white, white, 3);
@@ -562,7 +562,7 @@ export class SelectionTool extends PrimitiveTool {
 
     const graphic = context.createViewOverlay();
 
-    const vp = context.viewport;
+    const vp = context.viewport!;
     const origin = vp.worldToView(this.points[0]);
     const corner = vp.worldToView(ev.point);
     origin.z = corner.z = 0.0;

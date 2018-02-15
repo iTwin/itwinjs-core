@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Light, LightType } from "./Lighting";
-import { ViewFlags, HiddenLine } from "./Render";
-import { ColorDef, ColorRgb } from "./ColorDef";
+import { Light, LightType } from "../common/Lighting";
+import { ViewFlags, HiddenLine } from "../common/Render";
+import { ColorDef, ColorRgb } from "../common/ColorDef";
 import { ElementState } from "./EntityState";
-import { ElementProps } from "./ElementProps";
-import { IModel } from "./IModel";
+import { ElementProps } from "../common/ElementProps";
+import { IModel } from "../common/IModel";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Vector3d } from "@bentley/geometry-core/lib/PointVector";
 
@@ -17,7 +17,7 @@ export abstract class DisplayStyleState extends ElementState {
 
   constructor(props: ElementProps, iModel: IModel) {
     super(props, iModel);
-    this.viewFlags = ViewFlags.fromJSON(this.getStyle("viewflags"));
+    this._viewFlags = ViewFlags.fromJSON(this.getStyle("viewflags"));
     this._background = ColorDef.fromJSON(this.getStyle("backgroundColor"));
   }
 
