@@ -9,11 +9,11 @@ import { IModel, IModelToken } from "../common/IModel";
 import { IModelVersion } from "../common/IModelVersion";
 import { Gateway } from "../common/Gateway";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64, Id64Set } from "@bentley/bentleyjs-core/lib/Id";
 import { DateTime, Blob, NavigationValue, NavigationBindingValue } from "../common/ECSqlTypes";
 import { Point2d, Point3d, Vector2d, Vector3d } from "@bentley/geometry-core/lib/PointVector";
 import { Code } from "../common/Code";
-import { Camera } from "../common/ViewState";
+import { Camera } from "../frontend/ViewState";
 
 /** The iModel core gateway definition.
  * @hidden
@@ -90,7 +90,7 @@ export abstract class IModelGateway extends Gateway {
   }
 
   /** Return an array of model JSON strings given an array of stringified model ids. */
-  public async getModelProps(_iModelToken: IModelToken, _modelIds: string[]): Promise<any[]> {
+  public async getModelProps(_iModelToken: IModelToken, _modelIds: Id64Set): Promise<any[]> {
     return this.forward.apply(this, arguments);
   }
 

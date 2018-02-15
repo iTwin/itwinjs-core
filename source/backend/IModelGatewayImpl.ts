@@ -15,6 +15,7 @@ import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { IModelDb } from "../backend/IModelDb";
 import { IModelGateway } from "../gateway/IModelGateway";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
+import { Id64Set } from "@bentley/bentleyjs-core/lib/Id";
 
 const loggingCategory = "imodeljs-backend.IModelGatewayImpl";
 
@@ -76,7 +77,7 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
     iModelDb.saveChanges(description);
   }
 
-  public async getModelProps(iModelToken: IModelToken, modelIds: string[]): Promise<string[]> {
+  public async getModelProps(iModelToken: IModelToken, modelIds: Id64Set): Promise<string[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const modelJsonArray: string[] = [];
     for (const modelId of modelIds) {

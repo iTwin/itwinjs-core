@@ -3,11 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core/lib/Id";
 import { ElementState } from "./EntityState";
-import { IModel } from "./IModel";
-import { ModelSelectorProps } from "./ElementProps";
+import { IModel } from "../common/IModel";
+import { ModelSelectorProps } from "../common/ElementProps";
 
 /** A set of ids of GeometricModels for a SpatialViewDefinition. */
 export class ModelSelectorState extends ElementState {
+  /** the set of ModelIds of this ModelSelectorState */
   public readonly models = new Set<string>();
   constructor(props: ModelSelectorProps, iModel: IModel) {
     super(props, iModel);

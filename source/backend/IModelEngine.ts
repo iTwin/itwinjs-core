@@ -1,3 +1,6 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import { DeploymentEnv, AccessToken } from "@bentley/imodeljs-clients";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { IModelJsFs } from "./IModelJsFs";
@@ -24,11 +27,11 @@ export class IModelEngineConfiguration {
   /** Method that returns a valid access token for the service user. If defined, this is used for all Connect and iModelHub operations
    * instead of the one passed in from the front end.
    */
-  public getServiceUserAccessToken: () => AccessToken|undefined = () => undefined;
+  public getServiceUserAccessToken: () => AccessToken | undefined = () => undefined;
 }
 
 export class IModelEngine {
-  private constructor(public readonly configuration: IModelEngineConfiguration) {}
+  private constructor(public readonly configuration: IModelEngineConfiguration) { }
 
   /** Create a directory, recursively setting up the path as necessary */
   private static makeDirectoryRecursive(dirPath: string) {

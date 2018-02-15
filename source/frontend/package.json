@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "0.48.1",
+  "version": "0.48.2",
   "description": "iModelJs frontend components",
   "license": "UNLICENSED",
   "scripts": {
@@ -24,7 +24,7 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/bentleyjs-core": "^5.3.3",
+    "@bentley/bentleyjs-core": "^5.5.0",
     "@bentley/geometry-core": "^4.3.1",
     "@bentley/imodeljs-clients": "^2.1.1",
     "flatbuffers": "^1.8.0",
@@ -36,8 +36,8 @@
   },
   "//peerDependencies": "NOTE: peerDependencies are for types exposed in this package's public API",
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^5.2.1",
-    "@bentley/geometry-core": "^4.2.0",
+    "@bentley/bentleyjs-core": "^5.5.0",
+    "@bentley/geometry-core": "^4.3.1",
     "@bentley/imodeljs-clients": "^2.0.1",
     "flatbuffers": "^1.8.0"
   },

@@ -100,7 +100,7 @@ export class ChangeSummaryManager {
    * If undefined, the latest changeset of the iModel is used.
    * @throws [[IModelError]]
    */
-  public static async extractChangeSummaries_new(accessToken: AccessToken, contextId: string, iModelId: string,
+  public static async extractChangeSummaries(accessToken: AccessToken, contextId: string, iModelId: string,
     startChangeSetId?: string, endChangeSetId?: string): Promise<void> {
 
     const startTime: number = new Date().getTime();
@@ -112,6 +112,8 @@ export class ChangeSummaryManager {
       throw new IModelError(IModelStatus.BadArg);
 
     const changeSetInfos: ChangeSet[] = await this.retrieveChangeSetInfos(accessToken, iModelId, startChangeSetId, endChangeSetId);
+    assert(startChangeSetId === undefined || startChangeSetId === changeSetInfos[0].wsgId);
+    assert(endChangeSetId === undefined || endChangeSetId === changeSetInfos[changeSetInfos.length - 1].wsgId);
 
     const changesFile: ECDb = ChangeSummaryManager.openOrCreateChangesFile(iModel);
     if (changesFile === undefined || changesFile.nativeDb === undefined)
@@ -161,7 +163,10 @@ export class ChangeSummaryManager {
 
     } finally {
       changesFile.dispose();
-      await iModel.close(accessToken);
+
+      try {
+        await iModel.reinstateChanges(accessToken, endVersion);
+      } finally { await iModel.close(accessToken); }
 
       if (Logger.isEnabled(loggingCategory, LogLevel.TRACE)) {
         const duration: number = new Date().getTime() - startTime;
@@ -182,7 +187,7 @@ export class ChangeSummaryManager {
       changeSetInfos.unshift(startChangeSetInfo);
     }
 
-    if (endChangeSetId === undefined)
+    if (endChangeSetId === undefined || changeSetInfos.length === 0)
       return changeSetInfos;
 
     let endChangeSetIx: number = -1;
@@ -193,6 +198,9 @@ export class ChangeSummaryManager {
       }
     }
 
+    if (endChangeSetIx === changeSetInfos.length - 1)
+      return changeSetInfos;
+
     if (endChangeSetIx < 0) {
       const errorMsg: string = startChangeSetId !== undefined ? `Invalid ChangeSet ${endChangeSetId} for iModel ${iModelId}. It does not exist.` :
       `Invalid ChangeSet ${endChangeSetId} for iModel ${iModelId}. It either does not exist or it is not a successor of the start changeset ${startChangeSetId}.`;
@@ -200,91 +208,8 @@ export class ChangeSummaryManager {
     }
 
     const deleteIx: number = endChangeSetIx + 1;
-    return changeSetInfos.splice(deleteIx, changeSetInfos.length - deleteIx);
-  }
-
-  /** Extracts change summaries from the specified range of changesets
-   * @param startChangeSetId  Changeset Id of the starting changeset to extract from (including this changeset).
-   * If undefined, the first changeset of the iModel is used.
-   * @param endChangeSetId  Changeset Id of the end changeset to extract from (including this changeset).
-   * If undefined, the latest changeset of the iModel is used.
-   * @throws [[IModelError]]
-   */
-  public static async extractChangeSummaries(accessToken: AccessToken, projectId: string, iModelId: string,
-    startChangeSetId?: string, endChangeSetId?: string): Promise<void> {
-
-    await BriefcaseManager.initCache(accessToken);
-
-    let endVersion: IModelVersion = IModelVersion.latest();
-    if (endChangeSetId !== undefined)
-      endVersion = IModelVersion.asOfChangeSet(endChangeSetId);
-
-    endChangeSetId = await endVersion.evaluateChangeSet(accessToken, iModelId);
-
-    // If we want to download changesets that includes startChangeSetId, we need to pass its parent.
-    // So determine the parent changeset id first (WIP: Isn't there an easier way to achieve that?)
-    let startParentChangeSetId: string | undefined;
-    if (startChangeSetId !== undefined) {
-      const startChangeSet: ChangeSet = await BriefcaseManager.hubClient!.getChangeSet(accessToken, iModelId, false, startChangeSetId);
-      if (startChangeSet === null || startChangeSet === undefined)
-        throw new IModelError(IModelStatus.BadArg, `Start ChangeSet ${startChangeSetId} not found on the hub for iModel ${iModelId}.`);
-
-      startParentChangeSetId = startChangeSet.parentId;
-    }
-
-    // Downloads the required changesets (if they haven't been downloaded before)
-    const changeSets: ChangeSet[] = await BriefcaseManager.downloadChangeSets(accessToken, iModelId, endChangeSetId, startParentChangeSetId);
-
-    // to create the cache file we need the corresponding iModel as the changes cache file stores information
-    // about the imodel it belongs to.
-    const latestIModel: IModelDb = await IModelDb.open(accessToken, projectId, iModelId, OpenMode.Readonly);
-    if (latestIModel == null || latestIModel.nativeDb == null)
-      throw new IModelError(IModelStatus.BadArg);
-
-    let changesFile: ECDb;
-
-    try {
-      changesFile = ChangeSummaryManager.openOrCreateChangesFile(latestIModel);
-    } finally {
-      await latestIModel.close(accessToken);
-    }
-
-    assert(changesFile.isOpen());
-    const userInfoCache = new Map<string, string>();
-    const changeSetsFolder: string = BriefcaseManager.getChangeSetsPath(iModelId);
-    for (const changeSet of changeSets) {
-      const version: IModelVersion = IModelVersion.asOfChangeSet(changeSet.wsgId);
-      const iModel: IModelDb = await IModelDb.open(accessToken, projectId, iModelId, OpenMode.Readonly, version);
-      try {
-
-        if (ChangeSummaryManager.isSummaryAlreadyExtracted(changesFile, changeSet.wsgId)) {
-          continue;
-        }
-
-        const nativeIModelDb = iModel.nativeDb;
-        const changeSetFilePath: string = path.join(changeSetsFolder, changeSet.fileName!);
-        const stat: ErrorStatusOrResult<DbResult, string> = nativeIModelDb.extractChangeSummary(changesFile.nativeDb, changeSetFilePath);
-        if (stat.error != null && stat.error!.status !== DbResult.BE_SQLITE_OK)
-          throw new IModelError(stat.error!.status);
-
-        assert(stat.result != null);
-        const changeSummaryId = new Id64(stat.result!);
-
-        let userEmail: string | undefined = userInfoCache.get(changeSet.userCreated!);
-        if (userEmail == null) {
-          const userInfo: UserInfo = await BriefcaseManager.hubClient!.getUserInfo(accessToken, iModelId, changeSet.userCreated!);
-          userEmail = userInfo.email!;
-          userInfoCache.set(changeSet.userCreated!, userEmail);
-        }
-
-        ChangeSummaryManager.addExtendedInfos(changesFile, changeSummaryId, changeSet.wsgId, changeSet.parentId, changeSet.pushDate !== undefined ? new DateTime(changeSet.pushDate) : undefined, userEmail);
-      } finally {
-        await iModel.close(accessToken);
-      }
-    }
-
-    changesFile.saveChanges();
-    changesFile.closeDb();
+    changeSetInfos.splice(deleteIx, changeSetInfos.length - deleteIx);
+    return changeSetInfos;
   }
 
   private static openOrCreateChangesFile(iModel: IModelDb): ECDb {
