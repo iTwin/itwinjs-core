@@ -9,7 +9,7 @@ export type Range = Range1d | Range2d | Range3d;
 
 export class PointUtil {
   public static isNaN(val: any): boolean { return Number.isNaN(Number.parseFloat(val)); }
-  public static isNumber(val: any): boolean { return !PointUtil.isNaN(val); }
+  public static isNumber(val: any): val is number { return !PointUtil.isNaN(val); }
   public static isNumberArray(arr: any[]): arr is number[] { return arr.every(PointUtil.isNumber); }
   public static isVector(val: any): val is XY | XYZ { return typeof val === "object" && (val instanceof XY || val instanceof XYZ); }
   public static isXY(val: any): val is XY { return val instanceof XY; }
@@ -33,8 +33,20 @@ export class PointUtil {
   public static fromUint16Array(data: Uint16Array): Point {
     return PointUtil.fromNumberArray(Array.from(data));
   }
+  public static toUint16Array(pt: Point): Uint16Array {
+    return new Uint16Array(PointUtil.toNumberArray(pt));
+  }
+  public static toFloat32Array(pt: Point): Float32Array {
+    return new Float32Array(PointUtil.toNumberArray(pt));
+  }
+  public static asFloat32Point(pt: Point): Point {
+    return PointUtil.fromFloat32Array((PointUtil.toFloat32Array(pt)));
+  }
   public static to2dNumberArray(...pts: Point[]): number[][] {
     return pts.map(PointUtil.toNumberArray);
+  }
+  public static toUint16(val: number): number {
+    return new Uint16Array([ val ])[0];
   }
   public static asNumberArray(pt: Point, func: (pt: number[]) => number[]): Point {
     return PointUtil.fromNumberArray(func(PointUtil.toNumberArray(pt)));
@@ -48,13 +60,14 @@ export class RangeUtil {
   public static isRange1d(val: any): val is Range1d { return val instanceof Range1d; }
   public static isRange2d(val: any): val is Range2d { return val instanceof Range2d; }
   public static isRange3d(val: any): val is Range3d { return val instanceof Range3d; }
+  public static isRange(val: any): val is Range { return RangeUtil.isRange3d(val) || RangeUtil.isRange2d(val) || RangeUtil.isRange1d(val); }
   // computes diagonal for a range of any dimension and returns a zeroed point of same dimension if range is invalid
-  public static toDiagonal(range: Range1d | Range2d | Range3d): number | XY | XYZ {
+  public static toDiagonal(range: Range): Point {
     if (RangeUtil.isRange1d(range)) return range.length(); // Range1d length bottoms out at zero, so no null check required
     else if (RangeUtil.isRange2d(range)) return range.isNull() ? new Vector2d(0, 0) : range.diagonal();
     else return range.isNull() ? new Vector3d(0, 0, 0) : range.diagonal();
   }
-  public static fromPoints(...pts: Array<number | XY | XYZ>): Range1d | Range2d | Range3d | undefined {
+  public static fromPoints(...pts: Point[]): Range | undefined {
     if (PointUtil.isNumberArray(pts)) return Range1d.createArray(pts);
     if (PointUtil.isPoint2dArray(pts)) return Range2d.createArray(pts);
     if (PointUtil.isPoint3dArray(pts)) return Range3d.createArray(pts);
