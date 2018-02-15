@@ -1,0 +1,61 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+import { Vector3d } from "@bentley/geometry-core/lib/PointVector";
+import { PointUtil } from "./Utility";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+
+export class OctEncodedNormal {
+  private _value: number;
+  public get value(): number { return PointUtil.toUint16(this._value); }
+  constructor(val: number | Vector3d) { this.init(val); }
+  public init(val: number | Vector3d) { this._value = PointUtil.isNumber(val) ? val : OctEncodedNormal.encode(val); }
+  public decode(): Vector3d | undefined { return OctEncodedNormal.decode(this.value); }
+  public static clamp(val: number, minVal: number, maxVal: number): number {
+    return val < minVal ? minVal : (val > maxVal ? maxVal : val);
+  }
+  public static signNotZero(val: number): number {
+    return val < 0.0 ? -1.0 : 1.0;
+  }
+  public static toUInt16(val: number): number {
+    return PointUtil.toUint16(0.5 + (OctEncodedNormal.clamp(val, -1, 1) * 0.5 + 0.5) * 255);
+  }
+  public static decode(val: number): Vector3d | undefined {
+    let ex = val & 0xff;
+    let ey = val >> 8;
+    ex = ex / 255.0 * 2.0 - 1.0;
+    ey = ey / 255.0 * 2.0 - 1.0;
+    const n = new Vector3d(ex, ey, 1 - (Math.abs(ex) + Math.abs(ey)));
+    if (n.z < 0) {
+      const x = n.x;
+      const y = n.y;
+      n.x = (1 - Math.abs(y)) * OctEncodedNormal.signNotZero(x);
+      n.y = (1 - Math.abs(x)) * OctEncodedNormal.signNotZero(y);
+    }
+    return n.normalize();
+  }
+  public static encode(vec: Vector3d): number {
+    OctEncodedNormal.verifyNormalized(vec);
+    const denom = Math.abs(vec.x) + Math.abs(vec.y) + Math.abs(vec.z);
+    let rx = vec.x / denom;
+    let ry = vec.y / denom;
+    if (vec.z < 0) {
+      const x = rx;
+      const y = ry;
+      rx = (1 - Math.abs(y)) * OctEncodedNormal.signNotZero(x);
+      ry = (1 - Math.abs(x)) * OctEncodedNormal.signNotZero(y);
+    }
+    const value = OctEncodedNormal.toUInt16(ry) << 8 | OctEncodedNormal.toUInt16(rx);
+    OctEncodedNormal.verifyEncoded(value, vec);
+    return value;
+  }
+  public static verifyNormalized(vec: Vector3d): void {
+    const magSq = vec.x * vec.x + vec.y * vec.y + vec.z * vec.z;
+    assert(Math.abs(magSq - 1) < 0.001);
+  }
+  public static verifyEncoded(val: number, inVal: Vector3d): void {
+    const enc = new OctEncodedNormal(val);
+    const out = enc.decode();
+    assert(typeof out !== "undefined" && inVal.isAlmostEqual(out, 0.05));
+  }
+}
