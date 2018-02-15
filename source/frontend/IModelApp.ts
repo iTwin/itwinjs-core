@@ -36,6 +36,7 @@ export class IModelApp {
   protected _locateManager?: ElementLocateManager;
   protected _tentativePoint?: TentativePoint;
   protected _i18N?: I18N;
+
   public readonly features = new FeatureGates();
   public readonly tools = new ToolRegistry();
 

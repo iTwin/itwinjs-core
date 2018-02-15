@@ -161,9 +161,12 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Binds an integer value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
-   * @param val Integer value
+   * @param val Integer value as number, decimal string or hexadecimal string.
    */
-  public bindInt(parameter: number | string, val: number): void {
+  public bindInteger(parameter: number | string, val: number | string): void {
+    if (typeof(val) === "string")
+      throw new Error("Passing stringified numbers to bindInteger is only supported with next add-on version.");
+
     using(this.getBinder(parameter), (binder) => binder.bindInt(val));
   }
 
@@ -467,7 +470,7 @@ class ECSqlBindingHelper {
 
     if (typeof(val) === "number") {
       if (Number.isInteger(val))
-        return binder.bindInt(val); // need to call bindInt64 once new addon with ECDb fixes is available
+        return binder.bindInt(val);
 
       return binder.bindDouble(val);
     }

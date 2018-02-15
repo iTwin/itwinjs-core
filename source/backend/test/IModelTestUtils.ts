@@ -19,15 +19,21 @@ import { Appearance } from "../../common/SubCategoryAppearance";
 import { Configuration } from "../../common/Configuration";
 import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { IModelEngine } from "../IModelEngine";
 import * as path from "path";
+// import { Logger, LogLevel } from "@bentley/bentleyjs-core/lib/Logger";
 
 // Logger.initializeToConsole();
+// Logger.setLevelDefault(LogLevel.ERROR);
 
 // Initialize the gateway classes used by tests
 Gateway.initialize(IModelGateway);
 
 // Initialize the Node addon used by tests
 NodeAddonRegistry.loadAndRegisterStandardAddon();
+
+// Start the backend
+IModelEngine.startup();
 
 export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;

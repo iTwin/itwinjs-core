@@ -18,6 +18,10 @@ import { CategorySelectorState } from "../../frontend/CategorySelectorState";
 // spell-checker: disable
 
 describe("IModelConnection", () => {
+  before(async () => {
+    await TestData.load();
+  });
+
   it("should be able to get elements and models from an IModelConnection", async () => {
     const iModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
     assert.exists(iModel);
@@ -88,7 +92,6 @@ describe("IModelConnection", () => {
   });
 
   it("Parameterized ECSQL", async () => {
-    await TestData.load();
     const iModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
     assert.exists(iModel);
 
