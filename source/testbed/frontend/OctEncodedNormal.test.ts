@@ -39,7 +39,7 @@ function roundTrip(x: number, y: number, z: number, normalized: boolean = true, 
   _roundTrip(new Vector3d(x, y, z), normalized, tolerance );
 }
 
-describe.only("OctEncodedNormal", () => {
+describe("OctEncodedNormal", () => {
   it("OctEncodedNormal tests from native source", () => {
     roundTrip(1.0, 0.0, 0.0);
     roundTrip(0.0, 1.0, 0.0);
