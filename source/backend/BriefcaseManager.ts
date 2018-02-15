@@ -817,7 +817,7 @@ export class BriefcaseManager {
 
     const reverse: boolean = (targetChangeSetIndex < currentChangeSetIndex);
     const changeSets: ChangeSet[] = await BriefcaseManager.downloadChangeSets(accessToken, briefcase.iModelId, reverse ? currentChangeSetId : targetChangeSetId, reverse ? targetChangeSetId : currentChangeSetId);
-    assert(changeSets.length === Math.abs(targetChangeSetIndex - currentChangeSetIndex));
+    assert(changeSets.length <= Math.abs(targetChangeSetIndex - currentChangeSetIndex));
     if (reverse)
       changeSets.reverse();
 
