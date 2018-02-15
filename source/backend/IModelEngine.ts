@@ -16,12 +16,12 @@ export class IModelEngineConfiguration {
   public iModelHubDeployConfig: DeploymentEnv = "QA";
 
   /** The path where the cache of briefcases are stored. */
-  private _briefcaseCacheDir: string = path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/iModels/").normalize();
+  private _briefcaseCacheDir: string = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/iModels/"));
   public get briefcaseCacheDir(): string {
     return this._briefcaseCacheDir;
   }
   public set briefcaseCacheDir(cacheDir: string) {
-    this._briefcaseCacheDir = cacheDir.replace(/\/?$/, "/").normalize();
+    this._briefcaseCacheDir = path.normalize(cacheDir.replace(/\/?$/, path.sep));
   }
 
   /** Method that returns a valid access token for the service user. If defined, this is used for all Connect and iModelHub operations
