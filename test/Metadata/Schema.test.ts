@@ -23,12 +23,13 @@ describe("schema test", () => {
     });
 
     it("with setting properties", () => {
-      const testSchema = new Schema("TestSchema", 1, 0, 2);
-      testSchema.alias = "ts";
+      const testSchema = new Schema("TestSchema", 1, 0, 2, "ts", "Test label", "Test setting a description");
       assert.isDefined(testSchema.alias);
       assert.equal(testSchema.alias, "ts");
 
-      testSchema.description = "Test setting a description";
+      assert.isDefined(testSchema.label);
+      assert.equal(testSchema.label, "Test label");
+
       assert.isDefined(testSchema.description);
       assert.equal(testSchema.description, "Test setting a description");
     });

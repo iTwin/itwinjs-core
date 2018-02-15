@@ -25,17 +25,20 @@ const SCHEMAURL3_1 = "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecsche
 export default class Schema implements CustomAttributeContainerProps {
   private _context?: SchemaContext;
   public readonly schemaKey: SchemaKey;
-  public alias: string;
-  public label?: string;
-  public description?: string;
+  protected _alias?: string;
+  protected _label?: string;
+  protected _description?: string;
   public customAttributes?: CustomAttributeSet;
   public readonly references: Schema[];
   private readonly _children: SchemaChild[];
 
-  constructor(name?: string, readVersion?: number, writeVersion?: number, minorVersion?: number, context?: SchemaContext) {
+  constructor(name?: string, readVersion?: number, writeVersion?: number, minorVersion?: number, alias?: string, label?: string, description?: string, context?: SchemaContext) {
     this.schemaKey = new SchemaKey(name, readVersion, writeVersion, minorVersion);
     this.references = [];
     this._children = [];
+    this._alias = alias;
+    this._label = label;
+    this._description = description;
     this._context = context;
   }
 
@@ -50,6 +53,10 @@ export default class Schema implements CustomAttributeContainerProps {
 
   get minorVersion() { return this.schemaKey.minorVersion; }
   set minorVersion(version: number) { this.schemaKey.minorVersion = version; }
+
+  get alias() {return this._alias; }
+  get label() {return this._label; }
+  get description() {return this._description; }
 
   /**
    * Creates a EntityClass with the provided name in this schema.
@@ -282,9 +289,9 @@ export default class Schema implements CustomAttributeContainerProps {
       throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl);
 
     if (jsonObj.name) this.name = jsonObj.name;
-    if (jsonObj.alias) this.alias = jsonObj.alias;
-    if (jsonObj.description) this.description = jsonObj.description;
-    if (jsonObj.label) this.label = jsonObj.label;
+    if (jsonObj.alias) this._alias = jsonObj.alias;
+    if (jsonObj.description) this._description = jsonObj.description;
+    if (jsonObj.label) this._label = jsonObj.label;
 
     if (jsonObj.version) {
       if (!this.schemaKey.version)
