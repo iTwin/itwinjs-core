@@ -329,7 +329,11 @@ describe("BriefcaseManager", () => {
     timer = new Timer("pullmergepush");
 
     // Push the changes to the hub
+    const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
     await rwIModel.pushChanges(accessToken);
+    const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
+    assert(!!postPushChangeSetId);
+    expect(prePushChangeSetId !== postPushChangeSetId);
 
     timer.end();
 

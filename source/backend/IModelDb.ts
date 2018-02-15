@@ -349,7 +349,9 @@ export class IModelDb extends IModel {
 
     const description = describer ? describer(this.Txns.getCurrentTxnId()) : this.Txns.describeChangeSet();
 
-    return BriefcaseManager.pushChanges(accessToken, this.briefcaseEntry, description);
+    await BriefcaseManager.pushChanges(accessToken, this.briefcaseEntry, description);
+    this.token.changeSetId = this.briefcaseEntry.changeSetId;
+    this.initializeIModelDb();
   }
 
   /**

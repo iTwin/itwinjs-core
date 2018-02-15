@@ -915,11 +915,11 @@ export class BriefcaseManager {
     changeSet.fileSize = IModelJsFs.lstatSync(changeSetToken.pathname)!.size.toString();
     changeSet.description = description;
 
-    await BriefcaseManager.hubClient!.uploadChangeSet(accessToken, briefcase.iModelId, changeSet, changeSetToken.pathname);
+    const postedChangeSet = await BriefcaseManager.hubClient!.uploadChangeSet(accessToken, briefcase.iModelId, changeSet, changeSetToken.pathname);
 
     BriefcaseManager.finishCreateChangeSet(briefcase);
-    briefcase.changeSetId = changeSet.wsgId;
-    briefcase.changeSetIndex = +changeSet.index!;
+    briefcase.changeSetId = postedChangeSet.wsgId;
+    briefcase.changeSetIndex = +postedChangeSet.index!;
   }
 
   /** Create an iModel on the iModelHub */
