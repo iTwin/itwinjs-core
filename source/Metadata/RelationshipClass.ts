@@ -81,8 +81,8 @@ export default class RelationshipClass extends ECClass {
 /**
  * A Typescript class representation of a ECRelationshipConstraint.
  */
-export class RelationshipConstraint implements RelationshipConstraint {
-  private _abstractConstraint?: LazyLoadedRelationshipConstraintClass;
+export class RelationshipConstraint {
+  protected _abstractConstraint?: LazyLoadedRelationshipConstraintClass;
   public relationshipClass: RelationshipClass;
   public relationshipEnd: RelationshipEnd;
   public multiplicity?: RelationshipMultiplicity;

@@ -9,9 +9,8 @@ import Schema from "../Metadata/Schema";
 import EntityClass from "../Metadata/EntityClass";
 import MixinClass from "../Metadata/MixinClass";
 import RelationshipClass, { RelationshipConstraint } from "../Metadata/RelationshipClass";
-import { AnyClassType } from "../Interfaces";
+import { AnyClassType, SchemaDeserializationVisitor, AnySchemaChildType } from "../Interfaces";
 import { ECProperty } from "../Metadata/Property";
-import { SchemaDeserializationVisitor, AnySchemaChildType } from "source";
 
 /**
  * The purpose of this class is to properly order the deserialization of ECSchemas and SchemaChildren from the JSON formats.
