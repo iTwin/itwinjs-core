@@ -340,13 +340,6 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     return row;
     }
 
-  /** @deprecated Use [[ECSqlStatement.getRow]] instead.
-   * Get the current row.
-   */
-  public getRow_depr(): any {
-    return JSON.parse(this._stmt!.getRow());
-  }
-
   /** Calls step when called as an iterator. */
   public next(): IteratorResult<any> {
     if (DbResult.BE_SQLITE_ROW === this.step()) {
