@@ -25,6 +25,10 @@ import * as path from "path";
 
 // Logger.initializeToConsole();
 // Logger.setLevelDefault(LogLevel.ERROR);
+// Logger.setLevel("Diagnostics", LogLevel.NONE);
+// Logger.setLevel("ECObjectsNative", LogLevel.NONE);
+// Logger.setLevel("BeSQLite", LogLevel.NONE);
+// Logger.setLevel("ECPresentation", LogLevel.NONE);
 
 // Initialize the gateway classes used by tests
 Gateway.initialize(IModelGateway);

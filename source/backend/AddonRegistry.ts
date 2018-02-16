@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelError, IModelStatus } from "../common/IModelError";
+import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 
     /* WIP this require breaks our react app's webpack build step
 import { KnownLocations } from "./KnownLocations";
@@ -30,6 +31,8 @@ export class AddonRegistry {
       return;
 
     AddonRegistry.checkAddonVersion();
+
+    AddonRegistry._addon.logger = Logger;
   }
 
   private static parseSemVer(str: string): number[] {
