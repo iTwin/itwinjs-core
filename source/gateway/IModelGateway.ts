@@ -97,10 +97,8 @@ export abstract class IModelGateway extends Gateway {
     return this.forward.apply(this, arguments);
   }
 
-  /** Return an array of element id strings from a query constructed from the specified parameters. */
-  public async queryElementIds(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<string[]> {
-    return this.forward.apply(this, arguments);
-  }
+  /** Return a set of ids from a query constructed from the specified parameters. */
+  public async queryEntityIds(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<Id64Set> { return this.forward.apply(this, arguments); }
 
   /** Return an array of elements formatted for presentation given an array of stringified element ids. */
   public async formatElements(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<any[]> {
@@ -137,8 +135,13 @@ export abstract class IModelGateway extends Gateway {
     return this.forward.apply(this, arguments);
   }
 
+  // /** Query for a set of models of the specified class and matching the specified IsPrivate setting. */
+  // public async queryModelIds(_iModelToken: IModelToken, _className: string, _limit: number, _wantPrivate: boolean, _wantTemplate: boolean): Promise<Id64Set> {
+  //   return this.forward.apply(this, arguments);
+  // }
+
   /** Query for the array of ViewDefinitions of the specified class and matching the specified IsPrivate setting. */
-  public async queryViewDefinitionProps(_iModelToken: IModelToken, _className: string, _wantPrivate: boolean): Promise<ViewDefinitionProps[]> {
+  public async queryViewDefinitionProps(_iModelToken: IModelToken, _className: string, _limit: number, _offset: number, _wantPrivate: boolean): Promise<ViewDefinitionProps[]> {
     return this.forward.apply(this, arguments);
   }
 

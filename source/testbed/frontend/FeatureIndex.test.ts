@@ -45,9 +45,7 @@ describe("ColorIndex", () => {
     }
     ci.setNonUniform(numColors, colors, indices, true);
     assert.isTrue(ci.isValid(), "NonUniform ColorIndex should be valid");
-    assert.isTrue(ci.isUniform(), "NonUniform ColorIndex should be Uniform");
-    assert.isTrue(0x1f3f7fff === ci.uniform, "NonUniform ColorIndex should have uniform color of 0x1f3f7fff");
-    assert.isTrue(undefined === ci.nonUniform, "NonUniform ColorIndex should have undefined nonUniform");
+    assert.isFalse(ci.isUniform(), "NonUniform ColorIndex should not be Uniform");
     assert.isTrue(ci.hasAlpha(), "NonUniform ColorIndex should have alpha");
 
     ci.reset();

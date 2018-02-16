@@ -36,8 +36,7 @@ describe("IModelConnection", () => {
     assert.isTrue(iModel.models.repositoryModelId.equals(new Id64(elementProps[0].model)));
 
     const queryElementIds = await iModel.elements.queryElementIds({ from: "BisCore.Category", limit: 20, offset: 0 });
-    assert.isAtLeast(queryElementIds.length, 1);
-    assert.isTrue(queryElementIds[0] instanceof Id64);
+    assert.isAtLeast(queryElementIds.size, 1);
 
     const formatObjs: any[] = await iModel.elements.formatElements(queryElementIds);
     assert.isAtLeast(formatObjs.length, 1);
@@ -51,7 +50,7 @@ describe("IModelConnection", () => {
     const rows: any[] = await iModel.executeQuery("SELECT CodeValue AS code FROM BisCore.Category");
     assert.isAtLeast(rows.length, 1);
     assert.exists(rows[0].code);
-    assert.equal(rows.length, queryElementIds.length);
+    assert.equal(rows.length, queryElementIds.size);
 
     const codeSpecByName: CodeSpec = await iModel.codeSpecs.getCodeSpecByName(CodeSpecNames.SpatialCategory());
     assert.exists(codeSpecByName);

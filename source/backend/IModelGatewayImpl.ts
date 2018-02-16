@@ -27,9 +27,7 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
     return OpenMode.ReadWrite === iModelToken.openMode;
   }
 
-  public static register() {
-    Gateway.registerImplementation(IModelGateway, IModelGatewayImpl);
-  }
+  public static register() { Gateway.registerImplementation(IModelGateway, IModelGatewayImpl); }
 
   public async openForRead(accessToken: AccessToken, iModelToken: IModelToken): Promise<IModel> {
     return this.open(accessToken, iModelToken);
@@ -80,9 +78,9 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
   public async getModelProps(iModelToken: IModelToken, modelIds: Id64Set): Promise<string[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const modelJsonArray: string[] = [];
-    for (const modelId of modelIds) {
+    for (const id of modelIds) {
       try {
-        modelJsonArray.push(iModelDb.models.getModelJson(modelId));
+        modelJsonArray.push(iModelDb.models.getModelJson(JSON.stringify({ id })));
       } catch (error) {
         if (modelIds.size === 1)
           throw error; // if they're asking for more than one model, don't throw on error.
@@ -94,29 +92,18 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
   public async getElementProps(iModelToken: IModelToken, elementIds: Id64Set): Promise<string[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const elementProps: string[] = [];
-    for (const elementId of elementIds) {
-      elementProps.push(iModelDb.elements.getElementJson(elementId));
+    for (const id of elementIds) {
+      try {
+        elementProps.push(iModelDb.elements.getElementJson(JSON.stringify({ id })));
+      } catch (error) {
+        if (elementIds.size === 1)
+          throw error; // if they're asking for more than one element, don't throw on error.
+      }
     }
     return elementProps;
   }
 
-  public async queryElementIds(iModelToken: IModelToken, params: EntityQueryParams): Promise<string[]> {
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    let sql: string = "SELECT ECInstanceId AS id FROM " + params.from;
-    if (params.where) sql += " WHERE " + params.where;
-    if (params.orderBy) sql += " ORDER BY " + params.orderBy;
-    if (params.offset) sql += " OFFSET " + params.offset;
-    sql += (params.limit) ? ` LIMIT ${params.limit}` : ` LIMIT ${IModelDb.defaultLimit}`;
-
-    const statement: ECSqlStatement = iModelDb.getPreparedStatement(sql);
-    const elementIds: string[] = [];
-    for (const row of statement)
-      elementIds.push(row.id);
-
-    iModelDb.releasePreparedStatement(statement);
-    Logger.logTrace(loggingCategory, "IModelDbRemoting.queryElementIds", () => ({ sql, numElements: elementIds.length }));
-    return elementIds;
-  }
+  public async queryEntityIds(iModelToken: IModelToken, params: EntityQueryParams): Promise<Id64Set> { return IModelDb.find(iModelToken).queryEntityIds(params); }
 
   public async formatElements(iModelToken: IModelToken, elementIds: Id64Set): Promise<any[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
@@ -162,16 +149,25 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
     iModelDb.updateProjectExtents(newExtents);
   }
 
-  // !!! TESTING METHOD
+  /**
+   * Perform a test in addon
+   * @hidden
+   */
   public async executeTest(iModelToken: IModelToken, testName: string, params: any): Promise<any> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     return iModelDb.executeTest(testName, params);
   }
 
+  // /** Query for a set of models of the specified class and matching the specified IsPrivate setting. */
+  // public async queryModelIds(iModelToken: IModelToken, className: string, limit: number, wantPrivate: boolean, wantTemplate: boolean): Promise<Id64Set> {
+  //   const iModelDb: IModelDb = IModelDb.find(iModelToken);
+  //   return iModelDb.models.queryModelIds(className, limit, wantPrivate, wantTemplate);
+  // }
+
   /** Query for the array of ViewDefinitions of the specified class and matching the specified IsPrivate setting. */
-  public async queryViewDefinitionProps(iModelToken: IModelToken, className: string, wantPrivate: boolean): Promise<ViewDefinitionProps[]> {
+  public async queryViewDefinitionProps(iModelToken: IModelToken, className: string, limit: number, offset: number, wantPrivate: boolean): Promise<ViewDefinitionProps[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    return iModelDb.views.queryViewDefinitionProps(className, wantPrivate);
+    return iModelDb.views.queryViewDefinitionProps(className, limit, offset, wantPrivate);
   }
 
   /** Get the ViewState data for the specified ViewDefinition */
