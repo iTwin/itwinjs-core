@@ -12,11 +12,12 @@ import { PropertyType } from "../../source/PropertyTypes";
 import { PrimitiveArrayProperty } from "../../source/index";
 
 async function testInvalidAttribute(prop: Property, attributeName: string, expectedType: string, value: any) {
-  const json: any = { name: prop.name };
-  json[attributeName] = value;
-
   expect(prop).to.exist;
-  await expect(prop.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Property BadProp has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
+  const json: any = {
+    name: prop.name,
+    [attributeName]: value,
+  };
+  await expect(prop.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Property ${prop.name} has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
 }
 
 describe("Property", () => {
