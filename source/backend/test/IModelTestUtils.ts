@@ -21,12 +21,14 @@ import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelEngine } from "../IModelEngine";
 import * as path from "path";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core/lib/Logger";
+// import { Logger, LogLevel } from "@bentley/bentleyjs-core/lib/Logger";
 
-Logger.initializeToConsole();
-Logger.setLevel("Diagnostics", undefined);    <<< does not suppress this category, because it merely removes category from the Map. As a result, the default log level kicks in. We need a higher-than-all-levels LogLevel.
-Logger.setLevel("ECObjectsNative", undefined);
-Logger.setLevelDefault(LogLevel.ERROR);
+// Logger.initializeToConsole();
+// Logger.setLevelDefault(LogLevel.ERROR);
+// Logger.setLevel("Diagnostics", LogLevel.NONE);
+// Logger.setLevel("ECObjectsNative", LogLevel.NONE);
+// Logger.setLevel("BeSQLite", LogLevel.NONE);
+// Logger.setLevel("ECPresentation", LogLevel.NONE);
 
 // Initialize the gateway classes used by tests
 Gateway.initialize(IModelGateway);
