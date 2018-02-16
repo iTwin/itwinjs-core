@@ -5,8 +5,10 @@
 import { assert, expect } from "chai";
 import Schema from "../../source/Metadata/Schema";
 import Enumeration from "../../source/Metadata/Enumeration";
+import { ECObjectsError } from "../../source/Exception";
+import { PrimitiveType } from "../../source/index";
 
-describe("enumeration", () => {
+describe("Enumeration", () => {
   describe("deserialization", () => {
     it("minimum values", async () => {
       const testSchema = {
@@ -58,6 +60,72 @@ describe("enumeration", () => {
       const ecSchema = await Schema.fromJson(testSchema);
       const testEnum = await ecSchema.getChild<Enumeration>("testEnum");
       assert.isDefined(testEnum);
+    });
+  });
+
+  describe("fromJson", () => {
+    let testEnum: Enumeration;
+
+    beforeEach(() => {
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      testEnum = new Enumeration(schema, "TestEnumeration");
+    });
+
+    it("should throw for invalid backingTypeName", async () => {
+      expect(testEnum).to.exist;
+      let json: any = { backingTypeName: 0 };
+      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'backingTypeName' attribute. It should be of type 'string'.`);
+
+      json = { backingTypeName: "ThisIsNotRight" };
+      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`);
+    });
+
+    it("should throw for enumerators not an array", async () => {
+      expect(testEnum).to.exist;
+      const json: any = { enumerators: 0 };
+      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
+    });
+
+    it("should throw for enumerators not an array of objects", async () => {
+      expect(testEnum).to.exist;
+      const json: any = { enumerators: [0] };
+      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
+    });
+
+    it("should throw for enumerator with missing value", async () => {
+      expect(testEnum).to.exist;
+      const json: any = { enumerators: [{}] };
+      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator that is missing the required attribute 'value'.`);
+    });
+
+    it("should throw for enumerator with invalid value", async () => {
+      expect(testEnum).to.exist;
+      const json: any = { enumerators: [
+        { value: false },
+      ]};
+      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator with an invalid 'value' attribute. It should be of type 'number'.`);
+    });
+
+    it("should throw for enumerator with incompatible value type", async () => {
+      expect(testEnum).to.exist;
+      let json: any = { enumerators: [
+        { value: "shouldBeNumber" },
+      ]};
+      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator with an invalid 'value' attribute. It should be of type 'number'.`);
+
+      json = { enumerators: [
+        { value: 0 /* should be string */ },
+      ]};
+      testEnum.primitiveType = PrimitiveType.String;
+      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator with an invalid 'value' attribute. It should be of type 'string'.`);
+    });
+
+    it("should throw for enumerator with invalid label", async () => {
+      expect(testEnum).to.exist;
+      const json: any = { enumerators: [
+        { value: 0, label: 0 },
+      ]};
+      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator with an invalid 'label' attribute. It should be of type 'string'.`);
     });
   });
 });

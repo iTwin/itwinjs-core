@@ -65,35 +65,47 @@ export default class Enumeration extends SchemaChild {
   public async fromJson(jsonObj: any) {
     await super.fromJson(jsonObj);
 
-    if (jsonObj.isStrict) {
+    if (undefined !== jsonObj.isStrict) {
       if (typeof(jsonObj.isStrict) !== "boolean")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'isStrict' attribute. It should be of type 'boolean'.`);
       this.isStrict = jsonObj.isStrict;
     }
 
-    if (jsonObj.backingTypeName) {
+    // FIXME: Don't we already have primitiveType defined in c'tor?
+    // TODO: Should we allow changing primitiveType in fromJson?
+    // TODO: Should we throw if primitiveType is undefined? If it doesn't match?
+    if (undefined !== jsonObj.backingTypeName) {
+      if (typeof(jsonObj.backingTypeName) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'backingTypeName' attribute. It should be of type 'string'.`);
+
       if (/int/i.test(jsonObj.backingTypeName))
         this.primitiveType = PrimitiveType.Integer;
       else if (/string/i.test(jsonObj.backingTypeName))
         this.primitiveType = PrimitiveType.String;
+      else
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`);
     }
 
-    if (jsonObj.enumerators) {
+    if (undefined !== jsonObj.enumerators) {
       if (!Array.isArray(jsonObj.enumerators))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'enumerators' attribute. It should be of type 'array'.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
 
       jsonObj.enumerators.forEach((enumerator: any) => {
-        if (!enumerator.value && enumerator.value !== 0)
+        if (typeof(enumerator) !== "object")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
+        if (undefined === enumerator.value)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator that is missing the required attribute 'value'.`);
-        else if (typeof(enumerator.value) !== "string" && typeof(enumerator.value) !== "number")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'value' attribute.
-                                                                    The value attribute must be of type ${this.primitiveType === PrimitiveType.Integer ? "'number'" : "'string'"}.`);
+
+        const expectedPrimitiveType = (this.primitiveType === PrimitiveType.Integer) ? "number" : "string";
+        if (typeof(enumerator.value) !== expectedPrimitiveType)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'value' attribute. It should be of type '${expectedPrimitiveType}'.`);
+
         // Need to check if the Enumerator exists
         let newEnum = this.getEnumerator(enumerator.value);
         if (!newEnum)
           newEnum = new Enumerator(enumerator.value);
 
-        if (enumerator.label) {
+        if (undefined !== enumerator.label) {
           if (typeof(enumerator.label) !== "string")
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'label' attribute. It should be of type 'string'.`);
           newEnum.label = enumerator.label;
