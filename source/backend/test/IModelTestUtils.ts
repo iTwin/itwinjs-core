@@ -10,7 +10,7 @@ import { Code } from "../../common/Code";
 import { Gateway } from "../../common/Gateway";
 import { Element, InformationPartitionElement } from "../Element";
 import { IModelDb } from "../IModelDb";
-import { NodeAddonRegistry } from "../NodeAddonRegistry";
+import { AddonRegistry } from "../AddonRegistry";
 import { IModelGateway } from "../../gateway/IModelGateway";
 import { ElementProps, GeometricElementProps } from "../../common/ElementProps";
 import { DefinitionModel, Model } from "../Model";
@@ -30,7 +30,7 @@ import * as path from "path";
 Gateway.initialize(IModelGateway);
 
 // Initialize the Node addon used by tests
-NodeAddonRegistry.loadAndRegisterStandardAddon();
+AddonRegistry.loadAndRegisterStandardAddon();
 
 // Start the backend
 IModelEngine.startup();
@@ -97,13 +97,36 @@ export class IModelTestUtils {
     return iModels[0].wsgId;
   }
 
-  public static async deleteAllBriefcases(accessToken: AccessToken, iModelId: string) {
+  private static async deleteAllBriefcases(accessToken: AccessToken, iModelId: string) {
     const promises = new Array<Promise<void>>();
     const briefcases = await IModelTestUtils.hubClient.getBriefcases(accessToken, iModelId);
     briefcases.forEach((briefcase: Briefcase) => {
       promises.push(IModelTestUtils.hubClient.deleteBriefcase(accessToken, iModelId, briefcase.briefcaseId!));
     });
     await Promise.all(promises);
+  }
+
+  /** Deletes all acquired briefcases for specified iModel and User, *if* the maximum limit of briefcases that can be acquired
+   * has been reached.
+   */
+  public static async deleteBriefcasesIfAcquireLimitReached(accessToken: AccessToken, projectName: string, iModelName: string): Promise<void> {
+    const projectId: string = await IModelTestUtils.getTestProjectId(accessToken, projectName);
+    const iModelId: string = await IModelTestUtils.getTestIModelId(accessToken, projectId, iModelName);
+
+    try {
+      const briefcaseIds = new Array<number>();
+      let ii = 5; // todo: IModelHub needs to provide a better way for testing this limit. We are arbitrarily testing for 5 briefcases here!
+      while (ii-- > 0) {
+        const briefcaseId: number = await IModelTestUtils.hubClient.acquireBriefcase(accessToken, iModelId);
+        briefcaseIds.push(briefcaseId);
+      }
+      for (const briefcaseId of briefcaseIds) {
+        await IModelTestUtils.hubClient.deleteBriefcase(accessToken, iModelId, briefcaseId);
+      }
+    } catch (error) {
+      console.log(`Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Deleting all briefcases.`); // tslint:disable-line
+      IModelTestUtils.deleteAllBriefcases(accessToken, iModelId);
+    }
   }
 
   private static getStat(name: string) {

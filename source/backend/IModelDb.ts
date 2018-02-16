@@ -32,10 +32,11 @@ import { RepositoryStatus } from "@bentley/bentleyjs-core/lib/BentleyError";
 import * as path from "path";
 import { IModelDbLinkTableRelationships, LinkTableRelationship } from "./LinkTableRelationship";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
-import { NodeAddonRegistry } from "./NodeAddonRegistry";
+import { AddonRegistry } from "./AddonRegistry";
 import { RequestQueryOptions } from "@bentley/imodeljs-clients/lib";
 import { iModelEngine } from "./IModelEngine";
 import { EntityQueryParams } from "../common/EntityProps";
+import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 
 const loggingCategory = "imodeljs-backend.IModelDb";
 
@@ -168,19 +169,28 @@ export class IModelDb extends IModel {
   private setupBriefcaseEntry(briefcaseEntry: BriefcaseEntry) {
     this.briefcaseEntry = briefcaseEntry;
     this.briefcaseEntry.iModelDb = this;
-    this.briefcaseEntry.onClose.addListener(this.onBriefcaseCloseHandler, this);
-    this.briefcaseEntry.onVersionUpdated.addListener(this.onBriefcaseVersionUpdatedHandler, this);
+    this.briefcaseEntry.onBeforeClose.addListener(this.onBriefcaseCloseHandler, this);
+    this.briefcaseEntry.onBeforeVersionUpdate.addListener(this.onBriefcaseVersionUpdatedHandler, this);
   }
 
   private clearBriefcaseEntry(): void {
-    this.briefcaseEntry!.onClose.removeListener(this.onBriefcaseCloseHandler, this);
-    this.briefcaseEntry!.onVersionUpdated.removeListener(this.onBriefcaseVersionUpdatedHandler, this);
+    this.briefcaseEntry!.onBeforeClose.removeListener(this.onBriefcaseCloseHandler, this);
+    this.briefcaseEntry!.onBeforeVersionUpdate.removeListener(this.onBriefcaseVersionUpdatedHandler, this);
     this.briefcaseEntry!.iModelDb = undefined;
     this.briefcaseEntry = undefined;
   }
 
-  private onBriefcaseCloseHandler() { this.clearStatementCacheOnClose(); }
-  private onBriefcaseVersionUpdatedHandler() { this.iModelToken.changeSetId = this.briefcaseEntry!.changeSetId; }
+  private onBriefcaseCloseHandler() {
+    this.onBeforeClose.raiseEvent();
+    this.clearStatementCacheOnClose();
+  }
+
+  private onBriefcaseVersionUpdatedHandler() {
+    this.iModelToken.changeSetId = this.briefcaseEntry!.changeSetId;
+  }
+
+  /** Event called when the iModel is about to be closed */
+  public readonly onBeforeClose = new BeEvent<() => void>();
 
   /** Get the in-memory handle of the native Db */
   public get nativeDb(): any { return (this.briefcaseEntry === undefined) ? undefined : this.briefcaseEntry.nativeDb; }
@@ -581,7 +591,7 @@ export class ConcurrencyControl {
 
   /** Create an empty Request */
   public static createRequest(): ConcurrencyControl.Request {
-    return new (NodeAddonRegistry.getAddon()).AddonBriefcaseManagerResourcesRequest();
+    return new (AddonRegistry.getAddon()).AddonBriefcaseManagerResourcesRequest();
   }
 
   /** Convert the request to any */

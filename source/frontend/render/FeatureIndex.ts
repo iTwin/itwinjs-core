@@ -1,6 +1,65 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { ColorDef } from "../../common/ColorDef";
+
+export class ColorIndexNonUniform {
+  public colors: Uint32Array;
+  public indices: Uint16Array;
+  public hasAlpha: boolean;
+  public constructor(colors: Uint32Array, indices: Uint16Array, hasAlpha: boolean) {
+    this.colors = new Uint32Array(colors.buffer);
+    this.indices = new Uint16Array(indices.buffer);
+    this.hasAlpha = hasAlpha;
+  }
+}
+export class ColorIndex {
+  public numColors: number = 1;
+  public uniform: number = 0x00ffffff;
+  public nonUniform: ColorIndexNonUniform | undefined;
+  public constructor() {
+    this.reset();
+  }
+  public isValid(): boolean {
+    return this.numColors > 0;
+  }
+  public isUniform(): boolean {
+    assert(this.numColors > 0);
+    return this.numColors === 1;
+  }
+  public hasAlpha(): boolean {
+    if (this.isUniform())
+      return (0 !== (this.uniform & 0xff000000));
+    else {
+      assert(undefined !== this.nonUniform);
+      if (undefined !== this.nonUniform)
+        return this.nonUniform.hasAlpha;
+      else
+        return false;
+    }
+  }
+  public reset() {
+    this.numColors = 1;
+    this.uniform = ColorDef.white.tbgr;
+    this.nonUniform = undefined;
+  }
+  public setUniform(color: number | ColorDef) {
+    if (color instanceof ColorDef)
+      this.setUniform(color.tbgr);
+    else {
+      this.numColors = 1;
+      this.uniform = color;
+      this.nonUniform = undefined;
+    }
+  }
+  public setNonUniform(numColors: number, colors: Uint32Array, indices: Uint16Array, hasAlpha: boolean) {
+    assert(numColors > 1);
+    this.numColors = numColors;
+    this.nonUniform = new ColorIndexNonUniform(colors, indices, hasAlpha);
+    this.uniform = 0;
+  }
+}
 
 export const enum FeatureIndexType {
   kEmpty,

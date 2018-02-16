@@ -2,11 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { DeploymentEnv, AccessToken } from "@bentley/imodeljs-clients";
-import { IModelError, IModelStatus } from "../common/IModelError";
-import { IModelJsFs } from "./IModelJsFs";
+import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
+import { BentleyStatus, IModelError } from "../common/IModelError";
 import * as path from "path";
 import { KnownLocations } from "./KnownLocations";
-import { BriefcaseManager } from "./BriefcaseManager";
 
 /** Global access to the IModelEngine. Initialized by calling IModelEngine.startup(). */
 export let iModelEngine: IModelEngine;
@@ -33,27 +32,27 @@ export class IModelEngineConfiguration {
 export class IModelEngine {
   private constructor(public readonly configuration: IModelEngineConfiguration) { }
 
-  /** Create a directory, recursively setting up the path as necessary */
-  private static makeDirectoryRecursive(dirPath: string) {
-    if (IModelJsFs.existsSync(dirPath))
-      return;
-    IModelEngine.makeDirectoryRecursive(path.dirname(dirPath));
-    IModelJsFs.mkdirSync(dirPath);
-  }
-
   /** This method must be called before any iModelJs services are used. */
   public static startup(configuration: IModelEngineConfiguration = new IModelEngineConfiguration()) {
     if (iModelEngine !== undefined)
-      throw new IModelError(IModelStatus.AlreadyLoaded, "startup may only be called once");
-
-    if (!IModelJsFs.existsSync(configuration.briefcaseCacheDir))
-      IModelEngine.makeDirectoryRecursive(configuration.briefcaseCacheDir);
+      throw new IModelError(BentleyStatus.ERROR, "startup may only be called once");
 
     iModelEngine = new IModelEngine(configuration);
+    iModelEngine.onAfterStartup.raiseEvent();
   }
 
   public static shutdown() {
-    BriefcaseManager.clearCache();
+    if (!iModelEngine)
+      throw new IModelError(BentleyStatus.ERROR, "startup needs to be called before shutdown");
+
+    iModelEngine.onBeforeShutdown.raiseEvent();
+
     (iModelEngine as any) = undefined;
   }
+
+  /** Event raised just after the backend IModelEngine was started up */
+  public readonly onAfterStartup = new BeEvent<() => void>();
+
+  /** Event raised just before the backend IModelEngine is to be shut down */
+  public readonly onBeforeShutdown = new BeEvent<() => void>();
 }

@@ -4,7 +4,7 @@
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { AddonECDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
-import { NodeAddonRegistry } from "./NodeAddonRegistry";
+import { AddonRegistry } from "./AddonRegistry";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { IDisposable } from "@bentley/bentleyjs-core/lib/Disposable";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
@@ -18,7 +18,7 @@ export class ECDb implements IDisposable {
   private readonly _statementCache: ECSqlStatementCache;
 
   constructor() {
-    this._nativeDb = new (NodeAddonRegistry.getAddon()).AddonECDb();
+    this._nativeDb = new (AddonRegistry.getAddon()).AddonECDb();
     this._statementCache = new ECSqlStatementCache();
   }
 
