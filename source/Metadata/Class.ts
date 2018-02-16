@@ -184,14 +184,14 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
 
     if (undefined !== jsonObj.modifier) {
       if (typeof(jsonObj.modifier) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The modifier of ${this.name} is not a string type.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${this.name} has an invalid 'modifier' attribute. It should be of type 'string'.`);
 
       this.modifier = parseClassModifier(jsonObj.modifier);
     }
 
     if (undefined !== jsonObj.baseClass) {
       if (typeof(jsonObj.baseClass) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The base class of ${this.name} is not a string type.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${this.name} has an invalid 'baseClass' attribute. It should be of type 'string'.`);
 
       const baseClass = await this.schema.getChild<ECClass>(jsonObj.baseClass, true);
       if (!baseClass)

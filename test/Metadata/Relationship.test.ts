@@ -7,6 +7,7 @@ import Schema from "../../source/Metadata/Schema";
 import EntityClass from "../../source/Metadata/EntityClass";
 import RelationshipClass from "../../source/Metadata/RelationshipClass";
 import { RelationshipMultiplicity, StrengthType, RelatedInstanceDirection } from "../../source/ECObjects";
+import { ECObjectsError } from "../../source/Exception";
 
 describe("relationship multiplicity", () => {
   it("check if standard multiplicities are truly static objects", () => {
@@ -17,7 +18,7 @@ describe("relationship multiplicity", () => {
   });
 });
 
-describe("relationship", () => {
+describe("RelationshipClass", () => {
   describe("deserialization", () => {
     it("succeed with fully defined relationship", async () => {
       const schemaJson = {
@@ -84,6 +85,27 @@ describe("relationship", () => {
       assert.isDefined(relClass!.target!.constraintClasses);
       expect(relClass!.target!.constraintClasses!.length).equal(1);
       assert.isTrue(await relClass!.target!.constraintClasses![0] === targetEntity);
+    });
+  });
+
+  describe("fromJson", () => {
+    let testRelationship: RelationshipClass;
+
+    beforeEach(() => {
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      testRelationship = new RelationshipClass(schema, "TestRelationship");
+    });
+
+    it("should throw for invalid strength", async () => {
+      expect(testRelationship).to.exist;
+      const json = { strength: 0 };
+      await expect(testRelationship.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestRelationship has an invalid 'strength' attribute. It should be of type 'string'.`);
+    });
+
+    it("should throw for invalid strengthDirection", async () => {
+      expect(testRelationship).to.exist;
+      const json = { strengthDirection: 0 };
+      await expect(testRelationship.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestRelationship has an invalid 'strengthDirection' attribute. It should be of type 'string'.`);
     });
   });
 });

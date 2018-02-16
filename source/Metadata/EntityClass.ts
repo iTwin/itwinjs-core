@@ -115,7 +115,7 @@ export default class EntityClass extends ECClass {
 
     const loadAllMixins = (mixinFullNames: string[]) => Promise.all(mixinFullNames.map((name) => loadMixin(name)));
 
-    if (jsonObj.mixin) {
+    if (undefined !== jsonObj.mixin) {
       if (typeof(jsonObj.mixin) === "string")
         await loadMixin(jsonObj.mixin);
       else if (Array.isArray(jsonObj.mixin))

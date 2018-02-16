@@ -8,8 +8,10 @@ import Schema from "../../source/Metadata/Schema";
 import EntityClass from "../../source/Metadata/EntityClass";
 import { SchemaContext } from "../../source/Context";
 import { DelayedPromiseWithProps } from "../../source/DelayedPromise";
+import ECClass from "../../source/Metadata/Class";
+import { ECObjectsError } from "../../source/Exception";
 
-describe("class", () => {
+describe("ECClass", () => {
   let schema: Schema;
 
   describe("get properties", () => {
@@ -172,6 +174,30 @@ describe("class", () => {
       assert.isDefined(testStructProp);
       const testStructArrProp = await testEntity!.getProperty("testStructArrProp");
       assert.isDefined(testStructArrProp);
+    });
+  });
+
+  describe("fromJson", () => {
+    let testClass: ECClass;
+    class MockECClass extends ECClass {}
+
+    beforeEach(() => {
+      testClass = new MockECClass(schema, "TestClass");
+    });
+
+    it("should throw for invalid modifier", async () => {
+      expect(testClass).to.exist;
+      const invalidModifierJson = { modifier: 0 };
+      await expect(testClass.fromJson(invalidModifierJson)).to.be.rejectedWith(ECObjectsError, `The ECClass TestClass has an invalid 'modifier' attribute. It should be of type 'string'.`);
+    });
+
+    it("should throw for invalid appliesTo", async () => {
+      expect(testClass).to.exist;
+      const invalidBaseClassJson = { baseClass: 0 };
+      await expect(testClass.fromJson(invalidBaseClassJson)).to.be.rejectedWith(ECObjectsError, `The ECClass TestClass has an invalid 'baseClass' attribute. It should be of type 'string'.`);
+
+      const unloadedBaseClassJson = { baseClass: "ThisClassDoesNotExist" };
+      await expect(testClass.fromJson(unloadedBaseClassJson)).to.be.rejectedWith(ECObjectsError);
     });
   });
 });

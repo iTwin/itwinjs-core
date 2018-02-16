@@ -25,15 +25,16 @@ export default class MixinClass extends ECClass {
   public async fromJson(jsonObj: any): Promise<void> {
     await super.fromJson(jsonObj);
 
-    if (jsonObj.appliesTo) {
-      // TODO: Fix
-      if (!this.schema)
-        throw new ECObjectsError(ECObjectsStatus.ECOBJECTS_ERROR_BASE, `TODO: Fix this error`);
-      const tmpClass = await this.schema.getChild<EntityClass>(jsonObj.appliesTo, false);
-      if (!tmpClass)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+    if (undefined === jsonObj.appliesTo)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The MixinClass ${this.name} is missing the required 'appliesTo' attribute.`);
 
-      this.appliesTo = new DelayedPromiseWithProps(tmpClass.key, async () => tmpClass);
-    }
+    if (typeof(jsonObj.appliesTo) !== "string")
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The MixinClass ${this.name} has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
+
+    const tmpClass = await this.schema.getChild<EntityClass>(jsonObj.appliesTo, false);
+    if (!tmpClass)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+
+    this.appliesTo = new DelayedPromiseWithProps(tmpClass.key, async () => tmpClass);
   }
 }

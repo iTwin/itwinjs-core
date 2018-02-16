@@ -22,10 +22,11 @@ export default class CustomAttributeClass extends ECClass {
   public async fromJson(jsonObj: any): Promise<void> {
     await super.fromJson(jsonObj);
 
-    if (!jsonObj.appliesTo)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Custom Attribute class ${this.name} is missing the required 'appliesTo' property.`);
+    if (undefined === jsonObj.appliesTo)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The CustomAttributeClass ${this.name} is missing the required 'appliesTo' attribute.`);
+
     if (typeof(jsonObj.appliesTo) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The CustomAttributeClass ${this.name} has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
 
     this.containerType = parseCustomAttributeContainerType(jsonObj.appliesTo);
   }
