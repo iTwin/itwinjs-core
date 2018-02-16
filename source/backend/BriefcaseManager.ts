@@ -105,10 +105,10 @@ export class BriefcaseEntry {
   public fileId?: string;
 
   /** Event called when the briefcase is about to be closed */
-  public readonly onClose = new BeEvent<() => void>();
+  public readonly onBeforeClose = new BeEvent<() => void>();
 
   /** Event called when the version of the briefcase has been updated */
-  public readonly onVersionUpdated = new BeEvent<() => void>();
+  public readonly onBeforeVersionUpdate = new BeEvent<() => void>();
 
   /** Gets the path key to be used in the cache and iModelToken */
   public getPathKey(): string {
@@ -205,7 +205,7 @@ class BriefcaseCache {
  *      ...
  */
 export class BriefcaseManager {
-  public static hubClient?: IModelHubClient;
+  private static hubClient?: IModelHubClient;
   private static cache: BriefcaseCache = new BriefcaseCache();
   private static standaloneCache: BriefcaseCache = new BriefcaseCache();
 
@@ -270,8 +270,20 @@ export class BriefcaseManager {
   }
 
   /** Clear the briefcase manager cache of in-memory briefcases */
-  public static clearCache() {
+  private static clearCache() {
     BriefcaseManager.cache.clear();
+  }
+
+  private static onIModelEngineShutdown() {
+    BriefcaseManager.clearCache();
+  }
+
+  /** Create a directory, recursively setting up the path as necessary */
+  private static makeDirectoryRecursive(dirPath: string) {
+    if (IModelJsFs.existsSync(dirPath))
+      return;
+    BriefcaseManager.makeDirectoryRecursive(path.dirname(dirPath));
+    IModelJsFs.mkdirSync(dirPath);
   }
 
   /** Initialize the briefcase manager cache of in-memory briefcases (if necessary). */
@@ -282,6 +294,8 @@ export class BriefcaseManager {
     if (!iModelEngine)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "IModelEngine.startup() should be called before any backend operations");
 
+    iModelEngine.onAfterStartup.addListener(BriefcaseManager.onIModelEngineShutdown);
+
     const startTime = new Date().getTime();
 
     BriefcaseManager.hubClient = new IModelHubClient(iModelEngine.configuration.iModelHubDeployConfig);
@@ -289,8 +303,12 @@ export class BriefcaseManager {
       return;
 
     const cacheDir = iModelEngine.configuration.briefcaseCacheDir;
-    const briefcaseInfos = BriefcaseManager.getCachedBriefcaseInfos(cacheDir);
+    if (!IModelJsFs.existsSync(cacheDir)) {
+      BriefcaseManager.makeDirectoryRecursive(cacheDir);
+      return;
+    }
 
+    const briefcaseInfos = BriefcaseManager.getCachedBriefcaseInfos(cacheDir);
     const iModelIds = Object.getOwnPropertyNames(briefcaseInfos);
     for (const iModelId of iModelIds) {
       const localBriefcases = briefcaseInfos[iModelId];
@@ -400,7 +418,7 @@ export class BriefcaseManager {
 
   /** Close a briefcase */
   public static async close(accessToken: AccessToken, briefcase: BriefcaseEntry, keepBriefcase: KeepBriefcase): Promise<void> {
-    briefcase.onClose.raiseEvent(briefcase);
+    briefcase.onBeforeClose.raiseEvent(briefcase);
     briefcase.nativeDb!.closeDgnDb();
     briefcase.isOpen = false;
     if (keepBriefcase === KeepBriefcase.No)
@@ -525,8 +543,10 @@ export class BriefcaseManager {
   /** Acquire a briefcase */
   private static async acquireBriefcase(accessToken: AccessToken, iModelId: string): Promise<HubBriefcase> {
     const briefcaseId: number = await BriefcaseManager.hubClient!.acquireBriefcase(accessToken, iModelId);
-    if (!briefcaseId)
+    if (!briefcaseId) {
+      Logger.logError(loggingCategory, "Could not acquire briefcase"); // Could well be that the current user does not have the appropriate access
       return Promise.reject(new IModelError(BriefcaseStatus.CannotAcquire));
+    }
 
     const briefcase: HubBriefcase = await BriefcaseManager.hubClient!.getBriefcase(accessToken, iModelId, briefcaseId, true /*=getDownloadUrl*/);
     if (!briefcase) {
@@ -694,7 +714,7 @@ export class BriefcaseManager {
 
   /** Close the standalone briefcase */
   public static closeStandalone(briefcase: BriefcaseEntry) {
-    briefcase.onClose.raiseEvent(briefcase);
+    briefcase.onBeforeClose.raiseEvent(briefcase);
     briefcase.nativeDb!.closeDgnDb();
     briefcase.isOpen = false;
 
