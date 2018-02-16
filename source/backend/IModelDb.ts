@@ -167,13 +167,13 @@ export class IModelDb extends IModel {
   private setupBriefcaseEntry(briefcaseEntry: BriefcaseEntry) {
     this.briefcaseEntry = briefcaseEntry;
     this.briefcaseEntry.iModelDb = this;
-    this.briefcaseEntry.onClose.addListener(this.onBriefcaseCloseHandler, this);
-    this.briefcaseEntry.onVersionUpdated.addListener(this.onBriefcaseVersionUpdatedHandler, this);
+    this.briefcaseEntry.onBeforeClose.addListener(this.onBriefcaseCloseHandler, this);
+    this.briefcaseEntry.onBeforeVersionUpdate.addListener(this.onBriefcaseVersionUpdatedHandler, this);
   }
 
   private clearBriefcaseEntry(): void {
-    this.briefcaseEntry!.onClose.removeListener(this.onBriefcaseCloseHandler, this);
-    this.briefcaseEntry!.onVersionUpdated.removeListener(this.onBriefcaseVersionUpdatedHandler, this);
+    this.briefcaseEntry!.onBeforeClose.removeListener(this.onBriefcaseCloseHandler, this);
+    this.briefcaseEntry!.onBeforeVersionUpdate.removeListener(this.onBriefcaseVersionUpdatedHandler, this);
     this.briefcaseEntry!.iModelDb = undefined;
     this.briefcaseEntry = undefined;
   }
