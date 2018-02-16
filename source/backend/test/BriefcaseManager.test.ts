@@ -3,13 +3,16 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { expect, assert } from "chai";
+import * as TypeMoq from "typemoq";
 import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState } from "@bentley/imodeljs-clients";
+import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState, IModelHubClient,
+  SeedFile, ConnectClient, Project, ECJsonTypeMap, WsgInstance } from "@bentley/imodeljs-clients";
 import { Code } from "../../common/Code";
 import { IModelVersion } from "../../common/IModelVersion";
 import { KeepBriefcase } from "../BriefcaseManager";
 import { IModelDb, ConcurrencyControl } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
+import { iModelEngine } from "../IModelEngine";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Element } from "../Element";
 import { DictionaryModel } from "../Model";
@@ -18,7 +21,6 @@ import { Appearance } from "../../common/SubCategoryAppearance";
 import { ColorDef } from "../../common/ColorDef";
 import { IModel } from "../../common/IModel";
 import { IModelJsFs } from "../IModelJsFs";
-import { iModelEngine } from "../IModelEngine";
 
 class Timer {
   private label: string;
@@ -32,53 +34,159 @@ class Timer {
     console.timeEnd(this.label);
   }
 }
+export class IModelTestUser {
+  public static user = {
+    email: "bistroDEV_pmadm1@mailinator.com",
+    password: "pmadm1",
+  };
+}
 
 describe("BriefcaseManager", () => {
   let accessToken: AccessToken;
+  let spoofAccessToken: AccessToken | undefined;
   let testProjectId: string;
   let testIModelId: string;
   let testChangeSets: ChangeSet[];
   const testVersionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
   const testElementCounts = [80, 81, 82];
-
   let iModelLocalReadonlyPath: string;
   let iModelLocalReadWritePath: string;
+  const assetDir = "./source/backend/test/assets";
 
+  const iModelHubClientMock = TypeMoq.Mock.ofType(IModelHubClient);
+  const iModelVersionMock = TypeMoq.Mock.ofType(IModelVersion);
+  const connectClientMock = TypeMoq.Mock.ofType(ConnectClient);
+
+  let shouldDeleteAllBriefcases: boolean = false;
   const getElementCount = (iModel: IModelDb): number => {
     const rows: any[] = iModel.executeQuery("SELECT COUNT(*) AS cnt FROM bis.Element");
     const count = +(rows[0].cnt);
     return count;
   };
 
+  const getObjectInstance = <T extends WsgInstance>(typedConstructor: new () => T, jsonBody: any): T => {
+    const instance: T | undefined = ECJsonTypeMap.fromJson<T>(typedConstructor, "wsg", jsonBody);
+    if (!instance) { throw new Error("Unable to parse JSON into typed instance"); }
+    return instance!;
+  };
+
+  const getObjectInstances = <T extends WsgInstance>(typedConstructor: new () => T, jsonBody: any): T[] => {
+    const instances: T[] = new Array<T>();
+    for (const ecJsonInstance of jsonBody) {
+      const typedInstance: T | undefined = ECJsonTypeMap.fromJson<T>(typedConstructor, "wsg",  ecJsonInstance);
+      if (typedInstance) { instances.push(typedInstance); }
+    }
+    return instances;
+  };
+
   before(async () => {
-    let startTime = new Date().getTime();
+    const startTime = new Date().getTime();
+
     console.log("    Started monitoring briefcase manager performance..."); // tslint:disable-line:no-console
 
-    accessToken = await IModelTestUtils.getTestUserAccessToken();
-    console.log(`    ...getting user access token from IMS: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
-    startTime = new Date().getTime();
+    spoofAccessToken = undefined;
 
-    testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
-    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "TestModel");
+    connectClientMock.setup((f: ConnectClient) => f.getProject(TypeMoq.It.isAny(), TypeMoq.It.isAny()))
+      .returns(() => {
+        const assetPath = path.join(assetDir, "SampleProject.json");
+        const buff = IModelJsFs.readFileSync(assetPath);
+        const jsonObj = JSON.parse(buff.toString())[0];
+        return Promise.resolve(getObjectInstance<Project>(Project, jsonObj));
+      }).verifiable();
+    iModelHubClientMock.setup((f: IModelHubClient) => f.getIModels(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
+      .returns(() => {
+        const sampleIModelPath = path.join(assetDir, "SampleIModel.json");
+        const buff = IModelJsFs.readFileSync(sampleIModelPath);
+        const jsonObj = JSON.parse(buff.toString());
+        return Promise.resolve(getObjectInstances<HubIModel>(HubIModel, jsonObj));
+      }).verifiable();
+    iModelHubClientMock.setup((f: IModelHubClient) => f.getChangeSets(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
+      .returns(() => {
+        const sampleChangeSetPath = path.join(assetDir, "SampleChangeSets.json");
+        const buff = IModelJsFs.readFileSync(sampleChangeSetPath);
+        const jsonObj = JSON.parse(buff.toString());
+        return Promise.resolve(getObjectInstances<ChangeSet>(ChangeSet, jsonObj));
+      }).verifiable();
 
-    testChangeSets = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
+    // accessToken = await IModelTestUtils.getTestUserAccessToken();
+    // testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
+    // testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "TestModel");
+    // testChangeSets = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
+
+    // getTestProjectId()
+    const project: Project = await connectClientMock.object.getProject(spoofAccessToken as any, {
+      $select: "*",
+      $filter: "Name+eq+'NodeJstestproject'",
+    });
+    connectClientMock.verify((f: ConnectClient) => f.getProject(TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.exactly(1));
+    assert(project && project.wsgId);
+    testProjectId = project.wsgId;
+
+    // getTestModelId
+    const iModels = await iModelHubClientMock.object.getIModels(spoofAccessToken as any, testProjectId, {
+      $select: "*",
+      $filter: "Name+eq+'TestModel'",
+    });
+    iModelHubClientMock.verify((f: IModelHubClient) => f.getIModels(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()), TypeMoq.Times.exactly(1));
+    assert(iModels.length > 0);
+    assert(iModels[0].wsgId);
+    testIModelId = iModels[0].wsgId;
+
+    // getChangeSets
+    testChangeSets = await iModelHubClientMock.object.getChangeSets(spoofAccessToken as any, testIModelId, false);
+    iModelHubClientMock.verify((f: IModelHubClient) => f.getChangeSets(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()), TypeMoq.Times.exactly(1));
     expect(testChangeSets.length).greaterThan(2);
+
+    expect(testChangeSets.length).greaterThan(2);
+    console.log(`    ...getting information on Project+IModel+ChangeSets for test case from mock data: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
 
     const cacheDir = iModelEngine.configuration.briefcaseCacheDir;
     iModelLocalReadonlyPath = path.join(cacheDir, testIModelId, "readOnly");
     iModelLocalReadWritePath = path.join(cacheDir, testIModelId, "readWrite");
 
-    // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
-    if (!IModelJsFs.existsSync(cacheDir)) {
-      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "TestModel");
-      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "NoVersionsTest");
+    // Recreate briefcases if the cache has been cleaned. todo: Figure a better way to prevent bleeding briefcase ids
+    // TODO: Mock this out
+    shouldDeleteAllBriefcases = !IModelJsFs.existsSync(cacheDir);
+    if (shouldDeleteAllBriefcases) {
+      await IModelTestUtils.deleteAllBriefcases(accessToken, testIModelId);
     }
 
-    console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
   });
 
-  it("should be able to open an IModel from the Hub in Readonly mode", async () => {
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
+  it("should open multiple versions of iModels", async () => {
+    const iModelNames = ["TestModel", "NoVersionsTest"];
+    for (const name of iModelNames) {
+       const iModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, name);
+
+       await IModelDb.open(accessToken, testProjectId, iModelId, OpenMode.Readonly, IModelVersion.first());
+       await IModelDb.open(accessToken, testProjectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
+     }
+   });
+
+  it.only("should be able to open an IModel from the Hub in Readonly mode", async () => {
+    // Arrange
+    iModelVersionMock.setup((f: IModelVersion) => f.evaluateChangeSet(spoofAccessToken as any, TypeMoq.It.isAnyString()))
+      .returns(() => Promise.resolve(""));
+    iModelHubClientMock.setup((f: IModelHubClient) => f.getIModel(spoofAccessToken as any, testProjectId, {
+      $select: "Name", $filter: "$id+eq+'" + testIModelId + "'"}))
+      .returns(() => {
+        const jsonString = "";
+        IModelJsFs.copySync("./assets/SampleIModel.json", jsonString);
+        const jsonObj = JSON.parse(jsonString);
+        return Promise.resolve(getObjectInstance<HubIModel>(HubIModel, jsonObj));
+        });
+    iModelHubClientMock.setup((f: IModelHubClient) => f.getSeedFile(spoofAccessToken as any, testIModelId, true))
+      .returns(() => {
+        const jsonString = "";
+        IModelJsFs.copySync("./assets/SampleSeedFile.json", jsonString);
+        const jsonObj = JSON.parse(jsonString);
+        return Promise.resolve(getObjectInstance<SeedFile>(SeedFile, jsonObj));
+      });
+
+    // Act
+    const iModel: IModelDb = await IModelDb.open(spoofAccessToken as any, testProjectId, testIModelId, OpenMode.Readonly);
+
+    // Assert
     assert.exists(iModel);
     assert(iModel.iModelToken.openMode === OpenMode.Readonly);
 
@@ -160,6 +268,10 @@ describe("BriefcaseManager", () => {
 
   it("should open a briefcase of an iModel with no versions", async () => {
     const iModelNoVerId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "NoVersionsTest");
+
+    if (shouldDeleteAllBriefcases)
+      await IModelTestUtils.deleteAllBriefcases(accessToken, iModelNoVerId);
+
     const iModelNoVer: IModelDb = await IModelDb.open(accessToken, testProjectId, iModelNoVerId, OpenMode.Readonly);
     assert.exists(iModelNoVer);
   });
@@ -256,8 +368,6 @@ describe("BriefcaseManager", () => {
 
     assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests());
 
-    rwIModel.saveChanges(JSON.stringify({userid: "user1", description: "changed a userLabel"}));  // save it, to show that saveChanges will accumulate local txn descriptions
-
     // Create a new physical model.
     let newModelId: Id64;
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
@@ -315,7 +425,7 @@ describe("BriefcaseManager", () => {
 
     // Commit the local changes to a local transaction in the briefcase.
     // (Note that this ends the bulk operation automatically, so there's no need to call endBulkOperation.)
-    rwIModel.saveChanges(JSON.stringify({userid: "user1", description: "inserted generic objects"}));
+    rwIModel.saveChanges("inserted generic objects");
 
     rwIModel.elements.getElement(elid1); // throws if elid1 is not found
     rwIModel.elements.getElement(spatialCategoryId); // throws if spatialCategoryId is not found
@@ -325,11 +435,7 @@ describe("BriefcaseManager", () => {
     timer = new Timer("pullmergepush");
 
     // Push the changes to the hub
-    const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
     await rwIModel.pushChanges(accessToken);
-    const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
-    assert(!!postPushChangeSetId);
-    expect(prePushChangeSetId !== postPushChangeSetId);
 
     timer.end();
 

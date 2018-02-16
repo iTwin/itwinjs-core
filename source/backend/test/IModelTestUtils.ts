@@ -97,7 +97,7 @@ export class IModelTestUtils {
     return iModels[0].wsgId;
   }
 
-  private static async deleteAllBriefcases(accessToken: AccessToken, iModelId: string) {
+  public static async deleteAllBriefcases(accessToken: AccessToken, iModelId: string) {
     const promises = new Array<Promise<void>>();
     const briefcases = await IModelTestUtils.hubClient.getBriefcases(accessToken, iModelId);
     briefcases.forEach((briefcase: Briefcase) => {
