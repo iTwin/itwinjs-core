@@ -46,6 +46,9 @@ describe("ModelState", () => {
     assert.instanceOf(modelStates[3], SpatialModelState);
     assert.instanceOf(modelStates[4], DrawingModelState);
     modelStates.forEach((model) => assert.deepEqual(model.clone(), model, "clone of ModelState should work"));
+
+    const modelProps = await imodel.models.queryModelProps({ from: SpatialModelState.sqlName });
+    assert.isAtLeast(modelProps.length, 2);
   });
 
 });
