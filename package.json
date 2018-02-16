@@ -101,6 +101,7 @@
     "ts-node": "^3.3.0",
     "tsconfig-paths": "^2.7.2",
     "tslint": "^5.8.0",
+    "typemoq": "^2.1.0",
     "typescript": "2.6.2",
     "webpack": "^3.9.1",
     "webpack-stream": "latest"
