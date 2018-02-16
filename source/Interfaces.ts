@@ -6,7 +6,7 @@ import { SchemaKey, SchemaChildKey } from "./ECObjects";
 import { DelayedPromise } from "./DelayedPromise";
 import Schema from "./Metadata/Schema";
 import SchemaChild from "./Metadata/SchemaChild";
-import { ECProperty } from "./Metadata/Property";
+import { Property } from "./Metadata/Property";
 import ECClass, { StructClass } from "./Metadata/Class";
 import EntityClass from "./Metadata/EntityClass";
 import MixinClass from "./Metadata/MixinClass";
@@ -17,7 +17,7 @@ import KindOfQuantity from "./Metadata/KindOfQuantity";
 import PropertyCategory from "./Metadata/PropertyCategory";
 
 export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<Schema>;
-export type LazyLoadedProperty = Readonly<{ name: string }> & DelayedPromise<ECProperty>;
+export type LazyLoadedProperty = Readonly<{ name: string }> & DelayedPromise<Property>;
 
 export type LazyLoadedSchemaChild<T extends SchemaChild> = Readonly<SchemaChildKey> & DelayedPromise<T>;
 export type LazyLoadedECClass = LazyLoadedSchemaChild<ECClass>;
@@ -31,14 +31,14 @@ export type LazyLoadedKindOfQuantity = LazyLoadedSchemaChild<KindOfQuantity>;
 export type LazyLoadedPropertyCategory = LazyLoadedSchemaChild<PropertyCategory>;
 export type LazyLoadedRelationshipConstraintClass = LazyLoadedSchemaChild<EntityClass | MixinClass | RelationshipClass>;
 
-export type AnyClassType = EntityClass | MixinClass | StructClass | CustomAttributeClass | RelationshipClass;
-export type AnySchemaChildType = AnyClassType | Enumeration | KindOfQuantity | PropertyCategory;
+export type AnyClass = EntityClass | MixinClass | StructClass | CustomAttributeClass | RelationshipClass;
+export type AnySchemaChild = AnyClass | Enumeration | KindOfQuantity | PropertyCategory;
 
 export interface SchemaChildVisitor {
   /* async */ visitEnumeration?: (enumeration: Enumeration) => Promise<void>;
   /* async */ visitKindOfQuantity?: (koq: KindOfQuantity) => Promise<void>;
   /* async */ visitPropertyCategory?: (category: PropertyCategory) => Promise<void>;
-  /* async */ visitClass?: (ecClass: AnyClassType) => Promise<void>;
+  /* async */ visitClass?: (ecClass: AnyClass) => Promise<void>;
 }
 
 export interface SchemaDeserializationVisitor extends SchemaChildVisitor {
@@ -71,7 +71,7 @@ export interface SchemaDeserializationVisitor extends SchemaChildVisitor {
    * Called after an ECClass and its baseClass, properties, and custom attributes have been deserialized.
    * @param ecClass a fully-loaded ECClass
    */
-  /* async */ visitClass?: (ecClass: AnyClassType) => Promise<void>;
+  /* async */ visitClass?: (ecClass: AnyClass) => Promise<void>;
 
   /**
    * Called after a schema and all its references, children, and custom attributes have been deserialized,
