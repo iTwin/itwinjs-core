@@ -12,7 +12,7 @@ import { StructClass } from "../../source/Metadata/Class";
 import { ECObjectsError } from "../../source/Exception";
 import { SchemaKey, SchemaMatchType } from "../../source/ECObjects";
 
-describe("schema test", () => {
+describe("Schema", () => {
   describe("api creation of schema", () => {
     it("with only the essentials", () => {
       const testSchema = new Schema("TestSchemaCreation", 10, 99, 15);
@@ -89,6 +89,35 @@ describe("schema test", () => {
     });
   });
 
+  describe("fromJson", () => {
+    async function testInvalidAttribute(schema: Schema, attributeName: string, expectedType: string, value: any) {
+      expect(schema).to.exist;
+      const json: any = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        [attributeName]: value,
+      };
+      await expect(schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECSchema ${schema.name} has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
+    }
+
+    it("should throw for missing $schema", async () => {
+      const testSchema = new Schema("BadSchema");
+      expect(testSchema).to.exist;
+      await expect(testSchema.fromJson({})).to.be.rejectedWith(ECObjectsError);
+    });
+
+    it("should throw for invalid $schema", async () => {
+      const schemaJson = { $schema: "https://badmetaschema.com" };
+      const testSchema = new Schema("BadSchema");
+      expect(testSchema).to.exist;
+      await expect(testSchema.fromJson(schemaJson)).to.be.rejectedWith(ECObjectsError);
+    });
+
+    it("should throw for invalid name", async () => testInvalidAttribute(new Schema("BadSchema"), "name", "string", 0));
+    it("should throw for invalid alias", async () => testInvalidAttribute(new Schema("BadSchema"), "alias", "string", 0));
+    it("should throw for invalid label", async () => testInvalidAttribute(new Schema("BadSchema"), "label", "string", 0));
+    it("should throw for invalid description", async () => testInvalidAttribute(new Schema("BadSchema"), "description", "string", 0));
+    it("should throw for invalid version", async () => testInvalidAttribute(new Schema("BadSchema"), "version", "string", 0));
+  });
 }); // Schema tests
 
 describe("SchemaKey ", () => {

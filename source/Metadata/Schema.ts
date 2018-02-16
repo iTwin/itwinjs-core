@@ -12,7 +12,7 @@ import Enumeration from "./Enumeration";
 import KindOfQuantity from "./KindOfQuantity";
 import PropertyCategory from "./PropertyCategory";
 import SchemaReadHelper from "../Deserialization/Helper";
-import { ECVersion, SchemaChildKey, SchemaKey, ECClassModifier } from "../ECObjects";
+import { SchemaChildKey, SchemaKey, ECClassModifier } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { SchemaContext } from "../Context";
@@ -278,17 +278,39 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param jsonObj
    */
   public async fromJson(jsonObj: any): Promise<void> {
-    if (!jsonObj.$schema || jsonObj.$schema !== SCHEMAURL3_1)
+    if (SCHEMAURL3_1 !== jsonObj.$schema)
       throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl);
 
-    if (jsonObj.name) this.name = jsonObj.name;
-    if (jsonObj.alias) this.alias = jsonObj.alias;
-    if (jsonObj.description) this.description = jsonObj.description;
-    if (jsonObj.label) this.label = jsonObj.label;
+    // TODO: Should we allow changing name in fromJson?
+    // TODO: Should we throw if name is undefined?
+    if (undefined !== jsonObj.name) {
+      if (typeof(jsonObj.name) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'name' attribute. It should be of type 'string'.`);
+      this.name = jsonObj.name;
+    }
 
-    if (jsonObj.version) {
-      if (!this.schemaKey.version)
-        this.schemaKey.version = new ECVersion();
+    if (undefined !== jsonObj.alias) {
+      if (typeof(jsonObj.alias) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'alias' attribute. It should be of type 'string'.`);
+      this.alias = jsonObj.alias;
+    }
+
+    if (undefined !== jsonObj.label) {
+      if (typeof(jsonObj.label) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'label' attribute. It should be of type 'string'.`);
+      this.label = jsonObj.label;
+    }
+
+    if (undefined !== jsonObj.description) {
+      if (typeof(jsonObj.description) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'description' attribute. It should be of type 'string'.`);
+      this.description = jsonObj.description;
+    }
+
+    if (undefined !== jsonObj.version) {
+      if (typeof(jsonObj.version) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'version' attribute. It should be of type 'string'.`);
+
       this.schemaKey.version.fromString(jsonObj.version);
     }
   }
