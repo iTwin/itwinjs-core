@@ -7,6 +7,7 @@ import { Id64Props } from "@bentley/bentleyjs-core/lib/Id";
 
 export interface ModelProps extends EntityProps {
   modeledElement: Id64Props;
+  parentModel?: Id64Props;
   isPrivate?: boolean;
   isTemplate?: boolean;
   jsonProperties?: any;

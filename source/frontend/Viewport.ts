@@ -342,7 +342,7 @@ export class Viewport {
 
     const auxCoordSysId = view.getAuxiliaryCoordinateSystemId();
     if (auxCoordSysId.isValid()) {
-      const props = await this.iModel.elements.getElementProps([auxCoordSysId]);
+      const props = await this.iModel.elements.getElementProps(auxCoordSysId);
       this._auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
     } else { this._auxCoordSystem = undefined; }
 

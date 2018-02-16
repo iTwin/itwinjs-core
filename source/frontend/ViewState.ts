@@ -19,7 +19,6 @@ import { ColorDef } from "../common/ColorDef";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { Model2dState } from "./ModelState";
 import { IModel } from "../common/IModel";
 
 export const enum GridOrientationType {
@@ -1011,15 +1010,15 @@ export class ViewState2d extends ViewState {
   public readonly origin: Point2d;
   public readonly delta: Point2d;
   public readonly angle: Angle;
+  public readonly baseModelId: Id64;
   public static get className() { return "ViewDefinition2d"; }
 
-  public constructor(props: ViewDefinition2dProps, iModel: IModel, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, public readonly baseModel: Model2dState) {
+  public constructor(props: ViewDefinition2dProps, iModel: IModel, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
     super(props, iModel, categories, displayStyle);
     this.origin = Point2d.fromJSON(props.origin);
     this.delta = Point2d.fromJSON(props.delta);
     this.angle = Angle.fromJSON(props.angle);
-    if (categories instanceof ViewState2d)
-      this.baseModel = categories.baseModel;
+    this.baseModelId = Id64.fromJSON(props.baseModelId);
   }
 
   public toJSON(): ViewDefinition2dProps {
@@ -1027,19 +1026,19 @@ export class ViewState2d extends ViewState {
     val.origin = this.origin;
     val.delta = this.delta;
     val.angle = this.angle;
-    val.baseModelId = this.baseModel.id;
+    val.baseModelId = this.baseModelId;
     return val;
   }
 
   public allow3dManipulations(): boolean { return false; }
-  public getViewedExtents() { return AxisAlignedBox3d.fromRange2d(this.baseModel.getExtents()); }
+  public getViewedExtents() { return new AxisAlignedBox3d(); } // NEEDS_WORK
   public getOrigin() { return new Point3d(this.origin.x, this.origin.y); }
   public getExtents() { return new Vector3d(this.delta.x, this.delta.y); }
   public getRotation() { return RotMatrix.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
   public setExtents(delta: Vector3d) { this.delta.set(delta.x, delta.y); }
   public setOrigin(origin: Point3d) { this.origin.set(origin.x, origin.y); }
   public setRotation(rot: RotMatrix) { const xColumn = rot.getColumn(0); this.angle.setRadians(Math.atan2(xColumn.y, xColumn.x)); }
-  public viewsModel(modelId: Id64) { return this.baseModel.id.equals(modelId); }
+  public viewsModel(modelId: Id64) { return this.baseModelId.equals(modelId); }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem2dState.createNew(acsName, this.iModel); }
 }
 

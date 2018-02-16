@@ -13,7 +13,6 @@ import { Id64, Id64Set } from "@bentley/bentleyjs-core/lib/Id";
 import { DateTime, Blob, NavigationValue, NavigationBindingValue } from "../common/ECSqlTypes";
 import { Point2d, Point3d, Vector2d, Vector3d } from "@bentley/geometry-core/lib/PointVector";
 import { Code } from "../common/Code";
-import { Camera } from "../frontend/ViewState";
 
 /** The iModel core gateway definition.
  * @hidden
@@ -38,7 +37,6 @@ export abstract class IModelGateway extends Gateway {
     Vector3d,
     Date,
     Code,
-    Camera,
   ]
 
   /** Returns the IModelGatewayProxy instance for the frontend. */
@@ -95,7 +93,7 @@ export abstract class IModelGateway extends Gateway {
   }
 
   /** Return an array of element JSON strings given an array of stringified element ids. */
-  public async getElementProps(_iModelToken: IModelToken, _elementIds: string[]): Promise<any[]> {
+  public async getElementProps(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<any[]> {
     return this.forward.apply(this, arguments);
   }
 
@@ -105,7 +103,7 @@ export abstract class IModelGateway extends Gateway {
   }
 
   /** Return an array of elements formatted for presentation given an array of stringified element ids. */
-  public async formatElements(_iModelToken: IModelToken, _elementIds: string[]): Promise<any[]> {
+  public async formatElements(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<any[]> {
     return this.forward.apply(this, arguments);
   }
 

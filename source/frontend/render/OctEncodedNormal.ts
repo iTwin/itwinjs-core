@@ -59,3 +59,15 @@ export class OctEncodedNormal {
     assert(typeof out !== "undefined" && inVal.isAlmostEqual(out, 0.05));
   }
 }
+
+export class Pair<T1, T2> { constructor(public first: T1, public second: T2) {} }
+
+export class OctEncodedNormalPair extends Pair<OctEncodedNormal, OctEncodedNormal> {
+  constructor(first: OctEncodedNormal | number | Vector3d, second: OctEncodedNormal | number | Vector3d) {
+    super(first instanceof OctEncodedNormal ? first : new OctEncodedNormal(first), second instanceof OctEncodedNormal ? second : new OctEncodedNormal(second));
+  }
+}
+
+export class OctEncodedNormalList extends Array<OctEncodedNormal> { constructor(...args: OctEncodedNormal[]) { super(...args); } }
+
+export class OctEncodedNormalPairList extends Array<OctEncodedNormalPair> { constructor(...args: OctEncodedNormalPair[]) { super(...args); } }

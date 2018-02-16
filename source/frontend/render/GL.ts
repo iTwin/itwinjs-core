@@ -78,6 +78,16 @@ export namespace GL {
     Default = Back,
   }
 
+  export enum DataType {
+    Byte = WebGLRenderingContext.BYTE,
+    Short = WebGLRenderingContext.SHORT,
+    UnsignedByte = WebGLRenderingContext.UNSIGNED_BYTE,
+    UnsignedShort = WebGLRenderingContext.UNSIGNED_SHORT,
+    Float = WebGLRenderingContext.FLOAT,
+    // WebGL 2 has more data types
+    // HalfFloat = WebGLRenderingContext.HALF_FLOAT,
+  }
+
   export enum FrontFace {
     CounterClockwise = WebGLRenderingContext.CCW,
     Clockwise = WebGLRenderingContext.CW,

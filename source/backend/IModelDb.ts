@@ -50,10 +50,10 @@ BisCore.registerSchema();
 /** Represents a physical copy (briefcase) of an iModel that can be accessed as a file. */
 export class IModelDb extends IModel {
   public static readonly defaultLimit = 1000;
-  public models: IModelDbModels;  // tslint:disable-line
-  public elements: IModelDbElements; // tslint:disable-line
-  public views: IModelDbViews; // tslint:disable-line
-  public linkTableRelationships: IModelDbLinkTableRelationships; // tslint:disable-line
+  public models: IModelDbModels;
+  public elements: IModelDbElements;
+  public views: IModelDbViews;
+  public linkTableRelationships: IModelDbLinkTableRelationships;
   private readonly statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
@@ -86,7 +86,7 @@ export class IModelDb extends IModel {
   private static constructIModelDb(briefcaseEntry: BriefcaseEntry, contextId?: string): IModelDb {
     if (briefcaseEntry.iModelDb)
       return briefcaseEntry.iModelDb; // If there's an IModelDb already associated with the briefcase, that should be reused.
-    const iModelToken = new IModelToken (briefcaseEntry.getPathKey(), briefcaseEntry.isStandalone, contextId, briefcaseEntry.iModelId, briefcaseEntry.changeSetId, briefcaseEntry.openMode, briefcaseEntry.userId);
+    const iModelToken = new IModelToken(briefcaseEntry.getPathKey(), briefcaseEntry.isStandalone, contextId, briefcaseEntry.iModelId, briefcaseEntry.changeSetId, briefcaseEntry.openMode, briefcaseEntry.userId);
     return new IModelDb(briefcaseEntry, iModelToken);
   }
 
@@ -167,13 +167,13 @@ export class IModelDb extends IModel {
   private setupBriefcaseEntry(briefcaseEntry: BriefcaseEntry) {
     this.briefcaseEntry = briefcaseEntry;
     this.briefcaseEntry.iModelDb = this;
-    this.briefcaseEntry.onClose.addListener(this.onBriefcaseCloseHandler, this);
-    this.briefcaseEntry.onVersionUpdated.addListener(this.onBriefcaseVersionUpdatedHandler, this);
+    this.briefcaseEntry.onBeforeClose.addListener(this.onBriefcaseCloseHandler, this);
+    this.briefcaseEntry.onBeforeVersionUpdate.addListener(this.onBriefcaseVersionUpdatedHandler, this);
   }
 
   private clearBriefcaseEntry(): void {
-    this.briefcaseEntry!.onClose.removeListener(this.onBriefcaseCloseHandler, this);
-    this.briefcaseEntry!.onVersionUpdated.removeListener(this.onBriefcaseVersionUpdatedHandler, this);
+    this.briefcaseEntry!.onBeforeClose.removeListener(this.onBriefcaseCloseHandler, this);
+    this.briefcaseEntry!.onBeforeVersionUpdate.removeListener(this.onBriefcaseVersionUpdatedHandler, this);
     this.briefcaseEntry!.iModelDb = undefined;
     this.briefcaseEntry = undefined;
   }
@@ -1190,7 +1190,7 @@ export class IModelDbModels {
     // Must go get the model from the iModel. Start by requesting the model's data.
     const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getModel(JSON.stringify({ id: modelIdStr }));
     if (error)
-      throw new IModelError(error.status, error.message, Logger.logWarning, loggingCategory);
+      throw new IModelError(error.status, "ModelId=" + modelIdStr, Logger.logWarning, loggingCategory);
 
     return json!;
   }
@@ -1302,7 +1302,7 @@ export class IModelDbElements {
     // Must go get the element from the iModel. Start by requesting the element's data.
     const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getElement(JSON.stringify(opts));
     if (error)
-      throw new IModelError(error.status, error.message, Logger.logWarning, loggingCategory);
+      throw new IModelError(error.status, "reading element:" + opts.toString(), Logger.logWarning, loggingCategory);
     const props = JSON.parse(json!) as ElementProps;
     props.iModel = this._iModel;
     return props;
@@ -1315,7 +1315,7 @@ export class IModelDbElements {
     // Must go get the element from the iModel. Start by requesting the element's data.
     const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getElement(JSON.stringify({ id: elementIdStr }));
     if (error)
-      throw new IModelError(error.status, error.message, Logger.logWarning, loggingCategory);
+      throw new IModelError(error.status, "ElementId=" + elementIdStr, Logger.logWarning, loggingCategory);
     return json!;
   }
 
@@ -1543,8 +1543,6 @@ export class IModelDbViews {
     viewStateData.viewDefinitionProps = elements.getElementProps(new Id64(viewDefinitionId)) as ViewDefinitionProps;
     viewStateData.categorySelectorProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.categorySelectorId));
     viewStateData.displayStyleProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.displayStyleId));
-    if (viewStateData.viewDefinitionProps.baseModelId !== undefined)
-      viewStateData.baseModelProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.baseModelId));
     if (viewStateData.viewDefinitionProps.modelSelectorId !== undefined)
       viewStateData.modelSelectorProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.modelSelectorId));
     return viewStateData;

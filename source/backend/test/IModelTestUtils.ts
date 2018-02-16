@@ -47,14 +47,14 @@ export class IModelTestUtils {
     password: "pmadm1",
   };
 
-  private static _connectClient: ConnectClient|undefined;
+  private static _connectClient: ConnectClient | undefined;
   public static get connectClient(): ConnectClient {
     if (!IModelTestUtils._connectClient)
       IModelTestUtils.setIModelHubDeployConfig("QA");
     return IModelTestUtils._connectClient!;
   }
 
-  private static _hubClient: IModelHubClient|undefined;
+  private static _hubClient: IModelHubClient | undefined;
   public static get hubClient(): IModelHubClient {
     if (!IModelTestUtils._connectClient)
       IModelTestUtils.setIModelHubDeployConfig("QA");

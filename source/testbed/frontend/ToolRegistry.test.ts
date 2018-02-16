@@ -32,7 +32,7 @@ class TestCommandApp extends IModelApp {
 
 function SetupToolRegistryTests() {
   TestCommandApp.startup();
-  CreateTestTools();
+  createTestTools();
 }
 
 describe("ToolRegistry", () => {
@@ -141,7 +141,7 @@ function registerTestClass(id: string, keyin: string, ns: I18NNamespace) {
   }).register(ns);
 }
 
-function CreateTestTools(): void {
+function createTestTools(): void {
   const testCommandEntries: any = JSON.parse(testCommandsString);
   const ns: I18NNamespace = (iModelApp as TestCommandApp).testNamespace;
   for (const thisEntry of testCommandEntries) {
