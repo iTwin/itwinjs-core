@@ -8,6 +8,20 @@ import { PrimitiveType, SchemaChildType } from "../ECObjects";
 import { SchemaChildVisitor } from "../Interfaces";
 import Schema from "./Schema";
 
+export interface Enumerator<T> {
+  value: T;
+  label?: string;
+}
+export type AnyEnumerator = Enumerator<string | number>;
+
+export interface StringEnumeration extends Enumeration {
+  enumerators: Array<Enumerator<string>>;
+}
+
+export interface IntEnumeration extends Enumeration {
+  enumerators: Array<Enumerator<string>>;
+}
+
 /**
  * A Typescript class representation of an ECEnumeration.
  */
@@ -15,7 +29,7 @@ export default class Enumeration extends SchemaChild {
   public readonly type: SchemaChildType.Enumeration;
   public primitiveType: PrimitiveType.Integer | PrimitiveType.String;
   public isStrict: boolean;
-  public enumerators: Enumerator[];
+  public enumerators: AnyEnumerator[];
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
@@ -27,12 +41,15 @@ export default class Enumeration extends SchemaChild {
     this.enumerators = [];
   }
 
+  public isInt(): this is IntEnumeration { return this.primitiveType === PrimitiveType.Integer; }
+  public isString(): this is StringEnumeration { return this.primitiveType === PrimitiveType.String; }
+
   /**
    * Returns an enumerator that matches the value provided.
    * @param value The value of the Enumerator to find.
    */
-  public getEnumerator(value: string | number): Enumerator | undefined {
-    return this.enumerators.find((item) => item.value === value);
+  public getEnumerator<T extends string | number>(value: T): Enumerator<T> | undefined {
+    return this.enumerators.find((item) => item.value === value) as any;
   }
 
   /**
@@ -45,7 +62,7 @@ export default class Enumeration extends SchemaChild {
         (typeof(value) === "number" && this.primitiveType !== PrimitiveType.Integer))
       throw new ECObjectsError(ECObjectsStatus.InvalidEnumValue, `The value`);
 
-    this.enumerators.push(new Enumerator(value, label));
+    this.enumerators.push({value, label});
   }
 
   /**
@@ -53,7 +70,7 @@ export default class Enumeration extends SchemaChild {
    * @param enumerator The Enumerator to add to the this Enumeration
    */
   // Not sure if we want to keep this in the public api.
-  public addEnumerator(enumerator: Enumerator): void {
+  public addEnumerator(enumerator: AnyEnumerator): void {
     // TODO: Need to validate that the enumerator has a unique value.
 
     this.enumerators.push(enumerator);
@@ -100,36 +117,19 @@ export default class Enumeration extends SchemaChild {
         if (typeof(enumerator.value) !== expectedPrimitiveType)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'value' attribute. It should be of type '${expectedPrimitiveType}'.`);
 
-        // Need to check if the Enumerator exists
-        let newEnum = this.getEnumerator(enumerator.value);
-        if (!newEnum)
-          newEnum = new Enumerator(enumerator.value);
-
         if (undefined !== enumerator.label) {
           if (typeof(enumerator.label) !== "string")
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'label' attribute. It should be of type 'string'.`);
-          newEnum.label = enumerator.label;
         }
 
-        this.enumerators.push(newEnum);
+        // TODO: Guard against duplicate values
       });
     }
+    this.enumerators = jsonObj.enumerators;
   }
 
   public async accept(visitor: SchemaChildVisitor) {
     if (visitor.visitEnumeration)
       await visitor.visitEnumeration(this);
   }
-}
-
-/**
- * A Typescript class representation of an ECEnumerator.
- */
-export class Enumerator {
-  public enumeration: Enumeration;
-
-  constructor(public value: number | string, public label?: string) { }
-
-  get isInt() { return this.enumeration.primitiveType === PrimitiveType.Integer; }
-  get isString() { return this.enumeration.primitiveType === PrimitiveType.String; }
 }
