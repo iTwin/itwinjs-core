@@ -21,18 +21,18 @@ describe("ChangeSummary", () => {
   let accessToken: AccessToken;
   let testProjectId: string;
   let testIModelId: string;
-  let shouldDeleteAllBriefcases: boolean = false;
 
   before(async () => {
     accessToken = await IModelTestUtils.getTestUserAccessToken();
     testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
     testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "TestModel");
 
-    // Recreate briefcases if it's a TMR. todo: Figure a better way to prevent bleeding briefcase ids
+    // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
     const cacheDir = iModelEngine.configuration.briefcaseCacheDir;
-    shouldDeleteAllBriefcases = !IModelJsFs.existsSync(cacheDir);
-    if (shouldDeleteAllBriefcases)
-      await IModelTestUtils.deleteAllBriefcases(accessToken, testIModelId);
+    if (!IModelJsFs.existsSync(cacheDir)) {
+      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "TestModel");
+      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "NoVersionsTest");
+    }
 
     const changesPath: string = BriefcaseManager.buildChangeSummaryFilePath(testIModelId);
     if (IModelJsFs.existsSync(changesPath))
