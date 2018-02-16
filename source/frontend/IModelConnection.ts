@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64Arg, Id64Props } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64, Id64Arg, Id64Props, Id64Set } from "@bentley/bentleyjs-core/lib/Id";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
@@ -153,6 +153,9 @@ export class IModelConnection extends IModel {
     return await IModelGateway.getProxy().executeQuery(this.iModelToken, ecsql, bindings);
   }
 
+  /** query for a set of ids that satisfy the supplied query params  */
+  public async queryEntityIds(params: EntityQueryParams): Promise<Id64Set> { return IModelGateway.getProxy().queryEntityIds(this.iModelToken, params); }
+
   /**
    * Update the project extents of this iModel.
    * @param newExtents The new project extents as an AxisAlignedBox3d
@@ -200,6 +203,7 @@ export class IModelConnectionModels {
     return models;
   }
 
+  /** load a set of models. */
   public async loadModels(modelId: Id64Arg): Promise<ModelState[]> {
     const propsArray = await this.getModelProps(modelId);
     const modelStates: ModelState[] = [];
@@ -229,6 +233,11 @@ export class IModelConnectionModels {
     }
     return modelStates;
   }
+
+  // /** Query for a set of models of the specified class and matching the specified IsPrivate setting. */
+  // public async queryModelIds(className: string, limit: number, wantPrivate: boolean, wantTemplate: boolean): Promise<Id64Set> {
+  //   return IModelGateway.getProxy().queryModels(this._iModel.iModelToken, className, limit, wantPrivate, wantTemplate);
+  // }
 }
 
 /** The collection of elements for an [[IModelConnection]]. */
@@ -255,11 +264,8 @@ export class IModelConnectionElements {
     return await IModelGateway.getProxy().formatElements(this._iModel.iModelToken, Id64.toIdSet(elementIds));
   }
 
-  /** */
-  public async queryElementIds(params: EntityQueryParams): Promise<Id64[]> {
-    const elementIds: string[] = await IModelGateway.getProxy().queryElementIds(this._iModel.iModelToken, params);
-    return elementIds.map((elementId: string) => new Id64(elementId));
-  }
+  /** get a set of element ids that satisfy a query */
+  public async queryElementIds(params: EntityQueryParams): Promise<Id64Set> { return this._iModel.queryEntityIds(params); }
 }
 
 /** The collection of [[CodeSpec]] entities for an [[IModelConnection]]. */
@@ -329,8 +335,8 @@ export class IModelConnectionViews {
    * @param className Query for view definitions of this class.
    * @param wantPrivate If true, include private view definitions.
    */
-  public async queryViewDefinitionProps(className: string = "BisCore.ViewDefinition", wantPrivate: boolean = false): Promise<ViewDefinitionProps[]> {
-    const viewDefinitionProps: ViewDefinitionProps[] = await IModelGateway.getProxy().queryViewDefinitionProps(this._iModel.iModelToken, className, wantPrivate);
+  public async queryViewDefinitionProps(className: string = "BisCore.ViewDefinition", limit = 0, offset = 0, wantPrivate: boolean = false): Promise<ViewDefinitionProps[]> {
+    const viewDefinitionProps: ViewDefinitionProps[] = await IModelGateway.getProxy().queryViewDefinitionProps(this._iModel.iModelToken, className, limit, offset, wantPrivate);
     return viewDefinitionProps;
   }
 
