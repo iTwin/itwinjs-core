@@ -22,6 +22,7 @@ export abstract class Property {
   public priority: number;
   public inherited?: boolean;
   public category?: LazyLoadedPropertyCategory;
+  public kindOfQuantity?: LazyLoadedKindOfQuantity;
 
   constructor(name: string, type: PropertyType) {
     this.name = name;
@@ -51,6 +52,8 @@ export abstract class Property {
     // TODO category
 
     // TODO CustomAttributes
+
+    // TODO: KoQ
   }
 }
 
@@ -58,7 +61,6 @@ export abstract class Property {
  *
  */
 export abstract class PrimitiveOrEnumPropertyBase extends Property {
-  public kindOfQuantity?: LazyLoadedKindOfQuantity;
   public extendedTypeName?: string;
   public minLength: number;
   public maxLength: number;
@@ -97,8 +99,6 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
       this.extendedTypeName = jsonObj.extendedTypeName;
     }
-
-    // TODO: KoQ
   }
 }
 
