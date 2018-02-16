@@ -10,7 +10,7 @@ import { Code } from "../../common/Code";
 import { Gateway } from "../../common/Gateway";
 import { Element, InformationPartitionElement } from "../Element";
 import { IModelDb } from "../IModelDb";
-import { NodeAddonRegistry } from "../NodeAddonRegistry";
+import { AddonRegistry } from "../AddonRegistry";
 import { IModelGateway } from "../../gateway/IModelGateway";
 import { ElementProps, GeometricElementProps } from "../../common/ElementProps";
 import { DefinitionModel, Model } from "../Model";
@@ -30,7 +30,7 @@ import * as path from "path";
 Gateway.initialize(IModelGateway);
 
 // Initialize the Node addon used by tests
-NodeAddonRegistry.loadAndRegisterStandardAddon();
+AddonRegistry.loadAndRegisterStandardAddon();
 
 // Start the backend
 IModelEngine.startup();
