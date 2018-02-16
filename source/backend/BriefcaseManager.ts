@@ -10,7 +10,7 @@ import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { BriefcaseStatus, IModelError } from "../common/IModelError";
 import { IModelVersion } from "../common/IModelVersion";
 import { IModelToken } from "../common/IModel";
-import { NodeAddonRegistry } from "./NodeAddonRegistry";
+import { AddonRegistry } from "./AddonRegistry";
 import { AddonDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { IModelDb } from "./IModelDb";
 import { iModelEngine } from "./IModelEngine";
@@ -261,7 +261,7 @@ export class BriefcaseManager {
    * }
    */
   private static getCachedBriefcaseInfos(cacheDir: string): any {
-    const nativeDb: AddonDgnDb = new (NodeAddonRegistry.getAddon()).AddonDgnDb();
+    const nativeDb: AddonDgnDb = new (AddonRegistry.getAddon()).AddonDgnDb();
     const res: ErrorStatusOrResult<DbResult, string> = nativeDb.getCachedBriefcaseInfos(cacheDir);
     if (res.error)
       Promise.reject(new IModelError(res.error.status));
@@ -276,6 +276,14 @@ export class BriefcaseManager {
 
   private static onIModelEngineShutdown() {
     BriefcaseManager.clearCache();
+  }
+
+  /** Create a directory, recursively setting up the path as necessary */
+  private static makeDirectoryRecursive(dirPath: string) {
+    if (IModelJsFs.existsSync(dirPath))
+      return;
+    BriefcaseManager.makeDirectoryRecursive(path.dirname(dirPath));
+    IModelJsFs.mkdirSync(dirPath);
   }
 
   /** Initialize the briefcase manager cache of in-memory briefcases (if necessary). */
@@ -295,8 +303,12 @@ export class BriefcaseManager {
       return;
 
     const cacheDir = iModelEngine.configuration.briefcaseCacheDir;
-    const briefcaseInfos = BriefcaseManager.getCachedBriefcaseInfos(cacheDir);
+    if (!IModelJsFs.existsSync(cacheDir)) {
+      BriefcaseManager.makeDirectoryRecursive(cacheDir);
+      return;
+    }
 
+    const briefcaseInfos = BriefcaseManager.getCachedBriefcaseInfos(cacheDir);
     const iModelIds = Object.getOwnPropertyNames(briefcaseInfos);
     for (const iModelId of iModelIds) {
       const localBriefcases = briefcaseInfos[iModelId];
@@ -516,7 +528,7 @@ export class BriefcaseManager {
 
     briefcase.openMode = OpenMode.ReadWrite; // Setup briefcase as ReadWrite to allow pull and merge of changes (irrespective of the real openMode)
 
-    const nativeDb: AddonDgnDb = new (NodeAddonRegistry.getAddon()).AddonDgnDb();
+    const nativeDb: AddonDgnDb = new (AddonRegistry.getAddon()).AddonDgnDb();
     const res: DbResult = nativeDb.setupBriefcase(JSON.stringify(briefcase));
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, briefcase.pathname);
@@ -644,7 +656,7 @@ export class BriefcaseManager {
     if (BriefcaseManager.standaloneCache.findBriefcaseByToken({ pathKey: pathname }))
       throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open ${pathname} again - it's already been opened once`);
 
-    const nativeDb: AddonDgnDb = new (NodeAddonRegistry.getAddon()).AddonDgnDb();
+    const nativeDb: AddonDgnDb = new (AddonRegistry.getAddon()).AddonDgnDb();
 
     const res = nativeDb.openDgnDb(pathname, openMode);
     if (DbResult.BE_SQLITE_OK !== res)
@@ -678,7 +690,7 @@ export class BriefcaseManager {
     if (BriefcaseManager.standaloneCache.findBriefcaseByToken({ pathKey: pathname }))
     throw new IModelError(DbResult.BE_SQLITE_ERROR_FileExists, `Cannot create file ${pathname} again - it already exists`);
 
-    const nativeDb: AddonDgnDb = new (NodeAddonRegistry.getAddon()).AddonDgnDb();
+    const nativeDb: AddonDgnDb = new (AddonRegistry.getAddon()).AddonDgnDb();
 
     const res: DbResult = nativeDb.createDgnDb(pathname, rootSubjectName, rootSubjectDescription);
     if (DbResult.BE_SQLITE_OK !== res)
@@ -768,7 +780,7 @@ export class BriefcaseManager {
 
   private static openBriefcase(briefcase: BriefcaseEntry) {
     if (!briefcase.nativeDb)
-      briefcase.nativeDb = new (NodeAddonRegistry.getAddon()).AddonDgnDb();
+      briefcase.nativeDb = new (AddonRegistry.getAddon()).AddonDgnDb();
 
     // Note: Open briefcase as ReadWrite, even if briefcase.openMode is Readonly. This is to allow to pull and merge change sets.
     const res: DbResult = briefcase.nativeDb.openDgnDb(briefcase.pathname, OpenMode.ReadWrite);
@@ -935,7 +947,7 @@ export class BriefcaseManager {
     await BriefcaseManager.initCache(accessToken);
     assert(!!BriefcaseManager.hubClient);
 
-    const nativeDb: AddonDgnDb = new (NodeAddonRegistry.getAddon()).AddonDgnDb();
+    const nativeDb: AddonDgnDb = new (AddonRegistry.getAddon()).AddonDgnDb();
 
     const scratchDir = BriefcaseManager.buildScratchPath();
     if (!IModelJsFs.existsSync(scratchDir))

@@ -32,7 +32,7 @@ import { RepositoryStatus } from "@bentley/bentleyjs-core/lib/BentleyError";
 import * as path from "path";
 import { IModelDbLinkTableRelationships, LinkTableRelationship } from "./LinkTableRelationship";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
-import { NodeAddonRegistry } from "./NodeAddonRegistry";
+import { AddonRegistry } from "./AddonRegistry";
 import { RequestQueryOptions } from "@bentley/imodeljs-clients/lib";
 import { iModelEngine } from "./IModelEngine";
 
@@ -601,7 +601,7 @@ export class ConcurrencyControl {
 
   /** Create an empty Request */
   public static createRequest(): ConcurrencyControl.Request {
-    return new (NodeAddonRegistry.getAddon()).AddonBriefcaseManagerResourcesRequest();
+    return new (AddonRegistry.getAddon()).AddonBriefcaseManagerResourcesRequest();
   }
 
   /** Convert the request to any */

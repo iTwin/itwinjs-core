@@ -766,7 +766,7 @@ describe("iModel", () => {
 
   });
 
-  it.skip("should set EC properties of various types", () => {
+  it("should set EC properties of various types", () => {
 
     const testImodel = imodel1;
     try {

@@ -4,7 +4,6 @@
 import { DeploymentEnv, AccessToken } from "@bentley/imodeljs-clients";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { BentleyStatus, IModelError } from "../common/IModelError";
-import { IModelJsFs } from "./IModelJsFs";
 import * as path from "path";
 import { KnownLocations } from "./KnownLocations";
 
@@ -33,21 +32,10 @@ export class IModelEngineConfiguration {
 export class IModelEngine {
   private constructor(public readonly configuration: IModelEngineConfiguration) { }
 
-  /** Create a directory, recursively setting up the path as necessary */
-  private static makeDirectoryRecursive(dirPath: string) {
-    if (IModelJsFs.existsSync(dirPath))
-      return;
-    IModelEngine.makeDirectoryRecursive(path.dirname(dirPath));
-    IModelJsFs.mkdirSync(dirPath);
-  }
-
   /** This method must be called before any iModelJs services are used. */
   public static startup(configuration: IModelEngineConfiguration = new IModelEngineConfiguration()) {
     if (iModelEngine !== undefined)
       throw new IModelError(BentleyStatus.ERROR, "startup may only be called once");
-
-    if (!IModelJsFs.existsSync(configuration.briefcaseCacheDir))
-      IModelEngine.makeDirectoryRecursive(configuration.briefcaseCacheDir);
 
     iModelEngine = new IModelEngine(configuration);
     iModelEngine.onAfterStartup.raiseEvent();
