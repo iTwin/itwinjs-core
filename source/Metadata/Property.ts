@@ -10,6 +10,7 @@ import ECClass from "./Class";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import KindOfQuantity from "./KindOfQuantity";
 import PropertyCategory from "./PropertyCategory";
+import { AnyClass } from "../Interfaces";
 
 /**
  * A common abstract class for all ECProperty types.
@@ -18,7 +19,7 @@ export abstract class Property {
   protected _name: ECName;
   protected _type: PropertyType;
 
-  public class: ECClass;
+  public class: AnyClass;
   public description?: string;
   public label?: string;
   public isReadOnly: boolean;
@@ -28,7 +29,7 @@ export abstract class Property {
   public kindOfQuantity?: LazyLoadedKindOfQuantity;
 
   constructor(ecClass: ECClass, name: string, type: PropertyType) {
-    this.class = ecClass;
+    this.class = ecClass as AnyClass;
     this.name = name;
     this._type = type;
   }
