@@ -2,9 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { ECVersion, SchemaChildKey, SchemaKey, SchemaChildType } from "../ECObjects";
+import { SchemaChildKey, SchemaChildType } from "../ECObjects";
 import { SchemaChildVisitor } from "../Interfaces";
 import Schema from "./Schema";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
 
 /**
  * An abstract class that supplies all of the common parts of a SchemaChild.
@@ -28,24 +29,44 @@ export default abstract class SchemaChild {
   get fullName() { return this.key.schemaKey ? `${this.key.schemaKey}.${this.name}` : this.name; }
 
   public async fromJson(jsonObj: any): Promise<void> {
-    if (jsonObj.name) this.name = jsonObj.name;
-    if (jsonObj.description) this.description = jsonObj.description;
-    if (jsonObj.label) this.label = jsonObj.label;
+    // FIXME: Don't we already have name defined in c'tor?
+    // TODO: Should we allow changing name in fromJson?
+    // TODO: Should we throw if name is undefined? If it doesn't match?
+    if (undefined !== jsonObj.name) {
+      if (typeof(jsonObj.name) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaChild ${this.name} has an invalid 'name' attribute. It should be of type 'string'.`);
+      this.name = jsonObj.name;
+    }
 
-    if (jsonObj.schema) {
-      if (!this.key.schemaKey)
-        this.key.schemaKey = new SchemaKey();
+    if (undefined !== jsonObj.description) {
+      if (typeof(jsonObj.description) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaChild ${this.name} has an invalid 'description' attribute. It should be of type 'string'.`);
+      this.description = jsonObj.description;
+    }
+
+    if (undefined !== jsonObj.label) {
+      if (typeof(jsonObj.label) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaChild ${this.name} has an invalid 'label' attribute. It should be of type 'string'.`);
+      this.label = jsonObj.label;
+    }
+
+    // FIXME: Don't we already have schema defined in c'tor?
+    // TODO: Should we allow changing schema in fromJson?
+    // TODO: Should we throw if schema is undefined? If it doesn't match?
+    if (undefined !== jsonObj.schema) {
+      if (typeof(jsonObj.schema) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaChild ${this.name} has an invalid 'schema' attribute. It should be of type 'string'.`);
       this.key.schemaKey.name = jsonObj.schema;
     }
 
-    if (jsonObj.schemaVersion) {
-      if (!this.key.schemaKey)
-        this.key.schemaKey = new SchemaKey();
+    // FIXME: Don't we already have schemaVersion defined in c'tor?
+    // TODO: Should we allow changing schemaVersion in fromJson?
+    // TODO: Should we throw if schemaVersion is undefined? If it doesn't match?
+    if (undefined !== jsonObj.schemaVersion) {
+      if (typeof(jsonObj.schemaVersion) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaChild ${this.name} has an invalid 'schemaVersion' attribute. It should be of type 'string'.`);
 
-      if (!this.key.schemaKey.version)
-        this.key.schemaKey.version = new ECVersion();
-
-      this.key.schemaKey.version.fromString(jsonObj.version);
+      this.key.schemaKey.version.fromString(jsonObj.schemaVersion);
     }
   }
 
