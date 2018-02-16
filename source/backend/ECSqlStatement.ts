@@ -21,7 +21,7 @@ import { StatusCodeWithMessage } from "@bentley/bentleyjs-core/lib/BentleyError"
  *  In case of failure it contains the [[DbResult]] error code.
  */
 export class ECSqlInsertResult {
-  public constructor(public status: DbResult, public id?: Id64) {}
+  public constructor(public status: DbResult, public id?: Id64) { }
 }
 
 /** An ECSQL Statement.
@@ -110,7 +110,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   public bindBlob(parameter: number | string, val: Blob | string): void {
     using(this.getBinder(parameter), (binder) => {
       let base64Str: string;
-      if (typeof(val) === "string")
+      if (typeof (val) === "string")
         base64Str = val;
       else
         base64Str = val.base64;
@@ -134,7 +134,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   public bindDateTime(parameter: number | string, val: DateTime | string): void {
     using(this.getBinder(parameter), (binder) => {
       let isoString: string;
-      if (typeof(val) === "string")
+      if (typeof (val) === "string")
         isoString = val;
       else
         isoString = val.isoString;
@@ -157,7 +157,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    */
   public bindId(parameter: number | string, val: Id64): void {
     using(this.getBinder(parameter), (binder) => binder.bindId(val.value));
-   }
+  }
 
   /** Binds an integer value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
@@ -197,7 +197,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    */
   public bindNavigation(parameter: number | string, val: NavigationBindingValue): void {
     using(this.getBinder(parameter), (binder) => binder.bindNavigation(val.id.value, val.relClassName, val.relClassTableSpace));
-    }
+  }
 
   /** Binds a struct property value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
@@ -230,20 +230,20 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
         if (paramValue === undefined || paramValue === null)
           continue;
 
-        using (this.getBinder(paramIndex),
+        using(this.getBinder(paramIndex),
           (binder) => ECSqlBindingHelper.bindValue(binder, paramValue));
       }
       return;
     }
 
     for (const entry of Object.entries(values)) {
-        const paramName: string = entry[0];
-        const paramValue: any = entry[1];
-        if (paramValue === undefined || paramValue === null)
+      const paramName: string = entry[0];
+      const paramValue: any = entry[1];
+      if (paramValue === undefined || paramValue === null)
         continue;
 
-        using (this.getBinder(paramName),
-          (binder) => ECSqlBindingHelper.bindValue(binder, paramValue));
+      using(this.getBinder(paramName),
+        (binder) => ECSqlBindingHelper.bindValue(binder, paramValue));
     }
   }
 
@@ -279,7 +279,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * call. In case of error, the respective error code is returned.
    */
   public stepForInsert(): ECSqlInsertResult {
-    const r: {status: DbResult, id: string} = this._stmt!.stepForInsert();
+    const r: { status: DbResult, id: string } = this._stmt!.stepForInsert();
     if (r.status === DbResult.BE_SQLITE_DONE)
       return new ECSqlInsertResult(r.status, new Id64(r.id));
 
@@ -322,23 +322,23 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * | SELECT count(*) FROM bis.Element | `{"count(*)":number}` |
    * | SELECT count(*) cnt FROM bis.Element | `{cnt:number}` |
    */
-   public getRow(): any {
+  public getRow(): any {
     const colCount: number = this._stmt!.getColumnCount();
     const row: object = {};
     const duplicatePropNames = new Map<string, number>();
     for (let i = 0; i < colCount; i++) {
-      using (this._stmt!.getValue(i), (ecsqlValue) => {
+      using(this._stmt!.getValue(i), (ecsqlValue) => {
         if (ecsqlValue.isNull())
           return;
 
         const propName: string = ECSqlValueHelper.determineResultRowPropertyName(duplicatePropNames, ecsqlValue);
         const val: any = ECSqlValueHelper.getValue(ecsqlValue);
-        Object.defineProperty(row, propName, {enumerable: true, configurable: true, writable: true, value: val});
-        });
-      }
+        Object.defineProperty(row, propName, { enumerable: true, configurable: true, writable: true, value: val });
+      });
+    }
 
     return row;
-    }
+  }
 
   /** Calls step when called as an iterator. */
   public next(): IteratorResult<any> {
@@ -386,7 +386,7 @@ class ECSqlBindingHelper {
       return;
     }
 
-    if (typeof(val) === "object") {
+    if (typeof (val) === "object") {
       ECSqlBindingHelper.bindStruct(binder, val);
       return;
     }
@@ -426,9 +426,9 @@ class ECSqlBindingHelper {
     for (const member of Object.entries(val)) {
       const memberName: string = member[0];
       const memberVal: any = member[1];
-      using (binder.bindMember(memberName),
+      using(binder.bindMember(memberName),
         (memberBinder) => ECSqlBindingHelper.bindValue(memberBinder, memberVal));
-      }
+    }
   }
 
   /** Binds the specified array to the specified array binder
@@ -446,9 +446,9 @@ class ECSqlBindingHelper {
     }
 
     for (const element of val) {
-      using (binder.addArrayElement(),
-        (elementBinder) => ECSqlBindingHelper.bindValue(elementBinder, element) );
-      }
+      using(binder.addArrayElement(),
+        (elementBinder) => ECSqlBindingHelper.bindValue(elementBinder, element));
+    }
   }
 
   /** tries to interpret the passed value as known leaf types (primitives and navigation values).
@@ -458,20 +458,20 @@ class ECSqlBindingHelper {
     if (val === undefined || val === null)
       return binder.bindNull();
 
-    if (typeof(val) === "number") {
+    if (typeof (val) === "number") {
       if (Number.isInteger(val))
         return binder.bindInteger(val);
 
       return binder.bindDouble(val);
     }
 
-    if (typeof(val) === "boolean")
+    if (typeof (val) === "boolean")
       return binder.bindBoolean(val);
 
-    if (typeof(val) === "string")
+    if (typeof (val) === "string")
       return binder.bindString(val);
 
-    assert(typeof(val) === "object");
+    assert(typeof (val) === "object");
 
     if (val instanceof Blob)
       return binder.bindBlob(val.base64);
@@ -511,11 +511,11 @@ class ECSqlValueHelper {
         return ECSqlValueHelper.getStructValue(ecsqlValue);
 
       case ECSqlValueType.Navigation:
-      return ECSqlValueHelper.getNavigationValue(ecsqlValue);
+        return ECSqlValueHelper.getNavigationValue(ecsqlValue);
 
       case ECSqlValueType.PrimitiveArray:
       case ECSqlValueType.StructArray:
-      return ECSqlValueHelper.getArrayValue(ecsqlValue);
+        return ECSqlValueHelper.getArrayValue(ecsqlValue);
 
       default:
         return ECSqlValueHelper.getPrimitiveValue(ecsqlValue);
@@ -570,7 +570,7 @@ class ECSqlValueHelper {
         }
       }
     } else
-        propName = ECJsNames.toJsName(colAccessString);
+      propName = ECJsNames.toJsName(colAccessString);
 
     // now check duplicates. If there are, append a numeric suffix to the duplicates
     assert(propName !== undefined);
@@ -591,20 +591,21 @@ class ECSqlValueHelper {
       return undefined;
 
     const structVal: object = {};
-    using (ecsqlValue.getStructIterator(), (it) => {
+    using(ecsqlValue.getStructIterator(), (it) => {
       while (it.moveNext()) {
-        using (it.getCurrent(), (memberECSqlVal) => {
-        if (memberECSqlVal.isNull())
-          return;
+        using(it.getCurrent(), (memberECSqlVal) => {
+          if (memberECSqlVal.isNull())
+            return;
 
-        assert(!memberECSqlVal.getColumnInfo().isGeneratedProperty());
-        const memberName: string = ECJsNames.toJsName(memberECSqlVal.getColumnInfo().getPropertyName());
-        const memberVal = ECSqlValueHelper.getValue(memberECSqlVal);
-        Object.defineProperty(structVal, memberName, {
-          enumerable: true,
-          configurable: true,
-          writable: true,
-          value: memberVal});
+          assert(!memberECSqlVal.getColumnInfo().isGeneratedProperty());
+          const memberName: string = ECJsNames.toJsName(memberECSqlVal.getColumnInfo().getPropertyName());
+          const memberVal = ECSqlValueHelper.getValue(memberECSqlVal);
+          Object.defineProperty(structVal, memberName, {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: memberVal,
+          });
         });
       }
     });
@@ -616,11 +617,11 @@ class ECSqlValueHelper {
       return undefined;
 
     const arrayVal: any[] = [];
-    using (ecsqlValue.getArrayIterator(), (it) => {
+    using(ecsqlValue.getArrayIterator(), (it) => {
       while (it.moveNext()) {
-        using (it.getCurrent(), (memberECSqlVal) => {
-        const memberVal = ECSqlValueHelper.getValue(memberECSqlVal);
-        arrayVal.push(memberVal);
+        using(it.getCurrent(), (memberECSqlVal) => {
+          const memberVal = ECSqlValueHelper.getValue(memberECSqlVal);
+          arrayVal.push(memberVal);
         });
       }
     });
@@ -632,7 +633,7 @@ class ECSqlValueHelper {
     if (ecsqlValue.isNull())
       return undefined;
 
-    const rawVal: {id: string, relClassName?: string} = ecsqlValue.getNavigation();
+    const rawVal: { id: string, relClassName?: string } = ecsqlValue.getNavigation();
     return new NavigationValue(new Id64(rawVal.id), rawVal.relClassName);
   }
 
@@ -663,17 +664,17 @@ class ECSqlValueHelper {
       case ECSqlValueType.Int64:
         return ecsqlValue.getInt64();
       case ECSqlValueType.Point2d: {
-        const rawPoint: {x: number, y: number} = ecsqlValue.getPoint2d();
+        const rawPoint: { x: number, y: number } = ecsqlValue.getPoint2d();
         return new Point2d(rawPoint.x, rawPoint.y);
       }
       case ECSqlValueType.Point3d: {
-        const rawPoint: {x: number, y: number, z: number} = ecsqlValue.getPoint3d();
+        const rawPoint: { x: number, y: number, z: number } = ecsqlValue.getPoint3d();
         return new Point3d(rawPoint.x, rawPoint.y, rawPoint.z);
       }
       case ECSqlValueType.String:
         return ecsqlValue.getString();
       default:
-       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unsupported type ${ecsqlValue.getColumnInfo().getType()} of the ECSQL Value`);
+        throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unsupported type ${ecsqlValue.getColumnInfo().getType()} of the ECSQL Value`);
     }
   }
 
@@ -683,13 +684,13 @@ class ECSqlValueHelper {
 
     return ecdb.withPreparedStatement("SELECT s.Name schemaName, c.Name className FROM [" + tableSpace
       + "].meta.ECSchemaDef s, JOIN [" + tableSpace + "].meta.ECClassDef c ON s.ECInstanceId=c.SchemaId WHERE c.ECInstanceId=?", (stmt) => {
-      stmt.bindId(1, classId);
-      if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-        throw new IModelError(DbResult.BE_SQLITE_ERROR, "No class found with ECClassId " + classId.value + " in table space " + tableSpace + ".");
+        stmt.bindId(1, classId);
+        if (stmt.step() !== DbResult.BE_SQLITE_ROW)
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, "No class found with ECClassId " + classId.value + " in table space " + tableSpace + ".");
 
-      const row: any = stmt.getRow();
-      return row.schemaName + "." + row.className;
-    });
+        const row: any = stmt.getRow();
+        return row.schemaName + "." + row.className;
+      });
   }
 
 }
