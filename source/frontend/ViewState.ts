@@ -9,17 +9,17 @@ import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
 import { AxisOrder, Angle, Geometry } from "@bentley/geometry-core/lib/Geometry";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { ClipVector } from "@bentley/geometry-core/lib/numerics/ClipVector";
-import { IModel } from "./IModel";
-import { AxisAlignedBox3d } from "./geometry/Primitives";
-import { Frustum, Npc } from "./Frustum";
+import { AxisAlignedBox3d } from "../common/geometry/Primitives";
+import { Frustum, Npc } from "../common/Frustum";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
-import { ElementState, Model2dState } from "./EntityState";
-import { ViewDefinitionProps, ViewDefinition3dProps, SpatialViewDefinitionProps, ViewDefinition2dProps, CameraProps } from "./ElementProps";
+import { ElementState } from "./EntityState";
+import { ViewDefinitionProps, ViewDefinition3dProps, SpatialViewDefinitionProps, ViewDefinition2dProps, CameraProps } from "../common/ElementProps";
 import { DisplayStyleState, DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
-import { ColorDef } from "./ColorDef";
+import { ColorDef } from "../common/ColorDef";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { IModel } from "../common/IModel";
 
 export const enum GridOrientationType {
   View = 0,
@@ -106,7 +106,7 @@ export class MarginPercent {
  * Subclasses of ViewDefinition determine which model(s) are viewed.
  */
 export abstract class ViewState extends ElementState {
-  public static getClassFullName(): string { return this.schemaName + ":ViewDefinition"; }
+  public static get className() { return "ViewDefinition"; }
   public description?: string;
   public isPrivate?: boolean;
 
@@ -584,10 +584,10 @@ export abstract class ViewState3d extends ViewState {
   public readonly extents: Vector3d;      // The extent of the view frustum.
   public readonly rotation: RotMatrix;    // Rotation of the view frustum.
   public readonly camera: Camera;         // The camera used for this view.
-  public static getClassFullName(): string { return this.schemaName + ":ViewDefinition3d"; }
+  public forceMinFrontDist = 0.0;         // minimum distance for front plane
+  public static get className() { return "ViewDefinition3d"; }
 
   public allow3dManipulations(): boolean { return true; }
-  public forceMinFrontDist() { return 0.0; } // minimum distance for front plane
   public constructor(props: ViewDefinition3dProps, iModel: IModel, categories: CategorySelectorState, displayStyle: DisplayStyle3dState) {
     super(props, iModel, categories, displayStyle);
     this.cameraOn = JsonUtils.asBool(props.cameraOn);
@@ -672,7 +672,7 @@ export abstract class ViewState3d extends ViewState {
   public setRotation(rot: RotMatrix) { this.rotation.setFrom(rot); }
   protected enableCamera(): void { this.cameraOn = true; }
   public supportsCamera(): boolean { return true; }
-  public minimumFrontDistance() { return Math.max(15.2 * Constant.oneCentimeter, this.forceMinFrontDist()); }
+  public minimumFrontDistance() { return Math.max(15.2 * Constant.oneCentimeter, this.forceMinFrontDist); }
   public isEyePointAbove(elevation: number): boolean { return !this.cameraOn ? (this.getZVector().z > 0) : (this.getEyePoint().z > elevation); }
 
   public getDisplayStyle3d() { return this.displayStyle as DisplayStyle3dState; }
@@ -982,7 +982,7 @@ export class SpatialViewState extends ViewState3d {
   }
   public equals(other: SpatialViewState): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
 
-  public static getClassFullName(): string { return this.schemaName + ":SpatialViewDefinition"; }
+  public static get className() { return "SpatialViewDefinition"; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
   public getViewedExtents(): AxisAlignedBox3d { return this.iModel.projectExtents; }
 
@@ -997,7 +997,7 @@ export class SpatialViewState extends ViewState3d {
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection. */
 export class OrthographicViewState extends SpatialViewState {
-  public static getClassFullName(): string { return this.schemaName + ":OrthographicViewDefinition"; }
+  public static get className() { return "OrthographicViewDefinition"; }
   constructor(props: SpatialViewDefinitionProps, iModel: IModel, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle, modelSelector); }
 
   // tslint:disable-next-line:no-empty
@@ -1010,15 +1010,15 @@ export class ViewState2d extends ViewState {
   public readonly origin: Point2d;
   public readonly delta: Point2d;
   public readonly angle: Angle;
-  public static getClassFullName(): string { return this.schemaName + ":ViewDefinition2d"; }
+  public readonly baseModelId: Id64;
+  public static get className() { return "ViewDefinition2d"; }
 
-  public constructor(props: ViewDefinition2dProps, iModel: IModel, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, public readonly baseModel: Model2dState) {
+  public constructor(props: ViewDefinition2dProps, iModel: IModel, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
     super(props, iModel, categories, displayStyle);
     this.origin = Point2d.fromJSON(props.origin);
     this.delta = Point2d.fromJSON(props.delta);
     this.angle = Angle.fromJSON(props.angle);
-    if (categories instanceof ViewState2d)
-      this.baseModel = categories.baseModel;
+    this.baseModelId = Id64.fromJSON(props.baseModelId);
   }
 
   public toJSON(): ViewDefinition2dProps {
@@ -1026,28 +1026,28 @@ export class ViewState2d extends ViewState {
     val.origin = this.origin;
     val.delta = this.delta;
     val.angle = this.angle;
-    val.baseModelId = this.baseModel.id;
+    val.baseModelId = this.baseModelId;
     return val;
   }
 
   public allow3dManipulations(): boolean { return false; }
-  public getViewedExtents() { return AxisAlignedBox3d.fromRange2d(this.baseModel.extents); }
+  public getViewedExtents() { return new AxisAlignedBox3d(); } // NEEDS_WORK
   public getOrigin() { return new Point3d(this.origin.x, this.origin.y); }
   public getExtents() { return new Vector3d(this.delta.x, this.delta.y); }
   public getRotation() { return RotMatrix.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
   public setExtents(delta: Vector3d) { this.delta.set(delta.x, delta.y); }
   public setOrigin(origin: Point3d) { this.origin.set(origin.x, origin.y); }
   public setRotation(rot: RotMatrix) { const xColumn = rot.getColumn(0); this.angle.setRadians(Math.atan2(xColumn.y, xColumn.x)); }
-  public viewsModel(modelId: Id64) { return this.baseModel.id.equals(modelId); }
+  public viewsModel(modelId: Id64) { return this.baseModelId.equals(modelId); }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem2dState.createNew(acsName, this.iModel); }
 }
 
 /** a view of a DrawingModel */
 export class DrawingViewState extends ViewState2d {
-  public static getClassFullName(): string { return this.schemaName + ":DrawingViewDefinition"; }
+  public static get className() { return "DrawingViewDefinition"; }
 }
 
 /** a view of a SheetModel */
 export class SheetViewState extends ViewState2d {
-  public static getClassFullName(): string { return this.schemaName + ":SheetViewDefinition"; }
+  public static get className() { return "SheetViewDefinition"; }
 }

@@ -4,21 +4,23 @@
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { CodeSpec, CodeSpecNames } from "../../common/Code";
-import { ElementProps, ViewDefinitionProps } from "../../common/ElementProps";
-import { Model2dState } from "../../common/EntityState";
-import { ModelProps } from "../../common/ModelProps";
-import { DrawingViewState, OrthographicViewState, ViewState } from "../../common/ViewState";
+import { ViewDefinitionProps } from "../../common/ElementProps";
+import { DrawingViewState, OrthographicViewState, ViewState } from "../../frontend/ViewState";
 import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "../../frontend/IModelConnection";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { DateTime, Blob, NavigationValue } from "../../common/ECSqlTypes";
 import { TestData } from "./TestData";
-import { ModelSelectorState } from "../../common/ModelSelectorState";
-import { DisplayStyle3dState, DisplayStyle2dState } from "../../common/DisplayStyleState";
-import { CategorySelectorState } from "../../common/CategorySelectorState";
+import { ModelSelectorState } from "../../frontend/ModelSelectorState";
+import { DisplayStyle3dState, DisplayStyle2dState } from "../../frontend/DisplayStyleState";
+import { CategorySelectorState } from "../../frontend/CategorySelectorState";
 
 // spell-checker: disable
 
 describe("IModelConnection", () => {
+  before(async () => {
+    await TestData.load();
+  });
+
   it("should be able to get elements and models from an IModelConnection", async () => {
     const iModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
     assert.exists(iModel);
@@ -28,23 +30,22 @@ describe("IModelConnection", () => {
     assert.exists(iModel.elements);
     assert.isTrue(iModel.elements instanceof IModelConnectionElements);
 
-    const elementIds: Id64[] = [iModel.elements.rootSubjectId];
-    const elementProps: ElementProps[] = await iModel.elements.getElementProps(elementIds);
-    assert.equal(elementProps.length, elementIds.length);
+    const elementProps = await iModel.elements.getElementProps(iModel.elements.rootSubjectId);
+    assert.equal(elementProps.length, 1);
     assert.isTrue(iModel.elements.rootSubjectId.equals(new Id64(elementProps[0].id)));
     assert.isTrue(iModel.models.repositoryModelId.equals(new Id64(elementProps[0].model)));
 
-    const queryElementIds: Id64[] = await iModel.elements.queryElementIds({ from: "BisCore.Category", limit: 20, offset: 0 });
+    const queryElementIds = await iModel.elements.queryElementIds({ from: "BisCore.Category", limit: 20, offset: 0 });
     assert.isAtLeast(queryElementIds.length, 1);
     assert.isTrue(queryElementIds[0] instanceof Id64);
 
     const formatObjs: any[] = await iModel.elements.formatElements(queryElementIds);
     assert.isAtLeast(formatObjs.length, 1);
 
-    const modelIds: Id64[] = [iModel.models.repositoryModelId];
-    const modelProps: ModelProps[] = await iModel.models.getModelProps(modelIds);
+    const modelProps = await iModel.models.getModelProps(iModel.models.repositoryModelId);
     assert.exists(modelProps);
-    assert.equal(modelProps.length, modelIds.length);
+    assert.equal(modelProps.length, 1);
+    assert.equal(modelProps[0].id, iModel.models.repositoryModelId.value);
     assert.isTrue(iModel.models.repositoryModelId.equals(new Id64(modelProps[0].id)));
 
     const rows: any[] = await iModel.executeQuery("SELECT CodeValue AS code FROM BisCore.Category");
@@ -81,15 +82,12 @@ describe("IModelConnection", () => {
     assert.instanceOf(viewState, DrawingViewState);
     assert.instanceOf(viewState.categorySelector, CategorySelectorState);
     assert.instanceOf(viewState.displayStyle, DisplayStyle2dState);
-    assert.instanceOf((viewState as DrawingViewState).baseModel, Model2dState);
-
     assert.exists(iModel.projectExtents);
 
     await iModel.close(TestData.accessToken);
   });
 
   it("Parameterized ECSQL", async () => {
-    await TestData.load();
     const iModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
     assert.exists(iModel);
 

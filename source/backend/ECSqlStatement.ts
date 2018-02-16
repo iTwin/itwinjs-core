@@ -161,10 +161,10 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Binds an integer value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
-   * @param val Integer value
+   * @param val Integer value as number, decimal string or hexadecimal string.
    */
-  public bindInt(parameter: number | string, val: number): void {
-    using(this.getBinder(parameter), (binder) => binder.bindInt(val));
+  public bindInteger(parameter: number | string, val: number | string): void {
+    using(this.getBinder(parameter), (binder) => binder.bindInteger(val));
   }
 
   /** Binds an Point2d value to the specified ECSQL parameter.
@@ -340,13 +340,6 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     return row;
     }
 
-  /** @deprecated Use [[ECSqlStatement.getRow]] instead.
-   * Get the current row.
-   */
-  public getRow_depr(): any {
-    return JSON.parse(this._stmt!.getRow());
-  }
-
   /** Calls step when called as an iterator. */
   public next(): IteratorResult<any> {
     if (DbResult.BE_SQLITE_ROW === this.step()) {
@@ -467,7 +460,7 @@ class ECSqlBindingHelper {
 
     if (typeof(val) === "number") {
       if (Number.isInteger(val))
-        return binder.bindInt(val); // need to call bindInt64 once new addon with ECDb fixes is available
+        return binder.bindInteger(val);
 
       return binder.bindDouble(val);
     }
@@ -665,8 +658,8 @@ class ECSqlValueHelper {
 
         return new Id64(ecsqlValue.getId());
       }
+      // JS doesn't tell between int32 and larger ints, so retrieve them with the getInt64 method
       case ECSqlValueType.Int:
-        return ecsqlValue.getInt();
       case ECSqlValueType.Int64:
         return ecsqlValue.getInt64();
       case ECSqlValueType.Point2d: {

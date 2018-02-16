@@ -6,13 +6,13 @@ import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
 import { Viewport } from "./Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { Geometry } from "@bentley/geometry-core/lib/Geometry";
-import { StandardViewId, ViewState } from "../common/ViewState";
+import { StandardViewId, ViewState } from "../frontend/ViewState";
 import { CoordinateLockOverrides } from "./tools/ToolAdmin";
 import { ColorDef, ColorRgb } from "../common/ColorDef";
 import { BeButtonEvent, CoordSource, BeModifierKey } from "./tools/Tool";
 import { SnapMode } from "./HitDetail";
 import { TentativeOrAccuSnap } from "./AccuSnap";
-import { AuxCoordSystemState } from "../common/AuxCoordSys";
+import { AuxCoordSystemState } from "../frontend/AuxCoordSys";
 import { LinePixels, GraphicBuilder } from "../common/Render";
 import { DecorateContext, SnapContext } from "./ViewContext";
 import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
@@ -1852,7 +1852,7 @@ export class AccuDraw {
     if (!this.isActive)
       return;
 
-    const vp = context.viewport;
+    const vp = context.viewport!;
     if (this.currentView !== vp) // Do nothing if AccuDraw is not enabled for this view...
       return;
 

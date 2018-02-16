@@ -1,25 +1,25 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64Arg } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64, Id64Arg, Id64Props } from "@bentley/bentleyjs-core/lib/Id";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { CodeSpec } from "../common/Code";
 import { ElementProps, ViewDefinitionProps } from "../common/ElementProps";
 import { EntityQueryParams } from "../common/EntityProps";
-import { Model2dState } from "../common/EntityState";
 import { IModel, IModelToken, IModelProps } from "../common/IModel";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { ModelProps } from "../common/ModelProps";
 import { IModelGateway } from "../gateway/IModelGateway";
 import { IModelVersion } from "../common/IModelVersion";
-import { DrawingViewState, OrthographicViewState, SheetViewState, SpatialViewState, ViewState, ViewState2d } from "../common/ViewState";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { HilitedSet, SelectionSet } from "./SelectionSet";
-import { DisplayStyle3dState, DisplayStyle2dState } from "../common/DisplayStyleState";
-import { ModelSelectorState } from "../common/ModelSelectorState";
-import { CategorySelectorState } from "../common/CategorySelectorState";
+import { ViewState, SpatialViewState, OrthographicViewState, ViewState2d, DrawingViewState, SheetViewState } from "./ViewState";
+import { CategorySelectorState } from "./CategorySelectorState";
+import { DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
+import { ModelSelectorState } from "./ModelSelectorState";
+import { ModelState, SpatialModelState, SectionDrawingModelState, DrawingModelState, SheetModelState } from "./ModelState";
 
 const loggingCategory = "imodeljs-backend.IModelConnection";
 
@@ -34,7 +34,8 @@ export class IModelConnection extends IModel {
   public readonly selectionSet: SelectionSet;
 
   private constructor(iModelToken: IModelToken, name: string, props: IModelProps) {
-    super(iModelToken, name, props);
+    super(iModelToken);
+    super.initialize(name, props);
     this.models = new IModelConnectionModels(this);
     this.elements = new IModelConnectionElements(this);
     this.codeSpecs = new IModelConnectionCodeSpecs(this);
@@ -53,7 +54,7 @@ export class IModelConnection extends IModel {
     if (!changeSetId)
       changeSetId = "0"; // The first version is arbitrarily setup to have changeSetId = "0" since it's required by the gateway API.
 
-    const iModelToken = IModelToken.create(iModelId, changeSetId, openMode, accessToken.getUserProfile()!.userId, contextId);
+    const iModelToken = new IModelToken(undefined, undefined, contextId, iModelId, changeSetId, openMode, accessToken.getUserProfile()!.userId);
     let openResponse: IModel;
     if (openMode === OpenMode.ReadWrite)
       openResponse = await IModelGateway.getProxy().openForWrite(accessToken, iModelToken);
@@ -191,12 +192,42 @@ export class IModelConnectionModels {
   public get repositoryModelId(): Id64 { return new Id64("0x1"); }
 
   /** Ask the backend for a batch of [[ModelProps]] given a list of model ids. */
-  public async getModelProps(modelIds: Id64[]): Promise<ModelProps[]> {
-    const modelJsonArray = await IModelGateway.getProxy().getModelProps(this._iModel.iModelToken, modelIds.map((id: Id64) => id.value));
+  public async getModelProps(modelIds: Id64Arg): Promise<ModelProps[]> {
+    const modelJsonArray = await IModelGateway.getProxy().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds));
     const models: ModelProps[] = [];
     for (const modelJson of modelJsonArray)
       models.push(JSON.parse(modelJson) as ModelProps);
     return models;
+  }
+
+  public async loadModels(modelId: Id64Arg): Promise<ModelState[]> {
+    const propsArray = await this.getModelProps(modelId);
+    const modelStates: ModelState[] = [];
+
+    for (const props of propsArray) {
+      const names = props.classFullName.split(":"); // fullClassName is in format schema:className.
+      if (names.length < 2)
+        continue;
+      let ctor = ModelState;
+      switch (names[1]) {
+        case "PhysicalModel":
+        case "SpatialLocationModel":
+        case "WebMercatorModel":
+          ctor = SpatialModelState;
+          break;
+        case "SectionDrawingModel":
+          ctor = SectionDrawingModelState;
+          break;
+        case "DrawingModel":
+          ctor = DrawingModelState;
+          break;
+        case "SheetModel":
+          ctor = SheetModelState;
+          break;
+      }
+      modelStates.push(new ctor(props, this._iModel));
+    }
+    return modelStates;
   }
 }
 
@@ -210,20 +241,9 @@ export class IModelConnectionElements {
   /** The Id of the root subject element. */
   public get rootSubjectId(): Id64 { return new Id64("0x1"); }
 
-  /** Ask the backend for a batch of [[ElementProps]] given a list of element ids. */
+  /** Ask the backend for a batch of [[ElementProps]] given one or more element ids. */
   public async getElementProps(arg: Id64Arg): Promise<ElementProps[]> {
-    let idArray: string[] = [];
-    if (Array.isArray(arg)) {
-      if (arg.length > 0) {
-        idArray = (typeof arg[0] === "string") ? (arg as string[]) : (arg as Id64[]).map((id: Id64) => id.value);
-      }
-    } else if (arg instanceof Set) {
-      arg.forEach((id) => idArray.push(id));
-    } else {
-      idArray.push(typeof arg === "string" ? arg : arg.value);
-    }
-
-    const elementJsonArray: any[] = await IModelGateway.getProxy().getElementProps(this._iModel.iModelToken, idArray);
+    const elementJsonArray: any[] = await IModelGateway.getProxy().getElementProps(this._iModel.iModelToken, Id64.toIdSet(arg));
     const elements: ElementProps[] = [];
     for (const elementJson of elementJsonArray)
       elements.push(JSON.parse(elementJson) as ElementProps);
@@ -231,8 +251,8 @@ export class IModelConnectionElements {
   }
 
   /** Ask the backend to format (for presentation) the specified list of element ids. */
-  public async formatElements(elementIds: Id64[]): Promise<any[]> {
-    return await IModelGateway.getProxy().formatElements(this._iModel.iModelToken, elementIds.map((id: Id64) => id.value));
+  public async formatElements(elementIds: Id64Arg): Promise<any[]> {
+    return await IModelGateway.getProxy().formatElements(this._iModel.iModelToken, Id64.toIdSet(elementIds));
   }
 
   /** */
@@ -315,7 +335,7 @@ export class IModelConnectionViews {
   }
 
   /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
-  public async loadView(viewDefinitionId: Id64 | string): Promise<ViewState> {
+  public async loadView(viewDefinitionId: Id64Props): Promise<ViewState> {
     const viewStateData: any = await IModelGateway.getProxy().getViewStateData(this._iModel.iModelToken, typeof viewDefinitionId === "string" ? viewDefinitionId : viewDefinitionId.value);
     const categorySelectorState = new CategorySelectorState(viewStateData.categorySelectorProps, this._iModel);
 
@@ -332,18 +352,15 @@ export class IModelConnectionViews {
       }
       case ViewState2d.getClassFullName(): {
         const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
-        const baseModelState = new Model2dState(viewStateData.baseModelProps, this._iModel);
-        return new ViewState2d(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, baseModelState);
+        return new ViewState2d(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState);
       }
       case DrawingViewState.getClassFullName(): {
         const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
-        const baseModelState = new Model2dState(viewStateData.baseModelProps, this._iModel);
-        return new DrawingViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, baseModelState);
+        return new DrawingViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState);
       }
       case SheetViewState.getClassFullName(): {
         const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
-        const baseModelState = new Model2dState(viewStateData.baseModelProps, this._iModel);
-        return new SheetViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, baseModelState);
+        return new SheetViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState);
       }
       default:
         return Promise.reject(new IModelError(IModelStatus.WrongClass, "Invalid ViewState subclass", Logger.logError, loggingCategory, () => viewStateData));

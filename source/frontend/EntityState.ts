@@ -2,13 +2,10 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
-import { EntityProps } from "./EntityProps";
-import { IModel } from "./IModel";
-import { ModelProps, GeometricModel2dProps } from "./ModelProps";
-import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { Range2d } from "@bentley/geometry-core/lib/Range";
-import { ElementProps, RelatedElement } from "./ElementProps";
-import { Code } from "./Code";
+import { EntityProps } from "../common/EntityProps";
+import { IModel } from "../common/IModel";
+import { Code } from "../common/Code";
+import { ElementProps, RelatedElement } from "../common/ElementProps";
 
 /** the constructor for an EntityState (for cloning). */
 interface EntityStateCtor extends FunctionConstructor {
@@ -49,45 +46,9 @@ export class EntityState implements EntityProps {
    * @note This relies on all EntityState subclasses using their exact ECClass name as their class name, <em>with "State" appended to the end</em>.
    * @note Subclasses from other than the BisCore domain should override the static member "schemaName" with their domain prefix.
    */
-  public static getClassFullName(): string { return this.schemaName + ":" + this.name.slice(0, this.name.lastIndexOf("State")); }
-}
-
-/** the state of a Model */
-export abstract class ModelState extends EntityState implements ModelProps {
-  public readonly modeledElement: Id64;
-  public readonly jsonProperties: any;
-  public readonly isPrivate: boolean;
-  public readonly isTemplate: boolean;
-
-  constructor(props: ModelProps, iModel: IModel) {
-    super(props, iModel);
-    this.modeledElement = Id64.fromJSON(props.modeledElement);
-    this.isPrivate = JsonUtils.asBool(props.isPrivate);
-    this.isTemplate = JsonUtils.asBool(props.isTemplate);
-  }
-
-  /** Add all custom-handled properties of a Model to a json object. */
-  public toJSON(): ModelProps {
-    const val = super.toJSON() as ModelProps;
-    val.modeledElement = this.modeledElement;
-    if (this.isPrivate)
-      val.isPrivate = this.isPrivate;
-    if (this.isTemplate)
-      val.isTemplate = this.isTemplate;
-    return val;
-  }
-}
-
-/** the state of a 2d Model */
-export class Model2dState extends ModelState implements GeometricModel2dProps {
-  public readonly extents: Range2d;
-  constructor(props: GeometricModel2dProps, iModel: IModel) {
-    super(props, iModel);
-  }
-  public toJSON(): GeometricModel2dProps {
-    const val = super.toJSON() as GeometricModel2dProps;
-    return val;
-  }
+  public static getClassFullName(): string { return this.schemaName + ":" + this.className; }
+  public static get sqlName(): string { return this.schemaName + "." + this.className; }
+  public static get className(): string { return this.name.slice(0, this.name.lastIndexOf("State")); }
 }
 
 export class ElementState extends EntityState implements ElementProps {

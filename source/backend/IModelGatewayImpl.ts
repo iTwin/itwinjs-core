@@ -15,6 +15,7 @@ import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { IModelDb } from "../backend/IModelDb";
 import { IModelGateway } from "../gateway/IModelGateway";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
+import { Id64Set } from "@bentley/bentleyjs-core/lib/Id";
 
 const loggingCategory = "imodeljs-backend.IModelGatewayImpl";
 
@@ -41,8 +42,8 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
   }
 
   private async open(accessToken: AccessToken, iModelToken: IModelToken): Promise<IModel> {
-    const iModelVersion = iModelToken.changeSetId === "0" ? IModelVersion.first() : IModelVersion.asOfChangeSet(iModelToken.changeSetId);
-    return await IModelDb.open(AccessToken.fromJson(accessToken)!, iModelToken.contextId!, iModelToken.iModelId, iModelToken.openMode, iModelVersion);
+    const iModelVersion = iModelToken.changeSetId === "0" ? IModelVersion.first() : IModelVersion.asOfChangeSet(iModelToken.changeSetId!);
+    return await IModelDb.open(AccessToken.fromJson(accessToken)!, iModelToken.contextId!, iModelToken.iModelId!, iModelToken.openMode, iModelVersion);
   }
 
   /** Ask the backend to open a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend. */
@@ -76,16 +77,21 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
     iModelDb.saveChanges(description);
   }
 
-  public async getModelProps(iModelToken: IModelToken, modelIds: string[]): Promise<string[]> {
+  public async getModelProps(iModelToken: IModelToken, modelIds: Id64Set): Promise<string[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const modelJsonArray: string[] = [];
     for (const modelId of modelIds) {
-      modelJsonArray.push(iModelDb.models.getModelJson(modelId));
+      try {
+        modelJsonArray.push(iModelDb.models.getModelJson(modelId));
+      } catch (error) {
+        if (modelIds.size === 1)
+          throw error; // if they're asking for more than one model, don't throw on error.
+      }
     }
     return modelJsonArray;
   }
 
-  public async getElementProps(iModelToken: IModelToken, elementIds: string[]): Promise<string[]> {
+  public async getElementProps(iModelToken: IModelToken, elementIds: Id64Set): Promise<string[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const elementProps: string[] = [];
     for (const elementId of elementIds) {
@@ -112,7 +118,7 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
     return elementIds;
   }
 
-  public async formatElements(iModelToken: IModelToken, elementIds: string[]): Promise<any[]> {
+  public async formatElements(iModelToken: IModelToken, elementIds: Id64Set): Promise<any[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const formatArray: any[] = [];
     for (const elementId of elementIds) {

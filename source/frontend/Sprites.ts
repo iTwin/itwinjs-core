@@ -79,7 +79,7 @@ export class SpriteLocation {
 
   public decorateViewport(context: DecorateContext): void {
     if (context.viewport === this.viewport) {
-      const loc = this.viewport.worldToView(this.location);
+      const loc = this.viewport!.worldToView(this.location);
       loc.z = 0;
       context.addSprite(this.sprite!, loc, Vector3d.unitX(), this.transparency);
     }

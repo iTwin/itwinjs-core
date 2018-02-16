@@ -19,15 +19,21 @@ import { Appearance } from "../../common/SubCategoryAppearance";
 import { Configuration } from "../../common/Configuration";
 import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { IModelEngine } from "../IModelEngine";
 import * as path from "path";
+// import { Logger, LogLevel } from "@bentley/bentleyjs-core/lib/Logger";
 
 // Logger.initializeToConsole();
+// Logger.setLevelDefault(LogLevel.ERROR);
 
 // Initialize the gateway classes used by tests
 Gateway.initialize(IModelGateway);
 
 // Initialize the Node addon used by tests
 NodeAddonRegistry.loadAndRegisterStandardAddon();
+
+// Start the backend
+IModelEngine.startup();
 
 export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;
@@ -41,14 +47,14 @@ export class IModelTestUtils {
     password: "pmadm1",
   };
 
-  private static _connectClient: ConnectClient|undefined;
+  private static _connectClient: ConnectClient | undefined;
   public static get connectClient(): ConnectClient {
     if (!IModelTestUtils._connectClient)
       IModelTestUtils.setIModelHubDeployConfig("QA");
     return IModelTestUtils._connectClient!;
   }
 
-  private static _hubClient: IModelHubClient|undefined;
+  private static _hubClient: IModelHubClient | undefined;
   public static get hubClient(): IModelHubClient {
     if (!IModelTestUtils._connectClient)
       IModelTestUtils.setIModelHubDeployConfig("QA");

@@ -9,7 +9,7 @@ import { ElementProps } from "../common/ElementProps";
 import { ViewDefinitionProps, ViewDefinition3dProps, ViewDefinition2dProps, SpatialViewDefinitionProps, ModelSelectorProps, CategorySelectorProps } from "../common/ElementProps";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
-import { Camera } from "../common/ViewState";
+import { Camera } from "../frontend/ViewState";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
 export class DisplayStyle extends DefinitionElement {

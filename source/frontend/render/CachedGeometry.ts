@@ -7,9 +7,9 @@ import { FeatureIndexType, FeatureIndex } from "./FeatureIndex";
 import { GL } from "./GL";
 
 export class FeatureIndices {
-  public type: FeatureIndexType = FeatureIndexType.kEmpty;
-  public uniform: number = 0;
-  public nonUniform: BufferHandle | undefined = undefined;
+  public type: FeatureIndexType;
+  public uniform: number;
+  public nonUniform: BufferHandle | undefined;
 
   public constructor(gl: WebGLRenderingContext, src: FeatureIndex, numVerts?: number) {
     this.type = src.type;
@@ -19,6 +19,7 @@ export class FeatureIndices {
         this.nonUniform = undefined;
         break;
       case FeatureIndexType.kNonUniform:
+        this.uniform = 0;
         this.nonUniform = new BufferHandle();
         this.nonUniform.init(gl);
 
@@ -34,6 +35,10 @@ export class FeatureIndices {
           }
           this.nonUniform.bindData(gl, GL.Buffer.ArrayBuffer, numVerts * 4, GL.BufferUsage.StaticDraw, featureIDs);
         }
+        break;
+      default:
+        this.uniform = 0;
+        this.nonUniform = undefined;
         break;
     }
   }

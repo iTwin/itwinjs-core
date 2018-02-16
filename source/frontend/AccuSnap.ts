@@ -67,7 +67,7 @@ export class AccuSnap {
   public readonly cross = new SpriteLocation();          // the "+" that indicates where the snap point is
   public readonly icon = new SpriteLocation();           // the icon that indicates what type of snap is active
   public readonly errorIcon = new SpriteLocation();      // the icon that indicates an error
-  public errorReason: LocateFailureValue;                // reason code for last error
+  public errorReason = LocateFailureValue.None;                // reason code for last error
   public explanation?: string;                           // why last error was generated.
   private candidateSnapMode = SnapMode.First;            // during snap creation: the snap to try
   private suppressed = 0;                                // number of times "suppress" has been called -- unlike suspend this is not automatically cleared by tools
@@ -206,7 +206,7 @@ export class AccuSnap {
   /**  flash a hit in a single view. */
   private flashHitInView(hit: HitDetail, context: DecorateContext) {
     const viewport = context.viewport;
-    if (!this.hitShouldBeHilited(hit) || !this.needsFlash(viewport))
+    if (!viewport || !this.hitShouldBeHilited(hit) || !this.needsFlash(viewport))
       return;
 
     hit.draw(context);
@@ -862,7 +862,7 @@ export class AccuSnap {
   }
 
   private flashElements(context: DecorateContext): void {
-    const viewport = context.viewport;
+    const viewport = context.viewport!;
     if (this.currHit) {
       if (this.needsFlash(viewport))
         this.flashHitInView(this.currHit, context);
@@ -882,7 +882,7 @@ export class AccuSnap {
 
       // we have to adjust the world pt for the icon every time we draw it because the view may have changed size since we snapped
       const iconSize = this.icon.sprite!.getSize();
-      const viewport = context.viewport;
+      const viewport = context.viewport!;
       this.icon.location.setFrom(AccuSnap.adjustIconLocation(viewport, this.cross.location, iconSize));
       this.icon.decorateViewport(context);
     }

@@ -26,7 +26,7 @@ describe("Tools", function () {
     imodel = await IModelConnection.openStandalone(iModelLocation);
   });
   after(async () => {
-    await imodel.closeStandalone();
+    if (imodel) await imodel.closeStandalone();
     TestIModelApp.shutdown();
   });
 
