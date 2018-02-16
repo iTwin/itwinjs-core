@@ -89,6 +89,11 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
     return modelJsonArray;
   }
 
+  public async queryModelProps(iModelToken: IModelToken, params: EntityQueryParams): Promise<string[]> {
+    const ids = await this.queryEntityIds(iModelToken, params);
+    return this.getModelProps(iModelToken, ids);
+  }
+
   public async getElementProps(iModelToken: IModelToken, elementIds: Id64Set): Promise<string[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const elementProps: string[] = [];

@@ -10,7 +10,7 @@ import { ElementProps, ViewDefinitionProps } from "../common/ElementProps";
 import { EntityQueryParams } from "../common/EntityProps";
 import { IModel, IModelToken, IModelProps } from "../common/IModel";
 import { IModelError, IModelStatus } from "../common/IModelError";
-import { ModelProps } from "../common/ModelProps";
+import { ModelProps, ModelQueryParams } from "../common/ModelProps";
 import { IModelGateway } from "../gateway/IModelGateway";
 import { IModelVersion } from "../common/IModelVersion";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
@@ -194,13 +194,15 @@ export class IModelConnectionModels {
   /** The Id of the repository model. */
   public get repositoryModelId(): Id64 { return new Id64("0x1"); }
 
-  /** Ask the backend for a batch of [[ModelProps]] given a list of model ids. */
-  public async getModelProps(modelIds: Id64Arg): Promise<ModelProps[]> {
-    const modelJsonArray = await IModelGateway.getProxy().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds));
+  private async modelPropsFromArray(modelJsonArray: string[]) {
     const models: ModelProps[] = [];
     for (const modelJson of modelJsonArray)
       models.push(JSON.parse(modelJson) as ModelProps);
     return models;
+  }
+  /** Get a batch of [[ModelProps]] given a list of model ids. */
+  public async getModelProps(modelIds: Id64Arg): Promise<ModelProps[]> {
+    return this.modelPropsFromArray(await IModelGateway.getProxy().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds)));
   }
 
   /** load a set of models. */
@@ -234,10 +236,24 @@ export class IModelConnectionModels {
     return modelStates;
   }
 
-  // /** Query for a set of models of the specified class and matching the specified IsPrivate setting. */
-  // public async queryModelIds(className: string, limit: number, wantPrivate: boolean, wantTemplate: boolean): Promise<Id64Set> {
-  //   return IModelGateway.getProxy().queryModels(this._iModel.iModelToken, className, limit, wantPrivate, wantTemplate);
-  // }
+  /** Query for a set of ModelProps of the specified query parameters. */
+  public async queryModelProps(paramsIn: ModelQueryParams): Promise<ModelProps[]> {
+    const params: ModelQueryParams = {};
+    params.from = paramsIn.from ? paramsIn.from : ModelState.sqlName;
+    params.where = paramsIn.where ? paramsIn.where : "";
+    params.limit = paramsIn.limit;
+    params.offset = paramsIn.offset;
+    params.orderBy = paramsIn.orderBy;
+    if (!paramsIn.wantPrivate) {
+      if (params.where.length > 0) params.where += " AND ";
+      params.where += "IsPrivate=FALSE";
+    }
+    if (!paramsIn.wantTemplate) {
+      if (params.where.length > 0) params.where += " AND ";
+      params.where += "IsTemplate=FALSE";
+    }
+    return this.modelPropsFromArray(await IModelGateway.getProxy().queryModelProps(this._iModel.iModelToken, params));
+  }
 }
 
 /** The collection of elements for an [[IModelConnection]]. */

@@ -12,9 +12,9 @@ export interface EntityProps {
 
 /** Interface for capturing input to query functions. */
 export interface EntityQueryParams {
-  from: string;
+  from?: string;
   where?: string;
   orderBy?: string;
-  limit: number;
-  offset: number;
+  limit?: number;
+  offset?: number;
 }

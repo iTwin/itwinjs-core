@@ -92,10 +92,15 @@ export abstract class IModelGateway extends Gateway {
     return this.forward.apply(this, arguments);
   }
 
+  public async queryModelProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<any[]> {
+    return this.forward.apply(this, arguments);
+  }
+
   /** Return an array of element JSON strings given an array of stringified element ids. */
   public async getElementProps(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<any[]> {
     return this.forward.apply(this, arguments);
   }
+  /** Return an array of element JSON strings given an array of stringified element ids. */
 
   /** Return a set of ids from a query constructed from the specified parameters. */
   public async queryEntityIds(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<Id64Set> { return this.forward.apply(this, arguments); }
