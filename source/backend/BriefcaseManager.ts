@@ -220,7 +220,7 @@ export class BriefcaseManager {
     return path.join(BriefcaseManager.getIModelPath(iModelId), "csets");
   }
 
-  public static buildChangeSummaryFilePath(iModelId: string): string {
+  public static getChangeSummaryPathname(iModelId: string): string {
     return path.join(BriefcaseManager.getIModelPath(iModelId), iModelId.concat(".bim.ecchanges"));
   }
 
