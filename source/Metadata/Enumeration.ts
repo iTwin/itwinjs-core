@@ -13,19 +13,30 @@ import Schema from "./Schema";
  */
 export default class Enumeration extends SchemaChild {
   public readonly type: SchemaChildType.Enumeration;
-  public primitiveType: PrimitiveType.Integer | PrimitiveType.String;
-  public isStrict: boolean;
+  protected _primitiveType: PrimitiveType.Integer | PrimitiveType.String;
+  protected _isStrict: boolean;
   public enumerators: Enumerator[];
 
-  constructor(schema: Schema, name: string, label?: string, description?: string) {
+  constructor(schema: Schema, name: string, label?: string, description?: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String, isStrict?: boolean) {
     super(schema, name, label, description);
 
     this.key.type = SchemaChildType.Enumeration;
 
-    this.primitiveType = PrimitiveType.Integer;
-    this.isStrict = true;
+    if (primitiveType)
+      this._primitiveType = primitiveType;
+    else
+      this._primitiveType = PrimitiveType.Integer;
+
+    if (isStrict)
+      this._isStrict = isStrict;
+    else
+      this._isStrict = true;
+
     this.enumerators = [];
   }
+
+  get primitiveType() { return this._primitiveType; }
+  get isStrict() { return this._isStrict; }
 
   /**
    * Returns an enumerator that matches the value provided.
@@ -68,14 +79,14 @@ export default class Enumeration extends SchemaChild {
     if (jsonObj.isStrict) {
       if (typeof(jsonObj.isStrict) !== "boolean")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'isStrict' attribute. It should be of type 'boolean'.`);
-      this.isStrict = jsonObj.isStrict;
+      this._isStrict = jsonObj.isStrict;
     }
 
     if (jsonObj.backingTypeName) {
       if (/int/i.test(jsonObj.backingTypeName))
-        this.primitiveType = PrimitiveType.Integer;
+        this._primitiveType = PrimitiveType.Integer;
       else if (/string/i.test(jsonObj.backingTypeName))
-        this.primitiveType = PrimitiveType.String;
+        this._primitiveType = PrimitiveType.String;
     }
 
     if (jsonObj.enumerators) {

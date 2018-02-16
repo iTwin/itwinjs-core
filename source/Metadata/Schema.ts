@@ -12,7 +12,7 @@ import Enumeration from "./Enumeration";
 import KindOfQuantity from "./KindOfQuantity";
 import PropertyCategory from "./PropertyCategory";
 import SchemaReadHelper from "../Deserialization/Helper";
-import { ECVersion, SchemaChildKey, SchemaKey, ECClassModifier, StrengthType, RelatedInstanceDirection } from "../ECObjects";
+import { ECVersion, SchemaChildKey, SchemaKey, ECClassModifier, StrengthType, RelatedInstanceDirection, PrimitiveType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { SchemaContext } from "../Context";
@@ -128,12 +128,14 @@ export default class Schema implements CustomAttributeContainerProps {
    * Creates an Enumeration with the provided name in this schema.
    * @param name
    */
-  public async createEnumeration(name: string, label?: string, description?: string): Promise<Enumeration> {
-    return this.createChild<Enumeration>(Enumeration, name, label, description);
+  public async createEnumeration(name: string, label?: string, description?: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String, isStrict?: boolean): Promise<Enumeration> {
+    return this.createEnumerationSync(name, label, description, primitiveType, isStrict);
   }
 
-  public createEnumerationSync(name: string, label?: string, description?: string): Enumeration {
-    return this.createChild<Enumeration>(Enumeration, name, label, description);
+  public createEnumerationSync(name: string, label?: string, description?: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String, isStrict?: boolean): Enumeration {
+    const child = new Enumeration(this, name, label, description, primitiveType, isStrict);
+    this.addChild(child);
+    return child;
   }
 
   /**
