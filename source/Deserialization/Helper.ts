@@ -9,7 +9,7 @@ import Schema from "../Metadata/Schema";
 import EntityClass from "../Metadata/EntityClass";
 import MixinClass from "../Metadata/MixinClass";
 import RelationshipClass, { RelationshipConstraint } from "../Metadata/RelationshipClass";
-import { AnyClass, SchemaDeserializationVisitor, AnySchemaChildType } from "../Interfaces";
+import { AnyClass, SchemaDeserializationVisitor, AnySchemaChild } from "../Interfaces";
 import { Property } from "../Metadata/Property";
 
 /**
@@ -144,7 +144,7 @@ export default class SchemaReadHelper {
     if (!schemaChildJson.schemaChildType)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaChild ${childName} is missing the required schemaChildType property.`);
 
-    let schemaChild: AnySchemaChildType | undefined;
+    let schemaChild: AnySchemaChild | undefined;
 
     switch (schemaChildJson.schemaChildType) {
       case "EntityClass":

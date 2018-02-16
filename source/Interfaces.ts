@@ -32,7 +32,7 @@ export type LazyLoadedPropertyCategory = LazyLoadedSchemaChild<PropertyCategory>
 export type LazyLoadedRelationshipConstraintClass = LazyLoadedSchemaChild<EntityClass | MixinClass | RelationshipClass>;
 
 export type AnyClass = EntityClass | MixinClass | StructClass | CustomAttributeClass | RelationshipClass;
-export type AnySchemaChildType = AnyClass | Enumeration | KindOfQuantity | PropertyCategory;
+export type AnySchemaChild = AnyClass | Enumeration | KindOfQuantity | PropertyCategory;
 
 export interface SchemaChildVisitor {
   /* async */ visitEnumeration?: (enumeration: Enumeration) => Promise<void>;
