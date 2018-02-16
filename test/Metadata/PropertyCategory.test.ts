@@ -33,21 +33,20 @@ describe("PropertyCategory", () => {
       assert.isDefined(propCat);
       expect(propCat.priority).equal(5);
     });
+  });
 
-    it("should throw when priority is not a number", async () => {
-      const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
-        name: "TestSchema",
-        version: "1.2.3",
-        children: {
-          invalidPropCategory: {
-            schemaChildType: "PropertyCategory",
-            priority: "5",
-          },
-        },
-      };
+  describe("fromJson", () => {
+    let testMixin: PropertyCategory;
 
-      await expect(Schema.fromJson(testSchema)).to.be.rejectedWith(ECObjectsError);
+    beforeEach(() => {
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      testMixin = new PropertyCategory(schema, "TestCategory");
+    });
+
+    it("should throw for invalid priority", async () => {
+      expect(testMixin).to.exist;
+      const json = { priority: "1" };
+      await expect(testMixin.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The PropertyCategory TestCategory has an invalid 'priority' attribute. It should be of type 'number'.`);
     });
   });
 });
