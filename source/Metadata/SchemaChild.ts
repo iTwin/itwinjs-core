@@ -11,26 +11,33 @@ import Schema from "./Schema";
  */
 export default abstract class SchemaChild {
   public readonly schema: Schema;
-  public key: SchemaChildKey;
-  public description?: string;
-  public label?: string;
+  protected _key: SchemaChildKey;
+  protected _description?: string;
+  protected _label?: string;
 
-  constructor(schema: Schema, name: string) {
-    this.key = new SchemaChildKey(name);
+  constructor(schema: Schema, name: string, label?: string, description?: string) {
+    this._key = new SchemaChildKey(name);
     this.schema = schema;
+    this._label = label;
+    this._description = description;
   }
 
   public get type(): SchemaChildType { return this.key.type; }
 
   get name() { return this.key.name; }
-  set name(name: string) { this.key.name = name; }
 
   get fullName() { return this.key.schemaKey ? `${this.key.schemaKey}.${this.name}` : this.name; }
 
+  get key() { return this._key; }
+
+  get label() { return this._label; }
+
+  get description() { return this._description; }
+
   public async fromJson(jsonObj: any): Promise<void> {
-    if (jsonObj.name) this.name = jsonObj.name;
-    if (jsonObj.description) this.description = jsonObj.description;
-    if (jsonObj.label) this.label = jsonObj.label;
+    if (jsonObj.name) this.key.name = jsonObj.name;
+    if (jsonObj.description) this._description = jsonObj.description;
+    if (jsonObj.label) this._label = jsonObj.label;
 
     if (jsonObj.schema) {
       if (!this.key.schemaKey)

@@ -14,13 +14,10 @@ describe("Schema Composition", () => {
 
     it("fill schema with content", async () => {
       await schema.addReference(baseSchema);
-      const personClass = await schema.createEntityClass("Person", ECClassModifier.Sealed);
-      personClass.description = "This is my entity class";
-      personClass.label = "My Entity";
+      const personClass = await schema.createEntityClass("Person", ECClassModifier.Sealed, "My Entity", "This is my entity class");
       await personClass.createPrimitiveProperty("Name", PrimitiveType.String);
 
-      const addressClass = await baseSchema.createStructClass("Address");
-      addressClass.label = "Address";
+      const addressClass = await baseSchema.createStructClass("Address", undefined, "Address");
       const houseNumberProperty = await addressClass.createPrimitiveProperty("HouseNumber", PrimitiveType.Integer);
       houseNumberProperty.label = "House Number";
 

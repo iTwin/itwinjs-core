@@ -19,8 +19,8 @@ export default class EntityClass extends ECClass {
   public readonly type: SchemaChildType.EntityClass;
   private _mixins?: LazyLoadedMixin[];
 
-  constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
-    super(schema, name, modifier);
+  constructor(schema: Schema, name: string, modifier?: ECClassModifier, label?: string, description?: string) {
+    super(schema, name, modifier, label, description);
     this.key.type = SchemaChildType.EntityClass;
   }
 

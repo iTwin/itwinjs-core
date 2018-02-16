@@ -14,8 +14,8 @@ export default class CustomAttributeClass extends ECClass {
   public readonly type: SchemaChildType.CustomAttributeClass;
   public containerType: CustomAttributeContainerType;
 
-  constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
-    super(schema, name, modifier);
+  constructor(schema: Schema, name: string, modifier?: ECClassModifier, label?: string, description?: string) {
+    super(schema, name, modifier, label, description);
     this.key.type = SchemaChildType.CustomAttributeClass;
   }
 

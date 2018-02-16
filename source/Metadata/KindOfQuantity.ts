@@ -22,8 +22,8 @@ export default class KindOfQuantity extends SchemaChild {
   public presentationUnits: FormatUnitSpec[];
   public persistenceUnit: FormatUnitSpec;
 
-  constructor(schema: Schema, name: string) {
-    super(schema, name);
+  constructor(schema: Schema, name: string, label?: string, description?: string) {
+    super(schema, name, label, description);
     this.key.type = SchemaChildType.KindOfQuantity;
   }
 

@@ -17,8 +17,8 @@ export default class Enumeration extends SchemaChild {
   public isStrict: boolean;
   public enumerators: Enumerator[];
 
-  constructor(schema: Schema, name: string) {
-    super(schema, name);
+  constructor(schema: Schema, name: string, label?: string, description?: string) {
+    super(schema, name, label, description);
 
     this.key.type = SchemaChildType.Enumeration;
 

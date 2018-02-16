@@ -12,8 +12,8 @@ export default class PropertyCategory extends SchemaChild {
   public readonly type: SchemaChildType.PropertyCategory;
   public priority: number;
 
-  constructor(schema: Schema, name: string) {
-    super(schema, name);
+  constructor(schema: Schema, name: string, label?: string, description?: string) {
+    super(schema, name, label, description);
     this.key.type = SchemaChildType.PropertyCategory;
   }
 

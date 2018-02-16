@@ -19,24 +19,28 @@ type AnyConstraintClass = EntityClass | MixinClass | RelationshipClass;
  * A Typescript class representation of a ECRelationshipClass.
  */
 export default class RelationshipClass extends ECClass {
-  public schema: Schema;
+  public readonly schema: Schema;
   public readonly type: SchemaChildType.RelationshipClass;
-  public strength: StrengthType;
-  public strengthDirection: RelatedInstanceDirection;
+  protected _strength: StrengthType;
+  protected _strengthDirection: RelatedInstanceDirection;
   public readonly source: RelationshipConstraint;
   public readonly target: RelationshipConstraint;
 
-  constructor(schema: Schema, name: string, strength?: StrengthType, strengthDirection?: RelatedInstanceDirection, modifier?: ECClassModifier) {
-    super(schema, name, modifier);
+  constructor(schema: Schema, name: string, strength?: StrengthType, strengthDirection?: RelatedInstanceDirection, modifier?: ECClassModifier, label?: string, description?: string) {
+    super(schema, name, modifier, label, description);
 
     this.key.type = SchemaChildType.RelationshipClass;
 
-    if (strength) this.strength = strength; else this.strength = StrengthType.Referencing;
-    if (strengthDirection) this.strengthDirection = strengthDirection; else this.strengthDirection = RelatedInstanceDirection.Forward;
+    if (strength) this._strength = strength; else this._strength = StrengthType.Referencing;
+    if (strengthDirection) this._strengthDirection = strengthDirection; else this._strengthDirection = RelatedInstanceDirection.Forward;
 
     this.source = new RelationshipConstraint(this, RelationshipEnd.Source);
     this.target = new RelationshipConstraint(this, RelationshipEnd.Target);
   }
+
+  get strength() { return this._strength; }
+
+  get strengthDirection() { return this._strengthDirection; }
 
   /**
    *
@@ -73,8 +77,8 @@ export default class RelationshipClass extends ECClass {
   public async fromJson(jsonObj: any): Promise<void> {
     await super.fromJson(jsonObj);
 
-    if (jsonObj.strength) this.strength = parseStrength(jsonObj.strength);
-    if (jsonObj.strengthDirection) this.strengthDirection = parseStrengthDirection(jsonObj.strengthDirection);
+    if (jsonObj.strength) this._strength = parseStrength(jsonObj.strength);
+    if (jsonObj.strengthDirection) this._strengthDirection = parseStrengthDirection(jsonObj.strengthDirection);
   }
 }
 
@@ -83,19 +87,28 @@ export default class RelationshipClass extends ECClass {
  */
 export class RelationshipConstraint implements RelationshipConstraint {
   private _abstractConstraint?: LazyLoadedRelationshipConstraintClass;
-  public relationshipClass: RelationshipClass;
-  public relationshipEnd: RelationshipEnd;
-  public multiplicity?: RelationshipMultiplicity;
-  public polymorphic?: boolean;
-  public roleLabel?: string;
+  public readonly relationshipClass: RelationshipClass;
+  public readonly relationshipEnd: RelationshipEnd;
+  protected _multiplicity?: RelationshipMultiplicity;
+  protected _polymorphic?: boolean;
+  protected _roleLabel?: string;
   public constraintClasses?: LazyLoadedRelationshipConstraintClass[];
 
-  constructor(relClass: RelationshipClass, relEnd: RelationshipEnd) {
+  constructor(relClass: RelationshipClass, relEnd: RelationshipEnd, roleLabel?: string, polymorphic?: boolean) {
     this.relationshipEnd = relEnd;
-    this.polymorphic = false;
-    this.multiplicity = RelationshipMultiplicity.zeroOne;
+    if (polymorphic)
+      this._polymorphic = polymorphic;
+    else
+      this._polymorphic = false;
+
+    this._multiplicity = RelationshipMultiplicity.zeroOne;
     this.relationshipClass = relClass;
+    this._roleLabel = roleLabel;
   }
+
+  get multiplicity() { return this._multiplicity; }
+  get polymorphic() { return this._polymorphic; }
+  get roleLabel() { return this._roleLabel; }
 
   get abstractConstraint(): LazyLoadedRelationshipConstraintClass | undefined {
     if (this._abstractConstraint)
@@ -137,14 +150,14 @@ export class RelationshipConstraint implements RelationshipConstraint {
    * @param jsonObj The json representation of an ECRelationshipConstraint using the ECSchemaJson format.
    */
   public async fromJson(jsonObj: any): Promise<void> {
-    if (jsonObj.roleLabel) this.roleLabel = jsonObj.roleLabel;
-    if (jsonObj.polymorphic) this.polymorphic = jsonObj.polymorphic;
+    if (jsonObj.roleLabel) this._roleLabel = jsonObj.roleLabel;
+    if (jsonObj.polymorphic) this._polymorphic = jsonObj.polymorphic;
 
     if (jsonObj.multiplicity) {
-      const multTmp = RelationshipMultiplicity.fromString(jsonObj.multiplicity);
-      if (!multTmp)
+      const tempMultiplicity = RelationshipMultiplicity.fromString(jsonObj.multiplicity);
+      if (!tempMultiplicity)
         throw new ECObjectsError(ECObjectsStatus.InvalidMultiplicity, ``);
-      this.multiplicity = multTmp;
+      this._multiplicity = tempMultiplicity;
     }
 
     const relClassSchema = this.relationshipClass.schema;
