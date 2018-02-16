@@ -10,7 +10,7 @@ import { ECSqlValueType, DateTime, Blob, NavigationValue, NavigationBindingValue
 import { Point2d, Point3d, XAndY, XY, XYAndZ, XYZ } from "@bentley/geometry-core/lib/PointVector";
 import { ECDb } from "./ECDb";
 import { using, IDisposable } from "@bentley/bentleyjs-core/lib/Disposable";
-import { NodeAddonRegistry } from "./NodeAddonRegistry";
+import { AddonRegistry } from "./AddonRegistry";
 import { AddonECSqlStatement, AddonECSqlBinder, AddonECSqlValue, AddonECSqlColumnInfo, AddonECDb, AddonDgnDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { StatusCodeWithMessage } from "@bentley/bentleyjs-core/lib/BentleyError";
 
@@ -67,7 +67,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   public prepare(db: AddonDgnDb | AddonECDb, ecsql: string): void {
     if (this.isPrepared())
       throw new Error("ECSqlStatement is already prepared");
-    this._stmt = new (NodeAddonRegistry.getAddon()).AddonECSqlStatement();
+    this._stmt = new (AddonRegistry.getAddon()).AddonECSqlStatement();
     const stat: StatusCodeWithMessage<DbResult> = this._stmt!.prepare(db, ecsql);
     if (stat.status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat.status, stat.message);
