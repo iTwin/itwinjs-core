@@ -7,7 +7,7 @@ import SchemaChild from "./SchemaChild";
 import { ECClassModifier, parseClassModifier, PrimitiveType, SchemaChildType, tryParsePrimitiveType } from "../ECObjects";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty, EnumerationProperty, EnumerationArrayProperty, ECProperty } from "./Property";
+import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty, EnumerationProperty, EnumerationArrayProperty, Property } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import Schema from "./Schema";
 import { AnyClassType, LazyLoadedECClass, LazyLoadedProperty, SchemaChildVisitor } from "../Interfaces";
@@ -67,7 +67,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param prop The property to add.
    * @returns The property that was added.
    */
-  protected addProperty<T extends ECProperty>(prop: T): T {
+  protected addProperty<T extends Property>(prop: T): T {
     if (!this.properties)
       this.properties = [];
 
@@ -79,7 +79,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * Searches, case-insensitive, for a local ECProperty with the name provided.
    * @param name
    */
-  public async getProperty(name: string, includeInherited: boolean = false): Promise<ECProperty | undefined> {
+  public async getProperty(name: string, includeInherited: boolean = false): Promise<Property | undefined> {
     let foundProp: LazyLoadedProperty | undefined;
 
     if (this.properties) {
@@ -98,7 +98,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * Searches the base class, if one exists, for the property with the name provided.
    * @param name The name of the inherited property to find.
    */
-  public async getInheritedProperty(name: string): Promise<ECProperty | undefined> {
+  public async getInheritedProperty(name: string): Promise<Property | undefined> {
     let inheritedProperty;
 
     if (this.baseClass) {
@@ -118,8 +118,8 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    */
   public async createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
   public async createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
-  public async createPrimitiveProperty(name: string, primitiveType?: string): Promise<ECProperty>;
-  public async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<ECProperty> {
+  public async createPrimitiveProperty(name: string, primitiveType?: string): Promise<Property>;
+  public async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
@@ -137,8 +137,8 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    */
   public async createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveArrayProperty>;
   public async createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
-  public async createPrimitiveArrayProperty(name: string, primitiveType?: string): Promise<ECProperty>;
-  public async createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<ECProperty> {
+  public async createPrimitiveArrayProperty(name: string, primitiveType?: string): Promise<Property>;
+  public async createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 

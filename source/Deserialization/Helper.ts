@@ -10,7 +10,7 @@ import EntityClass from "../Metadata/EntityClass";
 import MixinClass from "../Metadata/MixinClass";
 import RelationshipClass, { RelationshipConstraint } from "../Metadata/RelationshipClass";
 import { AnyClassType, SchemaDeserializationVisitor, AnySchemaChildType } from "../Interfaces";
-import { ECProperty } from "../Metadata/Property";
+import { Property } from "../Metadata/Property";
 
 /**
  * The purpose of this class is to properly order the deserialization of ECSchemas and SchemaChildren from the JSON formats.
@@ -384,7 +384,7 @@ export default class SchemaReadHelper {
     }
   }
 
-  private async loadProperty<T extends ECProperty>(prop: T, propertyJson: any): Promise<void> {
+  private async loadProperty<T extends Property>(prop: T, propertyJson: any): Promise<void> {
     if (propertyJson.category) {
       if (typeof(propertyJson.category) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${prop.class.name}.${prop.name} has an invalid 'category' property. It should be of type 'string'.`);

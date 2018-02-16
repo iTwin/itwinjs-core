@@ -11,13 +11,13 @@ import ECClass from "./Class";
 /**
  * A common abstract class for all ECProperty types.
  */
-export abstract class ECProperty {
+export abstract class Property {
   protected _name: ECName;
   protected _type: PropertyType;
 
   public class: ECClass;
-  public description: string;
-  public label: string;
+  public description?: string;
+  public label?: string;
   public isReadOnly: boolean;
   public priority: number;
   public inherited?: boolean;
@@ -57,7 +57,7 @@ export abstract class ECProperty {
 /**
  *
  */
-export abstract class PrimitiveOrEnumPropertyBase extends ECProperty {
+export abstract class PrimitiveOrEnumPropertyBase extends Property {
   public kindOfQuantity?: LazyLoadedKindOfQuantity;
   public extendedTypeName?: string;
   public minLength: number;
@@ -120,7 +120,7 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
   }
 }
 
-export class StructProperty extends ECProperty {
+export class StructProperty extends Property {
   public structClass: LazyLoadedStructClass;
 
   constructor(name: string, type: LazyLoadedStructClass) {
@@ -135,7 +135,7 @@ export class StructProperty extends ECProperty {
   }
 }
 
-export class NavigationProperty extends ECProperty {
+export class NavigationProperty extends Property {
   public relationshipClass: LazyLoadedRelationshipClass;
   public direction: RelatedInstanceDirection;
 
@@ -162,7 +162,7 @@ export interface ArrayProperty {
 }
 
 // tslint:disable-next-line:variable-name
-const ArrayProperty = <T extends Constructor<ECProperty>>(Base: T) => {
+const ArrayProperty = <T extends Constructor<Property>>(Base: T) => {
   return class extends Base {
     public minOccurs: number = 0;
     public maxOccurs: number;
