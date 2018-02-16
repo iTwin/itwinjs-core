@@ -278,6 +278,14 @@ export class BriefcaseManager {
     BriefcaseManager.clearCache();
   }
 
+  /** Create a directory, recursively setting up the path as necessary */
+  private static makeDirectoryRecursive(dirPath: string) {
+    if (IModelJsFs.existsSync(dirPath))
+      return;
+    BriefcaseManager.makeDirectoryRecursive(path.dirname(dirPath));
+    IModelJsFs.mkdirSync(dirPath);
+  }
+
   /** Initialize the briefcase manager cache of in-memory briefcases (if necessary). */
   private static async initCache(accessToken?: AccessToken): Promise<void> {
     if (!BriefcaseManager.cache.isEmpty())
@@ -295,8 +303,12 @@ export class BriefcaseManager {
       return;
 
     const cacheDir = iModelEngine.configuration.briefcaseCacheDir;
-    const briefcaseInfos = BriefcaseManager.getCachedBriefcaseInfos(cacheDir);
+    if (!IModelJsFs.existsSync(cacheDir)) {
+      BriefcaseManager.makeDirectoryRecursive(cacheDir);
+      return;
+    }
 
+    const briefcaseInfos = BriefcaseManager.getCachedBriefcaseInfos(cacheDir);
     const iModelIds = Object.getOwnPropertyNames(briefcaseInfos);
     for (const iModelId of iModelIds) {
       const localBriefcases = briefcaseInfos[iModelId];
