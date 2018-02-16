@@ -35,6 +35,7 @@ import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { AddonRegistry } from "./AddonRegistry";
 import { RequestQueryOptions } from "@bentley/imodeljs-clients/lib";
 import { iModelEngine } from "./IModelEngine";
+import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 
 const loggingCategory = "imodeljs-backend.IModelDb";
 
@@ -179,12 +180,16 @@ export class IModelDb extends IModel {
   }
 
   private onBriefcaseCloseHandler() {
+    this.onBeforeClose.raiseEvent();
     this.clearStatementCacheOnClose();
   }
 
   private onBriefcaseVersionUpdatedHandler() {
     this.iModelToken.changeSetId = this.briefcaseEntry!.changeSetId;
   }
+
+  /** Event called when the iModel is about to be closed */
+  public readonly onBeforeClose = new BeEvent<() => void>();
 
   /** Get the in-memory handle of the native Db */
   public get nativeDb(): any {
