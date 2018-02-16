@@ -9,7 +9,7 @@ import Schema from "../Metadata/Schema";
 import EntityClass from "../Metadata/EntityClass";
 import MixinClass from "../Metadata/MixinClass";
 import RelationshipClass, { RelationshipConstraint } from "../Metadata/RelationshipClass";
-import { AnyClassType, SchemaDeserializationVisitor, AnySchemaChildType } from "../Interfaces";
+import { AnyClass, SchemaDeserializationVisitor, AnySchemaChildType } from "../Interfaces";
 import { Property } from "../Metadata/Property";
 
 /**
@@ -234,7 +234,7 @@ export default class SchemaReadHelper {
    * @param classJson The json object for this class
    * @param schema The ECSchema this class exists in.
    */
-  private async loadClass(classObj: AnyClassType, classJson: any): Promise<void> {
+  private async loadClass(classObj: AnyClass, classJson: any): Promise<void> {
     // Load base class first
     if (classJson.baseClass) {
       if (typeof(classJson.baseClass) !== "string")
@@ -321,7 +321,7 @@ export default class SchemaReadHelper {
    * @param classObj
    * @param propertyJson
    */
-  private async loadPropertyTypes(classObj: AnyClassType, propertyJson: any): Promise<void> {
+  private async loadPropertyTypes(classObj: AnyClass, propertyJson: any): Promise<void> {
     if (!propertyJson.name)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson,  `An ECProperty in ${classObj.key.schemaName}.${classObj.name} is missing the required 'name' property.`);
     if (typeof(propertyJson.name) !== "string")
