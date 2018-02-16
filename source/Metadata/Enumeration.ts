@@ -15,11 +15,13 @@ export interface Enumerator<T> {
 export type AnyEnumerator = Enumerator<string | number>;
 
 export interface StringEnumeration extends Enumeration {
+  primitiveType: PrimitiveType.String;
   enumerators: Array<Enumerator<string>>;
 }
 
 export interface IntEnumeration extends Enumeration {
-  enumerators: Array<Enumerator<string>>;
+  primitiveType: PrimitiveType.Integer;
+  enumerators: Array<Enumerator<number>>;
 }
 
 /**
