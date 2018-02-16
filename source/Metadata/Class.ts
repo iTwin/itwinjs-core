@@ -125,9 +125,9 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
 
     const propType = await loadPrimitiveType(primitiveType, this.schema);
     if (typeof(propType) === "number")
-      return this.addProperty(new PrimitiveProperty(name, propType));
+      return this.addProperty(new PrimitiveProperty(this, name, propType));
 
-    return this.addProperty(new EnumerationProperty(name, createLazyLoadedChild(propType)));
+    return this.addProperty(new EnumerationProperty(this, name, createLazyLoadedChild(propType)));
   }
 
   /**
@@ -144,9 +144,9 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
 
     const propType = await loadPrimitiveType(primitiveType, this.schema);
     if (typeof(propType) === "number")
-      return this.addProperty(new PrimitiveArrayProperty(name, propType));
+      return this.addProperty(new PrimitiveArrayProperty(this, name, propType));
 
-    return this.addProperty(new EnumerationArrayProperty(name, createLazyLoadedChild(propType)));
+    return this.addProperty(new EnumerationArrayProperty(this, name, createLazyLoadedChild(propType)));
   }
 
   /**
@@ -159,7 +159,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const lazyStructClass = createLazyLoadedChild(await loadStructType(structType, this.schema));
-    return this.addProperty(new StructProperty(name, lazyStructClass));
+    return this.addProperty(new StructProperty(this, name, lazyStructClass));
   }
 
   /**
@@ -172,7 +172,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const lazyStructClass = createLazyLoadedChild(await loadStructType(structType, this.schema));
-    return this.addProperty(new StructArrayProperty(name, lazyStructClass));
+    return this.addProperty(new StructArrayProperty(this, name, lazyStructClass));
   }
 
   /**

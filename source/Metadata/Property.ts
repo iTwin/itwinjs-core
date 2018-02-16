@@ -27,7 +27,8 @@ export abstract class Property {
   public category?: LazyLoadedPropertyCategory;
   public kindOfQuantity?: LazyLoadedKindOfQuantity;
 
-  constructor(name: string, type: PropertyType) {
+  constructor(ecClass: ECClass, name: string, type: PropertyType) {
+    this.class = ecClass;
     this.name = name;
     this._type = type;
   }
@@ -146,17 +147,17 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
 export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
   public get primitiveType(): PrimitiveType { return PropertyTypeUtils.getPrimitiveType(this._type); }
 
-  constructor(name: string, primitiveType: PrimitiveType = PrimitiveType.Integer) {
-    super(name, PropertyTypeUtils.fromPrimitiveType(primitiveType));
+  constructor(ecClass: ECClass, name: string, primitiveType: PrimitiveType = PrimitiveType.Integer) {
+    super(ecClass, name, PropertyTypeUtils.fromPrimitiveType(primitiveType));
   }
 }
 
 export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
   public enumeration: LazyLoadedEnumeration;
 
-  constructor(name: string, type: LazyLoadedEnumeration) {
+  constructor(ecClass: ECClass, name: string, type: LazyLoadedEnumeration) {
     // TODO: Should we allow specifying the backing type?
-    super(name, PropertyType.Integer_Enumeration);
+    super(ecClass, name, PropertyType.Integer_Enumeration);
     this.enumeration = type;
   }
 }
@@ -164,8 +165,8 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
 export class StructProperty extends Property {
   public structClass: LazyLoadedStructClass;
 
-  constructor(name: string, type: LazyLoadedStructClass) {
-    super(name, PropertyType.Struct);
+  constructor(ecClass: ECClass, name: string, type: LazyLoadedStructClass) {
+    super(ecClass, name, PropertyType.Struct);
     this.structClass = type;
   }
 }
@@ -174,8 +175,8 @@ export class NavigationProperty extends Property {
   public relationshipClass: LazyLoadedRelationshipClass;
   public direction: RelatedInstanceDirection;
 
-  constructor(name: string, relationship: LazyLoadedRelationshipClass, direction?: RelatedInstanceDirection) {
-    super(name, PropertyType.Navigation);
+  constructor(ecClass: ECClass, name: string, relationship: LazyLoadedRelationshipClass, direction?: RelatedInstanceDirection) {
+    super(ecClass, name, PropertyType.Navigation);
     this.relationshipClass = relationship;
 
     if (direction !== undefined)
