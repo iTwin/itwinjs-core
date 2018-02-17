@@ -74,7 +74,7 @@
     "@types/node": "^9.4.5",
     "@types/serve-static": "^1.13.1",
     "@types/tapable": "^0.2.4",
-    "@types/uglify-js": "^2.6.30",
+    "@types/uglify-js": "^2.6.30",  
     "@types/webpack": "^3.8.5",
     "chai": "^4.1.2",
     "commander": "^2.12.2",
