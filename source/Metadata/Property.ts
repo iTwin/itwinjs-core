@@ -11,7 +11,7 @@ import ECClass from "./Class";
 /**
  * A common abstract class for all ECProperty types.
  */
-export abstract class ECProperty {
+export abstract class Property {
   protected _name: ECName;
   protected _type: PropertyType;
 
@@ -22,6 +22,7 @@ export abstract class ECProperty {
   protected _priority: number;
   public inherited?: boolean;
   public category?: LazyLoadedPropertyCategory;
+  public kindOfQuantity?: LazyLoadedKindOfQuantity;
 
   constructor(ecClass: ECClass, name: string, type: PropertyType, label?: string, description?: string, isReadOnly?: boolean, priority?: number) {
     this._class = ecClass;
@@ -63,13 +64,15 @@ export abstract class ECProperty {
     // TODO category
 
     // TODO CustomAttributes
+
+    // TODO: KoQ
   }
 }
 
 /**
  *
  */
-export abstract class PrimitiveOrEnumPropertyBase extends ECProperty {
+export abstract class PrimitiveOrEnumPropertyBase extends Property {
   public kindOfQuantity?: LazyLoadedKindOfQuantity;
   protected _extendedTypeName?: string;
   protected _minLength?: number;
@@ -130,8 +133,6 @@ export abstract class PrimitiveOrEnumPropertyBase extends ECProperty {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
       this._extendedTypeName = jsonObj.extendedTypeName;
     }
-
-    // TODO: KoQ
   }
 }
 
@@ -177,7 +178,7 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
   }
 }
 
-export class StructProperty extends ECProperty {
+export class StructProperty extends Property {
   public readonly structClass: LazyLoadedStructClass;
 
   constructor(
@@ -199,7 +200,7 @@ export class StructProperty extends ECProperty {
   }
 }
 
-export class NavigationProperty extends ECProperty {
+export class NavigationProperty extends Property {
   public relationshipClass: LazyLoadedRelationshipClass;
   public direction: RelatedInstanceDirection;
 
@@ -231,7 +232,7 @@ export interface ArrayProperty {
 }
 
 // tslint:disable-next-line:variable-name
-const ArrayProperty = <T extends Constructor<ECProperty>>(Base: T) => {
+const ArrayProperty = <T extends Constructor<Property>>(Base: T) => {
   return class extends Base {
     public minOccurs: number = 0;
     public maxOccurs?: number;

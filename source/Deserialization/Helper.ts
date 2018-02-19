@@ -9,9 +9,8 @@ import Schema from "../Metadata/Schema";
 import EntityClass from "../Metadata/EntityClass";
 import MixinClass from "../Metadata/MixinClass";
 import RelationshipClass, { RelationshipConstraint } from "../Metadata/RelationshipClass";
-import { AnyClassType } from "../Interfaces";
-import { ECProperty } from "../Metadata/Property";
-import { SchemaDeserializationVisitor, AnySchemaChildType } from "source";
+import { AnyClass, SchemaDeserializationVisitor, AnySchemaChild } from "../Interfaces";
+import { Property } from "../Metadata/Property";
 
 /**
  * The purpose of this class is to properly order the deserialization of ECSchemas and SchemaChildren from the JSON formats.
@@ -145,7 +144,7 @@ export default class SchemaReadHelper {
     if (!schemaChildJson.schemaChildType)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaChild ${childName} is missing the required schemaChildType property.`);
 
-    let schemaChild: AnySchemaChildType | undefined;
+    let schemaChild: AnySchemaChild | undefined;
 
     switch (schemaChildJson.schemaChildType) {
       case "EntityClass":
@@ -235,7 +234,7 @@ export default class SchemaReadHelper {
    * @param classJson The json object for this class
    * @param schema The ECSchema this class exists in.
    */
-  private async loadClass(classObj: AnyClassType, classJson: any): Promise<void> {
+  private async loadClass(classObj: AnyClass, classJson: any): Promise<void> {
     // Load base class first
     if (classJson.baseClass) {
       if (typeof(classJson.baseClass) !== "string")
@@ -322,7 +321,7 @@ export default class SchemaReadHelper {
    * @param classObj
    * @param propertyJson
    */
-  private async loadPropertyTypes(classObj: AnyClassType, propertyJson: any): Promise<void> {
+  private async loadPropertyTypes(classObj: AnyClass, propertyJson: any): Promise<void> {
     if (!propertyJson.name)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson,  `An ECProperty in ${classObj.key.schemaName}.${classObj.name} is missing the required 'name' property.`);
     if (typeof(propertyJson.name) !== "string")
@@ -385,7 +384,7 @@ export default class SchemaReadHelper {
     }
   }
 
-  private async loadProperty<T extends ECProperty>(prop: T, propertyJson: any): Promise<void> {
+  private async loadProperty<T extends Property>(prop: T, propertyJson: any): Promise<void> {
     if (propertyJson.category) {
       if (typeof(propertyJson.category) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${prop.class.name}.${prop.name} has an invalid 'category' property. It should be of type 'string'.`);
