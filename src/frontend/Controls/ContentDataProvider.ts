@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { InstanceKeysList } from "../../common/EC";
 import { ECPresentationManager, PageOptions } from "../../common/ECPresentationManager";
-import * as content from "../../common/Content";
+import * as content from "../../common/content";
 import { IModelToken } from "@bentley/imodeljs-frontend/lib/common/IModel";
 
 /** Base class for all data providers that are based on @ref PresentationManager. */

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import ContentDataProvider from "./ContentDataProvider";
 import ContentBuilder, { PropertyRecord } from "./ContentBuilder";
-import * as content from "../../common/Content";
+import * as content from "../../common/content";
 import { InstanceKey } from "../../common/EC";
 import { getUniqueNumber } from "../../common/Utils";
 import { ECPresentationManager } from "../../common/ECPresentationManager";
@@ -13,7 +13,13 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 let favoritesCategory: content.CategoryDescription | null = null;
 function getFavoritesCategory(): content.CategoryDescription {
   if (null == favoritesCategory) {
-    favoritesCategory = new content.CategoryDescription("Favorite", "Favorite", "", Number.MAX_VALUE, true);
+    favoritesCategory = {
+      name: "Favorite",
+      label: "Favorite",
+      description: "",
+      priority: Number.MAX_VALUE,
+      expand: true,
+    } as content.CategoryDescription;
   }
   return favoritesCategory;
 }
@@ -219,7 +225,7 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
     return this.getCategoryFields().then((cf: CategoryFields): Promise<PropertyRecord> => {
       const category = cf.getCategory(categoryIndex);
       const field = cf.getField(category, propertyIndex);
-      return this.getContentItem().then((item: content.ContentSetItem | null): PropertyRecord => {
+      return this.getContentItem().then((item: content.Item | null): PropertyRecord => {
         if (!item)
           return ContentBuilder.createInvalidPropertyRecord();
         return ContentBuilder.createPropertyRecord(field, item);
@@ -227,8 +233,8 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
     });
   }
 
-  public async getContentItem(): Promise<content.ContentSetItem | null> {
-    return this.getContent(this._keys, null, { pageStart: 0, pageSize: 0 }).then((c: content.Content): content.ContentSetItem | null => {
+  public async getContentItem(): Promise<content.Item | null> {
+    return this.getContent(this._keys, null, { pageStart: 0, pageSize: 0 }).then((c: content.Content): content.Item | null => {
       if (c.contentSet.length === 0)
         return null;
 

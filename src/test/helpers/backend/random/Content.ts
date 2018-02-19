@@ -2,34 +2,60 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
-import * as c from "@bentley/ecpresentation-backend/lib/common/Content";
+import * as c from "@bentley/ecpresentation-backend/lib/common/content";
 import { createRandomECClassInfo, createRandomRelationshipPath } from "./EC";
 import { nullable } from "./Misc";
 
 const createRandomSelectClassInfo = (): c.SelectClassInfo => {
-  return new c.SelectClassInfo(createRandomECClassInfo(), faker.random.boolean(), createRandomRelationshipPath());
+  return {
+    selectClassInfo: createRandomECClassInfo(),
+    isSelectPolymorphic: faker.random.boolean(),
+    pathToPrimaryClass: createRandomRelationshipPath(),
+  } as c.SelectClassInfo;
 };
 
 const createRandomCategory = (): c.CategoryDescription => {
-  return new c.CategoryDescription(faker.random.word(), faker.random.words(), faker.lorem.sentence(),
-    faker.random.number(), faker.random.boolean());
+  return {
+    name: faker.random.word(),
+    label: faker.random.words(),
+    description: faker.lorem.sentence(),
+    priority: faker.random.number(),
+    expand: faker.random.boolean(),
+  } as c.CategoryDescription;
 };
 
 const createRandomTypeDescription = (): c.TypeDescription => {
-  return new c.PrimitiveTypeDescription(faker.database.type());
+  return {
+    valueFormat: c.PropertyValueFormat.Primitive,
+    typeName: faker.database.type(),
+  } as c.PrimitiveTypeDescription;
 };
 
 const createRandomEditorDescription = (): c.EditorDescription => {
-  return new c.EditorDescription(faker.random.word());
+  return {
+    name: faker.random.word(),
+  } as c.EditorDescription;
 };
 
 export const createRandomField = (): c.Field => {
-  return new c.Field(createRandomCategory(), faker.random.word(), faker.random.words(), createRandomTypeDescription(),
-    faker.random.boolean(), faker.random.number(), nullable(createRandomEditorDescription), null);
+  return {
+    category: createRandomCategory(),
+    name: faker.random.word(),
+    label: faker.random.words(),
+    description: createRandomTypeDescription(),
+    isReadOnly: faker.random.boolean(),
+    priority: faker.random.number(),
+    editor: nullable(createRandomEditorDescription),
+  } as c.Field;
 };
 
 export const createRandomDescriptor = (): c.Descriptor => {
   const selectClasses = [createRandomSelectClassInfo(), createRandomSelectClassInfo()];
   const fields = [createRandomField(), createRandomField(), createRandomField()];
-  return new c.Descriptor(faker.lorem.words(), selectClasses, fields, 0);
+  return {
+    displayType: faker.lorem.words(),
+    selectClasses,
+    fields,
+    contentFlags: 0,
+  } as c.Descriptor;
 };

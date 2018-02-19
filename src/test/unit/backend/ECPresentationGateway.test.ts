@@ -9,7 +9,7 @@ import ECPresentationGatewayDefinition from "@bentley/ecpresentation-backend/lib
 import { Gateway } from "@bentley/imodeljs-backend/lib/common/Gateway";
 import { IModelToken } from "@bentley/imodeljs-backend/lib/common/IModel";
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-backend/lib/common/Hierarchy";
-import { SelectionInfo, Content } from "@bentley/ecpresentation-backend/lib/common/Content";
+import { SelectionInfo, Content } from "@bentley/ecpresentation-backend/lib/common/content";
 import { PageOptions } from "@bentley/ecpresentation-backend/lib/common/ECPresentationManager";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { createRandomECInstanceKey } from "../../helpers/backend/random/EC";
@@ -140,7 +140,9 @@ describe("ECPresentationGatewayImpl", () => {
     });
 
     it("calls manager's getContent", async () => {
-      const result = new Content(testData.descriptor);
+      const result = {
+        descriptor: testData.descriptor,
+      } as Content;
       mock.setup((x) => x.getContent(testData.imodelToken, testData.descriptor, testData.inputKeys, testData.pageOptions, testData.extendedOptions))
         .returns(() => Promise.resolve(result))
         .verifiable();

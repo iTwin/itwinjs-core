@@ -11,3 +11,7 @@ export const getUniqueNumber = (): number => {
     previousUniqueNumber = date;
   return date;
 };
+
+export interface ValuesDictionary<T> {
+  [key: string]: T;
+}

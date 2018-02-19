@@ -6,7 +6,7 @@ import { IModelToken } from "@bentley/imodeljs-backend/lib/common/IModel";
 import ECPresentationManager from "./ECPresentationManager";
 import ECPresentationGatewayDefinition from "../common/ECPresentationGatewayDefinition";
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "../common/Hierarchy";
-import { SelectionInfo, Descriptor, Content } from "../common/Content";
+import { SelectionInfo, Descriptor, Content } from "../common/content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes";
 import { PageOptions, ECPresentationManager as ECPresentationManagerDefinition } from "../common/ECPresentationManager";
 import { InstanceKeysList } from "../common/EC";

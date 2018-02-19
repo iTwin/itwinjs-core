@@ -1,7 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import * as content from "../../common/Content";
+import * as content from "../../common/content";
+import { isPropertiesField } from "../../common/content/Fields";
+import { isFieldMerged, getFieldPropertyValueKeys } from "../../common/content/Item";
+import { isPrimitiveDescription, isArrayDescription, isStructDescription } from "../../common/content/TypeDescription";
 import * as ec from "../../common/EC";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
@@ -83,10 +86,10 @@ export default class ContentBuilder {
     const createValue = (): any => {
       if (isMerged)
         return null;
-      if (typeDescription.isArrayDescription)
-        return createArrayValue(typeDescription.asArrayDescription()!, value, displayValue);
-      if (typeDescription.isStructDescription)
-        return createStructValue(typeDescription.asStructDescription()!, value, displayValue);
+      if (isArrayDescription(typeDescription))
+        return createArrayValue(typeDescription, value, displayValue);
+      if (isStructDescription(typeDescription))
+        return createStructValue(typeDescription, value, displayValue);
       assert(content.PropertyValueFormat.Primitive === typeDescription.valueFormat);
       return value;
     };
@@ -114,8 +117,8 @@ export default class ContentBuilder {
     } as PropertyRecord;
   }
 
-  public static createPropertyRecord(field: content.Field, item: content.ContentSetItem): PropertyRecord {
-    const isValueReadOnly = field.isReadOnly || item.isMerged(field.name) || !item.getFieldPropertyValueKeys(field.name).every((keys: content.PropertyValueKeys): boolean => {
+  public static createPropertyRecord(field: content.Field, item: content.Item): PropertyRecord {
+    const isValueReadOnly = field.isReadOnly || isFieldMerged(item, field.name) || !getFieldPropertyValueKeys(item, field.name).every((keys: content.PropertyValueKeys): boolean => {
       // note: fields can have multiple properties and each field value can belong to zero or more ECInstances -
       // we consider field value read-only if there's at least one ECInstanceKey which doesn't have an ECInstanceId.
       return keys.keys.every((key: ec.InstanceKey): boolean => (key.instanceId !== "0"));
@@ -123,7 +126,7 @@ export default class ContentBuilder {
 
     return ContentBuilder.createRecord(ContentBuilder.createPropertyDescription(field), field.description,
       item.values[field.name], item.displayValues[field.name],
-      isValueReadOnly, item.isMerged(field.name));
+      isValueReadOnly, isFieldMerged(item, field.name));
   }
 
   public static createInvalidPropertyRecord(): PropertyRecord {
@@ -137,14 +140,14 @@ export default class ContentBuilder {
   }
 
   public static createPropertyDescription(field: content.Field): PropertyDescription {
-    if (field.description.isPrimitiveDescription && "enum" === field.description.typeName) {
-      if (field.isPropertiesField) {
+    if (isPrimitiveDescription(field.description) && "enum" === field.description.typeName) {
+      if (isPropertiesField(field)) {
         return {
           name: field.name,
           displayLabel: field.label,
           typename: field.description.typeName,
           editor: field.editor ? field.editor.name : null,
-          enumerationInfo: field.asPropertiesField()!.properties[0].property.enumerationInfo!,
+          enumerationInfo: field.properties[0].property.enumerationInfo!,
           maxDisplayedRows: null,
         } as ChoicesPropertyDescription;
       }

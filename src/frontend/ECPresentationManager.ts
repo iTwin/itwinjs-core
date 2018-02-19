@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "../common/Hierarchy";
-import { SelectionInfo, Descriptor, Content } from "../common/Content";
+import { SelectionInfo, Descriptor, Content } from "../common/content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes";
 import { InstanceKeysList } from "../common/EC";
 import { PageOptions, ECPresentationManager as ECPInterface } from "../common/ECPresentationManager";

@@ -5,7 +5,7 @@ import { Gateway } from "@build/imodeljs-core/lib/common/Gateway";
 import { IModelToken } from "@build/imodeljs-core/lib/common/IModel";
 import ECPresentationGatewayDefinition from "../common/ECPresentationGatewayDefinition";
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "../common/Hierarchy";
-import * as content from "../common/Content";
+import * as content from "../common/content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes";
 import { PageOptions } from "../common/ECPresentationManager";
 import { InstanceKeysList } from "../common/EC";

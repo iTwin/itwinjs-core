@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "./Hierarchy";
-import { SelectionInfo, Descriptor, Content } from "./Content";
+import { SelectionInfo, Descriptor, Content } from "./content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "./Changes";
 import { InstanceKeysList } from "./EC";
 import { IModelToken } from "@build/imodeljs-core/lib/common/IModel";

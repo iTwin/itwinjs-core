@@ -3,11 +3,11 @@
  *--------------------------------------------------------------------------------------------*/
 import { Gateway } from "@build/imodeljs-core/lib/common/Gateway";
 import { IModelToken } from "@build/imodeljs-core/lib/common/IModel";
-import { NavNode, NavNodeKeyPath, NavNodePathElement } from "../common/Hierarchy";
-import * as content from "../common/Content";
-import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes";
-import { PageOptions, ECPresentationManager as ECPInterface } from "../common/ECPresentationManager";
-import * as ec from "../common/EC";
+import { NavNode, NavNodeKeyPath, NavNodePathElement } from "./Hierarchy";
+import * as content from "./content";
+import { ChangedECInstanceInfo, ECInstanceChangeResult } from "./Changes";
+import { PageOptions, ECPresentationManager as ECPInterface } from "./ECPresentationManager";
+import * as ec from "./EC";
 
 /** Gateway definition for ECPresentation services.
  * WIP: would like to name it ECPresentationGatewayDefinition, but can't because
@@ -20,22 +20,6 @@ export default abstract class ECPresentationGateway extends Gateway implements E
   /** The types that can be marshaled by the gateway. */
   public static types = () => [
     IModelToken,
-    content.CategoryDescription,
-    content.SelectClassInfo,
-    content.TypeDescription,
-    content.PrimitiveTypeDescription,
-    content.ArrayTypeDescription,
-    content.StructTypeDescription,
-    content.EditorDescription,
-    content.Property,
-    content.Field,
-    content.PropertiesField,
-    content.NestedContentField,
-    content.SelectionInfo,
-    content.Descriptor,
-    content.PropertyValueKeys,
-    content.ContentSetItem,
-    content.Content,
   ]
 
   public abstract getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<NavNode[]>;

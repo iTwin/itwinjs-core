@@ -5,7 +5,8 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import * as responseTypes from "./AddonResponses";
 import * as ec from "../common/EC";
 import { NavNode, NavNodeKey, NavNodeKeyPath, NavNodePathElement, ECInstanceNodeKey } from "../common/Hierarchy";
-import * as content from "../common/Content";
+import * as content from "../common/content";
+import { StructFieldMemberDescription, isStructDescription } from "../common/content/TypeDescription";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes";
 import { PageOptions, ECPresentationManager as ECPInterface } from "../common/ECPresentationManager";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
@@ -115,8 +116,8 @@ export default class ECPresentationManager implements ECPInterface {
 
   private createDescriptorOverrides(descriptor: content.Descriptor): object {
     return {
-      displayType: descriptor.preferredDisplayType,
-      hiddenFieldNames: descriptor.getHiddenFieldNames(),
+      displayType: descriptor.displayType,
+      // hiddenFieldNames: content.getHiddenFieldNames(descriptor),
       sortingFieldName: descriptor.sortingField ? descriptor.sortingField.name : undefined,
       sortDirection: descriptor.sortDirection,
       contentFlags: descriptor.contentFlags,
@@ -276,25 +277,33 @@ namespace Conversion {
     if (!descriptor)
       return null;
 
-    const cont = new content.Content(descriptor);
-
+    const cont: content.Content = {
+      descriptor,
+      contentSet: [],
+    };
     for (const itemResp of r.ContentSet) {
       let classInfo: ec.ClassInfo | null = null;
       if (itemResp.ClassInfo)
         classInfo = createClassInfo(itemResp.ClassInfo);
-      const item = new content.ContentSetItem(createInstanceKeyList(itemResp.PrimaryKeys!),
-        itemResp.DisplayLabel!, itemResp.ImageId!, classInfo,
-        itemResp.Values!, itemResp.DisplayValues!, itemResp.MergedFieldNames!,
-        createItemValueKeys(descriptor, itemResp.FieldValueKeys!));
+      const item: content.Item = {
+        primaryKeys: createInstanceKeyList(itemResp.PrimaryKeys!),
+        label: itemResp.DisplayLabel!,
+        imageId: itemResp.ImageId!,
+        classInfo,
+        values: itemResp.Values!,
+        displayValues: itemResp.DisplayValues!,
+        mergedFieldNames: itemResp.MergedFieldNames!,
+        fieldPropertyValueKeys: createItemValueKeys(descriptor, itemResp.FieldValueKeys!),
+      };
       cont.contentSet.push(item);
     }
 
     return cont;
   }
 
-  function createItemValueKeys(descriptor: content.Descriptor, fieldValueKeysResp: { [fieldName: string]: any[] }): content.FieldPropertyValueKeys {
+  function createItemValueKeys(_descriptor: content.Descriptor, _fieldValueKeysResp: { [fieldName: string]: any[] }): content.FieldPropertyValueKeys {
     const result: content.FieldPropertyValueKeys = {};
-    for (const field of descriptor.fields) {
+    /*for (const field of descriptor.fields) {
       if (!field.isPropertiesField || field.description.isArrayDescription || field.description.isStructDescription) {
         // only property-based fields have value keys
         // WIP: structs and arrays don't have value keys either
@@ -315,7 +324,7 @@ namespace Conversion {
         itemValueKeys.push(new content.PropertyValueKeys(field, fieldProperty, propertyKeys.Keys));
       }
       result[field.name] = itemValueKeys;
-    }
+    }*/
     return result;
   }
 
@@ -333,43 +342,67 @@ namespace Conversion {
       fields.push(createField(respField, categories, null));
 
     let sortingField: content.Field | null = null;
-    const sortingDirection = r.SortDirection as content.SortDirection;
+    const sortDirection = r.SortDirection as content.SortDirection;
     if (r.SortingFieldIndex > 0 && r.SortingFieldIndex < fields.length)
       sortingField = fields[r.SortingFieldIndex];
 
-    const descriptor = new content.Descriptor(r.PreferredDisplayType, selectClasses, fields, r.ContentFlags);
-    descriptor.sortingField = sortingField;
-    descriptor.sortDirection = sortingDirection;
-    descriptor.filterExpression = r.FilterExpression;
+    const descriptor = {
+      displayType: r.PreferredDisplayType,
+      contentFlags: r.ContentFlags,
+      selectClasses,
+      fields,
+      sortingField,
+      sortDirection,
+      filterExpression: r.FilterExpression,
+    } as content.Descriptor;
     return descriptor;
   }
 
   function createFieldType(r: responseTypes.FieldTypeDescription): content.TypeDescription {
     switch (r.ValueFormat) {
       case "Primitive":
-        return new content.PrimitiveTypeDescription(r.TypeName);
+        return {
+          valueFormat: content.PropertyValueFormat.Primitive,
+          typeName: r.TypeName,
+        } as content.PrimitiveTypeDescription;
       case "Array":
-        return new content.ArrayTypeDescription(r.TypeName, createFieldType((r as responseTypes.FieldArrayTypeDescription).MemberType));
+        return {
+          valueFormat: content.PropertyValueFormat.Array,
+          typeName: r.TypeName,
+          memberType: createFieldType((r as responseTypes.FieldArrayTypeDescription).MemberType),
+        } as content.ArrayTypeDescription;
       case "Struct":
-        const structDescription = new content.StructTypeDescription(r.TypeName);
+        const structMembers = new Array<StructFieldMemberDescription>();
         for (const member of (r as responseTypes.FieldStructTypeDescription).Members) {
-          structDescription.members.push({
+          structMembers.push({
             name: member.Name,
             label: member.Label,
             type: createFieldType(member.Type),
           });
         }
-        return structDescription;
+        return {
+          valueFormat: content.PropertyValueFormat.Struct,
+          typeName: r.TypeName,
+          members: structMembers,
+        } as content.StructTypeDescription;
     }
     assert(false, "Unknown value format");
-    return new content.PrimitiveTypeDescription("string");
+    return {
+      valueFormat: content.PropertyValueFormat.Primitive,
+      typeName: r.TypeName,
+    } as content.PrimitiveTypeDescription;
   }
 
   function createSelectClassInfo(r: responseTypes.SelectClassInfo): content.SelectClassInfo {
-    const info = new content.SelectClassInfo(createClassInfo(r.SelectClassInfo), r.IsPolymorphic,
-      createRelationshipPath(r.PathToPrimaryClass));
+    const relatedPropertyPaths = new Array<ec.RelationshipPathInfo>();
     for (const pr of r.RelatedPropertyPaths)
-      info.relatedPropertyPaths.push(createRelationshipPath(pr));
+      relatedPropertyPaths.push(createRelationshipPath(pr));
+    const info = {
+      selectClassInfo: createClassInfo(r.SelectClassInfo),
+      isSelectPolymorphic: r.IsPolymorphic,
+      pathToPrimaryClass: createRelationshipPath(r.PathToPrimaryClass),
+      relatedPropertyPaths,
+    } as content.SelectClassInfo;
     return info;
   }
 
@@ -427,8 +460,13 @@ namespace Conversion {
   function createCategory(r: responseTypes.Category, categories: { [name: string]: content.CategoryDescription }): content.CategoryDescription {
     if (categories.hasOwnProperty(r.Name))
       return categories[r.Name];
-
-    const category = new content.CategoryDescription(r.Name, r.DisplayLabel, r.Description, r.Priority, r.Expand);
+    const category = {
+      name: r.Name,
+      label: r.DisplayLabel,
+      description: r.Description,
+      priority: r.Priority,
+      expand: r.Expand,
+    } as content.CategoryDescription;
     categories[category.name] = category;
     return category;
   }
@@ -477,29 +515,54 @@ namespace Conversion {
 
   function createFieldProperty(r: responseTypes.FieldProperty): content.Property {
     const propertyInfo = createECPropertyInfo(r.Property);
-    const property = new content.Property(propertyInfo);
+    const relatedClassPath = new Array<ec.RelatedClassInfo>();
     for (const pr of r.RelatedClassPath)
-      property.relatedClassPath.push(createRelatedClassInfo(pr));
+      relatedClassPath.push(createRelatedClassInfo(pr));
+    const property = {
+      property: propertyInfo,
+      relatedClassPath,
+    } as content.Property;
     return property;
   }
 
   function createPropertiesField(r: responseTypes.ECPropertiesField, type: content.TypeDescription, editor: content.EditorDescription | null,
     category: content.CategoryDescription, parent: content.NestedContentField | null): content.PropertiesField {
-    const field = new content.PropertiesField(category, r.Name, r.DisplayLabel, type,
-      r.IsReadOnly, r.Priority, editor, parent);
+    const properties = new Array<content.Property>();
     for (const pr of r.Properties)
-      field.properties.push(createFieldProperty(pr));
-    return field;
+      properties.push(createFieldProperty(pr));
+    return {
+      category,
+      name: r.Name,
+      label: r.DisplayLabel,
+      description: type,
+      properties,
+      editor,
+      priority: r.Priority,
+      isReadOnly: r.IsReadOnly,
+      parent,
+    } as content.PropertiesField;
   }
 
   function createNestedContentField(r: responseTypes.NestedContentField, type: content.TypeDescription, editor: content.EditorDescription | null,
     categories: { [name: string]: content.CategoryDescription }, parent: content.NestedContentField | null): content.NestedContentField {
-    assert(type.isStructDescription, "Nested content fields' type should be 'struct'");
+    assert(isStructDescription(type), "Nested content fields' type should be 'struct'");
     const category = categories[r.Category.Name];
-    const field = new content.NestedContentField(category, r.Name, r.DisplayLabel, type.asStructDescription()!,
-      createClassInfo(r.ContentClassInfo), createRelationshipPath(r.PathToPrimary), r.IsReadOnly, r.Priority, editor, parent);
+    const nestedFields = new Array<content.Field>();
+    const field = {
+      category,
+      name: r.Name,
+      label: r.DisplayLabel,
+      description: type,
+      contentClassInfo: createClassInfo(r.ContentClassInfo),
+      pathToPrimaryClass: createRelationshipPath(r.PathToPrimary),
+      nestedFields,
+      editor,
+      priority: r.Priority,
+      isReadOnly: r.IsReadOnly,
+      parent,
+    } as content.NestedContentField;
     for (const nestedField of r.NestedFields)
-      field.nestedFields.push(createField(nestedField, categories, field));
+      nestedFields.push(createField(nestedField, categories, field));
     return field;
   }
 
@@ -520,7 +583,15 @@ namespace Conversion {
     if (isNestedContentField(r)) {
       return createNestedContentField(r as responseTypes.NestedContentField, type, editor, categories, parent);
     }
-    return new content.Field(category, r.Name, r.DisplayLabel, type,
-      r.IsReadOnly, r.Priority, editor, parent);
+    return {
+      category,
+      name: r.Name,
+      label: r.DisplayLabel,
+      description: type,
+      editor,
+      priority: r.Priority,
+      isReadOnly: r.IsReadOnly,
+      parent,
+    } as content.Field;
   }
 }

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-frontend",
+      "comment": "Change content-related classes to interfaces.",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-frontend",
+  "email": "grigas.petraitis@bentley.com"
+}

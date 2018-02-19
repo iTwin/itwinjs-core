@@ -3,7 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import ContentDataProvider from "./ContentDataProvider";
 import ContentBuilder, { PropertyDescription } from "./ContentBuilder";
-import * as content from "../../common/Content";
+import * as content from "../../common/content";
+import { isPrimitiveDescription } from "../../common/content/TypeDescription";
 import { InstanceKey } from "../../common/EC";
 import { ECPresentationManager, PageOptions } from "../../common/ECPresentationManager";
 import { IModelToken } from "@bentley/imodeljs-frontend/lib/common/IModel";
@@ -79,7 +80,7 @@ class Page {
     this.rows = rows;
   }
 
-  private static createRowItemFromContentRecord(descriptor: content.Descriptor, record: content.ContentSetItem): RowItem {
+  private static createRowItemFromContentRecord(descriptor: content.Descriptor, record: content.Item): RowItem {
     // note: for table view we expect the record to always have only 1 primary key
     assert(1 === record.primaryKeys.length);
 
@@ -95,7 +96,7 @@ class Page {
       if (!record.values.hasOwnProperty(cellKey))
         continue;
 
-      const field = descriptor.getFieldByName(cellKey);
+      const field = getFieldByName(descriptor, cellKey);
       if (!field) {
         assert(false, "Record contains property '" + cellKey + "' which is not defined in ContentDescriptor");
         continue;
@@ -208,10 +209,18 @@ class PageContainer {
   }
 }
 
+const getFieldByName = (descriptor: content.Descriptor, name: string): content.Field | undefined => {
+  for (const field of descriptor.fields) {
+    if (field.name === name)
+      return field;
+  }
+  return undefined;
+};
+
 export default class TableViewDataProvider extends ContentDataProvider {
   private _sortColumnKey: string | null = null;
   private _sortDirection: SortDirection = SortDirection.Ascending;
-  private _filterExpression: string | null = null;
+  private _filterExpression: string | undefined;
   private _pages: PageContainer;
   private _keys: InstanceKey[];
 
@@ -225,7 +234,7 @@ export default class TableViewDataProvider extends ContentDataProvider {
   }
 
   protected invalidateCache(): void {
-    this._filterExpression = null;
+    this._filterExpression = undefined;
     this._sortColumnKey = null;
     this._sortDirection = SortDirection.Ascending;
 
@@ -247,7 +256,7 @@ export default class TableViewDataProvider extends ContentDataProvider {
     super.configureContentDescriptor(descriptor);
 
     if (null != this._sortColumnKey) {
-      const sortingField = descriptor.getFieldByName(this._sortColumnKey);
+      const sortingField = getFieldByName(descriptor, this._sortColumnKey);
       if (null != sortingField) {
         descriptor.sortingField = sortingField;
         descriptor.sortDirection = this._sortDirection;
@@ -288,7 +297,7 @@ export default class TableViewDataProvider extends ContentDataProvider {
           description: propertyDescription,
           sortable: true,
           editable: !field.isReadOnly,
-          filterable: field.description.isPrimitiveDescription,
+          filterable: isPrimitiveDescription(field.description),
         };
         cols.push(columnDescription);
       }
