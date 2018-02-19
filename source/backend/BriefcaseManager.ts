@@ -934,9 +934,9 @@ export class BriefcaseManager {
     changeSet.seedFileId = briefcase.fileId!;
     changeSet.fileSize = IModelJsFs.lstatSync(changeSetToken.pathname)!.size.toString();
     changeSet.description = description;
-    if (changeSet.description.length >= 400) {
-      Logger.logWarning(loggingCategory, "pushChanges - Truncating description to 400 characters. " + changeSet.description);
-      changeSet.description = changeSet.description.slice(0, 399);
+    if (changeSet.description.length >= 255) {
+      Logger.logWarning(loggingCategory, "pushChanges - Truncating description to 255 characters. " + changeSet.description);
+      changeSet.description = changeSet.description.slice(0, 254);
     }
 
     const postedChangeSet = await BriefcaseManager.hubClient!.uploadChangeSet(accessToken, briefcase.iModelId, changeSet, changeSetToken.pathname);
