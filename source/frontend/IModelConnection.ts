@@ -6,7 +6,7 @@ import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { CodeSpec } from "../common/Code";
-import { ElementProps, ViewDefinitionProps, ViewQueryParams } from "../common/ElementProps";
+import { ElementProps } from "../common/ElementProps";
 import { EntityQueryParams } from "../common/EntityProps";
 import { IModel, IModelToken } from "../common/IModel";
 import { IModelError, IModelStatus } from "../common/IModelError";
@@ -20,6 +20,7 @@ import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { ModelState, SpatialModelState, SectionDrawingModelState, DrawingModelState, SheetModelState } from "./ModelState";
+import { ViewQueryParams, ViewDefinitionProps } from "../common/ViewProps";
 
 const loggingCategory = "imodeljs-backend.IModelConnection";
 

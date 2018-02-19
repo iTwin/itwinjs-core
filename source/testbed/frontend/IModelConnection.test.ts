@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { CodeSpec, CodeSpecNames } from "../../common/Code";
-import { ViewDefinitionProps } from "../../common/ElementProps";
+import { ViewDefinitionProps } from "../../common/ViewProps";
 import { DrawingViewState, OrthographicViewState, ViewState } from "../../frontend/ViewState";
 import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "../../frontend/IModelConnection";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";

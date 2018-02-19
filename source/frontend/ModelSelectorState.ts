@@ -4,7 +4,7 @@
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core/lib/Id";
 import { ElementState } from "./EntityState";
 import { IModel } from "../common/IModel";
-import { ModelSelectorProps } from "../common/ElementProps";
+import { ModelSelectorProps } from "../common/ViewProps";
 
 /** A set of ids of GeometricModels for a SpatialViewDefinition. */
 export class ModelSelectorState extends ElementState {

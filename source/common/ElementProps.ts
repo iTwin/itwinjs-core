@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64Props, GuidProps } from "@bentley/bentleyjs-core/lib/Id";
 import { CodeProps, Code } from "./Code";
-import { EntityProps, EntityQueryParams } from "./EntityProps";
+import { EntityProps } from "./EntityProps";
 import { GeometryStream } from "./geometry/GeometryStream";
 import { XYZProps, XYProps, YawPitchRollProps, LowAndHighXYZ, LowAndHighXY } from "@bentley/geometry-core/lib/PointVector";
 import { AngleProps } from "@bentley/geometry-core/lib/Geometry";
@@ -104,85 +104,6 @@ export interface InformationPartitionElementProps extends DefinitionElementProps
   description?: string;
 }
 
-/** properties that define a ModelSelector */
-export interface ModelSelectorProps extends ElementProps {
-  models: string[];
-}
-
-/** properties that define a CategorySelector */
-export interface CategorySelectorProps extends ElementProps {
-  categories: string[];
-}
-
-export interface ViewQueryParams extends EntityQueryParams {
-  wantPrivate?: boolean;
-}
-
-/** Parameters used to construct a ViewDefinition */
-export interface ViewDefinitionProps extends DefinitionElementProps {
-  categorySelectorId: Id64Props;
-  displayStyleId: Id64Props;
-  description?: string;
-}
-
-/** properties of a camera */
-export interface CameraProps {
-  lens: AngleProps;
-  focusDist: number; // NOTE: this is abbreviated, do not change!
-  eye: XYZProps;
-}
-
-/** Parameters to construct a ViewDefinition3d */
-export interface ViewDefinition3dProps extends ViewDefinitionProps {
-  cameraOn: boolean;  // if true, camera is valid.
-  origin: XYZProps;    // The lower left back corner of the view frustum.
-  extents: XYZProps;   // The extent of the view frustum.
-  angles: YawPitchRollProps | undefined;    // Rotation of the view frustum (could be undefined if going RotMatrix -> YawPitchRoll).
-  camera: CameraProps;    // The camera used for this view.
-}
-
-/** Parameters to construct a SpatialViewDefinition */
-export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
-  modelSelectorId: Id64Props;
-}
-
-/** Parameters used to construct a ViewDefinition2d */
-export interface ViewDefinition2dProps extends ViewDefinitionProps {
-  baseModelId: Id64Props;
-  origin: XYProps;
-  delta: XYProps;
-  angle: AngleProps;
-}
-
-export interface AuxCoordSystemProps extends ElementProps {
-  type?: number;
-  description?: string;
-}
-
-/**
- * Properties of AuxCoordSystem2d
- * @note angle is stored in degrees
- */
-export interface AuxCoordSystem2dProps extends AuxCoordSystemProps {
-  origin?: XYProps;
-  angle?: number; // in degrees
-}
-
-/**
- * Properties of AuxCoordSystem3d
- * @note All angles are stored in degrees
- */
-export interface AuxCoordSystem3dProps extends AuxCoordSystemProps {
-  origin?: XYZProps;
-  yaw?: AngleProps;  // in degrees
-  pitch?: AngleProps; // in degrees
-  roll?: AngleProps; // in degrees
-}
-
-export interface LightLocationProps extends GeometricElement3dProps {
-  enabled?: boolean;
-}
-
 /** Parameters to specify what element to load. */
 export interface ElementLoadParams {
   id?: Id64Props;
@@ -196,4 +117,8 @@ export interface ElementLoadParams {
 export interface ElementAspectProps extends EntityProps {
   id: Id64Props;
   element: Id64Props;
+}
+
+export interface LightLocationProps extends GeometricElement3dProps {
+  enabled?: boolean;
 }

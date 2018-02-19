@@ -7,8 +7,8 @@ import { ModelSelectorState } from "../../frontend/ModelSelectorState";
 import { IModelConnection } from "../../frontend/IModelConnection";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Code } from "../../common/Code";
-import { ModelSelectorProps } from "../../common/ElementProps";
 import { DrawingModelState, SheetModelState, SpatialModelState } from "../../frontend/ModelState";
+import { ModelSelectorProps } from "../../common/ViewProps";
 
 const iModelLocation = path.join(__dirname, "../../../../backend/lib/backend/test/assets/CompatibilityTestSeed.bim");
 

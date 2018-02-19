@@ -8,7 +8,7 @@ import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
 import { DeploymentEnv } from "@bentley/imodeljs-clients/lib/Clients";
 import { MultiCode, IModelHubClient, CodeState } from "@bentley/imodeljs-clients/lib/IModelHubClients";
 import { Code, CodeSpec } from "../common/Code";
-import { ElementProps, ElementAspectProps, ElementLoadParams, ViewDefinitionProps } from "../common/ElementProps";
+import { ElementProps, ElementAspectProps, ElementLoadParams } from "../common/ElementProps";
 import { IModel, IModelProps } from "../common/IModel";
 import { Configuration } from "../common/Configuration";
 import { IModelVersion } from "../common/IModelVersion";
@@ -37,6 +37,7 @@ import { RequestQueryOptions } from "@bentley/imodeljs-clients/lib";
 import { iModelEngine } from "./IModelEngine";
 import { EntityQueryParams, EntityProps } from "../common/EntityProps";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
+import { ViewDefinitionProps } from "../common/ViewProps";
 
 const loggingCategory = "imodeljs-backend.IModelDb";
 
@@ -277,7 +278,10 @@ export class IModelDb extends IModel {
    * @returns an Id64Set with results of query
    */
   public queryEntityIds(params: EntityQueryParams): Id64Set {
-    let sql: string = "SELECT ECInstanceId AS id FROM " + params.from;
+    let sql = "SELECT HexStr(ECInstanceId) AS id FROM ";
+    if (params.only)
+      sql += "ONLY ";
+    sql += params.from;
     if (params.where) sql += " WHERE " + params.where;
     if (params.orderBy) sql += " ORDER BY " + params.orderBy;
     if (typeof params.limit === "number" && params.limit > 0) sql += " LIMIT " + params.limit;
@@ -287,7 +291,7 @@ export class IModelDb extends IModel {
     this.withPreparedStatement(sql, (stmt) => {
       for (const row of stmt) {
         if (row.id !== undefined)
-          ids.add(row.id.value);
+          ids.add(row.id);
       }
     });
     return ids;
@@ -554,14 +558,9 @@ export class IModelDb extends IModel {
  */
 export class ConcurrencyControl {
   private _pendingRequest: ConcurrencyControl.Request;
-  private _imodel: IModelDb;
   private _codes?: ConcurrencyControl.Codes;
   private _policy?: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy;
-
-  constructor(im: IModelDb) {
-    this._imodel = im;
-    this._pendingRequest = ConcurrencyControl.createRequest();
-  }
+  constructor(private _iModel: IModelDb) { this._pendingRequest = ConcurrencyControl.createRequest(); }
 
   /** @hidden */
   public onSaveChanges() {
@@ -592,38 +591,38 @@ export class ConcurrencyControl {
 
   /** @hidden [[Model.buildConcurrencyControlRequest]] */
   public buildRequestForModel(model: Model, opcode: DbOpcode): void {
-    if (!this._imodel.briefcaseEntry)
+    if (!this._iModel.briefcaseEntry)
       throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this._imodel.briefcaseEntry.nativeDb.buildBriefcaseManagerResourcesRequestForModel(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, JSON.stringify(model.id), opcode);
+    const rc: RepositoryStatus = this._iModel.briefcaseEntry.nativeDb.buildBriefcaseManagerResourcesRequestForModel(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, JSON.stringify(model.id), opcode);
     if (rc !== RepositoryStatus.Success)
       throw new IModelError(rc);
   }
 
   /** @hidden [[Element.buildConcurrencyControlRequest]] */
   public buildRequestForElement(element: Element, opcode: DbOpcode): void {
-    if (!this._imodel.briefcaseEntry)
+    if (!this._iModel.briefcaseEntry)
       throw new IModelError(IModelStatus.BadRequest);
     let rc: RepositoryStatus;
     if (element.id === undefined || opcode === DbOpcode.Insert)
-      rc = this._imodel.briefcaseEntry.nativeDb.buildBriefcaseManagerResourcesRequestForElement(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, JSON.stringify({ modelid: element.model, code: element.code }), opcode);
+      rc = this._iModel.briefcaseEntry.nativeDb.buildBriefcaseManagerResourcesRequestForElement(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, JSON.stringify({ modelid: element.model, code: element.code }), opcode);
     else
-      rc = this._imodel.briefcaseEntry.nativeDb.buildBriefcaseManagerResourcesRequestForElement(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, JSON.stringify(element.id), opcode);
+      rc = this._iModel.briefcaseEntry.nativeDb.buildBriefcaseManagerResourcesRequestForElement(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, JSON.stringify(element.id), opcode);
     if (rc !== RepositoryStatus.Success)
       throw new IModelError(rc);
   }
 
   /** @hidden [[LinkTableRelationship.buildConcurrencyControlRequest]] */
   public buildRequestForLinkTableRelationship(instance: LinkTableRelationship, opcode: DbOpcode): void {
-    if (!this._imodel.briefcaseEntry)
+    if (!this._iModel.briefcaseEntry)
       throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this._imodel.briefcaseEntry.nativeDb.buildBriefcaseManagerResourcesRequestForLinkTableRelationship(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, JSON.stringify(instance), opcode);
+    const rc: RepositoryStatus = this._iModel.briefcaseEntry.nativeDb.buildBriefcaseManagerResourcesRequestForLinkTableRelationship(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, JSON.stringify(instance), opcode);
     if (rc !== RepositoryStatus.Success)
       throw new IModelError(rc);
   }
 
   private captureBulkOpRequest() {
-    if (this._imodel.briefcaseEntry)
-      this._imodel.briefcaseEntry.nativeDb.extractBulkResourcesRequest(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, true, true);
+    if (this._iModel.briefcaseEntry)
+      this._iModel.briefcaseEntry.nativeDb.extractBulkResourcesRequest(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, true, true);
   }
 
   /** @hidden */
@@ -634,7 +633,7 @@ export class ConcurrencyControl {
 
   /** Are there pending, unprocessed requests for locks or codes? */
   public hasPendingRequests(): boolean {
-    if (!this._imodel.briefcaseEntry)
+    if (!this._iModel.briefcaseEntry)
       return false;
     const reqAny: any = ConcurrencyControl.convertRequestToAny(this.pendingRequest);
     return (reqAny.Codes.length !== 0) || (reqAny.Locks.length !== 0);
@@ -647,14 +646,14 @@ export class ConcurrencyControl {
    * @param codesOnly If true, only the codes in the pending request are extracted. The default is to extract all requests.
    */
   public extractPendingRequest(locksOnly?: boolean, codesOnly?: boolean): ConcurrencyControl.Request {
-    if (!this._imodel.briefcaseEntry)
+    if (!this._iModel.briefcaseEntry)
       throw new IModelError(IModelStatus.BadRequest);
 
     const extractLocks: boolean = !codesOnly;
     const extractCodes: boolean = !locksOnly;
 
     const req: ConcurrencyControl.Request = ConcurrencyControl.createRequest();
-    this._imodel.briefcaseEntry.nativeDb.extractBriefcaseManagerResourcesRequest(req as AddonBriefcaseManagerResourcesRequest, this.pendingRequest as AddonBriefcaseManagerResourcesRequest, extractLocks, extractCodes);
+    this._iModel.briefcaseEntry.nativeDb.extractBriefcaseManagerResourcesRequest(req as AddonBriefcaseManagerResourcesRequest, this.pendingRequest as AddonBriefcaseManagerResourcesRequest, extractLocks, extractCodes);
     return req;
   }
 
@@ -678,15 +677,15 @@ export class ConcurrencyControl {
    * @throws [[IModelError]] if the IModelDb is not open or is not connected to an iModel.
    */
   public async request(clientAccessToken: AccessToken, req?: ConcurrencyControl.Request): Promise<void> {
-    if (!this._imodel.briefcaseEntry)
-      return Promise.reject(this._imodel._newNotOpenError());
+    if (!this._iModel.briefcaseEntry)
+      return Promise.reject(this._iModel._newNotOpenError());
 
     if (req === undefined)
       req = this.extractPendingRequest();
 
     const accessToken = ConcurrencyControl.getAccessToken(clientAccessToken);
-    const codeResults = await this.reserveCodesFromRequest(req, this._imodel.briefcaseEntry, accessToken);
-    await this.acquireLocksFromRequest(req, this._imodel.briefcaseEntry, accessToken);
+    const codeResults = await this.reserveCodesFromRequest(req, this._iModel.briefcaseEntry, accessToken);
+    await this.acquireLocksFromRequest(req, this._iModel.briefcaseEntry, accessToken);
 
     let err: ConcurrencyControl.RequestError | undefined;
     for (const code of codeResults) {
@@ -825,21 +824,21 @@ export class ConcurrencyControl {
 
   /** Reserve the specified codes */
   public async reserveCodes(clientAccessToken: AccessToken, codes: Code[]): Promise<MultiCode[]> {
-    if (this._imodel.briefcaseEntry === undefined)
-      return Promise.reject(this._imodel._newNotOpenError());
+    if (this._iModel.briefcaseEntry === undefined)
+      return Promise.reject(this._iModel._newNotOpenError());
 
-    const bySpecId = this.buildCodeRequestsFromCodes(this._imodel.briefcaseEntry, codes);
+    const bySpecId = this.buildCodeRequestsFromCodes(this._iModel.briefcaseEntry, codes);
     if (bySpecId === undefined)
       return Promise.reject(new IModelError(IModelStatus.NotFound));
 
     const accessToken = ConcurrencyControl.getAccessToken(clientAccessToken);
-    return this.reserveCodes2(bySpecId, this._imodel.briefcaseEntry, accessToken);
+    return this.reserveCodes2(bySpecId, this._iModel.briefcaseEntry, accessToken);
   }
 
   // Query the state of the Codes for the specified CodeSpec and scope.
   public async queryCodeStates(clientAccessToken: AccessToken, specId: Id64, scopeId: string, _value?: string): Promise<MultiCode[]> {
-    if (this._imodel.briefcaseEntry === undefined)
-      return Promise.reject(this._imodel._newNotOpenError());
+    if (this._iModel.briefcaseEntry === undefined)
+      return Promise.reject(this._iModel._newNotOpenError());
 
     const queryOptions: RequestQueryOptions = {
       $filter: `CodeSpecId+eq+'${specId}'+and+CodeScope+eq+'${scopeId}'`,
@@ -853,7 +852,7 @@ export class ConcurrencyControl {
 
     const imodelHubClient = this.getIModelHubClient();
     const accessToken = ConcurrencyControl.getAccessToken(clientAccessToken);
-    return imodelHubClient.getMultipleCodes(accessToken, this._imodel.briefcaseEntry.iModelId, queryOptions);
+    return imodelHubClient.getMultipleCodes(accessToken, this._iModel.briefcaseEntry.iModelId, queryOptions);
   }
 
   /** Abandon any pending requests for locks or codes. */
@@ -875,12 +874,12 @@ export class ConcurrencyControl {
    * @returns true if all codes are available or false if any is not.
    */
   public async areCodesAvailable(clientAccessToken: AccessToken, req?: ConcurrencyControl.Request): Promise<boolean> {
-    if (!this._imodel.briefcaseEntry)
-      return Promise.reject(this._imodel._newNotOpenError());
+    if (!this._iModel.briefcaseEntry)
+      return Promise.reject(this._iModel._newNotOpenError());
     // throw new Error("TBD");
     if (req === undefined)
       req = this.pendingRequest;
-    const bySpecId = this.buildCodeRequests(this._imodel.briefcaseEntry, req);
+    const bySpecId = this.buildCodeRequests(this._iModel.briefcaseEntry, req);
 
     const accessToken = ConcurrencyControl.getAccessToken(clientAccessToken);
     if (bySpecId !== undefined) {
@@ -907,8 +906,8 @@ export class ConcurrencyControl {
    * @returns true if all resources could be acquired or false if any could not be acquired.
    */
   public async areAvailable(clientAccessToken: AccessToken, req?: ConcurrencyControl.Request): Promise<boolean> {
-    if (!this._imodel.briefcaseEntry)
-      return Promise.reject(this._imodel._newNotOpenError());
+    if (!this._iModel.briefcaseEntry)
+      return Promise.reject(this._iModel._newNotOpenError());
 
     if (req === undefined)
       req = this.pendingRequest;
@@ -935,14 +934,14 @@ export class ConcurrencyControl {
    */
   public setPolicy(policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy): void {
     this._policy = policy;
-    if (!this._imodel.briefcaseEntry)
+    if (!this._iModel.briefcaseEntry)
       throw new IModelError(IModelStatus.BadRequest);
     let rc: RepositoryStatus = RepositoryStatus.Success;
     if (policy as ConcurrencyControl.OptimisticPolicy) {
       const oc: ConcurrencyControl.OptimisticPolicy = policy as ConcurrencyControl.OptimisticPolicy;
-      rc = this._imodel.briefcaseEntry.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(oc.conflictResolution);
+      rc = this._iModel.briefcaseEntry.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(oc.conflictResolution);
     } else {
-      rc = this._imodel.briefcaseEntry.nativeDb.setBriefcaseManagerPessimisticConcurrencyControlPolicy();
+      rc = this._iModel.briefcaseEntry.nativeDb.setBriefcaseManagerPessimisticConcurrencyControlPolicy();
     }
     if (RepositoryStatus.Success !== rc) {
       throw new IModelError(rc);
@@ -961,18 +960,18 @@ export class ConcurrencyControl {
    * @throws [[IModelError]] if it would be illegal to enter bulk operation mode.
    */
   private startBulkOperation(): void {
-    if (!this._imodel.briefcaseEntry)
+    if (!this._iModel.briefcaseEntry)
       throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this._imodel.briefcaseEntry.nativeDb.briefcaseManagerStartBulkOperation();
+    const rc: RepositoryStatus = this._iModel.briefcaseEntry.nativeDb.briefcaseManagerStartBulkOperation();
     if (RepositoryStatus.Success !== rc)
       throw new IModelError(rc);
   }
 
   /** Check if there is a bulk operation in progress */
   private inBulkOperation(): boolean {
-    if (!this._imodel.briefcaseEntry)
+    if (!this._iModel.briefcaseEntry)
       return false;
-    return this._imodel.briefcaseEntry.nativeDb.inBulkOperation();
+    return this._iModel.briefcaseEntry.nativeDb.inBulkOperation();
   }
 
   /*
@@ -992,7 +991,7 @@ export class ConcurrencyControl {
   /** API to reserve Codes and query the status of Codes */
   get codes(): ConcurrencyControl.Codes {
     if (this._codes === undefined)
-      this._codes = new ConcurrencyControl.Codes(this._imodel);
+      this._codes = new ConcurrencyControl.Codes(this._iModel);
     return this._codes;
   }
 }
@@ -1063,8 +1062,7 @@ export namespace ConcurrencyControl {
 
   /** Code manager */
   export class Codes {
-    private _imodel: IModelDb;
-    constructor(im: IModelDb) { this._imodel = im; }
+    constructor(private _iModel: IModelDb) { }
 
     /**
      * Reserve Codes. If no Codes are specified, then all of the Codes that are in currently pending requests are reserved.
@@ -1078,19 +1076,19 @@ export namespace ConcurrencyControl {
      */
     public async reserve(clientAccessToken: AccessToken, codes?: Code[]) {
 
-      if (!this._imodel.briefcaseEntry)
-        return Promise.reject(this._imodel._newNotOpenError());
+      if (!this._iModel.briefcaseEntry)
+        return Promise.reject(this._iModel._newNotOpenError());
 
       if (codes !== undefined) {
-        await this._imodel.concurrencyControl.reserveCodes(clientAccessToken, codes);
+        await this._iModel.concurrencyControl.reserveCodes(clientAccessToken, codes);
         // TODO: examine result and throw CodeReservationError if some codes could not be reserved
         return;
       }
 
-      const req: ConcurrencyControl.Request = this._imodel.concurrencyControl.extractPendingRequest(false, true);
-      this._imodel.briefcaseEntry.nativeDb.extractBulkResourcesRequest(req as AddonBriefcaseManagerResourcesRequest, false, true);
-      this._imodel.briefcaseEntry.nativeDb.extractBriefcaseManagerResourcesRequest(req as AddonBriefcaseManagerResourcesRequest, req as AddonBriefcaseManagerResourcesRequest, false, true);
-      return this._imodel.concurrencyControl.request(clientAccessToken, req);
+      const req: ConcurrencyControl.Request = this._iModel.concurrencyControl.extractPendingRequest(false, true);
+      this._iModel.briefcaseEntry.nativeDb.extractBulkResourcesRequest(req as AddonBriefcaseManagerResourcesRequest, false, true);
+      this._iModel.briefcaseEntry.nativeDb.extractBriefcaseManagerResourcesRequest(req as AddonBriefcaseManagerResourcesRequest, req as AddonBriefcaseManagerResourcesRequest, false, true);
+      return this._iModel.concurrencyControl.request(clientAccessToken, req);
     }
 
     /**
@@ -1101,18 +1099,17 @@ export namespace ConcurrencyControl {
      * @param value Optional. The Code value to query.
      */
     public async query(accessToken: AccessToken, specId: Id64, scopeId: string, value?: string): Promise<MultiCode[]> {
-      return this._imodel.concurrencyControl.queryCodeStates(accessToken, specId, scopeId, value);
+      return this._iModel.concurrencyControl.queryCodeStates(accessToken, specId, scopeId, value);
     }
   }
 }
 
 /** The collection of models in an [[IModelDb]]. */
 export class IModelDbModels {
-  private _iModel: IModelDb;
   private _loaded: LRUMap<string, Model>;
 
   /** @hidden */
-  public constructor(iModel: IModelDb, max: number = 500) { this._iModel = iModel; this._loaded = new LRUMap<string, Model>(max); }
+  public constructor(private _iModel: IModelDb, max: number = 500) { this._loaded = new LRUMap<string, Model>(max); }
 
   /** Get the Model with the specified identifier.
    * @param modelId The Model identifier.
@@ -1218,14 +1215,13 @@ export class IModelDbModels {
 
 /** The collection of elements in an [[IModelDb]]. */
 export class IModelDbElements {
-  private _iModel: IModelDb;
   private _loaded: LRUMap<string, Element>;
 
   /** get the map of loaded elements */
   public get loaded() { return this._loaded; }
 
   /** @hidden */
-  public constructor(iModel: IModelDb, maxElements: number = 2000) { this._iModel = iModel; this._loaded = new LRUMap<string, Element>(maxElements); }
+  public constructor(private _iModel: IModelDb, maxElements: number = 2000) { this._loaded = new LRUMap<string, Element>(maxElements); }
 
   /** Private implementation details of getElementProps */
   private _getElementProps(opts: ElementLoadParams): ElementProps {
@@ -1436,10 +1432,8 @@ export class IModelDbElements {
 
 /** The collection of views in an [[IModelDb]]. */
 export class IModelDbViews {
-  private _iModel: IModelDb;
-
   /** @hidden */
-  public constructor(iModel: IModelDb) { this._iModel = iModel; }
+  public constructor(private _iModel: IModelDb) { }
 
   /** Query for the array of ViewDefinitionProps of the specified class and matching the specified IsPrivate setting.
    * @param className Query for view definitions of this class.
@@ -1476,45 +1470,28 @@ export class IModelDbViews {
  * Local Txns in an IModelDb. Local Txns persist only until [[IModelDb.pushChanges]] is called.
  */
 export class TxnManager {
-  private _iModel: IModelDb;
-
-  constructor(iModel: IModelDb) {
-    this._iModel = iModel;
-  }
+  constructor(private _iModel: IModelDb) { }
 
   /** Get the ID of the first transaction, if any. */
-  public queryFirstTxnId(): TxnManager.TxnId {
-    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerQueryFirstTxnId();
-  }
+  public queryFirstTxnId(): TxnManager.TxnId { return this._iModel.briefcaseEntry!.nativeDb!.txnManagerQueryFirstTxnId(); }
 
   /** Get the successor of the specified TxnId */
-  public queryNextTxnId(txnId: TxnManager.TxnId): TxnManager.TxnId {
-    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerQueryNextTxnId(txnId);
-  }
+  public queryNextTxnId(txnId: TxnManager.TxnId): TxnManager.TxnId { return this._iModel.briefcaseEntry!.nativeDb!.txnManagerQueryNextTxnId(txnId); }
 
   /** Get the predecessor of the specified TxnId */
-  public queryPreviousTxnId(txnId: TxnManager.TxnId): TxnManager.TxnId {
-    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerQueryPreviousTxnId(txnId);
-  }
+  public queryPreviousTxnId(txnId: TxnManager.TxnId): TxnManager.TxnId { return this._iModel.briefcaseEntry!.nativeDb!.txnManagerQueryPreviousTxnId(txnId); }
 
   /** Get the ID of the current (tip) transaction.  */
-  public getCurrentTxnId(): TxnManager.TxnId {
-    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerGetCurrentTxnId();
-  }
+  public getCurrentTxnId(): TxnManager.TxnId { return this._iModel.briefcaseEntry!.nativeDb!.txnManagerGetCurrentTxnId(); }
 
   /** Get the description that was supplied when the specified transaction was saved. */
-  public getTxnDescription(txnId: TxnManager.TxnId): string {
-    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerGetTxnDescription(txnId);
-  }
+  public getTxnDescription(txnId: TxnManager.TxnId): string { return this._iModel.briefcaseEntry!.nativeDb!.txnManagerGetTxnDescription(txnId); }
 
   /** Test if a TxnId is valid */
-  public isTxnIdValid(txnId: TxnManager.TxnId): boolean {
-    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerIsTxnIdValid(txnId);
-  }
+  public isTxnIdValid(txnId: TxnManager.TxnId): boolean { return this._iModel.briefcaseEntry!.nativeDb!.txnManagerIsTxnIdValid(txnId); }
 
   /** Make a description of the changeset by combining all local txn comments. */
   public describeChangeSet(endTxnId?: TxnManager.TxnId): string {
-
     if (endTxnId === undefined)
       endTxnId = this.getCurrentTxnId();
 

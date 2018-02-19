@@ -13,8 +13,9 @@ import { DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import {
   ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
   ViewAttachmentProps, SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,
-  InformationPartitionElementProps, AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, LightLocationProps, DefinitionElementProps,
+  InformationPartitionElementProps, LightLocationProps, DefinitionElementProps,
 } from "../common/ElementProps";
+import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps } from "../common/ViewProps";
 
 /**
  * Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.

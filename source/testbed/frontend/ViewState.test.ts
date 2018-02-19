@@ -11,10 +11,10 @@ import * as path from "path";
 import { AuxCoordSystemSpatialState } from "../../frontend/AuxCoordSys";
 import { CategorySelectorState } from "../../frontend/CategorySelectorState";
 import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
-import { SpatialViewDefinitionProps } from "../../common/ElementProps";
 import { ModelSelectorState } from "../../frontend/ModelSelectorState";
 import { IModelConnection } from "../../frontend/IModelConnection";
 import { DisplayStyle3dState } from "../../frontend/DisplayStyleState";
+import { SpatialViewDefinitionProps } from "../../common/ViewProps";
 
 const iModelLocation = path.join(__dirname, "../../../../backend/lib/backend/test/assets/test.bim");
 
