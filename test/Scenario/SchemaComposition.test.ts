@@ -18,11 +18,9 @@ describe("Schema Composition", () => {
       await personClass.createPrimitiveProperty("Name", PrimitiveType.String);
 
       const addressClass = await baseSchema.createStructClass("Address", undefined, "Address");
-      const houseNumberProperty = await addressClass.createPrimitiveProperty("HouseNumber", PrimitiveType.Integer);
-      houseNumberProperty.label = "House Number";
+      await addressClass.createPrimitiveProperty("HouseNumber", PrimitiveType.Integer, "House Number");
 
-      const primaryAddressProperty = await personClass.createStructProperty("PrimaryAddress", addressClass);
-      primaryAddressProperty.label = "Primary Address";
+      const primaryAddressProperty = await personClass.createStructProperty("PrimaryAddress", addressClass, "House Number");
       assert((await primaryAddressProperty.structClass).label === "Address", "Wrong label returned for struct property address");
       assert((await primaryAddressProperty.structClass).schema.schemaKey.name === "BaseSchema", "Struct class returned wrong schema");
       // bug: the next line does not work, yet. schemaName is unset

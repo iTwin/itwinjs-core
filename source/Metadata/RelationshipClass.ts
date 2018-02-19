@@ -67,7 +67,7 @@ export default class RelationshipClass extends ECClass {
       direction = parseStrengthDirection(direction);
 
     const lazyRelationship = new DelayedPromiseWithProps(resolvedRelationship.key, async () => resolvedRelationship!);
-    return this.addProperty(new NavigationProperty(name, lazyRelationship, direction));
+    return this.addProperty(new NavigationProperty(this, name, lazyRelationship, direction));
   }
 
   /**
