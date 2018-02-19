@@ -14,7 +14,7 @@ export interface RelatedElementProps {
   relClassName?: string;
 }
 
-/** The properties that define an Element */
+/** The properties that define a BIS Element */
 export interface ElementProps extends EntityProps {
   model?: Id64Props;
   code?: CodeProps;
@@ -24,7 +24,7 @@ export interface ElementProps extends EntityProps {
   jsonProperties?: any;
 }
 
-/** The Id and relationship class of an Element that is related to another Element */
+/** The Id and relationship class of an Element that is somehow related to another Element */
 export class RelatedElement implements RelatedElementProps {
   public readonly id: Id64;
   public readonly relClassName?: string;
