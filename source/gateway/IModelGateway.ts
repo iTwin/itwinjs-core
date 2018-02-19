@@ -83,32 +83,24 @@ export abstract class IModelGateway extends Gateway {
    * @returns All rows as an array or an empty array if nothing was selected
    * @throws [[IModelError]] if the ECSQL is invalid
    */
-  public async executeQuery(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object): Promise<any[]> {
-    return this.forward.apply(this, arguments);
-  }
+  public async executeQuery(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object): Promise<any[]> { return this.forward.apply(this, arguments); }
 
   /** Return an array of model JSON strings given an array of stringified model ids. */
-  public async getModelProps(_iModelToken: IModelToken, _modelIds: Id64Set): Promise<any[]> {
-    return this.forward.apply(this, arguments);
-  }
+  public async getModelProps(_iModelToken: IModelToken, _modelIds: Id64Set): Promise<any[]> { return this.forward.apply(this, arguments); }
 
-  public async queryModelProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<any[]> {
-    return this.forward.apply(this, arguments);
-  }
+  public async queryModelProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<any[]> { return this.forward.apply(this, arguments); }
 
   /** Return an array of element JSON strings given an array of stringified element ids. */
-  public async getElementProps(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<any[]> {
-    return this.forward.apply(this, arguments);
-  }
-  /** Return an array of element JSON strings given an array of stringified element ids. */
+  public async getElementProps(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<any[]> { return this.forward.apply(this, arguments); }
+
+  /** Return an array of element JSON strings given an EntityQueryParams. */
+  public async queryElementProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<string[]> { return this.forward.apply(this, arguments); }
 
   /** Return a set of ids from a query constructed from the specified parameters. */
   public async queryEntityIds(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<Id64Set> { return this.forward.apply(this, arguments); }
 
   /** Return an array of elements formatted for presentation given an array of stringified element ids. */
-  public async formatElements(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<any[]> {
-    return this.forward.apply(this, arguments);
-  }
+  public async formatElements(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<any[]> { return this.forward.apply(this, arguments); }
 
   /** Returns an array of class entries given a starting class and walking up the inheritance chain.
    * Each entry contains the class name and the class meta data.

@@ -8,7 +8,7 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import { CodeSpec } from "../common/Code";
 import { ElementProps, ViewDefinitionProps } from "../common/ElementProps";
 import { EntityQueryParams } from "../common/EntityProps";
-import { IModel, IModelToken, IModelProps } from "../common/IModel";
+import { IModel, IModelToken } from "../common/IModel";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { ModelProps, ModelQueryParams } from "../common/ModelProps";
 import { IModelGateway } from "../gateway/IModelGateway";
@@ -25,7 +25,7 @@ const loggingCategory = "imodeljs-backend.IModelConnection";
 
 /** A connection to an iModel database hosted on the backend. */
 export class IModelConnection extends IModel {
-  /** Get access to the [[Model]] entities in this IModel */
+  /** The [[Model]] entities in this IModel */
   public readonly models: IModelConnectionModels;
   public readonly elements: IModelConnectionElements;
   public readonly codeSpecs: IModelConnectionCodeSpecs;
@@ -33,9 +33,9 @@ export class IModelConnection extends IModel {
   public readonly hilited: HilitedSet;
   public readonly selectionSet: SelectionSet;
 
-  private constructor(iModelToken: IModelToken, name: string, props: IModelProps) {
-    super(iModelToken);
-    super.initialize(name, props);
+  private constructor(iModel: IModel) {
+    super(iModel.iModelToken);
+    super.initialize(iModel.name, iModel);
     this.models = new IModelConnectionModels(this);
     this.elements = new IModelConnectionElements(this);
     this.codeSpecs = new IModelConnectionCodeSpecs(this);
@@ -44,8 +44,11 @@ export class IModelConnection extends IModel {
     this.selectionSet = new SelectionSet(this);
   }
 
-  private static create(iModel: IModel): IModelConnection {
-    return new IModelConnection(iModel.iModelToken, iModel.name, iModel);
+  /** @hidden */
+  public static async toPropsArray(jsonArray: string[]): Promise<any[]> {
+    const props: any[] = [];
+    jsonArray.forEach((json) => props.push(JSON.parse(json)));
+    return props;
   }
 
   /** Open an iModel from iModelHub */
@@ -64,7 +67,7 @@ export class IModelConnection extends IModel {
     Logger.logTrace(loggingCategory, "IModelConnection.open", () => ({ iModelId, openMode, changeSetId }));
 
     // todo: Setup userId if it's a readWrite open - this is necessary to reopen the same exact briefcase at the backend
-    return IModelConnection.create(openResponse);
+    return new IModelConnection(openResponse);
   }
 
   /** Close this iModel */
@@ -84,7 +87,7 @@ export class IModelConnection extends IModel {
   public static async openStandalone(fileName: string, openMode = OpenMode.Readonly): Promise<IModelConnection> {
     const openResponse: IModel = await IModelGateway.getProxy().openStandalone(fileName, openMode);
     Logger.logTrace(loggingCategory, "IModelConnection.openStandalone", () => ({ fileName, openMode }));
-    return IModelConnection.create(openResponse);
+    return new IModelConnection(openResponse);
   }
 
   /** Close this standalone iModel */
@@ -186,113 +189,113 @@ export class IModelConnection extends IModel {
 
 /** The collection of models for an [[IModelConnection]]. */
 export class IModelConnectionModels {
-  private _iModel: IModelConnection;
+  public loadedModels = new Map<string, ModelState>();
 
   /** @hidden */
-  public constructor(iModel: IModelConnection) { this._iModel = iModel; }
+  constructor(private _iModel: IModelConnection) { }
 
   /** The Id of the repository model. */
   public get repositoryModelId(): Id64 { return new Id64("0x1"); }
 
-  private async modelPropsFromArray(modelJsonArray: string[]) {
-    const models: ModelProps[] = [];
-    for (const modelJson of modelJsonArray)
-      models.push(JSON.parse(modelJson) as ModelProps);
-    return models;
-  }
   /** Get a batch of [[ModelProps]] given a list of model ids. */
   public async getModelProps(modelIds: Id64Arg): Promise<ModelProps[]> {
-    return this.modelPropsFromArray(await IModelGateway.getProxy().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds)));
+    return IModelConnection.toPropsArray(await IModelGateway.getProxy().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds)));
   }
 
-  /** load a set of models. */
-  public async loadModels(modelId: Id64Arg): Promise<ModelState[]> {
-    const propsArray = await this.getModelProps(modelId);
-    const modelStates: ModelState[] = [];
+  public getLoadedModel(id: string): ModelState | undefined { return this.loadedModels.get(id); }
 
-    for (const props of propsArray) {
-      const names = props.classFullName.split(":"); // fullClassName is in format schema:className.
-      if (names.length < 2)
-        continue;
-      let ctor = ModelState;
-      switch (names[1]) {
-        case "PhysicalModel":
-        case "SpatialLocationModel":
-        case "WebMercatorModel":
-          ctor = SpatialModelState;
-          break;
-        case "SectionDrawingModel":
-          ctor = SectionDrawingModelState;
-          break;
-        case "DrawingModel":
-          ctor = DrawingModelState;
-          break;
-        case "SheetModel":
-          ctor = SheetModelState;
-          break;
-      }
-      modelStates.push(new ctor(props, this._iModel));
-    }
-    return modelStates;
+  /** load a set of models by ModelId. After calling this method, you may get the ModelState objects by calling getLoadedModel. */
+  public async loadModels(modelIds: Id64Arg): Promise<void> {
+    const notLoaded = new Set<string>();
+    Id64.toIdSet(modelIds).forEach((id) => {
+      const loaded = this.getLoadedModel(id);
+      if (!loaded)
+        notLoaded.add(id);
+    });
+
+    if (notLoaded.size === 0)
+      return;
+
+    try {
+      (await this.getModelProps(notLoaded)).forEach((props) => {
+        const names = props.classFullName.split(":"); // fullClassName is in format schema:className.
+        if (names.length < 2)
+          return;
+        let ctor = ModelState;
+        switch (names[1]) {
+          case "PhysicalModel":
+          case "SpatialLocationModel":
+          case "WebMercatorModel":
+            ctor = SpatialModelState;
+            break;
+          case "SectionDrawingModel":
+            ctor = SectionDrawingModelState;
+            break;
+          case "DrawingModel":
+            ctor = DrawingModelState;
+            break;
+          case "SheetModel":
+            ctor = SheetModelState;
+            break;
+        }
+        const modelState = new ctor(props, this._iModel);
+        this.loadedModels.set(modelState.id.value, modelState);
+      });
+    } catch (err) { } // ignore error, we had nothing to do.
   }
 
-  /** Query for a set of ModelProps of the specified query parameters. */
-  public async queryModelProps(paramsIn: ModelQueryParams): Promise<ModelProps[]> {
-    const params: ModelQueryParams = {};
-    params.from = paramsIn.from ? paramsIn.from : ModelState.sqlName;
-    params.where = paramsIn.where ? paramsIn.where : "";
-    params.limit = paramsIn.limit;
-    params.offset = paramsIn.offset;
-    params.orderBy = paramsIn.orderBy;
-    if (!paramsIn.wantPrivate) {
+  /**
+   * Query for a set of ModelProps of the specified ModelQueryParams
+   */
+  public async queryModelProps(queryParams: ModelQueryParams): Promise<ModelProps[]> {
+    const params: ModelQueryParams = Object.assign({}, queryParams); // make a copy
+    params.from = queryParams.from || ModelState.sqlName; // use "BisCore.Model" as default class name
+    params.where = queryParams.where || "";
+    if (!queryParams.wantPrivate) {
       if (params.where.length > 0) params.where += " AND ";
-      params.where += "IsPrivate=FALSE";
+      params.where += "IsPrivate=FALSE ";
     }
-    if (!paramsIn.wantTemplate) {
+    if (!queryParams.wantTemplate) {
       if (params.where.length > 0) params.where += " AND ";
-      params.where += "IsTemplate=FALSE";
+      params.where += "IsTemplate=FALSE ";
     }
-    return this.modelPropsFromArray(await IModelGateway.getProxy().queryModelProps(this._iModel.iModelToken, params));
+    return IModelConnection.toPropsArray(await IModelGateway.getProxy().queryModelProps(this._iModel.iModelToken, params));
   }
 }
 
 /** The collection of elements for an [[IModelConnection]]. */
 export class IModelConnectionElements {
-  private _iModel: IModelConnection;
-
   /** @hidden */
-  public constructor(iModel: IModelConnection) { this._iModel = iModel; }
+  public constructor(private _iModel: IModelConnection) { }
 
   /** The Id of the root subject element. */
   public get rootSubjectId(): Id64 { return new Id64("0x1"); }
 
-  /** Ask the backend for a batch of [[ElementProps]] given one or more element ids. */
+  /** get a set of element ids that satisfy a query */
+  public async queryElementIds(params: EntityQueryParams): Promise<Id64Set> { return this._iModel.queryEntityIds(params); }
+
+  /** Get a batch of [[ElementProps]] given one or more element ids. */
   public async getElementProps(arg: Id64Arg): Promise<ElementProps[]> {
-    const elementJsonArray: any[] = await IModelGateway.getProxy().getElementProps(this._iModel.iModelToken, Id64.toIdSet(arg));
-    const elements: ElementProps[] = [];
-    for (const elementJson of elementJsonArray)
-      elements.push(JSON.parse(elementJson) as ElementProps);
-    return elements;
+    return IModelConnection.toPropsArray(await IModelGateway.getProxy().getElementProps(this._iModel.iModelToken, Id64.toIdSet(arg)));
+  }
+
+  /** get a bach of [[ElementProps]] that satisfy a query */
+  public async queryElementProps(params: EntityQueryParams): Promise<ElementProps[]> {
+    return IModelConnection.toPropsArray(await IModelGateway.getProxy().queryElementProps(this._iModel.iModelToken, params));
   }
 
   /** Ask the backend to format (for presentation) the specified list of element ids. */
   public async formatElements(elementIds: Id64Arg): Promise<any[]> {
     return await IModelGateway.getProxy().formatElements(this._iModel.iModelToken, Id64.toIdSet(elementIds));
   }
-
-  /** get a set of element ids that satisfy a query */
-  public async queryElementIds(params: EntityQueryParams): Promise<Id64Set> { return this._iModel.queryEntityIds(params); }
 }
 
 /** The collection of [[CodeSpec]] entities for an [[IModelConnection]]. */
 export class IModelConnectionCodeSpecs {
-  private _iModel: IModelConnection;
   private _loaded?: CodeSpec[];
 
   /** @hidden */
-  constructor(imodel: IModelConnection) {
-    this._iModel = imodel;
-  }
+  constructor(private _iModel: IModelConnection) { }
 
   /** Loads all CodeSpec from the remote IModelDb. */
   private async _loadAllCodeSpecs(): Promise<void> {
@@ -340,12 +343,8 @@ export class IModelConnectionCodeSpecs {
 
 /** The collection of views for an [[IModelConnection]]. */
 export class IModelConnectionViews {
-  private _iModel: IModelConnection;
-
   /** @hidden */
-  constructor(iModel: IModelConnection) {
-    this._iModel = iModel;
-  }
+  constructor(private _iModel: IModelConnection) { }
 
   /** Query for the array of ViewDefinitionProps of the specified class and matching the specified IsPrivate setting.
    * @param className Query for view definitions of this class.

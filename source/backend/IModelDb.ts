@@ -35,7 +35,7 @@ import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { AddonRegistry } from "./AddonRegistry";
 import { RequestQueryOptions } from "@bentley/imodeljs-clients/lib";
 import { iModelEngine } from "./IModelEngine";
-import { EntityQueryParams } from "../common/EntityProps";
+import { EntityQueryParams, EntityProps } from "../common/EntityProps";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 
 const loggingCategory = "imodeljs-backend.IModelDb";
@@ -52,6 +52,7 @@ BisCore.registerSchema();
 /** Represents a physical copy (briefcase) of an iModel that can be accessed as a file. */
 export class IModelDb extends IModel {
   public static readonly defaultLimit = 1000;
+  public static readonly maxLimit = 10000;
   public models: IModelDbModels;
   public elements: IModelDbElements;
   public views: IModelDbViews;
@@ -210,13 +211,11 @@ export class IModelDb extends IModel {
    * @returns the prepared statement
    * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSql syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
    */
-  public getPreparedStatement(ecsql: string): ECSqlStatement {
-    const cs = this.statementCache.find(ecsql);
-    if (cs !== undefined && cs.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
-      assert(cs.statement.isShared());
-      assert(cs.statement.isPrepared());
-      cs.useCount++;
-      return cs.statement;
+  private getPreparedStatement(ecsql: string): ECSqlStatement {
+    const cachedStatement = this.statementCache.find(ecsql);
+    if (cachedStatement !== undefined && cachedStatement.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
+      cachedStatement.useCount++;
+      return cachedStatement.statement;
     }
 
     this.statementCache.removeUnusedStatementsIfNecessary();
@@ -224,20 +223,21 @@ export class IModelDb extends IModel {
     this.statementCache.add(ecsql, stmt);
     return stmt;
   }
+  private releasePreparedStatement(stmt: ECSqlStatement): void { this.statementCache.release(stmt); }
 
   /** Use a prepared statement. This function takes care of preparing the statement and then releasing it.
    * @param ecsql The ECSql statement to execute
-   * @param cb the callback to invoke on the prepared statement
+   * @param callback the callback to invoke on the prepared statement
    * @returns the value returned by cb
    */
-  public withPreparedStatement<T>(ecsql: string, cb: (stmt: ECSqlStatement) => T): T {
+  public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T {
     const stmt = this.getPreparedStatement(ecsql);
     try {
-      const val: T = cb(stmt);
+      const val = callback(stmt);
       this.releasePreparedStatement(stmt);
       return val;
     } catch (err) {
-      this.releasePreparedStatement(stmt);
+      this.releasePreparedStatement(stmt); // always release statement
       Logger.logError(loggingCategory, err.toString());
       throw err;
     }
@@ -264,7 +264,7 @@ export class IModelDb extends IModel {
       const rows: any[] = [];
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
         rows.push(stmt.getRow());
-        if (rows.length >= IModelDb.defaultLimit)
+        if (rows.length >= IModelDb.maxLimit)
           break; // don't let a "rogue" query consume too many resources
       }
       return rows;
@@ -293,7 +293,6 @@ export class IModelDb extends IModel {
     return ids;
   }
 
-  public releasePreparedStatement(stmt: ECSqlStatement): void { this.statementCache.release(stmt); }
   public clearStatementCacheOnClose(): void { this.statementCache.clearOnClose(); }
 
   /** Get the GUID of this iModel. */
@@ -433,23 +432,14 @@ export class IModelDb extends IModel {
     return this._classMetaDataRegistry;
   }
 
-  /** Get access to the ConcurrencyControl for this IModel. */
-  public get concurrencyControl(): ConcurrencyControl {
-    if (this._concurrency === undefined) this._concurrency = new ConcurrencyControl(this);
-    return this._concurrency;
-  }
+  /** Get the ConcurrencyControl for this IModel. */
+  public get concurrencyControl(): ConcurrencyControl { return (this._concurrency !== undefined) ? this._concurrency : (this._concurrency = new ConcurrencyControl(this)); }
 
   /** Get the TxnManager for this IModelDb. */
-  public get Txns(): TxnManager {
-    if (this._txnManager === undefined) this._txnManager = new TxnManager(this);
-    return this._txnManager;
-  }
+  public get Txns(): TxnManager { return (this._txnManager !== undefined) ? this._txnManager : (this._txnManager = new TxnManager(this)); }
 
-  /** Get access to the CodeSpecs in this IModel. */
-  public get codeSpecs(): CodeSpecs {
-    if (this._codeSpecs === undefined) this._codeSpecs = new CodeSpecs(this);
-    return this._codeSpecs;
-  }
+  /** Get the CodeSpecs in this IModel. */
+  public get codeSpecs(): CodeSpecs { return (this._codeSpecs !== undefined) ? this._codeSpecs : (this._codeSpecs = new CodeSpecs(this)); }
 
   /** @hidden */
   public insertCodeSpec(codeSpec: CodeSpec): Id64 {
@@ -476,7 +466,8 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] if there is a problem preparing the statement.
    */
   public prepareStatement(sql: string): ECSqlStatement {
-    if (!this.briefcaseEntry) throw this._newNotOpenError();
+    if (!this.briefcaseEntry)
+      throw this._newNotOpenError();
     const stmt = new ECSqlStatement();
     stmt.prepare(this.briefcaseEntry.nativeDb, sql);
     return stmt;
@@ -486,7 +477,7 @@ export class IModelDb extends IModel {
    * if necessary in order to get the entity's class defined as a prerequisite.
    * @throws [[IModelError]] if the entity cannot be constructed.
    */
-  public constructEntity(props: any): Entity {
+  public constructEntity(props: EntityProps): Entity {
     let entity: Entity;
     try {
       entity = ClassRegistry.createInstance(props, this);
@@ -1004,7 +995,6 @@ export class ConcurrencyControl {
       this._codes = new ConcurrencyControl.Codes(this._imodel);
     return this._codes;
   }
-
 }
 
 export namespace ConcurrencyControl {
@@ -1056,7 +1046,7 @@ export namespace ConcurrencyControl {
    */
   export class OptimisticPolicy {
     public conflictResolution: ConflictResolutionPolicy;
-    constructor(p?: ConflictResolutionPolicy) { this.conflictResolution = p ? p! : new ConflictResolutionPolicy(); }
+    constructor(policy?: ConflictResolutionPolicy) { this.conflictResolution = policy ? policy! : new ConflictResolutionPolicy(); }
   }
 
   /** Specifies a pessimistic concurrency policy.
@@ -1074,10 +1064,7 @@ export namespace ConcurrencyControl {
   /** Code manager */
   export class Codes {
     private _imodel: IModelDb;
-
-    constructor(im: IModelDb) {
-      this._imodel = im;
-    }
+    constructor(im: IModelDb) { this._imodel = im; }
 
     /**
      * Reserve Codes. If no Codes are specified, then all of the Codes that are in currently pending requests are reserved.
@@ -1149,7 +1136,7 @@ export class IModelDbModels {
   }
 
   /**
-   * Read the data for a Model as a json string
+   * Read the properties for a Model as a json string
    * @param modelIdArg a json string with the identity of the model to load. Must have either "id" or "code".
    * @return a json string with the properties of the model.
    */
@@ -1182,11 +1169,7 @@ export class IModelDbModels {
    * @param modelProps The properties to use when creating the model.
    * @throws [[IModelError]] if there is a problem creating the model.
    */
-  public createModel(modelProps: ModelProps): Model {
-    const model: Model = this._iModel.constructEntity(modelProps) as Model;
-    assert(model instanceof Model);
-    return model;
-  }
+  public createModel(modelProps: ModelProps): Model { return this._iModel.constructEntity(modelProps) as Model; }
 
   /** Insert a new model.
    * @param model The data for the new model.
@@ -1230,33 +1213,6 @@ export class IModelDbModels {
 
     // Discard from the cache
     this._loaded.delete(model.id.value);
-  }
-
-  /** Query for the set of ModelIds of the specified model class and matching the specified IsPrivate and IsTemplate setting.
-   * @param className Query for Models of this class (and all its subclasses)
-   * @param limit if greater than 0, limit result to this number of entries
-   * @param wantPrivate If true, include private models
-   * @param wantTemplate If true, include template models
-   */
-  public queryModelIProps(className = "BisCore.Model", limit = -1, wantPrivate = false, wantTemplate = false): Id64Set {
-    let sql = "SELECT ECInstanceId AS id FROM " + className;
-    if (!wantPrivate || !wantTemplate) {
-      sql += " WHERE ";
-      if (!wantPrivate) { sql += "IsPrivate=FALSE "; if (!wantTemplate) sql += "AND "; }
-      if (!wantTemplate) sql += "IsTemplate=FALSE";
-    }
-    if (limit > 0)
-      sql += ` LIMIT ${limit}`; // limit number of returned models
-
-    const models = new Set<string>();
-    const statement: ECSqlStatement = this._iModel.getPreparedStatement(sql);
-    try {
-      for (const row of statement)
-        models.add(row.id);
-    } finally {
-      this._iModel.releasePreparedStatement(statement);
-    }
-    return models;
   }
 }
 

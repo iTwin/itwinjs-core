@@ -11,7 +11,6 @@ import { IModelError, IModelStatus } from "../common/IModelError";
 import { IModelVersion } from "../common/IModelVersion";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { EntityMetaData } from "../backend/Entity";
-import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { IModelDb } from "../backend/IModelDb";
 import { IModelGateway } from "../gateway/IModelGateway";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
@@ -108,6 +107,11 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
     return elementProps;
   }
 
+  public async queryElementProps(iModelToken: IModelToken, params: EntityQueryParams): Promise<string[]> {
+    const ids = await this.queryEntityIds(iModelToken, params);
+    return this.getElementProps(iModelToken, ids);
+  }
+
   public async queryEntityIds(iModelToken: IModelToken, params: EntityQueryParams): Promise<Id64Set> { return IModelDb.find(iModelToken).queryEntityIds(params); }
 
   public async formatElements(iModelToken: IModelToken, elementIds: Id64Set): Promise<any[]> {
@@ -136,13 +140,11 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
   }
 
   public async getAllCodeSpecs(iModelToken: IModelToken): Promise<any[]> {
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    const statement: ECSqlStatement = iModelDb.getPreparedStatement("SELECT ECInstanceId AS id, name, jsonProperties FROM BisCore.CodeSpec");
     const codeSpecs: any[] = [];
-    for (const row of statement)
-      codeSpecs.push({ id: row.id, name: row.name, jsonProperties: JSON.parse(row.jsonProperties) });
-
-    iModelDb.releasePreparedStatement(statement);
+    IModelDb.find(iModelToken).withPreparedStatement("SELECT ECInstanceId AS id, name, jsonProperties FROM BisCore.CodeSpec", (statement) => {
+      for (const row of statement)
+        codeSpecs.push({ id: row.id, name: row.name, jsonProperties: JSON.parse(row.jsonProperties) });
+    });
     Logger.logTrace(loggingCategory, "IModelDbRemoting.getAllCodeSpecs", () => ({ numCodeSpecs: codeSpecs.length }));
     return codeSpecs;
   }
