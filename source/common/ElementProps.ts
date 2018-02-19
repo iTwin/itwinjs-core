@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64Props, GuidProps } from "@bentley/bentleyjs-core/lib/Id";
 import { CodeProps, Code } from "./Code";
-import { EntityProps } from "./EntityProps";
+import { EntityProps, EntityQueryParams } from "./EntityProps";
 import { GeometryStream } from "./geometry/GeometryStream";
 import { XYZProps, XYProps, YawPitchRollProps, LowAndHighXYZ, LowAndHighXY } from "@bentley/geometry-core/lib/PointVector";
 import { AngleProps } from "@bentley/geometry-core/lib/Geometry";
@@ -112,6 +112,10 @@ export interface ModelSelectorProps extends ElementProps {
 /** properties that define a CategorySelector */
 export interface CategorySelectorProps extends ElementProps {
   categories: string[];
+}
+
+export interface ViewQueryParams extends EntityQueryParams {
+  wantPrivate?: boolean;
 }
 
 /** Parameters used to construct a ViewDefinition */

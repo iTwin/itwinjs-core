@@ -16,7 +16,7 @@ export class CodeSpecs {
   constructor(imodel: IModelDb) { this._imodel = imodel; }
 
   /** Look up the Id of the CodeSpec with the specified name. */
-  public queryCodeSpecId(name: string): Id64 {
+  public queryId(name: string): Id64 {
     return this._imodel.withPreparedStatement("SELECT ECInstanceId as id FROM BisCore.CodeSpec WHERE Name=?", (stmt: ECSqlStatement) => {
       stmt.bindString(1, name);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
@@ -30,7 +30,7 @@ export class CodeSpecs {
    * @returns The CodeSpec with the specified Id
    * @throws [[IModelError]] if the Id is invalid or if no CodeSpec with that Id could be found.
    */
-  public getCodeSpecById(codeSpecId: Id64): CodeSpec {
+  public getById(codeSpecId: Id64): CodeSpec {
     if (!codeSpecId.isValid())
       throw new IModelError(IModelStatus.InvalidId);
 
@@ -42,7 +42,7 @@ export class CodeSpecs {
       return found;
 
     // must load this codespec
-    const loadedCodeSpec = this.loadCodeSpec(codeSpecId);
+    const loadedCodeSpec = this.load(codeSpecId);
     this._loadedCodeSpecs.push(loadedCodeSpec);
     return loadedCodeSpec;
   }
@@ -52,17 +52,17 @@ export class CodeSpecs {
    * @returns The CodeSpec with the specified name
    * @throws [[IModelError]] if no CodeSpec with the specified name could be found.
    */
-  public getCodeSpecByName(name: string): CodeSpec {
+  public getByName(name: string): CodeSpec {
     // good chance it's already loaded - check there before running a query
     const found: CodeSpec | undefined = this._loadedCodeSpecs.find((codeSpec: CodeSpec) => {
       return codeSpec.name === name;
     });
     if (found !== undefined)
       return found;
-    const codeSpecId = this.queryCodeSpecId(name);
+    const codeSpecId = this.queryId(name);
     if (codeSpecId === undefined)
       throw new IModelError(IModelStatus.NotFound);
-    return this.getCodeSpecById(codeSpecId);
+    return this.getById(codeSpecId);
   }
 
   /** Add a new CodeSpec to the table.
@@ -80,7 +80,7 @@ export class CodeSpecs {
   /** Load a CodeSpec from IModel
    * @param id  The persistent Id of the CodeSpec to load
    */
-  public loadCodeSpec(id: Id64): CodeSpec {
+  public load(id: Id64): CodeSpec {
     if (!id.isValid()) {
       throw new IModelError(IModelStatus.InvalidId);
     }

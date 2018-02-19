@@ -6,7 +6,7 @@ import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { CodeSpec } from "../common/Code";
-import { ElementProps, ViewDefinitionProps } from "../common/ElementProps";
+import { ElementProps, ViewDefinitionProps, ViewQueryParams } from "../common/ElementProps";
 import { EntityQueryParams } from "../common/EntityProps";
 import { IModel, IModelToken } from "../common/IModel";
 import { IModelError, IModelStatus } from "../common/IModelError";
@@ -51,7 +51,7 @@ export class IModelConnection extends IModel {
     return props;
   }
 
-  /** Open an iModel from iModelHub */
+  /** Open an IModelConnection to an iModel */
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
     let changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId);
     if (!changeSetId)
@@ -70,7 +70,7 @@ export class IModelConnection extends IModel {
     return new IModelConnection(openResponse);
   }
 
-  /** Close this iModel */
+  /** Close this IModelConnection */
   public async close(accessToken: AccessToken): Promise<void> {
     if (!this.iModelToken)
       return;
@@ -81,8 +81,9 @@ export class IModelConnection extends IModel {
     }
   }
 
-  /** Ask the backend to open a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend.
-   * This method is designed for desktop or mobile applications and typically should not be used for web applications.
+  /**
+   * Open an IModelConnection to a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend.
+   * This method is intended for desktop or mobile applications and should not be used for web applications.
    */
   public static async openStandalone(fileName: string, openMode = OpenMode.Readonly): Promise<IModelConnection> {
     const openResponse: IModel = await IModelGateway.getProxy().openStandalone(fileName, openMode);
@@ -90,7 +91,7 @@ export class IModelConnection extends IModel {
     return new IModelConnection(openResponse);
   }
 
-  /** Close this standalone iModel */
+  /** Close this standalone IModelConnection */
   public async closeStandalone(): Promise<void> {
     if (!this.iModelToken)
       return;
@@ -101,7 +102,8 @@ export class IModelConnection extends IModel {
     }
   }
 
-  /** Execute a query against the iModel.
+  /**
+   * Execute a query against the iModel.
    *
    * ## Row Format
    * The returned rows are formatted as JavaScript objects where every SELECT clause item becomes a property in the JavaScript object.
@@ -189,7 +191,7 @@ export class IModelConnection extends IModel {
 
 /** The collection of models for an [[IModelConnection]]. */
 export class IModelConnectionModels {
-  public loadedModels = new Map<string, ModelState>();
+  public loaded = new Map<string, ModelState>();
 
   /** @hidden */
   constructor(private _iModel: IModelConnection) { }
@@ -198,17 +200,17 @@ export class IModelConnectionModels {
   public get repositoryModelId(): Id64 { return new Id64("0x1"); }
 
   /** Get a batch of [[ModelProps]] given a list of model ids. */
-  public async getModelProps(modelIds: Id64Arg): Promise<ModelProps[]> {
+  public async getProps(modelIds: Id64Arg): Promise<ModelProps[]> {
     return IModelConnection.toPropsArray(await IModelGateway.getProxy().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds)));
   }
 
-  public getLoadedModel(id: string): ModelState | undefined { return this.loadedModels.get(id); }
+  public getLoaded(id: string): ModelState | undefined { return this.loaded.get(id); }
 
   /** load a set of models by ModelId. After calling this method, you may get the ModelState objects by calling getLoadedModel. */
-  public async loadModels(modelIds: Id64Arg): Promise<void> {
+  public async load(modelIds: Id64Arg): Promise<void> {
     const notLoaded = new Set<string>();
     Id64.toIdSet(modelIds).forEach((id) => {
-      const loaded = this.getLoadedModel(id);
+      const loaded = this.getLoaded(id);
       if (!loaded)
         notLoaded.add(id);
     });
@@ -217,7 +219,7 @@ export class IModelConnectionModels {
       return;
 
     try {
-      (await this.getModelProps(notLoaded)).forEach((props) => {
+      (await this.getProps(notLoaded)).forEach((props) => {
         const names = props.classFullName.split(":"); // fullClassName is in format schema:className.
         if (names.length < 2)
           return;
@@ -239,7 +241,7 @@ export class IModelConnectionModels {
             break;
         }
         const modelState = new ctor(props, this._iModel);
-        this.loadedModels.set(modelState.id.value, modelState);
+        this.loaded.set(modelState.id.value, modelState);
       });
     } catch (err) { } // ignore error, we had nothing to do.
   }
@@ -247,7 +249,7 @@ export class IModelConnectionModels {
   /**
    * Query for a set of ModelProps of the specified ModelQueryParams
    */
-  public async queryModelProps(queryParams: ModelQueryParams): Promise<ModelProps[]> {
+  public async queryProps(queryParams: ModelQueryParams): Promise<ModelProps[]> {
     const params: ModelQueryParams = Object.assign({}, queryParams); // make a copy
     params.from = queryParams.from || ModelState.sqlName; // use "BisCore.Model" as default class name
     params.where = queryParams.where || "";
@@ -272,15 +274,15 @@ export class IModelConnectionElements {
   public get rootSubjectId(): Id64 { return new Id64("0x1"); }
 
   /** get a set of element ids that satisfy a query */
-  public async queryElementIds(params: EntityQueryParams): Promise<Id64Set> { return this._iModel.queryEntityIds(params); }
+  public async queryIds(params: EntityQueryParams): Promise<Id64Set> { return this._iModel.queryEntityIds(params); }
 
   /** Get a batch of [[ElementProps]] given one or more element ids. */
-  public async getElementProps(arg: Id64Arg): Promise<ElementProps[]> {
+  public async getProps(arg: Id64Arg): Promise<ElementProps[]> {
     return IModelConnection.toPropsArray(await IModelGateway.getProxy().getElementProps(this._iModel.iModelToken, Id64.toIdSet(arg)));
   }
 
   /** get a bach of [[ElementProps]] that satisfy a query */
-  public async queryElementProps(params: EntityQueryParams): Promise<ElementProps[]> {
+  public async queryProps(params: EntityQueryParams): Promise<ElementProps[]> {
     return IModelConnection.toPropsArray(await IModelGateway.getProxy().queryElementProps(this._iModel.iModelToken, params));
   }
 
@@ -314,7 +316,7 @@ export class IModelConnectionCodeSpecs {
    * @returns The CodeSpec with the specified Id
    * @throws [[IModelError]] if the Id is invalid or if no CodeSpec with that Id could be found.
    */
-  public async getCodeSpecById(codeSpecId: Id64): Promise<CodeSpec> {
+  public async getById(codeSpecId: Id64): Promise<CodeSpec> {
     if (!codeSpecId.isValid())
       return Promise.reject(new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggingCategory, () => ({ codeSpecId })));
 
@@ -331,7 +333,7 @@ export class IModelConnectionCodeSpecs {
    * @returns The CodeSpec with the specified name
    * @throws [[IModelError]] if no CodeSpec with the specified name could be found.
    */
-  public async getCodeSpecByName(name: string): Promise<CodeSpec> {
+  public async getByName(name: string): Promise<CodeSpec> {
     await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
     const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.name === name);
     if (!found)
@@ -346,17 +348,23 @@ export class IModelConnectionViews {
   /** @hidden */
   constructor(private _iModel: IModelConnection) { }
 
-  /** Query for the array of ViewDefinitionProps of the specified class and matching the specified IsPrivate setting.
-   * @param className Query for view definitions of this class.
-   * @param wantPrivate If true, include private view definitions.
+  /**
+   * Query for the array of ViewDefinitionProps
+   * @param queryParams Query parameters
    */
-  public async queryViewDefinitionProps(className: string = "BisCore.ViewDefinition", limit = 0, offset = 0, wantPrivate: boolean = false): Promise<ViewDefinitionProps[]> {
-    const viewDefinitionProps: ViewDefinitionProps[] = await IModelGateway.getProxy().queryViewDefinitionProps(this._iModel.iModelToken, className, limit, offset, wantPrivate);
-    return viewDefinitionProps;
+  public async queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]> {
+    const params: ViewQueryParams = Object.assign({}, queryParams); // make a copy
+    params.from = queryParams.from || ViewState.sqlName; // use "BisCore.ViewDefinition" as default class name
+    params.where = queryParams.where || "";
+    if (!queryParams.wantPrivate) {
+      if (params.where.length > 0) params.where += " AND ";
+      params.where += "IsPrivate=FALSE ";
+    }
+    return IModelConnection.toPropsArray(await IModelGateway.getProxy().queryElementProps(this._iModel.iModelToken, params));
   }
 
   /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
-  public async loadView(viewDefinitionId: Id64Props): Promise<ViewState> {
+  public async load(viewDefinitionId: Id64Props): Promise<ViewState> {
     const viewStateData: any = await IModelGateway.getProxy().getViewStateData(this._iModel.iModelToken, typeof viewDefinitionId === "string" ? viewDefinitionId : viewDefinitionId.value);
     const categorySelectorState = new CategorySelectorState(viewStateData.categorySelectorProps, this._iModel);
 

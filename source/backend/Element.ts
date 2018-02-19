@@ -454,7 +454,7 @@ export abstract class InformationPartitionElement extends InformationContentElem
 
   /** Create a code that can be used for any kind of InformationPartitionElement. */
   public static createCode(scopeElement: Element, codeValue: string): Code {
-    const codeSpec = scopeElement.iModel.codeSpecs.getCodeSpecByName(CodeSpecNames.InformationPartitionElement());
+    const codeSpec = scopeElement.iModel.codeSpecs.getByName(CodeSpecNames.InformationPartitionElement());
     return new Code({ spec: codeSpec.id, scope: scopeElement.id.toString(), value: codeValue });
   }
 

@@ -65,10 +65,9 @@ export class Category extends DefinitionElement implements CategoryProps {
 
   /** Set the default appearance of this category */
   public setDefaultAppearance(app: Appearance) {
-    const subcat: SubCategory = this.iModel.elements.getElement(this.id) as SubCategory;
-    const subcatR: SubCategory = subcat.copyForEdit() as SubCategory;
-    subcatR.appearance = app;
-    this.iModel.elements.updateElement(subcatR);
+    const subCat = this.iModel.elements.getElement(this.id).copyForEdit() as SubCategory;
+    subCat.appearance = app;
+    this.iModel.elements.updateElement(subCat);
   }
 }
 
@@ -84,7 +83,7 @@ export class DrawingCategory extends Category {
    * @return A drawing category Code
    */
   public static createCode(scopeModel: DefinitionModel, codeValue: string): Code {
-    const codeSpec = scopeModel.iModel.codeSpecs.getCodeSpecByName(DrawingCategory.getCodeSpecName());
+    const codeSpec = scopeModel.iModel.codeSpecs.getByName(DrawingCategory.getCodeSpecName());
     return new Code({ spec: codeSpec.id, scope: scopeModel.id.toString(), value: codeValue });
   }
 }
@@ -107,7 +106,7 @@ export class SpatialCategory extends Category {
    * @return A spatial category Code
    */
   public static createCode(scopeModel: DefinitionModel, codeValue: string): Code {
-    const codeSpec = scopeModel.iModel.codeSpecs.getCodeSpecByName(SpatialCategory.getCodeSpecName());
+    const codeSpec = scopeModel.iModel.codeSpecs.getByName(SpatialCategory.getCodeSpecName());
     return new Code({ spec: codeSpec.id, scope: scopeModel.id.toString(), value: codeValue });
   }
 
@@ -127,7 +126,7 @@ export class SpatialCategory extends Category {
       classFullName: "BisCore:SpatialCategory",
       model: scopeModel.id,
       code: SpatialCategory.createCode(scopeModel, categoryName),
-      }) as SpatialCategory;
+    }) as SpatialCategory;
   }
 
   /** Inserts this SpatialCategory into the DgnDb and initializes its default sub-category with the specified appearance.

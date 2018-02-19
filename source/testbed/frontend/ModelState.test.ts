@@ -38,8 +38,8 @@ describe("ModelState", () => {
   });
 
   it("should be able to load ModelState", async () => {
-    await imodel.models.loadModels(["0x24", "0x28", "0x2c", "0x11", "0x34", "0x24", "nonsense"]);
-    const models = imodel.models.loadedModels;
+    await imodel.models.load(["0x24", "0x28", "0x2c", "0x11", "0x34", "0x24", "nonsense"]);
+    const models = imodel.models.loaded;
     assert.equal(models.size, 5);
     assert.instanceOf(models.get("0x24"), DrawingModelState);
     assert.instanceOf(models.get("0x28"), SheetModelState);
@@ -48,10 +48,10 @@ describe("ModelState", () => {
     assert.instanceOf(models.get("0x34"), DrawingModelState);
     models.forEach((model) => assert.deepEqual(model.clone(), model, "clone of ModelState should work"));
 
-    await imodel.models.loadModels(["0x24", "0x28", "0x2c", "0x11", "0x34", "0x24", "nonsense"]);
+    await imodel.models.load(["0x24", "0x28", "0x2c", "0x11", "0x34", "0x24", "nonsense"]);
     assert.equal(models.size, 5);
 
-    const modelProps = await imodel.models.queryModelProps({ from: SpatialModelState.sqlName });
+    const modelProps = await imodel.models.queryProps({ from: SpatialModelState.sqlName });
     assert.isAtLeast(modelProps.length, 2);
   });
 

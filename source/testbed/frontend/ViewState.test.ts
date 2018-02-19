@@ -24,9 +24,9 @@ describe("ViewState", () => {
 
   before(async () => {
     imodel = await IModelConnection.openStandalone(iModelLocation);
-    const viewRows = await imodel.views.queryViewDefinitionProps(SpatialViewState.sqlName);
+    const viewRows = await imodel.views.queryProps({ from: SpatialViewState.sqlName });
     assert.exists(viewRows, "Should find some views");
-    viewState = await imodel.views.loadView(viewRows[0].id!) as SpatialViewState;
+    viewState = await imodel.views.load(viewRows[0].id!) as SpatialViewState;
   });
 
   after(async () => { if (imodel) imodel.closeStandalone(); });

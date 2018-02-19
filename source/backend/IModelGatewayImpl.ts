@@ -3,7 +3,6 @@
  *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { ViewDefinitionProps } from "../common/ElementProps";
 import { EntityQueryParams } from "../common/EntityProps";
 import { Gateway } from "../common/Gateway";
 import { IModelToken, IModel } from "../common/IModel";
@@ -150,10 +149,7 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
   }
 
   public async updateProjectExtents(iModelToken: IModelToken, newExtents: AxisAlignedBox3d): Promise<void> {
-    if (!IModelGatewayImpl._hasReadWriteAccess(iModelToken))
-      return Promise.reject(new IModelError(IModelStatus.NotOpenForWrite));
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    iModelDb.updateProjectExtents(newExtents);
+    IModelDb.find(iModelToken).updateProjectExtents(newExtents);
   }
 
   /**
@@ -161,25 +157,11 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
    * @hidden
    */
   public async executeTest(iModelToken: IModelToken, testName: string, params: any): Promise<any> {
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    return iModelDb.executeTest(testName, params);
-  }
-
-  // /** Query for a set of models of the specified class and matching the specified IsPrivate setting. */
-  // public async queryModelIds(iModelToken: IModelToken, className: string, limit: number, wantPrivate: boolean, wantTemplate: boolean): Promise<Id64Set> {
-  //   const iModelDb: IModelDb = IModelDb.find(iModelToken);
-  //   return iModelDb.models.queryModelIds(className, limit, wantPrivate, wantTemplate);
-  // }
-
-  /** Query for the array of ViewDefinitions of the specified class and matching the specified IsPrivate setting. */
-  public async queryViewDefinitionProps(iModelToken: IModelToken, className: string, limit: number, offset: number, wantPrivate: boolean): Promise<ViewDefinitionProps[]> {
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    return iModelDb.views.queryViewDefinitionProps(className, limit, offset, wantPrivate);
+    return IModelDb.find(iModelToken).executeTest(testName, params);
   }
 
   /** Get the ViewState data for the specified ViewDefinition */
   public async getViewStateData(iModelToken: IModelToken, viewDefinitionId: string): Promise<any> {
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    return iModelDb.views.getViewStateData(viewDefinitionId);
+    return IModelDb.find(iModelToken).views.getViewStateData(viewDefinitionId);
   }
 }
