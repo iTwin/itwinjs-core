@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { DeploymentEnv, IModelHubClient } from "@bentley/imodeljs-clients";
 import { ViewManager } from "./ViewManager";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import { AccuDraw } from "./AccuDraw";
@@ -37,6 +38,16 @@ export class IModelApp {
   protected _tentativePoint?: TentativePoint;
   protected _i18N?: I18N;
 
+  private _iModelHubDeploymentConfig: DeploymentEnv = "QA";
+  public get iModelHubDeploymentConfig(): DeploymentEnv {return this._iModelHubDeploymentConfig; }
+
+  public _iModelHubClient?: IModelHubClient;
+  public get iModelHubClient(): IModelHubClient {
+    if (!this._iModelHubClient)
+      this._iModelHubClient = new IModelHubClient(this.iModelHubDeploymentConfig);
+    return this._iModelHubClient;
+  }
+
   public readonly features = new FeatureGates();
   public readonly tools = new ToolRegistry();
 
@@ -61,11 +72,15 @@ export class IModelApp {
    * MyApp.startup();
    * ```
    */
-  public static startup() {
+  public static startup(iModelHubDeploymentConfig: DeploymentEnv = "QA") {
     if (iModelApp !== undefined)
       throw new IModelError(IModelStatus.AlreadyLoaded, "startup may only be called once");
 
     iModelApp = new this(); // this will create an instance of the appropriate subclass of IModelApp (that calls this static method)
+
+    if (iModelApp.iModelHubDeploymentConfig !== iModelHubDeploymentConfig) {
+      iModelApp._iModelHubDeploymentConfig = iModelHubDeploymentConfig;
+    }
 
     // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
     iModelApp._i18N = new I18N(["iModelSystem"], "iModelSystem", iModelApp.supplyI18NOptions());

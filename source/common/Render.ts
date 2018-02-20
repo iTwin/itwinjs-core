@@ -12,6 +12,7 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { Point3d, Point2d} from "@bentley/geometry-core/lib/PointVector";
 import { Transform } from "@bentley/geometry-core/lib/Transform";
 import { Range3d, Range2d } from "@bentley/geometry-core/lib/Range";
+import { Viewport } from "../frontend/Viewport";
 
 import { PatternParams } from "./geometry/AreaPattern";
 import { LineStyleInfo } from "./geometry/LineStyle";
@@ -614,6 +615,106 @@ export class Graphic {
 }
 
 export const enum AsThickenedLine { No = 0, Yes = 1 }
+
+/**
+ * Exposes methods for creating GraphicBuilder params.
+ */
+export class GraphicBuilderCreateParams {
+  private _iModel: IModel | undefined; // Same as DgnDb
+  private _placement: Transform;
+  private _viewport: Viewport | undefined;
+  private _type: GraphicType;
+
+  public constructor(vp: Viewport | undefined, tf: Transform, type: GraphicType, iModel?: IModel) {
+    this._viewport = vp;
+    this._placement = tf;
+    this._type = type;
+    if (iModel) {
+      this._iModel = iModel;
+    } else if (vp) {
+      this._iModel = vp.view.iModel; // is this equivalent to vp.GetViewController().GetDgnDb() ??
+     } else {
+       this._iModel = undefined;
+    }
+  }
+
+  /**
+   * Create params for a graphic in world coordinates, not necessarily associated with any viewport.
+   * When an iModel parameter is given, this function is chiefly used for tile generation code as the tolerance for faceting the graphic's geometry is independent of any viewport.
+   * When an iModel parameter is not given, this function is chiefly used for code which produces 'normal' decorations and dynamics.
+   * If this function is used outside of tile generation context, a default coarse tolerance will be used.
+   * To get a tolerance appropriate to a viewport, use the overload accepting a Viewport.
+   */
+  public static Scene(placement = Transform.createIdentity(), vp: Viewport | undefined, iModel?: IModel): GraphicBuilderCreateParams {
+    if (iModel) {
+      return new GraphicBuilderCreateParams(vp, placement, GraphicType.Scene, iModel);
+    } else {
+      return new GraphicBuilderCreateParams(vp, placement, GraphicType.Scene);
+    }
+  }
+
+  /**
+   * Create params for a WorldDecoration-type Graphic
+   * The faceting tolerance will be computed from the finished graphic's range and the viewport.
+   */
+  public static WorldDecoration(vp: Viewport, placement: Transform = Transform.createIdentity()): GraphicBuilderCreateParams {
+    return new GraphicBuilderCreateParams(vp, placement, GraphicType.WorldDecoration);
+  }
+
+  /**
+   * Create params for a WorldOverlay-type Graphic
+   * The faceting tolerance will be computed from the finished graphic's range and the viewport.
+   */
+  public static WorldOverlay(vp: Viewport, placement: Transform = Transform.createIdentity()): GraphicBuilderCreateParams {
+    return new GraphicBuilderCreateParams(vp, placement, GraphicType.WorldOverlay);
+  }
+
+  /**
+   * Create params for a ViewOverlay-type Graphic
+   */
+  public static ViewOverlay(vp: Viewport, placement: Transform = Transform.createIdentity()): GraphicBuilderCreateParams {
+    return new GraphicBuilderCreateParams(vp, placement, GraphicType.ViewOverlay);
+  }
+
+  /**
+   * Create params for a subgraphic
+   */
+  public SubGraphic(placement: Transform = Transform.createIdentity()): GraphicBuilderCreateParams {
+    return new GraphicBuilderCreateParams(this._viewport, placement, this._type, this._iModel);
+  }
+
+  public get iModel(): IModel | undefined {
+    return this._iModel;
+  }
+  public get placement(): Transform {
+    return this._placement;
+  }
+  public get viewport(): Viewport | undefined {
+    return this._viewport;
+  }
+  public get type(): GraphicType {
+    return this._type;
+  }
+  public IsViewCoordinates(): boolean {
+    return GraphicType.ViewBackground === this._type || GraphicType.ViewOverlay === this._type;
+  }
+  public IsWorldCoordinates(): boolean {
+    return !this.IsViewCoordinates;
+  }
+  public IsSceneGraphic(): boolean {
+    return GraphicType.Scene === this._type;
+  }
+  public IsViewBackground(): boolean {
+    return GraphicType.ViewBackground === this._type;
+  }
+  public IsOverlay(): boolean {
+    return GraphicType.ViewOverlay === this._type || GraphicType.WorldOverlay === this._type;
+  }
+
+  public SetPlacement(tf: Transform): void {
+    this._placement = tf;
+  }
+}
 
 /**
  * Exposes methods for constructing a Graphic from geometric primitives.

@@ -4,7 +4,6 @@
 import { AccessToken, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelError } from "./IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
-import { Configuration } from "./Configuration";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 /** Option to specify the version of the iModel to be acquired and used */
@@ -87,15 +86,13 @@ export class IModelVersion {
    * version was already specified as of a ChangeSet, the method simply returns
    * that Id without any validation.
    */
-  public evaluateChangeSet(accessToken: AccessToken, iModelId: string): Promise<string> {
+  public evaluateChangeSet(accessToken: AccessToken, iModelId: string, hubClient: IModelHubClient): Promise<string> {
     if (this._first)
       return Promise.resolve("");
 
     if (this._afterChangeSetId) {
       return Promise.resolve(this._afterChangeSetId);
     }
-
-    const hubClient = new IModelHubClient(Configuration.iModelHubDeployConfig);
 
     if (this._latest) {
       return IModelVersion.getLatestChangeSetId(hubClient, accessToken, iModelId);
