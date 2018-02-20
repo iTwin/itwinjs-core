@@ -7,13 +7,14 @@ import { expect } from "chai";
 import Schema from "../../source/Metadata/Schema";
 import { ECObjectsError } from "../../source/Exception";
 import SchemaChild from "../../source/Metadata/SchemaChild";
+import { SchemaChildType } from "../../source/ECObjects";
 
 describe("SchemaChild", () => {
   describe("fromJson", () => {
     class MockSchemaChild extends SchemaChild {
       constructor(name: string) {
         const schema = new Schema("TestSchema", 1, 0, 0);
-        super(schema, name);
+        super(schema, name, SchemaChildType.EntityClass);
       }
       public async accept() {}
     }
