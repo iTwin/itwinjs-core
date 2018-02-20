@@ -90,6 +90,61 @@ describe("Schema", () => {
   });
 
   describe("fromJson", () => {
+    describe("should successfully deserialize valid JSON", () => {
+      function assertValidSchema(testSchema: Schema) {
+        expect(testSchema.name).to.eql("ValidSchema");
+        expect(testSchema.alias).to.eql("vs");
+        expect(testSchema.label).to.eql("SomeDisplayLabel");
+        expect(testSchema.description).to.eql("A really long description...");
+        expect(testSchema.readVersion).to.eql(1);
+        expect(testSchema.writeVersion).to.eql(2);
+        expect(testSchema.minorVersion).to.eql(3);
+      }
+
+      it("with name/version first specified in JSON", async () => {
+        const propertyJson = {
+          $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+          name: "ValidSchema",
+          version: "1.2.3",
+          alias: "vs",
+          label: "SomeDisplayLabel",
+          description: "A really long description...",
+        };
+        const testSchema = new Schema();
+        expect(testSchema).to.exist;
+        await testSchema.fromJson(propertyJson);
+        assertValidSchema(testSchema);
+      });
+
+      it("with name/version repeated in JSON", async () => {
+        const propertyJson = {
+          $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+          name: "ValidSchema",
+          version: "1.2.3",
+          alias: "vs",
+          label: "SomeDisplayLabel",
+          description: "A really long description...",
+        };
+        const testSchema = new Schema("ValidSchema", 1, 2, 3);
+        expect(testSchema).to.exist;
+        await testSchema.fromJson(propertyJson);
+        assertValidSchema(testSchema);
+      });
+
+      it("with name/version omitted in JSON", async () => {
+        const propertyJson = {
+          $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+          alias: "vs",
+          label: "SomeDisplayLabel",
+          description: "A really long description...",
+        };
+        const testSchema = new Schema("ValidSchema", 1, 2, 3);
+        expect(testSchema).to.exist;
+        await testSchema.fromJson(propertyJson);
+        assertValidSchema(testSchema);
+      });
+    });
+
     async function testInvalidAttribute(schema: Schema, attributeName: string, expectedType: string, value: any) {
       expect(schema).to.exist;
       const json: any = {
@@ -112,7 +167,37 @@ describe("Schema", () => {
       await expect(testSchema.fromJson(schemaJson)).to.be.rejectedWith(ECObjectsError);
     });
 
-    it("should throw for invalid name", async () => testInvalidAttribute(new Schema("BadSchema"), "name", "string", 0));
+    it("should throw for missing name", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+      };
+      const testSchema = new Schema();
+      expect(testSchema).to.exist;
+      expect(() => testSchema.name).to.throw(ECObjectsError, "An ECSchema is missing the required 'name' attribute.");
+      await expect(testSchema.fromJson(json)).to.be.rejectedWith(ECObjectsError, "An ECSchema is missing the required 'name' attribute.");
+    });
+
+    it("should throw for mismatched name", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "ThisDoesNotMatch",
+      };
+      const testSchema = new Schema("BadSchema");
+      expect(testSchema).to.exist;
+      await expect(testSchema.fromJson(json)).to.be.rejectedWith(ECObjectsError);
+    });
+
+    it("should throw for invalid name", async () => {
+      const schema = new Schema();
+      const schemaWithName = new Schema("BadSchema");
+
+      const json: any = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: 0,
+      };
+      await expect(schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `An ECSchema has an invalid 'name' attribute. It should be of type 'string'.`);
+      await expect(schemaWithName.fromJson(json)).to.be.rejectedWith(ECObjectsError, `he ECSchema BadSchema has an invalid 'name' attribute. It should be of type 'string'.`);
+    });
     it("should throw for invalid alias", async () => testInvalidAttribute(new Schema("BadSchema"), "alias", "string", 0));
     it("should throw for invalid label", async () => testInvalidAttribute(new Schema("BadSchema"), "label", "string", 0));
     it("should throw for invalid description", async () => testInvalidAttribute(new Schema("BadSchema"), "description", "string", 0));

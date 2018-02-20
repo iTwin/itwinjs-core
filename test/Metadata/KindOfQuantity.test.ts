@@ -66,6 +66,48 @@ describe("KindOfQuantity", () => {
       testKoQ = new KindOfQuantity(schema, "TestKindOfQuantity");
     });
 
+    it("should successfully deserialize valid JSON", async () => {
+      const koqJson = {
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        precision: 1.234,
+        persistenceUnit: { unit: "in", format: "DEFAULTREAL" },
+        presentationUnits: [
+          { unit: "cm" },
+          { unit: "in", format: "anotherFormat" },
+        ],
+      };
+      await testKoQ.fromJson(koqJson);
+
+      expect(testKoQ.name).to.eql("TestKindOfQuantity");
+      expect(testKoQ.label).to.eql("SomeDisplayLabel");
+      expect(testKoQ.description).to.eql("A really long description...");
+      expect(testKoQ.precision).to.eql(1.234);
+      expect(testKoQ.presentationUnits).to.exist;
+      expect(testKoQ.presentationUnits.length).to.eql(2);
+      expect(testKoQ.defaultPresentationUnit).to.eql({ unit: "cm" });
+      expect(testKoQ.presentationUnits[0]).to.eql({ unit: "cm" });
+      expect(testKoQ.presentationUnits[1]).to.eql({ unit: "in", format: "anotherFormat" });
+      expect(testKoQ.persistenceUnit).to.eql({ unit: "in", format: "DEFAULTREAL" });
+    });
+
+    it("should successfully deserialize valid JSON (without units)", async () => {
+      const koqJson = {
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        precision: 1.234,
+      };
+      await testKoQ.fromJson(koqJson);
+
+      expect(testKoQ.name).to.eql("TestKindOfQuantity");
+      expect(testKoQ.label).to.eql("SomeDisplayLabel");
+      expect(testKoQ.description).to.eql("A really long description...");
+      expect(testKoQ.precision).to.eql(1.234);
+      expect(testKoQ.presentationUnits).to.exist;
+      expect(testKoQ.presentationUnits.length).to.eql(0);
+      expect(testKoQ.defaultPresentationUnit).to.not.exist;
+      expect(testKoQ.persistenceUnit).to.not.exist;
+    });
     async function testInvalidAttribute(attributeName: string, expectedType: string, value: any) {
       expect(testKoQ).to.exist;
       const json: any = { [attributeName]: value };

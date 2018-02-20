@@ -24,6 +24,7 @@ export default class KindOfQuantity extends SchemaChild {
 
   constructor(schema: Schema, name: string) {
     super(schema, name, SchemaChildType.KindOfQuantity);
+    this.presentationUnits = [];
   }
 
   public get defaultPresentationUnit() {

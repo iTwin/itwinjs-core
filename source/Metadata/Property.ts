@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { LazyLoadedPropertyCategory, LazyLoadedKindOfQuantity, LazyLoadedEnumeration, LazyLoadedStructClass, LazyLoadedRelationshipClass } from "../Interfaces";
-import { ECName, PrimitiveType, RelatedInstanceDirection } from "../ECObjects";
+import { ECName, PrimitiveType, RelatedInstanceDirection, parsePrimitiveType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PropertyType, PropertyTypeUtils } from "../PropertyTypes";
 import ECClass from "./Class";
@@ -154,6 +154,18 @@ export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
 
   constructor(ecClass: ECClass, name: string, primitiveType: PrimitiveType = PrimitiveType.Integer) {
     super(ecClass, name, PropertyTypeUtils.fromPrimitiveType(primitiveType));
+  }
+
+  public async fromJson(jsonObj: any): Promise<void> {
+    await super.fromJson(jsonObj);
+
+    if (undefined !== jsonObj.typeName) {
+      if (typeof(jsonObj.typeName) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'typeName' attribute. It should be of type 'string'.`);
+
+      if (this.primitiveType !== parsePrimitiveType(jsonObj.typeName))
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+    }
   }
 }
 
