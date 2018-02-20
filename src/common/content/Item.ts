@@ -23,9 +23,9 @@ export default interface Item {
   primaryKeys: ec.InstanceKey[];
   label: string;
   imageId: string;
-  classInfo: ec.ClassInfo | null;
+  classInfo?: ec.ClassInfo;
   values: ValuesDictionary<any>;
-  displayValues: ValuesDictionary<string | null>;
+  displayValues: ValuesDictionary<string | undefined>;
   mergedFieldNames: string[];
   fieldPropertyValueKeys: FieldPropertyValueKeys;
 }
@@ -55,9 +55,9 @@ export const getNestedInstanceKeys = (item: Item, accessor: PropertyAccessor[]):
     else if (Array.isArray(values))
       values = values[0];
     const nestedValues: NestedContent = values;
-    values = nestedValues.values;
+    values = nestedValues.Values;
     if (i === accessor.length - 2)
-      return nestedValues.primaryKeys;
+      return nestedValues.PrimaryKeys;
   }
   return [];
 };

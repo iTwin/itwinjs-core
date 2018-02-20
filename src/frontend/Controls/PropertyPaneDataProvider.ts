@@ -198,48 +198,40 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
   }
 
   public async getCategoryCount(): Promise<number> {
-    return this.getCategoryFields().then((cf: CategoryFields) => {
-      return cf.getCategoryCount();
-    });
+    const cf = await this.getCategoryFields();
+    return cf.getCategoryCount();
   }
 
   public async getCategory(index: number): Promise<PropertyCategory> {
-    return this.getCategoryFields().then((cf: CategoryFields): PropertyCategory => {
-      const category = cf.getCategory(index);
-      return {
-        name: category.name,
-        label: category.label,
-        expand: category.expand,
-      };
-    });
+    const cf = await this.getCategoryFields();
+    const category = cf.getCategory(index);
+    return {
+      name: category.name,
+      label: category.label,
+      expand: category.expand,
+    };
   }
 
   public async getPropertyCount(categoryIndex: number): Promise<number> {
-    return this.getCategoryFields().then((cf: CategoryFields) => {
-      const category = cf.getCategory(categoryIndex);
-      return cf.getFieldCount(category);
-    });
+    const cf = await this.getCategoryFields();
+    const category = cf.getCategory(categoryIndex);
+    return cf.getFieldCount(category);
   }
 
   public async getProperty(categoryIndex: number, propertyIndex: number): Promise<PropertyRecord> {
-    return this.getCategoryFields().then((cf: CategoryFields): Promise<PropertyRecord> => {
-      const category = cf.getCategory(categoryIndex);
-      const field = cf.getField(category, propertyIndex);
-      return this.getContentItem().then((item: content.Item | null): PropertyRecord => {
-        if (!item)
-          return ContentBuilder.createInvalidPropertyRecord();
-        return ContentBuilder.createPropertyRecord(field, item);
-      });
-    });
+    const cf = await this.getCategoryFields();
+    const category = cf.getCategory(categoryIndex);
+    const field = cf.getField(category, propertyIndex);
+    const item = await this.getContentItem();
+    return item ? ContentBuilder.createPropertyRecord(field, item) : ContentBuilder.createInvalidPropertyRecord();
   }
 
-  public async getContentItem(): Promise<content.Item | null> {
-    return this.getContent(this._keys, null, { pageStart: 0, pageSize: 0 }).then((c: content.Content): content.Item | null => {
-      if (c.contentSet.length === 0)
-        return null;
+  public async getContentItem(): Promise<content.Item | undefined> {
+    const c = await this.getContent(this._keys, null, { pageStart: 0, pageSize: 0 });
+    if (c.contentSet.length === 0)
+      return undefined;
 
-      assert(c.contentSet.length === 1, "Expecting the number of records to be exactly 1");
-      return c.contentSet[0];
-    }, () => null);
+    assert(c.contentSet.length === 1, "Expecting the number of records to be exactly 1");
+    return c.contentSet[0];
   }
 }

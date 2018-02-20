@@ -6,9 +6,9 @@ import Descriptor from "./Descriptor";
 import ContentSetItem from "./Item";
 
 export interface NestedContent {
-  primaryKeys: ec.InstanceKey[];
-  values: any;
-  displayValues: any;
+  PrimaryKeys: ec.InstanceKey[];
+  Values: any;
+  DisplayValues: any;
 }
 
 /** A struct that contains the Descriptor and a list of ContentSetItem

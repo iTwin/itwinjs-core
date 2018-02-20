@@ -6,6 +6,7 @@ import * as responseTypes from "./AddonResponses";
 import * as ec from "../common/EC";
 import { NavNode, NavNodeKey, NavNodeKeyPath, NavNodePathElement, ECInstanceNodeKey } from "../common/Hierarchy";
 import * as content from "../common/content";
+import { createDescriptorOverrides } from "../common/content/Descriptor";
 import { StructFieldMemberDescription, isStructDescription } from "../common/content/TypeDescription";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes";
 import { PageOptions, ECPresentationManager as ECPInterface } from "../common/ECPresentationManager";
@@ -98,7 +99,7 @@ export default class ECPresentationManager implements ECPInterface {
   public async getContentSetSize(token: IModelToken, descriptor: content.Descriptor, keys: ec.InstanceKeysList, options: object): Promise<number> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetContentSetSize, {
       keys,
-      descriptorOverrides: this.createDescriptorOverrides(descriptor),
+      descriptorOverrides: createDescriptorOverrides(descriptor),
       options,
     });
     return this.request(token, params);
@@ -107,22 +108,11 @@ export default class ECPresentationManager implements ECPInterface {
   public async getContent(token: IModelToken, descriptor: content.Descriptor, keys: ec.InstanceKeysList, pageOptions: PageOptions, options: object): Promise<content.Content> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetContent, {
       keys,
-      descriptorOverrides: this.createDescriptorOverrides(descriptor),
+      descriptorOverrides: createDescriptorOverrides(descriptor),
       pageOptions,
       options,
     });
     return this.request(token, params, Conversion.createContent);
-  }
-
-  private createDescriptorOverrides(descriptor: content.Descriptor): object {
-    return {
-      displayType: descriptor.displayType,
-      // hiddenFieldNames: content.getHiddenFieldNames(descriptor),
-      sortingFieldName: descriptor.sortingField ? descriptor.sortingField.name : undefined,
-      sortDirection: descriptor.sortDirection,
-      contentFlags: descriptor.contentFlags,
-      filterExpression: descriptor.filterExpression,
-    };
   }
 
   public async getDistinctValues(_token: IModelToken, _displayType: string, _fieldName: string, _maximumValueCount: number, _options: object): Promise<string[]> {
@@ -269,6 +259,23 @@ namespace Conversion {
     return r.map((k: responseTypes.ECInstanceKey) => createInstanceKey(k));
   }
 
+  function createContentItem(descriptor: content.Descriptor, r: responseTypes.ContentSetItem): content.Item {
+    let classInfo: ec.ClassInfo | null = null;
+    if (r.ClassInfo)
+      classInfo = createClassInfo(r.ClassInfo);
+    const item = {
+      primaryKeys: createInstanceKeyList(r.PrimaryKeys!),
+      label: r.DisplayLabel,
+      imageId: r.ImageId,
+      classInfo,
+      values: r.Values,
+      displayValues: r.DisplayValues,
+      mergedFieldNames: r.MergedFieldNames || [],
+      fieldPropertyValueKeys: createItemValueKeys(descriptor, r.FieldValueKeys || {}),
+    } as content.Item;
+    return item;
+  }
+
   export function createContent(r: responseTypes.Content): content.Content | null {
     if (!r)
       return null;
@@ -281,23 +288,8 @@ namespace Conversion {
       descriptor,
       contentSet: [],
     };
-    for (const itemResp of r.ContentSet) {
-      let classInfo: ec.ClassInfo | null = null;
-      if (itemResp.ClassInfo)
-        classInfo = createClassInfo(itemResp.ClassInfo);
-      const item: content.Item = {
-        primaryKeys: createInstanceKeyList(itemResp.PrimaryKeys!),
-        label: itemResp.DisplayLabel!,
-        imageId: itemResp.ImageId!,
-        classInfo,
-        values: itemResp.Values!,
-        displayValues: itemResp.DisplayValues!,
-        mergedFieldNames: itemResp.MergedFieldNames!,
-        fieldPropertyValueKeys: createItemValueKeys(descriptor, itemResp.FieldValueKeys!),
-      };
-      cont.contentSet.push(item);
-    }
-
+    for (const itemResp of r.ContentSet)
+      cont.contentSet.push(createContentItem(descriptor, itemResp));
     return cont;
   }
 
@@ -339,7 +331,7 @@ namespace Conversion {
     const categories: { [name: string]: content.CategoryDescription } = {};
     const fields = new Array<content.Field>();
     for (const respField of r.Fields)
-      fields.push(createField(respField, categories, null));
+      fields.push(createField(respField, categories));
 
     let sortingField: content.Field | null = null;
     const sortDirection = r.SortDirection as content.SortDirection;
@@ -526,7 +518,7 @@ namespace Conversion {
   }
 
   function createPropertiesField(r: responseTypes.ECPropertiesField, type: content.TypeDescription, editor: content.EditorDescription | null,
-    category: content.CategoryDescription, parent: content.NestedContentField | null): content.PropertiesField {
+    category: content.CategoryDescription, parent: content.NestedContentField | undefined): content.PropertiesField {
     const properties = new Array<content.Property>();
     for (const pr of r.Properties)
       properties.push(createFieldProperty(pr));
@@ -544,7 +536,7 @@ namespace Conversion {
   }
 
   function createNestedContentField(r: responseTypes.NestedContentField, type: content.TypeDescription, editor: content.EditorDescription | null,
-    categories: { [name: string]: content.CategoryDescription }, parent: content.NestedContentField | null): content.NestedContentField {
+    categories: { [name: string]: content.CategoryDescription }, parent: content.NestedContentField | undefined): content.NestedContentField {
     assert(isStructDescription(type), "Nested content fields' type should be 'struct'");
     const category = categories[r.Category.Name];
     const nestedFields = new Array<content.Field>();
@@ -574,7 +566,7 @@ namespace Conversion {
     return (field as any).ContentClassInfo;
   }
 
-  function createField(r: responseTypes.Field, categories: { [name: string]: content.CategoryDescription }, parent: content.NestedContentField | null): content.Field {
+  function createField(r: responseTypes.Field, categories: { [name: string]: content.CategoryDescription }, parent?: content.NestedContentField): content.Field {
     const type = createFieldType(r.Type);
     const editor = createFieldEditor(r.Editor!);
     const category = createCategory(r.Category, categories);

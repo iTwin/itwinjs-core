@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as ec from "../EC";
-import { Field } from "./Fields";
+import { Field, resetParentship as resetFieldParentship, rebuildParentship as rebuildFieldParentship } from "./Fields";
 
 /** Data structure that describes an ECClass in ContentDescriptor. In addition to the class
  * itself the structure holds its relationship path to the primary ECClass and paths
@@ -57,3 +57,37 @@ export default interface Descriptor {
   contentFlags: number;
   filterExpression?: string;
 }
+
+/** @hidden */
+export interface DescriptorOverrides {
+  displayType: string;
+  hiddenFieldNames: string[];
+  sortingFieldName?: string;
+  sortDirection: SortDirection;
+  contentFlags: number;
+  filterExpression?: string;
+}
+
+/** @hidden */
+export const createDescriptorOverrides = (descriptor: Descriptor): DescriptorOverrides => {
+  return {
+    displayType: descriptor.displayType,
+    hiddenFieldNames: [],
+    sortingFieldName: descriptor.sortingField ? descriptor.sortingField.name : undefined,
+    sortDirection: descriptor.sortDirection,
+    contentFlags: descriptor.contentFlags,
+    filterExpression: descriptor.filterExpression,
+  };
+};
+
+/** @hidden */
+export const resetParentship = (descriptor: Descriptor): void => {
+  for (const field of descriptor.fields)
+    resetFieldParentship(field);
+};
+
+/** @hidden */
+export const rebuildParentship = (descriptor: Descriptor): void => {
+  for (const field of descriptor.fields)
+    rebuildFieldParentship(field);
+};

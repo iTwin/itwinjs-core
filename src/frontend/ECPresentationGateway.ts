@@ -5,7 +5,7 @@ import { Gateway } from "@build/imodeljs-core/lib/common/Gateway";
 import { IModelToken } from "@build/imodeljs-core/lib/common/IModel";
 import ECPresentationGatewayDefinition from "../common/ECPresentationGatewayDefinition";
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "../common/Hierarchy";
-import * as content from "../common/content";
+import * as c from "../common/content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes";
 import { PageOptions } from "../common/ECPresentationManager";
 import { InstanceKeysList } from "../common/EC";
@@ -40,16 +40,16 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return this.forward.apply(this, arguments);
   }
 
-  public async getContentDescriptor(_token: IModelToken, _displayType: string, _keys: InstanceKeysList, _selection: content.SelectionInfo | null, _options: object): Promise<content.Descriptor | null> {
+  public async getContentDescriptor(_token: IModelToken, _displayType: string, _keys: InstanceKeysList, _selection: c.SelectionInfo | null, _options: object): Promise<c.Descriptor | null> {
+    return await this.forward.apply(this, arguments);
+  }
+
+  public async getContentSetSize(_token: IModelToken, _descriptor: c.Descriptor, _keys: InstanceKeysList, _options: object): Promise<number> {
     return this.forward.apply(this, arguments);
   }
 
-  public async getContentSetSize(_token: IModelToken, _descriptor: content.Descriptor, _keys: InstanceKeysList, _options: object): Promise<number> {
-    return this.forward.apply(this, arguments);
-  }
-
-  public async getContent(_token: IModelToken, _descriptor: content.Descriptor, _keys: InstanceKeysList, _pageOptions: PageOptions, _options: object): Promise<content.Content> {
-    return this.forward.apply(this, arguments);
+  public async getContent(_token: IModelToken, _descriptor: c.Descriptor, _keys: InstanceKeysList, _pageOptions: PageOptions, _options: object): Promise<c.Content> {
+    return await this.forward.apply(this, arguments);
   }
 
   public async getDistinctValues(_token: IModelToken, _displayType: string, _fieldName: string, _maximumValueCount: number, _options: object): Promise<string[]> {

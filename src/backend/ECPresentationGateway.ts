@@ -7,6 +7,7 @@ import ECPresentationManager from "./ECPresentationManager";
 import ECPresentationGatewayDefinition from "../common/ECPresentationGatewayDefinition";
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "../common/Hierarchy";
 import { SelectionInfo, Descriptor, Content } from "../common/content";
+import { resetParentship } from "../common/content/Descriptor";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes";
 import { PageOptions, ECPresentationManager as ECPresentationManagerDefinition } from "../common/ECPresentationManager";
 import { InstanceKeysList } from "../common/EC";
@@ -53,7 +54,10 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
   }
 
   public async getContentDescriptor(token: IModelToken, displayType: string, keys: InstanceKeysList, selection: SelectionInfo | null, options: object): Promise<Descriptor | null> {
-    return await this.getManager().getContentDescriptor(token, displayType, keys, selection, options);
+    const descriptor = await this.getManager().getContentDescriptor(token, displayType, keys, selection, options);
+    if (descriptor)
+      resetParentship(descriptor);
+    return descriptor;
   }
 
   public async getContentSetSize(token: IModelToken, descriptor: Descriptor, keys: InstanceKeysList, options: object): Promise<number> {
@@ -61,7 +65,9 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
   }
 
   public async getContent(token: IModelToken, descriptor: Descriptor, keys: InstanceKeysList, pageOptions: PageOptions, options: object): Promise<Content> {
-    return await this.getManager().getContent(token, descriptor, keys, pageOptions, options);
+    const content: Content = await this.getManager().getContent(token, descriptor, keys, pageOptions, options);
+    resetParentship(content.descriptor);
+    return content;
   }
 
   public async getDistinctValues(token: IModelToken, displayType: string, fieldName: string, maximumValueCount: number, options: object): Promise<string[]> {

@@ -1,20 +1,15 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <PresentationRuleSet RuleSetId="Items" VersionMajor="1" VersionMinor="3" SupportedSchemas="Generic,BisCore" 
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <!-- Label overrides -->
-  <LabelOverride Condition='ThisNode.IsInstanceNode ANDALSO this.IsOfClass("DefinitionPartition", "BisCore") ANDALSO ThisNode.InstanceId = "16"' Label='"Dictionary"' Priority='200'/>
-  <LabelOverride Condition='ThisNode.IsInstanceNode ANDALSO this.IsOfClass("LinkPartition", "BisCore") ANDALSO ThisNode.InstanceId = "14"' Label='"Reality Data Links"' Priority='200'/>
-  <ImageIdOverride ImageId='"ECLiteralImage://CATEGORY"' Condition='ThisNode.IsInstanceNode ANDALSO this.IsOfClass("Category", "BisCore")' Priority='100'/>
-  <ImageIdOverride ImageId='"ECLiteralImage://MODEL"' Condition='ThisNode.IsInstanceNode ANDALSO this.IsOfClass("Model", "BisCore")' Priority='100'/>
+  
   <!-- Root Subject -->
   <RootNodeRule>
     <InstancesOfSpecificClasses ClassNames='BisCore:Subject' ArePolymorphic='false' InstanceFilter='this.Parent = NULL' GroupByClass='false' GroupByLabel='false'/>
   </RootNodeRule>
-  <!-- Navigation of Subject / InformationPartitionElement hierarchy -->
+  <!-- Navigation of Subject / Subject and Subject / InformationPartitionElement hierarchy -->
   <ChildNodeRule Condition='ParentNode.ECInstance.IsOfClass("Subject", "BisCore")'>
-    <RelatedInstances RelationshipClassNames='BisCore:SubjectOwnsPartitionElements' RequiredDirection='Forward' RelatedClassNames='BisCore:InformationPartitionElement' GroupByClass='false' GroupByLabel='false'/>
-    <!-- No such relationship: BisCore:SubjectOwnsChildSubjects
-        <RelatedInstances RelationshipClassNames='BisCore:SubjectOwnsChildSubjects' RequiredDirection='Forward' RelatedClassNames='BisCore:Subject' GroupByClass='false' GroupByLabel='false'/>-->
+    <RelatedInstances RelationshipClassNames='BisCore:SubjectOwnsSubjects' RequiredDirection='Forward' RelatedClassNames='BisCore:Subject' GroupByClass='false' GroupByLabel='false' />
+    <RelatedInstances RelationshipClassNames='BisCore:SubjectOwnsPartitionElements' RequiredDirection='Forward' RelatedClassNames='BisCore:InformationPartitionElement' GroupByClass='false' GroupByLabel='false' />
   </ChildNodeRule>
   <!-- Navigation of InformationPartitionElement / Model hierarchy -->
   <ChildNodeRule Condition='ParentNode.IsInstanceNode ANDALSO ParentNode.ECInstance.IsOfClass("InformationPartitionElement", "BisCore")'>
@@ -86,7 +81,11 @@
     <RelatedInstances RelationshipClassNames='Planning:WorkBreakdownOwnsWorkBreakdowns' RequiredDirection='Forward' RelatedClassNames='Planning:WorkBreakdown' GroupByClass='false' GroupByLabel='false'/>
     <RelatedInstances RelationshipClassNames='Planning:WorkBreakdownOwnsActivities' RequiredDirection='Forward' RelatedClassNames='Planning:Activity' GroupByClass='false' GroupByLabel='false'/>
   </ChildNodeRule>
-  
+  <!-- Navigation of RoleModel -->
+  <ChildNodeRule Condition='ParentNode.ECInstance.IsOfClass("RoleModel", "BisCore")'>
+    <RelatedInstances RelationshipClassNames='BisCore:ModelContainsElements' RequiredDirection='Forward' RelatedClassNames='BisCore:Element' GroupByClass='false' GroupByLabel='false'/>
+  </ChildNodeRule>
+
   <!-- Content rules -->
   <!-- Grid / DGN view -->
   <ContentRule Condition='(ContentDisplayType = "Grid" OR ContentDisplayType = "Graphics") ANDALSO SelectedNode.ECInstance.IsOfClass("Model", "BisCore")' OnlyIfNotHandled='true'>
@@ -103,11 +102,5 @@
   <ContentRule OnlyIfNotHandled='true'>
     <SelectedNodeInstances />
   </ContentRule>
-  <!-- Content modifiers that apply to any content rule -->
-  <ContentModifier ClassName="PhysicalElement" SchemaName="BisCore">
-    <RelatedProperties RelationshipClassNames='BisCore:PhysicalElementIsOfType' RelatedClassNames='BisCore:PhysicalType' RequiredDirection='Forward' PropertyNames='CodeValue'/>
-  </ContentModifier>
-  <ContentModifier ClassName="SpatialLocationElement" SchemaName="BisCore">
-    <RelatedProperties RelationshipClassNames='BisCore:SpatialLocationIsOfType' RelatedClassNames='BisCore:SpatialLocationType' RequiredDirection='Forward' PropertyNames='CodeValue'/>
-  </ContentModifier>
+
 </PresentationRuleSet>

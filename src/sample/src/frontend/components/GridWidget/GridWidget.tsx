@@ -3,7 +3,7 @@ import { IModelToken } from "@bentley/imodeljs-frontend/lib/common/IModel";
 import { IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend/IModelConnection";
 import { InstanceKey } from "@bentley/ecpresentation-frontend/lib/common/EC";
 import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/frontend/ECPresentationManager";
-import TableViewDataProvider, { RowItem } from "@bentley/ecpresentation-frontend/lib/frontend/Controls/TableViewDataProvider";
+import TableViewDataProvider from "@bentley/ecpresentation-frontend/lib/frontend/Controls/TableViewDataProvider";
 import { TreeNodeItem } from "@bentley/ecpresentation-frontend/lib/frontend/Controls/TreeDataProvider";
 
 import "./GridWidget.css";
@@ -45,7 +45,13 @@ interface RowDefinition {
 interface GridState {
   columns?: ColumnDefinition[];
   rows?: RowDefinition[];
+  error?: string;
 }
+const initialState: GridState = {
+  columns: [],
+  rows: [],
+  error: undefined,
+};
 class Grid extends React.Component<GridProps, GridState> {
   private _presentationManager: ECPresentationManager;
   private _dataProvider: TableViewDataProvider | undefined;
@@ -88,7 +94,7 @@ class Grid extends React.Component<GridProps, GridState> {
   }
   private async fetchData(_imodelToken: IModelToken, selectedNodes: TreeNodeItem[]) {
     if (0 === selectedNodes.length || !this._dataProvider) {
-      this.setState({});
+      this.setState(initialState);
       return;
     }
 
@@ -102,24 +108,21 @@ class Grid extends React.Component<GridProps, GridState> {
       const columnDescriptions = await this._dataProvider.getColumns();
       for (const columnDescription of columnDescriptions)
         columns.push({ name: columnDescription.key, label: columnDescription.label });
-      this.setState({ columns });
+      this.setState({ ...initialState, columns });
 
       const rowsCount = await this._dataProvider.getRowsCount();
-      const rowPromises = new Array<Promise<RowItem>>();
-      for (let i = 0; i < rowsCount; ++i)
-        rowPromises.push(this._dataProvider.getRow(i));
-      const rows = (await Promise.all(rowPromises)).map((rowItem: RowItem): RowDefinition => {
+      const rows = new Array<RowDefinition>();
+      for (let i = 0; i < rowsCount; ++i) {
+        const row = await this._dataProvider.getRow(i);
         const values: { [key: string]: string } = {};
-        for (const cell of rowItem.cells)
+        for (const cell of row.cells)
           values[cell.key] = this.createCellDisplayValue(cell.displayValue);
-        return { values };
-      });
-      this.setState({ columns, rows });
+        rows.push({ values });
+      }
+      this.setState({ ...initialState, columns, rows });
 
     } catch (error) {
-      // tslint:disable-next-line:no-console
-      console.log("Error fetching grid data: " + error);
-      this.setState({});
+      this.setState({ ...initialState, error: error.toString()});
     }
   }
   private renderHeaderRow() {
@@ -138,10 +141,12 @@ class Grid extends React.Component<GridProps, GridState> {
         ))}
       </tr>);
   }
-  private renderNoRecords() {
-    return (<tr><td className="NoData">No records</td></tr>);
+  private renderNoRecords(columnCount: number) {
+    return (<tr><td className="NoData" colSpan={columnCount}>No records</td></tr>);
   }
   public render() {
+    if (this.state.error)
+      return (<div className="Error">{this.state.error}</div>);
     if (0 === this.props.selectedNodes.length)
       return (<div className="NoData">Nothing selected</div>);
     if (!this.state.columns || 0 === this.state.columns.length)
@@ -152,7 +157,7 @@ class Grid extends React.Component<GridProps, GridState> {
           {this.renderHeaderRow()}
         </thead>
         <tbody>
-          {this.state.rows ? this.state.rows.map((row, index) => this.renderRow(row, index)) : this.renderNoRecords()}
+          {this.state.rows ? this.state.rows.map((row, index) => this.renderRow(row, index)) : this.renderNoRecords(this.state.columns.length)}
         </tbody>
       </table>
     );

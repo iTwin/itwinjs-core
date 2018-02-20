@@ -42,3 +42,21 @@ export const isPropertiesField = (field: Field): field is PropertiesField => {
 export const isNestedContentField = (field: Field): field is NestedContentField => {
   return (field as any).contentClassInfo;
 };
+
+/** @hidden */
+export const resetParentship = (field: Field): void => {
+  field.parent = undefined;
+  if (isNestedContentField(field)) {
+    for (const nestedField of field.nestedFields)
+      resetParentship(nestedField);
+  }
+};
+
+/** @hidden */
+export const rebuildParentship = (field: Field, parentField?: NestedContentField): void => {
+  field.parent = parentField;
+  if (isNestedContentField(field)) {
+    for (const nestedField of field.nestedFields)
+      rebuildParentship(nestedField, field);
+  }
+};

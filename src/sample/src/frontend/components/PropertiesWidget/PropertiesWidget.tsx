@@ -5,9 +5,8 @@ import { IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend/IModel
 import { InstanceKey } from "@bentley/ecpresentation-frontend/lib/common/EC";
 import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/frontend/ECPresentationManager";
 import PropertyPaneDataProvider from "@bentley/ecpresentation-frontend/lib/frontend/Controls/PropertyPaneDataProvider";
-import { PropertyRecord } from "@bentley/ecpresentation-frontend/lib/frontend/Controls/ContentBuilder";
 import { TreeNodeItem } from "@bentley/ecpresentation-frontend/lib/frontend/Controls/TreeDataProvider";
-
+import { isPrimitiveValue, isStructValue, isArrayValue, PropertyRecord } from "@bentley/ecpresentation-frontend/lib/frontend/Controls/ContentBuilder";
 import "./PropertiesWidget.css";
 
 export interface Props {
@@ -41,16 +40,25 @@ interface PropertyDisplayInfo {
   label: string;
   value: string | null;
 }
-interface PropertyPaneState {
-  records?: PropertyDisplayInfo[];
+interface GroupDisplayInfo {
+  label: string;
+  records: PropertyDisplayInfo[];
 }
+interface PropertyPaneState {
+  groups?: GroupDisplayInfo[];
+  error?: string;
+}
+const initialState: PropertyPaneState = {
+  groups: undefined,
+  error: undefined,
+};
 class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState> {
   private _presentationManager: ECPresentationManager;
   private _dataProvider: PropertyPaneDataProvider | undefined;
 
   constructor(props: PropertyPaneProps, context?: any) {
     super(props, context);
-    this.state = {};
+    this.state = initialState;
     this._presentationManager = new ECPresentationManager();
     if (props.rulesetId)
       this._dataProvider = new PropertyPaneDataProvider(this._presentationManager, props.imodelToken, props.rulesetId);
@@ -75,18 +83,41 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
     }
     return true;
   }
-  private createRecordDisplayValue(value: any): string {
-    if (!value)
-      return "";
-    if (typeof(value) === "string")
-      return value;
-    if (typeof(value) === "object" || Array.isArray(value))
-      return JSON.stringify(value);
-    return value.toString();
+  private createRecordDisplayValues(record: PropertyRecord): PropertyDisplayInfo[] {
+    const values = new Array<PropertyDisplayInfo>();
+    const recordValue = record.value;
+    if (!recordValue) {
+      values.push({ label: record.property.displayLabel, value: "" });
+    } else if (isPrimitiveValue(recordValue)) {
+      let displayValue = "";
+      if (!recordValue.displayValue)
+        displayValue = "";
+      else if (typeof (recordValue.displayValue) === "string")
+        displayValue = recordValue.displayValue;
+      else if (typeof (recordValue.displayValue) === "object" || Array.isArray(recordValue.displayValue))
+        displayValue = JSON.stringify(recordValue.displayValue);
+      else
+        displayValue = recordValue.displayValue!.toString();
+      values.push({ label: record.property.displayLabel, value: displayValue });
+    } else if (isStructValue(recordValue)) {
+      for (const key in recordValue.members) {
+        if (recordValue.members.hasOwnProperty(key)) {
+          const member = recordValue.members[key];
+          const memberValues = this.createRecordDisplayValues(member);
+          values.push(...memberValues);
+        }
+      }
+    } else if (isArrayValue(recordValue)) {
+      for (const member of recordValue.members) {
+        const memberValues = this.createRecordDisplayValues(member);
+        values.push(...memberValues);
+      }
+    }
+    return values;
   }
   private async fetchProperties(_imodelToken: IModelToken, selectedNodes: TreeNodeItem[]) {
     if (0 === selectedNodes.length || !this._dataProvider) {
-      this.setState({});
+      this.setState(initialState);
       return;
     }
 
@@ -96,43 +127,55 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
 
     try {
       this._dataProvider.keys = keys;
-      const records: PropertyDisplayInfo[] = [];
+      const groups: GroupDisplayInfo[] = [];
       const categoryCount = await this._dataProvider.getCategoryCount();
       for (let i = 0; i < categoryCount; ++i) {
+        const category = await this._dataProvider.getCategory(i);
+        const records: PropertyDisplayInfo[] = [];
         const propertiesCount = await this._dataProvider.getPropertyCount(i);
-        const propertyPromises: Array<Promise<PropertyRecord>> = [];
         for (let j = 0; j < propertiesCount; ++j) {
-          propertyPromises.push(this._dataProvider.getProperty(i, j));
+          const prop = await this._dataProvider.getProperty(i, j);
+          const values = this.createRecordDisplayValues(prop);
+          records.push(...values);
         }
-        const properties = await Promise.all(propertyPromises);
-        for (const property of properties) {
-          records.push({
-            label: property.property.displayLabel,
-            value: this.createRecordDisplayValue(property.displayValue),
-          });
-        }
-        this.setState({ records });
+        const groupInfo = {
+          label: category.label,
+          records,
+        } as GroupDisplayInfo;
+        groups.push(groupInfo);
       }
+      this.setState({ ...initialState, groups });
     } catch (error) {
-      // tslint:disable-next-line:no-console
-      console.log("Error fetching element properties: " + error);
-      this.setState({ records: undefined });
+      this.setState({ ...initialState, error: error.toString() });
     }
   }
+  private renderGroupHeader(group: GroupDisplayInfo) {
+    return (
+      <th className="GroupLabel" rowSpan={group.records.length}>
+        <div className="Rotated">{group.label}</div>
+      </th>
+    );
+  }
+  private renderGroup(group: GroupDisplayInfo) {
+    return group.records.map((record: PropertyDisplayInfo, index: number) => (
+      <tr key={index}>
+        {(0 === index) ? this.renderGroupHeader(group) : ""}
+        <td className="PropertyLabel">{record.label}</td>
+        <td className="PropertyValue">{record.value}</td>
+      </tr>
+    ));
+  }
   public render() {
+    if (this.state.error)
+      return (<div className="Error">{this.state.error}</div>);
     if (!this.props.selectedNodes || 0 === this.props.selectedNodes.length)
       return (<div className="NoProperties">Nothing selected</div>);
-    if (!this.state.records || 0 === this.state.records.length)
+    if (!this.state.groups || 0 === this.state.groups.length)
       return (<div className="NoProperties">No Properties</div>);
     return (
       <table>
         <tbody>
-          {this.state.records.map((record: PropertyDisplayInfo, index: number) => (
-            <tr key={index}>
-              <td className="PropertyLabel">{record.label}</td>
-              <td className="PropertyValue">{record.value}</td>
-            </tr>
-          ))}
+          {this.state.groups.map((group: GroupDisplayInfo) => this.renderGroup(group))}
         </tbody>
       </table>
     );

@@ -131,6 +131,8 @@ export default abstract class ContentDataProvider {
     if (!this._contentPromise) {
       const self = this;
       const getContent = (descriptor: content.Descriptor | null): Promise<content.Content> => {
+        if (!descriptor)
+          throw new Error("Invalid descriptor");
         return self._manager.getContent(self.imodelToken, descriptor!, keys,
           {pageStart, pageSize}, self.createRequestOptions());
       };
@@ -149,9 +151,9 @@ export default abstract class ContentDataProvider {
       const self = this;
       this._contentSetSizePromise = this.getContentDescriptor(keys, selectionInfo).then((descriptor: content.Descriptor | null) => {
         if (!descriptor)
-          return 0;
+          throw new Error("Invalid descriptor");
         return self._manager.getContentSetSize(self.imodelToken, descriptor, keys, self.createRequestOptions());
-      }).catch(() => 0);
+      });
     }
     return this._contentSetSizePromise!;
   }

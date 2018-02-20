@@ -28,3 +28,11 @@
   border: 1px solid grey;
   font-size: 90%;
 }
+
+.GridWidget .Error {
+  color: red;
+}
+
+.GridWidget .NoData {
+  text-align: center;
+}

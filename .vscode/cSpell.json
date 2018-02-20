@@ -25,6 +25,7 @@
         "lcov",
         "nodeaddon",
         "nodeaddonapi",
+        "parentship",
         "performant",
         "ruleset",
         "rulesets",

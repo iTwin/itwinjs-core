@@ -6,14 +6,14 @@ import { IModelToken } from "@build/imodeljs-core/lib/common/IModel";
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "./Hierarchy";
 import * as content from "./content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "./Changes";
-import { PageOptions, ECPresentationManager as ECPInterface } from "./ECPresentationManager";
+import { PageOptions } from "./ECPresentationManager";
 import * as ec from "./EC";
 
 /** Gateway definition for ECPresentation services.
  * WIP: would like to name it ECPresentationGatewayDefinition, but can't because
  * Gateway's API requires it's name to match the name of the frontend implementation.
  */
-export default abstract class ECPresentationGateway extends Gateway implements ECPInterface {
+export default abstract class ECPresentationGateway extends Gateway {
   /** The version of the gateway. */
   public static version = "1.0.0";
 
