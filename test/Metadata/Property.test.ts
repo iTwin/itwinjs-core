@@ -30,8 +30,8 @@ describe("Property", () => {
   }
 
   describe("fromJson", () => {
-    it("should throw for missing name", async () => {
-      const propertyJson = {};
+    it("should throw for invalid name", async () => {
+      const propertyJson = { name: "ThisDoesNotMatch"};
       const testProp = new MockProperty("BadProp");
       expect(testProp).to.exist;
       await expect(testProp.fromJson(propertyJson)).to.be.rejectedWith(ECObjectsError);
