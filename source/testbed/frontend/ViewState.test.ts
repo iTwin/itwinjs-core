@@ -11,10 +11,10 @@ import * as path from "path";
 import { AuxCoordSystemSpatialState } from "../../frontend/AuxCoordSys";
 import { CategorySelectorState } from "../../frontend/CategorySelectorState";
 import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
-import { SpatialViewDefinitionProps } from "../../common/ElementProps";
 import { ModelSelectorState } from "../../frontend/ModelSelectorState";
 import { IModelConnection } from "../../frontend/IModelConnection";
 import { DisplayStyle3dState } from "../../frontend/DisplayStyleState";
+import { SpatialViewDefinitionProps } from "../../common/ViewProps";
 
 const iModelLocation = path.join(__dirname, "../../../../backend/lib/backend/test/assets/test.bim");
 
@@ -24,9 +24,9 @@ describe("ViewState", () => {
 
   before(async () => {
     imodel = await IModelConnection.openStandalone(iModelLocation);
-    const viewRows = await imodel.views.queryViewDefinitionProps(SpatialViewState.sqlName);
+    const viewRows = await imodel.views.queryProps({ from: SpatialViewState.sqlName });
     assert.exists(viewRows, "Should find some views");
-    viewState = await imodel.views.loadView(viewRows[0].id!) as SpatialViewState;
+    viewState = await imodel.views.load(viewRows[0].id!) as SpatialViewState;
   });
 
   after(async () => { if (imodel) imodel.closeStandalone(); });

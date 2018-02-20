@@ -75,7 +75,7 @@ describe("ECSqlStatement", () => {
   });
 });
 
-  it.skip("Bind Numbers", () => {
+  it("Bind Numbers", () => {
   using (ECDbTestHelper.createECDb(_outDir, "bindnumbers.ecdb",
   `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
     <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -278,8 +278,7 @@ describe("ECSqlStatement", () => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const row = stmt.getRow();
       assert.equal(row.d, largeSafeNumber);
-      // WIP Needs a fix in ECDb so that getInt64 can be called on int32 properties
-      // assert.equal(row.i, largeSafeNumber);
+      assert.equal(row.i, largeSafeNumber);
       assert.equal(row.si, largeSafeNumberStr);
       assert.equal(row.hi, largeSafeNumberHexStr);
       assert.equal(row.l, largeSafeNumber);
@@ -303,7 +302,7 @@ describe("ECSqlStatement", () => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const row = stmt.getRow();
       assert.equal(row.d, largeSafeNumber);
-      // WIP waiting for ECDb fix assert.equal(row.i, largeSafeNumber);
+      assert.equal(row.i, largeSafeNumber);
       assert.equal(row.l, largeSafeNumber);
       assert.equal(row.s, largeSafeNumberStr);
     });
@@ -323,7 +322,7 @@ describe("ECSqlStatement", () => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const row = stmt.getRow();
       assert.equal(row.d, largeSafeNumber);
-      // WIP waiting for ECDb fix assert.equal(row.i, largeSafeNumber);
+      assert.equal(row.i, largeSafeNumber);
       assert.equal(row.l, largeSafeNumber);
       assert.equal(row.s, largeSafeNumberStr); // even though it was bound as hex str, it gets converted to int64 before persisting
     });
@@ -343,7 +342,7 @@ describe("ECSqlStatement", () => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const row = stmt.getRow();
       assert.equal(row.d, largeSafeNumber);
-      // WIP waiting for ECDb fix assert.equal(row.i, largeSafeNumber);
+      assert.equal(row.i, largeSafeNumber);
       assert.equal(row.l, largeSafeNumber);
       assert.equal(row.s, largeSafeNumberStr);
     });
@@ -388,7 +387,7 @@ describe("ECSqlStatement", () => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const row = stmt.getRow();
       assert.equal(row.d, largeNegSafeNumber);
-      // WIP waiting for ECDb fix assert.equal(row.i, largeNegSafeNumber);
+      assert.equal(row.i, largeNegSafeNumber);
       assert.equal(row.l, largeNegSafeNumber);
       assert.equal(row.s, largeNegSafeNumberStr);
     });
@@ -408,7 +407,7 @@ describe("ECSqlStatement", () => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const row = stmt.getRow();
       assert.equal(row.d, largeNegSafeNumber);
-      // WIP waiting for ECDb fix assert.equal(row.i, largeNegSafeNumber);
+      assert.equal(row.i, largeNegSafeNumber);
       assert.equal(row.l, largeNegSafeNumber);
       assert.equal(row.s, largeNegSafeNumberStr);
     });
@@ -428,7 +427,7 @@ describe("ECSqlStatement", () => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const row = stmt.getRow();
       assert.equal(row.d, largeNegSafeNumber);
-      // WIP waiting for ECDb fix assert.equal(row.i, largeNegSafeNumber);
+      assert.equal(row.i, largeNegSafeNumber);
       assert.equal(row.l, largeNegSafeNumber);
       assert.equal(row.s, largeNegSafeNumberStr);
     });
@@ -1169,7 +1168,7 @@ describe("ECSqlStatement", () => {
       });
   });
 
-  it.skip("HexStr SQL function", () => {
+  it("HexStr SQL function", () => {
     using (ECDbTestHelper.createECDb(_outDir, "hexstrfunction.ecdb",
     `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
        <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -1206,7 +1205,6 @@ describe("ECSqlStatement", () => {
           assert.equal(row.hex, "0x3");
         });
 
-       // WIP: Needs to wait for a new addon-build including an ECDb fix
       ecdb.withPreparedStatement("SELECT L, HexStr(L) hex FROM test.Foo WHERE ECInstanceId=?", (stmt) => {
           stmt.bindId(1, id);
           assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);

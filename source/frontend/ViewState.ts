@@ -13,7 +13,7 @@ import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { Frustum, Npc } from "../common/Frustum";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState } from "./EntityState";
-import { ViewDefinitionProps, ViewDefinition3dProps, SpatialViewDefinitionProps, ViewDefinition2dProps, CameraProps } from "../common/ElementProps";
+import { ViewDefinitionProps, ViewDefinition3dProps, SpatialViewDefinitionProps, ViewDefinition2dProps, CameraProps } from "../common/ViewProps";
 import { DisplayStyleState, DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
 import { ColorDef } from "../common/ColorDef";
 import { ModelSelectorState } from "./ModelSelectorState";

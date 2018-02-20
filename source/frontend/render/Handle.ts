@@ -4,14 +4,18 @@
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { GL } from "../../frontend/render/GL";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
-import { Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { Range2d, Range3d } from "@bentley/geometry-core/lib/Range";
+import { Matrix3, Matrix4 } from "../../frontend/render/Matrix";
+import { QParams } from "../../frontend/render/QPoint";
+import { XY, XYZ } from "@bentley/geometry-core/lib/PointVector";
 
 /** A handle to some GL resource.
  * This class should be a NonCopyableClass.
  */
 export class Handle {
   public static readonly INVALID_VALUE: number = -1;
-  public value: WebGLBuffer | number | null = Handle.INVALID_VALUE;
+  public value: WebGLBuffer | WebGLUniformLocation | number | null = Handle.INVALID_VALUE;
 
   public constructor(val?: Handle | number) {
     if (!val) {
@@ -108,37 +112,81 @@ export class BufferHandle extends Handle {
   }
 
   public bindData(gl: WebGLRenderingContext, target: number, size: number, usage: number, data?: ArrayBufferView | ArrayBuffer) {
-    this.bind(gl, target);
-    if (data) {
-      this.setBufferData(gl, target, data, usage);
-    } else {
+    if (!data) {
       this.setBufferData(gl, target, size, usage);
+      this.verifySize(gl, target, size);
+      return;
     }
+    this.bind(gl, target);
+    this.setBufferData(gl, target, data, usage);
     this.verifySize(gl, target, size);
     BufferHandle.unBind(gl, target);
   }
 }
 
 export class QBufferHandle2d extends BufferHandle {
-  public params: [number, number, number, number];
+  public params: [number, number, number, number] = [0, 0, 0, 0];
 
-  public constructor(val?: QBufferHandle2d) {
-    super(val);
+  public constructor(val?: QBufferHandle2d | QParams<Point2d, Range2d>) {
+    super();
     if (val instanceof QBufferHandle2d) {
+      this.value = val.value;
+      val.value = Handle.INVALID_VALUE;
       this.params = val.params;
+    } else if (val instanceof QParams) {
+      const origin = val.origin;
+      const scale = val.scale;
+      if (origin instanceof XY) {
+        this.params[0] = origin.x;
+        this.params[1] = origin.y;
+      }
+      if (scale instanceof XY) {
+        this.params[2] = scale.x;
+        this.params[3] = scale.y;
+      }
+      if (0 !== this.params[2]) {
+        this.params[2] = 1.0 / this.params[2];
+      }
+      if (0 !== this.params[3]) {
+        this.params[3] = 1.0 / this.params[3];
+      }
     }
   }
 }
 
 export class QBufferHandle3d extends BufferHandle {
-  public origin: Point3d;
-  public scale: Point3d;
+  public origin: Point3d = new Point3d();
+  public scale: Point3d = new Point3d();
 
-  public constructor(val?: QBufferHandle3d) {
-    super(val);
+  public constructor(val?: QBufferHandle3d | QParams<Point3d, Range3d>) {
+    super();
     if (val instanceof QBufferHandle3d) {
+      this.value = val.value;
+      val.value = Handle.INVALID_VALUE;
       this.origin = val.origin;
       this.scale = val.scale;
+    } else if (val instanceof QParams) {
+      const origin = val.origin;
+      const scale = val.scale;
+      if (origin instanceof XYZ) {
+        this.origin.x = origin.x;
+        this.origin.y = origin.y;
+        this.origin.z = origin.z;
+      }
+      if (scale instanceof XYZ) {
+        this.scale.x = scale.x;
+        this.scale.y = scale.y;
+        this.scale.z = scale.z;
+      }
+      if (0 !== this.scale.x) {
+        this.scale.x = 1.0 / this.scale.x;
+      }
+      if (0 !== this.scale.y) {
+        this.scale.y = 1.0 / this.scale.y;
+      }
+      if (0 !== this.scale.z) {
+        this.scale.z = 1.0 / this.scale.z;
+      }
     }
   }
 }
@@ -150,7 +198,7 @@ export class AttributeHandle extends Handle {
 
   public init(gl: WebGLRenderingContext, program: WebGLProgram, name: string, required: boolean): boolean {
     this.invalidate();
-    gl.getAttribLocation(program, name);
+    this.value = gl.getAttribLocation(program, name);
     assert(!required || this.isValid());
     return this.isValid();
   }
@@ -180,23 +228,25 @@ export class AttributeHandle extends Handle {
 }
 
 export class UniformHandle extends Handle {
-  public value: number;
-
   public constructor(val?: UniformHandle | number) {
     super(val);
   }
 
-  // private setUniformMatrix4fv(gl: WebGLRenderingContext, transpose: boolean, data: Float32Array | number[]): void {
-  //   gl.uniformMatrix4fv(this.value, transpose, data);
-  // }
+  private setUniformMatrix4fv(gl: WebGLRenderingContext, transpose: boolean, data: Float32Array | number[]): void {
+    if (this.value instanceof WebGLUniformLocation) {
+      gl.uniformMatrix4fv(this.value, transpose, data);
+    }
+  }
 
-  // private setUniformMatrix3fv(gl: WebGLRenderingContext, transpose: boolean, data: Float32Array | number[]): void {
-  //   gl.uniformMatrix3fv(this.value, transpose, data);
-  // }
+  private setUniformMatrix3fv(gl: WebGLRenderingContext, transpose: boolean, data: Float32Array | number[]): void {
+    if (this.value instanceof WebGLUniformLocation) {
+      gl.uniformMatrix3fv(this.value, transpose, data);
+    }
+  }
 
   public init(gl: WebGLRenderingContext, program: WebGLProgram, name: string, required: boolean): boolean {
     this.invalidate();
-    gl.getAttribLocation(program, name);
+    this.value = gl.getUniformLocation(program, name);
     assert(!required || this.isValid());
     return this.isValid();
   }
@@ -205,28 +255,28 @@ export class UniformHandle extends Handle {
     this.value = Handle.INVALID_VALUE;
   }
 
-  // public setMatrix(gl: WebGLRenderingContext, mat: Matrix4 | Matrix3): void {
-  //   if (mat instanceof Matrix4) {
-  //     this.setUniformMatrix4fv(gl, false, mat.data);
-  //   } else if (mat instanceof Matrix3) {
-  //     this.setUniformMatrix3fv(gl, false, mat.data);
-  //   }
-  // }
+  public setMatrix(gl: WebGLRenderingContext, mat: Matrix4 | Matrix3): void {
+    if (mat instanceof Matrix4) {
+      this.setUniformMatrix4fv(gl, false, mat.data);
+    } else if (mat instanceof Matrix3) {
+      this.setUniformMatrix3fv(gl, false, mat.data);
+    }
+  }
 
   public setUniform1fv(gl: WebGLRenderingContext, data: Float32Array | number[]): void {
-    gl.uniform1fv(this.value, data);
+    gl.uniform1fv(Number(this.value), data);
   }
 
   public setUniform2fv(gl: WebGLRenderingContext, data: Float32Array | number[]): void {
-    gl.uniform2fv(this.value, data);
+    gl.uniform2fv(Number(this.value), data);
   }
 
   public setUniform3fv(gl: WebGLRenderingContext, data: Float32Array | number[]): void {
-    gl.uniform3fv(this.value, data);
+    gl.uniform3fv(Number(this.value), data);
   }
 
   public setUniform4fv(gl: WebGLRenderingContext, data: Float32Array | number[]): void {
-    gl.uniform4fv(this.value, data);
+    gl.uniform4fv(Number(this.value), data);
   }
 
   public setUniform1i(gl: WebGLRenderingContext, data: number): void {
