@@ -383,8 +383,8 @@ export class BriefcaseManager {
 
   /** Open a briefcase */
   public static async open(accessToken: AccessToken, projectId: string, iModelId: string, openMode: OpenMode, version: IModelVersion): Promise<BriefcaseEntry> {
-    await BriefcaseManager.initCache(accessToken);
-    assert(!!BriefcaseManager.hubClient);
+    // await BriefcaseManager.initCache(accessToken);
+    // assert(!!BriefcaseManager.hubClient);
 
     const changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId);
 

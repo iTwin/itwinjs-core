@@ -6,10 +6,10 @@ import { expect, assert } from "chai";
 import * as TypeMoq from "typemoq";
 import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState, IModelHubClient,
-  SeedFile, ConnectClient, Project, ECJsonTypeMap, WsgInstance } from "@bentley/imodeljs-clients";
+  ConnectClient, Project, ECJsonTypeMap, WsgInstance } from "@bentley/imodeljs-clients";
 import { Code } from "../../common/Code";
 import { IModelVersion } from "../../common/IModelVersion";
-import { KeepBriefcase } from "../BriefcaseManager";
+import { KeepBriefcase, BriefcaseManager, BriefcaseEntry } from "../BriefcaseManager";
 import { IModelDb, ConcurrencyControl } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { iModelEngine } from "../IModelEngine";
@@ -64,13 +64,13 @@ describe("BriefcaseManager", () => {
     return count;
   };
 
-  const getObjectInstance = <T extends WsgInstance>(typedConstructor: new () => T, jsonBody: any): T => {
+  const getTypedInstance = <T extends WsgInstance>(typedConstructor: new () => T, jsonBody: any): T => {
     const instance: T | undefined = ECJsonTypeMap.fromJson<T>(typedConstructor, "wsg", jsonBody);
     if (!instance) { throw new Error("Unable to parse JSON into typed instance"); }
     return instance!;
   };
 
-  const getObjectInstances = <T extends WsgInstance>(typedConstructor: new () => T, jsonBody: any): T[] => {
+  const getTypedInstances = <T extends WsgInstance>(typedConstructor: new () => T, jsonBody: any): T[] => {
     const instances: T[] = new Array<T>();
     for (const ecJsonInstance of jsonBody) {
       const typedInstance: T | undefined = ECJsonTypeMap.fromJson<T>(typedConstructor, "wsg",  ecJsonInstance);
@@ -91,21 +91,21 @@ describe("BriefcaseManager", () => {
         const assetPath = path.join(assetDir, "SampleProject.json");
         const buff = IModelJsFs.readFileSync(assetPath);
         const jsonObj = JSON.parse(buff.toString())[0];
-        return Promise.resolve(getObjectInstance<Project>(Project, jsonObj));
+        return Promise.resolve(getTypedInstance<Project>(Project, jsonObj));
       }).verifiable();
     iModelHubClientMock.setup((f: IModelHubClient) => f.getIModels(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
       .returns(() => {
         const sampleIModelPath = path.join(assetDir, "SampleIModel.json");
         const buff = IModelJsFs.readFileSync(sampleIModelPath);
         const jsonObj = JSON.parse(buff.toString());
-        return Promise.resolve(getObjectInstances<HubIModel>(HubIModel, jsonObj));
+        return Promise.resolve(getTypedInstances<HubIModel>(HubIModel, jsonObj));
       }).verifiable();
     iModelHubClientMock.setup((f: IModelHubClient) => f.getChangeSets(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
       .returns(() => {
         const sampleChangeSetPath = path.join(assetDir, "SampleChangeSets.json");
         const buff = IModelJsFs.readFileSync(sampleChangeSetPath);
         const jsonObj = JSON.parse(buff.toString());
-        return Promise.resolve(getObjectInstances<ChangeSet>(ChangeSet, jsonObj));
+        return Promise.resolve(getTypedInstances<ChangeSet>(ChangeSet, jsonObj));
       }).verifiable();
 
     // accessToken = await IModelTestUtils.getTestUserAccessToken();
@@ -145,7 +145,8 @@ describe("BriefcaseManager", () => {
     iModelLocalReadWritePath = path.join(cacheDir, testIModelId, "readWrite");
 
     // Recreate briefcases if the cache has been cleaned. todo: Figure a better way to prevent bleeding briefcase ids
-    // TODO: Mock this out
+    // Mocking notes:
+    //              - Do we ever need to clear briefcases if they're never actually created from the mocks?
     shouldDeleteAllBriefcases = !IModelJsFs.existsSync(cacheDir);
     if (shouldDeleteAllBriefcases) {
       await IModelTestUtils.deleteAllBriefcases(accessToken, testIModelId);
@@ -163,38 +164,31 @@ describe("BriefcaseManager", () => {
      }
    });
 
-  it.only("should be able to open an IModel from the Hub in Readonly mode", async () => {
+  it.only("should be able to open an cached first version IModel in Readonly mode", async () => {
     // Arrange
     iModelVersionMock.setup((f: IModelVersion) => f.evaluateChangeSet(spoofAccessToken as any, TypeMoq.It.isAnyString()))
       .returns(() => Promise.resolve(""));
-    iModelHubClientMock.setup((f: IModelHubClient) => f.getIModel(spoofAccessToken as any, testProjectId, {
-      $select: "Name", $filter: "$id+eq+'" + testIModelId + "'"}))
+    iModelHubClientMock.setup((f: IModelHubClient) => f.getIModel(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
       .returns(() => {
-        const jsonString = "";
-        IModelJsFs.copySync("./assets/SampleIModel.json", jsonString);
-        const jsonObj = JSON.parse(jsonString);
-        return Promise.resolve(getObjectInstance<HubIModel>(HubIModel, jsonObj));
-        });
-    iModelHubClientMock.setup((f: IModelHubClient) => f.getSeedFile(spoofAccessToken as any, testIModelId, true))
-      .returns(() => {
-        const jsonString = "";
-        IModelJsFs.copySync("./assets/SampleSeedFile.json", jsonString);
-        const jsonObj = JSON.parse(jsonString);
-        return Promise.resolve(getObjectInstance<SeedFile>(SeedFile, jsonObj));
-      });
+      const sampleIModelPath = path.join(assetDir, "SampleIModel.json");
+      const buff = IModelJsFs.readFileSync(sampleIModelPath);
+      const jsonObj = JSON.parse(buff.toString());
+      return Promise.resolve(getTypedInstance<HubIModel>(HubIModel, jsonObj));
+    }).verifiable();
 
     // Act
-    const iModel: IModelDb = await IModelDb.open(spoofAccessToken as any, testProjectId, testIModelId, OpenMode.Readonly);
+    const iModel: BriefcaseEntry = await BriefcaseManager.open(spoofAccessToken as any, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
 
     // Assert
     assert.exists(iModel);
-    assert(iModel.iModelToken.openMode === OpenMode.Readonly);
+    assert(iModel.openMode === OpenMode.Readonly);
 
-    expect(IModelJsFs.existsSync(iModelLocalReadonlyPath));
-    const files = IModelJsFs.readdirSync(iModelLocalReadonlyPath);
-    expect(files.length).greaterThan(0);
+    // some verify stuff
+    // expect(IModelJsFs.existsSync(iModelLocalReadonlyPath));
+    // const files = IModelJsFs.readdirSync(iModelLocalReadonlyPath);
+    // expect(files.length).greaterThan(0);
 
-    iModel.close(accessToken);
+    // iModel.close(accessToken);
   });
 
   it("should be able to open an IModel from the Hub in ReadWrite mode", async () => {
