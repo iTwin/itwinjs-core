@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Guid, Id64, Id64Set } from "@bentley/bentleyjs-core/lib/Id";
 import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
 import { OpenMode, DbResult, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
 import { DeploymentEnv } from "@bentley/imodeljs-clients/lib/Clients";
 import { MultiCode, IModelHubClient, CodeState } from "@bentley/imodeljs-clients/lib/IModelHubClients";
 import { Code, CodeSpec } from "../common/Code";
-import { ElementProps, ElementAspectProps, ElementLoadParams, ViewDefinitionProps } from "../common/ElementProps";
+import { ElementProps, ElementAspectProps, ElementLoadParams } from "../common/ElementProps";
 import { IModel, IModelProps } from "../common/IModel";
 import { Configuration } from "../common/Configuration";
 import { IModelVersion } from "../common/IModelVersion";
@@ -32,9 +32,12 @@ import { RepositoryStatus } from "@bentley/bentleyjs-core/lib/BentleyError";
 import * as path from "path";
 import { IModelDbLinkTableRelationships, LinkTableRelationship } from "./LinkTableRelationship";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
-import { NodeAddonRegistry } from "./NodeAddonRegistry";
+import { AddonRegistry } from "./AddonRegistry";
 import { RequestQueryOptions } from "@bentley/imodeljs-clients/lib";
 import { iModelEngine } from "./IModelEngine";
+import { EntityQueryParams, EntityProps } from "../common/EntityProps";
+import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
+import { ViewDefinitionProps } from "../common/ViewProps";
 
 const loggingCategory = "imodeljs-backend.IModelDb";
 
@@ -50,6 +53,7 @@ BisCore.registerSchema();
 /** Represents a physical copy (briefcase) of an iModel that can be accessed as a file. */
 export class IModelDb extends IModel {
   public static readonly defaultLimit = 1000;
+  public static readonly maxLimit = 10000;
   public models: IModelDbModels;
   public elements: IModelDbElements;
   public views: IModelDbViews;
@@ -167,18 +171,19 @@ export class IModelDb extends IModel {
   private setupBriefcaseEntry(briefcaseEntry: BriefcaseEntry) {
     this.briefcaseEntry = briefcaseEntry;
     this.briefcaseEntry.iModelDb = this;
-    this.briefcaseEntry.onClose.addListener(this.onBriefcaseCloseHandler, this);
-    this.briefcaseEntry.onVersionUpdated.addListener(this.onBriefcaseVersionUpdatedHandler, this);
+    this.briefcaseEntry.onBeforeClose.addListener(this.onBriefcaseCloseHandler, this);
+    this.briefcaseEntry.onBeforeVersionUpdate.addListener(this.onBriefcaseVersionUpdatedHandler, this);
   }
 
   private clearBriefcaseEntry(): void {
-    this.briefcaseEntry!.onClose.removeListener(this.onBriefcaseCloseHandler, this);
-    this.briefcaseEntry!.onVersionUpdated.removeListener(this.onBriefcaseVersionUpdatedHandler, this);
+    this.briefcaseEntry!.onBeforeClose.removeListener(this.onBriefcaseCloseHandler, this);
+    this.briefcaseEntry!.onBeforeVersionUpdate.removeListener(this.onBriefcaseVersionUpdatedHandler, this);
     this.briefcaseEntry!.iModelDb = undefined;
     this.briefcaseEntry = undefined;
   }
 
   private onBriefcaseCloseHandler() {
+    this.onBeforeClose.raiseEvent();
     this.clearStatementCacheOnClose();
   }
 
@@ -186,25 +191,20 @@ export class IModelDb extends IModel {
     this.iModelToken.changeSetId = this.briefcaseEntry!.changeSetId;
   }
 
+  /** Event called when the iModel is about to be closed */
+  public readonly onBeforeClose = new BeEvent<() => void>();
+
   /** Get the in-memory handle of the native Db */
-  public get nativeDb(): any {
-    if (!this.briefcaseEntry)
-      return undefined;
-    return this.briefcaseEntry.nativeDb;
-  }
+  public get nativeDb(): any { return (this.briefcaseEntry === undefined) ? undefined : this.briefcaseEntry.nativeDb; }
 
   /** Get the briefcase ID of this iModel */
-  public getBriefcaseId(): BriefcaseId {
-    if (!this.briefcaseEntry)
-      return new BriefcaseId(BriefcaseId.Illegal);
-    return new BriefcaseId(this.briefcaseEntry.briefcaseId);
-  }
+  public getBriefcaseId(): BriefcaseId { return new BriefcaseId(this.briefcaseEntry === undefined ? BriefcaseId.Illegal : this.briefcaseEntry.briefcaseId); }
 
   /** Returns a new IModelError with errorNumber, message, and meta-data set properly for a *not open* error.
    * @hidden
    */
-  public _newNotOpenError(): IModelError {
-    return new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, loggingCategory, () => ({ iModelId: this.iModelToken.iModelId }));
+  public _newNotOpenError() {
+    return new IModelError(IModelStatus.NotOpen, "IModelDb not open" + this.name, Logger.logError, loggingCategory, () => ({ iModelId: this.iModelToken.iModelId }));
   }
 
   /** Get a prepared ECSql statement - may require preparing the statement, if not found in the cache.
@@ -212,35 +212,33 @@ export class IModelDb extends IModel {
    * @returns the prepared statement
    * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSql syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
    */
-  public getPreparedStatement(ecsql: string): ECSqlStatement {
-    const cs = this.statementCache.find(ecsql);
-    if (cs !== undefined && cs.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
-      assert(cs.statement.isShared());
-      assert(cs.statement.isPrepared());
-      cs.useCount++;
-      return cs.statement;
+  private getPreparedStatement(ecsql: string): ECSqlStatement {
+    const cachedStatement = this.statementCache.find(ecsql);
+    if (cachedStatement !== undefined && cachedStatement.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
+      cachedStatement.useCount++;
+      return cachedStatement.statement;
     }
 
     this.statementCache.removeUnusedStatementsIfNecessary();
-
     const stmt = this.prepareStatement(ecsql);
     this.statementCache.add(ecsql, stmt);
     return stmt;
   }
+  private releasePreparedStatement(stmt: ECSqlStatement): void { this.statementCache.release(stmt); }
 
   /** Use a prepared statement. This function takes care of preparing the statement and then releasing it.
    * @param ecsql The ECSql statement to execute
-   * @param cb the callback to invoke on the prepared statement
+   * @param callback the callback to invoke on the prepared statement
    * @returns the value returned by cb
    */
-  public withPreparedStatement<T>(ecsql: string, cb: (stmt: ECSqlStatement) => T): T {
+  public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T {
     const stmt = this.getPreparedStatement(ecsql);
     try {
-      const val: T = cb(stmt);
+      const val = callback(stmt);
       this.releasePreparedStatement(stmt);
       return val;
     } catch (err) {
-      this.releasePreparedStatement(stmt);
+      this.releasePreparedStatement(stmt); // always release statement
       Logger.logError(loggingCategory, err.toString());
       throw err;
     }
@@ -267,20 +265,39 @@ export class IModelDb extends IModel {
       const rows: any[] = [];
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
         rows.push(stmt.getRow());
-        if (rows.length >= IModelDb.defaultLimit)
+        if (rows.length >= IModelDb.maxLimit)
           break; // don't let a "rogue" query consume too many resources
       }
       return rows;
     });
   }
 
-  public releasePreparedStatement(stmt: ECSqlStatement): void {
-    this.statementCache.release(stmt);
+  /**
+   * Query for a set of entity ids, given an EntityQueryParams
+   * @param params the EntityQueryParams for query
+   * @returns an Id64Set with results of query
+   */
+  public queryEntityIds(params: EntityQueryParams): Id64Set {
+    let sql = "SELECT HexStr(ECInstanceId) AS id FROM ";
+    if (params.only)
+      sql += "ONLY ";
+    sql += params.from;
+    if (params.where) sql += " WHERE " + params.where;
+    if (params.orderBy) sql += " ORDER BY " + params.orderBy;
+    if (typeof params.limit === "number" && params.limit > 0) sql += " LIMIT " + params.limit;
+    if (typeof params.offset === "number" && params.offset > 0) sql += " OFFSET " + params.offset;
+
+    const ids = new Set<string>();
+    this.withPreparedStatement(sql, (stmt) => {
+      for (const row of stmt) {
+        if (row.id !== undefined)
+          ids.add(row.id);
+      }
+    });
+    return ids;
   }
 
-  public clearStatementCacheOnClose(): void {
-    this.statementCache.clearOnClose();
-  }
+  public clearStatementCacheOnClose(): void { this.statementCache.clearOnClose(); }
 
   /** Get the GUID of this iModel. */
   public getGuid(): Guid {
@@ -318,7 +335,6 @@ export class IModelDb extends IModel {
       throw this._newNotOpenError();
 
     // TODO: this.Txns.onSaveChanges => validation, rules, indirect changes, etc.
-
     this.concurrencyControl.onSaveChanges();
 
     const stat = this.briefcaseEntry.nativeDb.saveChanges(description);
@@ -335,9 +351,7 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] If the pull and merge fails.
    */
   public async pullAndMergeChanges(clientAccessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    if (!this.briefcaseEntry)
-      throw this._newNotOpenError();
-
+    if (!this.briefcaseEntry) throw this._newNotOpenError();
     const accessToken = IModelDb.getAccessToken(clientAccessToken);
     await BriefcaseManager.pullAndMergeChanges(accessToken, this.briefcaseEntry, version);
     this.token.changeSetId = this.briefcaseEntry.changeSetId;
@@ -351,12 +365,10 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] If the pull and merge fails.
    */
   public async pushChanges(clientAccessToken: AccessToken, describer?: ChangeSetDescriber): Promise<void> {
-    if (!this.briefcaseEntry)
-      throw this._newNotOpenError();
+    if (!this.briefcaseEntry) throw this._newNotOpenError();
 
     const accessToken = IModelDb.getAccessToken(clientAccessToken);
     const description = describer ? describer(this.Txns.getCurrentTxnId()) : this.Txns.describeChangeSet();
-
     await BriefcaseManager.pushChanges(accessToken, this.briefcaseEntry, description);
     this.token.changeSetId = this.briefcaseEntry.changeSetId;
     this.initializeIModelDb();
@@ -369,8 +381,7 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] If the reversal fails.
    */
   public async reverseChanges(clientAccessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    if (!this.briefcaseEntry)
-      throw this._newNotOpenError();
+    if (!this.briefcaseEntry) throw this._newNotOpenError();
 
     const accessToken = IModelDb.getAccessToken(clientAccessToken);
     await BriefcaseManager.reverseChanges(accessToken, this.briefcaseEntry, version);
@@ -384,8 +395,7 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] If the reinstate fails.
    */
   public async reinstateChanges(clientAccessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    if (!this.briefcaseEntry)
-      throw this._newNotOpenError();
+    if (!this.briefcaseEntry) throw this._newNotOpenError();
 
     const accessToken = IModelDb.getAccessToken(clientAccessToken);
     await BriefcaseManager.reinstateChanges(accessToken, this.briefcaseEntry, version);
@@ -396,19 +406,14 @@ export class IModelDb extends IModel {
    * Abandon pending changes to this iModel
    */
   public abandonChanges() {
-    if (!this.briefcaseEntry)
-      throw this._newNotOpenError();
-
+    if (!this.briefcaseEntry) throw this._newNotOpenError();
     this.concurrencyControl.abandonRequest();
-
     this.briefcaseEntry.nativeDb.abandonChanges();
   }
 
   /** Import an ECSchema. */
   public importSchema(schemaFileName: string) {
-    if (!this.briefcaseEntry)
-      throw this._newNotOpenError();
-
+    if (!this.briefcaseEntry) throw this._newNotOpenError();
     const stat = this.briefcaseEntry.nativeDb.importSchema(schemaFileName);
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, "Error importing schema", Logger.logError, loggingCategory, () => ({ schemaFileName }));
@@ -427,42 +432,25 @@ export class IModelDb extends IModel {
 
   /** Get the ClassMetaDataRegistry for this iModel. */
   public get classMetaDataRegistry(): MetaDataRegistry {
-    if (!this._classMetaDataRegistry)
-      this._classMetaDataRegistry = new MetaDataRegistry();
+    if (this._classMetaDataRegistry === undefined) this._classMetaDataRegistry = new MetaDataRegistry();
     return this._classMetaDataRegistry;
   }
 
-  /** Get access to the ConcurrencyControl for this IModel. */
-  public get concurrencyControl(): ConcurrencyControl {
-    if (this._concurrency === undefined)
-      this._concurrency = new ConcurrencyControl(this);
-    return this._concurrency;
-  }
+  /** Get the ConcurrencyControl for this IModel. */
+  public get concurrencyControl(): ConcurrencyControl { return (this._concurrency !== undefined) ? this._concurrency : (this._concurrency = new ConcurrencyControl(this)); }
 
   /** Get the TxnManager for this IModelDb. */
-  public get Txns(): TxnManager {
-    if (this._txnManager === undefined)
-      this._txnManager = new TxnManager(this);
-    return this._txnManager;
-  }
+  public get Txns(): TxnManager { return (this._txnManager !== undefined) ? this._txnManager : (this._txnManager = new TxnManager(this)); }
 
-  /** Get access to the CodeSpecs in this IModel. */
-  public get codeSpecs(): CodeSpecs {
-    if (this._codeSpecs === undefined)
-      this._codeSpecs = new CodeSpecs(this);
-    return this._codeSpecs;
-  }
+  /** Get the CodeSpecs in this IModel. */
+  public get codeSpecs(): CodeSpecs { return (this._codeSpecs !== undefined) ? this._codeSpecs : (this._codeSpecs = new CodeSpecs(this)); }
 
   /** @hidden */
   public insertCodeSpec(codeSpec: CodeSpec): Id64 {
-    if (!this.briefcaseEntry)
-      throw this._newNotOpenError();
-
-    const { error, result: idHexStr } = this.briefcaseEntry.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.specScopeType, codeSpec.scopeReq);
-    if (error)
-      throw new IModelError(error.status, "Problem inserting CodeSpec", Logger.logWarning, loggingCategory);
-
-    return new Id64(idHexStr);
+    if (!this.briefcaseEntry) throw this._newNotOpenError();
+    const { error, result } = this.briefcaseEntry.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.specScopeType, codeSpec.scopeReq);
+    if (error) throw new IModelError(error.status, "inserting CodeSpec" + codeSpec, Logger.logWarning, loggingCategory);
+    return new Id64(result);
   }
 
   /** @deprecated */
@@ -484,7 +472,6 @@ export class IModelDb extends IModel {
   public prepareStatement(sql: string): ECSqlStatement {
     if (!this.briefcaseEntry)
       throw this._newNotOpenError();
-
     const stmt = new ECSqlStatement();
     stmt.prepare(this.briefcaseEntry.nativeDb, sql);
     return stmt;
@@ -494,7 +481,7 @@ export class IModelDb extends IModel {
    * if necessary in order to get the entity's class defined as a prerequisite.
    * @throws [[IModelError]] if the entity cannot be constructed.
    */
-  public constructEntity(props: any): Entity {
+  public constructEntity(props: EntityProps): Entity {
     let entity: Entity;
     try {
       entity = ClassRegistry.createInstance(props, this);
@@ -547,7 +534,7 @@ export class IModelDb extends IModel {
       this.loadMetaData(metaData.baseClasses[0]);
   }
 
-  /** TESTING ONLY - Execute a test from native code
+  /** Execute a test from native code
    * @param testName The name of the test
    * @param params parameters for the test
    * @hidden
@@ -571,14 +558,9 @@ export class IModelDb extends IModel {
  */
 export class ConcurrencyControl {
   private _pendingRequest: ConcurrencyControl.Request;
-  private _imodel: IModelDb;
   private _codes?: ConcurrencyControl.Codes;
   private _policy?: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy;
-
-  constructor(im: IModelDb) {
-    this._imodel = im;
-    this._pendingRequest = ConcurrencyControl.createRequest();
-  }
+  constructor(private _iModel: IModelDb) { this._pendingRequest = ConcurrencyControl.createRequest(); }
 
   /** @hidden */
   public onSaveChanges() {
@@ -587,9 +569,7 @@ export class ConcurrencyControl {
   }
 
   /** @hidden */
-  public onSavedChanges() {
-    this.applyTransactionOptions();
-  }
+  public onSavedChanges() { this.applyTransactionOptions(); }
 
   /** @hidden */
   private applyTransactionOptions() {
@@ -601,7 +581,7 @@ export class ConcurrencyControl {
 
   /** Create an empty Request */
   public static createRequest(): ConcurrencyControl.Request {
-    return new (NodeAddonRegistry.getAddon()).AddonBriefcaseManagerResourcesRequest();
+    return new (AddonRegistry.getAddon()).AddonBriefcaseManagerResourcesRequest();
   }
 
   /** Convert the request to any */
@@ -611,38 +591,38 @@ export class ConcurrencyControl {
 
   /** @hidden [[Model.buildConcurrencyControlRequest]] */
   public buildRequestForModel(model: Model, opcode: DbOpcode): void {
-    if (!this._imodel.briefcaseEntry)
+    if (!this._iModel.briefcaseEntry)
       throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this._imodel.briefcaseEntry.nativeDb.buildBriefcaseManagerResourcesRequestForModel(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, JSON.stringify(model.id), opcode);
+    const rc: RepositoryStatus = this._iModel.briefcaseEntry.nativeDb.buildBriefcaseManagerResourcesRequestForModel(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, JSON.stringify(model.id), opcode);
     if (rc !== RepositoryStatus.Success)
       throw new IModelError(rc);
   }
 
   /** @hidden [[Element.buildConcurrencyControlRequest]] */
   public buildRequestForElement(element: Element, opcode: DbOpcode): void {
-    if (!this._imodel.briefcaseEntry)
+    if (!this._iModel.briefcaseEntry)
       throw new IModelError(IModelStatus.BadRequest);
     let rc: RepositoryStatus;
     if (element.id === undefined || opcode === DbOpcode.Insert)
-      rc = this._imodel.briefcaseEntry.nativeDb.buildBriefcaseManagerResourcesRequestForElement(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, JSON.stringify({ modelid: element.model, code: element.code }), opcode);
+      rc = this._iModel.briefcaseEntry.nativeDb.buildBriefcaseManagerResourcesRequestForElement(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, JSON.stringify({ modelid: element.model, code: element.code }), opcode);
     else
-      rc = this._imodel.briefcaseEntry.nativeDb.buildBriefcaseManagerResourcesRequestForElement(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, JSON.stringify(element.id), opcode);
+      rc = this._iModel.briefcaseEntry.nativeDb.buildBriefcaseManagerResourcesRequestForElement(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, JSON.stringify(element.id), opcode);
     if (rc !== RepositoryStatus.Success)
       throw new IModelError(rc);
   }
 
   /** @hidden [[LinkTableRelationship.buildConcurrencyControlRequest]] */
   public buildRequestForLinkTableRelationship(instance: LinkTableRelationship, opcode: DbOpcode): void {
-    if (!this._imodel.briefcaseEntry)
+    if (!this._iModel.briefcaseEntry)
       throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this._imodel.briefcaseEntry.nativeDb.buildBriefcaseManagerResourcesRequestForLinkTableRelationship(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, JSON.stringify(instance), opcode);
+    const rc: RepositoryStatus = this._iModel.briefcaseEntry.nativeDb.buildBriefcaseManagerResourcesRequestForLinkTableRelationship(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, JSON.stringify(instance), opcode);
     if (rc !== RepositoryStatus.Success)
       throw new IModelError(rc);
   }
 
   private captureBulkOpRequest() {
-    if (this._imodel.briefcaseEntry)
-      this._imodel.briefcaseEntry.nativeDb.extractBulkResourcesRequest(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, true, true);
+    if (this._iModel.briefcaseEntry)
+      this._iModel.briefcaseEntry.nativeDb.extractBulkResourcesRequest(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, true, true);
   }
 
   /** @hidden */
@@ -653,7 +633,7 @@ export class ConcurrencyControl {
 
   /** Are there pending, unprocessed requests for locks or codes? */
   public hasPendingRequests(): boolean {
-    if (!this._imodel.briefcaseEntry)
+    if (!this._iModel.briefcaseEntry)
       return false;
     const reqAny: any = ConcurrencyControl.convertRequestToAny(this.pendingRequest);
     return (reqAny.Codes.length !== 0) || (reqAny.Locks.length !== 0);
@@ -666,14 +646,14 @@ export class ConcurrencyControl {
    * @param codesOnly If true, only the codes in the pending request are extracted. The default is to extract all requests.
    */
   public extractPendingRequest(locksOnly?: boolean, codesOnly?: boolean): ConcurrencyControl.Request {
-    if (!this._imodel.briefcaseEntry)
+    if (!this._iModel.briefcaseEntry)
       throw new IModelError(IModelStatus.BadRequest);
 
     const extractLocks: boolean = !codesOnly;
     const extractCodes: boolean = !locksOnly;
 
     const req: ConcurrencyControl.Request = ConcurrencyControl.createRequest();
-    this._imodel.briefcaseEntry.nativeDb.extractBriefcaseManagerResourcesRequest(req as AddonBriefcaseManagerResourcesRequest, this.pendingRequest as AddonBriefcaseManagerResourcesRequest, extractLocks, extractCodes);
+    this._iModel.briefcaseEntry.nativeDb.extractBriefcaseManagerResourcesRequest(req as AddonBriefcaseManagerResourcesRequest, this.pendingRequest as AddonBriefcaseManagerResourcesRequest, extractLocks, extractCodes);
     return req;
   }
 
@@ -697,15 +677,15 @@ export class ConcurrencyControl {
    * @throws [[IModelError]] if the IModelDb is not open or is not connected to an iModel.
    */
   public async request(clientAccessToken: AccessToken, req?: ConcurrencyControl.Request): Promise<void> {
-    if (!this._imodel.briefcaseEntry)
-      return Promise.reject(this._imodel._newNotOpenError());
+    if (!this._iModel.briefcaseEntry)
+      return Promise.reject(this._iModel._newNotOpenError());
 
     if (req === undefined)
       req = this.extractPendingRequest();
 
     const accessToken = ConcurrencyControl.getAccessToken(clientAccessToken);
-    const codeResults = await this.reserveCodesFromRequest(req, this._imodel.briefcaseEntry, accessToken);
-    await this.acquireLocksFromRequest(req, this._imodel.briefcaseEntry, accessToken);
+    const codeResults = await this.reserveCodesFromRequest(req, this._iModel.briefcaseEntry, accessToken);
+    await this.acquireLocksFromRequest(req, this._iModel.briefcaseEntry, accessToken);
 
     let err: ConcurrencyControl.RequestError | undefined;
     for (const code of codeResults) {
@@ -731,8 +711,7 @@ export class ConcurrencyControl {
   }
 
   private buildCodeRequests(briefcaseEntry: BriefcaseEntry, req: ConcurrencyControl.Request): Map<string, any> | undefined {
-    const reqAny: any = ConcurrencyControl.convertRequestToAny(req);
-
+    const reqAny = ConcurrencyControl.convertRequestToAny(req);
     if (!reqAny.hasOwnProperty("Codes") || reqAny.Codes.length === 0)
       return undefined;
 
@@ -747,15 +726,12 @@ export class ConcurrencyControl {
         thisReq = this.buildCodeRequest(briefcaseEntry, cReq.Id, cReq.Scope);
         byScope.set(cReq.Scope, (thisReq = thisReq));
       }
-
       thisReq.values!.push(cReq.Name);
     }
-
     return bySpecId;
   }
 
   private buildCodeRequestsFromCodes(briefcaseEntry: BriefcaseEntry, codes: Code[]): Map<string, any> {
-
     const bySpecId: Map<string, any> = new Map();
     for (const code of codes) {
       if (code.value === undefined)
@@ -770,10 +746,8 @@ export class ConcurrencyControl {
         thisReq = this.buildCodeRequest(briefcaseEntry, specId, code.scope);
         byScope.set(code.scope, (thisReq = thisReq));
       }
-
       thisReq.values!.push(code.value);
     }
-
     return bySpecId;
   }
 
@@ -804,13 +778,8 @@ export class ConcurrencyControl {
     throw new IModelError(IModelStatus.BadRequest, "TBD locks");
   }
 
-  private getDeploymentEnv(): DeploymentEnv {
-    return Configuration.iModelHubDeployConfig;
-  }
-
-  private getIModelHubClient(): IModelHubClient {
-    return new IModelHubClient(this.getDeploymentEnv());
-  }
+  private getDeploymentEnv(): DeploymentEnv { return Configuration.iModelHubDeployConfig; }
+  private getIModelHubClient(): IModelHubClient { return new IModelHubClient(this.getDeploymentEnv()); }
 
   /** process the Lock-specific part of the request. */
   private async acquireLocksFromRequest(req: ConcurrencyControl.Request, briefcaseEntry: BriefcaseEntry, _accessToken: AccessToken): Promise<void> {
@@ -834,17 +803,13 @@ export class ConcurrencyControl {
 
   /** process a Code-reservation request. The requests in bySpecId must already be in iModelHub REST format. */
   private async reserveCodes2(bySpecId: Map<string, any>, briefcaseEntry: BriefcaseEntry, accessToken: AccessToken): Promise<MultiCode[]> {
-
     const imodelHubClient = this.getIModelHubClient();
-
     const results: MultiCode[] = [];
-
     for (const [, thisSpec] of bySpecId) {
       for (const [, thisReq] of thisSpec) {
         results.push(await imodelHubClient.requestMultipleCodes(accessToken, briefcaseEntry.iModelId, thisReq));
       }
     }
-
     return results;
   }
 
@@ -859,21 +824,21 @@ export class ConcurrencyControl {
 
   /** Reserve the specified codes */
   public async reserveCodes(clientAccessToken: AccessToken, codes: Code[]): Promise<MultiCode[]> {
-    if (this._imodel.briefcaseEntry === undefined)
-      return Promise.reject(this._imodel._newNotOpenError());
+    if (this._iModel.briefcaseEntry === undefined)
+      return Promise.reject(this._iModel._newNotOpenError());
 
-    const bySpecId = this.buildCodeRequestsFromCodes(this._imodel.briefcaseEntry, codes);
+    const bySpecId = this.buildCodeRequestsFromCodes(this._iModel.briefcaseEntry, codes);
     if (bySpecId === undefined)
       return Promise.reject(new IModelError(IModelStatus.NotFound));
 
     const accessToken = ConcurrencyControl.getAccessToken(clientAccessToken);
-    return this.reserveCodes2(bySpecId, this._imodel.briefcaseEntry, accessToken);
+    return this.reserveCodes2(bySpecId, this._iModel.briefcaseEntry, accessToken);
   }
 
   // Query the state of the Codes for the specified CodeSpec and scope.
   public async queryCodeStates(clientAccessToken: AccessToken, specId: Id64, scopeId: string, _value?: string): Promise<MultiCode[]> {
-    if (this._imodel.briefcaseEntry === undefined)
-      return Promise.reject(this._imodel._newNotOpenError());
+    if (this._iModel.briefcaseEntry === undefined)
+      return Promise.reject(this._iModel._newNotOpenError());
 
     const queryOptions: RequestQueryOptions = {
       $filter: `CodeSpecId+eq+'${specId}'+and+CodeScope+eq+'${scopeId}'`,
@@ -887,7 +852,7 @@ export class ConcurrencyControl {
 
     const imodelHubClient = this.getIModelHubClient();
     const accessToken = ConcurrencyControl.getAccessToken(clientAccessToken);
-    return imodelHubClient.getMultipleCodes(accessToken, this._imodel.briefcaseEntry.iModelId, queryOptions);
+    return imodelHubClient.getMultipleCodes(accessToken, this._iModel.briefcaseEntry.iModelId, queryOptions);
   }
 
   /** Abandon any pending requests for locks or codes. */
@@ -909,12 +874,12 @@ export class ConcurrencyControl {
    * @returns true if all codes are available or false if any is not.
    */
   public async areCodesAvailable(clientAccessToken: AccessToken, req?: ConcurrencyControl.Request): Promise<boolean> {
-    if (!this._imodel.briefcaseEntry)
-      return Promise.reject(this._imodel._newNotOpenError());
+    if (!this._iModel.briefcaseEntry)
+      return Promise.reject(this._iModel._newNotOpenError());
     // throw new Error("TBD");
     if (req === undefined)
       req = this.pendingRequest;
-    const bySpecId = this.buildCodeRequests(this._imodel.briefcaseEntry, req);
+    const bySpecId = this.buildCodeRequests(this._iModel.briefcaseEntry, req);
 
     const accessToken = ConcurrencyControl.getAccessToken(clientAccessToken);
     if (bySpecId !== undefined) {
@@ -941,8 +906,8 @@ export class ConcurrencyControl {
    * @returns true if all resources could be acquired or false if any could not be acquired.
    */
   public async areAvailable(clientAccessToken: AccessToken, req?: ConcurrencyControl.Request): Promise<boolean> {
-    if (!this._imodel.briefcaseEntry)
-      return Promise.reject(this._imodel._newNotOpenError());
+    if (!this._iModel.briefcaseEntry)
+      return Promise.reject(this._iModel._newNotOpenError());
 
     if (req === undefined)
       req = this.pendingRequest;
@@ -969,14 +934,14 @@ export class ConcurrencyControl {
    */
   public setPolicy(policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy): void {
     this._policy = policy;
-    if (!this._imodel.briefcaseEntry)
+    if (!this._iModel.briefcaseEntry)
       throw new IModelError(IModelStatus.BadRequest);
     let rc: RepositoryStatus = RepositoryStatus.Success;
     if (policy as ConcurrencyControl.OptimisticPolicy) {
       const oc: ConcurrencyControl.OptimisticPolicy = policy as ConcurrencyControl.OptimisticPolicy;
-      rc = this._imodel.briefcaseEntry.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(oc.conflictResolution);
+      rc = this._iModel.briefcaseEntry.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(oc.conflictResolution);
     } else {
-      rc = this._imodel.briefcaseEntry.nativeDb.setBriefcaseManagerPessimisticConcurrencyControlPolicy();
+      rc = this._iModel.briefcaseEntry.nativeDb.setBriefcaseManagerPessimisticConcurrencyControlPolicy();
     }
     if (RepositoryStatus.Success !== rc) {
       throw new IModelError(rc);
@@ -995,18 +960,18 @@ export class ConcurrencyControl {
    * @throws [[IModelError]] if it would be illegal to enter bulk operation mode.
    */
   private startBulkOperation(): void {
-    if (!this._imodel.briefcaseEntry)
+    if (!this._iModel.briefcaseEntry)
       throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this._imodel.briefcaseEntry.nativeDb.briefcaseManagerStartBulkOperation();
+    const rc: RepositoryStatus = this._iModel.briefcaseEntry.nativeDb.briefcaseManagerStartBulkOperation();
     if (RepositoryStatus.Success !== rc)
       throw new IModelError(rc);
   }
 
   /** Check if there is a bulk operation in progress */
   private inBulkOperation(): boolean {
-    if (!this._imodel.briefcaseEntry)
+    if (!this._iModel.briefcaseEntry)
       return false;
-    return this._imodel.briefcaseEntry.nativeDb.inBulkOperation();
+    return this._iModel.briefcaseEntry.nativeDb.inBulkOperation();
   }
 
   /*
@@ -1026,10 +991,9 @@ export class ConcurrencyControl {
   /** API to reserve Codes and query the status of Codes */
   get codes(): ConcurrencyControl.Codes {
     if (this._codes === undefined)
-      this._codes = new ConcurrencyControl.Codes(this._imodel);
+      this._codes = new ConcurrencyControl.Codes(this._iModel);
     return this._codes;
   }
-
 }
 
 export namespace ConcurrencyControl {
@@ -1081,7 +1045,7 @@ export namespace ConcurrencyControl {
    */
   export class OptimisticPolicy {
     public conflictResolution: ConflictResolutionPolicy;
-    constructor(p?: ConflictResolutionPolicy) { this.conflictResolution = p ? p! : new ConflictResolutionPolicy(); }
+    constructor(policy?: ConflictResolutionPolicy) { this.conflictResolution = policy ? policy! : new ConflictResolutionPolicy(); }
   }
 
   /** Specifies a pessimistic concurrency policy.
@@ -1098,11 +1062,7 @@ export namespace ConcurrencyControl {
 
   /** Code manager */
   export class Codes {
-    private _imodel: IModelDb;
-
-    constructor(im: IModelDb) {
-      this._imodel = im;
-    }
+    constructor(private _iModel: IModelDb) { }
 
     /**
      * Reserve Codes. If no Codes are specified, then all of the Codes that are in currently pending requests are reserved.
@@ -1116,19 +1076,19 @@ export namespace ConcurrencyControl {
      */
     public async reserve(clientAccessToken: AccessToken, codes?: Code[]) {
 
-      if (!this._imodel.briefcaseEntry)
-        return Promise.reject(this._imodel._newNotOpenError());
+      if (!this._iModel.briefcaseEntry)
+        return Promise.reject(this._iModel._newNotOpenError());
 
       if (codes !== undefined) {
-        await this._imodel.concurrencyControl.reserveCodes(clientAccessToken, codes);
+        await this._iModel.concurrencyControl.reserveCodes(clientAccessToken, codes);
         // TODO: examine result and throw CodeReservationError if some codes could not be reserved
         return;
       }
 
-      const req: ConcurrencyControl.Request = this._imodel.concurrencyControl.extractPendingRequest(false, true);
-      this._imodel.briefcaseEntry.nativeDb.extractBulkResourcesRequest(req as AddonBriefcaseManagerResourcesRequest, false, true);
-      this._imodel.briefcaseEntry.nativeDb.extractBriefcaseManagerResourcesRequest(req as AddonBriefcaseManagerResourcesRequest, req as AddonBriefcaseManagerResourcesRequest, false, true);
-      return this._imodel.concurrencyControl.request(clientAccessToken, req);
+      const req: ConcurrencyControl.Request = this._iModel.concurrencyControl.extractPendingRequest(false, true);
+      this._iModel.briefcaseEntry.nativeDb.extractBulkResourcesRequest(req as AddonBriefcaseManagerResourcesRequest, false, true);
+      this._iModel.briefcaseEntry.nativeDb.extractBriefcaseManagerResourcesRequest(req as AddonBriefcaseManagerResourcesRequest, req as AddonBriefcaseManagerResourcesRequest, false, true);
+      return this._iModel.concurrencyControl.request(clientAccessToken, req);
     }
 
     /**
@@ -1139,19 +1099,17 @@ export namespace ConcurrencyControl {
      * @param value Optional. The Code value to query.
      */
     public async query(accessToken: AccessToken, specId: Id64, scopeId: string, value?: string): Promise<MultiCode[]> {
-      return this._imodel.concurrencyControl.queryCodeStates(accessToken, specId, scopeId, value);
+      return this._iModel.concurrencyControl.queryCodeStates(accessToken, specId, scopeId, value);
     }
   }
-
 }
 
 /** The collection of models in an [[IModelDb]]. */
 export class IModelDbModels {
-  private _iModel: IModelDb;
   private _loaded: LRUMap<string, Model>;
 
   /** @hidden */
-  public constructor(iModel: IModelDb, max: number = 500) { this._iModel = iModel; this._loaded = new LRUMap<string, Model>(max); }
+  public constructor(private _iModel: IModelDb, max: number = 500) { this._loaded = new LRUMap<string, Model>(max); }
 
   /** Get the Model with the specified identifier.
    * @param modelId The Model identifier.
@@ -1159,40 +1117,31 @@ export class IModelDbModels {
    */
   public getModel(modelId: Id64): Model {
     // first see if the model is already in the local cache.
-    const loaded = this._loaded.get(modelId.toString());
+    const loaded = this._loaded.get(modelId.value);
     if (loaded)
       return loaded;
 
-    if (!this._iModel.briefcaseEntry)
-      throw this._iModel._newNotOpenError();
-
-    // Must go get the model from the iModel. Start by requesting the model's data.
-    const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getModel(JSON.stringify({ id: modelId }));
-    if (error)
-      throw new IModelError(error.status, error.message, Logger.logWarning, loggingCategory);
-
+    const json = this.getModelJson(JSON.stringify({ id: modelId }));
     const props = JSON.parse(json!) as ModelProps;
     props.iModel = this._iModel;
-    const entity = this._iModel.constructEntity(props);
-    assert(entity instanceof Model);
-    const model = entity as Model;
+    const model = this._iModel.constructEntity(props) as Model;
 
     // We have created the model. Cache it before we return it.
     model.setPersistent(); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
-    this._loaded.set(model.id.toString(), model);
+    this._loaded.set(model.id.value, model);
     return model;
   }
 
-  public getModelJson(modelIdStr: string): string {
-    if (!this._iModel.briefcaseEntry)
-      throw this._iModel._newNotOpenError();
-
-    // Must go get the model from the iModel. Start by requesting the model's data.
-    const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getModel(JSON.stringify({ id: modelIdStr }));
-    if (error)
-      throw new IModelError(error.status, "ModelId=" + modelIdStr, Logger.logWarning, loggingCategory);
-
-    return json!;
+  /**
+   * Read the properties for a Model as a json string
+   * @param modelIdArg a json string with the identity of the model to load. Must have either "id" or "code".
+   * @return a json string with the properties of the model.
+   */
+  public getModelJson(modelIdArg: string): string {
+    if (!this._iModel.briefcaseEntry) throw this._iModel._newNotOpenError();
+    const { error, result } = this._iModel.briefcaseEntry.nativeDb.getModel(modelIdArg);
+    if (error) throw new IModelError(error.status, "Model=" + modelIdArg);
+    return result!;
   }
 
   /** Get the sub-model of the specified Element.
@@ -1200,7 +1149,7 @@ export class IModelDbModels {
    * @throws [[IModelError]]
    */
   public getSubModel(modeledElementId: Id64 | Guid | Code): Model {
-    const modeledElement: Element = this._iModel.elements.getElement(modeledElementId);
+    const modeledElement = this._iModel.elements.getElement(modeledElementId);
     if (modeledElement.id.equals(this._iModel.elements.rootSubjectId))
       throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model", Logger.logWarning, loggingCategory);
 
@@ -1217,11 +1166,7 @@ export class IModelDbModels {
    * @param modelProps The properties to use when creating the model.
    * @throws [[IModelError]] if there is a problem creating the model.
    */
-  public createModel(modelProps: ModelProps): Model {
-    const model: Model = this._iModel.constructEntity(modelProps) as Model;
-    assert(model instanceof Model);
-    return model;
-  }
+  public createModel(modelProps: ModelProps): Model { return this._iModel.constructEntity(modelProps) as Model; }
 
   /** Insert a new model.
    * @param model The data for the new model.
@@ -1229,19 +1174,11 @@ export class IModelDbModels {
    * @throws [[IModelError]] if unable to insert the model.
    */
   public insertModel(model: Model): Id64 {
-    if (!this._iModel.briefcaseEntry)
-      throw this._iModel._newNotOpenError();
-
-    if (model.isPersistent()) {
-      assert(false);
-      throw new IModelError(IModelStatus.WriteError, "Cannot insert a model marked as persistent. Call copyForEdit.", Logger.logError, loggingCategory);
-    }
-
-    const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.insertModel(JSON.stringify(model));
-    if (error)
-      throw new IModelError(error.status, "Problem inserting model", Logger.logWarning, loggingCategory);
-
-    return model.id = new Id64(JSON.parse(json!).id);
+    if (!this._iModel.briefcaseEntry) throw this._iModel._newNotOpenError();
+    if (model.isPersistent()) throw new IModelError(IModelStatus.WriteError, "Cannot insert a model marked as persistent. Call copyForEdit.", Logger.logError, loggingCategory);
+    const { error, result } = this._iModel.briefcaseEntry.nativeDb.insertModel(JSON.stringify(model));
+    if (error) throw new IModelError(error.status, "inserting model", Logger.logWarning, loggingCategory);
+    return model.id = new Id64(JSON.parse(result!).id);
   }
 
   /** Update an existing model.
@@ -1249,17 +1186,10 @@ export class IModelDbModels {
    * @throws [[IModelError]] if unable to update the model.
    */
   public updateModel(model: ModelProps): void {
-    if (!this._iModel.briefcaseEntry)
-      throw this._iModel._newNotOpenError();
-
-    if ((model.isPersistent !== undefined) && model.isPersistent()) {
-      assert(false);
-      throw new IModelError(IModelStatus.WriteError, "Cannot update a model marked as persistent. Call copyForEdit.", Logger.logError, loggingCategory);
-    }
-
+    if (!this._iModel.briefcaseEntry) throw this._iModel._newNotOpenError();
     const error: IModelStatus = this._iModel.briefcaseEntry.nativeDb.updateModel(JSON.stringify(model));
     if (error !== IModelStatus.Success)
-      throw new IModelError(error, "", Logger.logWarning, loggingCategory);
+      throw new IModelError(error, "updating model id=" + model.id, Logger.logWarning, loggingCategory);
 
     // Discard from the cache, to make sure that the next fetch see the updated version.
     if (model.id)
@@ -1274,49 +1204,43 @@ export class IModelDbModels {
     if (!this._iModel.briefcaseEntry)
       throw this._iModel._newNotOpenError();
 
-    const error: IModelStatus = this._iModel.briefcaseEntry.nativeDb.deleteModel(model.id.toString());
+    const error: IModelStatus = this._iModel.briefcaseEntry.nativeDb.deleteModel(model.id.value);
     if (error !== IModelStatus.Success)
-      throw new IModelError(error, "", Logger.logWarning, loggingCategory);
+      throw new IModelError(error, "deleting model id=" + model.id.value, Logger.logWarning, loggingCategory);
 
     // Discard from the cache
-    this._loaded.delete(model.id.toString());
+    this._loaded.delete(model.id.value);
   }
 }
 
 /** The collection of elements in an [[IModelDb]]. */
 export class IModelDbElements {
-  private _iModel: IModelDb;
   private _loaded: LRUMap<string, Element>;
 
   /** get the map of loaded elements */
   public get loaded() { return this._loaded; }
 
   /** @hidden */
-  public constructor(iModel: IModelDb, maxElements: number = 2000) { this._iModel = iModel; this._loaded = new LRUMap<string, Element>(maxElements); }
+  public constructor(private _iModel: IModelDb, maxElements: number = 2000) { this._loaded = new LRUMap<string, Element>(maxElements); }
 
   /** Private implementation details of getElementProps */
   private _getElementProps(opts: ElementLoadParams): ElementProps {
-    if (!this._iModel.briefcaseEntry)
-      throw this._iModel._newNotOpenError();
-
-    // Must go get the element from the iModel. Start by requesting the element's data.
-    const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getElement(JSON.stringify(opts));
-    if (error)
-      throw new IModelError(error.status, "reading element:" + opts.toString(), Logger.logWarning, loggingCategory);
-    const props = JSON.parse(json!) as ElementProps;
+    const json = this.getElementJson(JSON.stringify(opts));
+    const props = JSON.parse(json) as ElementProps;
     props.iModel = this._iModel;
     return props;
   }
 
-  public getElementJson(elementIdStr: string): string {
-    if (!this._iModel.briefcaseEntry)
-      throw this._iModel._newNotOpenError();
-
-    // Must go get the element from the iModel. Start by requesting the element's data.
-    const { error, result: json } = this._iModel.briefcaseEntry.nativeDb.getElement(JSON.stringify({ id: elementIdStr }));
-    if (error)
-      throw new IModelError(error.status, "ElementId=" + elementIdStr, Logger.logWarning, loggingCategory);
-    return json!;
+  /**
+   * Read element data from iModel as a json string
+   * @param elementIdArg a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
+   * @return a json string with the properties of the element.
+   */
+  public getElementJson(elementIdArg: string): string {
+    if (!this._iModel.briefcaseEntry) throw this._iModel._newNotOpenError();
+    const { error, result } = this._iModel.briefcaseEntry.nativeDb.getElement(elementIdArg);
+    if (error) throw new IModelError(error.status, "reading element=" + elementIdArg, Logger.logWarning, loggingCategory);
+    return result!;
   }
 
   /** Private implementation details of getElement */
@@ -1341,11 +1265,11 @@ export class IModelDbElements {
    * Get properties of an Element by Id, FederationGuid, or Code
    * @throws [[IModelError]] if the element is not found.
    */
-  public getElementProps(elementId: Id64 | Guid | Code): ElementProps {
-    if (elementId instanceof Id64) return this._getElementProps({ id: elementId });
+  public getElementProps(elementId: Id64 | Guid | Code | string): ElementProps {
+    if (typeof elementId === "string" || elementId instanceof Id64) return this._getElementProps({ id: elementId.toString() });
     if (elementId instanceof Guid) return this._getElementProps({ federationGuid: elementId.value });
     if (elementId instanceof Code) return this._getElementProps({ code: elementId });
-    throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, loggingCategory, () => ({ elementId }));
+    throw new IModelError(IModelStatus.BadArg, "id=" + elementId);
   }
 
   /**
@@ -1354,10 +1278,10 @@ export class IModelDbElements {
    * @throws [[IModelError]] if the element is not found.
    */
   public getElement(elementId: Id64 | Guid | Code): Element {
-    if (elementId instanceof Id64) return this._doGetElement({ id: elementId });
+    if (elementId instanceof Id64) return this._doGetElement({ id: elementId.value });
     if (elementId instanceof Guid) return this._doGetElement({ federationGuid: elementId.value });
     if (elementId instanceof Code) return this._doGetElement({ code: elementId });
-    throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, loggingCategory, () => ({ elementId }));
+    throw new IModelError(IModelStatus.BadArg, "id=" + elementId);
   }
 
   /**
@@ -1367,12 +1291,9 @@ export class IModelDbElements {
    * @throws IModelError if the code is invalid
    */
   public queryElementIdByCode(code: Code): Id64 | undefined {
-    if (!code.spec.isValid()) {
-      throw new IModelError(IModelStatus.InvalidCodeSpec);
-    }
-    if (code.value === undefined) {
-      throw new IModelError(IModelStatus.InvalidCode);
-    }
+    if (!code.spec.isValid()) throw new IModelError(IModelStatus.InvalidCodeSpec);
+    if (code.value === undefined) throw new IModelError(IModelStatus.InvalidCode);
+
     return this._iModel.withPreparedStatement("SELECT ECInstanceId FROM " + Element.sqlName + " WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?", (stmt: ECSqlStatement) => {
       stmt.bindId(1, code.spec);
       stmt.bindId(2, new Id64(code.scope));
@@ -1437,12 +1358,12 @@ export class IModelDbElements {
     if (!this._iModel.briefcaseEntry)
       throw this._iModel._newNotOpenError();
 
-    const error: IModelStatus = this._iModel.briefcaseEntry.nativeDb.deleteElement(id.toString());
+    const error: IModelStatus = this._iModel.briefcaseEntry.nativeDb.deleteElement(id.value);
     if (error !== IModelStatus.Success)
       throw new IModelError(error, "", Logger.logWarning, loggingCategory);
 
     // Discard from the cache
-    this._loaded.delete(id.toString());
+    this._loaded.delete(id.value);
   }
 
   /** Query for the child elements of the specified element.
@@ -1511,88 +1432,66 @@ export class IModelDbElements {
 
 /** The collection of views in an [[IModelDb]]. */
 export class IModelDbViews {
-  private _iModel: IModelDb;
-
   /** @hidden */
-  public constructor(iModel: IModelDb) { this._iModel = iModel; }
+  public constructor(private _iModel: IModelDb) { }
 
   /** Query for the array of ViewDefinitionProps of the specified class and matching the specified IsPrivate setting.
    * @param className Query for view definitions of this class.
    * @param wantPrivate If true, include private view definitions.
    */
-  public queryViewDefinitionProps(className: string = "BisCore.ViewDefinition", wantPrivate: boolean = false): ViewDefinitionProps[] {
-    let sql: string = "SELECT ECInstanceId AS id FROM " + className;
-    if (!wantPrivate)
-      sql += " WHERE IsPrivate=FALSE";
-    sql += ` LIMIT ${IModelDb.defaultLimit}`; // limit number of returned view definitions
+  public queryViewDefinitionProps(className: string = "BisCore.ViewDefinition", limit = IModelDb.defaultLimit, offset = 0, wantPrivate: boolean = false): ViewDefinitionProps[] {
+    const where: string = (wantPrivate === false) ? "IsPrivate=FALSE" : "";
+    const ids = this._iModel.queryEntityIds({ from: className, limit, offset, where });
 
-    const viewIds: Id64[] = [];
-    const statement: ECSqlStatement = this._iModel.getPreparedStatement(sql);
-    try {
-      for (const row of statement)
-        viewIds.push(new Id64(row.id));
-    } finally {
-      this._iModel.releasePreparedStatement(statement);
-    }
-    return viewIds.map((viewId: Id64) => this._iModel.elements.getElementProps(viewId) as ViewDefinitionProps);
+    const props: ViewDefinitionProps[] = [];
+    const imodel = this._iModel;
+    ids.forEach((id) => {
+      try {
+        props.push(imodel.elements.getElementProps(id) as ViewDefinitionProps);
+      } catch (err) { }
+    });
+
+    return props;
   }
 
   public getViewStateData(viewDefinitionId: string): any {
     const viewStateData: any = {};
     const elements = this._iModel.elements;
-    viewStateData.viewDefinitionProps = elements.getElementProps(new Id64(viewDefinitionId)) as ViewDefinitionProps;
-    viewStateData.categorySelectorProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.categorySelectorId));
-    viewStateData.displayStyleProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.displayStyleId));
+    viewStateData.viewDefinitionProps = elements.getElementProps(viewDefinitionId) as ViewDefinitionProps;
+    viewStateData.categorySelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.categorySelectorId);
+    viewStateData.displayStyleProps = elements.getElementProps(viewStateData.viewDefinitionProps.displayStyleId);
     if (viewStateData.viewDefinitionProps.modelSelectorId !== undefined)
-      viewStateData.modelSelectorProps = elements.getElementProps(new Id64(viewStateData.viewDefinitionProps.modelSelectorId));
+      viewStateData.modelSelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.modelSelectorId);
     return viewStateData;
   }
-
 }
 
 /**
  * Local Txns in an IModelDb. Local Txns persist only until [[IModelDb.pushChanges]] is called.
  */
 export class TxnManager {
-  private _iModel: IModelDb;
-
-  constructor(iModel: IModelDb) {
-    this._iModel = iModel;
-  }
+  constructor(private _iModel: IModelDb) { }
 
   /** Get the ID of the first transaction, if any. */
-  public queryFirstTxnId(): TxnManager.TxnId {
-    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerQueryFirstTxnId();
-  }
+  public queryFirstTxnId(): TxnManager.TxnId { return this._iModel.briefcaseEntry!.nativeDb!.txnManagerQueryFirstTxnId(); }
 
   /** Get the successor of the specified TxnId */
-  public queryNextTxnId(txnId: TxnManager.TxnId): TxnManager.TxnId {
-    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerQueryNextTxnId(txnId);
-  }
+  public queryNextTxnId(txnId: TxnManager.TxnId): TxnManager.TxnId { return this._iModel.briefcaseEntry!.nativeDb!.txnManagerQueryNextTxnId(txnId); }
 
   /** Get the predecessor of the specified TxnId */
-  public queryPreviousTxnId(txnId: TxnManager.TxnId): TxnManager.TxnId {
-    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerQueryPreviousTxnId(txnId);
-  }
+  public queryPreviousTxnId(txnId: TxnManager.TxnId): TxnManager.TxnId { return this._iModel.briefcaseEntry!.nativeDb!.txnManagerQueryPreviousTxnId(txnId); }
 
   /** Get the ID of the current (tip) transaction.  */
-  public getCurrentTxnId(): TxnManager.TxnId {
-    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerGetCurrentTxnId();
-  }
+  public getCurrentTxnId(): TxnManager.TxnId { return this._iModel.briefcaseEntry!.nativeDb!.txnManagerGetCurrentTxnId(); }
 
   /** Get the description that was supplied when the specified transaction was saved. */
-  public getTxnDescription(txnId: TxnManager.TxnId): string {
-    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerGetTxnDescription(txnId);
-  }
+  public getTxnDescription(txnId: TxnManager.TxnId): string { return this._iModel.briefcaseEntry!.nativeDb!.txnManagerGetTxnDescription(txnId); }
 
   /** Test if a TxnId is valid */
-  public isTxnIdValid(txnId: TxnManager.TxnId): boolean {
-    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerIsTxnIdValid(txnId);
-  }
+  public isTxnIdValid(txnId: TxnManager.TxnId): boolean { return this._iModel.briefcaseEntry!.nativeDb!.txnManagerIsTxnIdValid(txnId); }
 
   /** Make a description of the changeset by combining all local txn comments. */
   public describeChangeSet(endTxnId?: TxnManager.TxnId): string {
-
     if (endTxnId === undefined)
       endTxnId = this.getCurrentTxnId();
 

@@ -12,9 +12,9 @@ import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import * as path from "path";
 import { PanTool } from "../../frontend/tools/ViewTool";
 import { CompassMode } from "../../frontend/AccuDraw";
-import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
-import { SpatialViewDefinitionProps } from "../../common/ElementProps";
-import { DisplayStyle3dState } from "../../frontend/DisplayStyleState";
+// import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
+// import { SpatialViewDefinitionProps } from "../../common/ElementProps";
+// import { DisplayStyle3dState } from "../../frontend/DisplayStyleState";
 
 const iModelLocation = path.join(__dirname, "../../../../backend/lib/backend/test/assets/test.bim");
 
@@ -29,12 +29,12 @@ class TestIModelApp extends IModelApp {
   protected supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
 }
 
-const compareView = (v1: SpatialViewState, v2: SpatialViewDefinitionProps, str: string) => {
-  const compare = new DeepCompare();
-  const v2State = new SpatialViewState(v2, v1.iModel, v1.categorySelector, v1.displayStyle as DisplayStyle3dState, v1.modelSelector);
-  const val = compare.compare(v1, v2State, .01);
-  assert.isTrue(val, str);
-};
+// const compareView = (v1: SpatialViewState, v2: SpatialViewDefinitionProps, str: string) => {
+//   const compare = new DeepCompare();
+//   const v2State = new SpatialViewState(v2, v1.iModel, v1.categorySelector, v1.displayStyle as DisplayStyle3dState, v1.modelSelector);
+//   const val = compare.compare(v1, v2State, .01);
+//   assert.isTrue(val, str);
+// };
 
 describe("Viewport", () => {
   let imodel: IModelConnection;
@@ -43,7 +43,7 @@ describe("Viewport", () => {
   before(async () => {   // Create a ViewState to load into a Viewport
     TestIModelApp.startup();
     imodel = await IModelConnection.openStandalone(iModelLocation);
-    spatialView = await imodel.views.loadView("0x34") as SpatialViewState;
+    spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
@@ -52,7 +52,7 @@ describe("Viewport", () => {
     IModelApp.shutdown();
   });
 
-  it.skip("Viewport", async () => {
+  it("Viewport", async () => {
     const vpView = spatialView.clone<SpatialViewState>();
     const vp = new TestViewport(vpView);
     assert.isFalse(vp.isRedoPossible, "no redo");
@@ -65,13 +65,15 @@ describe("Viewport", () => {
     assert.notEqual(saveView.displayStyle, vpView.displayStyle, "clone should copy displayStyle");
     const frustSave = vp.getFrustum();
 
-    const clientRect = vp.getClientRect();
-    const testParams: any = { view: vpView, rect: { left: clientRect.left, bottom: clientRect.bottom, right: clientRect.right, top: clientRect.top } };
+    // const clientRect = vp.getClientRect();
     vpView.camera.validateLens();
 
-    const cppView = await imodel.executeTest("turnCameraOn", testParams);
+    // currently the range test for visible elements doesn't match native code, so we get a different result.
+    // re-enable this test when models hold their ranges.
+    // const testParams: any = { view: vpView, rect: { left: clientRect.left, bottom: clientRect.bottom, right: clientRect.right, top: clientRect.top } };
+    // const cppView = await imodel.executeTest("turnCameraOn", testParams);
     vp.turnCameraOn();
-    compareView(vpView, cppView, "turnCameraOn 3");
+    // compareView(vpView, cppView, "turnCameraOn 3");
 
     vp.synchWithView(true);
     assert.isTrue(vp.isCameraOn(), "camera should be on");
@@ -92,7 +94,7 @@ describe("Viewport", () => {
     assert.equal(pan.viewport, vp);
   });
 
-  it("AccuDraw should work properly", () => {
+  it("AccuDraw", () => {
     const vpView = spatialView.clone<SpatialViewState>();
     const viewport = new TestViewport(vpView);
     const accudraw = iModelApp.accuDraw;

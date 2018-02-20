@@ -44,7 +44,6 @@ describe("BriefcaseManager", () => {
   let iModelLocalReadonlyPath: string;
   let iModelLocalReadWritePath: string;
 
-  let shouldDeleteAllBriefcases: boolean = false;
   const getElementCount = (iModel: IModelDb): number => {
     const rows: any[] = iModel.executeQuery("SELECT COUNT(*) AS cnt FROM bis.Element");
     const count = +(rows[0].cnt);
@@ -69,10 +68,11 @@ describe("BriefcaseManager", () => {
     iModelLocalReadonlyPath = path.join(cacheDir, testIModelId, "readOnly");
     iModelLocalReadWritePath = path.join(cacheDir, testIModelId, "readWrite");
 
-    // Recreate briefcases if the cache has been cleaned. todo: Figure a better way to prevent bleeding briefcase ids
-    shouldDeleteAllBriefcases = !IModelJsFs.existsSync(cacheDir);
-    if (shouldDeleteAllBriefcases)
-      await IModelTestUtils.deleteAllBriefcases(accessToken, testIModelId);
+    // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
+    if (!IModelJsFs.existsSync(cacheDir)) {
+      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "TestModel");
+      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "NoVersionsTest");
+    }
 
     console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
   });
@@ -160,10 +160,6 @@ describe("BriefcaseManager", () => {
 
   it("should open a briefcase of an iModel with no versions", async () => {
     const iModelNoVerId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "NoVersionsTest");
-
-    if (shouldDeleteAllBriefcases)
-      await IModelTestUtils.deleteAllBriefcases(accessToken, iModelNoVerId);
-
     const iModelNoVer: IModelDb = await IModelDb.open(accessToken, testProjectId, iModelNoVerId, OpenMode.Readonly);
     assert.exists(iModelNoVer);
   });

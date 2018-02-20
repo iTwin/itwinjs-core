@@ -6,7 +6,7 @@ import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Vector3d, Point3d, Point2d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { ElementProps } from "../common/ElementProps";
-import { ViewDefinitionProps, ViewDefinition3dProps, ViewDefinition2dProps, SpatialViewDefinitionProps, ModelSelectorProps, CategorySelectorProps } from "../common/ElementProps";
+import { ViewDefinitionProps, ViewDefinition3dProps, ViewDefinition2dProps, SpatialViewDefinitionProps, ModelSelectorProps, CategorySelectorProps } from "../common/ViewProps";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { Camera } from "../frontend/ViewState";

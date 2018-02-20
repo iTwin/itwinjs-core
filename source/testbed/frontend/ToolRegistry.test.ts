@@ -1,3 +1,6 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { iModelApp, IModelApp } from "../../frontend/IModelApp";
 import { Tool } from "../../frontend/tools/Tool";
@@ -18,6 +21,7 @@ class TestImmediate extends Tool {
     return true;
   }
 }
+// spell-checker: disable
 
 class TestCommandApp extends IModelApp {
   public testNamespace?: I18NNamespace;
@@ -35,13 +39,18 @@ class TestCommandApp extends IModelApp {
   protected supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
 }
 
-function SetupToolRegistryTests() {
+function setupToolRegistryTests() {
   TestCommandApp.startup();
   createTestTools();
 }
 
+function logResult(..._args: any[]) {
+  // tslint:disable-next-line:no-console
+  // console.log(..._args);
+}
+
 describe("ToolRegistry", () => {
-  before(() => SetupToolRegistryTests());
+  before(() => setupToolRegistryTests());
   after(() => TestCommandApp.shutdown());
 
   it("Should find Select tool", async () => {
@@ -71,19 +80,16 @@ describe("ToolRegistry", () => {
 
   it("Should find some partial matches for plac", async () => {
     const searchResults: FuzzySearchResults<typeof Tool> | undefined = await iModelApp.tools.findPartialMatches("plac");
-    // tslint:disable-next-line:no-console
     showSearchResults("Matches for 'plac':", searchResults);
   });
 
   it("Should find some partial matches for plce", async () => {
     const searchResults: FuzzySearchResults<typeof Tool> | undefined = await iModelApp.tools.findPartialMatches("plce");
-    // tslint:disable-next-line:no-console
     showSearchResults("Matches for 'plce':", searchResults);
   });
 
   it("Should find some partial matches for cone plac", async () => {
     const searchResults: FuzzySearchResults<typeof Tool> | undefined = await iModelApp.tools.findPartialMatches("cone plac");
-    // tslint:disable-next-line:no-console
     showSearchResultsUsingIndexApi("Matches for 'cone plac':", searchResults);
   });
 });
@@ -101,18 +107,15 @@ function showSearchResults(title: string, searchResults?: FuzzySearchResults<typ
   assert.isDefined(searchResults);
   if (!searchResults)
     return;
-  // tslint:disable-next-line:no-console
-  console.log(searchResults.length, title);
+  logResult(searchResults.length, title);
 
   for (const thisResult of searchResults) {
     const keyin = thisResult.getMatchedValue();
-    // tslint:disable-next-line:no-console
-    console.log(keyin);
+    logResult(keyin);
     assert.isTrue(keyin.length > 0);
 
     const boldMask: boolean[] = thisResult.getBoldMask();
-    // tslint:disable-next-line:no-console
-    console.log(caretStringFromBoldMask(keyin, boldMask));
+    logResult(caretStringFromBoldMask(keyin, boldMask));
   }
 }
 
@@ -120,8 +123,7 @@ function showSearchResultsUsingIndexApi(title: string, searchResults?: FuzzySear
   assert.isDefined(searchResults);
   if (!searchResults)
     return;
-  // tslint:disable-next-line:no-console
-  console.log(searchResults.length, title);
+  logResult(searchResults.length, title);
 
   // tslint:disable-next-line:prefer-for-of
   for (let resultIndex: number = 0; resultIndex < searchResults.length; resultIndex++) {
@@ -129,13 +131,11 @@ function showSearchResultsUsingIndexApi(title: string, searchResults?: FuzzySear
     assert.isDefined(thisResult);
 
     const keyin = thisResult!.getMatchedValue();
-    // tslint:disable-next-line:no-console
-    console.log(keyin);
+    logResult(keyin);
     assert.isTrue(keyin.length > 0);
 
     const boldMask: boolean[] = thisResult!.getBoldMask();
-    // tslint:disable-next-line:no-console
-    console.log(caretStringFromBoldMask(keyin, boldMask));
+    logResult(caretStringFromBoldMask(keyin, boldMask));
   }
 }
 

@@ -4,7 +4,6 @@
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
 import { EntityQueryParams } from "../common/EntityProps";
-import { ViewDefinitionProps } from "../common/ElementProps";
 import { IModel, IModelToken } from "../common/IModel";
 import { IModelVersion } from "../common/IModelVersion";
 import { Gateway } from "../common/Gateway";
@@ -83,29 +82,24 @@ export abstract class IModelGateway extends Gateway {
    * @returns All rows as an array or an empty array if nothing was selected
    * @throws [[IModelError]] if the ECSQL is invalid
    */
-  public async executeQuery(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object): Promise<any[]> {
-    return this.forward.apply(this, arguments);
-  }
+  public async executeQuery(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object): Promise<any[]> { return this.forward.apply(this, arguments); }
 
   /** Return an array of model JSON strings given an array of stringified model ids. */
-  public async getModelProps(_iModelToken: IModelToken, _modelIds: Id64Set): Promise<any[]> {
-    return this.forward.apply(this, arguments);
-  }
+  public async getModelProps(_iModelToken: IModelToken, _modelIds: Id64Set): Promise<any[]> { return this.forward.apply(this, arguments); }
+
+  public async queryModelProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<any[]> { return this.forward.apply(this, arguments); }
 
   /** Return an array of element JSON strings given an array of stringified element ids. */
-  public async getElementProps(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<any[]> {
-    return this.forward.apply(this, arguments);
-  }
+  public async getElementProps(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<any[]> { return this.forward.apply(this, arguments); }
 
-  /** Return an array of element id strings from a query constructed from the specified parameters. */
-  public async queryElementIds(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<string[]> {
-    return this.forward.apply(this, arguments);
-  }
+  /** Return an array of element JSON strings given an EntityQueryParams. */
+  public async queryElementProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<string[]> { return this.forward.apply(this, arguments); }
+
+  /** Return a set of ids from a query constructed from the specified parameters. */
+  public async queryEntityIds(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<Id64Set> { return this.forward.apply(this, arguments); }
 
   /** Return an array of elements formatted for presentation given an array of stringified element ids. */
-  public async formatElements(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<any[]> {
-    return this.forward.apply(this, arguments);
-  }
+  public async formatElements(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<any[]> { return this.forward.apply(this, arguments); }
 
   /** Returns an array of class entries given a starting class and walking up the inheritance chain.
    * Each entry contains the class name and the class meta data.
@@ -137,10 +131,10 @@ export abstract class IModelGateway extends Gateway {
     return this.forward.apply(this, arguments);
   }
 
-  /** Query for the array of ViewDefinitions of the specified class and matching the specified IsPrivate setting. */
-  public async queryViewDefinitionProps(_iModelToken: IModelToken, _className: string, _wantPrivate: boolean): Promise<ViewDefinitionProps[]> {
-    return this.forward.apply(this, arguments);
-  }
+  // /** Query for a set of models of the specified class and matching the specified IsPrivate setting. */
+  // public async queryModelIds(_iModelToken: IModelToken, _className: string, _limit: number, _wantPrivate: boolean, _wantTemplate: boolean): Promise<Id64Set> {
+  //   return this.forward.apply(this, arguments);
+  // }
 
   /** Get the ViewState data for the specified ViewDefinition */
   public async getViewStateData(_iModelToken: IModelToken, _viewDefinitionId: string): Promise<any> {
