@@ -384,7 +384,7 @@ export class ECName {
 
   get name() { return this._name; }
   set name(name: string) {
-    const test: boolean = /^([a-zA-Z_.]+[a-zA-Z0-9_.]*)$/i.test(name);
+    const test: boolean = /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i.test(name);
     if (!test)
       throw new ECObjectsError(ECObjectsStatus.InvalidECName);
     this._name = name;
