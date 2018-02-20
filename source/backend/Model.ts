@@ -14,6 +14,7 @@ import { Point2d } from "@bentley/geometry-core/lib/PointVector";
  */
 export class Model extends Entity implements ModelProps {
   public modeledElement: Id64;
+  public readonly name: string;
   public parentModel: Id64;
   public jsonProperties: any;
   public isPrivate: boolean;
@@ -22,6 +23,7 @@ export class Model extends Entity implements ModelProps {
   constructor(props: ModelProps, iModel: IModelDb) {
     super(props, iModel);
     this.id = Id64.fromJSON(props.id);
+    this.name = props.name ? props.name : "";
     this.modeledElement = Id64.fromJSON(props.modeledElement)!;
     this.parentModel = Id64.fromJSON(props.parentModel)!;
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
@@ -35,6 +37,7 @@ export class Model extends Entity implements ModelProps {
     val.id = this.id;
     val.modeledElement = this.modeledElement;
     val.parentModel = this.parentModel;
+    val.name = this.name;
     if (this.isPrivate)
       val.isPrivate = this.isPrivate;
     if (this.isTemplate)

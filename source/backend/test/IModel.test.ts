@@ -15,7 +15,7 @@ import { Category, SubCategory, SpatialCategory } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
 import { BisCore } from "../BisCore";
 import { ECSqlStatement } from "../ECSqlStatement";
-import { GeometricElementProps, ViewDefinitionProps } from "../../common/ElementProps";
+import { GeometricElementProps } from "../../common/ElementProps";
 import {
   Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
   LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject,
@@ -30,6 +30,7 @@ import { Appearance } from "../../common/SubCategoryAppearance";
 import { ColorDef } from "../../common/ColorDef";
 import { IModel } from "../../common/IModel";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { ViewDefinitionProps } from "../../common/ViewProps";
 
 // spell-checker: disable
 

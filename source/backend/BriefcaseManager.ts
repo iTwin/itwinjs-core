@@ -220,7 +220,7 @@ export class BriefcaseManager {
     return path.join(BriefcaseManager.getIModelPath(iModelId), "csets");
   }
 
-  public static buildChangeSummaryFilePath(iModelId: string): string {
+  public static getChangeSummaryPathname(iModelId: string): string {
     return path.join(BriefcaseManager.getIModelPath(iModelId), iModelId.concat(".bim.ecchanges"));
   }
 
@@ -934,6 +934,10 @@ export class BriefcaseManager {
     changeSet.seedFileId = briefcase.fileId!;
     changeSet.fileSize = IModelJsFs.lstatSync(changeSetToken.pathname)!.size.toString();
     changeSet.description = description;
+    if (changeSet.description.length >= 255) {
+      Logger.logWarning(loggingCategory, "pushChanges - Truncating description to 255 characters. " + changeSet.description);
+      changeSet.description = changeSet.description.slice(0, 254);
+    }
 
     const postedChangeSet = await BriefcaseManager.hubClient!.uploadChangeSet(accessToken, briefcase.iModelId, changeSet, changeSetToken.pathname);
 
@@ -967,15 +971,12 @@ export class BriefcaseManager {
 
     nativeDb.closeDgnDb();
 
-    const iModelId: string = await BriefcaseManager.uploadIModel(accessToken, projectId, pathname, hubName, hubDescription);
+    const iModelId: string = await BriefcaseManager.upload(accessToken, projectId, pathname, hubName, hubDescription);
     return BriefcaseManager.open(accessToken, projectId, iModelId, OpenMode.ReadWrite, IModelVersion.latest());
   }
 
   /** Pushes a new iModel to the Hub */
-  public static async uploadIModel(accessToken: AccessToken, projectId: string, pathname: string, hubName?: string, hubDescription?: string, timeOutInMilliseconds: number = 2 * 60 * 1000): Promise<string> {
-    await BriefcaseManager.initCache(accessToken);
-    assert(!!BriefcaseManager.hubClient);
-
+  private static async upload(accessToken: AccessToken, projectId: string, pathname: string, hubName?: string, hubDescription?: string, timeOutInMilliseconds: number = 2 * 60 * 1000): Promise<string> {
     hubName = hubName || path.basename(pathname, ".bim");
 
     const iModel: HubIModel = await BriefcaseManager.hubClient!.createIModel(accessToken, projectId, hubName, hubDescription);

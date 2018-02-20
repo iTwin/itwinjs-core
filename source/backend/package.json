@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.52.0",
+  "version": "0.52.4",
   "description": "iModelJs backend components",
   "license": "UNLICENSED",
   "scripts": {
@@ -28,12 +28,12 @@
     "NOTE: must use ~ range to depend on the addon api -- that is, must lock onto a minor version."
   ],
   "dependencies": {
-    "@bentley/bentleyjs-core": "^6.0.0",
+    "@bentley/bentleyjs-core": "^6.1.0",
     "@bentley/geometry-core": "^4.3.1",
     "@bentley/imodeljs-clients": "^3.0.0",
-    "@bentley/imodeljs-electronaddon": "~8.0.0",
-    "@bentley/imodeljs-nodeaddon": "~8.0.0",
-    "@bentley/imodeljs-nodeaddonapi": "~8.0.0",
+    "@bentley/imodeljs-electronaddon": "~8.1.0",
+    "@bentley/imodeljs-nodeaddon": "~8.1.0",
+    "@bentley/imodeljs-nodeaddonapi": "~8.1.0",
     "fs-extra": "^4.0.3",
     "js-base64": "^2.4.0"
   },

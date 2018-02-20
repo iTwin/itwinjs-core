@@ -79,7 +79,7 @@ export class ChangeSummaryManager {
     if (iModel.briefcaseEntry.nativeDb!.isChangeCacheAttached())
       return;
 
-    const changesCacheFilePath: string = BriefcaseManager.buildChangeSummaryFilePath(iModel.briefcaseEntry.iModelId);
+    const changesCacheFilePath: string = BriefcaseManager.getChangeSummaryPathname(iModel.briefcaseEntry.iModelId);
     if (!IModelJsFs.existsSync(changesCacheFilePath)) {
       using (new ECDb(), (changesFile) => {
         ChangeSummaryManager.createChangesFile(iModel, changesFile, changesCacheFilePath);
@@ -221,7 +221,7 @@ export class ChangeSummaryManager {
       throw new IModelError(IModelStatus.BadArg);
 
     const changesFile = new ECDb();
-    const changesPath: string = BriefcaseManager.buildChangeSummaryFilePath(iModel.briefcaseEntry.iModelId);
+    const changesPath: string = BriefcaseManager.getChangeSummaryPathname(iModel.briefcaseEntry.iModelId);
     if (IModelJsFs.existsSync(changesPath)) {
       changesFile.openDb(changesPath, OpenMode.ReadWrite);
       return changesFile;

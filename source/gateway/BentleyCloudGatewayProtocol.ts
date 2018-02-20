@@ -5,7 +5,7 @@ import { GatewayHttpProtocol } from "./GatewayHttpProtocol";
 import { IModelToken } from "../common/IModel";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 
-const loggingCategory = "imodeljs-backend.BentleyCloudGatewayProtocol";
+const loggingCategory = "imodeljs-gateway.BentleyCloudGatewayProtocol";
 
 /** An http server request object. */
 export interface HttpServerRequest {
