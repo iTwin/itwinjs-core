@@ -18,7 +18,7 @@ import { Appearance } from "../../common/SubCategoryAppearance";
 import { ColorDef } from "../../common/ColorDef";
 import { IModel } from "../../common/IModel";
 import { IModelJsFs } from "../IModelJsFs";
-import { iModelEngine } from "../IModelEngine";
+import { iModelHost } from "../IModelHost";
 
 class Timer {
   private label: string;
@@ -64,7 +64,7 @@ describe("BriefcaseManager", () => {
     testChangeSets = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
     expect(testChangeSets.length).greaterThan(2);
 
-    const cacheDir = iModelEngine.configuration.briefcaseCacheDir;
+    const cacheDir = iModelHost.configuration.briefcaseCacheDir;
     iModelLocalReadonlyPath = path.join(cacheDir, testIModelId, "readOnly");
     iModelLocalReadWritePath = path.join(cacheDir, testIModelId, "readWrite");
 

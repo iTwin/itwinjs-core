@@ -7,7 +7,7 @@ import { ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nod
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { using } from "@bentley/bentleyjs-core/lib/Disposable";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { iModelEngine } from "./IModelEngine";
+import { iModelHost } from "./IModelHost";
 import { IModelDb } from "./IModelDb";
 import { ECDb } from "./ECDb";
 import { DateTime } from "../common/ECSqlTypes";
@@ -115,7 +115,7 @@ export class ChangeSummaryManager {
     perfLogger.dispose();
 
     perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos from Hub");
-    const hubClient = new IModelHubClient(iModelEngine.configuration.iModelHubDeployConfig);
+    const hubClient = new IModelHubClient(iModelHost.configuration.iModelHubDeployConfig);
 
     const changeSetInfos: ChangeSet[] = await this.retrieveChangeSetInfos(hubClient, accessToken, iModelId, startChangeSetId, endChangeSetId);
     assert(startChangeSetId === undefined || startChangeSetId === changeSetInfos[0].wsgId);

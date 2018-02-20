@@ -33,7 +33,7 @@ import { IModelDbLinkTableRelationships, LinkTableRelationship } from "./LinkTab
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { AddonRegistry } from "./AddonRegistry";
 import { RequestQueryOptions } from "@bentley/imodeljs-clients/lib";
-import { iModelEngine } from "./IModelEngine";
+import { iModelHost } from "./IModelHost";
 import { EntityQueryParams, EntityProps } from "../common/EntityProps";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { ViewDefinitionProps } from "../common/ViewProps";
@@ -106,9 +106,9 @@ export class IModelDb extends IModel {
   }
 
   private static getAccessToken(clientAccessToken: AccessToken): AccessToken {
-    if (!iModelEngine)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "IModelEngine.startup() should be called before any backend operations");
-    return iModelEngine.configuration.getServiceUserAccessToken() || clientAccessToken;
+    if (!iModelHost)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "IModelHost.startup() should be called before any backend operations");
+    return iModelHost.configuration.getServiceUserAccessToken() || clientAccessToken;
   }
 
   /** Create an iModel on the Hub */
@@ -657,10 +657,10 @@ export class ConcurrencyControl {
   }
 
   private static getAccessToken(clientAccessToken: AccessToken): AccessToken {
-    if (!iModelEngine)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "IModelEngine.startup() should be called before any backend operations");
+    if (!iModelHost)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "IModelHost.startup() should be called before any backend operations");
 
-    return iModelEngine.configuration.getServiceUserAccessToken() || clientAccessToken;
+    return iModelHost.configuration.getServiceUserAccessToken() || clientAccessToken;
   }
 
   /**
@@ -777,7 +777,7 @@ export class ConcurrencyControl {
     throw new IModelError(IModelStatus.BadRequest, "TBD locks");
   }
 
-  private getDeploymentEnv(): DeploymentEnv { return iModelEngine.configuration.iModelHubDeployConfig; }
+  private getDeploymentEnv(): DeploymentEnv { return iModelHost.configuration.iModelHubDeployConfig; }
   private getIModelHubClient(): IModelHubClient { return new IModelHubClient(this.getDeploymentEnv()); }
 
   /** process the Lock-specific part of the request. */

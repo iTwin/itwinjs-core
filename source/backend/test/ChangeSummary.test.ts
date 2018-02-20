@@ -14,7 +14,7 @@ import { IModelTestUtils } from "./IModelTestUtils";
 import { ChangeSet } from "@bentley/imodeljs-clients";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelJsFs } from "../IModelJsFs";
-import { iModelEngine } from "../IModelEngine";
+import { iModelHost } from "../IModelHost";
 
 describe("ChangeSummary", () => {
   let accessToken: AccessToken;
@@ -27,7 +27,7 @@ describe("ChangeSummary", () => {
     testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "TestModel");
 
     // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
-    const cacheDir = iModelEngine.configuration.briefcaseCacheDir;
+    const cacheDir = iModelHost.configuration.briefcaseCacheDir;
     if (!IModelJsFs.existsSync(cacheDir)) {
       await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "TestModel");
       await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "NoVersionsTest");
@@ -63,7 +63,7 @@ describe("ChangeSummary", () => {
         assert.equal(row.csumcount, 0);
       });
 
-      const cacheDir = iModelEngine.configuration.briefcaseCacheDir;
+      const cacheDir = iModelHost.configuration.briefcaseCacheDir;
       const expectedCachePath: string = path.join(cacheDir, testIModelId, testIModelId.concat(".bim.ecchanges"));
       expect(IModelJsFs.existsSync(expectedCachePath));
     } finally {
@@ -94,7 +94,7 @@ describe("ChangeSummary", () => {
         assert.equal(row.csumcount, 0);
       });
 
-      const cacheDir = iModelEngine.configuration.briefcaseCacheDir;
+      const cacheDir = iModelHost.configuration.briefcaseCacheDir;
       const expectedCachePath: string = path.join(cacheDir, testIModelId, testIModelId.concat(".bim.ecchanges"));
       expect(IModelJsFs.existsSync(expectedCachePath));
     } finally {

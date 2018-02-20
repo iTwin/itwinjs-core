@@ -18,7 +18,7 @@ import { SpatialCategory } from "../Category";
 import { Appearance } from "../../common/SubCategoryAppearance";
 import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { IModelEngineConfiguration, IModelEngine, iModelEngine } from "../IModelEngine";
+import { IModelHostConfiguration, IModelHost, iModelHost } from "../IModelHost";
 import * as path from "path";
 // import { Logger, LogLevel } from "@bentley/bentleyjs-core/lib/Logger";
 
@@ -64,7 +64,7 @@ export class IModelTestUtils {
 
   private static _iModelHubDeployConfig: DeploymentEnv = "QA";
   public static set iModelHubDeployConfig(deployConfig: DeploymentEnv) {
-    if (iModelEngine) {
+    if (iModelHost) {
       throw new Error("Cannot change the deployment configuration after the backend has started up. Set the configuration earlier, or call iModelEngine.shutdown().");
     }
     IModelTestUtils._iModelHubDeployConfig = deployConfig;
@@ -76,11 +76,11 @@ export class IModelTestUtils {
   }
 
   public static setIModelHubDeployConfig(deployConfig: DeploymentEnv) {
-    if (iModelEngine) {
+    if (iModelHost) {
       throw new Error("Cannot change the deployment configuration after the backend has started up. Set the configuration earlier, or call iModelEngine.shutdown().");
     }
 
-    const config = new IModelEngineConfiguration();
+    const config = new IModelHostConfiguration();
     config.iModelHubDeployConfig = deployConfig;
     IModelTestUtils._connectClient = new ConnectClient(deployConfig);
     IModelTestUtils._hubClient = new IModelHubClient(deployConfig);
@@ -280,7 +280,7 @@ export class IModelTestUtils {
 
   public static startBackend() {
     IModelTestUtils.iModelHubDeployConfig = "QA";
-    IModelEngine.startup(new IModelEngineConfiguration());
+    IModelHost.startup(new IModelHostConfiguration());
   }
 }
 

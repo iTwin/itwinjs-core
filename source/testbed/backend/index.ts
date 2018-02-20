@@ -5,7 +5,7 @@ import * as express from "express";
 import * as bodyParser from "body-parser";
 import { IModelDb } from "../../backend/IModelDb";
 import { AddonRegistry } from "../../backend/AddonRegistry";
-import { IModelEngine } from "../../backend/IModelEngine";
+import { IModelHost } from "../../backend/IModelHost";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
 import { TestGatewayImpl } from "./TestGatewayImpl";
 
@@ -31,7 +31,7 @@ TestbedConfig.initializeGatewayConfig();
 AddonRegistry.loadAndRegisterStandardAddon();
 
 // Start the backend
-IModelEngine.startup();
+IModelHost.startup();
 
 if (TestbedConfig.gatewayConfig) {
   const app = express();
