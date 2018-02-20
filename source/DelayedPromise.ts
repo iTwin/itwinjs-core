@@ -96,6 +96,11 @@ export const DelayedPromiseWithProps = (class <TProps, TPayload> extends Delayed
       if (props.hasOwnProperty(name))
         Object.defineProperty(this, name, { get: () => props[name] });
     }
+
+    for (const name of Object.getOwnPropertyNames(Object.getPrototypeOf(props))) {
+      if ("constructor" !== name)
+        Object.defineProperty(this, name, { get: () => (props as any)[name] });
+    }
   }
 }) as DelayedPromiseWithPropsConstructor;
 
