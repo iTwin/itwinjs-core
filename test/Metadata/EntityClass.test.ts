@@ -6,7 +6,7 @@ import { assert, expect } from "chai";
 import Schema from "../../source/Metadata/Schema";
 import ECClass from "../../source/Metadata/Class";
 import EntityClass from "../../source/Metadata/EntityClass";
-import MixinClass from "../../source/Metadata/MixinClass";
+import Mixin from "../../source/Metadata/Mixin";
 import RelationshipClass from "../../source/Metadata/RelationshipClass";
 import { ECClassModifier } from "../../source/ECObjects";
 import { DelayedPromiseWithProps } from "../../source/DelayedPromise";
@@ -23,7 +23,7 @@ describe("entity class", () => {
       const baseClass = new EntityClass(schema, "TestBase");
       const basePrimProp = await baseClass.createPrimitiveProperty("BasePrimProp");
 
-      const mixin = new MixinClass(schema, "TestMixin");
+      const mixin = new Mixin(schema, "TestMixin");
       const mixinPrimProp = await mixin.createPrimitiveProperty("MixinPrimProp");
 
       const entityClass = new EntityClass(schema, "TestClass");
@@ -97,7 +97,7 @@ describe("entity class", () => {
       assert.isTrue(testClass instanceof EntityClass);
       const entityClass = testClass as EntityClass;
 
-      const mixinClass = await ecschema.getClass<MixinClass>("testMixin");
+      const mixinClass = await ecschema.getClass<Mixin>("testMixin");
       assert.isDefined(mixinClass);
 
       assert.isDefined(entityClass.mixins);

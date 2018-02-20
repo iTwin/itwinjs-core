@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import Schema from "../../source/Metadata/Schema";
 import ECClass from "../../source/Metadata/Class";
 import EntityClass from "../../source/Metadata/EntityClass";
-import MixinClass from "../../source/Metadata/MixinClass";
+import Mixin from "../../source/Metadata/Mixin";
 import { StructClass } from "../../source/Metadata/Class";
 import { ECObjectsError } from "../../source/Exception";
 import { SchemaKey, SchemaMatchType } from "../../source/ECObjects";
@@ -68,7 +68,7 @@ describe("Schema", () => {
       await testSchema.createMixinClass("TestMixin");
 
       expect(await testSchema.getClass("TestMixin")).instanceof(ECClass);
-      expect(await testSchema.getClass<MixinClass>("TestMixin")).instanceof(MixinClass);
+      expect(await testSchema.getClass<Mixin>("TestMixin")).instanceof(Mixin);
     });
 
     it("should succeed for struct class", async () => {

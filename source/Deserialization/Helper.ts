@@ -7,7 +7,7 @@ import { ECVersion, SchemaKey, relationshipEndToString, SchemaChildKey, SchemaCh
 import SchemaChild from "../Metadata/SchemaChild";
 import Schema from "../Metadata/Schema";
 import EntityClass from "../Metadata/EntityClass";
-import MixinClass from "../Metadata/MixinClass";
+import Mixin from "../Metadata/Mixin";
 import RelationshipClass, { RelationshipConstraint } from "../Metadata/RelationshipClass";
 import { AnyClass, SchemaDeserializationVisitor, AnySchemaChild } from "../Interfaces";
 import { Property } from "../Metadata/Property";
@@ -272,7 +272,7 @@ export default class SchemaReadHelper {
     await this.loadClass(entity, entityJson);
   }
 
-  private async loadMixin(mixin: MixinClass, mixinJson: any): Promise<void> {
+  private async loadMixin(mixin: Mixin, mixinJson: any): Promise<void> {
     if (mixinJson.appliesTo) {
       if (typeof(mixinJson.appliesTo) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Mixin ${mixin.name} has an invalid 'appliesTo' property. It should be of type 'string'.`);

@@ -14,7 +14,7 @@ export const enum ECClassModifier {
 
 export const enum SchemaChildType {
   EntityClass,
-  MixinClass,
+  Mixin,
   StructClass,
   CustomAttributeClass,
   RelationshipClass,

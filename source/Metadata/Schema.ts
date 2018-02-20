@@ -4,7 +4,7 @@
 
 import ECClass, { StructClass } from "./Class";
 import CustomAttributeClass from "./CustomAttributeClass";
-import MixinClass from "./MixinClass";
+import Mixin from "./Mixin";
 import EntityClass from "./EntityClass";
 import RelationshipClass from "./RelationshipClass";
 import SchemaChild from "./SchemaChild";
@@ -60,11 +60,11 @@ export default class Schema implements CustomAttributeContainerProps {
   public createEntityClassSync(name: string, modifier?: ECClassModifier): EntityClass { return this.createClass<EntityClass>(EntityClass, name, modifier); }
 
   /**
-   * Creates a MixinClass with the provided name in this schema.
+   * Creates a Mixin with the provided name in this schema.
    * @param name
    */
-  public async createMixinClass(name: string): Promise<MixinClass> { return this.createClass<MixinClass>(MixinClass, name); }
-  public createMixinClassSync(name: string): MixinClass { return this.createClass<MixinClass>(MixinClass, name); }
+  public async createMixinClass(name: string): Promise<Mixin> { return this.createClass<Mixin>(Mixin, name); }
+  public createMixinClassSync(name: string): Mixin { return this.createClass<Mixin>(Mixin, name); }
 
   /**
    * Creates a StructClass with the provided name in this schema.

@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import ECClass from "./Class";
-import MixinClass from "./MixinClass";
+import Mixin from "./Mixin";
 import RelationshipClass from "./RelationshipClass";
 import { LazyLoadedMixin } from "../Interfaces";
 import { ECClassModifier, RelatedInstanceDirection, SchemaChildType, parseStrengthDirection } from "../ECObjects";
@@ -35,7 +35,7 @@ export default class EntityClass extends ECClass {
    *
    * @param mixin
    */
-  public addMixin(mixin: MixinClass | MixinClass[]) {
+  public addMixin(mixin: Mixin | Mixin[]) {
     if (!this._mixins)
       this._mixins = [];
 
@@ -106,7 +106,7 @@ export default class EntityClass extends ECClass {
       if (!this.schema)
         throw new ECObjectsError(ECObjectsStatus.ECOBJECTS_ERROR_BASE, `TODO: Fix this message`);
 
-      const tempMixin = await this.schema.getChild<MixinClass>(mixinFullName, false);
+      const tempMixin = await this.schema.getChild<Mixin>(mixinFullName, false);
       if (!tempMixin)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `TODO: Fix this message`);
 

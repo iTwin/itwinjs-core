@@ -10,10 +10,10 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { NavigationProperty } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import EntityClass from "./EntityClass";
-import MixinClass from "./MixinClass";
+import Mixin from "./Mixin";
 import Schema from "./Schema";
 
-type AnyConstraintClass = EntityClass | MixinClass | RelationshipClass;
+type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
 
 /**
  * A Typescript class representation of a ECRelationshipClass.
@@ -129,7 +129,7 @@ export class RelationshipConstraint {
    * Adds the provided class as a constraint class to this constraint.
    * @param constraint The class to add as a constraint class.
    */
-  public addClass(constraint: EntityClass | MixinClass | RelationshipClass): void {
+  public addClass(constraint: EntityClass | Mixin | RelationshipClass): void {
     // Ensure we don't start mixing constraint class types
     if (this.constraintClasses && this.constraintClasses.length > 0 && this.constraintClasses[0].type !== constraint.key.type)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
