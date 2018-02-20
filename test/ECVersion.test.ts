@@ -4,9 +4,10 @@
 
 import { assert, expect } from "chai";
 import { ECVersion } from "../source/ECObjects";
+import { ECObjectsError } from "../source/Exception";
 
 describe("ECVersion", () => {
-  describe("from string", () => {
+  describe("fromString", () => {
     it("should succeed with properly formed version string", () => {
       const testVersion = new ECVersion();
       testVersion.fromString("1.2.3");
@@ -38,9 +39,16 @@ describe("ECVersion", () => {
       expect(testVersion.read).equals(10);
       expect(testVersion.write).equals(2);
     });
+
+    it("should throw for an incomplete version string", () => {
+      const testVersion = new ECVersion();
+      expect(() => testVersion.fromString("")).to.throw(ECObjectsError, "The read version is missing from version string, ") ;
+      expect(() => testVersion.fromString("10")).to.throw(ECObjectsError, "The write version is missing from version string, 10") ;
+      expect(() => testVersion.fromString("10.0")).to.throw(ECObjectsError, "The minor version is missing from version string, 10.0") ;
+    });
   });
 
-  describe("to string", () => {
+  describe("toString", () => {
     it("fully defined version string", () => {
       const testVersion = new ECVersion(1, 0, 14);
       assert.equal("1.0.14", testVersion.toString());

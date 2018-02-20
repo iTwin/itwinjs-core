@@ -356,15 +356,15 @@ export class ECVersion {
   public fromString(versionString: string): void {
     const [read, write, minor] = versionString.split(".");
     if (!read)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The read version if missing from version string, ${versionString}`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The read version is missing from version string, ${versionString}`);
     this.read = +read;
 
     if (!write)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The write version if missing from version string, ${versionString}`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The write version is missing from version string, ${versionString}`);
     this.write = +write;
 
     if (!minor)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The minor version if missing from version string, ${versionString}`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The minor version is missing from version string, ${versionString}`);
     this.minor = +minor;
   }
 }
@@ -394,7 +394,7 @@ export class ECName {
 export class SchemaKey {
   private _name?: ECName;
   public version: ECVersion;
-  public checksum: number;
+  // public checksum: number;
   // TODO: need to add a checksum
 
   constructor(name?: string, readVersion?: number, writeVersion?: number, minorVersion?: number) {
@@ -456,8 +456,8 @@ export class SchemaKey {
   public matches(rhs: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Identical): boolean {
     switch (matchType) {
       case SchemaMatchType.Identical:
-        if (this.checksum && rhs.checksum)
-          return this.checksum === rhs.checksum;
+        // TODO: if (this.checksum && rhs.checksum)
+        // TODO:   return this.checksum === rhs.checksum;
         return this.compareByName(rhs.name) && this.readVersion === rhs.readVersion &&
             this.writeVersion === rhs.writeVersion && this.minorVersion === rhs.minorVersion;
       case SchemaMatchType.Exact:
@@ -494,27 +494,17 @@ export class SchemaChildKey {
   public schemaKey: SchemaKey;
   // TODO: Need a checksum
 
-  constructor(name?: string, type?: SchemaChildType, schema?: SchemaKey) {
-    if (undefined !== name) this.name = name;
-    if (undefined !== type) this.type = type;
-    if (undefined !== schema) this.schemaKey = schema;
+  constructor(name: string, type: SchemaChildType | undefined, schema: SchemaKey) {
+    this.name = name;
+    this.schemaKey = schema;
+    if (undefined !== type)
+      this.type = type;
   }
 
   get name() { return this._name.name; }
-  set name(name: string) {
-    this._name = new ECName(name);
-  }
+  set name(name: string) { this._name = new ECName(name); }
 
   get schemaName() { return this.schemaKey.name; }
-
-  /*
-   * Compares two schema names and returns whether or not they match. Comparison is case-sensitive.
-   */
-  public compareByName(rhs: SchemaKey | string): boolean {
-    if (typeof(rhs) === "string")
-      return rhs === this.name;
-    return rhs.name === this.name;
-  }
 
   /**
    * Checks whether this SchemaChildKey matches the one provided.
@@ -525,10 +515,10 @@ export class SchemaChildKey {
     if (rhs.name !== this.name)
       return false;
 
-    if (rhs.type && this.type && rhs.type !== this.type)
+    if (this.type === undefined || rhs.type !== this.type)
       return false;
 
-    if (rhs.schemaKey && this.schemaKey && !rhs.schemaKey.matches(this.schemaKey, SchemaMatchType.Latest))
+    if (!rhs.schemaKey.matches(this.schemaKey, SchemaMatchType.Latest))
       return false;
 
     return true;

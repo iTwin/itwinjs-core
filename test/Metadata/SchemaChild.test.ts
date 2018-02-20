@@ -7,7 +7,7 @@ import { expect } from "chai";
 import Schema from "../../source/Metadata/Schema";
 import { ECObjectsError } from "../../source/Exception";
 import SchemaChild from "../../source/Metadata/SchemaChild";
-import { SchemaChildType } from "../../source/ECObjects";
+import { SchemaChildType, SchemaKey, SchemaChildKey } from "../../source/ECObjects";
 
 describe("SchemaChild", () => {
   describe("fromJson", () => {
@@ -30,5 +30,33 @@ describe("SchemaChild", () => {
     it("should throw for invalid label", async () => testInvalidAttribute(new MockSchemaChild("BadSchema"), "label", "string", 0));
     it("should throw for invalid schema", async () => testInvalidAttribute(new MockSchemaChild("BadSchema"), "schema", "string", 0));
     it("should throw for invalid schemaVersion", async () => testInvalidAttribute(new MockSchemaChild("BadSchema"), "schemaVersion", "string", 0));
+  });
+});
+
+describe("SchemaChildKey", () => {
+  describe("matches", () => {
+    const schemaKeyA = new SchemaKey("SchemaTest", 1, 2, 3);
+    const schemaKeyB = new SchemaKey("OtherTestSchema", 1, 2, 3);
+
+    const typeA = SchemaChildType.Mixin;
+    const typeB = SchemaChildType.EntityClass;
+
+    it("should return false if names do not match", () => {
+      expect(new SchemaChildKey("MixinA", typeA, schemaKeyA).matches(new SchemaChildKey("MixinB", typeA, schemaKeyA))).to.be.false;
+    });
+
+    it("should return false if types do not match", () => {
+      expect(new SchemaChildKey("Name", typeA, schemaKeyA).matches(new SchemaChildKey("Name", typeB, schemaKeyA))).to.be.false;
+      expect(new SchemaChildKey("Name", typeA, schemaKeyA).matches(new SchemaChildKey("Name", undefined, schemaKeyA))).to.be.false;
+      expect(new SchemaChildKey("Name", undefined, schemaKeyA).matches(new SchemaChildKey("Name", typeA, schemaKeyA))).to.be.false;
+    });
+
+    it("should return false if types do not match", () => {
+      expect(new SchemaChildKey("Name", typeA, schemaKeyA).matches(new SchemaChildKey("Name", typeA, schemaKeyB))).to.be.false;
+    });
+
+    it("should return true if keys match", () => {
+      expect(new SchemaChildKey("MixinA", typeA, schemaKeyA).matches(new SchemaChildKey("MixinA", typeA, schemaKeyA))).to.be.true;
+    });
   });
 });

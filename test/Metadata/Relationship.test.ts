@@ -9,12 +9,27 @@ import RelationshipClass from "../../source/Metadata/RelationshipClass";
 import { RelationshipMultiplicity, StrengthType, RelatedInstanceDirection } from "../../source/ECObjects";
 import { ECObjectsError } from "../../source/Exception";
 
-describe("relationship multiplicity", () => {
-  it("check if standard multiplicities are truly static objects", () => {
-    assert.isTrue(RelationshipMultiplicity.zeroOne === RelationshipMultiplicity.zeroOne);
-    assert.isTrue(RelationshipMultiplicity.zeroMany === RelationshipMultiplicity.zeroMany);
-    assert.isTrue(RelationshipMultiplicity.oneOne === RelationshipMultiplicity.oneOne);
-    assert.isTrue(RelationshipMultiplicity.oneMany === RelationshipMultiplicity.oneMany);
+describe("RelationshipMultiplicity", () => {
+  describe("fromString", () => {
+    it("should return a static object for standard multiplicities", () => {
+      // Note that since we're using .equal instead of .eql, this checks that standard multiplicities are truly static objects
+      expect(RelationshipMultiplicity.fromString("(0..1)")).to.equal(RelationshipMultiplicity.zeroOne);
+      expect(RelationshipMultiplicity.fromString("(0..*)")).to.equal(RelationshipMultiplicity.zeroMany);
+      expect(RelationshipMultiplicity.fromString("(1..1)")).to.equal(RelationshipMultiplicity.oneOne);
+      expect(RelationshipMultiplicity.fromString("(1..*)")).to.equal(RelationshipMultiplicity.oneMany);
+    });
+
+    it("should return a new object for unknown multiplicities", () => {
+      const testMul = RelationshipMultiplicity.fromString("(1..5)");
+      expect(testMul).to.exist;
+      expect(testMul!.lowerLimit).to.equal(1);
+      expect(testMul!.upperLimit).to.equal(5);
+    });
+
+    it("should return a undefined for an invalid multiplicity", () => {
+      const testMul = RelationshipMultiplicity.fromString("invalid");
+      expect(testMul).to.not.exist;
+    });
   });
 });
 
