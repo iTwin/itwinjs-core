@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecpresentation-frontend",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "Frontend of ECPresentation library",
   "keywords": [
     "Bentley",
@@ -21,8 +21,7 @@
     "resolve-imports": "cd lib && replace \"@build/imodeljs-core\" \"@bentley/imodeljs-frontend\" -r -q .",
     "prepublishOnly": "npm run build"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^5.2.0",
     "@bentley/imodeljs-frontend": "^0.44.0"

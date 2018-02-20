@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecpresentation-backend",
-  "version": "0.0.26",
+  "version": "0.0.27",
   "description": "Backend of ECPresentation library",
   "keywords": [
     "Bentley",
@@ -21,8 +21,7 @@
     "resolve-imports": "cd lib && replace \"@build/imodeljs-core\" \"@bentley/imodeljs-backend\" -r -q .",
     "prepublishOnly": "npm run build"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^5.2.0",
     "@bentley/imodeljs-backend": "^0.44.0",

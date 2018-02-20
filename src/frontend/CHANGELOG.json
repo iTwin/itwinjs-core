@@ -2,6 +2,24 @@
   "name": "@bentley/ecpresentation-frontend",
   "entries": [
     {
+      "version": "0.0.16",
+      "tag": "@bentley/ecpresentation-frontend_v0.0.16",
+      "date": "Tue, 20 Feb 2018 12:06:04 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update dependencies: bentleyjs-core@5.2.0, imodeljs-backend@0.44.3, imodeljs-nodeaddonapi@6.4.0"
+          },
+          {
+            "comment": "Change content-related classes to interfaces."
+          },
+          {
+            "comment": "Implemented support for complex properties"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.15",
       "tag": "@bentley/ecpresentation-frontend_v0.0.15",
       "date": "Fri, 19 Jan 2018 11:51:55 GMT",

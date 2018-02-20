@@ -1,6 +1,16 @@
 # Change Log - @bentley/ecpresentation-backend
 
-This log was last generated on Fri, 19 Jan 2018 11:51:55 GMT and should not be manually modified.
+This log was last generated on Tue, 20 Feb 2018 12:06:04 GMT and should not be manually modified.
+
+## 0.0.27
+Tue, 20 Feb 2018 12:06:04 GMT
+
+### Patches
+
+- Update dependencies: bentleyjs-core@5.2.0, imodeljs-frontend@0.44.2
+- Fixed content descriptor customization.
+- Change content-related classes to interfaces.
+- Implemented support for complex properties
 
 ## 0.0.26
 Fri, 19 Jan 2018 11:51:55 GMT
