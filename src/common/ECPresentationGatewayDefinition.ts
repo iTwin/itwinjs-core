@@ -22,15 +22,15 @@ export default abstract class ECPresentationGateway extends Gateway {
     IModelToken,
   ]
 
-  public abstract getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<NavNode[]>;
+  public abstract getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<Array<Readonly<NavNode>>>;
   public abstract getRootNodesCount(token: IModelToken, options: object): Promise<number>;
-  public abstract getChildren(token: IModelToken, parent: NavNode, pageOptions: PageOptions, options: object): Promise<NavNode[]>;
+  public abstract getChildren(token: IModelToken, parent: NavNode, pageOptions: PageOptions, options: object): Promise<Array<Readonly<NavNode>>>;
   public abstract getChildrenCount(token: IModelToken, parent: NavNode, options: object): Promise<number>;
-  public abstract getNodePaths(token: IModelToken, paths: NavNodeKeyPath[], markedIndex: number, options: object): Promise<NavNodePathElement[]>;
-  public abstract getFilteredNodesPaths(token: IModelToken, filterText: string, options: object): Promise<NavNodePathElement[]>;
-  public abstract getContentDescriptor(token: IModelToken, displayType: string, keys: ec.InstanceKeysList, selection: content.SelectionInfo | undefined, options: object): Promise<content.Descriptor>;
+  public abstract getNodePaths(token: IModelToken, paths: NavNodeKeyPath[], markedIndex: number, options: object): Promise<Array<Readonly<NavNodePathElement>>>;
+  public abstract getFilteredNodesPaths(token: IModelToken, filterText: string, options: object): Promise<Array<Readonly<NavNodePathElement>>>;
+  public abstract getContentDescriptor(token: IModelToken, displayType: string, keys: ec.InstanceKeysList, selection: content.SelectionInfo | undefined, options: object): Promise<Readonly<content.Descriptor>>;
   public abstract getContentSetSize(token: IModelToken, descriptor: content.Descriptor, keys: ec.InstanceKeysList, options: object): Promise<number>;
-  public abstract getContent(token: IModelToken, descriptor: content.Descriptor, keys: ec.InstanceKeysList, pageOptions: PageOptions, options: object): Promise<content.Content>;
+  public abstract getContent(token: IModelToken, descriptor: content.Descriptor, keys: ec.InstanceKeysList, pageOptions: PageOptions, options: object): Promise<Readonly<content.Content>>;
   public abstract getDistinctValues(token: IModelToken, displayType: string, fieldName: string, maximumValueCount: number, options: object): Promise<string[]>;
-  public abstract saveValueChange(token: IModelToken, instancesInfo: ChangedECInstanceInfo[], propertyAccessor: string, value: any, options: object): Promise<ECInstanceChangeResult[]>;
+  public abstract saveValueChange(token: IModelToken, instancesInfo: ChangedECInstanceInfo[], propertyAccessor: string, value: any, options: object): Promise<Array<Readonly<ECInstanceChangeResult>>>;
 }

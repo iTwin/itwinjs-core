@@ -46,7 +46,7 @@ export default class ECPresentationManager implements ECPInterface {
     return this._addon!;
   }
 
-  public async getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<NavNode[]> {
+  public async getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<Array<Readonly<NavNode>>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetRootNodes, {
       pageOptions,
       options,
@@ -61,7 +61,7 @@ export default class ECPresentationManager implements ECPInterface {
     return this.request(token, params);
   }
 
-  public async getChildren(token: IModelToken, parent: NavNode, pageOptions: PageOptions, options: object): Promise<NavNode[]> {
+  public async getChildren(token: IModelToken, parent: NavNode, pageOptions: PageOptions, options: object): Promise<Array<Readonly<NavNode>>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetChildren, {
       nodeId: parent.nodeId,
       pageOptions,
@@ -78,15 +78,15 @@ export default class ECPresentationManager implements ECPInterface {
     return this.request(token, params);
   }
 
-  public async getNodePaths(_token: IModelToken, _paths: NavNodeKeyPath[], _markedIndex: number, _options: object): Promise<NavNodePathElement[]> {
+  public async getNodePaths(_token: IModelToken, _paths: NavNodeKeyPath[], _markedIndex: number, _options: object): Promise<Array<Readonly<NavNodePathElement>>> {
     throw new Error("Not implemented.");
   }
 
-  public async getFilteredNodesPaths(_token: IModelToken, _filterText: string, _options: object): Promise<NavNodePathElement[]> {
+  public async getFilteredNodesPaths(_token: IModelToken, _filterText: string, _options: object): Promise<Array<Readonly<NavNodePathElement>>> {
     throw new Error("Not implemented.");
   }
 
-  public async getContentDescriptor(token: IModelToken, displayType: string, keys: ec.InstanceKeysList, selection: content.SelectionInfo | undefined, options: object): Promise<content.Descriptor> {
+  public async getContentDescriptor(token: IModelToken, displayType: string, keys: ec.InstanceKeysList, selection: content.SelectionInfo | undefined, options: object): Promise<Readonly<content.Descriptor>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetContentDescriptor, {
       displayType,
       keys,
@@ -105,7 +105,7 @@ export default class ECPresentationManager implements ECPInterface {
     return this.request(token, params);
   }
 
-  public async getContent(token: IModelToken, descriptor: content.Descriptor, keys: ec.InstanceKeysList, pageOptions: PageOptions, options: object): Promise<content.Content> {
+  public async getContent(token: IModelToken, descriptor: content.Descriptor, keys: ec.InstanceKeysList, pageOptions: PageOptions, options: object): Promise<Readonly<content.Content>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetContent, {
       keys,
       descriptorOverrides: createDescriptorOverrides(descriptor),
@@ -119,7 +119,7 @@ export default class ECPresentationManager implements ECPInterface {
     throw new Error("Not implemented.");
   }
 
-  public async saveValueChange(_token: IModelToken, _instancesInfo: ChangedECInstanceInfo[], _propertyAccessor: string, _value: any, _options: object): Promise<ECInstanceChangeResult[]> {
+  public async saveValueChange(_token: IModelToken, _instancesInfo: ChangedECInstanceInfo[], _propertyAccessor: string, _value: any, _options: object): Promise<Array<Readonly<ECInstanceChangeResult>>> {
     // note: should probably handle this in typescript rather than forwarding to node addon
     throw new Error("Not implemented.");
   }

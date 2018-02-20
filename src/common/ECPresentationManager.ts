@@ -21,7 +21,7 @@ export interface ECPresentationManager {
    * @param[in] options      An options object that depends on the used presentation manager implementation.
    * @return A promise object that returns either an array of @ref NavNode on success or an error string on error.
    */
-  getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<NavNode[]>;
+  getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<Array<Readonly<NavNode>>>;
 
   /** Retrieves root nodes count.
    * @param[in] token Token of imodel to pull data from.
@@ -37,7 +37,7 @@ export interface ECPresentationManager {
    * @param[in] options      An options object that depends on the used presentation manager implementation.
    * @return A promise object that returns either an array of @ref NavNode on success or an error string on error.
    */
-  getChildren(token: IModelToken, parent: NavNode, pageOptions: PageOptions, options: object): Promise<NavNode[]>;
+  getChildren(token: IModelToken, parent: NavNode, pageOptions: PageOptions, options: object): Promise<Array<Readonly<NavNode>>>;
 
   /** Retrieves children count for the specified parent node.
    * @param[in] token Token of imodel to pull data from.
@@ -53,7 +53,7 @@ export interface ECPresentationManager {
    * @param[in] markedIndex Index of the path which will be marked in the resulting path's list.
    * @param[in] options  An options object that depends on the used presentation manager implementation.
    */
-  getNodePaths(token: IModelToken, paths: NavNodeKeyPath[], markedIndex: number, options: object): Promise<NavNodePathElement[]>;
+  getNodePaths(token: IModelToken, paths: NavNodeKeyPath[], markedIndex: number, options: object): Promise<Array<Readonly<NavNodePathElement>>>;
 
   /** Send message to get filtered nodes paths.
    * @param[in] token Token of imodel to pull data from
@@ -61,7 +61,7 @@ export interface ECPresentationManager {
    * @param[in] options              An options object that depends on the used presentation manager implementation.
    * @return A promise object that returns either a boolean on success or an error string on error.
    */
-  getFilteredNodesPaths(token: IModelToken, filterText: string, options: object): Promise<NavNodePathElement[]>;
+  getFilteredNodesPaths(token: IModelToken, filterText: string, options: object): Promise<Array<Readonly<NavNodePathElement>>>;
 
   /** Retrieves the content descriptor which can be used to call @ref GetContent.
    * @param[in] token Token of imodel to pull data from.
@@ -71,7 +71,7 @@ export interface ECPresentationManager {
    * @param[in] options  An options object that depends on the used presentation manager implementation.
    * @return A promise object that returns either a @ref Descriptor on success or an error string on error.
    */
-  getContentDescriptor(token: IModelToken, displayType: string, keys: InstanceKeysList, selection: SelectionInfo | undefined, options: object): Promise<Descriptor>;
+  getContentDescriptor(token: IModelToken, displayType: string, keys: InstanceKeysList, selection: SelectionInfo | undefined, options: object): Promise<Readonly<Descriptor>>;
 
   /** Retrieves the content set size based on the supplied content descriptor override.
    * @param[in] token Token of imodel to pull data from
@@ -92,7 +92,7 @@ export interface ECPresentationManager {
    * @param[in] options              An options object that depends on the used presentation manager implementation.
    * @return A promise object that returns either @ref Content on success or an error string on error.
    */
-  getContent(token: IModelToken, descriptor: Descriptor, keys: InstanceKeysList, pageOptions: PageOptions, options: object): Promise<Content>;
+  getContent(token: IModelToken, descriptor: Descriptor, keys: InstanceKeysList, pageOptions: PageOptions, options: object): Promise<Readonly<Content>>;
 
   /** Send message to WorkThread to get specified column distinct values.
    * @param[in] token Token of imodel to pull data from
@@ -113,5 +113,5 @@ export interface ECPresentationManager {
    * @param[in] options      An options object that depends on the used presentation manager implementation.
    * @return A promise object that contains the new value.
    */
-  saveValueChange(token: IModelToken, instancesInfo: ChangedECInstanceInfo[], propertyAccessor: string, value: any, options: object): Promise<ECInstanceChangeResult[]>;
+  saveValueChange(token: IModelToken, instancesInfo: ChangedECInstanceInfo[], propertyAccessor: string, value: any, options: object): Promise<Array<Readonly<ECInstanceChangeResult>>>;
 }

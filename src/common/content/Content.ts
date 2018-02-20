@@ -6,7 +6,7 @@ import Descriptor from "./Descriptor";
 import ContentSetItem from "./Item";
 
 export interface NestedContent {
-  PrimaryKeys: ec.InstanceKey[];
+  PrimaryKeys: Array<Readonly<ec.InstanceKey>>;
   Values: any;
   DisplayValues: any;
 }
@@ -15,6 +15,6 @@ export interface NestedContent {
  * objects which are based on that descriptor.
  */
 export default interface Content {
-  descriptor: Descriptor;
-  contentSet: ContentSetItem[];
+  descriptor: Readonly<Descriptor>;
+  contentSet: Array<Readonly<ContentSetItem>>;
 }

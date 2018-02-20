@@ -14,6 +14,6 @@ export type PropertyAccessorPath = PropertyAccessor[];
 
 /** Describes a single ECProperty that's included in a @ref ContentField. */
 export default interface Property {
-  property: ec.PropertyInfo;
-  relatedClassPath: ec.RelationshipPathInfo;
+  property: Readonly<ec.PropertyInfo>;
+  relatedClassPath: Readonly<ec.RelationshipPathInfo>;
 }

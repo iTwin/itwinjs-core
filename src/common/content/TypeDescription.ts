@@ -22,19 +22,19 @@ export interface PrimitiveTypeDescription extends TypeDescription {
 
 /** Type description for array properties. */
 export interface ArrayTypeDescription extends TypeDescription {
-  memberType: TypeDescription;
+  memberType: Readonly<TypeDescription>;
 }
 
 /** An interface for struct member type description. */
 export interface StructFieldMemberDescription {
   name: string;
   label: string;
-  type: TypeDescription;
+  type: Readonly<TypeDescription>;
 }
 
 /** Type description for struct properties. */
 export interface StructTypeDescription extends TypeDescription {
-  members: StructFieldMemberDescription[];
+  members: Array<Readonly<StructFieldMemberDescription>>;
 }
 
 /** Checks if this is a primitive type description */

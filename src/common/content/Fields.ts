@@ -11,26 +11,26 @@ import { TypeDescription } from "./TypeDescription";
  * or a property pane row.
  */
 export interface Field {
-  category: CategoryDescription;
+  category: Readonly<CategoryDescription>;
   name: string;
   label: string;
-  description: TypeDescription;
-  editor?: EditorDescription;
+  description: Readonly<TypeDescription>;
+  editor?: Readonly<EditorDescription>;
   isReadOnly: boolean;
   priority: number;
-  parent?: NestedContentField;
+  parent?: Readonly<NestedContentField>;
 }
 
 /** Describes a single content field that's based on one or more EC properties. */
 export interface PropertiesField extends Field {
-  properties: Property[];
+  properties: Array<Readonly<Property>>;
 }
 
 /** Describes a single content field that contains nested content. */
 export interface NestedContentField extends Field {
-  contentClassInfo: ec.ClassInfo;
-  pathToPrimaryClass: ec.RelationshipPathInfo;
-  nestedFields: Field[];
+  contentClassInfo: Readonly<ec.ClassInfo>;
+  pathToPrimaryClass: Readonly<ec.RelationshipPathInfo>;
+  nestedFields: Array<Readonly<Field>>;
 }
 
 /** Checks if the field is a properties field */

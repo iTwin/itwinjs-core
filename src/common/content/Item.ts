@@ -9,25 +9,25 @@ import Property, { PropertyAccessor } from "./Property";
 import { NestedContent } from "./Content";
 
 export interface PropertyValueKeys {
-  field: Field;
-  property: Property;
-  keys: ec.InstanceKey[];
+  field: Readonly<Field>;
+  property: Readonly<Property>;
+  keys: Array<Readonly<ec.InstanceKey>>;
 }
 
 export interface FieldPropertyValueKeys {
-  [fieldName: string]: PropertyValueKeys[];
+  [fieldName: string]: Array<Readonly<PropertyValueKeys>>;
 }
 
 /** A struct that represents a single content record. */
 export default interface Item {
-  primaryKeys: ec.InstanceKey[];
+  primaryKeys: Array<Readonly<ec.InstanceKey>>;
   label: string;
   imageId: string;
-  classInfo?: ec.ClassInfo;
-  values: ValuesDictionary<any>;
-  displayValues: ValuesDictionary<string | undefined>;
+  classInfo?: Readonly<ec.ClassInfo>;
+  values: Readonly<ValuesDictionary<any>>;
+  displayValues: Readonly<ValuesDictionary<string | undefined>>;
   mergedFieldNames: string[];
-  fieldPropertyValueKeys: FieldPropertyValueKeys;
+  fieldPropertyValueKeys: Readonly<FieldPropertyValueKeys>;
 }
 
 /** Is value of field with the specified name merged in this record. */

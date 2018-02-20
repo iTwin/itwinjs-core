@@ -11,7 +11,7 @@ import ECPresentationGateway from "./ECPresentationGateway";
 import { IModelToken } from "@bentley/imodeljs-frontend/lib/common/IModel";
 
 class ECPresentationManager implements ECPInterface {
-  public async getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<NavNode[]> {
+  public async getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<Array<Readonly<NavNode>>> {
     return await ECPresentationGateway.getProxy().getRootNodes(token, pageOptions, options);
   }
 
@@ -19,7 +19,7 @@ class ECPresentationManager implements ECPInterface {
     return await ECPresentationGateway.getProxy().getRootNodesCount(token, options);
   }
 
-  public async getChildren(token: IModelToken, parent: NavNode, pageOptions: PageOptions, options: object): Promise<NavNode[]> {
+  public async getChildren(token: IModelToken, parent: NavNode, pageOptions: PageOptions, options: object): Promise<Array<Readonly<NavNode>>> {
     return await ECPresentationGateway.getProxy().getChildren(token, parent, pageOptions, options);
   }
 
@@ -27,15 +27,15 @@ class ECPresentationManager implements ECPInterface {
     return await ECPresentationGateway.getProxy().getChildrenCount(token, parent, options);
   }
 
-  public async getNodePaths(token: IModelToken, paths: NavNodeKeyPath[], markedIndex: number, options: object): Promise<NavNodePathElement[]> {
+  public async getNodePaths(token: IModelToken, paths: NavNodeKeyPath[], markedIndex: number, options: object): Promise<Array<Readonly<NavNodePathElement>>> {
     return await ECPresentationGateway.getProxy().getNodePaths(token, paths, markedIndex, options);
   }
 
-  public async getFilteredNodesPaths(token: IModelToken, filterText: string, options: object): Promise<NavNodePathElement[]> {
+  public async getFilteredNodesPaths(token: IModelToken, filterText: string, options: object): Promise<Array<Readonly<NavNodePathElement>>> {
     return await ECPresentationGateway.getProxy().getFilteredNodesPaths(token, filterText, options);
   }
 
-  public async getContentDescriptor(token: IModelToken, displayType: string, keys: InstanceKeysList, selection: SelectionInfo | undefined, options: object): Promise<Descriptor> {
+  public async getContentDescriptor(token: IModelToken, displayType: string, keys: InstanceKeysList, selection: SelectionInfo | undefined, options: object): Promise<Readonly<Descriptor>> {
     const descriptor = await ECPresentationGateway.getProxy().getContentDescriptor(token, displayType, keys, selection, options);
     if (descriptor)
       rebuildParentship(descriptor);
@@ -52,7 +52,7 @@ class ECPresentationManager implements ECPInterface {
     return await ECPresentationGateway.getProxy().getContentSetSize(token, this.getStrippedDescriptor(descriptor), keys, options);
   }
 
-  public async getContent(token: IModelToken, descriptor: Descriptor, keys: InstanceKeysList, pageOptions: PageOptions, options: object): Promise<Content> {
+  public async getContent(token: IModelToken, descriptor: Descriptor, keys: InstanceKeysList, pageOptions: PageOptions, options: object): Promise<Readonly<Content>> {
     const content = await ECPresentationGateway.getProxy().getContent(token, this.getStrippedDescriptor(descriptor), keys, pageOptions, options);
     rebuildParentship(content.descriptor);
     return content;
@@ -62,7 +62,7 @@ class ECPresentationManager implements ECPInterface {
     return await ECPresentationGateway.getProxy().getDistinctValues(token, displayType, fieldName, maximumValueCount, options);
   }
 
-  public async saveValueChange(token: IModelToken, instancesInfo: ChangedECInstanceInfo[], propertyAccessor: string, value: any, options: object): Promise<ECInstanceChangeResult[]> {
+  public async saveValueChange(token: IModelToken, instancesInfo: ChangedECInstanceInfo[], propertyAccessor: string, value: any, options: object): Promise<Array<Readonly<ECInstanceChangeResult>>> {
     return await ECPresentationGateway.getProxy().saveValueChange(token, instancesInfo, propertyAccessor, value, options);
   }
 }

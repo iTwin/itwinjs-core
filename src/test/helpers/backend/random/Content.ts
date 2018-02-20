@@ -11,6 +11,7 @@ const createRandomSelectClassInfo = (): c.SelectClassInfo => {
     selectClassInfo: createRandomECClassInfo(),
     isSelectPolymorphic: faker.random.boolean(),
     pathToPrimaryClass: createRandomRelationshipPath(),
+    relatedPropertyPaths: [createRandomRelationshipPath(1), createRandomRelationshipPath(1)],
   } as c.SelectClassInfo;
 };
 

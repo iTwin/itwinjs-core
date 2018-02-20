@@ -16,7 +16,7 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return Gateway.getProxyForGateway(ECPresentationGateway);
   }
 
-  public async getRootNodes(_token: IModelToken, _pageOptions: PageOptions, _options: object): Promise<NavNode[]> {
+  public async getRootNodes(_token: IModelToken, _pageOptions: PageOptions, _options: object): Promise<Array<Readonly<NavNode>>> {
     return this.forward.apply(this, arguments);
   }
 
@@ -24,7 +24,7 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return this.forward.apply(this, arguments);
   }
 
-  public async getChildren(_token: IModelToken, _parent: NavNode, _pageOptions: PageOptions, _options: object): Promise<NavNode[]> {
+  public async getChildren(_token: IModelToken, _parent: NavNode, _pageOptions: PageOptions, _options: object): Promise<Array<Readonly<NavNode>>> {
     return this.forward.apply(this, arguments);
   }
 
@@ -32,15 +32,15 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return this.forward.apply(this, arguments);
   }
 
-  public async getNodePaths(_token: IModelToken, _paths: NavNodeKeyPath[], _markedIndex: number, _options: object): Promise<NavNodePathElement[]> {
+  public async getNodePaths(_token: IModelToken, _paths: NavNodeKeyPath[], _markedIndex: number, _options: object): Promise<Array<Readonly<NavNodePathElement>>> {
     return this.forward.apply(this, arguments);
   }
 
-  public async getFilteredNodesPaths(_token: IModelToken, _filterText: string, _options: object): Promise<NavNodePathElement[]> {
+  public async getFilteredNodesPaths(_token: IModelToken, _filterText: string, _options: object): Promise<Array<Readonly<NavNodePathElement>>> {
     return this.forward.apply(this, arguments);
   }
 
-  public async getContentDescriptor(_token: IModelToken, _displayType: string, _keys: InstanceKeysList, _selection: c.SelectionInfo | undefined, _options: object): Promise<c.Descriptor> {
+  public async getContentDescriptor(_token: IModelToken, _displayType: string, _keys: InstanceKeysList, _selection: c.SelectionInfo | undefined, _options: object): Promise<Readonly<c.Descriptor>> {
     return await this.forward.apply(this, arguments);
   }
 
@@ -48,7 +48,7 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return this.forward.apply(this, arguments);
   }
 
-  public async getContent(_token: IModelToken, _descriptor: c.Descriptor, _keys: InstanceKeysList, _pageOptions: PageOptions, _options: object): Promise<c.Content> {
+  public async getContent(_token: IModelToken, _descriptor: c.Descriptor, _keys: InstanceKeysList, _pageOptions: PageOptions, _options: object): Promise<Readonly<c.Content>> {
     return await this.forward.apply(this, arguments);
   }
 
@@ -56,7 +56,7 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return this.forward.apply(this, arguments);
   }
 
-  public async saveValueChange(_token: IModelToken, _instancesInfo: ChangedECInstanceInfo[], _propertyAccessor: string, _value: any, _options: object): Promise<ECInstanceChangeResult[]> {
+  public async saveValueChange(_token: IModelToken, _instancesInfo: ChangedECInstanceInfo[], _propertyAccessor: string, _value: any, _options: object): Promise<Array<Readonly<ECInstanceChangeResult>>> {
     return this.forward.apply(this, arguments);
   }
 }

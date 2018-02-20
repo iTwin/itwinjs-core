@@ -9,10 +9,10 @@ import { Field, resetParentship as resetFieldParentship, rebuildParentship as re
  * to related property classes.
  */
 export interface SelectClassInfo {
-  selectClassInfo: ec.ClassInfo;
+  selectClassInfo: Readonly<ec.ClassInfo>;
   isSelectPolymorphic: boolean;
-  pathToPrimaryClass: ec.RelationshipPathInfo;
-  relatedPropertyPaths: ec.RelationshipPathInfo[];
+  pathToPrimaryClass: Readonly<ec.RelationshipPathInfo>;
+  relatedPropertyPaths: Array<Readonly<ec.RelationshipPathInfo>>;
 }
 
 /** Flags that control content format. */
@@ -50,9 +50,9 @@ export interface SelectionInfo {
  */
 export default interface Descriptor {
   displayType: string;
-  selectClasses: SelectClassInfo[];
-  fields: Field[];
-  sortingField?: Field;
+  selectClasses: Array<Readonly<SelectClassInfo>>;
+  fields: Array<Readonly<Field>>;
+  sortingField?: Readonly<Field>;
   sortDirection: SortDirection;
   contentFlags: number;
   filterExpression?: string;
