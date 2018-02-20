@@ -99,23 +99,23 @@ export default class Enumeration extends SchemaChild {
     } else {
       if (undefined !== jsonObj.backingTypeName) {
         if (typeof(jsonObj.backingTypeName) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'backingTypeName' attribute. It should be of type 'string'.`);
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'backingTypeName' attribute. It should be of type 'string'.`);
 
         const primitiveTypePattern = (this.isInt()) ? /int/i : /string/i;
         if (!primitiveTypePattern.test(jsonObj.backingTypeName))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'backingTypeName' attribute. It should be "${(this.isInt()) ? "int" : "string"}".`);
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'backingTypeName' attribute. It should be "${(this.isInt()) ? "int" : "string"}".`);
       }
     }
 
     if (undefined !== jsonObj.isStrict) {
       if (typeof(jsonObj.isStrict) !== "boolean")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'isStrict' attribute. It should be of type 'boolean'.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'isStrict' attribute. It should be of type 'boolean'.`);
       this.isStrict = jsonObj.isStrict;
     }
 
     if (undefined !== jsonObj.enumerators) {
       if (!Array.isArray(jsonObj.enumerators))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
 
       const expectedEnumeratorType = (this.isInt()) ? "number" : "string";
       jsonObj.enumerators.forEach((enumerator: any) => {
