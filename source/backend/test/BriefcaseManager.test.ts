@@ -8,7 +8,7 @@ import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState } fro
 import { Code } from "../../common/Code";
 import { IModelVersion } from "../../common/IModelVersion";
 import { KeepBriefcase } from "../BriefcaseManager";
-import { IModelDb, ConcurrencyControl, ChangeSetDescriber } from "../IModelDb";
+import { IModelDb, ConcurrencyControl } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Element } from "../Element";
@@ -385,11 +385,15 @@ describe("BriefcaseManager", () => {
       isIdle: () => true,
     };
 
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
-    iModel.pushChanges = async (_clientAccessToken: AccessToken, _describer?: ChangeSetDescriber): Promise<void> => { lastPushTimeMillis = Date.now(); };
+    const iModel = {
+      pushChanges: async (_clientAccessToken: AccessToken) => { lastPushTimeMillis = Date.now(); },
+      concurrencyControl: {
+        request: async (_clientAccessToken: AccessToken) => {},
+      },
+    };
     lastPushTimeMillis = 0;
 
-    const autoPush = new AutoPush(iModel, {pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 10}, accessToken, activityMonitor);
+    const autoPush = new AutoPush(iModel as any, {pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 10}, accessToken, activityMonitor);
     assert.isTrue(autoPush.isScheduled());
     await new Promise((resolve, _reject)  => { setTimeout(resolve, 100); }); // wait for 1/10 second before checking
     assert.notEqual(lastPushTimeMillis, 0);
@@ -403,6 +407,8 @@ describe("BriefcaseManager", () => {
 
     await new Promise((resolve, _reject)  => { setTimeout(resolve, 100); }); // wait for 1/10 second before checking
     assert.notEqual(lastPushTimeMillis, 0);
+
+    autoPush.reserveCodes();
 
   });
 
