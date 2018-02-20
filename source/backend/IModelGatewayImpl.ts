@@ -3,7 +3,6 @@
  *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { ViewDefinitionProps } from "../common/ElementProps";
 import { EntityQueryParams } from "../common/EntityProps";
 import { Gateway } from "../common/Gateway";
 import { IModelToken, IModel } from "../common/IModel";
@@ -11,7 +10,6 @@ import { IModelError, IModelStatus } from "../common/IModelError";
 import { IModelVersion } from "../common/IModelVersion";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { EntityMetaData } from "../backend/Entity";
-import { ECSqlStatement } from "../backend/ECSqlStatement";
 import { IModelDb } from "../backend/IModelDb";
 import { IModelGateway } from "../gateway/IModelGateway";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
@@ -108,6 +106,11 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
     return elementProps;
   }
 
+  public async queryElementProps(iModelToken: IModelToken, params: EntityQueryParams): Promise<string[]> {
+    const ids = await this.queryEntityIds(iModelToken, params);
+    return this.getElementProps(iModelToken, ids);
+  }
+
   public async queryEntityIds(iModelToken: IModelToken, params: EntityQueryParams): Promise<Id64Set> { return IModelDb.find(iModelToken).queryEntityIds(params); }
 
   public async formatElements(iModelToken: IModelToken, elementIds: Id64Set): Promise<any[]> {
@@ -136,22 +139,17 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
   }
 
   public async getAllCodeSpecs(iModelToken: IModelToken): Promise<any[]> {
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    const statement: ECSqlStatement = iModelDb.getPreparedStatement("SELECT ECInstanceId AS id, name, jsonProperties FROM BisCore.CodeSpec");
     const codeSpecs: any[] = [];
-    for (const row of statement)
-      codeSpecs.push({ id: row.id, name: row.name, jsonProperties: JSON.parse(row.jsonProperties) });
-
-    iModelDb.releasePreparedStatement(statement);
+    IModelDb.find(iModelToken).withPreparedStatement("SELECT ECInstanceId AS id, name, jsonProperties FROM BisCore.CodeSpec", (statement) => {
+      for (const row of statement)
+        codeSpecs.push({ id: row.id, name: row.name, jsonProperties: JSON.parse(row.jsonProperties) });
+    });
     Logger.logTrace(loggingCategory, "IModelDbRemoting.getAllCodeSpecs", () => ({ numCodeSpecs: codeSpecs.length }));
     return codeSpecs;
   }
 
   public async updateProjectExtents(iModelToken: IModelToken, newExtents: AxisAlignedBox3d): Promise<void> {
-    if (!IModelGatewayImpl._hasReadWriteAccess(iModelToken))
-      return Promise.reject(new IModelError(IModelStatus.NotOpenForWrite));
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    iModelDb.updateProjectExtents(newExtents);
+    IModelDb.find(iModelToken).updateProjectExtents(newExtents);
   }
 
   /**
@@ -159,25 +157,11 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
    * @hidden
    */
   public async executeTest(iModelToken: IModelToken, testName: string, params: any): Promise<any> {
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    return iModelDb.executeTest(testName, params);
-  }
-
-  // /** Query for a set of models of the specified class and matching the specified IsPrivate setting. */
-  // public async queryModelIds(iModelToken: IModelToken, className: string, limit: number, wantPrivate: boolean, wantTemplate: boolean): Promise<Id64Set> {
-  //   const iModelDb: IModelDb = IModelDb.find(iModelToken);
-  //   return iModelDb.models.queryModelIds(className, limit, wantPrivate, wantTemplate);
-  // }
-
-  /** Query for the array of ViewDefinitions of the specified class and matching the specified IsPrivate setting. */
-  public async queryViewDefinitionProps(iModelToken: IModelToken, className: string, limit: number, offset: number, wantPrivate: boolean): Promise<ViewDefinitionProps[]> {
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    return iModelDb.views.queryViewDefinitionProps(className, limit, offset, wantPrivate);
+    return IModelDb.find(iModelToken).executeTest(testName, params);
   }
 
   /** Get the ViewState data for the specified ViewDefinition */
   public async getViewStateData(iModelToken: IModelToken, viewDefinitionId: string): Promise<any> {
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    return iModelDb.views.getViewStateData(viewDefinitionId);
+    return IModelDb.find(iModelToken).views.getViewStateData(viewDefinitionId);
   }
 }

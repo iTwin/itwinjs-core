@@ -12,7 +12,6 @@ import { IModelDb } from "../IModelDb";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ChangeSet } from "@bentley/imodeljs-clients";
-import { using } from "@bentley/bentleyjs-core/lib/Disposable";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelJsFs } from "../IModelJsFs";
 import { iModelEngine } from "../IModelEngine";
@@ -47,7 +46,7 @@ describe("ChangeSummary", () => {
 
       assert.isFalse(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
-      assert.throw(() => iModel.getPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary"));
+      assert.throw(() => iModel.withPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary", () => { }));
 
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
@@ -78,7 +77,7 @@ describe("ChangeSummary", () => {
     assert(iModel.iModelToken.openMode === OpenMode.Readonly);
     try {
       assert.isFalse(ChangeSummaryManager.isChangeCacheAttached(iModel));
-      assert.throw(() => using (iModel.getPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary"), () => {}));
+      assert.throw(() => iModel.withPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary", () => { }));
 
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
@@ -99,8 +98,8 @@ describe("ChangeSummary", () => {
       const expectedCachePath: string = path.join(cacheDir, testIModelId, testIModelId.concat(".bim.ecchanges"));
       expect(IModelJsFs.existsSync(expectedCachePath));
     } finally {
-    await iModel.close(accessToken);
-  }
+      await iModel.close(accessToken);
+    }
   });
 
   it("Attach ChangeCache file to closed imodel", async () => {
@@ -178,7 +177,7 @@ describe("ChangeSummary", () => {
         assert.isDefined(row.id);
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
         return row.id;
-        });
+      });
 
       iModel.withPreparedStatement("SELECT WsgId, Summary FROM imodelchange.ChangeSet", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
@@ -188,7 +187,7 @@ describe("ChangeSummary", () => {
         assert.isDefined(row.summary);
         assert.equal(row.summary.id.value, changeSummaryId.value);
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
-        });
+      });
     } finally {
       await iModel.close(accessToken);
     }
@@ -220,7 +219,7 @@ describe("ChangeSummary", () => {
         assert.isDefined(row.id);
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
         return row.id;
-        });
+      });
 
       iModel.withPreparedStatement("SELECT WsgId, Summary FROM imodelchange.ChangeSet", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
@@ -230,7 +229,7 @@ describe("ChangeSummary", () => {
         assert.isDefined(row.summary);
         assert.equal(row.summary.id.value, changeSummaryId.value);
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
-        });
+      });
     } finally {
       await iModel.close(accessToken);
     }
@@ -259,7 +258,7 @@ describe("ChangeSummary", () => {
             assert.equal(row.changesetId, lastChangesetId);
         }
         assert.equal(rowCount, 2);
-        });
+      });
     } finally {
       await iModel.close(accessToken);
     }
@@ -297,12 +296,12 @@ describe("ChangeSummary", () => {
   it.skip("Extract ChangeSummaries with invalid input", async () => {
     try {
       await ChangeSummaryManager.extractChangeSummaries(accessToken, "123", testIModelId);
-     } catch (e) {
-       assert.equal(e.message, "Not Found");
-     }
+    } catch (e) {
+      assert.equal(e.message, "Not Found");
+    }
 
     try {
-     await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, "123");
+      await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, "123");
     } catch (e) {
       assert.equal(e.message, "Not Found");
     }
@@ -333,7 +332,7 @@ describe("ChangeSummary", () => {
       if (IModelJsFs.existsSync(filePath))
         IModelJsFs.unlinkSync(filePath);
 
-      const content = {id: changeSummary.id, changeSet: changeSummary.changeSet, instanceChanges: new Array<InstanceChange>()};
+      const content = { id: changeSummary.id, changeSet: changeSummary.changeSet, instanceChanges: new Array<InstanceChange>() };
       iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId", (stmt) => {
         stmt.bindId(1, changeSummary.id);
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {

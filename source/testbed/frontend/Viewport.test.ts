@@ -43,7 +43,7 @@ describe("Viewport", () => {
   before(async () => {   // Create a ViewState to load into a Viewport
     TestIModelApp.startup();
     imodel = await IModelConnection.openStandalone(iModelLocation);
-    spatialView = await imodel.views.loadView("0x34") as SpatialViewState;
+    spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 

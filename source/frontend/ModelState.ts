@@ -12,6 +12,7 @@ import { IModel } from "../common/IModel";
 /** the state of a Model */
 export class ModelState extends EntityState implements ModelProps {
   public readonly modeledElement: Id64;
+  public readonly name: string;
   public parentModel: Id64;
   public readonly jsonProperties: any;
   public readonly isPrivate: boolean;
@@ -20,6 +21,7 @@ export class ModelState extends EntityState implements ModelProps {
   constructor(props: ModelProps, iModel: IModel) {
     super(props, iModel);
     this.modeledElement = Id64.fromJSON(props.modeledElement);
+    this.name = props.name ? props.name : "";
     this.parentModel = Id64.fromJSON(props.parentModel)!;
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
@@ -30,6 +32,7 @@ export class ModelState extends EntityState implements ModelProps {
     const val = super.toJSON() as ModelProps;
     val.modeledElement = this.modeledElement;
     val.parentModel = this.parentModel;
+    val.name = this.name;
     if (this.isPrivate)
       val.isPrivate = this.isPrivate;
     if (this.isTemplate)

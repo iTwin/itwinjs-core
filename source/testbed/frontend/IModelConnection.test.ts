@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { CodeSpec, CodeSpecNames } from "../../common/Code";
-import { ViewDefinitionProps } from "../../common/ElementProps";
+import { ViewDefinitionProps } from "../../common/ViewProps";
 import { DrawingViewState, OrthographicViewState, ViewState } from "../../frontend/ViewState";
 import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "../../frontend/IModelConnection";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
@@ -30,18 +30,18 @@ describe("IModelConnection", () => {
     assert.exists(iModel.elements);
     assert.isTrue(iModel.elements instanceof IModelConnectionElements);
 
-    const elementProps = await iModel.elements.getElementProps(iModel.elements.rootSubjectId);
+    const elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
     assert.equal(elementProps.length, 1);
     assert.isTrue(iModel.elements.rootSubjectId.equals(new Id64(elementProps[0].id)));
     assert.isTrue(iModel.models.repositoryModelId.equals(new Id64(elementProps[0].model)));
 
-    const queryElementIds = await iModel.elements.queryElementIds({ from: "BisCore.Category", limit: 20, offset: 0 });
+    const queryElementIds = await iModel.elements.queryIds({ from: "BisCore.Category", limit: 20, offset: 0 });
     assert.isAtLeast(queryElementIds.size, 1);
 
     const formatObjs: any[] = await iModel.elements.formatElements(queryElementIds);
     assert.isAtLeast(formatObjs.length, 1);
 
-    const modelProps = await iModel.models.getModelProps(iModel.models.repositoryModelId);
+    const modelProps = await iModel.models.getProps(iModel.models.repositoryModelId);
     assert.exists(modelProps);
     assert.equal(modelProps.length, 1);
     assert.equal(modelProps[0].id, iModel.models.repositoryModelId.value);
@@ -52,16 +52,16 @@ describe("IModelConnection", () => {
     assert.exists(rows[0].code);
     assert.equal(rows.length, queryElementIds.size);
 
-    const codeSpecByName: CodeSpec = await iModel.codeSpecs.getCodeSpecByName(CodeSpecNames.SpatialCategory());
+    const codeSpecByName: CodeSpec = await iModel.codeSpecs.getByName(CodeSpecNames.SpatialCategory());
     assert.exists(codeSpecByName);
-    const codeSpecById: CodeSpec = await iModel.codeSpecs.getCodeSpecById(codeSpecByName.id);
+    const codeSpecById: CodeSpec = await iModel.codeSpecs.getById(codeSpecByName.id);
     assert.exists(codeSpecById);
-    const codeSpecByNewId: CodeSpec = await iModel.codeSpecs.getCodeSpecById(new Id64(codeSpecByName.id));
+    const codeSpecByNewId: CodeSpec = await iModel.codeSpecs.getById(new Id64(codeSpecByName.id));
     assert.exists(codeSpecByNewId);
 
-    let viewDefinitionProps: ViewDefinitionProps[] = await iModel.views.queryViewDefinitionProps("BisCore.OrthographicViewDefinition");
+    let viewDefinitionProps: ViewDefinitionProps[] = await iModel.views.queryProps({ from: "BisCore.OrthographicViewDefinition" });
     assert.isAtLeast(viewDefinitionProps.length, 1);
-    let viewState: ViewState = await iModel.views.loadView(viewDefinitionProps[0].id!);
+    let viewState: ViewState = await iModel.views.load(viewDefinitionProps[0].id!);
     assert.exists(viewState);
     assert.equal(viewState.classFullName, OrthographicViewState.getClassFullName());
     assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.getClassFullName());
@@ -71,9 +71,9 @@ describe("IModelConnection", () => {
     assert.instanceOf(viewState.displayStyle, DisplayStyle3dState);
     assert.instanceOf((viewState as OrthographicViewState).modelSelector, ModelSelectorState);
 
-    viewDefinitionProps = await iModel.views.queryViewDefinitionProps("BisCore.DrawingViewDefinition");
+    viewDefinitionProps = await iModel.views.queryProps({ from: "BisCore.DrawingViewDefinition" });
     assert.isAtLeast(viewDefinitionProps.length, 1);
-    viewState = await iModel.views.loadView(viewDefinitionProps[0].id!);
+    viewState = await iModel.views.load(viewDefinitionProps[0].id!);
     assert.exists(viewState);
     assert.equal(viewState.classFullName, DrawingViewState.getClassFullName());
     assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.getClassFullName());
