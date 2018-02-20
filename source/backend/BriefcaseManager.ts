@@ -295,6 +295,8 @@ export class BriefcaseManager {
     if (!iModelHost)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "IModelHost.startup() should be called before any backend operations");
 
+    // TODO: call BriefcaseManager.deleteAllBriefcasesIfNewInstance here?
+
     iModelHost.onAfterStartup.addListener(BriefcaseManager.onIModelHostShutdown);
 
     const startTime = new Date().getTime();
