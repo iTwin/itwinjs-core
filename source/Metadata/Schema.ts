@@ -24,7 +24,7 @@ const SCHEMAURL3_1 = "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecsche
  */
 export default class Schema implements CustomAttributeContainerProps {
   private _context?: SchemaContext;
-  public readonly schemaKey: SchemaKey;
+  private _schemaKey?: SchemaKey;
   public alias: string;
   public label?: string;
   public description?: string;
@@ -32,18 +32,20 @@ export default class Schema implements CustomAttributeContainerProps {
   public readonly references: Schema[];
   private readonly _children: SchemaChild[];
 
-  constructor(name?: string, readVersion?: number, writeVersion?: number, minorVersion?: number, context?: SchemaContext) {
-    this.schemaKey = new SchemaKey(name, readVersion, writeVersion, minorVersion);
+  constructor(key?: SchemaKey, context?: SchemaContext) {
+    this._schemaKey = key;
     this.references = [];
     this._children = [];
     this._context = context;
   }
 
-  get name() {
-    if (undefined === this.schemaKey.name)
+  get schemaKey() {
+    if (undefined === this._schemaKey)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECSchema is missing the required 'name' attribute.`);
-    return this.schemaKey.name;
+    return this._schemaKey;
   }
+
+  get name() { return this.schemaKey.name; }
   set name(name: string) { this.schemaKey.name = name; }
 
   get readVersion() { return this.schemaKey.readVersion; }
@@ -285,20 +287,36 @@ export default class Schema implements CustomAttributeContainerProps {
     if (SCHEMAURL3_1 !== jsonObj.$schema)
       throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl);
 
-    if (!this.schemaKey.name) {
+    if (!this._schemaKey) {
       if (undefined === jsonObj.name)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECSchema is missing the required 'name' attribute.`);
 
       if (typeof(jsonObj.name) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECSchema has an invalid 'name' attribute. It should be of type 'string'.`);
 
-      this.schemaKey.name = jsonObj.name;
+      this._schemaKey = new SchemaKey(jsonObj.name);
+
+      if (undefined === jsonObj.version)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} is missing the required 'version' attribute.`);
+
+      if (typeof(jsonObj.version) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'version' attribute. It should be of type 'string'.`);
+
+      this.schemaKey.version.fromString(jsonObj.version);
     } else {
       if (undefined !== jsonObj.name) {
         if (typeof(jsonObj.name) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'name' attribute. It should be of type 'string'.`);
 
         if (jsonObj.name.toLowerCase() !== this.name.toLowerCase())
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+      }
+
+      if (undefined !== jsonObj.version) {
+        if (typeof(jsonObj.version) !== "string")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'version' attribute. It should be of type 'string'.`);
+
+        if (jsonObj.version !== this.schemaKey.version.toString())
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
       }
     }
@@ -319,13 +337,6 @@ export default class Schema implements CustomAttributeContainerProps {
       if (typeof(jsonObj.description) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'description' attribute. It should be of type 'string'.`);
       this.description = jsonObj.description;
-    }
-
-    if (undefined !== jsonObj.version) {
-      if (typeof(jsonObj.version) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'version' attribute. It should be of type 'string'.`);
-
-      this.schemaKey.version.fromString(jsonObj.version);
     }
   }
 

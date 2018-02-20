@@ -15,7 +15,7 @@ import { SchemaKey, SchemaMatchType } from "../../source/ECObjects";
 describe("Schema", () => {
   describe("api creation of schema", () => {
     it("with only the essentials", () => {
-      const testSchema = new Schema("TestSchemaCreation", 10, 99, 15);
+      const testSchema = new Schema(new SchemaKey("TestSchemaCreation", 10, 99, 15));
       assert.equal(testSchema.name, "TestSchemaCreation");
       assert.equal(testSchema.readVersion, 10);
       assert.equal(testSchema.writeVersion, 99);
@@ -23,7 +23,7 @@ describe("Schema", () => {
     });
 
     it("with setting properties", () => {
-      const testSchema = new Schema("TestSchema", 1, 0, 2);
+      const testSchema = new Schema(new SchemaKey("TestSchema", 1, 0, 2));
       testSchema.alias = "ts";
       assert.isDefined(testSchema.alias);
       assert.equal(testSchema.alias, "ts");
@@ -34,13 +34,13 @@ describe("Schema", () => {
     });
 
     it("with invalid version numbers should fail", () => {
-      expect(() => {new Schema("NewSchemaWithInvalidReadVersion", 123, 4, 5); }).to.throw(ECObjectsError);
-      expect(() => {new Schema("NewSchemaWithInvalidWriteVersion", 12, 345, 6); }).to.throw(ECObjectsError);
-      expect(() => {new Schema("NewSchemaWithInvalidMinorVersion", 12, 34, 567); }).to.throw(ECObjectsError);
+      expect(() => {new Schema(new SchemaKey("NewSchemaWithInvalidReadVersion", 123, 4, 5)); }).to.throw(ECObjectsError);
+      expect(() => {new Schema(new SchemaKey("NewSchemaWithInvalidWriteVersion", 12, 345, 6)); }).to.throw(ECObjectsError);
+      expect(() => {new Schema(new SchemaKey("NewSchemaWithInvalidMinorVersion", 12, 34, 567)); }).to.throw(ECObjectsError);
     });
 
     it("should throw when attempting to change the version to an invalid version", () => {
-      const testSchema = new Schema("TestSchema", 1, 1, 1);
+      const testSchema = new Schema(new SchemaKey("TestSchema", 1, 1, 1));
       expect(() => {testSchema.readVersion = 123; }).to.throw(ECObjectsError);
       expect(testSchema.readVersion).equal(1);
       expect(() => {testSchema.writeVersion = 123; }).to.throw(ECObjectsError);
@@ -56,7 +56,7 @@ describe("Schema", () => {
 
   describe("create schema children", () => {
     it("should succeed for entity class", async () => {
-      const testSchema = new Schema("TestSchema", 1, 1, 1);
+      const testSchema = new Schema(new SchemaKey("TestSchema", 1, 1, 1));
       await testSchema.createEntityClass("TestEntity");
 
       expect(await testSchema.getClass("TestEntity")).instanceof(ECClass);
@@ -64,7 +64,7 @@ describe("Schema", () => {
     });
 
     it("should succeed for mixin class", async () => {
-      const testSchema = new Schema("TestSchema", 1, 2, 3);
+      const testSchema = new Schema(new SchemaKey("TestSchema", 1, 2, 3));
       await testSchema.createMixinClass("TestMixin");
 
       expect(await testSchema.getClass("TestMixin")).instanceof(ECClass);
@@ -72,7 +72,7 @@ describe("Schema", () => {
     });
 
     it("should succeed for struct class", async () => {
-      const testSchema = new Schema("TestSchema", 1, 2, 3);
+      const testSchema = new Schema(new SchemaKey("TestSchema", 1, 2, 3));
       await testSchema.createStructClass("TestStruct");
 
       expect(await testSchema.getClass("TestStruct")).instanceof(ECClass);
@@ -80,7 +80,7 @@ describe("Schema", () => {
     });
 
     it("should succeed with case-insensitive search", async () => {
-      const testSchema = new Schema("TestSchema", 1, 0, 0);
+      const testSchema = new Schema(new SchemaKey("TestSchema", 1, 0, 0));
       await testSchema.createEntityClass("testEntity");
 
       expect(await testSchema.getClass("TESTENTITY")).not.undefined;
@@ -125,7 +125,7 @@ describe("Schema", () => {
           label: "SomeDisplayLabel",
           description: "A really long description...",
         };
-        const testSchema = new Schema("ValidSchema", 1, 2, 3);
+        const testSchema = new Schema(new SchemaKey("ValidSchema", 1, 2, 3));
         expect(testSchema).to.exist;
         await testSchema.fromJson(propertyJson);
         assertValidSchema(testSchema);
@@ -138,7 +138,7 @@ describe("Schema", () => {
           label: "SomeDisplayLabel",
           description: "A really long description...",
         };
-        const testSchema = new Schema("ValidSchema", 1, 2, 3);
+        const testSchema = new Schema(new SchemaKey("ValidSchema", 1, 2, 3));
         expect(testSchema).to.exist;
         await testSchema.fromJson(propertyJson);
         assertValidSchema(testSchema);
@@ -155,14 +155,14 @@ describe("Schema", () => {
     }
 
     it("should throw for missing $schema", async () => {
-      const testSchema = new Schema("BadSchema");
+      const testSchema = new Schema(new SchemaKey("BadSchema"));
       expect(testSchema).to.exist;
       await expect(testSchema.fromJson({})).to.be.rejectedWith(ECObjectsError);
     });
 
     it("should throw for invalid $schema", async () => {
       const schemaJson = { $schema: "https://badmetaschema.com" };
-      const testSchema = new Schema("BadSchema");
+      const testSchema = new Schema(new SchemaKey("BadSchema"));
       expect(testSchema).to.exist;
       await expect(testSchema.fromJson(schemaJson)).to.be.rejectedWith(ECObjectsError);
     });
@@ -182,26 +182,60 @@ describe("Schema", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "ThisDoesNotMatch",
       };
-      const testSchema = new Schema("BadSchema");
+      const testSchema = new Schema(new SchemaKey("BadSchema"));
       expect(testSchema).to.exist;
       await expect(testSchema.fromJson(json)).to.be.rejectedWith(ECObjectsError);
     });
 
     it("should throw for invalid name", async () => {
       const schema = new Schema();
-      const schemaWithName = new Schema("BadSchema");
+      const schemaWithName = new Schema(new SchemaKey("BadSchema"));
 
       const json: any = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: 0,
       };
       await expect(schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `An ECSchema has an invalid 'name' attribute. It should be of type 'string'.`);
-      await expect(schemaWithName.fromJson(json)).to.be.rejectedWith(ECObjectsError, `he ECSchema BadSchema has an invalid 'name' attribute. It should be of type 'string'.`);
+      await expect(schemaWithName.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECSchema BadSchema has an invalid 'name' attribute. It should be of type 'string'.`);
     });
-    it("should throw for invalid alias", async () => testInvalidAttribute(new Schema("BadSchema"), "alias", "string", 0));
-    it("should throw for invalid label", async () => testInvalidAttribute(new Schema("BadSchema"), "label", "string", 0));
-    it("should throw for invalid description", async () => testInvalidAttribute(new Schema("BadSchema"), "description", "string", 0));
-    it("should throw for invalid version", async () => testInvalidAttribute(new Schema("BadSchema"), "version", "string", 0));
+
+    it("should throw for invalid version", async () => {
+      const schema = new Schema();
+      const schemaWithKey = new Schema(new SchemaKey("BadSchema", 1, 2, 3));
+
+      const json: any = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "BadSchema",
+        version: 0,
+      };
+      await expect(schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECSchema BadSchema has an invalid 'version' attribute. It should be of type 'string'.`);
+      await expect(schemaWithKey.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECSchema BadSchema has an invalid 'version' attribute. It should be of type 'string'.`);
+    });
+
+    it("should throw for missing version", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "BadSchema",
+      };
+      const testSchema = new Schema();
+      expect(testSchema).to.exist;
+      await expect(testSchema.fromJson(json)).to.be.rejectedWith(ECObjectsError, "The ECSchema BadSchema is missing the required 'version' attribute.");
+    });
+
+    it("should throw for mismatched version", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "BadSchema",
+        version: "1.2.6",
+      };
+      const testSchema = new Schema(new SchemaKey("BadSchema", 1, 2, 3));
+      expect(testSchema).to.exist;
+      await expect(testSchema.fromJson(json)).to.be.rejectedWith(ECObjectsError);
+    });
+
+    it("should throw for invalid alias", async () => testInvalidAttribute(new Schema(new SchemaKey("BadSchema")), "alias", "string", 0));
+    it("should throw for invalid label", async () => testInvalidAttribute(new Schema(new SchemaKey("BadSchema")), "label", "string", 0));
+    it("should throw for invalid description", async () => testInvalidAttribute(new Schema(new SchemaKey("BadSchema")), "description", "string", 0));
   });
 }); // Schema tests
 

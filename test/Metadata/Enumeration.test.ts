@@ -6,7 +6,7 @@ import { assert, expect } from "chai";
 import Schema from "../../source/Metadata/Schema";
 import Enumeration from "../../source/Metadata/Enumeration";
 import { ECObjectsError } from "../../source/Exception";
-import { PrimitiveType } from "../../source/index";
+import { PrimitiveType, SchemaKey } from "../../source/ECObjects";
 
 describe("Enumeration", () => {
   describe("deserialization", () => {
@@ -68,7 +68,7 @@ describe("Enumeration", () => {
     let testEnumSansPrimType: Enumeration;
 
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaKey("TestSchema", 1, 0, 0));
       testEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.Integer);
       testEnumSansPrimType = new Enumeration(schema, "TestEnumeration");
     });

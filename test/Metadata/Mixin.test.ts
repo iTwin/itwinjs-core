@@ -7,6 +7,7 @@ import Schema from "../../source/Metadata/Schema";
 import EntityClass from "../../source/Metadata/EntityClass";
 import Mixin from "../../source/Metadata/Mixin";
 import { ECObjectsError } from "../../source/Exception";
+import { SchemaKey } from "../../source/ECObjects";
 
 describe("Mixin", () => {
   describe("deserialization", () => {
@@ -50,7 +51,7 @@ describe("Mixin", () => {
     let testMixin: Mixin;
 
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaKey("TestSchema", 1, 0, 0));
       testMixin = new Mixin(schema, "TestMixin");
     });
 

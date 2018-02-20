@@ -392,21 +392,19 @@ export class ECName {
  * The SchemaKey object contains
  */
 export class SchemaKey {
-  private _name?: ECName;
+  private _name: ECName;
   public version: ECVersion;
   // public checksum: number;
   // TODO: need to add a checksum
 
-  constructor(name?: string, readVersion?: number, writeVersion?: number, minorVersion?: number) {
-    if (name)
-      this.name = name;
-
+  constructor(name: string, readVersion?: number, writeVersion?: number, minorVersion?: number) {
+    this.name = name;
     this.version = new ECVersion(readVersion, writeVersion, minorVersion);
   }
 
-  get name() { return this._name && this._name.name; }
-  set name(name: string | undefined) {
-    this._name = (undefined === name) ? undefined : new ECName(name);
+  get name() { return this._name.name; }
+  set name(name: string) {
+    this._name = new ECName(name);
   }
 
   get readVersion() { return this.version.read; }

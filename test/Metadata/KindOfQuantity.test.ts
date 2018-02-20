@@ -6,6 +6,7 @@ import { assert, expect } from "chai";
 import Schema from "../../source/Metadata/Schema";
 import { ECObjectsError } from "../../source/Exception";
 import KindOfQuantity from "../../source/Metadata/KindOfQuantity";
+import { SchemaKey } from "../../source/ECObjects";
 
 describe("KindOfQuantity", () => {
   describe("deserialization", () => {
@@ -62,7 +63,7 @@ describe("KindOfQuantity", () => {
     let testKoQ: KindOfQuantity;
 
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaKey("TestSchema", 1, 0, 0));
       testKoQ = new KindOfQuantity(schema, "TestKindOfQuantity");
     });
 

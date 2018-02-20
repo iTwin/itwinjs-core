@@ -6,6 +6,7 @@ import { expect } from "chai";
 import Schema from "../../source/Metadata/Schema";
 import { ECObjectsError } from "../../source/Exception";
 import CustomAttributeClass from "../../source/Metadata/CustomAttributeClass";
+import { SchemaKey } from "../../source/ECObjects";
 
 describe("CustomAttributeClass", () => {
 
@@ -13,7 +14,7 @@ describe("CustomAttributeClass", () => {
     let testClass: CustomAttributeClass;
 
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaKey("TestSchema", 1, 0, 0));
       testClass = new CustomAttributeClass(schema, "TestCustomAttribute");
     });
 
