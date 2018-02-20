@@ -65,19 +65,37 @@ describe("Enumeration", () => {
 
   describe("fromJson", () => {
     let testEnum: Enumeration;
+    let testEnumSansPrimType: Enumeration;
 
     beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);
-      testEnum = new Enumeration(schema, "TestEnumeration");
+      testEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.Integer);
+      testEnumSansPrimType = new Enumeration(schema, "TestEnumeration");
+    });
+
+    it("should throw for missing backingTypeName", async () => {
+      expect(testEnumSansPrimType).to.exist;
+      const json: any = {};
+      await expect(testEnumSansPrimType.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration is missing the required 'backingTypeName' attribute.`);
     });
 
     it("should throw for invalid backingTypeName", async () => {
-      expect(testEnum).to.exist;
+      expect(testEnumSansPrimType).to.exist;
       let json: any = { backingTypeName: 0 };
-      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'backingTypeName' attribute. It should be of type 'string'.`);
+      await expect(testEnumSansPrimType.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'backingTypeName' attribute. It should be of type 'string'.`);
 
       json = { backingTypeName: "ThisIsNotRight" };
-      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`);
+      await expect(testEnumSansPrimType.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`);
+    });
+
+    it("should throw for mismatched backingTypeName", async () => {
+      expect(testEnum).to.exist;
+      let json: any = { backingTypeName: "string" };
+      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'backingTypeName' attribute. It should be "int".`);
+
+      testEnum.primitiveType = PrimitiveType.String;
+      json = { backingTypeName: "int" };
+      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'backingTypeName' attribute. It should be "string".`);
     });
 
     it("should throw for enumerators not an array", async () => {

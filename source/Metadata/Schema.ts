@@ -39,7 +39,11 @@ export default class Schema implements CustomAttributeContainerProps {
     this._context = context;
   }
 
-  get name() { return this.schemaKey.name; }
+  get name() {
+    if (undefined === this.schemaKey.name)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECSchema is missing the required 'name' attribute.`);
+    return this.schemaKey.name;
+  }
   set name(name: string) { this.schemaKey.name = name; }
 
   get readVersion() { return this.schemaKey.readVersion; }
@@ -265,7 +269,7 @@ export default class Schema implements CustomAttributeContainerProps {
     if (this.references.length === 0)
       return undefined;
 
-    return this.references.find((ref) => ref.schemaKey.name.toLowerCase() === refSchemaName.toLowerCase()) as T;
+    return this.references.find((ref) => ref.name.toLowerCase() === refSchemaName.toLowerCase()) as T;
   }
 
   public getReferenceSync<T extends Schema>(refSchemaName: string): T | undefined {
@@ -281,12 +285,22 @@ export default class Schema implements CustomAttributeContainerProps {
     if (SCHEMAURL3_1 !== jsonObj.$schema)
       throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl);
 
-    if (undefined !== jsonObj.name) {
-      if (typeof(jsonObj.name) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'name' attribute. It should be of type 'string'.`);
+    if (!this.schemaKey.name) {
+      if (undefined === jsonObj.name)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECSchema is missing the required 'name' attribute.`);
 
-      if (jsonObj.name.toLowerCase() !== this.name.toLowerCase())
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+      if (typeof(jsonObj.name) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECSchema has an invalid 'name' attribute. It should be of type 'string'.`);
+
+      this.schemaKey.name = jsonObj.name;
+    } else {
+      if (undefined !== jsonObj.name) {
+        if (typeof(jsonObj.name) !== "string")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'name' attribute. It should be of type 'string'.`);
+
+        if (jsonObj.name.toLowerCase() !== this.name.toLowerCase())
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+      }
     }
 
     if (undefined !== jsonObj.alias) {

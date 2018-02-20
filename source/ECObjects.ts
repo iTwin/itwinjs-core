@@ -319,26 +319,26 @@ export class ECVersion {
   private _minor: number;
 
   constructor(read?: number, write?: number, minor?: number) {
-    if (read || read === 0) this.read = read;
-    if (write || write === 0) this.write = write;
-    if (minor || minor === 0) this.minor = minor;
+    if (undefined !== read) this.read = read;
+    if (undefined !== write) this.write = write;
+    if (undefined !== minor) this.minor = minor;
   }
 
-  get read() { return this._read ? this._read : 0; }
+  get read() { return this._read || 0; }
   set read(read: number) {
     if (read > 99 || read < 0)
       throw new ECObjectsError(ECObjectsStatus.InvalidECVersion);
     this._read = read;
   }
 
-  get write() { return this._write ? this._write : 0; }
+  get write() { return this._write || 0; }
   set write(write: number) {
     if (write > 99 || write < 0)
       throw new ECObjectsError(ECObjectsStatus.InvalidECVersion);
     this._write = write;
   }
 
-  get minor() { return this._minor ? this._minor : 0; }
+  get minor() { return this._minor || 0; }
   set minor(minor: number) {
     if (minor > 99 || minor < 0)
       throw new ECObjectsError(ECObjectsStatus.InvalidECVersion);
@@ -395,7 +395,7 @@ export class ECName {
  * The SchemaKey object contains
  */
 export class SchemaKey {
-  private _name: ECName;
+  private _name?: ECName;
   public version: ECVersion;
   public checksum: number;
   // TODO: need to add a checksum
@@ -407,9 +407,9 @@ export class SchemaKey {
     this.version = new ECVersion(readVersion, writeVersion, minorVersion);
   }
 
-  get name() { return this._name.name; }
-  set name(name: string) {
-    this._name = new ECName(name);
+  get name() { return this._name && this._name.name; }
+  set name(name: string | undefined) {
+    this._name = (undefined === name) ? undefined : new ECName(name);
   }
 
   get readVersion() { return this.version.read; }
@@ -445,8 +445,8 @@ export class SchemaKey {
   /*
    * Compares two schema names and returns whether or not they match. Comparison is case-sensitive.
    */
-  public compareByName(rhs: SchemaKey | string): boolean {
-    if (typeof(rhs) === "string")
+  public compareByName(rhs: SchemaKey | string | undefined): boolean {
+    if (undefined === rhs || typeof(rhs) === "string")
       return rhs === this.name;
     return rhs.name === this.name;
   }

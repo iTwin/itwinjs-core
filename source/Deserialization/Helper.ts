@@ -193,7 +193,7 @@ export default class SchemaReadHelper {
    */
   private async findSchemaChild(fullName: string): Promise<void> {
     const [schemaName, childName] = SchemaChild.parseFullName(fullName);
-    const isInThisSchema = (this._schema && this._schema.schemaKey.name.toLowerCase() === schemaName.toLowerCase());
+    const isInThisSchema = (this._schema && this._schema.name.toLowerCase() === schemaName.toLowerCase());
 
     if (isInThisSchema && undefined === await this._schema.getChild(childName, false)) {
       await this.loadSchemaChild(this._schema, this._itemToRead.children[childName], childName);
