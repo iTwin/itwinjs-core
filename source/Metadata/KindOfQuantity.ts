@@ -23,8 +23,7 @@ export default class KindOfQuantity extends SchemaChild {
   public persistenceUnit: FormatUnitSpec;
 
   constructor(schema: Schema, name: string) {
-    super(schema, name);
-    this.key.type = SchemaChildType.KindOfQuantity;
+    super(schema, name, SchemaChildType.KindOfQuantity);
   }
 
   public get defaultPresentationUnit() {

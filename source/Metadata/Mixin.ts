@@ -18,8 +18,7 @@ export default class Mixin extends ECClass {
   public appliesTo: LazyLoadedEntityClass;
 
   constructor(schema: Schema, name: string) {
-    super(schema, name, ECClassModifier.Abstract);
-    this.key.type = SchemaChildType.Mixin;
+    super(schema, name, SchemaChildType.Mixin, ECClassModifier.Abstract);
   }
 
   public async fromJson(jsonObj: any): Promise<void> {

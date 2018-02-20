@@ -10,6 +10,7 @@ import { SchemaContext } from "../../source/Context";
 import { DelayedPromiseWithProps } from "../../source/DelayedPromise";
 import ECClass from "../../source/Metadata/Class";
 import { ECObjectsError } from "../../source/Exception";
+import { SchemaChildType } from "../../source/index";
 
 describe("ECClass", () => {
   let schema: Schema;
@@ -182,7 +183,7 @@ describe("ECClass", () => {
     class MockECClass extends ECClass {}
 
     beforeEach(() => {
-      testClass = new MockECClass(schema, "TestClass");
+      testClass = new MockECClass(schema, "TestClass", SchemaChildType.EntityClass);
     });
 
     it("should throw for invalid modifier", async () => {

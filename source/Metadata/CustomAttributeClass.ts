@@ -15,8 +15,7 @@ export default class CustomAttributeClass extends ECClass {
   public containerType: CustomAttributeContainerType;
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
-    super(schema, name, modifier);
-    this.key.type = SchemaChildType.CustomAttributeClass;
+    super(schema, name, SchemaChildType.CustomAttributeClass, modifier);
   }
 
   public async fromJson(jsonObj: any): Promise<void> {

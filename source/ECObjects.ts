@@ -498,9 +498,9 @@ export class SchemaChildKey {
   // TODO: Need a checksum
 
   constructor(name?: string, type?: SchemaChildType, schema?: SchemaKey) {
-    if (name) this.name = name;
-    if (type) this.type = type;
-    if (schema) this.schemaKey = schema;
+    if (undefined !== name) this.name = name;
+    if (undefined !== type) this.type = type;
+    if (undefined !== schema) this.schemaKey = schema;
   }
 
   get name() { return this._name.name; }

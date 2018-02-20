@@ -27,9 +27,7 @@ export default class RelationshipClass extends ECClass {
   public readonly target: RelationshipConstraint;
 
   constructor(schema: Schema, name: string, strength?: StrengthType, strengthDirection?: RelatedInstanceDirection, modifier?: ECClassModifier) {
-    super(schema, name, modifier);
-
-    this.key.type = SchemaChildType.RelationshipClass;
+    super(schema, name, SchemaChildType.RelationshipClass, modifier);
 
     if (strength) this.strength = strength; else this.strength = StrengthType.Referencing;
     if (strengthDirection) this.strengthDirection = strengthDirection; else this.strengthDirection = RelatedInstanceDirection.Forward;

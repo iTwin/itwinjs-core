@@ -53,8 +53,8 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
   public properties?: LazyLoadedProperty[];
   public customAttributes?: CustomAttributeSet;
 
-  constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
-    super(schema, name);
+  constructor(schema: Schema, name: string, type: SchemaChildType, modifier?: ECClassModifier) {
+    super(schema, name, type);
 
     if (modifier)
       this.modifier = modifier;
@@ -214,7 +214,6 @@ export class StructClass extends ECClass {
   public readonly type: SchemaChildType.StructClass;
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
-    super(schema, name, modifier);
-    this.key.type = SchemaChildType.StructClass;
+    super(schema, name, SchemaChildType.StructClass, modifier);
   }
 }

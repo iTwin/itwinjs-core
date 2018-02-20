@@ -34,8 +34,7 @@ export default class Enumeration extends SchemaChild {
   public enumerators: AnyEnumerator[];
 
   constructor(schema: Schema, name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String) {
-    super(schema, name);
-    this.key.type = SchemaChildType.Enumeration;
+    super(schema, name, SchemaChildType.Enumeration);
 
     this.primitiveType = primitiveType;
     this.isStrict = true;

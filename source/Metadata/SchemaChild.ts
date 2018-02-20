@@ -16,8 +16,8 @@ export default abstract class SchemaChild {
   public description?: string;
   public label?: string;
 
-  constructor(schema: Schema, name: string) {
-    this.key = new SchemaChildKey(name);
+  constructor(schema: Schema, name: string, type: SchemaChildType) {
+    this.key = new SchemaChildKey(name, type, schema.schemaKey);
     this.schema = schema;
   }
 

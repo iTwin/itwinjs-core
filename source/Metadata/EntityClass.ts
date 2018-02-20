@@ -20,8 +20,7 @@ export default class EntityClass extends ECClass {
   private _mixins?: LazyLoadedMixin[];
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
-    super(schema, name, modifier);
-    this.key.type = SchemaChildType.EntityClass;
+    super(schema, name, SchemaChildType.EntityClass, modifier);
   }
 
   set mixins(mixins: LazyLoadedMixin[]) { this._mixins = mixins; }

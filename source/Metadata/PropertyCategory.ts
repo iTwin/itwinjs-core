@@ -13,8 +13,7 @@ export default class PropertyCategory extends SchemaChild {
   public priority: number;
 
   constructor(schema: Schema, name: string) {
-    super(schema, name);
-    this.key.type = SchemaChildType.PropertyCategory;
+    super(schema, name, SchemaChildType.PropertyCategory);
   }
 
   public async fromJson(jsonObj: any) {
