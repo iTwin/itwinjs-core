@@ -72,13 +72,13 @@ export default abstract class SchemaChild {
    * @param fullName The full name to be parsed.
    */
   public static parseFullName(fullName: string): [string, string] {
-    const matches = /^([a-zA-Z_.]+[a-zA-Z0-9_.]*)\.([a-zA-Z_.]+[a-zA-Z0-9_.]*)$/.exec(fullName);
+    const matches = /^([a-zA-Z_]+[a-zA-Z0-9_]*(\.\d+\.\d+\.\d+)?)[.:]([a-zA-Z_]+[a-zA-Z0-9_]*)$/.exec(fullName);
 
-    // The first match will be the full string match, the second two will be the two groups
-    if (matches === null || matches.length !== 3)
+    // The first match will be the full string match, the second three will be the three groups
+    if (matches === null || matches.length !== 4)
       return ["", fullName];
 
-    return [matches[1], matches[2]];
+    return [matches[1], matches[3]];
   }
 
   public abstract async accept(visitor: SchemaChildVisitor): Promise<void>;

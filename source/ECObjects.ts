@@ -129,12 +129,11 @@ export const enum SchemaMatchType {
  * @throws ECObjectsStatus.InvalidModifier if the p
  */
 export function parseClassModifier(modifier: string): ECClassModifier {
-  const lowerModifier = modifier.toLowerCase();
-  if (/Abstract/i.test(lowerModifier))
+  if (/Abstract/i.test(modifier))
     return ECClassModifier.Abstract;
-  else if (/None/i.test(lowerModifier))
+  else if (/None/i.test(modifier))
     return ECClassModifier.None;
-  else if (/Sealed/i.test(lowerModifier))
+  else if (/Sealed/i.test(modifier))
     return ECClassModifier.Sealed;
 
   throw new ECObjectsError(ECObjectsStatus.InvalidModifier, `The string '${modifier}' is not a valid ECClassModifier.`);
@@ -153,39 +152,37 @@ export function parseCustomAttributeContainerType(type: string): CustomAttribute
     if (typeToken.length === 0)
       return;
 
-    typeToken = typeToken.toLowerCase();
-
-    if (/Schema/i.test(typeToken))
+    if (/^Schema$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.Schema;
-    else if (/EntityClass/i.test(typeToken))
+    else if (/^EntityClass$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.EntityClass;
-    else if (/CustomAttributeClass/i.test(typeToken))
+    else if (/^CustomAttributeClass$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.CustomAttributeClass;
-    else if (/StructClass/i.test(typeToken))
+    else if (/^StructClass$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.StructClass;
-    else if (/RelationshipClass/i.test(typeToken))
+    else if (/^RelationshipClass$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.RelationshipClass;
-    else if (/AnyClass/i.test(typeToken))
+    else if (/^AnyClass$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.AnyClass;
-    else if (/PrimitiveProperty/i.test(typeToken))
+    else if (/^PrimitiveProperty$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.PrimitiveProperty;
-    else if (/StructProperty/i.test(typeToken))
+    else if (/^StructProperty$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.StructProperty;
-    else if (/ArrayProperty/i.test(typeToken))
+    else if (/^PrimitiveArrayProperty$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.PrimitiveArrayProperty;
-    else if (/StructArrayProperty/i.test(typeToken))
+    else if (/^StructArrayProperty$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.StructArrayProperty;
-    else if (/NavigationProperty/i.test(typeToken))
+    else if (/^NavigationProperty$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.NavigationProperty;
-    else if (/AnyProperty/i.test(typeToken))
+    else if (/^AnyProperty$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.AnyProperty;
-    else if (/SourceRelationshipConstraint/i.test(typeToken))
+    else if (/^SourceRelationshipConstraint$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.SourceRelationshipConstraint;
-    else if (/TargetRelationshipConstraint/i.test(typeToken))
+    else if (/^TargetRelationshipConstraint$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.TargetRelationshipConstraint;
-    else if (/AnyRelationshipConstraint/i.test(typeToken))
+    else if (/^AnyRelationshipConstraint$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.AnyRelationshipConstraint;
-    else if (/Any/i.test(typeToken))
+    else if (/^Any$/i.test(typeToken))
       containerType = CustomAttributeContainerType.Any;
     else
       throw new ECObjectsError(ECObjectsStatus.InvalidContainerType, `${typeToken} is not a valid CustomAttributeContainerType value.`);
@@ -207,52 +204,52 @@ export function containerTypeToString(type: CustomAttributeContainerType): strin
   if (testContainerTypeValue(CustomAttributeContainerType.Any, type))
     return ECStringConstants.CONTAINERTYPE_ANY;
 
-  const setOrAppend = (str: string, val: string) => {
-    if (str.length === 0)
-      str = val;
+  let containerType = "";
+  const setOrAppend = (val: string) => {
+    if (containerType.length === 0)
+      containerType = val;
     else
-      str += "," + val;
+      containerType += "," + val;
   };
 
-  const containerType: string = "";
   if (testContainerTypeValue(CustomAttributeContainerType.Schema, type))
-    setOrAppend(containerType, "Schema");
+    setOrAppend("Schema");
 
   if (testContainerTypeValue(CustomAttributeContainerType.AnyClass, type))
-    setOrAppend(containerType, "AnyClass");
+    setOrAppend("AnyClass");
   else {
     if (testContainerTypeValue(CustomAttributeContainerType.EntityClass, type))
-      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_ENTITYCLASS);
+      setOrAppend(ECStringConstants.CONTAINERTYPE_ENTITYCLASS);
     if (testContainerTypeValue(CustomAttributeContainerType.CustomAttributeClass, type))
-      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_CUSTOMATTRIBUTECLASS);
+      setOrAppend(ECStringConstants.CONTAINERTYPE_CUSTOMATTRIBUTECLASS);
     if (testContainerTypeValue(CustomAttributeContainerType.StructClass, type))
-      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_STRUCTCLASS);
+      setOrAppend(ECStringConstants.CONTAINERTYPE_STRUCTCLASS);
     if (testContainerTypeValue(CustomAttributeContainerType.RelationshipClass, type))
-      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_RELATIONSHIPCLASS);
+      setOrAppend(ECStringConstants.CONTAINERTYPE_RELATIONSHIPCLASS);
   }
 
   if (testContainerTypeValue(CustomAttributeContainerType.AnyProperty, type))
-    setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_ANYPROPERTY);
+    setOrAppend(ECStringConstants.CONTAINERTYPE_ANYPROPERTY);
   else {
     if (testContainerTypeValue(CustomAttributeContainerType.PrimitiveProperty, type))
-      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_PRIMITIVEPROPERTY);
+      setOrAppend(ECStringConstants.CONTAINERTYPE_PRIMITIVEPROPERTY);
     if (testContainerTypeValue(CustomAttributeContainerType.StructProperty, type))
-      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_STRUCTPROPERTY);
+      setOrAppend(ECStringConstants.CONTAINERTYPE_STRUCTPROPERTY);
     if (testContainerTypeValue(CustomAttributeContainerType.PrimitiveArrayProperty, type))
-      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_ARRAYPROPERTY);
+      setOrAppend(ECStringConstants.CONTAINERTYPE_PRIMITIVEARRAYPROPERTY);
     if (testContainerTypeValue(CustomAttributeContainerType.StructArrayProperty, type))
-      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_STRUCTARRAYPROPERTY);
+      setOrAppend(ECStringConstants.CONTAINERTYPE_STRUCTARRAYPROPERTY);
     if (testContainerTypeValue(CustomAttributeContainerType.NavigationProperty, type))
-      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_NAVIGATIONPROPERTY);
+      setOrAppend(ECStringConstants.CONTAINERTYPE_NAVIGATIONPROPERTY);
   }
 
   if (testContainerTypeValue(CustomAttributeContainerType.AnyRelationshipConstraint, type))
-    setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_ANYRELATIONSHIPCONSTRAINT);
+    setOrAppend(ECStringConstants.CONTAINERTYPE_ANYRELATIONSHIPCONSTRAINT);
   else {
     if (testContainerTypeValue(CustomAttributeContainerType.SourceRelationshipConstraint, type))
-      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_SOURCERELATIONSHIPCONSTRAINT);
+      setOrAppend(ECStringConstants.CONTAINERTYPE_SOURCERELATIONSHIPCONSTRAINT);
     if (testContainerTypeValue(CustomAttributeContainerType.TargetRelationshipConstraint, type))
-      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_TARGETRELATIONSHIPCONSTRAINT);
+      setOrAppend(ECStringConstants.CONTAINERTYPE_TARGETRELATIONSHIPCONSTRAINT);
   }
 
   return containerType;
