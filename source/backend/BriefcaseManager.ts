@@ -18,7 +18,6 @@ import { iModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import * as path from "path";
 import * as fs from "fs";
-import { Configuration } from "../common/Configuration";
 
 const loggingCategory = "imodeljs-backend.BriefcaseManager";
 
@@ -1024,21 +1023,20 @@ export class BriefcaseManager {
     });
   }
 
-}
-
-/** Utility to clean up briefcases. */
-export class BriefcaseUtils {
-
-  public static async cleanUpBriefcases(accessToken: AccessToken, iModelId: string) {
-    if (fs.existsSync(iModelEngine.configuration.briefcaseCacheDir))
-      return;
-
+  /** @hidden */
+  public static async deleteAllBriefcases(accessToken: AccessToken, iModelId: string) {
     const promises = new Array<Promise<void>>();
-    const hubClient = new IModelHubClient(Configuration.iModelHubDeployConfig);
-    const briefcases = await hubClient.getBriefcases(accessToken, iModelId);
+    const briefcases = await BriefcaseManager.hubClient!.getBriefcases(accessToken, iModelId);
     briefcases.forEach((briefcase: Briefcase) => {
-      promises.push(hubClient.deleteBriefcase(accessToken, iModelId, briefcase.briefcaseId!));
+      promises.push(BriefcaseManager.hubClient!.deleteBriefcase(accessToken, iModelId, briefcase.briefcaseId!));
     });
-    await Promise.all(promises);
+    return Promise.all(promises);
+  }
+
+  /** @hidden */
+  public static async deleteAllBriefcasesIfNewInstance(accessToken: AccessToken, iModelId: string) {
+    if (!fs.existsSync(iModelHost.configuration.briefcaseCacheDir))
+      return BriefcaseManager.deleteAllBriefcases(accessToken, iModelId);
+    return;
   }
 }

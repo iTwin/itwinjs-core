@@ -21,6 +21,8 @@ import { IModelJsFs } from "../IModelJsFs";
 import { iModelHost } from "../IModelHost";
 import { AutoPush } from "../AutoPush";
 
+let lastPushTimeMillis = 0;
+
 class Timer {
   private label: string;
   constructor(label: string) {
