@@ -38,7 +38,7 @@ module.exports = {
     "@bentley/imodeljs-mobile": "require('@bentley/imodeljs-mobile')",
     "IModelJsFs": "{IModelJsFs: IModelJsFs}",
     "./IModelJsFs": "{IModelJsFs: IModelJsFs}",
-    "../backend/IModelJsFs": "{IModelJsFs: IModelJsFs}",
+    "../IModelJsFs": "{IModelJsFs: IModelJsFs}",
     "fs": "IModelJsFs",
     "fs-extra": "IModelJsFs"
   },

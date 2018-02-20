@@ -8,7 +8,7 @@ import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState } fro
 import { Code } from "../../common/Code";
 import { IModelVersion } from "../../common/IModelVersion";
 import { KeepBriefcase } from "../BriefcaseManager";
-import { IModelDb, ConcurrencyControl } from "../IModelDb";
+import { IModelDb, ConcurrencyControl, ChangeSetDescriber } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Element } from "../Element";
@@ -19,6 +19,9 @@ import { ColorDef } from "../../common/ColorDef";
 import { IModel } from "../../common/IModel";
 import { IModelJsFs } from "../IModelJsFs";
 import { iModelEngine } from "../IModelEngine";
+import { AutoPush } from "../AutoPush";
+
+let lastPushTimeMillis = 0;
 
 class Timer {
   private label: string;
@@ -375,6 +378,32 @@ describe("BriefcaseManager", () => {
   it("should be able to create a standalone IModel", async () => {
     const iModel: IModelDb = IModelTestUtils.createStandaloneIModel("TestStandalone.bim", "TestSubject");
     iModel.closeStandalone();
+  });
+
+  it.only("should test AutoPush", async () => {
+    const activityMonitor = {
+      isIdle: () => true,
+    };
+
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
+    iModel.pushChanges = async (_clientAccessToken: AccessToken, _describer?: ChangeSetDescriber): Promise<void> => { lastPushTimeMillis = Date.now(); };
+    lastPushTimeMillis = 0;
+
+    const autoPush = new AutoPush(iModel, {pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 10}, accessToken, activityMonitor);
+    assert.isTrue(autoPush.isScheduled());
+    await new Promise((resolve, _reject)  => { setTimeout(resolve, 100); }); // wait for 1/10 second before checking
+    assert.notEqual(lastPushTimeMillis, 0);
+
+    lastPushTimeMillis = 0;
+
+    autoPush.cancel();
+    assert.isFalse(autoPush.isScheduled());
+    autoPush.scheduleNextAutoPush();
+    assert.isTrue(autoPush.isScheduled());
+
+    await new Promise((resolve, _reject)  => { setTimeout(resolve, 100); }); // wait for 1/10 second before checking
+    assert.notEqual(lastPushTimeMillis, 0);
+
   });
 
 });

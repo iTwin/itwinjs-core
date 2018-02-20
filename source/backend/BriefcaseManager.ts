@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { AccessToken, Briefcase as HubBriefcase, IModelHubClient, ChangeSet, IModel as HubIModel, ContainsSchemaChanges, SeedFile, SeedFileInitState } from "@bentley/imodeljs-clients";
+import { AccessToken, Briefcase as HubBriefcase, IModelHubClient, ChangeSet, IModel as HubIModel, ContainsSchemaChanges, SeedFile, SeedFileInitState, Briefcase } from "@bentley/imodeljs-clients";
 import { ChangeSetProcessOption } from "@bentley/bentleyjs-core/lib/Bentley";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -17,6 +17,8 @@ import { iModelEngine } from "./IModelEngine";
 
 import { IModelJsFs } from "./IModelJsFs";
 import * as path from "path";
+import * as fs from "fs";
+import { Configuration } from "../common/Configuration";
 
 const loggingCategory = "imodeljs-backend.BriefcaseManager";
 
@@ -1022,4 +1024,21 @@ export class BriefcaseManager {
     });
   }
 
+}
+
+/** Utility to clean up briefcases. */
+export class BriefcaseUtils {
+
+  public static async cleanUpBriefcases(accessToken: AccessToken, iModelId: string) {
+    if (fs.existsSync(iModelEngine.configuration.briefcaseCacheDir))
+      return;
+
+    const promises = new Array<Promise<void>>();
+    const hubClient = new IModelHubClient(Configuration.iModelHubDeployConfig);
+    const briefcases = await hubClient.getBriefcases(accessToken, iModelId);
+    briefcases.forEach((briefcase: Briefcase) => {
+      promises.push(hubClient.deleteBriefcase(accessToken, iModelId, briefcase.briefcaseId!));
+    });
+    await Promise.all(promises);
+  }
 }
