@@ -63,6 +63,12 @@ Now, [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush) takes over t
 | Run tests            | npm test -s      | npm test -s      |
 | Run lint rules       | npm run lint -s  | npm run lint -s  |
 
+## Updating dependencies/devDependencies
+
+1. Edit the appropriate `package.json` file to update the semantic version range
+2. Run `rush check` to make sure that you are specifying consistent versions across the repository
+3. Run `rush install` to make sure the newer version of the module specified in #1 is installed
+
 ## Other NPM Scripts
 
 1. Build TypeDoc documentation: `npm run docs`
