@@ -46,10 +46,10 @@ export default class KindOfQuantity extends SchemaChild {
       if (typeof(presUnit.unit) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has a ${kind} with an invalid 'unit' attribute. It should be of type 'string'.`);
 
-      if (undefined === presUnit.format)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has a ${kind} that is missing the required attribute 'format'.`);
-      if (typeof(presUnit.format) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has a ${kind} with an invalid 'format' attribute. It should be of type 'string'.`);
+      if (undefined !== presUnit.format) {
+        if (typeof(presUnit.format) !== "string")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has a ${kind} with an invalid 'format' attribute. It should be of type 'string'.`);
+      }
     };
 
     if (undefined !== jsonObj.presentationUnits) {

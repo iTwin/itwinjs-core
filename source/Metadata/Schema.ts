@@ -281,12 +281,12 @@ export default class Schema implements CustomAttributeContainerProps {
     if (SCHEMAURL3_1 !== jsonObj.$schema)
       throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl);
 
-    // TODO: Should we allow changing name in fromJson?
-    // TODO: Should we throw if name is undefined?
     if (undefined !== jsonObj.name) {
       if (typeof(jsonObj.name) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'name' attribute. It should be of type 'string'.`);
-      this.name = jsonObj.name;
+
+      if (jsonObj.name.toLowerCase() !== this.name.toLowerCase())
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
     }
 
     if (undefined !== jsonObj.alias) {

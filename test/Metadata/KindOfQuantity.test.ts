@@ -79,7 +79,7 @@ describe("KindOfQuantity", () => {
     it("should throw for presentationUnit with missing unit", async () => {
       expect(testKoQ).to.exist;
       const json: any = {
-        presentationUnits: [{ format: "valid" }],
+        presentationUnits: [{}],
       };
       await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit that is missing the required attribute 'unit'.`);
     });
@@ -87,17 +87,9 @@ describe("KindOfQuantity", () => {
     it("should throw for presentationUnit with invalid unit", async () => {
       expect(testKoQ).to.exist;
       const json: any = {
-        presentationUnits: [{ unit: 0, format: "valid" }],
+        presentationUnits: [{ unit: 0 }],
       };
       await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit with an invalid 'unit' attribute. It should be of type 'string'.`);
-    });
-
-    it("should throw for presentationUnit with missing format", async () => {
-      expect(testKoQ).to.exist;
-      const json: any = {
-        presentationUnits: [{ unit: "valid" }],
-      };
-      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit that is missing the required attribute 'format'.`);
     });
 
     it("should throw for presentationUnit with invalid format", async () => {
@@ -113,7 +105,7 @@ describe("KindOfQuantity", () => {
     it("should throw for persistenceUnit with missing unit", async () => {
       expect(testKoQ).to.exist;
       const json: any = {
-        persistenceUnit: { format: "valid" },
+        persistenceUnit: {},
       };
       await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit that is missing the required attribute 'unit'.`);
     });
@@ -121,17 +113,9 @@ describe("KindOfQuantity", () => {
     it("should throw for persistenceUnit with invalid unit", async () => {
       expect(testKoQ).to.exist;
       const json: any = {
-        persistenceUnit: { unit: 0, format: "valid" },
+        persistenceUnit: { unit: 0 },
       };
       await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit with an invalid 'unit' attribute. It should be of type 'string'.`);
-    });
-
-    it("should throw for persistenceUnit with missing format", async () => {
-      expect(testKoQ).to.exist;
-      const json: any = {
-        persistenceUnit: { unit: "valid" },
-      };
-      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit that is missing the required attribute 'format'.`);
     });
 
     it("should throw for persistenceUnit with invalid format", async () => {

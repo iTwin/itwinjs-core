@@ -46,9 +46,13 @@ export abstract class Property {
   }
 
   public async fromJson(jsonObj: any): Promise<void> {
-    if (!jsonObj.name || typeof(jsonObj.name) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``); // FIXME: What are we actually checking here?  Why do we update name?
-    this.name = jsonObj.name;
+    if (undefined !== jsonObj.name) {
+      if (typeof(jsonObj.name) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'name' attribute. It should be of type 'string'.`);
+
+      if (jsonObj.name.toLowerCase() !== this.name.toLowerCase())
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+    }
 
     if (undefined !== jsonObj.label) {
       if (typeof(jsonObj.label) !== "string")
@@ -161,6 +165,18 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
     super(ecClass, name, PropertyType.Integer_Enumeration);
     this.enumeration = type;
   }
+
+  public async fromJson(jsonObj: any): Promise<void> {
+    await super.fromJson(jsonObj);
+
+    if (undefined !== jsonObj.typeName) {
+      if (typeof(jsonObj.typeName) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'typeName' attribute. It should be of type 'string'.`);
+
+      if (jsonObj.typeName.toLowerCase() !== this.enumeration.name.toLowerCase())
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+    }
+  }
 }
 
 export class StructProperty extends Property {
@@ -169,6 +185,18 @@ export class StructProperty extends Property {
   constructor(ecClass: ECClass, name: string, type: LazyLoadedStructClass) {
     super(ecClass, name, PropertyType.Struct);
     this.structClass = type;
+  }
+
+  public async fromJson(jsonObj: any): Promise<void> {
+    await super.fromJson(jsonObj);
+
+    if (undefined !== jsonObj.typeName) {
+      if (typeof(jsonObj.typeName) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'typeName' attribute. It should be of type 'string'.`);
+
+      if (jsonObj.typeName.toLowerCase() !== this.structClass.name.toLowerCase())
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+    }
   }
 }
 

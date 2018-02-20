@@ -191,7 +191,7 @@ describe("ECClass", () => {
       await expect(testClass.fromJson(invalidModifierJson)).to.be.rejectedWith(ECObjectsError, `The ECClass TestClass has an invalid 'modifier' attribute. It should be of type 'string'.`);
     });
 
-    it("should throw for invalid appliesTo", async () => {
+    it("should throw for invalid baseClass", async () => {
       expect(testClass).to.exist;
       const invalidBaseClassJson = { baseClass: 0 };
       await expect(testClass.fromJson(invalidBaseClassJson)).to.be.rejectedWith(ECObjectsError, `The ECClass TestClass has an invalid 'baseClass' attribute. It should be of type 'string'.`);

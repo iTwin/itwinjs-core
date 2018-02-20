@@ -47,34 +47,34 @@ describe("Property", () => {
 });
 
 describe("PrimitiveProperty", () => {
-  class MockPrimitiveProperty extends PrimitiveProperty {
-    constructor(name: string) {
+  describe("fromJson", () => {
+    let testProperty: PrimitiveProperty;
+
+    beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);
       const testClass = new EntityClass(schema, "TestClass");
-      super(testClass, name);
-    }
-  }
+      testProperty = new PrimitiveProperty(testClass, "TestProperty");
+    });
 
-  describe("fromJson", () => {
-      it("should throw for invalid minLength", async () => testInvalidAttribute(new MockPrimitiveProperty("BadProp"), "minLength", "number", "0"));
-      it("should throw for invalid maxLength", async () => testInvalidAttribute(new MockPrimitiveProperty("BadProp"), "maxLength", "number", "0"));
-      it("should throw for invalid minValue", async () => testInvalidAttribute(new MockPrimitiveProperty("BadProp"), "minValue", "number", "0"));
-      it("should throw for invalid maxValue", async () => testInvalidAttribute(new MockPrimitiveProperty("BadProp"), "maxValue", "number", "0"));
-      it("should throw for invalid extendedTypeName", async () => testInvalidAttribute(new MockPrimitiveProperty("BadProp"), "extendedTypeName", "string", 0));
+    it("should throw for invalid minLength", async () => testInvalidAttribute(testProperty, "minLength", "number", "0"));
+    it("should throw for invalid maxLength", async () => testInvalidAttribute(testProperty, "maxLength", "number", "0"));
+    it("should throw for invalid minValue", async () => testInvalidAttribute(testProperty, "minValue", "number", "0"));
+    it("should throw for invalid maxValue", async () => testInvalidAttribute(testProperty, "maxValue", "number", "0"));
+    it("should throw for invalid extendedTypeName", async () => testInvalidAttribute(testProperty, "extendedTypeName", "string", 0));
   });
 });
 
 describe("PrimitiveArrayProperty", () => {
-  class MockPrimitiveArrayProperty extends PrimitiveArrayProperty {
-    constructor(name: string) {
+  describe("fromJson", () => {
+    let testProperty: PrimitiveArrayProperty;
+
+    beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);
       const testClass = new EntityClass(schema, "TestClass");
-      super(testClass, name);
-    }
-  }
+      testProperty = new PrimitiveArrayProperty(testClass, "TestProperty");
+    });
 
-  describe("fromJson", () => {
-      it("should throw for invalid minOccurs", async () => testInvalidAttribute(new MockPrimitiveArrayProperty("BadProp"), "minOccurs", "number", "0"));
-      it("should throw for invalid maxOccurs", async () => testInvalidAttribute(new MockPrimitiveArrayProperty("BadProp"), "maxOccurs", "number", "0"));
+    it("should throw for invalid minOccurs", async () => testInvalidAttribute(testProperty, "minOccurs", "number", "0"));
+    it("should throw for invalid maxOccurs", async () => testInvalidAttribute(testProperty, "maxOccurs", "number", "0"));
   });
 });

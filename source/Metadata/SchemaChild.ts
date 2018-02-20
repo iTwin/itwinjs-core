@@ -29,13 +29,12 @@ export default abstract class SchemaChild {
   get fullName() { return this.key.schemaKey ? `${this.key.schemaKey}.${this.name}` : this.name; }
 
   public async fromJson(jsonObj: any): Promise<void> {
-    // FIXME: Don't we already have name defined in c'tor?
-    // TODO: Should we allow changing name in fromJson?
-    // TODO: Should we throw if name is undefined? If it doesn't match?
     if (undefined !== jsonObj.name) {
       if (typeof(jsonObj.name) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaChild ${this.name} has an invalid 'name' attribute. It should be of type 'string'.`);
-      this.name = jsonObj.name;
+
+      if (jsonObj.name.toLowerCase() !== this.name.toLowerCase())
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
     }
 
     if (undefined !== jsonObj.description) {
@@ -50,23 +49,20 @@ export default abstract class SchemaChild {
       this.label = jsonObj.label;
     }
 
-    // FIXME: Don't we already have schema defined in c'tor?
-    // TODO: Should we allow changing schema in fromJson?
-    // TODO: Should we throw if schema is undefined? If it doesn't match?
     if (undefined !== jsonObj.schema) {
       if (typeof(jsonObj.schema) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaChild ${this.name} has an invalid 'schema' attribute. It should be of type 'string'.`);
-      this.key.schemaKey.name = jsonObj.schema;
+
+      if (jsonObj.schema.toLowerCase() !== this.schema.name.toLowerCase())
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
     }
 
-    // FIXME: Don't we already have schemaVersion defined in c'tor?
-    // TODO: Should we allow changing schemaVersion in fromJson?
-    // TODO: Should we throw if schemaVersion is undefined? If it doesn't match?
     if (undefined !== jsonObj.schemaVersion) {
       if (typeof(jsonObj.schemaVersion) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaChild ${this.name} has an invalid 'schemaVersion' attribute. It should be of type 'string'.`);
 
-      this.key.schemaKey.version.fromString(jsonObj.schemaVersion);
+      if (jsonObj.schemaVersion !== this.key.schemaKey.version.toString())
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
     }
   }
 
