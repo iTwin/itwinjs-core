@@ -38,7 +38,7 @@ interface PropertyPaneProps {
 }
 interface PropertyDisplayInfo {
   label: string;
-  value: string | null;
+  value?: string;
 }
 interface GroupDisplayInfo {
   label: string;

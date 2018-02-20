@@ -11,11 +11,11 @@ export default abstract class ContentDataProvider {
   private _manager: ECPresentationManager;
   private _rulesetId: string;
   private _displayType: string;
-  private _configuredDescriptorPromise: Promise<content.Descriptor | null> | null = null;
-  private _descriptorPromise: Promise<content.Descriptor | null> | null = null;
-  private _descriptor: content.Descriptor | null = null;
-  private _contentSetSizePromise: Promise<number> | null = null;
-  private _contentPromise: Promise<content.Content> | null = null;
+  private _configuredDescriptorPromise: Promise<content.Descriptor> | undefined;
+  private _descriptorPromise: Promise<content.Descriptor> | undefined;
+  private _descriptor: content.Descriptor | undefined;
+  private _contentSetSizePromise: Promise<number> | undefined;
+  private _contentPromise: Promise<content.Content> | undefined;
   private _imodelToken: IModelToken;
 
   /** Constructor.
@@ -42,9 +42,9 @@ export default abstract class ContentDataProvider {
    * selection changes.
    */
   protected invalidateCache(): void {
-    this._configuredDescriptorPromise = null;
-    this._descriptorPromise = null;
-    this._descriptor = null;
+    this._configuredDescriptorPromise = undefined;
+    this._descriptorPromise = undefined;
+    this._descriptor = undefined;
     this.invalidateContentCache(true);
   }
 
@@ -55,11 +55,11 @@ export default abstract class ContentDataProvider {
    * amount of items in the content set doesn't change.
    */
   protected invalidateContentCache(invalidateContentSetSize: boolean): void {
-    this._configuredDescriptorPromise = null;
-    this._contentPromise = null;
+    this._configuredDescriptorPromise = undefined;
+    this._contentPromise = undefined;
 
     if (invalidateContentSetSize)
-      this._contentSetSizePromise = null;
+      this._contentSetSizePromise = undefined;
   }
 
   /** Called to create extended options for content requests. The actual options depend on the
@@ -72,26 +72,26 @@ export default abstract class ContentDataProvider {
   }
 
   /** Get the content descriptor currently used by this data provider. */
-  public get descriptor(): content.Descriptor | null { return this._descriptor; }
+  public get descriptor(): content.Descriptor | undefined { return this._descriptor; }
 
   /** Get the content descriptor.
    * @param keys Keys of ECInstances to get content for.
    * @param selectionInfo Info about selection in case the content is requested due to selection change.
    */
-  public async getContentDescriptor(keys: InstanceKeysList, selectionInfo: content.SelectionInfo | null = null): Promise<content.Descriptor | null> {
-    if (null == this._configuredDescriptorPromise) {
-      if (null == this._descriptorPromise) {
+  public async getContentDescriptor(keys: InstanceKeysList, selectionInfo?: content.SelectionInfo): Promise<content.Descriptor> {
+    if (undefined === this._configuredDescriptorPromise) {
+      if (undefined === this._descriptorPromise) {
         this._descriptorPromise = this._manager.getContentDescriptor(this.imodelToken, this._displayType, keys,
           selectionInfo, this.createRequestOptions());
       }
 
       const self = this;
-      const configureDescriptor = (descriptor: content.Descriptor | null): content.Descriptor | null => {
+      const configureDescriptor = (descriptor: content.Descriptor): content.Descriptor => {
         if (descriptor)
           self.configureContentDescriptor(descriptor);
         return descriptor;
       };
-      const setAndReturn = (descriptor: content.Descriptor | null): content.Descriptor | null => {
+      const setAndReturn = (descriptor: content.Descriptor): content.Descriptor => {
         self._descriptor = descriptor;
         return descriptor;
       };
@@ -127,12 +127,10 @@ export default abstract class ContentDataProvider {
    * @param pageStart Start index of the page to load.
    * @param pageSize The number of requested items in the page (0 means all items).
    */
-  protected async getContent(keys: InstanceKeysList, selectionInfo: content.SelectionInfo | null = null, { pageStart = 0, pageSize = 0 }: PageOptions): Promise<content.Content> {
+  protected async getContent(keys: InstanceKeysList, selectionInfo: content.SelectionInfo | undefined, { pageStart = 0, pageSize = 0 }: PageOptions): Promise<content.Content> {
     if (!this._contentPromise) {
       const self = this;
-      const getContent = (descriptor: content.Descriptor | null): Promise<content.Content> => {
-        if (!descriptor)
-          throw new Error("Invalid descriptor");
+      const getContent = (descriptor: content.Descriptor): Promise<content.Content> => {
         return self._manager.getContent(self.imodelToken, descriptor!, keys,
           {pageStart, pageSize}, self.createRequestOptions());
       };
@@ -146,12 +144,10 @@ export default abstract class ContentDataProvider {
    * @param selectionInfo Info about selection in case the content is requested due to selection change.
    * @note The method returns the total number of records (without paging).
    */
-  protected async getContentSetSize(keys: InstanceKeysList, selectionInfo: content.SelectionInfo | null = null): Promise<number> {
+  protected async getContentSetSize(keys: InstanceKeysList, selectionInfo?: content.SelectionInfo): Promise<number> {
     if (!this._contentSetSizePromise) {
       const self = this;
-      this._contentSetSizePromise = this.getContentDescriptor(keys, selectionInfo).then((descriptor: content.Descriptor | null) => {
-        if (!descriptor)
-          throw new Error("Invalid descriptor");
+      this._contentSetSizePromise = this.getContentDescriptor(keys, selectionInfo).then((descriptor: content.Descriptor) => {
         return self._manager.getContentSetSize(self.imodelToken, descriptor, keys, self.createRequestOptions());
       });
     }

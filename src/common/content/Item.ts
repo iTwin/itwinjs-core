@@ -50,7 +50,7 @@ export const getNestedInstanceKeys = (item: Item, accessor: PropertyAccessor[]):
   let values: any = item.values;
   for (let i = 0; i < accessor.length && values; ++i) {
     values = values[accessor[i].propertyName];
-    if (null !== accessor[i].arrayIndex && undefined !== accessor[i].arrayIndex)
+    if (undefined !== accessor[i].arrayIndex)
       values = values[accessor[i].arrayIndex!];
     else if (Array.isArray(values))
       values = values[0];

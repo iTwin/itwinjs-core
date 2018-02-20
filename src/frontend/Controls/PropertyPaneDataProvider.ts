@@ -10,9 +10,9 @@ import { ECPresentationManager } from "../../common/ECPresentationManager";
 import { IModelToken } from "@bentley/imodeljs-frontend/lib/common/IModel";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
-let favoritesCategory: content.CategoryDescription | null = null;
+let favoritesCategory: content.CategoryDescription | undefined;
 function getFavoritesCategory(): content.CategoryDescription {
-  if (null == favoritesCategory) {
+  if (undefined === favoritesCategory) {
     favoritesCategory = {
       name: "Favorite",
       label: "Favorite",
@@ -41,7 +41,7 @@ class CategoryFields {
   private _categories: content.CategoryDescription[];
   private _fields: { [categoryName: string]: content.Field[] };
 
-  constructor(c: content.Content | null, includeFieldsWithNoValues: boolean, isFieldFavorite?: FieldPredicate, isFieldHidden?: FieldPredicate,
+  constructor(c: content.Content | undefined, includeFieldsWithNoValues: boolean, isFieldFavorite?: FieldPredicate, isFieldHidden?: FieldPredicate,
     categoriesSortHandler?: CategoriesSortHandler, fieldsSortFunctionSupplier?: FieldsSortHandlerSupplier) {
     this._categories = [];
     this._fields = {};
@@ -62,7 +62,7 @@ class CategoryFields {
           continue;
 
         const fieldValue = c.contentSet[0].values[field.name];
-        if (fieldValue == null || fieldValue === "")
+        if (undefined === fieldValue || "" === fieldValue)
           continue;
       }
 
@@ -74,7 +74,7 @@ class CategoryFields {
 
     // sort fields by priority
     for (const category of this._categories) {
-      const sortFunction = fieldsSortFunctionSupplier ? fieldsSortFunctionSupplier(category) : null;
+      const sortFunction = fieldsSortFunctionSupplier ? fieldsSortFunctionSupplier(category) : undefined;
       this._fields[category.name].sort(sortFunction ? sortFunction : prioritySortFunction);
     }
   }
@@ -100,7 +100,7 @@ export interface PropertyCategory {
 }
 
 export default class PropertyPaneDataProvider extends ContentDataProvider {
-  private _categoryFieldsPromise: Promise<CategoryFields> | null;
+  private _categoryFieldsPromise: Promise<CategoryFields> | undefined;
   private _categoryFieldsValidationId: number;
   private _includeFieldsWithNoValues: boolean;
   private _favorites: { [name: string]: boolean };
@@ -109,7 +109,7 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
   /** Constructor. */
   constructor(manager: ECPresentationManager, imodelToken: IModelToken, rulesetId: string) {
     super(manager, imodelToken, rulesetId, content.DefaultContentDisplayTypes.PROPERTY_PANE);
-    this._categoryFieldsPromise = null;
+    this._categoryFieldsPromise = undefined;
     this._categoryFieldsValidationId = 0;
     this._includeFieldsWithNoValues = true;
     this._favorites = {};
@@ -129,7 +129,7 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
 
   protected invalidateContentCache(invalidateContentSetSize: boolean): void {
     super.invalidateContentCache(invalidateContentSetSize);
-    this._categoryFieldsPromise = null;
+    this._categoryFieldsPromise = undefined;
     this._categoryFieldsValidationId = 0;
   }
 
@@ -177,7 +177,7 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
   protected supplyFieldsSortFunction(_category: content.CategoryDescription): FieldsSortHandler { return prioritySortFunction; }
 
   private async getCategoryFields(): Promise<CategoryFields> {
-    if (null == this._categoryFieldsPromise) {
+    if (undefined === this._categoryFieldsPromise) {
       const self = this;
       const validationId = getUniqueNumber();
       this._categoryFieldsValidationId = validationId;
@@ -190,7 +190,7 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
         return Promise.resolve(cf);
       };
       const handleError = (): Promise<CategoryFields> => {
-        return Promise.resolve(new CategoryFields(null, false));
+        return Promise.resolve(new CategoryFields(undefined, false));
       };
       this._categoryFieldsPromise = this.getContent(this._keys, {}, { pageStart: 0, pageSize: 0 }).then(getCategoryFieldsFromContent).catch(handleError);
     }
@@ -227,7 +227,7 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
   }
 
   public async getContentItem(): Promise<content.Item | undefined> {
-    const c = await this.getContent(this._keys, null, { pageStart: 0, pageSize: 0 });
+    const c = await this.getContent(this._keys, undefined, { pageStart: 0, pageSize: 0 });
     if (c.contentSet.length === 0)
       return undefined;
 

@@ -71,7 +71,7 @@ export interface ECPresentationManager {
    * @param[in] options  An options object that depends on the used presentation manager implementation.
    * @return A promise object that returns either a @ref Descriptor on success or an error string on error.
    */
-  getContentDescriptor(token: IModelToken, displayType: string, keys: InstanceKeysList, selection: SelectionInfo | null, options: object): Promise<Descriptor | null>;
+  getContentDescriptor(token: IModelToken, displayType: string, keys: InstanceKeysList, selection: SelectionInfo | undefined, options: object): Promise<Descriptor>;
 
   /** Retrieves the content set size based on the supplied content descriptor override.
    * @param[in] token Token of imodel to pull data from

@@ -28,7 +28,7 @@ export interface Props {
 
 export default class ECPresentationManager implements ECPInterface {
 
-  private _addon: NodeAddonDefinition | null = null;
+  private _addon?: NodeAddonDefinition;
 
   constructor(props?: Props) {
     if (props && props.addon)
@@ -86,7 +86,7 @@ export default class ECPresentationManager implements ECPInterface {
     throw new Error("Not implemented.");
   }
 
-  public async getContentDescriptor(token: IModelToken, displayType: string, keys: ec.InstanceKeysList, selection: content.SelectionInfo | null, options: object): Promise<content.Descriptor | null> {
+  public async getContentDescriptor(token: IModelToken, displayType: string, keys: ec.InstanceKeysList, selection: content.SelectionInfo | undefined, options: object): Promise<content.Descriptor> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetContentDescriptor, {
       displayType,
       keys,
@@ -191,14 +191,14 @@ namespace Conversion {
     for (const rNode of r) {
       nodes.push({
         nodeId: rNode.NodeId,
-        parentNodeId: rNode.ParentNodeId,
+        parentNodeId: rNode.ParentNodeId || undefined,
         key: createNavNodeKey(rNode.Key),
         label: rNode.Label,
         description: rNode.Description,
-        imageId: rNode.ExpandedImageId,
-        foreColor: rNode.ForeColor,
-        backColor: rNode.BackColor,
-        fontStyle: rNode.FontStyle,
+        imageId: rNode.ExpandedImageId || undefined,
+        foreColor: rNode.ForeColor || undefined,
+        backColor: rNode.BackColor || undefined,
+        fontStyle: rNode.FontStyle || undefined,
         hasChildren: rNode.HasChildren,
         isSelectable: rNode.IsSelectable,
         isEditable: rNode.IsEditable,
@@ -260,7 +260,7 @@ namespace Conversion {
   }
 
   function createContentItem(descriptor: content.Descriptor, r: responseTypes.ContentSetItem): content.Item {
-    let classInfo: ec.ClassInfo | null = null;
+    let classInfo: ec.ClassInfo | undefined;
     if (r.ClassInfo)
       classInfo = createClassInfo(r.ClassInfo);
     const item = {
@@ -276,13 +276,10 @@ namespace Conversion {
     return item;
   }
 
-  export function createContent(r: responseTypes.Content): content.Content | null {
-    if (!r)
-      return null;
-
+  export function createContent(r: responseTypes.Content): content.Content {
     const descriptor = createContentDescriptor(r.Descriptor);
     if (!descriptor)
-      return null;
+      throw new Error("Invalid content descriptor");
 
     const cont: content.Content = {
       descriptor,
@@ -320,10 +317,7 @@ namespace Conversion {
     return result;
   }
 
-  export function createContentDescriptor(r: responseTypes.Descriptor): content.Descriptor | null {
-    if (!r)
-      return null;
-
+  export function createContentDescriptor(r: responseTypes.Descriptor): content.Descriptor {
     const selectClasses = new Array<content.SelectClassInfo>();
     for (const respClass of r.SelectClasses)
       selectClasses.push(createSelectClassInfo(respClass));
@@ -333,7 +327,7 @@ namespace Conversion {
     for (const respField of r.Fields)
       fields.push(createField(respField, categories));
 
-    let sortingField: content.Field | null = null;
+    let sortingField: content.Field | undefined;
     const sortDirection = r.SortDirection as content.SortDirection;
     if (r.SortingFieldIndex > 0 && r.SortingFieldIndex < fields.length)
       sortingField = fields[r.SortingFieldIndex];
@@ -398,8 +392,8 @@ namespace Conversion {
     return info;
   }
 
-  function createFieldEditor(_r: responseTypes.Editor): content.EditorDescription | null {
-    return null;
+  function createFieldEditor(_r: responseTypes.Editor): content.EditorDescription | undefined {
+    return undefined;
     /* todo:
     if (!r)
       return null;
@@ -517,7 +511,7 @@ namespace Conversion {
     return property;
   }
 
-  function createPropertiesField(r: responseTypes.ECPropertiesField, type: content.TypeDescription, editor: content.EditorDescription | null,
+  function createPropertiesField(r: responseTypes.ECPropertiesField, type: content.TypeDescription, editor: content.EditorDescription | undefined,
     category: content.CategoryDescription, parent: content.NestedContentField | undefined): content.PropertiesField {
     const properties = new Array<content.Property>();
     for (const pr of r.Properties)
@@ -535,8 +529,8 @@ namespace Conversion {
     } as content.PropertiesField;
   }
 
-  function createNestedContentField(r: responseTypes.NestedContentField, type: content.TypeDescription, editor: content.EditorDescription | null,
-    categories: { [name: string]: content.CategoryDescription }, parent: content.NestedContentField | undefined): content.NestedContentField {
+  function createNestedContentField(r: responseTypes.NestedContentField, type: content.TypeDescription, editor: content.EditorDescription | undefined,
+    categories: { [name: string]: content.CategoryDescription }, parent?: content.NestedContentField): content.NestedContentField {
     assert(isStructDescription(type), "Nested content fields' type should be 'struct'");
     const category = categories[r.Category.Name];
     const nestedFields = new Array<content.Field>();

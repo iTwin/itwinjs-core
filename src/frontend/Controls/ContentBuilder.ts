@@ -189,18 +189,18 @@ class NestedContentRecord implements PropertyRecord {
 export default class ContentBuilder {
   private static createRecord(propertyDescription: PropertyDescription, typeDescription: content.TypeDescription,
     value: any, displayValue: any, isReadOnly: boolean, isMerged: boolean): PropertyRecord {
-    const createRecordDescription = (): string | null => {
+    const createRecordDescription = (): string | undefined => {
       if (content.PropertyValueFormat.Array === typeDescription.valueFormat || content.PropertyValueFormat.Struct === typeDescription.valueFormat)
-        return null;
+        return undefined;
       assert(content.PropertyValueFormat.Primitive === typeDescription.valueFormat);
       return displayValue;
     };
-    const createDisplayValue = (): string | null => {
+    const createDisplayValue = (): string | undefined => {
       if (isMerged || content.PropertyValueFormat.Primitive === typeDescription.valueFormat)
         return displayValue;
-      return null;
+      return undefined;
     };
-    const createArrayValue = (arrayDescription: content.ArrayTypeDescription, values: any[], displayValues: Array<string | null>): ArrayValue => {
+    const createArrayValue = (arrayDescription: content.ArrayTypeDescription, values: any[], displayValues: Array<string | undefined>): ArrayValue => {
       const members = new Array<PropertyRecord>();
       if (values && displayValues) {
         assert(values.length === displayValues.length);
@@ -223,7 +223,7 @@ export default class ContentBuilder {
     };
     const createStructValue = (description: content.StructTypeDescription,
       valueObj: { [key: string]: any },
-      displayValueObj: { [key: string]: string | null }): StructValue => {
+      displayValueObj: { [key: string]: string | undefined }): StructValue => {
       const members: { [name: string]: PropertyRecord } = {};
       if (valueObj && displayValueObj) {
         for (const memberTypeDescription of description.members) {
@@ -316,7 +316,7 @@ export default class ContentBuilder {
       name: field.name,
       displayLabel: field.label,
       typename: field.description.typeName,
-      editor: field.editor ? field.editor.name : null,
+      editor: field.editor ? field.editor.name : undefined,
     } as PropertyDescription;
   }
 

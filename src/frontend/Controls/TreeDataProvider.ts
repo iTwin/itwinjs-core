@@ -19,12 +19,12 @@ export interface TreeNodeItem {
   label: string;
   description: string;
   hasChildren: boolean;
-  parent: TreeNodeItem | null;
-  labelForeColor: number | null;
-  labelBackColor: number | null;
+  parent?: TreeNodeItem | undefined;
+  labelForeColor?: number | undefined;
+  labelBackColor?: number | undefined;
   labelBold: boolean;
   labelItalic: boolean;
-  iconPath: string | null;
+  iconPath?: string | undefined;
   displayCheckBox: boolean;
   checkBoxState: CheckBoxState;
   isCheckBoxEnabled: boolean;
@@ -109,7 +109,6 @@ export class TreeDataProvider {
   private createTreeNodeItem(node: NavNode): TreeNodeItem {
     const item: TreeNodeItem = {
       id: node.nodeId.toString(),
-      parent: null,
       label: node.label,
       description: node.description,
       hasChildren: node.hasChildren,
@@ -117,7 +116,6 @@ export class TreeDataProvider {
       labelBackColor: StyleHelper.getBackColor(node),
       labelBold: StyleHelper.isBold(node),
       labelItalic: StyleHelper.isItalic(node),
-      iconPath: null,
       displayCheckBox: node.isCheckboxVisible,
       checkBoxState: node.isChecked ? CheckBoxState.On : CheckBoxState.Off,
       isCheckBoxEnabled: node.isCheckboxEnabled,

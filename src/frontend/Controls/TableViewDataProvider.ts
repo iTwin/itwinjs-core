@@ -21,7 +21,7 @@ export interface ColumnDescription {
   sortable: boolean;
   filterable: boolean;
   editable: boolean;
-  description: PropertyDescription | null;
+  description?: PropertyDescription;
 }
 
 export interface CellItem {
@@ -41,13 +41,13 @@ export interface RowItem {
 class Page {
   private _pageStart: number;
   private _pageEnd: number;
-  private _rowsPromise: Promise<RowItem[]> | null;
+  private _rowsPromise: Promise<RowItem[]> | undefined;
   public rows: RowItem[];
 
   constructor(pageStart: number, pageEnd: number) {
     this._pageStart = pageStart;
     this._pageEnd = pageEnd;
-    this._rowsPromise = null;
+    this._rowsPromise = undefined;
     this.rows = new Array<RowItem>();
   }
 
@@ -136,18 +136,18 @@ class PageContainer {
 
   public invalidatePages(): void { this._pages = []; }
 
-  public getPage(index: number): Page | null {
+  public getPage(index: number): Page | undefined {
     for (const page of this._pages) {
       if (page.pageStart <= index && index < page.pageEnd)
         return page;
     }
-    return null;
+    return undefined;
   }
 
-  public getRow(index: number): RowItem | null {
+  public getRow(index: number): RowItem | undefined {
     const page = this.getPage(index);
     if (!page)
-      return null;
+      return undefined;
     return page.rows[index - page.pageStart];
   }
 
@@ -170,16 +170,16 @@ class PageContainer {
         break;
       pageIndex++;
     }
-    const pageBefore = (pageIndex > 0) ? this._pages[pageIndex - 1] : null;
-    const pageAfter = (pageIndex < this._pages.length) ? this._pages[pageIndex] : null;
+    const pageBefore = (pageIndex > 0) ? this._pages[pageIndex - 1] : undefined;
+    const pageAfter = (pageIndex < this._pages.length) ? this._pages[pageIndex] : undefined;
 
     // determine the start of the page for the specified index
     let pageStartIndex = index;
     let pageSize = this.pageSize;
-    if (null != pageAfter && pageStartIndex > pageAfter.pageStart - this.pageSize) {
+    if (undefined !== pageAfter && pageStartIndex > pageAfter.pageStart - this.pageSize) {
       pageStartIndex = pageAfter.pageStart - this.pageSize;
     }
-    if (null != pageBefore && pageBefore.pageEnd > pageStartIndex) {
+    if (undefined !== pageBefore && pageBefore.pageEnd > pageStartIndex) {
       pageStartIndex = pageBefore.pageEnd;
       pageSize = pageAfter!.pageStart - pageBefore.pageEnd;
     }
@@ -218,7 +218,7 @@ const getFieldByName = (descriptor: content.Descriptor, name: string): content.F
 };
 
 export default class TableViewDataProvider extends ContentDataProvider {
-  private _sortColumnKey: string | null = null;
+  private _sortColumnKey: string | undefined;
   private _sortDirection: SortDirection = SortDirection.Ascending;
   private _filterExpression: string | undefined;
   private _pages: PageContainer;
@@ -235,10 +235,10 @@ export default class TableViewDataProvider extends ContentDataProvider {
 
   protected invalidateCache(): void {
     this._filterExpression = undefined;
-    this._sortColumnKey = null;
+    this._sortColumnKey = undefined;
     this._sortDirection = SortDirection.Ascending;
 
-    if (null != this._pages)
+    if (undefined !== this._pages)
       this._pages.invalidatePages();
 
     super.invalidateCache();
@@ -255,9 +255,9 @@ export default class TableViewDataProvider extends ContentDataProvider {
   protected configureContentDescriptor(descriptor: content.Descriptor): void {
     super.configureContentDescriptor(descriptor);
 
-    if (null != this._sortColumnKey) {
+    if (undefined !== this._sortColumnKey) {
       const sortingField = getFieldByName(descriptor, this._sortColumnKey);
-      if (null != sortingField) {
+      if (undefined !== sortingField) {
         descriptor.sortingField = sortingField;
         descriptor.sortDirection = this._sortDirection;
       }
@@ -275,7 +275,7 @@ export default class TableViewDataProvider extends ContentDataProvider {
   /** Returns column definitions for the content. */
   public async getColumns(): Promise<ColumnDescription[]> {
     // setup onFulfilled promise function
-    const getColumnsFromDescriptor = (descriptor: content.Descriptor | null): ColumnDescription[] => {
+    const getColumnsFromDescriptor = (descriptor: content.Descriptor): ColumnDescription[] => {
       const cols = new Array<ColumnDescription>();
       if (!descriptor)
         return cols;
@@ -309,7 +309,7 @@ export default class TableViewDataProvider extends ContentDataProvider {
       return [];
     };
 
-    return this.getContentDescriptor(this.keys, null).then(getColumnsFromDescriptor).catch(handleError);
+    return this.getContentDescriptor(this.keys).then(getColumnsFromDescriptor).catch(handleError);
   }
 
   /** Sorts the data in this data provider.
@@ -331,7 +331,7 @@ export default class TableViewDataProvider extends ContentDataProvider {
   }
 
   /** Get the total number of rows in the content. */
-  public async getRowsCount(): Promise<number> { return this.getContentSetSize(this.keys, null); }
+  public async getRowsCount(): Promise<number> { return this.getContentSetSize(this.keys); }
 
   /** Get a single row.
    * @param[in] rowIndex Index of the row to return.
@@ -339,21 +339,21 @@ export default class TableViewDataProvider extends ContentDataProvider {
    */
   public async getRow(rowIndex: number, _unfiltered?: boolean): Promise<RowItem> {
     let page = this._pages.getPage(rowIndex);
-    if (null == page) {
+    if (!page) {
       this.invalidateContentCache(false, false);
       page = this._pages.createPage(rowIndex);
-      page.setContentPromise(this.getContent(this.keys, null, { pageStart: page.pageStart, pageSize: page.pageEnd - page.pageStart } as PageOptions));
+      page.setContentPromise(this.getContent(this.keys, undefined, { pageStart: page.pageStart, pageSize: page.pageEnd - page.pageStart } as PageOptions));
     }
     return page.rowsPromise.then((rows: RowItem[]) => {
       return rows[rowIndex - page!.pageStart];
     });
   }
 
-  /** Try to get the loaded row. Returns null if the row is not currently cached.
+  /** Try to get the loaded row. Returns undefined if the row is not currently cached.
    * @param[in] rowIndex Index of the row to return.
    * @param[in] unfiltered (not used)
    */
-  public getLoadedRow(rowIndex: number, _unfiltered?: boolean): RowItem | null {
+  public getLoadedRow(rowIndex: number, _unfiltered?: boolean): RowItem | undefined {
     return this._pages.getRow(rowIndex);
   }
 }

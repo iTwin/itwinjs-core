@@ -20,14 +20,14 @@ export type NavNodeKeyPath = NavNodeKey[];
  */
 export interface NavNode {
   nodeId: number;
-  parentNodeId: number | null;
+  parentNodeId?: number;
   key: NavNodeKey;
   label: string;
   description: string;
-  imageId: string | null;
-  foreColor: string | null;
-  backColor: string | null;
-  fontStyle: string | null;
+  imageId?: string;
+  foreColor?: string;
+  backColor?: string;
+  fontStyle?: string;
   hasChildren: boolean;
   isSelectable: boolean;
   isEditable: boolean;

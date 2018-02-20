@@ -180,6 +180,6 @@ export default class StyleHelper {
 
   public static isBold(node: NavNode): boolean { return node.fontStyle ? (node.fontStyle.indexOf("Bold") !== -1) : false; }
   public static isItalic(node: NavNode): boolean { return node.fontStyle ? (node.fontStyle.indexOf("Italic") !== -1) : false; }
-  public static getForeColor(node: NavNode): number | null { return node.foreColor ? StyleHelper.getColor(node.foreColor) : null; }
-  public static getBackColor(node: NavNode): number | null { return node.backColor ? StyleHelper.getColor(node.backColor) : null; }
+  public static getForeColor(node: NavNode): number | undefined { return node.foreColor ? StyleHelper.getColor(node.foreColor) : undefined; }
+  public static getBackColor(node: NavNode): number | undefined { return node.backColor ? StyleHelper.getColor(node.backColor) : undefined; }
 }

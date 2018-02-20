@@ -15,7 +15,7 @@ import { InstanceKeysList } from "../common/EC";
 /** The backend implementation of ECPresentationGatewayDefinition. */
 export default class ECPresentationGateway extends ECPresentationGatewayDefinition {
 
-  private _manager: ECPresentationManagerDefinition | null = null;
+  private _manager?: ECPresentationManagerDefinition;
 
   /** @hidden */
   public getManager(): ECPresentationManagerDefinition {
@@ -25,7 +25,7 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
   }
 
   /** @hidden */
-  public setManager(mgr: ECPresentationManagerDefinition | null): void {
+  public setManager(mgr: ECPresentationManagerDefinition | undefined): void {
     this._manager = mgr;
   }
 
@@ -53,7 +53,7 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return await this.getManager().getFilteredNodesPaths(token, filterText, options);
   }
 
-  public async getContentDescriptor(token: IModelToken, displayType: string, keys: InstanceKeysList, selection: SelectionInfo | null, options: object): Promise<Descriptor | null> {
+  public async getContentDescriptor(token: IModelToken, displayType: string, keys: InstanceKeysList, selection: SelectionInfo | undefined, options: object): Promise<Descriptor> {
     const descriptor = await this.getManager().getContentDescriptor(token, displayType, keys, selection, options);
     if (descriptor)
       resetParentship(descriptor);

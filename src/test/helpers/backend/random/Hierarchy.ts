@@ -14,14 +14,11 @@ export const createRandomECInstanceNodeKey = (): h.NavNodeKey => {
 export const createRandomECInstanceNode = (): h.NavNode => {
   return {
     nodeId: Math.floor(faker.random.number(Number.MAX_VALUE)),
-    parentNodeId: null,
     key: createRandomECInstanceNodeKey(),
     label: faker.random.words(),
     description: faker.lorem.sentence(),
-    imageId: null,
     foreColor: nullable<string>(faker.commerce.color),
     backColor: nullable<string>(faker.commerce.color),
-    fontStyle: null,
     hasChildren: faker.random.boolean(),
     isSelectable: faker.random.boolean(),
     isEditable: faker.random.boolean(),

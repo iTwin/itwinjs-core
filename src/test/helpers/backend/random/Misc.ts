@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
 
-export function nullable<T>(generator: () => T): T | null {
+export function nullable<T>(generator: () => T): T | undefined {
   if (faker.random.boolean())
-    return null;
+    return undefined;
   return generator();
 }

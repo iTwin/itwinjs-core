@@ -40,7 +40,7 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return this.forward.apply(this, arguments);
   }
 
-  public async getContentDescriptor(_token: IModelToken, _displayType: string, _keys: InstanceKeysList, _selection: c.SelectionInfo | null, _options: object): Promise<c.Descriptor | null> {
+  public async getContentDescriptor(_token: IModelToken, _displayType: string, _keys: InstanceKeysList, _selection: c.SelectionInfo | undefined, _options: object): Promise<c.Descriptor> {
     return await this.forward.apply(this, arguments);
   }
 

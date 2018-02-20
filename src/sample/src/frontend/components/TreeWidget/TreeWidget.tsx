@@ -34,13 +34,13 @@ export default class TreeWidget extends React.Component<Props, State> {
     this.loadNodes(parent);
   }
 
-  private async loadNodes(parent: TreeNode | null): Promise<void> {
+  private async loadNodes(parent?: TreeNode): Promise<void> {
     if (!this._dataProvider)
       return Promise.reject("No data provider");
 
-    const parentItem = (null != parent) ? this._items.get((parent.props as any).eventKey as string) : null;
+    const parentItem = (parent) ? this._items.get((parent.props as any).eventKey as string) : undefined;
     let nodes: TreeNodeItem[];
-    if (null == parentItem)
+    if (!parentItem)
       nodes = await this._dataProvider.getRootNodes({ pageStart: 0, pageSize: 0 });
     else
       nodes = await this._dataProvider.getChildNodes(parentItem, { pageStart: 0, pageSize: 0 });
@@ -83,7 +83,7 @@ export default class TreeWidget extends React.Component<Props, State> {
     this._dataProvider = new TreeDataProvider(this._manager, this.props.imodel.iModelToken, rulesetId);
     this._items.clear();
     this.setState({ treeData: [] });
-    this.loadNodes(null);
+    this.loadNodes();
     this.onNodeSelected([]);
   }
 

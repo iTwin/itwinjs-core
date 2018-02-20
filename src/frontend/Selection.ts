@@ -143,7 +143,7 @@ export interface SelectionChangeEventArgs {
   items: SelectedItem[];
 
   /** Any additional presentation-manager specific data. */
-  extendedData: any;
+  extendedData?: any;
 }
 
 /** An interface for selection change listeners */
@@ -269,7 +269,6 @@ export class SelectionManagerImpl implements IDisposable, SelectionManager {
         isSubSelection: false,
         changeType: SelectionChangeType.Clear,
         items: [],
-        extendedData: null,
       };
       this.handleEvent(selectionEvent);
   }
@@ -328,7 +327,7 @@ export abstract class SelectionHandler implements IDisposable {
   private _manager: SelectionManager;
   private _inSelect: boolean;
   private _disposables: DisposableList;
-  public connection: Connection | null = null;
+  public connection: Connection | undefined;
   public name: string;
 
   /** Constructor.
@@ -453,7 +452,7 @@ class RangeSelectionContainer {
  * change causes multiple content control updates.
  */
 export abstract class RangeSelectionHandler extends SelectionHandler {
-  private _rangeSelectionContainer: RangeSelectionContainer | null;
+  private _rangeSelectionContainer: RangeSelectionContainer | undefined;
   public isInSelectionChange: boolean;
 
   /** Constructor.
@@ -461,7 +460,7 @@ export abstract class RangeSelectionHandler extends SelectionHandler {
    */
   constructor(manager: SelectionManager, selectionSourceName: string) {
     super(manager, selectionSourceName);
-    this._rangeSelectionContainer = null;
+    this._rangeSelectionContainer = undefined;
     this.isInSelectionChange = false;
   }
 
@@ -469,7 +468,7 @@ export abstract class RangeSelectionHandler extends SelectionHandler {
    * @param[in] isSelection True if this is a range selection, False if this is deselection.
    */
   public onRangeSelectionStart(isSelection: boolean): void {
-    assert(null == this._rangeSelectionContainer, "Range selection container shouldn't exist on range selection start");
+    assert(undefined === this._rangeSelectionContainer, "Range selection container shouldn't exist on range selection start");
     this._rangeSelectionContainer = new RangeSelectionContainer(isSelection);
   }
 
@@ -477,7 +476,7 @@ export abstract class RangeSelectionHandler extends SelectionHandler {
    * @details Calling this function causes the selection to be actually changed.
    */
   public onRangeSelectionEnd(): void {
-    if (null == this._rangeSelectionContainer) {
+    if (undefined === this._rangeSelectionContainer) {
       assert(false, "Range selection container should exist on range selection end");
       return;
     }
@@ -494,7 +493,7 @@ export abstract class RangeSelectionHandler extends SelectionHandler {
     } else {
       this.clearSelection(this._rangeSelectionContainer.isSubSelection);
     }
-    this._rangeSelectionContainer = null;
+    this._rangeSelectionContainer = undefined;
     this.isInSelectionChange = false;
   }
 
@@ -502,12 +501,12 @@ export abstract class RangeSelectionHandler extends SelectionHandler {
    * @details This function should be called in cases when the range selection is cancelled.
    */
   public dismissSelection(): void {
-    this._rangeSelectionContainer = null;
+    this._rangeSelectionContainer = undefined;
     this.isInSelectionChange = false;
   }
 
   public addToSelection(isSubSelection: boolean, items: SelectedItem[]): void {
-    if (null != this._rangeSelectionContainer) {
+    if (undefined !== this._rangeSelectionContainer) {
       for (const key of items)
         this._rangeSelectionContainer.items.push(key);
       this._rangeSelectionContainer.isSubSelection = isSubSelection;
@@ -522,7 +521,7 @@ export abstract class RangeSelectionHandler extends SelectionHandler {
   }
 
   public removeFromSelection(isSubSelection: boolean, items: SelectedItem[]): void {
-    if (null != this._rangeSelectionContainer) {
+    if (undefined !== this._rangeSelectionContainer) {
       for (const key of items)
         this._rangeSelectionContainer.items.push(key);
       this._rangeSelectionContainer.isSubSelection = isSubSelection;
