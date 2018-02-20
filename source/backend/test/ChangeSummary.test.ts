@@ -272,7 +272,7 @@ describe("ChangeSummary", () => {
     if (IModelJsFs.existsSync(changesFilePath))
       IModelJsFs.removeSync(changesFilePath);
 
-    const lastChangesetId: string = await IModelVersion.latest().evaluateChangeSet(accessToken, testIModelId);
+    const lastChangesetId: string = await IModelVersion.latest().evaluateChangeSet(accessToken, testIModelId, IModelTestUtils.hubClient);
     assert.isTrue(IModelJsFs.existsSync(path.join(csetPath, lastChangesetId + ".cs")));
 
     // now extract again where changesets were already downloaded

@@ -16,10 +16,9 @@ import { ElementProps, GeometricElementProps } from "../../common/ElementProps";
 import { DefinitionModel, Model } from "../Model";
 import { SpatialCategory } from "../Category";
 import { Appearance } from "../../common/SubCategoryAppearance";
-import { Configuration } from "../../common/Configuration";
 import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { IModelEngine } from "../IModelEngine";
+import { IModelEngineConfiguration, IModelEngine, iModelEngine } from "../IModelEngine";
 import * as path from "path";
 // import { Logger, LogLevel } from "@bentley/bentleyjs-core/lib/Logger";
 
@@ -37,9 +36,6 @@ Gateway.initialize(IModelGateway);
 // Initialize the Node addon used by tests
 AddonRegistry.loadAndRegisterStandardAddon();
 
-// Start the backend
-IModelEngine.startup();
-
 export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;
   enableTransactions?: boolean;
@@ -55,19 +51,37 @@ export class IModelTestUtils {
   private static _connectClient: ConnectClient | undefined;
   public static get connectClient(): ConnectClient {
     if (!IModelTestUtils._connectClient)
-      IModelTestUtils.setIModelHubDeployConfig("QA");
+      IModelTestUtils._connectClient = new ConnectClient(IModelTestUtils.iModelHubDeployConfig);
     return IModelTestUtils._connectClient!;
   }
 
   private static _hubClient: IModelHubClient | undefined;
   public static get hubClient(): IModelHubClient {
-    if (!IModelTestUtils._connectClient)
-      IModelTestUtils.setIModelHubDeployConfig("QA");
+    if (!IModelTestUtils._hubClient)
+      IModelTestUtils._hubClient = new IModelHubClient(IModelTestUtils.iModelHubDeployConfig);
     return IModelTestUtils._hubClient!;
   }
 
+  private static _iModelHubDeployConfig: DeploymentEnv = "QA";
+  public static set iModelHubDeployConfig(deployConfig: DeploymentEnv) {
+    if (iModelEngine) {
+      throw new Error("Cannot change the deployment configuration after the backend has started up. Set the configuration earlier, or call iModelEngine.shutdown().");
+    }
+    IModelTestUtils._iModelHubDeployConfig = deployConfig;
+    IModelTestUtils._connectClient = undefined;
+    IModelTestUtils._hubClient = undefined;
+  }
+  public static get iModelHubDeployConfig(): DeploymentEnv {
+    return IModelTestUtils._iModelHubDeployConfig;
+  }
+
   public static setIModelHubDeployConfig(deployConfig: DeploymentEnv) {
-    Configuration.iModelHubDeployConfig = deployConfig;
+    if (iModelEngine) {
+      throw new Error("Cannot change the deployment configuration after the backend has started up. Set the configuration earlier, or call iModelEngine.shutdown().");
+    }
+
+    const config = new IModelEngineConfiguration();
+    config.iModelHubDeployConfig = deployConfig;
     IModelTestUtils._connectClient = new ConnectClient(deployConfig);
     IModelTestUtils._hubClient = new IModelHubClient(deployConfig);
   }
@@ -264,4 +278,11 @@ export class IModelTestUtils {
     return testImodel.elements.createElement(elementProps);
   }
 
+  public static startBackend() {
+    IModelTestUtils.iModelHubDeployConfig = "QA";
+    IModelEngine.startup(new IModelEngineConfiguration());
+  }
 }
+
+// Start the backend
+IModelTestUtils.startBackend();

@@ -10,7 +10,6 @@ import { MultiCode, IModelHubClient, CodeState } from "@bentley/imodeljs-clients
 import { Code, CodeSpec } from "../common/Code";
 import { ElementProps, ElementAspectProps, ElementLoadParams } from "../common/ElementProps";
 import { IModel, IModelProps } from "../common/IModel";
-import { Configuration } from "../common/Configuration";
 import { IModelVersion } from "../common/IModelVersion";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { ModelProps } from "../common/ModelProps";
@@ -778,7 +777,7 @@ export class ConcurrencyControl {
     throw new IModelError(IModelStatus.BadRequest, "TBD locks");
   }
 
-  private getDeploymentEnv(): DeploymentEnv { return Configuration.iModelHubDeployConfig; }
+  private getDeploymentEnv(): DeploymentEnv { return iModelEngine.configuration.iModelHubDeployConfig; }
   private getIModelHubClient(): IModelHubClient { return new IModelHubClient(this.getDeploymentEnv()); }
 
   /** process the Lock-specific part of the request. */

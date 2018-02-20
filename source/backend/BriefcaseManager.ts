@@ -386,7 +386,7 @@ export class BriefcaseManager {
     await BriefcaseManager.initCache(accessToken);
     assert(!!BriefcaseManager.hubClient);
 
-    const changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId);
+    const changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId, BriefcaseManager.hubClient!);
 
     let changeSetIndex: number;
     if (changeSetId === "") {
@@ -795,7 +795,7 @@ export class BriefcaseManager {
     if (briefcase.changeSetIndex === undefined)
       return Promise.reject(new IModelError(DbResult.BE_SQLITE_ERROR, "Cannot apply changes to a standalone file"));
 
-    const targetChangeSetId: string = await targetVersion.evaluateChangeSet(accessToken, briefcase.iModelId);
+    const targetChangeSetId: string = await targetVersion.evaluateChangeSet(accessToken, briefcase.iModelId, BriefcaseManager.hubClient!);
     const targetChangeSetIndex: number = await BriefcaseManager.getChangeSetIndexFromId(accessToken, briefcase.iModelId, targetChangeSetId);
     if (targetChangeSetIndex === undefined)
       return Promise.reject(new IModelError(BriefcaseStatus.CannotApplyChanges, "Could not determine change set information from the Hub"));
