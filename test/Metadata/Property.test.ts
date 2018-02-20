@@ -9,7 +9,9 @@ import EntityClass from "../../source/Metadata/EntityClass";
 import { ECObjectsError } from "../../source/Exception";
 import { Property, PrimitiveProperty } from "../../source/Metadata/Property";
 import { PropertyType } from "../../source/PropertyTypes";
-import { PrimitiveArrayProperty } from "../../source/index";
+import { PrimitiveArrayProperty, EnumerationProperty, DelayedPromiseWithProps, StructProperty } from "../../source/index";
+import Enumeration from "../../source/Metadata/Enumeration";
+import { StructClass } from "../../source/Metadata/Class";
 
 async function testInvalidAttribute(prop: Property, attributeName: string, expectedType: string, value: any) {
   expect(prop).to.exist;
@@ -61,6 +63,46 @@ describe("PrimitiveProperty", () => {
     it("should throw for invalid minValue", async () => testInvalidAttribute(testProperty, "minValue", "number", "0"));
     it("should throw for invalid maxValue", async () => testInvalidAttribute(testProperty, "maxValue", "number", "0"));
     it("should throw for invalid extendedTypeName", async () => testInvalidAttribute(testProperty, "extendedTypeName", "string", 0));
+  });
+});
+
+describe("EnumerationProperty", () => {
+  describe("fromJson", () => {
+    let testProperty: EnumerationProperty;
+
+    beforeEach(() => {
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      const testClass = new EntityClass(schema, "TestClass");
+      const testEnum = new Enumeration(schema, "TestEnum");
+      testProperty = new EnumerationProperty(testClass, "TestProperty", new DelayedPromiseWithProps(testEnum.key, async () => testEnum));
+    });
+
+    it("should throw for invalid typeName", async () => testInvalidAttribute(testProperty, "typeName", "string", 0));
+    it("should throw for mismatched typeName", async () => {
+      const propertyJson = { typeName: "ThisDoesNotMatch"};
+      expect(testProperty).to.exist;
+      await expect(testProperty.fromJson(propertyJson)).to.be.rejectedWith(ECObjectsError);
+    });
+  });
+});
+
+describe("StructProperty", () => {
+  describe("fromJson", () => {
+    let testProperty: StructProperty;
+
+    beforeEach(() => {
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      const testClass = new EntityClass(schema, "TestClass");
+      const testStruct = new StructClass(schema, "TestStruct");
+      testProperty = new StructProperty(testClass, "TestProperty", new DelayedPromiseWithProps(testStruct.key, async () => testStruct));
+    });
+
+    it("should throw for invalid typeName", async () => testInvalidAttribute(testProperty, "typeName", "string", 0));
+    it("should throw for mismatched typeName", async () => {
+      const propertyJson = { typeName: "ThisDoesNotMatch"};
+      expect(testProperty).to.exist;
+      await expect(testProperty.fromJson(propertyJson)).to.be.rejectedWith(ECObjectsError);
+    });
   });
 });
 

@@ -536,6 +536,12 @@ export class SchemaChildKey {
 
     return true;
   }
+
+  public matchesFullName(rhs: string): boolean {
+    const schemaVersion = this.schemaKey.version.toString().replace(/\./g, "\\.");
+    const fullNameRegex = new RegExp(`^${this.schemaName}(\\.${schemaVersion})?[.:]${this.name}$`, "i");
+    return fullNameRegex.test(rhs);
+  }
 }
 
 const INT32_MAX = 2147483647;

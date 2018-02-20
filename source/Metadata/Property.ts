@@ -173,7 +173,7 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
       if (typeof(jsonObj.typeName) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'typeName' attribute. It should be of type 'string'.`);
 
-      if (jsonObj.typeName.toLowerCase() !== this.enumeration.name.toLowerCase())
+      if (!this.enumeration.matchesFullName(jsonObj.typeName))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
     }
   }
@@ -194,7 +194,7 @@ export class StructProperty extends Property {
       if (typeof(jsonObj.typeName) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'typeName' attribute. It should be of type 'string'.`);
 
-      if (jsonObj.typeName.toLowerCase() !== this.structClass.name.toLowerCase())
+      if (!this.structClass.matchesFullName(jsonObj.typeName))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
     }
   }
