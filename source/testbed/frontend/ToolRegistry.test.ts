@@ -97,7 +97,7 @@ describe("ToolRegistry", () => {
     showSearchResultsUsingIndexApi("Matches for 'vie':", searchResults);
   });
   it("Should find some partial matches for 'place '", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await iModelApp.tools.findPartialMatches("vie");
+    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await iModelApp.tools.findPartialMatches("place ");
     showSearchResults("Matches for 'place ':", searchResults);
   });
 });
