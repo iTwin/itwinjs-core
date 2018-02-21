@@ -13,13 +13,14 @@ import { AxisAlignedBox3d } from "../common/geometry/Primitives";
 import { Frustum, Npc } from "../common/Frustum";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState } from "./EntityState";
-import { ViewDefinitionProps, ViewDefinition3dProps, SpatialViewDefinitionProps, ViewDefinition2dProps, CameraProps } from "../common/ViewProps";
+import { ViewDefinitionProps, ViewDefinition3dProps, SpatialViewDefinitionProps, ViewDefinition2dProps } from "../common/ViewProps";
 import { DisplayStyleState, DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
 import { ColorDef } from "../common/ColorDef";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { IModelConnection } from "./IModelConnection";
+import { Camera } from "../common/Render";
 
 export const enum GridOrientationType {
   View = 0,
@@ -541,41 +542,6 @@ export abstract class ViewState extends ElementState {
  *          - View volumes where one dimension is very small or large relative to the other dimensions (e.g. "long skinny telescope" views,
  *            or "wide and shallow slices", etc.) are problematic and disallowed based on ratio limits.
  */
-
-/**
- * The current position (eyepoint), lens angle, and focus distance of a camera.
- */
-export class Camera implements CameraProps {
-  public readonly lens: Angle;
-  public focusDist: number;
-  public readonly eye: Point3d;
-
-  public static isValidLensAngle(val: Angle) { return val.radians > (Math.PI / 8.0) && val.radians < Math.PI; }
-  public static validateLensAngle(val: Angle) { if (!this.isValidLensAngle(val)) val.setRadians(Math.PI / 2.0); }
-  public invalidateFocus() { this.focusDist = 0.0; }
-  public isFocusValid() { return this.focusDist > 0.0 && this.focusDist < 1.0e14; }
-  public getFocusDistance() { return this.focusDist; }
-  public setFocusDistance(dist: number) { this.focusDist = dist; }
-  public isLensValid() { return Camera.isValidLensAngle(this.lens); }
-  public validateLens() { Camera.validateLensAngle(this.lens); }
-  public getLensAngle() { return this.lens; }
-  public setLensAngle(angle: Angle) { this.lens.setFrom(angle); }
-  public getEyePoint() { return this.eye; }
-  public setEyePoint(pt: XYAndZ) { this.eye.setFrom(pt); }
-  public isValid() { return this.isLensValid() && this.isFocusValid(); }
-  public equals(other: Camera) { return this.lens === other.lens && this.focusDist === other.focusDist && this.eye.isExactEqual(other.eye); }
-  public clone() { return new Camera(this); }
-  public copyFrom(rhs: Camera) {
-    this.lens.setFrom(rhs.lens);
-    this.focusDist = rhs.focusDist;
-    this.eye.setFrom(rhs.eye);
-  }
-  public constructor(json: CameraProps) {
-    this.lens = Angle.fromJSON(json.lens);
-    this.focusDist = JsonUtils.asDouble(json.focusDist);
-    this.eye = Point3d.fromJSON(json.eye);
-  }
-}
 
 /** Defines the state of a view of 3d models. */
 export abstract class ViewState3d extends ViewState {

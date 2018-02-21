@@ -25,7 +25,7 @@ export class EntityState implements EntityProps {
     this.classFullName = props.classFullName;
     this.iModel = iModel;
     this.id = Id64.fromJSON(props.id);
-    this.jsonProperties = !props.jsonProperties ? {} : JSON.parse(JSON.stringify(props.jsonProperties)); // make sure we have our own copy
+    this.jsonProperties = props.jsonProperties ? JSON.parse(JSON.stringify(props.jsonProperties)) : {}; // make sure we have our own copy
   }
 
   public toJSON(): EntityProps {
@@ -33,7 +33,7 @@ export class EntityState implements EntityProps {
     val.classFullName = this.classFullName;
     if (this.id.isValid())
       val.id = this.id;
-    if (Object.keys(this.jsonProperties).length > 0)
+    if (this.jsonProperties && Object.keys(this.jsonProperties).length > 0)
       val.jsonProperties = this.jsonProperties;
     return val;
   }

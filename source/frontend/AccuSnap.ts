@@ -4,7 +4,7 @@
 import { Point3d, Point2d, XAndY } from "@bentley/geometry-core/lib/PointVector";
 import { Viewport } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
-import { SnapStatus, LocateAction, LocateResponse, HitListHolder, TestHitStatus, SnapType } from "./ElementLocateManager";
+import { SnapStatus, LocateAction, LocateResponse, HitListHolder, TestHitStatus, SnapType, ElementLocateManager } from "./ElementLocateManager";
 import { SpriteLocation, Sprite } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
 import { HitDetail, HitList, SnapMode, SnapDetail, SubSelectionMode, HitSource, HitDetailType, HitPriority } from "./HitDetail";
@@ -67,8 +67,8 @@ export class AccuSnap {
   public readonly cross = new SpriteLocation();          // the "+" that indicates where the snap point is
   public readonly icon = new SpriteLocation();           // the icon that indicates what type of snap is active
   public readonly errorIcon = new SpriteLocation();      // the icon that indicates an error
-  public errorReason?: string;                           // reason code for last error
-  public explanation?: string;                           // why last error was generated.
+  public errorKey?: string;                              // reason key for last error
+  public explanation?: string;                           // localized message explaining why last error was generated.
   private candidateSnapMode = SnapMode.First;            // during snap creation: the snap to try
   private suppressed = 0;                                // number of times "suppress" has been called -- unlike suspend this is not automatically cleared by tools
   private wasAborted = false;                            // was the search for elements from last motion event aborted?
@@ -303,10 +303,10 @@ export class AccuSnap {
     }
 
     // if we don't have an explanation yet, translate the error code.
-    if (!this.errorReason)
+    if (!this.errorKey)
       return;
 
-    this.explanation = iModelApp.i18N.translate(iModelApp.baseToolNamespace!.name + ":" + this.errorReason);
+    this.explanation = iModelApp.i18N.translate(this.errorKey);
     if (!this.explanation)
       return;
 
@@ -378,17 +378,17 @@ export class AccuSnap {
         break;
 
       case SnapStatus.FilteredByAppQuietly:
-        this.errorReason = undefined;
+        this.errorKey = undefined;
         break;
 
       case SnapStatus.NotSnappable:
         errorSprite = s_notSnappable;
-        this.errorReason = "LocateFailure.NotSnappable";
+        this.errorKey = ElementLocateManager.getFailureMessageKey("NotSnappable");
         break;
 
       case SnapStatus.ModelNotSnappable:
         errorSprite = s_notSnappable;
-        this.errorReason = "LocateFailure.ModelNotAllowed";
+        this.errorKey = ElementLocateManager.getFailureMessageKey("ModelNotAllowed");
         break;
     }
 

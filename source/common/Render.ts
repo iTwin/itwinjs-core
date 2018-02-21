@@ -9,22 +9,57 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { DgnFB } from "./geometry/ElementGraphicsSchema";
 import { IModel } from "./IModel";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { Point3d, Point2d} from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, Point2d, XYAndZ } from "@bentley/geometry-core/lib/PointVector";
 import { Transform } from "@bentley/geometry-core/lib/Transform";
 import { Range3d, Range2d } from "@bentley/geometry-core/lib/Range";
-import { Viewport } from "../frontend/Viewport";
-
 import { PatternParams } from "./geometry/AreaPattern";
 import { LineStyleInfo } from "./geometry/LineStyle";
 import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
 import { BSplineCurve3d } from "@bentley/geometry-core/lib/bspline/BSplineCurve";
 import { BSplineSurface3d } from "@bentley/geometry-core/lib/bspline/BSplineSurface";
+import { CameraProps } from "./ViewProps";
+import { Angle } from "@bentley/geometry-core/lib/Geometry";
 
 export const enum RenderMode {
   Wireframe = 0,
   HiddenLine = 3,
   SolidFill = 4,
   SmoothShade = 6,
+}
+
+/**
+ * The current position (eyepoint), lens angle, and focus distance of a camera.
+ */
+export class Camera implements CameraProps {
+  public readonly lens: Angle;
+  public focusDist: number;
+  public readonly eye: Point3d;
+
+  public static isValidLensAngle(val: Angle) { return val.radians > (Math.PI / 8.0) && val.radians < Math.PI; }
+  public static validateLensAngle(val: Angle) { if (!this.isValidLensAngle(val)) val.setRadians(Math.PI / 2.0); }
+  public invalidateFocus() { this.focusDist = 0.0; }
+  public isFocusValid() { return this.focusDist > 0.0 && this.focusDist < 1.0e14; }
+  public getFocusDistance() { return this.focusDist; }
+  public setFocusDistance(dist: number) { this.focusDist = dist; }
+  public isLensValid() { return Camera.isValidLensAngle(this.lens); }
+  public validateLens() { Camera.validateLensAngle(this.lens); }
+  public getLensAngle() { return this.lens; }
+  public setLensAngle(angle: Angle) { this.lens.setFrom(angle); }
+  public getEyePoint() { return this.eye; }
+  public setEyePoint(pt: XYAndZ) { this.eye.setFrom(pt); }
+  public isValid() { return this.isLensValid() && this.isFocusValid(); }
+  public equals(other: Camera) { return this.lens === other.lens && this.focusDist === other.focusDist && this.eye.isExactEqual(other.eye); }
+  public clone() { return new Camera(this); }
+  public copyFrom(rhs: Camera) {
+    this.lens.setFrom(rhs.lens);
+    this.focusDist = rhs.focusDist;
+    this.eye.setFrom(rhs.eye);
+  }
+  public constructor(json: CameraProps) {
+    this.lens = Angle.fromJSON(json.lens);
+    this.focusDist = JsonUtils.asDouble(json.focusDist);
+    this.eye = Point3d.fromJSON(json.eye);
+  }
 }
 
 /** Flags for view display style */
@@ -416,7 +451,7 @@ export class AppearanceOverrides {
 export class GeometryParams {
   public readonly appearanceOverrides = new AppearanceOverrides(); // flags for parameters that override SubCategory::Appearance.
   private resolved = false; // whether Resolve has established SubCategory::Appearance/effective values.
-  private materialId: Id64; // render material Id.
+  private materialId?: Id64; // render material Id.
   private elmPriority = 0; // display priority (applies to 2d only)
   private netPriority = 0; // net display priority for element/category (applies to 2d only)
   private weight = 0;
@@ -622,19 +657,19 @@ export const enum AsThickenedLine { No = 0, Yes = 1 }
 export class GraphicBuilderCreateParams {
   private _iModel: IModel | undefined; // Same as DgnDb
   private _placement: Transform;
-  private _viewport: Viewport | undefined;
+  private _viewport?: any;
   private _type: GraphicType;
 
-  public constructor(vp: Viewport | undefined, tf: Transform, type: GraphicType, iModel?: IModel) {
+  public constructor(vp: any, trans: Transform, type: GraphicType, iModel?: IModel) {
     this._viewport = vp;
-    this._placement = tf;
+    this._placement = trans;
     this._type = type;
     if (iModel) {
       this._iModel = iModel;
     } else if (vp) {
       this._iModel = vp.view.iModel; // is this equivalent to vp.GetViewController().GetDgnDb() ??
-     } else {
-       this._iModel = undefined;
+    } else {
+      this._iModel = undefined;
     }
   }
 
@@ -645,19 +680,15 @@ export class GraphicBuilderCreateParams {
    * If this function is used outside of tile generation context, a default coarse tolerance will be used.
    * To get a tolerance appropriate to a viewport, use the overload accepting a Viewport.
    */
-  public static Scene(placement = Transform.createIdentity(), vp: Viewport | undefined, iModel?: IModel): GraphicBuilderCreateParams {
-    if (iModel) {
-      return new GraphicBuilderCreateParams(vp, placement, GraphicType.Scene, iModel);
-    } else {
-      return new GraphicBuilderCreateParams(vp, placement, GraphicType.Scene);
-    }
+  public static Scene(placement = Transform.createIdentity(), vp: any, iModel?: IModel): GraphicBuilderCreateParams {
+    return iModel ? new GraphicBuilderCreateParams(vp, placement, GraphicType.Scene, iModel) : new GraphicBuilderCreateParams(vp, placement, GraphicType.Scene);
   }
 
   /**
    * Create params for a WorldDecoration-type Graphic
    * The faceting tolerance will be computed from the finished graphic's range and the viewport.
    */
-  public static WorldDecoration(vp: Viewport, placement: Transform = Transform.createIdentity()): GraphicBuilderCreateParams {
+  public static WorldDecoration(vp: any, placement: Transform = Transform.createIdentity()): GraphicBuilderCreateParams {
     return new GraphicBuilderCreateParams(vp, placement, GraphicType.WorldDecoration);
   }
 
@@ -665,14 +696,14 @@ export class GraphicBuilderCreateParams {
    * Create params for a WorldOverlay-type Graphic
    * The faceting tolerance will be computed from the finished graphic's range and the viewport.
    */
-  public static WorldOverlay(vp: Viewport, placement: Transform = Transform.createIdentity()): GraphicBuilderCreateParams {
+  public static WorldOverlay(vp: any, placement: Transform = Transform.createIdentity()): GraphicBuilderCreateParams {
     return new GraphicBuilderCreateParams(vp, placement, GraphicType.WorldOverlay);
   }
 
   /**
    * Create params for a ViewOverlay-type Graphic
    */
-  public static ViewOverlay(vp: Viewport, placement: Transform = Transform.createIdentity()): GraphicBuilderCreateParams {
+  public static ViewOverlay(vp: any, placement: Transform = Transform.createIdentity()): GraphicBuilderCreateParams {
     return new GraphicBuilderCreateParams(vp, placement, GraphicType.ViewOverlay);
   }
 
@@ -683,37 +714,16 @@ export class GraphicBuilderCreateParams {
     return new GraphicBuilderCreateParams(this._viewport, placement, this._type, this._iModel);
   }
 
-  public get iModel(): IModel | undefined {
-    return this._iModel;
-  }
-  public get placement(): Transform {
-    return this._placement;
-  }
-  public get viewport(): Viewport | undefined {
-    return this._viewport;
-  }
-  public get type(): GraphicType {
-    return this._type;
-  }
-  public IsViewCoordinates(): boolean {
-    return GraphicType.ViewBackground === this._type || GraphicType.ViewOverlay === this._type;
-  }
-  public IsWorldCoordinates(): boolean {
-    return !this.IsViewCoordinates;
-  }
-  public IsSceneGraphic(): boolean {
-    return GraphicType.Scene === this._type;
-  }
-  public IsViewBackground(): boolean {
-    return GraphicType.ViewBackground === this._type;
-  }
-  public IsOverlay(): boolean {
-    return GraphicType.ViewOverlay === this._type || GraphicType.WorldOverlay === this._type;
-  }
-
-  public SetPlacement(tf: Transform): void {
-    this._placement = tf;
-  }
+  public get iModel(): IModel | undefined { return this._iModel; }
+  public get placement(): Transform { return this._placement; }
+  public get viewport(): any { return this._viewport; }
+  public get type(): GraphicType { return this._type; }
+  public isViewCoordinates(): boolean { return GraphicType.ViewBackground === this._type || GraphicType.ViewOverlay === this._type; }
+  public isWorldCoordinates(): boolean { return !this.isViewCoordinates; }
+  public isSceneGraphic(): boolean { return GraphicType.Scene === this._type; }
+  public isViewBackground(): boolean { return GraphicType.ViewBackground === this._type; }
+  public isOverlay(): boolean { return GraphicType.ViewOverlay === this._type || GraphicType.WorldOverlay === this._type; }
+  public setPlacement(tf: Transform): void { this._placement = tf; }
 }
 
 /**
@@ -1045,7 +1055,7 @@ export namespace Hilite {
 export class Decorations {
   public viewBackground?: Graphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
   public normal?: GraphicList;       // drawn with zbuffer, with scene lighting
-  public world: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
-  public worldOverlay: DecorationList; // drawn in overlay mode, world units
-  public viewOverlay: DecorationList;  // drawn in overlay mode, view units
+  public world?: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
+  public worldOverlay?: DecorationList; // drawn in overlay mode, world units
+  public viewOverlay?: DecorationList;  // drawn in overlay mode, view units
 }

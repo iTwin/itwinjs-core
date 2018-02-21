@@ -160,6 +160,8 @@ export class ElementLocateManager {
   public readonly options = new LocateOptions();
   public readonly picker = new ElementPicker();
 
+  /** get the full message key for a locate failure  */
+  public static getFailureMessageKey(key: string) { return "CoreTools:LocateFailure." + key; }
   public onInitialized() { }
   public getApertureInches() { return 0.11; }
   public getKeypointDivisor() { return 2; }
@@ -213,7 +215,7 @@ export class ElementLocateManager {
   public filterHit(hit: HitDetail, mode: SubSelectionMode, _action: LocateAction, out: LocateResponse): boolean {
     // Tools must opt-in to locate of transient geometry as it requires special treatment.
     if (!hit.elementId && !this.options.allowTransients) {
-      out.reason = "LocateFailure.Transient";
+      out.reason = ElementLocateManager.getFailureMessageKey("Transient");
       return true;
     }
 
@@ -225,7 +227,7 @@ export class ElementLocateManager {
 
     const retVal = !tool.onPostLocate(hit, out);
     if (retVal)
-      out.reason = "LocateFailure.ByCommand";
+      out.reason = ElementLocateManager.getFailureMessageKey("ByCommand");
 
     return retVal;
   }
@@ -273,7 +275,7 @@ export class ElementLocateManager {
   }
 
   public doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, view: Viewport | undefined, mode: SubSelectionMode = SubSelectionMode.None, filterHits = true): HitDetail | undefined {
-    response.reason = "LocateFailure.NoElements";
+    response.reason = ElementLocateManager.getFailureMessageKey("NoElements");
     response.explanation = "";
 
     const hit = this._doLocate(response, newSearch, testPoint, view, mode, filterHits);
