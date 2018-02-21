@@ -31,12 +31,32 @@ export default class Schema implements CustomAttributeContainerProps {
   public customAttributes?: CustomAttributeSet;
   public readonly references: Schema[];
   private readonly _children: SchemaChild[];
-
-  constructor(key?: SchemaKey, context?: SchemaContext) {
-    this._schemaKey = key;
+  /**
+   * Constructs an empty Schema with the given name and version, (optionally) in a given context.
+   * @param name The schema's name
+   * @param readVersion The integer read (major) version of the schema
+   * @param writeVersion The integer write version of the schema
+   * @param minorVersion The integer minor version of the schema
+   * @param context The SchemaContext that will control the lifetime of the schema
+   */
+  constructor(name: string, readVersion: number, writeVersion: number, minorVersion: number, context?: SchemaContext);
+  /**
+   * Constructs an empty Schema with the given key, (optionally) in a given context.
+   * @param key A SchemaKey that uniquely identifies the schema
+   * @param context The SchemaContext that will control the lifetime of the schema.
+   */
+  constructor(key: SchemaKey, context?: SchemaContext);  // tslint:disable-line:unified-signatures
+  /**
+   * Constructs an empty Schema (without a SchemaKey).
+   * This should only be used when the schema name and version will be deserialized (via `fromJson()`) immediately after this Schema is instantiated.
+   * @internal
+   */
+  constructor();
+  constructor(nameOrKey?: SchemaKey | string, readVerOrCtx?: SchemaContext | number, writeVer?: number, minorVer?: number, otherCtx?: SchemaContext) {
+    this._schemaKey = (typeof(nameOrKey) === "string") ? new SchemaKey(nameOrKey, readVerOrCtx as number, writeVer, minorVer) : nameOrKey;
+    this._context = (typeof(readVerOrCtx) === "number") ? otherCtx : readVerOrCtx;
     this.references = [];
     this._children = [];
-    this._context = context;
   }
 
   get schemaKey() {

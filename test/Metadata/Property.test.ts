@@ -15,7 +15,7 @@ import PropertyCategory from "../../source/Metadata/PropertyCategory";
 import KindOfQuantity from "../../source/Metadata/KindOfQuantity";
 import RelationshipClass from "../../source/Metadata/RelationshipClass";
 import { DelayedPromiseWithProps } from "../../source/DelayedPromise";
-import { PrimitiveType, SchemaKey } from "../../source/ECObjects";
+import { PrimitiveType } from "../../source/ECObjects";
 
 async function testInvalidAttribute(prop: Property, attributeName: string, expectedType: string, value: any) {
   expect(prop).to.exist;
@@ -41,7 +41,7 @@ describe("Property", () => {
   }
 
   beforeEach(async () => {
-    const schema = new Schema(new SchemaKey("TestSchema", 1, 0, 0));
+    const schema = new Schema("TestSchema", 1, 0, 0);
     testClass = await schema.createEntityClass("TestClass");
     testCategory = await schema.createPropertyCategory("TestCategory");
     testKindOfQuantity = await schema.createKindOfQuantity("TestKoQ");
@@ -183,7 +183,7 @@ describe("PrimitiveProperty", () => {
     let testProperty: PrimitiveProperty;
 
     beforeEach(() => {
-      const schema = new Schema(new SchemaKey("TestSchema", 1, 0, 0));
+      const schema = new Schema("TestSchema", 1, 0, 0);
       const testClass = new EntityClass(schema, "TestClass");
       testProperty = new PrimitiveProperty(testClass, "TestProperty", PrimitiveType.Double);
     });
@@ -228,7 +228,7 @@ describe("EnumerationProperty", () => {
     let testEnum: Enumeration;
 
     beforeEach(async () => {
-      const schema = new Schema(new SchemaKey("TestSchema", 1, 0, 0));
+      const schema = new Schema("TestSchema", 1, 0, 0);
       const testClass = await schema.createEntityClass("TestClass");
       testEnum = await schema.createEnumeration("TestEnum");
       testProperty = new EnumerationProperty(testClass, "TestProperty", new DelayedPromiseWithProps(testEnum.key, async () => testEnum));
@@ -262,7 +262,7 @@ describe("StructProperty", () => {
     let testStruct: StructClass;
 
     beforeEach(async () => {
-      const schema = new Schema(new SchemaKey("TestSchema", 1, 0, 0));
+      const schema = new Schema("TestSchema", 1, 0, 0);
       const testClass = await schema.createEntityClass("TestClass");
       testStruct = await schema.createStructClass("TestStruct");
       testProperty = new StructProperty(testClass, "TestProperty", new DelayedPromiseWithProps(testStruct.key, async () => testStruct));
@@ -295,7 +295,7 @@ describe("PrimitiveArrayProperty", () => {
     let testProperty: PrimitiveArrayProperty;
 
     beforeEach(() => {
-      const schema = new Schema(new SchemaKey("TestSchema", 1, 0, 0));
+      const schema = new Schema("TestSchema", 1, 0, 0);
       const testClass = new EntityClass(schema, "TestClass");
       testProperty = new PrimitiveArrayProperty(testClass, "TestProperty");
     });

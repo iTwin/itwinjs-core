@@ -6,7 +6,7 @@ import { assert, expect } from "chai";
 import Schema from "../../source/Metadata/Schema";
 import EntityClass from "../../source/Metadata/EntityClass";
 import RelationshipClass from "../../source/Metadata/RelationshipClass";
-import { SchemaKey, RelationshipMultiplicity, StrengthType, RelatedInstanceDirection } from "../../source/ECObjects";
+import { RelationshipMultiplicity, StrengthType, RelatedInstanceDirection } from "../../source/ECObjects";
 import { ECObjectsError } from "../../source/Exception";
 
 describe("RelationshipMultiplicity", () => {
@@ -107,7 +107,7 @@ describe("RelationshipClass", () => {
     let testRelationship: RelationshipClass;
 
     beforeEach(() => {
-      const schema = new Schema(new SchemaKey("TestSchema", 1, 0, 0));
+      const schema = new Schema("TestSchema", 1, 0, 0);
       testRelationship = new RelationshipClass(schema, "TestRelationship");
     });
 

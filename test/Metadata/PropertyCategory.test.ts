@@ -6,7 +6,6 @@ import { assert, expect } from "chai";
 import Schema from "../../source/Metadata/Schema";
 import { ECObjectsError } from "../../source/Exception";
 import PropertyCategory from "../../source/Metadata/PropertyCategory";
-import { SchemaKey } from "../../source/ECObjects";
 
 describe("PropertyCategory", () => {
   describe("deserialization", () => {
@@ -40,7 +39,7 @@ describe("PropertyCategory", () => {
     let testMixin: PropertyCategory;
 
     beforeEach(() => {
-      const schema = new Schema(new SchemaKey("TestSchema", 1, 0, 0));
+      const schema = new Schema("TestSchema", 1, 0, 0);
       testMixin = new PropertyCategory(schema, "TestCategory");
     });
 

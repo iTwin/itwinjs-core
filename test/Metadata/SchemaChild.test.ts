@@ -13,7 +13,7 @@ describe("SchemaChild", () => {
   describe("fromJson", () => {
     class MockSchemaChild extends SchemaChild {
       constructor(name: string) {
-        const schema = new Schema(new SchemaKey("TestSchema", 1, 0, 0));
+        const schema = new Schema("TestSchema", 1, 0, 0);
         super(schema, name, SchemaChildType.EntityClass);
       }
       public async accept() {}

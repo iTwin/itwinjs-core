@@ -39,7 +39,7 @@ describe("Schema Cache", () => {
     const schema4 = new Schema(new SchemaKey("TestSchema", 1, 0));
     await expect(cache.addSchema(schema4)).to.be.rejectedWith(ECObjectsError, "The schema, TestSchema.1.0.0, already exists within this cache.");
 
-    const schema5 = new Schema(new SchemaKey("TestSchema", 1, 0, 0));
+    const schema5 = new Schema("TestSchema", 1, 0, 0);
     await expect(cache.addSchema(schema5)).to.be.rejectedWith(ECObjectsError, "The schema, TestSchema.1.0.0, already exists within this cache.");
   });
 });

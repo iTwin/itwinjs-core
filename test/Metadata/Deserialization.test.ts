@@ -6,7 +6,6 @@ import { assert, expect } from "chai";
 import Schema from "../../source/Metadata/Schema";
 import { SchemaContext } from "../../source/Context";
 import { ECObjectsError } from "../../source/Exception";
-import { SchemaKey } from "../../source/ECObjects";
 
 describe("schema deserialization", () => {
   it("should succeed from json string", async () => {
@@ -79,7 +78,7 @@ describe("schema deserialization", () => {
     };
 
     it("should succeed when referenced schema is already in the schema context", async () => {
-      const refSchema = new Schema(new SchemaKey("RefSchema", 1, 0, 5));
+      const refSchema = new Schema("RefSchema", 1, 0, 5);
       const context = new SchemaContext();
       await context.addSchema(refSchema);
 

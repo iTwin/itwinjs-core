@@ -8,7 +8,7 @@ import ECClass from "../../source/Metadata/Class";
 import EntityClass from "../../source/Metadata/EntityClass";
 import Mixin from "../../source/Metadata/Mixin";
 import RelationshipClass from "../../source/Metadata/RelationshipClass";
-import { ECClassModifier, SchemaKey } from "../../source/ECObjects";
+import { ECClassModifier } from "../../source/ECObjects";
 import { DelayedPromiseWithProps } from "../../source/DelayedPromise";
 
 describe("entity class", () => {
@@ -16,7 +16,7 @@ describe("entity class", () => {
     let schema: Schema;
 
     beforeEach(() => {
-      schema = new Schema(new SchemaKey("TestSchema", 1, 0, 0));
+      schema = new Schema("TestSchema", 1, 0, 0);
     });
 
     it("from mixins", async () => {

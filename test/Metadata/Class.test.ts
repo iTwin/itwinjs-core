@@ -10,14 +10,14 @@ import { SchemaContext } from "../../source/Context";
 import { DelayedPromiseWithProps } from "../../source/DelayedPromise";
 import ECClass from "../../source/Metadata/Class";
 import { ECObjectsError } from "../../source/Exception";
-import { SchemaKey, SchemaChildType } from "../../source/ECObjects";
+import { SchemaChildType } from "../../source/ECObjects";
 
 describe("ECClass", () => {
   let schema: Schema;
 
   describe("get properties", () => {
     beforeEach(() => {
-      schema = new Schema(new SchemaKey("TestSchema", 1, 0, 0));
+      schema = new Schema("TestSchema", 1, 0, 0);
     });
 
     it("inherited properties from base class", async () => {
@@ -109,7 +109,7 @@ describe("ECClass", () => {
         },
       };
 
-      const refSchema = new Schema(new SchemaKey("RefSchema", 1, 0, 5));
+      const refSchema = new Schema("RefSchema", 1, 0, 5);
       const refBaseClass = await refSchema.createEntityClass("BaseClassInRef");
 
       const context = new SchemaContext();
