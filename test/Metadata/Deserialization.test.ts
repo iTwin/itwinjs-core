@@ -6,6 +6,9 @@ import { assert, expect } from "chai";
 import Schema from "../../source/Metadata/Schema";
 import { SchemaContext } from "../../source/Context";
 import { ECObjectsError } from "../../source/Exception";
+import { SchemaDeserializationVisitor } from "../../source/Interfaces";
+import SchemaReadHelper from "../../source/Deserialization/Helper";
+import * as sinon from "sinon";
 
 describe("Full Schema Deserialization", () => {
   describe("basic (empty) schemas", () => {
@@ -179,6 +182,77 @@ describe("Full Schema Deserialization", () => {
         children: { BadChild: { schemaChildType: 0 } },
       };
       await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaChild BadChild has an invalid 'schemaChildType' property. It should be of type 'string'.`);
+    });
+  });
+
+  describe("with visitor", () => {
+    const baseJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+      name: "TestSchema",
+      version: "1.2.3",
+    };
+    type Mock<T> = { readonly [P in keyof T]: sinon.SinonSpy; };
+    let mockVisitor: Mock<SchemaDeserializationVisitor>;
+
+    beforeEach(() => {
+      mockVisitor = {
+        visitEmptySchema: sinon.spy(),
+        visitClass: sinon.spy(),
+        visitEnumeration: sinon.spy(),
+        visitKindOfQuantity: sinon.spy(),
+        visitPropertyCategory: sinon.spy(),
+        visitFullSchema: sinon.spy(),
+      };
+    });
+
+    it("should call all visit methods", async () => {
+      const schemaJson = {
+        ...baseJson,
+        children: {
+          TestEnum: { schemaChildType: "Enumeration", backingTypeName: "int" },
+          TestCategory: { schemaChildType: "PropertyCategory" },
+          TestClass: { schemaChildType: "EntityClass" },
+          TestKoQ: { schemaChildType: "KindOfQuantity" },
+        },
+      };
+      let testSchema = new Schema();
+      const reader = new SchemaReadHelper(undefined, mockVisitor);
+
+      testSchema = await reader.readSchema(testSchema, schemaJson);
+      expect(testSchema).to.exist;
+      expect(mockVisitor.visitEmptySchema.calledOnce).to.be.true;
+      expect(mockVisitor.visitEmptySchema.calledWithExactly(testSchema)).to.be.true;
+
+      const testEnum = await testSchema.getChild("TestEnum");
+      expect(testEnum).to.exist;
+      expect(mockVisitor.visitEnumeration.calledOnce).to.be.true;
+      expect(mockVisitor.visitEnumeration.calledWithExactly(testEnum)).to.be.true;
+      expect(mockVisitor.visitEnumeration.calledAfter(mockVisitor.visitEmptySchema)).to.be.true;
+
+      const testCategory = await testSchema.getChild("TestCategory");
+      expect(testCategory).to.exist;
+      expect(mockVisitor.visitPropertyCategory.calledOnce).to.be.true;
+      expect(mockVisitor.visitPropertyCategory.calledWithExactly(testCategory)).to.be.true;
+      expect(mockVisitor.visitPropertyCategory.calledAfter(mockVisitor.visitEmptySchema)).to.be.true;
+
+      const testClass = await testSchema.getChild("TestClass");
+      expect(testClass).to.exist;
+      expect(mockVisitor.visitClass.calledOnce).to.be.true;
+      expect(mockVisitor.visitClass.calledWithExactly(testClass)).to.be.true;
+      expect(mockVisitor.visitClass.calledAfter(mockVisitor.visitEmptySchema)).to.be.true;
+
+      const testKoq = await testSchema.getChild("TestKoQ");
+      expect(testKoq).to.exist;
+      expect(mockVisitor.visitKindOfQuantity.calledOnce).to.be.true;
+      expect(mockVisitor.visitKindOfQuantity.calledWithExactly(testKoq)).to.be.true;
+      expect(mockVisitor.visitKindOfQuantity.calledAfter(mockVisitor.visitEmptySchema)).to.be.true;
+
+      expect(mockVisitor.visitFullSchema.calledOnce).to.be.true;
+      expect(mockVisitor.visitFullSchema.calledWithExactly(testSchema)).to.be.true;
+      expect(mockVisitor.visitFullSchema.calledAfter(mockVisitor.visitEnumeration)).to.be.true;
+      expect(mockVisitor.visitFullSchema.calledAfter(mockVisitor.visitPropertyCategory)).to.be.true;
+      expect(mockVisitor.visitFullSchema.calledAfter(mockVisitor.visitClass)).to.be.true;
+      expect(mockVisitor.visitFullSchema.calledAfter(mockVisitor.visitKindOfQuantity)).to.be.true;
     });
   });
 });

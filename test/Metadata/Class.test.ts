@@ -11,6 +11,7 @@ import { DelayedPromiseWithProps } from "../../source/DelayedPromise";
 import ECClass from "../../source/Metadata/Class";
 import { ECObjectsError } from "../../source/Exception";
 import { SchemaChildType } from "../../source/ECObjects";
+import * as sinon from "sinon";
 
 describe("ECClass", () => {
   let schema: Schema;
@@ -201,6 +202,28 @@ describe("ECClass", () => {
 
       const unloadedBaseClassJson = { schemaChildType: "EntityClass", baseClass: "ThisClassDoesNotExist" };
       await expect(testClass.fromJson(unloadedBaseClassJson)).to.be.rejectedWith(ECObjectsError);
+    });
+  });
+
+  describe("accept", () => {
+    let testClass: ECClass;
+    class MockECClass extends ECClass {}
+
+    beforeEach(() => {
+      testClass = new MockECClass(schema, "TestClass", SchemaChildType.EntityClass);
+    });
+
+    it("should call visitClass on a SchemaChildVisitor object", async () => {
+      expect(testClass).to.exist;
+      const mockVisitor = { visitClass: sinon.spy() };
+      await testClass.accept(mockVisitor);
+      expect(mockVisitor.visitClass.calledOnce).to.be.true;
+      expect(mockVisitor.visitClass.calledWithExactly(testClass)).to.be.true;
+    });
+
+    it("should safely handle a SchemaChildVisitor without visitClass defined", async () => {
+      expect(testClass).to.exist;
+      await testClass.accept({});
     });
   });
 });
