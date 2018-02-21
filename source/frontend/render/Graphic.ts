@@ -4,6 +4,19 @@
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { Point3d, Vector3d } from "@bentley/geometry-core/lib/PointVector";
 import { FeatureIndexType, FeatureIndex } from "./FeatureIndex";
+import { IModelConnection } from "../IModelConnection";
+import { ViewContext } from "../ViewContext";
+
+/**
+ * A renderer-specific object that can be placed into a display list.
+ */
+export class Graphic {
+  public static excessiveRefCountThreshold = 100000;
+  constructor(public readonly imodel: IModelConnection, public readonly viewContext: ViewContext) {}
+}
+
+export class GraphicList extends Array<Graphic> { constructor(...args: Graphic[]) { super(...args); } }
+
 
 export class IndexedPrimitiveParamsFeatures {
   public type: FeatureIndexType;

@@ -3,14 +3,48 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { IndexedPrimitiveParamsFeatures, PolylineParamVertex, PolylineParam } from "../../frontend/render/Graphic";
+import { IndexedPrimitiveParamsFeatures, PolylineParamVertex, PolylineParam, Graphic, GraphicList } from "../../frontend/render/Graphic";
 import { FeatureIndexType, FeatureIndex } from "../../frontend/render/FeatureIndex";
+import { IModelConnection } from "../../frontend/IModelConnection";
+import { ViewContext } from "../../frontend/ViewContext";
+import * as path from "path";
 
 function withinTol(x: number, y: number): boolean {
   return Math.abs(x - y) < 0.0000000000001;
 }
 
-describe("Graphic", () => {
+const iModelLocation = path.join(__dirname, "../../../../backend/test/assets/test.bim");
+
+describe.only("Graphic", () => {
+  let imodel: IModelConnection;
+
+  before(async () => {   
+    imodel = await IModelConnection.openStandalone(iModelLocation);
+  });
+
+  after(async () => {
+    if (imodel) await imodel.closeStandalone();
+  });
+
+  it("Graphic works as expected", () => {
+    const vc = new ViewContext();
+    const g = new Graphic(imodel, vc);
+    assert.isTrue(Graphic.excessiveRefCountThreshold === 100000, "excessiveRefCountThreshold is correct");
+    assert.isTrue(g.imodel instanceof IModelConnection, "can access IModelConnection");
+    assert.isTrue(g.viewContext instanceof ViewContext, "can access ViewContext");
+  });
+
+  it("GraphicList works as expected", () => {
+    const vc = new ViewContext();
+    const g1 = new Graphic(imodel, vc);
+    const g2 = new Graphic(imodel, vc);
+    const g3 = new Graphic(imodel, vc);
+    const g4 = new Graphic(imodel, vc);
+    const glist = new GraphicList(g1, g2, g3, g4);
+    assert.isTrue(glist.length === 4, "graphics loaded into array");
+    assert.isTrue(glist[0] instanceof Graphic, "graphics can be accessed by index");
+  });
+  
   it("IndexedPrimitiveParamsFeatures works as expected", () => {
     // Test comstructor with no params
     let ippFeatures: IndexedPrimitiveParamsFeatures = new IndexedPrimitiveParamsFeatures();
