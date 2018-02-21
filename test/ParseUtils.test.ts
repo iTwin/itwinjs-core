@@ -48,7 +48,7 @@ describe("Parsing/ToString Functions", () => {
     expect(() => parseClassModifier("invalid modifier")).to.throw(ECObjectsError, "The string 'invalid modifier' is not a valid ECClassModifier.");
   });
 
-  it("parseClassModifier", () => {
+  it("parseCustomAttributeContainerType", () => {
     expect(parseCustomAttributeContainerType("SChEma")).to.equal(CustomAttributeContainerType.Schema);
     expect(parseCustomAttributeContainerType("ENTiTycLAsS")).to.equal(CustomAttributeContainerType.EntityClass);
     expect(parseCustomAttributeContainerType("CUstOmAttRIBUteClASs")).to.equal(CustomAttributeContainerType.CustomAttributeClass);
