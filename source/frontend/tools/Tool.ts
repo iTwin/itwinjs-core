@@ -11,7 +11,8 @@ import { iModelApp } from "../IModelApp";
 import { IModelError } from "../../common/IModelError";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 
-type CommandList = Array<typeof Tool>;
+type ToolType = typeof Tool;
+type CommandList = ToolType[];
 
 export const enum BeButton {
   Data = 0,
@@ -329,8 +330,8 @@ export class Tool {
   public static toolId = "";
   public static namespace: I18NNamespace;
   protected static _keyin?: string; // localized (fetched only once, first time needed).
-
   public constructor(..._args: any[]) { }
+
   /**
    * Register this Tool class with the ToolRegistry.
    * @param namespace optional namespace to supply to ToolRegistry.register. If undefined, use namespace from superclass.
@@ -341,21 +342,16 @@ export class Tool {
    * Get the localized keyin string for this Tool class. This returns the value of "tools." + this.toolId + ".keyin" from the
    * .json file for the current locale of its registered NameSpace (e.g. "en/MyApp.json")
    */
-  public static get keyin(): string {
-    if (!this._keyin) {
-      this._keyin = iModelApp.i18N.translate(this.namespace.name + ":tools." + this.toolId + ".keyin");
-    }
-    return this._keyin!;
-  }
+  public static get keyin(): string { return this._keyin ? this._keyin : (this._keyin = iModelApp.i18N.translate(this.namespace.name + ":tools." + this.toolId + ".keyin")); }
 
   /**
    * Get the toolId string for this Tool class. This string is used to identify the Tool in the ToolRegistry and is used to localize
    * the keyin, description, etc. from the current locale.
    */
-  public get toolId(): string { return (this.constructor as typeof Tool).toolId; }
+  public get toolId(): string { return (this.constructor as ToolType).toolId; }
 
   /** Get the localized keyin string from this Tool's class */
-  public get keyin(): string { return (this.constructor as typeof Tool).keyin; }
+  public get keyin(): string { return (this.constructor as ToolType).keyin; }
 
   /**
    * run this instance of a Tool. Subclasses should override to perform their action.
@@ -467,14 +463,14 @@ export abstract class InteractiveTool extends Tool {
  * find Tools by their toolId, and also a way to iterate over the collection of Tools available.
  */
 export class ToolRegistry {
-  public map: Map<string, typeof Tool> = new Map<string, typeof Tool>();
+  public readonly tools = new Map<string, typeof Tool>();
   private _keyinList?: CommandList;
 
   /**
    * Un-register a Tool class.
    * @param toolId the toolId of a previously registered tool to unRegister.
    */
-  public unRegister(toolId: string) { this.map.delete(toolId); }
+  public unRegister(toolId: string) { this.tools.delete(toolId); this._keyinList = undefined; }
 
   /**
    * Register a Tool class. This establishes a connection between the toolId of the class and the class itself.
@@ -486,15 +482,13 @@ export class ToolRegistry {
       toolClass.namespace = namespace;
 
     if (toolClass.toolId.length === 0)
-      return; // must be an abstract class
+      return; // must be an abstract class, ignore it
 
     if (!toolClass.namespace)
       throw new IModelError(-1, "Tools must have a namespace");
 
-    this.map.set(toolClass.toolId, toolClass);
-
-    // throw away the current _keyinList and produce a new one when asked.
-    this._keyinList = undefined;
+    this.tools.set(toolClass.toolId, toolClass);
+    this._keyinList = undefined;  // throw away the current keyinList so we'll produce a new one when asked.
   }
 
   /**
@@ -514,7 +508,7 @@ export class ToolRegistry {
   }
 
   /** Look up a tool by toolId */
-  public find(toolId: string): typeof Tool | undefined { return this.map.get(toolId); }
+  public find(toolId: string): typeof Tool | undefined { return this.tools.get(toolId); }
 
   /**
    * Look up a tool by toolId and, if found, create an instance with the supplied arguments.
@@ -539,12 +533,13 @@ export class ToolRegistry {
   }
 
   private async getKeyinList(): Promise<CommandList> {
-    if (this._keyinList) return this._keyinList;
-    const thePromise: Promise<CommandList> = new Promise<CommandList>((resolve: any, reject: any) => {
+    if (this._keyinList)
+      return this._keyinList;
+    const thePromise = new Promise<CommandList>((resolve: any, reject: any) => {
       iModelApp.i18N.waitForAllRead().then(() => {
-        this._keyinList = new Array<typeof Tool>();
-        for (const thisTool of this.map.values()) {
-          this._keyinList!.push(thisTool);
+        this._keyinList = [];
+        for (const thisTool of this.tools.values()) {
+          this._keyinList.push(thisTool);
         }
         resolve(this._keyinList);
       }, () => { reject(); });
@@ -553,21 +548,29 @@ export class ToolRegistry {
   }
 
   public async findPartialMatches(keyin: string): Promise<FuzzySearchResults<typeof Tool>> {
-    const commandList: CommandList = await iModelApp.tools.getKeyinList();
-    const searcher: FuzzySearch<typeof Tool> = new FuzzySearch<typeof Tool>();
-    const searchResults: FuzzySearchResults<typeof Tool> = searcher.search(commandList, ["keyin"], keyin);
+    const commandList: CommandList = await this.getKeyinList();
+    const searcher = new FuzzySearch<ToolType>();
+    const searchResults: FuzzySearchResults<ToolType> = searcher.search(commandList, ["keyin"], keyin);
     return searchResults;
   }
 
+  /**
+   * Find a tool by its localized keyin. If found (via exact match), execute the tool with the supplied arguments.
+   * @param keyin the localized keyin string of the tool to run.
+   * @param args the arguments for the tool. Note: these argument are passed to both the constructor and the tools' run method.
+   */
   public async executeExactMatch(keyin: string, ...args: any[]): Promise<boolean> {
-    const foundClass: typeof Tool | undefined = await this.findExactMatch(keyin);
-    if (!foundClass)
-      return false;
-    return new foundClass(...args).run(...args);
+    const foundClass = await this.findExactMatch(keyin);
+    return foundClass ? new foundClass(...args).run(...args) : false;
   }
 
+  /**
+   * Find a tool by its localized keyin.
+   * @param keyin the localized keyin string of the tool.
+   * @returns the tool class, if an exact match is found.
+   */
   public async findExactMatch(keyin: string): Promise<typeof Tool | undefined> {
-    const commandList: CommandList = await iModelApp.tools.getKeyinList();
+    const commandList: CommandList = await this.getKeyinList();
     for (const thisTool of commandList) {
       if (thisTool.keyin === keyin)
         return thisTool;

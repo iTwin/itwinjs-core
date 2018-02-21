@@ -24,7 +24,12 @@ class TestImmediate extends Tool {
 // spell-checker: disable
 
 class TestCommandApp extends IModelApp {
-  public testNamespace: I18NNamespace;
+  public testNamespace?: I18NNamespace;
+
+  constructor() {
+    super();
+    this.testNamespace = undefined;
+  }
 
   protected onStartup() {
     this.testNamespace = iModelApp.i18N.registerNamespace("TestApp");
@@ -143,7 +148,7 @@ function registerTestClass(id: string, keyin: string, ns: I18NNamespace) {
 
 function createTestTools(): void {
   const testCommandEntries: any = JSON.parse(testCommandsString);
-  const ns: I18NNamespace = (iModelApp as TestCommandApp).testNamespace;
+  const ns: I18NNamespace = (iModelApp as TestCommandApp).testNamespace!;
   for (const thisEntry of testCommandEntries) {
     // create a tool id by concatenating the words of the keyin.
     const toolId: string = thisEntry.commandString.replace(/ /g, ".");

@@ -3,27 +3,29 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 import { EntityProps } from "../common/EntityProps";
-import { IModel } from "../common/IModel";
 import { Code } from "../common/Code";
 import { ElementProps, RelatedElement } from "../common/ElementProps";
+import { IModelConnection } from "./IModelConnection";
 
-/** the constructor for an EntityState (for cloning). */
-interface EntityStateCtor extends FunctionConstructor {
-  new(args: EntityProps, iModel: IModel, state?: EntityState): EntityState;
-}
-
+/** The "state" of a BSI Entity as represented in a web browser. */
 export class EntityState implements EntityProps {
   public readonly id: Id64;
-  public readonly iModel: IModel;
+  public readonly iModel: IModelConnection;
   public readonly classFullName: string;
   public readonly jsonProperties: any;
   public static schemaName = "BisCore";
 
-  constructor(props: EntityProps, iModel: IModel) {
+  /**
+   * constructor for EntityState
+   * @param props the properties of the Entity to be represented by this EntityState
+   * @param iModel the iModel from which this EntityState is to be constructed
+   * @param _state source EntityState for clone
+   */
+  constructor(props: EntityProps, iModel: IModelConnection, _state?: EntityState) {
     this.classFullName = props.classFullName;
     this.iModel = iModel;
     this.id = Id64.fromJSON(props.id);
-    this.jsonProperties = !props.jsonProperties ? {} : JSON.parse(JSON.stringify(props.jsonProperties)); // make sure we have our own copy
+    this.jsonProperties = props.jsonProperties ? JSON.parse(JSON.stringify(props.jsonProperties)) : {}; // make sure we have our own copy
   }
 
   public toJSON(): EntityProps {
@@ -31,7 +33,7 @@ export class EntityState implements EntityProps {
     val.classFullName = this.classFullName;
     if (this.id.isValid())
       val.id = this.id;
-    if (Object.keys(this.jsonProperties).length > 0)
+    if (this.jsonProperties && Object.keys(this.jsonProperties).length > 0)
       val.jsonProperties = this.jsonProperties;
     return val;
   }
@@ -39,18 +41,25 @@ export class EntityState implements EntityProps {
   public equals(other: EntityState): boolean { return JSON.stringify(this.toJSON()) === JSON.stringify(other.toJSON()); }
 
   /** Make an independent copy of this EntityState */
-  public clone<T extends EntityState>() { return new (this.constructor as EntityStateCtor)(this.toJSON(), this.iModel, this) as T; }
+  public clone<T extends EntityState>() { return new (this.constructor as typeof EntityState)(this.toJSON(), this.iModel, this) as T; }
 
   /**
-   * Get full class name of this Entity in the form "schema:class".
-   * @note This relies on all EntityState subclasses using their exact ECClass name as their class name, <em>with "State" appended to the end</em>.
-   * @note Subclasses from other than the BisCore domain should override the static member "schemaName" with their domain prefix.
+   * Get full class name of this Entity in the form "SchemaName:ClassName".
+   * @note Subclasses from other than the BisCore domain should override their static member "schemaName" with their schema name.
    */
   public static getClassFullName(): string { return this.schemaName + ":" + this.className; }
+
   public static get sqlName(): string { return this.schemaName + "." + this.className; }
+
+  /**
+   * Get the ECClass name for this EntityState.
+   * @note This default implementation relies on all EntityState subclasses using their ECClass name as their JavaScript class name, <em>with "State" appended to the end </em>.
+   * If this is not true, you must override this method.
+   */
   public static get className(): string { return this.name.slice(0, this.name.lastIndexOf("State")); }
 }
 
+/** The "state" of an Element as represented in a web browser. */
 export class ElementState extends EntityState implements ElementProps {
   public readonly model: Id64;
   public readonly code: Code;
@@ -58,7 +67,7 @@ export class ElementState extends EntityState implements ElementProps {
   public readonly federationGuid?: Guid;
   public readonly userLabel?: string;
 
-  constructor(props: ElementProps, iModel: IModel) {
+  constructor(props: ElementProps, iModel: IModelConnection) {
     super(props, iModel);
     this.code = Code.fromJSON(props.code);
     this.model = Id64.fromJSON(props.model);

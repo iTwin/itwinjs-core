@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64Props } from "@bentley/bentleyjs-core/lib/Id";
 
-/** The properties of an BIS Entity. */
+/** The properties of a BIS Entity as they are read/stored from/to the database. */
 export interface EntityProps {
   /** The full name of the EC Class for this entity. Must be in the form "Schema:ClassName" */
   classFullName: string;
@@ -12,9 +12,9 @@ export interface EntityProps {
   [propName: string]: any;
 }
 
-/** Parameters for performing an ECSQL SELECT query on entity classes. */
+/** Parameters for performing an ECSQL SELECT query on BIS entity classes. */
 export interface EntityQueryParams {
-  /** The classFullName of the class to search. */
+  /** The sql className, in the form "Schema.ClassName", of the class to search. */
   from?: string;
   /** Set to true to limit results to *not* include sub-classes of "from" class */
   only?: boolean;

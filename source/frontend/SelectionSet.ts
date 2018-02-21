@@ -1,13 +1,15 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64Arg } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64, Id64Arg, Id64Set } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelConnection } from "./IModelConnection";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { iModelApp } from "./IModelApp";
 
+/** event types for SelectionSet.onChanged  */
 export const enum SelectEventType { Add, Remove, Replace, Clear }
 
+/** The set of hilited elements for an IModelConnection, by element id */
 export class HilitedSet {
   public readonly elements = new Set<string>();
   public constructor(public iModel: IModelConnection) { }
@@ -24,13 +26,14 @@ export class HilitedSet {
   public get size() { return this.elements.size; }
 }
 
-/** the set of currently selected elements for an iModel */
+/** The set of currently selected elements for an IModelConnection */
 export class SelectionSet {
   public readonly elements = new Set<string>();
-  public readonly onChanged = new BeEvent<(iModel: IModelConnection, evType: SelectEventType, ids?: Set<string>) => void>();
+  /** Called whenever elements are added or removed from this SelectionSet */
+  public readonly onChanged = new BeEvent<(iModel: IModelConnection, evType: SelectEventType, ids?: Id64Set) => void>();
   public constructor(public iModel: IModelConnection) { }
 
-  private sendChangedEvent(evType: SelectEventType, ids?: Set<string>) { this.onChanged.raiseEvent(this.iModel, evType, ids); }
+  private sendChangedEvent(evType: SelectEventType, ids?: Id64Set) { this.onChanged.raiseEvent(this.iModel, evType, ids); }
 
   /** Get the number of entries in this selection set. */
   public get size() { return this.elements.size; }
@@ -53,7 +56,7 @@ export class SelectionSet {
   }
 
   /**
-   * Add an element or set of elements to the current selection set.
+   * Add one or more elements to the current selection set.
    * @returns true if any elements were added.
    */
   public add(elem: Id64Arg, sendEvent = true): boolean {
@@ -67,7 +70,7 @@ export class SelectionSet {
   }
 
   /**
-   * Remove an element or set of elements from the current selection set.
+   * Remove one or more elements from the current selection set.
    * @returns true if any elements were removed.
    */
   public remove(elem: Id64Arg, sendEvent = true): boolean {
@@ -94,7 +97,7 @@ export class SelectionSet {
     return this.addAndRemove(elementsToAdd, elementsToRemove);
   }
 
-  /** Change selection set to be the supplied element or set of elements */
+  /** Change selection set to be the supplied set of elements */
   public replace(elem: Id64Arg): void {
     this.elements.clear();
     this.add(elem, false);
