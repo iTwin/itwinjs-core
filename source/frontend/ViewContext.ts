@@ -6,7 +6,8 @@ import { Sprite } from "./Sprites";
 import { Point3d, Vector3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
 import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
 import { HitDetail, SnapMode, SnapDetail } from "./HitDetail";
-import { DecorationList, GraphicList, Decorations, Graphic, GraphicType, GraphicBuilder } from "../common/Render";
+import { GraphicType, GraphicBuilder } from "./render/GraphicBuilder";
+import { DecorationList, GraphicList, Decorations, Graphic } from "../common/Render";
 import { ACSDisplayOptions, AuxCoordSystemState } from "../frontend/AuxCoordSys";
 
 export class ViewContext {
