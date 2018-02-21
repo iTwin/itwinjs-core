@@ -17,7 +17,6 @@ export class Graphic {
 
 export class GraphicList extends Array<Graphic> { constructor(...args: Graphic[]) { super(...args); } }
 
-
 export class IndexedPrimitiveParamsFeatures {
   public type: FeatureIndexType;
   public uniform: number;

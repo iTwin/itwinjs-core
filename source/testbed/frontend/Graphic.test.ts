@@ -18,7 +18,7 @@ const iModelLocation = path.join(__dirname, "../../../../backend/test/assets/tes
 describe("Graphic", () => {
   let imodel: IModelConnection;
 
-  before(async () => {   
+  before(async () => {
     imodel = await IModelConnection.openStandalone(iModelLocation);
   });
 
