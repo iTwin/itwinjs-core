@@ -60,6 +60,7 @@ describe("KindOfQuantity", () => {
 
   describe("fromJson", () => {
     let testKoQ: KindOfQuantity;
+    const baseJson = { schemaChildType: "KindOfQuantity" };
 
     beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);
@@ -68,6 +69,7 @@ describe("KindOfQuantity", () => {
 
     it("should successfully deserialize valid JSON", async () => {
       const koqJson = {
+        ...baseJson,
         label: "SomeDisplayLabel",
         description: "A really long description...",
         precision: 1.234,
@@ -93,6 +95,7 @@ describe("KindOfQuantity", () => {
 
     it("should successfully deserialize valid JSON (without units)", async () => {
       const koqJson = {
+        ...baseJson,
         label: "SomeDisplayLabel",
         description: "A really long description...",
         precision: 1.234,
@@ -110,7 +113,10 @@ describe("KindOfQuantity", () => {
     });
     async function testInvalidAttribute(attributeName: string, expectedType: string, value: any) {
       expect(testKoQ).to.exist;
-      const json: any = { [attributeName]: value };
+      const json: any = {
+        ...baseJson,
+        [attributeName]: value,
+      };
       await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
     }
 
@@ -121,6 +127,7 @@ describe("KindOfQuantity", () => {
     it("should throw for presentationUnit with missing unit", async () => {
       expect(testKoQ).to.exist;
       const json: any = {
+        ...baseJson,
         presentationUnits: [{}],
       };
       await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit that is missing the required attribute 'unit'.`);
@@ -129,6 +136,7 @@ describe("KindOfQuantity", () => {
     it("should throw for presentationUnit with invalid unit", async () => {
       expect(testKoQ).to.exist;
       const json: any = {
+        ...baseJson,
         presentationUnits: [{ unit: 0 }],
       };
       await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit with an invalid 'unit' attribute. It should be of type 'string'.`);
@@ -137,6 +145,7 @@ describe("KindOfQuantity", () => {
     it("should throw for presentationUnit with invalid format", async () => {
       expect(testKoQ).to.exist;
       const json: any = {
+        ...baseJson,
         presentationUnits: [{ unit: "valid", format: false }],
       };
       await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit with an invalid 'format' attribute. It should be of type 'string'.`);
@@ -147,6 +156,7 @@ describe("KindOfQuantity", () => {
     it("should throw for persistenceUnit with missing unit", async () => {
       expect(testKoQ).to.exist;
       const json: any = {
+        ...baseJson,
         persistenceUnit: {},
       };
       await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit that is missing the required attribute 'unit'.`);
@@ -155,6 +165,7 @@ describe("KindOfQuantity", () => {
     it("should throw for persistenceUnit with invalid unit", async () => {
       expect(testKoQ).to.exist;
       const json: any = {
+        ...baseJson,
         persistenceUnit: { unit: 0 },
       };
       await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit with an invalid 'unit' attribute. It should be of type 'string'.`);
@@ -163,6 +174,7 @@ describe("KindOfQuantity", () => {
     it("should throw for persistenceUnit with invalid format", async () => {
       expect(testKoQ).to.exist;
       const json: any = {
+        ...baseJson,
         persistenceUnit: { unit: "valid", format: false },
       };
       await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit with an invalid 'format' attribute. It should be of type 'string'.`);

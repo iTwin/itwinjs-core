@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaChildKey, SchemaChildType } from "../ECObjects";
+import { SchemaChildKey, SchemaChildType, tryParseSchemaChildType, schemaChildTypeToString } from "../ECObjects";
 import { SchemaChildVisitor } from "../Interfaces";
 import Schema from "./Schema";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
@@ -29,6 +29,15 @@ export default abstract class SchemaChild {
   get fullName() { return this.key.schemaKey ? `${this.key.schemaKey}.${this.name}` : this.name; }
 
   public async fromJson(jsonObj: any): Promise<void> {
+    if (undefined === jsonObj.schemaChildType)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaChild ${this.name} is missing the required schemaChildType property.`);
+
+    if (typeof(jsonObj.schemaChildType) !== "string")
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaChild ${this.name} has an invalid 'schemaChildType' attribute. It should be of type 'string'.`);
+
+    if (tryParseSchemaChildType(jsonObj.schemaChildType) !== this.type)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaChild ${this.name} has an incompatible schemaChildType. It must be "${schemaChildTypeToString(this.type)}", not "${jsonObj.schemaChildType}".`);
+
     if (undefined !== jsonObj.name) {
       if (typeof(jsonObj.name) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaChild ${this.name} has an invalid 'name' attribute. It should be of type 'string'.`);

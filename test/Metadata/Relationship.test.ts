@@ -104,6 +104,7 @@ describe("RelationshipClass", () => {
   });
 
   describe("fromJson", () => {
+    const baseJson = { schemaChildType: "RelationshipClass" };
     let testRelationship: RelationshipClass;
 
     beforeEach(() => {
@@ -113,13 +114,13 @@ describe("RelationshipClass", () => {
 
     it("should throw for invalid strength", async () => {
       expect(testRelationship).to.exist;
-      const json = { strength: 0 };
+      const json = { ...baseJson, strength: 0 };
       await expect(testRelationship.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestRelationship has an invalid 'strength' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid strengthDirection", async () => {
       expect(testRelationship).to.exist;
-      const json = { strengthDirection: 0 };
+      const json = { ...baseJson, strengthDirection: 0 };
       await expect(testRelationship.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestRelationship has an invalid 'strengthDirection' attribute. It should be of type 'string'.`);
     });
   });

@@ -188,16 +188,16 @@ describe("ECClass", () => {
 
     it("should throw for invalid modifier", async () => {
       expect(testClass).to.exist;
-      const invalidModifierJson = { modifier: 0 };
+      const invalidModifierJson = { schemaChildType: "EntityClass", modifier: 0 };
       await expect(testClass.fromJson(invalidModifierJson)).to.be.rejectedWith(ECObjectsError, `The ECClass TestClass has an invalid 'modifier' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid baseClass", async () => {
       expect(testClass).to.exist;
-      const invalidBaseClassJson = { baseClass: 0 };
+      const invalidBaseClassJson = { schemaChildType: "EntityClass", baseClass: 0 };
       await expect(testClass.fromJson(invalidBaseClassJson)).to.be.rejectedWith(ECObjectsError, `The ECClass TestClass has an invalid 'baseClass' attribute. It should be of type 'string'.`);
 
-      const unloadedBaseClassJson = { baseClass: "ThisClassDoesNotExist" };
+      const unloadedBaseClassJson = { schemaChildType: "EntityClass", baseClass: "ThisClassDoesNotExist" };
       await expect(testClass.fromJson(unloadedBaseClassJson)).to.be.rejectedWith(ECObjectsError);
     });
   });

@@ -45,7 +45,10 @@ describe("PropertyCategory", () => {
 
     it("should throw for invalid priority", async () => {
       expect(testMixin).to.exist;
-      const json = { priority: "1" };
+      const json = {
+        schemaChildType: "PropertyCategory",
+        priority: "1",
+      };
       await expect(testMixin.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The PropertyCategory TestCategory has an invalid 'priority' attribute. It should be of type 'number'.`);
     });
   });

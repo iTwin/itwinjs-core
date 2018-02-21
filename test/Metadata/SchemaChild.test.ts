@@ -11,25 +11,48 @@ import { SchemaChildType, SchemaKey, SchemaChildKey } from "../../source/ECObjec
 
 describe("SchemaChild", () => {
   describe("fromJson", () => {
-    class MockSchemaChild extends SchemaChild {
-      constructor(name: string) {
-        const schema = new Schema("TestSchema", 1, 0, 0);
-        super(schema, name, SchemaChildType.EntityClass);
+    let testChild: SchemaChild;
+
+    beforeEach(() => {
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      class MockSchemaChild extends SchemaChild {
+        constructor(name: string) { super(schema, name, SchemaChildType.EntityClass); }
+        public async accept() {}
       }
-      public async accept() {}
+      testChild = new MockSchemaChild("BadSchemaChild");
+    });
+
+    it("should throw for missing schemaChildType", async () => {
+      expect(testChild).to.exist;
+      await expect(testChild.fromJson({})).to.be.rejectedWith(ECObjectsError, `The SchemaChild BadSchemaChild is missing the required schemaChildType property.`);
+    });
+
+    it("should throw for invalid schemaChildType", async () => {
+      expect(testChild).to.exist;
+      const json: any = { schemaChildType: 0 };
+      await expect(testChild.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaChild BadSchemaChild has an invalid 'schemaChildType' attribute. It should be of type 'string'.`);
+    });
+
+    it("should throw for mismatched schemaChildType", async () => {
+      expect(testChild).to.exist;
+      const json = { schemaChildType: "Mixin" };
+      await expect(testChild.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaChild BadSchemaChild has an incompatible schemaChildType. It must be "EntityClass", not "Mixin".`);
+    });
+
+    async function testInvalidAttribute(attributeName: string, expectedType: string, value: any) {
+      expect(testChild).to.exist;
+      const json: any = {
+        schemaChildType: "EntityClass",
+        [attributeName]: value,
+      };
+      await expect(testChild.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaChild BadSchemaChild has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
     }
 
-    async function testInvalidAttribute(child: SchemaChild, attributeName: string, expectedType: string, value: any) {
-      expect(child).to.exist;
-      const json: any = { [attributeName]: value };
-      await expect(child.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaChild ${child.name} has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
-    }
-
-    it("should throw for invalid name", async () => testInvalidAttribute(new MockSchemaChild("BadSchema"), "name", "string", 0));
-    it("should throw for invalid description", async () => testInvalidAttribute(new MockSchemaChild("BadSchema"), "description", "string", 0));
-    it("should throw for invalid label", async () => testInvalidAttribute(new MockSchemaChild("BadSchema"), "label", "string", 0));
-    it("should throw for invalid schema", async () => testInvalidAttribute(new MockSchemaChild("BadSchema"), "schema", "string", 0));
-    it("should throw for invalid schemaVersion", async () => testInvalidAttribute(new MockSchemaChild("BadSchema"), "schemaVersion", "string", 0));
+    it("should throw for invalid name", async () => testInvalidAttribute("name", "string", 0));
+    it("should throw for invalid description", async () => testInvalidAttribute("description", "string", 0));
+    it("should throw for invalid label", async () => testInvalidAttribute("label", "string", 0));
+    it("should throw for invalid schema", async () => testInvalidAttribute("schema", "string", 0));
+    it("should throw for invalid schemaVersion", async () => testInvalidAttribute("schemaVersion", "string", 0));
   });
 });
 

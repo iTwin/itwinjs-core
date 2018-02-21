@@ -24,6 +24,40 @@ export const enum SchemaChildType {
 }
 
 /**
+ * Tries to parse the given string as one of the 8 schema child types.
+ * @param type The schema child type string to parse.
+ * @returns A valid SchemaChildType if successfully parsed, or undefined if the provided string is not a valid SchemaChildType.
+ */
+export function tryParseSchemaChildType(type: string): SchemaChildType | undefined {
+  if (/^EntityClass$/i.test(type)) return SchemaChildType.EntityClass;
+  if (/^Mixin$/i.test(type)) return SchemaChildType.Mixin;
+  if (/^StructClass$/i.test(type)) return SchemaChildType.StructClass;
+  if (/^CustomAttributeClass$/i.test(type)) return SchemaChildType.CustomAttributeClass;
+  if (/^RelationshipClass$/i.test(type)) return SchemaChildType.RelationshipClass;
+  if (/^Enumeration$/i.test(type)) return SchemaChildType.Enumeration;
+  if (/^KindOfQuantity$/i.test(type)) return SchemaChildType.KindOfQuantity;
+  if (/^PropertyCategory$/i.test(type)) return SchemaChildType.PropertyCategory;
+  return undefined;
+}
+
+/**
+ * Converts a valid SchemaChildType to a display string.
+ * @param value The SchemaChildType to stringify.
+ */
+export function schemaChildTypeToString(value: SchemaChildType): string {
+  switch (value) {
+    case SchemaChildType.EntityClass: return "EntityClass";
+    case SchemaChildType.Mixin: return "Mixin";
+    case SchemaChildType.StructClass: return "StructClass";
+    case SchemaChildType.CustomAttributeClass: return "CustomAttributeClass";
+    case SchemaChildType.RelationshipClass: return "RelationshipClass";
+    case SchemaChildType.Enumeration: return "Enumeration";
+    case SchemaChildType.KindOfQuantity: return "KindOfQuantity";
+    case SchemaChildType.PropertyCategory: return "PropertyCategory";
+  }
+}
+
+/**
  * Enumeration of primitive data types for ECProperties
  */
 export const enum PrimitiveType {
@@ -46,26 +80,16 @@ export const enum PrimitiveType {
  * @returns A valid PrimitiveType if successfully parsed, or undefined if the provided string is not a valid PrimitiveType.
  */
 export function tryParsePrimitiveType(type: string): PrimitiveType | undefined {
-  if (/^binary$/i.test(type))
-    return PrimitiveType.Binary;
-  else if (/^bool$/i.test(type) || /^boolean$/i.test(type))
-    return PrimitiveType.Boolean;
-  else if (/^dateTime$/i.test(type))
-    return PrimitiveType.DateTime;
-  else if (/^double$/i.test(type))
-    return PrimitiveType.Double;
-  else if (/^int$/i.test(type))
-    return PrimitiveType.Integer;
-  else if (/^long$/i.test(type))
-    return PrimitiveType.Long;
-  else if (/^point2d$/i.test(type))
-    return PrimitiveType.Point2d;
-  else if (/^point3d$/i.test(type))
-    return PrimitiveType.Point3d;
-  else if (/^string$/i.test(type))
-    return PrimitiveType.String;
-  else if (/^Bentley\.Geometry\.Common\.IGeometry$/i.test(type))
-    return PrimitiveType.IGeometry;
+  if (/^binary$/i.test(type)) return PrimitiveType.Binary;
+  if (/^bool(ean)?$/i.test(type)) return PrimitiveType.Boolean;
+  if (/^dateTime$/i.test(type)) return PrimitiveType.DateTime;
+  if (/^double$/i.test(type)) return PrimitiveType.Double;
+  if (/^int$/i.test(type)) return PrimitiveType.Integer;
+  if (/^long$/i.test(type)) return PrimitiveType.Long;
+  if (/^point2d$/i.test(type)) return PrimitiveType.Point2d;
+  if (/^point3d$/i.test(type)) return PrimitiveType.Point3d;
+  if (/^string$/i.test(type)) return PrimitiveType.String;
+  if (/^Bentley\.Geometry\.Common\.IGeometry$/i.test(type)) return PrimitiveType.IGeometry;
 
   return undefined;
 }

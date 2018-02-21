@@ -49,6 +49,7 @@ describe("Mixin", () => {
   describe("fromJson", () => {
     let testEntity: EntityClass;
     let testMixin: Mixin;
+    const baseJson = { schemaChildType: "Mixin" };
 
     beforeEach(async () => {
       const schema = new Schema("TestSchema", 1, 0, 0);
@@ -57,26 +58,27 @@ describe("Mixin", () => {
     });
 
     it("should successfully deserialize valid JSON", async () => {
-      const propertyJson = {
+      const json = {
+        ...baseJson,
         appliesTo: "TestSchema.TestEntity",
       };
       expect(testMixin).to.exist;
-      await testMixin.fromJson(propertyJson);
+      await testMixin.fromJson(json);
 
       expect(await testMixin.appliesTo).to.eql(testEntity);
     });
 
     it("should throw for missing appliesTo", async () => {
       expect(testMixin).to.exist;
-      await expect(testMixin.fromJson({})).to.be.rejectedWith(ECObjectsError, `The Mixin TestMixin is missing the required 'appliesTo' attribute.`);
+      await expect(testMixin.fromJson({...baseJson})).to.be.rejectedWith(ECObjectsError, `The Mixin TestMixin is missing the required 'appliesTo' attribute.`);
     });
 
     it("should throw for invalid appliesTo", async () => {
       expect(testMixin).to.exist;
-      const invalidAppliesToJson = { appliesTo: 0 };
+      const invalidAppliesToJson = { ...baseJson, appliesTo: 0 };
       await expect(testMixin.fromJson(invalidAppliesToJson)).to.be.rejectedWith(ECObjectsError, `The Mixin TestMixin has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
 
-      const unloadedAppliesToJson = { appliesTo: "ThisClassDoesNotExist" };
+      const unloadedAppliesToJson = { ...baseJson, appliesTo: "ThisClassDoesNotExist" };
       await expect(testMixin.fromJson(unloadedAppliesToJson)).to.be.rejectedWith(ECObjectsError);
     });
   });

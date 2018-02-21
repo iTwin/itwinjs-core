@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaContext } from "../Context";
-import { ECVersion, SchemaKey, relationshipEndToString, SchemaChildKey, SchemaChildType, tryParsePrimitiveType } from "../ECObjects";
+import { ECVersion, SchemaKey, relationshipEndToString, SchemaChildKey, SchemaChildType, tryParsePrimitiveType, tryParseSchemaChildType } from "../ECObjects";
 import SchemaChild from "../Metadata/SchemaChild";
 import Schema from "../Metadata/Schema";
 import EntityClass from "../Metadata/EntityClass";
@@ -141,41 +141,44 @@ export default class SchemaReadHelper {
     if (!childName)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson);
 
-    if (!schemaChildJson.schemaChildType)
+    if (undefined === schemaChildJson.schemaChildType)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaChild ${childName} is missing the required schemaChildType property.`);
+
+    if (typeof(schemaChildJson.schemaChildType) !== "string")
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaChild ${childName} has an invalid 'schemaChildType' property. It should be of type 'string'.`);
 
     let schemaChild: AnySchemaChild | undefined;
 
-    switch (schemaChildJson.schemaChildType) {
-      case "EntityClass":
+    switch (tryParseSchemaChildType(schemaChildJson.schemaChildType)) {
+       case SchemaChildType.EntityClass:
         schemaChild = await schema.createEntityClass(childName);
         await this.loadEntityClass(schemaChild, schemaChildJson);
         break;
-      case "StructClass":
+       case SchemaChildType.StructClass:
         schemaChild = await schema.createStructClass(childName);
         await this.loadClass(schemaChild, schemaChildJson);
         break;
-      case "Mixin":
+       case SchemaChildType.Mixin:
         schemaChild = await schema.createMixinClass(childName);
         await this.loadMixin(schemaChild, schemaChildJson);
         break;
-      case "CustomAttributeClass":
+       case SchemaChildType.CustomAttributeClass:
         schemaChild = await schema.createCustomAttributeClass(childName);
         await this.loadClass(schemaChild, schemaChildJson);
         break;
-      case "RelationshipClass":
+       case SchemaChildType.RelationshipClass:
         schemaChild = await schema.createRelationshipClass(childName);
         await this.loadRelationshipClass(schemaChild, schemaChildJson);
         break;
-      case "KindOfQuantity":
+       case SchemaChildType.KindOfQuantity:
         schemaChild = await schema.createKindOfQuantity(childName);
         await schemaChild.fromJson(schemaChildJson);
         break;
-      case "PropertyCategory":
+       case SchemaChildType.PropertyCategory:
         schemaChild = await schema.createPropertyCategory(childName);
         await schemaChild.fromJson(schemaChildJson);
         break;
-      case "Enumeration":
+       case SchemaChildType.Enumeration:
         schemaChild = await schema.createEnumeration(childName);
         await schemaChild.fromJson(schemaChildJson);
         break;

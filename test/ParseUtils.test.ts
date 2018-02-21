@@ -5,7 +5,8 @@
 import { expect } from "chai";
 import { ECClassModifier, CustomAttributeContainerType, parsePrimitiveType, parseClassModifier,
          PrimitiveType, tryParsePrimitiveType, parseCustomAttributeContainerType, containerTypeToString,
-         RelationshipEnd, relationshipEndToString, StrengthType, parseStrength, RelatedInstanceDirection, parseStrengthDirection } from "../source/ECObjects";
+         RelationshipEnd, relationshipEndToString, StrengthType, parseStrength, RelatedInstanceDirection,
+         parseStrengthDirection, SchemaChildType, schemaChildTypeToString, tryParseSchemaChildType } from "../source/ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../source/Exception";
 
 describe("Parsing/ToString Functions", () => {
@@ -138,5 +139,28 @@ describe("ECObjectsError ", () => {
     expect(new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, "msg").toDebugString()).to.equal("ECObjectsStatus.MissingSchemaUrl: msg");
     expect(new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, "msg").toDebugString()).to.equal("ECObjectsStatus.UnableToLocateSchema: msg");
     expect(() => new ECObjectsError(-9999).toDebugString()).to.throw(Error);
+  });
+
+  it("tryParseSchemaChildType", () => {
+    expect(tryParseSchemaChildType("eNtItyCLaSs")).to.equal(SchemaChildType.EntityClass);
+    expect(tryParseSchemaChildType("mIXIn")).to.equal(SchemaChildType.Mixin);
+    expect(tryParseSchemaChildType("sTRuCTcLaSS")).to.equal(SchemaChildType.StructClass);
+    expect(tryParseSchemaChildType("cuSTomATTRIbuTEClaSs")).to.equal(SchemaChildType.CustomAttributeClass);
+    expect(tryParseSchemaChildType("rELAtIONsHiPClaSs")).to.equal(SchemaChildType.RelationshipClass);
+    expect(tryParseSchemaChildType("enUmERAtiON")).to.equal(SchemaChildType.Enumeration);
+    expect(tryParseSchemaChildType("KiNDofQuaNTiTy")).to.equal(SchemaChildType.KindOfQuantity);
+    expect(tryParseSchemaChildType("prOpeRtYcAteGoRy")).to.equal(SchemaChildType.PropertyCategory);
+    expect(tryParseSchemaChildType("inVAlId")).to.not.exist;
+  });
+
+  it("schemaChildTypeToString", () => {
+    expect(schemaChildTypeToString(SchemaChildType.EntityClass)).to.equal("EntityClass");
+    expect(schemaChildTypeToString(SchemaChildType.Mixin)).to.equal("Mixin");
+    expect(schemaChildTypeToString(SchemaChildType.StructClass)).to.equal("StructClass");
+    expect(schemaChildTypeToString(SchemaChildType.CustomAttributeClass)).to.equal("CustomAttributeClass");
+    expect(schemaChildTypeToString(SchemaChildType.RelationshipClass)).to.equal("RelationshipClass");
+    expect(schemaChildTypeToString(SchemaChildType.Enumeration)).to.equal("Enumeration");
+    expect(schemaChildTypeToString(SchemaChildType.KindOfQuantity)).to.equal("KindOfQuantity");
+    expect(schemaChildTypeToString(SchemaChildType.PropertyCategory)).to.equal("PropertyCategory");
   });
 });
