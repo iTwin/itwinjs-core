@@ -2,7 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ViewState } from "./ViewState";
-import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps } from "../common/ElementProps";
+import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps } from "../common/ViewProps";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY } from "@bentley/geometry-core/lib/PointVector";
 import { RotMatrix } from "@bentley/geometry-core/lib/Transform";
@@ -10,7 +10,7 @@ import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Code, CodeSpecNames } from "../common/Code";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { ElementState } from "./EntityState";
-import { IModel } from "../common/IModel";
+import { IModelConnection } from "./IModelConnection";
 
 export const enum ACSType {
   None = 0,
@@ -32,7 +32,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
   public type: number;
   public description?: string;
 
-  public static fromProps(props: AuxCoordSystemProps, iModel: IModel): AuxCoordSystemState {
+  public static fromProps(props: AuxCoordSystemProps, iModel: IModelConnection): AuxCoordSystemState {
     const name = props.classFullName.toLowerCase();
     if (name.endsWith("system2d"))
       return new AuxCoordSystem2dState(props, iModel);
@@ -49,12 +49,12 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
    * @param iModel the iModel for which the ACS applies.
    * @note call this method with the appropriate subclass (e.g. AuxCoordSystemSpatialState, AuxCoordSystem2dState, etc), not on AuxCoordSystemState directly
    */
-  public static createNew(acsName: string, iModel: IModel): AuxCoordSystemState {
-    const myCode = new Code({ spec: CodeSpecNames.AuxCoordSystemSpatial(), scope: IModel.getDictionaryId().toString(), value: acsName });
-    return new AuxCoordSystemSpatialState({ model: IModel.getDictionaryId(), code: myCode, classFullName: this.getClassFullName(), id: new Id64() }, iModel);
+  public static createNew(acsName: string, iModel: IModelConnection): AuxCoordSystemState {
+    const myCode = new Code({ spec: CodeSpecNames.AuxCoordSystemSpatial(), scope: IModelConnection.getDictionaryId().toString(), value: acsName });
+    return new AuxCoordSystemSpatialState({ model: IModelConnection.getDictionaryId(), code: myCode, classFullName: this.getClassFullName(), id: new Id64() }, iModel);
   }
 
-  public constructor(props: AuxCoordSystemProps, iModel: IModel) {
+  public constructor(props: AuxCoordSystemProps, iModel: IModelConnection) {
     super(props, iModel);
     this.type = JsonUtils.asInt(props.type, ACSType.None);
     this.description = props.description;
@@ -85,7 +85,7 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
   public angle: number; // in degrees
   private readonly _rMatrix: RotMatrix;
 
-  constructor(props: AuxCoordSystem2dProps, iModel: IModel) {
+  constructor(props: AuxCoordSystem2dProps, iModel: IModelConnection) {
     super(props, iModel);
     this.origin = Point2d.fromJSON(props.origin);
     this.angle = JsonUtils.asDouble(props.angle);
@@ -115,7 +115,7 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
   public roll: number;
   private readonly _rMatrix: RotMatrix;
 
-  constructor(props: AuxCoordSystem3dProps, iModel: IModel) {
+  constructor(props: AuxCoordSystem3dProps, iModel: IModelConnection) {
     super(props, iModel);
     this.origin = Point3d.fromJSON(props.origin);
     this.yaw = JsonUtils.asDouble(props.yaw);

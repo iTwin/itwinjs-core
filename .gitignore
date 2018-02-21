@@ -1,10 +1,18 @@
+# dependencies
 /node_modules
-/lib
 /source/backend/node_modules
+/source/frontend/node_modules
+/source/testbed/node_modules
+
+# build output
+.nyc_output
 /source/backend/lib
 /source/backend/test/output
-/source/frontend/node_modules
 /source/frontend/lib
-.nyc_output
-/source/testbed/node_modules
 /source/testbed/lib
+
+# rush-specific
+/common/temp
+package-deps.json
+*.build.log
+*.build.error.log

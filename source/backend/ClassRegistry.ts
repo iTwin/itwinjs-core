@@ -49,7 +49,7 @@ export class ClassRegistry {
 
   private static generateProxySchema(schemaName: string): typeof Schema {
     const schemaClass = class extends Schema { };
-    // the above line creates an "anonymous" class. We rely on the "constructor.name" property to be eponymous with the Schema name.
+    // the above line creates an "anonymous" class. But, we rely on the "constructor.name" property to be eponymous with the Schema name.
     // this is the (only) way to change that readonly property.
     Object.defineProperty(schemaClass, "name", { get: () => schemaName });
     this.registerSchema(schemaClass); // register the class before we return it.

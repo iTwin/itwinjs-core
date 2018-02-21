@@ -13,8 +13,9 @@ import { DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import {
   ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
   ViewAttachmentProps, SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,
-  InformationPartitionElementProps, AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, LightLocationProps, DefinitionElementProps,
+  InformationPartitionElementProps, LightLocationProps, DefinitionElementProps,
 } from "../common/ElementProps";
+import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps } from "../common/ViewProps";
 
 /**
  * Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.
@@ -454,7 +455,7 @@ export abstract class InformationPartitionElement extends InformationContentElem
 
   /** Create a code that can be used for any kind of InformationPartitionElement. */
   public static createCode(scopeElement: Element, codeValue: string): Code {
-    const codeSpec = scopeElement.iModel.codeSpecs.getCodeSpecByName(CodeSpecNames.InformationPartitionElement());
+    const codeSpec = scopeElement.iModel.codeSpecs.getByName(CodeSpecNames.InformationPartitionElement());
     return new Code({ spec: codeSpec.id, scope: scopeElement.id.toString(), value: codeValue });
   }
 

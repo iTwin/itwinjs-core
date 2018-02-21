@@ -9,7 +9,7 @@ import { ClipVector } from "@bentley/geometry-core/lib/numerics/ClipVector";
  * The fence clip mode controls element acceptance criteria. A clip mode of none returns
  * only elements inside the fence when overlaps aren't requested. A clip mode of
  * original or copy always returns overlapping elements. The actual clip behavior varies
- * according to the fence operation, ex. delete, move, copy.
+ * according to the fence operation, e.g. delete, move, copy.
  */
 export const enum FenceClipMode {
   /** Inclusion of inside/overlapping elements controlled by overlap mode. No clipping of elements satisfying the fence criteria. */

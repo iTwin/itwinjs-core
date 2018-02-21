@@ -3,13 +3,13 @@
  * --------------------------------------------------------------------------------------------*/
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core/lib/Id";
 import { ElementState } from "./EntityState";
-import { IModel } from "../common/IModel";
-import { CategorySelectorProps } from "../common/ElementProps";
+import { IModelConnection } from "./IModelConnection";
+import { CategorySelectorProps } from "../common/ViewProps";
 
 /** A list of Categories to be displayed in a view. */
 export class CategorySelectorState extends ElementState {
   public categories: Set<string> = new Set<string>();
-  constructor(props: CategorySelectorProps, iModel: IModel) {
+  constructor(props: CategorySelectorProps, iModel: IModelConnection) {
     super(props, iModel);
     if (props.categories)
       props.categories.forEach((cat) => this.categories.add(cat));

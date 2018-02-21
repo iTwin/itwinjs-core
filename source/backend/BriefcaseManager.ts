@@ -14,7 +14,7 @@ import { IModelToken } from "../common/IModel";
 import { AddonRegistry } from "./AddonRegistry";
 import { AddonDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { IModelDb } from "./IModelDb";
-import { iModelEngine } from "./IModelEngine";
+import { iModelHost } from "./IModelHost";
 
 import { IModelJsFs } from "./IModelJsFs";
 import * as path from "path";
@@ -116,7 +116,7 @@ export class BriefcaseEntry {
     if (this.isStandalone)
       return this.pathname;
 
-    const cacheDir = iModelEngine.configuration.briefcaseCacheDir;
+    const cacheDir = iModelHost.configuration.briefcaseCacheDir;
     assert(this.pathname.startsWith(cacheDir));
     return this.pathname.substr(cacheDir.length);
   }
@@ -212,8 +212,8 @@ export class BriefcaseManager {
 
   /** Get the local path of the root folder storing the imodel seed file, change sets and briefcases */
   private static getIModelPath(iModelId: string): string {
-    assert(!!iModelEngine);
-    const pathname = path.join(iModelEngine.configuration.briefcaseCacheDir, iModelId, "/");
+    assert(!!iModelHost);
+    const pathname = path.join(iModelHost.configuration.briefcaseCacheDir, iModelId, "/");
     return path.normalize(pathname);
   }
 
@@ -225,7 +225,7 @@ export class BriefcaseManager {
     return path.join(BriefcaseManager.getIModelPath(iModelId), "csets");
   }
 
-  public static buildChangeSummaryFilePath(iModelId: string): string {
+  public static getChangeSummaryPathname(iModelId: string): string {
     return path.join(BriefcaseManager.getIModelPath(iModelId), iModelId.concat(".bim.ecchanges"));
   }
 
@@ -242,7 +242,7 @@ export class BriefcaseManager {
   }
 
   private static buildScratchPath(): string {
-    return path.join(iModelEngine.configuration.briefcaseCacheDir, "scratch");
+    return path.join(iModelHost.configuration.briefcaseCacheDir, "scratch");
   }
 
   /** Get information on the briefcases that have been cached on disk
@@ -279,7 +279,7 @@ export class BriefcaseManager {
     BriefcaseManager.cache.clear();
   }
 
-  private static onIModelEngineShutdown() {
+  private static onIModelHostShutdown() {
     BriefcaseManager.clearCache();
   }
 
@@ -296,10 +296,10 @@ export class BriefcaseManager {
     if (!BriefcaseManager.cache.isEmpty())
       return;
 
-    if (!iModelEngine)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "IModelEngine.startup() should be called before any backend operations");
+    if (!iModelHost)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "IModelHost.startup() should be called before any backend operations");
 
-    iModelEngine.onAfterStartup.addListener(BriefcaseManager.onIModelEngineShutdown);
+    iModelHost.onAfterStartup.addListener(BriefcaseManager.onIModelHostShutdown);
 
     const startTime = new Date().getTime();
 
@@ -308,7 +308,7 @@ export class BriefcaseManager {
     if (!accessToken)
       return;
 
-    const cacheDir = iModelEngine.configuration.briefcaseCacheDir;
+    const cacheDir = iModelHost.configuration.briefcaseCacheDir;
     if (!IModelJsFs.existsSync(cacheDir)) {
       BriefcaseManager.makeDirectoryRecursive(cacheDir);
       return;
@@ -392,7 +392,7 @@ export class BriefcaseManager {
     await BriefcaseManager.initCache(accessToken);
     assert(!!BriefcaseManager.hubClient);
 
-    const changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId);
+    const changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId, BriefcaseManager.hubClient!);
 
     let changeSetIndex: number;
     if (changeSetId === "") {
@@ -759,11 +759,11 @@ export class BriefcaseManager {
 
   /** Purge all briefcases and reset the briefcase manager */
   public static purgeAll() {
-    if (!iModelEngine)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "IModelEngine.startup() should be called before any backend operations");
+    if (!iModelHost)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "IModelHost.startup() should be called before any backend operations");
 
-    if (IModelJsFs.existsSync(iModelEngine.configuration.briefcaseCacheDir))
-      BriefcaseManager.deleteFolderRecursive(iModelEngine.configuration.briefcaseCacheDir);
+    if (IModelJsFs.existsSync(iModelHost.configuration.briefcaseCacheDir))
+      BriefcaseManager.deleteFolderRecursive(iModelHost.configuration.briefcaseCacheDir);
 
     BriefcaseManager.clearCache();
   }
@@ -801,7 +801,7 @@ export class BriefcaseManager {
     if (briefcase.changeSetIndex === undefined)
       return Promise.reject(new IModelError(DbResult.BE_SQLITE_ERROR, "Cannot apply changes to a standalone file"));
 
-    const targetChangeSetId: string = await targetVersion.evaluateChangeSet(accessToken, briefcase.iModelId);
+    const targetChangeSetId: string = await targetVersion.evaluateChangeSet(accessToken, briefcase.iModelId, BriefcaseManager.hubClient!);
     const targetChangeSetIndex: number = await BriefcaseManager.getChangeSetIndexFromId(accessToken, briefcase.iModelId, targetChangeSetId);
     if (targetChangeSetIndex === undefined)
       return Promise.reject(new IModelError(BriefcaseStatus.CannotApplyChanges, "Could not determine change set information from the Hub"));
@@ -940,6 +940,10 @@ export class BriefcaseManager {
     changeSet.seedFileId = briefcase.fileId!;
     changeSet.fileSize = IModelJsFs.lstatSync(changeSetToken.pathname)!.size.toString();
     changeSet.description = description;
+    if (changeSet.description.length >= 255) {
+      Logger.logWarning(loggingCategory, "pushChanges - Truncating description to 255 characters. " + changeSet.description);
+      changeSet.description = changeSet.description.slice(0, 254);
+    }
 
     const postedChangeSet = await BriefcaseManager.hubClient!.uploadChangeSet(accessToken, briefcase.iModelId, changeSet, changeSetToken.pathname);
 

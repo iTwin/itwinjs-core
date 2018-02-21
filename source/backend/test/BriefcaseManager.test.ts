@@ -12,7 +12,6 @@ import { IModelVersion } from "../../common/IModelVersion";
 import { KeepBriefcase, BriefcaseManager, BriefcaseEntry } from "../BriefcaseManager";
 import { IModelDb, ConcurrencyControl } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { iModelEngine } from "../IModelEngine";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Element } from "../Element";
 import { DictionaryModel } from "../Model";
@@ -21,6 +20,7 @@ import { Appearance } from "../../common/SubCategoryAppearance";
 import { ColorDef } from "../../common/ColorDef";
 import { IModel } from "../../common/IModel";
 import { IModelJsFs } from "../IModelJsFs";
+import { iModelHost } from "../IModelHost";
 
 class Timer {
   private label: string;
@@ -140,7 +140,7 @@ describe("BriefcaseManager", () => {
     expect(testChangeSets.length).greaterThan(2);
     console.log(`    ...getting information on Project+IModel+ChangeSets for test case from mock data: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
 
-    const cacheDir = iModelEngine.configuration.briefcaseCacheDir;
+    const cacheDir = iModelHost.configuration.briefcaseCacheDir;
     iModelLocalReadonlyPath = path.join(cacheDir, testIModelId, "readOnly");
     iModelLocalReadWritePath = path.join(cacheDir, testIModelId, "readWrite");
 
@@ -166,7 +166,7 @@ describe("BriefcaseManager", () => {
 
   it.only("should be able to open an cached first version IModel in Readonly mode", async () => {
     // Arrange
-    iModelVersionMock.setup((f: IModelVersion) => f.evaluateChangeSet(spoofAccessToken as any, TypeMoq.It.isAnyString()))
+    iModelVersionMock.setup((f: IModelVersion) => f.evaluateChangeSet(spoofAccessToken as any, TypeMoq.It.isAnyString(), iModelHubClientMock.object))
       .returns(() => Promise.resolve(""));
     iModelHubClientMock.setup((f: IModelHubClient) => f.getIModel(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
       .returns(() => {

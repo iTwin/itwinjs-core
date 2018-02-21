@@ -3,14 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core/lib/Id";
 import { ElementState } from "./EntityState";
-import { IModel } from "../common/IModel";
-import { ModelSelectorProps } from "../common/ElementProps";
+import { IModelConnection } from "./IModelConnection";
+import { ModelSelectorProps } from "../common/ViewProps";
 
 /** A set of ids of GeometricModels for a SpatialViewDefinition. */
 export class ModelSelectorState extends ElementState {
   /** the set of ModelIds of this ModelSelectorState */
   public readonly models = new Set<string>();
-  constructor(props: ModelSelectorProps, iModel: IModel) {
+  constructor(props: ModelSelectorProps, iModel: IModelConnection) {
     super(props, iModel);
     if (props.models)
       props.models.forEach((model) => this.models.add(model));
@@ -26,11 +26,11 @@ export class ModelSelectorState extends ElementState {
     return val;
   }
 
-  /** Add a model to this ModelSelectorState */
+  /** Add one or more models to this ModelSelectorState */
   public addModels(arg: Id64Arg) { Id64.toIdSet(arg).forEach((id) => this.models.add(id)); }
-  /** Drop a model from this ModelSelectorState */
+  /** Drop one or more models from this ModelSelectorState */
   public dropModels(arg: Id64Arg) { Id64.toIdSet(arg).forEach((id) => this.models.delete(id)); }
-  /** Determine whether this ModelSelectorState includes the specified modelId string */
+  /** Determine whether this ModelSelectorState includes the specified modelId value */
   public has(id: string): boolean { return this.models.has(id); }
   /** Determine whether this ModelSelectorState includes the specified modelId */
   public containsModel(modelId: Id64): boolean { return this.has(modelId.value); }

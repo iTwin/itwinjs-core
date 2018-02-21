@@ -12,10 +12,9 @@ import { IModelDb } from "../IModelDb";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ChangeSet } from "@bentley/imodeljs-clients";
-import { using } from "@bentley/bentleyjs-core/lib/Disposable";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelJsFs } from "../IModelJsFs";
-import { iModelEngine } from "../IModelEngine";
+import { iModelHost } from "../IModelHost";
 
 describe("ChangeSummary", () => {
   let accessToken: AccessToken;
@@ -28,13 +27,13 @@ describe("ChangeSummary", () => {
     testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "TestModel");
 
     // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
-    const cacheDir = iModelEngine.configuration.briefcaseCacheDir;
+    const cacheDir = iModelHost.configuration.briefcaseCacheDir;
     if (!IModelJsFs.existsSync(cacheDir)) {
       await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "TestModel");
       await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "NoVersionsTest");
     }
 
-    const changesPath: string = BriefcaseManager.buildChangeSummaryFilePath(testIModelId);
+    const changesPath: string = BriefcaseManager.getChangeSummaryPathname(testIModelId);
     if (IModelJsFs.existsSync(changesPath))
       IModelJsFs.unlinkSync(changesPath);
   });
@@ -47,7 +46,7 @@ describe("ChangeSummary", () => {
 
       assert.isFalse(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
-      assert.throw(() => iModel.getPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary"));
+      assert.throw(() => iModel.withPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary", () => { }));
 
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
@@ -64,7 +63,7 @@ describe("ChangeSummary", () => {
         assert.equal(row.csumcount, 0);
       });
 
-      const cacheDir = iModelEngine.configuration.briefcaseCacheDir;
+      const cacheDir = iModelHost.configuration.briefcaseCacheDir;
       const expectedCachePath: string = path.join(cacheDir, testIModelId, testIModelId.concat(".bim.ecchanges"));
       expect(IModelJsFs.existsSync(expectedCachePath));
     } finally {
@@ -78,7 +77,7 @@ describe("ChangeSummary", () => {
     assert(iModel.iModelToken.openMode === OpenMode.Readonly);
     try {
       assert.isFalse(ChangeSummaryManager.isChangeCacheAttached(iModel));
-      assert.throw(() => using (iModel.getPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary"), () => {}));
+      assert.throw(() => iModel.withPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary", () => { }));
 
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
@@ -95,12 +94,12 @@ describe("ChangeSummary", () => {
         assert.equal(row.csumcount, 0);
       });
 
-      const cacheDir = iModelEngine.configuration.briefcaseCacheDir;
+      const cacheDir = iModelHost.configuration.briefcaseCacheDir;
       const expectedCachePath: string = path.join(cacheDir, testIModelId, testIModelId.concat(".bim.ecchanges"));
       expect(IModelJsFs.existsSync(expectedCachePath));
     } finally {
-    await iModel.close(accessToken);
-  }
+      await iModel.close(accessToken);
+    }
   });
 
   it("Attach ChangeCache file to closed imodel", async () => {
@@ -158,7 +157,7 @@ describe("ChangeSummary", () => {
     // extract summary for second changeset
     const changesetId: string = changeSets[1].wsgId;
 
-    const changesFilePath: string = BriefcaseManager.buildChangeSummaryFilePath(testIModelId);
+    const changesFilePath: string = BriefcaseManager.getChangeSummaryPathname(testIModelId);
     if (IModelJsFs.existsSync(changesFilePath))
       IModelJsFs.removeSync(changesFilePath);
 
@@ -178,7 +177,7 @@ describe("ChangeSummary", () => {
         assert.isDefined(row.id);
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
         return row.id;
-        });
+      });
 
       iModel.withPreparedStatement("SELECT WsgId, Summary FROM imodelchange.ChangeSet", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
@@ -188,14 +187,14 @@ describe("ChangeSummary", () => {
         assert.isDefined(row.summary);
         assert.equal(row.summary.id.value, changeSummaryId.value);
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
-        });
+      });
     } finally {
       await iModel.close(accessToken);
     }
   });
 
   it("Subsequent ChangeSummary extractions", async () => {
-    const changesFilePath: string = BriefcaseManager.buildChangeSummaryFilePath(testIModelId);
+    const changesFilePath: string = BriefcaseManager.getChangeSummaryPathname(testIModelId);
     if (IModelJsFs.existsSync(changesFilePath))
       IModelJsFs.removeSync(changesFilePath);
 
@@ -220,7 +219,7 @@ describe("ChangeSummary", () => {
         assert.isDefined(row.id);
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
         return row.id;
-        });
+      });
 
       iModel.withPreparedStatement("SELECT WsgId, Summary FROM imodelchange.ChangeSet", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
@@ -230,7 +229,7 @@ describe("ChangeSummary", () => {
         assert.isDefined(row.summary);
         assert.equal(row.summary.id.value, changeSummaryId.value);
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
-        });
+      });
     } finally {
       await iModel.close(accessToken);
     }
@@ -259,7 +258,7 @@ describe("ChangeSummary", () => {
             assert.equal(row.changesetId, lastChangesetId);
         }
         assert.equal(rowCount, 2);
-        });
+      });
     } finally {
       await iModel.close(accessToken);
     }
@@ -267,13 +266,13 @@ describe("ChangeSummary", () => {
 
   it("Extract ChangeSummaries for already downloaded changesets", async () => {
     await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, testIModelId);
-    const changesFilePath: string = BriefcaseManager.buildChangeSummaryFilePath(testIModelId);
+    const changesFilePath: string = BriefcaseManager.getChangeSummaryPathname(testIModelId);
     const csetPath: string = BriefcaseManager.getChangeSetsPath(testIModelId);
     // delete changes file before extracting again with already downloaded changesets
     if (IModelJsFs.existsSync(changesFilePath))
       IModelJsFs.removeSync(changesFilePath);
 
-    const lastChangesetId: string = await IModelVersion.latest().evaluateChangeSet(accessToken, testIModelId);
+    const lastChangesetId: string = await IModelVersion.latest().evaluateChangeSet(accessToken, testIModelId, IModelTestUtils.hubClient);
     assert.isTrue(IModelJsFs.existsSync(path.join(csetPath, lastChangesetId + ".cs")));
 
     // now extract again where changesets were already downloaded
@@ -297,12 +296,12 @@ describe("ChangeSummary", () => {
   it.skip("Extract ChangeSummaries with invalid input", async () => {
     try {
       await ChangeSummaryManager.extractChangeSummaries(accessToken, "123", testIModelId);
-     } catch (e) {
-       assert.equal(e.message, "Not Found");
-     }
+    } catch (e) {
+      assert.equal(e.message, "Not Found");
+    }
 
     try {
-     await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, "123");
+      await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, "123");
     } catch (e) {
       assert.equal(e.message, "Not Found");
     }
@@ -333,7 +332,7 @@ describe("ChangeSummary", () => {
       if (IModelJsFs.existsSync(filePath))
         IModelJsFs.unlinkSync(filePath);
 
-      const content = {id: changeSummary.id, changeSet: changeSummary.changeSet, instanceChanges: new Array<InstanceChange>()};
+      const content = { id: changeSummary.id, changeSet: changeSummary.changeSet, instanceChanges: new Array<InstanceChange>() };
       iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId", (stmt) => {
         stmt.bindId(1, changeSummary.id);
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {

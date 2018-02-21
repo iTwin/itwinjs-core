@@ -130,8 +130,7 @@ function getBoldMask(this: any): boolean[] {
  * returning an object implementing the FuzzySearchResult interface.
  */
 export class FuzzySearchResults<T> implements Iterable<T> {
-  private results: any[];
-  private counter = 0;
+  public results: any[];
 
   constructor(results: any[] | undefined) {
     this.results = [];
@@ -139,17 +138,8 @@ export class FuzzySearchResults<T> implements Iterable<T> {
       this.results = results;
   }
 
-  public [Symbol.iterator]() {
-    const nextFunc = () => {
-      const thisFSR: FuzzySearchResults<T> = this as FuzzySearchResults<T>;
-      return {
-        done: thisFSR.counter === thisFSR.results.length,
-        value: thisFSR.results[thisFSR.counter++] as FuzzySearchResult<T>,
-      };
-    };
-    return {
-      next: nextFunc.bind(this),
-    };
+  public [Symbol.iterator](): any {
+    return new FuzzySearchResultsIterator(this);
   }
 
   public get length(): number {
@@ -160,5 +150,20 @@ export class FuzzySearchResults<T> implements Iterable<T> {
     if ((resultIndex < 0) || (resultIndex > this.results.length))
       return undefined;
     return this.results[resultIndex];
+  }
+}
+class FuzzySearchResultsIterator<T> {
+  public counter: number;
+  public fsr: FuzzySearchResults<T>;
+
+  constructor(fsr: FuzzySearchResults<T>) {
+    this.fsr = fsr;
+    this.counter = 0;
+  }
+  public next: any = () => {
+    return {
+      done: this.counter === this.fsr.results.length,
+      value: this.fsr.results[this.counter++] as FuzzySearchResult<T>,
+    };
   }
 }

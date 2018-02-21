@@ -7,7 +7,7 @@ import { GatewayConfiguration } from "./GatewayConfiguration";
 import { ServerError } from "../common/IModelError";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 
-const loggingCategory = "imodeljs-backend.GatewayHttpProtocol";
+const loggingCategory = "imodeljs-gateway.GatewayHttpProtocol";
 // tslint:disable:space-before-function-paren
 
 /** The HTTP application protocol. */

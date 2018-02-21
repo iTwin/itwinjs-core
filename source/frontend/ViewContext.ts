@@ -10,15 +10,15 @@ import { DecorationList, GraphicList, Decorations, Graphic, GraphicType, Graphic
 import { ACSDisplayOptions, AuxCoordSystemState } from "../frontend/AuxCoordSys";
 
 export class ViewContext {
-  public viewport?: Viewport;
+  constructor(public viewport?: Viewport) { }
 }
 
 export class NullContext extends ViewContext {
 }
 
 export class DynamicsContext extends ViewContext {
-
 }
+
 export class SnapContext extends ViewContext {
   public snapDetail?: SnapDetail; // result of the snap
   public snapAperture: number;

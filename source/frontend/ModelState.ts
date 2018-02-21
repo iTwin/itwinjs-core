@@ -7,19 +7,21 @@ import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Point2d } from "@bentley/geometry-core/lib/PointVector";
 import { ModelProps, GeometricModel2dProps } from "../common/ModelProps";
 import { AxisAlignedBox3d } from "../common/geometry/Primitives";
-import { IModel } from "../common/IModel";
+import { IModelConnection } from "./IModelConnection";
 
 /** the state of a Model */
 export class ModelState extends EntityState implements ModelProps {
   public readonly modeledElement: Id64;
+  public readonly name: string;
   public parentModel: Id64;
   public readonly jsonProperties: any;
   public readonly isPrivate: boolean;
   public readonly isTemplate: boolean;
 
-  constructor(props: ModelProps, iModel: IModel) {
+  constructor(props: ModelProps, iModel: IModelConnection) {
     super(props, iModel);
     this.modeledElement = Id64.fromJSON(props.modeledElement);
+    this.name = props.name ? props.name : "";
     this.parentModel = Id64.fromJSON(props.parentModel)!;
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
@@ -30,6 +32,7 @@ export class ModelState extends EntityState implements ModelProps {
     const val = super.toJSON() as ModelProps;
     val.modeledElement = this.modeledElement;
     val.parentModel = this.parentModel;
+    val.name = this.name;
     if (this.isPrivate)
       val.isPrivate = this.isPrivate;
     if (this.isTemplate)
@@ -44,7 +47,7 @@ export class GeometricModelState extends ModelState { }
 /** the state of a 2d Geometric Model */
 export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
   public readonly globalOrigin: Point2d;
-  constructor(props: GeometricModel2dProps, iModel: IModel) {
+  constructor(props: GeometricModel2dProps, iModel: IModelConnection) {
     super(props, iModel);
     this.globalOrigin = Point2d.fromJSON(props.globalOrigin);
   }

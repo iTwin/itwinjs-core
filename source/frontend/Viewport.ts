@@ -6,7 +6,7 @@ import { Range3d } from "@bentley/geometry-core/lib/Range";
 import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
 import { Map4d, Point4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { AxisOrder, Angle, AngleSweep } from "@bentley/geometry-core/lib/Geometry";
-import { ViewState, ViewStatus, MarginPercent, GridOrientationType, Camera } from "./ViewState";
+import { ViewState, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core/lib/Time";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
@@ -16,7 +16,7 @@ import { AuxCoordSystemState } from "../frontend/AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { DecorationList, Hilite } from "../common/Render";
+import { DecorationList, Hilite, Camera } from "../common/Render";
 import { HitDetail, SnapDetail, SnapMode } from "./HitDetail";
 import { DecorateContext } from "./ViewContext";
 import { ColorDef } from "../common/ColorDef";
@@ -342,7 +342,7 @@ export class Viewport {
 
     const auxCoordSysId = view.getAuxiliaryCoordinateSystemId();
     if (auxCoordSysId.isValid()) {
-      const props = await this.iModel.elements.getElementProps(auxCoordSysId);
+      const props = await this.iModel.elements.getProps(auxCoordSysId);
       this._auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
     } else { this._auxCoordSystem = undefined; }
 
