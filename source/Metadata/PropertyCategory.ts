@@ -10,7 +10,9 @@ import Schema from "./Schema";
 
 export default class PropertyCategory extends SchemaChild {
   public readonly type: SchemaChildType.PropertyCategory;
-  public priority: number;
+  protected _priority: number;
+
+  get priority() { return this._priority; }
 
   constructor(schema: Schema, name: string, label?: string, description?: string) {
     super(schema, name, label, description);
@@ -23,7 +25,7 @@ export default class PropertyCategory extends SchemaChild {
     if (jsonObj.priority) {
       if (typeof(jsonObj.priority) !== "number")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The PropertyCategory ${this.name} has an invalid 'priority' attribute. It should be of type 'number'.`);
-      this.priority = jsonObj.priority;
+      this._priority = jsonObj.priority;
     }
   }
 

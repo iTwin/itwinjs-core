@@ -15,7 +15,9 @@ export default class Enumeration extends SchemaChild {
   public readonly type: SchemaChildType.Enumeration;
   protected _primitiveType: PrimitiveType.Integer | PrimitiveType.String;
   protected _isStrict: boolean;
-  public enumerators: Enumerator[];
+  protected _enumerators: Enumerator[];
+
+  get enumerators() { return this._enumerators; }
 
   constructor(schema: Schema, name: string, label?: string, description?: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String, isStrict?: boolean) {
     super(schema, name, label, description);
@@ -32,7 +34,7 @@ export default class Enumeration extends SchemaChild {
     else
       this._isStrict = true;
 
-    this.enumerators = [];
+    this._enumerators = [];
   }
 
   get primitiveType() { return this._primitiveType; }

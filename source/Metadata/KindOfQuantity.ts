@@ -18,9 +18,15 @@ export class FormatUnitSpec {
  */
 export default class KindOfQuantity extends SchemaChild {
   public readonly type: SchemaChildType.KindOfQuantity;
-  public precision: number;
-  public presentationUnits: FormatUnitSpec[];
-  public persistenceUnit: FormatUnitSpec;
+  protected _precision: number;
+  protected _presentationUnits: FormatUnitSpec[];
+  protected _persistenceUnit: FormatUnitSpec;
+
+  get precision() { return this._precision; }
+
+  get presentationUnits() { return this._presentationUnits; }
+
+  get persistenceUnit() { return this._persistenceUnit; }
 
   constructor(schema: Schema, name: string, label?: string, description?: string) {
     super(schema, name, label, description);
@@ -37,14 +43,14 @@ export default class KindOfQuantity extends SchemaChild {
     if (jsonObj.precision) {
       if (typeof(jsonObj.precision) !== "number")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'precision' attribute. It should be of type 'number'.`);
-      this.precision = jsonObj.precision;
+      this._precision = jsonObj.precision;
     }
 
     if (jsonObj.presentationUnits)
-      this.presentationUnits = jsonObj.presentationUnits as FormatUnitSpec[];
+      this._presentationUnits = jsonObj.presentationUnits as FormatUnitSpec[];
 
     if (jsonObj.persistenceUnit)
-      this.persistenceUnit = jsonObj.persistenceUnit as FormatUnitSpec;
+      this._persistenceUnit = jsonObj.persistenceUnit as FormatUnitSpec;
   }
 
   public async accept(visitor: SchemaChildVisitor) {

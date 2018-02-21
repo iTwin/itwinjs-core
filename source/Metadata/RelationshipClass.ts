@@ -92,7 +92,7 @@ export class RelationshipConstraint {
   protected _multiplicity?: RelationshipMultiplicity;
   protected _polymorphic?: boolean;
   protected _roleLabel?: string;
-  public constraintClasses?: LazyLoadedRelationshipConstraintClass[];
+  protected _constraintClasses?: LazyLoadedRelationshipConstraintClass[];
 
   constructor(relClass: RelationshipClass, relEnd: RelationshipEnd, roleLabel?: string, polymorphic?: boolean) {
     this.relationshipEnd = relEnd;
@@ -109,6 +109,7 @@ export class RelationshipConstraint {
   get multiplicity() { return this._multiplicity; }
   get polymorphic() { return this._polymorphic; }
   get roleLabel() { return this._roleLabel; }
+  get constraintClasses(): LazyLoadedRelationshipConstraintClass[] | undefined { return this._constraintClasses; }
 
   get abstractConstraint(): LazyLoadedRelationshipConstraintClass | undefined {
     if (this._abstractConstraint)
@@ -138,11 +139,11 @@ export class RelationshipConstraint {
     if (this.constraintClasses && this.constraintClasses.length > 0 && this.constraintClasses[0].type !== constraint.key.type)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
-    if (!this.constraintClasses)
-      this.constraintClasses = [];
+    if (!this._constraintClasses)
+      this._constraintClasses = [];
 
     // TODO: Handle relationship constraints
-    this.constraintClasses.push(new DelayedPromiseWithProps(constraint.key, async () => constraint));
+    this._constraintClasses.push(new DelayedPromiseWithProps(constraint.key, async () => constraint));
   }
 
   /**

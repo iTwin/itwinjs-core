@@ -20,9 +20,9 @@ export abstract class Property {
   protected _label?: string;
   protected _isReadOnly: boolean;
   protected _priority: number;
-  public inherited?: boolean;
-  public category?: LazyLoadedPropertyCategory;
-  public kindOfQuantity?: LazyLoadedKindOfQuantity;
+  protected _inherited?: boolean;
+  protected _category?: LazyLoadedPropertyCategory;
+  protected _kindOfQuantity?: LazyLoadedKindOfQuantity;
 
   constructor(ecClass: ECClass, name: string, type: PropertyType, label?: string, description?: string, isReadOnly?: boolean, priority?: number) {
     this._class = ecClass;
@@ -52,6 +52,12 @@ export abstract class Property {
 
   get priority() { return this._priority; }
 
+  get inherited() { return this._inherited; }
+
+  get category(): LazyLoadedPropertyCategory | undefined { return this._category; }
+
+  get kindOfQuantity(): LazyLoadedKindOfQuantity | undefined { return this._kindOfQuantity; }
+
   public async fromJson(jsonObj: any): Promise<void> {
     if (!jsonObj.name)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
@@ -73,7 +79,6 @@ export abstract class Property {
  *
  */
 export abstract class PrimitiveOrEnumPropertyBase extends Property {
-  public kindOfQuantity?: LazyLoadedKindOfQuantity;
   protected _extendedTypeName?: string;
   protected _minLength?: number;
   protected _maxLength?: number;
@@ -137,7 +142,7 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
 }
 
 export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
-  public get primitiveType(): PrimitiveType { return PropertyTypeUtils.getPrimitiveType(this._type); }
+  get primitiveType(): PrimitiveType { return PropertyTypeUtils.getPrimitiveType(this._type); }
 
   constructor(
     ecClass: ECClass,
@@ -157,7 +162,9 @@ export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
 }
 
 export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
-  public readonly enumeration: LazyLoadedEnumeration;
+  protected _enumeration: LazyLoadedEnumeration;
+
+  get enumeration(): LazyLoadedEnumeration { return this._enumeration; }
 
   constructor(
     ecClass: ECClass,
@@ -174,12 +181,14 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
     maxValue?: number) {
     super(ecClass, name, PropertyType.Integer_Enumeration, label, description, isReadOnly, priority,
           extendedTypeName, minLength, maxLength, minValue, maxValue);
-    this.enumeration = type;
+    this._enumeration = type;
   }
 }
 
 export class StructProperty extends Property {
-  public readonly structClass: LazyLoadedStructClass;
+  protected _structClass: LazyLoadedStructClass;
+
+  get structClass(): LazyLoadedStructClass { return this._structClass; }
 
   constructor(
     ecClass: ECClass,
@@ -190,7 +199,7 @@ export class StructProperty extends Property {
     isReadOnly?: boolean,
     priority?: number) {
     super(ecClass, name, PropertyType.Struct, label, description, isReadOnly, priority);
-    this.structClass = type;
+    this._structClass = type;
   }
 
   public async fromJson(jsonObj: any): Promise<void> {
@@ -201,8 +210,12 @@ export class StructProperty extends Property {
 }
 
 export class NavigationProperty extends Property {
-  public relationshipClass: LazyLoadedRelationshipClass;
-  public direction: RelatedInstanceDirection;
+  protected _relationshipClass: LazyLoadedRelationshipClass;
+  protected _direction: RelatedInstanceDirection;
+
+  get relationshipClass(): LazyLoadedRelationshipClass { return this._relationshipClass; }
+
+  get direction() { return this._direction; }
 
   constructor(
     ecClass: ECClass,
@@ -214,9 +227,9 @@ export class NavigationProperty extends Property {
     isReadOnly?: boolean,
     priority?: number) {
     super(ecClass, name, PropertyType.Navigation, label, description, isReadOnly, priority);
-    this.relationshipClass = relationship;
+    this._relationshipClass = relationship;
 
-    this.direction = (direction !== undefined) ? direction : RelatedInstanceDirection.Forward;
+    this._direction = (direction !== undefined) ? direction : RelatedInstanceDirection.Forward;
   }
 
   public async fromJson(jsonObj: any): Promise<void> {

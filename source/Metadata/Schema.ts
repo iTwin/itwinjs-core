@@ -28,7 +28,7 @@ export default class Schema implements CustomAttributeContainerProps {
   protected _alias?: string;
   protected _label?: string;
   protected _description?: string;
-  public customAttributes?: CustomAttributeSet;
+  protected _customAttributes?: CustomAttributeSet;
   public readonly references: Schema[];
   private readonly _children: SchemaChild[];
 
@@ -57,6 +57,8 @@ export default class Schema implements CustomAttributeContainerProps {
   get alias() {return this._alias; }
   get label() {return this._label; }
   get description() {return this._description; }
+
+  get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
   /**
    * Creates a EntityClass with the provided name in this schema.
