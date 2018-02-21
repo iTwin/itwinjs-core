@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "tsc && npm run copy:assets",
-    "clean": "rimraf lib",
+    "clean": "rimraf lib package-deps.json",
     "copy:assets": "cpx ./assets/**/* ./lib/backend/assets",
     "copy:test-assets": "cpx ./test/assets/**/* ./lib/backend/test/assets",
     "pretest": "npm run copy:test-assets && npm run build",
