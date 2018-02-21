@@ -380,7 +380,7 @@ describe("BriefcaseManager", () => {
     iModel.closeStandalone();
   });
 
-  it.only("should test AutoPush", async () => {
+  it("should test AutoPush", async () => {
     const activityMonitor = {
       isIdle: () => true,
     };
