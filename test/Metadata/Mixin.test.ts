@@ -48,11 +48,23 @@ describe("Mixin", () => {
   });
 
   describe("fromJson", () => {
+    let testEntity: EntityClass;
     let testMixin: Mixin;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       const schema = new Schema(new SchemaKey("TestSchema", 1, 0, 0));
+      testEntity = await schema.createEntityClass("TestEntity");
       testMixin = new Mixin(schema, "TestMixin");
+    });
+
+    it("should successfully deserialize valid JSON", async () => {
+      const propertyJson = {
+        appliesTo: "TestSchema.TestEntity",
+      };
+      expect(testMixin).to.exist;
+      await testMixin.fromJson(propertyJson);
+
+      expect(await testMixin.appliesTo).to.eql(testEntity);
     });
 
     it("should throw for missing appliesTo", async () => {
