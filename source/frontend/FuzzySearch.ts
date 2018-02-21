@@ -52,19 +52,35 @@ export class FuzzySearch<T> {
     // We need to set the threshold fairly high to get results when the user misspells words (otherwise they are not returned),
     // but doing that results in matches that don't make sense when there are "good" matches. So we discard matches where the match
     // score increases by a large amount between results.
+    let checkScoreDelta: boolean = false;
+    let averageScoreDeltaThreshold = 1;
     if (results.length > 30) {
-      const averageScoreDeltaThreshold = ((results[results.length - 1].score - results[0].score) / results.length) * 10;
+      averageScoreDeltaThreshold = ((results[results.length - 1].score - results[0].score) / results.length) * 10;
       if (averageScoreDeltaThreshold > 0.01)
-        for (let resultIndex = 1; resultIndex < results.length; resultIndex++) {
-          const resultScore = results[resultIndex].score;
-          if (resultScore < 0.101)
-            continue;
-          if ((resultScore - results[resultIndex - 1].score) > averageScoreDeltaThreshold) {
-            results = results.slice(0, resultIndex);
-            break;
-          }
-        }
+        checkScoreDelta = true;
     }
+
+    // Sometimes fuse returns results in the array where the matches array is empty. That seems like a bug to me. In the cases
+    // I have seen, they always come near the end of large sets, so we just truncate the set when we see one.
+    // The other use for this loop is to truncate when we see a dramatic increase in the score. The ones after are unlikely
+    // to be useful, so we truncate the results when we hit that point also.
+    for (let resultIndex = 1; resultIndex < results.length; resultIndex++) {
+      if (0 === results[resultIndex].matches.length) {
+        results = results.slice(0, resultIndex);
+        break;
+      }
+
+      if (checkScoreDelta) {
+        const resultScore = results[resultIndex].score;
+        if (resultScore < 0.101)
+          continue;
+        if ((resultScore - results[resultIndex - 1].score) > averageScoreDeltaThreshold) {
+          results = results.slice(0, resultIndex);
+          break;
+        }
+      }
+    }
+
     // put the functions on each result so it fulfils the FuzzySearchResult interface.
     for (const thisResult of results) {
       thisResult.getResult = getResult.bind(thisResult);
