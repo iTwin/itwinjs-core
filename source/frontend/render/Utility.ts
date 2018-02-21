@@ -54,6 +54,9 @@ export class PointUtil {
   public static eachScalar(pt: Point, func: (pt: number, i?: number) => number): Point {
     return PointUtil.asNumberArray(pt, (pts) => pts.map((v, i) => func(v, i)));
   }
+  public static fromNumberArrays(...arrs: number[][]): Point[] {
+    return arrs.map((arr) => PointUtil.fromNumberArray(arr));
+  }
 }
 
 export class RangeUtil {

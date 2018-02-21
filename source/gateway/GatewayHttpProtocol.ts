@@ -363,6 +363,7 @@ export namespace GatewayHttpProtocol {
 
       this._active = false;
       this._cleanup(this);
+      Gateway.recordResponse();
       this._resolve(value);
     }
 
@@ -373,6 +374,7 @@ export namespace GatewayHttpProtocol {
 
       this._active = false;
       this._cleanup(this);
+      Gateway.recordResponse();
       this._reject(reason);
     }
   }

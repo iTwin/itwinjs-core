@@ -52,10 +52,12 @@ export class GatewayElectronProtocol extends GatewayProtocol {
         const id = ++GatewayElectronProtocol.id;
         GatewayElectronProtocol.interop.ipcRenderer.once(GatewayElectronProtocol.channel + id, (evt: any, arg: string) => {
           evt;
+          GatewayProtocol.recordOperationResponse();
           resolve(this.deserializeOperationResult(arg));
         });
         GatewayElectronProtocol.interop.ipcRenderer.send(GatewayElectronProtocol.channel, id, gateway.name, operation, this.serializeParametersForOperationRequest(gateway.name, ...parameters));
       } catch (e) {
+        GatewayProtocol.recordOperationResponse();
         reject(e);
       }
     });
