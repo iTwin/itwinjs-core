@@ -2,6 +2,9 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
+import { QPoint3dList, QPoint2dList, QParams3d, QParams2d } from "./QPoint";
+import { XY, XYZ } from "@bentley/geometry-core/lib/PointVector";
+import { PointUtil } from "./Utility";
 
 export const enum ContextState {
   Uninitialized,
@@ -65,4 +68,28 @@ export class Capabilities {
   public SupportsRenderToFloat(): boolean { return this.renderToFloat; } // EXT_color_buffer_float
   public SupportsDepthStencilTexture(): boolean { return this.depthStencilTexture; } // WEBGL_depth_texture - combined depth/stencil tex
   public SupportsShaderTextureLOD(): boolean { return this.shaderTextureLOD; } // WEBGL_depth_texture - combined depth/stencil tex
+}
+
+export class ViewportQuad {
+  public readonly vertices = new QPoint3dList();
+  public readonly indices = new Uint32Array(6);
+  constructor() {
+    const vertices = PointUtil.fromNumberArrays([-1, -1, 0], [1, -1, 0], [1, 1, 0], [-1, 1, 0]) as XYZ[];
+    this.vertices.assign(vertices, QParams3d.fromNormalizedRange());
+    this.indices[0] = 0;
+    this.indices[1] = 1;
+    this.indices[2] = 2;
+    this.indices[3] = 0;
+    this.indices[4] = 2;
+    this.indices[5] = 3;
+  }
+}
+
+export class TexturedViewportQuad extends ViewportQuad {
+  public readonly textureUV = new QPoint2dList();
+  constructor() {
+    super();
+    const textureUVPts = PointUtil.fromNumberArrays([0, 0], [1, 0], [1, 1], [0, 1]) as XY[];
+    this.textureUV.assign(textureUVPts, QParams2d.fromDefaultRange());
+  }
 }

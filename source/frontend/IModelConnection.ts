@@ -354,8 +354,8 @@ export class IModelConnectionViews {
   constructor(private _iModel: IModelConnection) { }
 
   /**
-   * Query for the array of ViewDefinitionProps
-   * @param queryParams Query parameters
+   * Query for an array of ViewDefinitionProps
+   * @param queryParams Query parameters specifying the views to return
    */
   public async queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]> {
     const params: ViewQueryParams = Object.assign({}, queryParams); // make a copy

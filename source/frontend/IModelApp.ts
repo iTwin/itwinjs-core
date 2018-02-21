@@ -8,7 +8,7 @@ import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { TentativePoint } from "./TentativePoint";
-import { I18N, I18NNamespace, I18NOptions } from "./Localization";
+import { I18N, I18NOptions } from "./Localization";
 import { FeatureGates } from "../common/FeatureGates";
 import { ToolRegistry } from "./tools/Tool";
 import { IModelError, IModelStatus } from "../common/IModelError";
@@ -37,17 +37,8 @@ export class IModelApp {
   protected _locateManager?: ElementLocateManager;
   protected _tentativePoint?: TentativePoint;
   protected _i18N?: I18N;
-
-  private _iModelHubDeploymentConfig: DeploymentEnv = "QA";
-  public get iModelHubDeploymentConfig(): DeploymentEnv {return this._iModelHubDeploymentConfig; }
-
-  public _iModelHubClient?: IModelHubClient;
-  public get iModelHubClient(): IModelHubClient {
-    if (!this._iModelHubClient)
-      this._iModelHubClient = new IModelHubClient(this.iModelHubDeploymentConfig);
-    return this._iModelHubClient;
-  }
-
+  protected _deploymentEnv: DeploymentEnv = "QA";
+  protected _iModelHubClient?: IModelHubClient;
   public readonly features = new FeatureGates();
   public readonly tools = new ToolRegistry();
 
@@ -58,6 +49,8 @@ export class IModelApp {
   public get locateManager(): ElementLocateManager { return this._locateManager!; }
   public get tentativePoint(): TentativePoint { return this._tentativePoint!; }
   public get i18N(): I18N { return this._i18N!; }
+  public get deploymentEnv(): DeploymentEnv { return this._deploymentEnv; }
+  public get iModelHubClient(): IModelHubClient { return this._iModelHubClient ? this._iModelHubClient : (this._iModelHubClient = new IModelHubClient(this.deploymentEnv)); }
 
   /**
    * This method must be called before any iModelJs services are used. Typically, an application will make a subclass of IModelApp
@@ -72,27 +65,25 @@ export class IModelApp {
    * MyApp.startup();
    * ```
    */
-  public static startup(iModelHubDeploymentConfig: DeploymentEnv = "QA") {
+  public static startup(deploymentEnv: DeploymentEnv = "QA") {
     if (iModelApp !== undefined)
       throw new IModelError(IModelStatus.AlreadyLoaded, "startup may only be called once");
 
     iModelApp = new this(); // this will create an instance of the appropriate subclass of IModelApp (that calls this static method)
-
-    if (iModelApp.iModelHubDeploymentConfig !== iModelHubDeploymentConfig) {
-      iModelApp._iModelHubDeploymentConfig = iModelHubDeploymentConfig;
-    }
+    iModelApp._deploymentEnv = deploymentEnv;
 
     // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
     iModelApp._i18N = new I18N(["iModelSystem"], "iModelSystem", iModelApp.supplyI18NOptions());
 
-    const tools = iModelApp.tools; // first register all the default tools. Subclasses may choose to override them.
-    const namespace: I18NNamespace = iModelApp.i18N.registerNamespace("BaseTools");
-    tools.registerModule(selectTool, namespace);
-    tools.registerModule(idleTool, namespace);
-    tools.registerModule(viewTool, namespace);
+    const tools = iModelApp.tools; // first register all the core tools. Subclasses may choose to override them.
+    const coreNamespace = iModelApp.i18N.registerNamespace("CoreTools");
+    tools.registerModule(selectTool, coreNamespace);
+    tools.registerModule(idleTool, coreNamespace);
+    tools.registerModule(viewTool, coreNamespace);
 
-    iModelApp.onStartup(); // allow subclasses to register their tools before we call onStartup
+    iModelApp.onStartup(); // allow subclasses to register their tools, etc.
 
+    // the startup function may have already allocated any of these members, so first test whether they're present
     if (!iModelApp._viewManager) iModelApp._viewManager = new ViewManager();
     if (!iModelApp._toolAdmin) iModelApp._toolAdmin = new ToolAdmin();
     if (!iModelApp._accuDraw) iModelApp._accuDraw = new AccuDraw();
@@ -109,6 +100,7 @@ export class IModelApp {
   }
 
   public static shutdown() { (iModelApp as any) = undefined; }
+
   /**
    * Implement this method to register your app's tools, override implementation of managers, and initialize your app-specific members.
    * @note The default tools will already be registered, so if you register tools with the same toolId, your tools will override the defaults.
@@ -118,8 +110,5 @@ export class IModelApp {
   /**
    * Implement this method to supply options for the initialization of the internationalization.
    */
-  protected supplyI18NOptions(): I18NOptions | undefined {
-    // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
-    return undefined;
-  }
+  protected supplyI18NOptions(): I18NOptions | undefined { return undefined; }
 }

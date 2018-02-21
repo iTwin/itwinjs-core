@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Range1d, Range2d, Range3d } from "@bentley/geometry-core/lib/Range";
-import { XY, XYZ, XYAndZ } from "@bentley/geometry-core/lib/PointVector";
+import { XY, XYZ, XYAndZ, Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
 import { Point, Range, PointUtil, RangeUtil } from "./Utility";
 
 // declare constant in module scope to prevent having to write out ScalarQuantizer.rangeScale every time
@@ -113,8 +113,18 @@ export class QParams<T extends Point, K extends Range> extends QParamsBase {
 }
 
 export class QParams1d extends QParams<number, Range1d> { constructor(range: Range1d) { super(range); } }
-export class QParams2d extends QParams<XY, Range2d> { constructor(range: Range2d) { super(range); } }
-export class QParams3d extends QParams<XYZ, Range3d> { constructor(range: Range3d) { super(range); } }
+export class QParams2d extends QParams<XY, Range2d> {
+  constructor(range: Range2d) { super(range); }
+  public static fromDefaultRange(): QParams2d {
+    return new QParams2d(Range2d.createArray([ Point2d.create(0, 0), Point2d.create(1, 1) ]));
+  }
+}
+export class QParams3d extends QParams<XYZ, Range3d> {
+  constructor(range: Range3d) { super(range); }
+  public static fromNormalizedRange(): QParams3d {
+    return new QParams3d(Range3d.createArray([ Point3d.create(-1, -1, -1), Point3d.create(1, 1, 1) ]));
+  }
+}
 
 // QPoint can quantize/unquantize a point, requires a range or qparams object to execute a quantization routine
 export abstract class QPointBase {
@@ -172,14 +182,14 @@ export class QPoint3d extends QPoint<XYZ, Range3d> implements XYAndZ {
 
 export class QPointFactory {
   public static createFromQRange(pt: Point, range: Range): QPointBase | undefined {
-    if (PointUtil.isPoint3d(pt) && RangeUtil.isRange3d(range)) return new QPoint3d(pt, range);
-    if (PointUtil.isPoint2d(pt) && RangeUtil.isRange2d(range)) return new QPoint2d(pt, range);
+    if (PointUtil.isXYZ(pt) && RangeUtil.isRange3d(range)) return new QPoint3d(pt, range);
+    if (PointUtil.isXY(pt) && RangeUtil.isRange2d(range)) return new QPoint2d(pt, range);
     if (PointUtil.isNumber(pt)  && RangeUtil.isRange1d(range)) return new QPoint1d(pt, range);
     return undefined;
   }
   public static create(pt: Point, params: QParamsBase): QPointBase | undefined {
-    if (PointUtil.isPoint3d(pt) && params.is3d()) return new QPoint3d(pt, params);
-    if (PointUtil.isPoint2d(pt) && params.is2d()) return new QPoint2d(pt, params);
+    if (PointUtil.isXYZ(pt) && params.is3d()) return new QPoint3d(pt, params);
+    if (PointUtil.isXY(pt) && params.is2d()) return new QPoint2d(pt, params);
     if (PointUtil.isNumber(pt)  && params.is1d()) return new QPoint1d(pt, params);
     return undefined;
   }
@@ -195,22 +205,28 @@ export class QParamsFactory {
 }
 
 export class QPointList<Q extends QPointBase, P extends Point, R extends Range, K extends QParamsBase> {
+  protected _valid = false;
   protected _pts: Q[];
   protected get pts(): Q[] { return this._pts; }
   public params: K;
-  constructor(params: R | K, pts: Q[] = []) {
-    this.params = (RangeUtil.isRange(params) ? QParamsFactory.create(params)! : params) as K;
+  public get canLoad(): boolean { return this._valid; }
+  public get length(): number { return this._pts.length; }
+  constructor(params?: R | K, pts: Q[] = []) {
+    this._valid = !!params;
+    if (this.canLoad) this.params = (RangeUtil.isRange(params) ? QParamsFactory.create(params)! : params) as K;
     this._pts = pts;
   }
   public push(pt: P) {
+    if (!this.canLoad) return; // if no params are set, then we can't quantize the point
     const qpt = QPointFactory.create(pt, this.params);
     if (!!qpt) this.pts.push(qpt as Q);
   }
   public assign( pts: P[], params: R | K) {
     this.reset((RangeUtil.isRange(params) ? QParamsFactory.create(params)! : params) as K);
-    this.push.apply(this, ...pts);
+    pts.forEach((pt) => this.push(pt));
   }
   public reset(params: R | K) {
+    this._valid = true;
     this.params = (RangeUtil.isRange(params) ? QParamsFactory.create(params)! : params) as K;
     this._pts = [];
   }
@@ -234,6 +250,6 @@ export class QPointList<Q extends QPointBase, P extends Point, R extends Range, 
   }
 }
 
-export class QPoint3dList extends QPointList<QPoint3d, XYZ, Range3d, QParams3d> { constructor(params: Range3d | QParams3d, pts: QPoint3d[] = []) { super(params, pts); } }
-export class QPoint2dList extends QPointList<QPoint2d, XY, Range2d, QParams2d> { constructor(params: Range2d | QParams2d, pts: QPoint2d[] = []) { super(params, pts); } }
-export class QPoint1dList extends QPointList<QPoint1d, number, Range1d, QParams1d> { constructor(params: Range1d | QParams1d, pts: QPoint1d[] = []) { super(params, pts); } }
+export class QPoint3dList extends QPointList<QPoint3d, XYZ, Range3d, QParams3d> { constructor(params?: Range3d | QParams3d, pts: QPoint3d[] = []) { super(params, pts); } }
+export class QPoint2dList extends QPointList<QPoint2d, XY, Range2d, QParams2d> { constructor(params?: Range2d | QParams2d, pts: QPoint2d[] = []) { super(params, pts); } }
+export class QPoint1dList extends QPointList<QPoint1d, number, Range1d, QParams1d> { constructor(params?: Range1d | QParams1d, pts: QPoint1d[] = []) { super(params, pts); } }
