@@ -84,7 +84,7 @@ export abstract class Property {
 
       const propertyCategory = await this.class.schema.getChild<PropertyCategory>(jsonObj.category, true);
       if (!propertyCategory)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);  // FIXME: Is this the right error?
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'category' ("${jsonObj.category}") that cannot be found.`);
 
       this.category = new DelayedPromiseWithProps(propertyCategory.key, async () => propertyCategory);
     }
@@ -95,7 +95,7 @@ export abstract class Property {
 
       const kindOfQuantity = await this.class.schema.getChild<KindOfQuantity>(jsonObj.kindOfQuantity, true);
       if (!kindOfQuantity)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);  // FIXME: Is this the right error?
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'kindOfQuantity' ("${jsonObj.kindOfQuantity}") that cannot be found.`);
 
       this.kindOfQuantity = new DelayedPromiseWithProps(kindOfQuantity.key, async () => kindOfQuantity);
     }

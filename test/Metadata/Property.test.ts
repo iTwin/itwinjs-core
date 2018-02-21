@@ -163,7 +163,7 @@ describe("Property", () => {
       const propertyJson = { category: "TestSchema.NonExistentPropertyCategory"};
       const testProp = new MockProperty("BadProp");
       expect(testProp).to.exist;
-      await expect(testProp.fromJson(propertyJson)).to.be.rejectedWith(ECObjectsError);
+      await expect(testProp.fromJson(propertyJson)).to.be.rejectedWith(ECObjectsError, `The Property BadProp has a 'category' ("TestSchema.NonExistentPropertyCategory") that cannot be found.`);
     });
 
     it("should throw for invalid kindOfQuantity", async () => {
@@ -173,7 +173,7 @@ describe("Property", () => {
       const propertyJson = { kindOfQuantity: "TestSchema.NonExistentKindOfQuantity"};
       const testProp = new MockProperty("BadProp");
       expect(testProp).to.exist;
-      await expect(testProp.fromJson(propertyJson)).to.be.rejectedWith(ECObjectsError);
+      await expect(testProp.fromJson(propertyJson)).to.be.rejectedWith(ECObjectsError, `The Property BadProp has a 'kindOfQuantity' ("TestSchema.NonExistentKindOfQuantity") that cannot be found.`);
     });
   });
 });
