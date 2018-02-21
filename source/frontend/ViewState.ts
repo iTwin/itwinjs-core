@@ -19,7 +19,7 @@ import { ColorDef } from "../common/ColorDef";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { IModel } from "../common/IModel";
+import { IModelConnection } from "./IModelConnection";
 
 export const enum GridOrientationType {
   View = 0,
@@ -110,7 +110,7 @@ export abstract class ViewState extends ElementState {
   public description?: string;
   public isPrivate?: boolean;
 
-  protected constructor(props: ViewDefinitionProps, iModel: IModel, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
+  protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
     super(props, iModel);
     this.description = props.description;
     this.isPrivate = props.isPrivate;
@@ -588,7 +588,7 @@ export abstract class ViewState3d extends ViewState {
   public static get className() { return "ViewDefinition3d"; }
 
   public allow3dManipulations(): boolean { return true; }
-  public constructor(props: ViewDefinition3dProps, iModel: IModel, categories: CategorySelectorState, displayStyle: DisplayStyle3dState) {
+  public constructor(props: ViewDefinition3dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState) {
     super(props, iModel, categories, displayStyle);
     this.cameraOn = JsonUtils.asBool(props.cameraOn);
     this.origin = Point3d.fromJSON(props.origin);
@@ -974,7 +974,7 @@ export abstract class ViewState3d extends ViewState {
  * The list of viewed models is stored by the ModelSelector.
  */
 export class SpatialViewState extends ViewState3d {
-  constructor(props: SpatialViewDefinitionProps, iModel: IModel, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, public modelSelector: ModelSelectorState) {
+  constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, public modelSelector: ModelSelectorState) {
     super(props, iModel, arg3, displayStyle);
     if (arg3 instanceof SpatialViewState) { // from clone
       this.modelSelector = arg3.modelSelector.clone();
@@ -998,7 +998,7 @@ export class SpatialViewState extends ViewState3d {
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection. */
 export class OrthographicViewState extends SpatialViewState {
   public static get className() { return "OrthographicViewDefinition"; }
-  constructor(props: SpatialViewDefinitionProps, iModel: IModel, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle, modelSelector); }
+  constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle, modelSelector); }
 
   // tslint:disable-next-line:no-empty
   public enableCamera(): void { }
@@ -1013,7 +1013,7 @@ export class ViewState2d extends ViewState {
   public readonly baseModelId: Id64;
   public static get className() { return "ViewDefinition2d"; }
 
-  public constructor(props: ViewDefinition2dProps, iModel: IModel, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
+  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
     super(props, iModel, categories, displayStyle);
     this.origin = Point2d.fromJSON(props.origin);
     this.delta = Point2d.fromJSON(props.delta);

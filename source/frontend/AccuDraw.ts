@@ -294,35 +294,27 @@ export class AccuDraw {
   }
 
   public setCompassMode(mode: CompassMode): void {
-    if (mode === this.currentMode)
-      return;
-
+    if (mode === this.currentMode) return;
     this.currentMode = mode;
     this.onCompassModeChange();
   }
 
   public setRotationMode(mode: RotationMode): void {
-    if (mode === this.rotationMode)
-      return;
-
+    if (mode === this.rotationMode) return;
     this.rotationMode = mode;
     this.onRotationModeChange();
   }
 
   public setFieldLock(index: ItemField, locked: boolean): void {
-    if (locked === this.fieldLocked[index])
-      return;
-
+    if (locked === this.fieldLocked[index]) return;
     this.fieldLocked[index] = locked;
     this.onFieldLockChange(index);
   }
 
   public setKeyinStatus(index: ItemField, status: KeyinStatus): void {
     this.keyinStatus[index] = status;
-
     if (KeyinStatus.Dynamic !== status)
       this.dontMoveFocus = true;
-
     if (KeyinStatus.Partial === status)
       this.threshold = Math.abs(ItemField.X_Item === index ? this.rawDelta.y : this.rawDelta.x) + this.tolerance;
   }

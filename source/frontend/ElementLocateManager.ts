@@ -54,21 +54,6 @@ export const enum TestHitStatus {
   Aborted = 2,
 }
 
-/** Indicates the reason an element was rejected by a filter. */
-export const enum LocateFailureValue {
-  None = 0,
-  NoElements = 1,
-  LockedElem = 2,
-  ByApp = 3,
-  ByCommand = 4,
-  ByType = 5,
-  ByProperties = 6,
-  Transient = 7,
-  ModelNotAllowed = 8,
-  NotSnappable = 9,
-  RejectedByElement = 10,
-}
-
 export class LocateOptions {
   public disableIModelFilter = false;
   public allowTransients = false;
@@ -87,7 +72,7 @@ export class LocateOptions {
 
 export class LocateResponse {
   public snapStatus = SnapStatus.Success;
-  public reason = LocateFailureValue.None;
+  public reason?: string;
   public explanation = "";
 }
 
@@ -186,19 +171,6 @@ export class ElementLocateManager {
   public isConstraintSnapActive(): boolean { return false; }
   public performConstraintSnap(_detail: SnapDetail, _hotDistance: number, _snapSource: HitSource) { return SnapStatus.Success; }
 
-  public readonly locateMessages = new Map<LocateFailureValue, string>([
-    [LocateFailureValue.NoElements, "No elements found"],
-    [LocateFailureValue.LockedElem, "Element is locked"],
-    [LocateFailureValue.ByApp, "Element not valid for current tool"],
-    [LocateFailureValue.ByCommand, "Element rejected by tool"],
-    [LocateFailureValue.ByType, "Element type not valid for this tool"],
-    [LocateFailureValue.ByProperties, "Element properties not valid for this tool"],
-    [LocateFailureValue.Transient, "Element is a transient element"],
-    [LocateFailureValue.ModelNotAllowed, "Element is in a model that is not allowed by this tool"],
-    [LocateFailureValue.NotSnappable, "Element is not snappable"],
-    [LocateFailureValue.RejectedByElement, "Element does not allow this operation"],
-  ]);
-
   public clear(): void { this.setCurrHit(undefined); }
   public setHitList(list?: HitList) { this.hitList = list; }
   public setCurrHit(hit?: HitDetail): void { this.currHit = hit; }
@@ -225,12 +197,6 @@ export class ElementLocateManager {
     return preLocated;
   }
 
-  public getLocateError(reason: number): string {
-    const val = this.locateMessages.get(reason);
-    const msg = val ? val : "Locate error";
-    return msg;
-  }
-
   public getPreferredPointSnapModes(source: HitSource): SnapMode[] {
     const snaps: SnapMode[] = [];
 
@@ -247,7 +213,7 @@ export class ElementLocateManager {
   public filterHit(hit: HitDetail, mode: SubSelectionMode, _action: LocateAction, out: LocateResponse): boolean {
     // Tools must opt-in to locate of transient geometry as it requires special treatment.
     if (!hit.elementId && !this.options.allowTransients) {
-      out.reason = LocateFailureValue.Transient;
+      out.reason = "LocateFailure.Transient";
       return true;
     }
 
@@ -259,7 +225,7 @@ export class ElementLocateManager {
 
     const retVal = !tool.onPostLocate(hit, out);
     if (retVal)
-      out.reason = LocateFailureValue.ByCommand;
+      out.reason = "LocateFailure.ByCommand";
 
     return retVal;
   }
@@ -307,7 +273,7 @@ export class ElementLocateManager {
   }
 
   public doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, view: Viewport | undefined, mode: SubSelectionMode = SubSelectionMode.None, filterHits = true): HitDetail | undefined {
-    response.reason = LocateFailureValue.NoElements;
+    response.reason = "LocateFailure.NoElements";
     response.explanation = "";
 
     const hit = this._doLocate(response, newSearch, testPoint, view, mode, filterHits);

@@ -36,6 +36,7 @@ export class IModelApp {
   protected _locateManager?: ElementLocateManager;
   protected _tentativePoint?: TentativePoint;
   protected _i18N?: I18N;
+  public baseToolNamespace?: I18NNamespace;
 
   public readonly features = new FeatureGates();
   public readonly tools = new ToolRegistry();
@@ -47,7 +48,6 @@ export class IModelApp {
   public get locateManager(): ElementLocateManager { return this._locateManager!; }
   public get tentativePoint(): TentativePoint { return this._tentativePoint!; }
   public get i18N(): I18N { return this._i18N!; }
-
   /**
    * This method must be called before any iModelJs services are used. Typically, an application will make a subclass of IModelApp
    * and call this method on that subclass. E.g:
@@ -71,10 +71,10 @@ export class IModelApp {
     iModelApp._i18N = new I18N(["iModelSystem"], "iModelSystem", iModelApp.supplyI18NOptions());
 
     const tools = iModelApp.tools; // first register all the default tools. Subclasses may choose to override them.
-    const namespace: I18NNamespace = iModelApp.i18N.registerNamespace("BaseTools");
-    tools.registerModule(selectTool, namespace);
-    tools.registerModule(idleTool, namespace);
-    tools.registerModule(viewTool, namespace);
+    iModelApp.baseToolNamespace = iModelApp.i18N.registerNamespace("BaseTools");
+    tools.registerModule(selectTool, iModelApp.baseToolNamespace);
+    tools.registerModule(idleTool, iModelApp.baseToolNamespace);
+    tools.registerModule(viewTool, iModelApp.baseToolNamespace);
 
     iModelApp.onStartup(); // allow subclasses to register their tools before we call onStartup
 

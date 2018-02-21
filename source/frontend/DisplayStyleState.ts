@@ -6,7 +6,7 @@ import { ViewFlags, HiddenLine } from "../common/Render";
 import { ColorDef, ColorRgb } from "../common/ColorDef";
 import { ElementState } from "./EntityState";
 import { ElementProps } from "../common/ElementProps";
-import { IModel } from "../common/IModel";
+import { IModelConnection } from "./IModelConnection";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Vector3d } from "@bentley/geometry-core/lib/PointVector";
 
@@ -15,7 +15,7 @@ export abstract class DisplayStyleState extends ElementState {
   private _viewFlags: ViewFlags;
   private _background: ColorDef;
 
-  constructor(props: ElementProps, iModel: IModel) {
+  constructor(props: ElementProps, iModel: IModelConnection) {
     super(props, iModel);
     this._viewFlags = ViewFlags.fromJSON(this.getStyle("viewflags"));
     this._background = ColorDef.fromJSON(this.getStyle("backgroundColor"));
@@ -48,7 +48,7 @@ export abstract class DisplayStyleState extends ElementState {
 
 /** A DisplayStyle for 2d views */
 export class DisplayStyle2dState extends DisplayStyleState {
-  constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  constructor(props: ElementProps, iModel: IModelConnection) { super(props, iModel); }
 }
 
 /** A circle drawn at a Z elevation, whose diameter is the the XY diagonal of the project extents */
@@ -125,7 +125,7 @@ export class Environment {
 
 /** A DisplayStyle for 3d views */
 export class DisplayStyle3dState extends DisplayStyleState {
-  public constructor(props: ElementProps, iModel: IModel) { super(props, iModel); }
+  public constructor(props: ElementProps, iModel: IModelConnection) { super(props, iModel); }
   public getHiddenLineParams(): HiddenLine.Params { return new HiddenLine.Params(this.getStyle("hline")); }
   public setHiddenLineParams(params: HiddenLine.Params) { this.setStyle("hline", params); }
 

@@ -96,19 +96,18 @@
       "DefineElem": "Select element to define rotation"
     }
   },
-  "ElementLocate": {
-    "NoElementsFound": "No Elements Found",
-    "MSG2": "Element is in a model with locate turned off",
-    "MSG4": "Element is locked",
-    "MSG6": "Element is view only",
-    "MSG7": "Element not valid for tool",
-    "MSG8": "Element rejected by tool",
-    "MSG9": "Element type not valid for this tool",
-    "MSG10": "Element properties not valid for this tool",
-    "MSG11": "Element is a transient element",
-    "MSG12": "Element is in a model that is not allowed by this tool",
-    "MSG15": "Element is not snappable",
-    "MSG22": "Element does not allow this operation"
+  "LocateFailure": {
+    "NoElements": "No Elements Found",
+    "LockedModel": "Element is in a model with locate turned off",
+    "LockedElem": "Element is locked",
+    "ByApp": "Element not valid for tool",
+    "ByCommand": "Element rejected by tool",
+    "ByType": "Element type not valid for this tool",
+    "ByProperties": "Element properties not valid for this tool",
+    "Transient": "Element is a transient element",
+    "ModelNotAllowed": "Element is in a model that is not allowed by this tool",
+    "NotSnappable": "Element is not snappable",
+    "RejectedByElement": "Element does not allow this operation"
   },
   "RegionTool": {
     "Error": {
