@@ -1,0 +1,27 @@
+{
+  "rushVersion": "4.2.5",
+  "npmVersion": "5.5.1",
+  "nodeSupportedVersionRange": ">=8.9.0 <9.0.0",
+  "projects": [
+    {
+      "packageName": "imodeljs-core",
+      "projectFolder": ".",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@bentley/imodeljs-backend",
+      "projectFolder": "source/backend",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "projectFolder": "source/frontend",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "imodeljs-core-testbed",
+      "projectFolder": "source/testbed",
+      "shouldPublish": false
+    }
+  ]
+}

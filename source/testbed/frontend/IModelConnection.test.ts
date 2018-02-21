@@ -13,12 +13,21 @@ import { TestData } from "./TestData";
 import { ModelSelectorState } from "../../frontend/ModelSelectorState";
 import { DisplayStyle3dState, DisplayStyle2dState } from "../../frontend/DisplayStyleState";
 import { CategorySelectorState } from "../../frontend/CategorySelectorState";
+import { IModelApp } from "../../frontend/IModelApp";
 
 // spell-checker: disable
+class TestApp extends IModelApp {
+  protected supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
+}
 
 describe("IModelConnection", () => {
   before(async () => {
+    TestApp.startup();
     await TestData.load();
+  });
+
+  after (() => {
+    TestApp.shutdown();
   });
 
   it("should be able to get elements and models from an IModelConnection", async () => {
