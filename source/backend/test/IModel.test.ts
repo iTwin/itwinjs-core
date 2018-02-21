@@ -766,9 +766,6 @@ describe("iModel", () => {
 
     testImodel.saveChanges("");
 
-    // Do a quick check that TxnManager hasLocalChanges method is working
-    assert.isTrue(imodel2.Txns.hasLocalChanges());
-
   });
 
   it("should set EC properties of various types", () => {
