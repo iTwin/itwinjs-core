@@ -218,7 +218,7 @@ export class BriefcaseManager {
   }
 
   private static createHubClient(): IModelHubClient {
-    return new IModelHubClient(iModelEngine.configuration.iModelHubDeployConfig);
+    return new IModelHubClient(iModelHost.configuration.iModelHubDeployConfig);
   }
 
   public static getChangeSetsPath(iModelId: string): string {
