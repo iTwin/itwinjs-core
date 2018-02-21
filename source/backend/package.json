@@ -11,6 +11,7 @@
     "clean": "rimraf lib package-deps.json",
     "copy:assets": "cpx ./assets/**/* ./lib/backend/assets",
     "copy:test-assets": "cpx ./test/assets/**/* ./lib/backend/test/assets",
+    "cover": "nyc mocha ./test/**/*.test.ts",
     "pretest": "npm run copy:test-assets && npm run build",
     "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/backend/test\"",
     "webpackformobile": "cpx ./test/runMochaTestsDirectly.js ./lib/backend/test && webpack --target=webworker --config ./test/mobile.webpack.config.js"
@@ -48,16 +49,43 @@
   },
   "//devDependencies": [
     "NOTE: The backend tests use the standard Node addon, so that is recorded in devDependencies.",
-    "The webpackformobile command needs webpack"
+    "NOTE: The webpackformobile command needs webpack"
   ],
   "devDependencies": {
     "@bentley/imodeljs-n_8_9-win32-x64": "~8.1.0",
     "cpx": "^1.5.0",
+    "mocha": "^3.5.3",
+    "nyc": "^11.4.1",
     "rimraf": "^2.6.2",
     "typescript": "~2.6.2",
     "webpack": "^3.10.0"  
   },
   "//optionalDependencies": [
     "NOTE: Rush (as of 4.2.5) does not support optionalDependencies!"
-  ]
+  ],
+  "nyc": {
+    "include": [
+      "./**/*.ts",
+      "../common/**/*.ts"
+    ],
+    "exclude": [
+      "./test/*",
+      "**/*.d.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "source-map-support/register",
+      "tsconfig-paths/register",
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text-summary",
+      "lcov",
+      "cobertura"
+    ],
+    "report-dir": "./lib/backend/test/coverage",
+    "all": true
+  }
 }
