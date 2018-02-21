@@ -13,14 +13,13 @@ export default class PropertyCategory extends SchemaChild {
   public priority: number;
 
   constructor(schema: Schema, name: string) {
-    super(schema, name);
-    this.key.type = SchemaChildType.PropertyCategory;
+    super(schema, name, SchemaChildType.PropertyCategory);
   }
 
   public async fromJson(jsonObj: any) {
     await super.fromJson(jsonObj);
 
-    if (jsonObj.priority) {
+    if (undefined !== jsonObj.priority) {
       if (typeof(jsonObj.priority) !== "number")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The PropertyCategory ${this.name} has an invalid 'priority' attribute. It should be of type 'number'.`);
       this.priority = jsonObj.priority;

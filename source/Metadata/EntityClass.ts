@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import ECClass from "./Class";
-import MixinClass from "./MixinClass";
+import Mixin from "./Mixin";
 import RelationshipClass from "./RelationshipClass";
 import { LazyLoadedMixin } from "../Interfaces";
 import { ECClassModifier, RelatedInstanceDirection, SchemaChildType, parseStrengthDirection } from "../ECObjects";
@@ -20,8 +20,7 @@ export default class EntityClass extends ECClass {
   private _mixins?: LazyLoadedMixin[];
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
-    super(schema, name, modifier);
-    this.key.type = SchemaChildType.EntityClass;
+    super(schema, name, SchemaChildType.EntityClass, modifier);
   }
 
   set mixins(mixins: LazyLoadedMixin[]) { this._mixins = mixins; }
@@ -35,7 +34,7 @@ export default class EntityClass extends ECClass {
    *
    * @param mixin
    */
-  public addMixin(mixin: MixinClass | MixinClass[]) {
+  public addMixin(mixin: Mixin | Mixin[]) {
     if (!this._mixins)
       this._mixins = [];
 
@@ -91,7 +90,7 @@ export default class EntityClass extends ECClass {
       direction = parseStrengthDirection(direction);
 
     const lazyRelationship = new DelayedPromiseWithProps(resolvedRelationship.key, async () => resolvedRelationship!);
-    return this.addProperty(new NavigationProperty(name, lazyRelationship, direction));
+    return this.addProperty(new NavigationProperty(this, name, lazyRelationship, direction));
   }
 
   /**
@@ -106,7 +105,7 @@ export default class EntityClass extends ECClass {
       if (!this.schema)
         throw new ECObjectsError(ECObjectsStatus.ECOBJECTS_ERROR_BASE, `TODO: Fix this message`);
 
-      const tempMixin = await this.schema.getChild<MixinClass>(mixinFullName, false);
+      const tempMixin = await this.schema.getChild<Mixin>(mixinFullName, false);
       if (!tempMixin)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `TODO: Fix this message`);
 
@@ -115,7 +114,7 @@ export default class EntityClass extends ECClass {
 
     const loadAllMixins = (mixinFullNames: string[]) => Promise.all(mixinFullNames.map((name) => loadMixin(name)));
 
-    if (jsonObj.mixin) {
+    if (undefined !== jsonObj.mixin) {
       if (typeof(jsonObj.mixin) === "string")
         await loadMixin(jsonObj.mixin);
       else if (Array.isArray(jsonObj.mixin))

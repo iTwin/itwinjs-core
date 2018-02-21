@@ -8,30 +8,49 @@ import { PrimitiveType, SchemaChildType } from "../ECObjects";
 import { SchemaChildVisitor } from "../Interfaces";
 import Schema from "./Schema";
 
+export interface Enumerator<T> {
+  value: T;
+  label?: string;
+}
+export type AnyEnumerator = Enumerator<string | number>;
+
+export interface StringEnumeration extends Enumeration {
+  primitiveType: PrimitiveType.String;
+  enumerators: Array<Enumerator<string>>;
+}
+
+export interface IntEnumeration extends Enumeration {
+  primitiveType: PrimitiveType.Integer;
+  enumerators: Array<Enumerator<number>>;
+}
+
 /**
  * A Typescript class representation of an ECEnumeration.
  */
 export default class Enumeration extends SchemaChild {
   public readonly type: SchemaChildType.Enumeration;
-  public primitiveType: PrimitiveType.Integer | PrimitiveType.String;
+  public primitiveType?: PrimitiveType.Integer | PrimitiveType.String;
   public isStrict: boolean;
-  public enumerators: Enumerator[];
+  public enumerators: AnyEnumerator[];
 
-  constructor(schema: Schema, name: string) {
-    super(schema, name);
+  constructor(schema: Schema, name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String) {
+    super(schema, name, SchemaChildType.Enumeration);
 
-    this.key.type = SchemaChildType.Enumeration;
-
-    this.primitiveType = PrimitiveType.Integer;
+    this.primitiveType = primitiveType;
     this.isStrict = true;
     this.enumerators = [];
   }
+
+  public isInt(): this is IntEnumeration { return this.primitiveType === PrimitiveType.Integer; }
+  public isString(): this is StringEnumeration { return this.primitiveType === PrimitiveType.String; }
 
   /**
    * Returns an enumerator that matches the value provided.
    * @param value The value of the Enumerator to find.
    */
-  public getEnumerator(value: string | number): Enumerator | undefined {
+  public getEnumerator(value: string): Enumerator<string> | undefined;
+  public getEnumerator(value: number): Enumerator<number> | undefined;
+  public getEnumerator(value: string | number): AnyEnumerator | undefined {
     return this.enumerators.find((item) => item.value === value);
   }
 
@@ -45,7 +64,7 @@ export default class Enumeration extends SchemaChild {
         (typeof(value) === "number" && this.primitiveType !== PrimitiveType.Integer))
       throw new ECObjectsError(ECObjectsStatus.InvalidEnumValue, `The value`);
 
-    this.enumerators.push(new Enumerator(value, label));
+    this.enumerators.push({value, label});
   }
 
   /**
@@ -53,7 +72,7 @@ export default class Enumeration extends SchemaChild {
    * @param enumerator The Enumerator to add to the this Enumeration
    */
   // Not sure if we want to keep this in the public api.
-  public addEnumerator(enumerator: Enumerator): void {
+  public addEnumerator(enumerator: AnyEnumerator): void {
     // TODO: Need to validate that the enumerator has a unique value.
 
     this.enumerators.push(enumerator);
@@ -65,59 +84,62 @@ export default class Enumeration extends SchemaChild {
   public async fromJson(jsonObj: any) {
     await super.fromJson(jsonObj);
 
-    if (jsonObj.isStrict) {
+    if (undefined === this.primitiveType) {
+      if (undefined === jsonObj.backingTypeName)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} is missing the required 'backingTypeName' attribute.`);
+      if (typeof(jsonObj.backingTypeName) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'backingTypeName' attribute. It should be of type 'string'.`);
+
+      if (/int/i.test(jsonObj.backingTypeName))
+        this.primitiveType = PrimitiveType.Integer;
+      else if (/string/i.test(jsonObj.backingTypeName))
+        this.primitiveType = PrimitiveType.String;
+      else
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`);
+    } else {
+      if (undefined !== jsonObj.backingTypeName) {
+        if (typeof(jsonObj.backingTypeName) !== "string")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'backingTypeName' attribute. It should be of type 'string'.`);
+
+        const primitiveTypePattern = (this.isInt()) ? /int/i : /string/i;
+        if (!primitiveTypePattern.test(jsonObj.backingTypeName))
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an incompatible backingTypeName. It must be "${(this.isInt()) ? "int" : "string"}", not "${(this.isInt()) ? "string" : "int"}".`);
+      }
+    }
+
+    if (undefined !== jsonObj.isStrict) {
       if (typeof(jsonObj.isStrict) !== "boolean")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'isStrict' attribute. It should be of type 'boolean'.`);
       this.isStrict = jsonObj.isStrict;
     }
 
-    if (jsonObj.backingTypeName) {
-      if (/int/i.test(jsonObj.backingTypeName))
-        this.primitiveType = PrimitiveType.Integer;
-      else if (/string/i.test(jsonObj.backingTypeName))
-        this.primitiveType = PrimitiveType.String;
-    }
-
-    if (jsonObj.enumerators) {
+    if (undefined !== jsonObj.enumerators) {
       if (!Array.isArray(jsonObj.enumerators))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'enumerators' attribute. It should be of type 'array'.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
 
+      const expectedEnumeratorType = (this.isInt()) ? "number" : "string";
       jsonObj.enumerators.forEach((enumerator: any) => {
-        if (!enumerator.value && enumerator.value !== 0)
+        if (typeof(enumerator) !== "object")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
+        if (undefined === enumerator.value)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator that is missing the required attribute 'value'.`);
-        else if (typeof(enumerator.value) !== "string" && typeof(enumerator.value) !== "number")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'value' attribute.
-                                                                    The value attribute must be of type ${this.primitiveType === PrimitiveType.Integer ? "'number'" : "'string'"}.`);
-        // Need to check if the Enumerator exists
-        let newEnum = this.getEnumerator(enumerator.value);
-        if (!newEnum)
-          newEnum = new Enumerator(enumerator.value);
 
-        if (enumerator.label) {
+        if (typeof(enumerator.value) !== expectedEnumeratorType)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'value' attribute. It should be of type '${expectedEnumeratorType}'.`);
+
+        if (undefined !== enumerator.label) {
           if (typeof(enumerator.label) !== "string")
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'label' attribute. It should be of type 'string'.`);
-          newEnum.label = enumerator.label;
         }
 
-        this.enumerators.push(newEnum);
+        // TODO: Guard against duplicate values
       });
     }
+    this.enumerators = jsonObj.enumerators;
   }
 
   public async accept(visitor: SchemaChildVisitor) {
     if (visitor.visitEnumeration)
       await visitor.visitEnumeration(this);
   }
-}
-
-/**
- * A Typescript class representation of an ECEnumerator.
- */
-export class Enumerator {
-  public enumeration: Enumeration;
-
-  constructor(public value: number | string, public label?: string) { }
-
-  get isInt() { return this.enumeration.primitiveType === PrimitiveType.Integer; }
-  get isString() { return this.enumeration.primitiveType === PrimitiveType.String; }
 }

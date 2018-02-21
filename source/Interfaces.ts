@@ -9,7 +9,7 @@ import SchemaChild from "./Metadata/SchemaChild";
 import { Property } from "./Metadata/Property";
 import ECClass, { StructClass } from "./Metadata/Class";
 import EntityClass from "./Metadata/EntityClass";
-import MixinClass from "./Metadata/MixinClass";
+import Mixin from "./Metadata/Mixin";
 import RelationshipClass from "./Metadata/RelationshipClass";
 import CustomAttributeClass from "./Metadata/CustomAttributeClass";
 import Enumeration from "./Metadata/Enumeration";
@@ -22,16 +22,16 @@ export type LazyLoadedProperty = Readonly<{ name: string }> & DelayedPromise<Pro
 export type LazyLoadedSchemaChild<T extends SchemaChild> = Readonly<SchemaChildKey> & DelayedPromise<T>;
 export type LazyLoadedECClass = LazyLoadedSchemaChild<ECClass>;
 export type LazyLoadedEntityClass = LazyLoadedSchemaChild<EntityClass>;
-export type LazyLoadedMixin = LazyLoadedSchemaChild<MixinClass>;
+export type LazyLoadedMixin = LazyLoadedSchemaChild<Mixin>;
 export type LazyLoadedStructClass = LazyLoadedSchemaChild<StructClass>;
 export type LazyLoadedCustomAttributeClass = LazyLoadedSchemaChild<CustomAttributeClass>;
 export type LazyLoadedRelationshipClass = LazyLoadedSchemaChild<RelationshipClass>;
 export type LazyLoadedEnumeration = LazyLoadedSchemaChild<Enumeration>;
 export type LazyLoadedKindOfQuantity = LazyLoadedSchemaChild<KindOfQuantity>;
 export type LazyLoadedPropertyCategory = LazyLoadedSchemaChild<PropertyCategory>;
-export type LazyLoadedRelationshipConstraintClass = LazyLoadedSchemaChild<EntityClass | MixinClass | RelationshipClass>;
+export type LazyLoadedRelationshipConstraintClass = LazyLoadedSchemaChild<EntityClass | Mixin | RelationshipClass>;
 
-export type AnyClass = EntityClass | MixinClass | StructClass | CustomAttributeClass | RelationshipClass;
+export type AnyClass = EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass;
 export type AnySchemaChild = AnyClass | Enumeration | KindOfQuantity | PropertyCategory;
 
 export interface SchemaChildVisitor {

@@ -16,8 +16,8 @@ export default class ECStringConstants {
   public static readonly CONTAINERTYPE_ANYCLASS: string = "AnyClass";
 
   public static readonly CONTAINERTYPE_PRIMITIVEPROPERTY: string = "PrimitiveProperty";
-  public static readonly CONTAINERTYPE_STRUCTPROPERTY: string = "PrimitiveProperty";
-  public static readonly CONTAINERTYPE_ARRAYPROPERTY: string = "ArrayProperty";
+  public static readonly CONTAINERTYPE_STRUCTPROPERTY: string = "StructProperty";
+  public static readonly CONTAINERTYPE_PRIMITIVEARRAYPROPERTY: string = "PrimitiveArrayProperty";
   public static readonly CONTAINERTYPE_STRUCTARRAYPROPERTY: string = "StructArrayProperty";
   public static readonly CONTAINERTYPE_NAVIGATIONPROPERTY: string = "NavigationProperty";
   public static readonly CONTAINERTYPE_ANYPROPERTY: string = "AnyProperty";

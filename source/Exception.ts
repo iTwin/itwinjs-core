@@ -53,6 +53,7 @@ export class ECObjectsError extends Error {
       case ECObjectsStatus.UnableToLocateSchema: return this._appendMessage("ECObjectsStatus.UnableToLocateSchema");
       default:
         assert(false);
+        /* istanbul ignore next */
         return this._appendMessage("Error " + this.errorNumber.toString());
     }
   }
