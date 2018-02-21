@@ -103,7 +103,7 @@ export default class Enumeration extends SchemaChild {
 
         const primitiveTypePattern = (this.isInt()) ? /int/i : /string/i;
         if (!primitiveTypePattern.test(jsonObj.backingTypeName))
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'backingTypeName' attribute. It should be "${(this.isInt()) ? "int" : "string"}".`);
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an incompatible backingTypeName. It must be "${(this.isInt()) ? "int" : "string"}", not "${(this.isInt()) ? "string" : "int"}".`);
       }
     }
 

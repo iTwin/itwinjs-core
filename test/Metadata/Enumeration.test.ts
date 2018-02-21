@@ -65,11 +65,13 @@ describe("Enumeration", () => {
 
   describe("fromJson", () => {
     let testEnum: Enumeration;
+    let testStringEnum: Enumeration;
     let testEnumSansPrimType: Enumeration;
 
     beforeEach(() => {
       const schema = new Schema(new SchemaKey("TestSchema", 1, 0, 0));
       testEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.Integer);
+      testStringEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.String);
       testEnumSansPrimType = new Enumeration(schema, "TestEnumeration");
     });
 
@@ -78,13 +80,23 @@ describe("Enumeration", () => {
         expect(enumeration.name).to.eql("TestEnumeration");
         expect(enumeration.label).to.eql("SomeDisplayLabel");
         expect(enumeration.description).to.eql("A really long description...");
-        expect(enumeration.isStrict).to.eql(false);
-        expect(enumeration.isInt()).to.eql(true);
-        expect(enumeration.isString()).to.eql(false);
+        expect(enumeration.isStrict).to.be.false;
         expect(enumeration.enumerators).to.exist;
         expect(enumeration.enumerators.length).to.eql(2);
+      }
+      function assertValidIntEnumeration(enumeration: Enumeration) {
+        assertValidEnumeration(enumeration);
+        expect(enumeration.isInt()).to.be.true;
+        expect(enumeration.isString()).to.be.false;
         expect(enumeration.getEnumerator(8)).to.exist;
         expect(enumeration.getEnumerator(8)!.label).to.eql("An enumerator label");
+      }
+      function assertValidStringEnumeration(enumeration: Enumeration) {
+        assertValidEnumeration(enumeration);
+        expect(enumeration.isInt()).to.be.false;
+        expect(enumeration.isString()).to.be.true;
+        expect(enumeration.getEnumerator("8")).to.exist;
+        expect(enumeration.getEnumerator("8")!.label).to.eql("An enumerator label");
       }
 
       it("with backingTypeName first specified in JSON", async () => {
@@ -99,7 +111,7 @@ describe("Enumeration", () => {
           ],
         };
         await testEnumSansPrimType.fromJson(propertyJson);
-        assertValidEnumeration(testEnumSansPrimType);
+        assertValidIntEnumeration(testEnumSansPrimType);
       });
 
       it("with backingTypeName repeated in JSON", async () => {
@@ -114,7 +126,7 @@ describe("Enumeration", () => {
           ],
         };
         await testEnum.fromJson(propertyJson);
-        assertValidEnumeration(testEnum);
+        assertValidIntEnumeration(testEnum);
       });
 
       it("with backingTypeName omitted in JSON", async () => {
@@ -128,7 +140,22 @@ describe("Enumeration", () => {
           ],
         };
         await testEnum.fromJson(propertyJson);
-        assertValidEnumeration(testEnum);
+        assertValidIntEnumeration(testEnum);
+      });
+
+      it(`with backingTypeName="string"`, async () => {
+        const propertyJson = {
+          backingTypeName: "string",
+          isStrict: false,
+          label: "SomeDisplayLabel",
+          description: "A really long description...",
+          enumerators: [
+            { value: "6" },
+            { value: "8", label: "An enumerator label" },
+          ],
+        };
+        await testEnumSansPrimType.fromJson(propertyJson);
+        assertValidStringEnumeration(testEnumSansPrimType);
       });
     });
 
@@ -158,11 +185,11 @@ describe("Enumeration", () => {
     it("should throw for mismatched backingTypeName", async () => {
       expect(testEnum).to.exist;
       let json: any = { backingTypeName: "string" };
-      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'backingTypeName' attribute. It should be "int".`);
+      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an incompatible backingTypeName. It must be "int", not "string".`);
 
-      testEnum.primitiveType = PrimitiveType.String;
+      expect(testStringEnum).to.exist;
       json = { backingTypeName: "int" };
-      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'backingTypeName' attribute. It should be "string".`);
+      await expect(testStringEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an incompatible backingTypeName. It must be "string", not "int".`);
     });
 
     it("should throw for enumerators not an array", async () => {
