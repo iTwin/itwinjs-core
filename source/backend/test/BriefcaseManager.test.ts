@@ -381,7 +381,7 @@ describe("BriefcaseManager", () => {
     iModel.closeStandalone();
   });
 
-  it("should test AutoPush", async () => {
+  it.skip("should test AutoPush", async () => {
     let isIdle: boolean = true;
     const activityMonitor = {
       isIdle: () => isIdle,
