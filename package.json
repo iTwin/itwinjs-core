@@ -25,7 +25,7 @@
     "test": "npm run test:backend && npm run test:frontend",
     "pretest:backend": "cd source/backend && npm run pretest",
     "test:backend": "node node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot \"./\" --testDir=\"./source/backend/lib/backend/test\"",
-    "test:backendwebpackformobile": "cd source/backend/test && npm run webpackformobile",
+    "test:backendwebpackformobile": "cd source/backend && npm run webpackformobile",
     "test:frontend": "cd source/testbed && npm run build && node bin/testbed.js",
     "test:tsnode": "node node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode --packageRoot \"./\" --testDir=\"./source/backend/test\" --tscPaths",
     "testbed": "cd source/testbed && node bin/testbed.js --debug",

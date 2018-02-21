@@ -67,7 +67,7 @@ export class AddonRegistry {
 
     if (KnownLocations.imodeljsMobile !== undefined) {
       // We are running in imodeljs (our mobile platform)
-      AddonRegistry.registerAddon(require("@bentley/imodeljs-mobile"));
+      AddonRegistry.registerAddon((self as any).imodeljsMobile.imodeljsNative);
       return;
     }
 
