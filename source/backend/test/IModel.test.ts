@@ -173,6 +173,8 @@ describe("iModel", () => {
       const elementId: Id64 = imodel2.elements.insertElement(element);
       assert.isTrue(elementId.isValid());
     }
+
+    assert.isTrue(imodel2.Txns.hasLocalChanges());
   });
 
   it("should have a valid root subject element", () => {
