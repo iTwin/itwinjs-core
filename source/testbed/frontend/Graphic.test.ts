@@ -15,7 +15,7 @@ function withinTol(x: number, y: number): boolean {
 
 const iModelLocation = path.join(__dirname, "../../../../backend/test/assets/test.bim");
 
-describe.only("Graphic", () => {
+describe("Graphic", () => {
   let imodel: IModelConnection;
 
   before(async () => {   
@@ -44,7 +44,7 @@ describe.only("Graphic", () => {
     assert.isTrue(glist.length === 4, "graphics loaded into array");
     assert.isTrue(glist[0] instanceof Graphic, "graphics can be accessed by index");
   });
-  
+
   it("IndexedPrimitiveParamsFeatures works as expected", () => {
     // Test comstructor with no params
     let ippFeatures: IndexedPrimitiveParamsFeatures = new IndexedPrimitiveParamsFeatures();
