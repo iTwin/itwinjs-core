@@ -12,7 +12,6 @@ import { Point4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { Sprite } from "./Sprites";
 
 // tslint:disable:variable-name
-// tslint:disable:no-conditional-assignment
 
 export const enum SnapMode {
   Invalid = -1,

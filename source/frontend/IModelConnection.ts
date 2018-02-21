@@ -4,6 +4,7 @@
 import { Id64, Id64Arg, Id64Props, Id64Set } from "@bentley/bentleyjs-core/lib/Id";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { CodeSpec } from "../common/Code";
 import { ElementProps } from "../common/ElementProps";
@@ -21,6 +22,7 @@ import { DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { ModelState, SpatialModelState, SectionDrawingModelState, DrawingModelState, SheetModelState } from "./ModelState";
 import { ViewQueryParams, ViewDefinitionProps } from "../common/ViewProps";
+import { iModelApp } from "./IModelApp";
 
 const loggingCategory = "imodeljs-backend.IModelConnection";
 
@@ -54,7 +56,9 @@ export class IModelConnection extends IModel {
 
   /** Open an IModelConnection to an iModel */
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
-    let changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId);
+    if (!iModelApp)
+      throw new IModelError(BentleyStatus.ERROR, "Call IModelApp.startup() before calling open");
+    let changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId, iModelApp.iModelHubClient);
     if (!changeSetId)
       changeSetId = "0"; // The first version is arbitrarily setup to have changeSetId = "0" since it's required by the gateway API.
 
@@ -350,8 +354,8 @@ export class IModelConnectionViews {
   constructor(private _iModel: IModelConnection) { }
 
   /**
-   * Query for the array of ViewDefinitionProps
-   * @param queryParams Query parameters
+   * Query for an array of ViewDefinitionProps
+   * @param queryParams Query parameters specifying the views to return
    */
   public async queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]> {
     const params: ViewQueryParams = Object.assign({}, queryParams); // make a copy

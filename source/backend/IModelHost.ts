@@ -7,10 +7,10 @@ import { BentleyStatus, IModelError } from "../common/IModelError";
 import * as path from "path";
 import { KnownLocations } from "./KnownLocations";
 
-/** Global access to the IModelEngine. Initialized by calling IModelEngine.startup(). */
-export let iModelEngine: IModelEngine;
+/** Global access to the IModelHost. Initialized by calling IModelHost.startup(). */
+export let iModelHost: IModelHost;
 
-export class IModelEngineConfiguration {
+export class IModelHostConfiguration {
   /** Deployment configuration of Connect and IModelHub services - these are used to find Projects and iModels */
   public iModelHubDeployConfig: DeploymentEnv = "QA";
 
@@ -29,30 +29,30 @@ export class IModelEngineConfiguration {
   public getServiceUserAccessToken: () => AccessToken | undefined = () => undefined;
 }
 
-export class IModelEngine {
-  private constructor(public readonly configuration: IModelEngineConfiguration) { }
+export class IModelHost {
+  private constructor(public readonly configuration: IModelHostConfiguration) { }
 
   /** This method must be called before any iModelJs services are used. */
-  public static startup(configuration: IModelEngineConfiguration = new IModelEngineConfiguration()) {
-    if (iModelEngine !== undefined)
+  public static startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()) {
+    if (iModelHost !== undefined)
       throw new IModelError(BentleyStatus.ERROR, "startup may only be called once");
 
-    iModelEngine = new IModelEngine(configuration);
-    iModelEngine.onAfterStartup.raiseEvent();
+    iModelHost = new IModelHost(configuration);
+    iModelHost.onAfterStartup.raiseEvent();
   }
 
   public static shutdown() {
-    if (!iModelEngine)
+    if (!iModelHost)
       throw new IModelError(BentleyStatus.ERROR, "startup needs to be called before shutdown");
 
-    iModelEngine.onBeforeShutdown.raiseEvent();
+    iModelHost.onBeforeShutdown.raiseEvent();
 
-    (iModelEngine as any) = undefined;
+    (iModelHost as any) = undefined;
   }
 
-  /** Event raised just after the backend IModelEngine was started up */
+  /** Event raised just after the backend IModelHost was started up */
   public readonly onAfterStartup = new BeEvent<() => void>();
 
-  /** Event raised just before the backend IModelEngine is to be shut down */
+  /** Event raised just before the backend IModelHost is to be shut down */
   public readonly onBeforeShutdown = new BeEvent<() => void>();
 }

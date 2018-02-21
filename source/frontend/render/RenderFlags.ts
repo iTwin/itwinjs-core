@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-// Ordered list of render passes which produce a rendered frame.
+/** Ordered list of render passes which produce a rendered frame. */
 export const enum RenderPass {
     None = 0xff,
     Background = 0,
@@ -17,14 +17,14 @@ export const enum RenderPass {
     COUNT,
 }
 
-// Describes the type of geometry rendered by a ShaderProgram.
+/** Describes the type of geometry rendered by a ShaderProgram. */
 export const enum GeometryType {
     IndexedTriangles,
     IndexedPoints,
     ArrayedPoints,
-  }
+}
 
-// Reserved texture units for specific sampler variables, to avoid conflicts between shader components which each have their own textures.
+/** Reserved texture units for specific sampler variables, to avoid conflicts between shader components which each have their own textures. */
 export const enum TextureUnit {
     // For shaders which know exactly which textures will be used
     Zero = 0,
@@ -48,20 +48,22 @@ export const enum TextureUnit {
     PickDepthAndOrder = Six,
 
     // WIP - Image lighting (won't work if device limited to 8 textures).
-    IBLDiffuse  = 8,
+    IBLDiffuse = 8,
     IBLSpecular = 9,
     BRDFLUT = 10,
     EnvironmentMap = 11,
 }
 
-// Defines the order in which primitives are rendered within a GLESList. This is chiefly
-// used to sort primitives which originate from the same element. e.g., the blanking fill
-// associated with a text field must always render behind the text; the edges of a surface
-// must render in front of the surface; etc.
-// An exception to the 'same element' rule is provided for planar surfaces and edges thereof
-// sketched onto non-planar surfaces. When the depth test is ambiguous the planar geometry
-// is always on top of the non-planar surface. This addresses z-fighting when shapes are
-// sketched onto surfaces, e.g. as part of push-pull modeling workflows.
+/**
+ * Defines the order in which primitives are rendered within a GLESList. This is chiefly
+ * used to sort primitives which originate from the same element. e.g., the blanking fill
+ * associated with a text field must always render behind the text; the edges of a surface
+ * must render in front of the surface; etc.
+ * An exception to the 'same element' rule is provided for planar surfaces and edges thereof
+ * sketched onto non-planar surfaces. When the depth test is ambiguous the planar geometry
+ * is always on top of the non-planar surface. This addresses z-fighting when shapes are
+ * sketched onto surfaces, e.g. as part of push-pull modeling workflows.
+ */
 export const enum RenderOrder {
     None = 0,
     BlankingRegion = 1,
@@ -82,7 +84,7 @@ export function isPlanar(order: RenderOrder): boolean { return order >= RenderOr
 
 export function isSurface(order: RenderOrder): boolean { return order <= RenderOrder.Surface || order === RenderOrder.PlanarSurface; }
 
-// Flags indicating operations to be performed by the post-process composite step.
+/** Flags indicating operations to be performed by the post-process composite step. */
 export const enum CompositeFlags {
     None = 0,
     Translucent = 1 << 0,
@@ -90,7 +92,7 @@ export const enum CompositeFlags {
     All = Translucent | Hilite,
 }
 
-// Describes attributes of a MeshGeometry object. Used to conditionally execute portion of shader programs.
+/** Describes attributes of a MeshGeometry object. Used to conditionally execute portion of shader programs. */
 export const enum SurfaceFlags {
     None = 0,
     HasTexture = 1 << 0,

@@ -3,14 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core/lib/Id";
 import { ElementState } from "./EntityState";
-import { IModel } from "../common/IModel";
+import { IModelConnection } from "./IModelConnection";
 import { ModelSelectorProps } from "../common/ViewProps";
 
 /** A set of ids of GeometricModels for a SpatialViewDefinition. */
 export class ModelSelectorState extends ElementState {
   /** the set of ModelIds of this ModelSelectorState */
   public readonly models = new Set<string>();
-  constructor(props: ModelSelectorProps, iModel: IModel) {
+  constructor(props: ModelSelectorProps, iModel: IModelConnection) {
     super(props, iModel);
     if (props.models)
       props.models.forEach((model) => this.models.add(model));
