@@ -79,7 +79,12 @@ export abstract class GatewayProtocol {
 
   /** Deserializes a gateway operation value. */
   public deserializeOperationValue(value: any) {
-    return JSON.parse(value, GatewayProtocol.unmarshal);
+    return (value === "") ? undefined : JSON.parse(value, GatewayProtocol.unmarshal);
+  }
+
+  /** Records a gateway operation response. */
+  protected static recordOperationResponse() {
+    Gateway.recordResponse();
   }
 
   /** JSON.stringify replacer callback that marshals JavaScript class instances. */
@@ -198,8 +203,10 @@ export class GatewayDirectProtocol extends GatewayProtocol {
       try {
         const impl = Gateway.getImplementationForGateway(gateway);
         const result = await impl.invoke<T>(operation, ...parameters);
+        GatewayProtocol.recordOperationResponse();
         resolve(result);
       } catch (e) {
+        GatewayProtocol.recordOperationResponse();
         reject(e);
       }
     });
