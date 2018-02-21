@@ -1,8 +1,11 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.53.0",
+  "version": "0.53.1",
   "description": "iModelJs backend components",
   "license": "UNLICENSED",
+  "engines": {
+    "node": ">=8.9.0 <9.0"
+  },
   "scripts": {
     "build": "tsc && npm run copy:assets",
     "clean": "rimraf lib",
@@ -22,22 +25,37 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
+  "//peerDependencies": [
+    "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check",
+    "NOTE: No matter which Node addon the outermost app choses, it must support the specified API level."
+  ],
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "^6.1.1",
+    "@bentley/imodeljs-nodeaddonapi": "~8.1.0",
+    "flatbuffers": "^1.8.0"
+  },
   "//dependencies": [
     "NOTE: these dependencies are specific to imodeljs-backend",
     "NOTE: dependencies that are in common with imodeljs-frontend must have a consistent version",
     "NOTE: must use ~ range to depend on the addon api -- that is, must lock onto a minor version."
   ],
   "dependencies": {
-    "@bentley/bentleyjs-core": "^6.1.1",
     "@bentley/geometry-core": "^4.3.1",
     "@bentley/imodeljs-clients": "^3.0.0",
-    "@bentley/imodeljs-electronaddon": "~8.1.0",
     "@bentley/imodeljs-nodeaddon": "~8.1.0",
-    "@bentley/imodeljs-nodeaddonapi": "~8.1.0",
-    "fs-extra": "^4.0.3",
+    "fs-extra": "^5.0.0",
     "js-base64": "^2.4.0"
   },
   "//devDependencies": [
-    "NOTE: all devDependencies should be recorded in the top-level package.json only"
+    "NOTE: The backend tests use the standard Node addon, so that is recorded in devDependencies."
+  ],
+  "devDependencies": {
+    "@bentley/imodeljs-n_8_9-win32-x64": "~8.1.0",
+    "cpx": "^1.5.0",
+    "rimraf": "^2.6.2",
+    "typescript": "~2.6.2"
+  },
+  "//optionalDependencies": [
+    "NOTE: Rush (as of 4.2.5) does not support optionalDependencies!"
   ]
 }
