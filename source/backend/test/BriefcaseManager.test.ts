@@ -382,12 +382,13 @@ describe("BriefcaseManager", () => {
   });
 
   it("should test AutoPush", async () => {
+    let isIdle: boolean = true;
     const activityMonitor = {
-      isIdle: () => true,
+      isIdle: () => isIdle,
     };
 
-    const fakePushTimeRequired = 10; // pretend that it takes 1/100 of a second to do the push
-    const millisToWaitForAutoPush = (2 * fakePushTimeRequired);
+    const fakePushTimeRequired = 1; // pretend that it takes 1/1000 of a second to do the push
+    const millisToWaitForAutoPush = (5 * fakePushTimeRequired); // a long enough wait to ensure that auto-push ran.
 
     const iModel = {
       pushChanges: async (_clientAccessToken: AccessToken) => {
@@ -405,7 +406,7 @@ describe("BriefcaseManager", () => {
     lastAutoPushEventType = undefined;
 
     // Create an autopush in manual-schedule mode.
-    const autoPush = new AutoPush(iModel as any, {pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 10, autoSchedule: false}, accessToken, activityMonitor);
+    const autoPush = new AutoPush(iModel as any, {pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false}, accessToken, activityMonitor);
     assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
     assert.isFalse(autoPush.autoSchedule);
 
@@ -457,6 +458,15 @@ describe("BriefcaseManager", () => {
     await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
     assert(autoPush.state === AutoPushState.NotRunning);
     assert.isFalse(autoPush.autoSchedule, "cancel turns off autoSchedule");
+
+    // Test auto-push when isIdle returns false
+    isIdle = false;
+    lastPushTimeMillis = 0;
+    autoPush.autoSchedule = true;
+    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
+    assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
+    autoPush.cancel();
   });
 
 });
