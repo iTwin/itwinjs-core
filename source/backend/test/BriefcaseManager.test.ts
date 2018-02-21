@@ -386,12 +386,12 @@ describe("BriefcaseManager", () => {
       isIdle: () => true,
     };
 
-    const fakePushTimeRequired = 100; // pretend that it takes 1/10 of a second to do the push
+    const fakePushTimeRequired = 10; // pretend that it takes 1/100 of a second to do the push
     const millisToWaitForAutoPush = (2 * fakePushTimeRequired);
 
     const iModel = {
       pushChanges: async (_clientAccessToken: AccessToken) => {
-        await new Promise((resolve, _reject)  => { setTimeout(resolve, fakePushTimeRequired); }); // wait for 1/10 second to simulate time spent doing push
+        await new Promise((resolve, _reject)  => { setTimeout(resolve, fakePushTimeRequired); }); // sleep, in order to simulate time spent doing push
         lastPushTimeMillis = Date.now();
       },
       iModelToken: {
