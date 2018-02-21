@@ -140,6 +140,7 @@ describe("ECClass", () => {
             properties: [
               {
                 propertyType: "PrimitiveProperty",
+                typeName: "double",
                 name: "testPrimProp",
               },
               {
@@ -149,6 +150,7 @@ describe("ECClass", () => {
               },
               {
                 propertyType: "PrimitiveArrayProperty",
+                typeName: "string",
                 name: "testPrimArrProp",
               },
               {
