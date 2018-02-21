@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Gateway } from "../../common/Gateway";
+import { Gateway, GatewayOperationsProfile } from "../../common/Gateway";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 export class TestOp1Params {
@@ -54,6 +54,10 @@ export abstract class TestGateway extends Gateway {
   }
 
   public async op6(_data: { x: number, y: number }): Promise<{ x: number, y: number }> {
+    return this.forward.apply(this, arguments);
+  }
+
+  public async op7(): Promise<GatewayOperationsProfile> {
     return this.forward.apply(this, arguments);
   }
 }
