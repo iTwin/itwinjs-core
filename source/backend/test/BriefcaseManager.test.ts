@@ -177,7 +177,7 @@ describe("BriefcaseManager", () => {
     }).verifiable();
 
     // Act
-    const iModel: BriefcaseEntry = await BriefcaseManager.open(spoofAccessToken as any, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
+    const iModel: BriefcaseEntry = await BriefcaseManager.open(spoofAccessToken as any, testProjectId, testIModelId, OpenMode.Readonly, iModelVersionMock.object);
 
     // Assert
     assert.exists(iModel);

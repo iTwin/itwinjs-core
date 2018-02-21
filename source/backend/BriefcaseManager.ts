@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { AccessToken, Briefcase as HubBriefcase, IModelHubClient, ChangeSet, IModel as HubIModel, ContainsSchemaChanges, SeedFile, SeedFileInitState } from "@bentley/imodeljs-clients";
+// import { IiModelHubClient } from "@bentley/imodeljs-clients/interfaces";
 import { ChangeSetProcessOption } from "@bentley/bentleyjs-core/lib/Bentley";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -205,7 +206,7 @@ class BriefcaseCache {
  *      ...
  */
 export class BriefcaseManager {
-  private static hubClient?: IModelHubClient;
+  public static hubClient?: IModelHubClient;
   private static cache: BriefcaseCache = new BriefcaseCache();
   private static standaloneCache: BriefcaseCache = new BriefcaseCache();
 
@@ -214,6 +215,10 @@ export class BriefcaseManager {
     assert(!!iModelEngine);
     const pathname = path.join(iModelEngine.configuration.briefcaseCacheDir, iModelId, "/");
     return path.normalize(pathname);
+  }
+
+  private static createHubClient(): IModelHubClient {
+    return new IModelHubClient(iModelEngine.configuration.iModelHubDeployConfig);
   }
 
   public static getChangeSetsPath(iModelId: string): string {
@@ -298,7 +303,8 @@ export class BriefcaseManager {
 
     const startTime = new Date().getTime();
 
-    BriefcaseManager.hubClient = new IModelHubClient(iModelEngine.configuration.iModelHubDeployConfig);
+    BriefcaseManager.hubClient = BriefcaseManager.createHubClient();
+    // BriefcaseManager.hubClient = myContainer.get<IiModelHubClient>(TYPES.IiModelHubClient);
     if (!accessToken)
       return;
 
@@ -383,8 +389,8 @@ export class BriefcaseManager {
 
   /** Open a briefcase */
   public static async open(accessToken: AccessToken, projectId: string, iModelId: string, openMode: OpenMode, version: IModelVersion): Promise<BriefcaseEntry> {
-    // await BriefcaseManager.initCache(accessToken);
-    // assert(!!BriefcaseManager.hubClient);
+    await BriefcaseManager.initCache(accessToken);
+    assert(!!BriefcaseManager.hubClient);
 
     const changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId);
 
