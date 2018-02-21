@@ -336,4 +336,26 @@ describe("EntityClass", () => {
       await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestEntityClass.testNavProp has an invalid 'relationshipName' property. It should be of type 'string'.`);
     });
   });
+
+  describe("fromJson", () => {
+    let testClass: EntityClass;
+    const baseJson = { schemaChildType: "EntityClass" };
+
+    beforeEach(() => {
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      testClass = new EntityClass(schema, "TestEntity");
+    });
+
+    it("should throw for invalid mixin", async () => {
+      expect(testClass).to.exist;
+      let json: any = { ...baseJson, mixin: 0 };
+      await expect(testClass.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECEntityClass TestEntity has an invalid 'mixin' attribute. It should be of type 'string' or 'string[]'.`);
+
+      json = { ...baseJson, mixin: [0] };
+      await expect(testClass.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECEntityClass TestEntity has an invalid 'mixin' attribute. It should be of type 'string' or 'string[]'.`);
+
+      json = { ...baseJson, mixin: "DoesNotExist" };
+      await expect(testClass.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECEntityClass TestEntity has a 'mixin' ("DoesNotExist") that cannot be found.`);
+    });
+  });
 });
