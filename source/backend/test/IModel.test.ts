@@ -174,7 +174,6 @@ describe("iModel", () => {
       assert.isTrue(elementId.isValid());
     }
 
-    assert.isTrue(imodel2.Txns.hasLocalChanges());
   });
 
   it("should have a valid root subject element", () => {
@@ -766,6 +765,9 @@ describe("iModel", () => {
     // TODO: Do an ECSql query to verify that 0->1 is gone but 0->2 is still there.
 
     testImodel.saveChanges("");
+
+    // Do a quick check that TxnManager hasLocalChanges method is working
+    assert.isTrue(imodel2.Txns.hasLocalChanges());
 
   });
 
