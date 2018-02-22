@@ -78,19 +78,27 @@ describe("ToolRegistry", () => {
     }
   });
 
-  it("Should find some partial matches for plac", async () => {
+  it("Should find some partial matches for 'plac'", async () => {
     const searchResults: FuzzySearchResults<typeof Tool> | undefined = await iModelApp.tools.findPartialMatches("plac");
     showSearchResults("Matches for 'plac':", searchResults);
   });
 
-  it("Should find some partial matches for plce", async () => {
+  it("Should find some partial matches for 'plce'", async () => {
     const searchResults: FuzzySearchResults<typeof Tool> | undefined = await iModelApp.tools.findPartialMatches("plce");
     showSearchResults("Matches for 'plce':", searchResults);
   });
 
-  it("Should find some partial matches for cone plac", async () => {
+  it("Should find some partial matches for 'cone plac'", async () => {
     const searchResults: FuzzySearchResults<typeof Tool> | undefined = await iModelApp.tools.findPartialMatches("cone plac");
     showSearchResultsUsingIndexApi("Matches for 'cone plac':", searchResults);
+  });
+  it("Should find some partial matches for 'vie'", async () => {
+    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await iModelApp.tools.findPartialMatches("vie");
+    showSearchResultsUsingIndexApi("Matches for 'vie':", searchResults);
+  });
+  it("Should find some partial matches for 'place '", async () => {
+    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await iModelApp.tools.findPartialMatches("place ");
+    showSearchResults("Matches for 'place ':", searchResults);
   });
 });
 
@@ -125,7 +133,7 @@ function showSearchResultsUsingIndexApi(title: string, searchResults?: FuzzySear
     return;
   logResult(searchResults.length, title);
 
-  // tslint:disable-next-line:prefer-for-of
+  // tslint:disablenext-line:prefer-for-of
   for (let resultIndex: number = 0; resultIndex < searchResults.length; resultIndex++) {
     const thisResult: FuzzySearchResult<typeof Tool> | undefined = searchResults.getResult(resultIndex);
     assert.isDefined(thisResult);

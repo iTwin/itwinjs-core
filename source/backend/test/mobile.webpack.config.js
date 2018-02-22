@@ -22,20 +22,13 @@ module.exports = {
       {
         test: /xunit\.js$/,
         use: 'null-loader'
-      },
-      {
-        test: /imodeljs-electronaddon$/,
-        use: 'null-loader'
-      },
-      {
-        test: /imodeljs-nodeaddon$/,
-        use: 'null-loader'
       }
 
     ]
   },
   externals: {
-    "@bentley/imodeljs-mobile": "require('@bentley/imodeljs-mobile')",
+    "@bentley/imodeljs-electronaddon": "throw new Error('should never happen')",
+    "@bentley/imodeljs-nodeaddon": "throw new Error('should never happen')",
     "IModelJsFs": "{IModelJsFs: IModelJsFs}",
     "./IModelJsFs": "{IModelJsFs: IModelJsFs}",
     "../IModelJsFs": "{IModelJsFs: IModelJsFs}",

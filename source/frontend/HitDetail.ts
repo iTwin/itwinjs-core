@@ -140,12 +140,6 @@ export interface ElemTopology {
 
   /** Compare objects and return true if they should be considered the same. */
   isEqual(other: ElemTopology): boolean;
-
-  //   //! Return GeometrySource to handle requests related to transient geometry (like locate) where we don't have an DgnElement.
-  //   toGeometrySource(): GeometrySource;
-  // //! Return IEditManipulator for interacting with transient geometry.
-  // //! @note Implementor is expected to check hit.GetDgnDb().IsReadonly().
-  // virtual IEditManipulatorPtr _GetTransientManipulator(HitDetailCR) const { return nullptr;}
 }
 
 export class GeomDetail {

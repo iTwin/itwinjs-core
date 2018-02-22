@@ -8,7 +8,6 @@ import { Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY } from "@
 import { RotMatrix } from "@bentley/geometry-core/lib/Transform";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Code, CodeSpecNames } from "../common/Code";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 
@@ -51,7 +50,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
    */
   public static createNew(acsName: string, iModel: IModelConnection): AuxCoordSystemState {
     const myCode = new Code({ spec: CodeSpecNames.AuxCoordSystemSpatial(), scope: IModelConnection.getDictionaryId().toString(), value: acsName });
-    return new AuxCoordSystemSpatialState({ model: IModelConnection.getDictionaryId(), code: myCode, classFullName: this.getClassFullName(), id: new Id64() }, iModel);
+    return new AuxCoordSystemSpatialState({ model: IModelConnection.getDictionaryId(), code: myCode, classFullName: this.getClassFullName() }, iModel);
   }
 
   public constructor(props: AuxCoordSystemProps, iModel: IModelConnection) {

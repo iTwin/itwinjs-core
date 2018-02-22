@@ -161,7 +161,6 @@ describe("iModel", () => {
         iModel: imodel2,
         model: seedElement.model,
         category: seedElement.category,
-        id: new Id64(),
         code: Code.createEmpty(),
         federationGuid: new Guid(true),
         userLabel: "UserLabel-" + i,
@@ -802,7 +801,6 @@ describe("iModel", () => {
         iModel: testImodel,
         model: newModelId,
         category: spatialCategoryId,
-        id: new Id64(),
         code: Code.createEmpty(),
       };
 
