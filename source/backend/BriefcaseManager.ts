@@ -229,8 +229,13 @@ export class BriefcaseManager {
     const briefcases = BriefcaseManager.cache.getFilteredBriefcases((entry: BriefcaseEntry) => {
       return entry.iModelId === iModelId && entry.openMode === OpenMode.Readonly;
     });
-    const numReadonly = briefcases.length;
-    return path.join(BriefcaseManager.getIModelPath(iModelId), "readOnly", numReadonly.toString(), iModelName.concat(".bim"));
+
+    let pathname: string|undefined;
+    for (let ii = briefcases.length; !pathname || IModelJsFs.existsSync(pathname); ii++) {
+      pathname = path.join(BriefcaseManager.getIModelPath(iModelId), "readOnly", ii.toString(), iModelName.concat(".bim"));
+    }
+
+    return pathname;
   }
 
   private static buildReadWritePath(iModelId: string, briefcaseId: number, iModelName: string): string {

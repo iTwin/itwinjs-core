@@ -161,7 +161,7 @@ export class ElementLocateManager {
   public readonly picker = new ElementPicker();
 
   /** get the full message key for a locate failure  */
-  public static getFailureMessageKey(key: string) { return "CoreTools:LocateFailure." + key; }
+  public static getFailureMessageKey(key: string) { return "LocateFailure." + key; }
   public onInitialized() { }
   public getApertureInches() { return 0.11; }
   public getKeypointDivisor() { return 2; }

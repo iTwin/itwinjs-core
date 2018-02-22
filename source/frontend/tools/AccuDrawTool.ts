@@ -1133,15 +1133,8 @@ export abstract class AccuDrawTool {
   public abstract doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
   public onManipulationComplete(): AccuDrawFlags { return 0; }
   public onDecorate(_context: DecorateContext) { }
-  public static installTool(shortcut: AccuDrawTool) {
-    const tool = new AccuDrawShortcutsTool(shortcut);
-    tool.run();
-  }
-  public static outputPrompt(_msg: string) {
-    // getLocalizedString("AccuDraw.Prompt." + msg);
-    // Utf8String msgStr = DgnViewL10N:: GetString(msgId);
-    // NotificationManager:: OutputPrompt(msgStr.c_str());
-  }
+  public static installTool(shortcut: AccuDrawTool): boolean { return new AccuDrawShortcutsTool(shortcut).run(); }
+  public static outputPrompt(messageKey: string) { iModelApp.notifications.outputPromptByKey("AccuDraw.Prompt." + messageKey); }
 }
 
 class RotateAxesTool extends AccuDrawTool {
