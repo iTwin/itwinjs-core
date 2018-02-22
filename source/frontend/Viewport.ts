@@ -14,7 +14,6 @@ import { BeButtonEvent, BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState } from "../frontend/AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
-import { IModelError, IModelStatus } from "../common/IModelError";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { DecorationList, Hilite, Camera } from "../common/Render";
 import { HitDetail, SnapDetail, SnapMode } from "./HitDetail";
@@ -103,7 +102,7 @@ class Animator {
     return done;
   }
 
-  /** abort this animation, moving to the final frame. */
+  /** Abort this animation, moving to the final frame. */
   public interrupt(): void {
     if (this.startTime) {
       // We've been interrupted after animation began. Skip to the final animation state
@@ -115,8 +114,8 @@ class Animator {
 export const enum RemoveMe { No, Yes }
 
 /**
- * An interface for an object that animates a viewport.
- * Only one animator may be associated with a viewport at a given time. Registering a new
+ * An object to animate a transition of viewport.
+ * Only one animator may be associated with a viewport at a time. Registering a new
  * animator replaces any existing animator.
  * The animator's animate() function will be invoked just prior to the rendering of each frame.
  * The return value of animate() indicates whether to keep the animator active or to remove it.
@@ -326,7 +325,6 @@ export class Viewport {
 
     this.fromView(eyePoint);
     eyePoint.plus(view.getOrigin(), eyePoint);
-
     camera.setEyePoint(eyePoint);
     camera.setFocusDistance(focusDistance);
   }
@@ -334,8 +332,6 @@ export class Viewport {
   public async changeView(view: ViewState) {
     this.clearUndo();
     this._view = view;
-    if (!(view.iModel instanceof IModelConnection))
-      throw new IModelError(IModelStatus.WrongIModel);
     this.iModel = view.iModel;
     this.setupFromView();
     this.saveViewUndo();
@@ -349,12 +345,13 @@ export class Viewport {
     this.gridOrientation = view.getGridOrientation();
     this.gridsPerRef = view.getGridsPerRef();
     view.getGridSpacing(this.gridSpacing);
+    return view.load(); // load the view's state, if necessary
   }
 
   private static readonly fullRangeNpc = new Range3d(0, 1, 0, 1, 0, 1); // full range of view
   private static readonly depthRect = new ViewRect();
-  public determineVisibleDepthNpc(subRectNpc?: Range3d | undefined, result?: DepthRangeNpc): DepthRangeNpc | undefined {
-    subRectNpc = subRectNpc ? subRectNpc : Viewport.fullRangeNpc;
+  public determineVisibleDepthNpc(subRectNpc?: Range3d, result?: DepthRangeNpc): DepthRangeNpc | undefined {
+    subRectNpc = subRectNpc || Viewport.fullRangeNpc;
 
     // Determine screen rectangle in which to query visible depth min + max
     const viewRect = Viewport.depthRect;
@@ -521,15 +518,10 @@ export class Viewport {
     delta.y = Math.abs(delta.y);
     delta.z = Math.abs(delta.z);
 
-    const limitRange = (min: number, max: number, val: number): number => {
-      if (val < min) return min;
-      if (val > max) return max;
-      return val;
-    };
-
     const limits = this.view.getExtentLimits();
-    delta.x = limitRange(limits.minExtent, limits.maxExtent, delta.x);
-    delta.y = limitRange(limits.minExtent, limits.maxExtent, delta.y);
+    const clampRange = (val: number) => Math.min(Math.max(limits.minExtent, val), limits.maxExtent);
+    delta.x = clampRange(delta.x);
+    delta.y = clampRange(delta.y);
 
     this.adjustAspectRatio(origin, delta);
 
@@ -685,10 +677,8 @@ export class Viewport {
     if (!this._view)
       return;
 
-    if (!this.currentBaseline) { // the first time we're called we need to establish the "baseline"
-      this.currentBaseline = this.view.clone<ViewState>();
-      return;
-    }
+    // the first time we're called we need to establish the "baseline"
+    if (!this.currentBaseline) { this.currentBaseline = this.view.clone<ViewState>(); return; }
 
     if (this.view.equals(this.currentBaseline)) // this does a deep compare of the ViewState plus DisplayStyle, CategorySelector, and ModelSelector
       return; // nothing changed, we're done
@@ -988,19 +978,12 @@ export class Viewport {
    */
   public setupFromFrustum(inFrustum: Frustum): boolean {
     const validSize = this.view.setupFromFrustum(inFrustum);
-    if (!this.setupFromView())
-      return false;
-
-    return validSize === ViewStatus.Success;
+    return this.setupFromView() ? validSize === ViewStatus.Success : false;
   }
 
   public resetUndo() {
-    // Clear the undo stack
     this.clearUndo();
-
-    // Set up new baseline state
-    this.saveViewUndo();
-
+    this.saveViewUndo();  // Set up new baseline state
     // Notify event listeners
     // this.historyChanged.raiseEvent();
   }
@@ -1321,5 +1304,4 @@ export class Viewport {
     const invert = ((bgColor.r + bgColor.g + bgColor.b) > (255 * 3) / 2);
     return invert ? ColorDef.black : ColorDef.white; // should we use black or white?
   }
-
 }

@@ -225,7 +225,6 @@ export class IModelTestUtils {
       iModel: testImodel,
       parent: { id: testImodel.elements.rootSubjectId, relClassName: "BisCore:SubjectOwnsPartitionElements" },
       model: testImodel.models.repositoryModelId,
-      id: new Id64(),
       code: newModelCode,
     };
     const modeledElement: Element = testImodel.elements.createElement(modeledElementProps);
@@ -234,7 +233,7 @@ export class IModelTestUtils {
     assert.isTrue(modeledElementId.isValid());
 
     // The model
-    const newModel = testImodel.models.createModel({ id: new Id64(), modeledElement: modeledElementId, classFullName: "BisCore:PhysicalModel", isPrivate: privateModel });
+    const newModel = testImodel.models.createModel({ modeledElement: modeledElementId, classFullName: "BisCore:PhysicalModel", isPrivate: privateModel });
     newModelId = testImodel.models.insertModel(newModel);
 
     assert.isTrue(newModelId.isValid());
@@ -271,7 +270,6 @@ export class IModelTestUtils {
       iModel: testImodel,
       model: modelId,
       category: categoryId,
-      id: new Id64(),
       code: elemCode ? elemCode : Code.createEmpty(),
     };
 

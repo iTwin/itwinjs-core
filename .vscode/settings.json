@@ -14,7 +14,11 @@
     "source/test/lib": true,
     "source/test/node_modules": true,
     "source/testbed/lib": true,
-    "source/testbed/node_modules": true
+    "source/testbed/node_modules": true,
+    "**/*.build.log": true,
+    "**/*.build.error.log": true,
+    "common/temp": true,
+    "**/package-deps.json": true
   },
   "cSpell.words": [
     "Accu",
@@ -102,5 +106,4 @@
   ],
   "typescript.autoImportSuggestions.enabled": false,
   "guides.normal.width": 3,
-  // "typescript.tsdk": "./node_modules/typescript/lib",
 }

@@ -25,12 +25,10 @@
     "test": "npm run test:backend && npm run test:frontend",
     "pretest:backend": "cd source/backend && npm run pretest",
     "test:backend": "node node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot \"./\" --testDir=\"./source/backend/lib/backend/test\"",
-    "test:backendwebpackformobile": "cd source/backend/test && npm run webpackformobile",
+    "test:backendwebpackformobile": "cd source/backend && npm run webpackformobile",
     "test:frontend": "cd source/testbed && npm run build && node bin/testbed.js",
-    "test:tsnode": "node node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode --packageRoot \"./\" --testDir=\"./source/backend/test\" --tscPaths",
     "testbed": "cd source/testbed && node bin/testbed.js --debug",
-    "cover": "nyc npm run test:tsnode",
-    "cover:docs": "cd source/backend/test && node ../../../node_modules/@bentley/bentleyjs-tools/scripts/docscoverage.js",
+    "cover:backend": "cd source/backend && npm run cover",
     "module:backend": "cd source/backend && node ../../node_modules/@bentley/bentleyjs-tools/scripts/mastermodule --includes=../common --recursively=true",
     "module:frontend": "cd source/frontend && node ../../node_modules/@bentley/bentleyjs-tools/scripts/mastermodule --includes=../common --recursively=true"
   },
@@ -77,7 +75,6 @@
     "mocha": "^3.5.3",
     "node-replace": "^0.3.3",
     "null-loader": "latest",
-    "nyc": "^11.4.1",
     "object-assign": "^4.1.1",
     "once": "^1.4.0",
     "os-locale": "^2.1.0",
@@ -95,30 +92,5 @@
     "typescript": "~2.6.2",
     "webpack": "^3.10.0",
     "webpack-stream": "latest"
-  },
-  "nyc": {
-    "include": [
-      "source/backend/**/*.ts",
-      "source/common/**/*.ts"
-    ],
-    "exclude": [
-      "source/backend/test/*",
-      "source/testbed/*",
-      "source/frontend/**/*.ts",
-      "**/*.d.ts"
-    ],
-    "extension": [
-      ".ts"
-    ],
-    "require": [
-      "ts-node/register"
-    ],
-    "reporter": [
-      "text-summary",
-      "lcov",
-      "cobertura"
-    ],
-    "report-dir": "./source/backend/lib/backend/test/coverage",
-    "all": true
   }
 }

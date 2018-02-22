@@ -1,8 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+<<<<<<< HEAD
 import { AccessToken, Briefcase as HubBriefcase, IModelHubClient, ChangeSet, IModel as HubIModel, ContainsSchemaChanges, SeedFile, SeedFileInitState } from "@bentley/imodeljs-clients";
 // import { IiModelHubClient } from "@bentley/imodeljs-clients/interfaces";
+=======
+import { AccessToken, Briefcase as HubBriefcase, IModelHubClient, ChangeSet, IModel as HubIModel, ContainsSchemaChanges, SeedFile, SeedFileInitState, Briefcase } from "@bentley/imodeljs-clients";
+>>>>>>> master
 import { ChangeSetProcessOption } from "@bentley/bentleyjs-core/lib/Bentley";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -18,6 +22,7 @@ import { iModelHost } from "./IModelHost";
 
 import { IModelJsFs } from "./IModelJsFs";
 import * as path from "path";
+import * as fs from "fs";
 
 const loggingCategory = "imodeljs-backend.BriefcaseManager";
 
@@ -298,6 +303,8 @@ export class BriefcaseManager {
 
     if (!iModelHost)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "IModelHost.startup() should be called before any backend operations");
+
+    // TODO: call BriefcaseManager.deleteAllBriefcasesIfNewInstance here?
 
     iModelHost.onAfterStartup.addListener(BriefcaseManager.onIModelHostShutdown);
 
@@ -1028,4 +1035,20 @@ export class BriefcaseManager {
     });
   }
 
+  /** @hidden */
+  public static async deleteAllBriefcases(accessToken: AccessToken, iModelId: string) {
+    const promises = new Array<Promise<void>>();
+    const briefcases = await BriefcaseManager.hubClient!.getBriefcases(accessToken, iModelId);
+    briefcases.forEach((briefcase: Briefcase) => {
+      promises.push(BriefcaseManager.hubClient!.deleteBriefcase(accessToken, iModelId, briefcase.briefcaseId!));
+    });
+    return Promise.all(promises);
+  }
+
+  /** @hidden */
+  public static async deleteAllBriefcasesIfNewInstance(accessToken: AccessToken, iModelId: string) {
+    if (!fs.existsSync(iModelHost.configuration.briefcaseCacheDir))
+      return BriefcaseManager.deleteAllBriefcases(accessToken, iModelId);
+    return;
+  }
 }

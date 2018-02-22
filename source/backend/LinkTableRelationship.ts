@@ -85,7 +85,6 @@ export class ElementRefersToElements extends LinkTableRelationship {
       sourceId: sourceIn,
       targetId: targetIn,
       classFullName: fullClassNameIn,
-      id: new Id64(),
     }) as ElementRefersToElements;
   }
 }
@@ -119,7 +118,6 @@ export class ElementGroupsMembers extends ElementRefersToElements {
       targetId: targetIn,
       memberPriority: memberPriorityIn,
       classFullName: fullClassNameIn,
-      id: new Id64(),
     }) as ElementGroupsMembers;
   }
 }
@@ -157,7 +155,6 @@ export class ElementDrivesElement extends LinkTableRelationship implements Eleme
       priority: priorityIn,
       status: 0,
       classFullName: fullClassNameIn,
-      id: new Id64(),
     }) as ElementDrivesElement;
   }
 }

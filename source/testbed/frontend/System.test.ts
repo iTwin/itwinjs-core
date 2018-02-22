@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Capabilities } from "../../frontend/render/System";
+import { Capabilities, ViewportQuad, TexturedViewportQuad } from "../../frontend/render/System";
 
 function getWebGLContext(): WebGLRenderingContext | null {
   let canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -65,5 +65,29 @@ describe("System WebGL Capabilities", () => {
     assert.isTrue(cap.renderToFloat === cap.SupportsRenderToFloat(), "SupportsRenderToFloat should return cap.renderToFloat");
     assert.isTrue(cap.depthStencilTexture === cap.SupportsDepthStencilTexture(), "SupportsDepthStencilTexture should return cap.depthStencilTexture");
     assert.isTrue(cap.shaderTextureLOD === cap.SupportsShaderTextureLOD(), "SupportsShaderTextureLOD should return cap.shaderTextureLOD");
+  });
+});
+
+describe("ViewportQuad Tests", () => {
+  it("ViewportQuad works as expected", () => {
+    const vpquad = new ViewportQuad();
+    assert.isTrue(vpquad.indices[0] === 0, "index 0 correct");
+    assert.isTrue(vpquad.indices[1] === 1, "index 1 correct");
+    assert.isTrue(vpquad.indices[2] === 2, "index 2 correct");
+    assert.isTrue(vpquad.indices[3] === 0, "index 0 correct");
+    assert.isTrue(vpquad.indices[4] === 2, "index 2 correct");
+    assert.isTrue(vpquad.indices[5] === 3, "index 3 correct");
+    assert.isTrue(vpquad.vertices.length === 4, "vertices initialized correctly");
+  });
+  it("TexturedViewportQuad works as expected", () => {
+    const tvpquad = new TexturedViewportQuad();
+    assert.isTrue(tvpquad.indices[0] === 0, "index 0 correct");
+    assert.isTrue(tvpquad.indices[1] === 1, "index 1 correct");
+    assert.isTrue(tvpquad.indices[2] === 2, "index 2 correct");
+    assert.isTrue(tvpquad.indices[3] === 0, "index 0 correct");
+    assert.isTrue(tvpquad.indices[4] === 2, "index 2 correct");
+    assert.isTrue(tvpquad.indices[5] === 3, "index 3 correct");
+    assert.isTrue(tvpquad.vertices.length === 4, "vertices initialized correctly");
+    assert.isTrue(tvpquad.textureUV.length === 4, "textureUV initialized correctly");
   });
 });

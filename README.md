@@ -57,9 +57,9 @@ Now, [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush) takes over t
 |----------------------|------------------|------------------|
 | Install dependencies | rush install     | npm install      |
 | Check dependencies   | rush check       | N/A              |
-| Clean output         | rush rebuild     | npm run clean    |
-| Rebuild source       | rush rebuild     | npm run build -s |
-| Incremental build    | rush build       | N/A              |
+| Clean output         | npm run clean    | npm run clean    |
+| Rebuild source       | rush rebuild -v  | npm run build -s |
+| Incremental build    | rush build -v    | N/A              |
 | Run tests            | npm test -s      | npm test -s      |
 | Run lint rules       | npm run lint -s  | npm run lint -s  |
 

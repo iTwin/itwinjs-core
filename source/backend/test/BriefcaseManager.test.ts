@@ -21,6 +21,10 @@ import { ColorDef } from "../../common/ColorDef";
 import { IModel } from "../../common/IModel";
 import { IModelJsFs } from "../IModelJsFs";
 import { iModelHost } from "../IModelHost";
+import { AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../AutoPush";
+
+let lastPushTimeMillis = 0;
+let lastAutoPushEventType: AutoPushEventType | undefined;
 
 class Timer {
   private label: string;
@@ -475,6 +479,94 @@ describe("BriefcaseManager", () => {
   it("should be able to create a standalone IModel", async () => {
     const iModel: IModelDb = IModelTestUtils.createStandaloneIModel("TestStandalone.bim", "TestSubject");
     iModel.closeStandalone();
+  });
+
+  it.skip("should test AutoPush", async () => {
+    let isIdle: boolean = true;
+    const activityMonitor = {
+      isIdle: () => isIdle,
+    };
+
+    const fakePushTimeRequired = 1; // pretend that it takes 1/1000 of a second to do the push
+    const millisToWaitForAutoPush = (5 * fakePushTimeRequired); // a long enough wait to ensure that auto-push ran.
+
+    const iModel = {
+      pushChanges: async (_clientAccessToken: AccessToken) => {
+        await new Promise((resolve, _reject)  => { setTimeout(resolve, fakePushTimeRequired); }); // sleep, in order to simulate time spent doing push
+        lastPushTimeMillis = Date.now();
+      },
+      iModelToken: {
+        changeSetId: "",
+      },
+      concurrencyControl: {
+        request: async (_clientAccessToken: AccessToken) => {},
+      },
+    };
+    lastPushTimeMillis = 0;
+    lastAutoPushEventType = undefined;
+
+    // Create an autopush in manual-schedule mode.
+    const autoPush = new AutoPush(iModel as any, {pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false}, accessToken, activityMonitor);
+    assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
+    assert.isFalse(autoPush.autoSchedule);
+
+    // Schedule the next push
+    autoPush.scheduleNextPush();
+    assert.equal(autoPush.state, AutoPushState.Scheduled);
+
+    // Wait long enough for the auto-push to happen
+    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); });
+
+    // Verify that push happened during the time that I was asleep.
+    assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to restart automatically");
+    assert.notEqual(lastPushTimeMillis, 0);
+    assert.isAtLeast(autoPush.durationOfLastPushMillis, fakePushTimeRequired);
+    assert.isUndefined(lastAutoPushEventType);  // not listening to events yet.
+
+    // Cancel the next scheduled push
+    autoPush.cancel();
+    assert.equal(autoPush.state, AutoPushState.NotRunning, "cancel does NOT automatically schedule the next push");
+
+    // Register an event handler
+    const autoPushEventHandler: AutoPushEventHandler = (etype: AutoPushEventType, _theAutoPush: AutoPush) => { lastAutoPushEventType = etype; };
+    autoPush.event.addListener(autoPushEventHandler);
+
+    lastPushTimeMillis = 0;
+
+    // Explicitly schedule the next auto-push
+    autoPush.scheduleNextPush();
+    assert.equal(autoPush.state, AutoPushState.Scheduled);
+
+    // wait long enough for the auto-push to happen
+    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); });
+    assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
+    assert.notEqual(lastPushTimeMillis, 0);
+    assert.equal(lastAutoPushEventType, AutoPushEventType.PushFinished, "event handler should have been called");
+
+    // Just verify that this doesn't blow up.
+    autoPush.reserveCodes();
+
+    // Now turn on auto-schedule and verify that we get a few auto-pushes
+    lastPushTimeMillis = 0;
+    autoPush.autoSchedule = true;
+    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    assert.notEqual(lastPushTimeMillis, 0);
+    lastPushTimeMillis = 0;
+    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    assert.notEqual(lastPushTimeMillis, 0);
+    autoPush.cancel();
+    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    assert(autoPush.state === AutoPushState.NotRunning);
+    assert.isFalse(autoPush.autoSchedule, "cancel turns off autoSchedule");
+
+    // Test auto-push when isIdle returns false
+    isIdle = false;
+    lastPushTimeMillis = 0;
+    autoPush.autoSchedule = true;
+    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
+    assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
+    autoPush.cancel();
   });
 
 });

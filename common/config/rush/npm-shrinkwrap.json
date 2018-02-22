@@ -107,7 +107,7 @@
     },
     "@rush-temp/imodeljs-backend": {
       "version": "file:projects/imodeljs-backend.tgz",
-      "integrity": "sha1-h3c4pLfnV+bAX/9FstTdljNU0DA=",
+      "integrity": "sha1-lbJLLcxbJ6q8z7tmEicVvW2lKFM=",
       "requires": {
         "@bentley/geometry-core": "4.3.1",
         "@bentley/imodeljs-clients": "3.0.0",
@@ -122,7 +122,7 @@
     },
     "@rush-temp/imodeljs-core": {
       "version": "file:projects/imodeljs-core.tgz",
-      "integrity": "sha1-Pyb4GBAvag47i3yV/6LcqXgQ894=",
+      "integrity": "sha1-6PCGaMS+IUs5f7GYue15uh1/aDY=",
       "requires": {
         "@bentley/bentleyjs-tools": "2.2.0",
         "@types/body-parser": "1.16.8",
@@ -175,7 +175,7 @@
     },
     "@rush-temp/imodeljs-core-testbed": {
       "version": "file:projects/imodeljs-core-testbed.tgz",
-      "integrity": "sha1-wz2umU4LIIUrNoJ3qFv1MmZchH8=",
+      "integrity": "sha1-WxTkEoFAHeCMqSCaB4PmMx/16SQ=",
       "requires": {
         "@bentley/bentleyjs-core": "6.1.1",
         "@bentley/geometry-core": "4.3.1",
@@ -203,7 +203,7 @@
     },
     "@rush-temp/imodeljs-frontend": {
       "version": "file:projects/imodeljs-frontend.tgz",
-      "integrity": "sha1-mIAEFJv6SqHKPzvkitOSeC5TfUo=",
+      "integrity": "sha1-tzR/K5eRRk6z2r0spKs/1hiUgAQ=",
       "requires": {
         "@bentley/geometry-core": "4.3.1",
         "@bentley/imodeljs-clients": "3.0.0",
@@ -211,7 +211,8 @@
         "i18next": "10.4.1",
         "i18next-browser-languagedetector": "2.1.0",
         "i18next-xhr-backend": "1.5.1",
-        "js-base64": "2.4.3"
+        "js-base64": "2.4.3",
+        "rimraf": "2.6.2"
       }
     },
     "@types/body-parser": {
@@ -7276,8 +7277,8 @@
     },
     "webpack-stream": {
       "version": "4.0.2",
-      "resolved": "https://npm.bentley.com/npm/npm/webpack-stream/-/webpack-stream-4.0.2.tgz",
-      "integrity": "sha1-e5Cuxx1FyKRRn/i1pNWeA5z9AsA=",
+      "resolved": "https://registry.npmjs.org/webpack-stream/-/webpack-stream-4.0.2.tgz",
+      "integrity": "sha512-x9st6kLpPXaB7wPb7nKVtTgdIZx2TFV0+rTAzMQEPyA72qzYPKR5OItxP7e1vTtbX5T4Fm7rAlMPfAq1Ijq6gg==",
       "requires": {
         "fancy-log": "1.3.2",
         "lodash.clone": "4.5.0",

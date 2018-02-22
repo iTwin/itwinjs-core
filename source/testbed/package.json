@@ -5,7 +5,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "tsc && npm run copy:frontendpublic  && npm run copy:testpublic",
-    "clean": "rimraf lib && rimraf backend/lib && rimraf frontend/lib",
+    "clean": "rimraf lib backend/lib frontend/lib package-deps.json",
     "copy:frontendpublic": "cpx ../frontend/public/**/* ./lib/testbed/backend/public",
     "copy:testpublic": "cpx ./public/**/* ./lib/testbed/backend/public"
   },
