@@ -11,7 +11,7 @@
     "clean": "rimraf lib package-deps.json",
     "copy:assets": "cpx ./assets/**/* ./lib/backend/assets",
     "copy:test-assets": "cpx ./test/assets/**/* ./lib/backend/test/assets",
-    "cover": "nyc mocha ./test/**/*.test.ts",
+    "cover": "nyc mocha ./test/**/*.test.ts --timeout 999999",
     "pretest": "npm run copy:test-assets && npm run build",
     "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/backend/test\"",
     "webpackformobile": "cpx ./test/runMochaTestsDirectly.js ./lib/backend/test && webpack --target=webworker --config ./test/mobile.webpack.config.js"
