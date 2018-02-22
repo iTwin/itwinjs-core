@@ -248,13 +248,12 @@ export default class ContentBuilder {
       } as StructValue;
     };
     const createValue = (): PropertyValue | undefined => {
-      if (isMerged)
-        return undefined;
-      if (isArrayDescription(typeDescription))
-        return createArrayValue(typeDescription, value, displayValue);
-      if (isStructDescription(typeDescription))
-        return createStructValue(typeDescription, value, displayValue);
-      assert(content.PropertyValueFormat.Primitive === typeDescription.valueFormat);
+      if (!isMerged) {
+        if (isArrayDescription(typeDescription))
+          return createArrayValue(typeDescription, value, displayValue);
+        if (isStructDescription(typeDescription))
+          return createStructValue(typeDescription, value, displayValue);
+      }
       return {
         valueFormat: content.PropertyValueFormat.Primitive,
         value,

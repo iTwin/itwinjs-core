@@ -38,46 +38,37 @@ export interface RowItem {
   cells: CellItem[];
 }
 
+interface PagePosition {
+  index: number;
+  start: number;
+  end: number;
+}
+
 class Page {
-  private _pageStart: number;
-  private _pageEnd: number;
-  private _rowsPromise: Promise<RowItem[]> | undefined;
-  public rows: RowItem[];
+  private readonly _position: PagePosition;
+  private _rowsPromise: Promise<RowItem[]>;
+  private _rows: Array<Readonly<RowItem>> | undefined;
 
-  constructor(pageStart: number, pageEnd: number) {
-    this._pageStart = pageStart;
-    this._pageEnd = pageEnd;
-    this._rowsPromise = undefined;
-    this.rows = new Array<RowItem>();
-  }
-
-  public get pageStart() { return this._pageStart; }
-  public get pageEnd() { return this._pageEnd; }
-
-  public get rowsPromise(): Promise<RowItem[]> {
-    if (!this._rowsPromise) {
-      assert(false, "Content promise was not set");
-      return Promise.resolve<RowItem[]>([]);
-    }
-    return this._rowsPromise;
-  }
-
-  public setContentPromise(value: Promise<content.Content>) {
+  constructor(position: PagePosition, contentPromise: Promise<content.Content>) {
     const self = this;
-    this._rowsPromise = value.then((c: content.Content) => {
-      self.fillFromContent(c);
-      return self.rows;
+    this._position = position;
+    this._rowsPromise = contentPromise.then((c: content.Content) => {
+      return self._rows = self.createRows(c);
     });
   }
 
-  private fillFromContent(c: content.Content) {
-    const pageSize = this._pageEnd - this._pageStart;
+  public get position(): Readonly<PagePosition> { return this._position; }
+  public get rows(): Array<Readonly<RowItem>> | undefined { return this._rows; }
+  public async getRows(): Promise<Array<Readonly<RowItem>>> { return this._rowsPromise; }
+
+  private createRows(c: content.Content): RowItem[] {
+    const pageSize = this._position.end - this._position.start;
     const rows = new Array<RowItem>();
     for (let i = 0; i < c.contentSet.length && i < pageSize; ++i) {
       const row = Page.createRowItemFromContentRecord(c.descriptor, c.contentSet[i]);
       rows.push(row);
     }
-    this.rows = rows;
+    return rows;
   }
 
   private static createRowItemFromContentRecord(descriptor: content.Descriptor, record: content.Item): RowItem {
@@ -136,37 +127,39 @@ class PageContainer {
 
   public invalidatePages(): void { this._pages = []; }
 
-  public getPage(index: number): Page | undefined {
+  public getPage(index: number): Readonly<Page> | undefined {
     for (const page of this._pages) {
-      if (page.pageStart <= index && index < page.pageEnd)
+      if (page.position.start <= index && index < page.position.end)
         return page;
     }
     return undefined;
   }
 
-  public getRow(index: number): RowItem | undefined {
+  public getRow(index: number): Readonly<RowItem> | undefined {
     const page = this.getPage(index);
-    if (!page)
+    if (!page || !page.rows)
       return undefined;
-    return page.rows[index - page.pageStart];
+    return page.rows[index - page.position.start];
   }
 
   public getIndex(item: RowItem): number {
     for (const page of this._pages) {
+      if (!page.rows)
+        continue;
       for (let i = 0; i < page.rows.length; ++i) {
         const row = page.rows[i];
         if (row === item)
-          return page.pageStart + i;
+          return page.position.start + i;
       }
     }
     return -1;
   }
 
-  public createPage(index: number): Page {
+  public reservePage(index: number): PagePosition {
     // find the place for the new page to insert
     let pageIndex: number = 0;
     for (const page of this._pages) {
-      if (page.pageStart > index)
+      if (page.position.start > index)
         break;
       pageIndex++;
     }
@@ -176,12 +169,12 @@ class PageContainer {
     // determine the start of the page for the specified index
     let pageStartIndex = index;
     let pageSize = this.pageSize;
-    if (undefined !== pageAfter && pageStartIndex > pageAfter.pageStart - this.pageSize) {
-      pageStartIndex = pageAfter.pageStart - this.pageSize;
+    if (undefined !== pageAfter && pageStartIndex > pageAfter.position.start - this.pageSize) {
+      pageStartIndex = pageAfter.position.start - this.pageSize;
     }
-    if (undefined !== pageBefore && pageBefore.pageEnd > pageStartIndex) {
-      pageStartIndex = pageBefore.pageEnd;
-      pageSize = pageAfter!.pageStart - pageBefore.pageEnd;
+    if (undefined !== pageBefore && pageBefore.position.end > pageStartIndex) {
+      pageStartIndex = pageBefore.position.end;
+      pageSize = pageAfter!.position.start - pageBefore.position.end;
     }
     if (pageStartIndex < 0)
       pageStartIndex = 0;
@@ -190,15 +183,23 @@ class PageContainer {
       pageSize = 1;
     }
 
+    return {
+      index: pageIndex,
+      start: pageStartIndex,
+      end: pageStartIndex + pageSize,
+    };
+  }
+
+  public createPage(position: PagePosition, contentPromise: Promise<content.Content>): Page {
     // create the new page
-    const newPage = new Page(pageStartIndex, pageStartIndex + pageSize);
-    this._pages.splice(pageIndex, 0, newPage);
+    const newPage = new Page(position, contentPromise);
+    this._pages.splice(position.index, 0, newPage);
 
     // dispose old pages, if necessary
     if (this._pages.length > this._maxPages) {
       // we drop the page that's furthest from the newly created one
-      const distanceToFront = pageIndex;
-      const distanceToBack = this._pages.length - pageIndex - 1;
+      const distanceToFront = position.index;
+      const distanceToBack = this._pages.length - position.index - 1;
       if (distanceToBack > distanceToFront)
         this._pages.pop();
       else
@@ -226,9 +227,7 @@ export default class TableViewDataProvider extends ContentDataProvider {
 
   /** Constructor. */
   constructor(manager: ECPresentationManager, imodelToken: IModelToken, rulesetId: string, pageSize: number = 20, cachedPagesCount: number = 5) {
-
     super(manager, imodelToken, rulesetId, content.DefaultContentDisplayTypes.GRID);
-
     this._pages = new PageContainer(pageSize, cachedPagesCount);
     this._keys = [];
   }
@@ -252,18 +251,17 @@ export default class TableViewDataProvider extends ContentDataProvider {
   }
 
   /** Handles filtering and sorting. */
-  protected configureContentDescriptor(descriptor: content.Descriptor): void {
-    super.configureContentDescriptor(descriptor);
-
-    if (undefined !== this._sortColumnKey) {
+  protected configureContentDescriptor(descriptor: Readonly<content.Descriptor>): content.Descriptor {
+    const configured = super.configureContentDescriptor(descriptor);
+    if (this._sortColumnKey) {
       const sortingField = getFieldByName(descriptor, this._sortColumnKey);
-      if (undefined !== sortingField) {
-        descriptor.sortingField = sortingField;
-        descriptor.sortDirection = this._sortDirection;
+      if (sortingField) {
+        configured.sortingField = sortingField;
+        configured.sortDirection = this._sortDirection;
       }
     }
-
-    descriptor.filterExpression = this._filterExpression;
+    configured.filterExpression = this._filterExpression;
+    return configured;
   }
 
   public get keys() { return this._keys; }
@@ -273,87 +271,70 @@ export default class TableViewDataProvider extends ContentDataProvider {
   }
 
   /** Returns column definitions for the content. */
-  public async getColumns(): Promise<ColumnDescription[]> {
-    // setup onFulfilled promise function
-    const getColumnsFromDescriptor = (descriptor: content.Descriptor): ColumnDescription[] => {
-      const cols = new Array<ColumnDescription>();
-      if (!descriptor)
-        return cols;
-
-      const sortedFields = descriptor.fields.slice();
-      sortedFields.sort((a: content.Field, b: content.Field): number => {
-        if (a.priority > b.priority)
-          return -1;
-        if (a.priority < b.priority)
-          return 1;
-        return 0;
-      });
-
-      for (const field of sortedFields) {
-        const propertyDescription = ContentBuilder.createPropertyDescription(field);
-        const columnDescription: ColumnDescription = {
-          key: field.name,
-          label: field.label,
-          description: propertyDescription,
-          sortable: true,
-          editable: !field.isReadOnly,
-          filterable: isPrimitiveDescription(field.description),
-        };
-        cols.push(columnDescription);
-      }
-      return cols;
-    };
-
-    // setup onRejected promise function
-    const handleError = (): ColumnDescription[] => {
-      return [];
-    };
-
-    return this.getContentDescriptor(this.keys).then(getColumnsFromDescriptor).catch(handleError);
+  public async getColumns(): Promise<Array<Readonly<ColumnDescription>>> {
+    const descriptor = await this.getContentDescriptor(this.keys);
+    const sortedFields = descriptor.fields.slice();
+    sortedFields.sort((a: content.Field, b: content.Field): number => {
+      if (a.priority > b.priority)
+        return -1;
+      if (a.priority < b.priority)
+        return 1;
+      return 0;
+    });
+    const cols = new Array<ColumnDescription>();
+    for (const field of sortedFields) {
+      const propertyDescription = ContentBuilder.createPropertyDescription(field);
+      const columnDescription: ColumnDescription = {
+        key: field.name,
+        label: field.label,
+        description: propertyDescription,
+        sortable: true,
+        editable: !field.isReadOnly,
+        filterable: isPrimitiveDescription(field.description),
+      };
+      cols.push(columnDescription);
+    }
+    return cols;
   }
 
   /** Sorts the data in this data provider.
    * @param[in] columnIndex Index of the column to sort on.
    * @param[in] sortDirection Sorting direction.
    */
-  public sort(columnIndex: number, sortDirection: SortDirection): void {
-    const self = this;
-    const sort = (column: ColumnDescription) => {
-      self._sortColumnKey = column.key;
-      self._sortDirection = sortDirection;
-      self.invalidateContentCache(false);
-    };
-    const getSortingColumn = (columns: ColumnDescription[]) => {
-      return columns[columnIndex];
-    };
-
-    this.getColumns().then(getSortingColumn).then(sort);
+  public async sort(columnIndex: number, sortDirection: SortDirection): Promise<void> {
+    const columns = await this.getColumns();
+    const sortingColumn = columns[columnIndex];
+    if (!sortingColumn)
+      throw new Error("Invalid column index");
+    this._sortColumnKey = sortingColumn.key;
+    this._sortDirection = sortDirection;
+    this.invalidateContentCache(false);
   }
 
   /** Get the total number of rows in the content. */
-  public async getRowsCount(): Promise<number> { return this.getContentSetSize(this.keys); }
+  public async getRowsCount(): Promise<number> { return await this.getContentSetSize(this.keys); }
 
   /** Get a single row.
    * @param[in] rowIndex Index of the row to return.
    * @param[in] _unfiltered (not used)
    */
-  public async getRow(rowIndex: number, _unfiltered?: boolean): Promise<RowItem> {
+  public async getRow(rowIndex: number, _unfiltered?: boolean): Promise<Readonly<RowItem>> {
     let page = this._pages.getPage(rowIndex);
     if (!page) {
       this.invalidateContentCache(false, false);
-      page = this._pages.createPage(rowIndex);
-      page.setContentPromise(this.getContent(this.keys, undefined, { pageStart: page.pageStart, pageSize: page.pageEnd - page.pageStart } as PageOptions));
+      const position = this._pages.reservePage(rowIndex);
+      page = this._pages.createPage(position, this.getContent(this.keys, undefined,
+        { pageStart: position.start, pageSize: position.end - position.start } as PageOptions));
     }
-    return page.rowsPromise.then((rows: RowItem[]) => {
-      return rows[rowIndex - page!.pageStart];
-    });
+    const rows = await page.getRows();
+    return rows[rowIndex - page.position.start];
   }
 
   /** Try to get the loaded row. Returns undefined if the row is not currently cached.
    * @param[in] rowIndex Index of the row to return.
    * @param[in] unfiltered (not used)
    */
-  public getLoadedRow(rowIndex: number, _unfiltered?: boolean): RowItem | undefined {
+  public getLoadedRow(rowIndex: number, _unfiltered?: boolean): Readonly<RowItem> | undefined {
     return this._pages.getRow(rowIndex);
   }
 }

@@ -64,38 +64,27 @@ export class TreeDataProvider {
   /** Returns the root nodes.
    * @param[in] pageOptions Information about the requested page of data.
    */
-  public async getRootNodes(pageOptions: PageOptions): Promise<TreeNodeItem[]> {
-    const self = this;
-    return this._manager.getRootNodes(this.imodelToken, pageOptions, this.createRequestOptions())
-      .then((nodes: NavNode[]) => {
-        return self.createTreeNodeItems(nodes);
-      })
-      .catch((_error: string) => {
-        return [];
-      });
+  public async getRootNodes(pageOptions: PageOptions): Promise<Array<Readonly<TreeNodeItem>>> {
+    const nodes = await this._manager.getRootNodes(this.imodelToken, pageOptions, this.createRequestOptions());
+    return this.createTreeNodeItems(nodes);
   }
 
   /** Returns the total number of root nodes. */
   public async getRootNodesCount(): Promise<number> {
-    return this._manager.getRootNodesCount(this.imodelToken, this.createRequestOptions());
+    return await this._manager.getRootNodesCount(this.imodelToken, this.createRequestOptions());
   }
 
   /** Returns child nodes.
    * @param[in] parentNode The parent node to return children for.
    * @param[in] pageOptions Information about the requested page of data.
    */
-  public async getChildNodes(parentNode: TreeNodeItem, pageOptions: PageOptions): Promise<TreeNodeItem[]> {
-    const self = this;
-    return this._manager.getChildren(this.imodelToken, TreeDataProvider.getNodeFromTreeNodeItem(parentNode), pageOptions, this.createRequestOptions())
-      .then((nodes: NavNode[]) => {
-        const items = self.createTreeNodeItems(nodes);
-        for (const item of items)
-          item.parent = parentNode;
-        return items;
-      })
-      .catch((_error: string) => {
-        return [];
-      });
+  public async getChildNodes(parentNode: TreeNodeItem, pageOptions: PageOptions): Promise<Array<Readonly<TreeNodeItem>>> {
+    const nodes = await this._manager.getChildren(this.imodelToken, TreeDataProvider.getNodeFromTreeNodeItem(parentNode), pageOptions, this.createRequestOptions());
+    const items = this.createTreeNodeItems(nodes);
+    items.forEach((item: TreeNodeItem) => {
+      item.parent = parentNode;
+    });
+    return items;
   }
 
   /** Returns the total number of child nodes.
@@ -103,7 +92,7 @@ export class TreeDataProvider {
    */
   public async getChildNodesCount(parentNode: TreeNodeItem): Promise<number> {
     const parent: NavNode = TreeDataProvider.getNodeFromTreeNodeItem(parentNode);
-    return this._manager.getChildrenCount(this.imodelToken, parent, this.createRequestOptions());
+    return await this._manager.getChildrenCount(this.imodelToken, parent, this.createRequestOptions());
   }
 
   private createTreeNodeItem(node: NavNode): TreeNodeItem {

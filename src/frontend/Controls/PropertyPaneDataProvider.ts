@@ -5,7 +5,6 @@ import ContentDataProvider from "./ContentDataProvider";
 import ContentBuilder, { PropertyRecord } from "./ContentBuilder";
 import * as content from "../../common/content";
 import { InstanceKey } from "../../common/EC";
-import { getUniqueNumber } from "../../common/Utils";
 import { ECPresentationManager } from "../../common/ECPresentationManager";
 import { IModelToken } from "@bentley/imodeljs-frontend/lib/common/IModel";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
@@ -100,8 +99,7 @@ export interface PropertyCategory {
 }
 
 export default class PropertyPaneDataProvider extends ContentDataProvider {
-  private _categoryFieldsPromise: Promise<CategoryFields> | undefined;
-  private _categoryFieldsValidationId: number;
+  private _categorizedFields: CategoryFields | undefined;
   private _includeFieldsWithNoValues: boolean;
   private _favorites: { [name: string]: boolean };
   private _keys: InstanceKey[];
@@ -109,8 +107,6 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
   /** Constructor. */
   constructor(manager: ECPresentationManager, imodelToken: IModelToken, rulesetId: string) {
     super(manager, imodelToken, rulesetId, content.DefaultContentDisplayTypes.PROPERTY_PANE);
-    this._categoryFieldsPromise = undefined;
-    this._categoryFieldsValidationId = 0;
     this._includeFieldsWithNoValues = true;
     this._favorites = {};
     this._keys = [];
@@ -122,15 +118,15 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
     this.invalidateCache();
   }
 
-  protected configureContentDescriptor(descriptor: content.Descriptor): void {
-    super.configureContentDescriptor(descriptor);
-    descriptor.contentFlags |= content.ContentFlags.ShowLabels;
+  protected configureContentDescriptor(descriptor: Readonly<content.Descriptor>): content.Descriptor {
+    const configured = super.configureContentDescriptor(descriptor);
+    configured.contentFlags |= content.ContentFlags.ShowLabels;
+    return configured;
   }
 
   protected invalidateContentCache(invalidateContentSetSize: boolean): void {
     super.invalidateContentCache(invalidateContentSetSize);
-    this._categoryFieldsPromise = undefined;
-    this._categoryFieldsValidationId = 0;
+    this._categorizedFields = undefined;
   }
 
   protected shouldExcludeFromDescriptor(field: content.Field): boolean { return this.isFieldHidden(field) && !this.isFieldFavorite(field); }
@@ -177,24 +173,13 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
   protected supplyFieldsSortFunction(_category: content.CategoryDescription): FieldsSortHandler { return prioritySortFunction; }
 
   private async getCategoryFields(): Promise<CategoryFields> {
-    if (undefined === this._categoryFieldsPromise) {
-      const self = this;
-      const validationId = getUniqueNumber();
-      this._categoryFieldsValidationId = validationId;
-      const getCategoryFieldsFromContent = (c: content.Content): Promise<CategoryFields> => {
-        if (validationId !== self._categoryFieldsValidationId)
-          return self.getCategoryFields();
-        const cf = new CategoryFields(c, self.includeFieldsWithNoValues,
-          (field) => self.isFieldFavorite(field), (field) => self.isFieldHidden(field), self.supplyCategoriesSortFunction(),
-          (category: content.CategoryDescription) => self.supplyFieldsSortFunction(category));
-        return Promise.resolve(cf);
-      };
-      const handleError = (): Promise<CategoryFields> => {
-        return Promise.resolve(new CategoryFields(undefined, false));
-      };
-      this._categoryFieldsPromise = this.getContent(this._keys, {}, { pageStart: 0, pageSize: 0 }).then(getCategoryFieldsFromContent).catch(handleError);
+    if (!this._categorizedFields) {
+      const c = await this.getContent(this._keys, {}, { pageStart: 0, pageSize: 0 });
+      this._categorizedFields = new CategoryFields(c, this.includeFieldsWithNoValues,
+        (field) => this.isFieldFavorite(field), (field) => this.isFieldHidden(field),
+        this.supplyCategoriesSortFunction(), (category: content.CategoryDescription) => this.supplyFieldsSortFunction(category));
     }
-    return this._categoryFieldsPromise;
+    return this._categorizedFields;
   }
 
   public async getCategoryCount(): Promise<number> {

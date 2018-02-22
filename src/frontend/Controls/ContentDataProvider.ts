@@ -11,12 +11,11 @@ export default abstract class ContentDataProvider {
   private _manager: ECPresentationManager;
   private _rulesetId: string;
   private _displayType: string;
-  private _configuredDescriptorPromise: Promise<content.Descriptor> | undefined;
-  private _descriptorPromise: Promise<content.Descriptor> | undefined;
-  private _descriptor: content.Descriptor | undefined;
-  private _contentSetSizePromise: Promise<number> | undefined;
-  private _contentPromise: Promise<content.Content> | undefined;
-  private _imodelToken: IModelToken;
+  private _descriptor: Readonly<content.Descriptor> | undefined;
+  private _configuredDescriptor: Readonly<content.Descriptor> | undefined;
+  private _contentSetSize: number | undefined;
+  private _content: Readonly<content.Content> | undefined;
+  private _imodelToken: Readonly<IModelToken>;
 
   /** Constructor.
    * @param displayType The content display type which this provider is going to
@@ -42,9 +41,8 @@ export default abstract class ContentDataProvider {
    * selection changes.
    */
   protected invalidateCache(): void {
-    this._configuredDescriptorPromise = undefined;
-    this._descriptorPromise = undefined;
     this._descriptor = undefined;
+    this._configuredDescriptor = undefined;
     this.invalidateContentCache(true);
   }
 
@@ -55,11 +53,11 @@ export default abstract class ContentDataProvider {
    * amount of items in the content set doesn't change.
    */
   protected invalidateContentCache(invalidateContentSetSize: boolean): void {
-    this._configuredDescriptorPromise = undefined;
-    this._contentPromise = undefined;
+    this._configuredDescriptor = undefined;
+    this._content = undefined;
 
     if (invalidateContentSetSize)
-      this._contentSetSizePromise = undefined;
+      this._contentSetSize = undefined;
   }
 
   /** Called to create extended options for content requests. The actual options depend on the
@@ -78,27 +76,15 @@ export default abstract class ContentDataProvider {
    * @param keys Keys of ECInstances to get content for.
    * @param selectionInfo Info about selection in case the content is requested due to selection change.
    */
-  public async getContentDescriptor(keys: InstanceKeysList, selectionInfo?: content.SelectionInfo): Promise<content.Descriptor> {
-    if (undefined === this._configuredDescriptorPromise) {
-      if (undefined === this._descriptorPromise) {
-        this._descriptorPromise = this._manager.getContentDescriptor(this.imodelToken, this._displayType, keys,
+  public async getContentDescriptor(keys: InstanceKeysList, selectionInfo?: content.SelectionInfo): Promise<Readonly<content.Descriptor>> {
+    if (!this._configuredDescriptor) {
+      if (!this._descriptor) {
+        this._descriptor = await this._manager.getContentDescriptor(this.imodelToken, this._displayType, keys,
           selectionInfo, this.createRequestOptions());
       }
-
-      const self = this;
-      const configureDescriptor = (descriptor: content.Descriptor): content.Descriptor => {
-        if (descriptor)
-          self.configureContentDescriptor(descriptor);
-        return descriptor;
-      };
-      const setAndReturn = (descriptor: content.Descriptor): content.Descriptor => {
-        self._descriptor = descriptor;
-        return descriptor;
-      };
-      this._configuredDescriptorPromise = this._descriptorPromise.then(configureDescriptor).then(setAndReturn);
+      this._configuredDescriptor = this.configureContentDescriptor(this._descriptor);
     }
-
-    return this._configuredDescriptorPromise;
+    return this._configuredDescriptor;
   }
 
   /** Called to configure the content descriptor. This is the place where concrete
@@ -106,19 +92,21 @@ export default abstract class ContentDataProvider {
    * @warning The default method implementation takes care of hiding properties. Subclasses
    * should call the base class method to not lose this functionality.
    */
-  protected configureContentDescriptor(descriptor: content.Descriptor): void {
-    const fieldsCount = descriptor.fields.length;
+  protected configureContentDescriptor(descriptor: Readonly<content.Descriptor>): content.Descriptor {
+    const fields = descriptor.fields.slice();
+    const fieldsCount = fields.length;
     for (let i = fieldsCount - 1; i >= 0; --i) {
-      const field = descriptor.fields[i];
+      const field = fields[i];
       if (this.shouldExcludeFromDescriptor(field))
-        descriptor.fields.splice(i, 1);
+        fields.splice(i, 1);
     }
+    return { ...descriptor, fields };
   }
 
   /** Called to check whether the field should be excluded from the descriptor. */
   protected shouldExcludeFromDescriptor(field: content.Field): boolean { return this.isFieldHidden(field); }
 
-  /** Called to check whether the field should be excluded from the descriptor. */
+  /** Called to check whether the field should be hidden. */
   protected isFieldHidden(_field: content.Field): boolean { return false; }
 
   /** Get the content.
@@ -127,16 +115,13 @@ export default abstract class ContentDataProvider {
    * @param pageStart Start index of the page to load.
    * @param pageSize The number of requested items in the page (0 means all items).
    */
-  protected async getContent(keys: InstanceKeysList, selectionInfo: content.SelectionInfo | undefined, { pageStart = 0, pageSize = 0 }: PageOptions): Promise<content.Content> {
-    if (!this._contentPromise) {
-      const self = this;
-      const getContent = (descriptor: content.Descriptor): Promise<content.Content> => {
-        return self._manager.getContent(self.imodelToken, descriptor!, keys,
-          {pageStart, pageSize}, self.createRequestOptions());
-      };
-      this._contentPromise = this.getContentDescriptor(keys, selectionInfo).then(getContent);
+  protected async getContent(keys: InstanceKeysList, selectionInfo: content.SelectionInfo | undefined, { pageStart = 0, pageSize = 0 }: PageOptions): Promise<Readonly<content.Content>> {
+    if (!this._content) {
+      const descriptor = await this.getContentDescriptor(keys, selectionInfo);
+      this._content = await this._manager.getContent(this.imodelToken, descriptor, keys,
+        { pageStart, pageSize }, this.createRequestOptions());
     }
-    return this._contentPromise;
+    return this._content;
   }
 
   /** Get the number of content records.
@@ -145,12 +130,11 @@ export default abstract class ContentDataProvider {
    * @note The method returns the total number of records (without paging).
    */
   protected async getContentSetSize(keys: InstanceKeysList, selectionInfo?: content.SelectionInfo): Promise<number> {
-    if (!this._contentSetSizePromise) {
-      const self = this;
-      this._contentSetSizePromise = this.getContentDescriptor(keys, selectionInfo).then((descriptor: content.Descriptor) => {
-        return self._manager.getContentSetSize(self.imodelToken, descriptor, keys, self.createRequestOptions());
-      });
+    if (undefined === this._contentSetSize) {
+      const descriptor = await this.getContentDescriptor(keys, selectionInfo);
+      this._contentSetSize = await this._manager.getContentSetSize(this.imodelToken, descriptor,
+        keys, this.createRequestOptions());
     }
-    return this._contentSetSizePromise!;
+    return this._contentSetSize;
   }
 }

@@ -133,12 +133,17 @@ class Grid extends React.Component<GridProps, GridState> {
         ))}
       </tr>);
   }
+  private renderCell(key: string, values: {[key: string]: string}) {
+    try {
+      return (<td key={key}>{values[key]}</td>);
+    } catch (e) {
+      return (<td key={key} className="Error">{e.toString()}</td>);
+    }
+  }
   private renderRow(row: RowDefinition, index: number) {
     return (
       <tr key={index}>
-        {this.state.columns!.map((col) => (
-          <td key={col.name}>{row.values[col.name]}</td>
-        ))}
+        {this.state.columns!.map((col) => this.renderCell(col.name, row.values))}
       </tr>);
   }
   private renderNoRecords(columnCount: number) {
