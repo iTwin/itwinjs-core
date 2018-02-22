@@ -4,15 +4,12 @@
 /** @hidden */
 export interface NodeKey {
   Type: string;
+  PathFromRoot: string[];
+  ECClassId: string;
 }
 /** @hidden */
 export interface ECInstanceNodeKey extends NodeKey {
-  ECClassId: string;
   ECInstanceId: string;
-}
-/** @hidden */
-export interface GroupingNodeKey extends NodeKey {
-  NodeId: number; // TODO: should be hex-string
 }
 /** @hidden */
 export interface Node {

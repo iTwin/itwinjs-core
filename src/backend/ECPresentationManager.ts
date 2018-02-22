@@ -4,7 +4,7 @@
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import * as responseTypes from "./AddonResponses";
 import * as ec from "../common/EC";
-import { NavNode, NavNodeKey, NavNodeKeyPath, NavNodePathElement, ECInstanceNodeKey } from "../common/Hierarchy";
+import { NavNode, NavNodeKey, ECInstanceNodeKey, NavNodeKeyPath, NavNodePathElement } from "../common/Hierarchy";
 import * as content from "../common/content";
 import { createDescriptorOverrides } from "../common/content/Descriptor";
 import { StructFieldMemberDescription, isStructDescription } from "../common/content/TypeDescription";
@@ -63,7 +63,7 @@ export default class ECPresentationManager implements ECPInterface {
 
   public async getChildren(token: IModelToken, parent: NavNode, pageOptions: PageOptions, options: object): Promise<Array<Readonly<NavNode>>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetChildren, {
-      nodeId: parent.nodeId,
+      nodeKey: parent.key,
       pageOptions,
       options,
     });
@@ -72,7 +72,7 @@ export default class ECPresentationManager implements ECPInterface {
 
   public async getChildrenCount(token: IModelToken, parent: NavNode, options: object): Promise<number> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetChildrenCount, {
-      nodeId: parent.nodeId,
+      nodeKey: parent.key,
       options,
     });
     return this.request(token, params);
@@ -215,29 +215,15 @@ namespace Conversion {
     return key.Type === "ECInstanceNode";
   }
 
-  /*function toHex(s: string): string {
-    if (s.substr(0, 2).toLowerCase() === "0x")
-      return s;
-    const l = "0123456789ABCDEF";
-    let o = "";
-    for (let i = 0; i < s.length; i++) {
-      const c = s.charCodeAt(i);
-      o = o + l.substr((c >> 4), 1) + l.substr((c & 0x0f), 1);
-    }
-    return "0x" + o;
-  }
-
-  function id64FromString(strId: string): Id64 {
-    // note: this won't always work when the numbers are higher
-    // return parseInt(id.toString().slice(2), 16).toString();
-    return new Id64(toHex(strId));
-  }*/
-
   function createNavNodeKey(r: responseTypes.NodeKey): NavNodeKey {
-    // WIP:
+    const key = {
+      type: r.Type,
+      pathFromRoot: r.PathFromRoot,
+      classId: r.ECClassId,
+    } as NavNodeKey;
     if (isECInstanceNodeKey(r))
-      return { type: r.Type, classId: r.ECClassId, instanceId: r.ECInstanceId } as ECInstanceNodeKey;
-    return { type: r.Type };
+      return { ...key, instanceId: r.ECInstanceId } as ECInstanceNodeKey;
+    return key;
   }
 
   function createClassInfo(r: responseTypes.ClassInfo): ec.ClassInfo {

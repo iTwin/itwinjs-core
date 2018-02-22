@@ -1,15 +1,16 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { ClassId, InstanceId } from "./EC";
 
  /** Base class for a @ref INavNode key which identifies similar nodes. */
 export interface NavNodeKey {
   type: string;
+  pathFromRoot: string[];
+  classId: ClassId;
 }
 export interface ECInstanceNodeKey extends NavNodeKey {
-  // WIP:
-  classId: string;
-  instanceId: string;
+  instanceId: InstanceId;
 }
 
 /** Contains a series of INavNodeKey objects which defines a path of nodes. */

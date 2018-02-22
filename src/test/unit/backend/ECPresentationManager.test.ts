@@ -80,7 +80,11 @@ describe("ECPresentationManager", () => {
       const addonResponse: addonTypes.Node[] = [{
         NodeId: 123,
         ParentNodeId: 456,
-        Key: { Type: "type1" } as addonTypes.NodeKey,
+        Key: {
+          Type: "type1",
+          PathFromRoot: ["p1", "p2", "p3"],
+          ECClassId: "some_class_id_1",
+        } as addonTypes.NodeKey,
         Label: "test1",
         Description: "description1",
         ExpandedImageId: "img_expanded_1",
@@ -98,7 +102,12 @@ describe("ECPresentationManager", () => {
       }, {
         NodeId: 789,
         ParentNodeId: null,
-        Key: { Type: "type2" } as addonTypes.NodeKey,
+        Key: {
+          Type: "ECInstanceNode",
+          PathFromRoot: ["p1"],
+          ECClassId: "some_class_id_2",
+          ECInstanceId: "some_instance_id_2",
+        } as addonTypes.ECInstanceNodeKey,
         Label: "test2",
         Description: "description2",
         ExpandedImageId: null,
@@ -118,7 +127,11 @@ describe("ECPresentationManager", () => {
       const expectedResult: NavNode[] = [{
         nodeId: addonResponse[0].NodeId,
         parentNodeId: addonResponse[0].ParentNodeId || undefined,
-        key: { type: addonResponse[0].Key.Type } as NavNodeKey,
+        key: {
+          type: addonResponse[0].Key.Type,
+          pathFromRoot: addonResponse[0].Key.PathFromRoot,
+          classId: addonResponse[0].Key.ECClassId,
+        } as NavNodeKey,
         label: addonResponse[0].Label,
         description: addonResponse[0].Description,
         imageId: addonResponse[0].ExpandedImageId || undefined,
@@ -135,7 +148,12 @@ describe("ECPresentationManager", () => {
       }, {
         nodeId: addonResponse[1].NodeId,
         parentNodeId: addonResponse[1].ParentNodeId || undefined,
-        key: { type: addonResponse[1].Key.Type } as NavNodeKey,
+          key: {
+            type: addonResponse[1].Key.Type,
+            pathFromRoot: addonResponse[1].Key.PathFromRoot,
+            classId: addonResponse[1].Key.ECClassId,
+            instanceId: (addonResponse[1].Key as addonTypes.ECInstanceNodeKey).ECInstanceId,
+          } as NavNodeKey,
         label: addonResponse[1].Label,
         description: addonResponse[1].Description,
         imageId: addonResponse[1].ExpandedImageId || undefined,

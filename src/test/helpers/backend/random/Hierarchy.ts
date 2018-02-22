@@ -7,8 +7,11 @@ import { nullable } from "./Misc";
 
 export const createRandomECInstanceNodeKey = (): h.NavNodeKey => {
   return {
-    type: "ECInstanceNodeKey",
-  };
+    type: "ECInstanceNode",
+    pathFromRoot: [faker.random.uuid(), faker.random.uuid()],
+    classId: faker.random.number().toString(),
+    instanceId: faker.random.number().toString(),
+  } as h.NavNodeKey;
 };
 
 export const createRandomECInstanceNode = (): h.NavNode => {

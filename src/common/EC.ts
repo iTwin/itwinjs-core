@@ -3,9 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 export type ClassId = string;
+export type InstanceId = string;
 export interface InstanceKey {
-  classId: string;
-  instanceId: string;
+  classId: ClassId;
+  instanceId: InstanceId;
 }
 export type InstanceKeysList = InstanceKey[];
 
