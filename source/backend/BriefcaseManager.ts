@@ -1,12 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-<<<<<<< HEAD
 import { AccessToken, Briefcase as HubBriefcase, IModelHubClient, ChangeSet, IModel as HubIModel, ContainsSchemaChanges, SeedFile, SeedFileInitState } from "@bentley/imodeljs-clients";
-// import { IiModelHubClient } from "@bentley/imodeljs-clients/interfaces";
-=======
-import { AccessToken, Briefcase as HubBriefcase, IModelHubClient, ChangeSet, IModel as HubIModel, ContainsSchemaChanges, SeedFile, SeedFileInitState, Briefcase } from "@bentley/imodeljs-clients";
->>>>>>> master
 import { ChangeSetProcessOption } from "@bentley/bentleyjs-core/lib/Bentley";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -222,9 +217,9 @@ export class BriefcaseManager {
     return path.normalize(pathname);
   }
 
-  private static createHubClient(): IModelHubClient {
-    return new IModelHubClient(iModelHost.configuration.iModelHubDeployConfig);
-  }
+  // public static createHubClient(): IModelHubClient {
+  //   return new IModelHubClient(iModelHost.configuration.iModelHubDeployConfig);
+  // }
 
   public static getChangeSetsPath(iModelId: string): string {
     return path.join(BriefcaseManager.getIModelPath(iModelId), "csets");
@@ -310,8 +305,7 @@ export class BriefcaseManager {
 
     const startTime = new Date().getTime();
 
-    BriefcaseManager.hubClient = BriefcaseManager.createHubClient();
-    // BriefcaseManager.hubClient = myContainer.get<IiModelHubClient>(TYPES.IiModelHubClient);
+    BriefcaseManager.hubClient = BriefcaseManager.hubClient || new IModelHubClient(iModelHost.configuration.iModelHubDeployConfig);
     if (!accessToken)
       return;
 
@@ -1039,7 +1033,7 @@ export class BriefcaseManager {
   public static async deleteAllBriefcases(accessToken: AccessToken, iModelId: string) {
     const promises = new Array<Promise<void>>();
     const briefcases = await BriefcaseManager.hubClient!.getBriefcases(accessToken, iModelId);
-    briefcases.forEach((briefcase: Briefcase) => {
+    briefcases.forEach((briefcase: HubBriefcase) => {
       promises.push(BriefcaseManager.hubClient!.deleteBriefcase(accessToken, iModelId, briefcase.briefcaseId!));
     });
     return Promise.all(promises);

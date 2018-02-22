@@ -47,7 +47,7 @@ export class IModelTestUser {
 
 describe("BriefcaseManager", () => {
   let accessToken: AccessToken;
-  let spoofAccessToken: AccessToken | undefined;
+  const spoofAccessToken: any = "some saml token";
   let testProjectId: string;
   let testIModelId: string;
   let testChangeSets: ChangeSet[];
@@ -87,8 +87,6 @@ describe("BriefcaseManager", () => {
     const startTime = new Date().getTime();
 
     console.log("    Started monitoring briefcase manager performance..."); // tslint:disable-line:no-console
-
-    spoofAccessToken = undefined;
 
     connectClientMock.setup((f: ConnectClient) => f.getProject(TypeMoq.It.isAny(), TypeMoq.It.isAny()))
       .returns(() => {
@@ -168,9 +166,9 @@ describe("BriefcaseManager", () => {
      }
    });
 
-  it.only("should be able to open an cached first version IModel in Readonly mode", async () => {
+  it("should be able to open an cached first version IModel in Readonly mode", async () => {
     // Arrange
-    iModelVersionMock.setup((f: IModelVersion) => f.evaluateChangeSet(spoofAccessToken as any, TypeMoq.It.isAnyString(), iModelHubClientMock.object))
+    iModelVersionMock.setup((f: IModelVersion) => f.evaluateChangeSet(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
       .returns(() => Promise.resolve(""));
     iModelHubClientMock.setup((f: IModelHubClient) => f.getIModel(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
       .returns(() => {
@@ -180,19 +178,19 @@ describe("BriefcaseManager", () => {
       return Promise.resolve(getTypedInstance<HubIModel>(HubIModel, jsonObj));
     }).verifiable();
 
+    BriefcaseManager.hubClient = iModelHubClientMock.object;
+
     // Act
     const iModel: BriefcaseEntry = await BriefcaseManager.open(spoofAccessToken as any, testProjectId, testIModelId, OpenMode.Readonly, iModelVersionMock.object);
 
     // Assert
     assert.exists(iModel);
     assert(iModel.openMode === OpenMode.Readonly);
+    expect(IModelJsFs.existsSync(iModelLocalReadonlyPath));
+    const files = IModelJsFs.readdirSync(iModelLocalReadonlyPath);
+    expect(files.length).greaterThan(0);
 
-    // some verify stuff
-    // expect(IModelJsFs.existsSync(iModelLocalReadonlyPath));
-    // const files = IModelJsFs.readdirSync(iModelLocalReadonlyPath);
-    // expect(files.length).greaterThan(0);
-
-    // iModel.close(accessToken);
+    iModelVersionMock.verify((f: IModelVersion) => f.evaluateChangeSet(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
   });
 
   it("should be able to open an IModel from the Hub in ReadWrite mode", async () => {
