@@ -101,6 +101,7 @@ describe("IModelApp", () => {
     // we have "TrivialTest.Test1" as the key in TestApp.json
     assert.equal(iModelApp.i18N.translate("TestApp:TrivialTests.Test1"), "Localized Trivial Test 1");
     assert.equal(iModelApp.i18N.translate("TestApp:TrivialTests.Test2"), "Localized Trivial Test 2");
+    assert.equal(iModelApp.i18N.translate("LocateFailure.NoElements"), "No Elements Found", "message from default (iModelJs) namespace");
   });
 
   it("Should return the key for localization keys that are missing", () => {

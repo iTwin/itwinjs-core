@@ -41,7 +41,7 @@ export class GraphicBuilderCreateParams {
     this._viewport = vp;
     this._placement = tf;
     this._type = type;
-    if (!iModel && vp) {
+    if (iModel === undefined && vp && vp.view) {
       this._iModel = vp.view.iModel; // is this equivalent to vp.GetViewController().GetDgnDb() ??
     } else {
       this._iModel = iModel;
@@ -55,7 +55,10 @@ export class GraphicBuilderCreateParams {
    * If this function is used outside of tile generation context, a default coarse tolerance will be used.
    * To get a tolerance appropriate to a viewport, use the overload accepting a Viewport.
    */
-  public static Scene(vp: Viewport, placement = Transform.createIdentity(), iModel?: IModel): GraphicBuilderCreateParams {
+  public static Scene(vp?: Viewport, placement: Transform = Transform.createIdentity(), iModel?: IModel): GraphicBuilderCreateParams {
+    if (!placement) {
+      placement = Transform.createIdentity();
+    }
     if (iModel) {
       return new GraphicBuilderCreateParams(placement, GraphicType.Scene, vp, iModel);
     } else {
@@ -109,7 +112,7 @@ export class GraphicBuilderCreateParams {
     return GraphicType.ViewBackground === this._type || GraphicType.ViewOverlay === this._type;
   }
   public IsWorldCoordinates(): boolean {
-    return !this.IsViewCoordinates;
+    return !this.IsViewCoordinates();
   }
   public IsSceneGraphic(): boolean {
     return GraphicType.Scene === this._type;
