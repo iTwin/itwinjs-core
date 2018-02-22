@@ -9,14 +9,14 @@ function mobileReporter(runner) {
     var failures = 0;
     runner.on('pass', function (test) {
         passes++;
-        console_log("pass: " + test.fullTitle());
+        console_log("pass: " + test.fullTitle() + "\n");
     });
     runner.on('fail', function (test, err) {
         failures++;
-        console_log("fail: " + test.fullTitle() + " -- error: " + err.message);
+        console_log("fail: " + test.fullTitle() + " -- error: " + err.message + "\n");
     });
     runner.on('end', function () {
-        console_log("end: " + passes + " / " + (passes+failures));
+        console_log("end: " + passes + " / " + (passes+failures) + "\n");
         // process.exit(failures);
     });
 }
@@ -33,7 +33,6 @@ require("./GeometryStream.test.js");
 require("./IModel.test.js");
 require("./Promise.test.js");
 require("./Render.test.js");
-require("./ViewState.test.js");
 
 
 // Nothing that needs XHR will work

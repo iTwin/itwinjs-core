@@ -4,9 +4,7 @@
 import { IModelError, IModelStatus } from "../common/IModelError";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 
-    /* WIP this require breaks our react app's webpack build step
 import { KnownLocations } from "./KnownLocations";
-*/
 
 /** Class that holds the singleton addon instance that was loaded by the app for this iModelJs session. It is up to the app to load the addon. */
 export class AddonRegistry {
@@ -67,13 +65,11 @@ export class AddonRegistry {
   /** Load and register the standard addon. */
   public static loadAndRegisterStandardAddon() {
 
-    /* WIP this require breaks our react app's webpack build step
     if (KnownLocations.imodeljsMobile !== undefined) {
       // We are running in imodeljs (our mobile platform)
-      AddonRegistry.registerAddon(require("@bentley/imodeljs-mobile"));
+      AddonRegistry.registerAddon((self as any).imodeljsMobile.imodeljsNative);
       return;
     }
-    */
 
     if (typeof (process) === "undefined") {
       // We are running in an unknown platform.
