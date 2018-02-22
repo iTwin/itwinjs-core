@@ -12,6 +12,7 @@ import { I18N, I18NOptions } from "./Localization";
 import { FeatureGates } from "../common/FeatureGates";
 import { ToolRegistry } from "./tools/Tool";
 import { IModelError, IModelStatus } from "../common/IModelError";
+import { NotificationManager } from "./NotificationManager";
 
 import * as selectTool from "./tools/SelectTool";
 import * as viewTool from "./tools/ViewTool";
@@ -31,6 +32,7 @@ export let iModelApp: IModelApp;
  */
 export class IModelApp {
   protected _viewManager?: ViewManager;
+  protected _notifications?: NotificationManager;
   protected _toolAdmin?: ToolAdmin;
   protected _accuDraw?: AccuDraw;
   protected _accuSnap?: AccuSnap;
@@ -43,6 +45,7 @@ export class IModelApp {
   public readonly tools = new ToolRegistry();
 
   public get viewManager(): ViewManager { return this._viewManager!; }
+  public get notifications(): NotificationManager { return this._notifications!; }
   public get toolAdmin(): ToolAdmin { return this._toolAdmin!; }
   public get accuDraw(): AccuDraw { return this._accuDraw!; }
   public get accuSnap(): AccuSnap { return this._accuSnap!; }
@@ -73,7 +76,7 @@ export class IModelApp {
     iModelApp._deploymentEnv = deploymentEnv;
 
     // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
-    iModelApp._i18N = new I18N(["iModelSystem"], "iModelSystem", iModelApp.supplyI18NOptions());
+    iModelApp._i18N = new I18N(["iModelJs"], "iModelJs", iModelApp.supplyI18NOptions());
 
     const tools = iModelApp.tools; // first register all the core tools. Subclasses may choose to override them.
     const coreNamespace = iModelApp.i18N.registerNamespace("CoreTools");
@@ -85,6 +88,7 @@ export class IModelApp {
 
     // the startup function may have already allocated any of these members, so first test whether they're present
     if (!iModelApp._viewManager) iModelApp._viewManager = new ViewManager();
+    if (!iModelApp._notifications) iModelApp._notifications = new NotificationManager();
     if (!iModelApp._toolAdmin) iModelApp._toolAdmin = new ToolAdmin();
     if (!iModelApp._accuDraw) iModelApp._accuDraw = new AccuDraw();
     if (!iModelApp._accuSnap) iModelApp._accuSnap = new AccuSnap();

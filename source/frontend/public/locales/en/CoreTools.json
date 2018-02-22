@@ -55,79 +55,42 @@
       "description": "Selects Element for inspection or manipulation",
       "flyover": "Select Elements",
       "Prompt": "Click or drag to selection elements."
-    }
-  },
-  "ViewUndo": {
-    "NoPreviousViewOps": "No previous viewing operations",
-    "NoPreviousUndos": "Only valid after 'View Previous'"
-  },
-  "ElementSetTool": {
-    "Prompt": {
-      "IdentifyElement": "Identify element",
-      "AcceptSelection": "Accept/Reject Selection",
-      "AcceptFence": "Accept/Reject Fence Contents"
     },
-    "Error": {
-      "NoFence": "No fence defined",
-      "NoFenceElems": "No elements in fence",
-      "NoFenceElemsOutside": "No elements outside fence",
-      "NoSSElems": "No elements selected.",
-      "NotSuportedElmType": "Element type not valid for this tool",
-      "ProjectExtents": "Invalid location. All elements must fit within the volume defined by the project extents."
-    }
-  },
-  "Manipulator": {
-    "ModifyHandle": "Handle: %s",
-    "ModifyHandleAngle": "(SHIFT - Tap to change action = ",
-    "ModifyHandleAction": "(SHIFT - Tap for preserve angle on/off = ",
-    "ProjectExtents": "Project Extents",
-    "ModifyProjectExtents": "Modify Project Extents"
-  },
-  "ElementUndo": {
-    "NothingToUndo": "No actions to undo",
-    "NothingToRedo": "Nothing has been undone",
-    "UndoAll": "Do you really want to undo all changes?"
-  },
-  "AccuDraw": {
-    "Prompt": {
-      "DefineOrigin": "Define X axis origin",
-      "DefineXAxis": "Define X axis",
-      "DefineYDir": "Define Y axis",
-      "DefineElem": "Select element to define rotation"
-    }
-  },
-  "LocateFailure": {
-    "NoElements": "No Elements Found",
-    "LockedModel": "Element is in a model with locate turned off",
-    "LockedElem": "Element is locked",
-    "ByApp": "Element not valid for tool",
-    "ByCommand": "Element rejected by tool",
-    "ByType": "Element type not valid for this tool",
-    "ByProperties": "Element properties not valid for this tool",
-    "Transient": "Element is a transient element",
-    "ModelNotAllowed": "Element is in a model that is not allowed by this tool",
-    "NotSnappable": "Element is not snappable",
-    "RejectedByElement": "Element does not allow this operation"
-  },
-  "RegionTool": {
-    "Error": {
-      "NoArea": "Difference results in zero area region",
-      "NoIntersection": "Regions do not intersect",
-      "Unbounded": "Unbounded solution",
-      "NonCoplanar": "Regions are not coplanar",
-      "NoEnclosingArea": "No enclosing region found",
-      "NotClosed": "Element is not closed, can't be used"
+    "ElementSet": {
+      "Prompt": {
+        "IdentifyElement": "Identify element",
+        "AcceptSelection": "Accept/Reject Selection",
+        "AcceptFence": "Accept/Reject Fence Contents"
+      },
+      "Error": {
+        "NoFence": "No fence defined",
+        "NoFenceElems": "No elements in fence",
+        "NoFenceElemsOutside": "No elements outside fence",
+        "NoSSElems": "No elements selected.",
+        "NotSuportedElmType": "Element type not valid for this tool",
+        "ProjectExtents": "Invalid location. All elements must fit within the volume defined by the project extents."
+      }
     },
-    "Prompt": {
-      "SubtractFrom": "Identify Solid Element",
-      "Intersection": "Identify Intersecting Elements",
-      "Union": "Identify Union Elements",
-      "Difference": "Identify Difference Elements",
-      "PointEnter": "Enter point",
-      "PointEnterInside": "Enter point inside area",
-      "PointReset": "Enter point or RESET to complete",
-      "AcceptConstruction": "Accept - Complete Operation",
-      "AcceptRejectMulti": "Accept/Reject (Ctrl+Data to select = "
+    "Region": {
+      "Error": {
+        "NoArea": "Difference results in zero area region",
+        "NoIntersection": "Regions do not intersect",
+        "Unbounded": "Unbounded solution",
+        "NonCoplanar": "Regions are not coplanar",
+        "NoEnclosingArea": "No enclosing region found",
+        "NotClosed": "Element is not closed, can't be used"
+      },
+      "Prompt": {
+        "SubtractFrom": "Identify Solid Element",
+        "Intersection": "Identify Intersecting Elements",
+        "Union": "Identify Union Elements",
+        "Difference": "Identify Difference Elements",
+        "PointEnter": "Enter point",
+        "PointEnterInside": "Enter point inside area",
+        "PointReset": "Enter point or RESET to complete",
+        "AcceptConstruction": "Accept - Complete Operation",
+        "AcceptRejectMulti": "Accept/Reject (Ctrl+Data to select = "
+      }
     }
   }
 }

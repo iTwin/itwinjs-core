@@ -9,6 +9,7 @@ import { IModelConnection } from "../IModelConnection";
 import { iModelApp } from "../IModelApp";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { DynamicsContext } from "../ViewContext";
+import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
 
 export const enum ModifyElementSource {
   /** The source for the element is unknown - not caused by a modification command. */
@@ -183,7 +184,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
       return true;
 
     if (isButtonEvent && ev.isDown) {
-      //   NotificationManager:: OutputMessage(NotifyMessageDetails(OutputMessagePriority:: Error, DgnViewL10N:: GetString(DgnViewL10N:: ELEMENTSETTOOL_ERROR_ProjectExtents()).c_str()));
+      iModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, iModelApp.i18N.translate("CoreTools:tools.ElementSet.Error.ProjectExtents")));
     }
 
     return false;

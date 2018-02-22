@@ -823,8 +823,7 @@ export class SelectionTool extends PrimitiveTool {
     if (!this.targetView)
       return;
     this.removeListener = this.iModel.selectionSet.onChanged.addListener(this.onSelectionChanged, this);
-    // Utf8String msgStr = DgnClientFxToolsL10N:: GetString(DgnClientFxToolsL10N:: ELEMENT_SET_TOOL_PROMPT_IdentifyElement());
-    // NotificationManager:: OutputPrompt(msgStr.c_str());
+    iModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompt.IdentifyElement");
   }
 
   public static startTool() {
