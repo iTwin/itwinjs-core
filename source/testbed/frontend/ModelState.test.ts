@@ -22,7 +22,6 @@ describe("ModelState", () => {
       classFullName: ModelSelectorState.getClassFullName(),
       model: new Id64([1, 1]),
       code: Code.createEmpty(),
-      id: new Id64(),
       models: ["0x1"],
     };
 

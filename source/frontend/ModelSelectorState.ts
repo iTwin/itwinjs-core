@@ -27,11 +27,17 @@ export class ModelSelectorState extends ElementState {
   }
 
   /** Add one or more models to this ModelSelectorState */
-  public addModels(arg: Id64Arg) { Id64.toIdSet(arg).forEach((id) => this.models.add(id)); }
+  public addModels(arg: Id64Arg): void { Id64.toIdSet(arg).forEach((id) => this.models.add(id)); }
+
   /** Drop one or more models from this ModelSelectorState */
-  public dropModels(arg: Id64Arg) { Id64.toIdSet(arg).forEach((id) => this.models.delete(id)); }
+  public dropModels(arg: Id64Arg): void { Id64.toIdSet(arg).forEach((id) => this.models.delete(id)); }
+
   /** Determine whether this ModelSelectorState includes the specified modelId value */
   public has(id: string): boolean { return this.models.has(id); }
+
   /** Determine whether this ModelSelectorState includes the specified modelId */
   public containsModel(modelId: Id64): boolean { return this.has(modelId.value); }
+
+  /** Make sure all models referenced by this ModelSelectorState are loaded. */
+  public load(): Promise<void> { return this.iModel.models.load(this.models); }
 }

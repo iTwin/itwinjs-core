@@ -132,6 +132,8 @@ export abstract class ViewState extends ElementState {
     return json;
   }
 
+  public abstract load(): Promise<void>;
+
   /** Get the name of this ViewDefinition */
   public get name(): string { return this.code.getValue(); }
 
@@ -933,7 +935,6 @@ export abstract class ViewState3d extends ViewState {
   /**  Get the distance from the eyePoint to the focus plane for this view. */
   public getFocusDistance(): number { return this.camera.focusDist; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem3dState.createNew(acsName, this.iModel); }
-
 }
 
 /** Defines a view of one or more SpatialModels.
@@ -957,7 +958,7 @@ export class SpatialViewState extends ViewState3d {
     val.modelSelectorId = this.modelSelector.id;
     return val;
   }
-
+  public load(): Promise<void> { return this.modelSelector.load(); }
   public viewsModel(modelId: Id64): boolean { return this.modelSelector.containsModel(modelId); }
 }
 
@@ -966,7 +967,6 @@ export class OrthographicViewState extends SpatialViewState {
   public static get className() { return "OrthographicViewDefinition"; }
   constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle, modelSelector); }
 
-  // tslint:disable-next-line:no-empty
   public enableCamera(): void { }
   public supportsCamera(): boolean { return false; }
 }
@@ -996,6 +996,7 @@ export class ViewState2d extends ViewState {
     return val;
   }
 
+  public load(): Promise<void> { return Promise.resolve(); }
   public allow3dManipulations(): boolean { return false; }
   public getViewedExtents() { return new AxisAlignedBox3d(); } // NEEDS_WORK
   public getOrigin() { return new Point3d(this.origin.x, this.origin.y); }

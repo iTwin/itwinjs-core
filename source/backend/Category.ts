@@ -95,7 +95,7 @@ export class SpatialCategory extends Category {
 
   /** Looks up the DgnCategoryId of a SpatialCategory by model and name */
   public static queryCategoryIdByName(parentModel: DefinitionModel, categoryName: string): Id64 | undefined {
-    const code: Code = SpatialCategory.createCode(parentModel, categoryName);
+    const code = SpatialCategory.createCode(parentModel, categoryName);
     return parentModel.iModel.elements.queryElementIdByCode(code);
   }
 
@@ -122,19 +122,16 @@ export class SpatialCategory extends Category {
       scopeModel = parentModel;
     return parentModel.iModel.elements.createElement({
       iModel: parentModel.iModel,
-      id: new Id64(),
       classFullName: "BisCore:SpatialCategory",
       model: scopeModel.id,
       code: SpatialCategory.createCode(scopeModel, categoryName),
     }) as SpatialCategory;
   }
 
-  /** Inserts this SpatialCategory into the DgnDb and initializes its default sub-category with the specified appearance.
+  /** Inserts this SpatialCategory into the iModel and initializes its default sub-category with the specified appearance.
    * @return The persistent SpatialCategory.
    * @throws IModelError if insert failed.
    * @see setDefaultAppearance
    */
-  public insert(): Id64 {
-    return this.iModel.elements.insertElement(this);
-  }
+  public insert(): Id64 { return this.iModel.elements.insertElement(this); }
 }
