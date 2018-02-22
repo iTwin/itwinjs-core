@@ -43,14 +43,13 @@ describe("Sample Code", () => {
       iModel: outputImodel,
       parent: { id: parentElement.id, relClassName: "BisCore:SubjectOwnsPartitionElements" },
       model: iModel.models.repositoryModelId,
-      id: new Id64(),
       code: modelCode,
     };
     const modeledElement: Element = outputImodel.elements.createElement(modeledElementProps);
     const modeledElementId: Id64 = outputImodel.elements.insertElement(modeledElement);
 
     // The model
-    const newModel = outputImodel.models.createModel({ id: new Id64(), modeledElement: modeledElementId, classFullName: "BisCore:PhysicalModel", isPrivate: isModelPrivate });
+    const newModel = outputImodel.models.createModel({ modeledElement: modeledElementId, classFullName: "BisCore:PhysicalModel", isPrivate: isModelPrivate });
     const newModelId = outputImodel.models.insertModel(newModel);
 
     return newModelId;
@@ -88,7 +87,7 @@ describe("Sample Code", () => {
       await iModel.concurrencyControl.codes.reserve(accessToken);
     } catch (err) {
       if (err instanceof ConcurrencyControl.RequestError) {
-          // Do something about err.unavailableCodes ...
+        // Do something about err.unavailableCodes ...
       }
     }
     // __PUBLISH_EXTRACT_END__

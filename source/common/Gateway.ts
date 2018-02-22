@@ -14,8 +14,19 @@ export type GatewayImplementation<T extends Gateway = Gateway> = new () => T;
 export interface GatewayDefinition<T extends Gateway = Gateway> { prototype: T; name: string; version: string; types: () => Function[]; }
 export type GatewayConfigurationSupplier = () => { new(): GatewayConfiguration };
 
+/** Runtime information related to the operation load of one or more gateways. */
+export interface GatewayOperationsProfile {
+  readonly lastRequest: number;
+  readonly lastResponse: number;
+}
+
 /** A set of related asynchronous APIs that operate over configurable protocols across multiple platforms. */
 export abstract class Gateway {
+  /** The aggregate operation load of all active gateways. */
+  public static get aggregateLoad(): GatewayOperationsProfile {
+    return Gateway._aggregateLoad;
+  }
+
   /** Returns the gateway proxy instance for the frontend. */
   public static getProxyForGateway<T extends Gateway>(definition: GatewayDefinition<T>): T {
     const instance = registry.proxies.get(definition.name) as T;
@@ -108,11 +119,15 @@ export abstract class Gateway {
 
   /** Invokes the backend implementation of a gateway operation by name. */
   public async invoke<T>(operation: string, ...parameters: any[]): Promise<T> {
+    Gateway.recordRequest();
+
     const implementation = (this as any)[operation];
     if (!implementation || typeof (implementation) !== "function")
       throw new IModelError(BentleyStatus.ERROR, `Gateway class "${this.constructor.name}" does not implement operation "${operation}".`, Logger.logError, "imodeljs-backend.Gateway");
 
-    return await implementation.call(this, ...parameters);
+    const result = await implementation.call(this, ...parameters);
+    Gateway.recordResponse();
+    return result;
   }
 
   /** Returns the configuration for the gateway. */
@@ -123,7 +138,24 @@ export abstract class Gateway {
 
   /** Obtains the implementation result for a gateway operation. */
   public forward<T>(operation: string, ...parameters: any[]): Promise<T> {
+    Gateway.recordRequest();
     return this.configuration.protocol.obtainGatewayImplementationResult<T>(this.constructor as any, operation, ...parameters);
+  }
+
+  /** @internal */
+  private static _aggregateLoad = {
+    lastRequest: 0,
+    lastResponse: 0,
+  };
+
+  /** @internal */
+  public static recordRequest() {
+    Gateway._aggregateLoad.lastRequest = new Date().getTime();
+  }
+
+  /** @internal */
+  public static recordResponse() {
+    Gateway._aggregateLoad.lastResponse = new Date().getTime();
   }
 }
 

@@ -161,7 +161,6 @@ describe("iModel", () => {
         iModel: imodel2,
         model: seedElement.model,
         category: seedElement.category,
-        id: new Id64(),
         code: Code.createEmpty(),
         federationGuid: new Guid(true),
         userLabel: "UserLabel-" + i,
@@ -173,6 +172,7 @@ describe("iModel", () => {
       const elementId: Id64 = imodel2.elements.insertElement(element);
       assert.isTrue(elementId.isValid());
     }
+
   });
 
   it("should have a valid root subject element", () => {
@@ -801,7 +801,6 @@ describe("iModel", () => {
         iModel: testImodel,
         model: newModelId,
         category: spatialCategoryId,
-        id: new Id64(),
         code: Code.createEmpty(),
       };
 

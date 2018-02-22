@@ -1489,6 +1489,21 @@ export class TxnManager {
   /** Test if a TxnId is valid */
   public isTxnIdValid(txnId: TxnManager.TxnId): boolean { return this._iModel.briefcaseEntry!.nativeDb!.txnManagerIsTxnIdValid(txnId); }
 
+  /** Query if there are any pending Txns in this IModelDb that are waiting to be pushed.  */
+  public hasPendingTxns(): boolean {
+    return this.isTxnIdValid(this.queryFirstTxnId());
+  }
+
+  /** Query if there are any changes in memory that have yet to be saved to the IModelDb. */
+  public hasUnsavedChanges(): boolean {
+    return false; // *** TODO: return this._iModel.briefcaseEntry!.nativeDb!.txnManagerHasUnsavedChanges
+  }
+
+  /** Query if there are un-saved or un-pushed local changes. */
+  public hasLocalChanges(): boolean {
+    return this.hasUnsavedChanges() || this.hasPendingTxns();
+  }
+
   /** Make a description of the changeset by combining all local txn comments. */
   public describeChangeSet(endTxnId?: TxnManager.TxnId): string {
     if (endTxnId === undefined)

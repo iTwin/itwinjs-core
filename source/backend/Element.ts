@@ -446,7 +446,7 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
 
 /**
  * Information Partition is an abstract base class for elements that indicate that there is a new modeling
- * perspective within the overall DgnDb information hierarchy. An Information Partition is always parented
+ * perspective within the overall iModel information hierarchy. An Information Partition is always parented
  * to a Subject and broken down by a Model.
  */
 export abstract class InformationPartitionElement extends InformationContentElement implements InformationPartitionElementProps {
@@ -463,65 +463,58 @@ export abstract class InformationPartitionElement extends InformationContentElem
 
 /**
  * A Definition Partition element indicates that there is a definition-related modeling perspective within
- * the overall DgnDb information hierarchy. A Definition Partition is always parented to a Subject and
+ * the overall iModel information hierarchy. A Definition Partition is always parented to a Subject and
  * broken down by a Definition Model.
  */
 export class DefinitionPartition extends InformationPartitionElement {
-  public constructor(props: InformationPartitionElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /**
  * A Document Partition element indicates that there is a document-related modeling perspective within
- * the overall DgnDb information hierarchy. A Document Partition is always parented to a Subject and broken
+ * the overall iModel information hierarchy. A Document Partition is always parented to a Subject and broken
  * down by a Document List Model.
  */
 export class DocumentPartition extends InformationPartitionElement {
-  public constructor(props: InformationPartitionElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /**
  * A Group Information Partition element indicates that there is a group-information-related modeling perspective
- * within the overall DgnDb information hierarchy. A Group Information Partition is always parented to
+ * within the overall iModel information hierarchy. A Group Information Partition is always parented to
  * a Subject and broken down by a Group Information Model.
  */
 export class GroupInformationPartition extends InformationPartitionElement {
-  public constructor(props: InformationPartitionElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /**
  * A Information Record Partition element indicates that there is an information-record-related modeling
- * perspective within the overall DgnDb information hierarchy. An Information Record Partition is always
+ * perspective within the overall iModel information hierarchy. An Information Record Partition is always
  * parented to a Subject and broken down by an Information Record Model.
  */
 export class InformationRecordPartition extends InformationPartitionElement {
-  public constructor(props: InformationPartitionElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /**
  * A Link Partition element indicates that there is a link-related modeling perspective within the overall
- * DgnDb information hierarchy. A Link Partition is always parented to a Subject and broken down by a Link
+ * iModel information hierarchy. A Link Partition is always parented to a Subject and broken down by a Link
  * Model.
  */
 export class LinkPartition extends InformationPartitionElement {
-  public constructor(props: InformationPartitionElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /**
  * A Physical Partition element indicates that there is a physical modeling perspective within the overall
- * DgnDb information hierarchy. A Physical Partition is always parented to a Subject and broken down by
+ * iModel information hierarchy. A Physical Partition is always parented to a Subject and broken down by
  * a Physical Model.
  */
 export class PhysicalPartition extends InformationPartitionElement {
-  public constructor(props: InformationPartitionElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /**
  * A Spatial Location Partition element indicates that there is a spatial-location-related modeling perspective
- * within the overall DgnDb information hierarchy. A Spatial Location Partition is always parented to a
+ * within the overall iModel information hierarchy. A Spatial Location Partition is always parented to a
  * Subject and broken down by a Spatial Location Model.
  */
 export class SpatialLocationPartition extends InformationPartitionElement {
-  public constructor(props: InformationPartitionElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /**
@@ -529,34 +522,29 @@ export class SpatialLocationPartition extends InformationPartitionElement {
  * a group of related elements.
  */
 export abstract class GroupInformationElement extends InformationReferenceElement {
-  public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 /**
  * An information element that specifies a link.
  */
 export abstract class LinkElement extends InformationReferenceElement {
-  public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /**
  * An information element that specifies a URL link.
  */
 export class UrlLink extends LinkElement {
-  public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /**
  * An information element that links to an embedded file.
  */
 export class EmbeddedFileLink extends LinkElement {
-  public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /**
  * An information element that links to a repository.
  */
 export class RepositoryLink extends UrlLink {
-  public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /**
@@ -565,7 +553,6 @@ export class RepositoryLink extends UrlLink {
  * a person can play the role of a teacher or a rock can play the role of a boundary marker.
  */
 export abstract class RoleElement extends Element {
-  public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoordSystemProps {
@@ -598,7 +585,6 @@ export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3d
  * A spatial coordinate system.
  */
 export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
-  public constructor(props: AuxCoordSystem3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /**
@@ -610,5 +596,4 @@ export class LightLocation extends SpatialLocationElement implements LightLocati
 }
 
 export class Texture extends DefinitionElement {
-  public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
