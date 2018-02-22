@@ -694,3 +694,7 @@ export class Decorations {
   public worldOverlay?: DecorationList; // drawn in overlay mode, world units
   public viewOverlay?: DecorationList;  // drawn in overlay mode, view units
 }
+
+export const enum DgnGeometryClass {
+  Primary, Construction, Dimension, Pattern,
+}
