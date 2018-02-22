@@ -28,7 +28,8 @@
   },
   "//peerDependencies": [
     "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check",
-    "NOTE: No matter which Node addon the outermost app choses, it must support the specified API level."
+    "NOTE: No matter which Node addon the outermost app choses, it must support the specified API level.",
+    "NOTE: must use ~ range to depend on the addon api -- that is, must lock onto a minor version."
   ],
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^6.1.1",
@@ -37,8 +38,7 @@
   },
   "//dependencies": [
     "NOTE: these dependencies are specific to imodeljs-backend",
-    "NOTE: dependencies that are in common with imodeljs-frontend must have a consistent version",
-    "NOTE: must use ~ range to depend on the addon api -- that is, must lock onto a minor version."
+    "NOTE: dependencies that are in common with imodeljs-frontend must have a consistent version"
   ],
   "dependencies": {
     "@bentley/geometry-core": "^4.3.1",
