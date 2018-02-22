@@ -106,9 +106,9 @@ export class ChangeSummaryManager {
     const totalPerf = new PerfLogger(`ChangeSummaryManager.extractChangeSummaries [Changesets: ${startChangesetIdStr} through ${endChangesetIdStr}, iModel: ${iModelId}, contextid: ${contextId}]`);
 
     let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Open iModel");
-    const endVersion: IModelVersion = endChangeSetId === undefined ? IModelVersion.latest() : IModelVersion.asOfChangeSet(endChangeSetId);
+
     // TODO: open the imodel readonly and in exclusive ownership as we go back in history. Needs changes in BriefcaseManager.
-    const iModel: IModelDb = await IModelDb.open(accessToken, contextId, iModelId, OpenMode.ReadWrite, endVersion);
+    const iModel: IModelDb = await IModelDb.open(accessToken, contextId, iModelId, OpenMode.ReadWrite, IModelVersion.latest());
     if (iModel === undefined || iModel.nativeDb === undefined)
       throw new IModelError(IModelStatus.BadArg);
 
@@ -132,18 +132,13 @@ export class ChangeSummaryManager {
       const changeSetsFolder: string = BriefcaseManager.getChangeSetsPath(iModelId);
       const userInfoCache = new Map<string, string>();
 
-      let isFirst: boolean = true;
       // extract summaries from end changeset through start changeset, so that we only have to go back in history
       for (const changeSetInfo of changeSetInfos.reverse()) {
         const currentChangeSetId: string = changeSetInfo.wsgId;
 
-        if (!isFirst) { // don't reverse change for first changeset as the imodel was already opened at that revision
-          perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Roll iModel to previous changeset");
-          await iModel.reverseChanges(accessToken, IModelVersion.asOfChangeSet(currentChangeSetId));
-          perfLogger.dispose();
-        }
-
-        isFirst = false;
+        perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Roll iModel to previous changeset");
+        await iModel.reverseChanges(accessToken, IModelVersion.asOfChangeSet(currentChangeSetId));
+        perfLogger.dispose();
 
         if (ChangeSummaryManager.isSummaryAlreadyExtracted(changesFile, currentChangeSetId))
           continue;
@@ -181,7 +176,7 @@ export class ChangeSummaryManager {
 
       try {
         perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Move iModel to original changeset");
-        await iModel.reinstateChanges(accessToken, endVersion);
+        await iModel.reinstateChanges(accessToken, IModelVersion.latest());
         perfLogger.dispose();
       } finally { await iModel.close(accessToken); }
 
