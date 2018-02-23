@@ -27,23 +27,25 @@
     "url": "http://www.bentley.com"
   },
   "//peerDependencies": [
-    "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check",
-    "NOTE: No matter which Node addon the outermost app choses, it must support the specified API level.",
-    "NOTE: must use ~ range to depend on the addon api -- that is, must lock onto a minor version."
+    "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check"
   ],
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^6.1.1",
-    "@bentley/imodeljs-nodeaddonapi": "~8.1.0",
     "flatbuffers": "^1.8.0"
   },
   "//dependencies": [
     "NOTE: these dependencies are specific to imodeljs-backend",
-    "NOTE: dependencies that are in common with imodeljs-frontend must have a consistent version"
+    "NOTE: dependencies that are in common with imodeljs-frontend must have a consistent version",
+    "NOTE: backend really does depend on the addon API - that's what we compile against",
+    "NOTE: backend does not really depend on the addon itself -- the app is supposed to deliver the addon.",
+    "       Nevertheless, we make backend depend directly on the addon dependency as a convenience to apps, ",
+    "       so that they don't have to depend on it. We might revisit this policy in the future."
   ],
   "dependencies": {
     "@bentley/geometry-core": "^4.3.1",
     "@bentley/imodeljs-clients": "^3.0.0",
     "@bentley/imodeljs-nodeaddon": "~8.1.0",
+    "@bentley/imodeljs-nodeaddonapi": "~8.1.0",
     "fs-extra": "^5.0.0",
     "js-base64": "^2.4.0"
   },
@@ -52,7 +54,6 @@
     "NOTE: The webpackformobile command needs webpack"
   ],
   "devDependencies": {
-    "@bentley/imodeljs-n_8_9-win32-x64": "~8.1.0",
     "cpx": "^1.5.0",
     "mocha": "^3.5.3",
     "mocha-junit-reporter": "^1.15.0",
