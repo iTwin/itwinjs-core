@@ -7,17 +7,33 @@ import Schema from "../../source/Metadata/Schema";
 import EntityClass from "../../source/Metadata/EntityClass";
 import RelationshipClass from "../../source/Metadata/RelationshipClass";
 import { RelationshipMultiplicity, StrengthType, RelatedInstanceDirection } from "../../source/ECObjects";
+import { ECObjectsError } from "../../source/Exception";
 
-describe("relationship multiplicity", () => {
-  it("check if standard multiplicities are truly static objects", () => {
-    assert.isTrue(RelationshipMultiplicity.zeroOne === RelationshipMultiplicity.zeroOne);
-    assert.isTrue(RelationshipMultiplicity.zeroMany === RelationshipMultiplicity.zeroMany);
-    assert.isTrue(RelationshipMultiplicity.oneOne === RelationshipMultiplicity.oneOne);
-    assert.isTrue(RelationshipMultiplicity.oneMany === RelationshipMultiplicity.oneMany);
+describe("RelationshipMultiplicity", () => {
+  describe("fromString", () => {
+    it("should return a static object for standard multiplicities", () => {
+      // Note that since we're using .equal instead of .eql, this checks that standard multiplicities are truly static objects
+      expect(RelationshipMultiplicity.fromString("(0..1)")).to.equal(RelationshipMultiplicity.zeroOne);
+      expect(RelationshipMultiplicity.fromString("(0..*)")).to.equal(RelationshipMultiplicity.zeroMany);
+      expect(RelationshipMultiplicity.fromString("(1..1)")).to.equal(RelationshipMultiplicity.oneOne);
+      expect(RelationshipMultiplicity.fromString("(1..*)")).to.equal(RelationshipMultiplicity.oneMany);
+    });
+
+    it("should return a new object for unknown multiplicities", () => {
+      const testMul = RelationshipMultiplicity.fromString("(1..5)");
+      expect(testMul).to.exist;
+      expect(testMul!.lowerLimit).to.equal(1);
+      expect(testMul!.upperLimit).to.equal(5);
+    });
+
+    it("should return a undefined for an invalid multiplicity", () => {
+      const testMul = RelationshipMultiplicity.fromString("invalid");
+      expect(testMul).to.not.exist;
+    });
   });
 });
 
-describe("relationship", () => {
+describe("RelationshipClass", () => {
   describe("deserialization", () => {
     it("succeed with fully defined relationship", async () => {
       const schemaJson = {
@@ -84,6 +100,28 @@ describe("relationship", () => {
       assert.isDefined(relClass!.target!.constraintClasses);
       expect(relClass!.target!.constraintClasses!.length).equal(1);
       assert.isTrue(await relClass!.target!.constraintClasses![0] === targetEntity);
+    });
+  });
+
+  describe("fromJson", () => {
+    const baseJson = { schemaChildType: "RelationshipClass" };
+    let testRelationship: RelationshipClass;
+
+    beforeEach(() => {
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      testRelationship = new RelationshipClass(schema, "TestRelationship");
+    });
+
+    it("should throw for invalid strength", async () => {
+      expect(testRelationship).to.exist;
+      const json = { ...baseJson, strength: 0 };
+      await expect(testRelationship.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestRelationship has an invalid 'strength' attribute. It should be of type 'string'.`);
+    });
+
+    it("should throw for invalid strengthDirection", async () => {
+      expect(testRelationship).to.exist;
+      const json = { ...baseJson, strengthDirection: 0 };
+      await expect(testRelationship.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestRelationship has an invalid 'strengthDirection' attribute. It should be of type 'string'.`);
     });
   });
 });

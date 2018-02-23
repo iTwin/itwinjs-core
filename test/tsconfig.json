@@ -3,9 +3,6 @@
   // Without this, since the test directory is not included in the root tsconfig.json,
   // files under source/ that are included from test/ don't honor the "baseUrl" property
   "extends": "../tsconfig.json",
-  "compilerOptions": {
-    "baseUrl": "../source"    
-  },
   "include": [
     "../source/**/*.ts",
     "**/*.test.ts"

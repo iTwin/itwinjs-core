@@ -63,8 +63,8 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
 
   get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
-  constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
-    super(schema, name);
+  constructor(schema: Schema, name: string, type: SchemaChildType, modifier?: ECClassModifier) {
+    super(schema, name, type);
 
     if (modifier)
       this._modifier = modifier;
@@ -194,14 +194,14 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
 
     if (undefined !== jsonObj.modifier) {
       if (typeof(jsonObj.modifier) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The modifier of ${this.name} is not a string type.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${this.name} has an invalid 'modifier' attribute. It should be of type 'string'.`);
 
       this._modifier = parseClassModifier(jsonObj.modifier);
     }
 
     if (undefined !== jsonObj.baseClass) {
       if (typeof(jsonObj.baseClass) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The base class of ${this.name} is not a string type.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${this.name} has an invalid 'baseClass' attribute. It should be of type 'string'.`);
 
       const baseClass = await this.schema.getChild<ECClass>(jsonObj.baseClass, true);
       if (!baseClass)
@@ -224,7 +224,6 @@ export class StructClass extends ECClass {
   public readonly type: SchemaChildType.StructClass;
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
-    super(schema, name, modifier);
-    this.key.type = SchemaChildType.StructClass;
+    super(schema, name, SchemaChildType.StructClass, modifier);
   }
 }

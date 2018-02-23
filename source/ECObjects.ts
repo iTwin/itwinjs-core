@@ -14,13 +14,47 @@ export const enum ECClassModifier {
 
 export const enum SchemaChildType {
   EntityClass,
-  MixinClass,
+  Mixin,
   StructClass,
   CustomAttributeClass,
   RelationshipClass,
   Enumeration,
   KindOfQuantity,
   PropertyCategory,
+}
+
+/**
+ * Tries to parse the given string as one of the 8 schema child types.
+ * @param type The schema child type string to parse.
+ * @returns A valid SchemaChildType if successfully parsed, or undefined if the provided string is not a valid SchemaChildType.
+ */
+export function tryParseSchemaChildType(type: string): SchemaChildType | undefined {
+  if (/^EntityClass$/i.test(type)) return SchemaChildType.EntityClass;
+  if (/^Mixin$/i.test(type)) return SchemaChildType.Mixin;
+  if (/^StructClass$/i.test(type)) return SchemaChildType.StructClass;
+  if (/^CustomAttributeClass$/i.test(type)) return SchemaChildType.CustomAttributeClass;
+  if (/^RelationshipClass$/i.test(type)) return SchemaChildType.RelationshipClass;
+  if (/^Enumeration$/i.test(type)) return SchemaChildType.Enumeration;
+  if (/^KindOfQuantity$/i.test(type)) return SchemaChildType.KindOfQuantity;
+  if (/^PropertyCategory$/i.test(type)) return SchemaChildType.PropertyCategory;
+  return undefined;
+}
+
+/**
+ * Converts a valid SchemaChildType to a display string.
+ * @param value The SchemaChildType to stringify.
+ */
+export function schemaChildTypeToString(value: SchemaChildType): string {
+  switch (value) {
+    case SchemaChildType.EntityClass: return "EntityClass";
+    case SchemaChildType.Mixin: return "Mixin";
+    case SchemaChildType.StructClass: return "StructClass";
+    case SchemaChildType.CustomAttributeClass: return "CustomAttributeClass";
+    case SchemaChildType.RelationshipClass: return "RelationshipClass";
+    case SchemaChildType.Enumeration: return "Enumeration";
+    case SchemaChildType.KindOfQuantity: return "KindOfQuantity";
+    case SchemaChildType.PropertyCategory: return "PropertyCategory";
+  }
 }
 
 /**
@@ -46,26 +80,16 @@ export const enum PrimitiveType {
  * @returns A valid PrimitiveType if successfully parsed, or undefined if the provided string is not a valid PrimitiveType.
  */
 export function tryParsePrimitiveType(type: string): PrimitiveType | undefined {
-  if (/^binary$/i.test(type))
-    return PrimitiveType.Binary;
-  else if (/^bool$/i.test(type) || /^boolean$/i.test(type))
-    return PrimitiveType.Boolean;
-  else if (/^dateTime$/i.test(type))
-    return PrimitiveType.DateTime;
-  else if (/^double$/i.test(type))
-    return PrimitiveType.Double;
-  else if (/^int$/i.test(type))
-    return PrimitiveType.Integer;
-  else if (/^long$/i.test(type))
-    return PrimitiveType.Long;
-  else if (/^point2d$/i.test(type))
-    return PrimitiveType.Point2d;
-  else if (/^point3d$/i.test(type))
-    return PrimitiveType.Point3d;
-  else if (/^string$/i.test(type))
-    return PrimitiveType.String;
-  else if (/^Bentley\.Geometry\.Common\.IGeometry$/i.test(type))
-    return PrimitiveType.IGeometry;
+  if (/^binary$/i.test(type)) return PrimitiveType.Binary;
+  if (/^bool(ean)?$/i.test(type)) return PrimitiveType.Boolean;
+  if (/^dateTime$/i.test(type)) return PrimitiveType.DateTime;
+  if (/^double$/i.test(type)) return PrimitiveType.Double;
+  if (/^int$/i.test(type)) return PrimitiveType.Integer;
+  if (/^long$/i.test(type)) return PrimitiveType.Long;
+  if (/^point2d$/i.test(type)) return PrimitiveType.Point2d;
+  if (/^point3d$/i.test(type)) return PrimitiveType.Point3d;
+  if (/^string$/i.test(type)) return PrimitiveType.String;
+  if (/^Bentley\.Geometry\.Common\.IGeometry$/i.test(type)) return PrimitiveType.IGeometry;
 
   return undefined;
 }
@@ -129,12 +153,11 @@ export const enum SchemaMatchType {
  * @throws ECObjectsStatus.InvalidModifier if the p
  */
 export function parseClassModifier(modifier: string): ECClassModifier {
-  const lowerModifier = modifier.toLowerCase();
-  if (/Abstract/i.test(lowerModifier))
+  if (/Abstract/i.test(modifier))
     return ECClassModifier.Abstract;
-  else if (/None/i.test(lowerModifier))
+  else if (/None/i.test(modifier))
     return ECClassModifier.None;
-  else if (/Sealed/i.test(lowerModifier))
+  else if (/Sealed/i.test(modifier))
     return ECClassModifier.Sealed;
 
   throw new ECObjectsError(ECObjectsStatus.InvalidModifier, `The string '${modifier}' is not a valid ECClassModifier.`);
@@ -153,39 +176,37 @@ export function parseCustomAttributeContainerType(type: string): CustomAttribute
     if (typeToken.length === 0)
       return;
 
-    typeToken = typeToken.toLowerCase();
-
-    if (/Schema/i.test(typeToken))
+    if (/^Schema$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.Schema;
-    else if (/EntityClass/i.test(typeToken))
+    else if (/^EntityClass$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.EntityClass;
-    else if (/CustomAttributeClass/i.test(typeToken))
+    else if (/^CustomAttributeClass$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.CustomAttributeClass;
-    else if (/StructClass/i.test(typeToken))
+    else if (/^StructClass$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.StructClass;
-    else if (/RelationshipClass/i.test(typeToken))
+    else if (/^RelationshipClass$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.RelationshipClass;
-    else if (/AnyClass/i.test(typeToken))
+    else if (/^AnyClass$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.AnyClass;
-    else if (/PrimitiveProperty/i.test(typeToken))
+    else if (/^PrimitiveProperty$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.PrimitiveProperty;
-    else if (/StructProperty/i.test(typeToken))
+    else if (/^StructProperty$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.StructProperty;
-    else if (/ArrayProperty/i.test(typeToken))
+    else if (/^PrimitiveArrayProperty$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.PrimitiveArrayProperty;
-    else if (/StructArrayProperty/i.test(typeToken))
+    else if (/^StructArrayProperty$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.StructArrayProperty;
-    else if (/NavigationProperty/i.test(typeToken))
+    else if (/^NavigationProperty$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.NavigationProperty;
-    else if (/AnyProperty/i.test(typeToken))
+    else if (/^AnyProperty$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.AnyProperty;
-    else if (/SourceRelationshipConstraint/i.test(typeToken))
+    else if (/^SourceRelationshipConstraint$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.SourceRelationshipConstraint;
-    else if (/TargetRelationshipConstraint/i.test(typeToken))
+    else if (/^TargetRelationshipConstraint$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.TargetRelationshipConstraint;
-    else if (/AnyRelationshipConstraint/i.test(typeToken))
+    else if (/^AnyRelationshipConstraint$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.AnyRelationshipConstraint;
-    else if (/Any/i.test(typeToken))
+    else if (/^Any$/i.test(typeToken))
       containerType = CustomAttributeContainerType.Any;
     else
       throw new ECObjectsError(ECObjectsStatus.InvalidContainerType, `${typeToken} is not a valid CustomAttributeContainerType value.`);
@@ -207,52 +228,52 @@ export function containerTypeToString(type: CustomAttributeContainerType): strin
   if (testContainerTypeValue(CustomAttributeContainerType.Any, type))
     return ECStringConstants.CONTAINERTYPE_ANY;
 
-  const setOrAppend = (str: string, val: string) => {
-    if (str.length === 0)
-      str = val;
+  let containerType = "";
+  const setOrAppend = (val: string) => {
+    if (containerType.length === 0)
+      containerType = val;
     else
-      str += "," + val;
+      containerType += "," + val;
   };
 
-  const containerType: string = "";
   if (testContainerTypeValue(CustomAttributeContainerType.Schema, type))
-    setOrAppend(containerType, "Schema");
+    setOrAppend("Schema");
 
   if (testContainerTypeValue(CustomAttributeContainerType.AnyClass, type))
-    setOrAppend(containerType, "AnyClass");
+    setOrAppend("AnyClass");
   else {
     if (testContainerTypeValue(CustomAttributeContainerType.EntityClass, type))
-      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_ENTITYCLASS);
+      setOrAppend(ECStringConstants.CONTAINERTYPE_ENTITYCLASS);
     if (testContainerTypeValue(CustomAttributeContainerType.CustomAttributeClass, type))
-      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_CUSTOMATTRIBUTECLASS);
+      setOrAppend(ECStringConstants.CONTAINERTYPE_CUSTOMATTRIBUTECLASS);
     if (testContainerTypeValue(CustomAttributeContainerType.StructClass, type))
-      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_STRUCTCLASS);
+      setOrAppend(ECStringConstants.CONTAINERTYPE_STRUCTCLASS);
     if (testContainerTypeValue(CustomAttributeContainerType.RelationshipClass, type))
-      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_RELATIONSHIPCLASS);
+      setOrAppend(ECStringConstants.CONTAINERTYPE_RELATIONSHIPCLASS);
   }
 
   if (testContainerTypeValue(CustomAttributeContainerType.AnyProperty, type))
-    setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_ANYPROPERTY);
+    setOrAppend(ECStringConstants.CONTAINERTYPE_ANYPROPERTY);
   else {
     if (testContainerTypeValue(CustomAttributeContainerType.PrimitiveProperty, type))
-      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_PRIMITIVEPROPERTY);
+      setOrAppend(ECStringConstants.CONTAINERTYPE_PRIMITIVEPROPERTY);
     if (testContainerTypeValue(CustomAttributeContainerType.StructProperty, type))
-      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_STRUCTPROPERTY);
+      setOrAppend(ECStringConstants.CONTAINERTYPE_STRUCTPROPERTY);
     if (testContainerTypeValue(CustomAttributeContainerType.PrimitiveArrayProperty, type))
-      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_ARRAYPROPERTY);
+      setOrAppend(ECStringConstants.CONTAINERTYPE_PRIMITIVEARRAYPROPERTY);
     if (testContainerTypeValue(CustomAttributeContainerType.StructArrayProperty, type))
-      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_STRUCTARRAYPROPERTY);
+      setOrAppend(ECStringConstants.CONTAINERTYPE_STRUCTARRAYPROPERTY);
     if (testContainerTypeValue(CustomAttributeContainerType.NavigationProperty, type))
-      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_NAVIGATIONPROPERTY);
+      setOrAppend(ECStringConstants.CONTAINERTYPE_NAVIGATIONPROPERTY);
   }
 
   if (testContainerTypeValue(CustomAttributeContainerType.AnyRelationshipConstraint, type))
-    setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_ANYRELATIONSHIPCONSTRAINT);
+    setOrAppend(ECStringConstants.CONTAINERTYPE_ANYRELATIONSHIPCONSTRAINT);
   else {
     if (testContainerTypeValue(CustomAttributeContainerType.SourceRelationshipConstraint, type))
-      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_SOURCERELATIONSHIPCONSTRAINT);
+      setOrAppend(ECStringConstants.CONTAINERTYPE_SOURCERELATIONSHIPCONSTRAINT);
     if (testContainerTypeValue(CustomAttributeContainerType.TargetRelationshipConstraint, type))
-      setOrAppend(containerType, ECStringConstants.CONTAINERTYPE_TARGETRELATIONSHIPCONSTRAINT);
+      setOrAppend(ECStringConstants.CONTAINERTYPE_TARGETRELATIONSHIPCONSTRAINT);
   }
 
   return containerType;
@@ -319,26 +340,26 @@ export class ECVersion {
   private _minor: number;
 
   constructor(read?: number, write?: number, minor?: number) {
-    if (read || read === 0) this.read = read;
-    if (write || write === 0) this.write = write;
-    if (minor || minor === 0) this.minor = minor;
+    if (undefined !== read) this.read = read;
+    if (undefined !== write) this.write = write;
+    if (undefined !== minor) this.minor = minor;
   }
 
-  get read() { return this._read ? this._read : 0; }
+  get read() { return this._read || 0; }
   set read(read: number) {
     if (read > 99 || read < 0)
       throw new ECObjectsError(ECObjectsStatus.InvalidECVersion);
     this._read = read;
   }
 
-  get write() { return this._write ? this._write : 0; }
+  get write() { return this._write || 0; }
   set write(write: number) {
     if (write > 99 || write < 0)
       throw new ECObjectsError(ECObjectsStatus.InvalidECVersion);
     this._write = write;
   }
 
-  get minor() { return this._minor ? this._minor : 0; }
+  get minor() { return this._minor || 0; }
   set minor(minor: number) {
     if (minor > 99 || minor < 0)
       throw new ECObjectsError(ECObjectsStatus.InvalidECVersion);
@@ -359,15 +380,15 @@ export class ECVersion {
   public fromString(versionString: string): void {
     const [read, write, minor] = versionString.split(".");
     if (!read)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The read version if missing from version string, ${versionString}`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The read version is missing from version string, ${versionString}`);
     this.read = +read;
 
     if (!write)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The write version if missing from version string, ${versionString}`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The write version is missing from version string, ${versionString}`);
     this.write = +write;
 
     if (!minor)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The minor version if missing from version string, ${versionString}`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The minor version is missing from version string, ${versionString}`);
     this.minor = +minor;
   }
 }
@@ -384,7 +405,7 @@ export class ECName {
 
   get name() { return this._name; }
   set name(name: string) {
-    const test: boolean = /^([a-zA-Z_.]+[a-zA-Z0-9_.]*)$/i.test(name);
+    const test: boolean = /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i.test(name);
     if (!test)
       throw new ECObjectsError(ECObjectsStatus.InvalidECName);
     this._name = name;
@@ -397,13 +418,11 @@ export class ECName {
 export class SchemaKey {
   private _name: ECName;
   public version: ECVersion;
-  public checksum: number;
+  // public checksum: number;
   // TODO: need to add a checksum
 
-  constructor(name?: string, readVersion?: number, writeVersion?: number, minorVersion?: number) {
-    if (name)
-      this.name = name;
-
+  constructor(name: string, readVersion?: number, writeVersion?: number, minorVersion?: number) {
+    this.name = name;
     this.version = new ECVersion(readVersion, writeVersion, minorVersion);
   }
 
@@ -445,8 +464,8 @@ export class SchemaKey {
   /*
    * Compares two schema names and returns whether or not they match. Comparison is case-sensitive.
    */
-  public compareByName(rhs: SchemaKey | string): boolean {
-    if (typeof(rhs) === "string")
+  public compareByName(rhs: SchemaKey | string | undefined): boolean {
+    if (undefined === rhs || typeof(rhs) === "string")
       return rhs === this.name;
     return rhs.name === this.name;
   }
@@ -459,8 +478,8 @@ export class SchemaKey {
   public matches(rhs: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Identical): boolean {
     switch (matchType) {
       case SchemaMatchType.Identical:
-        if (this.checksum && rhs.checksum)
-          return this.checksum === rhs.checksum;
+        // TODO: if (this.checksum && rhs.checksum)
+        // TODO:   return this.checksum === rhs.checksum;
         return this.compareByName(rhs.name) && this.readVersion === rhs.readVersion &&
             this.writeVersion === rhs.writeVersion && this.minorVersion === rhs.minorVersion;
       case SchemaMatchType.Exact:
@@ -497,27 +516,17 @@ export class SchemaChildKey {
   public schemaKey: SchemaKey;
   // TODO: Need a checksum
 
-  constructor(name?: string, type?: SchemaChildType, schema?: SchemaKey) {
-    if (name) this.name = name;
-    if (type) this.type = type;
-    if (schema) this.schemaKey = schema;
+  constructor(name: string, type: SchemaChildType | undefined, schema: SchemaKey) {
+    this.name = name;
+    this.schemaKey = schema;
+    if (undefined !== type)
+      this.type = type;
   }
 
   get name() { return this._name.name; }
-  set name(name: string) {
-    this._name = new ECName(name);
-  }
+  set name(name: string) { this._name = new ECName(name); }
 
   get schemaName() { return this.schemaKey.name; }
-
-  /*
-   * Compares two schema names and returns whether or not they match. Comparison is case-sensitive.
-   */
-  public compareByName(rhs: SchemaKey | string): boolean {
-    if (typeof(rhs) === "string")
-      return rhs === this.name;
-    return rhs.name === this.name;
-  }
 
   /**
    * Checks whether this SchemaChildKey matches the one provided.
@@ -528,13 +537,19 @@ export class SchemaChildKey {
     if (rhs.name !== this.name)
       return false;
 
-    if (rhs.type && this.type && rhs.type !== this.type)
+    if (this.type === undefined || rhs.type !== this.type)
       return false;
 
-    if (rhs.schemaKey && this.schemaKey && !rhs.schemaKey.matches(this.schemaKey, SchemaMatchType.Latest))
+    if (!rhs.schemaKey.matches(this.schemaKey, SchemaMatchType.Latest))
       return false;
 
     return true;
+  }
+
+  public matchesFullName(rhs: string): boolean {
+    const schemaVersion = this.schemaKey.version.toString().replace(/\./g, "\\.");
+    const fullNameRegex = new RegExp(`^${this.schemaName}(\\.${schemaVersion})?[.:]${this.name}$`, "i");
+    return fullNameRegex.test(rhs);
   }
 }
 

@@ -56,21 +56,128 @@ describe("KindOfQuantity", () => {
 
       assert.isTrue(testKoQ.presentationUnits[0] === testKoQ.defaultPresentationUnit);
     });
+  });
 
-    it("should throw when precision is not a number", async () => {
-      const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
-        name: "TestSchema",
-        version: "1.2.3",
-        children: {
-          invalidKoQ: {
-            schemaChildType: "KindOfQuantity",
-            precision: "5",
-          },
-        },
+  describe("fromJson", () => {
+    let testKoQ: KindOfQuantity;
+    const baseJson = { schemaChildType: "KindOfQuantity" };
+
+    beforeEach(() => {
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      testKoQ = new KindOfQuantity(schema, "TestKindOfQuantity");
+    });
+
+    it("should successfully deserialize valid JSON", async () => {
+      const koqJson = {
+        ...baseJson,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        precision: 1.234,
+        persistenceUnit: { unit: "in", format: "DEFAULTREAL" },
+        presentationUnits: [
+          { unit: "cm" },
+          { unit: "in", format: "anotherFormat" },
+        ],
       };
+      await testKoQ.fromJson(koqJson);
 
-      await expect(Schema.fromJson(testSchema)).to.be.rejectedWith(ECObjectsError);
+      expect(testKoQ.name).to.eql("TestKindOfQuantity");
+      expect(testKoQ.label).to.eql("SomeDisplayLabel");
+      expect(testKoQ.description).to.eql("A really long description...");
+      expect(testKoQ.precision).to.eql(1.234);
+      expect(testKoQ.presentationUnits).to.exist;
+      expect(testKoQ.presentationUnits.length).to.eql(2);
+      expect(testKoQ.defaultPresentationUnit).to.eql({ unit: "cm" });
+      expect(testKoQ.presentationUnits[0]).to.eql({ unit: "cm" });
+      expect(testKoQ.presentationUnits[1]).to.eql({ unit: "in", format: "anotherFormat" });
+      expect(testKoQ.persistenceUnit).to.eql({ unit: "in", format: "DEFAULTREAL" });
+    });
+
+    it("should successfully deserialize valid JSON (without units)", async () => {
+      const koqJson = {
+        ...baseJson,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        precision: 1.234,
+      };
+      await testKoQ.fromJson(koqJson);
+
+      expect(testKoQ.name).to.eql("TestKindOfQuantity");
+      expect(testKoQ.label).to.eql("SomeDisplayLabel");
+      expect(testKoQ.description).to.eql("A really long description...");
+      expect(testKoQ.precision).to.eql(1.234);
+      expect(testKoQ.presentationUnits).to.exist;
+      expect(testKoQ.presentationUnits.length).to.eql(0);
+      expect(testKoQ.defaultPresentationUnit).to.not.exist;
+      expect(testKoQ.persistenceUnit).to.not.exist;
+    });
+    async function testInvalidAttribute(attributeName: string, expectedType: string, value: any) {
+      expect(testKoQ).to.exist;
+      const json: any = {
+        ...baseJson,
+        [attributeName]: value,
+      };
+      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
+    }
+
+    it("should throw for invalid precision", async () => testInvalidAttribute("precision", "number", false));
+    it("should throw for presentationUnits not an array", async () => testInvalidAttribute("presentationUnits", "object[]", 0));
+    it("should throw for presentationUnits not an array of objects", async () => testInvalidAttribute("presentationUnits", "object[]", [0]));
+
+    it("should throw for presentationUnit with missing unit", async () => {
+      expect(testKoQ).to.exist;
+      const json: any = {
+        ...baseJson,
+        presentationUnits: [{}],
+      };
+      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit that is missing the required attribute 'unit'.`);
+    });
+
+    it("should throw for presentationUnit with invalid unit", async () => {
+      expect(testKoQ).to.exist;
+      const json: any = {
+        ...baseJson,
+        presentationUnits: [{ unit: 0 }],
+      };
+      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit with an invalid 'unit' attribute. It should be of type 'string'.`);
+    });
+
+    it("should throw for presentationUnit with invalid format", async () => {
+      expect(testKoQ).to.exist;
+      const json: any = {
+        ...baseJson,
+        presentationUnits: [{ unit: "valid", format: false }],
+      };
+      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit with an invalid 'format' attribute. It should be of type 'string'.`);
+    });
+
+    it("should throw for persistenceUnit not an object", async () => testInvalidAttribute("persistenceUnit", "object", 0));
+
+    it("should throw for persistenceUnit with missing unit", async () => {
+      expect(testKoQ).to.exist;
+      const json: any = {
+        ...baseJson,
+        persistenceUnit: {},
+      };
+      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit that is missing the required attribute 'unit'.`);
+    });
+
+    it("should throw for persistenceUnit with invalid unit", async () => {
+      expect(testKoQ).to.exist;
+      const json: any = {
+        ...baseJson,
+        persistenceUnit: { unit: 0 },
+      };
+      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit with an invalid 'unit' attribute. It should be of type 'string'.`);
+    });
+
+    it("should throw for persistenceUnit with invalid format", async () => {
+      expect(testKoQ).to.exist;
+      const json: any = {
+        ...baseJson,
+        persistenceUnit: { unit: "valid", format: false },
+      };
+      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit with an invalid 'format' attribute. It should be of type 'string'.`);
     });
   });
 });

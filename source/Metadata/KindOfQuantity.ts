@@ -29,8 +29,8 @@ export default class KindOfQuantity extends SchemaChild {
   get persistenceUnit() { return this._persistenceUnit; }
 
   constructor(schema: Schema, name: string) {
-    super(schema, name);
-    this.key.type = SchemaChildType.KindOfQuantity;
+    super(schema, name, SchemaChildType.KindOfQuantity);
+    this._presentationUnits = [];
   }
 
   public get defaultPresentationUnit() {
@@ -40,17 +40,43 @@ export default class KindOfQuantity extends SchemaChild {
   public async fromJson(jsonObj: any) {
     await super.fromJson(jsonObj);
 
-    if (jsonObj.precision) {
+    if (undefined !== jsonObj.precision) {
       if (typeof(jsonObj.precision) !== "number")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'precision' attribute. It should be of type 'number'.`);
       this._precision = jsonObj.precision;
     }
 
-    if (jsonObj.presentationUnits)
-      this._presentationUnits = jsonObj.presentationUnits as FormatUnitSpec[];
+    const validateFUS = (presUnit: any, kind: string) => {
+      if (undefined === presUnit.unit)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has a ${kind} that is missing the required attribute 'unit'.`);
+      if (typeof(presUnit.unit) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has a ${kind} with an invalid 'unit' attribute. It should be of type 'string'.`);
 
-    if (jsonObj.persistenceUnit)
+      if (undefined !== presUnit.format) {
+        if (typeof(presUnit.format) !== "string")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has a ${kind} with an invalid 'format' attribute. It should be of type 'string'.`);
+      }
+    };
+
+    if (undefined !== jsonObj.presentationUnits) {
+      if (!Array.isArray(jsonObj.presentationUnits))
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'presentationUnits' attribute. It should be of type 'object[]'.`);
+
+      for (const presUnit of jsonObj.presentationUnits) {
+        if (typeof(presUnit) !== "object")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'presentationUnits' attribute. It should be of type 'object[]'.`);
+        validateFUS(presUnit, "presentationUnit");
+      }
+      this._presentationUnits = jsonObj.presentationUnits as FormatUnitSpec[];
+    }
+
+    if (undefined !== jsonObj.persistenceUnit) {
+      if (typeof(jsonObj.persistenceUnit) !== "object")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'persistenceUnit' attribute. It should be of type 'object'.`);
+
+      validateFUS(jsonObj.persistenceUnit, "persistenceUnit");
       this._persistenceUnit = jsonObj.persistenceUnit as FormatUnitSpec;
+    }
   }
 
   public async accept(visitor: SchemaChildVisitor) {

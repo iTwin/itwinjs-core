@@ -4,7 +4,7 @@
 
 import ECClass, { StructClass } from "./Class";
 import CustomAttributeClass from "./CustomAttributeClass";
-import MixinClass from "./MixinClass";
+import Mixin from "./Mixin";
 import EntityClass from "./EntityClass";
 import RelationshipClass from "./RelationshipClass";
 import SchemaChild from "./SchemaChild";
@@ -12,7 +12,7 @@ import Enumeration from "./Enumeration";
 import KindOfQuantity from "./KindOfQuantity";
 import PropertyCategory from "./PropertyCategory";
 import SchemaReadHelper from "../Deserialization/Helper";
-import { ECVersion, SchemaChildKey, SchemaKey, ECClassModifier, PrimitiveType } from "../ECObjects";
+import { SchemaChildKey, SchemaKey, ECClassModifier, PrimitiveType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { SchemaContext } from "../Context";
@@ -24,19 +24,45 @@ const SCHEMAURL3_1 = "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecsche
  */
 export default class Schema implements CustomAttributeContainerProps {
   private _context?: SchemaContext;
-  public readonly schemaKey: SchemaKey;
-  protected _alias?: string;
+  private _schemaKey?: SchemaKey;
+  protected _alias: string;
   protected _label?: string;
   protected _description?: string;
   protected _customAttributes?: CustomAttributeSet;
   public readonly references: Schema[];
   private readonly _children: SchemaChild[];
-
-  constructor(name?: string, readVersion?: number, writeVersion?: number, minorVersion?: number, context?: SchemaContext) {
-    this.schemaKey = new SchemaKey(name, readVersion, writeVersion, minorVersion);
+  /**
+   * Constructs an empty Schema with the given name and version, (optionally) in a given context.
+   * @param name The schema's name
+   * @param readVersion The integer read (major) version of the schema
+   * @param writeVersion The integer write version of the schema
+   * @param minorVersion The integer minor version of the schema
+   * @param context The SchemaContext that will control the lifetime of the schema
+   */
+  constructor(name: string, readVersion: number, writeVersion: number, minorVersion: number, context?: SchemaContext);
+  /**
+   * Constructs an empty Schema with the given key, (optionally) in a given context.
+   * @param key A SchemaKey that uniquely identifies the schema
+   * @param context The SchemaContext that will control the lifetime of the schema.
+   */
+  constructor(key: SchemaKey, context?: SchemaContext);  // tslint:disable-line:unified-signatures
+  /**
+   * Constructs an empty Schema (without a SchemaKey).
+   * This should only be used when the schema name and version will be deserialized (via `fromJson()`) immediately after this Schema is instantiated.
+   * @internal
+   */
+  constructor();
+  constructor(nameOrKey?: SchemaKey | string, readVerOrCtx?: SchemaContext | number, writeVer?: number, minorVer?: number, otherCtx?: SchemaContext) {
+    this._schemaKey = (typeof(nameOrKey) === "string") ? new SchemaKey(nameOrKey, readVerOrCtx as number, writeVer, minorVer) : nameOrKey;
+    this._context = (typeof(readVerOrCtx) === "number") ? otherCtx : readVerOrCtx;
     this.references = [];
     this._children = [];
-    this._context = context;
+  }
+
+  get schemaKey() {
+    if (undefined === this._schemaKey)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECSchema is missing the required 'name' attribute.`);
+    return this._schemaKey;
   }
 
   get name() { return this.schemaKey.name; }
@@ -67,16 +93,11 @@ export default class Schema implements CustomAttributeContainerProps {
   }
 
   /**
-   * Creates a MixinClass with the provided name in this schema.
+   * Creates a Mixin with the provided name in this schema.
    * @param name
    */
-  public async createMixinClass(name: string): Promise<MixinClass> {
-    return this.createClass<MixinClass>(MixinClass, name, ECClassModifier.Abstract);
-  }
-
-  public createMixinClassSync(name: string): MixinClass {
-    return this.createClass<MixinClass>(MixinClass, name, ECClassModifier.Abstract);
-  }
+  public async createMixinClass(name: string): Promise<Mixin> { return this.createClass<Mixin>(Mixin, name); }
+  public createMixinClassSync(name: string): Mixin { return this.createClass<Mixin>(Mixin, name); }
 
   /**
    * Creates a StructClass with the provided name in this schema.
@@ -121,12 +142,12 @@ export default class Schema implements CustomAttributeContainerProps {
    * Creates an Enumeration with the provided name in this schema.
    * @param name
    */
-  public async createEnumeration(name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String, isStrict?: boolean): Promise<Enumeration> {
-    return this.createEnumerationSync(name, primitiveType, isStrict);
+  public async createEnumeration(name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String): Promise<Enumeration> {
+    return this.createEnumerationSync(name, primitiveType);
   }
 
-  public createEnumerationSync(name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String, isStrict?: boolean): Enumeration {
-    const child = new Enumeration(this, name, primitiveType, isStrict);
+  public createEnumerationSync(name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String): Enumeration {
+    const child = new Enumeration(this, name, primitiveType);
     this.addChild(child);
     return child;
   }
@@ -309,7 +330,7 @@ export default class Schema implements CustomAttributeContainerProps {
     if (this.references.length === 0)
       return undefined;
 
-    return this.references.find((ref) => ref.schemaKey.name.toLowerCase() === refSchemaName.toLowerCase()) as T;
+    return this.references.find((ref) => ref.name.toLowerCase() === refSchemaName.toLowerCase()) as T;
   }
 
   public getReferenceSync<T extends Schema>(refSchemaName: string): T | undefined {
@@ -322,18 +343,59 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param jsonObj
    */
   public async fromJson(jsonObj: any): Promise<void> {
-    if (!jsonObj.$schema || jsonObj.$schema !== SCHEMAURL3_1)
+    if (SCHEMAURL3_1 !== jsonObj.$schema)
       throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl);
 
-    if (jsonObj.name) this.schemaKey.name = jsonObj.name;
-    if (jsonObj.alias) this._alias = jsonObj.alias;
-    if (jsonObj.description) this._description = jsonObj.description;
-    if (jsonObj.label) this._label = jsonObj.label;
+    if (!this._schemaKey) {
+      if (undefined === jsonObj.name)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECSchema is missing the required 'name' attribute.`);
 
-    if (jsonObj.version) {
-      if (!this.schemaKey.version)
-        this.schemaKey.version = new ECVersion();
+      if (typeof(jsonObj.name) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECSchema has an invalid 'name' attribute. It should be of type 'string'.`);
+
+      this._schemaKey = new SchemaKey(jsonObj.name);
+
+      if (undefined === jsonObj.version)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} is missing the required 'version' attribute.`);
+
+      if (typeof(jsonObj.version) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'version' attribute. It should be of type 'string'.`);
+
       this.schemaKey.version.fromString(jsonObj.version);
+    } else {
+      if (undefined !== jsonObj.name) {
+        if (typeof(jsonObj.name) !== "string")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'name' attribute. It should be of type 'string'.`);
+
+        if (jsonObj.name.toLowerCase() !== this.name.toLowerCase())
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+      }
+
+      if (undefined !== jsonObj.version) {
+        if (typeof(jsonObj.version) !== "string")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'version' attribute. It should be of type 'string'.`);
+
+        if (jsonObj.version !== this.schemaKey.version.toString())
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+      }
+    }
+
+    if (undefined !== jsonObj.alias) {
+      if (typeof(jsonObj.alias) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'alias' attribute. It should be of type 'string'.`);
+      this._alias = jsonObj.alias;
+    }
+
+    if (undefined !== jsonObj.label) {
+      if (typeof(jsonObj.label) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'label' attribute. It should be of type 'string'.`);
+      this._label = jsonObj.label;
+    }
+
+    if (undefined !== jsonObj.description) {
+      if (typeof(jsonObj.description) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'description' attribute. It should be of type 'string'.`);
+      this._description = jsonObj.description;
     }
   }
 
