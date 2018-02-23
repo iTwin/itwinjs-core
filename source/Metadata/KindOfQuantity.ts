@@ -8,7 +8,7 @@ import { SchemaChildType } from "../ECObjects";
 import { SchemaChildVisitor } from "../Interfaces";
 import Schema from "./Schema";
 
-export class FormatUnitSpec {
+export class FormatUnitSet {
   public unit: string;
   public format: string;
 }
@@ -19,8 +19,8 @@ export class FormatUnitSpec {
 export default class KindOfQuantity extends SchemaChild {
   public readonly type: SchemaChildType.KindOfQuantity;
   protected _precision: number;
-  protected _presentationUnits: FormatUnitSpec[];
-  protected _persistenceUnit: FormatUnitSpec;
+  protected _presentationUnits: FormatUnitSet[];
+  protected _persistenceUnit: FormatUnitSet;
 
   get precision() { return this._precision; }
 
@@ -67,7 +67,7 @@ export default class KindOfQuantity extends SchemaChild {
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'presentationUnits' attribute. It should be of type 'object[]'.`);
         validateFUS(presUnit, "presentationUnit");
       }
-      this._presentationUnits = jsonObj.presentationUnits as FormatUnitSpec[];
+      this._presentationUnits = jsonObj.presentationUnits as FormatUnitSet[];
     }
 
     if (undefined !== jsonObj.persistenceUnit) {
@@ -75,7 +75,7 @@ export default class KindOfQuantity extends SchemaChild {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'persistenceUnit' attribute. It should be of type 'object'.`);
 
       validateFUS(jsonObj.persistenceUnit, "persistenceUnit");
-      this._persistenceUnit = jsonObj.persistenceUnit as FormatUnitSpec;
+      this._persistenceUnit = jsonObj.persistenceUnit as FormatUnitSet;
     }
   }
 

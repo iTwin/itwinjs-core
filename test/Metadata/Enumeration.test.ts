@@ -7,6 +7,7 @@ import Schema from "../../source/Metadata/Schema";
 import Enumeration from "../../source/Metadata/Enumeration";
 import { ECObjectsError } from "../../source/Exception";
 import { PrimitiveType } from "../../source/ECObjects";
+import * as sinon from "sinon";
 
 describe("Enumeration", () => {
   describe("deserialization", () => {
@@ -245,6 +246,28 @@ describe("Enumeration", () => {
         { value: 0, label: 0 },
       ]};
       await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator with an invalid 'label' attribute. It should be of type 'string'.`);
+    });
+  });
+
+  describe("accept", () => {
+    let testEnum: Enumeration;
+
+    beforeEach(() => {
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      testEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.Integer);
+    });
+
+    it("should call visitEnumeration on a SchemaChildVisitor object", async () => {
+      expect(testEnum).to.exist;
+      const mockVisitor = { visitEnumeration: sinon.spy() };
+      await testEnum.accept(mockVisitor);
+      expect(mockVisitor.visitEnumeration.calledOnce).to.be.true;
+      expect(mockVisitor.visitEnumeration.calledWithExactly(testEnum)).to.be.true;
+    });
+
+    it("should safely handle a SchemaChildVisitor without visitEnumeration defined", async () => {
+      expect(testEnum).to.exist;
+      await testEnum.accept({});
     });
   });
 });

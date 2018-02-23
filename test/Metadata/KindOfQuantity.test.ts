@@ -6,6 +6,7 @@ import { assert, expect } from "chai";
 import Schema from "../../source/Metadata/Schema";
 import { ECObjectsError } from "../../source/Exception";
 import KindOfQuantity from "../../source/Metadata/KindOfQuantity";
+import * as sinon from "sinon";
 
 describe("KindOfQuantity", () => {
   describe("deserialization", () => {
@@ -178,6 +179,28 @@ describe("KindOfQuantity", () => {
         persistenceUnit: { unit: "valid", format: false },
       };
       await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit with an invalid 'format' attribute. It should be of type 'string'.`);
+    });
+  });
+
+  describe("accept", () => {
+    let testKoq: KindOfQuantity;
+
+    beforeEach(() => {
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      testKoq = new KindOfQuantity(schema, "TestKindOfQuantity");
+    });
+
+    it("should call visitKindOfQuantity on a SchemaChildVisitor object", async () => {
+      expect(testKoq).to.exist;
+      const mockVisitor = { visitKindOfQuantity: sinon.spy() };
+      await testKoq.accept(mockVisitor);
+      expect(mockVisitor.visitKindOfQuantity.calledOnce).to.be.true;
+      expect(mockVisitor.visitKindOfQuantity.calledWithExactly(testKoq)).to.be.true;
+    });
+
+    it("should safely handle a SchemaChildVisitor without visitKindOfQuantity defined", async () => {
+      expect(testKoq).to.exist;
+      await testKoq.accept({});
     });
   });
 });

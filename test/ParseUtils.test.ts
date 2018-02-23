@@ -117,29 +117,6 @@ describe("Parsing/ToString Functions", () => {
     expect(parseStrengthDirection("BACKWARD")).to.equal(RelatedInstanceDirection.Backward);
     expect(() => parseStrengthDirection("invalid")).to.throw(ECObjectsError, "invalid is not a valid StrengthDirection.");
   });
-});
-
-describe("ECObjectsError ", () => {
-  it("toDebugString", () => {
-    expect(new ECObjectsError(ECObjectsStatus.DuplicateChild).toDebugString()).to.equal("ECObjectsStatus.DuplicateChild");
-    expect(new ECObjectsError(ECObjectsStatus.DuplicateProperty, "msg").toDebugString()).to.equal("ECObjectsStatus.DuplicateProperty: msg");
-    expect(new ECObjectsError(ECObjectsStatus.DuplicateSchema, "msg").toDebugString()).to.equal("ECObjectsStatus.DuplicateSchema: msg");
-    expect(new ECObjectsError(ECObjectsStatus.ImmutableSchema, "msg").toDebugString()).to.equal("ECObjectsStatus.ImmutableSchema: msg");
-    expect(new ECObjectsError(ECObjectsStatus.InvalidContainerType, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidContainerType: msg");
-    expect(new ECObjectsError(ECObjectsStatus.InvalidECJson, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidECJson: msg");
-    expect(new ECObjectsError(ECObjectsStatus.InvalidECName, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidECName: msg");
-    expect(new ECObjectsError(ECObjectsStatus.InvalidECVersion, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidECVersion: msg");
-    expect(new ECObjectsError(ECObjectsStatus.InvalidEnumValue, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidEnumValue: msg");
-    expect(new ECObjectsError(ECObjectsStatus.InvalidModifier, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidModifier: msg");
-    expect(new ECObjectsError(ECObjectsStatus.InvalidMultiplicity, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidMultiplicity: msg");
-    expect(new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidPrimitiveType: msg");
-    expect(new ECObjectsError(ECObjectsStatus.InvalidStrength, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidStrength: msg");
-    expect(new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidStrengthDirection: msg");
-    expect(new ECObjectsError(ECObjectsStatus.InvalidType, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidType: msg");
-    expect(new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, "msg").toDebugString()).to.equal("ECObjectsStatus.MissingSchemaUrl: msg");
-    expect(new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, "msg").toDebugString()).to.equal("ECObjectsStatus.UnableToLocateSchema: msg");
-    expect(() => new ECObjectsError(-9999).toDebugString()).to.throw(Error);
-  });
 
   it("tryParseSchemaChildType", () => {
     expect(tryParseSchemaChildType("eNtItyCLaSs")).to.equal(SchemaChildType.EntityClass);
@@ -162,5 +139,28 @@ describe("ECObjectsError ", () => {
     expect(schemaChildTypeToString(SchemaChildType.Enumeration)).to.equal("Enumeration");
     expect(schemaChildTypeToString(SchemaChildType.KindOfQuantity)).to.equal("KindOfQuantity");
     expect(schemaChildTypeToString(SchemaChildType.PropertyCategory)).to.equal("PropertyCategory");
+  });
+});
+
+describe("ECObjectsError ", () => {
+  it("toDebugString", () => {
+    expect(new ECObjectsError(ECObjectsStatus.DuplicateChild).toDebugString()).to.equal("ECObjectsStatus.DuplicateChild");
+    expect(new ECObjectsError(ECObjectsStatus.DuplicateProperty, "msg").toDebugString()).to.equal("ECObjectsStatus.DuplicateProperty: msg");
+    expect(new ECObjectsError(ECObjectsStatus.DuplicateSchema, "msg").toDebugString()).to.equal("ECObjectsStatus.DuplicateSchema: msg");
+    expect(new ECObjectsError(ECObjectsStatus.ImmutableSchema, "msg").toDebugString()).to.equal("ECObjectsStatus.ImmutableSchema: msg");
+    expect(new ECObjectsError(ECObjectsStatus.InvalidContainerType, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidContainerType: msg");
+    expect(new ECObjectsError(ECObjectsStatus.InvalidECJson, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidECJson: msg");
+    expect(new ECObjectsError(ECObjectsStatus.InvalidECName, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidECName: msg");
+    expect(new ECObjectsError(ECObjectsStatus.InvalidECVersion, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidECVersion: msg");
+    expect(new ECObjectsError(ECObjectsStatus.InvalidEnumValue, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidEnumValue: msg");
+    expect(new ECObjectsError(ECObjectsStatus.InvalidModifier, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidModifier: msg");
+    expect(new ECObjectsError(ECObjectsStatus.InvalidMultiplicity, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidMultiplicity: msg");
+    expect(new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidPrimitiveType: msg");
+    expect(new ECObjectsError(ECObjectsStatus.InvalidStrength, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidStrength: msg");
+    expect(new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidStrengthDirection: msg");
+    expect(new ECObjectsError(ECObjectsStatus.InvalidType, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidType: msg");
+    expect(new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, "msg").toDebugString()).to.equal("ECObjectsStatus.MissingSchemaUrl: msg");
+    expect(new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, "msg").toDebugString()).to.equal("ECObjectsStatus.UnableToLocateSchema: msg");
+    expect(() => new ECObjectsError(-9999).toDebugString()).to.throw(Error);
   });
 });

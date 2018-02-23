@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaContext } from "../Context";
-import { ECVersion, SchemaKey, relationshipEndToString, SchemaChildKey, SchemaChildType, tryParsePrimitiveType, tryParseSchemaChildType } from "../ECObjects";
+import { SchemaKey, relationshipEndToString, SchemaChildKey, SchemaChildType, tryParsePrimitiveType, tryParseSchemaChildType } from "../ECObjects";
 import SchemaChild from "../Metadata/SchemaChild";
 import Schema from "../Metadata/Schema";
 import EntityClass from "../Metadata/EntityClass";
@@ -65,14 +65,17 @@ export default class SchemaReadHelper {
 
     // Load schema references first
     // Need to figure out if other schemas are present.
-    if (this._itemToRead.references)
+    if (undefined !== this._itemToRead.references)
       await this.loadSchemaReferences(this._itemToRead.references);
 
     if (this._visitor && this._visitor.visitEmptySchema)
       await this._visitor.visitEmptySchema(schema);
 
     // Load all schema children
-    if (this._itemToRead.children) {
+    if (undefined !== this._itemToRead.children) {
+      if (typeof(this._itemToRead.children) !== "object" || Array.isArray(this._itemToRead.children))
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema.schemaKey.name} has an invalid 'children' property. It should be of type 'object'.`);
+
       for (const childName in this._itemToRead.children) {
         // Make sure the child has not already been read. No need to check the SchemaContext because all SchemaChildren are added to a Schema,
         // which would be found when adding to the context.
@@ -103,22 +106,26 @@ export default class SchemaReadHelper {
    */
   private async loadSchemaReferences(referencesJson: any) {
     if (!Array.isArray(referencesJson))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema.schemaKey.name} has an invalid 'references' property. It should be of type 'array'.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema.schemaKey.name} has an invalid 'references' property. It should be of type 'object[]'.`);
 
     const promises = referencesJson.map(async (ref) => {
-      if (!ref.name)
+      if (typeof(ref) !== "object")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema.schemaKey.name} has an invalid 'references' property. It should be of type 'object[]'.`);
+
+      if (undefined === ref.name)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema.schemaKey.name} has an invalid 'references' property. One of the references is missing the required 'name' property.`);
 
-      if (!ref.version)
+      if (typeof(ref.name) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema.schemaKey.name} has an invalid 'references' property. One of the references has an invalid 'name' property. It should be of type 'string'.`);
+
+      if (undefined === ref.version)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema.schemaKey.name} has an invalid 'references' property. One of the references is missing the required 'version' property.`);
 
-      const refVersion = new ECVersion();
-      refVersion.fromString(ref.version);
+      if (typeof(ref.version) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema.schemaKey.name} has an invalid 'references' property. One of the references has an invalid 'version' property. It should be of type 'string'.`);
 
       const schemaKey = new SchemaKey(ref.name);
-      schemaKey.readVersion = refVersion.read;
-      schemaKey.writeVersion = refVersion.write;
-      schemaKey.minorVersion = refVersion.minor;
+      schemaKey.version.fromString(ref.version);
 
       const refSchema = await this._context.getSchema(schemaKey);
       if (!refSchema)
@@ -137,9 +144,9 @@ export default class SchemaReadHelper {
    * @param name The name of the SchemaChild, only needed if the SchemaChild is being loaded outside the context of a Schema.
    */
   private async loadSchemaChild(schema: Schema, schemaChildJson: any, name?: string) {
-    const childName = (schemaChildJson.name) ? schemaChildJson.name : name;
+    const childName = (undefined === name) ? schemaChildJson.name : name;
     if (!childName)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `A SchemaChild in ${this._schema.schemaKey.name} has an invalid name.`);
 
     if (undefined === schemaChildJson.schemaChildType)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaChild ${childName} is missing the required schemaChildType property.`);
@@ -239,19 +246,19 @@ export default class SchemaReadHelper {
    */
   private async loadClass(classObj: AnyClass, classJson: any): Promise<void> {
     // Load base class first
-    if (classJson.baseClass) {
+    if (undefined !== classJson.baseClass) {
       if (typeof(classJson.baseClass) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${classObj.name} has an invalid 'baseClass' attribute. It should be of type 'string'.`);
       await this.findSchemaChild(classJson.baseClass);
     }
 
-    if (classJson.properties) {
+    if (undefined !== classJson.properties) {
       if (!Array.isArray(classJson.properties))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${classObj.name} has an invalid 'properties' attribute. It should be of type 'object[]'.`);
 
       for (const property of classJson.properties) {
         if (typeof(property) !== "object")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${classObj.name} has an invalid 'properties' attribute. It should be of type 'object[]'.`);
 
         await this.loadPropertyTypes(classObj, property);
       }
@@ -262,13 +269,14 @@ export default class SchemaReadHelper {
 
   private async loadEntityClass(entity: EntityClass, entityJson: any): Promise<void> {
     // Load Mixin classes first
-    if (entityJson.mixin) {
-      if (typeof(entityJson.mixin) === "string") {
-        await this.findSchemaChild(entityJson.mixin);
-      } else if (Array.isArray(entityJson.mixin)) {
-        for (const mixinName of entityJson.mixin) {
-          await this.findSchemaChild(mixinName);
-        }
+    if (undefined !== entityJson.mixins) {
+      if (!Array.isArray(entityJson.mixins))
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${entity.name} has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
+
+      for (const mixinName of entityJson.mixins) {
+        if (typeof(mixinName) !== "string")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${entity.name} has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
+        await this.findSchemaChild(mixinName);
       }
     }
 
@@ -276,7 +284,7 @@ export default class SchemaReadHelper {
   }
 
   private async loadMixin(mixin: Mixin, mixinJson: any): Promise<void> {
-    if (mixinJson.appliesTo) {
+    if (undefined !== mixinJson.appliesTo) {
       if (typeof(mixinJson.appliesTo) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Mixin ${mixin.name} has an invalid 'appliesTo' property. It should be of type 'string'.`);
       await this.findSchemaChild(mixinJson.appliesTo);
@@ -286,13 +294,19 @@ export default class SchemaReadHelper {
   }
 
   private async loadRelationshipClass(rel: RelationshipClass, relJson: any): Promise<void> {
-    if (!relJson.source)
+    if (undefined === relJson.source)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${rel.name} is missing the required source constraint.`);
+
+    if (typeof(relJson.source) !== "object")
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${rel.name} has an invalid source constraint. It should be of type 'object'.`);
 
     await this.loadRelationshipConstraint(rel.source, relJson.source);
 
-    if (!relJson.target)
+    if (undefined === relJson.target)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${rel.name} is missing the required target constraint.`);
+
+    if (typeof(relJson.target) !== "object")
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${rel.name} has an invalid target constraint. It should be of type 'object'.`);
 
     await this.loadRelationshipConstraint(rel.target, relJson.target);
 
@@ -300,14 +314,14 @@ export default class SchemaReadHelper {
   }
 
   private async loadRelationshipConstraint(relConstraint: RelationshipConstraint, relConstraintJson: any): Promise<void> {
-    if (relConstraintJson.abstractConstraint) {
+    if (undefined !== relConstraintJson.abstractConstraint) {
       if (typeof(relConstraintJson.abstractConstraint) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${relationshipEndToString(relConstraint.relationshipEnd)} Constraint of ${relConstraint.relationshipClass!.name} has an invalid 'abstractConstraint' property. It should be of type 'string'.`);
 
       await this.findSchemaChild(relConstraintJson.abstractConstraint);
     }
 
-    if (relConstraintJson.constraintClasses) {
+    if (undefined !== relConstraintJson.constraintClasses) {
       if (!Array.isArray(relConstraintJson.constraintClasses))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${relationshipEndToString(relConstraint.relationshipEnd)} Constraint of ${relConstraint.relationshipClass!.name} has an invalid 'constraintClasses' property. It should be of type 'array'.`);
 
@@ -325,32 +339,33 @@ export default class SchemaReadHelper {
    * @param propertyJson
    */
   private async loadPropertyTypes(classObj: AnyClass, propertyJson: any): Promise<void> {
-    if (!propertyJson.name)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson,  `An ECProperty in ${classObj.key.schemaName}.${classObj.name} is missing the required 'name' property.`);
+    if (undefined === propertyJson.name)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECProperty in ${classObj.key.schemaName}.${classObj.name} is missing the required 'name' property.`);
     if (typeof(propertyJson.name) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson,  `An ECProperty in ${classObj.key.schemaName}.${classObj.name} has an invalid 'name' property. It should be of type 'string'.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECProperty in ${classObj.key.schemaName}.${classObj.name} has an invalid 'name' property. It should be of type 'string'.`);
 
     const propName = propertyJson.name;
 
-    if (!propertyJson.propertyType)
+    if (undefined === propertyJson.propertyType)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${classObj.key.schemaName}.${classObj.name}.${propName} is missing the required 'propertyType' property.`);
     if (typeof(propertyJson.propertyType) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${classObj.key.schemaName}.${classObj.name}.${propName} has an invalid 'propertyType' property. It should be of type 'string'.`);
 
     const loadTypeName = async () => {
-      if (propertyJson.typeName) {
-        if (typeof(propertyJson.typeName) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${classObj.name}.${propName} has an invalid 'typeName' property. It should be of type 'string'.`);
+      if (undefined === propertyJson.typeName)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${classObj.key.schemaName}.${classObj.name}.${propName} is missing the required 'typeName' property.`);
 
-        if (undefined === tryParsePrimitiveType(propertyJson.typeName))
-          await this.findSchemaChild(propertyJson.typeName);
-      }
+      if (typeof(propertyJson.typeName) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${classObj.key.schemaName}.${classObj.name}.${propName} has an invalid 'typeName' property. It should be of type 'string'.`);
+
+      if (undefined === tryParsePrimitiveType(propertyJson.typeName))
+        await this.findSchemaChild(propertyJson.typeName);
     };
 
     switch (propertyJson.propertyType) {
       case "PrimitiveProperty":
         await loadTypeName();
-        const primProp = await classObj.createPrimitiveProperty(propName);
+        const primProp = await classObj.createPrimitiveProperty(propName, propertyJson.typeName);
         return this.loadProperty(primProp, propertyJson);
 
       case "StructProperty":
@@ -360,7 +375,7 @@ export default class SchemaReadHelper {
 
       case "PrimitiveArrayProperty":
         await loadTypeName();
-        const primArrProp = await classObj.createPrimitiveArrayProperty(propName);
+        const primArrProp = await classObj.createPrimitiveArrayProperty(propName, propertyJson.typeName);
         return this.loadProperty(primArrProp, propertyJson);
 
       case "StructArrayProperty":
@@ -370,17 +385,15 @@ export default class SchemaReadHelper {
 
       case "NavigationProperty":
         if (classObj.type !== SchemaChildType.EntityClass && classObj.type !== SchemaChildType.RelationshipClass)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson);
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${classObj.name}.${propName} is invalid, because only EntityClasses and RelationshipClasses can have NavigationProperties.`);
 
-        if (!propertyJson.relationshipName)
+        if (undefined === propertyJson.relationshipName)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${classObj.name}.${propName} is missing the required 'relationshipName' property.`);
 
-        if (propertyJson.relationshipName) {
-          if (typeof(propertyJson.relationshipName) !== "string")
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${classObj.name}.${propName} has an invalid 'relationshipClass' property. It should be of type 'string'.`);
+        if (typeof(propertyJson.relationshipName) !== "string")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${classObj.name}.${propName} has an invalid 'relationshipName' property. It should be of type 'string'.`);
 
-          await this.findSchemaChild(propertyJson.relationshipName);
-        }
+        await this.findSchemaChild(propertyJson.relationshipName);
 
         const navProp = await classObj.createNavigationProperty(propName, propertyJson.relationshipName);
         return this.loadProperty(navProp, propertyJson);
@@ -388,14 +401,14 @@ export default class SchemaReadHelper {
   }
 
   private async loadProperty<T extends Property>(prop: T, propertyJson: any): Promise<void> {
-    if (propertyJson.category) {
+    if (undefined !== propertyJson.category) {
       if (typeof(propertyJson.category) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${prop.class.name}.${prop.name} has an invalid 'category' property. It should be of type 'string'.`);
 
       await this.findSchemaChild(propertyJson.category);
     }
 
-    if (propertyJson.kindOfQuantity) {
+    if (undefined !== propertyJson.kindOfQuantity) {
       if (typeof(propertyJson.kindOfQuantity) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${prop.class.name}.${prop.name} has an invalid 'kindOfQuantity' property. It should be of type 'string'.`);
 
