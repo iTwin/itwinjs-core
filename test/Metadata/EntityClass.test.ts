@@ -92,7 +92,7 @@ describe("EntityClass", () => {
         },
         testClass: {
           schemaChildType: "EntityClass",
-          mixin: "TestSchema.testMixin",
+          mixins: [ "TestSchema.testMixin" ],
         },
       });
 
@@ -123,7 +123,7 @@ describe("EntityClass", () => {
         },
         testClass: {
           schemaChildType: "EntityClass",
-          mixin: [
+          mixins: [
             "TestSchema.testMixin",
             "TestSchema.anotherMixin",
           ],
@@ -223,12 +223,12 @@ describe("EntityClass", () => {
       await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECClass TestEntityClass has an invalid 'baseClass' attribute. It should be of type 'string'.`);
     });
 
-    it("should throw for invalid mixin", async () => {
-      let json: any = createSchemaJson({ mixin: 0 });
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECClass TestEntityClass has an invalid 'mixin' attribute. It should be of type 'string' or 'string[]'.`);
+    it("should throw for invalid mixins", async () => {
+      let json: any = createSchemaJson({ mixins: 0 });
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECClass TestEntityClass has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
 
-      json = createSchemaJson({ mixin: [0] });
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECClass TestEntityClass has an invalid 'mixin' attribute. It should be of type 'string' or 'string[]'.`);
+      json = createSchemaJson({ mixins: [0] });
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECClass TestEntityClass has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
     });
 
     it("should throw for invalid properties", async () => {
@@ -346,16 +346,16 @@ describe("EntityClass", () => {
       testClass = new EntityClass(schema, "TestEntity");
     });
 
-    it("should throw for invalid mixin", async () => {
+    it("should throw for invalid mixins", async () => {
       expect(testClass).to.exist;
-      let json: any = { ...baseJson, mixin: 0 };
-      await expect(testClass.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECEntityClass TestEntity has an invalid 'mixin' attribute. It should be of type 'string' or 'string[]'.`);
+      let json: any = { ...baseJson, mixins: 0 };
+      await expect(testClass.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECEntityClass TestEntity has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
 
-      json = { ...baseJson, mixin: [0] };
-      await expect(testClass.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECEntityClass TestEntity has an invalid 'mixin' attribute. It should be of type 'string' or 'string[]'.`);
+      json = { ...baseJson, mixins: [0] };
+      await expect(testClass.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECEntityClass TestEntity has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
 
-      json = { ...baseJson, mixin: "DoesNotExist" };
-      await expect(testClass.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECEntityClass TestEntity has a 'mixin' ("DoesNotExist") that cannot be found.`);
+      json = { ...baseJson, mixins: [ "DoesNotExist" ] };
+      await expect(testClass.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECEntityClass TestEntity has a mixin ("DoesNotExist") that cannot be found.`);
     });
   });
 });

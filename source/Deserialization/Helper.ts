@@ -269,17 +269,14 @@ export default class SchemaReadHelper {
 
   private async loadEntityClass(entity: EntityClass, entityJson: any): Promise<void> {
     // Load Mixin classes first
-    if (undefined !== entityJson.mixin) {
-      if (typeof(entityJson.mixin) === "string") {
-        await this.findSchemaChild(entityJson.mixin);
-      } else if (Array.isArray(entityJson.mixin)) {
-        for (const mixinName of entityJson.mixin) {
-          if (typeof(mixinName) !== "string")
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${entity.name} has an invalid 'mixin' attribute. It should be of type 'string' or 'string[]'.`);
-          await this.findSchemaChild(mixinName);
-        }
-      } else {
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${entity.name} has an invalid 'mixin' attribute. It should be of type 'string' or 'string[]'.`);
+    if (undefined !== entityJson.mixins) {
+      if (!Array.isArray(entityJson.mixins))
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${entity.name} has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
+
+      for (const mixinName of entityJson.mixins) {
+        if (typeof(mixinName) !== "string")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${entity.name} has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
+        await this.findSchemaChild(mixinName);
       }
     }
 
