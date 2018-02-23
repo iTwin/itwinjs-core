@@ -32,19 +32,19 @@ export class GraphicBuilderTileCorners extends Iterable<Point3d> {
  * Exposes methods for creating GraphicBuilder params.
  */
 export class GraphicBuilderCreateParams {
-  private _iModel?: IModelConnection; // Same as DgnDb
-  private readonly _placement: Transform = Transform.createIdentity();
-  private _viewport?: Viewport;
-  private _type: GraphicType;
+  public iModel?: IModelConnection; // Same as DgnDb
+  public readonly placement: Transform = Transform.createIdentity();
+  public viewport?: Viewport;
+  public type: GraphicType;
 
   public constructor(tf: Transform, type: GraphicType, vp?: Viewport, iModel?: IModelConnection) {
-    this._viewport = vp;
-    this._placement.setFrom(tf);
-    this._type = type;
+    this.viewport = vp;
+    this.placement.setFrom(tf);
+    this.type = type;
     if (iModel === undefined && vp && vp.view) {
-      this._iModel = vp.view.iModel; // is this equivalent to vp.GetViewController().GetDgnDb() ??
+      this.iModel = vp.view.iModel; // is this equivalent to vp.GetViewController().GetDgnDb() ??
     } else {
-      this._iModel = iModel;
+      this.iModel = iModel;
     }
   }
 
@@ -93,40 +93,16 @@ export class GraphicBuilderCreateParams {
    * Create params for a subgraphic
    */
   public subGraphic(placement: Transform = Transform.createIdentity()): GraphicBuilderCreateParams {
-    return new GraphicBuilderCreateParams(placement, this._type, this._viewport, this._iModel);
+    return new GraphicBuilderCreateParams(placement, this.type, this.viewport, this.iModel);
   }
 
-  public get iModel(): IModelConnection | undefined {
-    return this._iModel;
-  }
-  public get placement(): Transform {
-    return this._placement;
-  }
-  public get viewport(): Viewport | undefined {
-    return this._viewport;
-  }
-  public get type(): GraphicType {
-    return this._type;
-  }
-  public isViewCoordinates(): boolean {
-    return GraphicType.ViewBackground === this._type || GraphicType.ViewOverlay === this._type;
-  }
-  public isWorldCoordinates(): boolean {
-    return !this.isViewCoordinates();
-  }
-  public isSceneGraphic(): boolean {
-    return GraphicType.Scene === this._type;
-  }
-  public isViewBackground(): boolean {
-    return GraphicType.ViewBackground === this._type;
-  }
-  public isOverlay(): boolean {
-    return GraphicType.ViewOverlay === this._type || GraphicType.WorldOverlay === this._type;
-  }
+  public isViewCoordinates(): boolean { return GraphicType.ViewBackground === this.type || GraphicType.ViewOverlay === this.type; }
+  public isWorldCoordinates(): boolean { return !this.isViewCoordinates(); }
+  public isSceneGraphic(): boolean { return GraphicType.Scene === this.type; }
+  public isViewBackground(): boolean { return GraphicType.ViewBackground === this.type; }
+  public isOverlay(): boolean { return GraphicType.ViewOverlay === this.type || GraphicType.WorldOverlay === this.type; }
 
-  public setPlacement(tf: Transform): void {
-    this._placement.setFrom(tf);
-  }
+  public setPlacement(tf: Transform): void { this.placement.setFrom(tf); }
 }
 
 /**
