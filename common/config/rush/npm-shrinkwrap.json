@@ -72,19 +72,31 @@
         "xpath": "0.0.24"
       }
     },
+    "@bentley/imodeljs-e_1_6_11-win32-x64": {
+      "version": "8.1.0",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-e_1_6_11-win32-x64/-/imodeljs-e_1_6_11-win32-x64-8.1.0.tgz",
+      "integrity": "sha1-Z03EBaTj8R5zzp2+EV/8kUdfC9o="
+    },
     "@bentley/imodeljs-electronaddon": {
       "version": "8.1.0",
       "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-electronaddon/-/imodeljs-electronaddon-8.1.0.tgz",
       "integrity": "sha1-BTFLmzwKqdH4jxIDMg0k9C0/1aQ=",
       "requires": {
+        "@bentley/imodeljs-e_1_6_11-win32-x64": "8.1.0",
         "@bentley/imodeljs-nodeaddonapi": "8.1.0"
       }
+    },
+    "@bentley/imodeljs-n_8_9-win32-x64": {
+      "version": "8.1.0",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-n_8_9-win32-x64/-/imodeljs-n_8_9-win32-x64-8.1.0.tgz",
+      "integrity": "sha1-JAX1iH86ya9rTGVa0GLjrXNUHcs="
     },
     "@bentley/imodeljs-nodeaddon": {
       "version": "8.1.0",
       "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-nodeaddon/-/imodeljs-nodeaddon-8.1.0.tgz",
       "integrity": "sha1-EVv8urZpVzvXG5Qm+6hgb0KN9MA=",
       "requires": {
+        "@bentley/imodeljs-n_8_9-win32-x64": "8.1.0",
         "@bentley/imodeljs-nodeaddonapi": "8.1.0"
       }
     },
@@ -95,25 +107,29 @@
     },
     "@rush-temp/imodeljs-backend": {
       "version": "file:projects/imodeljs-backend.tgz",
-      "integrity": "sha1-9eV+ewcsX5in36+4k86B7W1IFFs=",
+      "integrity": "sha1-aWIu/Xy6nbHxIUguE1CLKHqkKjI=",
       "requires": {
         "@bentley/geometry-core": "4.3.1",
         "@bentley/imodeljs-clients": "3.0.0",
+        "@bentley/imodeljs-n_8_9-win32-x64": "8.1.0",
         "@bentley/imodeljs-nodeaddon": "8.1.0",
+        "@bentley/imodeljs-nodeaddonapi": "8.1.0",
         "cpx": "1.5.0",
         "fs-extra": "5.0.0",
         "js-base64": "2.4.3",
         "mocha": "3.5.3",
-        "mocha-junit-reporter": "1.17.0",
         "nyc": "11.4.1",
         "rimraf": "2.6.2",
+        "source-map-support": "0.5.3",
+        "ts-node": "3.3.0",
+        "tsconfig-paths": "2.7.3",
         "typescript": "2.6.2",
         "webpack": "3.11.0"
       }
     },
     "@rush-temp/imodeljs-core": {
       "version": "file:projects/imodeljs-core.tgz",
-      "integrity": "sha1-xnhDL5qc9d1aHEyw2cWrwnhucDw=",
+      "integrity": "sha1-etSpWLinUTvD9le/Vxn4hw1+XfI=",
       "requires": {
         "@bentley/bentleyjs-tools": "2.2.0",
         "@types/body-parser": "1.16.8",
@@ -164,11 +180,12 @@
     },
     "@rush-temp/imodeljs-core-testbed": {
       "version": "file:projects/imodeljs-core-testbed.tgz",
-      "integrity": "sha1-kiK5rpUe9EyxAPJJ/xd+hA4D8Nk=",
+      "integrity": "sha1-Etdnb75hYeakLPB8CfoeO1VUWZg=",
       "requires": {
         "@bentley/bentleyjs-core": "6.1.1",
         "@bentley/geometry-core": "4.3.1",
         "@bentley/imodeljs-clients": "3.0.0",
+        "@bentley/imodeljs-e_1_6_11-win32-x64": "8.1.0",
         "@bentley/imodeljs-electronaddon": "8.1.0",
         "body-parser": "1.18.2",
         "chai": "4.1.2",
@@ -191,7 +208,7 @@
     },
     "@rush-temp/imodeljs-frontend": {
       "version": "file:projects/imodeljs-frontend.tgz",
-      "integrity": "sha1-Ym9WT3zHdJHR9TNaWRdrrly9l5E=",
+      "integrity": "sha1-rpIktuItqTcEe+/OHvVP5jKmblM=",
       "requires": {
         "@bentley/geometry-core": "4.3.1",
         "@bentley/imodeljs-clients": "3.0.0",
@@ -2091,7 +2108,7 @@
       "integrity": "sha512-7f5cKUu19x1/E1piQCVeRSjJ/YW6se26OKr9GFVj7wOONqdCuhkAsKvgtJpq5gL8HSiMEuohM5hNwDN4SIOblg==",
       "requires": {
         "debug": "2.6.9",
-        "memoizee": "0.4.11",
+        "memoizee": "0.4.12",
         "object-assign": "4.1.1"
       }
     },
@@ -3651,9 +3668,9 @@
       }
     },
     "memoizee": {
-      "version": "0.4.11",
-      "resolved": "https://registry.npmjs.org/memoizee/-/memoizee-0.4.11.tgz",
-      "integrity": "sha1-vemBdmPJ5A/bKk6hw2cpYIeujI8=",
+      "version": "0.4.12",
+      "resolved": "https://registry.npmjs.org/memoizee/-/memoizee-0.4.12.tgz",
+      "integrity": "sha512-sprBu6nwxBWBvBOh5v2jcsGqiGLlL2xr2dLub3vR8dnE8YB17omwtm/0NSHl8jjNbcsJd5GMWJAnTSVe/O0Wfg==",
       "requires": {
         "d": "1.0.0",
         "es5-ext": "0.10.39",

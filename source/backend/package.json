@@ -55,6 +55,7 @@
   ],
   "devDependencies": {
     "cpx": "^1.5.0",
+    "@bentley/imodeljs-n_8_9-win32-x64": "~8.1.0",
     "mocha": "^3.5.3",
     "nyc": "^11.4.1",
     "rimraf": "^2.6.2",

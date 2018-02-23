@@ -16,7 +16,6 @@
     "clean:frontend": "cd source/frontend && npm run clean",
     "clean:testbed": "cd source/testbed && npm run clean",
     "lint": "node node_modules/@bentley/bentleyjs-tools/scripts/tslint.js",
-    "install": "echo \"*** GOT HERE ***\" && exit 1",
     "preinstall": "echo \"ERROR: use rush install instead\" && exit 1",
     "install-imodeljs-addon": "installImodelJsNative",
     "publish:backend": "cd source/backend && npm publish",
