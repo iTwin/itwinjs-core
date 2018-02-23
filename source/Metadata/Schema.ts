@@ -12,7 +12,7 @@ import Enumeration from "./Enumeration";
 import KindOfQuantity from "./KindOfQuantity";
 import PropertyCategory from "./PropertyCategory";
 import SchemaReadHelper from "../Deserialization/Helper";
-import { ECVersion, SchemaChildKey, SchemaKey, ECClassModifier, StrengthType, RelatedInstanceDirection, PrimitiveType } from "../ECObjects";
+import { ECVersion, SchemaChildKey, SchemaKey, ECClassModifier, PrimitiveType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { SchemaContext } from "../Context";
@@ -32,13 +32,11 @@ export default class Schema implements CustomAttributeContainerProps {
   public readonly references: Schema[];
   private readonly _children: SchemaChild[];
 
-  constructor(name?: string, readVersion?: number, writeVersion?: number, minorVersion?: number, alias?: string, label?: string, description?: string, context?: SchemaContext) {
+  constructor(name?: string, readVersion?: number, writeVersion?: number, minorVersion?: number, alias?: string, context?: SchemaContext) {
     this.schemaKey = new SchemaKey(name, readVersion, writeVersion, minorVersion);
     this.references = [];
     this._children = [];
     this._alias = alias;
-    this._label = label;
-    this._description = description;
     this._context = context;
   }
 
@@ -65,24 +63,24 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param name
    * @param modifier
    */
-  public async createEntityClass(name: string, modifier?: ECClassModifier, label?: string, description?: string): Promise<EntityClass> {
-     return this.createClass<EntityClass>(EntityClass, name, modifier, label, description);
+  public async createEntityClass(name: string, modifier?: ECClassModifier): Promise<EntityClass> {
+     return this.createClass<EntityClass>(EntityClass, name, modifier);
   }
 
-  public createEntityClassSync(name: string, modifier?: ECClassModifier, label?: string, description?: string): EntityClass {
-     return this.createClass<EntityClass>(EntityClass, name, modifier, label, description);
+  public createEntityClassSync(name: string, modifier?: ECClassModifier): EntityClass {
+     return this.createClass<EntityClass>(EntityClass, name, modifier);
   }
 
   /**
    * Creates a MixinClass with the provided name in this schema.
    * @param name
    */
-  public async createMixinClass(name: string, label?: string, description?: string): Promise<MixinClass> {
-    return this.createChild<MixinClass>(MixinClass, name, label, description);
+  public async createMixinClass(name: string): Promise<MixinClass> {
+    return this.createChild<MixinClass>(MixinClass, name);
   }
 
-  public createMixinClassSync(name: string, label?: string, description?: string): MixinClass {
-    return this.createChild<MixinClass>(MixinClass, name, label, description);
+  public createMixinClassSync(name: string): MixinClass {
+    return this.createChild<MixinClass>(MixinClass, name);
   }
 
   /**
@@ -90,12 +88,12 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param name
    * @param modifier
    */
-  public async createStructClass(name: string, modifier?: ECClassModifier, label?: string, description?: string): Promise<StructClass> {
-    return this.createClass<StructClass>(StructClass, name, modifier, label, description);
+  public async createStructClass(name: string, modifier?: ECClassModifier): Promise<StructClass> {
+    return this.createClass<StructClass>(StructClass, name, modifier);
   }
 
-  public createStructClassSync(name: string, modifier?: ECClassModifier, label?: string, description?: string): StructClass {
-    return this.createClass<StructClass>(StructClass, name, modifier, label, description);
+  public createStructClassSync(name: string, modifier?: ECClassModifier): StructClass {
+    return this.createClass<StructClass>(StructClass, name, modifier);
   }
 
   /**
@@ -103,12 +101,12 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param name
    * @param modifier
    */
-  public async createCustomAttributeClass(name: string, modifier?: ECClassModifier, label?: string, description?: string): Promise<CustomAttributeClass> {
-    return this.createClass<CustomAttributeClass>(CustomAttributeClass, name, modifier, label, description);
+  public async createCustomAttributeClass(name: string, modifier?: ECClassModifier): Promise<CustomAttributeClass> {
+    return this.createClass<CustomAttributeClass>(CustomAttributeClass, name, modifier);
   }
 
-  public createCustomAttributeClassSync(name: string, modifier?: ECClassModifier, label?: string, description?: string): CustomAttributeClass {
-    return this.createClass<CustomAttributeClass>(CustomAttributeClass, name, modifier, label, description);
+  public createCustomAttributeClassSync(name: string, modifier?: ECClassModifier): CustomAttributeClass {
+    return this.createClass<CustomAttributeClass>(CustomAttributeClass, name, modifier);
   }
 
   /**
@@ -116,26 +114,24 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param name
    * @param modifier
    */
-  public async createRelationshipClass(name: string, strength?: StrengthType, strengthDirection?: RelatedInstanceDirection,  modifier?: ECClassModifier, label?: string, description?: string): Promise<RelationshipClass> {
-    return this.createRelationshipClassSync(name, strength, strengthDirection, modifier, label, description);
+  public async createRelationshipClass(name: string, modifier?: ECClassModifier): Promise<RelationshipClass> {
+    return this.createRelationshipClassSync(name, modifier);
   }
 
-  public createRelationshipClassSync(name: string, strength?: StrengthType, strengthDirection?: RelatedInstanceDirection, modifier?: ECClassModifier, label?: string, description?: string): RelationshipClass {
-    const child = new RelationshipClass(this, name, strength, strengthDirection, modifier, label, description);
-    this.addChild(child);
-    return child;
+  public createRelationshipClassSync(name: string, modifier?: ECClassModifier): RelationshipClass {
+    return this.createClass<RelationshipClass>(RelationshipClass, name, modifier);
   }
 
   /**
    * Creates an Enumeration with the provided name in this schema.
    * @param name
    */
-  public async createEnumeration(name: string, label?: string, description?: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String, isStrict?: boolean): Promise<Enumeration> {
-    return this.createEnumerationSync(name, label, description, primitiveType, isStrict);
+  public async createEnumeration(name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String, isStrict?: boolean): Promise<Enumeration> {
+    return this.createEnumerationSync(name, primitiveType, isStrict);
   }
 
-  public createEnumerationSync(name: string, label?: string, description?: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String, isStrict?: boolean): Enumeration {
-    const child = new Enumeration(this, name, label, description, primitiveType, isStrict);
+  public createEnumerationSync(name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String, isStrict?: boolean): Enumeration {
+    const child = new Enumeration(this, name, primitiveType, isStrict);
     this.addChild(child);
     return child;
   }
@@ -144,36 +140,36 @@ export default class Schema implements CustomAttributeContainerProps {
    * Creates an KindOfQuantity with the provided name in this schema.
    * @param name
    */
-  public async createKindOfQuantity(name: string, label?: string, description?: string): Promise<KindOfQuantity> {
-    return this.createChild<KindOfQuantity>(KindOfQuantity, name, label, description);
+  public async createKindOfQuantity(name: string): Promise<KindOfQuantity> {
+    return this.createChild<KindOfQuantity>(KindOfQuantity, name);
   }
 
-  public createKindOfQuantitySync(name: string, label?: string, description?: string): KindOfQuantity {
-    return this.createChild<KindOfQuantity>(KindOfQuantity, name, label, description);
+  public createKindOfQuantitySync(name: string): KindOfQuantity {
+    return this.createChild<KindOfQuantity>(KindOfQuantity, name);
   }
 
   /**
    * Creates an PropertyCategory with the provided name in this schema.
    * @param name
    */
-  public async createPropertyCategory(name: string, label?: string, description?: string): Promise<PropertyCategory> {
-    return this.createChild<PropertyCategory>(PropertyCategory, name, label, description);
+  public async createPropertyCategory(name: string): Promise<PropertyCategory> {
+    return this.createChild<PropertyCategory>(PropertyCategory, name);
   }
 
-  public createPropertyCategorySync(name: string, label?: string, description?: string): PropertyCategory {
-    return this.createChild<PropertyCategory>(PropertyCategory, name, label, description);
+  public createPropertyCategorySync(name: string): PropertyCategory {
+    return this.createChild<PropertyCategory>(PropertyCategory, name);
   }
 
   // This method is private at the moment, but there is really no reason it can't be public... Need to make sure this is the way we want to handle this
-  private createClass<T extends ECClass>(type: (new (schema: Schema, name: string, modifier?: ECClassModifier, label?: string, description?: string) => T), name: string, modifier?: ECClassModifier, label?: string, description?: string): T {
-    const child = new type(this, name, modifier, label, description);
+  private createClass<T extends ECClass>(type: (new (schema: Schema, name: string, modifier?: ECClassModifier) => T), name: string, modifier?: ECClassModifier): T {
+    const child = new type(this, name, modifier);
     this.addChild(child);
     return child;
   }
 
   // This method is private at the moment, but there is really no reason it can't be public... Need to make sure this is the way we want to handle this
-  private createChild<T extends SchemaChild>(type: (new (schema: Schema, name: string, label?: string, description?: string) => T), name: string, label?: string, description?: string): T {
-    const child = new type(this, name, label, description);
+  private createChild<T extends SchemaChild>(type: (new (schema: Schema, name: string) => T), name: string): T {
+    const child = new type(this, name);
     this.addChild(child);
     return child;
   }

@@ -63,8 +63,8 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
 
   get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
-  constructor(schema: Schema, name: string, modifier?: ECClassModifier, label?: string, description?: string) {
-    super(schema, name, label, description);
+  constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
+    super(schema, name);
 
     if (modifier)
       this._modifier = modifier;
@@ -126,18 +126,18 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
    * @throws ECObjectsStatus DuplicateProperty: thrown if a property with the same name already exists in the class.
    */
-  public async createPrimitiveProperty(name: string, primitiveType: PrimitiveType, label?: string, description?: string, isReadOnly?: boolean, priority?: number, extendedTypeName?: string, minLength?: number, maxLength?: number, minValue?: number, maxValue?: number): Promise<PrimitiveProperty>;
-  public async createPrimitiveProperty(name: string, primitiveType: Enumeration, label?: string, description?: string, isReadOnly?: boolean, priority?: number, extendedTypeName?: string, minLength?: number, maxLength?: number, minValue?: number, maxValue?: number): Promise<EnumerationProperty>;
-  public async createPrimitiveProperty(name: string, primitiveType?: string, label?: string, description?: string, isReadOnly?: boolean, priority?: number, extendedTypeName?: string, minLength?: number, maxLength?: number, minValue?: number, maxValue?: number): Promise<Property>;
-  public async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration, label?: string, description?: string, isReadOnly?: boolean, priority?: number, extendedTypeName?: string, minLength?: number, maxLength?: number, minValue?: number, maxValue?: number): Promise<Property> {
+  public async createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
+  public async createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
+  public async createPrimitiveProperty(name: string, primitiveType?: string): Promise<Property>;
+  public async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = await loadPrimitiveType(primitiveType, this.schema);
     if (typeof(propType) === "number")
-      return this.addProperty(new PrimitiveProperty(this, name, propType, label, description, isReadOnly, priority, extendedTypeName, minLength, maxLength, minValue, maxValue));
+      return this.addProperty(new PrimitiveProperty(this, name, propType));
 
-    return this.addProperty(new EnumerationProperty(this, name, createLazyLoadedChild(propType), label, description, isReadOnly, priority, extendedTypeName, minLength, maxLength, minValue, maxValue));
+    return this.addProperty(new EnumerationProperty(this, name, createLazyLoadedChild(propType)));
   }
 
   /**
@@ -145,18 +145,18 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param name The name of property to create.
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
    */
-  public async createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType, label?: string, description?: string, isReadOnly?: boolean, priority?: number, extendedTypeName?: string, minLength?: number, maxLength?: number, minValue?: number, maxValue?: number, minOccurs?: number, maxOccurs?: number): Promise<PrimitiveArrayProperty>;
-  public async createPrimitiveArrayProperty(name: string, primitiveType: Enumeration, label?: string, description?: string, isReadOnly?: boolean, priority?: number, extendedTypeName?: string, minLength?: number, maxLength?: number, minValue?: number, maxValue?: number, minOccurs?: number, maxOccurs?: number): Promise<EnumerationArrayProperty>;
-  public async createPrimitiveArrayProperty(name: string, primitiveType?: string, label?: string, description?: string, isReadOnly?: boolean, priority?: number, extendedTypeName?: string, minLength?: number, maxLength?: number, minValue?: number, maxValue?: number, minOccurs?: number, maxOccurs?: number): Promise<Property>;
-  public async createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration, label?: string, description?: string, isReadOnly?: boolean, priority?: number, extendedTypeName?: string, minLength?: number, maxLength?: number, minValue?: number, maxValue?: number, minOccurs?: number, maxOccurs?: number): Promise<Property> {
+  public async createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveArrayProperty>;
+  public async createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
+  public async createPrimitiveArrayProperty(name: string, primitiveType?: string): Promise<Property>;
+  public async createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = await loadPrimitiveType(primitiveType, this.schema);
     if (typeof(propType) === "number")
-      return this.addProperty(new PrimitiveArrayProperty(this, name, propType, label, description, isReadOnly, priority, extendedTypeName, minLength, maxLength, minValue, maxValue, minOccurs, maxOccurs));
+      return this.addProperty(new PrimitiveArrayProperty(this, name, propType));
 
-    return this.addProperty(new EnumerationArrayProperty(this, name, createLazyLoadedChild(propType), label, description, isReadOnly, priority, extendedTypeName, minLength, maxLength, minValue, maxValue, minOccurs, maxOccurs));
+    return this.addProperty(new EnumerationArrayProperty(this, name, createLazyLoadedChild(propType)));
   }
 
   /**
@@ -164,12 +164,12 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param name The name of property to create.
    * @param structType The struct type of property to create.
    */
-  public async createStructProperty(name: string, structType: string | StructClass, label?: string, description?: string, isReadOnly?: boolean, priority?: number): Promise<StructProperty> {
+  public async createStructProperty(name: string, structType: string | StructClass): Promise<StructProperty> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const lazyStructClass = createLazyLoadedChild(await loadStructType(structType, this.schema));
-    return this.addProperty(new StructProperty(this, name, lazyStructClass, label, description, isReadOnly, priority));
+    return this.addProperty(new StructProperty(this, name, lazyStructClass));
   }
 
   /**
@@ -177,12 +177,12 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param name
    * @param type
    */
-  public async createStructArrayProperty(name: string, structType: string | StructClass, label?: string, description?: string, isReadOnly?: boolean, priority?: number, minOccurs?: number, maxOccurs?: number): Promise<StructArrayProperty> {
+  public async createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const lazyStructClass = createLazyLoadedChild(await loadStructType(structType, this.schema));
-    return this.addProperty(new StructArrayProperty(this, name, lazyStructClass, label, description, isReadOnly, priority, minOccurs, maxOccurs));
+    return this.addProperty(new StructArrayProperty(this, name, lazyStructClass));
   }
 
   /**
@@ -223,8 +223,8 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
 export class StructClass extends ECClass {
   public readonly type: SchemaChildType.StructClass;
 
-  constructor(schema: Schema, name: string, modifier?: ECClassModifier, label?: string, description?: string) {
-    super(schema, name, modifier, label, description);
+  constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
+    super(schema, name, modifier);
     this.key.type = SchemaChildType.StructClass;
   }
 }

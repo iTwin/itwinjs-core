@@ -14,8 +14,8 @@ export default class PropertyCategory extends SchemaChild {
 
   get priority() { return this._priority; }
 
-  constructor(schema: Schema, name: string, label?: string, description?: string) {
-    super(schema, name, label, description);
+  constructor(schema: Schema, name: string) {
+    super(schema, name);
     this.key.type = SchemaChildType.PropertyCategory;
   }
 

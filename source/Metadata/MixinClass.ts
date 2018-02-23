@@ -17,8 +17,8 @@ export default class MixinClass extends ECClass {
   public readonly type: SchemaChildType.MixinClass;
   public appliesTo: LazyLoadedEntityClass;
 
-  constructor(schema: Schema, name: string, label?: string, description?: string) {
-    super(schema, name, ECClassModifier.Abstract, label, description);
+  constructor(schema: Schema, name: string) {
+    super(schema, name, ECClassModifier.Abstract);
     this.key.type = SchemaChildType.MixinClass;
   }
 

@@ -24,14 +24,10 @@ export abstract class Property {
   protected _category?: LazyLoadedPropertyCategory;
   protected _kindOfQuantity?: LazyLoadedKindOfQuantity;
 
-  constructor(ecClass: ECClass, name: string, type: PropertyType, label?: string, description?: string, isReadOnly?: boolean, priority?: number) {
+  constructor(ecClass: ECClass, name: string, type: PropertyType) {
     this._class = ecClass;
     this._name = new ECName(name);
     this._type = type;
-    this._label = label;
-    this._description = description;
-    this._isReadOnly = isReadOnly ? isReadOnly : false;
-    this._priority = (priority !== undefined) ? priority : 0;
   }
 
   public isArray(): this is AnyArrayProperty { return PropertyTypeUtils.isArray(this._type); }
@@ -72,6 +68,10 @@ export abstract class Property {
     // TODO CustomAttributes
 
     // TODO: KoQ
+
+    // TODO: readOnly
+
+    // TODO: priority
   }
 }
 
@@ -85,25 +85,8 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
   protected _minValue?: number;
   protected _maxValue?: number;
 
-  constructor(
-    ecClass: ECClass,
-    name: string,
-    type: PropertyType,
-    label?: string,
-    description?: string,
-    isReadOnly?: boolean,
-    priority?: number,
-    extendedTypeName?: string,
-    minLength?: number,
-    maxLength?: number,
-    minValue?: number,
-    maxValue?: number) {
-    super(ecClass, name, type, label, description, isReadOnly, priority);
-    this._extendedTypeName = extendedTypeName;
-    this._minLength = minLength;
-    this._maxLength = maxLength;
-    this._minValue = minValue;
-    this._maxValue = maxValue;
+  constructor(ecClass: ECClass, name: string, type: PropertyType) {
+    super(ecClass, name, type);
   }
 
   public async fromJson(jsonObj: any): Promise<void> {
@@ -144,20 +127,8 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
 export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
   get primitiveType(): PrimitiveType { return PropertyTypeUtils.getPrimitiveType(this._type); }
 
-  constructor(
-    ecClass: ECClass,
-    name: string,
-    primitiveType: PrimitiveType = PrimitiveType.Integer,
-    label?: string,
-    description?: string,
-    isReadOnly?: boolean,
-    priority?: number,
-    extendedTypeName?: string,
-    minLength?: number,
-    maxLength?: number,
-    minValue?: number,
-    maxValue?: number) {
-    super(ecClass, name, PropertyTypeUtils.fromPrimitiveType(primitiveType), label, description, isReadOnly, priority, extendedTypeName, minLength, maxLength, minValue, maxValue);
+  constructor( ecClass: ECClass, name: string, primitiveType: PrimitiveType = PrimitiveType.Integer) {
+    super(ecClass, name, PropertyTypeUtils.fromPrimitiveType(primitiveType));
   }
 }
 
@@ -166,21 +137,8 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
 
   get enumeration(): LazyLoadedEnumeration { return this._enumeration; }
 
-  constructor(
-    ecClass: ECClass,
-    name: string,
-    type: LazyLoadedEnumeration,
-    label?: string,
-    description?: string,
-    isReadOnly?: boolean,
-    priority?: number,
-    extendedTypeName?: string,
-    minLength?: number,
-    maxLength?: number,
-    minValue?: number,
-    maxValue?: number) {
-    super(ecClass, name, PropertyType.Integer_Enumeration, label, description, isReadOnly, priority,
-          extendedTypeName, minLength, maxLength, minValue, maxValue);
+  constructor(ecClass: ECClass, name: string, type: LazyLoadedEnumeration) {
+    super(ecClass, name, PropertyType.Integer_Enumeration);
     this._enumeration = type;
   }
 }
@@ -190,15 +148,8 @@ export class StructProperty extends Property {
 
   get structClass(): LazyLoadedStructClass { return this._structClass; }
 
-  constructor(
-    ecClass: ECClass,
-    name: string,
-    type: LazyLoadedStructClass,
-    label?: string,
-    description?: string,
-    isReadOnly?: boolean,
-    priority?: number) {
-    super(ecClass, name, PropertyType.Struct, label, description, isReadOnly, priority);
+  constructor(ecClass: ECClass, name: string, type: LazyLoadedStructClass) {
+    super(ecClass, name, PropertyType.Struct);
     this._structClass = type;
   }
 
@@ -217,16 +168,8 @@ export class NavigationProperty extends Property {
 
   get direction() { return this._direction; }
 
-  constructor(
-    ecClass: ECClass,
-    name: string,
-    relationship: LazyLoadedRelationshipClass,
-    direction?: RelatedInstanceDirection,
-    label?: string,
-    description?: string,
-    isReadOnly?: boolean,
-    priority?: number) {
-    super(ecClass, name, PropertyType.Navigation, label, description, isReadOnly, priority);
+  constructor(ecClass: ECClass, name: string, relationship: LazyLoadedRelationshipClass, direction?: RelatedInstanceDirection) {
+    super(ecClass, name, PropertyType.Navigation);
     this._relationshipClass = relationship;
 
     this._direction = (direction !== undefined) ? direction : RelatedInstanceDirection.Forward;
@@ -239,13 +182,17 @@ export class NavigationProperty extends Property {
 
 export type Constructor<T> = new(...args: any[]) => T;
 
-export interface ArrayProperty {
-  minOccurs: number;
-  maxOccurs?: number;
+export abstract class ArrayProperty {
+  protected _minOccurs: number;
+  protected _maxOccurs?: number;
+
+  get minOccurs() { return this._minOccurs; }
+
+  get maxOccurs() { return this._maxOccurs; }
 }
 
 // tslint:disable-next-line:variable-name
-const ArrayProperty = <T extends Constructor<Property>>(Base: T) => {
+const ArrayPropertyMixin = <T extends Constructor<Property>>(Base: T) => {
   return class extends Base {
     public minOccurs: number = 0;
     public maxOccurs?: number;
@@ -257,64 +204,20 @@ const ArrayProperty = <T extends Constructor<Property>>(Base: T) => {
   } as typeof Base & Constructor<ArrayProperty>;
 };
 
-export class PrimitiveArrayProperty extends ArrayProperty(PrimitiveProperty) {
-  constructor(
-    ecClass: ECClass,
-    name: string,
-    primitiveType: PrimitiveType = PrimitiveType.Integer,
-    label?: string,
-    description?: string,
-    isReadOnly?: boolean,
-    priority?: number,
-    extendedTypeName?: string,
-    minLength?: number,
-    maxLength?: number,
-    minValue?: number,
-    maxValue?: number,
-    minOccurs?: number,
-    maxOccurs?: number) {
-    super(ecClass, name, primitiveType, label, description, isReadOnly, priority, extendedTypeName, minLength, maxLength, minValue, maxValue);
-    this.minOccurs = minOccurs !== undefined ? minOccurs : 0;
-    this.maxOccurs = maxOccurs;
+export class PrimitiveArrayProperty extends ArrayPropertyMixin(PrimitiveProperty) {
+  constructor(ecClass: ECClass, name: string, primitiveType: PrimitiveType = PrimitiveType.Integer) {
+    super(ecClass, name, primitiveType);
   }
 }
 
-export class EnumerationArrayProperty extends ArrayProperty(EnumerationProperty) {
-  constructor(
-    ecClass: ECClass,
-    name: string,
-    type: LazyLoadedEnumeration,
-    label?: string,
-    description?: string,
-    isReadOnly?: boolean,
-    priority?: number,
-    extendedTypeName?: string,
-    minLength?: number,
-    maxLength?: number,
-    minValue?: number,
-    maxValue?: number,
-    minOccurs?: number,
-    maxOccurs?: number) {
-    super(ecClass, name, type, label, description, isReadOnly, priority,
-          extendedTypeName, minLength, maxLength, minValue, maxValue);
-    this.minOccurs = minOccurs !== undefined ? minOccurs : 0;
-    this.maxOccurs = maxOccurs;
+export class EnumerationArrayProperty extends ArrayPropertyMixin(EnumerationProperty) {
+  constructor(ecClass: ECClass, name: string, type: LazyLoadedEnumeration) {
+    super(ecClass, name, type);
   }
 }
-export class StructArrayProperty extends ArrayProperty(StructProperty) {
-  constructor(
-    ecClass: ECClass,
-    name: string,
-    type: LazyLoadedStructClass,
-    label?: string,
-    description?: string,
-    isReadOnly?: boolean,
-    priority?: number,
-    minOccurs?: number,
-    maxOccurs?: number) {
-    super(ecClass, name, type, label, description, isReadOnly, priority);
-    this.minOccurs = minOccurs !== undefined ? minOccurs : 0;
-    this.maxOccurs = maxOccurs;
+export class StructArrayProperty extends ArrayPropertyMixin(StructProperty) {
+  constructor(ecClass: ECClass, name: string, type: LazyLoadedStructClass) {
+    super(ecClass, name, type);
   }
 }
 

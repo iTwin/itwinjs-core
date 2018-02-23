@@ -19,8 +19,8 @@ export default class Enumeration extends SchemaChild {
 
   get enumerators() { return this._enumerators; }
 
-  constructor(schema: Schema, name: string, label?: string, description?: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String, isStrict?: boolean) {
-    super(schema, name, label, description);
+  constructor(schema: Schema, name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String, isStrict?: boolean) {
+    super(schema, name);
 
     this.key.type = SchemaChildType.Enumeration;
 

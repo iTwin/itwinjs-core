@@ -22,16 +22,10 @@ describe("schema test", () => {
       assert.equal(testSchema.minorVersion, 15);
     });
 
-    it("with setting properties", () => {
-      const testSchema = new Schema("TestSchema", 1, 0, 2, "ts", "Test label", "Test setting a description");
+    it("with set alias", () => {
+      const testSchema = new Schema("TestSchema", 1, 0, 2, "ts");
       assert.isDefined(testSchema.alias);
       assert.equal(testSchema.alias, "ts");
-
-      assert.isDefined(testSchema.label);
-      assert.equal(testSchema.label, "Test label");
-
-      assert.isDefined(testSchema.description);
-      assert.equal(testSchema.description, "Test setting a description");
     });
 
     it("with invalid version numbers should fail", () => {

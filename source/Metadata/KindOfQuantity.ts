@@ -28,8 +28,8 @@ export default class KindOfQuantity extends SchemaChild {
 
   get persistenceUnit() { return this._persistenceUnit; }
 
-  constructor(schema: Schema, name: string, label?: string, description?: string) {
-    super(schema, name, label, description);
+  constructor(schema: Schema, name: string) {
+    super(schema, name);
     this.key.type = SchemaChildType.KindOfQuantity;
   }
 
