@@ -6,8 +6,58 @@ import { expect } from "chai";
 import Schema from "../../source/Metadata/Schema";
 import { ECObjectsError } from "../../source/Exception";
 import CustomAttributeClass from "../../source/Metadata/CustomAttributeClass";
+import { ECClassModifier } from "../../source/ECObjects";
+import { CustomAttributeContainerType } from "../../source/index";
 
 describe("CustomAttributeClass", () => {
+
+  describe("deserialization", () => {
+    function createSchemaJsonWithChildren(childrenJson: any): any {
+      return {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        children: {
+          ...childrenJson,
+        },
+      };
+    }
+    function createSchemaJson(caClassJson: any): any {
+      return createSchemaJsonWithChildren({
+        TestCAClass: {
+          schemaChildType: "CustomAttributeClass",
+          ...caClassJson,
+        },
+      });
+    }
+
+    it("should succeed with fully defined", async () => {
+      const schemaJson = createSchemaJson({
+        label: "Test CustomAttribute Class",
+        description: "Used for testing",
+        modifier: "Sealed",
+        appliesTo: "AnyClass",
+      });
+
+      const ecschema = await Schema.fromJson(schemaJson);
+
+      const testCAClass = await ecschema.getClass<CustomAttributeClass>("TestCAClass");
+      expect(testCAClass).to.exist;
+
+      expect(testCAClass!.name).to.equal("TestCAClass");
+      expect(testCAClass!.label).to.equal("Test CustomAttribute Class");
+      expect(testCAClass!.description).to.equal("Used for testing");
+      expect(testCAClass!.modifier).to.equal(ECClassModifier.Sealed);
+      expect(testCAClass!.containerType).to.equal(CustomAttributeContainerType.AnyClass);
+    });
+
+    it("should throw for NavigationProperty", async () => {
+      const json = createSchemaJson({
+        properties: [{ name: "navProp", propertyType: "NavigationProperty" }],
+      });
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestCAClass.navProp is invalid, because only EntityClasses and RelationshipClasses can have NavigationProperties.`);
+    });
+  });
 
   describe("fromJson", () => {
     let testClass: CustomAttributeClass;

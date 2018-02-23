@@ -34,14 +34,9 @@ export default class EntityClass extends ECClass {
    *
    * @param mixin
    */
-  public addMixin(mixin: Mixin | Mixin[]) {
+  public addMixin(mixin: Mixin) {
     if (!this._mixins)
       this._mixins = [];
-
-    if (Array.isArray(mixin)) {
-      this._mixins.concat(mixin.map((m) => new DelayedPromiseWithProps(m.key, async () => m)));
-      return;
-    }
 
     this._mixins.push(new DelayedPromiseWithProps(mixin.key, async () => mixin));
     return;
@@ -100,27 +95,20 @@ export default class EntityClass extends ECClass {
   public async fromJson(jsonObj: any): Promise<void> {
     await super.fromJson(jsonObj);
 
-    const loadMixin = async (mixinFullName: string) => {
-      // TODO: Fix
-      if (!this.schema)
-        throw new ECObjectsError(ECObjectsStatus.ECOBJECTS_ERROR_BASE, `TODO: Fix this message`);
+    if (undefined !== jsonObj.mixins) {
+      if (!Array.isArray(jsonObj.mixins))
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
 
-      const tempMixin = await this.schema.getChild<Mixin>(mixinFullName, false);
-      if (!tempMixin)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `TODO: Fix this message`);
+      for (const name of jsonObj.mixins) {
+        if (typeof(name) !== "string")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
 
-      this.addMixin(tempMixin);
-    };
+        const tempMixin = await this.schema.getChild<Mixin>(name, false);
+        if (!tempMixin)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
 
-    const loadAllMixins = (mixinFullNames: string[]) => Promise.all(mixinFullNames.map((name) => loadMixin(name)));
-
-    if (undefined !== jsonObj.mixin) {
-      if (typeof(jsonObj.mixin) === "string")
-        await loadMixin(jsonObj.mixin);
-      else if (Array.isArray(jsonObj.mixin))
-        await loadAllMixins(jsonObj.mixin);
-      else
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Mixin on ECEntityClass ${this.name} is an invalid type. It must be of Json type string or an array of strings.`);
+        this.addMixin(tempMixin);
+      }
     }
   }
 }
