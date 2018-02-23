@@ -9,6 +9,8 @@ import { ECObjectsError } from "../../source/Exception";
 import { SchemaDeserializationVisitor } from "../../source/Interfaces";
 import SchemaReadHelper from "../../source/Deserialization/Helper";
 import * as sinon from "sinon";
+import { AnyClass } from "../../source/Interfaces";
+import { SchemaChildType } from "../../source/index";
 
 describe("Full Schema Deserialization", () => {
   describe("basic (empty) schemas", () => {
@@ -253,6 +255,106 @@ describe("Full Schema Deserialization", () => {
       expect(mockVisitor.visitFullSchema.calledAfter(mockVisitor.visitPropertyCategory)).to.be.true;
       expect(mockVisitor.visitFullSchema.calledAfter(mockVisitor.visitClass)).to.be.true;
       expect(mockVisitor.visitFullSchema.calledAfter(mockVisitor.visitKindOfQuantity)).to.be.true;
+    });
+
+    it("should safely handle Mixin-appliesTo-EntityClass-extends-Mixin cycle", async () => {
+      const schemaJson = {
+        ...baseJson,
+        children: {
+          AMixin: {
+            schemaChildType: "Mixin",
+            appliesTo: "TestSchema.BEntityClass",
+            description: "Description for AMixin",
+          },
+          BEntityClass: {
+            schemaChildType: "EntityClass",
+            baseClass: "TestSchema.AMixin",
+            description: "Description for BEntityClass",
+          },
+        },
+      };
+
+      const descriptions: string[] = [];
+      mockVisitor = {
+        visitClass: sinon.spy(async (c: AnyClass) => {
+          if (c.type === SchemaChildType.EntityClass && c.baseClass)
+            descriptions.push((await c.baseClass).description!);
+          else if (c.type === SchemaChildType.Mixin && c.appliesTo)
+            descriptions.push((await c.appliesTo).description!);
+        }),
+      };
+
+      let testSchema = new Schema();
+      const reader = new SchemaReadHelper(undefined, mockVisitor);
+
+      testSchema = await reader.readSchema(testSchema, schemaJson);
+      expect(testSchema).to.exist;
+      expect(mockVisitor.visitClass.calledTwice).to.be.true;
+      expect(descriptions).to.have.lengthOf(2);
+
+      const testMixin = await testSchema.getChild("AMixin");
+      expect(testMixin).to.exist;
+
+      const testEntity = await testSchema.getChild("BEntityClass");
+      expect(testEntity).to.exist;
+
+      expect(mockVisitor.visitClass.firstCall.calledWithExactly(testEntity)).to.be.true;
+      expect(descriptions[0]).to.equal("Description for AMixin",
+        `SchemaDeserializationVisitor.visitClass was called for "BEntityClass" before its base class, "AMixin" was fully deserialized.`);
+
+      expect(mockVisitor.visitClass.secondCall.calledWithExactly(testMixin)).to.be.true;
+      expect(descriptions[1]).to.equal("Description for BEntityClass",
+        `SchemaDeserializationVisitor.visitClass was called for "AMixin" before its appliesTo class, "BEntityClass" was fully deserialized.`);
+    });
+
+    it("should safely handle EntityClass-extends-Mixin-appliesTo-EntityClass cycle", async () => {
+      const schemaJson = {
+        ...baseJson,
+        children: {
+          AEntityClass: {
+            schemaChildType: "EntityClass",
+            baseClass: "TestSchema.BMixin",
+            description: "Description for AEntityClass",
+          },
+          BMixin: {
+            schemaChildType: "Mixin",
+            appliesTo: "TestSchema.AEntityClass",
+            description: "Description for BMixin",
+          },
+        },
+      };
+
+      const descriptions: string[] = [];
+      mockVisitor = {
+        visitClass: sinon.spy(async (c: AnyClass) => {
+          if (c.type === SchemaChildType.EntityClass && c.baseClass)
+            descriptions.push((await c.baseClass).description!);
+          else if (c.type === SchemaChildType.Mixin && c.appliesTo)
+            descriptions.push((await c.appliesTo).description!);
+        }),
+      };
+
+      let testSchema = new Schema();
+      const reader = new SchemaReadHelper(undefined, mockVisitor);
+
+      testSchema = await reader.readSchema(testSchema, schemaJson);
+      expect(testSchema).to.exist;
+      expect(mockVisitor.visitClass.calledTwice).to.be.true;
+      expect(descriptions).to.have.lengthOf(2);
+
+      const testEntity = await testSchema.getChild("AEntityClass");
+      expect(testEntity).to.exist;
+
+      const testMixin = await testSchema.getChild("BMixin");
+      expect(testMixin).to.exist;
+
+      expect(mockVisitor.visitClass.firstCall.calledWithExactly(testMixin)).to.be.true;
+      expect(descriptions[0]).to.equal("Description for AEntityClass",
+        `SchemaDeserializationVisitor.visitClass was called for "BMixin" before its appliesTo class, "AEntityClass" was fully deserialized.`);
+
+      expect(mockVisitor.visitClass.secondCall.calledWithExactly(testEntity)).to.be.true;
+      expect(descriptions[1]).to.equal("Description for BMixin",
+        `SchemaDeserializationVisitor.visitClass was called for "AEntityClass" before its base class, "BMixin" was fully deserialized.`);
     });
   });
 });

@@ -82,7 +82,10 @@ export default class SchemaReadHelper {
         if (await schema.getChild(childName, false) !== undefined)
           continue;
 
-        await this.loadSchemaChild(schema, this._itemToRead.children[childName], childName);
+        const loadedChild = await this.loadSchemaChild(schema, this._itemToRead.children[childName], childName);
+        if (loadedChild && this._visitor) {
+          await loadedChild.accept(this._visitor);
+        }
       }
     }
 
@@ -143,7 +146,7 @@ export default class SchemaReadHelper {
    * @param schemaChildJson The JSON to populate the SchemaChild with.
    * @param name The name of the SchemaChild, only needed if the SchemaChild is being loaded outside the context of a Schema.
    */
-  private async loadSchemaChild(schema: Schema, schemaChildJson: any, name?: string) {
+  private async loadSchemaChild(schema: Schema, schemaChildJson: any, name?: string): Promise<SchemaChild | undefined> {
     const childName = (undefined === name) ? schemaChildJson.name : name;
     if (!childName)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `A SchemaChild in ${this._schema.schemaKey.name} has an invalid name.`);
@@ -192,24 +195,32 @@ export default class SchemaReadHelper {
       // NOTE: we are being permissive here and allowing unknown types to silently fail. Not sure if we want to hard fail or just do a basic deserialization
     }
 
-    if (schemaChild && this._visitor)
-      schemaChild.accept(this._visitor);
+    return schemaChild;
   }
 
   /**
    * Finds the a SchemaChild matching the fullName first by checking the schema that is being deserialized. If it does
    * not exist within the schema the SchemaContext will be searched.
    * @param fullName The full name of the SchemaChild to search for.
+   * @param skipVisitor Used to break Mixin -appliesTo-> Entity -extends-> Mixin cycle.
+   * @returns The SchemaChild if it had to be loaded, otherwise undefined.
    */
-  private async findSchemaChild(fullName: string): Promise<void> {
+  private async findSchemaChild(fullName: string, skipVisitor = false): Promise<SchemaChild | undefined> {
     const [schemaName, childName] = SchemaChild.parseFullName(fullName);
     const isInThisSchema = (this._schema && this._schema.name.toLowerCase() === schemaName.toLowerCase());
 
     if (isInThisSchema && undefined === await this._schema.getChild(childName, false)) {
-      await this.loadSchemaChild(this._schema, this._itemToRead.children[childName], childName);
-    } else if (undefined === await this._context.getSchemaChild(new SchemaChildKey(childName, undefined, new SchemaKey(schemaName)))) {
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaChild ${fullName}.`);
+      const schemaChild = await this.loadSchemaChild(this._schema, this._itemToRead.children[childName], childName);
+      if (!skipVisitor && schemaChild && this._visitor) {
+        await schemaChild.accept(this._visitor);
+      }
+      return schemaChild;
     }
+
+    if (undefined === await this._context.getSchemaChild(new SchemaChildKey(childName, undefined, new SchemaKey(schemaName))))
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaChild ${fullName}.`);
+
+    return undefined;
   }
 
   /**
@@ -233,7 +244,7 @@ export default class SchemaReadHelper {
         if (typeof(caJson.className) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
-        this.findSchemaChild(caJson.className);
+        this.findSchemaChild(caJson.className );
       }
     });
   }
@@ -246,10 +257,11 @@ export default class SchemaReadHelper {
    */
   private async loadClass(classObj: AnyClass, classJson: any): Promise<void> {
     // Load base class first
+    let baseClass: undefined | SchemaChild;
     if (undefined !== classJson.baseClass) {
       if (typeof(classJson.baseClass) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${classObj.name} has an invalid 'baseClass' attribute. It should be of type 'string'.`);
-      await this.findSchemaChild(classJson.baseClass);
+      baseClass = await this.findSchemaChild(classJson.baseClass, true);
     }
 
     if (undefined !== classJson.properties) {
@@ -265,6 +277,8 @@ export default class SchemaReadHelper {
     }
 
     await classObj.fromJson(classJson);
+    if (baseClass && this._visitor)
+      await baseClass.accept(this._visitor);
   }
 
   private async loadEntityClass(entity: EntityClass, entityJson: any): Promise<void> {
@@ -284,13 +298,17 @@ export default class SchemaReadHelper {
   }
 
   private async loadMixin(mixin: Mixin, mixinJson: any): Promise<void> {
+    let appliesToClass: undefined | SchemaChild;
     if (undefined !== mixinJson.appliesTo) {
       if (typeof(mixinJson.appliesTo) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Mixin ${mixin.name} has an invalid 'appliesTo' property. It should be of type 'string'.`);
-      await this.findSchemaChild(mixinJson.appliesTo);
+
+      appliesToClass = await this.findSchemaChild(mixinJson.appliesTo, true);
     }
 
     await this.loadClass(mixin, mixinJson);
+    if (appliesToClass && this._visitor)
+      await appliesToClass.accept(this._visitor);
   }
 
   private async loadRelationshipClass(rel: RelationshipClass, relJson: any): Promise<void> {
