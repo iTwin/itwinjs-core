@@ -23,21 +23,25 @@ export default class RelationshipClass extends ECClass {
   public readonly type: SchemaChildType.RelationshipClass;
   protected _strength: StrengthType = StrengthType.Referencing;
   protected _strengthDirection: RelatedInstanceDirection = RelatedInstanceDirection.Forward;
-  public readonly source: RelationshipConstraint;
-  public readonly target: RelationshipConstraint;
+  protected _source: RelationshipConstraint;
+  protected _target: RelationshipConstraint;
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name, modifier);
 
     this.key.type = SchemaChildType.RelationshipClass;
 
-    this.source = new RelationshipConstraint(this, RelationshipEnd.Source);
-    this.target = new RelationshipConstraint(this, RelationshipEnd.Target);
+    this._source = new RelationshipConstraint(this, RelationshipEnd.Source);
+    this._target = new RelationshipConstraint(this, RelationshipEnd.Target);
   }
 
   get strength() { return this._strength; }
 
   get strengthDirection() { return this._strengthDirection; }
+
+  get source() { return this._source; }
+
+  get target() { return this._target; }
 
   /**
    *
@@ -84,22 +88,22 @@ export default class RelationshipClass extends ECClass {
  */
 export class RelationshipConstraint {
   private _abstractConstraint?: LazyLoadedRelationshipConstraintClass;
-  public readonly relationshipClass: RelationshipClass;
-  public readonly relationshipEnd: RelationshipEnd;
+  protected _relationshipClass: RelationshipClass;
+  protected _relationshipEnd: RelationshipEnd;
   protected _multiplicity?: RelationshipMultiplicity;
   protected _polymorphic?: boolean;
   protected _roleLabel?: string;
   protected _constraintClasses?: LazyLoadedRelationshipConstraintClass[];
 
   constructor(relClass: RelationshipClass, relEnd: RelationshipEnd, roleLabel?: string, polymorphic?: boolean) {
-    this.relationshipEnd = relEnd;
+    this._relationshipEnd = relEnd;
     if (polymorphic)
       this._polymorphic = polymorphic;
     else
       this._polymorphic = false;
 
     this._multiplicity = RelationshipMultiplicity.zeroOne;
-    this.relationshipClass = relClass;
+    this._relationshipClass = relClass;
     this._roleLabel = roleLabel;
   }
 
@@ -107,6 +111,8 @@ export class RelationshipConstraint {
   get polymorphic() { return this._polymorphic; }
   get roleLabel() { return this._roleLabel; }
   get constraintClasses(): LazyLoadedRelationshipConstraintClass[] | undefined { return this._constraintClasses; }
+  get relationshipClass() { return this._relationshipClass; }
+  get relationshipEnd() { return this._relationshipEnd; }
 
   get abstractConstraint(): LazyLoadedRelationshipConstraintClass | undefined {
     if (this._abstractConstraint)

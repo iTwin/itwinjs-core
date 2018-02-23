@@ -32,25 +32,20 @@ export default class Schema implements CustomAttributeContainerProps {
   public readonly references: Schema[];
   private readonly _children: SchemaChild[];
 
-  constructor(name?: string, readVersion?: number, writeVersion?: number, minorVersion?: number, alias?: string, context?: SchemaContext) {
+  constructor(name?: string, readVersion?: number, writeVersion?: number, minorVersion?: number, context?: SchemaContext) {
     this.schemaKey = new SchemaKey(name, readVersion, writeVersion, minorVersion);
     this.references = [];
     this._children = [];
-    this._alias = alias;
     this._context = context;
   }
 
   get name() { return this.schemaKey.name; }
-  set name(name: string) { this.schemaKey.name = name; }
 
   get readVersion() { return this.schemaKey.readVersion; }
-  set readVersion(version: number) { this.schemaKey.readVersion = version; }
 
   get writeVersion() { return this.schemaKey.writeVersion; }
-  set writeVersion(version: number) { this.schemaKey.writeVersion = version; }
 
   get minorVersion() { return this.schemaKey.minorVersion; }
-  set minorVersion(version: number) { this.schemaKey.minorVersion = version; }
 
   get alias() {return this._alias; }
   get label() {return this._label; }
@@ -76,11 +71,11 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param name
    */
   public async createMixinClass(name: string): Promise<MixinClass> {
-    return this.createChild<MixinClass>(MixinClass, name);
+    return this.createClass<MixinClass>(MixinClass, name, ECClassModifier.Abstract);
   }
 
   public createMixinClassSync(name: string): MixinClass {
-    return this.createChild<MixinClass>(MixinClass, name);
+    return this.createClass<MixinClass>(MixinClass, name, ECClassModifier.Abstract);
   }
 
   /**
@@ -330,7 +325,7 @@ export default class Schema implements CustomAttributeContainerProps {
     if (!jsonObj.$schema || jsonObj.$schema !== SCHEMAURL3_1)
       throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl);
 
-    if (jsonObj.name) this.name = jsonObj.name;
+    if (jsonObj.name) this.schemaKey.name = jsonObj.name;
     if (jsonObj.alias) this._alias = jsonObj.alias;
     if (jsonObj.description) this._description = jsonObj.description;
     if (jsonObj.label) this._label = jsonObj.label;
