@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { IModel } from "../../common/IModel";
+import { IModelConnection } from "../IModelConnection";
 import { Transform } from "@bentley/geometry-core/lib/Transform";
 import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
 import { ClipVector } from "@bentley/geometry-core/lib/numerics/ClipVector";
@@ -32,19 +32,19 @@ export class GraphicBuilderTileCorners extends Iterable<Point3d> {
  * Exposes methods for creating GraphicBuilder params.
  */
 export class GraphicBuilderCreateParams {
-  private _iModel: IModel | undefined; // Same as DgnDb
-  private _placement: Transform;
-  private _viewport: Viewport | undefined;
-  private _type: GraphicType;
+  public iModel?: IModelConnection; // Same as DgnDb
+  public readonly placement: Transform = Transform.createIdentity();
+  public viewport?: Viewport;
+  public type: GraphicType;
 
-  public constructor(tf: Transform, type: GraphicType, vp?: Viewport, iModel?: IModel) {
-    this._viewport = vp;
-    this._placement = tf;
-    this._type = type;
+  public constructor(tf: Transform, type: GraphicType, vp?: Viewport, iModel?: IModelConnection) {
+    this.viewport = vp;
+    this.placement.setFrom(tf);
+    this.type = type;
     if (iModel === undefined && vp && vp.view) {
-      this._iModel = vp.view.iModel; // is this equivalent to vp.GetViewController().GetDgnDb() ??
+      this.iModel = vp.view.iModel; // is this equivalent to vp.GetViewController().GetDgnDb() ??
     } else {
-      this._iModel = iModel;
+      this.iModel = iModel;
     }
   }
 
@@ -55,7 +55,7 @@ export class GraphicBuilderCreateParams {
    * If this function is used outside of tile generation context, a default coarse tolerance will be used.
    * To get a tolerance appropriate to a viewport, use the overload accepting a Viewport.
    */
-  public static Scene(vp?: Viewport, placement: Transform = Transform.createIdentity(), iModel?: IModel): GraphicBuilderCreateParams {
+  public static scene(vp?: Viewport, placement: Transform = Transform.createIdentity(), iModel?: IModelConnection): GraphicBuilderCreateParams {
     if (!placement) {
       placement = Transform.createIdentity();
     }
@@ -70,7 +70,7 @@ export class GraphicBuilderCreateParams {
    * Create params for a WorldDecoration-type Graphic
    * The faceting tolerance will be computed from the finished graphic's range and the viewport.
    */
-  public static WorldDecoration(vp: Viewport, placement: Transform = Transform.createIdentity()): GraphicBuilderCreateParams {
+  public static worldDecoration(vp: Viewport, placement: Transform = Transform.createIdentity()): GraphicBuilderCreateParams {
     return new GraphicBuilderCreateParams(placement, GraphicType.WorldDecoration, vp);
   }
 
@@ -78,55 +78,31 @@ export class GraphicBuilderCreateParams {
    * Create params for a WorldOverlay-type Graphic
    * The faceting tolerance will be computed from the finished graphic's range and the viewport.
    */
-  public static WorldOverlay(vp: Viewport, placement: Transform = Transform.createIdentity()): GraphicBuilderCreateParams {
+  public static worldOverlay(vp: Viewport, placement: Transform = Transform.createIdentity()): GraphicBuilderCreateParams {
     return new GraphicBuilderCreateParams(placement, GraphicType.WorldOverlay, vp);
   }
 
   /**
    * Create params for a ViewOverlay-type Graphic
    */
-  public static ViewOverlay(vp: Viewport, placement: Transform = Transform.createIdentity()): GraphicBuilderCreateParams {
+  public static viewOverlay(vp: Viewport, placement: Transform = Transform.createIdentity()): GraphicBuilderCreateParams {
     return new GraphicBuilderCreateParams(placement, GraphicType.ViewOverlay, vp);
   }
 
   /**
    * Create params for a subgraphic
    */
-  public SubGraphic(placement: Transform = Transform.createIdentity()): GraphicBuilderCreateParams {
-    return new GraphicBuilderCreateParams(placement, this._type, this._viewport, this._iModel);
+  public subGraphic(placement: Transform = Transform.createIdentity()): GraphicBuilderCreateParams {
+    return new GraphicBuilderCreateParams(placement, this.type, this.viewport, this.iModel);
   }
 
-  public get iModel(): IModel | undefined {
-    return this._iModel;
-  }
-  public get placement(): Transform {
-    return this._placement;
-  }
-  public get viewport(): Viewport | undefined {
-    return this._viewport;
-  }
-  public get type(): GraphicType {
-    return this._type;
-  }
-  public IsViewCoordinates(): boolean {
-    return GraphicType.ViewBackground === this._type || GraphicType.ViewOverlay === this._type;
-  }
-  public IsWorldCoordinates(): boolean {
-    return !this.IsViewCoordinates();
-  }
-  public IsSceneGraphic(): boolean {
-    return GraphicType.Scene === this._type;
-  }
-  public IsViewBackground(): boolean {
-    return GraphicType.ViewBackground === this._type;
-  }
-  public IsOverlay(): boolean {
-    return GraphicType.ViewOverlay === this._type || GraphicType.WorldOverlay === this._type;
-  }
+  public isViewCoordinates(): boolean { return GraphicType.ViewBackground === this.type || GraphicType.ViewOverlay === this.type; }
+  public isWorldCoordinates(): boolean { return !this.isViewCoordinates(); }
+  public isSceneGraphic(): boolean { return GraphicType.Scene === this.type; }
+  public isViewBackground(): boolean { return GraphicType.ViewBackground === this.type; }
+  public isOverlay(): boolean { return GraphicType.ViewOverlay === this.type || GraphicType.WorldOverlay === this.type; }
 
-  public SetPlacement(tf: Transform): void {
-    this._placement = tf;
-  }
+  public setPlacement(tf: Transform): void { this.placement.setFrom(tf); }
 }
 
 /**
