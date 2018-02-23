@@ -144,6 +144,7 @@ export class RelationshipConstraint {
    * @param jsonObj The json representation of an ECRelationshipConstraint using the ECSchemaJson format.
    */
   public async fromJson(jsonObj: any): Promise<void> {
+    // TODO: Require all constraints to be fully defined.
     if (undefined !== jsonObj.roleLabel) {
       if (typeof(jsonObj.roleLabel) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipConstraint ${debugName(this)} has an invalid 'roleLabel' attribute. It should be of type 'string'.`);
