@@ -48,18 +48,28 @@ async function loadPrimitiveType(primitiveType: string | PrimitiveType | Enumera
  * A common abstract class for all of the ECClass types.
  */
 export default abstract class ECClass extends SchemaChild implements CustomAttributeContainerProps {
-  public modifier: ECClassModifier;
-  public baseClass?: LazyLoadedECClass;
-  public properties?: LazyLoadedProperty[];
-  public customAttributes?: CustomAttributeSet;
+  protected _modifier: ECClassModifier;
+  protected _baseClass?: LazyLoadedECClass;
+  protected _properties?: LazyLoadedProperty[];
+  protected _customAttributes?: CustomAttributeSet;
+
+  get modifier() { return this._modifier; }
+
+  get baseClass(): LazyLoadedECClass | undefined { return this._baseClass; }
+
+  set baseClass(baseClass: LazyLoadedECClass | undefined) { this._baseClass = baseClass; }
+
+  get properties(): LazyLoadedProperty[] | undefined { return this._properties; }
+
+  get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
   constructor(schema: Schema, name: string, type: SchemaChildType, modifier?: ECClassModifier) {
     super(schema, name, type);
 
     if (modifier)
-      this.modifier = modifier;
+      this._modifier = modifier;
     else
-      this.modifier = ECClassModifier.None;
+      this._modifier = ECClassModifier.None;
   }
 
   /**
@@ -68,10 +78,10 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @returns The property that was added.
    */
   protected addProperty<T extends Property>(prop: T): T {
-    if (!this.properties)
-      this.properties = [];
+    if (!this._properties)
+      this._properties = [];
 
-    this.properties.push(new DelayedPromiseWithProps({name: prop.name}, async () => prop));
+    this._properties.push(new DelayedPromiseWithProps({name: prop.name}, async () => prop));
     return prop;
   }
 
@@ -186,7 +196,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
       if (typeof(jsonObj.modifier) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${this.name} has an invalid 'modifier' attribute. It should be of type 'string'.`);
 
-      this.modifier = parseClassModifier(jsonObj.modifier);
+      this._modifier = parseClassModifier(jsonObj.modifier);
     }
 
     if (undefined !== jsonObj.baseClass) {
@@ -197,7 +207,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
       if (!baseClass)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
-      this.baseClass = createLazyLoadedChild(baseClass);
+      this._baseClass = createLazyLoadedChild(baseClass);
     }
   }
 

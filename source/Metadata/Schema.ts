@@ -12,7 +12,7 @@ import Enumeration from "./Enumeration";
 import KindOfQuantity from "./KindOfQuantity";
 import PropertyCategory from "./PropertyCategory";
 import SchemaReadHelper from "../Deserialization/Helper";
-import { SchemaChildKey, SchemaKey, ECClassModifier } from "../ECObjects";
+import { SchemaChildKey, SchemaKey, ECClassModifier, PrimitiveType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { SchemaContext } from "../Context";
@@ -25,10 +25,10 @@ const SCHEMAURL3_1 = "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecsche
 export default class Schema implements CustomAttributeContainerProps {
   private _context?: SchemaContext;
   protected _schemaKey?: SchemaKey;
-  public alias: string;
-  public label?: string;
-  public description?: string;
-  public customAttributes?: CustomAttributeSet;
+  protected _alias: string;
+  protected _label?: string;
+  protected _description?: string;
+  protected _customAttributes?: CustomAttributeSet;
   public readonly references: Schema[];
   private readonly _children: SchemaChild[];
   /**
@@ -66,24 +66,31 @@ export default class Schema implements CustomAttributeContainerProps {
   }
 
   get name() { return this.schemaKey.name; }
-  set name(name: string) { this.schemaKey.name = name; }
 
   get readVersion() { return this.schemaKey.readVersion; }
-  set readVersion(version: number) { this.schemaKey.readVersion = version; }
 
   get writeVersion() { return this.schemaKey.writeVersion; }
-  set writeVersion(version: number) { this.schemaKey.writeVersion = version; }
 
   get minorVersion() { return this.schemaKey.minorVersion; }
-  set minorVersion(version: number) { this.schemaKey.minorVersion = version; }
+
+  get alias() {return this._alias; }
+  get label() {return this._label; }
+  get description() {return this._description; }
+
+  get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
   /**
    * Creates a EntityClass with the provided name in this schema.
    * @param name
    * @param modifier
    */
-  public async createEntityClass(name: string, modifier?: ECClassModifier): Promise<EntityClass> { return this.createClass<EntityClass>(EntityClass, name, modifier); }
-  public createEntityClassSync(name: string, modifier?: ECClassModifier): EntityClass { return this.createClass<EntityClass>(EntityClass, name, modifier); }
+  public async createEntityClass(name: string, modifier?: ECClassModifier): Promise<EntityClass> {
+     return this.createClass<EntityClass>(EntityClass, name, modifier);
+  }
+
+  public createEntityClassSync(name: string, modifier?: ECClassModifier): EntityClass {
+     return this.createClass<EntityClass>(EntityClass, name, modifier);
+  }
 
   /**
    * Creates a Mixin with the provided name in this schema.
@@ -97,50 +104,82 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param name
    * @param modifier
    */
-  public async createStructClass(name: string, modifier?: ECClassModifier): Promise<StructClass> { return this.createClass<StructClass>(StructClass, name, modifier); }
-  public createStructClassSync(name: string, modifier?: ECClassModifier): StructClass { return this.createClass<StructClass>(StructClass, name, modifier); }
+  public async createStructClass(name: string, modifier?: ECClassModifier): Promise<StructClass> {
+    return this.createClass<StructClass>(StructClass, name, modifier);
+  }
+
+  public createStructClassSync(name: string, modifier?: ECClassModifier): StructClass {
+    return this.createClass<StructClass>(StructClass, name, modifier);
+  }
 
   /**
    * Creates a CustomAttributeClass with the provided name in this schema.
    * @param name
    * @param modifier
    */
-  public async createCustomAttributeClass(name: string, modifier?: ECClassModifier): Promise<CustomAttributeClass> { return this.createClass<CustomAttributeClass>(CustomAttributeClass, name, modifier); }
-  public createCustomAttributeClassSync(name: string, modifier?: ECClassModifier): CustomAttributeClass { return this.createClass<CustomAttributeClass>(CustomAttributeClass, name, modifier); }
+  public async createCustomAttributeClass(name: string, modifier?: ECClassModifier): Promise<CustomAttributeClass> {
+    return this.createClass<CustomAttributeClass>(CustomAttributeClass, name, modifier);
+  }
+
+  public createCustomAttributeClassSync(name: string, modifier?: ECClassModifier): CustomAttributeClass {
+    return this.createClass<CustomAttributeClass>(CustomAttributeClass, name, modifier);
+  }
 
   /**
    * Creates a RelationshipClass with the provided name in this schema.
    * @param name
    * @param modifier
    */
-  public async createRelationshipClass(name: string, modifier?: ECClassModifier): Promise<RelationshipClass> { return this.createClass<RelationshipClass>(RelationshipClass, name, modifier); }
-  public createRelationshipClassSync(name: string, modifier?: ECClassModifier): RelationshipClass { return this.createClass<RelationshipClass>(RelationshipClass, name, modifier); }
+  public async createRelationshipClass(name: string, modifier?: ECClassModifier): Promise<RelationshipClass> {
+    return this.createRelationshipClassSync(name, modifier);
+  }
+
+  public createRelationshipClassSync(name: string, modifier?: ECClassModifier): RelationshipClass {
+    return this.createClass<RelationshipClass>(RelationshipClass, name, modifier);
+  }
 
   /**
    * Creates an Enumeration with the provided name in this schema.
    * @param name
    */
-  public async createEnumeration(name: string): Promise<Enumeration> { return this.createChild<Enumeration>(Enumeration, name); }
-  public createEnumerationSync(name: string): Enumeration { return this.createChild<Enumeration>(Enumeration, name); }
+  public async createEnumeration(name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String): Promise<Enumeration> {
+    return this.createEnumerationSync(name, primitiveType);
+  }
+
+  public createEnumerationSync(name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String): Enumeration {
+    const child = new Enumeration(this, name, primitiveType);
+    this.addChild(child);
+    return child;
+  }
 
   /**
    * Creates an KindOfQuantity with the provided name in this schema.
    * @param name
    */
-  public async createKindOfQuantity(name: string): Promise<KindOfQuantity> { return this.createChild<KindOfQuantity>(KindOfQuantity, name); }
-  public createKindOfQuantitySync(name: string): KindOfQuantity { return this.createChild<KindOfQuantity>(KindOfQuantity, name); }
+  public async createKindOfQuantity(name: string): Promise<KindOfQuantity> {
+    return this.createChild<KindOfQuantity>(KindOfQuantity, name);
+  }
+
+  public createKindOfQuantitySync(name: string): KindOfQuantity {
+    return this.createChild<KindOfQuantity>(KindOfQuantity, name);
+  }
 
   /**
    * Creates an PropertyCategory with the provided name in this schema.
    * @param name
    */
-  public async createPropertyCategory(name: string): Promise<PropertyCategory> { return this.createChild<PropertyCategory>(PropertyCategory, name); }
-  public createPropertyCategorySync(name: string): PropertyCategory { return this.createChild<PropertyCategory>(PropertyCategory, name); }
+  public async createPropertyCategory(name: string): Promise<PropertyCategory> {
+    return this.createChild<PropertyCategory>(PropertyCategory, name);
+  }
+
+  public createPropertyCategorySync(name: string): PropertyCategory {
+    return this.createChild<PropertyCategory>(PropertyCategory, name);
+  }
 
   // This method is private at the moment, but there is really no reason it can't be public... Need to make sure this is the way we want to handle this
-  private createClass<T extends ECClass>(type: (new (schema: Schema, name: string) => T), name: string, modifier?: ECClassModifier): T {
-    const child = this.createChild(type, name);
-    if (modifier) child.modifier = modifier;
+  private createClass<T extends ECClass>(type: (new (schema: Schema, name: string, modifier?: ECClassModifier) => T), name: string, modifier?: ECClassModifier): T {
+    const child = new type(this, name, modifier);
+    this.addChild(child);
     return child;
   }
 
@@ -344,19 +383,19 @@ export default class Schema implements CustomAttributeContainerProps {
     if (undefined !== jsonObj.alias) {
       if (typeof(jsonObj.alias) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'alias' attribute. It should be of type 'string'.`);
-      this.alias = jsonObj.alias;
+      this._alias = jsonObj.alias;
     }
 
     if (undefined !== jsonObj.label) {
       if (typeof(jsonObj.label) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'label' attribute. It should be of type 'string'.`);
-      this.label = jsonObj.label;
+      this._label = jsonObj.label;
     }
 
     if (undefined !== jsonObj.description) {
       if (typeof(jsonObj.description) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'description' attribute. It should be of type 'string'.`);
-      this.description = jsonObj.description;
+      this._description = jsonObj.description;
     }
   }
 

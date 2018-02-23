@@ -19,22 +19,27 @@ type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
  * A Typescript class representation of a ECRelationshipClass.
  */
 export default class RelationshipClass extends ECClass {
-  public schema: Schema;
+  public readonly schema: Schema;
   public readonly type: SchemaChildType.RelationshipClass;
-  public strength: StrengthType;
-  public strengthDirection: RelatedInstanceDirection;
-  public readonly source: RelationshipConstraint;
-  public readonly target: RelationshipConstraint;
+  protected _strength: StrengthType = StrengthType.Referencing;
+  protected _strengthDirection: RelatedInstanceDirection = RelatedInstanceDirection.Forward;
+  protected _source: RelationshipConstraint;
+  protected _target: RelationshipConstraint;
 
-  constructor(schema: Schema, name: string, strength?: StrengthType, strengthDirection?: RelatedInstanceDirection, modifier?: ECClassModifier) {
+  constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name, SchemaChildType.RelationshipClass, modifier);
 
-    if (strength) this.strength = strength; else this.strength = StrengthType.Referencing;
-    if (strengthDirection) this.strengthDirection = strengthDirection; else this.strengthDirection = RelatedInstanceDirection.Forward;
-
-    this.source = new RelationshipConstraint(this, RelationshipEnd.Source);
-    this.target = new RelationshipConstraint(this, RelationshipEnd.Target);
+    this._source = new RelationshipConstraint(this, RelationshipEnd.Source);
+    this._target = new RelationshipConstraint(this, RelationshipEnd.Target);
   }
+
+  get strength() { return this._strength; }
+
+  get strengthDirection() { return this._strengthDirection; }
+
+  get source() { return this._source; }
+
+  get target() { return this._target; }
 
   /**
    *
@@ -74,13 +79,13 @@ export default class RelationshipClass extends ECClass {
     if (undefined !== jsonObj.strength) {
       if (typeof(jsonObj.strength) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this.name} has an invalid 'strength' attribute. It should be of type 'string'.`);
-      this.strength = parseStrength(jsonObj.strength);
+      this._strength = parseStrength(jsonObj.strength);
     }
 
     if (undefined !== jsonObj.strengthDirection) {
       if (typeof(jsonObj.strengthDirection) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this.name} has an invalid 'strengthDirection' attribute. It should be of type 'string'.`);
-      this.strengthDirection = parseStrengthDirection(jsonObj.strengthDirection);
+      this._strengthDirection = parseStrengthDirection(jsonObj.strengthDirection);
     }
   }
 }
@@ -90,19 +95,31 @@ export default class RelationshipClass extends ECClass {
  */
 export class RelationshipConstraint {
   protected _abstractConstraint?: LazyLoadedRelationshipConstraintClass;
-  public relationshipClass: RelationshipClass;
-  public relationshipEnd: RelationshipEnd;
-  public multiplicity?: RelationshipMultiplicity;
-  public polymorphic?: boolean;
-  public roleLabel?: string;
-  public constraintClasses?: LazyLoadedRelationshipConstraintClass[];
+  protected _relationshipClass: RelationshipClass;
+  protected _relationshipEnd: RelationshipEnd;
+  protected _multiplicity?: RelationshipMultiplicity;
+  protected _polymorphic?: boolean;
+  protected _roleLabel?: string;
+  protected _constraintClasses?: LazyLoadedRelationshipConstraintClass[];
 
-  constructor(relClass: RelationshipClass, relEnd: RelationshipEnd) {
-    this.relationshipEnd = relEnd;
-    this.polymorphic = false;
-    this.multiplicity = RelationshipMultiplicity.zeroOne;
-    this.relationshipClass = relClass;
+  constructor(relClass: RelationshipClass, relEnd: RelationshipEnd, roleLabel?: string, polymorphic?: boolean) {
+    this._relationshipEnd = relEnd;
+    if (polymorphic)
+      this._polymorphic = polymorphic;
+    else
+      this._polymorphic = false;
+
+    this._multiplicity = RelationshipMultiplicity.zeroOne;
+    this._relationshipClass = relClass;
+    this._roleLabel = roleLabel;
   }
+
+  get multiplicity() { return this._multiplicity; }
+  get polymorphic() { return this._polymorphic; }
+  get roleLabel() { return this._roleLabel; }
+  get constraintClasses(): LazyLoadedRelationshipConstraintClass[] | undefined { return this._constraintClasses; }
+  get relationshipClass() { return this._relationshipClass; }
+  get relationshipEnd() { return this._relationshipEnd; }
 
   get abstractConstraint(): LazyLoadedRelationshipConstraintClass | undefined {
     if (this._abstractConstraint)
@@ -132,11 +149,11 @@ export class RelationshipConstraint {
     if (this.constraintClasses && this.constraintClasses.length > 0 && this.constraintClasses[0].type !== constraint.key.type)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
-    if (!this.constraintClasses)
-      this.constraintClasses = [];
+    if (!this._constraintClasses)
+      this._constraintClasses = [];
 
     // TODO: Handle relationship constraints
-    this.constraintClasses.push(new DelayedPromiseWithProps(constraint.key, async () => constraint));
+    this._constraintClasses.push(new DelayedPromiseWithProps(constraint.key, async () => constraint));
   }
 
   /**
@@ -148,13 +165,13 @@ export class RelationshipConstraint {
     if (undefined !== jsonObj.roleLabel) {
       if (typeof(jsonObj.roleLabel) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipConstraint ${debugName(this)} has an invalid 'roleLabel' attribute. It should be of type 'string'.`);
-      this.roleLabel = jsonObj.roleLabel;
+      this._roleLabel = jsonObj.roleLabel;
     }
 
     if (undefined !== jsonObj.polymorphic) {
       if (typeof(jsonObj.polymorphic) !== "boolean")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipConstraint ${debugName(this)} has an invalid 'polymorphic' attribute. It should be of type 'boolean'.`);
-      this.polymorphic = jsonObj.polymorphic;
+      this._polymorphic = jsonObj.polymorphic;
     }
 
     if (undefined !== jsonObj.multiplicity) {
@@ -164,7 +181,7 @@ export class RelationshipConstraint {
       const parsedMultiplicity = RelationshipMultiplicity.fromString(jsonObj.multiplicity);
       if (!parsedMultiplicity)
         throw new ECObjectsError(ECObjectsStatus.InvalidMultiplicity, ``);
-      this.multiplicity = parsedMultiplicity;
+      this._multiplicity = parsedMultiplicity;
     }
 
     const relClassSchema = this.relationshipClass.schema;

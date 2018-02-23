@@ -12,21 +12,26 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
  */
 export default abstract class SchemaChild {
   public readonly schema: Schema;
-  public key: SchemaChildKey;
-  public description?: string;
-  public label?: string;
+  protected _key: SchemaChildKey;
+  protected _description?: string;
+  protected _label?: string;
 
   constructor(schema: Schema, name: string, type: SchemaChildType) {
-    this.key = new SchemaChildKey(name, type, schema.schemaKey);
+    this._key = new SchemaChildKey(name, type, schema.schemaKey);
     this.schema = schema;
   }
 
   public get type(): SchemaChildType { return this.key.type; }
 
   get name() { return this.key.name; }
-  set name(name: string) { this.key.name = name; }
 
   get fullName() { return this.key.schemaKey ? `${this.key.schemaKey}.${this.name}` : this.name; }
+
+  get key() { return this._key; }
+
+  get label() { return this._label; }
+
+  get description() { return this._description; }
 
   public async fromJson(jsonObj: any): Promise<void> {
     if (undefined === jsonObj.schemaChildType)
@@ -49,13 +54,13 @@ export default abstract class SchemaChild {
     if (undefined !== jsonObj.description) {
       if (typeof(jsonObj.description) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaChild ${this.name} has an invalid 'description' attribute. It should be of type 'string'.`);
-      this.description = jsonObj.description;
+      this._description = jsonObj.description;
     }
 
     if (undefined !== jsonObj.label) {
       if (typeof(jsonObj.label) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaChild ${this.name} has an invalid 'label' attribute. It should be of type 'string'.`);
-      this.label = jsonObj.label;
+      this._label = jsonObj.label;
     }
 
     if (undefined !== jsonObj.schema) {

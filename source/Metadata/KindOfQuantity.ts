@@ -18,13 +18,19 @@ export class FormatUnitSet {
  */
 export default class KindOfQuantity extends SchemaChild {
   public readonly type: SchemaChildType.KindOfQuantity;
-  public precision: number;
-  public presentationUnits: FormatUnitSet[];
-  public persistenceUnit: FormatUnitSet;
+  protected _precision: number;
+  protected _presentationUnits: FormatUnitSet[];
+  protected _persistenceUnit: FormatUnitSet;
+
+  get precision() { return this._precision; }
+
+  get presentationUnits() { return this._presentationUnits; }
+
+  get persistenceUnit() { return this._persistenceUnit; }
 
   constructor(schema: Schema, name: string) {
     super(schema, name, SchemaChildType.KindOfQuantity);
-    this.presentationUnits = [];
+    this._presentationUnits = [];
   }
 
   public get defaultPresentationUnit() {
@@ -37,7 +43,7 @@ export default class KindOfQuantity extends SchemaChild {
     if (undefined !== jsonObj.precision) {
       if (typeof(jsonObj.precision) !== "number")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'precision' attribute. It should be of type 'number'.`);
-      this.precision = jsonObj.precision;
+      this._precision = jsonObj.precision;
     }
 
     const validateFUS = (presUnit: any, kind: string) => {
@@ -61,7 +67,7 @@ export default class KindOfQuantity extends SchemaChild {
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'presentationUnits' attribute. It should be of type 'object[]'.`);
         validateFUS(presUnit, "presentationUnit");
       }
-      this.presentationUnits = jsonObj.presentationUnits as FormatUnitSet[];
+      this._presentationUnits = jsonObj.presentationUnits as FormatUnitSet[];
     }
 
     if (undefined !== jsonObj.persistenceUnit) {
@@ -69,7 +75,7 @@ export default class KindOfQuantity extends SchemaChild {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'persistenceUnit' attribute. It should be of type 'object'.`);
 
       validateFUS(jsonObj.persistenceUnit, "persistenceUnit");
-      this.persistenceUnit = jsonObj.persistenceUnit as FormatUnitSet;
+      this._persistenceUnit = jsonObj.persistenceUnit as FormatUnitSet;
     }
   }
 

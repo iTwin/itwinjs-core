@@ -19,18 +19,18 @@ export abstract class Property {
   protected _name: ECName;
   protected _type: PropertyType;
 
-  public class: AnyClass;
-  public description?: string;
-  public label?: string;
-  public isReadOnly: boolean;
-  public priority: number;
-  public inherited?: boolean;
-  public category?: LazyLoadedPropertyCategory;
-  public kindOfQuantity?: LazyLoadedKindOfQuantity;
+  protected _class: AnyClass; // TODO: class seems to be unused?
+  protected _description?: string;
+  protected _label?: string;
+  protected _isReadOnly: boolean;
+  protected _priority: number;
+  protected _inherited?: boolean;
+  protected _category?: LazyLoadedPropertyCategory;
+  protected _kindOfQuantity?: LazyLoadedKindOfQuantity;
 
   constructor(ecClass: ECClass, name: string, type: PropertyType) {
-    this.class = ecClass as AnyClass;
-    this.name = name;
+    this._class = ecClass as AnyClass;
+    this._name = new ECName(name);
     this._type = type;
   }
 
@@ -41,9 +41,22 @@ export abstract class Property {
   public isNavigation(): this is NavigationProperty { return PropertyTypeUtils.isNavigation(this._type); }
 
   get name() { return this._name.name; }
-  set name(name: string) {
-    this._name = new ECName(name);
-  }
+
+  get class() { return this._class; }
+
+  get label() { return this._label; }
+
+  get description() { return this._description; }
+
+  get isReadOnly() { return this._isReadOnly; }
+
+  get priority() { return this._priority; }
+
+  get inherited() { return this._inherited; }
+
+  get category(): LazyLoadedPropertyCategory | undefined { return this._category; }
+
+  get kindOfQuantity(): LazyLoadedKindOfQuantity | undefined { return this._kindOfQuantity; }
 
   public async fromJson(jsonObj: any): Promise<void> {
     if (undefined !== jsonObj.name) {
@@ -57,25 +70,25 @@ export abstract class Property {
     if (undefined !== jsonObj.label) {
       if (typeof(jsonObj.label) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'label' attribute. It should be of type 'string'.`);
-      this.label = jsonObj.label;
+      this._label = jsonObj.label;
     }
 
     if (undefined !== jsonObj.description) {
       if (typeof(jsonObj.description) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'description' attribute. It should be of type 'string'.`);
-      this.description = jsonObj.description;
+      this._description = jsonObj.description;
     }
 
     if (undefined !== jsonObj.priority) {
       if (typeof(jsonObj.priority) !== "number")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'priority' attribute. It should be of type 'number'.`);
-      this.priority = jsonObj.priority;
+      this._priority = jsonObj.priority;
     }
 
     if (undefined !== jsonObj.readOnly) {
       if (typeof(jsonObj.readOnly) !== "boolean")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'readOnly' attribute. It should be of type 'boolean'.`);
-      this.isReadOnly = jsonObj.readOnly;
+      this._isReadOnly = jsonObj.readOnly;
     }
 
     if (undefined !== jsonObj.category) {
@@ -86,7 +99,7 @@ export abstract class Property {
       if (!propertyCategory)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'category' ("${jsonObj.category}") that cannot be found.`);
 
-      this.category = new DelayedPromiseWithProps(propertyCategory.key, async () => propertyCategory);
+      this._category = new DelayedPromiseWithProps(propertyCategory.key, async () => propertyCategory);
     }
 
     if (undefined !== jsonObj.kindOfQuantity) {
@@ -97,7 +110,7 @@ export abstract class Property {
       if (!kindOfQuantity)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'kindOfQuantity' ("${jsonObj.kindOfQuantity}") that cannot be found.`);
 
-      this.kindOfQuantity = new DelayedPromiseWithProps(kindOfQuantity.key, async () => kindOfQuantity);
+      this._kindOfQuantity = new DelayedPromiseWithProps(kindOfQuantity.key, async () => kindOfQuantity);
     }
 
     // TODO CustomAttributes
@@ -108,11 +121,21 @@ export abstract class Property {
  *
  */
 export abstract class PrimitiveOrEnumPropertyBase extends Property {
-  public extendedTypeName?: string;
-  public minLength: number;
-  public maxLength: number;
-  public minValue: number;
-  public maxValue: number;
+  protected _extendedTypeName?: string;
+  protected _minLength?: number;
+  protected _maxLength?: number;
+  protected _minValue?: number;
+  protected _maxValue?: number;
+
+  get extendedTypeName() { return this._extendedTypeName; }
+  get minLength() { return this._minLength; }
+  get maxLength() { return this._maxLength; }
+  get minValue() { return this._minValue; }
+  get maxValue() { return this._maxValue; }
+
+  constructor(ecClass: ECClass, name: string, type: PropertyType) {
+    super(ecClass, name, type);
+  }
 
   public async fromJson(jsonObj: any): Promise<void> {
     await super.fromJson(jsonObj);
@@ -120,37 +143,37 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
     if (undefined !== jsonObj.minLength) {
       if (typeof(jsonObj.minLength) !== "number")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'minLength' attribute. It should be of type 'number'.`);
-      this.minLength = jsonObj.minLength;
+      this._minLength = jsonObj.minLength;
     }
 
     if (undefined !== jsonObj.maxLength) {
       if (typeof(jsonObj.maxLength) !== "number")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'maxLength' attribute. It should be of type 'number'.`);
-      this.maxLength = jsonObj.maxLength;
+      this._maxLength = jsonObj.maxLength;
     }
 
     if (undefined !== jsonObj.minValue) {
       if (typeof(jsonObj.minValue) !== "number")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'minValue' attribute. It should be of type 'number'.`);
-      this.minValue = jsonObj.minValue;
+      this._minValue = jsonObj.minValue;
     }
 
     if (undefined !== jsonObj.maxValue) {
       if (typeof(jsonObj.maxValue) !== "number")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'maxValue' attribute. It should be of type 'number'.`);
-      this.maxValue = jsonObj.maxValue;
+      this._maxValue = jsonObj.maxValue;
     }
 
     if (undefined !== jsonObj.extendedTypeName) {
       if (typeof(jsonObj.extendedTypeName) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'extendedTypeName' attribute. It should be of type 'string'.`);
-      this.extendedTypeName = jsonObj.extendedTypeName;
+      this._extendedTypeName = jsonObj.extendedTypeName;
     }
   }
 }
 
 export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
-  public get primitiveType(): PrimitiveType { return PropertyTypeUtils.getPrimitiveType(this._type); }
+  get primitiveType(): PrimitiveType { return PropertyTypeUtils.getPrimitiveType(this._type); }
 
   constructor(ecClass: ECClass, name: string, primitiveType: PrimitiveType = PrimitiveType.Integer) {
     super(ecClass, name, PropertyTypeUtils.fromPrimitiveType(primitiveType));
@@ -170,12 +193,14 @@ export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
 }
 
 export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
-  public enumeration: LazyLoadedEnumeration;
+  protected _enumeration: LazyLoadedEnumeration;
+
+  get enumeration(): LazyLoadedEnumeration { return this._enumeration; }
 
   constructor(ecClass: ECClass, name: string, type: LazyLoadedEnumeration) {
     // TODO: Should we allow specifying the backing type?
     super(ecClass, name, PropertyType.Integer_Enumeration);
-    this.enumeration = type;
+    this._enumeration = type;
   }
 
   public async fromJson(jsonObj: any): Promise<void> {
@@ -192,11 +217,13 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
 }
 
 export class StructProperty extends Property {
-  public structClass: LazyLoadedStructClass;
+  protected _structClass: LazyLoadedStructClass;
+
+  get structClass(): LazyLoadedStructClass { return this._structClass; }
 
   constructor(ecClass: ECClass, name: string, type: LazyLoadedStructClass) {
     super(ecClass, name, PropertyType.Struct);
-    this.structClass = type;
+    this._structClass = type;
   }
 
   public async fromJson(jsonObj: any): Promise<void> {
@@ -213,34 +240,39 @@ export class StructProperty extends Property {
 }
 
 export class NavigationProperty extends Property {
-  public relationshipClass: LazyLoadedRelationshipClass;
-  public direction: RelatedInstanceDirection;
+  protected _relationshipClass: LazyLoadedRelationshipClass;
+  protected _direction: RelatedInstanceDirection;
+
+  get relationshipClass(): LazyLoadedRelationshipClass { return this._relationshipClass; }
+
+  get direction() { return this._direction; }
 
   constructor(ecClass: ECClass, name: string, relationship: LazyLoadedRelationshipClass, direction?: RelatedInstanceDirection) {
     super(ecClass, name, PropertyType.Navigation);
-    this.relationshipClass = relationship;
+    this._relationshipClass = relationship;
 
-    if (direction !== undefined)
-      this.direction = direction;
-    else
-      this.direction = RelatedInstanceDirection.Forward;
+    this._direction = (direction !== undefined) ? direction : RelatedInstanceDirection.Forward;
   }
 }
 
 export type Constructor<T> = new(...args: any[]) => T;
 
-export interface ArrayProperty {
-  minOccurs: number;
-  maxOccurs: number;
+export abstract class ArrayProperty {
+  protected _minOccurs: number;
+  protected _maxOccurs?: number;
+
+  get minOccurs() { return this._minOccurs; }
+
+  get maxOccurs() { return this._maxOccurs; }
 }
 
 // tslint:disable-next-line:variable-name
-const ArrayProperty = <T extends Constructor<Property>>(Base: T) => {
+const ArrayPropertyMixin = <T extends Constructor<Property>>(Base: T) => {
   return class extends Base {
     public minOccurs: number = 0;
-    public maxOccurs: number;
+    public maxOccurs?: number;
 
-    constructor(...args: any[]) {
+    constructor( ...args: any[]) {
       super(...args);
       this._type = PropertyTypeUtils.asArray(this._type);
     }
@@ -263,9 +295,22 @@ const ArrayProperty = <T extends Constructor<Property>>(Base: T) => {
   } as typeof Base & Constructor<ArrayProperty>;
 };
 
-export class PrimitiveArrayProperty extends ArrayProperty(PrimitiveProperty) {}
-export class EnumerationArrayProperty extends ArrayProperty(EnumerationProperty) {}
-export class StructArrayProperty extends ArrayProperty(StructProperty) {}
+export class PrimitiveArrayProperty extends ArrayPropertyMixin(PrimitiveProperty) {
+  constructor(ecClass: ECClass, name: string, primitiveType: PrimitiveType = PrimitiveType.Integer) {
+    super(ecClass, name, primitiveType);
+  }
+}
+
+export class EnumerationArrayProperty extends ArrayPropertyMixin(EnumerationProperty) {
+  constructor(ecClass: ECClass, name: string, type: LazyLoadedEnumeration) {
+    super(ecClass, name, type);
+  }
+}
+export class StructArrayProperty extends ArrayPropertyMixin(StructProperty) {
+  constructor(ecClass: ECClass, name: string, type: LazyLoadedStructClass) {
+    super(ecClass, name, type);
+  }
+}
 
 export type AnyArrayProperty = PrimitiveArrayProperty | EnumerationArrayProperty | StructArrayProperty;
 export type AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty;

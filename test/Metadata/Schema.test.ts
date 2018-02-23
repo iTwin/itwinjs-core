@@ -22,17 +22,6 @@ describe("Schema", () => {
       assert.equal(testSchema.minorVersion, 15);
     });
 
-    it("with setting properties", () => {
-      const testSchema = new Schema("TestSchema", 1, 0, 2);
-      testSchema.alias = "ts";
-      assert.isDefined(testSchema.alias);
-      assert.equal(testSchema.alias, "ts");
-
-      testSchema.description = "Test setting a description";
-      assert.isDefined(testSchema.description);
-      assert.equal(testSchema.description, "Test setting a description");
-    });
-
     it("with invalid version numbers should fail", () => {
       expect(() => {new Schema("NewSchemaWithInvalidReadVersion", 123, 4, 5); }).to.throw(ECObjectsError);
       expect(() => {new Schema("NewSchemaWithInvalidWriteVersion", 12, 345, 6); }).to.throw(ECObjectsError);
@@ -41,11 +30,11 @@ describe("Schema", () => {
 
     it("should throw when attempting to change the version to an invalid version", () => {
       const testSchema = new Schema("TestSchema", 1, 1, 1);
-      expect(() => {testSchema.readVersion = 123; }).to.throw(ECObjectsError);
+      expect(() => {testSchema.schemaKey.readVersion = 123; }).to.throw(ECObjectsError);
       expect(testSchema.readVersion).equal(1);
-      expect(() => {testSchema.writeVersion = 123; }).to.throw(ECObjectsError);
+      expect(() => {testSchema.schemaKey.writeVersion = 123; }).to.throw(ECObjectsError);
       expect(testSchema.writeVersion).equal(1);
-      expect(() => {testSchema.minorVersion = 123; }).to.throw(ECObjectsError);
+      expect(() => {testSchema.schemaKey.minorVersion = 123; }).to.throw(ECObjectsError);
       expect(testSchema.minorVersion).equal(1);
     });
   });
