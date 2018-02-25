@@ -76,7 +76,12 @@ export class IModelDb extends IModel {
   }
 
   private initializeIModelDb() {
-    const props = JSON.parse(this.briefcaseEntry!.nativeDb.getIModelProps()) as IModelProps;
+    let props: any;
+    try {
+      props = JSON.parse(this.briefcaseEntry!.nativeDb.getIModelProps()) as IModelProps;
+    } catch (error) {
+
+    }
     const name = props.rootSubject ? props.rootSubject.name : path.basename(this.briefcaseEntry!.pathname);
     super.initialize(name, props);
 

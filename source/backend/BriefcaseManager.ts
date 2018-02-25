@@ -854,16 +854,16 @@ export class BriefcaseManager {
     // Close Db before merge (if there are schema changes)
     const containsSchemaChanges: boolean = changeSets.some((changeSet: ChangeSet) => changeSet.containsSchemaChanges === ContainsSchemaChanges.Yes);
     if (containsSchemaChanges && briefcase.isOpen)
-      BriefcaseManager.close(accessToken, briefcase, KeepBriefcase.Yes);
+      briefcase.onBeforeClose.raiseEvent(briefcase);
 
     // Apply the changes
-    const result: DbResult = briefcase.nativeDb!.processChangeSets(JSON.stringify(changeSetTokens), processOption);
+    const result: DbResult = briefcase.nativeDb!.processChangeSets(JSON.stringify(changeSetTokens), processOption, containsSchemaChanges);
     if (DbResult.BE_SQLITE_OK !== result)
       return Promise.reject(new IModelError(result));
 
-    // Reopen Db after merge (if there are schema changes)
+    // Mark Db as reopened after merge (if there are schema changes)
     if (containsSchemaChanges)
-      BriefcaseManager.openBriefcase(briefcase);
+      briefcase.isOpen = true;
 
     switch (processOption) {
       case ChangeSetProcessOption.Merge:
