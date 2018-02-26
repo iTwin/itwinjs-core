@@ -184,7 +184,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
       return true;
 
     if (isButtonEvent && ev.isDown) {
-      iModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, iModelApp.i18N.translate("CoreTools:tools.ElementSet.Error.ProjectExtents")));
+      iModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, iModelApp.i18n.translate("CoreTools:tools.ElementSet.Error.ProjectExtents")));
     }
 
     return false;

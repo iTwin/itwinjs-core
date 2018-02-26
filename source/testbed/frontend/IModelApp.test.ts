@@ -34,7 +34,7 @@ class TestApp extends IModelApp {
   protected onStartup() {
     this._accuDraw = new TestAccuDraw();
 
-    this.testNamespace = iModelApp.i18N.registerNamespace("TestApp");
+    this.testNamespace = iModelApp.i18n.registerNamespace("TestApp");
     TestImmediate.register(this.testNamespace);
     TestIdleTool.register();
     TestRotateTool.register();
@@ -99,19 +99,19 @@ describe("IModelApp", () => {
 
   it("Should do trivial localizations", () => {
     // we have "TrivialTest.Test1" as the key in TestApp.json
-    assert.equal(iModelApp.i18N.translate("TestApp:TrivialTests.Test1"), "Localized Trivial Test 1");
-    assert.equal(iModelApp.i18N.translate("TestApp:TrivialTests.Test2"), "Localized Trivial Test 2");
-    assert.equal(iModelApp.i18N.translate("LocateFailure.NoElements"), "No Elements Found", "message from default (iModelJs) namespace");
+    assert.equal(iModelApp.i18n.translate("TestApp:TrivialTests.Test1"), "Localized Trivial Test 1");
+    assert.equal(iModelApp.i18n.translate("TestApp:TrivialTests.Test2"), "Localized Trivial Test 2");
+    assert.equal(iModelApp.i18n.translate("LocateFailure.NoElements"), "No Elements Found", "message from default (iModelJs) namespace");
   });
 
   it("Should return the key for localization keys that are missing", () => {
     // there is no key for TrivialTest.Test3
-    assert.equal(iModelApp.i18N.translate("TestApp:TrivialTests.Test3"), "TrivialTests.Test3");
+    assert.equal(iModelApp.i18n.translate("TestApp:TrivialTests.Test3"), "TrivialTests.Test3");
   });
 
   it("Should properly substitute the  values in localized strings with interpolations", () => {
-    assert.equal(iModelApp.i18N.translate("TestApp:SubstitutionTests.Test1", { varA: "Variable1", varB: "Variable2" }), "Substitute Variable1 and Variable2");
-    assert.equal(iModelApp.i18N.translate("TestApp:SubstitutionTests.Test2", { varA: "Variable1", varB: "Variable2" }), "Reverse substitute Variable2 and Variable1");
+    assert.equal(iModelApp.i18n.translate("TestApp:SubstitutionTests.Test1", { varA: "Variable1", varB: "Variable2" }), "Substitute Variable1 and Variable2");
+    assert.equal(iModelApp.i18n.translate("TestApp:SubstitutionTests.Test2", { varA: "Variable1", varB: "Variable2" }), "Reverse substitute Variable2 and Variable1");
   });
 
 });
