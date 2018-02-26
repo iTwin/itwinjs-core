@@ -1032,8 +1032,10 @@ export class BriefcaseManager {
 
   /** @hidden */
   public static async deleteAllBriefcases(accessToken: AccessToken, iModelId: string) {
+    if (BriefcaseManager.hubClient === undefined)
+      return;
     const promises = new Array<Promise<void>>();
-    const briefcases = await BriefcaseManager.hubClient!.getBriefcases(accessToken, iModelId);
+    const briefcases = await BriefcaseManager.hubClient.getBriefcases(accessToken, iModelId);
     briefcases.forEach((briefcase: Briefcase) => {
       promises.push(BriefcaseManager.hubClient!.deleteBriefcase(accessToken, iModelId, briefcase.briefcaseId!));
     });
@@ -1042,8 +1044,9 @@ export class BriefcaseManager {
 
   /** @hidden */
   public static async deleteAllBriefcasesIfNewInstance(accessToken: AccessToken, iModelId: string) {
-    if (!fs.existsSync(iModelHost.configuration.briefcaseCacheDir))
-      return BriefcaseManager.deleteAllBriefcases(accessToken, iModelId);
-    return;
+    if (fs.existsSync(iModelHost.configuration.briefcaseCacheDir))
+      return;
+    await BriefcaseManager.initCache(accessToken); // set up hubClient
+    return BriefcaseManager.deleteAllBriefcases(accessToken, iModelId);
   }
 }
