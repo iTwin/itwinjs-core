@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { ColorDef } from "../../common/ColorDef";
+import { ColorDef } from "../../../common/ColorDef";
 
 export class ColorIndexNonUniform {
   public colors: Uint32Array;
@@ -14,6 +14,7 @@ export class ColorIndexNonUniform {
     this.hasAlpha = hasAlpha;
   }
 }
+
 export class ColorIndex {
   public numColors: number = 1;
   public uniform: number = 0x00ffffff;

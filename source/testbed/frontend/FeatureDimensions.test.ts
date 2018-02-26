@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { LUTParams, getFeatureName, FeatureDimension, FeatureDimensions, FeatureDimensionsIterator } from "../../frontend/render/FeatureDimensions";
-import { FeatureIndexType } from "../../frontend/render/FeatureIndex";
+import { LUTParams, getFeatureName, FeatureDimension, FeatureDimensions, FeatureDimensionsIterator } from "../../frontend/render/webgl/FeatureDimensions";
+import { FeatureIndexType } from "../../frontend/render/webgl/FeatureIndex";
 
 describe("LUTParams", () => {
   it("should create and store LUTParams", () => {
