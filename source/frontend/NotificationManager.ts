@@ -136,8 +136,8 @@ export class ActivityMessageDetails {
  * non-interactive sessions, these messages may be saved to a log file or simply discarded.
  */
 export class NotificationManager {
-  /** Output a prompt given a localization key. */
-  public outputPromptByKey(key: string) { this.outputPrompt(iModelApp.i18N.translate(key)); }
+  /** Output a prompt, given an i18n key. */
+  public outputPromptByKey(key: string) { this.outputPrompt(iModelApp.i18n.translate(key)); }
 
   /** Output a prompt to the user. A 'prompt' is intended to indicate an action the user should take to proceed. */
   public outputPrompt(_prompt: string) { }

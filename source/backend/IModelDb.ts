@@ -529,8 +529,11 @@ export class IModelDb extends IModel {
     const metaData = new EntityMetaData(JSON.parse(metaDataJson!));
     this.classMetaDataRegistry.add(classFullName, metaData);
     // Recursive, to make sure that base class is cached.
-    if (metaData.baseClasses !== undefined && metaData.baseClasses.length > 0)
-      this.loadMetaData(metaData.baseClasses[0]);
+    if (metaData.baseClasses !== undefined && metaData.baseClasses.length > 0) {
+      metaData.baseClasses.forEach((baseClassName: string) => {
+        this.loadMetaData(baseClassName);
+      });
+    }
   }
 
   /** Execute a test from native code

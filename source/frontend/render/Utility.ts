@@ -77,3 +77,5 @@ export class RangeUtil {
     return undefined;
   }
 }
+
+export interface Cloneable<T> { clone: () => T; }

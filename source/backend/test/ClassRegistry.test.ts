@@ -2,11 +2,13 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
+import * as path from "path";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Code } from "@bentley/imodeljs-common/lib/Code";
 import { EntityMetaData } from "../Entity";
 import { IModelDb } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
+import { KnownTestLocations } from "./KnownTestLocations";
 
 describe("Class Registry", () => {
   let imodel: IModelDb;
@@ -60,6 +62,33 @@ describe("Class Registry", () => {
       const n = metaData.properties.modelSelector;
       assert.equal(n.relationshipClass, "BisCore:SpatialViewDefinitionUsesModelSelector");
     }
+  });
+
+  it("should verify Entity metadata with both base class and mixin properties", () => {
+    const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
+    imodel.importSchema(schemaPathname); // will throw an exception if import fails
+
+    const testDomainClass = imodel.getMetaData("TestDomain:TestDomainClass"); // will throw on failure
+
+    assert.equal(testDomainClass.baseClasses.length, 2);
+    assert.equal(testDomainClass.baseClasses[0], "BisCore:DefinitionElement");
+    assert.equal(testDomainClass.baseClasses[1], "TestDomain:IMixin");
+
+    // Ensures the IMixin has been loaded as part of getMetadata call above.
+    assert.isDefined(imodel.classMetaDataRegistry.find("TestDomain:IMixin"));
+
+    // Verify that the forEach method which is called when constructing an entity
+    // is picking up all expected properties.
+    const testData: string[] = [];
+    EntityMetaData.forEach(imodel, "TestDomain:TestDomainClass", true, (propName) => {
+      testData.push(propName);
+    }, false);
+
+    const expectedString = testData.find((testString: string) => {
+      return testString === "testMixinProperty";
+    });
+
+    assert.isDefined(expectedString);
   });
 
 });

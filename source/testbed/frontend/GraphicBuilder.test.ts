@@ -49,162 +49,162 @@ describe("GraphicBuilderCreateParams", () => {
     let b: GraphicBuilderCreateParams = new GraphicBuilderCreateParams(tf2, GraphicType.ViewBackground, vp2, iModel2);
     assert.isTrue(a !== b, "constructor test 4 failed");
     assert.isTrue(a.viewport === vp, "constructor test 5 failed");
-    assert.isTrue(a.placement === tf, "constructor test 6 failed");
+    assert.isTrue(a.placement.isAlmostEqual(tf), "constructor test 6 failed");
     assert.isTrue(a.type === GraphicType.Scene, "constructor test 7 failed");
     assert.isTrue(a.iModel === iModel, "constructor test 8 failed");
     assert.isTrue(b.viewport === vp2, "constructor test 9 failed");
-    assert.isTrue(b.placement === tf2, "constructor test 10 failed");
+    assert.isTrue(b.placement.isAlmostEqual(tf2), "constructor test 10 failed");
     assert.isTrue(b.type === GraphicType.ViewBackground, "constructor test 11 failed");
     assert.isTrue(b.iModel === iModel2, "constructor test 12 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewOverlay);
     assert.isTrue(a.viewport === undefined, "constructor test 13 failed");
-    assert.isTrue(a.placement === tf, "constructor test 14 failed");
+    assert.isTrue(a.placement.isAlmostEqual(tf), "constructor test 14 failed");
     assert.isTrue(a.type === GraphicType.ViewOverlay, "constructor test 15 failed");
     assert.isTrue(a.iModel === undefined, "constructor test 16 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewOverlay, vp);
     assert.isTrue(a.viewport === vp, "constructor test 17 failed");
-    assert.isTrue(a.placement === tf, "constructor test 18 failed");
+    assert.isTrue(a.placement.isAlmostEqual(tf), "constructor test 18 failed");
     assert.isTrue(a.type === GraphicType.ViewOverlay, "constructor test 19 failed");
     assert.isTrue(a.iModel === undefined, "constructor test 20 failed");
 
     /** Test static Scene function */
-    a = GraphicBuilderCreateParams.Scene();
+    a = GraphicBuilderCreateParams.scene();
     assert.isTrue(a.viewport === undefined, "static Scene test 1 failed");
     assert.isTrue(a.placement.isIdentity(), "static Scene test 2 failed");
     assert.isTrue(a.type === GraphicType.Scene, "static Scene test 3 failed");
     assert.isTrue(a.iModel === undefined, "static Scene test 4 failed");
-    a = GraphicBuilderCreateParams.Scene(vp);
+    a = GraphicBuilderCreateParams.scene(vp);
     assert.isTrue(a.viewport === vp, "static Scene test 5 failed");
     assert.isTrue(a.placement.isIdentity(), "static Scene test 6 failed");
     assert.isTrue(a.type === GraphicType.Scene, "static Scene test 7 failed");
     assert.isTrue(a.iModel === undefined, "static Scene test 8 failed");
-    a = GraphicBuilderCreateParams.Scene(undefined, tf2);
+    a = GraphicBuilderCreateParams.scene(undefined, tf2);
     assert.isTrue(a.viewport === undefined, "static Scene test 9 failed");
-    assert.isTrue(a.placement === tf2, "static Scene test 10 failed");
+    assert.isTrue(a.placement.isAlmostEqual(tf2), "static Scene test 10 failed");
     assert.isTrue(a.type === GraphicType.Scene, "static Scene test 11 failed");
     assert.isTrue(a.iModel === undefined, "static Scene test 12 failed");
-    a = GraphicBuilderCreateParams.Scene(vp, tf2);
+    a = GraphicBuilderCreateParams.scene(vp, tf2);
     assert.isTrue(a.viewport === vp, "static Scene test 13 failed");
-    assert.isTrue(a.placement === tf2, "static Scene test 14 failed");
+    assert.isTrue(a.placement.isAlmostEqual(tf2), "static Scene test 14 failed");
     assert.isTrue(a.type === GraphicType.Scene, "static Scene test 15 failed");
     assert.isTrue(a.iModel === undefined, "static Scene test 16 failed");
-    a = GraphicBuilderCreateParams.Scene(undefined, undefined, iModel);
+    a = GraphicBuilderCreateParams.scene(undefined, undefined, iModel);
     assert.isTrue(a.viewport === undefined, "static Scene test 17 failed");
     assert.isTrue(a.placement.isIdentity(), "static Scene test 18 failed");
     assert.isTrue(a.type === GraphicType.Scene, "static Scene test 19 failed");
     assert.isTrue(a.iModel === iModel, "static Scene test 20 failed");
-    a = GraphicBuilderCreateParams.Scene(vp, undefined, iModel);
+    a = GraphicBuilderCreateParams.scene(vp, undefined, iModel);
     assert.isTrue(a.viewport === vp, "static Scene test 21 failed");
     assert.isTrue(a.placement.isIdentity(), "static Scene test 22 failed");
     assert.isTrue(a.type === GraphicType.Scene, "static Scene test 23 failed");
     assert.isTrue(a.iModel === iModel, "static Scene test 24 failed");
-    a = GraphicBuilderCreateParams.Scene(undefined, tf2, iModel);
+    a = GraphicBuilderCreateParams.scene(undefined, tf2, iModel);
     assert.isTrue(a.viewport === undefined, "static Scene test 25 failed");
-    assert.isTrue(a.placement === tf2, "static Scene test 26 failed");
+    assert.isTrue(a.placement.isAlmostEqual(tf2), "static Scene test 26 failed");
     assert.isTrue(a.type === GraphicType.Scene, "static Scene test 27 failed");
     assert.isTrue(a.iModel === iModel, "static Scene test 28 failed");
-    a = GraphicBuilderCreateParams.Scene(vp, tf2, iModel);
+    a = GraphicBuilderCreateParams.scene(vp, tf2, iModel);
     assert.isTrue(a.viewport === vp, "static Scene test 29 failed");
-    assert.isTrue(a.placement === tf2, "static Scene test 30 failed");
+    assert.isTrue(a.placement.isAlmostEqual(tf2), "static Scene test 30 failed");
     assert.isTrue(a.type === GraphicType.Scene, "static Scene test 31 failed");
     assert.isTrue(a.iModel === iModel, "static Scene test 32 failed");
 
     /** Test static WorldDecoration function */
-    a = GraphicBuilderCreateParams.WorldDecoration(vp);
+    a = GraphicBuilderCreateParams.worldDecoration(vp);
     assert.isTrue(a.viewport === vp, "static WorldDecoration test 1 failed");
     assert.isTrue(a.placement.isIdentity(), "static WorldDecoration test 2 failed");
     assert.isTrue(a.type === GraphicType.WorldDecoration, "static WorldDecoration test 3 failed");
     assert.isTrue(a.iModel === undefined, "static WorldDecoration test 4 failed");
-    a = GraphicBuilderCreateParams.WorldDecoration(vp2);
+    a = GraphicBuilderCreateParams.worldDecoration(vp2);
     assert.isTrue(a.viewport === vp2, "static WorldDecoration test 5 failed");
     assert.isTrue(a.placement.isIdentity(), "static WorldDecoration test 6 failed");
     assert.isTrue(a.type === GraphicType.WorldDecoration, "static WorldDecoration test 7 failed");
     assert.isTrue(a.iModel === undefined, "static WorldDecoration test 8 failed");
-    a = GraphicBuilderCreateParams.WorldDecoration(vp, tf2);
+    a = GraphicBuilderCreateParams.worldDecoration(vp, tf2);
     assert.isTrue(a.viewport === vp, "static WorldDecoration test 9 failed");
-    assert.isTrue(a.placement === tf2, "static WorldDecoration test 10 failed");
+    assert.isTrue(a.placement.isAlmostEqual(tf2), "static WorldDecoration test 10 failed");
     assert.isTrue(a.type === GraphicType.WorldDecoration, "static WorldDecoration test 11 failed");
     assert.isTrue(a.iModel === undefined, "static WorldDecoration test 12 failed");
 
     /** Test static WorldOverlay function */
-    a = GraphicBuilderCreateParams.WorldOverlay(vp);
+    a = GraphicBuilderCreateParams.worldOverlay(vp);
     assert.isTrue(a.viewport === vp, "static WorldOverlay test 1 failed");
     assert.isTrue(a.placement.isIdentity(), "static WorldOverlay test 2 failed");
     assert.isTrue(a.type === GraphicType.WorldOverlay, "static WorldOverlay test 3 failed");
     assert.isTrue(a.iModel === undefined, "static WorldOverlay test 4 failed");
-    a = GraphicBuilderCreateParams.WorldOverlay(vp2);
+    a = GraphicBuilderCreateParams.worldOverlay(vp2);
     assert.isTrue(a.viewport === vp2, "static WorldOverlay test 5 failed");
     assert.isTrue(a.placement.isIdentity(), "static WorldOverlay test 6 failed");
     assert.isTrue(a.type === GraphicType.WorldOverlay, "static WorldOverlay test 7 failed");
     assert.isTrue(a.iModel === undefined, "static WorldOverlay test 8 failed");
-    a = GraphicBuilderCreateParams.WorldOverlay(vp, tf2);
+    a = GraphicBuilderCreateParams.worldOverlay(vp, tf2);
     assert.isTrue(a.viewport === vp, "static WorldOverlay test 9 failed");
-    assert.isTrue(a.placement === tf2, "static WorldOverlay test 10 failed");
+    assert.isTrue(a.placement.isAlmostEqual(tf2), "static WorldOverlay test 10 failed");
     assert.isTrue(a.type === GraphicType.WorldOverlay, "static WorldOverlay test 11 failed");
     assert.isTrue(a.iModel === undefined, "static WorldOverlay test 12 failed");
 
     /** Test static ViewOverlay function */
-    a = GraphicBuilderCreateParams.ViewOverlay(vp);
+    a = GraphicBuilderCreateParams.viewOverlay(vp);
     assert.isTrue(a.viewport === vp, "static ViewOverlay test 1 failed");
     assert.isTrue(a.placement.isIdentity(), "static ViewOverlay test 2 failed");
     assert.isTrue(a.type === GraphicType.ViewOverlay, "static ViewOverlay test 3 failed");
     assert.isTrue(a.iModel === undefined, "static ViewOverlay test 4 failed");
-    a = GraphicBuilderCreateParams.ViewOverlay(vp2);
+    a = GraphicBuilderCreateParams.viewOverlay(vp2);
     assert.isTrue(a.viewport === vp2, "static ViewOverlay test 5 failed");
     assert.isTrue(a.placement.isIdentity(), "static ViewOverlay test 6 failed");
     assert.isTrue(a.type === GraphicType.ViewOverlay, "static ViewOverlay test 7 failed");
     assert.isTrue(a.iModel === undefined, "static ViewOverlay test 8 failed");
-    a = GraphicBuilderCreateParams.ViewOverlay(vp, tf2);
+    a = GraphicBuilderCreateParams.viewOverlay(vp, tf2);
     assert.isTrue(a.viewport === vp, "static ViewOverlay test 9 failed");
-    assert.isTrue(a.placement === tf2, "static ViewOverlay test 10 failed");
+    assert.isTrue(a.placement.isAlmostEqual(tf2), "static ViewOverlay test 10 failed");
     assert.isTrue(a.type === GraphicType.ViewOverlay, "static ViewOverlay test 11 failed");
     assert.isTrue(a.iModel === undefined, "static ViewOverlay test 12 failed");
 
     /** Test SubGraphic function */
     tf.multiplyXYZW(5, 4, 3, 2);
-    a = GraphicBuilderCreateParams.Scene(vp, tf2, iModel);
+    a = GraphicBuilderCreateParams.scene(vp, tf2, iModel);
     b = new GraphicBuilderCreateParams(tf, GraphicType.WorldOverlay);
     assert.isTrue(b.viewport === undefined, "SubGraphic test 1 failed");
-    assert.isTrue(b.placement === tf, "SubGraphic test 2 failed");
+    assert.isTrue(b.placement.isAlmostEqual(tf), "SubGraphic test 2 failed");
     assert.isTrue(b.type === GraphicType.WorldOverlay, "SubGraphic test 3 failed");
     assert.isTrue(b.iModel === undefined, "SubGraphic test 4 failed");
-    b = a.SubGraphic();
+    b = a.subGraphic();
     assert.isTrue(b.viewport === vp, "SubGraphic test 5 failed");
     assert.isTrue(b.placement.isIdentity(), "SubGraphic test 6 failed");
     assert.isTrue(b.type === GraphicType.Scene, "SubGraphic test 7 failed");
     assert.isTrue(b.iModel === iModel, "SubGraphic test 8 failed");
     b = new GraphicBuilderCreateParams(tf2, GraphicType.WorldOverlay);
     assert.isTrue(b.viewport === undefined, "SubGraphic test 9 failed");
-    assert.isTrue(b.placement === tf2, "SubGraphic test 10 failed");
+    assert.isTrue(b.placement.isAlmostEqual(tf2), "SubGraphic test 10 failed");
     assert.isTrue(b.type === GraphicType.WorldOverlay, "SubGraphic test 11 failed");
     assert.isTrue(b.iModel === undefined, "SubGraphic test 12 failed");
-    b = a.SubGraphic(tf);
+    b = a.subGraphic(tf);
     assert.isTrue(b.viewport === vp, "SubGraphic test 13 failed");
-    assert.isTrue(b.placement === tf, "SubGraphic test 14 failed");
+    assert.isTrue(b.placement.isAlmostEqual(tf), "SubGraphic test 14 failed");
     assert.isTrue(b.type === GraphicType.Scene, "SubGraphic test 15 failed");
     assert.isTrue(b.iModel === iModel, "SubGraphic test 16 failed");
 
     /** Test get iModel function */
-    a = GraphicBuilderCreateParams.Scene(vp, tf2, iModel);
+    a = GraphicBuilderCreateParams.scene(vp, tf2, iModel);
     assert.exists(a.iModel, "get Imodel test 1 failed");
     assert.isTrue(a.iModel === iModel, "get Imodel test 2 failed");
-    a = GraphicBuilderCreateParams.Scene(vp, tf2);
+    a = GraphicBuilderCreateParams.scene(vp, tf2);
     assert.notExists(a.iModel, "get Imodel test 3 failed");
     assert.isTrue(a.iModel === undefined, "get Imodel test 4 failed");
 
     /** Test get placement function */
-    a = GraphicBuilderCreateParams.Scene(vp, tf2, iModel);
+    a = GraphicBuilderCreateParams.scene(vp, tf2, iModel);
     assert.exists(a.placement, "get placement test 1 failed");
-    assert.isTrue(a.placement === tf2, "get placement test 2 failed");
-    a = GraphicBuilderCreateParams.Scene(vp, tf);
+    assert.isTrue(a.placement.isAlmostEqual(tf2), "get placement test 2 failed");
+    a = GraphicBuilderCreateParams.scene(vp, tf);
     assert.exists(a.placement, "get placement test 3 failed");
-    assert.isTrue(a.placement === tf, "get placement test 4 failed");
+    assert.isTrue(a.placement.isAlmostEqual(tf), "get placement test 4 failed");
 
     /** Test get viewport function */
-    a = GraphicBuilderCreateParams.Scene(vp, tf2, iModel);
+    a = GraphicBuilderCreateParams.scene(vp, tf2, iModel);
     assert.exists(a.viewport, "get viewport test 1 failed");
     assert.isTrue(a.viewport === vp, "get viewport test 2 failed");
-    a = GraphicBuilderCreateParams.Scene(vp2, tf);
+    a = GraphicBuilderCreateParams.scene(vp2, tf);
     assert.exists(a.viewport, "get viewport test 3 failed");
     assert.isTrue(a.viewport === vp2, "get viewport test 4 failed");
 
@@ -218,70 +218,70 @@ describe("GraphicBuilderCreateParams", () => {
 
     /** Test IsViewCoordinates function */
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewBackground);
-    assert.isTrue(a.IsViewCoordinates(), "IsViewCoordinates test 1 failed");
+    assert.isTrue(a.isViewCoordinates(), "IsViewCoordinates test 1 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewOverlay);
-    assert.isTrue(a.IsViewCoordinates(), "IsViewCoordinates test 2 failed");
+    assert.isTrue(a.isViewCoordinates(), "IsViewCoordinates test 2 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.Scene);
-    assert.isFalse(a.IsViewCoordinates(), "IsViewCoordinates test 3 failed");
+    assert.isFalse(a.isViewCoordinates(), "IsViewCoordinates test 3 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.WorldDecoration);
-    assert.isFalse(a.IsViewCoordinates(), "IsViewCoordinates test 4 failed");
+    assert.isFalse(a.isViewCoordinates(), "IsViewCoordinates test 4 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.WorldOverlay);
-    assert.isFalse(a.IsViewCoordinates(), "IsViewCoordinates test 5 failed");
+    assert.isFalse(a.isViewCoordinates(), "IsViewCoordinates test 5 failed");
 
     /** Test IsWorldCoordinates function */
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewBackground);
-    assert.isFalse(a.IsWorldCoordinates(), "IsWorldCoordinates test 1 failed");
+    assert.isFalse(a.isWorldCoordinates(), "IsWorldCoordinates test 1 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewOverlay);
-    assert.isFalse(a.IsWorldCoordinates(), "IsWorldCoordinates test 2 failed");
+    assert.isFalse(a.isWorldCoordinates(), "IsWorldCoordinates test 2 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.Scene);
-    assert.isTrue(a.IsWorldCoordinates(), "IsWorldCoordinates test 3 failed");
+    assert.isTrue(a.isWorldCoordinates(), "IsWorldCoordinates test 3 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.WorldDecoration);
-    assert.isTrue(a.IsWorldCoordinates(), "IsWorldCoordinates test 4 failed");
+    assert.isTrue(a.isWorldCoordinates(), "IsWorldCoordinates test 4 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.WorldOverlay);
-    assert.isTrue(a.IsWorldCoordinates(), "IsWorldCoordinates test 5 failed");
+    assert.isTrue(a.isWorldCoordinates(), "IsWorldCoordinates test 5 failed");
 
     /** Test IsSceneGraphic function */
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewBackground);
-    assert.isFalse(a.IsSceneGraphic(), "IsSceneGraphic test 1 failed");
+    assert.isFalse(a.isSceneGraphic(), "IsSceneGraphic test 1 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewOverlay);
-    assert.isFalse(a.IsSceneGraphic(), "IsSceneGraphic test 2 failed");
+    assert.isFalse(a.isSceneGraphic(), "IsSceneGraphic test 2 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.Scene);
-    assert.isTrue(a.IsSceneGraphic(), "IsSceneGraphic test 3 failed");
+    assert.isTrue(a.isSceneGraphic(), "IsSceneGraphic test 3 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.WorldDecoration);
-    assert.isFalse(a.IsSceneGraphic(), "IsSceneGraphic test 4 failed");
+    assert.isFalse(a.isSceneGraphic(), "IsSceneGraphic test 4 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.WorldOverlay);
-    assert.isFalse(a.IsSceneGraphic(), "IsSceneGraphic test 5 failed");
+    assert.isFalse(a.isSceneGraphic(), "IsSceneGraphic test 5 failed");
 
     /** Test IsViewBackground function */
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewBackground);
-    assert.isTrue(a.IsViewBackground(), "IsViewBackground test 1 failed");
+    assert.isTrue(a.isViewBackground(), "IsViewBackground test 1 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewOverlay);
-    assert.isFalse(a.IsViewBackground(), "IsViewBackground test 2 failed");
+    assert.isFalse(a.isViewBackground(), "IsViewBackground test 2 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.Scene);
-    assert.isFalse(a.IsViewBackground(), "IsViewBackground test 3 failed");
+    assert.isFalse(a.isViewBackground(), "IsViewBackground test 3 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.WorldDecoration);
-    assert.isFalse(a.IsViewBackground(), "IsViewBackground test 4 failed");
+    assert.isFalse(a.isViewBackground(), "IsViewBackground test 4 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.WorldOverlay);
-    assert.isFalse(a.IsViewBackground(), "IsViewBackground test 5 failed");
+    assert.isFalse(a.isViewBackground(), "IsViewBackground test 5 failed");
 
     /** Test IsOverlay function */
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewBackground);
-    assert.isFalse(a.IsOverlay(), "IsOverlay test 1 failed");
+    assert.isFalse(a.isOverlay(), "IsOverlay test 1 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewOverlay);
-    assert.isTrue(a.IsOverlay(), "IsOverlay test 2 failed");
+    assert.isTrue(a.isOverlay(), "IsOverlay test 2 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.Scene);
-    assert.isFalse(a.IsOverlay(), "IsOverlay test 3 failed");
+    assert.isFalse(a.isOverlay(), "IsOverlay test 3 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.WorldDecoration);
-    assert.isFalse(a.IsOverlay(), "IsOverlay test 4 failed");
+    assert.isFalse(a.isOverlay(), "IsOverlay test 4 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.WorldOverlay);
-    assert.isTrue(a.IsOverlay(), "IsOverlay test 5 failed");
+    assert.isTrue(a.isOverlay(), "IsOverlay test 5 failed");
 
     /** Test SetPlacement function */
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewBackground);
-    assert.isTrue(a.placement === tf, "SetPlacement test 1 failed");
-    a.SetPlacement(tf2);
-    assert.isTrue(a.placement === tf2, "SetPlacement test 2 failed");
-    a.SetPlacement(tf);
-    assert.isTrue(a.placement === tf, "SetPlacement test 3 failed");
+    assert.isTrue(a.placement.isAlmostEqual(tf), "SetPlacement test 1 failed");
+    a.setPlacement(tf2);
+    assert.isTrue(a.placement.isAlmostEqual(tf2), "SetPlacement test 2 failed");
+    a.setPlacement(tf);
+    assert.isTrue(a.placement.isAlmostEqual(tf), "SetPlacement test 3 failed");
   });
 });

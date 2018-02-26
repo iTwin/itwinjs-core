@@ -32,7 +32,7 @@ class TestCommandApp extends IModelApp {
   }
 
   protected onStartup() {
-    this.testNamespace = iModelApp.i18N.registerNamespace("TestApp");
+    this.testNamespace = iModelApp.i18n.registerNamespace("TestApp");
     TestImmediate.register(this.testNamespace);
   }
 

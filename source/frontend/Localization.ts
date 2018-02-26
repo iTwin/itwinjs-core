@@ -61,8 +61,8 @@ export class I18N {
       throw new IModelError(-1, "namespace '" + name + "' is not unique");
     }
     const theReadPromise: Promise<void> = new Promise((resolve: any, _reject: any) => {
-      iModelApp.i18N.loadNamespace(name, (err: any, _t: any) => {
-        let locales: string[] = iModelApp.i18N.languageList().map((thisLocale) => {
+      iModelApp.i18n.loadNamespace(name, (err: any, _t: any) => {
+        let locales: string[] = iModelApp.i18n.languageList().map((thisLocale) => {
           return ("/" + thisLocale + "/");
         });
         if (!err) {

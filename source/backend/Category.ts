@@ -93,7 +93,7 @@ export class SpatialCategory extends Category {
   public constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
   public static getCodeSpecName(): string { return CodeSpecNames.SpatialCategory(); }
 
-  /** Looks up the DgnCategoryId of a SpatialCategory by model and name */
+  /** Looks up the CategoryId of a SpatialCategory by model and name */
   public static queryCategoryIdByName(parentModel: DefinitionModel, categoryName: string): Id64 | undefined {
     const code = SpatialCategory.createCode(parentModel, categoryName);
     return parentModel.iModel.elements.queryElementIdByCode(code);

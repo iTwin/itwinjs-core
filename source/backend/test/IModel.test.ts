@@ -809,7 +809,7 @@ describe("iModel", () => {
 
       // The second one should point to the first.
       elementProps.id = new Id64();
-      elementProps.relatedElement = id1;      // use the short id-only format
+      elementProps.relatedElement = { id: id1, relClassName: trelClassName };
       elementProps.parent = { id: id1, relClassName: trelClassName };
       elementProps.longProp = 4294967295;     // make sure that we can save values in the range 0 ... UINT_MAX
 
@@ -835,24 +835,11 @@ describe("iModel", () => {
       // Change el2 to point to itself.
       const el2 = testImodel.elements.getElement(id2);
       const el2Modified = el2.copyForEdit<Element>();
-      el2Modified.relatedElement = { id: id2, relClassName: trelClassName }; // this time, use the long RelatedElement format.
+      el2Modified.relatedElement = { id: id2, relClassName: trelClassName };
       testImodel.elements.updateElement(el2Modified);
       // Test that el2 points to itself.
       const el2after: Element = testImodel.elements.getElement(id2);
       assert.deepEqual(el2after.relatedElement.id, id2);
-      assert.equal(el2after.relatedElement.relClassName.replace(".", ":"), trelClassName);
-    }
-
-    if (true) {
-      // Now set the navigation property value to the same thing, using the short, id-only form
-      const el2 = testImodel.elements.getElement(id2);
-      const el2Modified = el2.copyForEdit<Element>();
-      el2Modified.relatedElement = id1;
-      testImodel.elements.updateElement(el2Modified);
-      // Test that el2 points to el1 again.
-      const el2after = testImodel.elements.getElement(id2);
-      assert.deepEqual(el2after.relatedElement.id, id1);
-      // (the platform knows the relationship class and reports it.)
       assert.equal(el2after.relatedElement.relClassName.replace(".", ":"), trelClassName);
     }
 
