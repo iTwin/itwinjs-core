@@ -5,8 +5,8 @@ import * as path from "path";
 import { expect, assert } from "chai";
 import * as TypeMoq from "typemoq";
 import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { AccessToken, ChangeSet, IModel as HubIModel, SeedFile, MultiCode, CodeState, IModelHubClient,
-  ConnectClient, Project, ECJsonTypeMap, WsgInstance, UserProfile } from "@bentley/imodeljs-clients";
+import { AccessToken, Briefcase, ChangeSet, IModel as HubIModel, SeedFile, MultiCode, CodeState, IModelHubClient,
+  ConnectClient, Project, ECJsonTypeMap, WsgInstance, Response, UserProfile } from "@bentley/imodeljs-clients";
 import { Code } from "../../common/Code";
 import { IModelVersion } from "../../common/IModelVersion";
 import { KeepBriefcase, BriefcaseManager, BriefcaseEntry } from "../BriefcaseManager";
@@ -221,13 +221,21 @@ describe("BriefcaseManager", () => {
       .returns(() => Promise.resolve(1));
     iModelHubClientMock.setup((f: IModelHubClient) => f.getBriefcase(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAnyNumber(), TypeMoq.It.isValue(true)))
       .returns(() => {
-      const sampleIModelPath = path.join(assetDir, "SampleIModel.json");
+      const sampleIModelPath = path.join(assetDir, "SampleBriefcase.json");
       const buff = IModelJsFs.readFileSync(sampleIModelPath);
       const jsonObj = JSON.parse(buff.toString())[0];
-      return Promise.resolve(getTypedInstance<HubIModel>(HubIModel, jsonObj));
+      return Promise.resolve(getTypedInstance<Briefcase>(Briefcase, jsonObj));
     }).verifiable();
     iModelHubClientMock.setup((f: IModelHubClient) => f.downloadFile(TypeMoq.It.isAnyString(), TypeMoq.It.isAnyString()))
-      .returns(() => Promise.resolve());
+      .returns(() => {
+        const retResponse: Response = {
+          status: 200,
+          header: undefined,
+          body: undefined,
+        };
+        return Promise.resolve(retResponse)
+        .then(() => Promise.resolve());
+      });
 
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
