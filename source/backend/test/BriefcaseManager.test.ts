@@ -44,6 +44,7 @@ class MockAccessToken extends AccessToken {
   public getUserProfile(): UserProfile|undefined {
     return new UserProfile ("test", "user", "testuser001@mailinator.com", "12345", "Bentley");
   }
+  public toTokenString() { return ""; }
 }
 
 export class IModelTestUser {
@@ -90,6 +91,32 @@ describe("BriefcaseManager", () => {
     }
     return instances;
   };
+  const dumpTestCase = async (projectName: string, iModelName: string) => {
+    const projectId: string = await IModelTestUtils.getTestProjectId(accessToken, projectName);
+    const iModelId: string = await IModelTestUtils.getTestIModelId(accessToken, projectId, iModelName);
+
+    const rootPath = "d:\\temp\\imjsTestFiles\\";
+    if (!IModelJsFs.existsSync(rootPath))
+      IModelJsFs.mkdirSync(rootPath);
+
+    const imodelPath = path.join(rootPath, iModelName, "\\");
+    if (!IModelJsFs.existsSync(imodelPath))
+      IModelJsFs.mkdirSync(imodelPath);
+
+    // Get seed file information including the download link
+    const seedFile: SeedFile = await IModelTestUtils.hubClient.getSeedFile(accessToken, iModelId, true);
+    const downloadUrl = seedFile.downloadUrl!;
+
+    // Download seed
+    const downloadToPathname = path.join(imodelPath, `${iModelName}.bim`);
+    await IModelTestUtils.hubClient.downloadFile(downloadUrl, downloadToPathname);
+
+    // Get all change set information including the download link
+    const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, iModelId, true /*=includeDownloadLink*/);
+
+    // Download change sets
+    await IModelTestUtils.hubClient.downloadChangeSets(changeSets, imodelPath);
+  };
 
   before(async () => {
     const startTime = new Date().getTime();
@@ -116,6 +143,21 @@ describe("BriefcaseManager", () => {
         const buff = IModelJsFs.readFileSync(sampleChangeSetPath);
         const jsonObj = JSON.parse(buff.toString());
         return Promise.resolve(getTypedInstances<ChangeSet>(ChangeSet, jsonObj));
+      }).verifiable();
+    iModelHubClientMock.setup((f: IModelHubClient) => f.downloadChangeSets(TypeMoq.It.isAny(), TypeMoq.It.isAnyString()))
+      .returns((boundCsets: ChangeSet[], outPath: string) => {
+        for (const changeSet of boundCsets) {
+          const filePath = path.join(assetDir, changeSet.fileName!);
+          const outFilePath = path.join(outPath, changeSet.fileName!);
+          IModelJsFs.copySync(filePath, outFilePath);
+        }
+        const retResponse: Response = {
+          status: 200,
+          header: undefined,
+          body: undefined,
+        };
+        return Promise.resolve(retResponse)
+        .then(() => Promise.resolve());
       }).verifiable();
 
     // accessToken = await IModelTestUtils.getTestUserAccessToken();
@@ -147,10 +189,13 @@ describe("BriefcaseManager", () => {
     iModelHubClientMock.verify((f: IModelHubClient) => f.getChangeSets(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()), TypeMoq.Times.exactly(1));
     expect(testChangeSets.length).greaterThan(2);
 
-    expect(testChangeSets.length).greaterThan(2);
+    // downloadChangeSets
+    const cacheDir = iModelHost.configuration.briefcaseCacheDir;
+    const csetDir = path.join(cacheDir, testIModelId, "csets");
+    await iModelHubClientMock.object.downloadChangeSets(testChangeSets, csetDir);
+
     console.log(`    ...getting information on Project+IModel+ChangeSets for test case from mock data: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
 
-    const cacheDir = iModelHost.configuration.briefcaseCacheDir;
     iModelLocalReadonlyPath = path.join(cacheDir, testIModelId, "readOnly");
     iModelLocalReadWritePath = path.join(cacheDir, testIModelId, "readWrite");
 
@@ -158,13 +203,18 @@ describe("BriefcaseManager", () => {
     // Mocking notes:
     //              - Do we ever need to clear briefcases if they're never actually created from the mocks?
     shouldDeleteAllBriefcases = !IModelJsFs.existsSync(cacheDir);
-    if (shouldDeleteAllBriefcases) {
-      await IModelTestUtils.deleteAllBriefcases(accessToken, testIModelId);
-    }
+    // if (shouldDeleteAllBriefcases) {
+    //   await IModelTestUtils.deleteAllBriefcases(accessToken, testIModelId);
+    // }
 
   });
 
-  it("should open multiple versions of iModels", async () => {
+  it("should download seed files and change sets for all test cases", async () => {
+    await dumpTestCase("NodeJsTestProject", "TestModel");
+    await dumpTestCase("NodeJsTestProject", "NoVersionsTest");
+  });
+
+  it.only("should open multiple versions of iModels", async () => {
     const iModelNames = ["TestModel", "NoVersionsTest"];
     for (const name of iModelNames) {
        const iModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, name);
@@ -180,11 +230,11 @@ describe("BriefcaseManager", () => {
       .returns(() => Promise.resolve(""));
     iModelHubClientMock.setup((f: IModelHubClient) => f.getIModel(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
       .returns(() => {
-      const sampleIModelPath = path.join(assetDir, "SampleIModel.json");
-      const buff = IModelJsFs.readFileSync(sampleIModelPath);
-      const jsonObj = JSON.parse(buff.toString())[0];
-      return Promise.resolve(getTypedInstance<HubIModel>(HubIModel, jsonObj));
-    }).verifiable(); // Note: only used in the createBriefcase codeExPath
+        const sampleIModelPath = path.join(assetDir, "SampleIModel.json");
+        const buff = IModelJsFs.readFileSync(sampleIModelPath);
+        const jsonObj = JSON.parse(buff.toString())[0];
+        return Promise.resolve(getTypedInstance<HubIModel>(HubIModel, jsonObj));
+      }).verifiable(); // Note: only used in the createBriefcase codeExPath
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
     // Act
@@ -200,7 +250,7 @@ describe("BriefcaseManager", () => {
     iModelVersionMock.verify((f: IModelVersion) => f.evaluateChangeSet(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
   });
 
-  it.only("should be able to open a cached first version IModel in ReadWrite mode", async () => {
+  it("should be able to open a cached first version IModel in ReadWrite mode", async () => {
     // Arrange
     const seedFileMock = TypeMoq.Mock.ofType(SeedFile);
     seedFileMock.object.downloadUrl = "www.bentley.com";
@@ -210,24 +260,27 @@ describe("BriefcaseManager", () => {
       .returns(() => Promise.resolve(""));
     iModelHubClientMock.setup((f: IModelHubClient) => f.getIModel(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
       .returns(() => {
-      const sampleIModelPath = path.join(assetDir, "SampleIModel.json");
-      const buff = IModelJsFs.readFileSync(sampleIModelPath);
-      const jsonObj = JSON.parse(buff.toString())[0];
-      return Promise.resolve(getTypedInstance<HubIModel>(HubIModel, jsonObj));
-    }).verifiable();
+        const sampleIModelPath = path.join(assetDir, "SampleIModel.json");
+        const buff = IModelJsFs.readFileSync(sampleIModelPath);
+        const jsonObj = JSON.parse(buff.toString())[0];
+        return Promise.resolve(getTypedInstance<HubIModel>(HubIModel, jsonObj));
+      }).verifiable();
     iModelHubClientMock.setup((f: IModelHubClient) => f.getSeedFile(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isValue(true)))
       .returns(() => Promise.resolve(seedFileMock.object));
     iModelHubClientMock.setup((f: IModelHubClient) => f.acquireBriefcase(TypeMoq.It.isAny(), TypeMoq.It.isAnyString()))
       .returns(() => Promise.resolve(1));
     iModelHubClientMock.setup((f: IModelHubClient) => f.getBriefcase(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAnyNumber(), TypeMoq.It.isValue(true)))
       .returns(() => {
-      const sampleIModelPath = path.join(assetDir, "SampleBriefcase.json");
-      const buff = IModelJsFs.readFileSync(sampleIModelPath);
-      const jsonObj = JSON.parse(buff.toString())[0];
-      return Promise.resolve(getTypedInstance<Briefcase>(Briefcase, jsonObj));
-    }).verifiable();
+        const sampleIModelPath = path.join(assetDir, "SampleBriefcase.json");
+        const buff = IModelJsFs.readFileSync(sampleIModelPath);
+        const jsonObj = JSON.parse(buff.toString())[0];
+        return Promise.resolve(getTypedInstance<Briefcase>(Briefcase, jsonObj));
+      }).verifiable();
     iModelHubClientMock.setup((f: IModelHubClient) => f.downloadFile(TypeMoq.It.isAnyString(), TypeMoq.It.isAnyString()))
-      .returns(() => {
+      .returns((seedUrl: string, seedPathname: string) => {
+        seedUrl.italics();
+        const testModelPath = path.join(assetDir, "ReadWriteTest.bim");
+        IModelJsFs.copySync(testModelPath, seedPathname);
         const retResponse: Response = {
           status: 200,
           header: undefined,
