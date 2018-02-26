@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { DeploymentEnv, AccessToken } from "@bentley/imodeljs-clients";
+import { DeploymentEnv } from "@bentley/imodeljs-clients";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { BentleyStatus, IModelError } from "../common/IModelError";
 import * as path from "path";
@@ -22,11 +22,6 @@ export class IModelHostConfiguration {
   public set briefcaseCacheDir(cacheDir: string) {
     this._briefcaseCacheDir = path.normalize(cacheDir.replace(/\/?$/, path.sep));
   }
-
-  /** Method that returns a valid access token for the service user. If defined, this is used for all Connect and iModelHub operations
-   * instead of the one passed in from the front end.
-   */
-  public getServiceUserAccessToken: () => AccessToken | undefined = () => undefined;
 }
 
 export class IModelHost {
