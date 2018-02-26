@@ -7,7 +7,7 @@ import { TentativeOrAccuSnap } from "../AccuSnap";
 import { BeButtonEvent } from "./Tool";
 import { DecorateContext } from "../ViewContext";
 import { InputCollector } from "./ViewTool";
-import { LegacyMath } from "../../common/LegacyMath";
+import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { Vector3d, Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { RotMatrix } from "@bentley/geometry-core/lib/Transform";
 import { Geometry, Angle } from "@bentley/geometry-core/lib/Geometry";

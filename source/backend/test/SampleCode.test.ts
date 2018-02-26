@@ -6,7 +6,7 @@ import { BisCore } from "../BisCore";
 import { Element, InformationPartitionElement } from "../Element";
 import { IModelDb, ConcurrencyControl } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { ElementProps } from "../../common/ElementProps";
+import { ElementProps } from "@bentley/imodeljs-common/lib/ElementProps";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
 

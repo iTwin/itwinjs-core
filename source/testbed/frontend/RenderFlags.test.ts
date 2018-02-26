@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { RenderOrder, isPlanar, isSurface } from "../../frontend/render/RenderFlags";
+import { RenderOrder, isPlanar, isSurface } from "@bentley/imodeljs-frontend/lib/render/RenderFlags";
 
 describe("RenderFlags", () => {
   it("isPlanar should return true if given RenderOrder is greater than or equal to PlanarBit", () => {

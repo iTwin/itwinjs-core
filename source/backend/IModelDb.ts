@@ -7,14 +7,14 @@ import { OpenMode, DbResult, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLi
 import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
 import { DeploymentEnv } from "@bentley/imodeljs-clients/lib/Clients";
 import { MultiCode, IModelHubClient, CodeState } from "@bentley/imodeljs-clients/lib/IModelHubClients";
-import { Code, CodeSpec } from "../common/Code";
-import { ElementProps, ElementAspectProps, ElementLoadParams } from "../common/ElementProps";
-import { IModel, IModelProps } from "../common/IModel";
-import { IModelVersion } from "../common/IModelVersion";
+import { Code, CodeSpec } from "@bentley/imodeljs-common/lib/Code";
+import { ElementProps, ElementAspectProps, ElementLoadParams } from "@bentley/imodeljs-common/lib/ElementProps";
+import { IModel, IModelProps } from "@bentley/imodeljs-common/lib/IModel";
+import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
-import { ModelProps } from "../common/ModelProps";
-import { IModelToken } from "../common/IModel";
-import { IModelError, IModelStatus } from "../common/IModelError";
+import { ModelProps } from "@bentley/imodeljs-common/lib/ModelProps";
+import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
+import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
 import { BisCore } from "./BisCore";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element } from "./Element";
@@ -30,13 +30,13 @@ import { IModelGatewayImpl } from "./IModelGatewayImpl";
 import { RepositoryStatus } from "@bentley/bentleyjs-core/lib/BentleyError";
 import * as path from "path";
 import { IModelDbLinkTableRelationships, LinkTableRelationship } from "./LinkTableRelationship";
-import { AxisAlignedBox3d } from "../common/geometry/Primitives";
+import { AxisAlignedBox3d } from "@bentley/imodeljs-common/lib/geometry/Primitives";
 import { AddonRegistry } from "./AddonRegistry";
 import { RequestQueryOptions } from "@bentley/imodeljs-clients/lib";
 import { iModelHost } from "./IModelHost";
-import { EntityQueryParams, EntityProps } from "../common/EntityProps";
+import { EntityQueryParams, EntityProps } from "@bentley/imodeljs-common/lib/EntityProps";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
-import { ViewDefinitionProps } from "../common/ViewProps";
+import { ViewDefinitionProps } from "@bentley/imodeljs-common/lib/ViewProps";
 
 const loggingCategory = "imodeljs-backend.IModelDb";
 

@@ -7,9 +7,9 @@ import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
-import { BriefcaseStatus, IModelError } from "../common/IModelError";
-import { IModelVersion } from "../common/IModelVersion";
-import { IModelToken } from "../common/IModel";
+import { BriefcaseStatus, IModelError } from "@bentley/imodeljs-common/lib/IModelError";
+import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
+import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
 import { AddonRegistry } from "./AddonRegistry";
 import { AddonDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { IModelDb } from "./IModelDb";
@@ -661,7 +661,7 @@ export class BriefcaseManager {
 
   /** Open a standalone iModel from the local disk */
   public static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean): BriefcaseEntry {
-    if (BriefcaseManager.standaloneCache.findBriefcaseByToken({ pathKey: pathname }))
+    if (BriefcaseManager.standaloneCache.findBriefcaseByToken(new IModelToken(pathname)))
       throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open ${pathname} again - it's already been opened once`);
 
     const nativeDb: AddonDgnDb = new (AddonRegistry.getAddon()).AddonDgnDb();
@@ -695,7 +695,7 @@ export class BriefcaseManager {
 
   /** Create a standalone iModel from the local disk */
   public static createStandalone(pathname: string, rootSubjectName: string, rootSubjectDescription?: string): BriefcaseEntry {
-    if (BriefcaseManager.standaloneCache.findBriefcaseByToken({ pathKey: pathname }))
+    if (BriefcaseManager.standaloneCache.findBriefcaseByToken(new IModelToken(pathname)))
     throw new IModelError(DbResult.BE_SQLITE_ERROR_FileExists, `Cannot create file ${pathname} again - it already exists`);
 
     const nativeDb: AddonDgnDb = new (AddonRegistry.getAddon()).AddonDgnDb();

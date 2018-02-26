@@ -8,7 +8,7 @@ import { HitDetail } from "../HitDetail";
 import { LocateResponse } from "../ElementLocateManager";
 import { I18NNamespace } from "../Localization";
 import { iModelApp } from "../IModelApp";
-import { IModelError } from "../../common/IModelError";
+import { IModelError } from "@bentley/imodeljs-common/lib/IModelError";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 
 type ToolType = typeof Tool;

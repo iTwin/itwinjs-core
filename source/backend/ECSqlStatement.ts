@@ -4,9 +4,9 @@
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
-import { IModelError } from "../common/IModelError";
+import { IModelError } from "@bentley/imodeljs-common/lib/IModelError";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { ECSqlValueType, DateTime, Blob, NavigationValue, NavigationBindingValue, ECSqlSystemProperty, ECJsNames } from "../common/ECSqlTypes";
+import { ECSqlValueType, DateTime, Blob, NavigationValue, NavigationBindingValue, ECSqlSystemProperty, ECJsNames } from "@bentley/imodeljs-common/lib/ECSqlTypes";
 import { Point2d, Point3d, XAndY, XY, XYAndZ, XYZ } from "@bentley/geometry-core/lib/PointVector";
 import { ECDb } from "./ECDb";
 import { using, IDisposable } from "@bentley/bentleyjs-core/lib/Disposable";

@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { IModelError, IModelStatus } from "../common/IModelError";
+import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
 import { AddonECDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { AddonRegistry } from "./AddonRegistry";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";

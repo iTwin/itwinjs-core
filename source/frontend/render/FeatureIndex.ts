@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { ColorDef } from "../../common/ColorDef";
+import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
 
 export class ColorIndexNonUniform {
   public colors: Uint32Array;

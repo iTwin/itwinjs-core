@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { ECSqlInsertResult } from "../ECSqlStatement";
-import { DateTime, Blob, NavigationBindingValue } from "../../common/ECSqlTypes";
+import { DateTime, Blob, NavigationBindingValue } from "@bentley/imodeljs-common/lib/ECSqlTypes";
 import { ECDb } from "../ECDb";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";

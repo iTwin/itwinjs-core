@@ -2,19 +2,19 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { IModel } from "../../common/IModel";
+import { IModel } from "@bentley/imodeljs-common/lib/IModel";
 import { Transform } from "@bentley/geometry-core/lib/Transform";
 import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
 import { ClipVector } from "@bentley/geometry-core/lib/numerics/ClipVector";
-import { GeometryStreamEntryId } from "../../common/geometry/GeometryStream";
+import { GeometryStreamEntryId } from "@bentley/imodeljs-common/lib/geometry/GeometryStream";
 import { Range3d, Range2d } from "@bentley/geometry-core/lib/Range";
 import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
 import { BSplineCurve3d } from "@bentley/geometry-core/lib/bspline/BSplineCurve";
 import { BSplineSurface3d } from "@bentley/geometry-core/lib/bspline/BSplineSurface";
-import { PatternParams } from "../../common/geometry/AreaPattern";
-import { ColorDef } from "../../common/ColorDef";
+import { PatternParams } from "@bentley/imodeljs-common/lib/geometry/AreaPattern";
+import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
 import { Viewport } from "../Viewport";
-import { Graphic, GraphicParams, AsThickenedLine, GeometryParams, LinePixels } from "../../common/Render";
+import { Graphic, GraphicParams, AsThickenedLine, GeometryParams, LinePixels } from "@bentley/imodeljs-common/lib/Render";
 
 export abstract class Iterable<T> {
   constructor(protected list: T[]) {}

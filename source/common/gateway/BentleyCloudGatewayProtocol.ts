@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { GatewayHttpProtocol } from "./GatewayHttpProtocol";
-import { IModelToken } from "../common/IModel";
+import { IModelToken } from "../IModel";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 
 const loggingCategory = "imodeljs-gateway.BentleyCloudGatewayProtocol";
