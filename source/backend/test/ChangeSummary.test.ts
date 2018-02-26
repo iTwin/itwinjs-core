@@ -347,7 +347,7 @@ describe("ChangeSummary", () => {
     }
   });
 
-  it.only("Crash test", async () => {
+  it.skip("Crash test", async () => {
     const iModelId = "bd9b1b21-9485-445a-9cce-b084d1b654fa";
     const projectId = "d46de192-6cad-4086-b968-71b517edc215";
 
