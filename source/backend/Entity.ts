@@ -237,7 +237,9 @@ export class EntityMetaData {
     }
 
     if (wantSuper && meta.baseClasses && meta.baseClasses.length > 0) {
-      EntityMetaData.forEach(iModel, meta.baseClasses[0], true, func, includeCustom);
+      meta.baseClasses.forEach((baseClass) => {
+        EntityMetaData.forEach(iModel, baseClass, true, func, includeCustom);
+      });
     }
   }
 }
