@@ -38,7 +38,7 @@ export class IModelApp {
   protected _accuSnap?: AccuSnap;
   protected _locateManager?: ElementLocateManager;
   protected _tentativePoint?: TentativePoint;
-  protected _i18N?: I18N;
+  protected _i18n?: I18N;
   protected _deploymentEnv: DeploymentEnv = "QA";
   protected _iModelHubClient?: IModelHubClient;
   public readonly features = new FeatureGates();
@@ -51,7 +51,7 @@ export class IModelApp {
   public get accuSnap(): AccuSnap { return this._accuSnap!; }
   public get locateManager(): ElementLocateManager { return this._locateManager!; }
   public get tentativePoint(): TentativePoint { return this._tentativePoint!; }
-  public get i18N(): I18N { return this._i18N!; }
+  public get i18n(): I18N { return this._i18n!; }
   public get deploymentEnv(): DeploymentEnv { return this._deploymentEnv; }
   public get iModelHubClient(): IModelHubClient { return this._iModelHubClient ? this._iModelHubClient : (this._iModelHubClient = new IModelHubClient(this.deploymentEnv)); }
 
@@ -76,10 +76,10 @@ export class IModelApp {
     iModelApp._deploymentEnv = deploymentEnv;
 
     // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
-    iModelApp._i18N = new I18N(["iModelJs"], "iModelJs", iModelApp.supplyI18NOptions());
+    iModelApp._i18n = new I18N(["iModelJs"], "iModelJs", iModelApp.supplyI18NOptions());
 
     const tools = iModelApp.tools; // first register all the core tools. Subclasses may choose to override them.
-    const coreNamespace = iModelApp.i18N.registerNamespace("CoreTools");
+    const coreNamespace = iModelApp.i18n.registerNamespace("CoreTools");
     tools.registerModule(selectTool, coreNamespace);
     tools.registerModule(idleTool, coreNamespace);
     tools.registerModule(viewTool, coreNamespace);

@@ -69,15 +69,15 @@ export class CodeSpecNames {
 
 export namespace CodeScopeSpec {
   export const enum Type {
-    Repository = 1,     /** The Code value must be unique within (at least) the DgnDb repository */
-    Model = 2,          /** The Code value must be unique within the scope of the DgnModel */
+    Repository = 1,     /** The Code value must be unique within (at least) the iModel repository */
+    Model = 2,          /** The Code value must be unique within the scope of the Model */
     ParentElement = 3,  /** The Code value must be unique among other children of the same parent element */
     RelatedElement = 4, /** The Code value must be unique among other elements also scoped by the same element */
   }
 
   export const enum ScopeRequirement {
-    ElementId = 1,      /** The DgnCode is required to have a valid DgnElementId as its scope */
-    FederationGuid = 2, /** The DgnCode is required to have a valid FederationGuid as its scope */
+    ElementId = 1,      /** The Code is required to have a valid ElementId as its scope */
+    FederationGuid = 2, /** The Code is required to have a valid FederationGuid as its scope */
   }
 }
 
