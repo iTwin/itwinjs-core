@@ -12,6 +12,7 @@ import { I18N, I18NOptions } from "./Localization";
 import { FeatureGates } from "../common/FeatureGates";
 import { ToolRegistry } from "./tools/Tool";
 import { IModelError, IModelStatus } from "../common/IModelError";
+import { NotificationManager } from "./NotificationManager";
 
 import * as selectTool from "./tools/SelectTool";
 import * as viewTool from "./tools/ViewTool";
@@ -31,24 +32,26 @@ export let iModelApp: IModelApp;
  */
 export class IModelApp {
   protected _viewManager?: ViewManager;
+  protected _notifications?: NotificationManager;
   protected _toolAdmin?: ToolAdmin;
   protected _accuDraw?: AccuDraw;
   protected _accuSnap?: AccuSnap;
   protected _locateManager?: ElementLocateManager;
   protected _tentativePoint?: TentativePoint;
-  protected _i18N?: I18N;
+  protected _i18n?: I18N;
   protected _deploymentEnv: DeploymentEnv = "QA";
   protected _iModelHubClient?: IModelHubClient;
   public readonly features = new FeatureGates();
   public readonly tools = new ToolRegistry();
 
   public get viewManager(): ViewManager { return this._viewManager!; }
+  public get notifications(): NotificationManager { return this._notifications!; }
   public get toolAdmin(): ToolAdmin { return this._toolAdmin!; }
   public get accuDraw(): AccuDraw { return this._accuDraw!; }
   public get accuSnap(): AccuSnap { return this._accuSnap!; }
   public get locateManager(): ElementLocateManager { return this._locateManager!; }
   public get tentativePoint(): TentativePoint { return this._tentativePoint!; }
-  public get i18N(): I18N { return this._i18N!; }
+  public get i18n(): I18N { return this._i18n!; }
   public get deploymentEnv(): DeploymentEnv { return this._deploymentEnv; }
   public get iModelHubClient(): IModelHubClient { return this._iModelHubClient ? this._iModelHubClient : (this._iModelHubClient = new IModelHubClient(this.deploymentEnv)); }
 
@@ -73,10 +76,10 @@ export class IModelApp {
     iModelApp._deploymentEnv = deploymentEnv;
 
     // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
-    iModelApp._i18N = new I18N(["iModelSystem"], "iModelSystem", iModelApp.supplyI18NOptions());
+    iModelApp._i18n = new I18N(["iModelJs"], "iModelJs", iModelApp.supplyI18NOptions());
 
     const tools = iModelApp.tools; // first register all the core tools. Subclasses may choose to override them.
-    const coreNamespace = iModelApp.i18N.registerNamespace("CoreTools");
+    const coreNamespace = iModelApp.i18n.registerNamespace("CoreTools");
     tools.registerModule(selectTool, coreNamespace);
     tools.registerModule(idleTool, coreNamespace);
     tools.registerModule(viewTool, coreNamespace);
@@ -85,6 +88,7 @@ export class IModelApp {
 
     // the startup function may have already allocated any of these members, so first test whether they're present
     if (!iModelApp._viewManager) iModelApp._viewManager = new ViewManager();
+    if (!iModelApp._notifications) iModelApp._notifications = new NotificationManager();
     if (!iModelApp._toolAdmin) iModelApp._toolAdmin = new ToolAdmin();
     if (!iModelApp._accuDraw) iModelApp._accuDraw = new AccuDraw();
     if (!iModelApp._accuSnap) iModelApp._accuSnap = new AccuSnap();

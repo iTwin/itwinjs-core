@@ -306,7 +306,7 @@ export class AccuSnap {
     if (!this.errorKey)
       return;
 
-    this.explanation = iModelApp.i18N.translate(this.errorKey);
+    this.explanation = iModelApp.i18n.translate(this.errorKey);
     if (!this.explanation)
       return;
 

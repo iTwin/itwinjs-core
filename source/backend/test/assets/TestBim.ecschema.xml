@@ -35,7 +35,7 @@
     <BaseClass>bis:PhysicalElement</BaseClass>
     <ECNavigationProperty propertyName="relatedElement" relationshipName="TestPhysicalObjectRelatedToTestPhysicalObject" direction="Forward" readOnly="True"/>
     <ECProperty propertyName="longProp" typeName="long" displayLabel="an int64_t value" />
-	<ECProperty propertyName="intProperty" typeName="int" displayLabel="an int32 value" />
+    <ECProperty propertyName="intProperty" typeName="int" displayLabel="an int32 value" />
 </ECEntityClass>
   
 </ECSchema>

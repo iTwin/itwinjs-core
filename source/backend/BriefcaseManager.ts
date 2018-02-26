@@ -233,8 +233,13 @@ export class BriefcaseManager {
     const briefcases = BriefcaseManager.cache.getFilteredBriefcases((entry: BriefcaseEntry) => {
       return entry.iModelId === iModelId && entry.openMode === OpenMode.Readonly;
     });
-    const numReadonly = briefcases.length;
-    return path.join(BriefcaseManager.getIModelPath(iModelId), "readOnly", numReadonly.toString(), iModelName.concat(".bim"));
+
+    let pathname: string|undefined;
+    for (let ii = briefcases.length; !pathname || IModelJsFs.existsSync(pathname); ii++) {
+      pathname = path.join(BriefcaseManager.getIModelPath(iModelId), "readOnly", ii.toString(), iModelName.concat(".bim"));
+    }
+
+    return pathname;
   }
 
   private static buildReadWritePath(iModelId: string, briefcaseId: number, iModelName: string): string {
@@ -1031,8 +1036,10 @@ export class BriefcaseManager {
 
   /** @hidden */
   public static async deleteAllBriefcases(accessToken: AccessToken, iModelId: string) {
+    if (BriefcaseManager.hubClient === undefined)
+      return;
     const promises = new Array<Promise<void>>();
-    const briefcases = await BriefcaseManager.hubClient!.getBriefcases(accessToken, iModelId);
+    const briefcases = await BriefcaseManager.hubClient.getBriefcases(accessToken, iModelId);
     briefcases.forEach((briefcase: HubBriefcase) => {
       promises.push(BriefcaseManager.hubClient!.deleteBriefcase(accessToken, iModelId, briefcase.briefcaseId!));
     });
@@ -1041,8 +1048,9 @@ export class BriefcaseManager {
 
   /** @hidden */
   public static async deleteAllBriefcasesIfNewInstance(accessToken: AccessToken, iModelId: string) {
-    if (!fs.existsSync(iModelHost.configuration.briefcaseCacheDir))
-      return BriefcaseManager.deleteAllBriefcases(accessToken, iModelId);
-    return;
+    if (fs.existsSync(iModelHost.configuration.briefcaseCacheDir))
+      return;
+    await BriefcaseManager.initCache(accessToken); // set up hubClient
+    return BriefcaseManager.deleteAllBriefcases(accessToken, iModelId);
   }
 }

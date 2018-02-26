@@ -1,3 +1,6 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import * as i18next from "i18next";
 import { i18n } from "i18next";
 import * as i18nextXHRBackend from "i18next-xhr-backend";
@@ -55,11 +58,11 @@ export class I18N {
   // register a new Namespace. Must be unique in the system.
   public registerNamespace(name: string): I18NNamespace {
     if (this.namespaceRegistry.get(name)) {
-      throw new IModelError(-1, "namespace must be unique");
+      throw new IModelError(-1, "namespace '" + name + "' is not unique");
     }
     const theReadPromise: Promise<void> = new Promise((resolve: any, _reject: any) => {
-      iModelApp.i18N.loadNamespace(name, (err: any, _t: any) => {
-        let locales: string[] = iModelApp.i18N.languageList().map((thisLocale) => {
+      iModelApp.i18n.loadNamespace(name, (err: any, _t: any) => {
+        let locales: string[] = iModelApp.i18n.languageList().map((thisLocale) => {
           return ("/" + thisLocale + "/");
         });
         if (!err) {
@@ -102,5 +105,4 @@ export class I18N {
 
 export class I18NNamespace {
   public constructor(public name: string, public readFinished: Promise<void>) { }
-
 }
