@@ -244,7 +244,7 @@ export default class SchemaReadHelper {
         if (typeof(caJson.className) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
-        this.findSchemaChild(caJson.className );
+        this.findSchemaChild(caJson.className);
       }
     });
   }
