@@ -5,9 +5,9 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { IModelError } from "../common/IModelError";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64, Id64Props, GuidProps } from "@bentley/bentleyjs-core/lib/Id";
 import { ECSqlValueType, DateTime, Blob, NavigationValue, NavigationBindingValue, ECSqlSystemProperty, ECJsNames } from "../common/ECSqlTypes";
-import { Point2d, Point3d, XAndY, XY, XYAndZ, XYZ } from "@bentley/geometry-core/lib/PointVector";
+import { Point2d, Point3d, XAndY, XYAndZ, XYZ } from "@bentley/geometry-core/lib/PointVector";
 import { ECDb } from "./ECDb";
 import { using, IDisposable } from "@bentley/bentleyjs-core/lib/Disposable";
 import { AddonRegistry } from "./AddonRegistry";
@@ -151,12 +151,36 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     using(this.getBinder(parameter), (binder) => binder.bindDouble(val));
   }
 
+  /** Binds an Guid value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val Guid value
+   */
+  public bindGuid(parameter: number | string, val: GuidProps): void {
+    using(this.getBinder(parameter), (binder) => {
+      let strVal: string;
+      if (typeof (val) === "string")
+        strVal = val;
+      else
+        strVal = val.value;
+
+      binder.bindGuid(strVal);
+    });
+  }
+
   /** Binds an Id value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Id value
    */
-  public bindId(parameter: number | string, val: Id64): void {
-    using(this.getBinder(parameter), (binder) => binder.bindId(val.value));
+  public bindId(parameter: number | string, val: Id64Props): void {
+    using(this.getBinder(parameter), (binder) => {
+      let hexVal: string;
+      if (typeof (val) === "string")
+        hexVal = val;
+      else
+        hexVal = val.value;
+
+      binder.bindId(hexVal);
+    });
   }
 
   /** Binds an integer value to the specified ECSQL parameter.
@@ -359,6 +383,136 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   public [Symbol.iterator](): IterableIterator<any> {
     return this;
   }
+
+  /** Indicates whether the value for the column at the given index in the query result is NULL or not.
+   * @param columnIx Index of ECSQL column in query result (0-based)
+   */
+  public isNull(columnIx: number): boolean {
+    return using(this._stmt!.getValue(columnIx), (ecsqlValue) => {
+      return ecsqlValue.isNull();
+    });
+  }
+
+  /** Get the BLOB value of the specified column in the ECSQL query result.
+   * @param columnIx Index of ECSQL column in query result (0-based)
+   * @return BLOB value formatted as Base64 string
+   */
+  public getBlob(columnIx: number): string {
+    return using(this._stmt!.getValue(columnIx), (ecsqlValue) => {
+      return ECSqlValueHelper.getBlob(ecsqlValue);
+    });
+  }
+
+  /** Get the value of the specified column in the ECSQL query result as boolean.
+   * @param columnIx Index of ECSQL column in query result (0-based)
+   * @return Boolean value
+   */
+  public getBoolean(columnIx: number): boolean {
+    return using(this._stmt!.getValue(columnIx), (ecsqlValue) => {
+      return ECSqlValueHelper.getBoolean(ecsqlValue);
+    });
+  }
+
+  /** Get the value of the specified column in the ECSQL query result as DateTime.
+   * @param columnIx Index of ECSQL column in query result (0-based)
+   * @return DateTime value formatted as ISO8601 string
+   */
+  public getDateTime(columnIx: number): string {
+    return using(this._stmt!.getValue(columnIx), (ecsqlValue) => {
+      return ECSqlValueHelper.getDateTime(ecsqlValue);
+    });
+  }
+
+  /** Get the value of the specified column in the ECSQL query result as double.
+   * @param columnIx Index of ECSQL column in query result (0-based)
+   */
+  public getDouble(columnIx: number): number {
+    return using(this._stmt!.getValue(columnIx), (ecsqlValue) => {
+      return ECSqlValueHelper.getDouble(ecsqlValue);
+    });
+  }
+
+  /** Get the value of the specified column in the ECSQL query result as GUID.
+   * @param columnIx Index of ECSQL column in query result (0-based)
+   * @return GUID value formatted as string
+   */
+  public getGuid(columnIx: number): string {
+    return using(this._stmt!.getValue(columnIx), (ecsqlValue) => {
+      return ECSqlValueHelper.getGuid(ecsqlValue);
+    });
+
+  /** Get the value of the specified column in the ECSQL query result as double.
+   * @param columnIx Index of ECSQL column in query result (0-based)
+   * @return Id value formatted as hexadecimal string
+   */
+  public getId(columnIx: number): string {
+    return using(this._stmt!.getValue(columnIx), (ecsqlValue) => {
+      return ECSqlValueHelper.getId(ecsqlValue);
+    });
+  }
+
+  /** Get the value of the specified column in the ECSQL query result as integer.
+   * @param columnIx Index of ECSQL column in query result (0-based)
+   */
+  public getInteger(columnIx: number): number {
+    return using(this._stmt!.getValue(columnIx), (ecsqlValue) => {
+      return ECSqlValueHelper.getInteger(ecsqlValue);
+    });
+  }
+
+  /** Get the value of the specified column in the ECSQL query result as string.
+   * @param columnIx Index of ECSQL column in query result (0-based)
+   */
+  public getString(columnIx: number): string {
+    return using(this._stmt!.getValue(columnIx), (ecsqlValue) => {
+      return ECSqlValueHelper.getString(ecsqlValue);
+    });
+  }
+
+  /** Get the value of the specified column in the ECSQL query result as XAndY.
+   * @param columnIx Index of ECSQL column in query result (0-based)
+   */
+  public getXAndY(columnIx: number): XAndY {
+    return using(this._stmt!.getValue(columnIx), (ecsqlValue) => {
+      return ECSqlValueHelper.getXAndY(ecsqlValue);
+    });
+  }
+
+  /** Get the value of the specified column in the ECSQL query result as XAndY.
+   * @param columnIx Index of ECSQL column in query result (0-based)
+   */
+  public getXYAndZ(columnIx: number): XYAndZ {
+    return using(this._stmt!.getValue(columnIx), (ecsqlValue) => {
+      return ECSqlValueHelper.getXYAndZ(ecsqlValue);
+    });
+  }
+
+  /** Get the value of the specified column in the ECSQL query result as a Navigation property's value.
+   * @param columnIx Index of ECSQL column in query result (0-based)
+   */
+  public getNavigation(columnIx: number): NavigationValue {
+    return using(this._stmt!.getValue(columnIx), (ecsqlValue) => {
+      return ECSqlValueHelper.getNavigation(ecsqlValue);
+    });
+  }
+
+  /** Get the struct value of the specified column in the ECSQL query result.
+   * @param columnIx Index of ECSQL column in query result (0-based)
+   */
+  public getStruct(columnIx: number): any {
+    return using(this._stmt!.getValue(columnIx), (ecsqlValue) => {
+      return ECSqlValueHelper.getStruct(ecsqlValue);
+    });
+  }
+
+  /** Get the array value of the specified column in the ECSQL query result.
+   * @param columnIx Index of ECSQL column in query result (0-based)
+   */
+  public getArray(columnIx: number): any {
+    return using(this._stmt!.getValue(columnIx), (ecsqlValue) => {
+      return ECSqlValueHelper.getArray(ecsqlValue);
+    });
+  }
 }
 
 class ECSqlBindingHelper {
@@ -473,27 +627,23 @@ class ECSqlBindingHelper {
 
     assert(typeof (val) === "object");
 
-    if (val instanceof Blob)
+    if (val.base64 !== undefined)
       return binder.bindBlob(val.base64);
 
-    if (val instanceof DateTime)
+    if (val.isoString !== undefined)
       return binder.bindDateTime(val.isoString);
 
     if (val instanceof Id64)
       return binder.bindId(val.value);
 
-    // check for XYZ before XY because XY derives from XYZ
-    if (val instanceof XYZ)
+    if (XYZ.isXYAndZ(val))
       return binder.bindPoint3d(val.x, val.y, val.z);
 
-    if (val instanceof XY)
+    if (XYZ.isXAndY(val))
       return binder.bindPoint2d(val.x, val.y);
 
-    if (val instanceof NavigationBindingValue)
+    if (val.id !== undefined && val.id.value !== undefined)
       return binder.bindNavigation(val.id.value, val.relClassName, val.relClassTableSpace);
-
-    if (val instanceof NavigationValue)
-      return binder.bindNavigation(val.id.value, val.relClassName);
 
     return undefined;
   }
@@ -508,14 +658,14 @@ class ECSqlValueHelper {
     const dataType: ECSqlValueType = ecsqlValue.getColumnInfo().getType() as ECSqlValueType;
     switch (dataType) {
       case ECSqlValueType.Struct:
-        return ECSqlValueHelper.getStructValue(ecsqlValue);
+        return ECSqlValueHelper.getStruct(ecsqlValue);
 
       case ECSqlValueType.Navigation:
-        return ECSqlValueHelper.getNavigationValue(ecsqlValue);
+        return ECSqlValueHelper.getNavigation(ecsqlValue);
 
       case ECSqlValueType.PrimitiveArray:
       case ECSqlValueType.StructArray:
-        return ECSqlValueHelper.getArrayValue(ecsqlValue);
+        return ECSqlValueHelper.getArray(ecsqlValue);
 
       default:
         return ECSqlValueHelper.getPrimitiveValue(ecsqlValue);
@@ -586,7 +736,55 @@ class ECSqlValueHelper {
     return propName;
   }
 
-  private static getStructValue(ecsqlValue: AddonECSqlValue): any {
+  public static getBoolean(ecsqlVal: AddonECSqlValue): boolean {
+    return ecsqlVal.getBoolean();
+  }
+
+  public static getBlob(ecsqlVal: AddonECSqlValue): string {
+    return ecsqlVal.getBlob();
+  }
+
+  public static getDateTime(ecsqlVal: AddonECSqlValue): string {
+    return ecsqlVal.getDateTime();
+  }
+
+  public static getDouble(ecsqlVal: AddonECSqlValue): number {
+    return ecsqlVal.getDouble();
+  }
+
+  public static getId(ecsqlVal: AddonECSqlValue): string {
+    const colInfo: AddonECSqlColumnInfo = ecsqlVal.getColumnInfo();
+    if (colInfo.isSystemProperty() && colInfo.getPropertyName().endsWith("ECClassId"))
+      return ecsqlVal.getClassNameForClassId();
+
+    return ecsqlVal.getId();
+  }
+
+  public static getGeometry(ecsqlVal: AddonECSqlValue): any {
+    return JSON.parse(ecsqlVal.getGeometry());
+  }
+
+  public static getGuid(ecsqlVal: AddonECSqlValue): string {
+    return ecsqlVal.getGuid();
+  }
+
+  public static getInteger(ecsqlVal: AddonECSqlValue): number {
+    return ecsqlVal.getInt64();
+  }
+
+  public static getString(ecsqlVal: AddonECSqlValue): string {
+    return ecsqlVal.getString();
+  }
+
+  public static getXAndY(ecsqlVal: AddonECSqlValue): XAndY {
+    return ecsqlVal.getPoint2d();
+  }
+
+  public static getXYAndZ(ecsqlVal: AddonECSqlValue): XYAndZ {
+    return ecsqlVal.getPoint3d();
+  }
+
+  public static getStruct(ecsqlValue: AddonECSqlValue): any {
     if (ecsqlValue.isNull())
       return undefined;
 
@@ -612,10 +810,7 @@ class ECSqlValueHelper {
     return structVal;
   }
 
-  private static getArrayValue(ecsqlValue: AddonECSqlValue): any {
-    if (ecsqlValue.isNull())
-      return undefined;
-
+  public static getArray(ecsqlValue: AddonECSqlValue): any[] {
     const arrayVal: any[] = [];
     using(ecsqlValue.getArrayIterator(), (it) => {
       while (it.moveNext()) {
@@ -629,12 +824,8 @@ class ECSqlValueHelper {
     return arrayVal;
   }
 
-  private static getNavigationValue(ecsqlValue: AddonECSqlValue): any {
-    if (ecsqlValue.isNull())
-      return undefined;
-
-    const rawVal: { id: string, relClassName?: string } = ecsqlValue.getNavigation();
-    return new NavigationValue(new Id64(rawVal.id), rawVal.relClassName);
+  public static getNavigation(ecsqlValue: AddonECSqlValue): NavigationValue {
+    return ecsqlValue.getNavigation();
   }
 
   private static getPrimitiveValue(ecsqlValue: AddonECSqlValue): any {
@@ -644,35 +835,29 @@ class ECSqlValueHelper {
     const colInfo: AddonECSqlColumnInfo = ecsqlValue.getColumnInfo();
     switch (colInfo.getType()) {
       case ECSqlValueType.Blob:
-        return new Blob(ecsqlValue.getBlob());
+        return ECSqlValueHelper.getBlob(ecsqlValue);
       case ECSqlValueType.Boolean:
-        return ecsqlValue.getBoolean();
+        return ECSqlValueHelper.getBoolean(ecsqlValue);
       case ECSqlValueType.DateTime:
-        return new DateTime(ecsqlValue.getDateTime());
+        return ECSqlValueHelper.getDateTime(ecsqlValue);
       case ECSqlValueType.Double:
-        return ecsqlValue.getDouble();
+        return ECSqlValueHelper.getDouble(ecsqlValue);
       case ECSqlValueType.Geometry:
-        return JSON.parse(ecsqlValue.getGeometry());
-      case ECSqlValueType.Id: {
-        if (colInfo.isSystemProperty() && colInfo.getPropertyName().endsWith("ECClassId"))
-          return ecsqlValue.getClassNameForClassId();
-
-        return new Id64(ecsqlValue.getId());
-      }
+        return ECSqlValueHelper.getGeometry(ecsqlValue);
+      case ECSqlValueType.Guid:
+        return ECSqlValueHelper.getGuid(ecsqlValue);
+      case ECSqlValueType.Id:
+        return ECSqlValueHelper.getId(ecsqlValue);
       // JS doesn't tell between int32 and larger ints, so retrieve them with the getInt64 method
       case ECSqlValueType.Int:
       case ECSqlValueType.Int64:
-        return ecsqlValue.getInt64();
-      case ECSqlValueType.Point2d: {
-        const rawPoint: { x: number, y: number } = ecsqlValue.getPoint2d();
-        return new Point2d(rawPoint.x, rawPoint.y);
-      }
-      case ECSqlValueType.Point3d: {
-        const rawPoint: { x: number, y: number, z: number } = ecsqlValue.getPoint3d();
-        return new Point3d(rawPoint.x, rawPoint.y, rawPoint.z);
-      }
+        return ECSqlValueHelper.getInteger(ecsqlValue);
+      case ECSqlValueType.Point2d:
+        return ECSqlValueHelper.getXAndY(ecsqlValue);
+      case ECSqlValueType.Point3d:
+        return ECSqlValueHelper.getXYAndZ(ecsqlValue);
       case ECSqlValueType.String:
-        return ecsqlValue.getString();
+        return ECSqlValueHelper.getString(ecsqlValue);
       default:
         throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unsupported type ${ecsqlValue.getColumnInfo().getType()} of the ECSQL Value`);
     }
