@@ -3,8 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { IndexedPrimitiveParamsFeatures, PolylineParamVertex, PolylineParam, Graphic, GraphicList } from "../../frontend/render/Graphic";
-import { FeatureIndexType, FeatureIndex } from "../../frontend/render/FeatureIndex";
+import { IndexedPrimitiveParamsFeatures, PolylineParamVertex, PolylineParam } from "../../frontend/render/webgl/Graphic";
+import { Graphic, GraphicList } from "../../frontend/render/Graphic";
+import { FeatureIndexType, FeatureIndex } from "../../frontend/render/webgl/FeatureIndex";
 import { IModelConnection } from "../../frontend/IModelConnection";
 import { ViewContext } from "../../frontend/ViewContext";
 import * as path from "path";

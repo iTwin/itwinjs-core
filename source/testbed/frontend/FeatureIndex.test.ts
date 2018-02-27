@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ColorIndex } from "../../frontend/render/FeatureIndex";
+import { ColorIndex } from "../../frontend/render/webgl/FeatureIndex";
 import { ColorDef } from "../../common/ColorDef";
 
 describe("ColorIndex", () => {

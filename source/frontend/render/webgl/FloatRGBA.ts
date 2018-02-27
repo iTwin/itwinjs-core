@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ColorDef } from "../../common/ColorDef";
+import { ColorDef } from "../../../common/ColorDef";
 
 /** An RGB color. */
 export class FloatRgb {
