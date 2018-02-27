@@ -143,7 +143,7 @@ export class IModelConnection extends IModel {
    * ### Examples
    * | ECSQL | Row |
    * | ----- | --- |
-   * | SELECT ECInstanceId,ECClassId,Parent,LastMod,FederationGuid,UserLabel FROM bis.Element | `{id:"0x132", className:"generic.PhysicalObject", parent:{id:"0x444", relClassName:"bis.ElementOwnsChildElements"},lastMod:"2018-02-27T14:12:55.000Z",federationGuid:"123123-123123-3312",userLabel:"My element"}` |
+   * | SELECT ECInstanceId,ECClassId,Parent,LastMod,FederationGuid,UserLabel FROM bis.Element | `{id:"0x132", className:"generic.PhysicalObject", parent:{id:"0x444", relClassName:"bis.ElementOwnsChildElements"},lastMod:"2018-02-27T14:12:55.000Z",federationGuid:"274e25dc-8407-11e7-bb31-be2e44b06b34",userLabel:"My element"}` |
    * | SELECT s.ECInstanceId schemaId, c.ECInstanceId classId FROM meta.ECSchemaDef s JOIN meta.ECClassDef c ON s.ECInstanceId=c.Schema.Id | `{schemaId:"0x132", classId:"0x332"}` |
    * | SELECT count(*) FROM bis.Element | `{"count(*)": 31241}` |
    * | SELECT count(*) cnt FROM bis.Element | `{cnt: 31241}` |
