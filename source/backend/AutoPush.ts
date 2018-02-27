@@ -79,6 +79,7 @@ export class AutoPush {
    * @param activityMonitor The activity monitor that will tell me when the app is idle. Defaults to BackendActivityMonitor with a 1 second idle period.
    */
   constructor(iModel: IModelDb, params: AutoPushParams, serviceAccountAccessToken: AccessToken, activityMonitor?: AppActivityMonitor) {
+    iModel.onBeforeClose.addListener(() => this.cancel());
     this._iModel = iModel;
     this._serviceAccountAccessToken = serviceAccountAccessToken;
     this._activityMonitor = activityMonitor || new BackendActivityMonitor();
@@ -205,7 +206,6 @@ export class AutoPush {
 
   //  Push changes, if there are changes and only if the backend is idle.
   private doAutoPush() {
-
     if (this.iModel === undefined) {
       Logger.logInfo(loggingCategory, "AutoPush - No iModel! Cancelling...");
       this.cancel();
