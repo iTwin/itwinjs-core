@@ -249,10 +249,7 @@ export class IModelDb extends IModel {
    * Pass an array if the parameters are positional. Pass an object of the values keyed on the parameter name
    * for named parameters.
    * The values in either the array or object must match the respective types of the parameters.
-   * Supported types:
-   * boolean, [[Blob]],  [[DateTime]], [[NavigationBindingValue]], number, [[XY]], [[XYZ]], string
-   * For struct parameters pass an object with key value pairs of struct property name and values of the supported types
-   * For array parameters pass an array of the supported types.
+   * See [[ECSqlStatement.bindvValues]] for details.
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
    * See [[ECSqlStatement.getRow]] for details about the format of the returned rows.
    * @throws [[IModelError]] If the statement is invalid
@@ -277,7 +274,7 @@ export class IModelDb extends IModel {
    * @returns an Id64Set with results of query
    */
   public queryEntityIds(params: EntityQueryParams): Id64Set {
-    let sql = "SELECT HexStr(ECInstanceId) AS id FROM ";
+    let sql = "SELECT ECInstanceId FROM ";
     if (params.only)
       sql += "ONLY ";
     sql += params.from;
@@ -1302,7 +1299,8 @@ export class IModelDbElements {
       stmt.bindString(3, code.value!);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
         return undefined;
-      return stmt.getRow().id;
+
+      return new Id64(stmt.getRow().id);
     });
   }
 

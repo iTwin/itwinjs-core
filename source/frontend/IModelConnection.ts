@@ -122,29 +122,31 @@ export class IModelConnection extends IModel {
    * ### Property value types
    * The resulting types of the returned property values are these:
    *
-   * | ECSQL type | JavaScript Type |
-   * | ---------- | --------------- |
-   * | Boolean    | boolean       |
-   * | Blob       | [[Blob]]      |
-   * | Double     | number        |
-   * | DateTime   | [[DateTime]]  |
-   * | Id system properties | [[Id64]] |
-   * | Integer    | number        |
-   * | Int64      | number        |
-   * | Point2d    | [[Point2d]]   |
-   * | Point3d    | [[Point3d]]   |
-   * | String     | string        |
-   * | Navigation | [[NavigationValue]] |
-   * | Struct     | JS object with properties of the types in this table |
-   * | Array      | array of the types in this table |
+   * | ECSQL type | Extended Type | JavaScript Type |
+   * | ---------- | ------------- | --------------- |
+   * | Boolean    | -             | boolean         |
+   * | Blob       | -             | Base64 string   |
+   * | Blob       | BeGuid        | GUID string (see [[Guid]]) |
+   * | Double     | -             | number          |
+   * | DateTime   | -             | ISO8601 string  |
+   * | Id system properties | -   | Hexadecimal string |
+   * | Integer    | -             | number          |
+   * | Int64      | -             | number          |
+   * | Int64      | Id            | Hexadecimal string |
+   * | Point2d    | -             | [[XAndY]]      |
+   * | Point3d    | -             | [[XYAndZ]]     |
+   * | String     | -             | string         |
+   * | Navigation | n/a           | [[NavigationValue]] |
+   * | Struct     | n/a           | JS object with properties of the types in this table |
+   * | Array      | n/a           | array of the types in this table |
    *
    * ### Examples
    * | ECSQL | Row |
    * | ----- | --- |
-   * | SELECT ECInstanceId,ECClassId,Parent,LastMod,FederationGuid,UserLabel FROM bis.Element | `{id:Id64,className:string,parent:NavigationValue,lastMod:DateTime,federationGuid:Blob,userLabel:string}` |
-   * | SELECT s.ECInstanceId schemaId, c.ECInstanceId classId FROM meta.ECSchemaDef s JOIN meta.ECClassDef c ON s.ECInstanceId=c.Schema.Id | `{schemaId:Id64, classId:Id64}` |
-   * | SELECT count(*) FROM bis.Element | `{"count(*)":number}` |
-   * | SELECT count(*) cnt FROM bis.Element | `{cnt:number}` |
+   * | SELECT ECInstanceId,ECClassId,Parent,LastMod,FederationGuid,UserLabel FROM bis.Element | `{id:"0x132", className:"generic.PhysicalObject", parent:{id:"0x444", relClassName:"bis.ElementOwnsChildElements"},lastMod:"2018-02-27T14:12:55.000Z",federationGuid:"123123-123123-3312",userLabel:"My element"}` |
+   * | SELECT s.ECInstanceId schemaId, c.ECInstanceId classId FROM meta.ECSchemaDef s JOIN meta.ECClassDef c ON s.ECInstanceId=c.Schema.Id | `{schemaId:"0x132", classId:"0x332"}` |
+   * | SELECT count(*) FROM bis.Element | `{"count(*)": 31241}` |
+   * | SELECT count(*) cnt FROM bis.Element | `{cnt: 31241}` |
    *
    * @param ecsql The ECSQL to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).

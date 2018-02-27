@@ -7,8 +7,8 @@ import { CodeSpec, CodeSpecNames } from "../../common/Code";
 import { ViewDefinitionProps } from "../../common/ViewProps";
 import { DrawingViewState, OrthographicViewState, ViewState } from "../../frontend/ViewState";
 import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "../../frontend/IModelConnection";
-import { Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { DateTime, Blob, NavigationValue } from "../../common/ECSqlTypes";
+import { XYAndZ } from "@bentley/geometry-core/lib/PointVector";
+import { NavigationValue, ECSqlTypedString, ECSqlStringType } from "../../common/ECSqlTypes";
 import { TestData } from "./TestData";
 import { ModelSelectorState } from "../../frontend/ModelSelectorState";
 import { DisplayStyle3dState, DisplayStyle2dState } from "../../frontend/DisplayStyleState";
@@ -102,23 +102,21 @@ describe("IModelConnection", () => {
     let rows = await iModel.executeQuery("SELECT ECInstanceId,Model,LastMod,CodeValue,FederationGuid,Origin FROM bis.GeometricElement3d LIMIT 1");
     assert.equal(rows.length, 1);
     let expectedRow = rows[0];
-    const expectedId: Id64 = expectedRow.id;
+    const expectedId = new Id64(expectedRow.id);
     assert.isTrue(expectedId.isValid());
-    const expectedModelId: NavigationValue = expectedRow.model;
-    assert.isTrue(expectedModelId.isValid());
-    const expectedLastMod: DateTime = expectedRow.lastMod;
-    assert.isTrue(expectedLastMod.isValid());
-    const expectedFedGuid: Blob | undefined = expectedRow.federationGuid !== undefined ? expectedRow.federationGuid : undefined;
-    const expectedOrigin: Point3d = expectedRow.origin;
+    const expectedModel: NavigationValue = expectedRow.model;
+    assert.isTrue(new Id64(expectedModel.id).isValid());
+    const expectedLastMod: ECSqlTypedString = {type: ECSqlStringType.DateTime, value: expectedRow.lastMod};
+    const expectedFedGuid: ECSqlTypedString | undefined = expectedRow.federationGuid !== undefined ? {type: ECSqlStringType.Guid, value: expectedRow.federationGuid} : undefined;
+    const expectedOrigin: XYAndZ = expectedRow.origin;
 
     let actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement3d WHERE ECInstanceId=? AND Model=? OR (LastMod=? AND CodeValue=? AND FederationGuid=? AND Origin=?)",
-      [expectedId, expectedModelId, expectedLastMod, expectedRow.codeValue,
-        expectedFedGuid, expectedOrigin]);
+      [expectedId, expectedModel, expectedLastMod, expectedRow.codeValue, expectedFedGuid, expectedOrigin]);
     assert.equal(actualRows.length, 1);
 
     actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement3d WHERE ECInstanceId=:id AND Model=:model OR (LastMod=:lastmod AND CodeValue=:codevalue AND FederationGuid=:fedguid AND Origin=:origin)",
       {
-        id: expectedId, model: expectedModelId, lastmod: expectedLastMod,
+        id: expectedId, model: expectedModel, lastmod: expectedLastMod,
         codevalue: expectedRow.codeValue, fedguid: expectedFedGuid, origin: expectedOrigin,
       });
     assert.equal(actualRows.length, 1);
@@ -136,11 +134,11 @@ describe("IModelConnection", () => {
 
     expectedRow = rows[0];
     actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement2d WHERE ECInstanceId=? AND Origin=?",
-      [expectedRow.id, expectedRow.origin]);
+      [new Id64(expectedRow.id), expectedRow.origin]);
     assert.equal(actualRows.length, 1);
 
     actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement2d WHERE ECInstanceId=:id AND Origin=:origin",
-      { id: expectedRow.id, origin: expectedRow.origin });
+      { id: {type: ECSqlStringType.Id, value: expectedRow.id}, origin: expectedRow.origin });
     assert.equal(actualRows.length, 1);
 
     await iModel.close(TestData.accessToken);
