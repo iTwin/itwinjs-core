@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { GL } from "@bentley/imodeljs-frontend/lib/render/GL";
-import { Handle, BufferHandle, QBufferHandle2d, QBufferHandle3d, AttributeHandle, UniformHandle } from "@bentley/imodeljs-frontend/lib/render/Handle";
+import { GL } from "@bentley/imodeljs-frontend/lib/render/webgl/GL";
+import { Handle, BufferHandle, QBufferHandle2d, QBufferHandle3d, AttributeHandle, UniformHandle } from "@bentley/imodeljs-frontend/lib/render/webgl/Handle";
 import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { QParams } from "@bentley/imodeljs-frontend/lib/render/QPoint";
 import { Range2d, Range3d } from "@bentley/geometry-core/lib/Range";

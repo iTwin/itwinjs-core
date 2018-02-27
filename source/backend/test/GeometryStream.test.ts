@@ -165,7 +165,7 @@ describe("GeometryStream", () => {
     const geometry: any[] = [];
     const gsReader = new GSReader();
     do {
-      const geom = gsReader.dgnGetGeometricPrimitive(iter.operation!);
+      const geom = gsReader.getGeometricPrimitive(iter.operation!);
       if (geom)
         geometry.push(geom.data);
     } while (iter.nextOp());
@@ -218,7 +218,7 @@ describe("GeometryStream", () => {
       const geomArrayOut: Arc3d[] = [];
       do {
         const geomOut = Arc3d.createXY(Point3d.create(0, 0, 0), 1);
-        const success = gsReader.dgnGetArc3d(iterator.operation!, geomOut);
+        const success = gsReader.getArc3d(iterator.operation!, geomOut);
         assert.isTrue(success !== undefined, "Expect Arc3d out");
         if (success) {
           geomArrayOut.push(geomOut);
@@ -295,7 +295,7 @@ describe("GeometryBuilder", () => {
     const geomElement = imodel.elements.createElement(elementProps);
 
     // Set up builder
-    const builder = GeometryBuilder.createCategoryOrigin3d(seedElement.category, Point3d.create(0, 0, 0));
+    const builder = GeometryBuilder.fromCategoryIdAndOrigin3d(seedElement.category, Point3d.create(0, 0, 0));
     assert.isDefined(builder, "Builder is successfully created");
     if (!builder)
       return;
@@ -319,13 +319,13 @@ describe("GeometryBuilder", () => {
     const collection = new GSCollection(returned3d.geom.geomStream);
     const reader = new GSReader();
     let item: any;
-    const elParams = GeometryParams.createDefaults();
+    const elParams = new GeometryParams(new Id64());
     while (collection.isValid) {
       if (collection.operation!.isGeometryOp()) {
-        item = reader.dgnGetGeometricPrimitive(collection.operation!);
+        item = reader.getGeometricPrimitive(collection.operation!);
         assert.isDefined(item, "Item extracted into GeometricPrimitive");
       } else {
-        item = reader.dgnGetGeometryParams(collection.operation!, elParams);
+        item = reader.getGeometryParams(collection.operation!, elParams);
         assert.isTrue(item, "Item extracted into GeometryParams");
       }
       collection.nextOp();
@@ -334,7 +334,7 @@ describe("GeometryBuilder", () => {
 
   it("should be able to make appendages to GeometricElement2d, with an exception of 3d geometry", () => {
 
-    const builder = GeometryBuilder.createCategoryOrigin2d(seedElement.category, Point2d.create());
+    const builder = GeometryBuilder.fromCategoryIdAndOrigin2d(seedElement.category, Point2d.create());
     assert.isDefined(builder, "Builder is successfully created");
     if (!builder)
       return;
@@ -352,7 +352,7 @@ describe("GeometryBuilder", () => {
 
   // pending build of addon
   it("geometry stream built in JS should be deserialized properly in C++", () => {
-    const builder = GeometryBuilder.createCategoryOrigin3d(seedElement.category, Point3d.create(0, 0, 0));
+    const builder = GeometryBuilder.fromCategoryIdAndOrigin3d(seedElement.category, Point3d.create(0, 0, 0));
     assert.isDefined(builder, "Builder is successfully created");
     if (!builder)
       return;

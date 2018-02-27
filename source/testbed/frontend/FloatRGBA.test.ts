@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
-import { FloatRgb, FloatRgba, FloatPreMulRgba } from "@bentley/imodeljs-frontend/lib/render/FloatRGBA";
+import { FloatRgb, FloatRgba, FloatPreMulRgba } from "@bentley/imodeljs-frontend/lib/render/webgl/FloatRGBA";
 
 describe("FloatRgb", () => {
   it("should create and store rgb from ColorDef", () => {

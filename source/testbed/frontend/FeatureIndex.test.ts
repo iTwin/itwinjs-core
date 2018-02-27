@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ColorIndex } from "@bentley/imodeljs-frontend/lib/render/FeatureIndex";
+import { ColorIndex } from "@bentley/imodeljs-frontend/lib/render/webgl/FeatureIndex";
 import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
 
 describe("ColorIndex", () => {

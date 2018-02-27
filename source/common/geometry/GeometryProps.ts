@@ -10,6 +10,7 @@ import { DgnFB } from "./ElementGraphicsSchema";
 import { ColorDef, ColorRgb } from "../ColorDef";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Appearance } from "../SubCategoryAppearance";
+import { IModel } from "../IModel";
 
 export const enum BackgroundFill {
   None = 0,     // single color fill uses the fill color and line color to draw either a solid or outline fill
@@ -29,9 +30,9 @@ export class GeometryParams {
   private _resolved: boolean = false;             // !< whether Resolve has established SubCategory::Appearance/effective values.
   private _categoryId: Id64;                     // !< the Category Id on which the geometry is drawn.
   private _subCategoryId: Id64;                  // !< the SubCategory Id that controls the appearance of subsequent geometry.
-  private _materialId?: Id64 | undefined;                     // !< render material Id.
-  private _elmPriority: number = 0;                  // !< display priority (applies to 2d only)
-  private _netPriority: number = 0;                  // !< net display priority for element/category (applies to 2d only)
+  private _materialId?: Id64;                     // !< render material Id.
+  private _elmPriority = 0;                  // !< display priority (applies to 2d only)
+  private _netPriority = 0;                  // !< net display priority for element/category (applies to 2d only)
   private _weight: number = 0;
   private _lineColor?: ColorDef;
   private _fillColor?: ColorDef;                  // !< fill color (applicable only if filled)
@@ -46,33 +47,22 @@ export class GeometryParams {
   private _gradient?: GradientSymb;               // !< gradient fill settings.
   private _pattern?: PatternParams;               // !< area pattern settings.
 
-  public static createDefaults(): GeometryParams {
-    return new GeometryParams();
-  }
-
-  public static createId(categoryId: Id64, subCategoryId: Id64 = new Id64()): GeometryParams {
-    const retVal = new GeometryParams();
-    retVal._categoryId = categoryId;
+  public constructor(categoryId: Id64, subCategoryId: Id64 = new Id64()) {
+    this._categoryId = categoryId;
     if (subCategoryId.isValid())
-      retVal._subCategoryId = subCategoryId;
-    else {
-      const high = categoryId.getHigh();
-      const low = categoryId.getLow() + 1;
-      retVal._subCategoryId = new Id64([low, high]);
-    }
-    return retVal;
+      this._subCategoryId = subCategoryId;
+    else
+      this._subCategoryId = IModel.getDefaultSubCategoryId(categoryId);
   }
 
   public clone(): GeometryParams {
-    const retVal = new GeometryParams();
+    const retVal = new GeometryParams(this._categoryId, this._subCategoryId);
     retVal._colorOverride = this._colorOverride;
     retVal._weightOverride = this._weightOverride;
     retVal._styleOverride = this._styleOverride;
     retVal._materialOverride = this._materialOverride;
     retVal._fillOverride = this._fillOverride;
     retVal._resolved = this._resolved;
-    retVal._categoryId = this._categoryId;
-    retVal._subCategoryId = this._subCategoryId;
     retVal._materialId = this._materialId;
     retVal._elmPriority = this._elmPriority;
     retVal._netPriority = this._netPriority;
@@ -216,9 +206,7 @@ export class GeometryParams {
   // Setter methods
   public setCategoryId(categoryId: Id64, clearAppearanceOverrides: boolean = true) {
     this._categoryId = categoryId;
-    const high = categoryId.getHigh();
-    const low = categoryId.getLow() + 1;
-    this._subCategoryId = new Id64([low, high]);
+    this._subCategoryId = IModel.getDefaultSubCategoryId(categoryId);
     if (clearAppearanceOverrides) {
       this._colorOverride = false;
       this._fillOverride = false;

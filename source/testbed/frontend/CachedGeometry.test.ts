@@ -2,10 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { GL } from "@bentley/imodeljs-frontend/lib/render/GL";
-import { BufferHandle } from "@bentley/imodeljs-frontend/lib/render/Handle";
-import { FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-frontend/lib/render/FeatureIndex";
-import { FeatureIndices } from "@bentley/imodeljs-frontend/lib/render/CachedGeometry";
+import { GL } from "@bentley/imodeljs-frontend/lib/render/webgl/GL";
+import { BufferHandle } from "@bentley/imodeljs-frontend/lib/render/webgl/Handle";
+import { FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-frontend/lib/render/webgl/FeatureIndex";
+import { FeatureIndices } from "@bentley/imodeljs-frontend/lib/render/webgl/CachedGeometry";
 
 // ###TODO: canvas.getContext() returns null on PRG...GPU should not be required
 const haveWebGL = false;

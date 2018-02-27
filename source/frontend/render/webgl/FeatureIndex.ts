@@ -14,6 +14,7 @@ export class ColorIndexNonUniform {
     this.hasAlpha = hasAlpha;
   }
 }
+
 export class ColorIndex {
   public numColors: number = 1;
   public uniform: number = 0x00ffffff;
