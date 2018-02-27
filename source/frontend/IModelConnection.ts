@@ -153,10 +153,19 @@ export class IModelConnection extends IModel {
    * Pass an array if the parameters are positional. Pass an object of the values keyed on the parameter name
    * for named parameters.
    * The values in either the array or object must match the respective types of the parameters.
+   *
    * Supported types:
-   * boolean, [[Blob]],  [[DateTime]], [[NavigationBindingValue]], number, [[XY]], [[XYZ]], string
-   * For struct parameters pass an object with key value pairs of struct property name and values of the supported types
-   * For array parameters pass an array of the supported types.
+   *  * boolean
+   *  * number for integral or double parameters
+   *  * string for string parameters,
+   *  * [[ECSqlTypedString]] for date time, blob, id, or guid parameters
+   *  * [[Id64]] for id parameters
+   *  * [[Guid]] for guid parameters
+   *  * [[NavigationBindingValue]] for navigation property parameters
+   *  * [[XAndY]] for Point2d parameters
+   *  * [[XYAndZ]] for Point3d parameters
+   *  * Objects of primitives, objects or arrays of any of the above types when binding structs
+   *  * Arrays of primitives or objects of any of the above when binding arrays
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows
    * @throws [[IModelError]] if the ECSQL is invalid
    */

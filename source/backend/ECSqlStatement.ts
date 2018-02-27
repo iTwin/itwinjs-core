@@ -210,10 +210,22 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   }
 
   /** Bind values to all parameters in the statement.
-   * @param values The values to bind to the parameters. Pass an array if the parameters are positional.
-   * Pass an object of the values keyed on the parameter name for named parameters
-   * The values in either the array or object must match the respective types of the parameter. See the bindXXX
-   * methods for each type.
+   * @param values The values to bind to the parameters.
+   * Pass an array if the parameters are positional. Pass an object of the values keyed on the parameter name for named parameters.
+   * The values in either the array or object must match the respective types of the parameter.
+   *
+   * Supported types:
+   *  * boolean
+   *  * number for integral or double parameters
+   *  * string for string parameters,
+   *  * [[ECSqlTypedString]] for date time, blob, id, or guid parameters
+   *  * [[Id64]] for id parameters
+   *  * [[Guid]] for guid parameters
+   *  * [[NavigationBindingValue]] for navigation property parameters
+   *  * [[XAndY]] for Point2d parameters
+   *  * [[XYAndZ]] for Point3d parameters
+   *  * Objects of primitives, objects or arrays of any of the above types when binding structs
+   *  * Arrays of primitives or objects of any of the above when binding arrays
    */
   public bindValues(values: any[] | object): void {
     if (Array.isArray(values)) {
@@ -490,9 +502,17 @@ class ECSqlBindingHelper {
   /** Binds the specified value to the specified binder
    * @param binder Parameter Binder to bind to
    * @param val Value to be bound. Must be of one of these types:
-   *  null | undefined, boolean, number, string, DateTime, Blob, Id64, XY, XYZ, NavigationValue
-   *  Objects of primitives, objects or arrays of any of the above types when binding structs
-   *  Arrays of primitives or objects of any of the above when binding arrays
+   *  * boolean
+   *  * number for integral or double parameters
+   *  * string for string parameters,
+   *  * [[ECSqlTypedString]] for date time, blob, id, or guid parameters
+   *  * [[Id64]] for id parameters
+   *  * [[Guid]] for guid parameters
+   *  * [[NavigationBindingValue]] for navigation property parameters
+   *  * [[XAndY]] for Point2d parameters
+   *  * [[XYAndZ]] for Point3d parameters
+   * Objects of primitives, objects or arrays of any of the above types when binding structs
+   * Arrays of primitives or objects of any of the above when binding arrays
    * @throws IModelError in case of errors
    */
   public static bindValue(binder: AddonECSqlBinder, val: any): void {
