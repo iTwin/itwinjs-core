@@ -62,6 +62,8 @@ export class IModelDb extends IModel {
   private _classMetaDataRegistry?: MetaDataRegistry;
   private _concurrency?: ConcurrencyControl;
   private _txnManager?: TxnManager;
+  /** Event raised when a connected IModelDb is created or opened. This event is not raised for standalone IModelDbs. */
+  public static readonly onOpened = new BeEvent<(_imodelDb: IModelDb) => void>();
 
   /** @hidden */
   public briefcaseEntry?: BriefcaseEntry;
@@ -113,7 +115,9 @@ export class IModelDb extends IModel {
   /** Create an iModel on the Hub */
   public static async create(accessToken: AccessToken, contextId: string, hubName: string, rootSubjectName: string, hubDescription?: string, rootSubjectDescription?: string): Promise<IModelDb> {
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.create(accessToken, contextId, hubName, rootSubjectName, hubDescription, rootSubjectDescription);
-    return IModelDb.constructIModelDb(briefcaseEntry, contextId);
+    const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, contextId);
+    IModelDb.onOpened.raiseEvent(imodelDb);
+    return imodelDb;
   }
 
   /** Open the iModel from a local file
@@ -138,7 +142,9 @@ export class IModelDb extends IModel {
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(accessToken, contextId, iModelId, openMode, version);
     Logger.logTrace(loggingCategory, "IModelDb.open", () => ({ iModelId, openMode }));
-    return IModelDb.constructIModelDb(briefcaseEntry, contextId);
+    const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, contextId);
+    IModelDb.onOpened.raiseEvent(imodelDb);
+    return imodelDb;
   }
 
   /**

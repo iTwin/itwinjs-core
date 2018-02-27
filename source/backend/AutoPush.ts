@@ -6,12 +6,29 @@ import { AccessToken } from "@bentley/imodeljs-clients/lib";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
+import { Gateway } from "../common/Gateway";
 
 const loggingCategory = "imodeljs-backend.AutoPush";
 
 export interface AppActivityMonitor {
   /** Check if the app is idle, that is, not busy. */
   isIdle(): boolean;
+}
+
+/** An implementation of AppActivityMonitor that should be suitable for most backends. */
+export class BackendActivityMonitor implements AppActivityMonitor {
+
+  // intervalMillis - the length of time in seconds of inactivity that indicates that the backend is in a lull.
+  constructor(public idleIntervalSeconds: number = 1) {
+  }
+
+  public isIdle(): boolean {
+    // If it has been over the specified amount of time since the last request was received,
+    // then we *guess* the backend is in a lull and that the lull will continue for a similar amount of time.
+    const millisSinceLastPost: number = Date.now() - Gateway.aggregateLoad.lastRequest;
+    return (millisSinceLastPost >= (this.idleIntervalSeconds * 1000));
+
+  }
 }
 
 /** Configuration for AutoPush. */
@@ -59,12 +76,13 @@ export class AutoPush {
   /** Construct an AutoPushManager.
    * @param params  Auto-push configuration parameters
    * @param serviceAccountAccessToken The service account that should be used to push
-   * @param activityMonitor The activity monitor that will tell me when the app is idle
+   * @param activityMonitor The activity monitor that will tell me when the app is idle. Defaults to BackendActivityMonitor with a 1 second idle period.
    */
-  constructor(iModel: IModelDb, params: AutoPushParams, serviceAccountAccessToken: AccessToken, activityMonitor: AppActivityMonitor) {
+  constructor(iModel: IModelDb, params: AutoPushParams, serviceAccountAccessToken: AccessToken, activityMonitor?: AppActivityMonitor) {
+    iModel.onBeforeClose.addListener(() => this.cancel());
     this._iModel = iModel;
     this._serviceAccountAccessToken = serviceAccountAccessToken;
-    this._activityMonitor = activityMonitor;
+    this._activityMonitor = activityMonitor || new BackendActivityMonitor();
     this._pushIntervalMillisMin = params.pushIntervalSecondsMin * 1000;
     this._pushIntervalMillisMax = params.pushIntervalSecondsMax * 1000;
     this._endOfPushMillis = Date.now(); // not true, but this sets the mark for detecting when we reach the max
@@ -188,7 +206,6 @@ export class AutoPush {
 
   //  Push changes, if there are changes and only if the backend is idle.
   private doAutoPush() {
-
     if (this.iModel === undefined) {
       Logger.logInfo(loggingCategory, "AutoPush - No iModel! Cancelling...");
       this.cancel();

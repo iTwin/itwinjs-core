@@ -23,12 +23,12 @@ import * as path from "path";
 // import { Logger, LogLevel } from "@bentley/bentleyjs-core/lib/Logger";
 
 // Logger.initializeToConsole();
-// Logger.setLevel("Performance", LogLevel.INFO);
-// Logger.setLevelDefault(LogLevel.ERROR);
-// Logger.setLevel("Diagnostics", LogLevel.NONE);
-// Logger.setLevel("ECObjectsNative", LogLevel.NONE);
-// Logger.setLevel("BeSQLite", LogLevel.NONE);
-// Logger.setLevel("ECPresentation", LogLevel.NONE);
+// Logger.setLevel("Performance", LogLevel.Info);
+// Logger.setLevelDefault(LogLevel.Error);
+// Logger.setLevel("Diagnostics", LogLevel.None);
+// Logger.setLevel("ECObjectsNative", LogLevel.None);
+// Logger.setLevel("BeSQLite", LogLevel.None);
+// Logger.setLevel("ECPresentation", LogLevel.None);
 
 // Initialize the gateway classes used by tests
 Gateway.initialize(IModelGateway);

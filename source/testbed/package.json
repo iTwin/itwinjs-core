@@ -11,9 +11,9 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "^6.1.1",
+    "@bentley/bentleyjs-core": "^7.0.0",
     "@bentley/geometry-core": "^4.3.1",
-    "@bentley/imodeljs-clients": "^3.0.0",
+    "@bentley/imodeljs-clients": "^3.0.2",
     "@bentley/imodeljs-electronaddon": "~8.1.0",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
