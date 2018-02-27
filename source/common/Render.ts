@@ -698,3 +698,10 @@ export class Decorations {
 export const enum GeometryClass {
   Primary, Construction, Dimension, Pattern,
 }
+
+export class Feature {
+  public get isDefined(): boolean { return this.elementId.isValid() || this.subCategoryId.isValid() || this.geometryClass !== GeometryClass.Primary; }
+  public get isUndefined(): boolean { return !this.isDefined; }
+  constructor(public readonly elementId: Id64, public readonly subCategoryId: Id64, public readonly geometryClass: GeometryClass = GeometryClass.Primary) {}
+  public equals(other: Feature) { return this.isUndefined && other.isUndefined ? true : this.elementId.equals(other.elementId) && this.subCategoryId.equals(other.subCategoryId) && this.geometryClass === other.geometryClass; }
+}
