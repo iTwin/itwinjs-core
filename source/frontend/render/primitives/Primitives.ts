@@ -23,8 +23,8 @@ export const enum ComparePurpose {
 
 export class GeometryOptions {
   public get wantSurfacesOnly(): boolean { return this.surfaces === SurfacesOnly.Yes; }
-  public get WantPreserveOrder(): boolean { return this.preserveOrder === PreserveOrder.Yes; }
-  public get WantEdges(): boolean { return this.edges === GenerateEdges.Yes; }
+  public get wantPreserveOrder(): boolean { return this.preserveOrder === PreserveOrder.Yes; }
+  public get wantEdges(): boolean { return this.edges === GenerateEdges.Yes; }
   constructor(public readonly normals: NormalMode = NormalMode.Always,
               public readonly surfaces: SurfacesOnly = SurfacesOnly.No,
               public readonly preserveOrder: PreserveOrder = PreserveOrder.No,

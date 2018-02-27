@@ -21,6 +21,10 @@ describe("GeometryOptions", () => {
     assert.isTrue(a.preserveOrder === PreserveOrder.No, "default preserveOrder correct");
     assert.isTrue(a.edges === GenerateEdges.Yes, "default edges correct");
 
+    assert.isTrue(a.wantSurfacesOnly === false, "default wantSurfacesOnly correct");
+    assert.isTrue(a.wantPreserveOrder === false, "default wantPreserveOrder correct");
+    assert.isTrue(a.wantEdges === true, "default wantEdges correct");
+
     const b = new GeometryOptions(NormalMode.Never, SurfacesOnly.Yes, PreserveOrder.Yes, GenerateEdges.No);
     assert.isTrue(b.normals === NormalMode.Never, "normals correct");
     assert.isTrue(b.surfaces === SurfacesOnly.Yes, "surfaces correct");
