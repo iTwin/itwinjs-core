@@ -13,18 +13,17 @@ export enum ECSqlValueType {
   DateTime = 3,
   Double = 4,
   Geometry = 5,
-  Guid = 6,
-  Id = 7,
-  Int = 8,
-  Int64 = 9,
-  Point2d = 10,
-  Point3d = 11,
-  String = 12,
-  Navigation = 13,
-  Struct = 14,
-  PrimitiveArray = 15,
-  StructArray = 16,
-}
+  Id = 6,
+  Int = 7,
+  Int64 = 8,
+  Point2d = 9,
+  Point3d = 10,
+  String = 11,
+  Navigation = 12,
+  Struct = 13,
+  PrimitiveArray = 14,
+  StructArray = 15,
+  Guid = 16 }
 
 /** An ECSQL Navigation value.
  *
