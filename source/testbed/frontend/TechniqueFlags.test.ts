@@ -2,9 +2,9 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { FeatureDimension, FeatureDimensions, LUTDimension } from "../../frontend/render/FeatureDimensions";
-import { FeatureIndexType } from "../../frontend/render/FeatureIndex";
-import { TechniqueFlags, Mode, WithClipVolume } from "../../frontend/render/TechniqueFlags";
+import { FeatureDimension, FeatureDimensions, LUTDimension } from "../../frontend/render/webgl/FeatureDimensions";
+import { FeatureIndexType } from "../../frontend/render/webgl/FeatureIndex";
+import { TechniqueFlags, Mode, WithClipVolume } from "../../frontend/render/webgl/TechniqueFlags";
 
 describe("TechniqueFlags", () => {
   it("constructor should correctly set member variables", () => {

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Capabilities, ViewportQuad, TexturedViewportQuad } from "../../frontend/render/System";
+import { Capabilities, ViewportQuad, TexturedViewportQuad } from "../../frontend/render/webgl/System";
 
 function getWebGLContext(): WebGLRenderingContext | null {
   let canvas = document.getElementById("canvas") as HTMLCanvasElement;
