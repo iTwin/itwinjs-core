@@ -4,9 +4,9 @@
 
 import { assert } from "chai";
 import { LinePixels, HiddenLine } from "../../common/Render";
-import { LineCode, EdgeOverrides } from "../../frontend/render/EdgeOverrides";
-import { FloatPreMulRgba } from "../../frontend/render/FloatRGBA";
-import { OvrFlags } from "../../frontend/render/RenderFlags";
+import { LineCode, EdgeOverrides } from "../../frontend/render/webgl/EdgeOverrides";
+import { FloatPreMulRgba } from "../../frontend/render/webgl/FloatRGBA";
+import { OvrFlags } from "../../frontend/render/webgl/RenderFlags";
 
 describe("LineCode", () => {
   it("valueFromLinePixels correctly converts a LinePixel into a LineCode", () => {

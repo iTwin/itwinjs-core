@@ -342,7 +342,7 @@ export class Tool {
    * Get the localized keyin string for this Tool class. This returns the value of "tools." + this.toolId + ".keyin" from the
    * .json file for the current locale of its registered NameSpace (e.g. "en/MyApp.json")
    */
-  public static get keyin(): string { return this._keyin ? this._keyin : (this._keyin = iModelApp.i18N.translate(this.namespace.name + ":tools." + this.toolId + ".keyin")); }
+  public static get keyin(): string { return this._keyin ? this._keyin : (this._keyin = iModelApp.i18n.translate(this.namespace.name + ":tools." + this.toolId + ".keyin")); }
 
   /**
    * Get the toolId string for this Tool class. This string is used to identify the Tool in the ToolRegistry and is used to localize
@@ -536,7 +536,7 @@ export class ToolRegistry {
     if (this._keyinList)
       return this._keyinList;
     const thePromise = new Promise<CommandList>((resolve: any, reject: any) => {
-      iModelApp.i18N.waitForAllRead().then(() => {
+      iModelApp.i18n.waitForAllRead().then(() => {
         this._keyinList = [];
         for (const thisTool of this.tools.values()) {
           this._keyinList.push(thisTool);

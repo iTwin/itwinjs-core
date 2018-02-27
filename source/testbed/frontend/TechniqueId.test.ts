@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BuiltInTechniqueId, TechniqueId } from "../../frontend/render/TechniqueId";
+import { BuiltInTechniqueId, TechniqueId } from "../../frontend/render/webgl/TechniqueId";
 
 describe("TechniqueId", () => {
   it("should create TechniqueIds and retrieve their values", () => {
