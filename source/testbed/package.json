@@ -10,11 +10,15 @@
     "copy:testpublic": "cpx ./public/**/* ./lib/testbed/backend/public"
   },
   "repository": {},
+  "//dependencies": [
+    "NOTE: The only reason to add a dependency to imodeljs-nodeaddonapi is because we do NOT consume the backend as a package (will change soon)"
+  ],
   "dependencies": {
     "@bentley/bentleyjs-core": "^7.0.0",
     "@bentley/geometry-core": "^4.3.1",
     "@bentley/imodeljs-clients": "^3.0.2",
     "@bentley/imodeljs-electronaddon": "~10.0.0",
+    "@bentley/imodeljs-nodeaddonapi": "~10.0.0",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
     "commander": "^2.14.1",
