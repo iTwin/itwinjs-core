@@ -16,6 +16,10 @@ export const enum NormalMode {
 export const enum SurfacesOnly { Yes, No }  // Yes indicates polylines will not be generated, only meshes.
 export const enum PreserveOrder { Yes, No } // Yes indicates primitives will not be merged, and the order in which they were added to the GraphicBuilder will be preserved.
 export const enum GenerateEdges { Yes, No } // Yes indicates edges will be generated for surfaces
+export const enum ComparePurpose {
+  Merge,  // ignores category, subcategory, class, and considers colors equivalent if both have or both lack transparency
+  Strict,  // compares all members
+}
 
 export class GeometryOptions {
   public get wantSurfacesOnly(): boolean { return this.surfaces === SurfacesOnly.Yes; }
