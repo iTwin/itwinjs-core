@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { FrustumUniforms, FrustumUniformType, GLESClips } from "../../frontend/render/Target";
+import { FrustumUniforms, FrustumUniformType, GLESClips } from "../../frontend/render/webgl/Target";
 import { ClipVector } from "@bentley/geometry-core/lib/numerics/ClipVector";
 import { ClipShape } from "@bentley/geometry-core/lib/numerics/ClipPrimitives";
 import { ClipPlane } from "@bentley/geometry-core/lib/numerics/ClipPlanes";

@@ -2,9 +2,9 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { QPoint3dList, QPoint2dList, QParams3d, QParams2d } from "./QPoint";
+import { QPoint3dList, QPoint2dList, QParams3d, QParams2d } from "../QPoint";
 import { XY, XYZ } from "@bentley/geometry-core/lib/PointVector";
-import { PointUtil } from "./Utility";
+import { PointUtil } from "../Utility";
 
 export const enum ContextState {
   Uninitialized,

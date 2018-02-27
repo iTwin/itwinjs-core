@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { LinePixels, HiddenLine } from "../../common/Render";
+import { LinePixels, HiddenLine } from "../../../common/Render";
 import { FloatPreMulRgba } from "./FloatRGBA";
 import { OvrFlags } from "./RenderFlags";
 
