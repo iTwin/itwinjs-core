@@ -19,6 +19,7 @@
     "lint": "node node_modules/@bentley/bentleyjs-tools/scripts/tslint.js",
     "preinstall": "echo \"ERROR: use rush install instead\" && exit 1",
     "install-imodeljs-addon": "installImodelJsNative",
+    "publish:common": "cd source/common && npm publish",
     "publish:backend": "cd source/backend && npm publish",
     "publish:frontend": "cd source/frontend && npm publish",
     "predocs": "npm run extract",
