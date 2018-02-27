@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { ColorDef } from "../../common/ColorDef";
-import { FloatRgb, FloatRgba, FloatPreMulRgba } from "../../frontend/render/FloatRGBA";
+import { FloatRgb, FloatRgba, FloatPreMulRgba } from "../../frontend/render/webgl/FloatRGBA";
 
 describe("FloatRgb", () => {
   it("should create and store rgb from ColorDef", () => {
