@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { AddonRegistry } from "./AddonRegistry";
-import { IModelError } from "../common/IModelError";
+import { IModelError } from "@bentley/imodeljs-common/lib/IModelError";
 import { AddonECSchemaXmlContext } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 
 export type SchemaKey = AddonECSchemaXmlContext.SchemaKey;
