@@ -16,34 +16,6 @@ function createLazyLoadedChild<T extends SchemaChild>(c: T) {
   return new DelayedPromiseWithProps(c.key, async () => c);
 }
 
-async function loadStructType(structType: string | StructClass | undefined, schema: Schema) {
-  let correctType: StructClass | undefined;
-  if (typeof(structType) === "string")
-    correctType = await schema.getChild<StructClass>(structType, false);
-  else
-    correctType = structType as StructClass | undefined;
-
-  if (!correctType)
-    throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
-
-  return correctType;
-}
-
-async function loadPrimitiveType(primitiveType: string | PrimitiveType | Enumeration | undefined, schema: Schema) {
-  if (primitiveType === undefined)
-    return PrimitiveType.Integer;
-
-  if (typeof(primitiveType) === "string") {
-    const resolvedType = tryParsePrimitiveType(primitiveType) || await schema.getChild<Enumeration>(primitiveType, false);
-    if (resolvedType === undefined)
-      throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
-
-    return resolvedType;
-  }
-
-  return primitiveType;
-}
-
 /**
  * A common abstract class for all of the ECClass types.
  */
@@ -133,7 +105,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
-    const propType = await loadPrimitiveType(primitiveType, this.schema);
+    const propType = await this.loadPrimitiveType(primitiveType, this.schema);
     if (typeof(propType) === "number")
       return this.addProperty(new PrimitiveProperty(this, name, propType));
 
@@ -152,7 +124,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
-    const propType = await loadPrimitiveType(primitiveType, this.schema);
+    const propType = await this.loadPrimitiveType(primitiveType, this.schema);
     if (typeof(propType) === "number")
       return this.addProperty(new PrimitiveArrayProperty(this, name, propType));
 
@@ -168,7 +140,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
-    const lazyStructClass = createLazyLoadedChild(await loadStructType(structType, this.schema));
+    const lazyStructClass = createLazyLoadedChild(await this.loadStructType(structType, this.schema));
     return this.addProperty(new StructProperty(this, name, lazyStructClass));
   }
 
@@ -181,8 +153,36 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
-    const lazyStructClass = createLazyLoadedChild(await loadStructType(structType, this.schema));
+    const lazyStructClass = createLazyLoadedChild(await this.loadStructType(structType, this.schema));
     return this.addProperty(new StructArrayProperty(this, name, lazyStructClass));
+  }
+
+  protected async loadStructType(structType: string | StructClass | undefined, schema: Schema): Promise<StructClass> {
+    let correctType: StructClass | undefined;
+    if (typeof(structType) === "string")
+      correctType = await schema.getChild<StructClass>(structType, false);
+    else
+      correctType = structType as StructClass | undefined;
+
+    if (!correctType)
+      throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
+
+    return correctType;
+  }
+
+  protected async loadPrimitiveType(primitiveType: string | PrimitiveType | Enumeration | undefined, schema: Schema): Promise<PrimitiveType | Enumeration> {
+    if (primitiveType === undefined)
+      return PrimitiveType.Integer;
+
+    if (typeof(primitiveType) === "string") {
+      const resolvedType = tryParsePrimitiveType(primitiveType) || await schema.getChild<Enumeration>(primitiveType, false);
+      if (resolvedType === undefined)
+        throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
+
+      return resolvedType;
+    }
+
+    return primitiveType;
   }
 
   /**

@@ -4,6 +4,7 @@ export * from "./Context";
 export * from "./Interfaces";
 export * from "./DelayedPromise";
 export * from "./Exception";
+export * from "./PropertyTypes";
 export { default as Schema } from "./Metadata/Schema";
 export { default as SchemaChild } from "./Metadata/SchemaChild";
 export { default as ECClass, StructClass } from "./Metadata/Class";

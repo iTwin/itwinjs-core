@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecjs",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "ECObjects core concepts in typescript",
   "license": "UNLICENSED",
   "main": "lib/index.js",
@@ -32,21 +32,21 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bemetalsmith": "^1.17.4",
-    "@bentley/bentleyjs-tools": "^1.1.5",
-    "@types/chai": "^4.0.10",
+    "@bentley/bemetalsmith": "^1.18.4",
+    "@bentley/bentleyjs-tools": "^2.2.1",
+    "@types/chai": "^4.1.2",
     "@types/chai-as-promised": "^7.1.0",
-    "@types/mocha": "^2.2.45",
-    "@types/sinon": "^4.1.3",
+    "@types/mocha": "^2.2.48",
+    "@types/sinon": "^4.1.4",
     "chai-as-promised": "^7.1.1",
-    "nyc": "^11.4.1",
+    "nyc": "~11.4.1",
     "rimraf": "^2.6.2",
-    "sinon": "^4.3.0",
+    "sinon": "^4.4.2",
     "ts-node": "^3.3.0",
     "typescript": "^2.6.1"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "^5.1.0"
+    "@bentley/bentleyjs-core": "^7.0.1"
   },
   "nyc": {
     "include": [

@@ -49,7 +49,7 @@ export default class Schema implements CustomAttributeContainerProps {
   /**
    * Constructs an empty Schema (without a SchemaKey).
    * This should only be used when the schema name and version will be deserialized (via `fromJson()`) immediately after this Schema is instantiated.
-   * @internal
+   * @hidden
    */
   constructor();
   constructor(nameOrKey?: SchemaKey | string, readVerOrCtx?: SchemaContext | number, writeVer?: number, minorVer?: number, otherCtx?: SchemaContext) {
