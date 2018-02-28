@@ -16,7 +16,7 @@ import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompar
 import { PolyfaceBuilder } from "@bentley/geometry-core/lib/polyface/PolyfaceBuilder";
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelDb } from "../IModelDb";
-import { GSReader, GSWriter, GSCollection, GeometryBuilder, GeometryStream, OpCode } from "../../common/geometry/GeometryStream";
+import { OpCodeReader, OpCodeWriter, OpCodeIterator, GeometryStreamBuilder, GeometryStream, OpCode } from "../../common/geometry/GeometryStream";
 import { GeometryParams } from "../../common/geometry/GeometryProps";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Element } from "../Element";
@@ -161,9 +161,9 @@ describe("GeometryStream", () => {
     for (let i = 0; i < arr32bit.length; i++)
       view[i] = arr32bit[i];
 
-    const iter = new GSCollection(buff);
+    const iter = new OpCodeIterator(buff);
     const geometry: any[] = [];
-    const gsReader = new GSReader();
+    const gsReader = new OpCodeReader();
     do {
       const geom = gsReader.getGeometricPrimitive(iter.operation!);
       if (geom)
@@ -178,13 +178,13 @@ describe("GeometryStream", () => {
       Arc3d.createXY(Point3d.create(-5, -5), 20),
     ];
 
-    const gsWriter = new GSWriter();
+    const gsWriter = new OpCodeWriter();
 
     for (const geom of geomArray) {
       gsWriter.dgnAppendArc3d(geom, 2);
     }
 
-    const geometryStream = gsWriter.outputGSRef();
+    const geometryStream = gsWriter.getGeometryStreamRef();
 
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement(new Id64("0x1d"));
@@ -212,8 +212,8 @@ describe("GeometryStream", () => {
     assert.isDefined(value.geom);
 
     if (value.geom) {
-      const gsReader = new GSReader();
-      const iterator = new GSCollection(value.geom.geomStream);
+      const gsReader = new OpCodeReader();
+      const iterator = new OpCodeIterator(value.geom.geomStream);
 
       const geomArrayOut: Arc3d[] = [];
       do {
@@ -295,7 +295,7 @@ describe("GeometryBuilder", () => {
     const geomElement = imodel.elements.createElement(elementProps);
 
     // Set up builder
-    const builder = GeometryBuilder.fromCategoryIdAndOrigin3d(seedElement.category, Point3d.create(0, 0, 0));
+    const builder = GeometryStreamBuilder.fromCategoryIdAndOrigin3d(seedElement.category, Point3d.create(0, 0, 0));
     assert.isDefined(builder, "Builder is successfully created");
     if (!builder)
       return;
@@ -308,7 +308,7 @@ describe("GeometryBuilder", () => {
     assert.isTrue(builder.appendPolyface(polyface), "Successfully appended polyface using builder");
 
     // Update the element
-    assert.isTrue(geomElement.updateFromGeometryBuilder(builder), "Successfully updated element given a builder");
+    assert.isTrue(geomElement.updateFromGeometryStreamBuilder(builder), "Successfully updated element given a builder");
     const insert3d = imodel.elements.insertElement(geomElement);
     assert.isTrue(insert3d.isValid(), "Successfully inserted GeometricElement3d resulting from a GeometryBuilder's GeometryStream");
 
@@ -316,8 +316,8 @@ describe("GeometryBuilder", () => {
     const returned3d = imodel.elements.getElement(insert3d);
     assert.isDefined(returned3d.geom, "Returned element has GeometryStream");
 
-    const collection = new GSCollection(returned3d.geom.geomStream);
-    const reader = new GSReader();
+    const collection = new OpCodeIterator(returned3d.geom.geomStream);
+    const reader = new OpCodeReader();
     let item: any;
     const elParams = new GeometryParams(new Id64());
     while (collection.isValid) {
@@ -334,7 +334,7 @@ describe("GeometryBuilder", () => {
 
   it("should be able to make appendages to GeometricElement2d, with an exception of 3d geometry", () => {
 
-    const builder = GeometryBuilder.fromCategoryIdAndOrigin2d(seedElement.category, Point2d.create());
+    const builder = GeometryStreamBuilder.fromCategoryIdAndOrigin2d(seedElement.category, Point2d.create());
     assert.isDefined(builder, "Builder is successfully created");
     if (!builder)
       return;
@@ -352,7 +352,7 @@ describe("GeometryBuilder", () => {
 
   // pending build of addon
   it("geometry stream built in JS should be deserialized properly in C++", () => {
-    const builder = GeometryBuilder.fromCategoryIdAndOrigin3d(seedElement.category, Point3d.create(0, 0, 0));
+    const builder = GeometryStreamBuilder.fromCategoryIdAndOrigin3d(seedElement.category, Point3d.create(0, 0, 0));
     assert.isDefined(builder, "Builder is successfully created");
     if (!builder)
       return;
@@ -392,14 +392,15 @@ describe("GeometryBuilder", () => {
     assert.isTrue(cppResult.hasOwnProperty("geom"), "Successfully obtained geometry stream back from C++");
     const stream = GeometryStream.fromJSON(cppResult.geom);
     assert.isDefined(stream, "Geometry stream is defined");
-    const collection = new GSCollection(stream!.geomStream);
+    const collection = new OpCodeIterator(stream!.geomStream);
+    const reader = new OpCodeReader();
     while (collection.isValid) {
       const geomType = collection.operation!.opCode;
       if (!collection.operation!.isGeometryOp()) {
         collection.nextOp();
         continue;
       }
-      const geomPrim = collection.getGeometry();
+      const geomPrim = reader.getGeometricPrimitive(collection.operation!);
       assert.isDefined(geomPrim, "Successfully extracted a geometric primitive");
       switch (geomType) {
         case OpCode.ArcPrimitive: {

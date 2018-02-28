@@ -6,7 +6,7 @@ import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { Transform } from "@bentley/geometry-core/lib/Transform";
 import { Code, CodeSpecNames } from "../common/Code";
 import { Placement3d, Placement2d, AxisAlignedBox3d } from "../common/geometry/Primitives";
-import { GeometryStream, GeometryBuilder } from "../common/geometry/GeometryStream";
+import { GeometryStream, GeometryStreamBuilder } from "../common/geometry/GeometryStream";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -112,7 +112,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
     return val;
   }
 
-  public updateFromGeometryBuilder(builder: GeometryBuilder): boolean {
+  public updateFromGeometryStreamBuilder(builder: GeometryStreamBuilder): boolean {
     if (builder.isPartCreate)
       return false;   // Invalid builder for creating element geometry...
 

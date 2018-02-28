@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Range3d } from "@bentley/geometry-core/lib/Range";
-import { GeometryStream, GeometryBuilder, GSCollection } from "../common/geometry/GeometryStream";
+import { GeometryStream, GeometryStreamBuilder } from "../common/geometry/GeometryStream";
 import { ElementAlignedBox3d } from "../common/geometry/Primitives";
 import { DefinitionElement } from "./Element";
 import { ElementProps } from "../common/ElementProps";
@@ -25,7 +25,7 @@ export class GeometryPart extends DefinitionElement {
   }
 
   /** Saves contents of builder to GeometryStream of this GeometryPart and updates the bounding box */
-  public updateFromGeometryBuilder(builder: GeometryBuilder): boolean {
+  public updateFromGeometryStreamBuilder(builder: GeometryStreamBuilder): boolean {
     if (!builder.isPartCreate)
       return false;   // Invalid builder for creating part geometry...
 
@@ -40,24 +40,6 @@ export class GeometryPart extends DefinitionElement {
     } else {
       const convertedRange = Range3d.createRange2d(builder.placement2d.bbox, 0);
       localRange = ElementAlignedBox3d.createFromPoints(convertedRange.low, convertedRange.high);
-    }
-
-    // NOTE: GeometryBuilder.CreateGeometryPart doesn't supply range... need to compute it...
-    if (!localRange.isValid()) {
-      const iterator = new GSCollection(this.geometry.geomStream);
-
-      while (iterator.operation) {
-        const geom = iterator.getGeometry();
-        const range = new Range3d();
-
-        if (geom !== undefined && geom.getRange(undefined, range))
-          localRange.extendRange(range);
-
-        iterator.nextOp();
-      }
-
-      if (!localRange.isValid())
-        return false;
     }
 
     this.bbox.setFrom(localRange);
