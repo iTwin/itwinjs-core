@@ -7,8 +7,8 @@ import { Point3d, Vector3d, Point2d } from "@bentley/geometry-core/lib/PointVect
 import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
 import { HitDetail, SnapMode, SnapDetail } from "./HitDetail";
 import { GraphicType, GraphicBuilder } from "./render/GraphicBuilder";
-import { DecorationList, GraphicList, Decorations, Graphic } from "../common/Render";
-import { ACSDisplayOptions, AuxCoordSystemState } from "../frontend/AuxCoordSys";
+import { DecorationList, GraphicList, Decorations, Graphic } from "@bentley/imodeljs-common/lib/Render";
+import { ACSDisplayOptions, AuxCoordSystemState } from "./AuxCoordSys";
 
 export class ViewContext {
   constructor(public viewport?: Viewport) { }

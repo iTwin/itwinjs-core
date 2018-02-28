@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Gateway, GatewayDefinition } from "../common/Gateway";
+import { Gateway, GatewayDefinition } from "../Gateway";
 import { GatewayProtocol } from "./GatewayProtocol";
 import { GatewayConfiguration } from "./GatewayConfiguration";
-import { IModelError } from "../common/IModelError";
+import { IModelError } from "../IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 
 /** IPC within an Electron application. */

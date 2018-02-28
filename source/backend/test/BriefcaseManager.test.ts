@@ -5,20 +5,27 @@ import * as path from "path";
 import { expect, assert } from "chai";
 import * as TypeMoq from "typemoq";
 import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+<<<<<<< HEAD
 import { AccessToken, Briefcase, ChangeSet, IModel as HubIModel, SeedFile, MultiCode, CodeState, IModelHubClient,
   ConnectClient, Project, ECJsonTypeMap, WsgInstance, Response, UserProfile } from "@bentley/imodeljs-clients";
 import { Code } from "../../common/Code";
 import { IModelVersion } from "../../common/IModelVersion";
 import { KeepBriefcase, BriefcaseManager, BriefcaseEntry } from "../BriefcaseManager";
+=======
+import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState } from "@bentley/imodeljs-clients";
+import { Code } from "@bentley/imodeljs-common/lib/Code";
+import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
+import { KeepBriefcase } from "../BriefcaseManager";
+>>>>>>> master
 import { IModelDb, ConcurrencyControl } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Element } from "../Element";
 import { DictionaryModel } from "../Model";
 import { SpatialCategory } from "../Category";
-import { Appearance } from "../../common/SubCategoryAppearance";
-import { ColorDef } from "../../common/ColorDef";
-import { IModel } from "../../common/IModel";
+import { Appearance } from "@bentley/imodeljs-common/lib/SubCategoryAppearance";
+import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
+import { IModel } from "@bentley/imodeljs-common/lib/IModel";
 import { IModelJsFs } from "../IModelJsFs";
 import { iModelHost } from "../IModelHost";
 import { AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../AutoPush";

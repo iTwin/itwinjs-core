@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { OctEncodedNormal } from "../../frontend/render/OctEncodedNormal";
+import { OctEncodedNormal } from "@bentley/imodeljs-frontend/lib/render/OctEncodedNormal";
 import { XYZ, Vector3d} from "@bentley/geometry-core/lib/PointVector";
 
 function _expectSignsEqual(a: number, b: number) {

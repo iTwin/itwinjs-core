@@ -9,9 +9,9 @@ import { AccuSnap } from "./AccuSnap";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { TentativePoint } from "./TentativePoint";
 import { I18N, I18NOptions } from "./Localization";
-import { FeatureGates } from "../common/FeatureGates";
+import { FeatureGates } from "@bentley/imodeljs-common/lib/FeatureGates";
 import { ToolRegistry } from "./tools/Tool";
-import { IModelError, IModelStatus } from "../common/IModelError";
+import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
 import { NotificationManager } from "./NotificationManager";
 
 import * as selectTool from "./tools/SelectTool";

@@ -6,7 +6,7 @@ import { SolidPrimitive } from "@bentley/geometry-core/lib/solid/SolidPrimitive"
 import { Path, ParityRegion } from "@bentley/geometry-core/lib/curve/CurveChain";
 import { BSplineSurface3d } from "@bentley/geometry-core/lib/bspline/BSplineSurface";
 import { IndexedPolyface } from "@bentley/geometry-core/lib/polyface/Polyface";
-import { GeometricPrimitive, GeometryType } from "../../common/geometry/Primitives";
+import { GeometricPrimitive, GeometryType } from "@bentley/imodeljs-common/lib/geometry/Primitives";
 import { Point2d, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { AngleSweep } from "@bentley/geometry-core/lib/Geometry";
 import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
@@ -16,13 +16,13 @@ import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompar
 import { PolyfaceBuilder } from "@bentley/geometry-core/lib/polyface/PolyfaceBuilder";
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelDb } from "../IModelDb";
-import { GSReader, GSWriter, GSCollection, GeometryBuilder, GeometryStream, OpCode } from "../../common/geometry/GeometryStream";
-import { GeometryParams } from "../../common/geometry/GeometryProps";
+import { GSReader, GSWriter, GSCollection, GeometryBuilder, GeometryStream, OpCode } from "@bentley/imodeljs-common/lib/geometry/GeometryStream";
+import { GeometryParams } from "@bentley/imodeljs-common/lib/geometry/GeometryProps";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Element } from "../Element";
-import { Code } from "../../common/Code";
-import { Placement3d, ElementAlignedBox3d } from "../../common/geometry/Primitives";
-import { GeometricElement3dProps } from "../../common/ElementProps";
+import { Code } from "@bentley/imodeljs-common/lib/Code";
+import { Placement3d, ElementAlignedBox3d } from "@bentley/imodeljs-common/lib/geometry/Primitives";
+import { GeometricElement3dProps } from "@bentley/imodeljs-common/lib/ElementProps";
 
 import * as path from "path";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -165,7 +165,7 @@ describe("GeometryStream", () => {
     const geometry: any[] = [];
     const gsReader = new GSReader();
     do {
-      const geom = gsReader.dgnGetGeometricPrimitive(iter.operation!);
+      const geom = gsReader.getGeometricPrimitive(iter.operation!);
       if (geom)
         geometry.push(geom.data);
     } while (iter.nextOp());
@@ -218,7 +218,7 @@ describe("GeometryStream", () => {
       const geomArrayOut: Arc3d[] = [];
       do {
         const geomOut = Arc3d.createXY(Point3d.create(0, 0, 0), 1);
-        const success = gsReader.dgnGetArc3d(iterator.operation!, geomOut);
+        const success = gsReader.getArc3d(iterator.operation!, geomOut);
         assert.isTrue(success !== undefined, "Expect Arc3d out");
         if (success) {
           geomArrayOut.push(geomOut);
@@ -295,7 +295,7 @@ describe("GeometryBuilder", () => {
     const geomElement = imodel.elements.createElement(elementProps);
 
     // Set up builder
-    const builder = GeometryBuilder.createCategoryOrigin3d(seedElement.category, Point3d.create(0, 0, 0));
+    const builder = GeometryBuilder.fromCategoryIdAndOrigin3d(seedElement.category, Point3d.create(0, 0, 0));
     assert.isDefined(builder, "Builder is successfully created");
     if (!builder)
       return;
@@ -319,13 +319,13 @@ describe("GeometryBuilder", () => {
     const collection = new GSCollection(returned3d.geom.geomStream);
     const reader = new GSReader();
     let item: any;
-    const elParams = GeometryParams.createDefaults();
+    const elParams = new GeometryParams(new Id64());
     while (collection.isValid) {
       if (collection.operation!.isGeometryOp()) {
-        item = reader.dgnGetGeometricPrimitive(collection.operation!);
+        item = reader.getGeometricPrimitive(collection.operation!);
         assert.isDefined(item, "Item extracted into GeometricPrimitive");
       } else {
-        item = reader.dgnGetGeometryParams(collection.operation!, elParams);
+        item = reader.getGeometryParams(collection.operation!, elParams);
         assert.isTrue(item, "Item extracted into GeometryParams");
       }
       collection.nextOp();
@@ -334,7 +334,7 @@ describe("GeometryBuilder", () => {
 
   it("should be able to make appendages to GeometricElement2d, with an exception of 3d geometry", () => {
 
-    const builder = GeometryBuilder.createCategoryOrigin2d(seedElement.category, Point2d.create());
+    const builder = GeometryBuilder.fromCategoryIdAndOrigin2d(seedElement.category, Point2d.create());
     assert.isDefined(builder, "Builder is successfully created");
     if (!builder)
       return;
@@ -352,7 +352,7 @@ describe("GeometryBuilder", () => {
 
   // pending build of addon
   it("geometry stream built in JS should be deserialized properly in C++", () => {
-    const builder = GeometryBuilder.createCategoryOrigin3d(seedElement.category, Point3d.create(0, 0, 0));
+    const builder = GeometryBuilder.fromCategoryIdAndOrigin3d(seedElement.category, Point3d.create(0, 0, 0));
     assert.isDefined(builder, "Builder is successfully created");
     if (!builder)
       return;

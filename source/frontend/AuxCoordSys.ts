@@ -2,12 +2,12 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ViewState } from "./ViewState";
-import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps } from "../common/ViewProps";
+import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps } from "@bentley/imodeljs-common/lib/ViewProps";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY } from "@bentley/geometry-core/lib/PointVector";
 import { RotMatrix } from "@bentley/geometry-core/lib/Transform";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { Code, CodeSpecNames } from "../common/Code";
+import { Code, CodeSpecNames } from "@bentley/imodeljs-common/lib/Code";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 

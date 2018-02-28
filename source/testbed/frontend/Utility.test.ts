@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { PointUtil, RangeUtil } from "../../frontend/render/Utility";
+import { PointUtil, RangeUtil } from "@bentley/imodeljs-frontend/lib/render/Utility";
 import { Range1d, Range2d, Range3d } from "@bentley/geometry-core/lib/Range";
 import { XY, XYZ, Vector2d, Vector3d, Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
 

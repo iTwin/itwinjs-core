@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { CodeSpecNames, Code } from "../common/Code";
-import { ElementProps } from "../common/ElementProps";
-import { Appearance, Rank } from "../common/SubCategoryAppearance";
+import { CodeSpecNames, Code } from "@bentley/imodeljs-common/lib/Code";
+import { ElementProps } from "@bentley/imodeljs-common/lib/ElementProps";
+import { Appearance, Rank } from "@bentley/imodeljs-common/lib/SubCategoryAppearance";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel } from "./Model";

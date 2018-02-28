@@ -13,8 +13,6 @@
     "outDir": "./lib"
   },
   "include": [
-    "../common/**/*.ts",
-    "../gateway/**/*.ts",
     "./**/*.ts"
   ],
   "exclude": [

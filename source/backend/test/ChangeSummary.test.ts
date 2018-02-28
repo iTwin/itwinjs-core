@@ -5,7 +5,7 @@ import * as path from "path";
 import { expect, assert } from "chai";
 import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { IModelVersion } from "../../common/IModelVersion";
+import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
 import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../ChangeSummaryManager";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { IModelDb } from "../IModelDb";
@@ -125,7 +125,7 @@ describe("ChangeSummary", () => {
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
           rowCount++;
           const row: any = myStmt.getRow();
-          changeSummaryIds.push(row.id);
+          changeSummaryIds.push(new Id64(row.id));
           assert.equal(row.className, "ECDbChange.ChangeSummary");
           assert.isUndefined(row.extendedProperties, "ChangeSummary.ExtendedProperties is not expected to be populated when change summaries are extracted.");
         }
@@ -176,7 +176,7 @@ describe("ChangeSummary", () => {
         const row: any = myStmt.getRow();
         assert.isDefined(row.id);
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
-        return row.id;
+        return new Id64(row.id);
       });
 
       iModel.withPreparedStatement("SELECT WsgId, Summary FROM imodelchange.ChangeSet", (myStmt) => {
@@ -185,7 +185,7 @@ describe("ChangeSummary", () => {
         assert.isDefined(row.wsgId);
         assert.equal(row.wsgId, changesetId);
         assert.isDefined(row.summary);
-        assert.equal(row.summary.id.value, changeSummaryId.value);
+        assert.equal(row.summary.id, changeSummaryId.value);
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
       });
     } finally {
@@ -218,7 +218,7 @@ describe("ChangeSummary", () => {
         const row: any = myStmt.getRow();
         assert.isDefined(row.id);
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
-        return row.id;
+        return new Id64(row.id);
       });
 
       iModel.withPreparedStatement("SELECT WsgId, Summary FROM imodelchange.ChangeSet", (myStmt) => {
@@ -227,7 +227,7 @@ describe("ChangeSummary", () => {
         assert.isDefined(row.wsgId);
         assert.equal(row.wsgId, firstChangesetId);
         assert.isDefined(row.summary);
-        assert.equal(row.summary.id.value, changeSummaryId.value);
+        assert.equal(row.summary.id, changeSummaryId.value);
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
       });
     } finally {
@@ -322,7 +322,7 @@ describe("ChangeSummary", () => {
     iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.ChangeSummary ORDER BY ECInstanceId", (stmt) => {
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         const row = stmt.getRow();
-        const csum: ChangeSummary = ChangeSummaryManager.queryChangeSummary(iModel, row.id);
+        const csum: ChangeSummary = ChangeSummaryManager.queryChangeSummary(iModel, new Id64(row.id));
         changeSummaries.push(csum);
       }
     });
@@ -338,7 +338,7 @@ describe("ChangeSummary", () => {
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
           const row = stmt.getRow();
 
-          const instanceChange: InstanceChange = ChangeSummaryManager.queryInstanceChange(iModel, row.id);
+          const instanceChange: InstanceChange = ChangeSummaryManager.queryInstanceChange(iModel, new Id64(row.id));
           content.instanceChanges.push(instanceChange);
         }
       });
@@ -346,4 +346,13 @@ describe("ChangeSummary", () => {
       IModelJsFs.writeFileSync(filePath, JSON.stringify(content));
     }
   });
+
+  it.skip("Crash test", async () => {
+    const iModelId = "bd9b1b21-9485-445a-9cce-b084d1b654fa";
+    const projectId = "d46de192-6cad-4086-b968-71b517edc215";
+
+    const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, iModelId, false);
+    await ChangeSummaryManager.extractChangeSummaries(accessToken, projectId, iModelId, changeSets[0].wsgId, changeSets[0].wsgId);
+  });
+
 });

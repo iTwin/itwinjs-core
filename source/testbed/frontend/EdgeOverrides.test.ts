@@ -3,10 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { LinePixels, HiddenLine } from "../../common/Render";
-import { LineCode, EdgeOverrides } from "../../frontend/render/webgl/EdgeOverrides";
-import { FloatPreMulRgba } from "../../frontend/render/webgl/FloatRGBA";
-import { OvrFlags } from "../../frontend/render/webgl/RenderFlags";
+import { LinePixels, HiddenLine } from "@bentley/imodeljs-common/lib/Render";
+import { LineCode, EdgeOverrides } from "@bentley/imodeljs-frontend/lib/render/webgl/EdgeOverrides";
+import { FloatPreMulRgba } from "@bentley/imodeljs-frontend/lib/render/webgl/FloatRGBA";
+import { OvrFlags } from "@bentley/imodeljs-frontend/lib/render/webgl/RenderFlags";
 
 describe("LineCode", () => {
   it("valueFromLinePixels correctly converts a LinePixel into a LineCode", () => {

@@ -6,22 +6,22 @@ import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { CodeSpec } from "../common/Code";
-import { ElementProps } from "../common/ElementProps";
-import { EntityQueryParams } from "../common/EntityProps";
-import { IModel, IModelToken } from "../common/IModel";
-import { IModelError, IModelStatus } from "../common/IModelError";
-import { ModelProps, ModelQueryParams } from "../common/ModelProps";
-import { IModelGateway } from "../gateway/IModelGateway";
-import { IModelVersion } from "../common/IModelVersion";
-import { AxisAlignedBox3d } from "../common/geometry/Primitives";
+import { CodeSpec } from "@bentley/imodeljs-common/lib/Code";
+import { ElementProps } from "@bentley/imodeljs-common/lib/ElementProps";
+import { EntityQueryParams } from "@bentley/imodeljs-common/lib/EntityProps";
+import { IModel, IModelToken } from "@bentley/imodeljs-common/lib/IModel";
+import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
+import { ModelProps, ModelQueryParams } from "@bentley/imodeljs-common/lib/ModelProps";
+import { IModelGateway } from "@bentley/imodeljs-common/lib/gateway/IModelGateway";
+import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
+import { AxisAlignedBox3d } from "@bentley/imodeljs-common/lib/geometry/Primitives";
 import { HilitedSet, SelectionSet } from "./SelectionSet";
 import { ViewState, SpatialViewState, OrthographicViewState, ViewState2d, DrawingViewState, SheetViewState } from "./ViewState";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { ModelState, SpatialModelState, SectionDrawingModelState, DrawingModelState, SheetModelState } from "./ModelState";
-import { ViewQueryParams, ViewDefinitionProps } from "../common/ViewProps";
+import { ViewQueryParams, ViewDefinitionProps } from "@bentley/imodeljs-common/lib/ViewProps";
 import { iModelApp } from "./IModelApp";
 
 const loggingCategory = "imodeljs-backend.IModelConnection";
@@ -122,39 +122,50 @@ export class IModelConnection extends IModel {
    * ### Property value types
    * The resulting types of the returned property values are these:
    *
-   * | ECSQL type | JavaScript Type |
-   * | ---------- | --------------- |
-   * | Boolean    | boolean       |
-   * | Blob       | [[Blob]]      |
-   * | Double     | number        |
-   * | DateTime   | [[DateTime]]  |
-   * | Id system properties | [[Id64]] |
-   * | Integer    | number        |
-   * | Int64      | number        |
-   * | Point2d    | [[Point2d]]   |
-   * | Point3d    | [[Point3d]]   |
-   * | String     | string        |
-   * | Navigation | [[NavigationValue]] |
-   * | Struct     | JS object with properties of the types in this table |
-   * | Array      | array of the types in this table |
+   * | ECSQL type | Extended Type | JavaScript Type |
+   * | ---------- | ------------- | --------------- |
+   * | Boolean    | -             | boolean         |
+   * | Blob       | -             | Base64 string   |
+   * | Blob       | BeGuid        | GUID string (see [[Guid]]) |
+   * | Double     | -             | number          |
+   * | DateTime   | -             | ISO8601 string  |
+   * | Id system properties | -   | Hexadecimal string |
+   * | Integer    | -             | number          |
+   * | Int64      | -             | number          |
+   * | Int64      | Id            | Hexadecimal string |
+   * | Point2d    | -             | [[XAndY]]      |
+   * | Point3d    | -             | [[XYAndZ]]     |
+   * | String     | -             | string         |
+   * | Navigation | n/a           | [[NavigationValue]] |
+   * | Struct     | n/a           | JS object with properties of the types in this table |
+   * | Array      | n/a           | array of the types in this table |
    *
    * ### Examples
    * | ECSQL | Row |
    * | ----- | --- |
-   * | SELECT ECInstanceId,ECClassId,Parent,LastMod,FederationGuid,UserLabel FROM bis.Element | `{id:Id64,className:string,parent:NavigationValue,lastMod:DateTime,federationGuid:Blob,userLabel:string}` |
-   * | SELECT s.ECInstanceId schemaId, c.ECInstanceId classId FROM meta.ECSchemaDef s JOIN meta.ECClassDef c ON s.ECInstanceId=c.Schema.Id | `{schemaId:Id64, classId:Id64}` |
-   * | SELECT count(*) FROM bis.Element | `{"count(*)":number}` |
-   * | SELECT count(*) cnt FROM bis.Element | `{cnt:number}` |
+   * | SELECT ECInstanceId,ECClassId,Parent,LastMod,FederationGuid,UserLabel FROM bis.Element | `{id:"0x132", className:"generic.PhysicalObject", parent:{id:"0x444", relClassName:"bis.ElementOwnsChildElements"},lastMod:"2018-02-27T14:12:55.000Z",federationGuid:"274e25dc-8407-11e7-bb31-be2e44b06b34",userLabel:"My element"}` |
+   * | SELECT s.ECInstanceId schemaId, c.ECInstanceId classId FROM meta.ECSchemaDef s JOIN meta.ECClassDef c ON s.ECInstanceId=c.Schema.Id | `{schemaId:"0x132", classId:"0x332"}` |
+   * | SELECT count(*) FROM bis.Element | `{"count(*)": 31241}` |
+   * | SELECT count(*) cnt FROM bis.Element | `{cnt: 31241}` |
    *
    * @param ecsql The ECSQL to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).
    * Pass an array if the parameters are positional. Pass an object of the values keyed on the parameter name
    * for named parameters.
    * The values in either the array or object must match the respective types of the parameters.
+   *
    * Supported types:
-   * boolean, [[Blob]],  [[DateTime]], [[NavigationBindingValue]], number, [[XY]], [[XYZ]], string
-   * For struct parameters pass an object with key value pairs of struct property name and values of the supported types
-   * For array parameters pass an array of the supported types.
+   *  * boolean
+   *  * number for integral or double parameters
+   *  * string for string parameters,
+   *  * [[ECSqlTypedString]] for date time, blob, id, or guid parameters
+   *  * [[Id64]] for id parameters
+   *  * [[Guid]] for guid parameters
+   *  * [[NavigationBindingValue]] for navigation property parameters
+   *  * [[XAndY]] for Point2d parameters
+   *  * [[XYAndZ]] for Point3d parameters
+   *  * Objects of primitives, objects or arrays of any of the above types when binding structs
+   *  * Arrays of primitives or objects of any of the above when binding arrays
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows
    * @throws [[IModelError]] if the ECSQL is invalid
    */

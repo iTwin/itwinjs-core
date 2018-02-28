@@ -7,7 +7,7 @@ import { assert } from "chai";
 import { TestData } from "./TestData";
 import * as webpack from "webpack";
 import * as path from "path";
-import { IModelJsFs } from "../../backend/IModelJsFs";
+import { IModelJsFs } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 
 TestbedConfig.initializeGatewayConfig();
 if (TestbedConfig.gatewayConfig)

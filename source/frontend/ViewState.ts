@@ -9,18 +9,18 @@ import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
 import { AxisOrder, Angle, Geometry } from "@bentley/geometry-core/lib/Geometry";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { ClipVector } from "@bentley/geometry-core/lib/numerics/ClipVector";
-import { AxisAlignedBox3d } from "../common/geometry/Primitives";
-import { Frustum, Npc } from "../common/Frustum";
+import { AxisAlignedBox3d } from "@bentley/imodeljs-common/lib/geometry/Primitives";
+import { Frustum, Npc } from "@bentley/imodeljs-common/lib/Frustum";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState } from "./EntityState";
-import { ViewDefinitionProps, ViewDefinition3dProps, SpatialViewDefinitionProps, ViewDefinition2dProps } from "../common/ViewProps";
+import { ViewDefinitionProps, ViewDefinition3dProps, SpatialViewDefinitionProps, ViewDefinition2dProps } from "@bentley/imodeljs-common/lib/ViewProps";
 import { DisplayStyleState, DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
-import { ColorDef } from "../common/ColorDef";
+import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { IModelConnection } from "./IModelConnection";
-import { Camera } from "../common/Render";
+import { Camera } from "@bentley/imodeljs-common/lib/Render";
 
 export const enum GridOrientationType {
   View = 0,
@@ -638,7 +638,7 @@ export abstract class ViewState3d extends ViewState {
   public setOrigin(origin: XYAndZ) { this.origin.setFrom(origin); }
   public setExtents(extents: XYAndZ) { this.extents.setFrom(extents); }
   public setRotation(rot: RotMatrix) { this.rotation.setFrom(rot); }
-  protected enableCamera(): void { this.cameraOn = true; }
+  protected enableCamera(): void { if (this.supportsCamera()) this.cameraOn = true; }
   public supportsCamera(): boolean { return true; }
   public minimumFrontDistance() { return Math.max(15.2 * Constant.oneCentimeter, this.forceMinFrontDist); }
   public isEyePointAbove(elevation: number): boolean { return !this.cameraOn ? (this.getZVector().z > 0) : (this.getEyePoint().z > elevation); }
@@ -723,7 +723,6 @@ export abstract class ViewState3d extends ViewState {
     if (frontDistance < minFrontDist)
       frontDistance = minFrontDist;
 
-    // BeAssert(backDistance > frontDistance);
     delta.z = (backDistance! - frontDistance);
 
     const frontDelta = delta.scale(frontDistance / focusDist);
@@ -966,8 +965,6 @@ export class SpatialViewState extends ViewState3d {
 export class OrthographicViewState extends SpatialViewState {
   public static get className() { return "OrthographicViewDefinition"; }
   constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle, modelSelector); }
-
-  public enableCamera(): void { }
   public supportsCamera(): boolean { return false; }
 }
 
