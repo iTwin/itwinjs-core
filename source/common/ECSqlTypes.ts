@@ -145,7 +145,5 @@ export class ECJsNames {
     }
   }
 
-  private static lowerFirstChar(name: string): string {
-    return name[0].toLowerCase() + name.substring(1);
-  }
+  private static lowerFirstChar(name: string): string { return name[0].toLowerCase() + name.substring(1); }
 }

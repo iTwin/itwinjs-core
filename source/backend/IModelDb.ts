@@ -582,14 +582,10 @@ export class ConcurrencyControl {
   }
 
   /** Create an empty Request */
-  public static createRequest(): ConcurrencyControl.Request {
-    return new (AddonRegistry.getAddon()).AddonBriefcaseManagerResourcesRequest();
-  }
+  public static createRequest(): ConcurrencyControl.Request { return new (AddonRegistry.getAddon()).AddonBriefcaseManagerResourcesRequest(); }
 
   /** Convert the request to any */
-  public static convertRequestToAny(req: ConcurrencyControl.Request): any {
-    return JSON.parse((req as AddonBriefcaseManagerResourcesRequest).toJSON());
-  }
+  public static convertRequestToAny(req: ConcurrencyControl.Request): any { return JSON.parse((req as AddonBriefcaseManagerResourcesRequest).toJSON()); }
 
   /** @hidden [[Model.buildConcurrencyControlRequest]] */
   public buildRequestForModel(model: Model, opcode: DbOpcode): void {
@@ -858,9 +854,7 @@ export class ConcurrencyControl {
   }
 
   /** Abandon any pending requests for locks or codes. */
-  public abandonRequest() {
-    this.extractPendingRequest();
-  }
+  public abandonRequest() { this.extractPendingRequest(); }
 
   private static anyFound(a1: string[], a2: string[]) {
     for (const a of a1) {
@@ -1493,19 +1487,13 @@ export class TxnManager {
   public isTxnIdValid(txnId: TxnManager.TxnId): boolean { return this._iModel.briefcaseEntry!.nativeDb!.txnManagerIsTxnIdValid(txnId); }
 
   /** Query if there are any pending Txns in this IModelDb that are waiting to be pushed.  */
-  public hasPendingTxns(): boolean {
-    return this.isTxnIdValid(this.queryFirstTxnId());
-  }
+  public hasPendingTxns(): boolean { return this.isTxnIdValid(this.queryFirstTxnId()); }
 
   /** Query if there are any changes in memory that have yet to be saved to the IModelDb. */
-  public hasUnsavedChanges(): boolean {
-    return false; // *** TODO: return this._iModel.briefcaseEntry!.nativeDb!.txnManagerHasUnsavedChanges
-  }
+  public hasUnsavedChanges(): boolean { return false; } // *** TODO: return this._iModel.briefcaseEntry!.nativeDb!.txnManagerHasUnsavedChanges 
 
   /** Query if there are un-saved or un-pushed local changes. */
-  public hasLocalChanges(): boolean {
-    return this.hasUnsavedChanges() || this.hasPendingTxns();
-  }
+  public hasLocalChanges(): boolean { return this.hasUnsavedChanges() || this.hasPendingTxns(); }
 
   /** Make a description of the changeset by combining all local txn comments. */
   public describeChangeSet(endTxnId?: TxnManager.TxnId): string {

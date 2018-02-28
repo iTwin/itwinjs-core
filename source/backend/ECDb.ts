@@ -56,9 +56,7 @@ export class ECDb implements IDisposable {
   }
 
   /** Returns true if the ECDb is open */
-  public isOpen(): boolean {
-    return this.nativeDb.isOpen();
-  }
+  public isOpen(): boolean { return this.nativeDb.isOpen(); }
 
   /** Close the Db after saving any uncommitted changes.
    * @returns Promise that resolves to an object that contains an error property if the operation failed.

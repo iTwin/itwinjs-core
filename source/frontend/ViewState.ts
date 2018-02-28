@@ -638,7 +638,7 @@ export abstract class ViewState3d extends ViewState {
   public setOrigin(origin: XYAndZ) { this.origin.setFrom(origin); }
   public setExtents(extents: XYAndZ) { this.extents.setFrom(extents); }
   public setRotation(rot: RotMatrix) { this.rotation.setFrom(rot); }
-  protected enableCamera(): void { this.cameraOn = true; }
+  protected enableCamera(): void { if (this.supportsCamera()) this.cameraOn = true; }
   public supportsCamera(): boolean { return true; }
   public minimumFrontDistance() { return Math.max(15.2 * Constant.oneCentimeter, this.forceMinFrontDist); }
   public isEyePointAbove(elevation: number): boolean { return !this.cameraOn ? (this.getZVector().z > 0) : (this.getEyePoint().z > elevation); }
@@ -723,7 +723,6 @@ export abstract class ViewState3d extends ViewState {
     if (frontDistance < minFrontDist)
       frontDistance = minFrontDist;
 
-    // BeAssert(backDistance > frontDistance);
     delta.z = (backDistance! - frontDistance);
 
     const frontDelta = delta.scale(frontDistance / focusDist);
@@ -966,8 +965,6 @@ export class SpatialViewState extends ViewState3d {
 export class OrthographicViewState extends SpatialViewState {
   public static get className() { return "OrthographicViewDefinition"; }
   constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle, modelSelector); }
-
-  public enableCamera(): void { }
   public supportsCamera(): boolean { return false; }
 }
 
