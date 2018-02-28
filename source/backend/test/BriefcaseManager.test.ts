@@ -7,8 +7,8 @@ import * as TypeMoq from "typemoq";
 import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken, Briefcase, ChangeSet, IModel as HubIModel, SeedFile, MultiCode, CodeState, IModelHubClient,
   ConnectClient, Project, ECJsonTypeMap, WsgInstance, Response, UserProfile } from "@bentley/imodeljs-clients";
-import { Code } from "../../common/Code";
-import { IModelVersion } from "../../common/IModelVersion";
+import { Code } from "@bentley/imodeljs-common/lib/Code";
+import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
 import { KeepBriefcase, BriefcaseManager, BriefcaseEntry } from "../BriefcaseManager";
 import { IModelDb, ConcurrencyControl } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
