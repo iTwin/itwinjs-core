@@ -12,10 +12,10 @@ import { Vector3d, Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { RotMatrix } from "@bentley/geometry-core/lib/Transform";
 import { Geometry, Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Viewport } from "../Viewport";
-import { AuxCoordSystemState } from "../../frontend/AuxCoordSys";
+import { AuxCoordSystemState } from "../AuxCoordSys";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { SnapDetail, SnapHeat } from "../HitDetail";
-import { StandardViewId } from "../../frontend/ViewState";
+import { StandardViewId } from "../ViewState";
 import { iModelApp } from "../IModelApp";
 
 /**
