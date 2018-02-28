@@ -3,10 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 import ContentDataProvider from "./ContentDataProvider";
 import ContentBuilder, { PropertyRecord } from "./ContentBuilder";
-import * as content from "../../common/content";
-import { InstanceKey } from "../../common/EC";
-import { ECPresentationManager } from "../../common/ECPresentationManager";
-import { IModelToken } from "@bentley/imodeljs-frontend/lib/common/IModel";
+import * as content from "@bentley/ecpresentation-common/lib/content";
+import { InstanceKey } from "@bentley/ecpresentation-common/lib/EC";
+import { ECPresentationManager } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
+import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 let favoritesCategory: content.CategoryDescription | undefined;

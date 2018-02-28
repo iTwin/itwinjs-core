@@ -15,24 +15,24 @@
     "url": "http://www.bentley.com"
   },
   "scripts": {
-    "build": "tsc && npm run resolve-imports",
+    "build": "tsc",
     "clean": "rimraf lib",
     "lint": "tslint -p ./tsconfig.json",
-    "resolve-imports": "cd lib && replace \"@build/imodeljs-core\" \"@bentley/imodeljs-backend\" -r -q .",
     "prepublishOnly": "npm run build"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@bentley/ecpresentation-common": "^0.0.1"
+  },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^5.2.0",
-    "@bentley/imodeljs-backend": "^0.44.0",
-    "@bentley/imodeljs-nodeaddonapi": ">=3.1.0"
+    "@bentley/bentleyjs-core": "^7.0.0",
+    "@bentley/imodeljs-backend": "^0.57.0",
+    "@bentley/imodeljs-nodeaddonapi": "^10.0.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "^5.2.0",
+    "@bentley/bentleyjs-core": "^7.0.0",
     "@bentley/bentleyjs-tools": "^2.2.0",
-    "@bentley/imodeljs-backend": "^0.44.0",
-    "@bentley/imodeljs-nodeaddonapi": ">=3.1.0",
-    "@types/flatbuffers": "^1.6.5",
+    "@bentley/imodeljs-backend": "^0.57.0",
+    "@bentley/imodeljs-nodeaddonapi": "^10.0.0",
     "node-replace": "^0.3.3",
     "rimraf": "^2.6.2",
     "typescript": "^2.6.2",

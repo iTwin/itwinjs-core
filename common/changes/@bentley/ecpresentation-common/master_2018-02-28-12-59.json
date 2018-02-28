@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-common",
+      "comment": "Created a new package for common ecpresentation classes / utils.",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-common",
+  "email": "grigas.petraitis@bentley.com"
+}

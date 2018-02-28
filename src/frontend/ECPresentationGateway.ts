@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Gateway } from "@build/imodeljs-core/lib/common/Gateway";
-import { IModelToken } from "@build/imodeljs-core/lib/common/IModel";
-import ECPresentationGatewayDefinition from "../common/ECPresentationGatewayDefinition";
-import { NavNode, NavNodeKeyPath, NavNodePathElement } from "../common/Hierarchy";
-import * as c from "../common/content";
-import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes";
-import { PageOptions } from "../common/ECPresentationManager";
-import { InstanceKeysList } from "../common/EC";
+import { Gateway } from "@bentley/imodeljs-common/lib/Gateway";
+import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
+import ECPresentationGatewayDefinition from "@bentley/ecpresentation-common/lib/ECPresentationGatewayDefinition";
+import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common/lib/Hierarchy";
+import * as c from "@bentley/ecpresentation-common/lib/content";
+import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresentation-common/lib/Changes";
+import { PageOptions } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
+import { InstanceKeysList } from "@bentley/ecpresentation-common/lib/EC";
 
 export default class ECPresentationGateway extends ECPresentationGatewayDefinition {
   /** Returns the ECPresentationGateway instance for the frontend. */

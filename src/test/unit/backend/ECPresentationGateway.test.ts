@@ -3,18 +3,18 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as moq from "typemoq";
-import ECPresentationManager from "@bentley/ecpresentation-backend/lib/backend/ECPresentationManager";
-import ECPresentationGateway from "@bentley/ecpresentation-backend/lib/backend/ECPresentationGateway";
-import ECPresentationGatewayDefinition from "@bentley/ecpresentation-backend/lib/common/ECPresentationGatewayDefinition";
-import { Gateway } from "@bentley/imodeljs-backend/lib/common/Gateway";
-import { IModelToken } from "@bentley/imodeljs-backend/lib/common/IModel";
-import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-backend/lib/common/Hierarchy";
-import { SelectionInfo, Content } from "@bentley/ecpresentation-backend/lib/common/content";
-import { PageOptions } from "@bentley/ecpresentation-backend/lib/common/ECPresentationManager";
+import ECPresentationManager from "@bentley/ecpresentation-backend/lib/ECPresentationManager";
+import ECPresentationGateway from "@bentley/ecpresentation-backend/lib/ECPresentationGateway";
+import ECPresentationGatewayDefinition from "@bentley/ecpresentation-common/lib/ECPresentationGatewayDefinition";
+import { Gateway } from "@bentley/imodeljs-common/lib/Gateway";
+import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
+import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common/lib/Hierarchy";
+import { SelectionInfo, Content } from "@bentley/ecpresentation-common/lib/content";
+import { PageOptions } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { createRandomECInstanceKey } from "../../helpers/backend/random/EC";
-import { createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement } from "../../helpers/backend/random/Hierarchy";
-import { createRandomDescriptor } from "../../helpers/backend/random/Content";
+import { createRandomECInstanceKey } from "../../helpers/random/EC";
+import { createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement } from "../../helpers/random/Hierarchy";
+import { createRandomDescriptor } from "../../helpers/random/Content";
 
 describe("ECPresentationGatewayImpl", () => {
 
@@ -33,7 +33,7 @@ describe("ECPresentationGatewayImpl", () => {
   describe("calls forwarding", () => {
 
     const testData = {
-      imodelToken: IModelToken.create("test id", "changeset id", OpenMode.ReadWrite, "user id", "context id"),
+      imodelToken: new IModelToken("key path", false, "context id", "imodel id", "changeset id", OpenMode.ReadWrite, "user id"),
       pageOptions: { pageStart: 123, pageSize: 456 } as PageOptions,
       nodePathElements: [createRandomNodePathElement(3), createRandomNodePathElement(1)] as NavNodePathElement[],
       displayType: "sample display type",

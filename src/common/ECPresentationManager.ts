@@ -5,7 +5,7 @@ import { NavNode, NavNodeKeyPath, NavNodePathElement } from "./Hierarchy";
 import { SelectionInfo, Descriptor, Content } from "./content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "./Changes";
 import { InstanceKeysList } from "./EC";
-import { IModelToken } from "@build/imodeljs-core/lib/common/IModel";
+import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
 
 /** Paging options. */
 export interface PageOptions {

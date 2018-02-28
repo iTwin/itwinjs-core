@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import SampleGatewayDefinition from "../common/SampleGatewayDefinition";
-import { Gateway } from "@bentley/imodeljs-backend/lib/common/Gateway";
-import { KnownLocations } from "@bentley/imodeljs-backend/lib/backend/KnownLocations";
+import { Gateway } from "@bentley/imodeljs-common/lib/Gateway";
+import { KnownLocations } from "@bentley/imodeljs-backend/lib/KnownLocations";
 import * as fs from "fs";
 import * as path from "path";
 

@@ -1,13 +1,12 @@
 {
-  "name": "@bentley/ecpresentation-frontend",
-  "version": "0.0.16",
-  "description": "Frontend of ECPresentation library",
+  "name": "@bentley/ecpresentation-common",
+  "version": "0.0.1",
+  "description": "Common pieces for ecpresentation packages.",
   "keywords": [
     "Bentley",
     "EC",
     "Presentation",
-    "iModelJS",
-    "Frontend"
+    "iModelJS"
   ],
   "license": "UNLICENSED",
   "author": {
@@ -20,17 +19,15 @@
     "lint": "tslint -p ./tsconfig.json",
     "prepublishOnly": "npm run build"
   },
-  "dependencies": {
-    "@bentley/ecpresentation-common": "^0.0.1"
-  },
+  "dependencies": {},
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^7.0.0",
-    "@bentley/imodeljs-frontend": "^0.57.0"
+    "@bentley/imodeljs-common": "^0.57.0"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "^7.0.0",
     "@bentley/bentleyjs-tools": "^2.2.0",
-    "@bentley/imodeljs-frontend": "^0.57.0",
+    "@bentley/imodeljs-common": "^0.57.0",
     "rimraf": "^2.6.2",
     "typescript": "^2.6.2",
     "tslint": "^5.8.0"

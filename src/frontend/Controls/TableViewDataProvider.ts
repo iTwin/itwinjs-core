@@ -3,11 +3,11 @@
  *--------------------------------------------------------------------------------------------*/
 import ContentDataProvider from "./ContentDataProvider";
 import ContentBuilder, { PropertyDescription } from "./ContentBuilder";
-import * as content from "../../common/content";
-import { isPrimitiveDescription } from "../../common/content/TypeDescription";
-import { InstanceKey } from "../../common/EC";
-import { ECPresentationManager, PageOptions } from "../../common/ECPresentationManager";
-import { IModelToken } from "@bentley/imodeljs-frontend/lib/common/IModel";
+import * as content from "@bentley/ecpresentation-common/lib/content";
+import { isPrimitiveDescription } from "@bentley/ecpresentation-common/lib/content/TypeDescription";
+import { InstanceKey } from "@bentley/ecpresentation-common/lib/EC";
+import { ECPresentationManager, PageOptions } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
+import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 export enum SortDirection {

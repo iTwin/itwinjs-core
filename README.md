@@ -50,7 +50,7 @@ BentleyCloudGatewayConfiguration.initialize(
 
 3. Ensure that ecpresentation is included:
 ```typescript
-import ECPresentationManager from "@bentley/ecpresentation-backend/lib/backend/ECPresentationManager";
+import ECPresentationManager from "@bentley/ecpresentation-backend/lib/ECPresentationManager";
 ECPresentationManager;
 ```
 

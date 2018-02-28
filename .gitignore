@@ -1,5 +1,6 @@
 # dependencies
 /node_modules
+/src/common/node_modules
 /src/backend/node_modules
 /src/frontend/node_modules
 /src/sample/node_modules
@@ -10,6 +11,7 @@
 
 # production
 /lib
+/src/common/lib
 /src/backend/lib
 /src/frontend/lib
 /src/sample/lib

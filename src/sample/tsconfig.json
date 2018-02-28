@@ -6,7 +6,6 @@
     "skipLibCheck": true,
     "baseUrl": "./node_modules",
     "paths": {
-      "$(iModelJs-Common)/*": ["@bentley/imodeljs-backend/*"], /* Get intellisense to work in src/common */
       "*": [
         "@types/*",
         "*"

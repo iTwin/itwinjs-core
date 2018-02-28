@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Gateway } from "@bentley/imodeljs-frontend/lib/common/Gateway";
+import { Gateway } from "@bentley/imodeljs-common/lib/Gateway";
 import SampleGatewayDefinition from "../../common/SampleGatewayDefinition";
 
 export default class SampleGateway extends SampleGatewayDefinition {

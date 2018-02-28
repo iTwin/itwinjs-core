@@ -5,17 +5,16 @@
 import { assert } from "chai";
 import * as moq from "typemoq";
 // frontend imports:
-// import FrontendGatewayConfiguration from "../helpers/frontend/FrontendGatewayConfiguration";
-// import FrontendGatewayImpl from "@bentley/ecpresentation-frontend/lib/frontend/ECPresentationGateway";
-import ECPresentationManagerFrontend from "@bentley/ecpresentation-frontend/lib/frontend/ECPresentationManager";
+// import FrontendGatewayConfiguration from "../helpers/TestGatewayConfiguration";
+// import FrontendGatewayImpl from "@bentley/ecpresentation-frontend/lib/ECPresentationGateway";
+import ECPresentationManagerFrontend from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
 // backend imports:
-import BackendGatewayConfiguration from "../helpers/backend/BackendGatewayConfiguration";
-import ECPresentationManagerBackend, { NodeAddonDefinition } from "@bentley/ecpresentation-backend/lib/backend/ECPresentationManager";
-import ECPresentationGatewayBackend from "@bentley/ecpresentation-backend/lib/backend/ECPresentationGateway";
-import ECPresentationGatewayDefinition from "@bentley/ecpresentation-backend/lib/common/ECPresentationGatewayDefinition";
-import { Gateway } from "@bentley/imodeljs-backend/lib/common/Gateway";
-import { IModelToken } from "@bentley/imodeljs-backend/lib/common/IModel";
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import BackendGatewayConfiguration from "../helpers/TestGatewayConfiguration";
+import ECPresentationManagerBackend, { NodeAddonDefinition } from "@bentley/ecpresentation-backend/lib/ECPresentationManager";
+import ECPresentationGatewayBackend from "@bentley/ecpresentation-backend/lib/ECPresentationGateway";
+import ECPresentationGatewayDefinition from "@bentley/ecpresentation-common/lib/ECPresentationGatewayDefinition";
+import { Gateway } from "@bentley/imodeljs-common/lib/Gateway";
+import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
 
 describe.skip("ECPresentationManager", () => {
 
@@ -40,7 +39,7 @@ describe.skip("ECPresentationManager", () => {
   describe("getRootNodesCount", () => {
 
     it("passes correct parameters and returns count from node addon", async () => {
-      const token = IModelToken.create("imodel_id", "changeset_id", OpenMode.Readonly);
+      const token = new IModelToken();
       const count = await frontend.getRootNodesCount(token, { sample: "options" });
       assert.equal(count, 999);
     });

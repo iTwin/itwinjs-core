@@ -3,25 +3,25 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as moq from "typemoq";
-import ECPresentationManager, { NodeAddonDefinition, NodeAddonRequestTypes } from "@bentley/ecpresentation-backend/lib/backend/ECPresentationManager";
-import * as addonTypes from "@bentley/ecpresentation-backend/lib/backend/AddonResponses";
-import { NodeAddonRegistry } from "@bentley/imodeljs-backend/lib/backend/NodeAddonRegistry";
-import { IModelToken } from "@bentley/imodeljs-backend/lib/common/IModel";
+import ECPresentationManager, { NodeAddonDefinition, NodeAddonRequestTypes } from "@bentley/ecpresentation-backend/lib/ECPresentationManager";
+import * as addonTypes from "@bentley/ecpresentation-backend/lib/AddonResponses";
+import { AddonRegistry } from "@bentley/imodeljs-backend/lib/AddonRegistry";
+import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { PageOptions } from "@bentley/ecpresentation-backend/lib/common/ECPresentationManager";
-import { NavNode, /*, NavNodeKeyPath, NavNodePathElement*/ NavNodeKey } from "@bentley/ecpresentation-backend/lib/common/Hierarchy";
+import { PageOptions } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
+import { NavNode, /*, NavNodeKeyPath, NavNodePathElement*/ NavNodeKey } from "@bentley/ecpresentation-common/lib/Hierarchy";
 // import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-backend/lib/common/Content";
 // import { InstanceKeysList } from "@bentley/ecpresentation-backend/lib/common/EC";
-// import { createRandomECInstanceKey } from "../../helpers/backend/random/EC";
-// import { createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement } from "../../helpers/backend/random/Hierarchy";
-// import { createRandomDescriptor } from "../../helpers/backend/random/Content";
+// import { createRandomECInstanceKey } from "../../helpers/random/EC";
+// import { createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement } from "../../helpers/random/Hierarchy";
+// import { createRandomDescriptor } from "../../helpers/random/Content";
 
 describe("ECPresentationManager", () => {
 
   it("uses default addon implementation if not overridden", () => {
-    NodeAddonRegistry.loadAndRegisterStandardAddon();
+    AddonRegistry.loadAndRegisterStandardAddon();
     const manager = new ECPresentationManager();
-    assert.instanceOf(manager.getAddon(), NodeAddonRegistry.getAddon().AddonECPresentationManager);
+    assert.instanceOf(manager.getAddon(), AddonRegistry.getAddon().AddonECPresentationManager);
   });
 
   it("uses addon implementation supplied through props", () => {
@@ -49,7 +49,7 @@ describe("ECPresentationManager", () => {
   describe("addon results conversion to ECPresentation objects", () => {
 
     const testData = {
-      imodelToken: IModelToken.create("imodel id", "changeset id", OpenMode.Readonly),
+      imodelToken: new IModelToken("key path", false, "context id", "imodel id", "changeset id", OpenMode.Readonly, "user id"),
       pageOptions: { pageStart: 123, pageSize: 456 } as PageOptions,
       extendedOptions: {
         rulesetId: "aaa",

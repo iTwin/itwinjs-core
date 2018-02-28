@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
-import * as h from "@bentley/ecpresentation-backend/lib/common/Hierarchy";
+import * as h from "@bentley/ecpresentation-common/lib/Hierarchy";
 import { nullable } from "./Misc";
 
 export const createRandomECInstanceNodeKey = (): h.NavNodeKey => {

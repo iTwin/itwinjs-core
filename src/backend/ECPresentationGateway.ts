@@ -1,16 +1,16 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Gateway } from "@bentley/imodeljs-backend/lib/common/Gateway";
-import { IModelToken } from "@bentley/imodeljs-backend/lib/common/IModel";
+import { Gateway } from "@bentley/imodeljs-common/lib/Gateway";
+import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
+import ECPresentationGatewayDefinition from "@bentley/ecpresentation-common/lib/ECPresentationGatewayDefinition";
+import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common/lib/Hierarchy";
+import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common/lib/content";
+import { resetParentship } from "@bentley/ecpresentation-common/lib/content/Descriptor";
+import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresentation-common/lib/Changes";
+import { PageOptions, ECPresentationManager as ECPresentationManagerDefinition } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
+import { InstanceKeysList } from "@bentley/ecpresentation-common/lib/EC";
 import ECPresentationManager from "./ECPresentationManager";
-import ECPresentationGatewayDefinition from "../common/ECPresentationGatewayDefinition";
-import { NavNode, NavNodeKeyPath, NavNodePathElement } from "../common/Hierarchy";
-import { SelectionInfo, Descriptor, Content } from "../common/content";
-import { resetParentship } from "../common/content/Descriptor";
-import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes";
-import { PageOptions, ECPresentationManager as ECPresentationManagerDefinition } from "../common/ECPresentationManager";
-import { InstanceKeysList } from "../common/EC";
 
 /** The backend implementation of ECPresentationGatewayDefinition. */
 export default class ECPresentationGateway extends ECPresentationGatewayDefinition {

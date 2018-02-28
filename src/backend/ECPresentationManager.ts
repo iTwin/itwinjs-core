@@ -3,18 +3,18 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import * as responseTypes from "./AddonResponses";
-import * as ec from "../common/EC";
-import { NavNode, NavNodeKey, ECInstanceNodeKey, NavNodeKeyPath, NavNodePathElement } from "../common/Hierarchy";
-import * as content from "../common/content";
-import { createDescriptorOverrides } from "../common/content/Descriptor";
-import { StructFieldMemberDescription, isStructDescription } from "../common/content/TypeDescription";
-import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes";
-import { PageOptions, ECPresentationManager as ECPInterface } from "../common/ECPresentationManager";
+import * as ec from "@bentley/ecpresentation-common/lib/EC";
+import { NavNode, NavNodeKey, ECInstanceNodeKey, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common/lib/Hierarchy";
+import * as content from "@bentley/ecpresentation-common/lib/content";
+import { createDescriptorOverrides } from "@bentley/ecpresentation-common/lib/content/Descriptor";
+import { StructFieldMemberDescription, isStructDescription } from "@bentley/ecpresentation-common/lib/content/TypeDescription";
+import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresentation-common/lib/Changes";
+import { PageOptions, ECPresentationManager as ECPInterface } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
-import { NodeAddonRegistry } from "@bentley/imodeljs-backend/lib/backend/NodeAddonRegistry";
-import { IModelToken } from "@bentley/imodeljs-backend/lib/common/IModel";
-import { IModelError, IModelStatus } from "@bentley/imodeljs-backend/lib/common/IModelError";
-import { IModelDb } from "@bentley/imodeljs-backend/lib/backend/IModelDb";
+import { AddonRegistry } from "@bentley/imodeljs-backend/lib/AddonRegistry";
+import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
+import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
+import { IModelDb } from "@bentley/imodeljs-backend/lib/IModelDb";
 import ECPresentationGateway from "./ECPresentationGateway";
 
 // make sure the gateway gets registered (hopefully this is temporary)
@@ -152,7 +152,7 @@ export interface NodeAddonDefinition {
 }
 
 const createAddonImpl = () => {
-  const nativeAddon = (NodeAddonRegistry.getAddon()).AddonECPresentationManager;
+  const nativeAddon = (AddonRegistry.getAddon()).AddonECPresentationManager;
   // note the implementation is constructed here to make ECPresentationManager
   // usable without loading the actual addon (if addon is set to something other)
   return class extends nativeAddon implements NodeAddonDefinition {

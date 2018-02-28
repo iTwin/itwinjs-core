@@ -3,15 +3,15 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import initLogging from "./logging";
-import { IModelDb } from "@bentley/imodeljs-backend/lib/backend/IModelDb";
-import ECPresentationManager from "@bentley/ecpresentation-backend/lib/backend/ECPresentationManager";
-import { NodeAddonRegistry } from "@bentley/imodeljs-backend/lib/backend/NodeAddonRegistry";
+import { IModelDb } from "@bentley/imodeljs-backend/lib/IModelDb";
+import ECPresentationManager from "@bentley/ecpresentation-backend/lib/ECPresentationManager";
+import { AddonRegistry } from "@bentley/imodeljs-backend/lib/AddonRegistry";
 
 // initialize logging
 initLogging();
 
 // initialize the node addon
-NodeAddonRegistry.loadAndRegisterStandardAddon();
+AddonRegistry.loadAndRegisterStandardAddon();
 
 // ensure that the imodeljs-core backend is included
 IModelDb;

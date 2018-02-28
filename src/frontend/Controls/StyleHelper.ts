@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { NavNode } from "../../common/Hierarchy";
+import { NavNode } from "@bentley/ecpresentation-common/lib/Hierarchy";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 export default class StyleHelper {

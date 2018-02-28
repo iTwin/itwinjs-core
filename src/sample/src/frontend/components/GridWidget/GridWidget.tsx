@@ -1,10 +1,10 @@
 import * as React from "react";
-import { IModelToken } from "@bentley/imodeljs-frontend/lib/common/IModel";
-import { IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend/IModelConnection";
-import { InstanceKey } from "@bentley/ecpresentation-frontend/lib/common/EC";
-import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/frontend/ECPresentationManager";
-import TableViewDataProvider from "@bentley/ecpresentation-frontend/lib/frontend/Controls/TableViewDataProvider";
-import { TreeNodeItem } from "@bentley/ecpresentation-frontend/lib/frontend/Controls/TreeDataProvider";
+import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
+import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnection";
+import { InstanceKey } from "@bentley/ecpresentation-common/lib/EC";
+import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
+import TableViewDataProvider from "@bentley/ecpresentation-frontend/lib/Controls/TableViewDataProvider";
+import { TreeNodeItem } from "@bentley/ecpresentation-frontend/lib/Controls/TreeDataProvider";
 
 import "./GridWidget.css";
 

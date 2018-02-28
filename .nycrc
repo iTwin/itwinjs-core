@@ -1,12 +1,12 @@
 {
   "include": [
     "src/common/**/*.ts",
-    "src/gateway/**/*.ts",
     "src/frontend/**/*.ts",
     "src/backend/**/*.ts"
   ],
   "exclude": [
     "src/test/*",
+    "src/common/lib/*",
     "src/backend/lib/*",
     "src/frontend/lib/*"
   ],

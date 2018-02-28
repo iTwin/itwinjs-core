@@ -1,5 +1,5 @@
 import * as React from "react";
-import { IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend/IModelConnection";
+import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnection";
 import { MyAppFrontend } from "../../api/MyAppFrontend";
 import "./IModelSelector.css";
 

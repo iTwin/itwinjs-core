@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ECPresentationManager, PageOptions } from "../../common/ECPresentationManager";
-import { NavNode } from "../../common/Hierarchy";
+import { ECPresentationManager, PageOptions } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
+import { NavNode } from "@bentley/ecpresentation-common/lib/Hierarchy";
 import StyleHelper from "./StyleHelper";
-import { IModelToken } from "@bentley/imodeljs-frontend/lib/common/IModel";
+import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
 
 /** State of a checkbox */
 export enum CheckBoxState {

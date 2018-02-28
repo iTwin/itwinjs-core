@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
-import * as ec from "@bentley/ecpresentation-backend/lib/common/EC";
+import * as ec from "@bentley/ecpresentation-common/lib/EC";
 
 export const createRandomECInstanceKey = (): ec.InstanceKey => {
   return {

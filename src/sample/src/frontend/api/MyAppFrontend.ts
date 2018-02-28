@@ -3,12 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 import initLogging from "./logging";
 import { Config as ClientConfig } from "@bentley/imodeljs-clients/lib/Config";
-import { IModelGateway } from "@bentley/imodeljs-frontend/lib/gateway/IModelGateway";
-import ECPresentationGateway from "@bentley/ecpresentation-frontend/lib/frontend/ECPresentationGateway";
+import { IModelGateway } from "@bentley/imodeljs-common/lib/gateway/IModelGateway";
+import ECPresentationGateway from "@bentley/ecpresentation-frontend/lib/ECPresentationGateway";
 import SampleGateway from "./SampleGateway";
-import { IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend/IModelConnection";
+import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnection";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
-import { BentleyCloudGatewayConfiguration } from "@bentley/imodeljs-frontend/lib/gateway/BentleyCloudGatewayConfiguration";
+import { BentleyCloudGatewayConfiguration } from "@bentley/imodeljs-common/lib/gateway/BentleyCloudGatewayConfiguration";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 
 // initialize logging

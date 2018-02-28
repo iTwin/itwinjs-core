@@ -5,15 +5,9 @@
     "module": "commonjs",
     "skipLibCheck": true,
     "baseUrl": "./node_modules",
-    "paths": {
-      "@build/imodeljs-core/*": [
-        "@bentley/imodeljs-backend/*"
-      ]
-    },
     "outDir": "./lib"
   },
   "include": [
-    "../common/**/*.ts",
     "./**/*.ts"
   ],
   "exclude": [

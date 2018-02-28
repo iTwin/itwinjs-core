@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { InstanceKeysList } from "../../common/EC";
-import { ECPresentationManager, PageOptions } from "../../common/ECPresentationManager";
-import * as content from "../../common/content";
-import { IModelToken } from "@bentley/imodeljs-frontend/lib/common/IModel";
+import { InstanceKeysList } from "@bentley/ecpresentation-common/lib/EC";
+import { ECPresentationManager, PageOptions } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
+import * as content from "@bentley/ecpresentation-common/lib/content";
+import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
 
 /** Base class for all data providers that are based on @ref PresentationManager. */
 export default abstract class ContentDataProvider {

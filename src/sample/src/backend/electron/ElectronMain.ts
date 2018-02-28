@@ -7,10 +7,10 @@ import * as path from "path";
 import * as url from "url";
 
 // Initialize my application gateway configuration for the backend
-import { IModelGateway } from "@bentley/imodeljs-backend/lib/gateway/IModelGateway";
-import ECPresentationGateway from "@bentley/ecpresentation-backend/lib/common/ECPresentationGatewayDefinition";
+import { IModelGateway } from "@bentley/imodeljs-common/lib/gateway/IModelGateway";
+import ECPresentationGateway from "@bentley/ecpresentation-common/lib/ECPresentationGatewayDefinition";
 import SampleGateway from "../SampleGateway";
-import { BentleyCloudGatewayConfiguration } from "@bentley/imodeljs-backend/lib/gateway/BentleyCloudGatewayConfiguration";
+import { BentleyCloudGatewayConfiguration } from "@bentley/imodeljs-common/lib/gateway/BentleyCloudGatewayConfiguration";
 BentleyCloudGatewayConfiguration.initialize({ info: { title: "my-app", version: "v1.0" } },
   [IModelGateway, ECPresentationGateway, SampleGateway]);
 

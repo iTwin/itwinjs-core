@@ -1,9 +1,9 @@
 import * as express from "express";
 import * as bodyParser from "body-parser";
-import { IModelGateway } from "@bentley/imodeljs-backend/lib/gateway/IModelGateway";
-import ECPresentationGateway from "@bentley/ecpresentation-backend/lib/common/ECPresentationGatewayDefinition";
+import { IModelGateway } from "@bentley/imodeljs-common/lib/gateway/IModelGateway";
+import ECPresentationGateway from "@bentley/ecpresentation-common/lib/ECPresentationGatewayDefinition";
 import SampleGateway from "../SampleGateway";
-import { BentleyCloudGatewayConfiguration } from "@bentley/imodeljs-backend/lib/gateway/BentleyCloudGatewayConfiguration";
+import { BentleyCloudGatewayConfiguration } from "@bentley/imodeljs-common/lib/gateway/BentleyCloudGatewayConfiguration";
 
 declare namespace global {
   const webpackDevServer: express.Application | undefined;

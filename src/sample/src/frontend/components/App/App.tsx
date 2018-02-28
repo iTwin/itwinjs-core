@@ -1,6 +1,6 @@
 import * as React from "react";
-import { IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend/IModelConnection";
-import { TreeNodeItem } from "@bentley/ecpresentation-frontend/lib/frontend/Controls/TreeDataProvider";
+import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnection";
+import { TreeNodeItem } from "@bentley/ecpresentation-frontend/lib/Controls/TreeDataProvider";
 import IModelSelector from "../IModelSelector/IModelSelector";
 import PropertiesWidget from "../PropertiesWidget/PropertiesWidget";
 import GridWidget from "../GridWidget/GridWidget";

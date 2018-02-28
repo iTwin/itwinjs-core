@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { NavNode, NavNodeKeyPath, NavNodePathElement } from "../common/Hierarchy";
-import { SelectionInfo, Descriptor, Content } from "../common/content";
-import { rebuildParentship } from "../common/content/Descriptor";
-import { ChangedECInstanceInfo, ECInstanceChangeResult } from "../common/Changes";
-import { InstanceKeysList } from "../common/EC";
-import { PageOptions, ECPresentationManager as ECPInterface } from "../common/ECPresentationManager";
+import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common/lib/Hierarchy";
+import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common/lib/content";
+import { rebuildParentship } from "@bentley/ecpresentation-common/lib/content/Descriptor";
+import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresentation-common/lib/Changes";
+import { InstanceKeysList } from "@bentley/ecpresentation-common/lib/EC";
+import { PageOptions, ECPresentationManager as ECPInterface } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
 import ECPresentationGateway from "./ECPresentationGateway";
-import { IModelToken } from "@bentley/imodeljs-frontend/lib/common/IModel";
+import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
 
 class ECPresentationManager implements ECPInterface {
   public async getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<Array<Readonly<NavNode>>> {

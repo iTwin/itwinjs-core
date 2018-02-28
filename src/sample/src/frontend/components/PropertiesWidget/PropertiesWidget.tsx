@@ -1,12 +1,12 @@
 import * as React from "react";
 // import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { IModelToken } from "@bentley/imodeljs-frontend/lib/common/IModel";
-import { IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend/IModelConnection";
-import { InstanceKey } from "@bentley/ecpresentation-frontend/lib/common/EC";
-import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/frontend/ECPresentationManager";
-import PropertyPaneDataProvider from "@bentley/ecpresentation-frontend/lib/frontend/Controls/PropertyPaneDataProvider";
-import { TreeNodeItem } from "@bentley/ecpresentation-frontend/lib/frontend/Controls/TreeDataProvider";
-import { isPrimitiveValue, isStructValue, isArrayValue, PropertyRecord } from "@bentley/ecpresentation-frontend/lib/frontend/Controls/ContentBuilder";
+import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
+import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnection";
+import { InstanceKey } from "@bentley/ecpresentation-common/lib/EC";
+import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
+import PropertyPaneDataProvider from "@bentley/ecpresentation-frontend/lib/Controls/PropertyPaneDataProvider";
+import { TreeNodeItem } from "@bentley/ecpresentation-frontend/lib/Controls/TreeDataProvider";
+import { isPrimitiveValue, isStructValue, isArrayValue, PropertyRecord } from "@bentley/ecpresentation-frontend/lib/Controls/ContentBuilder";
 import "./PropertiesWidget.css";
 
 export interface Props {
