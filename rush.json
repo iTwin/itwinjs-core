@@ -28,5 +28,10 @@
       "projectFolder": "source/testbed",
       "shouldPublish": false
     }
-  ]
+  ],
+  "eventHooks": {
+    "postRushInstall": [
+      "echo postRushInstall"
+    ]
+  }
 }
