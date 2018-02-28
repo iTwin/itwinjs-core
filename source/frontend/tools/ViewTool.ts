@@ -6,12 +6,12 @@ import { Viewport, CoordSystem, ViewRect } from "../Viewport";
 import { Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d } from "@bentley/geometry-core/lib/PointVector";
 import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
 import { Range3d } from "@bentley/geometry-core/lib/Range";
-import { Frustum, NpcCenter, Npc } from "../../common/Frustum";
-import { MarginPercent, ViewStatus, ViewState3d } from "../../frontend/ViewState";
+import { Frustum, NpcCenter, Npc } from "@bentley/imodeljs-common/lib/Frustum";
+import { MarginPercent, ViewStatus, ViewState3d } from "../ViewState";
 import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { AccuDrawFlags } from "../AccuDraw";
-import { LegacyMath } from "../../common/LegacyMath";
+import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { iModelApp } from "../IModelApp";
 
 const scratchFrustum = new Frustum();

@@ -16,8 +16,8 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { DecorateContext } from "../ViewContext";
 import { TentativeOrAccuSnap, AccuSnapToolState } from "../AccuSnap";
 import { HitDetail } from "../HitDetail";
-import { LegacyMath } from "../../common/LegacyMath";
-import { NpcCenter } from "../../common/Frustum";
+import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
+import { NpcCenter } from "@bentley/imodeljs-common/lib/Frustum";
 import { iModelApp } from "../IModelApp";
 
 export const enum CoordinateLockOverrides {

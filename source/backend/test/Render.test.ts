@@ -2,9 +2,9 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ViewFlags, RenderMode } from "../../common/Render";
-import { ColorDef, ColorRgb } from "../../common/ColorDef";
-import { Light, LightProps, Spot, LightType } from "../../common/Lighting";
+import { ViewFlags, RenderMode } from "@bentley/imodeljs-common/lib/Render";
+import { ColorDef, ColorRgb } from "@bentley/imodeljs-common/lib/ColorDef";
+import { Light, LightProps, Spot, LightType } from "@bentley/imodeljs-common/lib/Lighting";
 
 describe("Render", () => {
   it("ColorDef should compare properly", () => {

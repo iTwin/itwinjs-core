@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ColorDef } from "../../common/ColorDef";
-import { FloatRgb, FloatRgba, FloatPreMulRgba } from "../../frontend/render/webgl/FloatRGBA";
+import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
+import { FloatRgb, FloatRgba, FloatPreMulRgba } from "@bentley/imodeljs-frontend/lib/render/webgl/FloatRGBA";
 
 describe("FloatRgb", () => {
   it("should create and store rgb from ColorDef", () => {

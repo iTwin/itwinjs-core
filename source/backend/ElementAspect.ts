@@ -4,7 +4,7 @@
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
-import { ElementAspectProps } from "../common/ElementProps";
+import { ElementAspectProps } from "@bentley/imodeljs-common/lib/ElementProps";
 
 /** ElementAspect */
 export class ElementAspect extends Entity implements ElementAspectProps {

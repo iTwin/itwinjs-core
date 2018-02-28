@@ -5,11 +5,11 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { Vector3d, Point3d, Point2d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { ElementProps } from "../common/ElementProps";
-import { ViewDefinitionProps, ViewDefinition3dProps, ViewDefinition2dProps, SpatialViewDefinitionProps, ModelSelectorProps, CategorySelectorProps } from "../common/ViewProps";
+import { ElementProps } from "@bentley/imodeljs-common/lib/ElementProps";
+import { ViewDefinitionProps, ViewDefinition3dProps, ViewDefinition2dProps, SpatialViewDefinitionProps, ModelSelectorProps, CategorySelectorProps } from "@bentley/imodeljs-common/lib/ViewProps";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
-import { Camera } from "../common/Render";
+import { Camera } from "@bentley/imodeljs-common/lib/Render";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
 export class DisplayStyle extends DefinitionElement {

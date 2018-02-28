@@ -1,16 +1,16 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelApp } from "../../frontend/IModelApp";
-import { IModelConnection } from "../../frontend/IModelConnection";
-import { ElementAgenda } from "../../frontend/tools/ElementSetTool";
+import { IModelApp } from "@bentley/imodeljs-frontend/lib/IModelApp";
+import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnection";
+import { ElementAgenda } from "@bentley/imodeljs-frontend/lib/tools/ElementSetTool";
 import * as path from "path";
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { ModifyElementSource } from "../../frontend/tools/PrimitiveTool";
-import { SelectEventType } from "../../frontend/SelectionSet";
+import { ModifyElementSource } from "@bentley/imodeljs-frontend/lib/tools/PrimitiveTool";
+import { SelectEventType } from "@bentley/imodeljs-frontend/lib/SelectionSet";
 
-const iModelLocation = path.join(__dirname, "../../../../backend/lib/backend/test/assets/test.bim");
+const iModelLocation = path.join(__dirname, "../../../backend/lib/test/assets/test.bim");
 
 class TestIModelApp extends IModelApp {
   protected supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Gateway, GatewayDefinition } from "../common/Gateway";
+import { Gateway, GatewayDefinition } from "../Gateway";
 import { GatewayProtocol, GatewayDirectProtocol } from "./GatewayProtocol";
 
 const INSTANCE = Symbol.for("instance");
