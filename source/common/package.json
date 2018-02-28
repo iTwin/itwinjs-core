@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-common",
-  "version": "0.57.0",
+  "version": "0.58.0",
   "description": "iModelJs components common to frontend and backend",
   "engines": {
     "node": ">=8.9.0 <9.0"
