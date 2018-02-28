@@ -6,7 +6,7 @@ import { CurvePrimitive } from "@bentley/geometry-core/lib/curve/CurvePrimitive"
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Viewport } from "./Viewport";
 import { DecorateContext } from "./ViewContext";
-import { RenderMode } from "../common/Render";
+import { RenderMode } from "@bentley/imodeljs-common/lib/Render";
 import { Geometry } from "@bentley/geometry-core/lib/Geometry";
 import { Point4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { Sprite } from "./Sprites";

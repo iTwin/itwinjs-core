@@ -6,16 +6,16 @@ import * as path from "path";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { Code, CodeSpec, CodeScopeSpec } from "../../common/Code";
-import { EntityProps } from "../../common/EntityProps";
-import { IModelError, IModelStatus } from "../../common/IModelError";
+import { Code, CodeSpec, CodeScopeSpec } from "@bentley/imodeljs-common/lib/Code";
+import { EntityProps } from "@bentley/imodeljs-common/lib/EntityProps";
+import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
 import { Entity, EntityMetaData, PrimitiveTypeCode } from "../Entity";
 import { Model, DictionaryModel } from "../Model";
 import { Category, SubCategory, SpatialCategory } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
 import { BisCore } from "../BisCore";
 import { ECSqlStatement } from "../ECSqlStatement";
-import { GeometricElementProps } from "../../common/ElementProps";
+import { GeometricElementProps } from "@bentley/imodeljs-common/lib/ElementProps";
 import {
   Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
   LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject,
@@ -23,14 +23,14 @@ import {
 import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
 import { IModelDb } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { ModelProps } from "../../common/ModelProps";
-import { AxisAlignedBox3d } from "../../common/geometry/Primitives";
+import { ModelProps } from "@bentley/imodeljs-common/lib/ModelProps";
+import { AxisAlignedBox3d } from "@bentley/imodeljs-common/lib/geometry/Primitives";
 import { ElementGroupsMembers } from "../LinkTableRelationship";
-import { Appearance } from "../../common/SubCategoryAppearance";
-import { ColorDef } from "../../common/ColorDef";
-import { IModel } from "../../common/IModel";
+import { Appearance } from "@bentley/imodeljs-common/lib/SubCategoryAppearance";
+import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
+import { IModel } from "@bentley/imodeljs-common/lib/IModel";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { ViewDefinitionProps } from "../../common/ViewProps";
+import { ViewDefinitionProps } from "@bentley/imodeljs-common/lib/ViewProps";
 
 // spell-checker: disable
 

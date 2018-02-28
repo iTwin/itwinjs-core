@@ -3,18 +3,18 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { IndexedPrimitiveParamsFeatures, PolylineParamVertex, PolylineParam } from "../../frontend/render/webgl/Graphic";
-import { Graphic, GraphicList } from "../../frontend/render/Graphic";
-import { FeatureIndexType, FeatureIndex } from "../../frontend/render/webgl/FeatureIndex";
-import { IModelConnection } from "../../frontend/IModelConnection";
-import { ViewContext } from "../../frontend/ViewContext";
+import { IndexedPrimitiveParamsFeatures, PolylineParamVertex, PolylineParam } from "@bentley/imodeljs-frontend/lib/render/webgl/Graphic";
+import { Graphic, GraphicList } from "@bentley/imodeljs-frontend/lib/render/Graphic";
+import { FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-frontend/lib/render/webgl/FeatureIndex";
+import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnection";
+import { ViewContext } from "@bentley/imodeljs-frontend/lib/ViewContext";
 import * as path from "path";
 
 function withinTol(x: number, y: number): boolean {
   return Math.abs(x - y) < 0.0000000000001;
 }
 
-const iModelLocation = path.join(__dirname, "../../../../backend/test/assets/test.bim");
+const iModelLocation = path.join(__dirname, "../../../backend/test/assets/test.bim");
 
 describe("Graphic", () => {
   let imodel: IModelConnection;

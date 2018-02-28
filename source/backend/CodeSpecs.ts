@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { IModelError, IModelStatus } from "../common/IModelError";
-import { CodeSpec } from "../common/Code";
+import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
+import { CodeSpec } from "@bentley/imodeljs-common/lib/Code";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelDb } from "./IModelDb";
 

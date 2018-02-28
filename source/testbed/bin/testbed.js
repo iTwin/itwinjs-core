@@ -15,7 +15,7 @@ program
 
 floss(
   {
-    path: "lib/testbed/frontend/index.js",
+    path: "lib/frontend/index.js",
     debug: program.debug,
     timeout: program.timeout || 999999,
     noDevTools: program.noDevTools,

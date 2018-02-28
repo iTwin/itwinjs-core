@@ -3,14 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
-import { EntityQueryParams } from "../common/EntityProps";
-import { IModel, IModelToken } from "../common/IModel";
-import { IModelVersion } from "../common/IModelVersion";
-import { Gateway } from "../common/Gateway";
-import { AxisAlignedBox3d } from "../common/geometry/Primitives";
+import { EntityQueryParams } from "../EntityProps";
+import { IModel, IModelToken } from "../IModel";
+import { IModelVersion } from "../IModelVersion";
+import { Gateway } from "../Gateway";
+import { AxisAlignedBox3d } from "../geometry/Primitives";
 import { Id64, Id64Set } from "@bentley/bentleyjs-core/lib/Id";
 import { Point2d, Point3d, Vector2d, Vector3d } from "@bentley/geometry-core/lib/PointVector";
-import { Code } from "../common/Code";
+import { Code } from "../Code";
 
 /** The iModel core gateway definition.
  * @hidden

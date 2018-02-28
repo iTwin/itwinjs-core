@@ -5,7 +5,7 @@ import * as path from "path";
 import { expect, assert } from "chai";
 import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { IModelVersion } from "../../common/IModelVersion";
+import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
 import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../ChangeSummaryManager";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { IModelDb } from "../IModelDb";
@@ -346,4 +346,13 @@ describe("ChangeSummary", () => {
       IModelJsFs.writeFileSync(filePath, JSON.stringify(content));
     }
   });
+
+  it.skip("Crash test", async () => {
+    const iModelId = "bd9b1b21-9485-445a-9cce-b084d1b654fa";
+    const projectId = "d46de192-6cad-4086-b968-71b517edc215";
+
+    const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, iModelId, false);
+    await ChangeSummaryManager.extractChangeSummaries(accessToken, projectId, iModelId, changeSets[0].wsgId, changeSets[0].wsgId);
+  });
+
 });

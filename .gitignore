@@ -1,11 +1,9 @@
 # dependencies
-/node_modules
-/source/backend/node_modules
-/source/frontend/node_modules
-/source/testbed/node_modules
+node_modules
 
 # build output
 .nyc_output
+/source/common/lib
 /source/backend/lib
 /source/backend/test/output
 /source/frontend/lib

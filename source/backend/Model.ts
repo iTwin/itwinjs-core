@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { ModelProps, GeometricModel2dProps } from "../common/ModelProps";
+import { ModelProps, GeometricModel2dProps } from "@bentley/imodeljs-common/lib/ModelProps";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";

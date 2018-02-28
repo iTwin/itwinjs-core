@@ -1,19 +1,19 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.55.2",
+  "version": "0.57.0",
   "description": "iModelJs backend components",
   "license": "UNLICENSED",
   "engines": {
     "node": ">=8.9.0 <9.0"
   },
   "scripts": {
-    "build": "tsc && npm run copy:assets",
+    "build": "tsc 1>&2 && npm run copy:assets",
     "clean": "rimraf lib package-deps.json",
-    "copy:assets": "cpx ./assets/**/* ./lib/backend/assets",
-    "copy:test-assets": "cpx ./test/assets/**/* ./lib/backend/test/assets",
+    "copy:assets": "cpx ./assets/**/* ./lib/assets",
+    "copy:test-assets": "cpx ./test/assets/**/* ./lib/test/assets",
     "cover": "nyc mocha --timeout 30000 --compilers ts-node/register --require tsconfig-paths/register --require source-map-support/register ./test/**/*.test.ts",
-    "pretest": "npm run copy:test-assets && npm run build",
-    "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/backend/test\"",
+    "pretest": "npm run copy:test-assets && rush build",
+    "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\"",
     "webpackformobile": "cpx ./test/runMochaTestsDirectly.js ./lib/backend/test && webpack --target=webworker --config ./test/mobile.webpack.config.js"
   },
   "repository": {},
@@ -30,7 +30,7 @@
     "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check"
   ],
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^6.1.1",
+    "@bentley/bentleyjs-core": "^7.0.0",
     "flatbuffers": "^1.8.0"
   },
   "//dependencies": [
@@ -43,9 +43,11 @@
   ],
   "dependencies": {
     "@bentley/geometry-core": "^4.3.1",
-    "@bentley/imodeljs-clients": "^3.0.0",
-    "@bentley/imodeljs-nodeaddon": "~8.1.0",
-    "@bentley/imodeljs-nodeaddonapi": "~8.1.0",
+    "@bentley/imodeljs-clients": "^3.0.2",
+    "@bentley/imodeljs-common": "^0.57.0",
+    "@bentley/imodeljs-electronaddon": "~10.0.0",
+    "@bentley/imodeljs-nodeaddon": "~10.0.0",
+    "@bentley/imodeljs-nodeaddonapi": "~10.0.0",
     "fs-extra": "^5.0.0",
     "js-base64": "^2.4.0"
   },
@@ -55,7 +57,7 @@
   ],
   "devDependencies": {
     "cpx": "^1.5.0",
-    "@bentley/imodeljs-n_8_9-win32-x64": "~8.1.0",
+    "@bentley/imodeljs-n_8_9-win32-x64": "~10.0.0",
     "mocha": "^3.5.3",
     "nyc": "^11.4.1",
     "rimraf": "^2.6.2",
@@ -63,7 +65,7 @@
     "ts-node": "^3.3.0",
     "tsconfig-paths": "^2.7.2",
     "typescript": "~2.6.2",
-    "webpack": "^3.10.0"  
+    "webpack": "^3.10.0"
   },
   "//optionalDependencies": [
     "NOTE: Rush (as of 4.2.5) does not support optionalDependencies!"

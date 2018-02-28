@@ -3,17 +3,17 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { CodeSpec, CodeSpecNames } from "../../common/Code";
-import { ViewDefinitionProps } from "../../common/ViewProps";
+import { CodeSpec, CodeSpecNames } from "@bentley/imodeljs-common/lib/Code";
+import { ViewDefinitionProps } from "@bentley/imodeljs-common/lib/ViewProps";
 import { DrawingViewState, OrthographicViewState, ViewState } from "../../frontend/ViewState";
 import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "../../frontend/IModelConnection";
 import { XYAndZ } from "@bentley/geometry-core/lib/PointVector";
-import { NavigationValue, ECSqlTypedString, ECSqlStringType } from "../../common/ECSqlTypes";
+import { NavigationValue, ECSqlTypedString, ECSqlStringType } from "@bentley/imodeljs-common/lib/ECSqlTypes";
 import { TestData } from "./TestData";
-import { ModelSelectorState } from "../../frontend/ModelSelectorState";
-import { DisplayStyle3dState, DisplayStyle2dState } from "../../frontend/DisplayStyleState";
-import { CategorySelectorState } from "../../frontend/CategorySelectorState";
-import { IModelApp } from "../../frontend/IModelApp";
+import { ModelSelectorState } from "@bentley/imodeljs-frontend/lib/ModelSelectorState";
+import { DisplayStyle3dState, DisplayStyle2dState } from "@bentley/imodeljs-frontend/lib/DisplayStyleState";
+import { CategorySelectorState } from "@bentley/imodeljs-frontend/lib/CategorySelectorState";
+import { IModelApp } from "@bentley/imodeljs-frontend/lib/IModelApp";
 
 // spell-checker: disable
 class TestApp extends IModelApp {
