@@ -1,0 +1,17 @@
+{
+  "name": "@bentley/ecpresentation-common",
+  "entries": [
+    {
+      "version": "0.0.1",
+      "tag": "@bentley/ecpresentation-common_v0.0.2",
+      "date": "Wed, 28 Feb 2018 13:44:55 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Created a new package for common ecpresentation classes / utils."
+          }
+        ]
+      }
+    }
+  ]
+}

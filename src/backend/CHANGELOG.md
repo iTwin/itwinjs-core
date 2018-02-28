@@ -1,6 +1,16 @@
 # Change Log - @bentley/ecpresentation-backend
 
-This log was last generated on Tue, 20 Feb 2018 12:06:04 GMT and should not be manually modified.
+This log was last generated on Wed, 28 Feb 2018 13:44:55 GMT and should not be manually modified.
+
+## 0.0.28
+Wed, 28 Feb 2018 13:44:55 GMT
+
+### Patches
+
+- Use undefined instead of null
+- Return read-only objects
+- Use async/await instead of pure promises
+- Update imodeljs-backend dependency to v.0.57.0
 
 ## 0.0.27
 Tue, 20 Feb 2018 12:06:04 GMT
