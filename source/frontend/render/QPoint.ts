@@ -4,6 +4,7 @@
 import { Range1d, Range2d, Range3d } from "@bentley/geometry-core/lib/Range";
 import { XY, XYZ, XYAndZ, Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
 import { Point, Range, PointUtil, RangeUtil } from "./Utility";
+import { Cloneable } from "./Utility";
 
 // declare constant in module scope to prevent having to write out ScalarQuantizer.rangeScale every time
 const rangeScale = 0xffff;
@@ -204,7 +205,7 @@ export class QParamsFactory {
   }
 }
 
-export class QPointList<Q extends QPointBase, P extends Point, R extends Range, K extends QParamsBase> {
+export class QPointList<Q extends QPointBase, P extends Point, R extends Range, K extends QParamsBase> implements Cloneable<QPointList<Q, P, R, K>> {
   protected _valid = false;
   protected _pts: Q[];
   protected get pts(): Q[] { return this._pts; }
@@ -248,6 +249,7 @@ export class QPointList<Q extends QPointBase, P extends Point, R extends Range, 
   public requantize( params: R | K) {
     this.assign(this.unquantizeAll(), params);
   }
+  public clone() { const out = new QPointList<Q, P, R, K>(); out._valid = this._valid; out._pts = this._pts; out.params = this.params; return out; }
 }
 
 export class QPoint3dList extends QPointList<QPoint3d, XYZ, Range3d, QParams3d> { constructor(params?: Range3d | QParams3d, pts: QPoint3d[] = []) { super(params, pts); } }
