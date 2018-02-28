@@ -189,10 +189,10 @@ describe("BriefcaseManager", () => {
     iModelHubClientMock.verify((f: IModelHubClient) => f.getChangeSets(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()), TypeMoq.Times.exactly(1));
     expect(testChangeSets.length).greaterThan(2);
 
-    // downloadChangeSets
+    // downloadChangeSets (Not needed if we assume cache is in initialized state)
     const cacheDir = iModelHost.configuration.briefcaseCacheDir;
-    const csetDir = path.join(cacheDir, testIModelId, "csets");
-    await iModelHubClientMock.object.downloadChangeSets(testChangeSets, csetDir);
+    // const csetDir = path.join(cacheDir, testIModelId, "csets");
+    // await iModelHubClientMock.object.downloadChangeSets(testChangeSets, csetDir);
 
     console.log(`    ...getting information on Project+IModel+ChangeSets for test case from mock data: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
 
@@ -214,7 +214,7 @@ describe("BriefcaseManager", () => {
     await dumpTestCase("NodeJsTestProject", "NoVersionsTest");
   });
 
-  it.only("should open multiple versions of iModels", async () => {
+  it("should open multiple versions of iModels", async () => {
     const iModelNames = ["TestModel", "NoVersionsTest"];
     for (const name of iModelNames) {
        const iModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, name);
@@ -303,24 +303,39 @@ describe("BriefcaseManager", () => {
     // iModel.close(accessToken);
   });
 
-  it("should reuse open briefcases in Readonly mode", async () => {
+  it.only("should reuse open briefcases in Readonly mode", async () => {
+    // Arrange
+    iModelVersionMock.setup((f: IModelVersion) => f.evaluateChangeSet(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
+      .returns(() => Promise.resolve(""));
+    iModelHubClientMock.setup((f: IModelHubClient) => f.getIModel(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
+      .returns(() => {
+        const sampleIModelPath = path.join(assetDir, "SampleIModel.json");
+        const buff = IModelJsFs.readFileSync(sampleIModelPath);
+        const jsonObj = JSON.parse(buff.toString())[0];
+        return Promise.resolve(getTypedInstance<HubIModel>(HubIModel, jsonObj));
+      }).verifiable(); // Note: only used in the createBriefcase codeExPath
+    BriefcaseManager.hubClient = iModelHubClientMock.object;
+
+    // Act
     let timer = new Timer("open briefcase first time");
-    const iModel0: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId);
+    const iModel0: BriefcaseEntry = await BriefcaseManager.open(spoofAccessToken as any, testProjectId, testIModelId, OpenMode.Readonly, iModelVersionMock.object);
     assert.exists(iModel0);
+    assert(iModel0.iModelId === testIModelId);
     timer.end();
 
     const briefcases = IModelJsFs.readdirSync(iModelLocalReadonlyPath);
     expect(briefcases.length).greaterThan(0);
 
     timer = new Timer("open briefcase 5 more times");
-    const iModels = new Array<IModelDb>();
+    const iModels = new Array<BriefcaseEntry>();
     for (let ii = 0; ii < 5; ii++) {
-      const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId);
+      const iModel: BriefcaseEntry = await BriefcaseManager.open(spoofAccessToken as any, testProjectId, testIModelId, OpenMode.Readonly, iModelVersionMock.object);
       assert.exists(iModel);
       iModels.push(iModel);
     }
     timer.end();
 
+    // Assert
     const briefcases2 = IModelJsFs.readdirSync(iModelLocalReadonlyPath);
     expect(briefcases2.length).equals(briefcases.length);
     const diff = briefcases2.filter((item) => briefcases.indexOf(item) < 0);
