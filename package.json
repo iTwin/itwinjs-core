@@ -46,7 +46,7 @@
     "typescript": "^2.6.1"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "^5.1.0"
+    "@bentley/bentleyjs-core": "^7.0.1"
   },
   "nyc": {
     "include": [
