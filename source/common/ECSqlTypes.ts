@@ -1,12 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64Props } from "@bentley/bentleyjs-core/lib/Id";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 import { IModelError } from "./IModelError";
 
 /** Describes the different data types an ECSQL value can be of. */
 export enum ECSqlValueType {
+  // do not change the values of the enum as it must match its counterpart in the addon
   Blob = 1,
   Boolean = 2,
   DateTime = 3,
@@ -22,59 +23,54 @@ export enum ECSqlValueType {
   Struct = 13,
   PrimitiveArray = 14,
   StructArray = 15,
-}
-
-/** An ECSQL DateTime value.
- *
- * It is returned from ECSQL SELECT statements for date time properties or expressions.
- * It is also used to bind a date time value to a date time ECSQL parameter.
- */
-export class DateTime {
-  /**
-   * @param isoString ISO 8601 formatted date time string
-   */
-  public constructor(public isoString: string) { }
-
-  public isValid(): boolean { return this.isoString !== undefined && this.isoString.length > 0; }
-}
+  Guid = 16 }
 
 /** An ECSQL Navigation value.
  *
  * It is returned from ECSQL SELECT statements for navigation properties.
  */
-export class NavigationValue {
-  /**
-   * @param id ECInstanceId of the related instance
-   * @param relClassName Fully qualified class name of the relationship backing the Navigation property
-   */
-  public constructor(public id: Id64, public relClassName?: string) { }
-  public isValid(): boolean { return this.id !== undefined && this.id!.isValid(); }
+export interface NavigationValue {
+  /** ECInstanceId of the related instance */
+  id: Id64Props;
+  /** Fully qualified class name of the relationship backing the Navigation property */
+  relClassName?: string;
+}
+
+/** An ECSqlTypedString is used to decorate a string value with type information.
+ *  This is necessary, when binding parameters to an ECSQL statement so that
+ *  [[ECSqlStatement]] can figure out the right EC type from the string value.
+ */
+export interface ECSqlTypedString {
+  type: ECSqlStringType;
+  value: string;
+}
+
+/** Type of an [[ECSqlTypedString]] */
+export enum ECSqlStringType {
+ /** The string represents a BLOB value, formatted as Base64 string. */
+ Blob,
+ /** The string represents a DateTime value, formatted as ISO8601 string. */
+ DateTime,
+ /** The string represents a GUID value, formatted as GUID string (see [[Guid]]). */
+ Guid,
+ /** The string represents an Id value, formatted as hexadecimal string (see [[Id64]]). */
+ Id,
+ /** The string is not specifically typed. */
+ String,
 }
 
 /** An ECSQL Navigation value which can be bound to a navigation property ECSQL parameter
  */
-export class NavigationBindingValue extends NavigationValue {
-  /**
-   * @param id ECInstanceId of the related instance
-   * @param relClassName Fully qualified class name of the relationship backing the Navigation property
-   * @param relClassTableSpace Table space where the relationship's schema is persisted. This is only required
+export interface NavigationBindingValue {
+  /** ECInstanceId of the related instance */
+  id: ECSqlTypedString | Id64Props;
+  /** Fully qualified class name of the relationship backing the Navigation property */
+  relClassName?: string;
+  /** Table space where the relationship's schema is persisted. This is only required
    * if other ECDb files are attached to the primary one. In case a schema exists in more than one of the files,
    * pass the table space to disambiguate.
    */
-  public constructor(public id: Id64, public relClassName?: string, public relClassTableSpace?: string) { super(id, relClassName); }
-}
-
-/** An ECSQL Blob value.
- * It is returned from ECSQL SELECT for Blob properties or expressions.
- * It is also used to bind a Blob value to a Blob ECSQL parameter.
- */
-export class Blob {
-  /**
-   * @param value BLOB formatted as Base64 string
-   */
-  public constructor(public base64: string) { }
-
-  public isValid(): boolean { return this.base64 !== undefined; }
+   relClassTableSpace?: string;
 }
 
 /** Defines the ECSQL system properties. */

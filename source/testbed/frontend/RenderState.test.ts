@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { GL } from "../../frontend/render/webgl/GL";
-import { RenderState } from "../../frontend/render/webgl/RenderState";
+import { GL } from "@bentley/imodeljs-frontend/lib/render/webgl/GL";
+import { RenderState } from "@bentley/imodeljs-frontend/lib/render/webgl/RenderState";
 
 // ###TODO: canvas.getContext() returns null on PRG...GPU should not be required
 const haveWebGL = false;

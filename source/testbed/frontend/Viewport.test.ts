@@ -3,20 +3,20 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { SpatialViewState, ViewState, StandardViewId } from "../../frontend/ViewState";
-import { IModelConnection } from "../../frontend/IModelConnection";
-import { Viewport, ViewRect } from "../../frontend/Viewport";
-import { IModelApp, iModelApp } from "../../frontend/IModelApp";
-import { Cartographic } from "../../common/geometry/Cartographic";
+import { SpatialViewState, ViewState, StandardViewId } from "@bentley/imodeljs-frontend/lib/ViewState";
+import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnection";
+import { Viewport, ViewRect } from "@bentley/imodeljs-frontend/lib/Viewport";
+import { IModelApp, iModelApp } from "@bentley/imodeljs-frontend/lib/IModelApp";
+import { Cartographic } from "@bentley/imodeljs-common/lib/geometry/Cartographic";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import * as path from "path";
-import { PanTool } from "../../frontend/tools/ViewTool";
-import { CompassMode } from "../../frontend/AccuDraw";
+import { PanTool } from "@bentley/imodeljs-frontend/lib/tools/ViewTool";
+import { CompassMode } from "@bentley/imodeljs-frontend/lib/AccuDraw";
 // import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
-// import { SpatialViewDefinitionProps } from "../../common/ElementProps";
-// import { DisplayStyle3dState } from "../../frontend/DisplayStyleState";
+// import { SpatialViewDefinitionProps } from "@bentley/imodeljs-common/lib/ElementProps";
+// import { DisplayStyle3dState } from "@bentley/imodeljs-frontend/lib/DisplayStyleState";
 
-const iModelLocation = path.join(__dirname, "../../../../backend/lib/backend/test/assets/test.bim");
+const iModelLocation = path.join(__dirname, "../../../backend/lib/test/assets/test.bim");
 
 /** For creating a Viewport without a canvas */
 class TestViewport extends Viewport {

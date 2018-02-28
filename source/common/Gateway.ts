@@ -4,8 +4,8 @@
 import { IModelError } from "./IModelError";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
-import { GatewayRegistry, GatewayDirectProtocol } from "../gateway/GatewayProtocol";
-import { GatewayConfiguration, GatewayDefaultConfiguration } from "../gateway/GatewayConfiguration";
+import { GatewayRegistry, GatewayDirectProtocol } from "./gateway/GatewayProtocol";
+import { GatewayConfiguration, GatewayDefaultConfiguration } from "./gateway/GatewayConfiguration";
 
 const registry = GatewayRegistry.instance(Symbol.for("@bentley/imodeljs-core/common/Gateway"));
 

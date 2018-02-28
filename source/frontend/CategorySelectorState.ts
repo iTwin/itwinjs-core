@@ -4,7 +4,7 @@
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core/lib/Id";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
-import { CategorySelectorProps } from "../common/ViewProps";
+import { CategorySelectorProps } from "@bentley/imodeljs-common/lib/ViewProps";
 
 /** A list of Categories to be displayed in a view. */
 export class CategorySelectorState extends ElementState {

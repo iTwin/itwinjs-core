@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelGateway } from "../../gateway/IModelGateway";
-import { BentleyCloudGatewayConfiguration } from "../../gateway/BentleyCloudGatewayConfiguration";
-import { GatewayElectronConfiguration } from "../../gateway/GatewayElectronProtocol";
+import { IModelGateway } from "@bentley/imodeljs-common/lib/gateway/IModelGateway";
+import { BentleyCloudGatewayConfiguration } from "@bentley/imodeljs-common/lib/gateway/BentleyCloudGatewayConfiguration";
+import { GatewayElectronConfiguration } from "@bentley/imodeljs-common/lib/gateway/GatewayElectronProtocol";
 import { TestGateway } from "../common/TestGateway";
 
 export class TestbedConfig {

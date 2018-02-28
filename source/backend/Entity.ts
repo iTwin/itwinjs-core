@@ -3,12 +3,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
-import { EntityProps } from "../common/EntityProps";
+import { EntityProps } from "@bentley/imodeljs-common/lib/EntityProps";
 import { ClassRegistry } from "./ClassRegistry";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 import { DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { RelatedElement } from "../common/ElementProps";
+import { RelatedElement } from "@bentley/imodeljs-common/lib/ElementProps";
 
 /** The primitive types of an Entity property. */
 export const enum PrimitiveTypeCode {

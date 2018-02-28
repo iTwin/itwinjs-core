@@ -3,14 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { ModelSelectorState } from "../../frontend/ModelSelectorState";
-import { IModelConnection } from "../../frontend/IModelConnection";
+import { ModelSelectorState } from "@bentley/imodeljs-frontend/lib/ModelSelectorState";
+import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnection";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { Code } from "../../common/Code";
-import { DrawingModelState, SheetModelState, SpatialModelState } from "../../frontend/ModelState";
-import { ModelSelectorProps } from "../../common/ViewProps";
+import { Code } from "@bentley/imodeljs-common/lib/Code";
+import { DrawingModelState, SheetModelState, SpatialModelState } from "@bentley/imodeljs-frontend/lib/ModelState";
+import { ModelSelectorProps } from "@bentley/imodeljs-common/lib/ViewProps";
 
-const iModelLocation = path.join(__dirname, "../../../../backend/lib/backend/test/assets/CompatibilityTestSeed.bim");
+const iModelLocation = path.join(__dirname, "../../../backend/lib/test/assets/CompatibilityTestSeed.bim");
 
 describe("ModelState", () => {
   let imodel: IModelConnection;

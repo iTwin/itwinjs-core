@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { DeploymentEnv, AccessToken } from "@bentley/imodeljs-clients";
+import { DeploymentEnv } from "@bentley/imodeljs-clients";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
-import { BentleyStatus, IModelError } from "../common/IModelError";
+import { BentleyStatus, IModelError } from "@bentley/imodeljs-common/lib/IModelError";
 import * as path from "path";
 import { KnownLocations } from "./KnownLocations";
 
@@ -16,13 +16,12 @@ export class IModelHostConfiguration {
 
   /** The path where the cache of briefcases are stored. */
   private _briefcaseCacheDir: string = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/iModels/"));
-  public get briefcaseCacheDir(): string { return this._briefcaseCacheDir; }
-  public set briefcaseCacheDir(cacheDir: string) { this._briefcaseCacheDir = path.normalize(cacheDir.replace(/\/?$/, path.sep)); }
-
-  /** Method that returns a valid access token for the service user. If defined, this is used for all Connect and iModelHub operations
-   * instead of the one passed in from the front end.
-   */
-  public getServiceUserAccessToken: () => AccessToken | undefined = () => undefined;
+  public get briefcaseCacheDir(): string {
+    return this._briefcaseCacheDir;
+  }
+  public set briefcaseCacheDir(cacheDir: string) {
+    this._briefcaseCacheDir = path.normalize(cacheDir.replace(/\/?$/, path.sep));
+  }
 }
 
 export class IModelHost {

@@ -6,17 +6,17 @@ import { Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/li
 import { Range3d } from "@bentley/geometry-core/lib/Range";
 import { RotMatrix } from "@bentley/geometry-core/lib/Transform";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { SpatialViewState, ViewStatus, StandardView, StandardViewId, MarginPercent } from "../../frontend/ViewState";
+import { SpatialViewState, ViewStatus, StandardView, StandardViewId, MarginPercent } from "@bentley/imodeljs-frontend/lib/ViewState";
 import * as path from "path";
-import { AuxCoordSystemSpatialState } from "../../frontend/AuxCoordSys";
-import { CategorySelectorState } from "../../frontend/CategorySelectorState";
+import { AuxCoordSystemSpatialState } from "@bentley/imodeljs-frontend/lib/AuxCoordSys";
+import { CategorySelectorState } from "@bentley/imodeljs-frontend/lib/CategorySelectorState";
 import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
-import { ModelSelectorState } from "../../frontend/ModelSelectorState";
-import { IModelConnection } from "../../frontend/IModelConnection";
-import { DisplayStyle3dState } from "../../frontend/DisplayStyleState";
-import { SpatialViewDefinitionProps } from "../../common/ViewProps";
+import { ModelSelectorState } from "@bentley/imodeljs-frontend/lib/ModelSelectorState";
+import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnection";
+import { DisplayStyle3dState } from "@bentley/imodeljs-frontend/lib/DisplayStyleState";
+import { SpatialViewDefinitionProps } from "@bentley/imodeljs-common/lib/ViewProps";
 
-const iModelLocation = path.join(__dirname, "../../../../backend/lib/backend/test/assets/test.bim");
+const iModelLocation = path.join(__dirname, "../../../backend/lib/test/assets/test.bim");
 
 describe("ViewState", () => {
   let imodel: IModelConnection;
