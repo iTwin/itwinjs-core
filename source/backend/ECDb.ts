@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { IModelError, IModelStatus } from "../common/IModelError";
+import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
 import { AddonECDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { AddonRegistry } from "./AddonRegistry";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
@@ -56,9 +56,7 @@ export class ECDb implements IDisposable {
   }
 
   /** Returns true if the ECDb is open */
-  public isOpen(): boolean {
-    return this.nativeDb.isOpen();
-  }
+  public isOpen(): boolean { return this.nativeDb.isOpen(); }
 
   /** Close the Db after saving any uncommitted changes.
    * @returns Promise that resolves to an object that contains an error property if the operation failed.

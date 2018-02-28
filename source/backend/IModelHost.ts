@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { DeploymentEnv } from "@bentley/imodeljs-clients";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
-import { BentleyStatus, IModelError } from "../common/IModelError";
+import { BentleyStatus, IModelError } from "@bentley/imodeljs-common/lib/IModelError";
 import * as path from "path";
 import { KnownLocations } from "./KnownLocations";
 

@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
-import { EntityProps } from "../common/EntityProps";
+import { EntityProps } from "@bentley/imodeljs-common/lib/EntityProps";
 import { Id64, Id64Props } from "@bentley/bentleyjs-core/lib/Id";
-import { IModelError, IModelStatus } from "../common/IModelError";
+import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { DbOpcode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -201,7 +201,6 @@ export class IModelDbLinkTableRelationships {
           throw new IModelError(IModelStatus.NotFound);
         return stmt.getRow() as LinkTableRelationshipProps;
       });
-
     }
 
     return this._iModel.withPreparedStatement("SELECT * FROM " + relClassSqlName + " WHERE SourceECInstanceId=? AND TargetECInstanceId=?", (stmt: ECSqlStatement) => {
@@ -223,5 +222,4 @@ export class IModelDbLinkTableRelationships {
       props.targetClassName = props.targetClassName.replace(".", ":");
     return this._iModel.constructEntity(props) as LinkTableRelationship;
   }
-
 }

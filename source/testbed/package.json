@@ -4,10 +4,10 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "tsc && npm run copy:frontendpublic  && npm run copy:testpublic",
+    "build": "tsc 1>&2 && npm run copy:frontendpublic  && npm run copy:testpublic",
     "clean": "rimraf lib backend/lib frontend/lib package-deps.json",
-    "copy:frontendpublic": "cpx ../frontend/public/**/* ./lib/testbed/backend/public",
-    "copy:testpublic": "cpx ./public/**/* ./lib/testbed/backend/public"
+    "copy:frontendpublic": "cpx ../frontend/public/**/* ./lib/backend/public",
+    "copy:testpublic": "cpx ./public/**/* ./lib/backend/public"
   },
   "repository": {},
   "//dependencies": [
@@ -16,8 +16,11 @@
   "dependencies": {
     "@bentley/bentleyjs-core": "^7.0.0",
     "@bentley/geometry-core": "^4.3.1",
+    "@bentley/imodeljs-backend": "^0.58.0",
     "@bentley/imodeljs-clients": "^3.0.3",
+    "@bentley/imodeljs-common": "^0.58.0",
     "@bentley/imodeljs-electronaddon": "~10.0.0",
+    "@bentley/imodeljs-frontend": "^0.58.0",
     "@bentley/imodeljs-nodeaddonapi": "~10.0.0",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",

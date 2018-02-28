@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { LinePixels } from "../../common/Render";
-import { ColorDef } from "../../common/ColorDef";
+import { LinePixels } from "@bentley/imodeljs-common/lib/Render";
+import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
 import { Id64, Id64Set } from "@bentley/bentleyjs-core/lib/Id";
 import { Cloneable } from "./Utility";
 

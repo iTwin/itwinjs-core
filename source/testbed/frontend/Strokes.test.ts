@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { StrokesPointList, StrokesPointLists } from "../../frontend/render/primitives/Strokes";
+import { StrokesPointList, StrokesPointLists } from "@bentley/imodeljs-frontend/lib/render/primitives/Strokes";
 
 describe("StrokesPointList", () => {
   it("StrokesPointList works as expected", () => {

@@ -2,9 +2,9 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ColorMap } from "../../frontend/render/primitives/ColorMap";
-import { ColorIndex } from "../../frontend/render/webgl/FeatureIndex";
-import { ColorDef } from "../../common/ColorDef";
+import { ColorMap } from "@bentley/imodeljs-frontend/lib/render/primitives/ColorMap";
+import { ColorIndex } from "@bentley/imodeljs-frontend/lib/render/webgl/FeatureIndex";
+import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
 
 describe("ColorMap", () => {
   it("create a new ColorMap", () => {

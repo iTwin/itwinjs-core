@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { ColorIndex } from "../webgl/FeatureIndex";
-import { ColorDef } from "../../../common/ColorDef";
+import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
 
 export class ColorMap {
   public map: Map<number, number> = new Map<number, number>();

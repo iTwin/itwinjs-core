@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { EntityProps } from "../common/EntityProps";
-import { IModelError, IModelStatus } from "../common/IModelError";
+import { EntityProps } from "@bentley/imodeljs-common/lib/EntityProps";
+import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
@@ -38,7 +38,6 @@ export class ClassRegistry {
       if (!entityClass)
         throw this.makeClassNotFoundError(props.classFullName);
     }
-
     return new entityClass(props, iModel);
   }
 

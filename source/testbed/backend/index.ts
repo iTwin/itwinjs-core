@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import * as express from "express";
 import * as bodyParser from "body-parser";
-import { IModelDb } from "../../backend/IModelDb";
-import { AddonRegistry } from "../../backend/AddonRegistry";
-import { IModelHost } from "../../backend/IModelHost";
+import { IModelDb } from "@bentley/imodeljs-backend/lib/IModelDb";
+import { AddonRegistry } from "@bentley/imodeljs-backend/lib/AddonRegistry";
+import { IModelHost } from "@bentley/imodeljs-backend/lib/IModelHost";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
 import { TestGatewayImpl } from "./TestGatewayImpl";
 

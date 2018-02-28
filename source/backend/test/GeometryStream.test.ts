@@ -6,7 +6,7 @@ import { SolidPrimitive } from "@bentley/geometry-core/lib/solid/SolidPrimitive"
 import { Path, ParityRegion } from "@bentley/geometry-core/lib/curve/CurveChain";
 import { BSplineSurface3d } from "@bentley/geometry-core/lib/bspline/BSplineSurface";
 import { IndexedPolyface } from "@bentley/geometry-core/lib/polyface/Polyface";
-import { GeometricPrimitive, GeometryType } from "../../common/geometry/Primitives";
+import { GeometricPrimitive, GeometryType } from "@bentley/imodeljs-common/lib/geometry/Primitives";
 import { Point2d, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { AngleSweep } from "@bentley/geometry-core/lib/Geometry";
 import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
@@ -16,13 +16,13 @@ import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompar
 import { PolyfaceBuilder } from "@bentley/geometry-core/lib/polyface/PolyfaceBuilder";
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelDb } from "../IModelDb";
-import { GSReader, GSWriter, GSCollection, GeometryBuilder, GeometryStream, OpCode } from "../../common/geometry/GeometryStream";
-import { GeometryParams } from "../../common/geometry/GeometryProps";
+import { GSReader, GSWriter, GSCollection, GeometryBuilder, GeometryStream, OpCode } from "@bentley/imodeljs-common/lib/geometry/GeometryStream";
+import { GeometryParams } from "@bentley/imodeljs-common/lib/geometry/GeometryProps";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Element } from "../Element";
-import { Code } from "../../common/Code";
-import { Placement3d, ElementAlignedBox3d } from "../../common/geometry/Primitives";
-import { GeometricElement3dProps } from "../../common/ElementProps";
+import { Code } from "@bentley/imodeljs-common/lib/Code";
+import { Placement3d, ElementAlignedBox3d } from "@bentley/imodeljs-common/lib/geometry/Primitives";
+import { GeometricElement3dProps } from "@bentley/imodeljs-common/lib/ElementProps";
 
 import * as path from "path";
 import { KnownTestLocations } from "./KnownTestLocations";

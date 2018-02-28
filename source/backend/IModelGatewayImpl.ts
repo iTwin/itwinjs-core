@@ -3,16 +3,16 @@
  *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { EntityQueryParams } from "../common/EntityProps";
-import { Gateway } from "../common/Gateway";
-import { IModelToken, IModel } from "../common/IModel";
-import { IModelError, IModelStatus } from "../common/IModelError";
-import { IModelVersion } from "../common/IModelVersion";
+import { EntityQueryParams } from "@bentley/imodeljs-common/lib/EntityProps";
+import { Gateway } from "@bentley/imodeljs-common/lib/Gateway";
+import { IModelToken, IModel } from "@bentley/imodeljs-common/lib/IModel";
+import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
+import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
-import { EntityMetaData } from "../backend/Entity";
-import { IModelDb } from "../backend/IModelDb";
-import { IModelGateway } from "../gateway/IModelGateway";
-import { AxisAlignedBox3d } from "../common/geometry/Primitives";
+import { EntityMetaData } from "./Entity";
+import { IModelDb } from "./IModelDb";
+import { IModelGateway } from "@bentley/imodeljs-common/lib/gateway/IModelGateway";
+import { AxisAlignedBox3d } from "@bentley/imodeljs-common/lib/geometry/Primitives";
 import { Id64Set } from "@bentley/bentleyjs-core/lib/Id";
 
 const loggingCategory = "imodeljs-backend.IModelGatewayImpl";

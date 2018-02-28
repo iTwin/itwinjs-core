@@ -7,14 +7,13 @@ import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
-import { BriefcaseStatus, IModelError } from "../common/IModelError";
-import { IModelVersion } from "../common/IModelVersion";
-import { IModelToken } from "../common/IModel";
+import { BriefcaseStatus, IModelError } from "@bentley/imodeljs-common/lib/IModelError";
+import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
+import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
 import { AddonRegistry } from "./AddonRegistry";
 import { AddonDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { IModelDb } from "./IModelDb";
 import { iModelHost } from "./IModelHost";
-
 import { IModelJsFs } from "./IModelJsFs";
 import * as path from "path";
 import * as fs from "fs";
@@ -45,7 +44,7 @@ export const enum KeepBriefcase {
   Yes = 1,
 }
 
-/** A token that represents a ChangeSet  */
+/** A token that represents a ChangeSet */
 class ChangeSetToken {
   constructor(public id: string, public parentId: string, public index: number, public pathname: string, public containsSchemaChanges: ContainsSchemaChanges) { }
 }
@@ -56,25 +55,25 @@ export class BriefcaseEntry {
   public iModelId: string;
 
   /** Id of the last change set that was applied to the BIM.
-   * * Set to an empty string if it's the initial version, or a standalone briefcase
+   * Set to an empty string if it's the initial version, or a standalone briefcase
    */
   public changeSetId: string;
 
   /** Index of the last change set that was applied to the BI.
-   * * Only specified if the briefcase was acquired from the Hub.
-   * * Set to 0 if it's the initial version.
+   * Only specified if the briefcase was acquired from the Hub.
+   * Set to 0 if it's the initial version.
    */
   public changeSetIndex?: number;
 
   /** Id of the last change set that was applied to the BIM after it was reversed.
-   * * Undefined if no change sets have been reversed.
-   * * Set to empty string if reversed to the first version.
+   * Undefined if no change sets have been reversed.
+   * Set to empty string if reversed to the first version.
    */
   public reversedChangeSetId?: string;
 
   /** Index of the last change set that was applied to the BIM after it was reversed.
-   * * Undefined if no change sets have been reversed
-   * * Set to 0 if the briefcase has been reversed to the first version
+   * Undefined if no change sets have been reversed
+   * Set to 0 if the briefcase has been reversed to the first version
    */
   public reversedChangeSetIndex?: number;
 
@@ -120,7 +119,6 @@ export class BriefcaseEntry {
     assert(this.pathname.startsWith(cacheDir));
     return this.pathname.substr(cacheDir.length);
   }
-
 }
 
 /** In-memory cache of briefcases */
@@ -230,7 +228,7 @@ export class BriefcaseManager {
       return entry.iModelId === iModelId && entry.openMode === OpenMode.Readonly;
     });
 
-    let pathname: string|undefined;
+    let pathname: string | undefined;
     for (let ii = briefcases.length; !pathname || IModelJsFs.existsSync(pathname); ii++) {
       pathname = path.join(BriefcaseManager.getIModelPath(iModelId), "readOnly", ii.toString(), iModelName.concat(".bim"));
     }
@@ -661,7 +659,7 @@ export class BriefcaseManager {
 
   /** Open a standalone iModel from the local disk */
   public static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean): BriefcaseEntry {
-    if (BriefcaseManager.standaloneCache.findBriefcaseByToken({ pathKey: pathname }))
+    if (BriefcaseManager.standaloneCache.findBriefcaseByToken(new IModelToken(pathname)))
       throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open ${pathname} again - it's already been opened once`);
 
     const nativeDb: AddonDgnDb = new (AddonRegistry.getAddon()).AddonDgnDb();
@@ -695,8 +693,8 @@ export class BriefcaseManager {
 
   /** Create a standalone iModel from the local disk */
   public static createStandalone(pathname: string, rootSubjectName: string, rootSubjectDescription?: string): BriefcaseEntry {
-    if (BriefcaseManager.standaloneCache.findBriefcaseByToken({ pathKey: pathname }))
-    throw new IModelError(DbResult.BE_SQLITE_ERROR_FileExists, `Cannot create file ${pathname} again - it already exists`);
+    if (BriefcaseManager.standaloneCache.findBriefcaseByToken(new IModelToken(pathname)))
+      throw new IModelError(DbResult.BE_SQLITE_ERROR_FileExists, `Cannot create file ${pathname} again - it already exists`);
 
     const nativeDb: AddonDgnDb = new (AddonRegistry.getAddon()).AddonDgnDb();
 
@@ -773,8 +771,8 @@ export class BriefcaseManager {
   /** Find the existing briefcase */
   public static findBriefcaseByToken(iModelToken: IModelToken): BriefcaseEntry | undefined {
     return iModelToken.isStandalone ?
-        BriefcaseManager.standaloneCache.findBriefcaseByToken(iModelToken) :
-        BriefcaseManager.cache.findBriefcaseByToken(iModelToken);
+      BriefcaseManager.standaloneCache.findBriefcaseByToken(iModelToken) :
+      BriefcaseManager.cache.findBriefcaseByToken(iModelToken);
   }
 
   private static buildChangeSetTokens(changeSets: ChangeSet[], changeSetsPath: string): ChangeSetToken[] {

@@ -6,7 +6,7 @@ import { CurvePrimitive } from "@bentley/geometry-core/lib/curve/CurvePrimitive"
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Viewport } from "./Viewport";
 import { DecorateContext } from "./ViewContext";
-import { RenderMode } from "../common/Render";
+import { RenderMode } from "@bentley/imodeljs-common/lib/Render";
 import { Geometry } from "@bentley/geometry-core/lib/Geometry";
 import { Point4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { Sprite } from "./Sprites";
@@ -348,7 +348,7 @@ export class HitList {
   }
 
   private static s_tooCloseTolerance = 1.0e-10;
-  private static doZCompareOfSurfaceAndEdge(oHitSurf: HitDetail, oHitEdge: HitDetail): number {
+  private static doZCompareOfSurfaceAndEdge(oHitSurf: HitDetail, oHitEdge: HitDetail): -1 | 1 | 0 {
     const origin = oHitSurf.geomDetail.closePoint;
     const normal = oHitSurf.geomDetail.normal;
     const homogeneousPlane = Point4d.createFromPointAndWeight(normal, -normal.dotProduct(origin));
@@ -361,7 +361,7 @@ export class HitList {
     return (Math.abs(a1) < tol) ? 0 : ((a0 * a1 > 0) ? 1 : -1);
   }
 
-  private static doZCompare(oHit1: HitDetail, oHit2: HitDetail): number {
+  private static doZCompare(oHit1: HitDetail, oHit2: HitDetail): -1 | 1 | 0 {
     const z1 = oHit1.geomDetail.viewZ;
     const z2 = oHit2.geomDetail.viewZ;
 
@@ -405,7 +405,7 @@ export class HitList {
     if (0.0 !== mag2) {
       // 2nd is surface hit...project 1st hit into plane defined by surface normal...
       const compareResult = (hiddenEdgesVisible && !isObscurableWireHit1) ? 1 : HitList.doZCompareOfSurfaceAndEdge(oHit2, oHit1);
-      return (0 === compareResult ? 0 : -compareResult);
+      return 0 === compareResult ? 0 : (compareResult === 1) ? -1 : 1;
     }
     // else {
     //   // NOTE: I don't believe this case currently exists...silhouette hits are only created for cones/spheres and always have a curve primitive...
@@ -429,7 +429,7 @@ export class HitList {
   /**
    * compare two hits for insertion into list. Hits are compared by calling getLocatePriority() and then getLocateDistance() on each.
    */
-  public compare(oHit1: HitDetail | undefined, oHit2: HitDetail | undefined, comparePriority: boolean, compareZ: boolean): number {
+  public compare(oHit1: HitDetail | undefined, oHit2: HitDetail | undefined, comparePriority: boolean, compareZ: boolean): -1 | 1 | 0 {
     if (!oHit1 || !oHit2)
       return 0;
 
