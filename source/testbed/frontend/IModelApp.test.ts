@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelApp, iModelApp } from "../../frontend/IModelApp"; // must be first import!
-import { Tool } from "../../frontend/tools/Tool";
+import { IModelApp, iModelApp } from "@bentley/imodeljs-frontend/lib/IModelApp"; // must be first import!
+import { Tool } from "@bentley/imodeljs-frontend/lib/tools/Tool";
 import { assert } from "chai";
-import { AccuDraw } from "../../frontend/AccuDraw";
-import { IdleTool } from "../../frontend/tools/IdleTool";
-import { I18NNamespace } from "../../frontend/Localization";
-import { RotateTool, PanTool } from "../../frontend/tools/ViewTool";
-import { SelectionTool } from "../../frontend/tools/SelectTool";
+import { AccuDraw } from "@bentley/imodeljs-frontend/lib/AccuDraw";
+import { IdleTool } from "@bentley/imodeljs-frontend/lib/tools/IdleTool";
+import { I18NNamespace } from "@bentley/imodeljs-frontend/lib/Localization";
+import { RotateTool, PanTool } from "@bentley/imodeljs-frontend/lib/tools/ViewTool";
+import { SelectionTool } from "@bentley/imodeljs-frontend/lib/tools/SelectTool";
 
 /** class to simulate overriding the default AccuDraw */
 class TestAccuDraw extends AccuDraw { }

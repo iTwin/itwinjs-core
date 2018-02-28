@@ -7,7 +7,7 @@ import * as os from "os";
 export class KnownLocations {
 
   /** The imodeljs mobile info object, if this is running in the imodeljs mobile platform. */
-  public static get imodeljsMobile(): any | undefined {
+  public static get imodeljsMobile(): any {
     try {
       return (self as any).imodeljsMobile;
     } catch (err) {

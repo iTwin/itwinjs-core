@@ -4,9 +4,9 @@
 import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
 import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { Transform } from "@bentley/geometry-core/lib/Transform";
-import { Code, CodeSpecNames } from "../common/Code";
-import { Placement3d, Placement2d, AxisAlignedBox3d } from "../common/geometry/Primitives";
-import { GeometryStream, GeometryStreamBuilder } from "../common/geometry/GeometryStream";
+import { Code, CodeSpecNames } from "@bentley/imodeljs-common/lib/Code";
+import { Placement3d, Placement2d, AxisAlignedBox3d } from "@bentley/imodeljs-common/lib/geometry/Primitives";
+import { GeometryStream, GeometryStreamBuilder } from "@bentley/imodeljs-common/lib/geometry/GeometryStream";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -14,8 +14,8 @@ import {
   ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
   ViewAttachmentProps, SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,
   InformationPartitionElementProps, LightLocationProps, DefinitionElementProps,
-} from "../common/ElementProps";
-import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps } from "../common/ViewProps";
+} from "@bentley/imodeljs-common/lib/ElementProps";
+import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps } from "@bentley/imodeljs-common/lib/ViewProps";
 
 /**
  * Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.
@@ -23,13 +23,24 @@ import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps } fro
  * other Elements that represent larger scale real world entities. Using this recursive modeling strategy,
  * Elements can represent entities at any scale. Elements can represent physical things or abstract concepts
  * or simply be information records.
+ *
+ * Every Element has a 64-bit id (inherited from Entity) that uniquely identifies it within an iModel. Every Element also
+ * has a "code" that identifies it's meaning in the real world. Additionally, Elements may have a "federationGuid"
+ * to hold a GUID, if the element was assigned that GUID by some other federated database. The iModel database enforces
+ * uniqueness of id, code, and federationGuid.
  */
 export abstract class Element extends Entity implements ElementProps {
+  /** the ModelId of the Model containing this element */
   public model: Id64;
+  /** the code for this element */
   public code: Code;
+  /** the parent element, if present, of this element. */
   public parent?: RelatedElement;
+  /** a GUID assigned to this element by some other federated database */
   public federationGuid?: Guid;
+  /** a user-assigned label for this element. */
   public userLabel?: string;
+  /** optional json properties of this element. */
   public jsonProperties: any;
 
   /** constructor for Element. */
@@ -80,9 +91,7 @@ export abstract class Element extends Entity implements ElementProps {
    * Add a request for locks, code reservations, and anything else that would be needed in order to carry out the specified operation.
    * @param opcode The operation that will be performed on the element.
    */
-  public buildConcurrencyControlRequest(opcode: DbOpcode): void {
-    this.iModel.concurrencyControl.buildRequestForElement(this, opcode);
-  }
+  public buildConcurrencyControlRequest(opcode: DbOpcode) { this.iModel.concurrencyControl.buildRequestForElement(this, opcode); }
 }
 
 /**

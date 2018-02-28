@@ -1,10 +1,10 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "0.53.3",
+  "version": "0.58.0",
   "description": "iModelJs frontend components",
   "license": "UNLICENSED",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc 1>&2",
     "clean": "rimraf lib package-deps.json",
     "test": "echo \"Error: run tests from the '../test' directory.\" && exit 1"
   },
@@ -32,7 +32,8 @@
   ],
   "dependencies": {
     "@bentley/geometry-core": "^4.3.1",
-    "@bentley/imodeljs-clients": "^3.0.2",
+    "@bentley/imodeljs-clients": "^3.0.3",
+    "@bentley/imodeljs-common": "^0.58.0",
     "fuse.js": "^3.2.0",
     "i18next": "^10.2.2",
     "i18next-browser-languagedetector": "^2.1.0",
@@ -40,6 +41,7 @@
     "js-base64": "^2.4.0"
   },
   "devDependencies": {
-    "rimraf": "^2.6.2"
+    "rimraf": "^2.6.2",
+    "typescript": "~2.6.2"
   }
 }

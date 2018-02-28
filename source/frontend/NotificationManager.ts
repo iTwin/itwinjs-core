@@ -139,7 +139,7 @@ export class NotificationManager {
   /** Output a prompt, given an i18n key. */
   public outputPromptByKey(key: string) { this.outputPrompt(iModelApp.i18n.translate(key)); }
 
-  /** Output a prompt to the user. A 'prompt' is intended to indicate an action the user should take to proceed. */
+  /** Output a prompt to the user. A 'prompt' indicates an action the user should take to proceed. */
   public outputPrompt(_prompt: string) { }
 
   /** Output a message and/or alert to the user. */

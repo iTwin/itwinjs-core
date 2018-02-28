@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Matrix3, Matrix4, fromNormalizedCrossProduct, normalizedDifference } from "../../frontend/render/Matrix";
+import { Matrix3, Matrix4, fromNormalizedCrossProduct, normalizedDifference } from "@bentley/imodeljs-frontend/lib/render/Matrix";
 import { Vector3d, Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { RotMatrix, Transform} from "@bentley/geometry-core/lib/Transform";
 import { Matrix4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";

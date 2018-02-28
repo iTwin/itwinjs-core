@@ -29,12 +29,15 @@ export class Appearance {
   public dontPlot: boolean = false;
   public dontSnap: boolean = false;
   public dontLocate: boolean = false;
-  public styleId: Id64 = new Id64();
-  public materialId: Id64 = new Id64();
+  public styleId: Id64;
+  public materialId: Id64;
 
   constructor(props?: AppearanceProps) {
-    if (!props)
+    if (!props) {
+      this.styleId = new Id64();
+      this.materialId = new Id64();
       return;
+    }
 
     this.invisible = JsonUtils.asBool(props.invisible);
     this.dontSnap = JsonUtils.asBool(props.dontSnap);
@@ -42,11 +45,9 @@ export class Appearance {
     this.dontPlot = JsonUtils.asBool(props.dontPlot);
     this.color = ColorDef.fromJSON(props.color);
     this.weight = JsonUtils.asInt(props.weight);
-    if (props.style)
-      this.styleId = Id64.fromJSON(props.style);
+    this.styleId = Id64.fromJSON(props.style);
     this.priority = JsonUtils.asInt(props.priority);
-    if (props.material)
-      this.materialId = Id64.fromJSON(props.material);
+    this.materialId = Id64.fromJSON(props.material);
     this.transparency = JsonUtils.asInt(props.transp);
   }
 
@@ -81,7 +82,7 @@ export class Appearance {
 
 /** the SubCategory appearance overrides for a view */
 export class SubCategoryOverride {
-  private _value: Appearance;
+  private readonly _value = new Appearance();
   private _invisible?: boolean;
   private _color?: boolean;
   private _weight?: boolean;
@@ -90,7 +91,6 @@ export class SubCategoryOverride {
   private _material?: boolean;
   private _transp?: boolean;
 
-  constructor() { this._value = new Appearance(); }
   public setInvisible(val: boolean): void { this._invisible = true; this._value.invisible = val; }
   public setColor(val: ColorDef): void { this._color = true; this._value.color = val; }
   public setWeight(val: number): void { this._weight = true; this._value.weight = val; }

@@ -5,8 +5,8 @@ import * as path from "path";
 import { expect, assert } from "chai";
 import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState } from "@bentley/imodeljs-clients";
-import { Code } from "../../common/Code";
-import { IModelVersion } from "../../common/IModelVersion";
+import { Code } from "@bentley/imodeljs-common/lib/Code";
+import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
 import { KeepBriefcase } from "../BriefcaseManager";
 import { IModelDb, ConcurrencyControl } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
@@ -14,12 +14,13 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Element } from "../Element";
 import { DictionaryModel } from "../Model";
 import { SpatialCategory } from "../Category";
-import { Appearance } from "../../common/SubCategoryAppearance";
-import { ColorDef } from "../../common/ColorDef";
-import { IModel } from "../../common/IModel";
+import { Appearance } from "@bentley/imodeljs-common/lib/SubCategoryAppearance";
+import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
+import { IModel } from "@bentley/imodeljs-common/lib/IModel";
 import { IModelJsFs } from "../IModelJsFs";
 import { iModelHost } from "../IModelHost";
 import { AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../AutoPush";
+import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
@@ -401,6 +402,10 @@ describe("BriefcaseManager", () => {
       concurrencyControl: {
         request: async (_clientAccessToken: AccessToken) => {},
       },
+      onBeforeClose: new BeEvent<() => void>(),
+      Txns: {
+        hasLocalChanges: () => true,
+      },
     };
     lastPushTimeMillis = 0;
     lastAutoPushEventType = undefined;
@@ -462,11 +467,29 @@ describe("BriefcaseManager", () => {
     // Test auto-push when isIdle returns false
     isIdle = false;
     lastPushTimeMillis = 0;
-    autoPush.autoSchedule = true;
+    autoPush.autoSchedule = true; // start running AutoPush...
     await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
     assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
     assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
     autoPush.cancel();
+    isIdle = true;
+
+    // Test auto-push when Txn.hasLocalChanges returns false
+    iModel.Txns.hasLocalChanges = () => false;
+    lastPushTimeMillis = 0;
+    autoPush.cancel();
+    autoPush.autoSchedule = true; // start running AutoPush...
+    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
+    assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
+    autoPush.cancel();
+
+    // ... now turn it back on
+    iModel.Txns.hasLocalChanges = () => true;
+    autoPush.autoSchedule = true; // start running AutoPush...
+    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    assert.notEqual(lastPushTimeMillis, 0); // AutoPush should have run
+
   });
 
 });
