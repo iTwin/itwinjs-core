@@ -38,7 +38,6 @@ export class ClassRegistry {
       if (!entityClass)
         throw this.makeClassNotFoundError(props.classFullName);
     }
-
     return new entityClass(props, iModel);
   }
 

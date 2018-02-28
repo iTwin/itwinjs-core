@@ -149,14 +149,10 @@ export abstract class Gateway {
   };
 
   /** @internal */
-  public static recordRequest() {
-    Gateway._aggregateLoad.lastRequest = new Date().getTime();
-  }
+  public static recordRequest() { Gateway._aggregateLoad.lastRequest = new Date().getTime(); }
 
   /** @internal */
-  public static recordResponse() {
-    Gateway._aggregateLoad.lastResponse = new Date().getTime();
-  }
+  public static recordResponse() { Gateway._aggregateLoad.lastResponse = new Date().getTime(); }
 }
 
 Gateway.prototype.defaultConfigurationSupplier = () => GatewayDefaultConfiguration;

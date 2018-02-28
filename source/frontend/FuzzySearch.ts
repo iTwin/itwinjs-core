@@ -110,19 +110,13 @@ export interface FuzzySearchResult<T> {
 }
 
 // this function is added to each result to support the FuzzySearchResult interface.
-function getResult(this: any) {
-  return this.item;
-}
+function getResult(this: any) { return this.item; }
 
 // this function is added to each result to support the FuzzySearchResult interface.
-function getMatchedKey(this: any): string {
-  return this.matches[0].key;
-}
+function getMatchedKey(this: any): string { return this.matches[0].key; }
 
 // this function is added to each result to support the FuzzySearchResult interface.
-function getMatchedValue(this: any): string {
-  return this.matches[0].value;
-}
+function getMatchedValue(this: any): string { return this.matches[0].value; }
 
 // this function is added to each result to support the FuzzySearchResult interface.
 function getBoldMask(this: any): boolean[] {
@@ -156,13 +150,9 @@ export class FuzzySearchResults<T> implements Iterable<T> {
       this.results = results;
   }
 
-  public [Symbol.iterator](): any {
-    return new FuzzySearchResultsIterator(this);
-  }
+  public [Symbol.iterator](): any { return new FuzzySearchResultsIterator(this); }
 
-  public get length(): number {
-    return this.results.length;
-  }
+  public get length(): number { return this.results.length; }
 
   public getResult(resultIndex: number): FuzzySearchResult<T> | undefined {
     if ((resultIndex < 0) || (resultIndex > this.results.length))
@@ -178,6 +168,7 @@ class FuzzySearchResultsIterator<T> {
     this.fsr = fsr;
     this.counter = 0;
   }
+
   public next: any = () => {
     return {
       done: this.counter === this.fsr.results.length,

@@ -251,10 +251,7 @@ export class IModelDb extends IModel {
    * Pass an array if the parameters are positional. Pass an object of the values keyed on the parameter name
    * for named parameters.
    * The values in either the array or object must match the respective types of the parameters.
-   * Supported types:
-   * boolean, [[Blob]],  [[DateTime]], [[NavigationBindingValue]], number, [[XY]], [[XYZ]], string
-   * For struct parameters pass an object with key value pairs of struct property name and values of the supported types
-   * For array parameters pass an array of the supported types.
+   * See [[ECSqlStatement.bindvValues]] for details.
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
    * See [[ECSqlStatement.getRow]] for details about the format of the returned rows.
    * @throws [[IModelError]] If the statement is invalid
@@ -279,7 +276,7 @@ export class IModelDb extends IModel {
    * @returns an Id64Set with results of query
    */
   public queryEntityIds(params: EntityQueryParams): Id64Set {
-    let sql = "SELECT HexStr(ECInstanceId) AS id FROM ";
+    let sql = "SELECT ECInstanceId FROM ";
     if (params.only)
       sql += "ONLY ";
     sql += params.from;
@@ -577,14 +574,10 @@ export class ConcurrencyControl {
   }
 
   /** Create an empty Request */
-  public static createRequest(): ConcurrencyControl.Request {
-    return new (AddonRegistry.getAddon()).AddonBriefcaseManagerResourcesRequest();
-  }
+  public static createRequest(): ConcurrencyControl.Request { return new (AddonRegistry.getAddon()).AddonBriefcaseManagerResourcesRequest(); }
 
   /** Convert the request to any */
-  public static convertRequestToAny(req: ConcurrencyControl.Request): any {
-    return JSON.parse((req as AddonBriefcaseManagerResourcesRequest).toJSON());
-  }
+  public static convertRequestToAny(req: ConcurrencyControl.Request): any { return JSON.parse((req as AddonBriefcaseManagerResourcesRequest).toJSON()); }
 
   /** @hidden [[Model.buildConcurrencyControlRequest]] */
   public buildRequestForModel(model: Model, opcode: DbOpcode): void {
@@ -843,9 +836,7 @@ export class ConcurrencyControl {
   }
 
   /** Abandon any pending requests for locks or codes. */
-  public abandonRequest() {
-    this.extractPendingRequest();
-  }
+  public abandonRequest() { this.extractPendingRequest(); }
 
   private static anyFound(a1: string[], a2: string[]) {
     for (const a of a1) {
@@ -1285,7 +1276,8 @@ export class IModelDbElements {
       stmt.bindString(3, code.value!);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
         return undefined;
-      return stmt.getRow().id;
+
+      return new Id64(stmt.getRow().id);
     });
   }
 
@@ -1476,19 +1468,13 @@ export class TxnManager {
   public isTxnIdValid(txnId: TxnManager.TxnId): boolean { return this._iModel.briefcaseEntry!.nativeDb!.txnManagerIsTxnIdValid(txnId); }
 
   /** Query if there are any pending Txns in this IModelDb that are waiting to be pushed.  */
-  public hasPendingTxns(): boolean {
-    return this.isTxnIdValid(this.queryFirstTxnId());
-  }
+  public hasPendingTxns(): boolean { return this.isTxnIdValid(this.queryFirstTxnId()); }
 
   /** Query if there are any changes in memory that have yet to be saved to the IModelDb. */
-  public hasUnsavedChanges(): boolean {
-    return false; // *** TODO: return this._iModel.briefcaseEntry!.nativeDb!.txnManagerHasUnsavedChanges
-  }
+  public hasUnsavedChanges() { return false; } // *** TODO: return this._iModel.briefcaseEntry!.nativeDb!.txnManagerHasUnsavedChanges
 
   /** Query if there are un-saved or un-pushed local changes. */
-  public hasLocalChanges(): boolean {
-    return this.hasUnsavedChanges() || this.hasPendingTxns();
-  }
+  public hasLocalChanges(): boolean { return this.hasUnsavedChanges() || this.hasPendingTxns(); }
 
   /** Make a description of the changeset by combining all local txn comments. */
   public describeChangeSet(endTxnId?: TxnManager.TxnId): string {

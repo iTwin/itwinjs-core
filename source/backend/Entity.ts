@@ -42,7 +42,7 @@ export class Entity implements EntityProps {
   /** The [[IModelDb]] that contains this Entity */
   public iModel: IModelDb;
 
-  /** The Id of this Entity. Valid only if persistent. */
+  /** The Id of this Entity. May be invalid if the Entity has not yet been saved in the database. */
   public id: Id64;
 
   constructor(props: EntityProps, iModel: IModelDb) {

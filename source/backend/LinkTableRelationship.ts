@@ -201,7 +201,6 @@ export class IModelDbLinkTableRelationships {
           throw new IModelError(IModelStatus.NotFound);
         return stmt.getRow() as LinkTableRelationshipProps;
       });
-
     }
 
     return this._iModel.withPreparedStatement("SELECT * FROM " + relClassSqlName + " WHERE SourceECInstanceId=? AND TargetECInstanceId=?", (stmt: ECSqlStatement) => {
@@ -223,5 +222,4 @@ export class IModelDbLinkTableRelationships {
       props.targetClassName = props.targetClassName.replace(".", ":");
     return this._iModel.constructEntity(props) as LinkTableRelationship;
   }
-
 }

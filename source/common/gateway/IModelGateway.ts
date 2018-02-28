@@ -9,7 +9,6 @@ import { IModelVersion } from "../IModelVersion";
 import { Gateway } from "../Gateway";
 import { AxisAlignedBox3d } from "../geometry/Primitives";
 import { Id64, Id64Set } from "@bentley/bentleyjs-core/lib/Id";
-import { DateTime, Blob, NavigationValue, NavigationBindingValue } from "../ECSqlTypes";
 import { Point2d, Point3d, Vector2d, Vector3d } from "@bentley/geometry-core/lib/PointVector";
 import { Code } from "../Code";
 
@@ -26,10 +25,6 @@ export abstract class IModelGateway extends Gateway {
     IModelVersion,
     IModelToken,
     Id64,
-    DateTime,
-    Blob,
-    NavigationValue,
-    NavigationBindingValue,
     Point2d,
     Point3d,
     Vector2d,
@@ -75,8 +70,6 @@ export abstract class IModelGateway extends Gateway {
    * Pass an array if the parameters are positional. Pass an object of the values keyed on the parameter name
    * for named parameters.
    * The values in either the array or object must match the respective types of the parameters.
-   * Supported types:
-   * boolean, [[Blob]],  [[DateTime]], [[NavigationBindingValue]], number, [[XY]], [[XYZ]], string
    * For struct parameters pass an object with key value pairs of struct property name and values of the supported types
    * For array parameters pass an array of the supported types.
    * @returns All rows as an array or an empty array if nothing was selected

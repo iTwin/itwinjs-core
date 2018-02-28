@@ -10,7 +10,6 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { iModelHost } from "./IModelHost";
 import { IModelDb } from "./IModelDb";
 import { ECDb } from "./ECDb";
-import { DateTime } from "@bentley/imodeljs-common/lib/ECSqlTypes";
 import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
 import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
 import { BriefcaseManager } from "./BriefcaseManager";
@@ -38,7 +37,7 @@ export enum ChangedValueState {
 
 export interface ChangeSummary {
   id: Id64;
-  changeSet: {wsgId: string, parentWsgId: string, pushDate: DateTime, author: string};
+  changeSet: {wsgId: string, parentWsgId: string, pushDate: string, author: string};
 }
 
 export interface InstanceChange {
@@ -166,7 +165,7 @@ export class ChangeSummaryManager {
             userEmail = foundUserEmail.length !== 0 ? foundUserEmail : undefined;
         }
 
-        ChangeSummaryManager.addExtendedInfos(changesFile, changeSummaryId, currentChangeSetId, changeSetInfo.parentId, changeSetInfo.pushDate !== undefined ? new DateTime(changeSetInfo.pushDate!) : undefined, userEmail);
+        ChangeSummaryManager.addExtendedInfos(changesFile, changeSummaryId, currentChangeSetId, changeSetInfo.parentId, changeSetInfo.pushDate, userEmail);
         perfLogger.dispose();
         }
 
@@ -259,7 +258,7 @@ export class ChangeSummaryManager {
       });
   }
 
-  private static addExtendedInfos(changesFile: ECDb, changeSummaryId: Id64, changesetWsgId: string, changesetParentWsgId?: string, changesetPushDate?: DateTime, changeSetAuthor?: string): void {
+  private static addExtendedInfos(changesFile: ECDb, changeSummaryId: Id64, changesetWsgId: string, changesetParentWsgId?: string, changesetPushDate?: string, changeSetAuthor?: string): void {
     changesFile.withPreparedStatement("INSERT INTO imodelchange.ChangeSet(Summary.Id,WsgId,ParentWsgId,PushDate,Author) VALUES(?,?,?,?,?)",
       (stmt) => {
         stmt.bindId(1, changeSummaryId);
@@ -320,11 +319,11 @@ export class ChangeSummaryManager {
           throw new IModelError(DbResult.BE_SQLITE_ERROR, `No InstanceChange found for id ${instanceChangeId.value}.`);
 
         const row = stmt.getRow();
-        const changedInstanceId = row.changedInstanceId;
+        const changedInstanceId = new Id64 (row.changedInstanceId);
         const changedInstanceClassName: string = row.changedInstanceSchemaName + "." + row.changedInstanceClassName;
         const op: ChangeOpCode = row.opCode as ChangeOpCode;
 
-        return { id: instanceChangeId, summaryId: row.summaryId, changedInstance: {id: changedInstanceId, className: changedInstanceClassName},
+        return { id: instanceChangeId, summaryId: new Id64(row.summaryId), changedInstance: {id: changedInstanceId, className: changedInstanceClassName},
                 opCode: op, isIndirect: row.isIndirect, changedProperties: {before: undefined, after: undefined}};
       });
 

@@ -57,20 +57,20 @@ export enum AutoPushEventType {
 /** The signature of an AutoPush event handler. */
 export type AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush) => void;
 
- /** Automatically push local changes to a specified IModel. */
+/** Automatically push local changes to a specified IModel. */
 export class AutoPush {
   private _iModel: IModelDb;
   private _serviceAccountAccessToken: AccessToken;
   private _autoSchedule: boolean;
   private _pushIntervalMillisMin: number;
   private _pushIntervalMillisMax: number;
-  private _endOfPushMillis: number;      // the time the last push finished (in unix millis)
-  private _startOfPushMillis: number;    // the time the last push was started (in unix millis)
+  private _endOfPushMillis: number;      // the time the last push finished (in unix milliseconds)
+  private _startOfPushMillis: number;    // the time the last push was started (in unix milliseconds)
   private _state: AutoPushState;
   private _activityMonitor: AppActivityMonitor;
   private _lastPushError: any;
   private _pendingTimeout: any | undefined;
-  /** Events rasied by AutoPush. See [[AutoPushEventType]] */
+  /** Events raised by AutoPush. See [[AutoPushEventType]] */
   public event: BeEvent<AutoPushEventHandler>;
 
   /** Construct an AutoPushManager.
@@ -111,9 +111,7 @@ export class AutoPush {
   }
 
   /** The autoSchedule property */
-  public get autoSchedule(): boolean {
-    return this._autoSchedule;
-  }
+  public get autoSchedule(): boolean { return this._autoSchedule; }
 
   /** The autoSchedule property */
   public set autoSchedule(v: boolean) {
@@ -123,29 +121,19 @@ export class AutoPush {
   }
 
   /** The IModelDb that this is auto-pushing. */
-  public get iModel(): IModelDb {
-    return this._iModel;
-  }
+  public get iModel(): IModelDb { return this._iModel; }
 
   /** The time that the last push finished in unix milliseconds. Returns 0 if no push has yet been done. */
-  public get endOfLastPushMillis() {
-    return (this._startOfPushMillis <= this._endOfPushMillis) ? this._endOfPushMillis : 0;
-  }
+  public get endOfLastPushMillis() { return (this._startOfPushMillis <= this._endOfPushMillis) ? this._endOfPushMillis : 0; }
 
   /** The length of time in milliseconds that the last push required in order to finish. Returns -1 if no push has yet been done. */
-  public get durationOfLastPushMillis() {
-    return this._endOfPushMillis - this._startOfPushMillis;
-  }
+  public get durationOfLastPushMillis() { return this._endOfPushMillis - this._startOfPushMillis; }
 
   /** Check the current state of this AutoPush. */
-  public get state(): AutoPushState {
-    return this._state;
-  }
+  public get state(): AutoPushState { return this._state; }
 
   /** The last push error, if any.  */
-  public get lastError(): any | undefined {
-    return this._lastPushError;
-  }
+  public get lastError(): any | undefined { return this._lastPushError; }
 
   // Schedules an auto-push, if none is already scheduled.
   public scheduleNextAutoPushIfNecessary() {
@@ -162,9 +150,7 @@ export class AutoPush {
     Logger.logTrace(loggingCategory, "AutoPush - next push in " + (intervalMillis / 1000) + " seconds...");
   }
 
-  public reserveCodes(): Promise<void> {
-    return this._iModel.concurrencyControl.request(this._serviceAccountAccessToken);
-  }
+  public reserveCodes(): Promise<void> { return this._iModel.concurrencyControl.request(this._serviceAccountAccessToken); }
 
   private onPushStart() {
     Logger.logTrace(loggingCategory, "AutoPush - pushing...");
@@ -186,7 +172,7 @@ export class AutoPush {
     this._state = AutoPushState.NotRunning;
     this._pendingTimeout = undefined;
     this._lastPushError = undefined;
-    Logger.logTrace(loggingCategory, "AutoPush - pushed.", () => ({changeSetId: this._iModel.iModelToken.changeSetId}));
+    Logger.logTrace(loggingCategory, "AutoPush - pushed.", () => ({ changeSetId: this._iModel.iModelToken.changeSetId }));
     if (this._autoSchedule)
       this.scheduleNextPush();
     if (this.event)
@@ -197,12 +183,12 @@ export class AutoPush {
     this._state = AutoPushState.NotRunning;
     this._pendingTimeout = undefined;
     this._lastPushError = err;
-    Logger.logInfo(loggingCategory, "AutoPush - push failed",  () => err);
+    Logger.logInfo(loggingCategory, "AutoPush - push failed", () => err);
     if (this._autoSchedule)
       this.scheduleNextPush();
     if (this.event)
       this.event.raiseEvent(AutoPushEventType.PushFailed, this);  // handler can cancel, if it wants to
-    }
+  }
 
   //  Push changes, if there are changes and only if the backend is idle.
   private doAutoPush() {
