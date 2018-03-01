@@ -7,8 +7,6 @@ import * as TypeMoq from "typemoq";
 import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { AccessToken, Briefcase, ChangeSet, IModel as HubIModel, SeedFile, MultiCode, CodeState, IModelHubClient,
   ConnectClient, Project, ECJsonTypeMap, WsgInstance, Response, UserProfile } from "@bentley/imodeljs-clients";
-import { Code } from "@bentley/imodeljs-common/lib/Code";
-import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
 import { KeepBriefcase, BriefcaseManager, BriefcaseEntry } from "../BriefcaseManager";
 import { IModelDb, ConcurrencyControl } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
@@ -16,6 +14,8 @@ import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Element } from "../Element";
 import { DictionaryModel } from "../Model";
 import { SpatialCategory } from "../Category";
+import { Code } from "@bentley/imodeljs-common/lib/Code";
+import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
 import { Appearance } from "@bentley/imodeljs-common/lib/SubCategoryAppearance";
 import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
 import { IModel } from "@bentley/imodeljs-common/lib/IModel";
@@ -64,7 +64,7 @@ describe("BriefcaseManager", () => {
   const testElementCounts = [80, 81, 82];
   let iModelLocalReadonlyPath: string;
   let iModelLocalReadWritePath: string;
-  const assetDir = "./source/backend/test/assets";
+  const assetDir = "./test/assets";
 
   const iModelHubClientMock = TypeMoq.Mock.ofType(IModelHubClient);
   const iModelVersionMock = TypeMoq.Mock.ofType(IModelVersion);
@@ -228,13 +228,6 @@ describe("BriefcaseManager", () => {
     // Arrange
     iModelVersionMock.setup((f: IModelVersion) => f.evaluateChangeSet(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
       .returns(() => Promise.resolve(""));
-    iModelHubClientMock.setup((f: IModelHubClient) => f.getIModel(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
-      .returns(() => {
-        const sampleIModelPath = path.join(assetDir, "SampleIModel.json");
-        const buff = IModelJsFs.readFileSync(sampleIModelPath);
-        const jsonObj = JSON.parse(buff.toString())[0];
-        return Promise.resolve(getTypedInstance<HubIModel>(HubIModel, jsonObj));
-      }).verifiable(); // Note: only used in the createBriefcase codeExPath
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
     // Act
@@ -303,17 +296,10 @@ describe("BriefcaseManager", () => {
     // iModel.close(accessToken);
   });
 
-  it.only("should reuse open briefcases in Readonly mode", async () => {
+  it("should reuse open briefcases in Readonly mode", async () => {
     // Arrange
     iModelVersionMock.setup((f: IModelVersion) => f.evaluateChangeSet(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
       .returns(() => Promise.resolve(""));
-    iModelHubClientMock.setup((f: IModelHubClient) => f.getIModel(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
-      .returns(() => {
-        const sampleIModelPath = path.join(assetDir, "SampleIModel.json");
-        const buff = IModelJsFs.readFileSync(sampleIModelPath);
-        const jsonObj = JSON.parse(buff.toString())[0];
-        return Promise.resolve(getTypedInstance<HubIModel>(HubIModel, jsonObj));
-      }).verifiable(); // Note: only used in the createBriefcase codeExPath
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
     // Act
@@ -378,6 +364,10 @@ describe("BriefcaseManager", () => {
   it("should open a briefcase of an iModel with no versions", async () => {
     const iModelNoVerId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "NoVersionsTest");
 
+    // Arrange
+    iModelVersionMock.setup((f: IModelVersion) => f.evaluateChangeSet(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
+      .returns(() => Promise.resolve(""));
+    BriefcaseManager.hubClient = iModelHubClientMock.object;
     if (shouldDeleteAllBriefcases)
       await IModelTestUtils.deleteAllBriefcases(accessToken, iModelNoVerId);
 
