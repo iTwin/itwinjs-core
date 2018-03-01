@@ -184,6 +184,8 @@ export enum NodeAddonRequestTypes {
 
 namespace Conversion {
   export function createNodesList(r: responseTypes.Node[]): NavNode[] {
+    if (!r)
+      throw new Error("Invalid nodes' response");
     const nodes = new Array<NavNode>();
     for (const rNode of r) {
       nodes.push({
@@ -260,10 +262,9 @@ namespace Conversion {
   }
 
   export function createContent(r: responseTypes.Content): content.Content {
+    if (!r)
+      throw new Error("Invalid content response");
     const descriptor = createContentDescriptor(r.Descriptor);
-    if (!descriptor)
-      throw new Error("Invalid content descriptor");
-
     const cont: content.Content = {
       descriptor,
       contentSet: [],
@@ -301,6 +302,9 @@ namespace Conversion {
   }
 
   export function createContentDescriptor(r: responseTypes.Descriptor): content.Descriptor {
+    if (!r)
+      throw new Error("Invalid descriptor response");
+
     const selectClasses = new Array<content.SelectClassInfo>();
     for (const respClass of r.SelectClasses)
       selectClasses.push(createSelectClassInfo(respClass));
