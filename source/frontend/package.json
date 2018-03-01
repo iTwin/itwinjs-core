@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "0.58.0",
+  "version": "0.58.1",
   "description": "iModelJs frontend components",
   "license": "UNLICENSED",
   "scripts": {
@@ -22,7 +22,7 @@
     "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check"
   ],
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^7.0.0",
+    "@bentley/bentleyjs-core": "^7.2.0",
     "flatbuffers": "^1.8.0"
   },
   "//dependencies": [
@@ -33,7 +33,7 @@
   "dependencies": {
     "@bentley/geometry-core": "^4.3.1",
     "@bentley/imodeljs-clients": "^3.0.3",
-    "@bentley/imodeljs-common": "^0.58.0",
+    "@bentley/imodeljs-common": "^0.59.0",
     "fuse.js": "^3.2.0",
     "i18next": "^10.2.2",
     "i18next-browser-languagedetector": "^2.1.0",
