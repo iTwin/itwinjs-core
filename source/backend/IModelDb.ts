@@ -1471,7 +1471,9 @@ export class TxnManager {
   public hasPendingTxns(): boolean { return this.isTxnIdValid(this.queryFirstTxnId()); }
 
   /** Query if there are any changes in memory that have yet to be saved to the IModelDb. */
-  public hasUnsavedChanges() { return false; } // *** TODO: return this._iModel.briefcaseEntry!.nativeDb!.txnManagerHasUnsavedChanges
+  public hasUnsavedChanges(): boolean {
+    return this._iModel.briefcaseEntry!.nativeDb!.txnManagerHasUnsavedChanges();
+  }
 
   /** Query if there are un-saved or un-pushed local changes. */
   public hasLocalChanges(): boolean { return this.hasUnsavedChanges() || this.hasPendingTxns(); }

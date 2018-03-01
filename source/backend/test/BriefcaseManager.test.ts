@@ -20,6 +20,7 @@ import { IModel } from "@bentley/imodeljs-common/lib/IModel";
 import { IModelJsFs } from "../IModelJsFs";
 import { iModelHost } from "../IModelHost";
 import { AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../AutoPush";
+import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
@@ -401,6 +402,10 @@ describe("BriefcaseManager", () => {
       concurrencyControl: {
         request: async (_clientAccessToken: AccessToken) => {},
       },
+      onBeforeClose: new BeEvent<() => void>(),
+      Txns: {
+        hasLocalChanges: () => true,
+      },
     };
     lastPushTimeMillis = 0;
     lastAutoPushEventType = undefined;
@@ -462,11 +467,29 @@ describe("BriefcaseManager", () => {
     // Test auto-push when isIdle returns false
     isIdle = false;
     lastPushTimeMillis = 0;
-    autoPush.autoSchedule = true;
+    autoPush.autoSchedule = true; // start running AutoPush...
     await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
     assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
     assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
     autoPush.cancel();
+    isIdle = true;
+
+    // Test auto-push when Txn.hasLocalChanges returns false
+    iModel.Txns.hasLocalChanges = () => false;
+    lastPushTimeMillis = 0;
+    autoPush.cancel();
+    autoPush.autoSchedule = true; // start running AutoPush...
+    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
+    assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
+    autoPush.cancel();
+
+    // ... now turn it back on
+    iModel.Txns.hasLocalChanges = () => true;
+    autoPush.autoSchedule = true; // start running AutoPush...
+    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    assert.notEqual(lastPushTimeMillis, 0); // AutoPush should have run
+
   });
 
 });

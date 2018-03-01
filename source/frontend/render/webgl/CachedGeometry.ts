@@ -5,6 +5,7 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BufferHandle } from "./Handle";
 import { FeatureIndexType, FeatureIndex } from "./FeatureIndex";
 import { GL } from "./GL";
+import { QPoint3dList } from "../QPoint";
 
 export class FeatureIndices {
   public type: FeatureIndexType;
@@ -45,4 +46,11 @@ export class FeatureIndices {
 
   public isEmpty(): boolean { return FeatureIndexType.kEmpty === this.type; }
   public isUniform(): boolean { return FeatureIndexType.kUniform === this.type; }
+}
+
+export class PointCloudGeometryCreateParams {
+  public readonly vertices = new QPoint3dList();
+  public colors: number[] = [];
+  public pointSize: number;
+  public constructor(vertices: QPoint3dList, colors: number[], pointSize: number) { this.vertices = vertices.clone(); this.colors = colors; this.pointSize = pointSize; }
 }

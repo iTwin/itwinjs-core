@@ -699,9 +699,70 @@ export const enum GeometryClass {
   Primary, Construction, Dimension, Pattern,
 }
 
+/**
+ * Describes a "feature" within a batched Graphic. A batched Graphic can
+ * contain multiple features. Each feature is associated with a unique combination of
+ * attributes (element ID, subcategory, geometry class). This allows geometry to be
+ * more efficiently batched on the GPU, while enabling features to be resymbolized
+ * individually.
+ *
+ * As a simple example, a single mesh primitive may contain geometry for 3 elements,
+ * all belonging to the same subcategory and geometry class. The mesh would therefore
+ * contain 3 Features. Each vertex within the mesh would be associated with the
+ * index of the Feature to which it belongs, where the index is determined by the
+ * FeatureTable associated with the primitive.
+ */
 export class Feature {
   public get isDefined(): boolean { return this.elementId.isValid() || this.subCategoryId.isValid() || this.geometryClass !== GeometryClass.Primary; }
   public get isUndefined(): boolean { return !this.isDefined; }
   constructor(public readonly elementId: Id64, public readonly subCategoryId: Id64, public readonly geometryClass: GeometryClass = GeometryClass.Primary) {}
-  public equals(other: Feature) { return this.isUndefined && other.isUndefined ? true : this.elementId.equals(other.elementId) && this.subCategoryId.equals(other.subCategoryId) && this.geometryClass === other.geometryClass; }
+  public equals(other: Feature): boolean { return this.isUndefined && other.isUndefined ? true : this.elementId.equals(other.elementId) && this.subCategoryId.equals(other.subCategoryId) && this.geometryClass === other.geometryClass; }
+}
+
+/**
+ * Defines a look-up table for Features within a batched Graphic. Consecutive 32-bit
+ * indices are assigned to each unique Feature. Primitives within the Graphic can
+ * use per-vertex indices to specify the distribution of Features within the primitive.
+ * A FeatureTable can be shared amongst multiple primitives within a single Graphic, and
+ * amongst multiple sub-Graphics of a Graphic.
+ */
+export class FeatureTable {
+  public get size(): number { return this.map.size; }
+  public get isFull(): boolean { assert(this.size <= this.maxFeatures); return this.size >= this.maxFeatures; }
+  public get isUniform(): boolean { return this.size === 1; }
+  public get numIndices(): number { return new Uint32Array([ this.size ])[0]; }
+  public get anyDefined(): boolean { return this.size > 1 || (this.isUniform && Array.from(this.map.values())[0].isDefined); }
+  constructor(public readonly maxFeatures: number,
+              public readonly modelId = new Id64(),
+              public readonly map: Map<number, Feature> = new Map<number, Feature>()) {}
+/**
+ * returns index of feature, unless it doesn't exist, then the feature is added and its key, which is the current numIndices is returned
+ */
+  public getIndex(feature: Feature): number {
+    assert(!this.isFull);
+    let key = this.findIndex(feature);
+    if (key === -1 && !this.isFull) {
+      key = this.numIndices;
+      this.map.set(key, feature);
+      return key;
+    }
+    return key;
+  }
+/**
+ * Deviates from native source in the following ways: no index parameter since primitives are always pass by value in js,
+ * consequently instead of returning a boolean and setting the index reference, the index value is returned, which will be -1 when
+ * the feature isn't found, which is a common practice in js
+ */
+  public findIndex(feature: Feature): number {
+    let index = -1;
+    this.map.forEach((v, k) => { if (v.equals(feature)) index = k; });
+    return index;
+  }
+/**
+ * Deviates from native source in the following ways: no feature parameter since the Feature's properties are readonly. Instead, the
+ * feature corresponding to the index will be returned, which could be undefined if not found.
+ */
+  public findFeature(index: number): Feature | undefined { return this.map.get(index); }
+  public clear(): void { this.map.clear(); }
+  public static fromFeatureTable(table: FeatureTable): FeatureTable { return new FeatureTable(table.maxFeatures, table.modelId, table.map); }
 }
