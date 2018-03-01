@@ -20,7 +20,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/geometry-core": "^4.3.1",
+    "@bentley/geometry-core": "^5.0.2",
     "@bentley/imodeljs-clients": "^3.0.2"
   },
   "//peerDependencies": [
