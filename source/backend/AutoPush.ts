@@ -7,6 +7,8 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 import { Gateway } from "@bentley/imodeljs-common/lib/Gateway";
+import { IModelError } from "@bentley/imodeljs-common/lib/IModelError";
+import { IModelStatus } from "@bentley/bentleyjs-core/lib/BentleyError";
 
 const loggingCategory = "imodeljs-backend.AutoPush";
 
@@ -79,6 +81,7 @@ export class AutoPush {
    * @param activityMonitor The activity monitor that will tell me when the app is idle. Defaults to BackendActivityMonitor with a 1 second idle period.
    */
   constructor(iModel: IModelDb, params: AutoPushParams, serviceAccountAccessToken: AccessToken, activityMonitor?: AppActivityMonitor) {
+    AutoPush.validateAutoPushParams(params);
     iModel.onBeforeClose.addListener(() => this.cancel());
     this._iModel = iModel;
     this._serviceAccountAccessToken = serviceAccountAccessToken;
@@ -94,6 +97,16 @@ export class AutoPush {
     this._autoSchedule = params.autoSchedule;
     if (this._autoSchedule)
       this.scheduleNextPush();
+  }
+
+  /** Check that 'params' is a valid AutoPushParams object. This is useful when you read params from a .json file. */
+  public static validateAutoPushParams(params: any) {
+    const reqProps = ["pushIntervalSecondsMin", "pushIntervalSecondsMax", "autoSchedule"];
+    for (const reqProp of reqProps) {
+      if (!params.hasOwnProperty(reqProp)) {
+        throw new IModelError(IModelStatus.BadArg, "Invalid AutoPushParams object - missing required property: " + reqProp, Logger.logError, loggingCategory);
+      }
+    }
   }
 
   /** Cancel the next auto-push. Note that this also turns off auto-scheduling. */
