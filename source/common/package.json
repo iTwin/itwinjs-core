@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@bentley/geometry-core": "^5.0.2",
-    "@bentley/imodeljs-clients": "^3.0.2"
+    "@bentley/imodeljs-clients": "^3.0.3"
   },
   "//peerDependencies": [
     "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check"

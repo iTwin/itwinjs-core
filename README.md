@@ -38,8 +38,9 @@ npm config set @bentley:registry https://npm.bentley.com/npm/npm/
 
 1. Clone repository (first time) with `git clone` or pull updates to the repository (subsequent times) with `git pull`
 2. Install dependencies: `rush install`
-3. Rebuild source: `rush rebuild`
-4. Run tests: `npm test -s`
+3. clean `npm run clean`
+4. Rebuild source: `rush rebuild`
+5. Run tests: `npm test -s`
 
 The `-s` option is short for `--silent` which results in a less verbose command.
 That part of the command is optional depending on the desired verbosity level.
