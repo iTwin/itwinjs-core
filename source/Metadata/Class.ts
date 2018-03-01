@@ -215,6 +215,31 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
     if (visitor.visitClass)
       await visitor.visitClass(this as AnyClass);
   }
+
+  /**
+   * Iterates (recursively) over all base classes and mixins, in "property override" order.
+   * This is essentially a depth-first traversal through the inheritance tree.
+   */
+  public async *getAllBaseClasses(): AsyncIterableIterator<ECClass> {
+    const baseClasses: ECClass[] = [ this ];
+    const addBaseClasses = async (ecClass: AnyClass) => {
+      if (SchemaChildType.EntityClass === ecClass.type) {
+        for (let i = ecClass.mixins.length - 1; i >= 0; i--) {
+          baseClasses.push(await ecClass.mixins[i]);
+        }
+      }
+
+      if (ecClass.baseClass)
+        baseClasses.push(await ecClass.baseClass);
+    };
+
+    while (baseClasses.length > 0) {
+      const baseClass = baseClasses.pop() as AnyClass;
+      await addBaseClasses(baseClass);
+      if (baseClass !== this)
+        yield baseClass;
+    }
+  }
 }
 
 /**
