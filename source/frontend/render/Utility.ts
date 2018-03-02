@@ -57,6 +57,9 @@ export class PointUtil {
   public static fromNumberArrays(...arrs: number[][]): Point[] {
     return arrs.map((arr) => PointUtil.fromNumberArray(arr));
   }
+  public static clone(pt: Point): Point {
+    return PointUtil.fromNumberArray(PointUtil.toNumberArray(pt));
+  }
 }
 
 export class RangeUtil {
@@ -76,6 +79,7 @@ export class RangeUtil {
     if (PointUtil.isPoint3dArray(pts)) return Range3d.createArray(pts);
     return undefined;
   }
+  public static clone(range: Range): Range { return RangeUtil.fromPoints(range.low, range.high)!; }
 }
 
 export interface Cloneable<T> { clone: () => T; }

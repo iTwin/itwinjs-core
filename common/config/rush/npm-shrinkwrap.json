@@ -5,9 +5,9 @@
   "requires": true,
   "dependencies": {
     "@bentley/bentleyjs-core": {
-      "version": "7.0.1",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bentleyjs-core/-/bentleyjs-core-7.0.1.tgz",
-      "integrity": "sha1-bm9i75zqkJoRWq8GmmFS/4hPBO0="
+      "version": "7.2.0",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bentleyjs-core/-/bentleyjs-core-7.2.0.tgz",
+      "integrity": "sha1-j/1y0KMxClN8srDJDQxPvNhaeKg="
     },
     "@bentley/bentleyjs-tools": {
       "version": "2.2.1",
@@ -49,26 +49,36 @@
       }
     },
     "@bentley/geometry-core": {
-      "version": "4.3.1",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/geometry-core/-/geometry-core-4.3.1.tgz",
-      "integrity": "sha1-LBLV7sKMr8V0gJjMXwQW/EP/lO0=",
+      "version": "5.0.2",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/geometry-core/-/geometry-core-5.0.2.tgz",
+      "integrity": "sha1-ZnwmCUTz7FwJmGdvw5GkBXSbEGk=",
       "requires": {
         "flatbuffers": "1.8.0"
       }
     },
     "@bentley/imodeljs-backend": {
-      "version": "0.57.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-backend/-/imodeljs-backend-0.57.0.tgz",
-      "integrity": "sha1-42MGbAtECTi5TXbdnT3xmlqNqwo=",
+      "version": "0.59.1",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-backend/-/imodeljs-backend-0.59.1.tgz",
+      "integrity": "sha1-aW7HI7VucvTyDLZMNhN64Euj3CM=",
       "requires": {
         "@bentley/geometry-core": "4.3.1",
         "@bentley/imodeljs-clients": "3.0.3",
-        "@bentley/imodeljs-common": "0.57.0",
+        "@bentley/imodeljs-common": "0.59.0",
         "@bentley/imodeljs-electronaddon": "10.0.0",
         "@bentley/imodeljs-nodeaddon": "10.0.0",
         "@bentley/imodeljs-nodeaddonapi": "10.0.0",
         "fs-extra": "5.0.0",
         "js-base64": "2.4.3"
+      },
+      "dependencies": {
+        "@bentley/geometry-core": {
+          "version": "4.3.1",
+          "resolved": "https://npm.bentley.com/npm/npm/@bentley/geometry-core/-/geometry-core-4.3.1.tgz",
+          "integrity": "sha1-LBLV7sKMr8V0gJjMXwQW/EP/lO0=",
+          "requires": {
+            "flatbuffers": "1.8.0"
+          }
+        }
       }
     },
     "@bentley/imodeljs-clients": {
@@ -76,7 +86,7 @@
       "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-clients/-/imodeljs-clients-3.0.3.tgz",
       "integrity": "sha1-lBfZb5Brp4GjT24GjhBZX96cD6o=",
       "requires": {
-        "@bentley/bentleyjs-core": "7.0.1",
+        "@bentley/bentleyjs-core": "7.2.0",
         "azure-storage": "2.8.0",
         "clone": "2.1.1",
         "deep-assign": "2.0.0",
@@ -88,12 +98,22 @@
       }
     },
     "@bentley/imodeljs-common": {
-      "version": "0.57.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-common/-/imodeljs-common-0.57.0.tgz",
-      "integrity": "sha1-D5afS8visOwN1VJD8K8hhthfGlY=",
+      "version": "0.59.0",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-common/-/imodeljs-common-0.59.0.tgz",
+      "integrity": "sha1-XZ7uIlYF9Hs9Rp4RdACev0MSFMk=",
       "requires": {
         "@bentley/geometry-core": "4.3.1",
         "@bentley/imodeljs-clients": "3.0.3"
+      },
+      "dependencies": {
+        "@bentley/geometry-core": {
+          "version": "4.3.1",
+          "resolved": "https://npm.bentley.com/npm/npm/@bentley/geometry-core/-/geometry-core-4.3.1.tgz",
+          "integrity": "sha1-LBLV7sKMr8V0gJjMXwQW/EP/lO0=",
+          "requires": {
+            "flatbuffers": "1.8.0"
+          }
+        }
       }
     },
     "@bentley/imodeljs-e_1_6_11-win32-x64": {
@@ -107,21 +127,6 @@
       "integrity": "sha1-ds4WipPs9Dz/bk2uzDQKpbn1+tg=",
       "requires": {
         "@bentley/imodeljs-e_1_6_11-win32-x64": "10.0.0"
-      }
-    },
-    "@bentley/imodeljs-frontend": {
-      "version": "0.57.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-frontend/-/imodeljs-frontend-0.57.0.tgz",
-      "integrity": "sha1-lAsj2mtncriTnK+MA3DpbSaLQhI=",
-      "requires": {
-        "@bentley/geometry-core": "4.3.1",
-        "@bentley/imodeljs-clients": "3.0.3",
-        "@bentley/imodeljs-common": "0.57.0",
-        "fuse.js": "3.2.0",
-        "i18next": "10.5.0",
-        "i18next-browser-languagedetector": "2.1.0",
-        "i18next-xhr-backend": "1.5.1",
-        "js-base64": "2.4.3"
       }
     },
     "@bentley/imodeljs-n_8_9-win32-x64": {
@@ -144,9 +149,9 @@
     },
     "@rush-temp/imodeljs-backend": {
       "version": "file:projects/imodeljs-backend.tgz",
-      "integrity": "sha1-M9yBWDXshOajNvZ1gNg6hZiyxQA=",
+      "integrity": "sha1-IalmmFcgmDh/pVB2dMpj0kuEw8E=",
       "requires": {
-        "@bentley/geometry-core": "4.3.1",
+        "@bentley/geometry-core": "5.0.2",
         "@bentley/imodeljs-clients": "3.0.3",
         "@bentley/imodeljs-electronaddon": "10.0.0",
         "@bentley/imodeljs-n_8_9-win32-x64": "10.0.0",
@@ -167,10 +172,10 @@
     },
     "@rush-temp/imodeljs-common": {
       "version": "file:projects/imodeljs-common.tgz",
-      "integrity": "sha1-5r6g0lDLVBG3TPYiKzbOehaLUno=",
+      "integrity": "sha1-YZWOC54PoEzhs9IMQ1X0v0Audvs=",
       "requires": {
-        "@bentley/bentleyjs-core": "7.0.1",
-        "@bentley/geometry-core": "4.3.1",
+        "@bentley/bentleyjs-core": "7.2.0",
+        "@bentley/geometry-core": "5.0.2",
         "@bentley/imodeljs-clients": "3.0.3",
         "rimraf": "2.6.2",
         "typescript": "2.6.2"
@@ -178,7 +183,7 @@
     },
     "@rush-temp/imodeljs-core": {
       "version": "file:projects/imodeljs-core.tgz",
-      "integrity": "sha1-mXfWG5Arb6KeN713+GMB/77eNlA=",
+      "integrity": "sha1-0MUKFUeWyROks1W7/319EANHzqQ=",
       "requires": {
         "@bentley/bentleyjs-tools": "2.2.1",
         "@types/body-parser": "1.16.8",
@@ -230,16 +235,14 @@
     },
     "@rush-temp/imodeljs-core-testbed": {
       "version": "file:projects/imodeljs-core-testbed.tgz",
-      "integrity": "sha1-7gfPc1Xf+3NFUtuEF0r6LHNkdZI=",
+      "integrity": "sha1-mVaXQPqHWFtWXAWUldFMrbvgVuw=",
       "requires": {
-        "@bentley/bentleyjs-core": "7.0.1",
-        "@bentley/geometry-core": "4.3.1",
-        "@bentley/imodeljs-backend": "0.57.0",
+        "@bentley/bentleyjs-core": "7.2.0",
+        "@bentley/geometry-core": "5.0.2",
+        "@bentley/imodeljs-backend": "0.59.1",
         "@bentley/imodeljs-clients": "3.0.3",
-        "@bentley/imodeljs-common": "0.57.0",
         "@bentley/imodeljs-e_1_6_11-win32-x64": "10.0.0",
         "@bentley/imodeljs-electronaddon": "10.0.0",
-        "@bentley/imodeljs-frontend": "0.57.0",
         "@bentley/imodeljs-nodeaddonapi": "10.0.0",
         "body-parser": "1.18.2",
         "chai": "4.1.2",
@@ -262,9 +265,9 @@
     },
     "@rush-temp/imodeljs-frontend": {
       "version": "file:projects/imodeljs-frontend.tgz",
-      "integrity": "sha1-xMBHUJ7txjcIfEUIrILzsgf1804=",
+      "integrity": "sha1-edV+hUxQTxmddirbwoKM5mT057s=",
       "requires": {
-        "@bentley/geometry-core": "4.3.1",
+        "@bentley/geometry-core": "5.0.2",
         "@bentley/imodeljs-clients": "3.0.3",
         "fuse.js": "3.2.0",
         "i18next": "10.5.0",
@@ -291,8 +294,8 @@
     },
     "@types/events": {
       "version": "1.2.0",
-      "resolved": "https://registry.npmjs.org/@types/events/-/events-1.2.0.tgz",
-      "integrity": "sha512-KEIlhXnIutzKwRbQkGWb/I4HFqBuUykAdHgDED6xqwXJfONCjF5VoE0cXEiurh3XauygxzeDzgtXUqvLkxFzzA=="
+      "resolved": "https://npm.bentley.com/npm/npm/@types/events/-/events-1.2.0.tgz",
+      "integrity": "sha1-gaZzHOTfQ2GeXIyUU4Oz5iqJ6oY="
     },
     "@types/express": {
       "version": "4.11.1",
@@ -320,8 +323,8 @@
     },
     "@types/fs-extra": {
       "version": "4.0.8",
-      "resolved": "https://registry.npmjs.org/@types/fs-extra/-/fs-extra-4.0.8.tgz",
-      "integrity": "sha512-Z5nu9Pbxj9yNeXIK3UwGlRdJth4cZ5sCq05nI7FaI6B0oz28nxkOtp6Lsz0ZnmLHJGvOJfB/VHxSTbVq/i6ujA==",
+      "resolved": "https://npm.bentley.com/npm/npm/@types/fs-extra/-/fs-extra-4.0.8.tgz",
+      "integrity": "sha1-aVfdr5FzGVGZy5baPbRMdHAEY9I=",
       "requires": {
         "@types/node": "9.4.6"
       }
@@ -442,9 +445,9 @@
       }
     },
     "accepts": {
-      "version": "1.3.4",
-      "resolved": "https://npm.bentley.com/npm/npm/accepts/-/accepts-1.3.4.tgz",
-      "integrity": "sha1-hiRnWMfdbSGmR0/whKR0DsBesh8=",
+      "version": "1.3.5",
+      "resolved": "https://npm.bentley.com/npm/npm/accepts/-/accepts-1.3.5.tgz",
+      "integrity": "sha1-63d99gEXI6OxTopywIBcjoZ0a9I=",
       "requires": {
         "mime-types": "2.1.18",
         "negotiator": "0.6.1"
@@ -452,8 +455,8 @@
     },
     "acorn": {
       "version": "5.5.0",
-      "resolved": "https://registry.npmjs.org/acorn/-/acorn-5.5.0.tgz",
-      "integrity": "sha512-arn53F07VXmls4o4pUhSzBa4fvaagPRe7AVZ8l7NHxFWUie2DsuFSBMMNAkgzRlOhEhzAnxeKyaWVzOH4xqp/g=="
+      "resolved": "https://npm.bentley.com/npm/npm/acorn/-/acorn-5.5.0.tgz",
+      "integrity": "sha1-GrtYf78FH5Tj3iDmsm75ELGCgpg="
     },
     "acorn-dynamic-import": {
       "version": "2.0.2",
@@ -655,6 +658,11 @@
       "version": "0.4.0",
       "resolved": "https://npm.bentley.com/npm/npm/asynckit/-/asynckit-0.4.0.tgz",
       "integrity": "sha1-x57Zf380y48robyXkLzDZkdLS3k="
+    },
+    "atob": {
+      "version": "2.0.3",
+      "resolved": "https://npm.bentley.com/npm/npm/atob/-/atob-2.0.3.tgz",
+      "integrity": "sha1-GcenYEc3dEaPILLS0DNyrX1Mv10="
     },
     "aws-sign2": {
       "version": "0.6.0",
@@ -1490,6 +1498,35 @@
       "resolved": "https://npm.bentley.com/npm/npm/balanced-match/-/balanced-match-1.0.0.tgz",
       "integrity": "sha1-ibTRmasr7kneFk6gK4nORi1xt2c="
     },
+    "base": {
+      "version": "0.11.2",
+      "resolved": "https://npm.bentley.com/npm/npm/base/-/base-0.11.2.tgz",
+      "integrity": "sha1-e95c7RRbbVUakNuH+DxVi060io8=",
+      "requires": {
+        "cache-base": "1.0.1",
+        "class-utils": "0.3.6",
+        "component-emitter": "1.2.1",
+        "define-property": "1.0.0",
+        "isobject": "3.0.1",
+        "mixin-deep": "1.3.1",
+        "pascalcase": "0.1.1"
+      },
+      "dependencies": {
+        "define-property": {
+          "version": "1.0.0",
+          "resolved": "https://npm.bentley.com/npm/npm/define-property/-/define-property-1.0.0.tgz",
+          "integrity": "sha1-dp66rz9KY6rTr56NMEybvnm/sOY=",
+          "requires": {
+            "is-descriptor": "1.0.2"
+          }
+        },
+        "isobject": {
+          "version": "3.0.1",
+          "resolved": "https://npm.bentley.com/npm/npm/isobject/-/isobject-3.0.1.tgz",
+          "integrity": "sha1-TkMekrEalzFjaqH5yNHMvP2reN8="
+        }
+      }
+    },
     "base64-js": {
       "version": "1.2.3",
       "resolved": "https://npm.bentley.com/npm/npm/base64-js/-/base64-js-1.2.3.tgz",
@@ -1663,6 +1700,29 @@
       "resolved": "https://npm.bentley.com/npm/npm/bytes/-/bytes-3.0.0.tgz",
       "integrity": "sha1-0ygVQE1olpn4Wk6k+odV3ROpYEg="
     },
+    "cache-base": {
+      "version": "1.0.1",
+      "resolved": "https://npm.bentley.com/npm/npm/cache-base/-/cache-base-1.0.1.tgz",
+      "integrity": "sha1-Cn9GQWgxyLZi7jb+TnxZ129marI=",
+      "requires": {
+        "collection-visit": "1.0.0",
+        "component-emitter": "1.2.1",
+        "get-value": "2.0.6",
+        "has-value": "1.0.0",
+        "isobject": "3.0.1",
+        "set-value": "2.0.0",
+        "to-object-path": "0.3.0",
+        "union-value": "1.0.0",
+        "unset-value": "1.0.0"
+      },
+      "dependencies": {
+        "isobject": {
+          "version": "3.0.1",
+          "resolved": "https://npm.bentley.com/npm/npm/isobject/-/isobject-3.0.1.tgz",
+          "integrity": "sha1-TkMekrEalzFjaqH5yNHMvP2reN8="
+        }
+      }
+    },
     "camelcase": {
       "version": "4.1.0",
       "resolved": "https://npm.bentley.com/npm/npm/camelcase/-/camelcase-4.1.0.tgz",
@@ -1755,10 +1815,82 @@
         "safe-buffer": "5.1.1"
       }
     },
-    "circular-json": {
-      "version": "0.3.3",
-      "resolved": "https://npm.bentley.com/npm/npm/circular-json/-/circular-json-0.3.3.tgz",
-      "integrity": "sha1-gVyZ6oT2gJUp0vRXkb34JxE1LWY="
+    "class-utils": {
+      "version": "0.3.6",
+      "resolved": "https://npm.bentley.com/npm/npm/class-utils/-/class-utils-0.3.6.tgz",
+      "integrity": "sha1-+TNprouafOAv1B+q0MqDAzGQxGM=",
+      "requires": {
+        "arr-union": "3.1.0",
+        "define-property": "0.2.5",
+        "isobject": "3.0.1",
+        "static-extend": "0.1.2"
+      },
+      "dependencies": {
+        "define-property": {
+          "version": "0.2.5",
+          "resolved": "https://npm.bentley.com/npm/npm/define-property/-/define-property-0.2.5.tgz",
+          "integrity": "sha1-w1se+RjsPJkPmlvFe+BKrOxcgRY=",
+          "requires": {
+            "is-descriptor": "0.1.6"
+          }
+        },
+        "is-accessor-descriptor": {
+          "version": "0.1.6",
+          "resolved": "https://npm.bentley.com/npm/npm/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
+          "integrity": "sha1-qeEss66Nh2cn7u84Q/igiXtcmNY=",
+          "requires": {
+            "kind-of": "3.2.2"
+          },
+          "dependencies": {
+            "kind-of": {
+              "version": "3.2.2",
+              "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-3.2.2.tgz",
+              "integrity": "sha1-MeohpzS6ubuw8yRm2JOupR5KPGQ=",
+              "requires": {
+                "is-buffer": "1.1.6"
+              }
+            }
+          }
+        },
+        "is-data-descriptor": {
+          "version": "0.1.4",
+          "resolved": "https://npm.bentley.com/npm/npm/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
+          "integrity": "sha1-C17mSDiOLIYCgueT8YVv7D8wG1Y=",
+          "requires": {
+            "kind-of": "3.2.2"
+          },
+          "dependencies": {
+            "kind-of": {
+              "version": "3.2.2",
+              "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-3.2.2.tgz",
+              "integrity": "sha1-MeohpzS6ubuw8yRm2JOupR5KPGQ=",
+              "requires": {
+                "is-buffer": "1.1.6"
+              }
+            }
+          }
+        },
+        "is-descriptor": {
+          "version": "0.1.6",
+          "resolved": "https://npm.bentley.com/npm/npm/is-descriptor/-/is-descriptor-0.1.6.tgz",
+          "integrity": "sha1-Nm2CQN3kh8pRgjsaufB6EKeCUco=",
+          "requires": {
+            "is-accessor-descriptor": "0.1.6",
+            "is-data-descriptor": "0.1.4",
+            "kind-of": "5.1.0"
+          }
+        },
+        "isobject": {
+          "version": "3.0.1",
+          "resolved": "https://npm.bentley.com/npm/npm/isobject/-/isobject-3.0.1.tgz",
+          "integrity": "sha1-TkMekrEalzFjaqH5yNHMvP2reN8="
+        },
+        "kind-of": {
+          "version": "5.1.0",
+          "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-5.1.0.tgz",
+          "integrity": "sha1-cpyR4thXt6QZofmqZWhcTDP1hF0="
+        }
+      }
     },
     "cliui": {
       "version": "3.2.0",
@@ -1823,6 +1955,15 @@
       "version": "1.1.0",
       "resolved": "https://npm.bentley.com/npm/npm/code-point-at/-/code-point-at-1.1.0.tgz",
       "integrity": "sha1-DQcLTQQ6W+ozovGkDi7bPZpMz3c="
+    },
+    "collection-visit": {
+      "version": "1.0.0",
+      "resolved": "https://npm.bentley.com/npm/npm/collection-visit/-/collection-visit-1.0.0.tgz",
+      "integrity": "sha1-S8A3PBZLwykbTTaMgpzxqApZ3KA=",
+      "requires": {
+        "map-visit": "1.0.0",
+        "object-visit": "1.0.1"
+      }
     },
     "color-convert": {
       "version": "1.9.1",
@@ -2011,6 +2152,11 @@
       "resolved": "https://npm.bentley.com/npm/npm/cookiejar/-/cookiejar-2.1.1.tgz",
       "integrity": "sha1-Qa1XsbVVlR7BcUEqgZQrHoIA00o="
     },
+    "copy-descriptor": {
+      "version": "0.1.1",
+      "resolved": "https://npm.bentley.com/npm/npm/copy-descriptor/-/copy-descriptor-0.1.1.tgz",
+      "integrity": "sha1-Z29us8OZl8LuGsOpJP1hJHSPV40="
+    },
     "core-js": {
       "version": "2.5.3",
       "resolved": "https://npm.bentley.com/npm/npm/core-js/-/core-js-2.5.3.tgz",
@@ -2177,6 +2323,11 @@
       "resolved": "https://npm.bentley.com/npm/npm/decamelize/-/decamelize-1.2.0.tgz",
       "integrity": "sha1-9lNNFRSCabIDUue+4m9QH5oZEpA="
     },
+    "decode-uri-component": {
+      "version": "0.2.0",
+      "resolved": "https://npm.bentley.com/npm/npm/decode-uri-component/-/decode-uri-component-0.2.0.tgz",
+      "integrity": "sha1-6zkTMzRYd1y4TNGh+uBiEGu4dUU="
+    },
     "deep-assign": {
       "version": "2.0.0",
       "resolved": "https://npm.bentley.com/npm/npm/deep-assign/-/deep-assign-2.0.0.tgz",
@@ -2202,6 +2353,22 @@
       "version": "2.0.1",
       "resolved": "https://npm.bentley.com/npm/npm/deepmerge/-/deepmerge-2.0.1.tgz",
       "integrity": "sha1-JcHCTxEPuRT4AAG5JSZN138/QxI="
+    },
+    "define-property": {
+      "version": "2.0.2",
+      "resolved": "https://npm.bentley.com/npm/npm/define-property/-/define-property-2.0.2.tgz",
+      "integrity": "sha1-1Flono1lS6d+AqgX+HENcCyxbp0=",
+      "requires": {
+        "is-descriptor": "1.0.2",
+        "isobject": "3.0.1"
+      },
+      "dependencies": {
+        "isobject": {
+          "version": "3.0.1",
+          "resolved": "https://npm.bentley.com/npm/npm/isobject/-/isobject-3.0.1.tgz",
+          "integrity": "sha1-TkMekrEalzFjaqH5yNHMvP2reN8="
+        }
+      }
     },
     "delayed-stream": {
       "version": "1.0.0",
@@ -2500,8 +2667,8 @@
     },
     "esrecurse": {
       "version": "4.2.1",
-      "resolved": "https://registry.npmjs.org/esrecurse/-/esrecurse-4.2.1.tgz",
-      "integrity": "sha512-64RBB++fIOAXPw3P9cy89qfMlvZEXZkqqJkjqqXIvzP5ezRZjW+lPWjw35UX/3EhUPFYbg5ER4JYgDw4007/DQ==",
+      "resolved": "https://npm.bentley.com/npm/npm/esrecurse/-/esrecurse-4.2.1.tgz",
+      "integrity": "sha1-AHo7n9vCs7uH5IeeoZyS/b05Qs8=",
       "requires": {
         "estraverse": "4.2.0"
       }
@@ -2593,7 +2760,7 @@
       "resolved": "https://npm.bentley.com/npm/npm/express/-/express-4.16.2.tgz",
       "integrity": "sha1-41xt/i1kt9ygpc1PIXgb4ymeB2w=",
       "requires": {
-        "accepts": "1.3.4",
+        "accepts": "1.3.5",
         "array-flatten": "1.1.1",
         "body-parser": "1.18.2",
         "content-disposition": "0.5.2",
@@ -2707,7 +2874,7 @@
     },
     "fast-deep-equal": {
       "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/fast-deep-equal/-/fast-deep-equal-1.1.0.tgz",
+      "resolved": "https://npm.bentley.com/npm/npm/fast-deep-equal/-/fast-deep-equal-1.1.0.tgz",
       "integrity": "sha1-wFNHeBfIa1HaqFPIHgWbcz0CNhQ="
     },
     "fast-json-stable-stringify": {
@@ -2837,6 +3004,14 @@
       "resolved": "https://npm.bentley.com/npm/npm/forwarded/-/forwarded-0.1.2.tgz",
       "integrity": "sha1-mMI9qxF1ZXuMBXPozszZGw/xjIQ="
     },
+    "fragment-cache": {
+      "version": "0.2.1",
+      "resolved": "https://npm.bentley.com/npm/npm/fragment-cache/-/fragment-cache-0.2.1.tgz",
+      "integrity": "sha1-QpD60n8T6Jvn8zeZxrxaCr//DRk=",
+      "requires": {
+        "map-cache": "0.2.2"
+      }
+    },
     "fresh": {
       "version": "0.5.2",
       "resolved": "https://npm.bentley.com/npm/npm/fresh/-/fresh-0.5.2.tgz",
@@ -2896,6 +3071,11 @@
       "version": "3.0.0",
       "resolved": "https://npm.bentley.com/npm/npm/get-stream/-/get-stream-3.0.0.tgz",
       "integrity": "sha1-jpQ9E1jcN1VQVOy+LtsFqhdO3hQ="
+    },
+    "get-value": {
+      "version": "2.0.6",
+      "resolved": "https://npm.bentley.com/npm/npm/get-value/-/get-value-2.0.6.tgz",
+      "integrity": "sha1-3BXKHGcjh8p2vTesCjlbogQqLCg="
     },
     "getpass": {
       "version": "0.1.7",
@@ -3023,6 +3203,60 @@
       "resolved": "https://npm.bentley.com/npm/npm/has-flag/-/has-flag-3.0.0.tgz",
       "integrity": "sha1-tdRU3CGZriJWmfNGfloH87lVuv0="
     },
+    "has-value": {
+      "version": "1.0.0",
+      "resolved": "https://npm.bentley.com/npm/npm/has-value/-/has-value-1.0.0.tgz",
+      "integrity": "sha1-GLKB2lhbHFxR3vJMkw7SmgvmsXc=",
+      "requires": {
+        "get-value": "2.0.6",
+        "has-values": "1.0.0",
+        "isobject": "3.0.1"
+      },
+      "dependencies": {
+        "isobject": {
+          "version": "3.0.1",
+          "resolved": "https://npm.bentley.com/npm/npm/isobject/-/isobject-3.0.1.tgz",
+          "integrity": "sha1-TkMekrEalzFjaqH5yNHMvP2reN8="
+        }
+      }
+    },
+    "has-values": {
+      "version": "1.0.0",
+      "resolved": "https://npm.bentley.com/npm/npm/has-values/-/has-values-1.0.0.tgz",
+      "integrity": "sha1-lbC2P+whRmGab+V/51Yo1aOe/k8=",
+      "requires": {
+        "is-number": "3.0.0",
+        "kind-of": "4.0.0"
+      },
+      "dependencies": {
+        "is-number": {
+          "version": "3.0.0",
+          "resolved": "https://npm.bentley.com/npm/npm/is-number/-/is-number-3.0.0.tgz",
+          "integrity": "sha1-JP1iAaR4LPUFYcgQJ2r8fRLXEZU=",
+          "requires": {
+            "kind-of": "3.2.2"
+          },
+          "dependencies": {
+            "kind-of": {
+              "version": "3.2.2",
+              "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-3.2.2.tgz",
+              "integrity": "sha1-MeohpzS6ubuw8yRm2JOupR5KPGQ=",
+              "requires": {
+                "is-buffer": "1.1.6"
+              }
+            }
+          }
+        },
+        "kind-of": {
+          "version": "4.0.0",
+          "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-4.0.0.tgz",
+          "integrity": "sha1-IIE989cSkosgc3hpGkUGb65y3Vc=",
+          "requires": {
+            "is-buffer": "1.1.6"
+          }
+        }
+      }
+    },
     "hash-base": {
       "version": "3.0.4",
       "resolved": "https://npm.bentley.com/npm/npm/hash-base/-/hash-base-3.0.4.tgz",
@@ -3139,8 +3373,8 @@
     },
     "i18next": {
       "version": "10.5.0",
-      "resolved": "https://registry.npmjs.org/i18next/-/i18next-10.5.0.tgz",
-      "integrity": "sha512-soHpHN/J8fpkt6z3mEsvO5Uf4huBLk1gYpwK7GwRJOBCJz6Zq4LgMjJ5pr8Lz0+lVwyzKW3zun7+C4pS4LZJ6Q=="
+      "resolved": "https://npm.bentley.com/npm/npm/i18next/-/i18next-10.5.0.tgz",
+      "integrity": "sha1-oqkOZ3dPqFuP+c0AY+aX5IJEDec="
     },
     "i18next-browser-languagedetector": {
       "version": "2.1.0",
@@ -3217,6 +3451,21 @@
       "resolved": "https://npm.bentley.com/npm/npm/ipaddr.js/-/ipaddr.js-1.6.0.tgz",
       "integrity": "sha1-4/o1e3c9phnybpXwSdBVxyeW+Gs="
     },
+    "is-accessor-descriptor": {
+      "version": "1.0.0",
+      "resolved": "https://npm.bentley.com/npm/npm/is-accessor-descriptor/-/is-accessor-descriptor-1.0.0.tgz",
+      "integrity": "sha1-FpwvbT3x+ZJhgHI2XJsOofaHhlY=",
+      "requires": {
+        "kind-of": "6.0.2"
+      },
+      "dependencies": {
+        "kind-of": {
+          "version": "6.0.2",
+          "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-6.0.2.tgz",
+          "integrity": "sha1-ARRrNqYhjmTljzqNZt5df8b20FE="
+        }
+      }
+    },
     "is-arrayish": {
       "version": "0.2.1",
       "resolved": "https://npm.bentley.com/npm/npm/is-arrayish/-/is-arrayish-0.2.1.tgz",
@@ -3241,6 +3490,38 @@
       "integrity": "sha1-VAVy0096wxGfj3bDDLwbHgN6/74=",
       "requires": {
         "builtin-modules": "1.1.1"
+      }
+    },
+    "is-data-descriptor": {
+      "version": "1.0.0",
+      "resolved": "https://npm.bentley.com/npm/npm/is-data-descriptor/-/is-data-descriptor-1.0.0.tgz",
+      "integrity": "sha1-2Eh2Mh0Oet0DmQQGq7u9NrqSaMc=",
+      "requires": {
+        "kind-of": "6.0.2"
+      },
+      "dependencies": {
+        "kind-of": {
+          "version": "6.0.2",
+          "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-6.0.2.tgz",
+          "integrity": "sha1-ARRrNqYhjmTljzqNZt5df8b20FE="
+        }
+      }
+    },
+    "is-descriptor": {
+      "version": "1.0.2",
+      "resolved": "https://npm.bentley.com/npm/npm/is-descriptor/-/is-descriptor-1.0.2.tgz",
+      "integrity": "sha1-OxWXRqZmBLBPjIFSS6NlxfFNhuw=",
+      "requires": {
+        "is-accessor-descriptor": "1.0.0",
+        "is-data-descriptor": "1.0.0",
+        "kind-of": "6.0.2"
+      },
+      "dependencies": {
+        "kind-of": {
+          "version": "6.0.2",
+          "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-6.0.2.tgz",
+          "integrity": "sha1-ARRrNqYhjmTljzqNZt5df8b20FE="
+        }
       }
     },
     "is-dotfile": {
@@ -3303,6 +3584,21 @@
       "resolved": "https://npm.bentley.com/npm/npm/is-obj/-/is-obj-1.0.1.tgz",
       "integrity": "sha1-PkcprB9f3gJc19g6iW2rn09n2w8="
     },
+    "is-odd": {
+      "version": "2.0.0",
+      "resolved": "https://npm.bentley.com/npm/npm/is-odd/-/is-odd-2.0.0.tgz",
+      "integrity": "sha1-dkZiRnH9fqVYzNmieVGC8pWPGyQ=",
+      "requires": {
+        "is-number": "4.0.0"
+      },
+      "dependencies": {
+        "is-number": {
+          "version": "4.0.0",
+          "resolved": "https://npm.bentley.com/npm/npm/is-number/-/is-number-4.0.0.tgz",
+          "integrity": "sha1-ACbjf1RU1z41bf5lZGmYZ8an8P8="
+        }
+      }
+    },
     "is-plain-object": {
       "version": "2.0.4",
       "resolved": "https://npm.bentley.com/npm/npm/is-plain-object/-/is-plain-object-2.0.4.tgz",
@@ -3347,6 +3643,11 @@
       "version": "0.2.1",
       "resolved": "https://npm.bentley.com/npm/npm/is-utf8/-/is-utf8-0.2.1.tgz",
       "integrity": "sha1-Sw2hRCEE0bM2NA6AeX6GXPOffXI="
+    },
+    "is-windows": {
+      "version": "1.0.2",
+      "resolved": "https://npm.bentley.com/npm/npm/is-windows/-/is-windows-1.0.2.tgz",
+      "integrity": "sha1-0YUOuXkezRjmGCzhKjDzlmNLsZ0="
     },
     "isarray": {
       "version": "1.0.0",
@@ -3539,7 +3840,7 @@
     },
     "loader-utils": {
       "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/loader-utils/-/loader-utils-1.1.0.tgz",
+      "resolved": "https://npm.bentley.com/npm/npm/loader-utils/-/loader-utils-1.1.0.tgz",
       "integrity": "sha1-yYrvSIvM7aL/teLeZG1qdUQp9c0=",
       "requires": {
         "big.js": "3.2.0",
@@ -3679,6 +3980,11 @@
       "resolved": "https://npm.bentley.com/npm/npm/make-error/-/make-error-1.3.4.tgz",
       "integrity": "sha1-GZeO1XX56VRdL/jBPjO10Ypn1TU="
     },
+    "map-cache": {
+      "version": "0.2.2",
+      "resolved": "https://npm.bentley.com/npm/npm/map-cache/-/map-cache-0.2.2.tgz",
+      "integrity": "sha1-wyq9C9ZSXZsFFkW7TyasXcmKDb8="
+    },
     "map-obj": {
       "version": "1.0.1",
       "resolved": "https://npm.bentley.com/npm/npm/map-obj/-/map-obj-1.0.1.tgz",
@@ -3689,10 +3995,18 @@
       "resolved": "https://npm.bentley.com/npm/npm/map-stream/-/map-stream-0.1.0.tgz",
       "integrity": "sha1-5WqpTEyAVaFkBKBnS3jyFffI4ZQ="
     },
+    "map-visit": {
+      "version": "1.0.0",
+      "resolved": "https://npm.bentley.com/npm/npm/map-visit/-/map-visit-1.0.0.tgz",
+      "integrity": "sha1-7Nyo8TFE5mDxtb1B8S80edmN+48=",
+      "requires": {
+        "object-visit": "1.0.1"
+      }
+    },
     "marked": {
       "version": "0.3.17",
-      "resolved": "https://registry.npmjs.org/marked/-/marked-0.3.17.tgz",
-      "integrity": "sha512-+AKbNsjZl6jFfLPwHhWmGTqE009wTKn3RTmn9K8oUKHrX/abPJjtcRtXpYB/FFrwPJRUA86LX/de3T0knkPCmQ=="
+      "resolved": "https://npm.bentley.com/npm/npm/marked/-/marked-0.3.17.tgz",
+      "integrity": "sha1-YH8GZos8axJGso8T2nYRasGqLSs="
     },
     "md5": {
       "version": "2.2.1",
@@ -3728,8 +4042,8 @@
     },
     "memoizee": {
       "version": "0.4.12",
-      "resolved": "https://registry.npmjs.org/memoizee/-/memoizee-0.4.12.tgz",
-      "integrity": "sha512-sprBu6nwxBWBvBOh5v2jcsGqiGLlL2xr2dLub3vR8dnE8YB17omwtm/0NSHl8jjNbcsJd5GMWJAnTSVe/O0Wfg==",
+      "resolved": "https://npm.bentley.com/npm/npm/memoizee/-/memoizee-0.4.12.tgz",
+      "integrity": "sha1-eA6ZohnFDFSb5tD8YXZQgJdcWPs=",
       "requires": {
         "d": "1.0.0",
         "es5-ext": "0.10.39",
@@ -3935,6 +4249,25 @@
       "resolved": "https://npm.bentley.com/npm/npm/minimist/-/minimist-0.0.8.tgz",
       "integrity": "sha1-hX/Kv8M5fSYluCKCYuhqp6ARsF0="
     },
+    "mixin-deep": {
+      "version": "1.3.1",
+      "resolved": "https://npm.bentley.com/npm/npm/mixin-deep/-/mixin-deep-1.3.1.tgz",
+      "integrity": "sha1-pJ5yaNzhoNlpjkUybFYm3zVD0P4=",
+      "requires": {
+        "for-in": "1.0.2",
+        "is-extendable": "1.0.1"
+      },
+      "dependencies": {
+        "is-extendable": {
+          "version": "1.0.1",
+          "resolved": "https://npm.bentley.com/npm/npm/is-extendable/-/is-extendable-1.0.1.tgz",
+          "integrity": "sha1-p0cPnkJnM9gb2B4RVSZOOjUHyrQ=",
+          "requires": {
+            "is-plain-object": "2.0.4"
+          }
+        }
+      }
+    },
     "mkdirp": {
       "version": "0.5.1",
       "resolved": "https://npm.bentley.com/npm/npm/mkdirp/-/mkdirp-0.5.1.tgz",
@@ -4043,10 +4376,51 @@
       "resolved": "https://npm.bentley.com/npm/npm/ms/-/ms-2.0.0.tgz",
       "integrity": "sha1-VgiurfwAvmwpAd9fmGF4jeDVl8g="
     },
+    "nanomatch": {
+      "version": "1.2.9",
+      "resolved": "https://npm.bentley.com/npm/npm/nanomatch/-/nanomatch-1.2.9.tgz",
+      "integrity": "sha1-h59xUMstq3pHElkGbBBO7m4Pp8I=",
+      "requires": {
+        "arr-diff": "4.0.0",
+        "array-unique": "0.3.2",
+        "define-property": "2.0.2",
+        "extend-shallow": "3.0.2",
+        "fragment-cache": "0.2.1",
+        "is-odd": "2.0.0",
+        "is-windows": "1.0.2",
+        "kind-of": "6.0.2",
+        "object.pick": "1.3.0",
+        "regex-not": "1.0.2",
+        "snapdragon": "0.8.1",
+        "to-regex": "3.0.2"
+      },
+      "dependencies": {
+        "arr-diff": {
+          "version": "4.0.0",
+          "resolved": "https://npm.bentley.com/npm/npm/arr-diff/-/arr-diff-4.0.0.tgz",
+          "integrity": "sha1-1kYQdP6/7HHn4VI1dhoyml3HxSA="
+        },
+        "array-unique": {
+          "version": "0.3.2",
+          "resolved": "https://npm.bentley.com/npm/npm/array-unique/-/array-unique-0.3.2.tgz",
+          "integrity": "sha1-qJS3XUvE9s1nnvMkSp/Y9Gri1Cg="
+        },
+        "kind-of": {
+          "version": "6.0.2",
+          "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-6.0.2.tgz",
+          "integrity": "sha1-ARRrNqYhjmTljzqNZt5df8b20FE="
+        }
+      }
+    },
     "negotiator": {
       "version": "0.6.1",
       "resolved": "https://npm.bentley.com/npm/npm/negotiator/-/negotiator-0.6.1.tgz",
       "integrity": "sha1-KzJxhOiZIQEXeyhWP7XnECrNDKk="
+    },
+    "neo-async": {
+      "version": "2.5.0",
+      "resolved": "https://npm.bentley.com/npm/npm/neo-async/-/neo-async-2.5.0.tgz",
+      "integrity": "sha1-drHIIxMMyias+6zMj7rwovozsY8="
     },
     "next-tick": {
       "version": "1.0.0",
@@ -5583,10 +5957,78 @@
       "resolved": "https://npm.bentley.com/npm/npm/object-assign/-/object-assign-4.1.1.tgz",
       "integrity": "sha1-IQmtx5ZYh8/AXLvUQsrIv7s2CGM="
     },
+    "object-copy": {
+      "version": "0.1.0",
+      "resolved": "https://npm.bentley.com/npm/npm/object-copy/-/object-copy-0.1.0.tgz",
+      "integrity": "sha1-fn2Fi3gb18mRpBupde04EnVOmYw=",
+      "requires": {
+        "copy-descriptor": "0.1.1",
+        "define-property": "0.2.5",
+        "kind-of": "3.2.2"
+      },
+      "dependencies": {
+        "define-property": {
+          "version": "0.2.5",
+          "resolved": "https://npm.bentley.com/npm/npm/define-property/-/define-property-0.2.5.tgz",
+          "integrity": "sha1-w1se+RjsPJkPmlvFe+BKrOxcgRY=",
+          "requires": {
+            "is-descriptor": "0.1.6"
+          }
+        },
+        "is-accessor-descriptor": {
+          "version": "0.1.6",
+          "resolved": "https://npm.bentley.com/npm/npm/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
+          "integrity": "sha1-qeEss66Nh2cn7u84Q/igiXtcmNY=",
+          "requires": {
+            "kind-of": "3.2.2"
+          }
+        },
+        "is-data-descriptor": {
+          "version": "0.1.4",
+          "resolved": "https://npm.bentley.com/npm/npm/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
+          "integrity": "sha1-C17mSDiOLIYCgueT8YVv7D8wG1Y=",
+          "requires": {
+            "kind-of": "3.2.2"
+          }
+        },
+        "is-descriptor": {
+          "version": "0.1.6",
+          "resolved": "https://npm.bentley.com/npm/npm/is-descriptor/-/is-descriptor-0.1.6.tgz",
+          "integrity": "sha1-Nm2CQN3kh8pRgjsaufB6EKeCUco=",
+          "requires": {
+            "is-accessor-descriptor": "0.1.6",
+            "is-data-descriptor": "0.1.4",
+            "kind-of": "5.1.0"
+          },
+          "dependencies": {
+            "kind-of": {
+              "version": "5.1.0",
+              "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-5.1.0.tgz",
+              "integrity": "sha1-cpyR4thXt6QZofmqZWhcTDP1hF0="
+            }
+          }
+        }
+      }
+    },
     "object-keys": {
       "version": "0.4.0",
       "resolved": "https://npm.bentley.com/npm/npm/object-keys/-/object-keys-0.4.0.tgz",
       "integrity": "sha1-KKaq50KN0sOpLz2V8hM13SBOAzY="
+    },
+    "object-visit": {
+      "version": "1.0.1",
+      "resolved": "https://npm.bentley.com/npm/npm/object-visit/-/object-visit-1.0.1.tgz",
+      "integrity": "sha1-95xEk68MU3e1n+OdOV5BBC3QRbs=",
+      "requires": {
+        "isobject": "3.0.1"
+      },
+      "dependencies": {
+        "isobject": {
+          "version": "3.0.1",
+          "resolved": "https://npm.bentley.com/npm/npm/isobject/-/isobject-3.0.1.tgz",
+          "integrity": "sha1-TkMekrEalzFjaqH5yNHMvP2reN8="
+        }
+      }
     },
     "object.omit": {
       "version": "2.0.1",
@@ -5595,6 +6037,21 @@
       "requires": {
         "for-own": "0.1.5",
         "is-extendable": "0.1.1"
+      }
+    },
+    "object.pick": {
+      "version": "1.3.0",
+      "resolved": "https://npm.bentley.com/npm/npm/object.pick/-/object.pick-1.3.0.tgz",
+      "integrity": "sha1-h6EKxMFpS9Lhy/U1kaZhQftd10c=",
+      "requires": {
+        "isobject": "3.0.1"
+      },
+      "dependencies": {
+        "isobject": {
+          "version": "3.0.1",
+          "resolved": "https://npm.bentley.com/npm/npm/isobject/-/isobject-3.0.1.tgz",
+          "integrity": "sha1-TkMekrEalzFjaqH5yNHMvP2reN8="
+        }
       }
     },
     "on-finished": {
@@ -5719,10 +6176,20 @@
       "resolved": "https://npm.bentley.com/npm/npm/parseurl/-/parseurl-1.3.2.tgz",
       "integrity": "sha1-/CidTtiZMRlGDBViUyYs3I3mW/M="
     },
+    "pascalcase": {
+      "version": "0.1.1",
+      "resolved": "https://npm.bentley.com/npm/npm/pascalcase/-/pascalcase-0.1.1.tgz",
+      "integrity": "sha1-s2PlXoAGym/iF4TS2yK9FdeRfxQ="
+    },
     "path-browserify": {
       "version": "0.0.0",
       "resolved": "https://npm.bentley.com/npm/npm/path-browserify/-/path-browserify-0.0.0.tgz",
       "integrity": "sha1-oLhwcpquIUAFt9UDLsLLuw+0RRo="
+    },
+    "path-dirname": {
+      "version": "1.0.2",
+      "resolved": "https://npm.bentley.com/npm/npm/path-dirname/-/path-dirname-1.0.2.tgz",
+      "integrity": "sha1-zDPSTVJeCZpTiMAzbG4yuRYGCeA="
     },
     "path-exists": {
       "version": "3.0.0",
@@ -5828,10 +6295,10 @@
         }
       }
     },
-    "postinstall-build": {
-      "version": "5.0.1",
-      "resolved": "https://npm.bentley.com/npm/npm/postinstall-build/-/postinstall-build-5.0.1.tgz",
-      "integrity": "sha1-uRepB5smF42aJK9aXNjLSpkdEbk="
+    "posix-character-classes": {
+      "version": "0.1.1",
+      "resolved": "https://npm.bentley.com/npm/npm/posix-character-classes/-/posix-character-classes-0.1.1.tgz",
+      "integrity": "sha1-AerA/jta9xoqbAL+q7jB/vfgDqs="
     },
     "preserve": {
       "version": "0.2.0",
@@ -6144,6 +6611,15 @@
         "is-equal-shallow": "0.1.3"
       }
     },
+    "regex-not": {
+      "version": "1.0.2",
+      "resolved": "https://npm.bentley.com/npm/npm/regex-not/-/regex-not-1.0.2.tgz",
+      "integrity": "sha1-H07OJ+ALC2XgJHpoEOaoXYOldSw=",
+      "requires": {
+        "extend-shallow": "3.0.2",
+        "safe-regex": "1.1.0"
+      }
+    },
     "regexpu-core": {
       "version": "2.0.0",
       "resolved": "https://npm.bentley.com/npm/npm/regexpu-core/-/regexpu-core-2.0.0.tgz",
@@ -6261,6 +6737,16 @@
         "path-parse": "1.0.5"
       }
     },
+    "resolve-url": {
+      "version": "0.2.1",
+      "resolved": "https://npm.bentley.com/npm/npm/resolve-url/-/resolve-url-0.2.1.tgz",
+      "integrity": "sha1-LGN/53yJOv0qZj/iGqkIAGjiBSo="
+    },
+    "ret": {
+      "version": "0.1.15",
+      "resolved": "https://npm.bentley.com/npm/npm/ret/-/ret-0.1.15.tgz",
+      "integrity": "sha1-uKSCXVvbH8P29Twrwz+BOIaBx7w="
+    },
     "right-align": {
       "version": "0.1.3",
       "resolved": "https://npm.bentley.com/npm/npm/right-align/-/right-align-0.1.3.tgz",
@@ -6305,6 +6791,14 @@
       "version": "5.1.1",
       "resolved": "https://npm.bentley.com/npm/npm/safe-buffer/-/safe-buffer-5.1.1.tgz",
       "integrity": "sha1-iTMSr2myEj3vcfV4iQAWce6yyFM="
+    },
+    "safe-regex": {
+      "version": "1.1.0",
+      "resolved": "https://npm.bentley.com/npm/npm/safe-regex/-/safe-regex-1.1.0.tgz",
+      "integrity": "sha1-QKNmnzsHfR6UPURinhV91IAjvy4=",
+      "requires": {
+        "ret": "0.1.15"
+      }
     },
     "save": {
       "version": "2.3.2",
@@ -6385,10 +6879,39 @@
       "resolved": "https://npm.bentley.com/npm/npm/set-blocking/-/set-blocking-2.0.0.tgz",
       "integrity": "sha1-BF+XgtARrppoA93TgrJDkrPYkPc="
     },
+    "set-getter": {
+      "version": "0.1.0",
+      "resolved": "https://npm.bentley.com/npm/npm/set-getter/-/set-getter-0.1.0.tgz",
+      "integrity": "sha1-12nBgsnVpR9AkUXy+6guXoboA3Y=",
+      "requires": {
+        "to-object-path": "0.3.0"
+      }
+    },
     "set-immediate-shim": {
       "version": "1.0.1",
       "resolved": "https://npm.bentley.com/npm/npm/set-immediate-shim/-/set-immediate-shim-1.0.1.tgz",
       "integrity": "sha1-SysbJ+uAip+NzEgaWOXlb1mfP2E="
+    },
+    "set-value": {
+      "version": "2.0.0",
+      "resolved": "https://npm.bentley.com/npm/npm/set-value/-/set-value-2.0.0.tgz",
+      "integrity": "sha1-ca5KiPD+77v1LR6mBPP7MV67YnQ=",
+      "requires": {
+        "extend-shallow": "2.0.1",
+        "is-extendable": "0.1.1",
+        "is-plain-object": "2.0.4",
+        "split-string": "3.1.0"
+      },
+      "dependencies": {
+        "extend-shallow": {
+          "version": "2.0.1",
+          "resolved": "https://npm.bentley.com/npm/npm/extend-shallow/-/extend-shallow-2.0.1.tgz",
+          "integrity": "sha1-Ua99YUrZqfYQ6huvu5idaxxWiQ8=",
+          "requires": {
+            "is-extendable": "0.1.1"
+          }
+        }
+      }
     },
     "setimmediate": {
       "version": "1.0.5",
@@ -6473,6 +6996,123 @@
       "resolved": "https://npm.bentley.com/npm/npm/slash/-/slash-1.0.0.tgz",
       "integrity": "sha1-xB8vbDn8FtHNF61LXYlhFK5HDVU="
     },
+    "snapdragon": {
+      "version": "0.8.1",
+      "resolved": "https://npm.bentley.com/npm/npm/snapdragon/-/snapdragon-0.8.1.tgz",
+      "integrity": "sha1-4StUh/re0+PeoKyR6UAL91tAE3A=",
+      "requires": {
+        "base": "0.11.2",
+        "debug": "2.6.9",
+        "define-property": "0.2.5",
+        "extend-shallow": "2.0.1",
+        "map-cache": "0.2.2",
+        "source-map": "0.5.7",
+        "source-map-resolve": "0.5.1",
+        "use": "2.0.2"
+      },
+      "dependencies": {
+        "define-property": {
+          "version": "0.2.5",
+          "resolved": "https://npm.bentley.com/npm/npm/define-property/-/define-property-0.2.5.tgz",
+          "integrity": "sha1-w1se+RjsPJkPmlvFe+BKrOxcgRY=",
+          "requires": {
+            "is-descriptor": "0.1.6"
+          }
+        },
+        "extend-shallow": {
+          "version": "2.0.1",
+          "resolved": "https://npm.bentley.com/npm/npm/extend-shallow/-/extend-shallow-2.0.1.tgz",
+          "integrity": "sha1-Ua99YUrZqfYQ6huvu5idaxxWiQ8=",
+          "requires": {
+            "is-extendable": "0.1.1"
+          }
+        },
+        "is-accessor-descriptor": {
+          "version": "0.1.6",
+          "resolved": "https://npm.bentley.com/npm/npm/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
+          "integrity": "sha1-qeEss66Nh2cn7u84Q/igiXtcmNY=",
+          "requires": {
+            "kind-of": "3.2.2"
+          },
+          "dependencies": {
+            "kind-of": {
+              "version": "3.2.2",
+              "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-3.2.2.tgz",
+              "integrity": "sha1-MeohpzS6ubuw8yRm2JOupR5KPGQ=",
+              "requires": {
+                "is-buffer": "1.1.6"
+              }
+            }
+          }
+        },
+        "is-data-descriptor": {
+          "version": "0.1.4",
+          "resolved": "https://npm.bentley.com/npm/npm/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
+          "integrity": "sha1-C17mSDiOLIYCgueT8YVv7D8wG1Y=",
+          "requires": {
+            "kind-of": "3.2.2"
+          },
+          "dependencies": {
+            "kind-of": {
+              "version": "3.2.2",
+              "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-3.2.2.tgz",
+              "integrity": "sha1-MeohpzS6ubuw8yRm2JOupR5KPGQ=",
+              "requires": {
+                "is-buffer": "1.1.6"
+              }
+            }
+          }
+        },
+        "is-descriptor": {
+          "version": "0.1.6",
+          "resolved": "https://npm.bentley.com/npm/npm/is-descriptor/-/is-descriptor-0.1.6.tgz",
+          "integrity": "sha1-Nm2CQN3kh8pRgjsaufB6EKeCUco=",
+          "requires": {
+            "is-accessor-descriptor": "0.1.6",
+            "is-data-descriptor": "0.1.4",
+            "kind-of": "5.1.0"
+          }
+        },
+        "kind-of": {
+          "version": "5.1.0",
+          "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-5.1.0.tgz",
+          "integrity": "sha1-cpyR4thXt6QZofmqZWhcTDP1hF0="
+        }
+      }
+    },
+    "snapdragon-node": {
+      "version": "2.1.1",
+      "resolved": "https://npm.bentley.com/npm/npm/snapdragon-node/-/snapdragon-node-2.1.1.tgz",
+      "integrity": "sha1-bBdfhv8UvbByRWPo88GwIaKGhTs=",
+      "requires": {
+        "define-property": "1.0.0",
+        "isobject": "3.0.1",
+        "snapdragon-util": "3.0.1"
+      },
+      "dependencies": {
+        "define-property": {
+          "version": "1.0.0",
+          "resolved": "https://npm.bentley.com/npm/npm/define-property/-/define-property-1.0.0.tgz",
+          "integrity": "sha1-dp66rz9KY6rTr56NMEybvnm/sOY=",
+          "requires": {
+            "is-descriptor": "1.0.2"
+          }
+        },
+        "isobject": {
+          "version": "3.0.1",
+          "resolved": "https://npm.bentley.com/npm/npm/isobject/-/isobject-3.0.1.tgz",
+          "integrity": "sha1-TkMekrEalzFjaqH5yNHMvP2reN8="
+        }
+      }
+    },
+    "snapdragon-util": {
+      "version": "3.0.1",
+      "resolved": "https://npm.bentley.com/npm/npm/snapdragon-util/-/snapdragon-util-3.0.1.tgz",
+      "integrity": "sha1-+VZHlIbyrNeXAGk/b3uAXkWrVuI=",
+      "requires": {
+        "kind-of": "3.2.2"
+      }
+    },
     "sntp": {
       "version": "1.0.9",
       "resolved": "https://npm.bentley.com/npm/npm/sntp/-/sntp-1.0.9.tgz",
@@ -6511,7 +7151,7 @@
         },
         "loader-utils": {
           "version": "0.2.17",
-          "resolved": "https://registry.npmjs.org/loader-utils/-/loader-utils-0.2.17.tgz",
+          "resolved": "https://npm.bentley.com/npm/npm/loader-utils/-/loader-utils-0.2.17.tgz",
           "integrity": "sha1-+G5jdNQyBabmxg6RlvF8Apm/s0g=",
           "requires": {
             "big.js": "3.2.0",
@@ -6525,6 +7165,18 @@
           "resolved": "https://npm.bentley.com/npm/npm/source-map/-/source-map-0.6.1.tgz",
           "integrity": "sha1-dHIq8y6WFOnCh6jQu95IteLxomM="
         }
+      }
+    },
+    "source-map-resolve": {
+      "version": "0.5.1",
+      "resolved": "https://npm.bentley.com/npm/npm/source-map-resolve/-/source-map-resolve-0.5.1.tgz",
+      "integrity": "sha1-etD1k/IoFZjoVN+A8ZquS5LXoRo=",
+      "requires": {
+        "atob": "2.0.3",
+        "decode-uri-component": "0.2.0",
+        "resolve-url": "0.2.1",
+        "source-map-url": "0.4.0",
+        "urix": "0.1.0"
       }
     },
     "source-map-support": {
@@ -6542,6 +7194,11 @@
         }
       }
     },
+    "source-map-url": {
+      "version": "0.4.0",
+      "resolved": "https://npm.bentley.com/npm/npm/source-map-url/-/source-map-url-0.4.0.tgz",
+      "integrity": "sha1-PpNdfd1zYxuXZZlW1VEo6HtQhKM="
+    },
     "spawn-command": {
       "version": "0.0.2-1",
       "resolved": "https://npm.bentley.com/npm/npm/spawn-command/-/spawn-command-0.0.2-1.tgz",
@@ -6549,8 +7206,8 @@
     },
     "spdx-correct": {
       "version": "3.0.0",
-      "resolved": "https://registry.npmjs.org/spdx-correct/-/spdx-correct-3.0.0.tgz",
-      "integrity": "sha512-N19o9z5cEyc8yQQPukRCZ9EUmb4HUpnrmaL/fxS2pBo2jbfcFRVuFZ/oFC+vZz0MNNk0h80iMn5/S6qGZOL5+g==",
+      "resolved": "https://npm.bentley.com/npm/npm/spdx-correct/-/spdx-correct-3.0.0.tgz",
+      "integrity": "sha1-BaW01xU6GVvJLDxCW2nzsqlSTII=",
       "requires": {
         "spdx-expression-parse": "3.0.0",
         "spdx-license-ids": "3.0.0"
@@ -6558,13 +7215,13 @@
     },
     "spdx-exceptions": {
       "version": "2.1.0",
-      "resolved": "https://registry.npmjs.org/spdx-exceptions/-/spdx-exceptions-2.1.0.tgz",
-      "integrity": "sha512-4K1NsmrlCU1JJgUrtgEeTVyfx8VaYea9J9LvARxhbHtVtohPs/gFGG5yy49beySjlIMhhXZ4QqujIZEfS4l6Cg=="
+      "resolved": "https://npm.bentley.com/npm/npm/spdx-exceptions/-/spdx-exceptions-2.1.0.tgz",
+      "integrity": "sha1-LHrmEFbHFKW5ubKyr30xHvXHj+k="
     },
     "spdx-expression-parse": {
       "version": "3.0.0",
-      "resolved": "https://registry.npmjs.org/spdx-expression-parse/-/spdx-expression-parse-3.0.0.tgz",
-      "integrity": "sha512-Yg6D3XpRD4kkOmTpdgbUiEJFKghJH03fiC1OPll5h/0sO6neh2jqRDVHOQ4o/LMea0tgCkbMgea5ip/e+MkWyg==",
+      "resolved": "https://npm.bentley.com/npm/npm/spdx-expression-parse/-/spdx-expression-parse-3.0.0.tgz",
+      "integrity": "sha1-meEZt6XaAOBUkcn6M4t5BII7QdA=",
       "requires": {
         "spdx-exceptions": "2.1.0",
         "spdx-license-ids": "3.0.0"
@@ -6572,8 +7229,8 @@
     },
     "spdx-license-ids": {
       "version": "3.0.0",
-      "resolved": "https://registry.npmjs.org/spdx-license-ids/-/spdx-license-ids-3.0.0.tgz",
-      "integrity": "sha512-2+EPwgbnmOIl8HjGBXXMd9NAu02vLjOO1nWw4kmeRDFyHn+M/ETfHxQUK0oXg8ctgVnl9t3rosNVsZ1jG61nDA=="
+      "resolved": "https://npm.bentley.com/npm/npm/spdx-license-ids/-/spdx-license-ids-3.0.0.tgz",
+      "integrity": "sha1-enzShHDMbToc/m1miG9rxDDTrIc="
     },
     "speedometer": {
       "version": "0.1.4",
@@ -6586,6 +7243,14 @@
       "integrity": "sha1-zQ7qXmOiEd//frDwkcQTPi0N0o8=",
       "requires": {
         "through": "2.3.8"
+      }
+    },
+    "split-string": {
+      "version": "3.1.0",
+      "resolved": "https://npm.bentley.com/npm/npm/split-string/-/split-string-3.1.0.tgz",
+      "integrity": "sha1-fLCd2jqGWFcFxks5pkZgOGguj+I=",
+      "requires": {
+        "extend-shallow": "3.0.2"
       }
     },
     "sprintf-js": {
@@ -6608,6 +7273,76 @@
           "version": "1.0.0",
           "resolved": "https://npm.bentley.com/npm/npm/assert-plus/-/assert-plus-1.0.0.tgz",
           "integrity": "sha1-8S4PPF13sLHN2RRpQuTpbB5N1SU="
+        }
+      }
+    },
+    "static-extend": {
+      "version": "0.1.2",
+      "resolved": "https://npm.bentley.com/npm/npm/static-extend/-/static-extend-0.1.2.tgz",
+      "integrity": "sha1-YICcOcv/VTNyJv1eC1IPNB8ftcY=",
+      "requires": {
+        "define-property": "0.2.5",
+        "object-copy": "0.1.0"
+      },
+      "dependencies": {
+        "define-property": {
+          "version": "0.2.5",
+          "resolved": "https://npm.bentley.com/npm/npm/define-property/-/define-property-0.2.5.tgz",
+          "integrity": "sha1-w1se+RjsPJkPmlvFe+BKrOxcgRY=",
+          "requires": {
+            "is-descriptor": "0.1.6"
+          }
+        },
+        "is-accessor-descriptor": {
+          "version": "0.1.6",
+          "resolved": "https://npm.bentley.com/npm/npm/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
+          "integrity": "sha1-qeEss66Nh2cn7u84Q/igiXtcmNY=",
+          "requires": {
+            "kind-of": "3.2.2"
+          },
+          "dependencies": {
+            "kind-of": {
+              "version": "3.2.2",
+              "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-3.2.2.tgz",
+              "integrity": "sha1-MeohpzS6ubuw8yRm2JOupR5KPGQ=",
+              "requires": {
+                "is-buffer": "1.1.6"
+              }
+            }
+          }
+        },
+        "is-data-descriptor": {
+          "version": "0.1.4",
+          "resolved": "https://npm.bentley.com/npm/npm/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
+          "integrity": "sha1-C17mSDiOLIYCgueT8YVv7D8wG1Y=",
+          "requires": {
+            "kind-of": "3.2.2"
+          },
+          "dependencies": {
+            "kind-of": {
+              "version": "3.2.2",
+              "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-3.2.2.tgz",
+              "integrity": "sha1-MeohpzS6ubuw8yRm2JOupR5KPGQ=",
+              "requires": {
+                "is-buffer": "1.1.6"
+              }
+            }
+          }
+        },
+        "is-descriptor": {
+          "version": "0.1.6",
+          "resolved": "https://npm.bentley.com/npm/npm/is-descriptor/-/is-descriptor-0.1.6.tgz",
+          "integrity": "sha1-Nm2CQN3kh8pRgjsaufB6EKeCUco=",
+          "requires": {
+            "is-accessor-descriptor": "0.1.6",
+            "is-data-descriptor": "0.1.4",
+            "kind-of": "5.1.0"
+          }
+        },
+        "kind-of": {
+          "version": "5.1.0",
+          "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-5.1.0.tgz",
+          "integrity": "sha1-cpyR4thXt6QZofmqZWhcTDP1hF0="
         }
       }
     },
@@ -6853,10 +7588,48 @@
       "resolved": "https://npm.bentley.com/npm/npm/to-fast-properties/-/to-fast-properties-1.0.3.tgz",
       "integrity": "sha1-uDVx+k2MJbguIxsG46MFXeTKGkc="
     },
+    "to-object-path": {
+      "version": "0.3.0",
+      "resolved": "https://npm.bentley.com/npm/npm/to-object-path/-/to-object-path-0.3.0.tgz",
+      "integrity": "sha1-KXWIt7Dn4KwI4E5nL4XB9JmeF68=",
+      "requires": {
+        "kind-of": "3.2.2"
+      }
+    },
+    "to-regex": {
+      "version": "3.0.2",
+      "resolved": "https://npm.bentley.com/npm/npm/to-regex/-/to-regex-3.0.2.tgz",
+      "integrity": "sha1-E8/dmzNlUvMLUfM6iuG0Knp1mc4=",
+      "requires": {
+        "define-property": "2.0.2",
+        "extend-shallow": "3.0.2",
+        "regex-not": "1.0.2",
+        "safe-regex": "1.1.0"
+      }
+    },
+    "to-regex-range": {
+      "version": "2.1.1",
+      "resolved": "https://npm.bentley.com/npm/npm/to-regex-range/-/to-regex-range-2.1.1.tgz",
+      "integrity": "sha1-fIDBe53+vlmeJzZ+DU3VWQFB2zg=",
+      "requires": {
+        "is-number": "3.0.0",
+        "repeat-string": "1.6.1"
+      },
+      "dependencies": {
+        "is-number": {
+          "version": "3.0.0",
+          "resolved": "https://npm.bentley.com/npm/npm/is-number/-/is-number-3.0.0.tgz",
+          "integrity": "sha1-JP1iAaR4LPUFYcgQJ2r8fRLXEZU=",
+          "requires": {
+            "kind-of": "3.2.2"
+          }
+        }
+      }
+    },
     "tough-cookie": {
       "version": "2.3.4",
-      "resolved": "https://registry.npmjs.org/tough-cookie/-/tough-cookie-2.3.4.tgz",
-      "integrity": "sha512-TZ6TTfI5NtZnuyy/Kecv+CnoROnyXn2DN97LontgQpCwsX2XyLYCC0ENhYkehSOwAp8rTQKc/NUIF7BkQ5rKLA==",
+      "resolved": "https://npm.bentley.com/npm/npm/tough-cookie/-/tough-cookie-2.3.4.tgz",
+      "integrity": "sha1-7GDO44rGdQY//JelwYlwV47oNlU=",
       "requires": {
         "punycode": "1.4.1"
       }
@@ -6953,8 +7726,8 @@
     },
     "tsutils": {
       "version": "2.21.2",
-      "resolved": "https://registry.npmjs.org/tsutils/-/tsutils-2.21.2.tgz",
-      "integrity": "sha512-iaIuyjIUeFLdD39MYdzqBuY7Zv6+uGxSwRH4mf+HuzsnznjFz0R2tGrAe0/JvtNh91WrN8UN/DZRFTZNDuVekA==",
+      "resolved": "https://npm.bentley.com/npm/npm/tsutils/-/tsutils-2.21.2.tgz",
+      "integrity": "sha1-kCqlmH4UQMR2c1Q9lnUt+NRKucc=",
       "requires": {
         "tslib": "1.9.0"
       }
@@ -7125,6 +7898,38 @@
       "resolved": "https://npm.bentley.com/npm/npm/underscore/-/underscore-1.8.3.tgz",
       "integrity": "sha1-Tz+1OxBuYJf8+ctBCfKl6b36UCI="
     },
+    "union-value": {
+      "version": "1.0.0",
+      "resolved": "https://npm.bentley.com/npm/npm/union-value/-/union-value-1.0.0.tgz",
+      "integrity": "sha1-XHHDTLW61dzr4+oM0IIHulqhrqQ=",
+      "requires": {
+        "arr-union": "3.1.0",
+        "get-value": "2.0.6",
+        "is-extendable": "0.1.1",
+        "set-value": "0.4.3"
+      },
+      "dependencies": {
+        "extend-shallow": {
+          "version": "2.0.1",
+          "resolved": "https://npm.bentley.com/npm/npm/extend-shallow/-/extend-shallow-2.0.1.tgz",
+          "integrity": "sha1-Ua99YUrZqfYQ6huvu5idaxxWiQ8=",
+          "requires": {
+            "is-extendable": "0.1.1"
+          }
+        },
+        "set-value": {
+          "version": "0.4.3",
+          "resolved": "https://npm.bentley.com/npm/npm/set-value/-/set-value-0.4.3.tgz",
+          "integrity": "sha1-fbCPnT0i3H945Trzw79GZuzfzPE=",
+          "requires": {
+            "extend-shallow": "2.0.1",
+            "is-extendable": "0.1.1",
+            "is-plain-object": "2.0.4",
+            "to-object-path": "0.3.0"
+          }
+        }
+      }
+    },
     "universalify": {
       "version": "0.1.1",
       "resolved": "https://npm.bentley.com/npm/npm/universalify/-/universalify-0.1.1.tgz",
@@ -7134,6 +7939,57 @@
       "version": "1.0.0",
       "resolved": "https://npm.bentley.com/npm/npm/unpipe/-/unpipe-1.0.0.tgz",
       "integrity": "sha1-sr9O6FFKrmFltIF4KdIbLvSZBOw="
+    },
+    "unset-value": {
+      "version": "1.0.0",
+      "resolved": "https://npm.bentley.com/npm/npm/unset-value/-/unset-value-1.0.0.tgz",
+      "integrity": "sha1-g3aHP30jNRef+x5vw6jtDfyKtVk=",
+      "requires": {
+        "has-value": "0.3.1",
+        "isobject": "3.0.1"
+      },
+      "dependencies": {
+        "has-value": {
+          "version": "0.3.1",
+          "resolved": "https://npm.bentley.com/npm/npm/has-value/-/has-value-0.3.1.tgz",
+          "integrity": "sha1-ex9YutpiyoJ+wKIHgCVlSEWZXh8=",
+          "requires": {
+            "get-value": "2.0.6",
+            "has-values": "0.1.4",
+            "isobject": "2.1.0"
+          },
+          "dependencies": {
+            "isobject": {
+              "version": "2.1.0",
+              "resolved": "https://npm.bentley.com/npm/npm/isobject/-/isobject-2.1.0.tgz",
+              "integrity": "sha1-8GVWEJaj8dou9GJy+BXIQNh+DIk=",
+              "requires": {
+                "isarray": "1.0.0"
+              }
+            }
+          }
+        },
+        "has-values": {
+          "version": "0.1.4",
+          "resolved": "https://npm.bentley.com/npm/npm/has-values/-/has-values-0.1.4.tgz",
+          "integrity": "sha1-bWHeldkd/Km5oCCJrThL/49it3E="
+        },
+        "isobject": {
+          "version": "3.0.1",
+          "resolved": "https://npm.bentley.com/npm/npm/isobject/-/isobject-3.0.1.tgz",
+          "integrity": "sha1-TkMekrEalzFjaqH5yNHMvP2reN8="
+        }
+      }
+    },
+    "upath": {
+      "version": "1.0.4",
+      "resolved": "https://npm.bentley.com/npm/npm/upath/-/upath-1.0.4.tgz",
+      "integrity": "sha1-7iMhugp4bFCXPbBDpQt7y6giNh0="
+    },
+    "urix": {
+      "version": "0.1.0",
+      "resolved": "https://npm.bentley.com/npm/npm/urix/-/urix-0.1.0.tgz",
+      "integrity": "sha1-2pN/emLiH+wf0Y1Js1wpNQZ6bHI="
     },
     "url": {
       "version": "0.11.0",
@@ -7148,6 +8004,90 @@
           "version": "1.3.2",
           "resolved": "https://npm.bentley.com/npm/npm/punycode/-/punycode-1.3.2.tgz",
           "integrity": "sha1-llOgNvt8HuQjQvIyXM7v6jkmxI0="
+        }
+      }
+    },
+    "use": {
+      "version": "2.0.2",
+      "resolved": "https://npm.bentley.com/npm/npm/use/-/use-2.0.2.tgz",
+      "integrity": "sha1-riig1y+TvyJCKhii43mZMRLeyOg=",
+      "requires": {
+        "define-property": "0.2.5",
+        "isobject": "3.0.1",
+        "lazy-cache": "2.0.2"
+      },
+      "dependencies": {
+        "define-property": {
+          "version": "0.2.5",
+          "resolved": "https://npm.bentley.com/npm/npm/define-property/-/define-property-0.2.5.tgz",
+          "integrity": "sha1-w1se+RjsPJkPmlvFe+BKrOxcgRY=",
+          "requires": {
+            "is-descriptor": "0.1.6"
+          }
+        },
+        "is-accessor-descriptor": {
+          "version": "0.1.6",
+          "resolved": "https://npm.bentley.com/npm/npm/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
+          "integrity": "sha1-qeEss66Nh2cn7u84Q/igiXtcmNY=",
+          "requires": {
+            "kind-of": "3.2.2"
+          },
+          "dependencies": {
+            "kind-of": {
+              "version": "3.2.2",
+              "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-3.2.2.tgz",
+              "integrity": "sha1-MeohpzS6ubuw8yRm2JOupR5KPGQ=",
+              "requires": {
+                "is-buffer": "1.1.6"
+              }
+            }
+          }
+        },
+        "is-data-descriptor": {
+          "version": "0.1.4",
+          "resolved": "https://npm.bentley.com/npm/npm/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
+          "integrity": "sha1-C17mSDiOLIYCgueT8YVv7D8wG1Y=",
+          "requires": {
+            "kind-of": "3.2.2"
+          },
+          "dependencies": {
+            "kind-of": {
+              "version": "3.2.2",
+              "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-3.2.2.tgz",
+              "integrity": "sha1-MeohpzS6ubuw8yRm2JOupR5KPGQ=",
+              "requires": {
+                "is-buffer": "1.1.6"
+              }
+            }
+          }
+        },
+        "is-descriptor": {
+          "version": "0.1.6",
+          "resolved": "https://npm.bentley.com/npm/npm/is-descriptor/-/is-descriptor-0.1.6.tgz",
+          "integrity": "sha1-Nm2CQN3kh8pRgjsaufB6EKeCUco=",
+          "requires": {
+            "is-accessor-descriptor": "0.1.6",
+            "is-data-descriptor": "0.1.4",
+            "kind-of": "5.1.0"
+          }
+        },
+        "isobject": {
+          "version": "3.0.1",
+          "resolved": "https://npm.bentley.com/npm/npm/isobject/-/isobject-3.0.1.tgz",
+          "integrity": "sha1-TkMekrEalzFjaqH5yNHMvP2reN8="
+        },
+        "kind-of": {
+          "version": "5.1.0",
+          "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-5.1.0.tgz",
+          "integrity": "sha1-cpyR4thXt6QZofmqZWhcTDP1hF0="
+        },
+        "lazy-cache": {
+          "version": "2.0.2",
+          "resolved": "https://npm.bentley.com/npm/npm/lazy-cache/-/lazy-cache-2.0.2.tgz",
+          "integrity": "sha1-uRkKT5EzVGlIQIWfio9whNiCImQ=",
+          "requires": {
+            "set-getter": "0.1.0"
+          }
         }
       }
     },
@@ -7183,16 +8123,16 @@
     },
     "v8flags": {
       "version": "3.0.2",
-      "resolved": "https://registry.npmjs.org/v8flags/-/v8flags-3.0.2.tgz",
-      "integrity": "sha512-6sgSKoFw1UpUPd3cFdF7QGnrH6tDeBgW1F3v9gy8gLY0mlbiBXq8soy8aQpY6xeeCjH5K+JvC62Acp7gtl7wWA==",
+      "resolved": "https://npm.bentley.com/npm/npm/v8flags/-/v8flags-3.0.2.tgz",
+      "integrity": "sha1-rWp4ogprI9A6jevBEhHjzCMUlHc=",
       "requires": {
         "homedir-polyfill": "1.0.1"
       }
     },
     "validate-npm-package-license": {
       "version": "3.0.3",
-      "resolved": "https://registry.npmjs.org/validate-npm-package-license/-/validate-npm-package-license-3.0.3.tgz",
-      "integrity": "sha512-63ZOUnL4SIXj4L0NixR3L1lcjO38crAbgrTpl28t8jjrfuiOBL5Iygm+60qPs/KsZGzPNg6Smnc/oY16QTjF0g==",
+      "resolved": "https://npm.bentley.com/npm/npm/validate-npm-package-license/-/validate-npm-package-license-3.0.3.tgz",
+      "integrity": "sha1-gWQ7y+8b3+zUYjeT3EZIlIupgzg=",
       "requires": {
         "spdx-correct": "3.0.0",
         "spdx-expression-parse": "3.0.0"
@@ -7247,21 +8187,304 @@
       }
     },
     "watchpack": {
-      "version": "1.4.0",
-      "resolved": "https://npm.bentley.com/npm/npm/watchpack/-/watchpack-1.4.0.tgz",
-      "integrity": "sha1-ShRyvLuVK9Cpu0A2gB+VTfs5+qw=",
+      "version": "1.5.0",
+      "resolved": "https://npm.bentley.com/npm/npm/watchpack/-/watchpack-1.5.0.tgz",
+      "integrity": "sha1-Ix54Ovgwoi+JZvZcTEusyBQHLu0=",
       "requires": {
-        "async": "2.6.0",
-        "chokidar": "1.7.0",
-        "graceful-fs": "4.1.11"
+        "chokidar": "2.0.2",
+        "graceful-fs": "4.1.11",
+        "neo-async": "2.5.0"
       },
       "dependencies": {
-        "async": {
-          "version": "2.6.0",
-          "resolved": "https://npm.bentley.com/npm/npm/async/-/async-2.6.0.tgz",
-          "integrity": "sha1-YaKau2/MAm/qd+VtHG7FOnlZUfQ=",
+        "anymatch": {
+          "version": "2.0.0",
+          "resolved": "https://npm.bentley.com/npm/npm/anymatch/-/anymatch-2.0.0.tgz",
+          "integrity": "sha1-vLJLTzeTTZqnrBe0ra+J58du8us=",
           "requires": {
-            "lodash": "4.17.5"
+            "micromatch": "3.1.9",
+            "normalize-path": "2.1.1"
+          }
+        },
+        "arr-diff": {
+          "version": "4.0.0",
+          "resolved": "https://npm.bentley.com/npm/npm/arr-diff/-/arr-diff-4.0.0.tgz",
+          "integrity": "sha1-1kYQdP6/7HHn4VI1dhoyml3HxSA="
+        },
+        "array-unique": {
+          "version": "0.3.2",
+          "resolved": "https://npm.bentley.com/npm/npm/array-unique/-/array-unique-0.3.2.tgz",
+          "integrity": "sha1-qJS3XUvE9s1nnvMkSp/Y9Gri1Cg="
+        },
+        "braces": {
+          "version": "2.3.1",
+          "resolved": "https://npm.bentley.com/npm/npm/braces/-/braces-2.3.1.tgz",
+          "integrity": "sha1-cIbJE7TloI2+N6wO5qJQDEumkbs=",
+          "requires": {
+            "arr-flatten": "1.1.0",
+            "array-unique": "0.3.2",
+            "define-property": "1.0.0",
+            "extend-shallow": "2.0.1",
+            "fill-range": "4.0.0",
+            "isobject": "3.0.1",
+            "kind-of": "6.0.2",
+            "repeat-element": "1.1.2",
+            "snapdragon": "0.8.1",
+            "snapdragon-node": "2.1.1",
+            "split-string": "3.1.0",
+            "to-regex": "3.0.2"
+          },
+          "dependencies": {
+            "define-property": {
+              "version": "1.0.0",
+              "resolved": "https://npm.bentley.com/npm/npm/define-property/-/define-property-1.0.0.tgz",
+              "integrity": "sha1-dp66rz9KY6rTr56NMEybvnm/sOY=",
+              "requires": {
+                "is-descriptor": "1.0.2"
+              }
+            },
+            "extend-shallow": {
+              "version": "2.0.1",
+              "resolved": "https://npm.bentley.com/npm/npm/extend-shallow/-/extend-shallow-2.0.1.tgz",
+              "integrity": "sha1-Ua99YUrZqfYQ6huvu5idaxxWiQ8=",
+              "requires": {
+                "is-extendable": "0.1.1"
+              }
+            }
+          }
+        },
+        "chokidar": {
+          "version": "2.0.2",
+          "resolved": "https://npm.bentley.com/npm/npm/chokidar/-/chokidar-2.0.2.tgz",
+          "integrity": "sha1-TcZROe6ycUl3c1tqNdBul7SU39c=",
+          "requires": {
+            "anymatch": "2.0.0",
+            "async-each": "1.0.1",
+            "braces": "2.3.1",
+            "glob-parent": "3.1.0",
+            "inherits": "2.0.3",
+            "is-binary-path": "1.0.1",
+            "is-glob": "4.0.0",
+            "normalize-path": "2.1.1",
+            "path-is-absolute": "1.0.1",
+            "readdirp": "2.1.0",
+            "upath": "1.0.4"
+          }
+        },
+        "expand-brackets": {
+          "version": "2.1.4",
+          "resolved": "https://npm.bentley.com/npm/npm/expand-brackets/-/expand-brackets-2.1.4.tgz",
+          "integrity": "sha1-t3c14xXOMPa27/D4OwQVGiJEliI=",
+          "requires": {
+            "debug": "2.6.9",
+            "define-property": "0.2.5",
+            "extend-shallow": "2.0.1",
+            "posix-character-classes": "0.1.1",
+            "regex-not": "1.0.2",
+            "snapdragon": "0.8.1",
+            "to-regex": "3.0.2"
+          },
+          "dependencies": {
+            "define-property": {
+              "version": "0.2.5",
+              "resolved": "https://npm.bentley.com/npm/npm/define-property/-/define-property-0.2.5.tgz",
+              "integrity": "sha1-w1se+RjsPJkPmlvFe+BKrOxcgRY=",
+              "requires": {
+                "is-descriptor": "0.1.6"
+              }
+            },
+            "extend-shallow": {
+              "version": "2.0.1",
+              "resolved": "https://npm.bentley.com/npm/npm/extend-shallow/-/extend-shallow-2.0.1.tgz",
+              "integrity": "sha1-Ua99YUrZqfYQ6huvu5idaxxWiQ8=",
+              "requires": {
+                "is-extendable": "0.1.1"
+              }
+            },
+            "is-descriptor": {
+              "version": "0.1.6",
+              "resolved": "https://npm.bentley.com/npm/npm/is-descriptor/-/is-descriptor-0.1.6.tgz",
+              "integrity": "sha1-Nm2CQN3kh8pRgjsaufB6EKeCUco=",
+              "requires": {
+                "is-accessor-descriptor": "0.1.6",
+                "is-data-descriptor": "0.1.4",
+                "kind-of": "5.1.0"
+              }
+            },
+            "kind-of": {
+              "version": "5.1.0",
+              "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-5.1.0.tgz",
+              "integrity": "sha1-cpyR4thXt6QZofmqZWhcTDP1hF0="
+            }
+          }
+        },
+        "extglob": {
+          "version": "2.0.4",
+          "resolved": "https://npm.bentley.com/npm/npm/extglob/-/extglob-2.0.4.tgz",
+          "integrity": "sha1-rQD+TcYSqSMuhxhxHcXLWrAoVUM=",
+          "requires": {
+            "array-unique": "0.3.2",
+            "define-property": "1.0.0",
+            "expand-brackets": "2.1.4",
+            "extend-shallow": "2.0.1",
+            "fragment-cache": "0.2.1",
+            "regex-not": "1.0.2",
+            "snapdragon": "0.8.1",
+            "to-regex": "3.0.2"
+          },
+          "dependencies": {
+            "define-property": {
+              "version": "1.0.0",
+              "resolved": "https://npm.bentley.com/npm/npm/define-property/-/define-property-1.0.0.tgz",
+              "integrity": "sha1-dp66rz9KY6rTr56NMEybvnm/sOY=",
+              "requires": {
+                "is-descriptor": "1.0.2"
+              }
+            },
+            "extend-shallow": {
+              "version": "2.0.1",
+              "resolved": "https://npm.bentley.com/npm/npm/extend-shallow/-/extend-shallow-2.0.1.tgz",
+              "integrity": "sha1-Ua99YUrZqfYQ6huvu5idaxxWiQ8=",
+              "requires": {
+                "is-extendable": "0.1.1"
+              }
+            }
+          }
+        },
+        "fill-range": {
+          "version": "4.0.0",
+          "resolved": "https://npm.bentley.com/npm/npm/fill-range/-/fill-range-4.0.0.tgz",
+          "integrity": "sha1-1USBHUKPmOsGpj3EAtJAPDKMOPc=",
+          "requires": {
+            "extend-shallow": "2.0.1",
+            "is-number": "3.0.0",
+            "repeat-string": "1.6.1",
+            "to-regex-range": "2.1.1"
+          },
+          "dependencies": {
+            "extend-shallow": {
+              "version": "2.0.1",
+              "resolved": "https://npm.bentley.com/npm/npm/extend-shallow/-/extend-shallow-2.0.1.tgz",
+              "integrity": "sha1-Ua99YUrZqfYQ6huvu5idaxxWiQ8=",
+              "requires": {
+                "is-extendable": "0.1.1"
+              }
+            }
+          }
+        },
+        "glob-parent": {
+          "version": "3.1.0",
+          "resolved": "https://npm.bentley.com/npm/npm/glob-parent/-/glob-parent-3.1.0.tgz",
+          "integrity": "sha1-nmr2KZ2NO9K9QEMIMr0RPfkGxa4=",
+          "requires": {
+            "is-glob": "3.1.0",
+            "path-dirname": "1.0.2"
+          },
+          "dependencies": {
+            "is-glob": {
+              "version": "3.1.0",
+              "resolved": "https://npm.bentley.com/npm/npm/is-glob/-/is-glob-3.1.0.tgz",
+              "integrity": "sha1-e6WuJCF4BKxwcHuWkiVnSGzD6Eo=",
+              "requires": {
+                "is-extglob": "2.1.1"
+              }
+            }
+          }
+        },
+        "is-accessor-descriptor": {
+          "version": "0.1.6",
+          "resolved": "https://npm.bentley.com/npm/npm/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
+          "integrity": "sha1-qeEss66Nh2cn7u84Q/igiXtcmNY=",
+          "requires": {
+            "kind-of": "3.2.2"
+          },
+          "dependencies": {
+            "kind-of": {
+              "version": "3.2.2",
+              "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-3.2.2.tgz",
+              "integrity": "sha1-MeohpzS6ubuw8yRm2JOupR5KPGQ=",
+              "requires": {
+                "is-buffer": "1.1.6"
+              }
+            }
+          }
+        },
+        "is-data-descriptor": {
+          "version": "0.1.4",
+          "resolved": "https://npm.bentley.com/npm/npm/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
+          "integrity": "sha1-C17mSDiOLIYCgueT8YVv7D8wG1Y=",
+          "requires": {
+            "kind-of": "3.2.2"
+          },
+          "dependencies": {
+            "kind-of": {
+              "version": "3.2.2",
+              "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-3.2.2.tgz",
+              "integrity": "sha1-MeohpzS6ubuw8yRm2JOupR5KPGQ=",
+              "requires": {
+                "is-buffer": "1.1.6"
+              }
+            }
+          }
+        },
+        "is-extglob": {
+          "version": "2.1.1",
+          "resolved": "https://npm.bentley.com/npm/npm/is-extglob/-/is-extglob-2.1.1.tgz",
+          "integrity": "sha1-qIwCU1eR8C7TfHahueqXc8gz+MI="
+        },
+        "is-glob": {
+          "version": "4.0.0",
+          "resolved": "https://npm.bentley.com/npm/npm/is-glob/-/is-glob-4.0.0.tgz",
+          "integrity": "sha1-lSHHaEXMJhCoUgPd8ICpWML/q8A=",
+          "requires": {
+            "is-extglob": "2.1.1"
+          }
+        },
+        "is-number": {
+          "version": "3.0.0",
+          "resolved": "https://npm.bentley.com/npm/npm/is-number/-/is-number-3.0.0.tgz",
+          "integrity": "sha1-JP1iAaR4LPUFYcgQJ2r8fRLXEZU=",
+          "requires": {
+            "kind-of": "3.2.2"
+          },
+          "dependencies": {
+            "kind-of": {
+              "version": "3.2.2",
+              "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-3.2.2.tgz",
+              "integrity": "sha1-MeohpzS6ubuw8yRm2JOupR5KPGQ=",
+              "requires": {
+                "is-buffer": "1.1.6"
+              }
+            }
+          }
+        },
+        "isobject": {
+          "version": "3.0.1",
+          "resolved": "https://npm.bentley.com/npm/npm/isobject/-/isobject-3.0.1.tgz",
+          "integrity": "sha1-TkMekrEalzFjaqH5yNHMvP2reN8="
+        },
+        "kind-of": {
+          "version": "6.0.2",
+          "resolved": "https://npm.bentley.com/npm/npm/kind-of/-/kind-of-6.0.2.tgz",
+          "integrity": "sha1-ARRrNqYhjmTljzqNZt5df8b20FE="
+        },
+        "micromatch": {
+          "version": "3.1.9",
+          "resolved": "https://npm.bentley.com/npm/npm/micromatch/-/micromatch-3.1.9.tgz",
+          "integrity": "sha1-FdyTF1rjnlLpMIeEcJbv/HPvz4k=",
+          "requires": {
+            "arr-diff": "4.0.0",
+            "array-unique": "0.3.2",
+            "braces": "2.3.1",
+            "define-property": "2.0.2",
+            "extend-shallow": "3.0.2",
+            "extglob": "2.0.4",
+            "fragment-cache": "0.2.1",
+            "kind-of": "6.0.2",
+            "nanomatch": "1.2.9",
+            "object.pick": "1.3.0",
+            "regex-not": "1.0.2",
+            "snapdragon": "0.8.1",
+            "to-regex": "3.0.2"
           }
         }
       }
@@ -7290,14 +8513,14 @@
         "supports-color": "4.5.0",
         "tapable": "0.2.8",
         "uglifyjs-webpack-plugin": "0.4.6",
-        "watchpack": "1.4.0",
+        "watchpack": "1.5.0",
         "webpack-sources": "1.1.0",
         "yargs": "8.0.2"
       },
       "dependencies": {
         "ajv": {
           "version": "6.2.0",
-          "resolved": "https://registry.npmjs.org/ajv/-/ajv-6.2.0.tgz",
+          "resolved": "https://npm.bentley.com/npm/npm/ajv/-/ajv-6.2.0.tgz",
           "integrity": "sha1-r6wpW7qgFSRJ5SJ0LkVHwa6TKNI=",
           "requires": {
             "fast-deep-equal": "1.1.0",
@@ -7346,8 +8569,8 @@
     },
     "webpack-stream": {
       "version": "4.0.2",
-      "resolved": "https://registry.npmjs.org/webpack-stream/-/webpack-stream-4.0.2.tgz",
-      "integrity": "sha512-x9st6kLpPXaB7wPb7nKVtTgdIZx2TFV0+rTAzMQEPyA72qzYPKR5OItxP7e1vTtbX5T4Fm7rAlMPfAq1Ijq6gg==",
+      "resolved": "https://npm.bentley.com/npm/npm/webpack-stream/-/webpack-stream-4.0.2.tgz",
+      "integrity": "sha1-e5Cuxx1FyKRRn/i1pNWeA5z9AsA=",
       "requires": {
         "fancy-log": "1.3.2",
         "lodash.clone": "4.5.0",
