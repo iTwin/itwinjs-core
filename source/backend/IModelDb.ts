@@ -251,7 +251,7 @@ export class IModelDb extends IModel {
    * Pass an array if the parameters are positional. Pass an object of the values keyed on the parameter name
    * for named parameters.
    * The values in either the array or object must match the respective types of the parameters.
-   * See [[ECSqlStatement.bindvValues]] for details.
+   * See [[ECSqlStatement.bindValues]] for details.
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
    * See [[ECSqlStatement.getRow]] for details about the format of the returned rows.
    * @throws [[IModelError]] If the statement is invalid
