@@ -4,3 +4,4 @@
 .npmignore
 tsconfig.json
 tslint.json
+.vscode

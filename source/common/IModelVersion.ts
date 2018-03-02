@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { AccessToken, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelError } from "./IModelError";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
 
 /** Option to specify the version of the iModel to be acquired and used */
 export class IModelVersion {
@@ -108,7 +108,7 @@ export class IModelVersion {
   /** Gets the last change set that was applied to the imodel */
   private static async getLatestChangeSetId(hubClient: IModelHubClient, accessToken: AccessToken, iModelId: string): Promise<string> {
     const changeSets: ChangeSet[] = await hubClient.getChangeSets(accessToken, iModelId, false /*=includeDownloadLink*/);
-      // todo: Need a more efficient iModel Hub API to get this information from the Hub.
+    // todo: Need a more efficient iModel Hub API to get this information from the Hub.
 
     return (changeSets.length === 0) ? "" : changeSets[changeSets.length - 1].wsgId;
   }

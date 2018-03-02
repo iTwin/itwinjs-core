@@ -4,7 +4,7 @@
 import { Gateway, GatewayImplementation, GatewayDefinition } from "../Gateway";
 import { GatewayConfiguration } from "./GatewayConfiguration";
 import { IModelError } from "../IModelError";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
+import { BentleyStatus } from "@bentley/bentleyjs-core";
 
 /**
  * Global store of gateway parameters.

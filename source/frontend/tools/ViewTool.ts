@@ -8,7 +8,7 @@ import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
 import { Range3d } from "@bentley/geometry-core/lib/Range";
 import { Frustum, NpcCenter, Npc } from "@bentley/imodeljs-common/lib/Frustum";
 import { MarginPercent, ViewStatus, ViewState3d } from "../ViewState";
-import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
+import { BeDuration } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { AccuDrawFlags } from "../AccuDraw";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";

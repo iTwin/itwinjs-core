@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64Props } from "@bentley/bentleyjs-core/lib/Id";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
+import { Id64Props } from "@bentley/bentleyjs-core";
+import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "./IModelError";
 
 /** Describes the different data types an ECSQL value can be of. */
@@ -23,7 +23,8 @@ export enum ECSqlValueType {
   Struct = 13,
   PrimitiveArray = 14,
   StructArray = 15,
-  Guid = 16 }
+  Guid = 16
+}
 
 /** An ECSQL Navigation value.
  *
@@ -47,16 +48,16 @@ export interface ECSqlTypedString {
 
 /** Type of an [[ECSqlTypedString]] */
 export enum ECSqlStringType {
- /** The string represents a BLOB value, formatted as Base64 string. */
- Blob,
- /** The string represents a DateTime value, formatted as ISO8601 string. */
- DateTime,
- /** The string represents a GUID value, formatted as GUID string (see [[Guid]]). */
- Guid,
- /** The string represents an Id value, formatted as hexadecimal string (see [[Id64]]). */
- Id,
- /** The string is not specifically typed. */
- String,
+  /** The string represents a BLOB value, formatted as Base64 string. */
+  Blob,
+  /** The string represents a DateTime value, formatted as ISO8601 string. */
+  DateTime,
+  /** The string represents a GUID value, formatted as GUID string (see [[Guid]]). */
+  Guid,
+  /** The string represents an Id value, formatted as hexadecimal string (see [[Id64]]). */
+  Id,
+  /** The string is not specifically typed. */
+  String,
 }
 
 /** An ECSQL Navigation value which can be bound to a navigation property ECSQL parameter
@@ -70,7 +71,7 @@ export interface NavigationBindingValue {
    * if other ECDb files are attached to the primary one. In case a schema exists in more than one of the files,
    * pass the table space to disambiguate.
    */
-   relClassTableSpace?: string;
+  relClassTableSpace?: string;
 }
 
 /** Defines the ECSQL system properties. */

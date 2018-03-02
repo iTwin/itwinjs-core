@@ -5,7 +5,7 @@ import { BeButtonEvent } from "./Tool";
 import { HitDetail } from "../HitDetail";
 import { Viewport } from "../Viewport";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
+import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { FenceParams } from "../FenceParams";
 
 /** Control selection modes. */

@@ -14,9 +14,9 @@
     "NOTE: The only reason to add a dependency to imodeljs-nodeaddonapi is because we do NOT consume the backend as a package (will change soon)"
   ],
   "dependencies": {
-    "@bentley/bentleyjs-core": "^7.2.0",
-    "@bentley/geometry-core": "^5.0.2",
-    "@bentley/imodeljs-backend": "^0.59.1",
+    "@bentley/bentleyjs-core": "^7.3.1",
+    "@bentley/geometry-core": "^5.0.3",
+    "@bentley/imodeljs-backend": "^0.60.0",
     "@bentley/imodeljs-clients": "^3.0.3",
     "@bentley/imodeljs-common": "^0.59.0",
     "@bentley/imodeljs-electronaddon": "~10.0.0",

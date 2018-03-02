@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64, Guid } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { Transform } from "@bentley/geometry-core/lib/Transform";
 import { Code, CodeSpecNames } from "@bentley/imodeljs-common/lib/Code";
@@ -9,7 +9,7 @@ import { Placement3d, Placement2d, AxisAlignedBox3d } from "@bentley/imodeljs-co
 import { GeometryStream, GeometryStreamBuilder } from "@bentley/imodeljs-common/lib/geometry/GeometryStream";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
-import { DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { DbOpcode } from "@bentley/bentleyjs-core";
 import {
   ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
   ViewAttachmentProps, SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,

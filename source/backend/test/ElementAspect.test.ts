@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { PhysicalElement } from "../Element";
 import { ElementMultiAspect, ElementUniqueAspect } from "../ElementAspect";
 import { IModelDb } from "../IModelDb";

@@ -2,11 +2,9 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { AccessToken, ChangeSet, UserInfo, IModelHubClient } from "@bentley/imodeljs-clients";
-import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { OpenMode, DbResult } from "@bentley/bentleyjs-core";
 import { ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { using } from "@bentley/bentleyjs-core/lib/Disposable";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { Id64, using, assert, PerfLogger } from "@bentley/bentleyjs-core";
 import { iModelHost } from "./IModelHost";
 import { IModelDb } from "./IModelDb";
 import { ECDb } from "./ECDb";
@@ -16,13 +14,13 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import * as path from "path";
 import { IModelJsFs } from "./IModelJsFs";
 import { KnownLocations } from "./KnownLocations";
-import { PerfLogger } from "@bentley/bentleyjs-core/lib/Logger";
 
 /** Equivalent of the ECEnumeration OpCode in the ECDbChange ECSchema */
 export enum ChangeOpCode {
   Insert = 1,
   Update = 2,
-  Delete = 4 }
+  Delete = 4
+}
 
 /** The enum represents the values for the ChangedValueState argument of the ECSQL function
  *  Changes.
@@ -30,23 +28,24 @@ export enum ChangeOpCode {
  * in an ECSQL using the Changes ECSQL function.
  */
 export enum ChangedValueState {
-    AfterInsert = 1,
-    BeforeUpdate = 2,
-    AfterUpdate = 3,
-    BeforeDelete = 4 }
+  AfterInsert = 1,
+  BeforeUpdate = 2,
+  AfterUpdate = 3,
+  BeforeDelete = 4
+}
 
 export interface ChangeSummary {
   id: Id64;
-  changeSet: {wsgId: string, parentWsgId: string, pushDate: string, author: string};
+  changeSet: { wsgId: string, parentWsgId: string, pushDate: string, author: string };
 }
 
 export interface InstanceChange {
   id: Id64;
   summaryId: Id64;
-  changedInstance: {id: Id64, className: string};
+  changedInstance: { id: Id64, className: string };
   opCode: ChangeOpCode;
   isIndirect: boolean;
-  changedProperties: {before: any, after: any};
+  changedProperties: { before: any, after: any };
 }
 
 /** Class to extract change summaries for a briefcase. */
@@ -76,7 +75,7 @@ export class ChangeSummaryManager {
 
     const changesCacheFilePath: string = BriefcaseManager.getChangeSummaryPathname(iModel.briefcaseEntry.iModelId);
     if (!IModelJsFs.existsSync(changesCacheFilePath)) {
-      using (new ECDb(), (changesFile) => {
+      using(new ECDb(), (changesFile) => {
         ChangeSummaryManager.createChangesFile(iModel, changesFile, changesCacheFilePath);
       });
     }
@@ -167,7 +166,7 @@ export class ChangeSummaryManager {
 
         ChangeSummaryManager.addExtendedInfos(changesFile, changeSummaryId, currentChangeSetId, changeSetInfo.parentId, changeSetInfo.pushDate, userEmail);
         perfLogger.dispose();
-        }
+      }
 
       changesFile.saveChanges();
     } finally {
@@ -209,7 +208,7 @@ export class ChangeSummaryManager {
 
     if (endChangeSetIx < 0) {
       const errorMsg: string = startChangeSetId !== undefined ? `Invalid ChangeSet ${endChangeSetId} for iModel ${iModelId}. It does not exist.` :
-      `Invalid ChangeSet ${endChangeSetId} for iModel ${iModelId}. It either does not exist or it is not a successor of the start changeset ${startChangeSetId}.`;
+        `Invalid ChangeSet ${endChangeSetId} for iModel ${iModelId}. It either does not exist or it is not a successor of the start changeset ${startChangeSetId}.`;
       throw new IModelError(IModelStatus.BadArg, errorMsg);
     }
 
@@ -295,8 +294,8 @@ export class ChangeSummaryManager {
         throw new IModelError(DbResult.BE_SQLITE_ERROR, `No ChangeSet information found for ChangeSummary ${changeSummaryId.value}.`);
 
       const row = stmt.getRow();
-      return {id: changeSummaryId, changeSet: {wsgId: row.wsgId, parentWsgId: row.parentWsgId, pushDate: row.pushDate, author: row.author}};
-      });
+      return { id: changeSummaryId, changeSet: { wsgId: row.wsgId, parentWsgId: row.parentWsgId, pushDate: row.pushDate, author: row.author } };
+    });
   }
 
   /** Queries the InstanceChange for the specified instance change id
@@ -319,12 +318,14 @@ export class ChangeSummaryManager {
           throw new IModelError(DbResult.BE_SQLITE_ERROR, `No InstanceChange found for id ${instanceChangeId.value}.`);
 
         const row = stmt.getRow();
-        const changedInstanceId = new Id64 (row.changedInstanceId);
+        const changedInstanceId = new Id64(row.changedInstanceId);
         const changedInstanceClassName: string = row.changedInstanceSchemaName + "." + row.changedInstanceClassName;
         const op: ChangeOpCode = row.opCode as ChangeOpCode;
 
-        return { id: instanceChangeId, summaryId: new Id64(row.summaryId), changedInstance: {id: changedInstanceId, className: changedInstanceClassName},
-                opCode: op, isIndirect: row.isIndirect, changedProperties: {before: undefined, after: undefined}};
+        return {
+          id: instanceChangeId, summaryId: new Id64(row.summaryId), changedInstance: { id: changedInstanceId, className: changedInstanceClassName },
+          opCode: op, isIndirect: row.isIndirect, changedProperties: { before: undefined, after: undefined }
+        };
       });
 
     switch (instanceChange.opCode) {
@@ -358,8 +359,8 @@ export class ChangeSummaryManager {
         const propChangeRow = stmt.getRow();
         propValECSql += propChangeRow.accessString;
         isFirstRow = false;
-        }
-      });
+      }
+    });
 
     propValECSql += " FROM main." + instanceChange.changedInstance.className + ".Changes(?," + changedValueState + ") WHERE ECInstanceId=?";
     return iModel.withPreparedStatement(propValECSql, (stmt) => {
@@ -369,6 +370,6 @@ export class ChangeSummaryManager {
         throw new IModelError(DbResult.BE_SQLITE_ERROR, `No property value changes found for InstanceChange ${instanceChange.id.value}.`);
 
       return stmt.getRow();
-      });
+    });
   }
 }

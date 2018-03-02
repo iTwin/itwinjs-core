@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ECDb } from "../ECDb";
-import { Guid } from "@bentley/bentleyjs-core/lib/Id";
+import { Guid } from "@bentley/bentleyjs-core";
 import { IModelJsFs } from "../IModelJsFs";
 import * as path from "path";
 

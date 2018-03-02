@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated.All rights reserved.$
  * --------------------------------------------------------------------------------------------*/
-import { Id64, Id64Arg } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { CategorySelectorProps } from "@bentley/imodeljs-common/lib/ViewProps";
