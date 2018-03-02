@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { TestGateway, TestOp1Params } from "../common/TestGateway";
 import { Gateway, GatewayOperationsProfile } from "@bentley/imodeljs-common/lib/Gateway";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64 } from "@bentley/bentleyjs-core";
 
 export class TestGatewayImpl extends Gateway implements TestGateway {
   public static register() {

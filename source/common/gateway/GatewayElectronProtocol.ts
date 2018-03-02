@@ -5,7 +5,7 @@ import { Gateway, GatewayDefinition } from "../Gateway";
 import { GatewayProtocol } from "./GatewayProtocol";
 import { GatewayConfiguration } from "./GatewayConfiguration";
 import { IModelError } from "../IModelError";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
+import { BentleyStatus } from "@bentley/bentleyjs-core";
 
 /** IPC within an Electron application. */
 export class GatewayElectronProtocol extends GatewayProtocol {

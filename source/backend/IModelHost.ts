@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { DeploymentEnv } from "@bentley/imodeljs-clients";
-import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
+import { BeEvent } from "@bentley/bentleyjs-core";
 import { BentleyStatus, IModelError } from "@bentley/imodeljs-common/lib/IModelError";
 import * as path from "path";
 import { KnownLocations } from "./KnownLocations";

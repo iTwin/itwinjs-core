@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64, Guid } from "@bentley/bentleyjs-core";
 import { EntityProps } from "@bentley/imodeljs-common/lib/EntityProps";
 import { Code } from "@bentley/imodeljs-common/lib/Code";
 import { ElementProps, RelatedElement } from "@bentley/imodeljs-common/lib/ElementProps";

@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
 import { EntityProps } from "@bentley/imodeljs-common/lib/EntityProps";
 import { ClassRegistry } from "./ClassRegistry";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
-import { DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { DbOpcode } from "@bentley/bentleyjs-core";
 import { RelatedElement } from "@bentley/imodeljs-common/lib/ElementProps";
 
 /** The primitive types of an Entity property. */

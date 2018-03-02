@@ -4,7 +4,7 @@
 import { CoordinateLockOverrides } from "./ToolAdmin";
 import { Tool, BeButtonEvent, BeCursor, InteractiveTool } from "./Tool";
 import { Viewport } from "../Viewport";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "../IModelConnection";
 import { iModelApp } from "../IModelApp";
 import { AccuDrawShortcuts } from "./AccuDrawTool";

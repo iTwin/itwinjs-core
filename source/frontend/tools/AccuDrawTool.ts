@@ -13,7 +13,7 @@ import { RotMatrix } from "@bentley/geometry-core/lib/Transform";
 import { Geometry, Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Viewport } from "../Viewport";
 import { AuxCoordSystemState } from "../AuxCoordSys";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
+import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { SnapDetail, SnapHeat } from "../HitDetail";
 import { StandardViewId } from "../ViewState";
 import { iModelApp } from "../IModelApp";

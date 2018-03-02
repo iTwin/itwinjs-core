@@ -3,10 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Point2d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
-import { RotMatrix, Transform} from "@bentley/geometry-core/lib/Transform";
+import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
 import { Geometry } from "@bentley/geometry-core/lib/Geometry";
 import { ColorDef } from "../ColorDef";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64 } from "@bentley/bentleyjs-core";
 
 /** Explicit declaration, separate from generated "schema", for easily changing and reassigning values */
 export class DwgHatchDefLine {

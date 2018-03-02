@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelError } from "./IModelError";
-import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
+import { Logger } from "@bentley/bentleyjs-core";
+import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { GatewayRegistry, GatewayDirectProtocol } from "./gateway/GatewayProtocol";
 import { GatewayConfiguration, GatewayDefaultConfiguration } from "./gateway/GatewayConfiguration";
 

@@ -1,14 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
 import { AddonECDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { AddonRegistry } from "./AddonRegistry";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
-import { IDisposable } from "@bentley/bentleyjs-core/lib/Disposable";
-import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { DbResult, OpenMode, IDisposable, Logger, assert } from "@bentley/bentleyjs-core";
 
 const loggingCategory = "imodeljs-backend.ECDb";
 

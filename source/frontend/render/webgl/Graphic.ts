@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { assert } from "@bentley/bentleyjs-core";
 import { Point3d, Vector3d } from "@bentley/geometry-core/lib/PointVector";
 import { FeatureIndexType, FeatureIndex } from "./FeatureIndex";
 
@@ -72,7 +72,7 @@ export class PolylineParamVertex {
   public isPolylineStartOrEnd: boolean;
 
   public constructor(isSegmentStart: boolean, isPolylineStartOrEnd: boolean, point: Point3d,
-                     prevPoint: Point3d, nextPoint: Point3d, color: number, attrib: number, length: number) {
+    prevPoint: Point3d, nextPoint: Point3d, color: number, attrib: number, length: number) {
     this.isSegmentStart = isSegmentStart;
     this.isPolylineStartOrEnd = isPolylineStartOrEnd;
     this.point = point;
@@ -84,11 +84,11 @@ export class PolylineParamVertex {
   }
 
   public DotProduct(): number {
-    const prevDir: Vector3d = Vector3d.createStartEnd (this.prevPoint, this.point);
-    prevDir.normalizeInPlace ();
-    const nextDir: Vector3d = Vector3d.createStartEnd (this.nextPoint, this.point);
-    nextDir.normalizeInPlace ();
-    return prevDir.dotProduct (nextDir);
+    const prevDir: Vector3d = Vector3d.createStartEnd(this.prevPoint, this.point);
+    prevDir.normalizeInPlace();
+    const nextDir: Vector3d = Vector3d.createStartEnd(this.nextPoint, this.point);
+    nextDir.normalizeInPlace();
+    return prevDir.dotProduct(nextDir);
   }
 
   public GetParam(negatePerp: boolean, adjacentToJoint: boolean = false, joint: boolean = false, noDisplacement: boolean = false): PolylineParam {

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { EntityProps, EntityQueryParams } from "./EntityProps";
 import { XYProps } from "@bentley/geometry-core/lib/PointVector";
-import { Id64Props } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64Props } from "@bentley/bentleyjs-core";
 
 export interface ModelProps extends EntityProps {
   modeledElement: Id64Props;

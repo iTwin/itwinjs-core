@@ -1,11 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Point3d, Vector3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
-import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
+import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Geometry, Arc3d } from "@bentley/geometry-core";
 import { Viewport } from "./Viewport";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
-import { Geometry } from "@bentley/geometry-core/lib/Geometry";
+import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { StandardViewId, ViewState } from "./ViewState";
 import { CoordinateLockOverrides } from "./tools/ToolAdmin";
 import { ColorDef, ColorRgb } from "@bentley/imodeljs-common/lib/ColorDef";
@@ -16,7 +14,6 @@ import { AuxCoordSystemState } from "./AuxCoordSys";
 import { LinePixels } from "@bentley/imodeljs-common/lib/Render";
 import { GraphicBuilder } from "./render/GraphicBuilder";
 import { DecorateContext, SnapContext } from "./ViewContext";
-import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { ViewTool } from "./tools/ViewTool";
 import { PrimitiveTool } from "./tools/PrimitiveTool";
@@ -201,7 +198,7 @@ export class ThreeAxes {
 }
 
 /**
- * Accudraw is an aide for entering coordinate data
+ * Accudraw is an aide for entering coordinate data.
  */
 export class AccuDraw {
   public currentState = CurrentState.NotEnabled;     // Compass state

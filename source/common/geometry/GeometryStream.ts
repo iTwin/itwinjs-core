@@ -15,7 +15,7 @@ import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
 import { LineSegment3d } from "@bentley/geometry-core/lib/curve/LineSegment3d";
 import { LineString3d } from "@bentley/geometry-core/lib/curve/LineString3d";
 import { BGFBBuilder, BGFBReader } from "@bentley/geometry-core/lib/serialization/BGFB";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { GeometricPrimitive, GeometryType, Placement2d, Placement3d, ElementAlignedBox2d, ElementAlignedBox3d } from "./Primitives";
 import { GeometryParams } from "./GeometryProps";
 import { LineStyleInfo, LineStyleParams } from "./LineStyle";

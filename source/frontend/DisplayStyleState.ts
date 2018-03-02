@@ -7,7 +7,7 @@ import { ColorDef, ColorRgb } from "@bentley/imodeljs-common/lib/ColorDef";
 import { ElementState } from "./EntityState";
 import { ElementProps } from "@bentley/imodeljs-common/lib/ElementProps";
 import { IModelConnection } from "./IModelConnection";
-import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
+import { JsonUtils } from "@bentley/bentleyjs-core";
 import { Vector3d } from "@bentley/geometry-core/lib/PointVector";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */

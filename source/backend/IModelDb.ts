@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Guid, Id64, Id64Set } from "@bentley/bentleyjs-core/lib/Id";
-import { LRUMap } from "@bentley/bentleyjs-core/lib/LRUMap";
-import { OpenMode, DbResult, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { Guid, Id64, Id64Set } from "@bentley/bentleyjs-core";
+import { LRUMap } from "@bentley/bentleyjs-core";
+import { OpenMode, DbResult, DbOpcode } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
 import { DeploymentEnv } from "@bentley/imodeljs-clients/lib/Clients";
 import { MultiCode, IModelHubClient, CodeState } from "@bentley/imodeljs-clients/lib/IModelHubClients";
@@ -11,7 +11,7 @@ import { Code, CodeSpec } from "@bentley/imodeljs-common/lib/Code";
 import { ElementProps, ElementAspectProps, ElementLoadParams } from "@bentley/imodeljs-common/lib/ElementProps";
 import { IModel, IModelProps } from "@bentley/imodeljs-common/lib/IModel";
 import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
-import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
+import { Logger } from "@bentley/bentleyjs-core";
 import { ModelProps } from "@bentley/imodeljs-common/lib/ModelProps";
 import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
 import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
@@ -23,11 +23,11 @@ import { Model } from "./Model";
 import { BriefcaseEntry, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./BriefcaseManager";
 import { AddonBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { assert } from "@bentley/bentleyjs-core";
 import { CodeSpecs } from "./CodeSpecs";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelGatewayImpl } from "./IModelGatewayImpl";
-import { RepositoryStatus } from "@bentley/bentleyjs-core/lib/BentleyError";
+import { RepositoryStatus } from "@bentley/bentleyjs-core";
 import * as path from "path";
 import { IModelDbLinkTableRelationships, LinkTableRelationship } from "./LinkTableRelationship";
 import { AxisAlignedBox3d } from "@bentley/imodeljs-common/lib/geometry/Primitives";
@@ -35,7 +35,7 @@ import { AddonRegistry } from "./AddonRegistry";
 import { RequestQueryOptions } from "@bentley/imodeljs-clients/lib";
 import { iModelHost } from "./IModelHost";
 import { EntityQueryParams, EntityProps } from "@bentley/imodeljs-common/lib/EntityProps";
-import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
+import { BeEvent } from "@bentley/bentleyjs-core";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common/lib/ViewProps";
 
 const loggingCategory = "imodeljs-backend.IModelDb";

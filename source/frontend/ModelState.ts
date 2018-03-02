@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { EntityState } from "./EntityState";
-import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
+import { JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core/lib/PointVector";
 import { ModelProps, GeometricModel2dProps } from "@bentley/imodeljs-common/lib/ModelProps";
 import { AxisAlignedBox3d } from "@bentley/imodeljs-common/lib/geometry/Primitives";

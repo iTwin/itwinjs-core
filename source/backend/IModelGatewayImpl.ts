@@ -1,19 +1,19 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { OpenMode } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { EntityQueryParams } from "@bentley/imodeljs-common/lib/EntityProps";
 import { Gateway } from "@bentley/imodeljs-common/lib/Gateway";
 import { IModelToken, IModel } from "@bentley/imodeljs-common/lib/IModel";
 import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
 import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
-import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
+import { Logger } from "@bentley/bentleyjs-core";
 import { EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { IModelGateway } from "@bentley/imodeljs-common/lib/gateway/IModelGateway";
 import { AxisAlignedBox3d } from "@bentley/imodeljs-common/lib/geometry/Primitives";
-import { Id64Set } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64Set } from "@bentley/bentleyjs-core";
 
 const loggingCategory = "imodeljs-backend.IModelGatewayImpl";
 

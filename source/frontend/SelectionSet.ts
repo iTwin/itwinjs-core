@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64Arg, Id64Set } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64, Id64Arg, Id64Set } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
-import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
+import { BeEvent } from "@bentley/bentleyjs-core";
 import { iModelApp } from "./IModelApp";
 
 /** event types for SelectionSet.onChanged  */

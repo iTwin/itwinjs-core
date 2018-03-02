@@ -10,8 +10,8 @@ import {
 } from "./Tool";
 import { ViewTool, ViewToolSettings, InputCollector } from "./ViewTool";
 import { IdleTool } from "./IdleTool";
-import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
-import { BeEvent, BeEventList } from "@bentley/bentleyjs-core/lib/BeEvent";
+import { BeDuration } from "@bentley/bentleyjs-core";
+import { BeEvent, BeEventList } from "@bentley/bentleyjs-core";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { DecorateContext } from "../ViewContext";
 import { TentativeOrAccuSnap, AccuSnapToolState } from "../AccuSnap";

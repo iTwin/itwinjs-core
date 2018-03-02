@@ -6,7 +6,7 @@ import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps } fro
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY } from "@bentley/geometry-core/lib/PointVector";
 import { RotMatrix } from "@bentley/geometry-core/lib/Transform";
-import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
+import { JsonUtils } from "@bentley/bentleyjs-core";
 import { Code, CodeSpecNames } from "@bentley/imodeljs-common/lib/Code";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
