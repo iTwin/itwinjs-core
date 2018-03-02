@@ -244,7 +244,7 @@ describe("BriefcaseManager", () => {
     iModelVersionMock.verify((f: IModelVersion) => f.evaluateChangeSet(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
   });
 
-  it("should be able to open a cached first version IModel in ReadWrite mode", async () => {
+  it.only("should be able to open a cached first version IModel in ReadWrite mode", async () => {
     // Arrange
     const seedFileMock = TypeMoq.Mock.ofType(SeedFile);
     seedFileMock.object.downloadUrl = "www.bentley.com";
@@ -270,6 +270,10 @@ describe("BriefcaseManager", () => {
         const jsonObj = JSON.parse(buff.toString())[0];
         return Promise.resolve(getTypedInstance<Briefcase>(Briefcase, jsonObj));
       }).verifiable();
+    // iModelHubClientMock.setup((f: IModelHubClient) => f.getBriefcases(TypeMoq.It.isAny(), TypeMoq.It.isAnyString()))
+    //   .returns(() => {
+        
+    //   }).verifiable();
     iModelHubClientMock.setup((f: IModelHubClient) => f.downloadFile(TypeMoq.It.isAnyString(), TypeMoq.It.isAnyString()))
       .returns((seedUrl: string, seedPathname: string) => {
         seedUrl.italics();
