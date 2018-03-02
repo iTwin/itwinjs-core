@@ -42,6 +42,52 @@ export interface IModelTestUtilsOpenOptions {
   openMode?: OpenMode;
 }
 
+/** Credentials for test users */
+export interface UserCredentials {
+  email: string;
+  password: string;
+}
+
+/** Test users with various permissions */
+export class TestUsers {
+  /** User with the typical permissions of the regular/average user - Co-Admin: No, Connect-Services-Admin: No */
+  public static readonly regular: UserCredentials = {
+    email: "Regular.IModelJsTestUser@mailinator.com",
+    password: "Regular@iMJs",
+  };
+
+  /** User with typical permissions of the project administrator - Co-Admin: Yes, Connect-Services-Admin: No */
+  public static readonly manager: UserCredentials = {
+    email: "Manager.IModelJsTestUser@mailinator.com",
+    password: "Manager@iMJs",
+  };
+
+  /** User with the typical permissions of the connected services administrator - Co-Admin: No, Connect-Services-Admin: Yes */
+  public static readonly super: UserCredentials = {
+    email: "Super.IModelJsTestUser@mailinator.com",
+    password: "Super@iMJs",
+  };
+
+  /** User with the typical permissions of the connected services administrator - Co-Admin: Yes, Connect-Services-Admin: Yes */
+  public static readonly superManager: UserCredentials = {
+    email: "SuperManager.IModelJsTestUser@mailinator.com",
+    password: "SuperManager@iMJs",
+  };
+
+  /** Just another user */
+  public static readonly user1: UserCredentials = {
+    email: "bistroDEV_pmadm1@mailinator.com",
+    password: "pmadm1",
+  };
+
+  /** Just another user */
+  public static readonly user2: UserCredentials = {
+    email: "bentleyvilnius@gmail.com",
+    password: "Q!w2e3r4t5",
+  };
+
+}
+
 export class IModelTestUtils {
   public static user = {
     email: "bistroDEV_pmadm1@mailinator.com",
@@ -86,11 +132,14 @@ export class IModelTestUtils {
     IModelTestUtils._hubClient = new IModelHubClient(deployConfig);
   }
 
-  public static async getTestUserAccessToken(): Promise<AccessToken> {
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient("QA")).getToken(IModelTestUtils.user.email, IModelTestUtils.user.password);
+  public static async getTestUserAccessToken(userCredentials?: any): Promise<AccessToken> {
+    if (userCredentials === undefined)
+      userCredentials = IModelTestUtils.user;
+    const env = IModelTestUtils._iModelHubDeployConfig;
+    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(env)).getToken(userCredentials.email, userCredentials.password);
     assert(authToken);
 
-    const accessToken = await (new ImsDelegationSecureTokenClient("QA")).getToken(authToken!);
+    const accessToken = await (new ImsDelegationSecureTokenClient(env)).getToken(authToken!);
     assert(accessToken);
 
     return accessToken;
@@ -277,7 +326,7 @@ export class IModelTestUtils {
   }
 
   public static startBackend() {
-    IModelTestUtils.iModelHubDeployConfig = "QA";
+    IModelTestUtils.iModelHubDeployConfig = IModelTestUtils._iModelHubDeployConfig;
     IModelHost.startup(new IModelHostConfiguration());
   }
 }

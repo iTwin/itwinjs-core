@@ -9,9 +9,9 @@ import { Code } from "@bentley/imodeljs-common/lib/Code";
 import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
 import { KeepBriefcase } from "../BriefcaseManager";
 import { IModelDb, ConcurrencyControl } from "../IModelDb";
-import { IModelTestUtils } from "./IModelTestUtils";
+import { IModelTestUtils, TestUsers } from "./IModelTestUtils";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { Element } from "../Element";
+import { Element, GeometricElement3d } from "../Element";
 import { DictionaryModel } from "../Model";
 import { SpatialCategory } from "../Category";
 import { Appearance } from "@bentley/imodeljs-common/lib/SubCategoryAppearance";
@@ -36,6 +36,28 @@ class Timer {
     // tslint:disable-next-line:no-console
     console.timeEnd(this.label);
   }
+}
+
+async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: AccessToken) {
+  // Create a new physical model.
+  let modelId: Id64;
+  [, modelId] = IModelTestUtils.createAndInsertPhysicalModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
+
+  // Find or create a SpatialCategory.
+  const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
+  const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
+  const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+
+  // Reserve all of the codes that are required by the new model and category.
+  try {
+    await rwIModel.concurrencyControl.request(accessToken);
+  } catch (err) {
+    if (err instanceof ConcurrencyControl.RequestError) {
+        assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
+    }
+  }
+
+  return {modelId, spatialCategoryId};
 }
 
 describe("BriefcaseManager", () => {
@@ -80,6 +102,53 @@ describe("BriefcaseManager", () => {
     }
 
     console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
+  });
+
+  it.only("should open two briefcases for two different users of same iModel", async () => {
+    const accessToken2 = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
+
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
+    const iModel2: IModelDb = await IModelDb.open(accessToken2, testProjectId, testIModelId, OpenMode.ReadWrite);
+    assert.notEqual(iModel, iModel2);
+
+    // Set up optimistic concurrency. Note the defaults are:
+    // updateVsUpdate - ConcurrencyControl.OnConflict.RejectIncomingChange;
+    // updateVsDelete - ConcurrencyControl.OnConflict.AcceptIncomingChange;
+    // deleteVsUpdate - ConcurrencyControl.OnConflict.RejectIncomingChange;
+    iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    iModel2.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+
+    // u1: create model, category, and element el1
+    const r: {modelId: Id64, spatialCategoryId: Id64} = await createNewModelAndCategory(iModel, accessToken);
+    const el1 = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, r.modelId, r.spatialCategoryId));
+    iModel.saveChanges("created model, category, and one element");
+    iModel.pushChanges(accessToken);
+
+    // u2: pull and merge
+    await iModel2.pullAndMergeChanges(accessToken2);
+
+    // u1: modify el1
+    if (true) {
+      const el1cc: GeometricElement3d = (iModel.elements.getElement(el1)).copyForEdit<Element>() as GeometricElement3d;
+      el1cc.userLabel = el1cc.userLabel + "changed by u1";
+      iModel.elements.updateElement(el1cc);
+      iModel.saveChanges("u1 modified el1");
+      await iModel.pushChanges(accessToken);
+    }
+
+    // u2: modify el1
+    if (true) {
+      const el1cc: GeometricElement3d = (iModel2.elements.getElement(el1)).copyForEdit<Element>() as GeometricElement3d;
+      el1cc.userLabel = el1cc.userLabel + "changed by u2";
+      iModel2.elements.updateElement(el1cc);
+      iModel.saveChanges("u2 modified el1");
+
+      // pull + merge => take mine (RejectIncomingChange)
+      await iModel2.pullAndMergeChanges(accessToken2);
+      const el1after = iModel2.elements.getElement(el1);
+      assert.equal(el1after.userLabel, el1cc.userLabel);
+    }
+
   });
 
   it("should be able to open an IModel from the Hub in Readonly mode", async () => {
