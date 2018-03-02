@@ -291,6 +291,9 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     return new ECSqlInsertResult(r.status);
   }
 
+  /** Get the query result's column count (only for ECSQL SELECT statements). */
+  public getColumnCount(): number { return this._stmt!.getColumnCount(); }
+
   /** Get the current row.
    * The returned row is formatted as JavaScript object where every SELECT clause item becomes a property in the JavaScript object.
    *
@@ -330,7 +333,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * | SELECT count(*) cnt FROM bis.Element | `{cnt: 31241}` |
    */
   public getRow(): any {
-    const colCount: number = this._stmt!.getColumnCount();
+    const colCount: number = this.getColumnCount();
     const row: object = {};
     const duplicatePropNames = new Map<string, number>();
     for (let i = 0; i < colCount; i++) {

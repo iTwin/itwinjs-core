@@ -7,12 +7,12 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Run Tests",
+      "name": "Run Backend Tests",
       "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
-      "cwd": "${workspaceFolder}",
+      "cwd": "${workspaceFolder}/source/backend",
       "args": [
         "--packageRoot=${workspaceFolder}",
-        "--testDir=${workspaceFolder}/source/backend/lib/backend/test",
+        "--testDir=${workspaceFolder}/source/backend/lib/test",
         "--debug"
       ],
       "port": 9229,
@@ -26,7 +26,7 @@
       "runtimeExecutable": "${workspaceFolder}\\source\\testbed\\node_modules\\.bin\\electron",
       "runtimeArgs": [
         "${workspaceFolder}/source/testbed/floss/electron/index.js",
-        "{\"debug\":true, \"noDevTools\":true, \"path\":\"lib/testbed/frontend/index.js\", \"grep\":\"\", \"fgrep\":\"\"}",
+        "{\"debug\":true, \"noDevTools\":true, \"path\":\"lib/frontend/index.js\", \"grep\":\"\", \"fgrep\":\"\"}",
         "--debug-brk=5858",
         "--remote-debugging-port=9223"
       ],
