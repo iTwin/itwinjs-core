@@ -6,7 +6,7 @@ import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnectio
 import { ElementAgenda } from "@bentley/imodeljs-frontend/lib/tools/ElementSetTool";
 import * as path from "path";
 import { assert } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { ModifyElementSource } from "@bentley/imodeljs-frontend/lib/tools/PrimitiveTool";
 import { SelectEventType } from "@bentley/imodeljs-frontend/lib/SelectionSet";
 

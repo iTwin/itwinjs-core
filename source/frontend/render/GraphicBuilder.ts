@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "../IModelConnection";
 import { Transform } from "@bentley/geometry-core/lib/Transform";
 import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
@@ -17,7 +17,7 @@ import { Viewport } from "../Viewport";
 import { Graphic, GraphicParams, AsThickenedLine, GeometryParams, LinePixels } from "@bentley/imodeljs-common/lib/Render";
 
 export abstract class Iterable<T> {
-  constructor(protected list: T[]) {}
+  constructor(protected list: T[]) { }
   public [Symbol.iterator]() {
     let key = 0;
     return { next: (): IteratorResult<T> => { const result = key < this.list.length ? { value: this.list[key], done: false } : { value: this.list[key - 1], done: true }; key++; return result; } };
@@ -25,7 +25,7 @@ export abstract class Iterable<T> {
 }
 
 export class GraphicBuilderTileCorners extends Iterable<Point3d> {
-  constructor(public pts: [ Point3d, Point3d, Point3d, Point3d ] ) { super(pts); }
+  constructor(public pts: [Point3d, Point3d, Point3d, Point3d]) { super(pts); }
 }
 
 /**

@@ -14,7 +14,7 @@ import { Cone } from "@bentley/geometry-core/lib/solid/Cone";
 import { Sample } from "@bentley/geometry-core/lib/serialization/GeometrySamples";
 import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
 import { PolyfaceBuilder } from "@bentley/geometry-core/lib/polyface/PolyfaceBuilder";
-import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64, Guid } from "@bentley/bentleyjs-core";
 import { IModelDb } from "../IModelDb";
 import { OpCodeReader, OpCodeWriter, OpCodeIterator, GeometryStreamBuilder, GeometryStream, OpCode } from "@bentley/imodeljs-common/lib/geometry/GeometryStream";
 import { GeometryParams } from "@bentley/imodeljs-common/lib/geometry/GeometryProps";

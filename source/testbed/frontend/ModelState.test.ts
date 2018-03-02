@@ -5,7 +5,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { ModelSelectorState } from "@bentley/imodeljs-frontend/lib/ModelSelectorState";
 import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnection";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { Code } from "@bentley/imodeljs-common/lib/Code";
 import { DrawingModelState, SheetModelState, SpatialModelState } from "@bentley/imodeljs-frontend/lib/ModelState";
 import { ModelSelectorProps } from "@bentley/imodeljs-common/lib/ViewProps";

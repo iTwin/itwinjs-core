@@ -8,13 +8,13 @@ import { Map4d, Point4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
 import { AxisOrder, Angle, AngleSweep } from "@bentley/geometry-core/lib/Geometry";
 import { ViewState, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
 import { Constant } from "@bentley/geometry-core/lib/Constant";
-import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core/lib/Time";
-import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
+import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@bentley/bentleyjs-core";
 import { BeButtonEvent, BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { DecorationList, Hilite, Camera } from "@bentley/imodeljs-common/lib/Render";
 import { HitDetail, SnapDetail, SnapMode } from "./HitDetail";
 import { DecorateContext } from "./ViewContext";
@@ -28,20 +28,20 @@ import { Placement2d, Placement3d } from "@bentley/imodeljs-common/lib/geometry/
 
 /** A rectangle in view coordinates. */
 export class ViewRect {
-  public constructor(public left: number = 0, public bottom: number = 0, public right: number = 0, public top: number = 0) { }
+  public constructor(public left = 0, public bottom = 0, public right = 0, public top = 0) { }
   public isNull(): boolean { return this.right < this.left || this.top < this.bottom; }
   public get width() { return this.right - this.left; }
   public get height() { return this.top - this.bottom; }
   public get aspect() { return this.isNull() ? 1.0 : this.width / this.height; }
   public get area() { return this.isNull() ? 0 : this.width * this.height; }
-  public init(left: number = 0, bottom: number = 0, right: number = 1, top: number = 1) { this.left = left, this.bottom = bottom, this.right = right, this.top = top; }
+  public init(left = 0, bottom = 0, right = 1, top = 1) { this.left = left, this.bottom = bottom, this.right = right, this.top = top; }
   public initFromPoint(low: XAndY, high: XAndY): void { this.init(low.x, low.y, high.x, high.y); }
   public initFromRange(input: LowAndHighXY): void { this.initFromPoint(input.low, input.high); }
 }
 
 /** the minimum and maximum values for the "depth" of a rectangle of screen space. Values are in "npc" so they will be between 0 and 1.0 */
 export class DepthRangeNpc {
-  constructor(public minimum: number = 0, public maximum: number = 1.0) { }
+  constructor(public minimum = 0, public maximum = 1.0) { }
   public middle(): number { return this.minimum + ((this.maximum - this.minimum) / 2.0); }
 }
 

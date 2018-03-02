@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { LinePixels } from "@bentley/imodeljs-common/lib/Render";
 import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
-import { Id64, Id64Set } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64, Id64Set } from "@bentley/bentleyjs-core";
 import { Cloneable } from "./Utility";
 
 export namespace FeatureSymbology {

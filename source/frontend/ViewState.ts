@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
+import { Id64 } from "@bentley/bentleyjs-core";
+import { JsonUtils } from "@bentley/bentleyjs-core";
 import { Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY } from "@bentley/geometry-core/lib/PointVector";
 import { Range3d } from "@bentley/geometry-core/lib/Range";
 import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
@@ -18,7 +18,7 @@ import { DisplayStyleState, DisplayStyle3dState, DisplayStyle2dState } from "./D
 import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
 import { Camera } from "@bentley/imodeljs-common/lib/Render";
 

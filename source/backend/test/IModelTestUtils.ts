@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { OpenMode } from "@bentley/bentleyjs-core";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
 import { ConnectClient, Project, IModelHubClient, Briefcase, DeploymentEnv } from "@bentley/imodeljs-clients";
 import { Code } from "@bentley/imodeljs-common/lib/Code";
@@ -20,7 +20,7 @@ import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelHostConfiguration, IModelHost, iModelHost } from "../IModelHost";
 import * as path from "path";
-// import { Logger, LogLevel } from "@bentley/bentleyjs-core/lib/Logger";
+// import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 
 // Logger.initializeToConsole();
 // Logger.setLevel("Performance", LogLevel.Info);

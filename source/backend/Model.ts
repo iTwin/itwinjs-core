@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
+import { Id64 } from "@bentley/bentleyjs-core";
+import { JsonUtils } from "@bentley/bentleyjs-core";
 import { ModelProps, GeometricModel2dProps } from "@bentley/imodeljs-common/lib/ModelProps";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
-import { DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { Point2d } from "@bentley/geometry-core/lib/PointVector";
+import { DbOpcode } from "@bentley/bentleyjs-core";
+import { Point2d } from "@bentley/geometry-core";
 
 /**
  * A Model is a container for persisting a collection of related elements within an iModel.

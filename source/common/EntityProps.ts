@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
-import { Id64Props } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64Props } from "@bentley/bentleyjs-core";
 
 /** The properties of a BIS Entity as they are read/stored from/to the database. */
 export interface EntityProps {

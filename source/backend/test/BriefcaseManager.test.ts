@@ -4,13 +4,13 @@
 import * as path from "path";
 import { expect, assert } from "chai";
 import * as TypeMoq from "typemoq";
-import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core";
 import { AccessToken, Briefcase, ChangeSet, IModel as HubIModel, SeedFile, MultiCode, CodeState, IModelHubClient,
   ConnectClient, Project, ECJsonTypeMap, WsgInstance, Response, UserProfile } from "@bentley/imodeljs-clients";
 import { KeepBriefcase, BriefcaseManager, BriefcaseEntry } from "../BriefcaseManager";
 import { IModelDb, ConcurrencyControl } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { Element } from "../Element";
 import { DictionaryModel } from "../Model";
 import { SpatialCategory } from "../Category";
@@ -22,7 +22,7 @@ import { IModel } from "@bentley/imodeljs-common/lib/IModel";
 import { IModelJsFs } from "../IModelJsFs";
 import { iModelHost } from "../IModelHost";
 import { AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../AutoPush";
-import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
+import { BeEvent } from "@bentley/bentleyjs-core";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
@@ -598,14 +598,14 @@ describe("BriefcaseManager", () => {
 
     const iModel = {
       pushChanges: async (_clientAccessToken: AccessToken) => {
-        await new Promise((resolve, _reject)  => { setTimeout(resolve, fakePushTimeRequired); }); // sleep, in order to simulate time spent doing push
+        await new Promise((resolve, _reject) => { setTimeout(resolve, fakePushTimeRequired); }); // sleep, in order to simulate time spent doing push
         lastPushTimeMillis = Date.now();
       },
       iModelToken: {
         changeSetId: "",
       },
       concurrencyControl: {
-        request: async (_clientAccessToken: AccessToken) => {},
+        request: async (_clientAccessToken: AccessToken) => { },
       },
       onBeforeClose: new BeEvent<() => void>(),
       Txns: {
@@ -616,7 +616,7 @@ describe("BriefcaseManager", () => {
     lastAutoPushEventType = undefined;
 
     // Create an autopush in manual-schedule mode.
-    const autoPush = new AutoPush(iModel as any, {pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false}, accessToken, activityMonitor);
+    const autoPush = new AutoPush(iModel as any, { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false }, accessToken, activityMonitor);
     assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
     assert.isFalse(autoPush.autoSchedule);
 
@@ -625,7 +625,7 @@ describe("BriefcaseManager", () => {
     assert.equal(autoPush.state, AutoPushState.Scheduled);
 
     // Wait long enough for the auto-push to happen
-    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); });
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); });
 
     // Verify that push happened during the time that I was asleep.
     assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to restart automatically");
@@ -648,7 +648,7 @@ describe("BriefcaseManager", () => {
     assert.equal(autoPush.state, AutoPushState.Scheduled);
 
     // wait long enough for the auto-push to happen
-    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); });
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); });
     assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
     assert.notEqual(lastPushTimeMillis, 0);
     assert.equal(lastAutoPushEventType, AutoPushEventType.PushFinished, "event handler should have been called");
@@ -659,13 +659,13 @@ describe("BriefcaseManager", () => {
     // Now turn on auto-schedule and verify that we get a few auto-pushes
     lastPushTimeMillis = 0;
     autoPush.autoSchedule = true;
-    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
     assert.notEqual(lastPushTimeMillis, 0);
     lastPushTimeMillis = 0;
-    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
     assert.notEqual(lastPushTimeMillis, 0);
     autoPush.cancel();
-    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
     assert(autoPush.state === AutoPushState.NotRunning);
     assert.isFalse(autoPush.autoSchedule, "cancel turns off autoSchedule");
 
@@ -673,7 +673,7 @@ describe("BriefcaseManager", () => {
     isIdle = false;
     lastPushTimeMillis = 0;
     autoPush.autoSchedule = true; // start running AutoPush...
-    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
     assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
     assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
     autoPush.cancel();
@@ -684,7 +684,7 @@ describe("BriefcaseManager", () => {
     lastPushTimeMillis = 0;
     autoPush.cancel();
     autoPush.autoSchedule = true; // start running AutoPush...
-    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
     assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
     assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
     autoPush.cancel();
@@ -692,7 +692,7 @@ describe("BriefcaseManager", () => {
     // ... now turn it back on
     iModel.Txns.hasLocalChanges = () => true;
     autoPush.autoSchedule = true; // start running AutoPush...
-    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
     assert.notEqual(lastPushTimeMillis, 0); // AutoPush should have run
 
   });

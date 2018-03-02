@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { Viewport } from "./Viewport";
 import { BeCursor } from "./tools/Tool";
-import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
+import { BeEvent } from "@bentley/bentleyjs-core";
+import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { EventController } from "./tools/EventController";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { iModelApp } from "./IModelApp";

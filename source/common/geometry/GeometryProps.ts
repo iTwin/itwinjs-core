@@ -8,7 +8,7 @@ import { GradientSymb } from "./GradientPattern";
 import { PatternParams } from "./AreaPattern";
 import { DgnFB } from "./ElementGraphicsSchema";
 import { ColorDef, ColorRgb } from "../ColorDef";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { Appearance } from "../SubCategoryAppearance";
 import { IModel } from "../IModel";
 

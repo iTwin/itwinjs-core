@@ -2,11 +2,11 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { AccessToken, Briefcase as HubBriefcase, IModelHubClient, ChangeSet, IModel as HubIModel, ContainsSchemaChanges, SeedFile, SeedFileInitState } from "@bentley/imodeljs-clients";
-import { ChangeSetProcessOption } from "@bentley/bentleyjs-core/lib/Bentley";
-import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
-import { DbResult, OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
+import { ChangeSetProcessOption } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@bentley/bentleyjs-core";
+import { DbResult, OpenMode } from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
+import { Logger } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError } from "@bentley/imodeljs-common/lib/IModelError";
 import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
 import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Point3d, Vector3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
 import { CurvePrimitive } from "@bentley/geometry-core/lib/curve/CurvePrimitive";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { Viewport } from "./Viewport";
 import { DecorateContext } from "./ViewContext";
 import { RenderMode } from "@bentley/imodeljs-common/lib/Render";

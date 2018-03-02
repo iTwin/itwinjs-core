@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { assert } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
-import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
+import { Logger } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { Range2d, Range3d } from "@bentley/geometry-core/lib/Range";
 import { Matrix3, Matrix4 } from "../Matrix";

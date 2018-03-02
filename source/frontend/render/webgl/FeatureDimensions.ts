@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { assert } from "@bentley/bentleyjs-core";
 import { FeatureIndexType } from "./FeatureIndex";
 
 /** Describes the dimensionality of a texture used as a look-up table. */
@@ -39,10 +39,10 @@ export class LUTParams {
 
   public equals(rhs: LUTParams): boolean {
     return this.texStep[0] === rhs.texStep[0]
-        && this.texStep[1] === rhs.texStep[1]
-        && this.texStep[2] === rhs.texStep[2]
-        && this.texStep[3] === rhs.texStep[3]
-        && this.texWidth === rhs.texWidth;
+      && this.texStep[1] === rhs.texStep[1]
+      && this.texStep[2] === rhs.texStep[2]
+      && this.texStep[3] === rhs.texStep[3]
+      && this.texWidth === rhs.texWidth;
   }
 }
 
@@ -76,7 +76,7 @@ export class FeatureDimensions {
     if (val === undefined) {
       this.value = FeatureDimension.kEmpty;
     } else {
-      assert ((val as number) < (FeatureDimension.kCOUNT as number));
+      assert((val as number) < (FeatureDimension.kCOUNT as number));
       this.value = val;
     }
   }
@@ -109,10 +109,10 @@ export class FeatureDimensions {
     }
   }
 
-  public static empty(): FeatureDimensions { return new FeatureDimensions (FeatureDimension.kEmpty); }
-  public static singleUniform(): FeatureDimensions { return new FeatureDimensions (FeatureDimension.kSingleUniform); }
-  public static singleNonUniform(): FeatureDimensions { return new FeatureDimensions (FeatureDimension.kSingleNonUniform); }
-  public static multiple(): FeatureDimensions { return new FeatureDimensions (FeatureDimension.kMultiple); }
+  public static empty(): FeatureDimensions { return new FeatureDimensions(FeatureDimension.kEmpty); }
+  public static singleUniform(): FeatureDimensions { return new FeatureDimensions(FeatureDimension.kSingleUniform); }
+  public static singleNonUniform(): FeatureDimensions { return new FeatureDimensions(FeatureDimension.kSingleNonUniform); }
+  public static multiple(): FeatureDimensions { return new FeatureDimensions(FeatureDimension.kMultiple); }
 
   public getValue(): number { return this.value as number; }
 
@@ -139,8 +139,8 @@ export class FeatureDimensions {
 export class FeatureDimensionsIterator {
   private current: FeatureDimension;
   public constructor(value: FeatureDimension) { this.current = value; }
-  public static begin(): FeatureDimensionsIterator { return new FeatureDimensionsIterator (FeatureDimension.kEmpty); }
-  public static end(): FeatureDimensionsIterator { return new FeatureDimensionsIterator (FeatureDimension.kCOUNT); }
+  public static begin(): FeatureDimensionsIterator { return new FeatureDimensionsIterator(FeatureDimension.kEmpty); }
+  public static end(): FeatureDimensionsIterator { return new FeatureDimensionsIterator(FeatureDimension.kCOUNT); }
   public equals(rhs: FeatureDimensionsIterator): boolean { return this.current === rhs.current; }
   public next(): void {
     this.current = (this.current.valueOf() + 1) as FeatureDimension;

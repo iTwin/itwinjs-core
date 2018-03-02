@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { GatewayHttpProtocol } from "./GatewayHttpProtocol";
 import { IModelToken } from "../IModel";
-import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
+import { Logger } from "@bentley/bentleyjs-core";
 
 const loggingCategory = "imodeljs-gateway.BentleyCloudGatewayProtocol";
 
@@ -41,8 +41,8 @@ export abstract class BentleyCloudGatewayProtocol extends GatewayHttpProtocol {
     } catch (error) {
       const status = 500;
       const errstr = (error instanceof Error) ? `${error.toString()} ${error.stack}`
-                   : error.hasOwnProperty("message") ? error.message
-                   : JSON.stringify(error);
+        : error.hasOwnProperty("message") ? error.message
+          : JSON.stringify(error);
       Logger.logInfo(loggingCategory, "BentleyCloudGatewayProtocol.backend.error", () => ({ method, path, status, error: errstr }));
       res.status(status).send(errstr);
     }

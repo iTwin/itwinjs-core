@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
+import { Id64 } from "@bentley/bentleyjs-core";
+import { JsonUtils } from "@bentley/bentleyjs-core";
 import { Vector3d, Point3d, Point2d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { ElementProps } from "@bentley/imodeljs-common/lib/ElementProps";

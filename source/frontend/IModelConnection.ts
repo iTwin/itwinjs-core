@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64Arg, Id64Props, Id64Set } from "@bentley/bentleyjs-core/lib/Id";
-import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
+import { Id64, Id64Arg, Id64Props, Id64Set } from "@bentley/bentleyjs-core";
+import { Logger } from "@bentley/bentleyjs-core";
+import { OpenMode } from "@bentley/bentleyjs-core";
+import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { CodeSpec } from "@bentley/imodeljs-common/lib/Code";
 import { ElementProps } from "@bentley/imodeljs-common/lib/ElementProps";
