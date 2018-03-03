@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d } from "@bentley/geometry-core";
 import { QPoint3d } from "../QPoint";
 
 export class VertexKeyNormalAndPosition {

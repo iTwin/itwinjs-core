@@ -3,14 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "../IModelConnection";
-import { Transform } from "@bentley/geometry-core/lib/Transform";
-import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
-import { ClipVector } from "@bentley/geometry-core/lib/numerics/ClipVector";
+import { Transform, Point3d, Point2d, ClipVector, Range3d, Range2d, Arc3d, BSplineCurve3d, BSplineSurface3d } from "@bentley/geometry-core";
 import { GeometryStreamEntryId } from "@bentley/imodeljs-common/lib/geometry/GeometryStream";
-import { Range3d, Range2d } from "@bentley/geometry-core/lib/Range";
-import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
-import { BSplineCurve3d } from "@bentley/geometry-core/lib/bspline/BSplineCurve";
-import { BSplineSurface3d } from "@bentley/geometry-core/lib/bspline/BSplineSurface";
 import { PatternParams } from "@bentley/imodeljs-common/lib/geometry/AreaPattern";
 import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
 import { Viewport } from "../Viewport";

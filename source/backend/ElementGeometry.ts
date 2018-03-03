@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Range3d } from "@bentley/geometry-core/lib/Range";
+import { Range3d } from "@bentley/geometry-core";
 import { GeometryStream, GeometryStreamBuilder } from "@bentley/imodeljs-common/lib/geometry/GeometryStream";
 import { ElementAlignedBox3d } from "@bentley/imodeljs-common/lib/geometry/Primitives";
 import { DefinitionElement } from "./Element";

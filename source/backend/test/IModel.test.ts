@@ -5,7 +5,7 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import { DbResult } from "@bentley/bentleyjs-core";
 import { Guid, Id64 } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d } from "@bentley/geometry-core";
 import { Code, CodeSpec, CodeScopeSpec } from "@bentley/imodeljs-common/lib/Code";
 import { EntityProps } from "@bentley/imodeljs-common/lib/EntityProps";
 import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";

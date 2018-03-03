@@ -3,13 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 import { BeButtonEvent, BeCursor, BeWheelEvent, CoordSource, BeGestureEvent, GestureInfo, InteractiveTool } from "./Tool";
 import { Viewport, CoordSystem, ViewRect } from "../Viewport";
-import { Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d } from "@bentley/geometry-core/lib/PointVector";
-import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
-import { Range3d } from "@bentley/geometry-core/lib/Range";
+import { Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d } from "@bentley/geometry-core";
+import { RotMatrix, Transform } from "@bentley/geometry-core";
+import { Range3d } from "@bentley/geometry-core";
 import { Frustum, NpcCenter, Npc } from "@bentley/imodeljs-common/lib/Frustum";
 import { MarginPercent, ViewStatus, ViewState3d } from "../ViewState";
 import { BeDuration } from "@bentley/bentleyjs-core";
-import { Angle } from "@bentley/geometry-core/lib/Geometry";
+import { Angle } from "@bentley/geometry-core";
 import { AccuDrawFlags } from "../AccuDraw";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { iModelApp } from "../IModelApp";

@@ -7,7 +7,7 @@ import { CodeSpec, CodeSpecNames } from "@bentley/imodeljs-common/lib/Code";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common/lib/ViewProps";
 import { DrawingViewState, OrthographicViewState, ViewState } from "@bentley/imodeljs-frontend/lib/ViewState";
 import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "@bentley/imodeljs-frontend/lib/IModelConnection";
-import { XYAndZ } from "@bentley/geometry-core/lib/PointVector";
+import { XYAndZ } from "@bentley/geometry-core";
 import { NavigationValue, ECSqlTypedString, ECSqlStringType } from "@bentley/imodeljs-common/lib/ECSqlTypes";
 import { TestData } from "./TestData";
 import { ModelSelectorState } from "@bentley/imodeljs-frontend/lib/ModelSelectorState";

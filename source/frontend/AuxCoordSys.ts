@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import { ViewState } from "./ViewState";
 import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps } from "@bentley/imodeljs-common/lib/ViewProps";
-import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY } from "@bentley/geometry-core/lib/PointVector";
-import { RotMatrix } from "@bentley/geometry-core/lib/Transform";
+import { Angle } from "@bentley/geometry-core";
+import { Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY } from "@bentley/geometry-core";
+import { RotMatrix } from "@bentley/geometry-core";
 import { JsonUtils } from "@bentley/bentleyjs-core";
 import { Code, CodeSpecNames } from "@bentley/imodeljs-common/lib/Code";
 import { ElementState } from "./EntityState";

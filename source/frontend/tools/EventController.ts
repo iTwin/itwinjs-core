@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Viewport } from "../Viewport";
 import { GestureId, GestureInfo, BeModifierKey, InputSource } from "./Tool";
-import { Point2d } from "@bentley/geometry-core/lib/PointVector";
+import { Point2d } from "@bentley/geometry-core";
 import { iModelApp } from "../IModelApp";
 
 const enum MouseButton {

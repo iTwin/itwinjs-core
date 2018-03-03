@@ -1,8 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { Point3d, Vector3d, XYZ, XYAndZ } from "@bentley/geometry-core/lib/PointVector";
+import { Angle, Point3d, Vector3d, XYZ, XYAndZ } from "@bentley/geometry-core";
 
 /** A position defined by longitude, latitude, and height above the WSG84 ellipsoid . */
 export class Cartographic {

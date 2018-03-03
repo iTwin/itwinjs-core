@@ -4,7 +4,7 @@
 import { Id64 } from "@bentley/bentleyjs-core";
 import { EntityState } from "./EntityState";
 import { JsonUtils } from "@bentley/bentleyjs-core";
-import { Point2d } from "@bentley/geometry-core/lib/PointVector";
+import { Point2d } from "@bentley/geometry-core";
 import { ModelProps, GeometricModel2dProps } from "@bentley/imodeljs-common/lib/ModelProps";
 import { AxisAlignedBox3d } from "@bentley/imodeljs-common/lib/geometry/Primitives";
 import { IModelConnection } from "./IModelConnection";

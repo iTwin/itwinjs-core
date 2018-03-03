@@ -6,7 +6,7 @@ import { BeCursor } from "./tools/Tool";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { EventController } from "./tools/EventController";
-import { Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d } from "@bentley/geometry-core";
 import { iModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 

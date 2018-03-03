@@ -2,8 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Viewport } from "./Viewport";
-import { Range3d } from "@bentley/geometry-core/lib/Range";
-import { ClipVector } from "@bentley/geometry-core/lib/numerics/ClipVector";
+import { Range3d, ClipVector } from "@bentley/geometry-core";
 
 /**
  * The fence clip mode controls element acceptance criteria. A clip mode of none returns

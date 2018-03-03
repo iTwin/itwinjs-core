@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Viewport } from "./Viewport";
-import { Point2d } from "@bentley/geometry-core/lib/PointVector";
+import { Point2d } from "@bentley/geometry-core";
 import { iModelApp } from "./IModelApp";
 
 /** Message Types for outputMessage */

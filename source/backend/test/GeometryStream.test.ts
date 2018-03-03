@@ -2,18 +2,13 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { SolidPrimitive } from "@bentley/geometry-core/lib/solid/SolidPrimitive";
-import { Path, ParityRegion } from "@bentley/geometry-core/lib/curve/CurveChain";
-import { BSplineSurface3d } from "@bentley/geometry-core/lib/bspline/BSplineSurface";
-import { IndexedPolyface } from "@bentley/geometry-core/lib/polyface/Polyface";
+import {
+  SolidPrimitive, Path, ParityRegion, BSplineSurface3d, IndexedPolyface, Point2d, Point3d, Vector3d, YawPitchRollAngles,
+  PolyfaceBuilder, Arc3d, Cone, AngleSweep,
+} from "@bentley/geometry-core";
 import { GeometricPrimitive, GeometryType } from "@bentley/imodeljs-common/lib/geometry/Primitives";
-import { Point2d, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
-import { AngleSweep } from "@bentley/geometry-core/lib/Geometry";
-import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
-import { Cone } from "@bentley/geometry-core/lib/solid/Cone";
 import { Sample } from "@bentley/geometry-core/lib/serialization/GeometrySamples";
 import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
-import { PolyfaceBuilder } from "@bentley/geometry-core/lib/polyface/PolyfaceBuilder";
 import { Id64, Guid } from "@bentley/bentleyjs-core";
 import { IModelDb } from "../IModelDb";
 import { OpCodeReader, OpCodeWriter, OpCodeIterator, GeometryStreamBuilder, GeometryStream, OpCode } from "@bentley/imodeljs-common/lib/geometry/GeometryStream";

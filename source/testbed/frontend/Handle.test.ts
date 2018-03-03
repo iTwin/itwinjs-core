@@ -4,10 +4,10 @@
 import { assert } from "chai";
 import { GL } from "@bentley/imodeljs-frontend/lib/render/webgl/GL";
 import { Handle, BufferHandle, QBufferHandle2d, QBufferHandle3d, AttributeHandle, UniformHandle } from "@bentley/imodeljs-frontend/lib/render/webgl/Handle";
-import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { Point2d, Point3d } from "@bentley/geometry-core";
 import { QParams } from "@bentley/imodeljs-frontend/lib/render/QPoint";
-import { Range2d, Range3d } from "@bentley/geometry-core/lib/Range";
-import { XY, XYZ } from "@bentley/geometry-core/lib/PointVector";
+import { Range2d, Range3d } from "@bentley/geometry-core";
+import { XY, XYZ } from "@bentley/geometry-core";
 
 // ###TODO: canvas.getContext() returns null on PRG...GPU should not be required
 const haveWebGL = false;

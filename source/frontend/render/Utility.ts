@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Range1d, Range2d, Range3d } from "@bentley/geometry-core/lib/Range";
-import { XY, XYZ, Vector3d, Vector2d, Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { Range1d, Range2d, Range3d } from "@bentley/geometry-core";
+import { XY, XYZ, Vector3d, Vector2d, Point2d, Point3d } from "@bentley/geometry-core";
 
 export type Point = number | XY | XYZ;
 export type Range = Range1d | Range2d | Range3d;
@@ -20,7 +20,7 @@ export class PointUtil {
   public static isXYZArray(arr: any[]): arr is XYZ[] { return arr.every((n) => PointUtil.isXYZ(n)); }
   public static isPoint2dArray(arr: any[]): arr is Point2d[] { return arr.every((n) => PointUtil.isPoint2d(n)); }
   public static isPoint3dArray(arr: any[]): arr is Point3d[] { return arr.every((n) => PointUtil.isPoint3d(n)); }
-  public static toNumberArray(pt: Point): number[] { return (PointUtil.isVector(pt) ? pt.toJSON(true) : [ pt ]) as number[]; }
+  public static toNumberArray(pt: Point): number[] { return (PointUtil.isVector(pt) ? pt.toJSON(true) : [pt]) as number[]; }
   public static toPoint(...scalars: number[]): Point { return PointUtil.fromNumberArray(scalars); }
   public static fromNumberArray(data: number[]): Point {
     if (data.length === 1) return data[0];
@@ -46,7 +46,7 @@ export class PointUtil {
     return pts.map(PointUtil.toNumberArray);
   }
   public static toUint16(val: number): number {
-    return new Uint16Array([ val ])[0];
+    return new Uint16Array([val])[0];
   }
   public static asNumberArray(pt: Point, func: (pt: number[]) => number[]): Point {
     return PointUtil.fromNumberArray(func(PointUtil.toNumberArray(pt)));

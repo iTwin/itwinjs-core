@@ -5,8 +5,8 @@ import { Id64, Id64Props, GuidProps } from "@bentley/bentleyjs-core";
 import { CodeProps, Code } from "./Code";
 import { EntityProps } from "./EntityProps";
 import { GeometryStream } from "./geometry/GeometryStream";
-import { XYZProps, XYProps, YawPitchRollProps, LowAndHighXYZ, LowAndHighXY } from "@bentley/geometry-core/lib/PointVector";
-import { AngleProps } from "@bentley/geometry-core/lib/Geometry";
+import { XYZProps, XYProps, YawPitchRollProps, LowAndHighXYZ, LowAndHighXY } from "@bentley/geometry-core";
+import { AngleProps } from "@bentley/geometry-core";
 
 /** The shape of a Navigation property value. Note that the internal properties are defined by the iModelJs JSON wire format and must not be changed. */
 export interface RelatedElementProps {

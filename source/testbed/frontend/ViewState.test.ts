@@ -2,10 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
-import { Range3d } from "@bentley/geometry-core/lib/Range";
-import { RotMatrix } from "@bentley/geometry-core/lib/Transform";
-import { Angle } from "@bentley/geometry-core/lib/Geometry";
+import { Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Range3d } from "@bentley/geometry-core";
+import { RotMatrix } from "@bentley/geometry-core";
+import { Angle } from "@bentley/geometry-core";
 import { SpatialViewState, ViewStatus, StandardView, StandardViewId, MarginPercent } from "@bentley/imodeljs-frontend/lib/ViewState";
 import * as path from "path";
 import { AuxCoordSystemSpatialState } from "@bentley/imodeljs-frontend/lib/AuxCoordSys";

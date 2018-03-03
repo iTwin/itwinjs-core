@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { OctEncodedNormal } from "@bentley/imodeljs-frontend/lib/render/OctEncodedNormal";
-import { XYZ, Vector3d} from "@bentley/geometry-core/lib/PointVector";
+import { XYZ, Vector3d} from "@bentley/geometry-core";
 
 function _expectSignsEqual(a: number, b: number) {
   if (a !== 0) {

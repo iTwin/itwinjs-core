@@ -15,7 +15,7 @@
   ],
   "dependencies": {
     "@bentley/bentleyjs-core": "^7.3.1",
-    "@bentley/geometry-core": "^5.0.3",
+    "@bentley/geometry-core": "^5.0.6",
     "@bentley/imodeljs-backend": "^0.60.0",
     "@bentley/imodeljs-clients": "^3.0.3",
     "@bentley/imodeljs-common": "^0.59.0",

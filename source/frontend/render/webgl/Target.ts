@@ -1,11 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ClipVector } from "@bentley/geometry-core/lib/numerics/ClipVector";
-import { ClipShape } from "@bentley/geometry-core/lib/numerics/ClipPrimitives";
-import { ClipPlane, ConvexClipPlaneSet, ClipPlaneSet } from "@bentley/geometry-core/lib/numerics/ClipPlanes";
-import { Transform } from "@bentley/geometry-core/lib/Transform";
-import { Vector3d, Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { ClipShape, ClipVector, Transform, Vector3d, Point3d, ClipPlane, ConvexClipPlaneSet, ClipPlaneSet } from "@bentley/geometry-core";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -107,16 +103,16 @@ export class GLESClips {
       for (let i = 0; i < count; ++i) {
         // Transform direction of clip plane
         const norm: Vector3d = planes[i].inwardNormalRef;
-        const dir: Vector3d = viewMatrix.multiplyVector (norm);
+        const dir: Vector3d = viewMatrix.multiplyVector(norm);
         dir.normalizeInPlace();
         this.clips[i * 4] = dir.x;
         this.clips[i * 4 + 1] = dir.y;
         this.clips[i * 4 + 2] = dir.z;
 
         // Transform distance of clip plane
-        const pos: Point3d = norm.scale (planes[i].distance).cloneAsPoint3d ();
-        const xFormPos: Point3d = viewMatrix.multiplyPoint (pos);
-        this.clips[i * 4 + 3] = -dir.dotProductXYZ (xFormPos.x, xFormPos.y, xFormPos.z);
+        const pos: Point3d = norm.scale(planes[i].distance).cloneAsPoint3d();
+        const xFormPos: Point3d = viewMatrix.multiplyPoint(pos);
+        this.clips[i * 4 + 3] = -dir.dotProductXYZ(xFormPos.x, xFormPos.y, xFormPos.z);
       }
     }
   }

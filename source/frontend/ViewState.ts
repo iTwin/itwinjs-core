@@ -3,12 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core";
 import { JsonUtils } from "@bentley/bentleyjs-core";
-import { Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY } from "@bentley/geometry-core/lib/PointVector";
-import { Range3d } from "@bentley/geometry-core/lib/Range";
-import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
-import { AxisOrder, Angle, Geometry } from "@bentley/geometry-core/lib/Geometry";
-import { Constant } from "@bentley/geometry-core/lib/Constant";
-import { ClipVector } from "@bentley/geometry-core/lib/numerics/ClipVector";
+import {
+  Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, RotMatrix, Transform,
+  AxisOrder, Angle, Geometry, Constant, ClipVector,
+} from "@bentley/geometry-core";
 import { AxisAlignedBox3d } from "@bentley/imodeljs-common/lib/geometry/Primitives";
 import { Frustum, Npc } from "@bentley/imodeljs-common/lib/Frustum";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";

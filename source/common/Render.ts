@@ -1,18 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { ColorDef } from "./ColorDef";
-import { Id64 } from "@bentley/bentleyjs-core";
 import { DgnFB } from "./geometry/ElementGraphicsSchema";
 import { IModel } from "./IModel";
-import { assert } from "@bentley/bentleyjs-core";
-import { Point3d, XYAndZ } from "@bentley/geometry-core/lib/PointVector";
-import { Transform } from "@bentley/geometry-core/lib/Transform";
+import { Point3d, XYAndZ, Transform, Angle } from "@bentley/geometry-core";
 import { PatternParams } from "./geometry/AreaPattern";
 import { LineStyleInfo } from "./geometry/LineStyle";
 import { CameraProps } from "./ViewProps";
-import { Angle } from "@bentley/geometry-core/lib/Geometry";
 
 export const enum RenderMode {
   Wireframe = 0,

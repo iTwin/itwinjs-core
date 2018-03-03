@@ -1,13 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ } from "@bentley/geometry-core/lib/PointVector";
-import { Range3d } from "@bentley/geometry-core/lib/Range";
-import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
-import { Map4d, Point4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
-import { AxisOrder, Angle, AngleSweep } from "@bentley/geometry-core/lib/Geometry";
+import {
+  Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ, Arc3d, Range3d, AxisOrder, Angle, AngleSweep,
+  RotMatrix, Transform, Map4d, Point4d, Constant,
+} from "@bentley/geometry-core";
 import { ViewState, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
-import { Constant } from "@bentley/geometry-core/lib/Constant";
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { BeButtonEvent, BeCursor } from "./tools/Tool";
@@ -19,7 +17,6 @@ import { DecorationList, Hilite, Camera } from "@bentley/imodeljs-common/lib/Ren
 import { HitDetail, SnapDetail, SnapMode } from "./HitDetail";
 import { DecorateContext } from "./ViewContext";
 import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
-import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { Frustum, Npc, NpcCorners, NpcCenter } from "@bentley/imodeljs-common/lib/Frustum";
 import { Placement3dProps, Placement2dProps } from "@bentley/imodeljs-common/lib/ElementProps";

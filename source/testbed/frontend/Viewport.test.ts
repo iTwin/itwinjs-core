@@ -2,13 +2,13 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d } from "@bentley/geometry-core";
 import { SpatialViewState, ViewState, StandardViewId } from "@bentley/imodeljs-frontend/lib/ViewState";
 import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnection";
 import { Viewport, ViewRect } from "@bentley/imodeljs-frontend/lib/Viewport";
 import { IModelApp, iModelApp } from "@bentley/imodeljs-frontend/lib/IModelApp";
 import { Cartographic } from "@bentley/imodeljs-common/lib/geometry/Cartographic";
-import { Angle } from "@bentley/geometry-core/lib/Geometry";
+import { Angle } from "@bentley/geometry-core";
 import * as path from "path";
 import { PanTool } from "@bentley/imodeljs-frontend/lib/tools/ViewTool";
 import { CompassMode } from "@bentley/imodeljs-frontend/lib/AccuDraw";

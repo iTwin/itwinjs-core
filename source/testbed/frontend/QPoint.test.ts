@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { QParams3d, QPoint3d } from "@bentley/imodeljs-frontend/lib/render/QPoint";
-import { XYZ, Point3d} from "@bentley/geometry-core/lib/PointVector";
-import { Range3d } from "@bentley/geometry-core/lib/Range";
+import { XYZ, Point3d } from "@bentley/geometry-core";
+import { Range3d } from "@bentley/geometry-core";
 
 function expectPointsEqual(lhs: XYZ, rhs: XYZ, tolerance: number) {
   assert.isTrue(lhs.isAlmostEqual(rhs, tolerance), `expectPointsEqual ${lhs.toJSON()} ${rhs.toJSON()}`);

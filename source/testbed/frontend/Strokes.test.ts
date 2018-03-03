@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d } from "@bentley/geometry-core";
 import { StrokesPointList, StrokesPointLists } from "@bentley/imodeljs-frontend/lib/render/primitives/Strokes";
 
 describe("StrokesPointList", () => {
