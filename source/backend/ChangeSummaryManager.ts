@@ -19,7 +19,7 @@ import { KnownLocations } from "./KnownLocations";
 export enum ChangeOpCode {
   Insert = 1,
   Update = 2,
-  Delete = 4
+  Delete = 4,
 }
 
 /** The enum represents the values for the ChangedValueState argument of the ECSQL function
@@ -31,7 +31,7 @@ export enum ChangedValueState {
   AfterInsert = 1,
   BeforeUpdate = 2,
   AfterUpdate = 3,
-  BeforeDelete = 4
+  BeforeDelete = 4,
 }
 
 export interface ChangeSummary {
@@ -324,7 +324,7 @@ export class ChangeSummaryManager {
 
         return {
           id: instanceChangeId, summaryId: new Id64(row.summaryId), changedInstance: { id: changedInstanceId, className: changedInstanceClassName },
-          opCode: op, isIndirect: row.isIndirect, changedProperties: { before: undefined, after: undefined }
+          opCode: op, isIndirect: row.isIndirect, changedProperties: { before: undefined, after: undefined },
         };
       });
 
