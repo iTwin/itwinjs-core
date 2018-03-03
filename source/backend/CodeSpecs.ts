@@ -2,8 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { DbResult, Id64 } from "@bentley/bentleyjs-core";
-import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
-import { CodeSpec } from "@bentley/imodeljs-common/lib/Code";
+import { IModelError, IModelStatus, CodeSpec } from "@bentley/imodeljs-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelDb } from "./IModelDb";
 

@@ -6,7 +6,7 @@ import { Viewport, CoordSystem, ViewRect } from "../Viewport";
 import { Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d } from "@bentley/geometry-core";
 import { RotMatrix, Transform } from "@bentley/geometry-core";
 import { Range3d } from "@bentley/geometry-core";
-import { Frustum, NpcCenter, Npc } from "@bentley/imodeljs-common/lib/Frustum";
+import { Frustum, NpcCenter, Npc } from "@bentley/imodeljs-common";
 import { MarginPercent, ViewStatus, ViewState3d } from "../ViewState";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core";
@@ -36,7 +36,7 @@ export const enum ViewHandleType {
   ViewLook = 1 << 9,
 }
 
-export const enum HitPriority {
+export const enum VieManipPriority {
   Low = 1,
   Normal = 10,
   Medium = 100,
@@ -100,7 +100,7 @@ export abstract class ViewingToolHandle {
   public getHandleCursor(): BeCursor { return BeCursor.Default; }
   public abstract doManipulation(ev: BeButtonEvent, inDynamics: boolean): boolean;
   public abstract firstPoint(ev: BeButtonEvent): boolean;
-  public abstract testHandleForHit(ptScreen: Point3d): { distance: number, priority: HitPriority } | undefined;
+  public abstract testHandleForHit(ptScreen: Point3d): { distance: number, priority: VieManipPriority } | undefined;
   public abstract get handleType(): ViewHandleType;
   public focusIn(): void { iModelApp.toolAdmin.viewCursor = this.getHandleCursor(); }
 }
@@ -130,7 +130,7 @@ export class ViewHandleArray {
     this.hitHandleIndex = -1;
     let minDistance = 0.0;
     let minDistValid = false;
-    let highestPriority = HitPriority.Low;
+    let highestPriority = VieManipPriority.Low;
     let nearestHitHandle: ViewingToolHandle | undefined;
 
     for (let i = 0; i < this.count; ++i) {
@@ -756,7 +756,7 @@ class ViewPan extends ViewingToolHandle {
       iModelApp.toolAdmin.viewCursor = this.getHandleCursor();
   }
 
-  public testHandleForHit(_ptScreen: Point3d) { return { distance: 0.0, priority: HitPriority.Low }; }
+  public testHandleForHit(_ptScreen: Point3d) { return { distance: 0.0, priority: VieManipPriority.Low }; }
 
   public doPan(newPtWorld: Point3d) {
     const vp = this.viewTool.viewport!;
@@ -788,7 +788,7 @@ class ViewRotate extends ViewingToolHandle {
     const tool = this.viewTool;
     const targetPt = tool.viewport!.worldToView(tool.targetCenterWorld);
     const dist = targetPt.distanceXY(ptScreen);
-    return { distance: dist, priority: HitPriority.Normal };
+    return { distance: dist, priority: VieManipPriority.Normal };
   }
 
   public firstPoint(ev: BeButtonEvent) {
@@ -1120,7 +1120,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
 
   public getMaxLinearVelocity() { return ViewToolSettings.walkVelocity; }
   public getMaxAngularVelocity() { return Math.PI / 4; }
-  public testHandleForHit(_ptScreen: Point3d) { return { distance: 0.0, priority: HitPriority.Low }; }
+  public testHandleForHit(_ptScreen: Point3d) { return { distance: 0.0, priority: VieManipPriority.Low }; }
 
   public getInputVector(result?: Vector3d): Vector3d {
     const inputDeadZone = 5.0;

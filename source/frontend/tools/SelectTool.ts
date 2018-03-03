@@ -12,9 +12,8 @@ import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { BeButtonEvent, BeButton, BeGestureEvent, GestureId } from "./Tool";
 import { LocateResponse } from "../ElementLocateManager";
 import { SubSelectionMode, HitDetail } from "../HitDetail";
-import { LinePixels } from "@bentley/imodeljs-common/lib/Render";
+import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
 import { GraphicBuilder } from "../render/GraphicBuilder";
-import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
 import { FenceParams } from "../FenceParams";
 import { AccuDrawHintBuilder } from "../AccuDraw";
 

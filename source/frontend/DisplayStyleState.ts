@@ -1,11 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Light, LightType } from "@bentley/imodeljs-common/lib/Lighting";
-import { ViewFlags, HiddenLine } from "@bentley/imodeljs-common/lib/Render";
-import { ColorDef, ColorRgb } from "@bentley/imodeljs-common/lib/ColorDef";
+import { Light, LightType, ViewFlags, HiddenLine, ColorDef, ColorRgb, ElementProps } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
-import { ElementProps } from "@bentley/imodeljs-common/lib/ElementProps";
 import { IModelConnection } from "./IModelConnection";
 import { JsonUtils } from "@bentley/bentleyjs-core";
 import { Vector3d } from "@bentley/geometry-core";

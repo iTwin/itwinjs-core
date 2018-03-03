@@ -5,7 +5,7 @@ import * as i18next from "i18next";
 import { i18n } from "i18next";
 import * as i18nextXHRBackend from "i18next-xhr-backend";
 import * as i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
-import { IModelError } from "@bentley/imodeljs-common/lib/IModelError";
+import { IModelError } from "@bentley/imodeljs-common";
 import { iModelApp } from "./IModelApp";
 
 export interface I18NOptions {

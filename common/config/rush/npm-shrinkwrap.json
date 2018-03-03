@@ -5,9 +5,9 @@
   "requires": true,
   "dependencies": {
     "@bentley/bentleyjs-core": {
-      "version": "7.3.1",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bentleyjs-core/-/bentleyjs-core-7.3.1.tgz",
-      "integrity": "sha1-kC21ONNQQ0mu1c1Ub9xtJ1p1Tfw="
+      "version": "7.3.2",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bentleyjs-core/-/bentleyjs-core-7.3.2.tgz",
+      "integrity": "sha1-5mr7FrnnY8TUoFvVhvXXBVbpyx4="
     },
     "@bentley/bentleyjs-tools": {
       "version": "2.2.2",
@@ -49,9 +49,9 @@
       }
     },
     "@bentley/geometry-core": {
-      "version": "5.0.6",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/geometry-core/-/geometry-core-5.0.6.tgz",
-      "integrity": "sha1-J4NYph+qTmuxV/W5ar2j6AInRQM=",
+      "version": "5.0.7",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/geometry-core/-/geometry-core-5.0.7.tgz",
+      "integrity": "sha1-CipNV9YZlfKtVYmgG0Ay+0OaN4Y=",
       "requires": {
         "flatbuffers": "1.8.0"
       }
@@ -61,7 +61,7 @@
       "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-clients/-/imodeljs-clients-3.0.3.tgz",
       "integrity": "sha1-lBfZb5Brp4GjT24GjhBZX96cD6o=",
       "requires": {
-        "@bentley/bentleyjs-core": "7.3.1",
+        "@bentley/bentleyjs-core": "7.3.2",
         "azure-storage": "2.8.0",
         "clone": "2.1.1",
         "deep-assign": "2.0.0",
@@ -105,9 +105,9 @@
     },
     "@rush-temp/imodeljs-backend": {
       "version": "file:projects/imodeljs-backend.tgz",
-      "integrity": "sha1-uYfVmT1OS6q0tBjGQ8E4kY4KxQY=",
+      "integrity": "sha1-52VJu9u/L5Scdwn1APteplPNRZ4=",
       "requires": {
-        "@bentley/geometry-core": "5.0.6",
+        "@bentley/geometry-core": "5.0.7",
         "@bentley/imodeljs-clients": "3.0.3",
         "@bentley/imodeljs-electronaddon": "10.0.1",
         "@bentley/imodeljs-n_8_9-win32-x64": "10.0.1",
@@ -128,10 +128,10 @@
     },
     "@rush-temp/imodeljs-common": {
       "version": "file:projects/imodeljs-common.tgz",
-      "integrity": "sha1-krzixWy3p1mGaM2lLQk06jUZtcQ=",
+      "integrity": "sha1-4gdhcjoVphoCXuLyghpr4N1tsy4=",
       "requires": {
-        "@bentley/bentleyjs-core": "7.3.1",
-        "@bentley/geometry-core": "5.0.6",
+        "@bentley/bentleyjs-core": "7.3.2",
+        "@bentley/geometry-core": "5.0.7",
         "@bentley/imodeljs-clients": "3.0.3",
         "rimraf": "2.6.2",
         "typescript": "2.6.2"
@@ -139,7 +139,7 @@
     },
     "@rush-temp/imodeljs-core": {
       "version": "file:projects/imodeljs-core.tgz",
-      "integrity": "sha1-kVV14wVrBoOqFS0Om8JAKaD0ARw=",
+      "integrity": "sha1-thenhp7rGOzc4V9U0CvOvAxPgQI=",
       "requires": {
         "@bentley/bentleyjs-tools": "2.2.2",
         "@types/body-parser": "1.16.8",
@@ -190,10 +190,10 @@
     },
     "@rush-temp/imodeljs-core-testbed": {
       "version": "file:projects/imodeljs-core-testbed.tgz",
-      "integrity": "sha1-XPy7J8zmMzijqDGx7j/Kf6kPrw0=",
+      "integrity": "sha1-Ux3pWf5e+QzDxH81m6fq6WfPoWw=",
       "requires": {
-        "@bentley/bentleyjs-core": "7.3.1",
-        "@bentley/geometry-core": "5.0.6",
+        "@bentley/bentleyjs-core": "7.3.2",
+        "@bentley/geometry-core": "5.0.7",
         "@bentley/imodeljs-clients": "3.0.3",
         "@bentley/imodeljs-e_1_6_11-win32-x64": "10.0.1",
         "@bentley/imodeljs-electronaddon": "10.0.1",
@@ -219,9 +219,9 @@
     },
     "@rush-temp/imodeljs-frontend": {
       "version": "file:projects/imodeljs-frontend.tgz",
-      "integrity": "sha1-P/4WclLzCO+oWyClIefvo9vxt+0=",
+      "integrity": "sha1-tRAoB38eI9bfoclL6pEggo72uCM=",
       "requires": {
-        "@bentley/geometry-core": "5.0.6",
+        "@bentley/geometry-core": "5.0.7",
         "@bentley/imodeljs-clients": "3.0.3",
         "fuse.js": "3.2.0",
         "i18next": "10.5.0",
@@ -7675,13 +7675,13 @@
         "resolve": "1.5.0",
         "semver": "5.5.0",
         "tslib": "1.9.0",
-        "tsutils": "2.22.0"
+        "tsutils": "2.22.1"
       }
     },
     "tsutils": {
-      "version": "2.22.0",
-      "resolved": "https://registry.npmjs.org/tsutils/-/tsutils-2.22.0.tgz",
-      "integrity": "sha512-05iMIQXsLVBx2vPTvpsHriRuNpKpU1Z9jqYUOBvwglO6I+QzdA1UQcVoNhsVkSZfns5TjFMFbdxdrkOW6cfwUQ==",
+      "version": "2.22.1",
+      "resolved": "https://registry.npmjs.org/tsutils/-/tsutils-2.22.1.tgz",
+      "integrity": "sha512-j4Nx7aeMPyIrKtDftSfDiTFBYW3o/41T3zAxm0C/9fSKT62jnfqOZooC9uKLr4rQF9QsZaVTVY6QY+vVnWSisw==",
       "requires": {
         "tslib": "1.9.0"
       }

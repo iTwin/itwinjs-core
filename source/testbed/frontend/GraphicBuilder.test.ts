@@ -2,12 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { GraphicBuilderTileCorners } from "@bentley/imodeljs-frontend/lib/render/GraphicBuilder";
 import { Point3d } from "@bentley/geometry-core";
-import { Viewport } from "@bentley/imodeljs-frontend/lib/Viewport";
+import { IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
 import { Transform } from "@bentley/geometry-core";
-import { GraphicBuilderCreateParams, GraphicType } from "@bentley/imodeljs-frontend/lib/render/GraphicBuilder";
-import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnection";
+import { GraphicBuilderCreateParams, GraphicType, GraphicBuilderTileCorners } from "@bentley/imodeljs-frontend/lib/rendering";
 import * as path from "path";
 
 const iModelLocation = path.join(__dirname, "../../../backend/lib/test/assets/test.bim");

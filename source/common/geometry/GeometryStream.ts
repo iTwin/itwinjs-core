@@ -10,7 +10,7 @@ import {
 import { BGFBBuilder, BGFBReader } from "@bentley/geometry-core/lib/serialization/BGFB";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { GeometricPrimitive, GeometryType, Placement2d, Placement3d, ElementAlignedBox2d, ElementAlignedBox3d } from "./Primitives";
-import { GeometryParams } from "./GeometryProps";
+import { GeometryProps } from "./GeometryProps";
 import { LineStyleInfo, LineStyleParams } from "./LineStyle";
 import { GradientSymb } from "./GradientPattern";
 import { PatternParams, DwgHatchDefLine } from "./AreaPattern";
@@ -357,7 +357,7 @@ export class OpCodeWriter {
     }
   }
 
-  public appendGeometryParams(elParams: GeometryParams, ignoreSubCategory: boolean, is3d: boolean) {
+  public appendGeometryParams(elParams: GeometryProps, ignoreSubCategory: boolean, is3d: boolean) {
     const useColor = !elParams.isLineColorFromSubCategoryAppearance();
     const useWeight = !elParams.isWeightFromSubCategoryAppearance();
     const useStyle = !elParams.isLineStyleFromSubCategoryAppearance();
@@ -1126,7 +1126,7 @@ export class OpCodeReader {
   /** Stores the read GeometricParams into the GeometricParams object given. If certain members read are not valid, preserves the old values.
    *  Returns true if the original elParams argument is changed
    */
-  public getGeometryParams(egOp: Operation, elParams: GeometryParams): boolean {
+  public getGeometryParams(egOp: Operation, elParams: GeometryProps): boolean {
     let changed = false;
 
     switch (egOp.opCode) {
@@ -1628,8 +1628,8 @@ export class GeometryStreamBuilder {
   /** Current Placement2d as of last call to Append when creating a 2d GeometryStream */
   public readonly placement2d = new Placement2d(Point2d.createZero(), Angle.createDegrees(0.0), new ElementAlignedBox2d());
   /** Current GeometryParams as of last call to Append */
-  public geometryParams = new GeometryParams(new Id64());
-  private geometryParamsModified: GeometryParams | undefined;
+  public geometryParams = new GeometryProps(new Id64());
+  private geometryParamsModified: GeometryProps | undefined;
   private writer = new OpCodeWriter();
 
   /** Current size (in bytes) of the GeometryStream being constructed */
@@ -1945,7 +1945,7 @@ export class GeometryStreamBuilder {
       this.placement3d.setFrom(new Placement3d(Point3d.createZero(), YawPitchRollAngles.createDegrees(0.0, 0.0, 0.0), new ElementAlignedBox3d()));
     else
       this.placement2d.setFrom(new Placement2d(Point2d.createZero(), Angle.createDegrees(0.0), new ElementAlignedBox2d()));
-    this.geometryParams = new GeometryParams(this.geometryParams.categoryId, this.geometryParams.subCategoryId);
+    this.geometryParams = new GeometryProps(this.geometryParams.categoryId, this.geometryParams.subCategoryId);
     this.geometryParamsModified = undefined;
     this.writer.reset();
   }
@@ -1954,7 +1954,7 @@ export class GeometryStreamBuilder {
    *  NOTE - If no symbology is specifically set in a GeometryStream, the GeometricPrimitive display uses the default SubCategoryId for the GeometricElement's CategoryId.
    */
   public appendSubCategoryId(subCategoryId: Id64): boolean {
-    const elParams = new GeometryParams(this.geometryParams.categoryId, subCategoryId); // Preserve current category...
+    const elParams = new GeometryProps(this.geometryParams.categoryId, subCategoryId); // Preserve current category...
     return this.appendGeometryParams(elParams);
   }
 
@@ -1962,7 +1962,7 @@ export class GeometryStreamBuilder {
    *  NOTE: If no symbology is specifically set in a GeometryStream, the GeometricPrimitive display uses the default SubCategoryId for the GeometricElement's
    *  CategoryId. World vs. local affects PatternParams and LineStyleInfo that need to store an orientation and other "placement" relative info.
    */
-  public appendGeometryParams(elParams: GeometryParams, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
+  public appendGeometryParams(elParams: GeometryProps, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
     // NOTE: Allow explicit symbology in GeometryPart's GeometryStream, sub-category won't be persisted
     if (!this.isPartCreate) {
       if (!this.geometryParams.categoryId.isValid())

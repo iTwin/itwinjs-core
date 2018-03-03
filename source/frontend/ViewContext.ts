@@ -6,7 +6,7 @@ import { Sprite } from "./Sprites";
 import { Point3d, Vector3d, Point2d, RotMatrix, Transform } from "@bentley/geometry-core";
 import { HitDetail, SnapMode, SnapDetail } from "./HitDetail";
 import { GraphicType, GraphicBuilder } from "./render/GraphicBuilder";
-import { DecorationList, GraphicList, Decorations, Graphic } from "@bentley/imodeljs-common/lib/Render";
+import { DecorationList, GraphicList, Decorations, Graphic } from "@bentley/imodeljs-common";
 import { ACSDisplayOptions, AuxCoordSystemState } from "./AuxCoordSys";
 
 export class ViewContext {

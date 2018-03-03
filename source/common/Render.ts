@@ -699,7 +699,7 @@ export const enum GeometryClass {
  * Describes a "feature" within a batched Graphic. A batched Graphic can
  * contain multiple features. Each feature is associated with a unique combination of
  * attributes (element ID, subcategory, geometry class). This allows geometry to be
- * more efficiently batched on the GPU, while enabling features to be resymbolized
+ * more efficiently batched on the GPU, while enabling features to be re-symbolized
  * individually.
  *
  * As a simple example, a single mesh primitive may contain geometry for 3 elements,

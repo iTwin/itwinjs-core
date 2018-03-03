@@ -2,9 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
-import { CodeSpecNames, Code } from "@bentley/imodeljs-common/lib/Code";
-import { ElementProps } from "@bentley/imodeljs-common/lib/ElementProps";
-import { Appearance, Rank } from "@bentley/imodeljs-common/lib/SubCategoryAppearance";
+import { CodeSpecNames, Code, ElementProps, Appearance, Rank } from "@bentley/imodeljs-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel } from "./Model";

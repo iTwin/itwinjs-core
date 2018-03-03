@@ -1,14 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelApp, iModelApp } from "@bentley/imodeljs-frontend/lib/IModelApp"; // must be first import!
-import { Tool } from "@bentley/imodeljs-frontend/lib/tools/Tool";
 import { assert } from "chai";
-import { AccuDraw } from "@bentley/imodeljs-frontend/lib/AccuDraw";
-import { IdleTool } from "@bentley/imodeljs-frontend/lib/tools/IdleTool";
-import { I18NNamespace } from "@bentley/imodeljs-frontend/lib/Localization";
-import { RotateTool, PanTool } from "@bentley/imodeljs-frontend/lib/tools/ViewTool";
-import { SelectionTool } from "@bentley/imodeljs-frontend/lib/tools/SelectTool";
+import { IModelApp, iModelApp, Tool, AccuDraw, IdleTool, I18NNamespace, RotateTool, PanTool, SelectionTool } from "@bentley/imodeljs-frontend";
 
 /** class to simulate overriding the default AccuDraw */
 class TestAccuDraw extends AccuDraw { }
@@ -51,7 +45,7 @@ class TestApp extends IModelApp {
   protected supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
 }
 
-describe("IModelApp", () => {
+describe.only("IModelApp", () => {
   before(() => TestApp.startup());
   after(() => TestApp.shutdown());
 

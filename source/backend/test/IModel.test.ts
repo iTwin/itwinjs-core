@@ -3,19 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import * as path from "path";
-import { DbResult } from "@bentley/bentleyjs-core";
-import { Guid, Id64 } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, Id64 } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { Code, CodeSpec, CodeScopeSpec } from "@bentley/imodeljs-common/lib/Code";
-import { EntityProps } from "@bentley/imodeljs-common/lib/EntityProps";
-import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
 import { Entity, EntityMetaData, PrimitiveTypeCode } from "../Entity";
 import { Model, DictionaryModel } from "../Model";
 import { Category, SubCategory, SpatialCategory } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
 import { BisCore } from "../BisCore";
 import { ECSqlStatement } from "../ECSqlStatement";
-import { GeometricElementProps } from "@bentley/imodeljs-common/lib/ElementProps";
 import {
   Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
   LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject,
@@ -23,14 +18,12 @@ import {
 import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
 import { IModelDb } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { ModelProps } from "@bentley/imodeljs-common/lib/ModelProps";
-import { AxisAlignedBox3d } from "@bentley/imodeljs-common/lib/geometry/Primitives";
-import { ElementGroupsMembers } from "../LinkTableRelationship";
-import { Appearance } from "@bentley/imodeljs-common/lib/SubCategoryAppearance";
-import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
-import { IModel } from "@bentley/imodeljs-common/lib/IModel";
+import {
+  GeometricElementProps, Code, CodeSpec, CodeScopeSpec, EntityProps, IModelError, IModelStatus, ModelProps, ViewDefinitionProps,
+  AxisAlignedBox3d, Appearance, ColorDef, IModel,
+} from "@bentley/imodeljs-common";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { ViewDefinitionProps } from "@bentley/imodeljs-common/lib/ViewProps";
+import { ElementGroupsMembers } from "../LinkTableRelationship";
 
 // spell-checker: disable
 

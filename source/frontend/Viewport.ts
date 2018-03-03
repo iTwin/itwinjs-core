@@ -13,15 +13,11 @@ import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { DecorationList, Hilite, Camera } from "@bentley/imodeljs-common/lib/Render";
 import { HitDetail, SnapDetail, SnapMode } from "./HitDetail";
 import { DecorateContext } from "./ViewContext";
-import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
-import { Frustum, Npc, NpcCorners, NpcCenter } from "@bentley/imodeljs-common/lib/Frustum";
-import { Placement3dProps, Placement2dProps } from "@bentley/imodeljs-common/lib/ElementProps";
+import { DecorationList, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d } from "@bentley/imodeljs-common";
 import { iModelApp } from "./IModelApp";
-import { Placement2d, Placement3d } from "@bentley/imodeljs-common/lib/geometry/Primitives";
 
 /** A rectangle in view coordinates. */
 export class ViewRect {

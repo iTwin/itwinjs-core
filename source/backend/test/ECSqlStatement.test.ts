@@ -4,12 +4,10 @@
 import { assert } from "chai";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { ECSqlInsertResult } from "../ECSqlStatement";
-import { ECSqlStringType, ECSqlTypedString, NavigationValue } from "@bentley/imodeljs-common/lib/ECSqlTypes";
+import { ECSqlStringType, ECSqlTypedString, NavigationValue } from "@bentley/imodeljs-common";
 import { ECDb } from "../ECDb";
-import { DbResult } from "@bentley/bentleyjs-core";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { DbResult, Id64, using } from "@bentley/bentleyjs-core";
 import { XAndY, XYAndZ, Point2d, Point3d } from "@bentley/geometry-core";
-import { using } from "@bentley/bentleyjs-core";
 import { KnownTestLocations } from "./KnownTestLocations";
 
 describe("ECSqlStatement", () => {

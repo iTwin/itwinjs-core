@@ -1,15 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ViewState } from "./ViewState";
-import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps } from "@bentley/imodeljs-common/lib/ViewProps";
-import { Angle } from "@bentley/geometry-core";
-import { Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY } from "@bentley/geometry-core";
-import { RotMatrix } from "@bentley/geometry-core";
+import { Code, CodeSpecNames, AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps } from "@bentley/imodeljs-common";
+import { Angle, Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, RotMatrix } from "@bentley/geometry-core";
 import { JsonUtils } from "@bentley/bentleyjs-core";
-import { Code, CodeSpecNames } from "@bentley/imodeljs-common/lib/Code";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
+import { ViewState } from "./ViewState";
 
 export const enum ACSType {
   None = 0,

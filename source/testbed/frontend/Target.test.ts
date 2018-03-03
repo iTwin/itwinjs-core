@@ -1,9 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
 import { assert } from "chai";
-import { FrustumUniforms, FrustumUniformType, GLESClips } from "@bentley/imodeljs-frontend/lib/render/webgl/Target";
+import { FrustumUniforms, FrustumUniformType, GLESClips } from "@bentley/imodeljs-frontend/lib/rendering";
 import { ClipVector, ClipShape, ClipPlane, Point3d, Transform, RotMatrix } from "@bentley/geometry-core";
 
 describe("FrustumUniforms", () => {

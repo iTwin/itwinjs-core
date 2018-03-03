@@ -8,9 +8,8 @@ import { BeButtonEvent } from "./tools/Tool";
 import { SnapMode, HitList, SnapDetail, SnapHeat, HitDetail, SubSelectionMode, HitSource, HitDetailType } from "./HitDetail";
 import { SnapContext, DecorateContext } from "./ViewContext";
 import { SnapType, SnapStatus, HitListHolder } from "./ElementLocateManager";
-import { LinePixels } from "@bentley/imodeljs-common/lib/Render";
+import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
 import { GraphicBuilder } from "./render/GraphicBuilder";
-import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
 import { iModelApp } from "./IModelApp";
 
 export class TentativePoint {

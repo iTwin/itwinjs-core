@@ -1,14 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelApp } from "@bentley/imodeljs-frontend/lib/IModelApp";
-import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnection";
-import { ElementAgenda } from "@bentley/imodeljs-frontend/lib/tools/ElementSetTool";
 import * as path from "path";
 import { assert } from "chai";
+import { IModelApp, IModelConnection, ElementAgenda, ModifyElementSource, SelectEventType } from "@bentley/imodeljs-frontend";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { ModifyElementSource } from "@bentley/imodeljs-frontend/lib/tools/PrimitiveTool";
-import { SelectEventType } from "@bentley/imodeljs-frontend/lib/SelectionSet";
 
 const iModelLocation = path.join(__dirname, "../../../backend/lib/test/assets/test.bim");
 

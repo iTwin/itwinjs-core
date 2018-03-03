@@ -1,27 +1,18 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64Arg, Id64Props, Id64Set } from "@bentley/bentleyjs-core";
-import { Logger } from "@bentley/bentleyjs-core";
-import { OpenMode } from "@bentley/bentleyjs-core";
-import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { Id64, Id64Arg, Id64Props, Id64Set, Logger, OpenMode, BentleyStatus } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { CodeSpec } from "@bentley/imodeljs-common/lib/Code";
-import { ElementProps } from "@bentley/imodeljs-common/lib/ElementProps";
-import { EntityQueryParams } from "@bentley/imodeljs-common/lib/EntityProps";
-import { IModel, IModelToken } from "@bentley/imodeljs-common/lib/IModel";
-import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
-import { ModelProps, ModelQueryParams } from "@bentley/imodeljs-common/lib/ModelProps";
-import { IModelGateway } from "@bentley/imodeljs-common/lib/gateway/IModelGateway";
-import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
-import { AxisAlignedBox3d } from "@bentley/imodeljs-common/lib/geometry/Primitives";
+import {
+  CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
+  IModelGateway, IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps,
+} from "@bentley/imodeljs-common";
 import { HilitedSet, SelectionSet } from "./SelectionSet";
 import { ViewState, SpatialViewState, OrthographicViewState, ViewState2d, DrawingViewState, SheetViewState } from "./ViewState";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { ModelState, SpatialModelState, SectionDrawingModelState, DrawingModelState, SheetModelState } from "./ModelState";
-import { ViewQueryParams, ViewDefinitionProps } from "@bentley/imodeljs-common/lib/ViewProps";
 import { iModelApp } from "./IModelApp";
 
 const loggingCategory = "imodeljs-backend.IModelConnection";

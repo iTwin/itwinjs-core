@@ -3,11 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
 import { Vector3d, Point3d, Point2d, YawPitchRollAngles, Angle } from "@bentley/geometry-core";
-import { ElementProps } from "@bentley/imodeljs-common/lib/ElementProps";
-import { ViewDefinitionProps, ViewDefinition3dProps, ViewDefinition2dProps, SpatialViewDefinitionProps, ModelSelectorProps, CategorySelectorProps } from "@bentley/imodeljs-common/lib/ViewProps";
+import {
+  ElementProps, ViewDefinitionProps, ViewDefinition3dProps, ViewDefinition2dProps, SpatialViewDefinitionProps, ModelSelectorProps,
+  CategorySelectorProps, Camera,
+} from "@bentley/imodeljs-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
-import { Camera } from "@bentley/imodeljs-common/lib/Render";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
 export class DisplayStyle extends DefinitionElement {

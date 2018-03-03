@@ -4,11 +4,8 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "../IModelConnection";
 import { Transform, Point3d, Point2d, ClipVector, Range3d, Range2d, Arc3d, BSplineCurve3d, BSplineSurface3d } from "@bentley/geometry-core";
-import { GeometryStreamEntryId } from "@bentley/imodeljs-common/lib/geometry/GeometryStream";
-import { PatternParams } from "@bentley/imodeljs-common/lib/geometry/AreaPattern";
-import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
+import { GeometryStreamEntryId, PatternParams, ColorDef, Graphic, GraphicParams, AsThickenedLine, GeometryParams, LinePixels } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
-import { Graphic, GraphicParams, AsThickenedLine, GeometryParams, LinePixels } from "@bentley/imodeljs-common/lib/Render";
 
 export abstract class Iterable<T> {
   constructor(protected list: T[]) { }

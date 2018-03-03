@@ -2,10 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { iModelApp, IModelApp } from "@bentley/imodeljs-frontend/lib/IModelApp";
-import { Tool } from "@bentley/imodeljs-frontend/lib/tools/Tool";
-import { I18NNamespace } from "@bentley/imodeljs-frontend/lib/Localization";
-import { FuzzySearchResults, FuzzySearchResult } from "@bentley/imodeljs-frontend/lib/FuzzySearch";
+import { iModelApp, IModelApp, Tool, I18NNamespace, FuzzySearchResults, FuzzySearchResult } from "@bentley/imodeljs-frontend";
 
 // these are later set by executing the TestImmediate tool.
 let testVal1: string;

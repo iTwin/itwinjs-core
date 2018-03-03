@@ -3,10 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { expect, assert } from "chai";
-import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core";
+import { OpenMode, DbOpcode, BeEvent } from "@bentley/bentleyjs-core";
 import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState } from "@bentley/imodeljs-clients";
-import { Code } from "@bentley/imodeljs-common/lib/Code";
-import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
+import { Code, IModelVersion, Appearance, ColorDef, IModel } from "@bentley/imodeljs-common";
 import { KeepBriefcase } from "../BriefcaseManager";
 import { IModelDb, ConcurrencyControl } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
@@ -14,13 +13,9 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import { Element } from "../Element";
 import { DictionaryModel } from "../Model";
 import { SpatialCategory } from "../Category";
-import { Appearance } from "@bentley/imodeljs-common/lib/SubCategoryAppearance";
-import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
-import { IModel } from "@bentley/imodeljs-common/lib/IModel";
 import { IModelJsFs } from "../IModelJsFs";
 import { iModelHost } from "../IModelHost";
 import { AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../AutoPush";
-import { BeEvent } from "@bentley/bentleyjs-core";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;

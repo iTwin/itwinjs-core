@@ -2,14 +2,12 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { AccessToken, ChangeSet, UserInfo, IModelHubClient } from "@bentley/imodeljs-clients";
-import { OpenMode, DbResult } from "@bentley/bentleyjs-core";
 import { ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
-import { Id64, using, assert, PerfLogger } from "@bentley/bentleyjs-core";
+import { Id64, using, assert, PerfLogger, OpenMode, DbResult } from "@bentley/bentleyjs-core";
 import { iModelHost } from "./IModelHost";
 import { IModelDb } from "./IModelDb";
 import { ECDb } from "./ECDb";
-import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
-import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
+import { IModelVersion, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { BriefcaseManager } from "./BriefcaseManager";
 import * as path from "path";
 import { IModelJsFs } from "./IModelJsFs";
@@ -19,7 +17,7 @@ import { KnownLocations } from "./KnownLocations";
 export enum ChangeOpCode {
   Insert = 1,
   Update = 2,
-  Delete = 4
+  Delete = 4,
 }
 
 /** The enum represents the values for the ChangedValueState argument of the ECSQL function
@@ -31,7 +29,7 @@ export enum ChangedValueState {
   AfterInsert = 1,
   BeforeUpdate = 2,
   AfterUpdate = 3,
-  BeforeDelete = 4
+  BeforeDelete = 4,
 }
 
 export interface ChangeSummary {
@@ -324,7 +322,7 @@ export class ChangeSummaryManager {
 
         return {
           id: instanceChangeId, summaryId: new Id64(row.summaryId), changedInstance: { id: changedInstanceId, className: changedInstanceClassName },
-          opCode: op, isIndirect: row.isIndirect, changedProperties: { before: undefined, after: undefined }
+          opCode: op, isIndirect: row.isIndirect, changedProperties: { before: undefined, after: undefined },
         };
       });
 
