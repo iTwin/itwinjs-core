@@ -56,7 +56,7 @@ describe("IModelConnection", () => {
     assert.equal(modelProps[0].id, iModel.models.repositoryModelId.value);
     assert.isTrue(iModel.models.repositoryModelId.equals(new Id64(modelProps[0].id)));
 
-    const rows: any[] = await iModel.executeQuery("SELECT CodeValue AS code FROM BisCore.Category");
+    const rows: any[] = await iModel.executeQuery("SELECT CodeValue AS code FROM BisCore.Category LIMIT 20");
     assert.isAtLeast(rows.length, 1);
     assert.exists(rows[0].code);
     assert.equal(rows.length, queryElementIds.size);
