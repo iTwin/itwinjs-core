@@ -66,7 +66,7 @@ export class I18N {
         // using i18next-xhr-backend, err will be an array of strings that includes the namespace it tried to read and the locale. There
         // might be errs for some other namespaces as well as this one. We resolve the promise unless there's an error for each possible language.
         const errorList = err as string[];
-        let locales: string[] = IModelApp.i18n.languageList().map((thisLocale) => "/" + thisLocale + "/");
+        let locales: string[] = IModelApp.i18n.languageList().map((thisLocale: any) => "/" + thisLocale + "/");
         for (const thisError of errorList) {
           if (!thisError.includes(name))
             continue;
