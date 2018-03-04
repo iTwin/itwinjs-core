@@ -23,7 +23,7 @@ export enum ECSqlValueType {
   Struct = 13,
   PrimitiveArray = 14,
   StructArray = 15,
-  Guid = 16
+  Guid = 16,
 }
 
 /** An ECSQL Navigation value.

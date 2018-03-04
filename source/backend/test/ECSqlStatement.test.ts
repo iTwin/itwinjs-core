@@ -562,7 +562,7 @@ describe("ECSqlStatement", () => {
             bl: blobVal, bo: boolVal, d: doubleVal, dt: dtVal,
             i: intVal, p2d: p2dVal, p3d: p3dVal, s: strVal,
             s_bl: blobVal, s_bo: boolVal, s_d: doubleVal, s_dt: dtVal,
-            s_i: intVal, s_p2d: p2dVal, s_p3d: p3dVal, s_s: strVal
+            s_i: intVal, s_p2d: p2dVal, s_p3d: p3dVal, s_s: strVal,
           });
 
           res = stmt.stepForInsert();
@@ -600,7 +600,7 @@ describe("ECSqlStatement", () => {
         const structVal = {
           bl: { type: ECSqlStringType.Blob, value: "SGVsbG8gd29ybGQNCg==" }, bo: true, d: 3.5,
           dt: { type: ECSqlStringType.DateTime, value: "2018-01-23T12:24:00.000" },
-          i: 3, p2d: new Point2d(1, 2), p3d: new Point3d(1, 2, 3), s: "Hello World"
+          i: 3, p2d: new Point2d(1, 2), p3d: new Point3d(1, 2, 3), s: "Hello World",
         };
 
         const verify = (expectedId: Id64) => {
@@ -1218,13 +1218,13 @@ describe("ECSqlStatement", () => {
 
         const expectedRow = {
           bl: "SGVsbG8gd29ybGQNCg==", bo: true, d: 3.5, dt: "2018-01-23T12:24:00.000",
-          i: 3, l: 12312312312312, p2d: { x: 1, y: 2 }, p3d: { x: 1, y: 2, z: 3 }, s: "Hello World"
+          i: 3, l: 12312312312312, p2d: { x: 1, y: 2 }, p3d: { x: 1, y: 2, z: 3 }, s: "Hello World",
         };
 
         const id: Id64 = ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl,Bo,D,Dt,I,L,P2d,P3d,S) VALUES(:bl,:bo,:d,:dt,:i,:l,:p2d,:p3d,:s)", (stmt) => {
           stmt.bindValues({
             bl: { type: ECSqlStringType.Blob, value: expectedRow.bl }, bo: expectedRow.bo, d: expectedRow.d,
-            dt: { type: ECSqlStringType.DateTime, value: expectedRow.dt }, i: expectedRow.i, l: expectedRow.l, p2d: expectedRow.p2d, p3d: expectedRow.p3d, s: expectedRow.s
+            dt: { type: ECSqlStringType.DateTime, value: expectedRow.dt }, i: expectedRow.i, l: expectedRow.l, p2d: expectedRow.p2d, p3d: expectedRow.p3d, s: expectedRow.s,
           });
           const res: ECSqlInsertResult = stmt.stepForInsert();
           assert.equal(res.status, DbResult.BE_SQLITE_DONE);
