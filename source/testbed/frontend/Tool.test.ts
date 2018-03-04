@@ -9,7 +9,7 @@ import { Id64 } from "@bentley/bentleyjs-core";
 const iModelLocation = path.join(__dirname, "../../../backend/lib/test/assets/test.bim");
 
 class TestIModelApp extends IModelApp {
-  protected supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
+  protected static supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
 }
 
 // tslint:disable:only-arrow-functions

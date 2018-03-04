@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Viewport } from "./Viewport";
 import { Point2d } from "@bentley/geometry-core";
-import { iModelApp } from "./IModelApp";
+import { IModelApp } from "./IModelApp";
 
 /** Message Types for outputMessage */
 export const enum OutputMessageType {
@@ -137,7 +137,7 @@ export class ActivityMessageDetails {
  */
 export class NotificationManager {
   /** Output a prompt, given an i18n key. */
-  public outputPromptByKey(key: string) { this.outputPrompt(iModelApp.i18n.translate(key)); }
+  public outputPromptByKey(key: string) { this.outputPrompt(IModelApp.i18n.translate(key)); }
 
   /** Output a prompt to the user. A 'prompt' indicates an action the user should take to proceed. */
   public outputPrompt(_prompt: string) { }

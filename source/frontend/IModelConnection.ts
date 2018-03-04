@@ -5,15 +5,16 @@ import { Id64, Id64Arg, Id64Props, Id64Set, Logger, OpenMode, BentleyStatus } fr
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
-  IModelGateway, IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps,
+  IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import { HilitedSet, SelectionSet } from "./SelectionSet";
+import { IModelGateway } from "@bentley/imodeljs-common/lib/gateway/IModelGateway";
 import { ViewState, SpatialViewState, OrthographicViewState, ViewState2d, DrawingViewState, SheetViewState } from "./ViewState";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { ModelState, SpatialModelState, SectionDrawingModelState, DrawingModelState, SheetModelState } from "./ModelState";
-import { iModelApp } from "./IModelApp";
+import { IModelApp } from "./IModelApp";
 
 const loggingCategory = "imodeljs-backend.IModelConnection";
 
@@ -47,9 +48,9 @@ export class IModelConnection extends IModel {
 
   /** Open an IModelConnection to an iModel */
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
-    if (!iModelApp)
+    if (!IModelApp)
       throw new IModelError(BentleyStatus.ERROR, "Call IModelApp.startup() before calling open");
-    let changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId, iModelApp.iModelHubClient);
+    let changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId, IModelApp.iModelHubClient);
     if (!changeSetId)
       changeSetId = "0"; // The first version is arbitrarily setup to have changeSetId = "0" since it's required by the gateway API.
 

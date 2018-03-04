@@ -10,7 +10,8 @@ import {
 import { Element, InformationPartitionElement } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { AddonRegistry } from "../AddonRegistry";
-import { Code, Gateway, IModelGateway, ElementProps, GeometricElementProps, Appearance } from "@bentley/imodeljs-common";
+import { IModelGateway } from "@bentley/imodeljs-common/lib/gateway/IModelGateway";
+import { Code, Gateway, ElementProps, GeometricElementProps, Appearance } from "@bentley/imodeljs-common";
 import { DefinitionModel, Model } from "../Model";
 import { SpatialCategory } from "../Category";
 import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";

@@ -5,7 +5,7 @@ import { BeButton, BeButtonEvent, BeGestureEvent, BeWheelEvent, InteractiveTool 
 import { ViewManip, ViewHandleType, FitViewTool, RotatePanZoomGestureTool, ViewTool } from "./ViewTool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { GeomDetail, HitDetail, HitSource, SnapDetail } from "../HitDetail";
-import { iModelApp } from "../IModelApp";
+import { IModelApp } from "../IModelApp";
 
 /**
  * The default "idle" tool. If no tool is active, or the active tool does not respond to a given
@@ -34,7 +34,7 @@ export class IdleTool extends InteractiveTool {
     const vp = ev.viewport;
     if (!vp)
       return true;
-    const cur = iModelApp.toolAdmin.currentInputState;
+    const cur = IModelApp.toolAdmin.currentInputState;
     if (cur.isDragging(BeButton.Data) || cur.isDragging(BeButton.Reset))
       return false;
 
@@ -42,13 +42,13 @@ export class IdleTool extends InteractiveTool {
     if (ev.isDoubleClick) {
       viewTool = new FitViewTool(vp, true);
     } else if (ev.isControlKey) {
-      viewTool = iModelApp.tools.create("View." + vp.view.is3d() ? "Look" : "Scroll", vp) as ViewTool | undefined;
+      viewTool = IModelApp.tools.create("View." + vp.view.is3d() ? "Look" : "Scroll", vp) as ViewTool | undefined;
     } else if (ev.isShiftKey) {
-      viewTool = iModelApp.tools.create("View.Rotate", vp) as ViewTool | undefined;
+      viewTool = IModelApp.tools.create("View.Rotate", vp) as ViewTool | undefined;
     } else if (false) {
       /* ###TODO: Other view tools if needed... */
     } else {
-      const currTool = iModelApp.toolAdmin.activeViewTool;
+      const currTool = IModelApp.toolAdmin.activeViewTool;
       if (currTool && currTool instanceof ViewManip) {
         if (!currTool.isDragging && currTool.viewHandles.hasHandle(ViewHandleType.ViewPan))
           currTool.forcedHandle = ViewHandleType.ViewPan;
@@ -56,7 +56,7 @@ export class IdleTool extends InteractiveTool {
         return true;
       }
 
-      viewTool = iModelApp.tools.create("View.Pan", vp) as ViewTool | undefined;
+      viewTool = IModelApp.tools.create("View.Pan", vp) as ViewTool | undefined;
     }
 
     return !!viewTool && viewTool.run();
@@ -66,7 +66,7 @@ export class IdleTool extends InteractiveTool {
     if (ev.isDoubleClick || ev.isControlKey || ev.isShiftKey)
       return false;
 
-    const currTool = iModelApp.toolAdmin.activeViewTool;
+    const currTool = IModelApp.toolAdmin.activeViewTool;
     if (currTool && currTool instanceof ViewManip) {
       if (currTool.viewHandles.hasHandle(ViewHandleType.ViewPan))
         currTool.forcedHandle = ViewHandleType.None; // Didn't get start drag, don't leave ViewPan active...
@@ -75,17 +75,17 @@ export class IdleTool extends InteractiveTool {
         currTool.invalidateTargetCenter();
     }
 
-    const tp = iModelApp.tentativePoint;
+    const tp = IModelApp.tentativePoint;
     tp.process(ev);
 
     if (tp.isSnapped) {
-      iModelApp.toolAdmin.adjustSnapPoint();
+      IModelApp.toolAdmin.adjustSnapPoint();
     } else {
-      if (iModelApp.accuDraw.isActive) {
+      if (IModelApp.accuDraw.isActive) {
         const point = tp.point;
         const vp = ev.viewport!;
         if (vp.isSnapAdjustmentRequired()) {
-          iModelApp.toolAdmin.adjustPointToACS(point, vp, false);
+          IModelApp.toolAdmin.adjustPointToACS(point, vp, false);
 
           const geomDetail = new GeomDetail();
           geomDetail.closePoint.setFrom(point);
@@ -93,27 +93,27 @@ export class IdleTool extends InteractiveTool {
           const snap = new SnapDetail(hit);
 
           tp.setCurrSnap(snap);
-          iModelApp.toolAdmin.adjustSnapPoint();
+          IModelApp.toolAdmin.adjustSnapPoint();
           tp.point.setFrom(tp.point);
           tp.setCurrSnap(undefined);
         } else {
-          iModelApp.accuDraw.adjustPoint(point, vp, false);
+          IModelApp.accuDraw.adjustPoint(point, vp, false);
           const savePoint = point.clone();
-          iModelApp.toolAdmin.adjustPointToGrid(point, vp);
+          IModelApp.toolAdmin.adjustPointToGrid(point, vp);
           if (!point.isExactEqual(savePoint))
-            iModelApp.accuDraw.adjustPoint(point, vp, false);
+            IModelApp.accuDraw.adjustPoint(point, vp, false);
           tp.point.setFrom(point);
         }
       } else {
-        iModelApp.toolAdmin.adjustPoint(tp.point, ev.viewport!);
+        IModelApp.toolAdmin.adjustPoint(tp.point, ev.viewport!);
       }
-      iModelApp.accuDraw.onTentative();
+      IModelApp.accuDraw.onTentative();
     }
 
     // NOTE: Need to synch tool dynamics because of UpdateDynamics call in _ExitViewTool from OnMiddleButtonUp before point was adjusted. :(
     if (currTool && currTool instanceof PrimitiveTool) {
       const tmpEv = new BeButtonEvent();
-      iModelApp.toolAdmin.fillEventFromCursorLocation(tmpEv);
+      IModelApp.toolAdmin.fillEventFromCursorLocation(tmpEv);
       currTool.updateDynamics(tmpEv);
     }
 
@@ -121,7 +121,7 @@ export class IdleTool extends InteractiveTool {
   }
 
   public onMouseWheel(ev: BeWheelEvent) {
-    return iModelApp.toolAdmin.processWheelEvent(ev, true);
+    return IModelApp.toolAdmin.processWheelEvent(ev, true);
   }
 
   public run() { return true; }
@@ -129,7 +129,7 @@ export class IdleTool extends InteractiveTool {
   public onDataButtonDown(_ev: BeButtonEvent) { return false; }
   public onMultiFingerMove(ev: BeGestureEvent) { const tool = new RotatePanZoomGestureTool(ev, true); tool.run(); return true; }
   public onSingleFingerMove(ev: BeGestureEvent) { return this.onMultiFingerMove(ev); }
-  public onSingleTap(ev: BeGestureEvent) { iModelApp.toolAdmin.convertGestureSingleTapToButtonDownAndUp(ev); return true; }
+  public onSingleTap(ev: BeGestureEvent) { IModelApp.toolAdmin.convertGestureSingleTapToButtonDownAndUp(ev); return true; }
   public onDoubleTap(ev: BeGestureEvent) { if (ev.viewport) { const tool = new FitViewTool(ev.viewport, true); tool.run(); } return true; }
-  public onTwoFingerTap(ev: BeGestureEvent) { iModelApp.toolAdmin.convertGestureToResetButtonDownAndUp(ev); return true; }
+  public onTwoFingerTap(ev: BeGestureEvent) { IModelApp.toolAdmin.convertGestureToResetButtonDownAndUp(ev); return true; }
 }

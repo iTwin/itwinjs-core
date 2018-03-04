@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Point3d, Point2d } from "@bentley/geometry-core";
 import { PrimitiveTool } from "./PrimitiveTool";
-import { iModelApp } from "../IModelApp";
+import { IModelApp } from "../IModelApp";
 import { CoordinateLockOverrides } from "./ToolAdmin";
 import { EditManipulator, ManipulatorSelectionMode } from "./EditManipulator";
 import { IModelConnection } from "../IModelConnection";
@@ -54,7 +54,7 @@ export class SelectionTool extends PrimitiveTool {
   protected getSelectionMethod(): SelectionMethod { return SelectionMethod.Pick; /* NEEDS_WORK: Settings... */ }
   protected getSelectionMode(): SelectionMode { return SelectionMode.Replace;    /* NEEDS_WORK: Settings... */ }
   protected wantToolSettings(): boolean {
-    if (!iModelApp.features.check("SelectionTool.ShowToolSettingInReadonlyFile")) {
+    if (!IModelApp.features.check("SelectionTool.ShowToolSettingInReadonlyFile")) {
       if (this.iModel.isReadonly())
         return false; // Tool can't be used when iModel is read only.
 
@@ -78,13 +78,13 @@ export class SelectionTool extends PrimitiveTool {
   protected initSelectTool() {
     this.isDragSelect = this.isDragControl = this.isDragElement = this.targetIsLocked = false;
     this.points.length = 0;
-    /// iModelApp.toolAdmin.setCursor(ViewManager:: GetManager().GetCursor(Display:: Cursor:: Id:: Arrow));
-    iModelApp.toolAdmin.setLocateCircleOn(true);
-    iModelApp.locateManager.initToolLocate(); // For drag move/copy...
-    iModelApp.locateManager.options.allowTransients = true; // Support edit manipulator for transient geometry...
-    iModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.All;
-    iModelApp.accuSnap.enableLocate(true);
-    iModelApp.accuSnap.enableSnap(false);
+    /// IModelApp.toolAdmin.setCursor(ViewManager:: GetManager().GetCursor(Display:: Cursor:: Id:: Arrow));
+    IModelApp.toolAdmin.setLocateCircleOn(true);
+    IModelApp.locateManager.initToolLocate(); // For drag move/copy...
+    IModelApp.locateManager.options.allowTransients = true; // Support edit manipulator for transient geometry...
+    IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.All;
+    IModelApp.accuSnap.enableLocate(true);
+    IModelApp.accuSnap.enableSnap(false);
   }
 
   public onSingleTap(ev: BeGestureEvent): boolean {
@@ -105,7 +105,7 @@ export class SelectionTool extends PrimitiveTool {
 
   public onSingleFingerMove(ev: BeGestureEvent): boolean {
     if (this.isDragControl || this.isDragSelect) {
-      iModelApp.toolAdmin.convertGestureMoveToButtonDownAndMotion(ev);
+      IModelApp.toolAdmin.convertGestureMoveToButtonDownAndMotion(ev);
       return true;
     }
     // Decide on first touch notification if we'll start handling this gesture instead of passing it on to the idle tool...
@@ -151,7 +151,7 @@ export class SelectionTool extends PrimitiveTool {
   }
 
   public async synchManipulators(clearCurrent: boolean) {
-    iModelApp.viewManager.invalidateDecorationsAllViews();
+    IModelApp.viewManager.invalidateDecorationsAllViews();
     if (ManipulatorPreference.Disabled === this.manipulatorPreference) {
       this.manipulator = undefined;
       return;
@@ -166,7 +166,7 @@ export class SelectionTool extends PrimitiveTool {
     }
 
     // If current hit is for an element, is it the one and only selected element?
-    let currHit = iModelApp.locateManager.currHit;
+    let currHit = IModelApp.locateManager.currHit;
     if (currHit && currHit.elementId) {
       const selSet = this.iModel.selectionSet;
       if (1 !== selSet.size || selSet.has(currHit.elementId))
@@ -290,7 +290,7 @@ export class SelectionTool extends PrimitiveTool {
     // NOTE: By default, handle drag for "vertex" type handles should honor all locks...
     //       Moved (from Topaz) before _OnPreModify to more easily allow manipulators to
     //       ignore incompatible locks when setting up button event/anchor point.
-    const toolState = iModelApp.toolAdmin.toolState;
+    const toolState = IModelApp.toolAdmin.toolState;
     const saveCoordLockOvr = toolState.coordLockOvr;
     toolState.coordLockOvr = CoordinateLockOverrides.None;
     if (!this.manipulator.onPreModify(ev)) {
@@ -376,7 +376,7 @@ export class SelectionTool extends PrimitiveTool {
     if (!ev.isDoubleClick)
       return false;
 
-    const currHit = iModelApp.locateManager.currHit;
+    const currHit = IModelApp.locateManager.currHit;
     if (!currHit)
       return false;
 
@@ -421,15 +421,15 @@ export class SelectionTool extends PrimitiveTool {
     if (0 === this.iModel.selectionSet.size)
       return false;
 
-    const hit = iModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, SubSelectionMode.None, false); // Don't want add/remove mode filtering...
+    const hit = IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, SubSelectionMode.None, false); // Don't want add/remove mode filtering...
     if (!hit || !this.iModel.selectionSet.has(hit.elementId))
       return false;
 
     if (this.iModel.isReadonly()) // NOTE: Don't need to check GetFilteredElementIds, this should be sufficient to know we have at least 1 element...
       return false;
 
-    iModelApp.accuSnap.enableLocate(false);
-    iModelApp.accuSnap.enableSnap(true);
+    IModelApp.accuSnap.enableLocate(false);
+    IModelApp.accuSnap.enableSnap(true);
 
     const hints = new AccuDrawHintBuilder();
     hints.enableSmartRotation;
@@ -537,7 +537,7 @@ export class SelectionTool extends PrimitiveTool {
       return;
 
     const ev = new BeButtonEvent();
-    iModelApp.toolAdmin.fillEventFromCursorLocation(ev);
+    IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
     if (!ev.isControlKey)
       return;
 
@@ -558,7 +558,7 @@ export class SelectionTool extends PrimitiveTool {
       return;
 
     const ev = new BeButtonEvent();
-    iModelApp.toolAdmin.fillEventFromCursorLocation(ev);
+    IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
 
     const graphic = context.createViewOverlay();
 
@@ -591,8 +591,8 @@ export class SelectionTool extends PrimitiveTool {
     this.points.length = 0;
     this.points.push(ev.point.clone());
     this.isDragSelect = true;
-    iModelApp.accuSnap.enableLocate(false);
-    iModelApp.toolAdmin.setLocateCircleOn(false);
+    IModelApp.accuSnap.enableLocate(false);
+    IModelApp.toolAdmin.setLocateCircleOn(false);
     return true;
   }
 
@@ -683,7 +683,7 @@ export class SelectionTool extends PrimitiveTool {
       return false;
     }
 
-    const hit = iModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport);
+    const hit = IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport);
     if (hit) {
       // DgnElementCPtr element = hit -> GetElement();
 
@@ -775,9 +775,9 @@ export class SelectionTool extends PrimitiveTool {
     }
 
     // Check for overlapping hits...
-    const lastHit = SelectionMode.Remove === this.getSelectionMode() ? undefined : iModelApp.locateManager.currHit;
+    const lastHit = SelectionMode.Remove === this.getSelectionMode() ? undefined : IModelApp.locateManager.currHit;
     if (lastHit && this.iModel.selectionSet.has(lastHit.elementId)) {
-      const autoHit = iModelApp.accuSnap.currHit;
+      const autoHit = IModelApp.accuSnap.currHit;
 
       // Play nice w/auto-locate, only remove previous hit if not currently auto-locating or over previous hit...
       if (!autoHit || autoHit.isSameHit(lastHit)) {
@@ -798,7 +798,7 @@ export class SelectionTool extends PrimitiveTool {
         // }
       }
     }
-    iModelApp.accuSnap.resetButton();
+    IModelApp.accuSnap.resetButton();
     return false;
   }
 
@@ -822,7 +822,7 @@ export class SelectionTool extends PrimitiveTool {
     if (!this.targetView)
       return;
     this.removeListener = this.iModel.selectionSet.onChanged.addListener(this.onSelectionChanged, this);
-    iModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompt.IdentifyElement");
+    IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompt.IdentifyElement");
   }
 
   public static startTool() {

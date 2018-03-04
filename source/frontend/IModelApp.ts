@@ -66,17 +66,17 @@ export class IModelApp {
    * ```
    */
   public static startup(deploymentEnv: DeploymentEnv = "QA") {
-    if (this._initialized)
+    if (IModelApp._initialized)
       throw new IModelError(IModelStatus.AlreadyLoaded, "startup may only be called once");
 
-    this._initialized = true;
-    this._deploymentEnv = deploymentEnv;
+    IModelApp._initialized = true;
+    IModelApp._deploymentEnv = deploymentEnv;
 
     // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
-    this._i18n = new I18N(["iModelJs"], "iModelJs", this.supplyI18NOptions());
+    IModelApp._i18n = new I18N(["iModelJs"], "iModelJs", this.supplyI18NOptions());
 
-    const tools = this.tools; // first register all the core tools. Subclasses may choose to override them.
-    const coreNamespace = this.i18n.registerNamespace("CoreTools");
+    const tools = IModelApp.tools; // first register all the core tools. Subclasses may choose to override them.
+    const coreNamespace = IModelApp.i18n.registerNamespace("CoreTools");
     tools.registerModule(selectTool, coreNamespace);
     tools.registerModule(idleTool, coreNamespace);
     tools.registerModule(viewTool, coreNamespace);
@@ -84,23 +84,23 @@ export class IModelApp {
     this.onStartup(); // allow subclasses to register their tools, etc.
 
     // the startup function may have already allocated any of these members, so first test whether they're present
-    if (!this._viewManager) this._viewManager = new ViewManager();
-    if (!this._notifications) this._notifications = new NotificationManager();
-    if (!this._toolAdmin) this._toolAdmin = new ToolAdmin();
-    if (!this._accuDraw) this._accuDraw = new AccuDraw();
-    if (!this._accuSnap) this._accuSnap = new AccuSnap();
-    if (!this._locateManager) this._locateManager = new ElementLocateManager();
-    if (!this._tentativePoint) this._tentativePoint = new TentativePoint();
+    if (!IModelApp._viewManager) IModelApp._viewManager = new ViewManager();
+    if (!IModelApp._notifications) IModelApp._notifications = new NotificationManager();
+    if (!IModelApp._toolAdmin) IModelApp._toolAdmin = new ToolAdmin();
+    if (!IModelApp._accuDraw) IModelApp._accuDraw = new AccuDraw();
+    if (!IModelApp._accuSnap) IModelApp._accuSnap = new AccuSnap();
+    if (!IModelApp._locateManager) IModelApp._locateManager = new ElementLocateManager();
+    if (!IModelApp._tentativePoint) IModelApp._tentativePoint = new TentativePoint();
 
-    this._viewManager.onInitialized();
-    this._toolAdmin.onInitialized();
-    this._accuDraw.onInitialized();
-    this._accuSnap.onInitialized();
-    this._locateManager.onInitialized();
-    this._tentativePoint.onInitialized();
+    IModelApp._viewManager.onInitialized();
+    IModelApp._toolAdmin.onInitialized();
+    IModelApp._accuDraw.onInitialized();
+    IModelApp._accuSnap.onInitialized();
+    IModelApp._locateManager.onInitialized();
+    IModelApp._tentativePoint.onInitialized();
   }
 
-  public static shutdown() { }
+  public static shutdown() { IModelApp._initialized = false; }
 
   /**
    * Implement this method to register your app's tools, override implementation of managers, and initialize your app-specific members.

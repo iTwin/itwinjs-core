@@ -14,7 +14,7 @@ import { AuxCoordSystemState } from "../AuxCoordSys";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { SnapDetail, SnapHeat } from "../HitDetail";
 import { StandardViewId } from "../ViewState";
-import { iModelApp } from "../IModelApp";
+import { IModelApp } from "../IModelApp";
 
 /**
  * A shortcut may require no user input  (immediate) or it may install a viewing tool.Tool implementors should not use
@@ -22,7 +22,7 @@ import { iModelApp } from "../IModelApp";
  */
 export class AccuDrawShortcuts {
   public static rotateAxesByPoint(isSnapped: boolean, aboutCurrentZ: boolean): boolean {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return false;
 
@@ -61,7 +61,7 @@ export class AccuDrawShortcuts {
   }
 
   public static updateACSByPoints(acs: AuxCoordSystemState, vp: Viewport, points: Point3d[], isDynamics: boolean): boolean {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return false;
 
@@ -130,7 +130,7 @@ export class AccuDrawShortcuts {
   }
 
   public counterRotate(angle: number): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return;
 
@@ -141,9 +141,9 @@ export class AccuDrawShortcuts {
     accudraw.axes.fromRotMatrix(rMatrix);
     accudraw.flags.lockedRotation = true;
   }
-  public static processPendingHints() { iModelApp.accuDraw.processHints(); }
+  public static processPendingHints() { IModelApp.accuDraw.processHints(); }
   public static saveToolState(restore: boolean, ignoreFlags: AccuDrawFlags, stateBuffer?: SavedState) {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
 
     if (restore) {
       if (!stateBuffer)
@@ -167,7 +167,7 @@ export class AccuDrawShortcuts {
   }
 
   public static synchSavedStateWithCurrent(stateBuffer?: SavedState): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
 
     // Restore will leave current state active...used for shortcuts like RE that also enable AccuDraw...
     if (stateBuffer && stateBuffer !== accudraw.savedState)
@@ -177,7 +177,7 @@ export class AccuDrawShortcuts {
   }
 
   public static requestInputFocus() {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return;
 
@@ -187,7 +187,7 @@ export class AccuDrawShortcuts {
 
   //   //! Helper methods for GUI implementation...
   public static itemFieldNavigate(index: ItemField, str: string, forward: boolean): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return;
 
@@ -231,9 +231,9 @@ export class AccuDrawShortcuts {
     accudraw.dontMoveFocus = true;
   }
 
-  public static itemFieldNewInput(index: ItemField): void { iModelApp.accuDraw.setKeyinStatus(index, KeyinStatus.Partial); }
+  public static itemFieldNewInput(index: ItemField): void { IModelApp.accuDraw.setKeyinStatus(index, KeyinStatus.Partial); }
   public static itemFieldAcceptInput(index: ItemField, str: string): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
 
     accudraw.processFieldInput(index, str, true);
     accudraw.setKeyinStatus(index, KeyinStatus.Dynamic);
@@ -282,7 +282,7 @@ export class AccuDrawShortcuts {
   }
 
   public static itemFieldLockToggle(index: ItemField): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return;
 
@@ -340,7 +340,7 @@ export class AccuDrawShortcuts {
   }
 
   public static itemRotationModeChange(rotation: RotationMode): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (RotationMode.Context === rotation) {
       if (ContextMode.None !== accudraw.savedState.contextRotMode) {
         accudraw.setRotationMode(RotationMode.Restore);
@@ -364,7 +364,7 @@ export class AccuDrawShortcuts {
 
   //   //! Shortcut implementations for GUI entry points...
   public setOrigin(explicitOrigin?: Point3d): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return;
 
@@ -373,12 +373,12 @@ export class AccuDrawShortcuts {
       accudraw.flags.haveValidOrigin = true;
     } else if (accudraw.isInactive() || accudraw.isDeactivated()) {
       // If AccuSnap is active use adjusted snap point, otherwise use last data point...
-      if (iModelApp.accuSnap.isHot()) {
+      if (IModelApp.accuSnap.isHot()) {
         accudraw.published.origin.setFrom(TentativeOrAccuSnap.getCurrentPoint());
         accudraw.flags.haveValidOrigin = true;
       } else {
         const ev = new BeButtonEvent();
-        iModelApp.toolAdmin.fillEventFromLastDataButton(ev);
+        IModelApp.toolAdmin.fillEventFromLastDataButton(ev);
 
         if (ev.viewport) {
           accudraw.published.origin.setFrom(ev.point);
@@ -410,7 +410,7 @@ export class AccuDrawShortcuts {
   }
 
   public changeCompassMode(): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return;
 
@@ -445,11 +445,11 @@ export class AccuDrawShortcuts {
   }
 
   public lockSmart(): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return;
 
-    const accuSnap = iModelApp.accuSnap;
+    const accuSnap = IModelApp.accuSnap;
 
     // Don't want AccuSnap to influence axis or Z...
     if (accuSnap.isHot()) {
@@ -534,7 +534,7 @@ export class AccuDrawShortcuts {
   }
 
   public lockX(): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return;
 
@@ -561,7 +561,7 @@ export class AccuDrawShortcuts {
   }
 
   public lockY(): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return;
 
@@ -588,7 +588,7 @@ export class AccuDrawShortcuts {
   }
 
   public lockZ(): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return;
 
@@ -612,7 +612,7 @@ export class AccuDrawShortcuts {
   }
 
   public lockDistance(): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return;
 
@@ -643,7 +643,7 @@ export class AccuDrawShortcuts {
   }
 
   public lockAngle(): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return;
     accudraw.doLockAngle(accudraw.clearTentative());
@@ -651,7 +651,7 @@ export class AccuDrawShortcuts {
   }
 
   public lockIndex(): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return;
 
@@ -698,7 +698,7 @@ export class AccuDrawShortcuts {
     accudraw.refreshDecorationsAndDynamics();
   }
   public static setStandardRotation(rotation: RotationMode, restoreContext: boolean = false): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return;
 
@@ -719,7 +719,7 @@ export class AccuDrawShortcuts {
   }
 
   public static alignView(): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return;
 
@@ -767,9 +767,9 @@ export class AccuDrawShortcuts {
     accudraw.refreshDecorationsAndDynamics();
   }
 
-  public static rotateToBase(restoreContext: boolean): void { this.setStandardRotation(iModelApp.accuDraw.flags.baseRotation, restoreContext); }
+  public static rotateToBase(restoreContext: boolean): void { this.setStandardRotation(IModelApp.accuDraw.flags.baseRotation, restoreContext); }
   public static rotateToACS(restoreContext: boolean): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return;
     // NOTE: Match current ACS orientation..reset auxRotationPlane to top!
@@ -778,7 +778,7 @@ export class AccuDrawShortcuts {
   }
 
   public static rotateToPoint(ptIn: Point3d, animate: boolean): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return;
 
@@ -810,7 +810,7 @@ export class AccuDrawShortcuts {
   }
 
   public static rotateCycle(updateCurrentACS: boolean): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return;
 
@@ -899,7 +899,7 @@ export class AccuDrawShortcuts {
   }
 
   public static rotate90(axis: number): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return;
 
@@ -933,11 +933,11 @@ export class AccuDrawShortcuts {
   }
 
   public static rotateAxes(aboutCurrentZ: boolean): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return;
 
-    if (accudraw.clearTentative() || iModelApp.accuSnap.isHot() ||
+    if (accudraw.clearTentative() || IModelApp.accuSnap.isHot() ||
       (CompassMode.Polar === accudraw.getCompassMode() && accudraw.getFieldLock(ItemField.ANGLE_Item)) ||
       (CompassMode.Polar !== accudraw.getCompassMode() && accudraw.getFieldLock(ItemField.X_Item) && accudraw.getFieldLock(ItemField.Y_Item))) {
       if (AccuDrawShortcuts.rotateAxesByPoint(true, aboutCurrentZ)) {
@@ -949,7 +949,7 @@ export class AccuDrawShortcuts {
   }
 
   public static rotateToElement(updateCurrentACS: boolean): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (accudraw.isEnabled())
       AccuDrawTool.installTool(new RotateElementTool(updateCurrentACS, false));
   }
@@ -959,13 +959,13 @@ export class AccuDrawShortcuts {
   }
 
   public static defineACSByPoints() {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (accudraw.isEnabled())
       AccuDrawTool.installTool(new DefineACSByPointsTool());
   }
 
   public static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): BentleyStatus {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return BentleyStatus.ERROR;
 
@@ -1046,7 +1046,7 @@ export class AccuDrawShortcuts {
   }
 
   public writeACS(_acsName: string): BentleyStatus {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled())
       return BentleyStatus.ERROR;
 
@@ -1080,7 +1080,7 @@ export class AccuDrawShortcuts {
   }
 
   public static itemFieldUnlockAll(): void {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (accudraw.isEnabled())
       accudraw.unlockAllFields();
   }
@@ -1105,16 +1105,16 @@ export abstract class AccuDrawTool {
 
   public doManipulationStart() {
     AccuDrawShortcuts.saveToolState(false, 0, this.stateBuffer);
-    const toolAdmin = iModelApp.toolAdmin;
+    const toolAdmin = IModelApp.toolAdmin;
 
     // NOTE: Unlike starting a viewing tool, an input collector inherits the suspended primitive's state and must set everything...
     toolAdmin.setLocateCursor(false);
     toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.None;
 
     if (this.activateAccuDrawOnStart())
-      iModelApp.accuDraw.activate();
+      IModelApp.accuDraw.activate();
 
-    const accuSnap = iModelApp.accuSnap;
+    const accuSnap = IModelApp.accuSnap;
     accuSnap.enableLocate(false);
     accuSnap.enableSnap(true);
 
@@ -1132,7 +1132,7 @@ export abstract class AccuDrawTool {
   public onManipulationComplete(): AccuDrawFlags { return 0; }
   public onDecorate(_context: DecorateContext) { }
   public static installTool(shortcut: AccuDrawTool): boolean { return new AccuDrawShortcutsTool(shortcut).run(); }
-  public static outputPrompt(messageKey: string) { iModelApp.notifications.outputPromptByKey("AccuDraw.Prompt." + messageKey); }
+  public static outputPrompt(messageKey: string) { IModelApp.notifications.outputPromptByKey("AccuDraw.Prompt." + messageKey); }
 }
 
 class RotateAxesTool extends AccuDrawTool {
@@ -1143,7 +1143,7 @@ class RotateAxesTool extends AccuDrawTool {
     AccuDrawTool.outputPrompt("DefineXAxis");
   }
   public doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean {
-    const vp = ev ? ev.viewport : iModelApp.accuDraw.currentView;
+    const vp = ev ? ev.viewport : IModelApp.accuDraw.currentView;
     if (!vp)
       return true;
     AccuDrawShortcuts.rotateAxesByPoint(TentativeOrAccuSnap.isHot(), this.aboutCurrentZ);
@@ -1163,7 +1163,7 @@ class RotateElementTool extends AccuDrawTool {
   public onManipulationComplete(): AccuDrawFlags { return AccuDrawFlags.SetOrigin | AccuDrawFlags.SetRMatrix; }
 
   public activateAccuDrawOnStart(): boolean {
-    this.moveOrigin = !iModelApp.accuDraw.isActive(); // Leave current origin is AccuDraw is already enabled...
+    this.moveOrigin = !IModelApp.accuDraw.isActive(); // Leave current origin is AccuDraw is already enabled...
     return !this.updateDynamicACS;
   }
 
@@ -1171,10 +1171,10 @@ class RotateElementTool extends AccuDrawTool {
     //   this.rotateElmHelper.enableGeometryCache(); // Keep geometry cache...
     super.doManipulationStart();
     AccuDrawTool.outputPrompt("DefineElem");
-    const accuSnap = iModelApp.accuSnap;
+    const accuSnap = IModelApp.accuSnap;
     // If user doesn't want AccuSnap, tool will work fine with with just auto-locate (which the user can no longer disable).
     if (!accuSnap.userWantsSnaps()) {
-      iModelApp.toolAdmin.setLocateCursor(true);
+      IModelApp.toolAdmin.setLocateCursor(true);
       accuSnap.enableLocate(true);
     }
   }
@@ -1185,7 +1185,7 @@ class RotateElementTool extends AccuDrawTool {
   }
 
   public updateOrientation(tmpSnapDetail: SnapDetail, ev: BeButtonEvent): boolean {
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (accudraw.isActive() && LockedStates.NONE_LOCKED !== accudraw.locked) {
       // Make sure adjusted point is used instead of close point on element...
       tmpSnapDetail.heat = SnapHeat.InRange;
@@ -1211,7 +1211,7 @@ class RotateElementTool extends AccuDrawTool {
     if (!ev || !ev.viewport)
       return true;
 
-    const accuSnap = iModelApp.accuSnap;
+    const accuSnap = IModelApp.accuSnap;
 
     // NOTE: User could start tool with AccuSnap user enabled and then turn it off...detect this and enable auto-locate.
     //       If AccuSnap is enabled after the tool is started you can end up with both auto-locate and AccuSnap enabled,
@@ -1237,12 +1237,12 @@ class RotateElementTool extends AccuDrawTool {
     }
 
     if (this.updateDynamicACS)
-      iModelApp.viewManager.invalidateDecorationsAllViews();
+      IModelApp.viewManager.invalidateDecorationsAllViews();
 
     if (isMotion)
       return true;
 
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (this.updateCurrentACS) {
 
       AccuDrawShortcuts.processPendingHints();
@@ -1268,7 +1268,7 @@ class RotateElementTool extends AccuDrawTool {
     if (!this.updateDynamicACS)
       return;
 
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     const origin = accudraw.origin;
     const rMatrix = accudraw.getRotation();
     const acs = context.viewport!.getAuxCoordSystem().clone<AuxCoordSystemState>();
@@ -1287,7 +1287,7 @@ class DefineACSByPointsTool extends AccuDrawTool {
   public dDoManipulationStart(): void {
     super.doManipulationStart();
 
-    const tentativePoint = iModelApp.tentativePoint;
+    const tentativePoint = IModelApp.tentativePoint;
     if (!tentativePoint.isActive) {
       AccuDrawTool.outputPrompt("DefineOrigin");
       return;
@@ -1295,7 +1295,7 @@ class DefineACSByPointsTool extends AccuDrawTool {
 
     const origin = tentativePoint.getPoint().clone();
     AccuDrawTool.outputPrompt("DefineXAxis");
-    iModelApp.accuDraw.setContext(AccuDrawFlags.SetOrigin | AccuDrawFlags.FixedOrigin, origin);
+    IModelApp.accuDraw.setContext(AccuDrawFlags.SetOrigin | AccuDrawFlags.FixedOrigin, origin);
     this.points.push(origin);
     tentativePoint.clear(true);
   }
@@ -1304,7 +1304,7 @@ class DefineACSByPointsTool extends AccuDrawTool {
     if (!ev || !ev.viewport)
       return true;
 
-    iModelApp.viewManager.invalidateDecorationsAllViews();
+    IModelApp.viewManager.invalidateDecorationsAllViews();
     if (isMotion)
       return false;
 
@@ -1329,7 +1329,7 @@ class DefineACSByPointsTool extends AccuDrawTool {
     this.points.forEach((pt) => tmpPoints.push(pt));
 
     const ev = new BeButtonEvent();
-    iModelApp.toolAdmin.fillEventFromCursorLocation(ev);
+    IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
     tmpPoints.push(ev.point);
 
     const vp = context.viewport!;

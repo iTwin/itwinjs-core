@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { iModelApp, IModelApp, Tool, I18NNamespace, FuzzySearchResults, FuzzySearchResult } from "@bentley/imodeljs-frontend";
+import { IModelApp, Tool, I18NNamespace, FuzzySearchResults, FuzzySearchResult } from "@bentley/imodeljs-frontend";
 
 // these are later set by executing the TestImmediate tool.
 let testVal1: string;
@@ -21,19 +21,14 @@ class TestImmediate extends Tool {
 // spell-checker: disable
 
 class TestCommandApp extends IModelApp {
-  public testNamespace?: I18NNamespace;
+  public static testNamespace?: I18NNamespace;
 
-  constructor() {
-    super();
-    this.testNamespace = undefined;
-  }
-
-  protected onStartup() {
-    this.testNamespace = iModelApp.i18n.registerNamespace("TestApp");
+  protected static onStartup() {
+    this.testNamespace = IModelApp.i18n.registerNamespace("TestApp");
     TestImmediate.register(this.testNamespace);
   }
 
-  protected supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
+  protected static supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
 }
 
 function setupToolRegistryTests() {
@@ -51,50 +46,50 @@ describe("ToolRegistry", () => {
   after(() => TestCommandApp.shutdown());
 
   it("Should find Select tool", async () => {
-    const command: typeof Tool | undefined = await iModelApp.tools.findExactMatch("Select Elements");
+    const command: typeof Tool | undefined = await IModelApp.tools.findExactMatch("Select Elements");
     assert.isDefined(command, "Found Select Elements Command");
     if (command) {
       assert.isTrue(command.prototype instanceof Tool);
-      assert.isTrue(iModelApp.tools.run(command.toolId));
+      assert.isTrue(IModelApp.tools.run(command.toolId));
     }
   });
 
   it("Should execute the TestImmediate command", async () => {
-    const cmdReturn: boolean = await iModelApp.tools.executeExactMatch("Localized TestImmediate Keyin");
+    const cmdReturn: boolean = await IModelApp.tools.executeExactMatch("Localized TestImmediate Keyin");
     assert.isTrue(cmdReturn);
     assert.equal(testVal1, "test1", "TestImmediate tool set values");
     assert.equal(testVal2, "test2");
   });
 
   it("Should find the MicroStation inputmanager training command", async () => {
-    const command: typeof Tool | undefined = await iModelApp.tools.findExactMatch("inputmanager training");
+    const command: typeof Tool | undefined = await IModelApp.tools.findExactMatch("inputmanager training");
     assert.isDefined(command, "Found inputmanager training command");
     if (command) {
-      assert.isTrue(iModelApp.tools.run(command.toolId));
+      assert.isTrue(IModelApp.tools.run(command.toolId));
       assert.equal(lastCommand, "inputmanager training");
     }
   });
 
   it("Should find some partial matches for 'plac'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await iModelApp.tools.findPartialMatches("plac");
+    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await IModelApp.tools.findPartialMatches("plac");
     showSearchResults("Matches for 'plac':", searchResults);
   });
 
   it("Should find some partial matches for 'plce'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await iModelApp.tools.findPartialMatches("plce");
+    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await IModelApp.tools.findPartialMatches("plce");
     showSearchResults("Matches for 'plce':", searchResults);
   });
 
   it("Should find some partial matches for 'cone plac'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await iModelApp.tools.findPartialMatches("cone plac");
+    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await IModelApp.tools.findPartialMatches("cone plac");
     showSearchResultsUsingIndexApi("Matches for 'cone plac':", searchResults);
   });
   it("Should find some partial matches for 'vie'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await iModelApp.tools.findPartialMatches("vie");
+    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await IModelApp.tools.findPartialMatches("vie");
     showSearchResultsUsingIndexApi("Matches for 'vie':", searchResults);
   });
   it("Should find some partial matches for 'place '", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await iModelApp.tools.findPartialMatches("place ");
+    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await IModelApp.tools.findPartialMatches("place ");
     showSearchResults("Matches for 'place ':", searchResults);
   });
 });
@@ -153,7 +148,7 @@ function registerTestClass(id: string, keyin: string, ns: I18NNamespace) {
 
 function createTestTools(): void {
   const testCommandEntries: any = JSON.parse(testCommandsString);
-  const ns: I18NNamespace = (iModelApp as TestCommandApp).testNamespace!;
+  const ns: I18NNamespace = TestCommandApp.testNamespace!;
   for (const thisEntry of testCommandEntries) {
     // create a tool id by concatenating the words of the keyin.
     const toolId: string = thisEntry.commandString.replace(/ /g, ".");

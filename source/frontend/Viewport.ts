@@ -17,7 +17,7 @@ import { HitDetail, SnapDetail, SnapMode } from "./HitDetail";
 import { DecorateContext } from "./ViewContext";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { DecorationList, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d } from "@bentley/imodeljs-common";
-import { iModelApp } from "./IModelApp";
+import { IModelApp } from "./IModelApp";
 
 /** A rectangle in view coordinates. */
 export class ViewRect {
@@ -210,8 +210,8 @@ export class Viewport {
   private static get2dFrustumDepth() { return Constant.oneMeter; }
 
   public isPointAdjustmentRequired(): boolean { return this.view.is3d(); }
-  public isSnapAdjustmentRequired(): boolean { return iModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
-  public isContextRotationRequired(): boolean { return iModelApp.toolAdmin.acsContextLock; }
+  public isSnapAdjustmentRequired(): boolean { return IModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
+  public isContextRotationRequired(): boolean { return IModelApp.toolAdmin.acsContextLock; }
 
   constructor(public canvas?: HTMLCanvasElement, private _view?: ViewState) { this.setCursor(); this.saveViewUndo(); }
 

@@ -6,7 +6,7 @@ import { i18n } from "i18next";
 import * as i18nextXHRBackend from "i18next-xhr-backend";
 import * as i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
 import { IModelError } from "@bentley/imodeljs-common";
-import { iModelApp } from "./IModelApp";
+import { IModelApp } from "./IModelApp";
 
 export interface I18NOptions {
   urlTemplate?: string;
@@ -61,8 +61,8 @@ export class I18N {
       throw new IModelError(-1, "namespace '" + name + "' is not unique");
     }
     const theReadPromise: Promise<void> = new Promise((resolve: any, _reject: any) => {
-      iModelApp.i18n.loadNamespace(name, (err: any, _t: any) => {
-        let locales: string[] = iModelApp.i18n.languageList().map((thisLocale) => {
+      IModelApp.i18n.loadNamespace(name, (err: any, _t: any) => {
+        let locales: string[] = IModelApp.i18n.languageList().map((thisLocale) => {
           return ("/" + thisLocale + "/");
         });
         if (!err) {

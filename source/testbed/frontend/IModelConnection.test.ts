@@ -13,7 +13,7 @@ import {
 
 // spell-checker: disable
 class TestApp extends IModelApp {
-  protected supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
+  protected static supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
 }
 
 describe("IModelConnection", () => {
