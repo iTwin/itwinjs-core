@@ -17,7 +17,6 @@ export * from "./ElementGeometry";
 export * from "./ElementPropertyFormatter";
 export * from "./Entity";
 export * from "./IModelHost";
-export * from "./IModelJsFs";
 export * from "./KnownLocations";
 export * from "./LinkTableRelationship";
 export * from "./Model";

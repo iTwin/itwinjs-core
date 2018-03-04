@@ -26,7 +26,7 @@ class TestApp extends IModelApp {
   public static testNamespace?: I18NNamespace;
 
   protected static onStartup() {
-    IModelApp._accuDraw = new TestAccuDraw();
+    IModelApp.accuDraw = new TestAccuDraw();
 
     this.testNamespace = IModelApp.i18n.registerNamespace("TestApp");
     TestImmediate.register(this.testNamespace);

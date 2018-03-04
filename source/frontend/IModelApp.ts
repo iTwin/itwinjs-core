@@ -28,28 +28,18 @@ import * as idleTool from "./tools/IdleTool";
  */
 export class IModelApp {
   protected static _initialized = false;
-  protected static _viewManager?: ViewManager;
-  protected static _notifications?: NotificationManager;
-  protected static _toolAdmin?: ToolAdmin;
-  protected static _accuDraw?: AccuDraw;
-  protected static _accuSnap?: AccuSnap;
-  protected static _locateManager?: ElementLocateManager;
-  protected static _tentativePoint?: TentativePoint;
-  protected static _i18n?: I18N;
-  protected static _deploymentEnv: DeploymentEnv = "QA";
-  protected static _iModelHubClient?: IModelHubClient;
+  public static viewManager: ViewManager;
+  public static notifications: NotificationManager;
+  public static toolAdmin: ToolAdmin;
+  public static accuDraw: AccuDraw;
+  public static accuSnap: AccuSnap;
+  public static locateManager: ElementLocateManager;
+  public static tentativePoint: TentativePoint;
+  public static i18n: I18N;
+  public static deploymentEnv: DeploymentEnv = "QA";
   public static readonly features = new FeatureGates();
   public static readonly tools = new ToolRegistry();
-
-  public static get viewManager(): ViewManager { return this._viewManager!; }
-  public static get notifications(): NotificationManager { return this._notifications!; }
-  public static get toolAdmin(): ToolAdmin { return this._toolAdmin!; }
-  public static get accuDraw(): AccuDraw { return this._accuDraw!; }
-  public static get accuSnap(): AccuSnap { return this._accuSnap!; }
-  public static get locateManager(): ElementLocateManager { return this._locateManager!; }
-  public static get tentativePoint(): TentativePoint { return this._tentativePoint!; }
-  public static get i18n(): I18N { return this._i18n!; }
-  public static get deploymentEnv(): DeploymentEnv { return this._deploymentEnv; }
+  protected static _iModelHubClient?: IModelHubClient;
   public static get iModelHubClient(): IModelHubClient { return this._iModelHubClient ? this._iModelHubClient : (this._iModelHubClient = new IModelHubClient(this.deploymentEnv)); }
 
   /**
@@ -70,10 +60,10 @@ export class IModelApp {
       throw new IModelError(IModelStatus.AlreadyLoaded, "startup may only be called once");
 
     IModelApp._initialized = true;
-    IModelApp._deploymentEnv = deploymentEnv;
+    IModelApp.deploymentEnv = deploymentEnv;
 
     // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
-    IModelApp._i18n = new I18N(["iModelJs"], "iModelJs", this.supplyI18NOptions());
+    IModelApp.i18n = new I18N(["iModelJs"], "iModelJs", this.supplyI18NOptions());
 
     const tools = IModelApp.tools; // first register all the core tools. Subclasses may choose to override them.
     const coreNamespace = IModelApp.i18n.registerNamespace("CoreTools");
@@ -84,20 +74,20 @@ export class IModelApp {
     this.onStartup(); // allow subclasses to register their tools, etc.
 
     // the startup function may have already allocated any of these members, so first test whether they're present
-    if (!IModelApp._viewManager) IModelApp._viewManager = new ViewManager();
-    if (!IModelApp._notifications) IModelApp._notifications = new NotificationManager();
-    if (!IModelApp._toolAdmin) IModelApp._toolAdmin = new ToolAdmin();
-    if (!IModelApp._accuDraw) IModelApp._accuDraw = new AccuDraw();
-    if (!IModelApp._accuSnap) IModelApp._accuSnap = new AccuSnap();
-    if (!IModelApp._locateManager) IModelApp._locateManager = new ElementLocateManager();
-    if (!IModelApp._tentativePoint) IModelApp._tentativePoint = new TentativePoint();
+    if (!IModelApp.viewManager) IModelApp.viewManager = new ViewManager();
+    if (!IModelApp.notifications) IModelApp.notifications = new NotificationManager();
+    if (!IModelApp.toolAdmin) IModelApp.toolAdmin = new ToolAdmin();
+    if (!IModelApp.accuDraw) IModelApp.accuDraw = new AccuDraw();
+    if (!IModelApp.accuSnap) IModelApp.accuSnap = new AccuSnap();
+    if (!IModelApp.locateManager) IModelApp.locateManager = new ElementLocateManager();
+    if (!IModelApp.tentativePoint) IModelApp.tentativePoint = new TentativePoint();
 
-    IModelApp._viewManager.onInitialized();
-    IModelApp._toolAdmin.onInitialized();
-    IModelApp._accuDraw.onInitialized();
-    IModelApp._accuSnap.onInitialized();
-    IModelApp._locateManager.onInitialized();
-    IModelApp._tentativePoint.onInitialized();
+    IModelApp.viewManager.onInitialized();
+    IModelApp.toolAdmin.onInitialized();
+    IModelApp.accuDraw.onInitialized();
+    IModelApp.accuSnap.onInitialized();
+    IModelApp.locateManager.onInitialized();
+    IModelApp.tentativePoint.onInitialized();
   }
 
   public static shutdown() { IModelApp._initialized = false; }

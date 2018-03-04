@@ -13,7 +13,7 @@ function withinTol(x: number, y: number): boolean {
 
 const iModelLocation = path.join(__dirname, "../../../backend/test/assets/test.bim");
 
-describe.only("Graphic", () => {
+describe("Graphic", () => {
   let imodel: IModelConnection;
 
   before(async () => {
