@@ -34,4 +34,3 @@ export * from "./ViewManager";
 export * from "./Viewport";
 export * from "./ViewState";
 export * from "./IModelApp";
-
