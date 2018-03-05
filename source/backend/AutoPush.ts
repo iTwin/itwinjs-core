@@ -4,8 +4,7 @@
 import { IModelDb } from "./IModelDb";
 import { AccessToken } from "@bentley/imodeljs-clients/lib";
 import { assert, Logger, BeEvent, IModelStatus } from "@bentley/bentleyjs-core";
-import { Gateway } from "@bentley/imodeljs-common/lib/Gateway";
-import { IModelError } from "@bentley/imodeljs-common/lib/IModelError";
+import { Gateway, IModelError } from "@bentley/imodeljs-common";
 
 const loggingCategory = "imodeljs-backend.AutoPush";
 

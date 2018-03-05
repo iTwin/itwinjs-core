@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Capabilities, ViewportQuad, TexturedViewportQuad } from "@bentley/imodeljs-frontend/lib/render/webgl/System";
+import { Capabilities, ViewportQuad, TexturedViewportQuad } from "@bentley/imodeljs-frontend/lib/rendering";
 
 function getWebGLContext(): WebGLRenderingContext | null {
   let canvas = document.getElementById("canvas") as HTMLCanvasElement;

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { Feature, FeatureTable, GeometryClass } from "@bentley/imodeljs-common/lib/Render";
+import { Feature, FeatureTable, GeometryClass } from "@bentley/imodeljs-common";
 
 describe("Feature", () => {
   it("constructor works as expected", () => {

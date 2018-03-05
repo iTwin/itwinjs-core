@@ -2,9 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ToleranceRatio, GeometryOptions, NormalMode, SurfacesOnly, PreserveOrder, GenerateEdges } from "@bentley/imodeljs-frontend/lib/render/primitives/Primitives";
-import { GraphicBuilderCreateParams, GraphicType } from "@bentley/imodeljs-frontend/lib/render/GraphicBuilder";
-import { Transform } from "@bentley/geometry-core/lib/Transform";
+import { ToleranceRatio, GeometryOptions, NormalMode, SurfacesOnly, PreserveOrder, GenerateEdges, GraphicBuilderCreateParams, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Transform } from "@bentley/geometry-core";
 
 describe("ToleranceRatio", () => {
   it("ToleranceRatio works as expected", () => {

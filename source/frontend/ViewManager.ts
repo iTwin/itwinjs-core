@@ -6,8 +6,8 @@ import { BeCursor } from "./tools/Tool";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { EventController } from "./tools/EventController";
-import { Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { iModelApp } from "./IModelApp";
+import { Point3d } from "@bentley/geometry-core";
+import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 
 /** The ViewManager holds the list of opened views, plus the "selected view" */
@@ -46,7 +46,7 @@ export class ViewManager {
     let priority = 0;
     this.inDynamicsMode = false;
 
-    const cursorVp = iModelApp.toolAdmin.getCursorView();
+    const cursorVp = IModelApp.toolAdmin.getCursorView();
     if (cursorVp)
       cursorVp.changeDynamics(undefined, priority);
 
@@ -103,7 +103,7 @@ export class ViewManager {
    */
   public dropViewport(vp: Viewport): BentleyStatus {
     this.onViewClose.raiseEvent(vp);
-    iModelApp.toolAdmin.onViewportClosed(vp); // notify tools that this view is no longer valid
+    IModelApp.toolAdmin.onViewportClosed(vp); // notify tools that this view is no longer valid
 
     let didDrop = false;
     const vpList = this.viewports;

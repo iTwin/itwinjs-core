@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Transform } from "@bentley/geometry-core/lib/Transform";
-import { ViewFlags } from "@bentley/imodeljs-common/lib/Render";
+import { Transform } from "@bentley/geometry-core";
+import { ViewFlags } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
 
 /**

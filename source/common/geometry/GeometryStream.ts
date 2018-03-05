@@ -2,22 +2,15 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { Point2d, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
-import { Transform, RotMatrix } from "@bentley/geometry-core/lib/Transform";
-import { Range3d } from "@bentley/geometry-core/lib/Range";
-import { CurveCollection, Loop } from "@bentley/geometry-core/lib/curve/CurveChain";
-import { BSplineSurface3d } from "@bentley/geometry-core/lib/bspline/BSplineSurface";
-import { GeometryQuery, CurvePrimitive } from "@bentley/geometry-core/lib/curve/CurvePrimitive";
-import { SolidPrimitive } from "@bentley/geometry-core/lib/solid/SolidPrimitive";
-import { IndexedPolyface } from "@bentley/geometry-core/lib/polyface/Polyface";
-import { Angle, AngleSweep } from "@bentley/geometry-core/lib/Geometry";
-import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
-import { LineSegment3d } from "@bentley/geometry-core/lib/curve/LineSegment3d";
-import { LineString3d } from "@bentley/geometry-core/lib/curve/LineString3d";
+import {
+  Point2d, Point3d, Vector3d, YawPitchRollAngles, Transform, RotMatrix, Range3d,
+  CurveCollection, Loop, BSplineSurface3d, GeometryQuery, CurvePrimitive,
+  SolidPrimitive, IndexedPolyface, Angle, AngleSweep, Arc3d, LineSegment3d, LineString3d,
+} from "@bentley/geometry-core";
 import { BGFBBuilder, BGFBReader } from "@bentley/geometry-core/lib/serialization/BGFB";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { GeometricPrimitive, GeometryType, Placement2d, Placement3d, ElementAlignedBox2d, ElementAlignedBox3d } from "./Primitives";
-import { GeometryParams } from "./GeometryProps";
+import { GeometryProps } from "./GeometryProps";
 import { LineStyleInfo, LineStyleParams } from "./LineStyle";
 import { GradientSymb } from "./GradientPattern";
 import { PatternParams, DwgHatchDefLine } from "./AreaPattern";
@@ -364,7 +357,7 @@ export class OpCodeWriter {
     }
   }
 
-  public appendGeometryParams(elParams: GeometryParams, ignoreSubCategory: boolean, is3d: boolean) {
+  public appendGeometryParams(elParams: GeometryProps, ignoreSubCategory: boolean, is3d: boolean) {
     const useColor = !elParams.isLineColorFromSubCategoryAppearance();
     const useWeight = !elParams.isWeightFromSubCategoryAppearance();
     const useStyle = !elParams.isLineStyleFromSubCategoryAppearance();
@@ -1133,7 +1126,7 @@ export class OpCodeReader {
   /** Stores the read GeometricParams into the GeometricParams object given. If certain members read are not valid, preserves the old values.
    *  Returns true if the original elParams argument is changed
    */
-  public getGeometryParams(egOp: Operation, elParams: GeometryParams): boolean {
+  public getGeometryParams(egOp: Operation, elParams: GeometryProps): boolean {
     let changed = false;
 
     switch (egOp.opCode) {
@@ -1438,24 +1431,24 @@ export class OpCodeIterator {
     return this.dataOffset === itr.dataOffset;
   }
 
-//  public get geometryParams() { return this.state.geomParams; }   // Returns GeometryParams for current GeometricPrimitive...
-//  public get geometryPartId() { return this.state.geomStreamEntryId!.geometryPartId; }   // Returns invalid id if not a DgnGeometryPart reference...
-//  public get geometryStreamEntryId() { return this.state.geomStreamEntryId; }   // Returns primitive id for current GeometricPrimitive...
-//  public get subgraphicLocalRange() { return this.state.localRange; }   // Returns local range for geometry that was appended with GeometryBuilder.SetAppendAsSubGraphics enabled
-//  public get sourceToWorld() { return this.state.sourceToWorld; }
-//  public get geometryToSource() { return this.state.geomToSource; }
-//  public get geometryToWorld() {
-//    this.state.geomToWorld.setMultiplyTransformTransform(this.state.sourceToWorld, this.state.geomToSource);
-//    return this.state.geomToWorld;
-//  }
-//  public getGeometry(): GeometricPrimitive | undefined {
-//    const gsReader = new OpCodeReader();
-//    const result = gsReader.getGeometricPrimitive(this.egOp!);
-//    if (!result)
-//      return undefined;
-//    this.state.geometry = result;
-//    return this.state.geometry;
-//  }
+  //  public get geometryParams() { return this.state.geomParams; }   // Returns GeometryParams for current GeometricPrimitive...
+  //  public get geometryPartId() { return this.state.geomStreamEntryId!.geometryPartId; }   // Returns invalid id if not a DgnGeometryPart reference...
+  //  public get geometryStreamEntryId() { return this.state.geomStreamEntryId; }   // Returns primitive id for current GeometricPrimitive...
+  //  public get subgraphicLocalRange() { return this.state.localRange; }   // Returns local range for geometry that was appended with GeometryBuilder.SetAppendAsSubGraphics enabled
+  //  public get sourceToWorld() { return this.state.sourceToWorld; }
+  //  public get geometryToSource() { return this.state.geomToSource; }
+  //  public get geometryToWorld() {
+  //    this.state.geomToWorld.setMultiplyTransformTransform(this.state.sourceToWorld, this.state.geomToSource);
+  //    return this.state.geomToWorld;
+  //  }
+  //  public getGeometry(): GeometricPrimitive | undefined {
+  //    const gsReader = new OpCodeReader();
+  //    const result = gsReader.getGeometricPrimitive(this.egOp!);
+  //    if (!result)
+  //      return undefined;
+  //    this.state.geometry = result;
+  //    return this.state.geometry;
+  //  }
 
   /** Returns true if this offset is equal to the given iterator's offset */
   public isEqualOffset(other: OpCodeIterator): boolean {
@@ -1466,12 +1459,12 @@ export class OpCodeIterator {
    *  When iterating a GeometricElement that has GeometryPart id references, this allows iteration of the GeometryPart's
    *  GeometryStream using the instance specific GeometryParams and part geometry to world transform as established by the parent GeometrySource.
    */
-//  public setNestedIteratorContext(collection: OpCodeIterator) {
-//    this.state.geomParams = collection.state.geomParams!.clone();
-//    this.state.geomStreamEntryId = collection.state.geomStreamEntryId!.clone();
-//    this.state.sourceToWorld = collection.state.sourceToWorld.clone();
-//    this.state.geomToSource = collection.state.geomToSource.clone();
-//  }
+  //  public setNestedIteratorContext(collection: OpCodeIterator) {
+  //    this.state.geomParams = collection.state.geomParams!.clone();
+  //    this.state.geomStreamEntryId = collection.state.geomStreamEntryId!.clone();
+  //    this.state.sourceToWorld = collection.state.sourceToWorld.clone();
+  //    this.state.geomToSource = collection.state.geomToSource.clone();
+  //  }
 }
 
 /** Class for identifying a geometric primitive in a GeometryStream */
@@ -1635,8 +1628,8 @@ export class GeometryStreamBuilder {
   /** Current Placement2d as of last call to Append when creating a 2d GeometryStream */
   public readonly placement2d = new Placement2d(Point2d.createZero(), Angle.createDegrees(0.0), new ElementAlignedBox2d());
   /** Current GeometryParams as of last call to Append */
-  public geometryParams = new GeometryParams(new Id64());
-  private geometryParamsModified: GeometryParams | undefined;
+  public geometryParams = new GeometryProps(new Id64());
+  private geometryParamsModified: GeometryProps | undefined;
   private writer = new OpCodeWriter();
 
   /** Current size (in bytes) of the GeometryStream being constructed */
@@ -1952,7 +1945,7 @@ export class GeometryStreamBuilder {
       this.placement3d.setFrom(new Placement3d(Point3d.createZero(), YawPitchRollAngles.createDegrees(0.0, 0.0, 0.0), new ElementAlignedBox3d()));
     else
       this.placement2d.setFrom(new Placement2d(Point2d.createZero(), Angle.createDegrees(0.0), new ElementAlignedBox2d()));
-    this.geometryParams = new GeometryParams(this.geometryParams.categoryId, this.geometryParams.subCategoryId);
+    this.geometryParams = new GeometryProps(this.geometryParams.categoryId, this.geometryParams.subCategoryId);
     this.geometryParamsModified = undefined;
     this.writer.reset();
   }
@@ -1961,7 +1954,7 @@ export class GeometryStreamBuilder {
    *  NOTE - If no symbology is specifically set in a GeometryStream, the GeometricPrimitive display uses the default SubCategoryId for the GeometricElement's CategoryId.
    */
   public appendSubCategoryId(subCategoryId: Id64): boolean {
-    const elParams = new GeometryParams(this.geometryParams.categoryId, subCategoryId); // Preserve current category...
+    const elParams = new GeometryProps(this.geometryParams.categoryId, subCategoryId); // Preserve current category...
     return this.appendGeometryParams(elParams);
   }
 
@@ -1969,7 +1962,7 @@ export class GeometryStreamBuilder {
    *  NOTE: If no symbology is specifically set in a GeometryStream, the GeometricPrimitive display uses the default SubCategoryId for the GeometricElement's
    *  CategoryId. World vs. local affects PatternParams and LineStyleInfo that need to store an orientation and other "placement" relative info.
    */
-  public appendGeometryParams(elParams: GeometryParams, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
+  public appendGeometryParams(elParams: GeometryProps, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
     // NOTE: Allow explicit symbology in GeometryPart's GeometryStream, sub-category won't be persisted
     if (!this.isPartCreate) {
       if (!this.geometryParams.categoryId.isValid())

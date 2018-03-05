@@ -6,18 +6,17 @@ import { Viewport } from "./Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { StandardViewId, ViewState } from "./ViewState";
 import { CoordinateLockOverrides } from "./tools/ToolAdmin";
-import { ColorDef, ColorRgb } from "@bentley/imodeljs-common/lib/ColorDef";
+import { ColorDef, ColorRgb, LinePixels } from "@bentley/imodeljs-common";
+import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { BeButtonEvent, CoordSource, BeModifierKey } from "./tools/Tool";
 import { SnapMode } from "./HitDetail";
 import { TentativeOrAccuSnap } from "./AccuSnap";
 import { AuxCoordSystemState } from "./AuxCoordSys";
-import { LinePixels } from "@bentley/imodeljs-common/lib/Render";
 import { GraphicBuilder } from "./render/GraphicBuilder";
 import { DecorateContext, SnapContext } from "./ViewContext";
-import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { ViewTool } from "./tools/ViewTool";
 import { PrimitiveTool } from "./tools/PrimitiveTool";
-import { iModelApp } from "./IModelApp";
+import { IModelApp } from "./IModelApp";
 
 export const enum AccuDrawFlags {
   SetModePolar = 1,
@@ -333,7 +332,7 @@ export class AccuDraw {
     }
 
     const isRectMode = (CompassMode.Rectangular === this.getCompassMode());
-    const offsetSnap = ((TentativeOrAccuSnap.isHot() || iModelApp.tentativePoint.isActive) && ((this.locked) || (distance > 0.0)));
+    const offsetSnap = ((TentativeOrAccuSnap.isHot() || IModelApp.tentativePoint.isActive) && ((this.locked) || (distance > 0.0)));
 
     // XY Offset:
     if (offsetSnap) {
@@ -417,7 +416,7 @@ export class AccuDraw {
 
       this.fixPoint(pointActive, vp);
 
-      if (!fromSnap && iModelApp.accuSnap.currHit)
+      if (!fromSnap && IModelApp.accuSnap.currHit)
         this.flags.redrawCompass = true;
     } else if (this.isActive()) {
       const lastPt = this.point.clone();
@@ -762,7 +761,7 @@ export class AccuDraw {
 
     const ev = new BeButtonEvent();
     ev.initEvent(pt, pt, vp.worldToView(pt), vp, CoordSource.User, BeModifierKey.None);
-    iModelApp.toolAdmin.setAdjustedDataPoint(ev);
+    IModelApp.toolAdmin.setAdjustedDataPoint(ev);
   }
 
   public sendDataPoint(pt: Point3d, vp: Viewport): void {
@@ -770,17 +769,17 @@ export class AccuDraw {
     ev.initEvent(pt, pt, vp.worldToView(pt), vp, CoordSource.User, BeModifierKey.None);
 
     // Send both down and up events...
-    iModelApp.toolAdmin.sendDataPoint(ev);
+    IModelApp.toolAdmin.sendDataPoint(ev);
     ev.isDown = false;
-    iModelApp.toolAdmin.sendDataPoint(ev);
+    IModelApp.toolAdmin.sendDataPoint(ev);
   }
 
   public clearTentative(): boolean {
-    if (!iModelApp.tentativePoint.isActive)
+    if (!IModelApp.tentativePoint.isActive)
       return false;
 
-    const wasSnapped = iModelApp.tentativePoint.isSnapped();
-    iModelApp.tentativePoint.clear(true);
+    const wasSnapped = IModelApp.tentativePoint.isSnapped();
+    IModelApp.tentativePoint.clear(true);
     return wasSnapped;
   }
 
@@ -1140,10 +1139,10 @@ export class AccuDraw {
       return true;
 
     // The "I don't want grid lock" flag can be set by tools to override the default behavior...
-    if (0 === (iModelApp.toolAdmin.toolState.coordLockOvr & CoordinateLockOverrides.Grid))
+    if (0 === (IModelApp.toolAdmin.toolState.coordLockOvr & CoordinateLockOverrides.Grid))
       return true;
 
-    return (!iModelApp.toolAdmin.gridLock);
+    return (!IModelApp.toolAdmin.gridLock);
   }
 
   public processFieldInput(index: ItemField, input: string, synchText: boolean): void {
@@ -1254,7 +1253,7 @@ export class AccuDraw {
   public static getStandardRotation(nStandard: StandardViewId, vp: Viewport | undefined, useACS: boolean, out?: RotMatrix): RotMatrix {
     const rMatrix = out ? out : new RotMatrix();
     rMatrix.setFrom(ViewState.getStandardViewMatrix(nStandard));
-    const useVp = vp ? vp : iModelApp.viewManager.selectedView;
+    const useVp = vp ? vp : IModelApp.viewManager.selectedView;
     if (!useACS || !useVp)
       return rMatrix;
 
@@ -1263,10 +1262,10 @@ export class AccuDraw {
   }
 
   public static getCurrentOrientation(vp: Viewport, checkAccuDraw: boolean, checkACS: boolean, rMatrix?: RotMatrix): RotMatrix | undefined {
-    if (checkAccuDraw && iModelApp.accuDraw.isActive())
-      return iModelApp.accuDraw.getRotation(rMatrix);
+    if (checkAccuDraw && IModelApp.accuDraw.isActive())
+      return IModelApp.accuDraw.getRotation(rMatrix);
 
-    const useVp = vp ? vp : iModelApp.viewManager.selectedView;
+    const useVp = vp ? vp : IModelApp.viewManager.selectedView;
     if (!useVp)
       return RotMatrix.createIdentity(rMatrix);
 
@@ -1279,7 +1278,7 @@ export class AccuDraw {
   public static updateAuxCoordinateSystem(acs: AuxCoordSystemState, vp: Viewport, allViews: boolean = true): void {
     // When modeling with multiple spatial views open, you'd typically want the same ACS in all views...
     if (allViews && vp.view.isSpatialView()) {
-      for (const otherVp of iModelApp.viewManager.viewports) {
+      for (const otherVp of IModelApp.viewManager.viewports) {
         if (otherVp !== vp && otherVp.view.isSpatialView())
           otherVp.setAuxCoordSystem(acs);
       }
@@ -1288,7 +1287,7 @@ export class AccuDraw {
     vp.setAuxCoordSystem(acs);
 
     // NOTE: Change AccuDraw's base rotation to ACS.
-    iModelApp.accuDraw.setContext(AccuDrawFlags.OrientACS);
+    IModelApp.accuDraw.setContext(AccuDrawFlags.OrientACS);
   }
 
   public distanceLock(synchText: boolean, saveInHistory: boolean): void {
@@ -1578,7 +1577,7 @@ export class AccuDraw {
     this.onEventCommon();
 
     // Save current primitive command AccuDraw state...
-    const tool = iModelApp.toolAdmin.activeTool;
+    const tool = IModelApp.toolAdmin.activeTool;
     if (tool && !(tool instanceof ViewTool))
       this.saveState(false);
 
@@ -1692,7 +1691,7 @@ export class AccuDraw {
     }
 
     const isRectMode = (CompassMode.Rectangular === this.getCompassMode());
-    const offsetSnap = ((TentativeOrAccuSnap.isHot() || iModelApp.tentativePoint.isActive) && ((this.locked) || (distance > 0.0)));
+    const offsetSnap = ((TentativeOrAccuSnap.isHot() || IModelApp.tentativePoint.isActive) && ((this.locked) || (distance > 0.0)));
 
     // XY Offset:
     if (offsetSnap) {
@@ -2140,7 +2139,7 @@ export class AccuDraw {
     if (!pointIsOnPlane)
       return false;
 
-    const snapDetail = iModelApp.accuSnap.getCurrSnapDetail();
+    const snapDetail = IModelApp.accuSnap.getCurrSnapDetail();
     return (!!snapDetail && (SnapMode.Nearest === snapDetail.snapMode));
   }
 
@@ -2602,16 +2601,16 @@ export class AccuDraw {
     vp.invalidateDecorations();
 
     // Make sure active tool updates it's dynamics. NOTE: Can't just call UpdateDynamics, need point adjusted for new locks, etc.
-    const tool = iModelApp.toolAdmin.activeTool;
+    const tool = IModelApp.toolAdmin.activeTool;
     if (!tool || !(tool instanceof PrimitiveTool))
       return;
 
     const ev = new BeButtonEvent();
-    iModelApp.toolAdmin.fillEventFromCursorLocation(ev);
+    IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
 
     // NOTE: Can't call DgnTool::OnMouseMotion since it can cause AccuDraw to move focus...
     const uorPoint = ev.point;
-    iModelApp.toolAdmin.adjustPoint(uorPoint, ev.viewport!);
+    IModelApp.toolAdmin.adjustPoint(uorPoint, ev.viewport!);
     ev.point = uorPoint;
     tool.updateDynamics(ev);
   }
@@ -2733,8 +2732,8 @@ export class AccuDraw {
   }
 
   public oResetButtonUp(_ev: BeButtonEvent): boolean {
-    if (iModelApp.tentativePoint.isActive && this.isActive()) {
-      iModelApp.tentativePoint.clear(true);
+    if (IModelApp.tentativePoint.isActive && this.isActive()) {
+      IModelApp.tentativePoint.clear(true);
       return true;
     }
 
@@ -3010,7 +3009,7 @@ export class AccuDrawHintBuilder {
     if (this.setLockZ) flags |= AccuDrawFlags.Lock_Z;
     if (this.enableSmartRotation) flags |= AccuDrawFlags.SmartRotation;
 
-    const accuDraw = iModelApp.accuDraw;
+    const accuDraw = IModelApp.accuDraw;
     if (BentleyStatus.SUCCESS !== accuDraw.setContext(flags, this.origin, this.flagRotation ? this.rMatrix : this.axis, undefined, this.flagDistance ? this.distance : undefined, this.flagAngle ? this.angle : undefined))
       return false; // Not enabled for this session...
 

@@ -2,8 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core";
-import { Point3d, XYZProps, TransformProps, Range3dProps } from "@bentley/geometry-core/lib/PointVector";
-import { Transform } from "@bentley/geometry-core/lib/Transform";
+import { Point3d, XYZProps, TransformProps, Range3dProps, Transform } from "@bentley/geometry-core";
 import { AxisAlignedBox3d } from "./geometry/Primitives";
 import { Id64 } from "@bentley/bentleyjs-core";
 

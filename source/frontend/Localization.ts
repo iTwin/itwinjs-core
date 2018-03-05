@@ -5,8 +5,9 @@ import * as i18next from "i18next";
 import { i18n } from "i18next";
 import * as i18nextXHRBackend from "i18next-xhr-backend";
 import * as i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
-import { IModelError } from "@bentley/imodeljs-common/lib/IModelError";
-import { iModelApp } from "./IModelApp";
+import { IModelError } from "@bentley/imodeljs-common";
+import { Logger } from "@bentley/bentleyjs-core";
+import { IModelApp } from "./IModelApp";
 
 export interface I18NOptions {
   urlTemplate?: string;
@@ -44,27 +45,17 @@ export class I18N {
       .changeLanguage(isDevelopment ? "en-pseudo" : undefined as any, undefined);
   }
 
-  public translate(key: string | string[], options?: i18next.TranslationOptions): any {
-    return this.i18n.t(key, options);
-  }
-
-  public loadNamespace(name: string, i18nCallback: any) {
-    this.i18n.loadNamespaces(name, i18nCallback);
-  }
-  public languageList(): string[] {
-    return this.i18n.languages;
-  }
+  public translate(key: string | string[], options?: i18next.TranslationOptions): any { return this.i18n.t(key, options); }
+  public loadNamespace(name: string, i18nCallback: any) { this.i18n.loadNamespaces(name, i18nCallback); }
+  public languageList(): string[] { return this.i18n.languages; }
 
   // register a new Namespace. Must be unique in the system.
   public registerNamespace(name: string): I18NNamespace {
-    if (this.namespaceRegistry.get(name)) {
+    if (this.namespaceRegistry.get(name))
       throw new IModelError(-1, "namespace '" + name + "' is not unique");
-    }
-    const theReadPromise: Promise<void> = new Promise((resolve: any, _reject: any) => {
-      iModelApp.i18n.loadNamespace(name, (err: any, _t: any) => {
-        let locales: string[] = iModelApp.i18n.languageList().map((thisLocale) => {
-          return ("/" + thisLocale + "/");
-        });
+
+    const theReadPromise = new Promise<void>((resolve: any, _reject: any) => {
+      IModelApp.i18n.loadNamespace(name, (err: any, _t: any) => {
         if (!err) {
           resolve();
           return;
@@ -74,22 +65,21 @@ export class I18N {
         // possible locale. For example 'fr-ca' might be the most specific local, in which case 'fr' ) and 'en are fallback locales.
         // using i18next-xhr-backend, err will be an array of strings that includes the namespace it tried to read and the locale. There
         // might be errs for some other namespaces as well as this one. We resolve the promise unless there's an error for each possible language.
-        const errorList: string[] = err as string[];
+        const errorList = err as string[];
+        let locales: string[] = IModelApp.i18n.languageList().map((thisLocale: any) => "/" + thisLocale + "/");
         for (const thisError of errorList) {
           if (!thisError.includes(name))
             continue;
-          locales = locales.filter((thisLocale) => {
-            return (!thisError.includes(thisLocale));
-          });
+          locales = locales.filter((thisLocale) => !thisError.includes(thisLocale));
         }
         // if we removed every locale from the array, it wasn't loaded.
-        if (locales.length > 0)
-          resolve();
-        else
-          throw new IModelError(-1, "The resource for namespace " + name + " could not be loaded");
+        if (locales.length === 0)
+          Logger.logError("I81N", "The resource for namespace " + name + " could not be loaded");
+
+        resolve();
       });
     });
-    const thisNamespace: I18NNamespace = new I18NNamespace(name, theReadPromise);
+    const thisNamespace = new I18NNamespace(name, theReadPromise);
     this.namespaceRegistry.set(name, thisNamespace);
     return thisNamespace;
   }

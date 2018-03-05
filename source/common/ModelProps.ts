@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { EntityProps, EntityQueryParams } from "./EntityProps";
-import { XYProps } from "@bentley/geometry-core/lib/PointVector";
+import { XYProps } from "@bentley/geometry-core";
 import { Id64Props } from "@bentley/bentleyjs-core";
 
 export interface ModelProps extends EntityProps {

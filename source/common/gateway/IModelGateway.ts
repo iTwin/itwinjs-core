@@ -9,7 +9,7 @@ import { IModelVersion } from "../IModelVersion";
 import { Gateway } from "../Gateway";
 import { AxisAlignedBox3d } from "../geometry/Primitives";
 import { Id64, Id64Set } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Vector2d, Vector3d } from "@bentley/geometry-core/lib/PointVector";
+import { Point2d, Point3d, Vector2d, Vector3d } from "@bentley/geometry-core";
 import { Code } from "../Code";
 
 /** The iModel core gateway definition.

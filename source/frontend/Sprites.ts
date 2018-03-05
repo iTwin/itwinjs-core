@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Point2d, Point3d, Vector3d, XYAndZ } from "@bentley/geometry-core/lib/PointVector";
+import { Point2d, Point3d, Vector3d, XYAndZ } from "@bentley/geometry-core";
 import { Viewport } from "./Viewport";
 import { DecorateContext } from "./ViewContext";
 

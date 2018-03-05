@@ -4,9 +4,10 @@
 import * as path from "path";
 import { expect, assert } from "chai";
 import * as TypeMoq from "typemoq";
-import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core";
+import { OpenMode, DbOpcode, BeEvent } from "@bentley/bentleyjs-core";
 import { AccessToken, Briefcase, ChangeSet, IModel as HubIModel, SeedFile, MultiCode, CodeState, IModelHubClient,
   ConnectClient, Project, ECJsonTypeMap, WsgInstance, Response, UserProfile } from "@bentley/imodeljs-clients";
+import { Code, IModelVersion, Appearance, ColorDef, IModel } from "@bentley/imodeljs-common";
 import { KeepBriefcase, BriefcaseManager, BriefcaseEntry } from "../BriefcaseManager";
 import { IModelDb, ConcurrencyControl } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
@@ -14,15 +15,9 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import { Element } from "../Element";
 import { DictionaryModel } from "../Model";
 import { SpatialCategory } from "../Category";
-import { Code } from "@bentley/imodeljs-common/lib/Code";
-import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
-import { Appearance } from "@bentley/imodeljs-common/lib/SubCategoryAppearance";
-import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
-import { IModel } from "@bentley/imodeljs-common/lib/IModel";
 import { IModelJsFs } from "../IModelJsFs";
 import { iModelHost } from "../IModelHost";
 import { AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../AutoPush";
-import { BeEvent } from "@bentley/bentleyjs-core";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
@@ -105,8 +100,8 @@ describe("BriefcaseManager", () => {
       IModelJsFs.mkdirSync(imodelPath);
 
     // Get seed file information including the download link
-    const seedFile: SeedFile = await IModelTestUtils.hubClient.getSeedFile(accessToken, iModelId, true);
-    const downloadUrl = seedFile.downloadUrl!;
+    const seedFile: SeedFile[] = await IModelTestUtils.hubClient.getSeedFiles(accessToken, iModelId, true);
+    const downloadUrl = seedFile[0].downloadUrl!;
 
     // Download seed
     const downloadToPathname = path.join(imodelPath, `${iModelName}.bim`);
@@ -259,8 +254,12 @@ describe("BriefcaseManager", () => {
         const jsonObj = JSON.parse(buff.toString())[0];
         return Promise.resolve(getTypedInstance<HubIModel>(HubIModel, jsonObj));
       }).verifiable();
-    iModelHubClientMock.setup((f: IModelHubClient) => f.getSeedFile(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isValue(true)))
-      .returns(() => Promise.resolve(seedFileMock.object));
+    iModelHubClientMock.setup((f: IModelHubClient) => f.getSeedFiles(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isValue(true)))
+      .returns(() => {
+        const seedFiles = new Array<SeedFile>();
+        seedFiles.push(seedFileMock.object);
+        return Promise.resolve(seedFiles);
+      });
     iModelHubClientMock.setup((f: IModelHubClient) => f.acquireBriefcase(TypeMoq.It.isAny(), TypeMoq.It.isAnyString()))
       .returns(() => Promise.resolve(1));
     iModelHubClientMock.setup((f: IModelHubClient) => f.getBriefcase(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAnyNumber(), TypeMoq.It.isValue(true)))

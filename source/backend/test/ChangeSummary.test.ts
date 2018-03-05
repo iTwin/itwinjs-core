@@ -3,13 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { expect, assert } from "chai";
-import { OpenMode, DbResult } from "@bentley/bentleyjs-core";
+import { OpenMode, DbResult, Id64 } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
+import { IModelVersion } from "@bentley/imodeljs-common";
 import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../ChangeSummaryManager";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { IModelDb } from "../IModelDb";
-import { Id64 } from "@bentley/bentleyjs-core";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ChangeSet } from "@bentley/imodeljs-clients";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -110,7 +109,7 @@ describe("ChangeSummary", () => {
     assert.throw(() => ChangeSummaryManager.attachChangeCache(iModel));
   });
 
-  it("Extract ChangeSummaries", async () => {
+  it.skip("Extract ChangeSummaries", async () => {
     await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, testIModelId);
 
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
@@ -151,7 +150,7 @@ describe("ChangeSummary", () => {
     }
   });
 
-  it("Extract ChangeSummary for single changeset", async () => {
+  it.skip("Extract ChangeSummary for single changeset", async () => {
     const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
     assert.equal(changeSets.length, 3);
     // extract summary for second changeset
@@ -193,7 +192,7 @@ describe("ChangeSummary", () => {
     }
   });
 
-  it("Subsequent ChangeSummary extractions", async () => {
+  it.skip("Subsequent ChangeSummary extractions", async () => {
     const changesFilePath: string = BriefcaseManager.getChangeSummaryPathname(testIModelId);
     if (IModelJsFs.existsSync(changesFilePath))
       IModelJsFs.removeSync(changesFilePath);
@@ -264,7 +263,7 @@ describe("ChangeSummary", () => {
     }
   });
 
-  it("Extract ChangeSummaries for already downloaded changesets", async () => {
+  it.skip("Extract ChangeSummaries for already downloaded changesets", async () => {
     await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, testIModelId);
     const changesFilePath: string = BriefcaseManager.getChangeSummaryPathname(testIModelId);
     const csetPath: string = BriefcaseManager.getChangeSetsPath(testIModelId);

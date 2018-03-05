@@ -4,7 +4,7 @@
 
 import { JsonUtils } from "@bentley/bentleyjs-core";
 import { ColorDef } from "./ColorDef";
-import { Angle } from "@bentley/geometry-core/lib/Geometry";
+import { Angle } from "@bentley/geometry-core";
 
 /** The type of a Light */
 export const enum LightType {

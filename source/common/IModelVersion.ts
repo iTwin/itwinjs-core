@@ -115,16 +115,16 @@ export class IModelVersion {
 
   /** Get the change set from the specified named version */
   private static async getChangeSetFromNamedVersion(hubClient: IModelHubClient, accessToken: AccessToken, iModelId: string, versionName: string): Promise<string> {
-    const version = await hubClient.getVersion(accessToken, iModelId, {
+    const versions = await hubClient.getVersions(accessToken, iModelId, {
       $select: "ChangeSetId",
       $filter: `Name+eq+'${versionName}'`,
     });
 
-    if (!version.changeSetId) {
+    if (!versions[0] || !versions[0].changeSetId) {
       return Promise.reject(new IModelError(BentleyStatus.ERROR));
     }
 
-    return version.changeSetId;
+    return versions[0].changeSetId!;
   }
 
 }

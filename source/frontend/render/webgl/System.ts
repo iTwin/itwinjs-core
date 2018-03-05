@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { QPoint3dList, QPoint2dList, QParams3d, QParams2d } from "../QPoint";
-import { XY, XYZ } from "@bentley/geometry-core/lib/PointVector";
+import { XY, XYZ } from "@bentley/geometry-core";
 import { PointUtil } from "../Utility";
 
 export const enum ContextState {
