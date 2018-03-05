@@ -385,7 +385,31 @@ export class ECSqlValue implements IDisposable {
   /** Get information about the ECSQL SELECT result's column this value refers to. */
   public get columnInfo(): ECSqlColumnInfo { return this._val.getColumnInfo() as ECSqlColumnInfo; }
 
-  /** Get the value of this ECSQL value */
+  /** Get the value of this ECSQL value
+   *
+   * ### Property value type
+   * The resulting type of the returned value is:
+   *
+   * | ECSQL type | Extended Type | JavaScript Type |
+   * | ---------- | ------------- | --------------- |
+   * | Boolean    | -             | boolean         |
+   * | Blob       | -             | Base64 string   |
+   * | Blob       | BeGuid        | GUID string (see [[Guid]]) |
+   * | Double     | -             | number          |
+   * | DateTime   | -             | ISO8601 string  |
+   * | Id system properties | -   | Hexadecimal string |
+   * | Integer    | -             | number          |
+   * | Int64      | -             | number          |
+   * | Int64      | Id            | Hexadecimal string |
+   * | Point2d    | -             | [[XAndY]]      |
+   * | Point3d    | -             | [[XYAndZ]]     |
+   * | String     | -             | string         |
+   * | Navigation | n/a           | [[NavigationValue]] |
+   * | Struct     | n/a           | JS object with properties of the types in this table |
+   * | Array      | n/a           | array of the types in this table |
+   *
+   * See also [[ECSqlStatement.getRow]]
+   */
   public get value(): any { return ECSqlValueHelper.getValue(this); }
 
   /** Indicates whether the value is NULL or not. */
