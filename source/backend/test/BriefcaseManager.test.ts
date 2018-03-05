@@ -99,7 +99,7 @@ describe("BriefcaseManager", () => {
     console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
   });
 
-  it.skip("should open two briefcases for two different users of same firstIModel", async () => {
+  it.skip("test change-merging scenarios", async () => {
     const firstUser = accessToken;
     const secondUser = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
 
@@ -199,9 +199,30 @@ describe("BriefcaseManager", () => {
   });
 
   it("should be able to open an IModel from the Hub in Readonly mode", async () => {
+    let onOpenCalled: boolean = false;
+    const onOpenListener = (accessTokenIn: AccessToken, contextIdIn: string, iModelIdIn: string, openModeIn: OpenMode, _versionIn: IModelVersion) => {
+      onOpenCalled = true;
+      assert.deepEqual(accessTokenIn, accessToken);
+      assert.equal(contextIdIn, testProjectId);
+      assert.equal(iModelIdIn, testIModelId);
+      assert.equal(openModeIn, OpenMode.Readonly);
+    };
+    IModelDb.onOpen.addListener(onOpenListener);
+    let onOpenedCalled: boolean = false;
+    const onOpenedListener = (iModelDb: IModelDb) => {
+      onOpenedCalled = true;
+      assert.equal(iModelDb.iModelToken.iModelId, testIModelId);
+    };
+    IModelDb.onOpened.addListener(onOpenedListener);
+
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
     assert.exists(iModel);
     assert(iModel.iModelToken.openMode === OpenMode.Readonly);
+
+    assert.isTrue(onOpenedCalled);
+    assert.isTrue(onOpenCalled);
+    IModelDb.onOpen.removeListener(onOpenListener);
+    IModelDb.onOpened.removeListener(onOpenedListener);
 
     expect(IModelJsFs.existsSync(iModelLocalReadonlyPath));
     const files = IModelJsFs.readdirSync(iModelLocalReadonlyPath);
