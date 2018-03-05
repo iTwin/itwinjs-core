@@ -155,21 +155,14 @@ class Header {
 /** Internal op code */
 export class Operation {
   public opCode: number;
-  // If signature is included, the signature will be held in data, and flatbuffer contents in data1, otherwise, all data lies in data
   public data: Uint8Array;
-  public data1: Uint8Array | undefined;
-  public data1Position = 0;
 
   /** Creates a new operation, typically then used to append to a writer. If using the geometry-core BGFB builder, the signature is placed
    *  in data, and then the Uint8Array of the geometry data is placed in data1, followed by the position returned by the BGFB builder
    */
-  public constructor(opCode: OpCode, data: Uint8Array, data1?: Uint8Array, data1Position?: number) {
+  public constructor(opCode: OpCode, data: Uint8Array) {
     this.opCode = opCode;
     this.data = data;
-    if (data1) {
-      this.data1 = data1;
-      this.data1Position = data1Position!;    // Should always come together
-    }
   }
 
   public isGeometryOp(): boolean {
@@ -257,7 +250,7 @@ export class OpCodeWriter {
   }
 
   private appendOperation(egOp: Operation) {
-    const totalegOpSize = 8 + egOp.data.length + (egOp.data1 ? egOp.data1.length - egOp.data1Position! : 0);   // Plus 8 for the data size and the opCode
+    const totalegOpSize = 8 + egOp.data.length;   // Plus 8 for the data size and the opCode
     let indexToAppendTo = Math.floor(this.buffer.byteLength / 4);
     this.resize(this.buffer.byteLength + totalegOpSize);
 
@@ -276,11 +269,6 @@ export class OpCodeWriter {
     for (const item of egOp.data) {
       currView[indexToAppendTo++] = item;
     }
-
-    // Add data1 if exists
-    if (egOp.data1)
-      for (let i = egOp.data1Position; i < egOp.data1.length; i++)
-        currView[indexToAppendTo++] = egOp.data1[i];
   }
 
   public appendHeader(flags: number = 0) {
@@ -708,26 +696,20 @@ export class OpCodeWriter {
   }
 
   public appendCurvePrimitive(cPrimitive: CurvePrimitive): boolean {
-    const buffer = BGFBBuilder.createFB(cPrimitive);
-    if (!buffer)
+    const arr = BGFBBuilder.createBytesWithSignature(cPrimitive);
+    if (!arr || 0 === arr.length)
       return false;
 
-    if (0 === buffer.bytes().length)
-      return false;
-
-    this.appendOperation(new Operation(OpCode.CurvePrimitive, BGFBBuilder.versionSignature, buffer.bytes(), buffer.position()));
+    this.appendOperation(new Operation(OpCode.CurvePrimitive, arr));
     return true;
   }
 
   public appendCurveCollection(collection: CurveCollection, opCode: OpCode = OpCode.CurveCollection): boolean {
-    const buffer = BGFBBuilder.createFB(collection);
-    if (!buffer)
+    const arr = BGFBBuilder.createBytesWithSignature(collection);
+    if (!arr || 0 === arr.length)
       return false;
 
-    if (buffer.bytes().length === 0)
-      return false;
-
-    this.appendOperation(new Operation(opCode, BGFBBuilder.versionSignature, buffer.bytes(), buffer.position()));
+    this.appendOperation(new Operation(opCode, arr));
     return true;
   }
 
@@ -746,38 +728,29 @@ export class OpCodeWriter {
   }
 
   public appendPolyface(polyface: IndexedPolyface, opCode: OpCode = OpCode.Polyface): boolean {
-    const buffer = BGFBBuilder.createFB(polyface);
-    if (!buffer)
+    const arr = BGFBBuilder.createBytesWithSignature(polyface);
+    if (!arr || 0 === arr.length)
       return false;
 
-    if (0 === buffer.bytes().length)
-      return false;
-
-    this.appendOperation(new Operation(opCode, BGFBBuilder.versionSignature, buffer.bytes(), buffer.position()));
+    this.appendOperation(new Operation(opCode, arr));
     return true;
   }
 
   public appendSolidPrimitive(sPrimitive: SolidPrimitive): boolean {
-    const buffer = BGFBBuilder.createFB(sPrimitive);
-    if (!buffer)
+    const arr = BGFBBuilder.createBytesWithSignature(sPrimitive);
+    if (!arr || 0 === arr.length)
       return false;
 
-    if (0 === buffer.bytes().length)
-      return false;
-
-    this.appendOperation(new Operation(OpCode.SolidPrimitive, BGFBBuilder.versionSignature, buffer.bytes(), buffer.position()));
+    this.appendOperation(new Operation(OpCode.SolidPrimitive, arr));
     return true;
   }
 
   public appendBsplineSurface(bspline: BSplineSurface3d): boolean {
-    const buffer = BGFBBuilder.createFB(bspline);
-    if (!buffer)
+    const arr = BGFBBuilder.createBytesWithSignature(bspline);
+    if (!arr || 0 === arr.length)
       return false;
 
-    if (0 === buffer.bytes().length)
-      return false;
-
-    this.appendOperation(new Operation(OpCode.BsplineSurface, BGFBBuilder.versionSignature, buffer.bytes(), buffer.position()));
+    this.appendOperation(new Operation(OpCode.BsplineSurface, arr));
     return true;
   }
 
@@ -906,14 +879,7 @@ export class OpCodeReader {
     if (OpCode.CurvePrimitive !== egOp.opCode)
       return undefined;
 
-    // Check version signature
-    if (!egOp.data1 || egOp.data.length !== BGFBBuilder.versionSignature.length)
-      return undefined;
-    for (let i = 0; i < egOp.data.length; i++)
-      if (!(egOp.data[i] === BGFBBuilder.versionSignature[i]))
-        return undefined;
-
-    const curve = BGFBReader.readFB(egOp.data1);
+    const curve = BGFBReader.readFB(egOp.data, BGFBBuilder.versionSignatureByteCount);
     if (curve !== undefined && curve instanceof CurvePrimitive)
       return curve;
     return undefined;
@@ -924,14 +890,7 @@ export class OpCodeReader {
     if (OpCode.CurveCollection !== egOp.opCode)
       return undefined;
 
-    // Check version signature
-    if (!egOp.data1 || egOp.data.length !== BGFBBuilder.versionSignature.length)
-      return undefined;
-    for (let i = 0; i < egOp.data.length; i++)
-      if (!(egOp.data[i] === BGFBBuilder.versionSignature[i]))
-        return undefined;
-
-    const curves = BGFBReader.readFB(egOp.data1);
+    const curves = BGFBReader.readFB(egOp.data, BGFBBuilder.versionSignatureByteCount);
     if (curves !== undefined && curves instanceof CurveCollection)
       return curves;
     return undefined;
@@ -942,14 +901,7 @@ export class OpCodeReader {
     if (OpCode.Polyface !== egOp.opCode)
       return undefined;
 
-    // Check version signature
-    if (!egOp.data1 || egOp.data.length !== BGFBBuilder.versionSignature.length)
-      return undefined;
-    for (let i = 0; i < egOp.data.length; i++)
-      if (!(egOp.data[i] === BGFBBuilder.versionSignature[i]))
-        return undefined;
-
-    const polyface = BGFBReader.readFB(egOp.data1);
+    const polyface = BGFBReader.readFB(egOp.data, BGFBBuilder.versionSignatureByteCount);
     if (polyface !== undefined && polyface instanceof IndexedPolyface)
       return polyface;
     return undefined;
@@ -960,14 +912,7 @@ export class OpCodeReader {
     if (OpCode.SolidPrimitive !== egOp.opCode)
       return undefined;
 
-    // Check version signature
-    if (!egOp.data1 || egOp.data.length !== BGFBBuilder.versionSignature.length)
-      return undefined;
-    for (let i = 0; i < egOp.data.length; i++)
-      if (!(egOp.data[i] === BGFBBuilder.versionSignature[i]))
-        return undefined;
-
-    const solidPrimitive = BGFBReader.readFB(egOp.data1);
+    const solidPrimitive = BGFBReader.readFB(egOp.data, BGFBBuilder.versionSignatureByteCount);
     if (solidPrimitive !== undefined && solidPrimitive instanceof SolidPrimitive)
       return solidPrimitive;
     return undefined;
@@ -978,14 +923,7 @@ export class OpCodeReader {
     if (OpCode.BsplineSurface !== egOp.opCode)
       return undefined;
 
-    // Check version signature
-    if (!egOp.data1 || egOp.data.length !== BGFBBuilder.versionSignature.length)
-      return undefined;
-    for (let i = 0; i < egOp.data.length; i++)
-      if (!(egOp.data[i] === BGFBBuilder.versionSignature[i]))
-        return undefined;
-
-    const bspline = BGFBReader.readFB(egOp.data1);
+    const bspline = BGFBReader.readFB(egOp.data, BGFBBuilder.versionSignatureByteCount);
     if (bspline !== undefined && bspline instanceof BSplineSurface3d)
       return bspline;
     return undefined;
@@ -1407,21 +1345,8 @@ export class OpCodeIterator {
     const dataSize = data32[index0 + 1];
     const opSize = dataSize + 8;
 
-    // Assign to either data or.. data AND data1 in operation based on whether a signature is needed (Will be using geometry-core serializers)
-    switch (data32[index0]) {
-      case OpCode.CurvePrimitive:
-      case OpCode.CurveCollection:
-      case OpCode.Polyface:
-      case OpCode.SolidPrimitive:
-      case OpCode.BsplineSurface:
-      case OpCode.BRepPolyface:
-      case OpCode.BRepCurveVector:
-        this.egOp = new Operation(data32[index0], this.data!.slice(this.dataOffset + 8, this.dataOffset + 16), this.data!.slice(this.dataOffset + 16, this.dataOffset + opSize));
-        break;
-      default:
-        this.egOp = new Operation(data32[index0], this.data!.slice(this.dataOffset + 8, this.dataOffset + opSize));
-        break;
-    }
+    // Assign to data
+    this.egOp = new Operation(data32[index0], this.data!.slice(this.dataOffset + 8, this.dataOffset + opSize));
 
     // Move to the next block
     this.dataOffset += opSize;
