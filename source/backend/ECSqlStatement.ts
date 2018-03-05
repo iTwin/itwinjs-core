@@ -305,6 +305,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * | Boolean    | -             | boolean         |
    * | Blob       | -             | Base64 string   |
    * | Blob       | BeGuid        | GUID string (see [[Guid]]) |
+   * | ClassId system properties | - | Fully qualified class name |
    * | Double     | -             | number          |
    * | DateTime   | -             | ISO8601 string  |
    * | Id system properties | -   | Hexadecimal string |
@@ -395,6 +396,7 @@ export class ECSqlValue implements IDisposable {
    * | Boolean    | -             | boolean         |
    * | Blob       | -             | Base64 string   |
    * | Blob       | BeGuid        | GUID string (see [[Guid]]) |
+   * | ClassId system properties | - | Fully qualified class name |
    * | Double     | -             | number          |
    * | DateTime   | -             | ISO8601 string  |
    * | Id system properties | -   | Hexadecimal string |
