@@ -8,7 +8,6 @@ import {
   Code, CodeSpec, ElementProps, ElementAspectProps, ElementLoadParams, IModel, IModelProps, IModelVersion, ModelProps, IModelToken,
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps, FontMap, FontMapProps,
 } from "@bentley/imodeljs-common";
-import { BisCore } from "./BisCore";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
@@ -17,22 +16,15 @@ import { BriefcaseEntry, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { CodeSpecs } from "./CodeSpecs";
 import { Entity, EntityMetaData } from "./Entity";
-import { IModelGatewayImpl } from "./IModelGatewayImpl";
 import * as path from "path";
 import { IModelDbLinkTableRelationships, LinkTableRelationship } from "./LinkTableRelationship";
 import { AddonRegistry } from "./AddonRegistry";
-import { iModelHost } from "./IModelHost";
+import { IModelHost } from "./IModelHost";
 
 const loggingCategory = "imodeljs-backend.IModelDb";
 
 /** The signature of a function that can supply a description of local Txns in the specified briefcase up to and including the specified endTxnId. */
 export type ChangeSetDescriber = (endTxnId: TxnManager.TxnId) => string;
-
-// Register the backend implementation of IModelGateway
-IModelGatewayImpl.register();
-
-// Register the use of BisCore for the backend
-BisCore.registerSchema();
 
 /** Represents a physical copy (briefcase) of an iModel that can be accessed as a file. */
 export class IModelDb extends IModel {
@@ -754,7 +746,7 @@ export class ConcurrencyControl {
     throw new IModelError(IModelStatus.BadRequest, "TBD locks");
   }
 
-  private getDeploymentEnv(): DeploymentEnv { return iModelHost.configuration.iModelHubDeployConfig; }
+  private getDeploymentEnv(): DeploymentEnv { return IModelHost.configuration!.iModelHubDeployConfig; }
   private getIModelHubClient(): IModelHubClient { return new IModelHubClient(this.getDeploymentEnv()); }
 
   /** process the Lock-specific part of the request. */

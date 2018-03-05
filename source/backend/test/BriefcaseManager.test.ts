@@ -14,7 +14,7 @@ import { Element } from "../Element";
 import { DictionaryModel } from "../Model";
 import { SpatialCategory } from "../Category";
 import { IModelJsFs } from "../IModelJsFs";
-import { iModelHost } from "../IModelHost";
+import { IModelHost } from "../IModelHost";
 import { AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../AutoPush";
 
 let lastPushTimeMillis = 0;
@@ -48,11 +48,11 @@ async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: Access
     await rwIModel.concurrencyControl.request(accessToken);
   } catch (err) {
     if (err instanceof ConcurrencyControl.RequestError) {
-        assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
+      assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
     }
   }
 
-  return {modelId, spatialCategoryId};
+  return { modelId, spatialCategoryId };
 }
 
 describe("BriefcaseManager", () => {
@@ -86,7 +86,7 @@ describe("BriefcaseManager", () => {
     testChangeSets = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
     expect(testChangeSets.length).greaterThan(2);
 
-    const cacheDir = iModelHost.configuration.briefcaseCacheDir;
+    const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
     iModelLocalReadonlyPath = path.join(cacheDir, testIModelId, "readOnly");
     iModelLocalReadWritePath = path.join(cacheDir, testIModelId, "readWrite");
 
@@ -112,7 +112,7 @@ describe("BriefcaseManager", () => {
     secondIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
     // firstUser: create model, category, and element el1
-    const r: {modelId: Id64, spatialCategoryId: Id64} = await createNewModelAndCategory(firstIModel, firstUser);
+    const r: { modelId: Id64, spatialCategoryId: Id64 } = await createNewModelAndCategory(firstIModel, firstUser);
     const el1 = firstIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(firstIModel, r.modelId, r.spatialCategoryId));
     // const el2 = firstIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(firstIModel, r.modelId, r.spatialCategoryId));
     firstIModel.saveChanges("firstUser created model, category, and two elements");
@@ -173,7 +173,7 @@ describe("BriefcaseManager", () => {
     const expectedValueOfSecondUserProp: string = "x";
     if (true) {
       const el1before = (secondIModel.elements.getElement(el1)).copyForEdit<Element>();
-      el1before.setUserProperties(secondUserPropNs, {property: expectedValueOfSecondUserProp});
+      el1before.setUserProperties(secondUserPropNs, { property: expectedValueOfSecondUserProp });
       secondIModel.elements.updateElement(el1before);
       secondIModel.saveChanges("secondUser modified el1.userProperties");
 
