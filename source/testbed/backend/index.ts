@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as express from "express";
 import * as bodyParser from "body-parser";
-import { IModelDb, AddonRegistry, IModelHost } from "@bentley/imodeljs-backend";
+import { AddonRegistry, IModelHost } from "@bentley/imodeljs-backend";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
 import { TestGatewayImpl } from "./TestGatewayImpl";
 
@@ -21,15 +21,14 @@ ipcMain.on("testbed", (event: any, arg: any) => {
   }
 });
 
-IModelDb; // Signal usage of IModelDb to tsc import logic
+// Start the backend
+IModelHost.startup();
+
 TestGatewayImpl.register();
 TestbedConfig.initializeGatewayConfig();
 
 // tslint:disable-next-line:no-var-requires
 AddonRegistry.loadAndRegisterStandardAddon();
-
-// Start the backend
-IModelHost.startup();
 
 if (TestbedConfig.gatewayConfig) {
   const app = express();
