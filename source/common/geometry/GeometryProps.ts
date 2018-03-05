@@ -1,25 +1,19 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
-import { Transform } from "@bentley/geometry-core/lib/Transform";
+import { Transform } from "@bentley/geometry-core";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { LineStyleInfo } from "./LineStyle";
 import { GradientSymb } from "./GradientPattern";
 import { PatternParams } from "./AreaPattern";
 import { DgnFB } from "./ElementGraphicsSchema";
 import { ColorDef, ColorRgb } from "../ColorDef";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { Appearance } from "../SubCategoryAppearance";
 import { IModel } from "../IModel";
-
-export const enum BackgroundFill {
-  None = 0,     // single color fill uses the fill color and line color to draw either a solid or outline fill
-  Solid = 1,    // single color fill uses the view's background color to draw a solid fill
-  Outline = 2,  // single color fill uses the view's background color and line color to draw an outline fill
-}
+import { BackgroundFill } from "../Render";
 
 /** Structure to hold the displayable parameters of a GeometrySource */
-export class GeometryParams {
+export class GeometryProps {
   // Flags for parameters that override SubCategory:Appearance
   private _colorOverride: boolean = false;
   private _weightOverride: boolean = false;
@@ -55,8 +49,8 @@ export class GeometryParams {
       this._subCategoryId = IModel.getDefaultSubCategoryId(categoryId);
   }
 
-  public clone(): GeometryParams {
-    const retVal = new GeometryParams(this._categoryId, this._subCategoryId);
+  public clone(): GeometryProps {
+    const retVal = new GeometryProps(this._categoryId, this._subCategoryId);
     retVal._colorOverride = this._colorOverride;
     retVal._weightOverride = this._weightOverride;
     retVal._styleOverride = this._styleOverride;
@@ -296,7 +290,7 @@ export class GeometryParams {
       this._styleInfo.styleParams.applyTransform(transform, options);
   }
 
-  public isEqualTo(other: GeometryParams): boolean {
+  public isEqualTo(other: GeometryProps): boolean {
     if (this === other)
       return true;    // Same pointer
     if (!this._categoryId.equals(other._categoryId))

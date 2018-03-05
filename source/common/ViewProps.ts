@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64Props } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64Props } from "@bentley/bentleyjs-core";
 import { EntityQueryParams } from "./EntityProps";
-import { AngleProps } from "@bentley/geometry-core/lib/Geometry";
-import { XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core/lib/PointVector";
+import { AngleProps } from "@bentley/geometry-core";
+import { XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { ElementProps, DefinitionElementProps } from "./ElementProps";
 
 /** properties that define a ModelSelector */

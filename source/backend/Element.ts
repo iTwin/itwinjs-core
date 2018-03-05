@@ -1,21 +1,17 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
-import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { Transform } from "@bentley/geometry-core/lib/Transform";
-import { Code, CodeSpecNames } from "@bentley/imodeljs-common/lib/Code";
-import { Placement3d, Placement2d, AxisAlignedBox3d } from "@bentley/imodeljs-common/lib/geometry/Primitives";
-import { GeometryStream, GeometryStreamBuilder } from "@bentley/imodeljs-common/lib/geometry/GeometryStream";
+import { Id64, Guid, DbOpcode } from "@bentley/bentleyjs-core";
+import { Point2d, Point3d, Transform } from "@bentley/geometry-core";
+import { Code, CodeSpecNames, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStream, GeometryStreamBuilder } from "@bentley/imodeljs-common";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
-import { DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import {
   ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
   ViewAttachmentProps, SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,
   InformationPartitionElementProps, LightLocationProps, DefinitionElementProps,
-} from "@bentley/imodeljs-common/lib/ElementProps";
-import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps } from "@bentley/imodeljs-common/lib/ViewProps";
+  AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps,
+} from "@bentley/imodeljs-common";
 
 /**
  * Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.

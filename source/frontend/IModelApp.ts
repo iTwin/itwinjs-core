@@ -9,17 +9,13 @@ import { AccuSnap } from "./AccuSnap";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { TentativePoint } from "./TentativePoint";
 import { I18N, I18NOptions } from "./Localization";
-import { FeatureGates } from "@bentley/imodeljs-common/lib/FeatureGates";
 import { ToolRegistry } from "./tools/Tool";
-import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
+import { IModelError, IModelStatus, FeatureGates } from "@bentley/imodeljs-common";
 import { NotificationManager } from "./NotificationManager";
 
 import * as selectTool from "./tools/SelectTool";
 import * as viewTool from "./tools/ViewTool";
 import * as idleTool from "./tools/IdleTool";
-
-/** Global access to the IModelApp. Initialized by calling IModelApp.startup(). */
-export let iModelApp: IModelApp;
 
 /**
  * An instance of IModelApp is the administrator for applications that read, write, or display an iModel in a browser.
@@ -31,29 +27,20 @@ export let iModelApp: IModelApp;
  * Before any interactive operations may be performed, IModelApp.startup must be called (typically on a subclass of IModelApp)
  */
 export class IModelApp {
-  protected _viewManager?: ViewManager;
-  protected _notifications?: NotificationManager;
-  protected _toolAdmin?: ToolAdmin;
-  protected _accuDraw?: AccuDraw;
-  protected _accuSnap?: AccuSnap;
-  protected _locateManager?: ElementLocateManager;
-  protected _tentativePoint?: TentativePoint;
-  protected _i18n?: I18N;
-  protected _deploymentEnv: DeploymentEnv = "QA";
-  protected _iModelHubClient?: IModelHubClient;
-  public readonly features = new FeatureGates();
-  public readonly tools = new ToolRegistry();
-
-  public get viewManager(): ViewManager { return this._viewManager!; }
-  public get notifications(): NotificationManager { return this._notifications!; }
-  public get toolAdmin(): ToolAdmin { return this._toolAdmin!; }
-  public get accuDraw(): AccuDraw { return this._accuDraw!; }
-  public get accuSnap(): AccuSnap { return this._accuSnap!; }
-  public get locateManager(): ElementLocateManager { return this._locateManager!; }
-  public get tentativePoint(): TentativePoint { return this._tentativePoint!; }
-  public get i18n(): I18N { return this._i18n!; }
-  public get deploymentEnv(): DeploymentEnv { return this._deploymentEnv; }
-  public get iModelHubClient(): IModelHubClient { return this._iModelHubClient ? this._iModelHubClient : (this._iModelHubClient = new IModelHubClient(this.deploymentEnv)); }
+  protected static _initialized = false;
+  public static viewManager: ViewManager;
+  public static notifications: NotificationManager;
+  public static toolAdmin: ToolAdmin;
+  public static accuDraw: AccuDraw;
+  public static accuSnap: AccuSnap;
+  public static locateManager: ElementLocateManager;
+  public static tentativePoint: TentativePoint;
+  public static i18n: I18N;
+  public static deploymentEnv: DeploymentEnv = "QA";
+  public static readonly features = new FeatureGates();
+  public static readonly tools = new ToolRegistry();
+  protected static _iModelHubClient?: IModelHubClient;
+  public static get iModelHubClient(): IModelHubClient { return this._iModelHubClient ? this._iModelHubClient : (this._iModelHubClient = new IModelHubClient(this.deploymentEnv)); }
 
   /**
    * This method must be called before any iModelJs services are used. Typically, an application will make a subclass of IModelApp
@@ -69,50 +56,50 @@ export class IModelApp {
    * ```
    */
   public static startup(deploymentEnv: DeploymentEnv = "QA") {
-    if (iModelApp !== undefined)
+    if (IModelApp._initialized)
       throw new IModelError(IModelStatus.AlreadyLoaded, "startup may only be called once");
 
-    iModelApp = new this(); // this will create an instance of the appropriate subclass of IModelApp (that calls this static method)
-    iModelApp._deploymentEnv = deploymentEnv;
+    IModelApp._initialized = true;
+    IModelApp.deploymentEnv = deploymentEnv;
 
     // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
-    iModelApp._i18n = new I18N(["iModelJs"], "iModelJs", iModelApp.supplyI18NOptions());
+    IModelApp.i18n = new I18N(["iModelJs"], "iModelJs", this.supplyI18NOptions());
 
-    const tools = iModelApp.tools; // first register all the core tools. Subclasses may choose to override them.
-    const coreNamespace = iModelApp.i18n.registerNamespace("CoreTools");
+    const tools = IModelApp.tools; // first register all the core tools. Subclasses may choose to override them.
+    const coreNamespace = IModelApp.i18n.registerNamespace("CoreTools");
     tools.registerModule(selectTool, coreNamespace);
     tools.registerModule(idleTool, coreNamespace);
     tools.registerModule(viewTool, coreNamespace);
 
-    iModelApp.onStartup(); // allow subclasses to register their tools, etc.
+    this.onStartup(); // allow subclasses to register their tools, etc.
 
     // the startup function may have already allocated any of these members, so first test whether they're present
-    if (!iModelApp._viewManager) iModelApp._viewManager = new ViewManager();
-    if (!iModelApp._notifications) iModelApp._notifications = new NotificationManager();
-    if (!iModelApp._toolAdmin) iModelApp._toolAdmin = new ToolAdmin();
-    if (!iModelApp._accuDraw) iModelApp._accuDraw = new AccuDraw();
-    if (!iModelApp._accuSnap) iModelApp._accuSnap = new AccuSnap();
-    if (!iModelApp._locateManager) iModelApp._locateManager = new ElementLocateManager();
-    if (!iModelApp._tentativePoint) iModelApp._tentativePoint = new TentativePoint();
+    if (!IModelApp.viewManager) IModelApp.viewManager = new ViewManager();
+    if (!IModelApp.notifications) IModelApp.notifications = new NotificationManager();
+    if (!IModelApp.toolAdmin) IModelApp.toolAdmin = new ToolAdmin();
+    if (!IModelApp.accuDraw) IModelApp.accuDraw = new AccuDraw();
+    if (!IModelApp.accuSnap) IModelApp.accuSnap = new AccuSnap();
+    if (!IModelApp.locateManager) IModelApp.locateManager = new ElementLocateManager();
+    if (!IModelApp.tentativePoint) IModelApp.tentativePoint = new TentativePoint();
 
-    iModelApp._viewManager.onInitialized();
-    iModelApp._toolAdmin.onInitialized();
-    iModelApp._accuDraw.onInitialized();
-    iModelApp._accuSnap.onInitialized();
-    iModelApp._locateManager.onInitialized();
-    iModelApp._tentativePoint.onInitialized();
+    IModelApp.viewManager.onInitialized();
+    IModelApp.toolAdmin.onInitialized();
+    IModelApp.accuDraw.onInitialized();
+    IModelApp.accuSnap.onInitialized();
+    IModelApp.locateManager.onInitialized();
+    IModelApp.tentativePoint.onInitialized();
   }
 
-  public static shutdown() { (iModelApp as any) = undefined; }
+  public static shutdown() { IModelApp._initialized = false; }
 
   /**
    * Implement this method to register your app's tools, override implementation of managers, and initialize your app-specific members.
    * @note The default tools will already be registered, so if you register tools with the same toolId, your tools will override the defaults.
    */
-  protected onStartup(): void { }
+  protected static onStartup(): void { }
 
   /**
    * Implement this method to supply options for the initialization of the internationalization.
    */
-  protected supplyI18NOptions(): I18NOptions | undefined { return undefined; }
+  protected static supplyI18NOptions(): I18NOptions | undefined { return undefined; }
 }

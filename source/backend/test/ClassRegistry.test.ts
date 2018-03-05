@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { Code } from "@bentley/imodeljs-common/lib/Code";
+import { Id64 } from "@bentley/bentleyjs-core";
+import { Code } from "@bentley/imodeljs-common";
 import { EntityMetaData } from "../Entity";
 import { IModelDb } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";

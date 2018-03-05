@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { OctEncodedNormal } from "@bentley/imodeljs-frontend/lib/render/OctEncodedNormal";
-import { XYZ, Vector3d} from "@bentley/geometry-core/lib/PointVector";
+import { OctEncodedNormal } from "@bentley/imodeljs-frontend/lib/rendering";
+import { XYZ, Vector3d } from "@bentley/geometry-core";
 
 function _expectSignsEqual(a: number, b: number) {
   if (a !== 0) {
@@ -36,7 +36,7 @@ function _roundTrip(vec: Vector3d, normalized: boolean = true, tolerance: number
 }
 
 function roundTrip(x: number, y: number, z: number, normalized: boolean = true, tolerance: number = 0.005) {
-  _roundTrip(new Vector3d(x, y, z), normalized, tolerance );
+  _roundTrip(new Vector3d(x, y, z), normalized, tolerance);
 }
 
 describe("OctEncodedNormal", () => {

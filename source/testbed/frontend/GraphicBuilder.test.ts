@@ -2,12 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { GraphicBuilderTileCorners } from "@bentley/imodeljs-frontend/lib/render/GraphicBuilder";
-import { Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { Viewport } from "@bentley/imodeljs-frontend/lib/Viewport";
-import { Transform } from "@bentley/geometry-core/lib/Transform";
-import { GraphicBuilderCreateParams, GraphicType } from "@bentley/imodeljs-frontend/lib/render/GraphicBuilder";
-import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnection";
+import { Point3d } from "@bentley/geometry-core";
+import { IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
+import { Transform } from "@bentley/geometry-core";
+import { GraphicBuilderCreateParams, GraphicType, GraphicBuilderTileCorners } from "@bentley/imodeljs-frontend/lib/rendering";
 import * as path from "path";
 
 const iModelLocation = path.join(__dirname, "../../../backend/lib/test/assets/test.bim");
@@ -15,8 +13,8 @@ const iModelLocation2 = path.join(__dirname, "../../../backend/lib/test/assets/t
 
 describe("GraphicBuilderTileCorners", () => {
   it("works as expected", () => {
-    const corners = [ new Point3d(0, 1, 2), new Point3d(3, 4, 5), new Point3d(6, 7, 8), new Point3d(9, 10, 11) ];
-    const tileCorners = new GraphicBuilderTileCorners([ new Point3d(0, 1, 2), new Point3d(3, 4, 5), new Point3d(6, 7, 8), new Point3d(9, 10, 11) ]);
+    const corners = [new Point3d(0, 1, 2), new Point3d(3, 4, 5), new Point3d(6, 7, 8), new Point3d(9, 10, 11)];
+    const tileCorners = new GraphicBuilderTileCorners([new Point3d(0, 1, 2), new Point3d(3, 4, 5), new Point3d(6, 7, 8), new Point3d(9, 10, 11)]);
     let key = 0;
     for (const p of tileCorners) { assert.isTrue(corners[key].isExactEqual(p)); key++; }
   });

@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64Arg, Id64Set } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64, Id64Arg, Id64Set } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
-import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
-import { iModelApp } from "./IModelApp";
+import { BeEvent } from "@bentley/bentleyjs-core";
+import { IModelApp } from "./IModelApp";
 
 /** event types for SelectionSet.onChanged  */
 export const enum SelectEventType { Add, Remove, Replace, Clear }
@@ -15,11 +15,11 @@ export class HilitedSet {
   public constructor(public iModel: IModelConnection) { }
   public setHilite(arg: Id64Arg, onOff: boolean) {
     Id64.toIdSet(arg).forEach((id) => onOff ? this.elements.add(id) : this.elements.delete(id));
-    iModelApp.viewManager.onSelectionSetChanged(this.iModel);
+    IModelApp.viewManager.onSelectionSetChanged(this.iModel);
   }
   public clearAll() {
     this.elements.clear();
-    iModelApp.viewManager.onSelectionSetChanged(this.iModel);
+    IModelApp.viewManager.onSelectionSetChanged(this.iModel);
   }
   public has(id: string) { return this.elements.has(id); }
   public isHilited(id: Id64) { return this.elements.has(id.value); }

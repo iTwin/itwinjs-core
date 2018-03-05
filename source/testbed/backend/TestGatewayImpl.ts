@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { TestGateway, TestOp1Params } from "../common/TestGateway";
-import { Gateway, GatewayOperationsProfile } from "@bentley/imodeljs-common/lib/Gateway";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Gateway, GatewayOperationsProfile } from "@bentley/imodeljs-common";
+import { Id64 } from "@bentley/bentleyjs-core";
 
 export class TestGatewayImpl extends Gateway implements TestGateway {
   public static register() {

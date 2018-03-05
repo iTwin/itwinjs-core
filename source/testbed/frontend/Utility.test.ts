@@ -2,9 +2,9 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { PointUtil, RangeUtil } from "@bentley/imodeljs-frontend/lib/render/Utility";
-import { Range1d, Range2d, Range3d } from "@bentley/geometry-core/lib/Range";
-import { XY, XYZ, Vector2d, Vector3d, Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { PointUtil, RangeUtil } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Range1d, Range2d, Range3d } from "@bentley/geometry-core";
+import { XY, XYZ, Vector2d, Vector3d, Point2d, Point3d } from "@bentley/geometry-core";
 
 describe("PointUtil", () => {
   it("isNaN", () => {
@@ -51,16 +51,16 @@ describe("PointUtil", () => {
         assert.isFalse(isNaN(v[0]), "isNumberArray");
       }
     }
-    testIsPointArray([ new Vector2d(0, 0), new Vector2d(0, 0)]);
-    testIsPointArray([ new Vector3d(0, 0, 0), new Vector3d(0, 0, 0)]);
-    testIsPointArray([ 0, 0 ]);
+    testIsPointArray([new Vector2d(0, 0), new Vector2d(0, 0)]);
+    testIsPointArray([new Vector3d(0, 0, 0), new Vector3d(0, 0, 0)]);
+    testIsPointArray([0, 0]);
   });
   it("toNumberArray", () => {
-    expect(PointUtil.toNumberArray(new Vector3d(0, 0, 0))).to.deep.equal([ 0, 0, 0]);
+    expect(PointUtil.toNumberArray(new Vector3d(0, 0, 0))).to.deep.equal([0, 0, 0]);
     assert.isTrue(PointUtil.toNumberArray(new Vector3d(0, 0, 0)).length === 3);
-    expect(PointUtil.toNumberArray(new Vector2d(0, 0))).to.deep.equal([ 0, 0]);
+    expect(PointUtil.toNumberArray(new Vector2d(0, 0))).to.deep.equal([0, 0]);
     assert.isTrue(PointUtil.toNumberArray(new Vector2d(0, 0)).length === 2);
-    expect(PointUtil.toNumberArray(0)).to.deep.equal([ 0 ]);
+    expect(PointUtil.toNumberArray(0)).to.deep.equal([0]);
     assert.isTrue(PointUtil.toNumberArray(0).length === 1);
   });
   it("fromNumberArray", () => {
@@ -69,9 +69,9 @@ describe("PointUtil", () => {
     assert.isTrue(PointUtil.fromNumberArray([0]) === 0);
   });
   it("to2dNumberArray", () => {
-    expect(PointUtil.to2dNumberArray(new Vector3d(0, 0, 0), new Vector3d(0, 0, 0))).to.deep.equal([[ 0, 0, 0], [ 0, 0, 0]]);
-    expect(PointUtil.to2dNumberArray(new Vector2d(0, 0), new Vector2d(0, 0))).to.deep.equal([[ 0, 0], [ 0, 0]]);
-    expect(PointUtil.to2dNumberArray(0, 0)).to.deep.equal([[ 0], [ 0]]);
+    expect(PointUtil.to2dNumberArray(new Vector3d(0, 0, 0), new Vector3d(0, 0, 0))).to.deep.equal([[0, 0, 0], [0, 0, 0]]);
+    expect(PointUtil.to2dNumberArray(new Vector2d(0, 0), new Vector2d(0, 0))).to.deep.equal([[0, 0], [0, 0]]);
+    expect(PointUtil.to2dNumberArray(0, 0)).to.deep.equal([[0], [0]]);
   });
   it("asNumberArray", () => {
     function runAgainstNumberArray(arr: number[]) { return arr.map((v) => v * 0); }
@@ -104,7 +104,7 @@ describe("RangeUtil", () => {
       }
     }
     testIsRange(Range1d.createArray([0, 0]));
-    testIsRange(Range2d.createArray([ new Point2d(0, 0), new Point2d(0, 0)]));
-    testIsRange(Range3d.createArray([ new Point3d(0, 0, 0), new Point3d(0, 0, 0)]));
+    testIsRange(Range2d.createArray([new Point2d(0, 0), new Point2d(0, 0)]));
+    testIsRange(Range3d.createArray([new Point3d(0, 0, 0), new Point3d(0, 0, 0)]));
   });
 });

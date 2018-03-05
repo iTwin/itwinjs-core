@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Vector3d } from "@bentley/geometry-core/lib/PointVector";
+import { Vector3d } from "@bentley/geometry-core";
 import { PointUtil } from "./Utility";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { assert } from "@bentley/bentleyjs-core";
 
 export class OctEncodedNormal {
   private _value: number;
@@ -60,7 +60,7 @@ export class OctEncodedNormal {
   }
 }
 
-export class Pair<T1, T2> { constructor(public first: T1, public second: T2) {} }
+export class Pair<T1, T2> { constructor(public first: T1, public second: T2) { } }
 
 export class OctEncodedNormalPair extends Pair<OctEncodedNormal, OctEncodedNormal> {
   constructor(first: OctEncodedNormal | number | Vector3d, second: OctEncodedNormal | number | Vector3d) {

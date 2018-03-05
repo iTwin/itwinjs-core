@@ -1,18 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
-import { Id64, Id64Props, Guid, GuidProps } from "@bentley/bentleyjs-core/lib/Id";
-import { ECSqlValueType, ECSqlTypedString, ECSqlStringType, NavigationValue, NavigationBindingValue, ECSqlSystemProperty, ECJsNames } from "@bentley/imodeljs-common/lib/ECSqlTypes";
-import { XAndY, XYAndZ, XYZ } from "@bentley/geometry-core/lib/PointVector";
-import { IModelError } from "@bentley/imodeljs-common/lib/IModelError";
+import { assert, DbResult, BentleyStatus, Id64, Id64Props, Guid, GuidProps, using, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
+import { IModelError, ECSqlValueType, ECSqlTypedString, ECSqlStringType, NavigationValue, NavigationBindingValue, ECSqlSystemProperty, ECJsNames } from "@bentley/imodeljs-common";
+import { XAndY, XYAndZ, XYZ } from "@bentley/geometry-core";
 import { ECDb } from "./ECDb";
-import { using, IDisposable } from "@bentley/bentleyjs-core/lib/Disposable";
 import { AddonRegistry } from "./AddonRegistry";
 import { AddonECSqlStatement, AddonECSqlBinder, AddonECSqlValue, AddonECSqlValueIterator, AddonECDb, AddonDgnDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
-import { StatusCodeWithMessage } from "@bentley/bentleyjs-core/lib/BentleyError";
 
 /** The result of an **ECSQL INSERT** statement as returned from [[ECSqlStatement.stepForInsert]].
  *

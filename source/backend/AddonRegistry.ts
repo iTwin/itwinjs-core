@@ -1,9 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
-import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
-
+import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { Logger } from "@bentley/bentleyjs-core";
 import { KnownLocations } from "./KnownLocations";
 
 /** Class that holds the singleton addon instance that was loaded by the app for this iModelJs session. It is up to the app to load the addon. */

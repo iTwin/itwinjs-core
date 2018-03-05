@@ -3,11 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
-import { EntityProps } from "@bentley/imodeljs-common/lib/EntityProps";
-import { Id64, Id64Props } from "@bentley/bentleyjs-core/lib/Id";
-import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
-import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
-import { DbOpcode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { Id64, Id64Props, Logger, DbOpcode, DbResult } from "@bentley/bentleyjs-core";
 import { ECSqlStatement } from "./ECSqlStatement";
 
 const loggingCategory = "imodeljs-backend.LinkTableRelationship";

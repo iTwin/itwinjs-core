@@ -1,9 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { EntityProps } from "@bentley/imodeljs-common/lib/EntityProps";
-import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
+import { assert } from "@bentley/bentleyjs-core";
+import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";

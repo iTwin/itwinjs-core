@@ -1,28 +1,20 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64Arg, Id64Props, Id64Set } from "@bentley/bentleyjs-core/lib/Id";
-import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
+import { Id64, Id64Arg, Id64Props, Id64Set, Logger, OpenMode, BentleyStatus } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { CodeSpec } from "@bentley/imodeljs-common/lib/Code";
-import { ElementProps } from "@bentley/imodeljs-common/lib/ElementProps";
-import { EntityQueryParams } from "@bentley/imodeljs-common/lib/EntityProps";
-import { IModel, IModelToken } from "@bentley/imodeljs-common/lib/IModel";
-import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
-import { ModelProps, ModelQueryParams } from "@bentley/imodeljs-common/lib/ModelProps";
-import { IModelGateway } from "@bentley/imodeljs-common/lib/gateway/IModelGateway";
-import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
-import { AxisAlignedBox3d } from "@bentley/imodeljs-common/lib/geometry/Primitives";
+import {
+  CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
+  IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps,
+} from "@bentley/imodeljs-common";
 import { HilitedSet, SelectionSet } from "./SelectionSet";
+import { IModelGateway } from "@bentley/imodeljs-common/lib/gateway/IModelGateway";
 import { ViewState, SpatialViewState, OrthographicViewState, ViewState2d, DrawingViewState, SheetViewState } from "./ViewState";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { ModelState, SpatialModelState, SectionDrawingModelState, DrawingModelState, SheetModelState } from "./ModelState";
-import { ViewQueryParams, ViewDefinitionProps } from "@bentley/imodeljs-common/lib/ViewProps";
-import { iModelApp } from "./IModelApp";
+import { IModelApp } from "./IModelApp";
 
 const loggingCategory = "imodeljs-backend.IModelConnection";
 
@@ -56,9 +48,9 @@ export class IModelConnection extends IModel {
 
   /** Open an IModelConnection to an iModel */
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
-    if (!iModelApp)
+    if (!IModelApp)
       throw new IModelError(BentleyStatus.ERROR, "Call IModelApp.startup() before calling open");
-    let changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId, iModelApp.iModelHubClient);
+    let changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId, IModelApp.iModelHubClient);
     if (!changeSetId)
       changeSetId = "0"; // The first version is arbitrarily setup to have changeSetId = "0" since it's required by the gateway API.
 

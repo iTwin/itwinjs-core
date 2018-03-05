@@ -2,11 +2,9 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { IndexedPrimitiveParamsFeatures, PolylineParamVertex, PolylineParam } from "@bentley/imodeljs-frontend/lib/render/webgl/Graphic";
-import { Graphic, GraphicList } from "@bentley/imodeljs-frontend/lib/render/Graphic";
-import { FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-frontend/lib/render/webgl/FeatureIndex";
-import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnection";
+import { Point3d } from "@bentley/geometry-core";
+import { IndexedPrimitiveParamsFeatures, PolylineParamVertex, PolylineParam, Graphic, GraphicList, FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-frontend/lib/rendering";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
 import * as path from "path";
 
 function withinTol(x: number, y: number): boolean {

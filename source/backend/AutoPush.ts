@@ -3,12 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { IModelDb } from "./IModelDb";
 import { AccessToken } from "@bentley/imodeljs-clients/lib";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
-import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
-import { Gateway } from "@bentley/imodeljs-common/lib/Gateway";
-import { IModelError } from "@bentley/imodeljs-common/lib/IModelError";
-import { IModelStatus } from "@bentley/bentleyjs-core/lib/BentleyError";
+import { assert, Logger, BeEvent, IModelStatus } from "@bentley/bentleyjs-core";
+import { Gateway, IModelError } from "@bentley/imodeljs-common";
 
 const loggingCategory = "imodeljs-backend.AutoPush";
 

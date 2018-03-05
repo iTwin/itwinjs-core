@@ -1,17 +1,16 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
+import { Point3d, Point2d } from "@bentley/geometry-core";
+import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { Viewport } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
 import { SnapMode, HitList, SnapDetail, SnapHeat, HitDetail, SubSelectionMode, HitSource, HitDetailType } from "./HitDetail";
 import { SnapContext, DecorateContext } from "./ViewContext";
 import { SnapType, SnapStatus, HitListHolder } from "./ElementLocateManager";
-import { LinePixels } from "@bentley/imodeljs-common/lib/Render";
+import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
 import { GraphicBuilder } from "./render/GraphicBuilder";
-import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
-import { iModelApp } from "./IModelApp";
+import { IModelApp } from "./IModelApp";
 
 export class TentativePoint {
   public isActive = false;
@@ -44,9 +43,9 @@ export class TentativePoint {
   public clear(doErase: boolean): void {
     if (doErase) {
       this.removeTentative();
-      iModelApp.locateManager.synchSnapMode();
+      IModelApp.locateManager.synchSnapMode();
     }
-    iModelApp.accuSnap.destroy();
+    IModelApp.accuSnap.destroy();
     this.isActive = false;
     this.snapPaths.empty();
     this.setCurrSnap(undefined);
@@ -57,10 +56,10 @@ export class TentativePoint {
     if (!this.isActive)
       return;
 
-    iModelApp.accuSnap.erase();
+    IModelApp.accuSnap.erase();
 
     if (this.getCurrSnap())
-      iModelApp.viewManager.invalidateDecorationsAllViews();
+      IModelApp.viewManager.invalidateDecorationsAllViews();
     else
       this.viewport!.invalidateDecorations();
 
@@ -79,8 +78,8 @@ export class TentativePoint {
 
   public showTentative(): void {
     if (this.isSnapped()) {
-      iModelApp.viewManager.invalidateDecorationsAllViews();
-      iModelApp.accuSnap.displayInfoBalloon(this.viewPt, this.viewport!, undefined);
+      IModelApp.viewManager.invalidateDecorationsAllViews();
+      IModelApp.accuSnap.displayInfoBalloon(this.viewPt, this.viewport!, undefined);
     } else {
       this.viewport!.invalidateDecorations();
     }
@@ -102,7 +101,7 @@ export class TentativePoint {
 
   public onButtonEvent(): void {
     this.removeTentative();
-    iModelApp.locateManager.synchSnapMode();
+    IModelApp.locateManager.synchSnapMode();
     this.snapPaths.empty();
     this.setCurrSnap(undefined);
     this.tpHits = undefined;
@@ -160,7 +159,7 @@ export class TentativePoint {
   public getNextSnap(): SnapDetail | undefined {
     const snap = this.snapPaths.getNextHit() as SnapDetail;
     if (snap)   // Report which of the multiple active modes we are using
-      iModelApp.locateManager.setChosenSnapMode(SnapType.Points, snap.snapMode);
+      IModelApp.locateManager.setChosenSnapMode(SnapType.Points, snap.snapMode);
     return snap;
   }
 
@@ -268,7 +267,7 @@ export class TentativePoint {
 
     let thisPath: HitDetail | undefined;
     while (thisPath = this.tpHits!.getNextHit()) {
-      const snapPath = await snapContext.snapToPath(thisPath, this.getTPSnapMode(), iModelApp.locateManager.getKeypointDivisor(), thisPath.viewport.pixelsFromInches(this.hotDistanceInches));
+      const snapPath = await snapContext.snapToPath(thisPath, this.getTPSnapMode(), IModelApp.locateManager.getKeypointDivisor(), thisPath.viewport.pixelsFromInches(this.hotDistanceInches));
       if (snapPath) {
         // Original hit list is already sorted...preserve order...
         this.snapPaths.insert(-1, snapPath);
@@ -290,14 +289,14 @@ export class TentativePoint {
     // make sure we don't have any hits.
     this.tpHits = undefined;
 
-    const currHit = iModelApp.accuSnap.getHitAndList(this) as SnapDetail;
+    const currHit = IModelApp.accuSnap.getHitAndList(this) as SnapDetail;
 
     // use existing AccuSnap hit list if one exists...
     if (!currHit) {
       // search for elements around the current raw point (search should not be affected by locks!)
-      const aperture = (2.0 * this.viewport!.pixelsFromInches(iModelApp.locateManager.getApertureInches()) / 2.0) + 1.5;
-      const options = iModelApp.locateManager.options.clone(); // Copy to avoid changing out from under active Tool...
-      const picker = iModelApp.locateManager.getElementPicker();
+      const aperture = (2.0 * this.viewport!.pixelsFromInches(IModelApp.locateManager.getApertureInches()) / 2.0) + 1.5;
+      const options = IModelApp.locateManager.options.clone(); // Copy to avoid changing out from under active Tool...
+      const picker = IModelApp.locateManager.getElementPicker();
       picker.empty();
       options.hitSource = HitSource.TentativeSnap;
 
@@ -308,7 +307,7 @@ export class TentativePoint {
     }
 
     // Construct each active point snap mode
-    const snaps = iModelApp.locateManager.getPreferredPointSnapModes(HitSource.TentativeSnap);
+    const snaps = IModelApp.locateManager.getPreferredPointSnapModes(HitSource.TentativeSnap);
     const snapContext = new SnapContext();
     for (const snap of snaps) {
       this.testHitsForSnapMode(snapContext, snap);
@@ -345,7 +344,7 @@ export class TentativePoint {
     this.qualifierMask = ev.keyModifiers;
 
     let snap: SnapDetail | undefined;
-    const snapAgain = (this.isSnapped() && TentativePoint.arePointsCloseEnough(lastPtView, this.viewPt, this.viewport!.pixelsFromInches(iModelApp.locateManager.getApertureInches())));
+    const snapAgain = (this.isSnapped() && TentativePoint.arePointsCloseEnough(lastPtView, this.viewPt, this.viewport!.pixelsFromInches(IModelApp.locateManager.getApertureInches())));
 
     snap = snapAgain ? this.getNextSnap() : this.getSnaps();
 
@@ -360,20 +359,20 @@ export class TentativePoint {
         snap = intersectSnap;
     }
 
-    if (snap && iModelApp.locateManager.isConstraintSnapActive()) {
+    if (snap && IModelApp.locateManager.isConstraintSnapActive()) {
       //  Does the user actually want to create a constraint?
       //  (Note you can't construct a constraint on top of a partially defined intersection)
       if (SnapMode.IntersectionCandidate !== snap.snapMode) {
         //  Construct constraint on top of TP
         snap.heat = SnapHeat.InRange;  // If we got here, the snap is "in range". Tell xSnap_convertToConstraint.
-        if (SnapStatus.Success !== iModelApp.locateManager.performConstraintSnap(snap, this.viewport.pixelsFromInches(iModelApp.locateManager.getApertureInches()), HitSource.TentativeSnap)) {
+        if (SnapStatus.Success !== IModelApp.locateManager.performConstraintSnap(snap, this.viewport.pixelsFromInches(IModelApp.locateManager.getApertureInches()), HitSource.TentativeSnap)) {
           snap = undefined;
         }
       }
     }
 
     this.setCurrSnap(snap); //  Adopt the snap as current
-    iModelApp.accuSnap.clear(); // make sure there's no AccuSnap active after a tentative point (otherwise we continually snap to it).
+    IModelApp.accuSnap.clear(); // make sure there's no AccuSnap active after a tentative point (otherwise we continually snap to it).
 
     if (this.isSnapped())
       this.point.setFrom(this.currSnap!.snapPoint);
