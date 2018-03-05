@@ -336,7 +336,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
           return;
 
         const propName: string = ECSqlValueHelper.determineResultRowPropertyName(duplicatePropNames, ecsqlValue);
-        const val: any = ECSqlValueHelper.getValue(ecsqlValue);
+        const val: any = ecsqlValue.value;
         Object.defineProperty(row, propName, { enumerable: true, configurable: true, writable: true, value: val });
       });
     }
@@ -383,7 +383,11 @@ export class ECSqlValue implements IDisposable {
   public dispose(): void { this._val.dispose(); }
 
   /** Get information about the ECSQL SELECT result's column this value refers to. */
-  public getColumnInfo(): ECSqlColumnInfo { return this._val.getColumnInfo() as ECSqlColumnInfo; }
+  public get columnInfo(): ECSqlColumnInfo { return this._val.getColumnInfo() as ECSqlColumnInfo; }
+
+  /** Get the value of this ECSQL value */
+  public get value(): any { return ECSqlValueHelper.getValue(this); }
+
   /** Indicates whether the value is NULL or not. */
   public isNull(): boolean { return this._val.isNull(); }
   /** Get the value as BLOB (formatted as Base64 string) */
@@ -645,7 +649,7 @@ class ECSqlValueHelper {
     if (ecsqlValue.isNull())
       return undefined;
 
-    const dataType: ECSqlValueType = ecsqlValue.getColumnInfo().getType();
+    const dataType: ECSqlValueType = ecsqlValue.columnInfo.getType();
     switch (dataType) {
       case ECSqlValueType.Struct:
         return ECSqlValueHelper.getStruct(ecsqlValue);
@@ -663,7 +667,7 @@ class ECSqlValueHelper {
   }
 
   public static determineResultRowPropertyName(duplicatePropNames: Map<string, number>, ecsqlValue: ECSqlValue): string {
-    const colInfo: ECSqlColumnInfo = ecsqlValue.getColumnInfo();
+    const colInfo: ECSqlColumnInfo = ecsqlValue.columnInfo;
     let propName: string;
 
     const colAccessString: string = colInfo.getAccessString();
@@ -737,8 +741,8 @@ class ECSqlValueHelper {
         if (memberECSqlVal.isNull())
           continue;
 
-        assert(!memberECSqlVal.getColumnInfo().isGeneratedProperty());
-        const memberName: string = ECJsNames.toJsName(memberECSqlVal.getColumnInfo().getPropertyName());
+        assert(!memberECSqlVal.columnInfo.isGeneratedProperty());
+        const memberName: string = ECJsNames.toJsName(memberECSqlVal.columnInfo.getPropertyName());
         const memberVal = ECSqlValueHelper.getValue(memberECSqlVal);
         Object.defineProperty(structVal, memberName, { enumerable: true, configurable: true, writable: true, value: memberVal });
       }
@@ -768,7 +772,7 @@ class ECSqlValueHelper {
     if (ecsqlValue.isNull())
       return undefined;
 
-    const colInfo: ECSqlColumnInfo = ecsqlValue.getColumnInfo();
+    const colInfo: ECSqlColumnInfo = ecsqlValue.columnInfo;
     switch (colInfo.getType()) {
       case ECSqlValueType.Blob:
         return ecsqlValue.getBlob();
@@ -799,7 +803,7 @@ class ECSqlValueHelper {
       case ECSqlValueType.String:
         return ecsqlValue.getString();
       default:
-        throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unsupported type ${ecsqlValue.getColumnInfo().getType()} of the ECSQL Value`);
+        throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unsupported type ${ecsqlValue.columnInfo.getType()} of the ECSQL Value`);
     }
   }
 

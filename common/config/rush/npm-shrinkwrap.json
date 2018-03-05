@@ -56,6 +56,21 @@
         "flatbuffers": "1.8.0"
       }
     },
+    "@bentley/imodeljs-backend": {
+      "version": "0.61.0",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-backend/-/imodeljs-backend-0.61.0.tgz",
+      "integrity": "sha1-rIegSEsjDjuaSzdn2xiMKYE+kdI=",
+      "requires": {
+        "@bentley/geometry-core": "5.0.7",
+        "@bentley/imodeljs-clients": "4.0.0",
+        "@bentley/imodeljs-common": "0.61.0",
+        "@bentley/imodeljs-electronaddon": "10.0.1",
+        "@bentley/imodeljs-nodeaddon": "10.0.1",
+        "@bentley/imodeljs-nodeaddonapi": "10.0.1",
+        "fs-extra": "5.0.0",
+        "js-base64": "2.4.3"
+      }
+    },
     "@bentley/imodeljs-clients": {
       "version": "4.0.0",
       "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-clients/-/imodeljs-clients-4.0.0.tgz",
@@ -70,6 +85,15 @@
         "superagent": "3.8.2",
         "xmldom": "0.1.27",
         "xpath": "0.0.24"
+      }
+    },
+    "@bentley/imodeljs-common": {
+      "version": "0.61.0",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-common/-/imodeljs-common-0.61.0.tgz",
+      "integrity": "sha1-jXxnPXJqjk7T+jP5y6N6GgwQ1Yw=",
+      "requires": {
+        "@bentley/geometry-core": "5.0.7",
+        "@bentley/imodeljs-clients": "4.0.0"
       }
     },
     "@bentley/imodeljs-e_1_6_11-win32-x64": {
@@ -105,7 +129,7 @@
     },
     "@rush-temp/imodeljs-backend": {
       "version": "file:projects/imodeljs-backend.tgz",
-      "integrity": "sha1-NUDG4D7f/ITH36ndDH8vRci2iys=",
+      "integrity": "sha1-WkQ1Y0tOkgTwCkrXkglufnsYamo=",
       "requires": {
         "@bentley/geometry-core": "5.0.7",
         "@bentley/imodeljs-clients": "4.0.0",
@@ -128,7 +152,7 @@
     },
     "@rush-temp/imodeljs-common": {
       "version": "file:projects/imodeljs-common.tgz",
-      "integrity": "sha1-Ye3KUsqTF235FsNEPaUYM79bkLQ=",
+      "integrity": "sha1-uNgeWv4/8QqVr/c9loMflZxvO84=",
       "requires": {
         "@bentley/bentleyjs-core": "7.3.2",
         "@bentley/geometry-core": "5.0.7",
@@ -139,7 +163,7 @@
     },
     "@rush-temp/imodeljs-core": {
       "version": "file:projects/imodeljs-core.tgz",
-      "integrity": "sha1-gbHAhYKdeaHBMeiL2oC4lbZpf40=",
+      "integrity": "sha1-cHL+V6yLs1TYsLnGLzedfAFv1JU=",
       "requires": {
         "@bentley/bentleyjs-tools": "2.2.2",
         "@types/body-parser": "1.16.8",
@@ -190,10 +214,11 @@
     },
     "@rush-temp/imodeljs-core-testbed": {
       "version": "file:projects/imodeljs-core-testbed.tgz",
-      "integrity": "sha1-tBVqBxHvWLqQpd02uYjrXKdP9dA=",
+      "integrity": "sha1-LgOLy0Bm7tE/+Q02+zWAY0XoTr0=",
       "requires": {
         "@bentley/bentleyjs-core": "7.3.2",
         "@bentley/geometry-core": "5.0.7",
+        "@bentley/imodeljs-backend": "0.61.0",
         "@bentley/imodeljs-clients": "4.0.0",
         "@bentley/imodeljs-e_1_6_11-win32-x64": "10.0.1",
         "@bentley/imodeljs-electronaddon": "10.0.1",
@@ -219,7 +244,7 @@
     },
     "@rush-temp/imodeljs-frontend": {
       "version": "file:projects/imodeljs-frontend.tgz",
-      "integrity": "sha1-EWFf6/3b8LWarDbgq7h2YD7iyhc=",
+      "integrity": "sha1-c3Oi95vBD+wOWg3pZJ8WuxnJsl0=",
       "requires": {
         "@bentley/geometry-core": "5.0.7",
         "@bentley/imodeljs-clients": "4.0.0",
@@ -3637,9 +3662,9 @@
       "integrity": "sha1-mGbfOVECEw449/mWvOtlRDIJwls="
     },
     "js-yaml": {
-      "version": "3.10.0",
-      "resolved": "https://registry.npmjs.org/js-yaml/-/js-yaml-3.10.0.tgz",
-      "integrity": "sha512-O2v52ffjLa9VeM43J4XocZE//WT9N0IiwDa3KSHH7Tu8CtH+1qM8SIZvnsTh6v+4yFy5KUY3BHUVwjpfAWsjIA==",
+      "version": "3.11.0",
+      "resolved": "https://registry.npmjs.org/js-yaml/-/js-yaml-3.11.0.tgz",
+      "integrity": "sha512-saJstZWv7oNeOyBh3+Dx1qWzhW0+e6/8eDzo7p5rDFqxntSztloLtuKu+Ejhtq82jsilwOIZYsCz+lIjthg1Hw==",
       "requires": {
         "argparse": "1.0.10",
         "esprima": "4.0.0"
@@ -7670,7 +7695,7 @@
         "commander": "2.14.1",
         "diff": "3.5.0",
         "glob": "7.1.2",
-        "js-yaml": "3.10.0",
+        "js-yaml": "3.11.0",
         "minimatch": "3.0.4",
         "resolve": "1.5.0",
         "semver": "5.5.0",
