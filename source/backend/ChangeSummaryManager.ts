@@ -65,13 +65,13 @@ export class ChangeSummaryManager {
    * @throws [[IModelError]]
    */
   public static attachChangeCache(iModel: IModelDb): void {
-    if (iModel == null || iModel.briefcaseEntry == null || iModel.briefcaseEntry.nativeDb == null)
+    if (iModel == null || iModel.briefcase == null || iModel.briefcase.nativeDb == null)
       throw new IModelError(IModelStatus.BadRequest);
 
-    if (iModel.briefcaseEntry.nativeDb!.isChangeCacheAttached())
+    if (iModel.briefcase.nativeDb!.isChangeCacheAttached())
       return;
 
-    const changesCacheFilePath: string = BriefcaseManager.getChangeSummaryPathname(iModel.briefcaseEntry.iModelId);
+    const changesCacheFilePath: string = BriefcaseManager.getChangeSummaryPathname(iModel.briefcase.iModelId);
     if (!IModelJsFs.existsSync(changesCacheFilePath)) {
       using(new ECDb(), (changesFile) => {
         ChangeSummaryManager.createChangesFile(iModel, changesFile, changesCacheFilePath);
@@ -79,9 +79,9 @@ export class ChangeSummaryManager {
     }
 
     assert(IModelJsFs.existsSync(changesCacheFilePath));
-    const res: DbResult = iModel.briefcaseEntry.nativeDb!.attachChangeCache(changesCacheFilePath);
+    const res: DbResult = iModel.briefcase.nativeDb!.attachChangeCache(changesCacheFilePath);
     if (res !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(res, `Failed to attach Changes cache file to ${iModel.briefcaseEntry.pathname}.`);
+      throw new IModelError(res, `Failed to attach Changes cache file to ${iModel.briefcase.pathname}.`);
   }
 
   /** Extracts change summaries from the specified range of changesets
@@ -216,11 +216,11 @@ export class ChangeSummaryManager {
   }
 
   private static openOrCreateChangesFile(iModel: IModelDb): ECDb {
-    if (iModel == null || iModel.briefcaseEntry == null || !iModel.briefcaseEntry.isOpen)
+    if (iModel == null || iModel.briefcase == null || !iModel.briefcase.isOpen)
       throw new IModelError(IModelStatus.BadArg);
 
     const changesFile = new ECDb();
-    const changesPath: string = BriefcaseManager.getChangeSummaryPathname(iModel.briefcaseEntry.iModelId);
+    const changesPath: string = BriefcaseManager.getChangeSummaryPathname(iModel.briefcase.iModelId);
     if (IModelJsFs.existsSync(changesPath)) {
       changesFile.openDb(changesPath, OpenMode.ReadWrite);
       return changesFile;
@@ -231,7 +231,7 @@ export class ChangeSummaryManager {
   }
 
   private static createChangesFile(iModel: IModelDb, changesFile: ECDb, changesFilePath: string): void {
-    if (iModel == null || iModel.briefcaseEntry == null || !iModel.briefcaseEntry.isOpen)
+    if (iModel == null || iModel.briefcase == null || !iModel.briefcase.isOpen)
       throw new IModelError(IModelStatus.BadArg);
 
     assert(iModel.nativeDb != null);

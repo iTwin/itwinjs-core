@@ -8,6 +8,7 @@ export * from "./ElementProps";
 export * from "./EntityProps";
 export * from "./FeatureGates";
 export * from "./Frustum";
+export * from "./Fonts";
 export * from "./Gateway";
 export * from "./IModel";
 export * from "./IModelError";
