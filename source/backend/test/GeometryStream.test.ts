@@ -2,27 +2,20 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { SolidPrimitive } from "@bentley/geometry-core/lib/solid/SolidPrimitive";
-import { Path, ParityRegion } from "@bentley/geometry-core/lib/curve/CurveChain";
-import { BSplineSurface3d } from "@bentley/geometry-core/lib/bspline/BSplineSurface";
-import { IndexedPolyface } from "@bentley/geometry-core/lib/polyface/Polyface";
-import { GeometricPrimitive, GeometryType } from "@bentley/imodeljs-common/lib/geometry/Primitives";
-import { Point2d, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
-import { AngleSweep } from "@bentley/geometry-core/lib/Geometry";
-import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
-import { Cone } from "@bentley/geometry-core/lib/solid/Cone";
+import {
+  SolidPrimitive, Path, ParityRegion, BSplineSurface3d, IndexedPolyface, Point2d, Point3d, Vector3d, YawPitchRollAngles,
+  PolyfaceBuilder, Arc3d, Cone, AngleSweep,
+} from "@bentley/geometry-core";
 import { Sample } from "@bentley/geometry-core/lib/serialization/GeometrySamples";
 import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
-import { PolyfaceBuilder } from "@bentley/geometry-core/lib/polyface/PolyfaceBuilder";
-import { Id64, Guid } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64, Guid } from "@bentley/bentleyjs-core";
 import { IModelDb } from "../IModelDb";
-import { OpCodeReader, OpCodeWriter, OpCodeIterator, GeometryStreamBuilder, GeometryStream, OpCode } from "@bentley/imodeljs-common/lib/geometry/GeometryStream";
-import { GeometryParams } from "@bentley/imodeljs-common/lib/geometry/GeometryProps";
+import {
+  OpCodeReader, OpCodeWriter, OpCodeIterator, GeometryStreamBuilder, GeometryStream, OpCode, GeometricPrimitive, GeometryType,
+  Code, Placement3d, ElementAlignedBox3d, GeometricElement3dProps, GeometryProps,
+} from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Element } from "../Element";
-import { Code } from "@bentley/imodeljs-common/lib/Code";
-import { Placement3d, ElementAlignedBox3d } from "@bentley/imodeljs-common/lib/geometry/Primitives";
-import { GeometricElement3dProps } from "@bentley/imodeljs-common/lib/ElementProps";
 
 import * as path from "path";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -336,7 +329,7 @@ describe("GeometryBuilder", () => {
     const collection = new OpCodeIterator(returned3d.geom.geomStream);
     const reader = new OpCodeReader();
     let item: any;
-    const elParams = new GeometryParams(new Id64());
+    const elParams = new GeometryProps(new Id64());
     while (collection.isValid) {
       if (collection.operation!.isGeometryOp()) {
         item = reader.getGeometricPrimitive(collection.operation!);

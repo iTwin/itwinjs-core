@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Point3d, Point2d, XAndY } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, Point2d, XAndY } from "@bentley/geometry-core";
 import { Viewport } from "../Viewport";
 import { DecorateContext } from "../ViewContext";
 import { HitDetail } from "../HitDetail";
 import { LocateResponse } from "../ElementLocateManager";
 import { I18NNamespace } from "../Localization";
-import { iModelApp } from "../IModelApp";
-import { IModelError } from "@bentley/imodeljs-common/lib/IModelError";
+import { IModelApp } from "../IModelApp";
+import { IModelError } from "@bentley/imodeljs-common";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 
 type ToolType = typeof Tool;
@@ -336,13 +336,13 @@ export class Tool {
    * Register this Tool class with the ToolRegistry.
    * @param namespace optional namespace to supply to ToolRegistry.register. If undefined, use namespace from superclass.
    */
-  public static register(namespace?: I18NNamespace) { iModelApp.tools.register(this, namespace); }
+  public static register(namespace?: I18NNamespace) { IModelApp.tools.register(this, namespace); }
 
   /**
    * Get the localized keyin string for this Tool class. This returns the value of "tools." + this.toolId + ".keyin" from the
    * .json file for the current locale of its registered NameSpace (e.g. "en/MyApp.json")
    */
-  public static get keyin(): string { return this._keyin ? this._keyin : (this._keyin = iModelApp.i18n.translate(this.namespace.name + ":tools." + this.toolId + ".keyin")); }
+  public static get keyin(): string { return this._keyin ? this._keyin : (this._keyin = IModelApp.i18n.translate(this.namespace.name + ":tools." + this.toolId + ".keyin")); }
 
   /**
    * Get the toolId string for this Tool class. This string is used to identify the Tool in the ToolRegistry and is used to localize
@@ -536,7 +536,7 @@ export class ToolRegistry {
     if (this._keyinList)
       return this._keyinList;
     const thePromise = new Promise<CommandList>((resolve: any, reject: any) => {
-      iModelApp.i18n.waitForAllRead().then(() => {
+      IModelApp.i18n.waitForAllRead().then(() => {
         this._keyinList = [];
         for (const thisTool of this.tools.values()) {
           this._keyinList.push(thisTool);

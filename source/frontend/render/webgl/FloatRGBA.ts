@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
+import { ColorDef } from "@bentley/imodeljs-common";
 
 /** An RGB color. */
 export class FloatRgb {

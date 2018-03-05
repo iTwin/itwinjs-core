@@ -4,9 +4,9 @@
 import { CoordinateLockOverrides } from "./ToolAdmin";
 import { Tool, BeButtonEvent, BeCursor, InteractiveTool } from "./Tool";
 import { Viewport } from "../Viewport";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "../IModelConnection";
-import { iModelApp } from "../IModelApp";
+import { IModelApp } from "../IModelApp";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { DynamicsContext } from "../ViewContext";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
@@ -101,8 +101,8 @@ export abstract class PrimitiveTool extends InteractiveTool {
    *  @see Tool.onInstall, Tool.onPostInstall
    */
   public run(): boolean {
-    const toolAdmin = iModelApp.toolAdmin;
-    if (this.isCompatibleViewport(iModelApp.viewManager.selectedView, false) || !toolAdmin.onInstallTool(this))
+    const toolAdmin = IModelApp.toolAdmin;
+    if (this.isCompatibleViewport(IModelApp.viewManager.selectedView, false) || !toolAdmin.onInstallTool(this))
       return false;
 
     toolAdmin.startPrimitiveTool(this);
@@ -172,11 +172,11 @@ export abstract class PrimitiveTool extends InteractiveTool {
       return true;
 
     // NOTE: If points aren't being adjusted then the tool shouldn't be creating geometry currently (ex. locating elements) and we shouldn't filter point...
-    if (0 !== (iModelApp.toolAdmin.toolState.coordLockOvr & CoordinateLockOverrides.ACS))
+    if (0 !== (IModelApp.toolAdmin.toolState.coordLockOvr & CoordinateLockOverrides.ACS))
       return true;
 
     // We know the tool isn't doing a locate, we don't know what it will do with this point. Minimize erroneous filtering by restricting the check to when AccuSnap is tool enable (not user enabled)...
-    if (!iModelApp.accuSnap.isSnapEnabled())
+    if (!IModelApp.accuSnap.isSnapEnabled())
       return true;
 
     const extents = iModel.projectExtents;
@@ -184,13 +184,13 @@ export abstract class PrimitiveTool extends InteractiveTool {
       return true;
 
     if (isButtonEvent && ev.isDown) {
-      iModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, iModelApp.i18n.translate("CoreTools:tools.ElementSet.Error.ProjectExtents")));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Error.ProjectExtents")));
     }
 
     return false;
   }
 
-  public exitTool(): void { iModelApp.toolAdmin.startDefaultTool(); }
+  public exitTool(): void { IModelApp.toolAdmin.startDefaultTool(); }
 
   /**
    * Called to revert to a previous tool state (ex. undo last data button).
@@ -225,11 +225,11 @@ export abstract class PrimitiveTool extends InteractiveTool {
   //  RepositoryStatus LockElementForOperation(DgnElementCR element, BeSQLite:: DbOpcode operation);
 
   /** Call to find out of complex dynamics are currently active. */
-  public isDynamicsStarted() { return iModelApp.viewManager.inDynamicsMode; }
+  public isDynamicsStarted() { return IModelApp.viewManager.inDynamicsMode; }
   /** Call to initialize dynamics mode. */
-  public beginDynamics() { iModelApp.toolAdmin.beginDynamics(); }
+  public beginDynamics() { IModelApp.toolAdmin.beginDynamics(); }
   /** Call to terminate dynamics mode. */
-  public endDynamics() { iModelApp.toolAdmin.endDynamics(); }
+  public endDynamics() { IModelApp.toolAdmin.endDynamics(); }
   /** Called to display dynamic elements. */
   public onDynamicFrame(_ev: BeButtonEvent, _context: DynamicsContext) { }
   public callOnRestartTool(): void { this.onRestartTool(); }
@@ -240,13 +240,13 @@ export abstract class PrimitiveTool extends InteractiveTool {
     AccuDrawShortcuts.processPendingHints(); // Process any hints the active tool setup in _OnUndoPreviousStep now...
 
     const ev = new BeButtonEvent();
-    iModelApp.toolAdmin.fillEventFromCursorLocation(ev);
+    IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
     this.updateDynamics(ev);
     return true;
   }
 
   public updateDynamics(ev: BeButtonEvent): void {
-    if (!ev.viewport || !iModelApp.viewManager.inDynamicsMode)
+    if (!ev.viewport || !IModelApp.viewManager.inDynamicsMode)
       return;
 
     const context = new DynamicsContext(); // NEEDS_WORK * ev.GetViewport(), Render:: Task:: Priority:: Highest());

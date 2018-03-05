@@ -2,9 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { ColorDef, ColorRgb } from "@bentley/imodeljs-common/lib/ColorDef";
-import { Appearance, AppearanceProps, SubCategoryOverride } from "@bentley/imodeljs-common/lib/SubCategoryAppearance";
+import { Id64 } from "@bentley/bentleyjs-core";
+import { ColorDef, ColorRgb, Appearance, AppearanceProps, SubCategoryOverride } from "@bentley/imodeljs-common";
 
 describe("Category tests", () => {
 

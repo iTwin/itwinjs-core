@@ -3,13 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { expect, assert } from "chai";
-import { OpenMode, DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { OpenMode, DbResult, Id64 } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
+import { IModelVersion } from "@bentley/imodeljs-common";
 import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../ChangeSummaryManager";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { IModelDb } from "../IModelDb";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ChangeSet } from "@bentley/imodeljs-clients";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -129,7 +128,7 @@ describe("ChangeSummary", () => {
           assert.equal(row.className, "ECDbChange.ChangeSummary");
           assert.isUndefined(row.extendedProperties, "ChangeSummary.ExtendedProperties is not expected to be populated when change summaries are extracted.");
         }
-        assert.equal(rowCount, 3);
+        assert.isAtLeast(rowCount, 3);
       });
 
       iModel.withPreparedStatement("SELECT ECClassId,Summary FROM imodelchange.ChangeSet ORDER BY Summary.Id", (myStmt) => {
@@ -141,9 +140,7 @@ describe("ChangeSummary", () => {
           assert.equal(row.summary.id, changeSummaryIds[rowCount - 1].value);
           assert.equal(row.summary.relClassName, "IModelChange.ChangeSummaryIsExtractedFromChangeset");
         }
-
-        assert.equal(rowCount, 3);
-
+        assert.isAtLeast(rowCount, 3);
       });
 
     } finally {
@@ -153,7 +150,7 @@ describe("ChangeSummary", () => {
 
   it("Extract ChangeSummary for single changeset", async () => {
     const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
-    assert.equal(changeSets.length, 3);
+    assert.isAtLeast(changeSets.length, 3);
     // extract summary for second changeset
     const changesetId: string = changeSets[1].wsgId;
 
@@ -199,7 +196,7 @@ describe("ChangeSummary", () => {
       IModelJsFs.removeSync(changesFilePath);
 
     const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
-    assert.equal(changeSets.length, 3);
+    assert.isAtLeast(changeSets.length, 3);
     // first extraction: just first changeset
     const firstChangesetId: string = changeSets[0].id!;
 
@@ -286,14 +283,14 @@ describe("ChangeSummary", () => {
 
       const rows: any[] = iModel.executeQuery("SELECT count(*) csumcount FROM change.ChangeSummary csum JOIN imodelchange.ChangeSet cset ON csum.ECInstanceId=cset.Summary.Id");
       assert.equal(rows.length, 1);
-      assert.equal(rows[0].csumcount, 3);
+      assert.isAtLeast(rows[0].csumcount, 3);
 
     } finally {
       await iModel.close(accessToken);
     }
   });
 
-  it.skip("Extract ChangeSummaries with invalid input", async () => {
+  it("Extract ChangeSummaries with invalid input", async () => {
     try {
       await ChangeSummaryManager.extractChangeSummaries(accessToken, "123", testIModelId);
     } catch (e) {
@@ -302,8 +299,9 @@ describe("ChangeSummary", () => {
 
     try {
       await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, "123");
+      assert.fail(); // expect above line to throw an Error
     } catch (e) {
-      assert.equal(e.message, "Not Found");
+      assert.exists(e.message);
     }
   });
 

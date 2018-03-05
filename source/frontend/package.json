@@ -2,6 +2,8 @@
   "name": "@bentley/imodeljs-frontend",
   "version": "0.58.1",
   "description": "iModelJs frontend components",
+  "main": "lib/frontend.js",
+  "typings": "lib/frontend",
   "license": "UNLICENSED",
   "scripts": {
     "build": "tsc 1>&2",
@@ -22,7 +24,7 @@
     "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check"
   ],
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^7.2.0",
+    "@bentley/bentleyjs-core": "^7.3.2",
     "flatbuffers": "^1.8.0"
   },
   "//dependencies": [
@@ -31,8 +33,8 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/geometry-core": "^5.0.2",
-    "@bentley/imodeljs-clients": "^3.0.3",
+    "@bentley/geometry-core": "^5.0.6",
+    "@bentley/imodeljs-clients": "^4.0.0",
     "@bentley/imodeljs-common": "^0.59.0",
     "fuse.js": "^3.2.0",
     "i18next": "^10.2.2",

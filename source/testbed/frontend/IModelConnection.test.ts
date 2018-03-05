@@ -2,22 +2,18 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { CodeSpec, CodeSpecNames } from "@bentley/imodeljs-common/lib/Code";
-import { ViewDefinitionProps } from "@bentley/imodeljs-common/lib/ViewProps";
-import { DrawingViewState, OrthographicViewState, ViewState } from "@bentley/imodeljs-frontend/lib/ViewState";
-import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "@bentley/imodeljs-frontend/lib/IModelConnection";
-import { XYAndZ } from "@bentley/geometry-core/lib/PointVector";
-import { NavigationValue, ECSqlTypedString, ECSqlStringType } from "@bentley/imodeljs-common/lib/ECSqlTypes";
+import { Id64 } from "@bentley/bentleyjs-core";
+import { XYAndZ } from "@bentley/geometry-core";
+import { CodeSpec, CodeSpecNames, ViewDefinitionProps, NavigationValue, ECSqlTypedString, ECSqlStringType } from "@bentley/imodeljs-common";
 import { TestData } from "./TestData";
-import { ModelSelectorState } from "@bentley/imodeljs-frontend/lib/ModelSelectorState";
-import { DisplayStyle3dState, DisplayStyle2dState } from "@bentley/imodeljs-frontend/lib/DisplayStyleState";
-import { CategorySelectorState } from "@bentley/imodeljs-frontend/lib/CategorySelectorState";
-import { IModelApp } from "@bentley/imodeljs-frontend/lib/IModelApp";
+import {
+  DrawingViewState, OrthographicViewState, ViewState, IModelConnection, IModelConnectionElements, IModelConnectionModels,
+  ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState, IModelApp,
+} from "@bentley/imodeljs-frontend";
 
 // spell-checker: disable
 class TestApp extends IModelApp {
-  protected supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
+  protected static supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
 }
 
 describe("IModelConnection", () => {
@@ -26,7 +22,7 @@ describe("IModelConnection", () => {
     await TestData.load();
   });
 
-  after (() => {
+  after(() => {
     TestApp.shutdown();
   });
 
@@ -56,7 +52,7 @@ describe("IModelConnection", () => {
     assert.equal(modelProps[0].id, iModel.models.repositoryModelId.value);
     assert.isTrue(iModel.models.repositoryModelId.equals(new Id64(modelProps[0].id)));
 
-    const rows: any[] = await iModel.executeQuery("SELECT CodeValue AS code FROM BisCore.Category");
+    const rows: any[] = await iModel.executeQuery("SELECT CodeValue AS code FROM BisCore.Category LIMIT 20");
     assert.isAtLeast(rows.length, 1);
     assert.exists(rows[0].code);
     assert.equal(rows.length, queryElementIds.size);
@@ -106,8 +102,8 @@ describe("IModelConnection", () => {
     assert.isTrue(expectedId.isValid());
     const expectedModel: NavigationValue = expectedRow.model;
     assert.isTrue(new Id64(expectedModel.id).isValid());
-    const expectedLastMod: ECSqlTypedString = {type: ECSqlStringType.DateTime, value: expectedRow.lastMod};
-    const expectedFedGuid: ECSqlTypedString | undefined = expectedRow.federationGuid !== undefined ? {type: ECSqlStringType.Guid, value: expectedRow.federationGuid} : undefined;
+    const expectedLastMod: ECSqlTypedString = { type: ECSqlStringType.DateTime, value: expectedRow.lastMod };
+    const expectedFedGuid: ECSqlTypedString | undefined = expectedRow.federationGuid !== undefined ? { type: ECSqlStringType.Guid, value: expectedRow.federationGuid } : undefined;
     const expectedOrigin: XYAndZ = expectedRow.origin;
 
     let actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement3d WHERE ECInstanceId=? AND Model=? OR (LastMod=? AND CodeValue=? AND FederationGuid=? AND Origin=?)",
@@ -138,7 +134,7 @@ describe("IModelConnection", () => {
     assert.equal(actualRows.length, 1);
 
     actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement2d WHERE ECInstanceId=:id AND Origin=:origin",
-      { id: {type: ECSqlStringType.Id, value: expectedRow.id}, origin: expectedRow.origin });
+      { id: { type: ECSqlStringType.Id, value: expectedRow.id }, origin: expectedRow.origin });
     assert.equal(actualRows.length, 1);
 
     await iModel.close(TestData.accessToken);

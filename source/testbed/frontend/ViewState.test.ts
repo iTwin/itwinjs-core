@@ -2,19 +2,14 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
-import { Range3d } from "@bentley/geometry-core/lib/Range";
-import { RotMatrix } from "@bentley/geometry-core/lib/Transform";
-import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { SpatialViewState, ViewStatus, StandardView, StandardViewId, MarginPercent } from "@bentley/imodeljs-frontend/lib/ViewState";
+import { Point3d, Vector3d, YawPitchRollAngles, Range3d, Angle, RotMatrix } from "@bentley/geometry-core";
+import { SpatialViewDefinitionProps } from "@bentley/imodeljs-common";
 import * as path from "path";
-import { AuxCoordSystemSpatialState } from "@bentley/imodeljs-frontend/lib/AuxCoordSys";
-import { CategorySelectorState } from "@bentley/imodeljs-frontend/lib/CategorySelectorState";
 import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
-import { ModelSelectorState } from "@bentley/imodeljs-frontend/lib/ModelSelectorState";
-import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnection";
-import { DisplayStyle3dState } from "@bentley/imodeljs-frontend/lib/DisplayStyleState";
-import { SpatialViewDefinitionProps } from "@bentley/imodeljs-common/lib/ViewProps";
+import {
+  SpatialViewState, ViewStatus, StandardView, StandardViewId, MarginPercent, AuxCoordSystemSpatialState, CategorySelectorState,
+  ModelSelectorState, IModelConnection, DisplayStyle3dState,
+} from "@bentley/imodeljs-frontend";
 
 const iModelLocation = path.join(__dirname, "../../../backend/lib/test/assets/test.bim");
 

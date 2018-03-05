@@ -1,14 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelApp, iModelApp } from "@bentley/imodeljs-frontend/lib/IModelApp"; // must be first import!
-import { Tool } from "@bentley/imodeljs-frontend/lib/tools/Tool";
 import { assert } from "chai";
-import { AccuDraw } from "@bentley/imodeljs-frontend/lib/AccuDraw";
-import { IdleTool } from "@bentley/imodeljs-frontend/lib/tools/IdleTool";
-import { I18NNamespace } from "@bentley/imodeljs-frontend/lib/Localization";
-import { RotateTool, PanTool } from "@bentley/imodeljs-frontend/lib/tools/ViewTool";
-import { SelectionTool } from "@bentley/imodeljs-frontend/lib/tools/SelectTool";
+import { IModelApp, Tool, AccuDraw, IdleTool, I18NNamespace, RotateTool, PanTool, SelectionTool } from "@bentley/imodeljs-frontend";
 
 /** class to simulate overriding the default AccuDraw */
 class TestAccuDraw extends AccuDraw { }
@@ -29,12 +23,12 @@ class TestRotateTool extends RotateTool { }
 class TestSelectTool extends SelectionTool { }
 
 class TestApp extends IModelApp {
-  public testNamespace?: I18NNamespace;
+  public static testNamespace?: I18NNamespace;
 
-  protected onStartup() {
-    this._accuDraw = new TestAccuDraw();
+  protected static onStartup() {
+    IModelApp.accuDraw = new TestAccuDraw();
 
-    this.testNamespace = iModelApp.i18n.registerNamespace("TestApp");
+    this.testNamespace = IModelApp.i18n.registerNamespace("TestApp");
     TestImmediate.register(this.testNamespace);
     TestIdleTool.register();
     TestRotateTool.register();
@@ -44,11 +38,11 @@ class TestApp extends IModelApp {
     const testNull = class extends Tool { public static toolId = "Null.Tool"; public run() { testVal1 = "fromNullTool"; return true; } };
     testNull.register(this.testNamespace);
 
-    this.features.setGate("feature2", { a: true, b: false });
-    this.features.setGate("feature5", { val: { str1: "string1", doNot: false } });
+    IModelApp.features.setGate("feature2", { a: true, b: false });
+    IModelApp.features.setGate("feature5", { val: { str1: "string1", doNot: false } });
   }
 
-  protected supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
+  protected static supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
 }
 
 describe("IModelApp", () => {
@@ -56,62 +50,60 @@ describe("IModelApp", () => {
   after(() => TestApp.shutdown());
 
   it("TestApp should override correctly", () => {
-    assert.instanceOf(iModelApp, TestApp, "test app instance is valid");
-    assert.instanceOf(iModelApp.accuDraw, TestAccuDraw, "accudraw override");
-    assert.instanceOf(iModelApp.toolAdmin.idleTool, TestIdleTool, "idle tool override");
-    assert.isTrue(iModelApp.tools.run("Test.Immediate", "test1", "test2"), "immediate tool ran");
+    assert.instanceOf(IModelApp.accuDraw, TestAccuDraw, "accudraw override");
+    assert.instanceOf(IModelApp.toolAdmin.idleTool, TestIdleTool, "idle tool override");
+    assert.isTrue(IModelApp.tools.run("Test.Immediate", "test1", "test2"), "immediate tool ran");
     assert.equal(testVal1, "test1", "arg1 was correct");
     assert.equal(testVal2, "test2", "arg2 was correct");
-    assert.isFalse(iModelApp.tools.run("Not.Found"), "toolId is not registered");
-    assert.isTrue(iModelApp.tools.run("View.Pan"), "run view pan");
-    assert.instanceOf(iModelApp.toolAdmin.activeViewTool, PanTool, "pan tool is active");
+    assert.isFalse(IModelApp.tools.run("Not.Found"), "toolId is not registered");
+    assert.isTrue(IModelApp.tools.run("View.Pan"), "run view pan");
+    assert.instanceOf(IModelApp.toolAdmin.activeViewTool, PanTool, "pan tool is active");
 
-    assert.isUndefined(iModelApp.features.check("feature1.test1"));
-    assert.isTrue(iModelApp.features.check("feature2.a"));
-    assert.isFalse(iModelApp.features.check("feature2.b"));
-    assert.isFalse(iModelApp.features.check("feature5.val.doNot"));
-    assert.equal(iModelApp.features.check("feature5.val.str1"), "string1");
-    const feature5 = iModelApp.features.check("feature5");
+    assert.isUndefined(IModelApp.features.check("feature1.test1"));
+    assert.isTrue(IModelApp.features.check("feature2.a"));
+    assert.isFalse(IModelApp.features.check("feature2.b"));
+    assert.isFalse(IModelApp.features.check("feature5.val.doNot"));
+    assert.equal(IModelApp.features.check("feature5.val.str1"), "string1");
+    const feature5 = IModelApp.features.check("feature5");
     assert.equal(feature5.val.str1, "string1");
 
-    assert.isTrue(iModelApp.tools.run("Null.Tool"), "run null");
+    assert.isTrue(IModelApp.tools.run("Null.Tool"), "run null");
     assert.equal(testVal1, "fromNullTool");
 
-    iModelApp.features.setGate("feat2", false);
-    iModelApp.features.setGate("feat3.sub1.val.a", true);
-    iModelApp.features.setGate("feat3.sub1.val.b", { yes: true });
-    assert.isFalse(iModelApp.features.check("feat2"));
-    assert.equal(iModelApp.features.check("feat3.sub1.notHere", "hello"), "hello", "undefined features should use default value");
-    assert.isTrue(iModelApp.features.check("feat3.sub1.val.a"));
-    assert.isTrue(iModelApp.features.check("feat3.sub1.val.b.yes"));
+    IModelApp.features.setGate("feat2", false);
+    IModelApp.features.setGate("feat3.sub1.val.a", true);
+    IModelApp.features.setGate("feat3.sub1.val.b", { yes: true });
+    assert.isFalse(IModelApp.features.check("feat2"));
+    assert.equal(IModelApp.features.check("feat3.sub1.notHere", "hello"), "hello", "undefined features should use default value");
+    assert.isTrue(IModelApp.features.check("feat3.sub1.val.a"));
+    assert.isTrue(IModelApp.features.check("feat3.sub1.val.b.yes"));
   });
 
   it("Should get localized name for tools", async () => {
-    const thisApp = iModelApp as TestApp;
-    await thisApp.testNamespace!.readFinished;  // we must wait for the localization read to finish.
+    await TestApp.testNamespace!.readFinished;  // we must wait for the localization read to finish.
     assert.equal(TestImmediate.keyin, "Localized TestImmediate Keyin");
     // here we are testing to make sure we can override the Select command but the keyin comes from the superclass.
-    assert.isTrue(iModelApp.tools.run("Select"));
-    const select = iModelApp.toolAdmin.activePrimitiveTool as TestSelectTool;
+    assert.isTrue(IModelApp.tools.run("Select"));
+    const select = IModelApp.toolAdmin.activePrimitiveTool as TestSelectTool;
     assert.instanceOf(select, TestSelectTool, "test select tool is active");
     assert.equal(select.keyin, "Select Elements", "keyin comes from superclass");
   });
 
   it("Should do trivial localizations", () => {
     // we have "TrivialTest.Test1" as the key in TestApp.json
-    assert.equal(iModelApp.i18n.translate("TestApp:TrivialTests.Test1"), "Localized Trivial Test 1");
-    assert.equal(iModelApp.i18n.translate("TestApp:TrivialTests.Test2"), "Localized Trivial Test 2");
-    assert.equal(iModelApp.i18n.translate("LocateFailure.NoElements"), "No Elements Found", "message from default (iModelJs) namespace");
+    assert.equal(IModelApp.i18n.translate("TestApp:TrivialTests.Test1"), "Localized Trivial Test 1");
+    assert.equal(IModelApp.i18n.translate("TestApp:TrivialTests.Test2"), "Localized Trivial Test 2");
+    assert.equal(IModelApp.i18n.translate("LocateFailure.NoElements"), "No Elements Found", "message from default (iModelJs) namespace");
   });
 
   it("Should return the key for localization keys that are missing", () => {
     // there is no key for TrivialTest.Test3
-    assert.equal(iModelApp.i18n.translate("TestApp:TrivialTests.Test3"), "TrivialTests.Test3");
+    assert.equal(IModelApp.i18n.translate("TestApp:TrivialTests.Test3"), "TrivialTests.Test3");
   });
 
   it("Should properly substitute the  values in localized strings with interpolations", () => {
-    assert.equal(iModelApp.i18n.translate("TestApp:SubstitutionTests.Test1", { varA: "Variable1", varB: "Variable2" }), "Substitute Variable1 and Variable2");
-    assert.equal(iModelApp.i18n.translate("TestApp:SubstitutionTests.Test2", { varA: "Variable1", varB: "Variable2" }), "Reverse substitute Variable2 and Variable1");
+    assert.equal(IModelApp.i18n.translate("TestApp:SubstitutionTests.Test1", { varA: "Variable1", varB: "Variable2" }), "Substitute Variable1 and Variable2");
+    assert.equal(IModelApp.i18n.translate("TestApp:SubstitutionTests.Test2", { varA: "Variable1", varB: "Variable2" }), "Reverse substitute Variable2 and Variable1");
   });
 
 });

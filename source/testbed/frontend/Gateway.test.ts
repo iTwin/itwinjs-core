@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Gateway } from "@bentley/imodeljs-common/lib/Gateway";
+import { Gateway } from "@bentley/imodeljs-common";
 import { TestGateway, TestOp1Params } from "../common/TestGateway";
 import { assert } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64 } from "@bentley/bentleyjs-core";
 
 const timeout = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

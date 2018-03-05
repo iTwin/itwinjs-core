@@ -4,3 +4,6 @@
 .npmignore
 tsconfig.json
 tslint.json
+.vscode
+*.log
+package-deps.json

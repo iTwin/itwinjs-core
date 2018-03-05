@@ -3,24 +3,19 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { expect, assert } from "chai";
-import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { OpenMode, DbOpcode, BeEvent } from "@bentley/bentleyjs-core";
 import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState } from "@bentley/imodeljs-clients";
-import { Code } from "@bentley/imodeljs-common/lib/Code";
-import { IModelVersion } from "@bentley/imodeljs-common/lib/IModelVersion";
+import { Code, IModelVersion, Appearance, ColorDef, IModel } from "@bentley/imodeljs-common";
 import { KeepBriefcase } from "../BriefcaseManager";
 import { IModelDb, ConcurrencyControl } from "../IModelDb";
-import { IModelTestUtils } from "./IModelTestUtils";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { IModelTestUtils, TestUsers } from "./IModelTestUtils";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { Element } from "../Element";
 import { DictionaryModel } from "../Model";
 import { SpatialCategory } from "../Category";
-import { Appearance } from "@bentley/imodeljs-common/lib/SubCategoryAppearance";
-import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
-import { IModel } from "@bentley/imodeljs-common/lib/IModel";
 import { IModelJsFs } from "../IModelJsFs";
 import { iModelHost } from "../IModelHost";
 import { AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../AutoPush";
-import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
@@ -36,6 +31,28 @@ class Timer {
     // tslint:disable-next-line:no-console
     console.timeEnd(this.label);
   }
+}
+
+async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: AccessToken) {
+  // Create a new physical model.
+  let modelId: Id64;
+  [, modelId] = IModelTestUtils.createAndInsertPhysicalModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
+
+  // Find or create a SpatialCategory.
+  const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
+  const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
+  const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+
+  // Reserve all of the codes that are required by the new model and category.
+  try {
+    await rwIModel.concurrencyControl.request(accessToken);
+  } catch (err) {
+    if (err instanceof ConcurrencyControl.RequestError) {
+        assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
+    }
+  }
+
+  return {modelId, spatialCategoryId};
 }
 
 describe("BriefcaseManager", () => {
@@ -82,10 +99,130 @@ describe("BriefcaseManager", () => {
     console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
   });
 
+  it.skip("test change-merging scenarios", async () => {
+    const firstUser = accessToken;
+    const secondUser = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
+
+    const firstIModel: IModelDb = await IModelDb.open(firstUser, testProjectId, testIModelId, OpenMode.ReadWrite);
+    const secondIModel: IModelDb = await IModelDb.open(secondUser, testProjectId, testIModelId, OpenMode.ReadWrite);
+    assert.notEqual(firstIModel, secondIModel);
+
+    // Set up optimistic concurrency. Note the defaults are:
+    firstIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    secondIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+
+    // firstUser: create model, category, and element el1
+    const r: {modelId: Id64, spatialCategoryId: Id64} = await createNewModelAndCategory(firstIModel, firstUser);
+    const el1 = firstIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(firstIModel, r.modelId, r.spatialCategoryId));
+    // const el2 = firstIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(firstIModel, r.modelId, r.spatialCategoryId));
+    firstIModel.saveChanges("firstUser created model, category, and two elements");
+    await firstIModel.pushChanges(firstUser);
+
+    // secondUser: pull and merge
+    await secondIModel.pullAndMergeChanges(secondUser);
+
+    // --- Test 1: Overlapping changes that really are conflicts => conflict-resolution policy is applied ---
+
+    // firstUser: modify el1.userLabel
+    if (true) {
+      const el1cc = (firstIModel.elements.getElement(el1)).copyForEdit<Element>();
+      el1cc.userLabel = el1cc.userLabel + "changed by firstUser";
+      firstIModel.elements.updateElement(el1cc);
+      firstIModel.saveChanges("firstUser modified el1.userLabel");
+      await firstIModel.pushChanges(firstUser);
+    }
+
+    // secondUser: modify el1.userLabel
+    let expectedValueofEl1UserLabel: string;
+    if (true) {
+      const el1before = (secondIModel.elements.getElement(el1)).copyForEdit<Element>();
+      expectedValueofEl1UserLabel = el1before.userLabel + "changed by secondUser";
+      el1before.userLabel = expectedValueofEl1UserLabel;
+      secondIModel.elements.updateElement(el1before);
+      secondIModel.saveChanges("secondUser modified el1.userLabel");
+
+      // pull + merge => take secondUser's change (RejectIncomingChange). That's because the default updateVsUpdate settting is RejectIncomingChange
+      await secondIModel.pullAndMergeChanges(secondUser);
+      const el1after = secondIModel.elements.getElement(el1);
+      assert.equal(el1after.userLabel, expectedValueofEl1UserLabel);
+
+      await secondIModel.pushChanges(secondUser);
+    }
+
+    // firstUser: pull and see that secondUser has overridden my change
+    if (true) {
+      await firstIModel.pullAndMergeChanges(firstUser);
+      const elobj = firstIModel.elements.getElement(el1);
+      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
+    }
+
+    // --- Test 2: Overlapping changes that are not conflicts  ---
+
+    // firstUser: modify el1
+    if (true) {
+      const el1cc = (firstIModel.elements.getElement(el1)).copyForEdit<Element>();
+      expectedValueofEl1UserLabel = el1cc.userLabel + "changed again by firstUser";
+      el1cc.userLabel = expectedValueofEl1UserLabel;
+      firstIModel.elements.updateElement(el1cc);
+      firstIModel.saveChanges("firstUser modified el1.userLabel");
+      await firstIModel.pushChanges(firstUser);
+    }
+
+    // secondUser: modify el1
+    const secondUserPropNs = "secondUser";
+    const expectedValueOfSecondUserProp: string = "x";
+    if (true) {
+      const el1before = (secondIModel.elements.getElement(el1)).copyForEdit<Element>();
+      el1before.setUserProperties(secondUserPropNs, {property: expectedValueOfSecondUserProp});
+      secondIModel.elements.updateElement(el1before);
+      secondIModel.saveChanges("secondUser modified el1.userProperties");
+
+      // pull + merge => no conflict + both changes should be intact
+      await secondIModel.pullAndMergeChanges(secondUser);
+      const el1after = secondIModel.elements.getElement(el1);
+      assert.equal(el1after.userLabel, expectedValueofEl1UserLabel);
+      assert.equal(el1after.getUserProperties(secondUserPropNs).property, expectedValueOfSecondUserProp);
+
+      await secondIModel.pushChanges(secondUser);
+    }
+
+    // firstUser: pull and see that both changes
+    if (true) {
+      await firstIModel.pullAndMergeChanges(firstUser);
+      const elobj = firstIModel.elements.getElement(el1);
+      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
+      assert.equal(elobj.getUserProperties("secondUser").secondUser, "x");
+    }
+
+    // --- Test 1: Non-overlapping changes ---
+
+  });
+
   it("should be able to open an IModel from the Hub in Readonly mode", async () => {
+    let onOpenCalled: boolean = false;
+    const onOpenListener = (accessTokenIn: AccessToken, contextIdIn: string, iModelIdIn: string, openModeIn: OpenMode, _versionIn: IModelVersion) => {
+      onOpenCalled = true;
+      assert.deepEqual(accessTokenIn, accessToken);
+      assert.equal(contextIdIn, testProjectId);
+      assert.equal(iModelIdIn, testIModelId);
+      assert.equal(openModeIn, OpenMode.Readonly);
+    };
+    IModelDb.onOpen.addListener(onOpenListener);
+    let onOpenedCalled: boolean = false;
+    const onOpenedListener = (iModelDb: IModelDb) => {
+      onOpenedCalled = true;
+      assert.equal(iModelDb.iModelToken.iModelId, testIModelId);
+    };
+    IModelDb.onOpened.addListener(onOpenedListener);
+
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
     assert.exists(iModel);
     assert(iModel.iModelToken.openMode === OpenMode.Readonly);
+
+    assert.isTrue(onOpenedCalled);
+    assert.isTrue(onOpenCalled);
+    IModelDb.onOpen.removeListener(onOpenListener);
+    IModelDb.onOpened.removeListener(onOpenedListener);
 
     expect(IModelJsFs.existsSync(iModelLocalReadonlyPath));
     const files = IModelJsFs.readdirSync(iModelLocalReadonlyPath);
@@ -261,7 +398,7 @@ describe("BriefcaseManager", () => {
 
     assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests());
 
-    rwIModel.saveChanges(JSON.stringify({userid: "user1", description: "changed a userLabel"}));  // save it, to show that saveChanges will accumulate local txn descriptions
+    rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "changed a userLabel" }));  // save it, to show that saveChanges will accumulate local txn descriptions
 
     // Create a new physical model.
     let newModelId: Id64;
@@ -288,7 +425,7 @@ describe("BriefcaseManager", () => {
       await rwIModel.concurrencyControl.request(accessToken);
     } catch (err) {
       if (err instanceof ConcurrencyControl.RequestError) {
-          assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
+        assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
       }
     }
 
@@ -302,13 +439,13 @@ describe("BriefcaseManager", () => {
     const foundCode: MultiCode[] = codeStates.filter((cs) => cs.values!.includes(category.code.value!) && (cs.state === CodeState.Reserved));
     assert.equal(foundCode.length, 1);
 
-      /* NEEDS WORK - query just this one code
-    assert.isTrue(category.code.value !== undefined);
-    const codeStates2 = await iModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope, category.code.value!);
-    assert.equal(codeStates2.length, 1);
-    assert.equal(codeStates2[0].values.length, 1);
-    assert.equal(codeStates2[0].values[0], category.code.value!);
-    */
+    /* NEEDS WORK - query just this one code
+  assert.isTrue(category.code.value !== undefined);
+  const codeStates2 = await iModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope, category.code.value!);
+  assert.equal(codeStates2.length, 1);
+  assert.equal(codeStates2[0].values.length, 1);
+  assert.equal(codeStates2[0].values[0], category.code.value!);
+  */
 
     timer.end();
 
@@ -320,7 +457,7 @@ describe("BriefcaseManager", () => {
 
     // Commit the local changes to a local transaction in the briefcase.
     // (Note that this ends the bulk operation automatically, so there's no need to call endBulkOperation.)
-    rwIModel.saveChanges(JSON.stringify({userid: "user1", description: "inserted generic objects"}));
+    rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "inserted generic objects" }));
 
     rwIModel.elements.getElement(elid1); // throws if elid1 is not found
     rwIModel.elements.getElement(spatialCategoryId); // throws if spatialCategoryId is not found
@@ -393,14 +530,14 @@ describe("BriefcaseManager", () => {
 
     const iModel = {
       pushChanges: async (_clientAccessToken: AccessToken) => {
-        await new Promise((resolve, _reject)  => { setTimeout(resolve, fakePushTimeRequired); }); // sleep, in order to simulate time spent doing push
+        await new Promise((resolve, _reject) => { setTimeout(resolve, fakePushTimeRequired); }); // sleep, in order to simulate time spent doing push
         lastPushTimeMillis = Date.now();
       },
       iModelToken: {
         changeSetId: "",
       },
       concurrencyControl: {
-        request: async (_clientAccessToken: AccessToken) => {},
+        request: async (_clientAccessToken: AccessToken) => { },
       },
       onBeforeClose: new BeEvent<() => void>(),
       Txns: {
@@ -411,7 +548,7 @@ describe("BriefcaseManager", () => {
     lastAutoPushEventType = undefined;
 
     // Create an autopush in manual-schedule mode.
-    const autoPush = new AutoPush(iModel as any, {pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false}, accessToken, activityMonitor);
+    const autoPush = new AutoPush(iModel as any, { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false }, accessToken, activityMonitor);
     assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
     assert.isFalse(autoPush.autoSchedule);
 
@@ -420,7 +557,7 @@ describe("BriefcaseManager", () => {
     assert.equal(autoPush.state, AutoPushState.Scheduled);
 
     // Wait long enough for the auto-push to happen
-    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); });
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); });
 
     // Verify that push happened during the time that I was asleep.
     assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to restart automatically");
@@ -443,7 +580,7 @@ describe("BriefcaseManager", () => {
     assert.equal(autoPush.state, AutoPushState.Scheduled);
 
     // wait long enough for the auto-push to happen
-    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); });
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); });
     assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
     assert.notEqual(lastPushTimeMillis, 0);
     assert.equal(lastAutoPushEventType, AutoPushEventType.PushFinished, "event handler should have been called");
@@ -454,13 +591,13 @@ describe("BriefcaseManager", () => {
     // Now turn on auto-schedule and verify that we get a few auto-pushes
     lastPushTimeMillis = 0;
     autoPush.autoSchedule = true;
-    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
     assert.notEqual(lastPushTimeMillis, 0);
     lastPushTimeMillis = 0;
-    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
     assert.notEqual(lastPushTimeMillis, 0);
     autoPush.cancel();
-    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
     assert(autoPush.state === AutoPushState.NotRunning);
     assert.isFalse(autoPush.autoSchedule, "cancel turns off autoSchedule");
 
@@ -468,7 +605,7 @@ describe("BriefcaseManager", () => {
     isIdle = false;
     lastPushTimeMillis = 0;
     autoPush.autoSchedule = true; // start running AutoPush...
-    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
     assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
     assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
     autoPush.cancel();
@@ -479,7 +616,7 @@ describe("BriefcaseManager", () => {
     lastPushTimeMillis = 0;
     autoPush.cancel();
     autoPush.autoSchedule = true; // start running AutoPush...
-    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
     assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
     assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
     autoPush.cancel();
@@ -487,7 +624,7 @@ describe("BriefcaseManager", () => {
     // ... now turn it back on
     iModel.Txns.hasLocalChanges = () => true;
     autoPush.autoSchedule = true; // start running AutoPush...
-    await new Promise((resolve, _reject)  => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
     assert.notEqual(lastPushTimeMillis, 0); // AutoPush should have run
 
   });

@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Transform } from "@bentley/geometry-core/lib/Transform";
-import { ViewFlags } from "@bentley/imodeljs-common/lib/Render";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { Transform } from "@bentley/geometry-core";
+import { ViewFlags } from "@bentley/imodeljs-common";
+import { assert } from "@bentley/bentleyjs-core";
 
 /**
  * Represents a branch node in the scene graph, with associated view flags and transform to be applied to

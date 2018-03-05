@@ -3,19 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import * as path from "path";
-import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { Code, CodeSpec, CodeScopeSpec } from "@bentley/imodeljs-common/lib/Code";
-import { EntityProps } from "@bentley/imodeljs-common/lib/EntityProps";
-import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
+import { DbResult, Guid, Id64 } from "@bentley/bentleyjs-core";
+import { Point3d } from "@bentley/geometry-core";
 import { Entity, EntityMetaData, PrimitiveTypeCode } from "../Entity";
 import { Model, DictionaryModel } from "../Model";
 import { Category, SubCategory, SpatialCategory } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
 import { BisCore } from "../BisCore";
 import { ECSqlStatement } from "../ECSqlStatement";
-import { GeometricElementProps } from "@bentley/imodeljs-common/lib/ElementProps";
 import {
   Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
   LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject,
@@ -23,14 +18,13 @@ import {
 import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
 import { IModelDb } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { ModelProps } from "@bentley/imodeljs-common/lib/ModelProps";
-import { AxisAlignedBox3d } from "@bentley/imodeljs-common/lib/geometry/Primitives";
-import { ElementGroupsMembers } from "../LinkTableRelationship";
-import { Appearance } from "@bentley/imodeljs-common/lib/SubCategoryAppearance";
-import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
-import { IModel } from "@bentley/imodeljs-common/lib/IModel";
+import {
+  GeometricElementProps, Code, CodeSpec, CodeScopeSpec, EntityProps, IModelError, IModelStatus, ModelProps, ViewDefinitionProps,
+  AxisAlignedBox3d, Appearance, ColorDef, IModel,
+  // FontType, FontMap,
+} from "@bentley/imodeljs-common";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { ViewDefinitionProps } from "@bentley/imodeljs-common/lib/ViewProps";
+import { ElementGroupsMembers } from "../LinkTableRelationship";
 
 // spell-checker: disable
 
@@ -86,6 +80,26 @@ describe("iModel", () => {
     assert.equal(elementClass!.name, "Element");
     assert.equal(categoryClass!.name, "Category");
   });
+
+  // disabled until build 10.1.0 of iModelJsNode module is available
+  // it.skip("FontMap", () => {
+  //   const fonts1 = imodel1.getFontMap();
+  //   assert.equal(fonts1.fonts.size, 4, "font map size should be 4");
+  //   assert.equal(FontType.TrueType, fonts1.getFont(1)!.type, "get font 1 type is TrueType");
+  //   assert.equal("Arial", fonts1.getFont(1)!.name, "get Font 1 name");
+  //   assert.equal(1, fonts1.getFont("Arial")!.id, "get Font 1, by name");
+  //   assert.equal(FontType.Rsc, fonts1.getFont(2)!.type, "get font 2 type is Rsc");
+  //   assert.equal("Font0", fonts1.getFont(2)!.name, "get Font 2 name");
+  //   assert.equal(2, fonts1.getFont("Font0")!.id, "get Font 2, by name");
+  //   assert.equal(FontType.Shx, fonts1.getFont(3)!.type, "get font 1 type is Shx");
+  //   assert.equal("ShxFont0", fonts1.getFont(3)!.name, "get Font 3 name");
+  //   assert.equal(3, fonts1.getFont("ShxFont0")!.id, "get Font 3, by name");
+  //   assert.equal(FontType.TrueType, fonts1.getFont(4)!.type, "get font 4 type is TrueType");
+  //   assert.equal("Calibri", fonts1.getFont(4)!.name, "get Font 4 name");
+  //   assert.equal(4, fonts1.getFont("Calibri")!.id, "get Font 3, by name");
+  //   assert.isUndefined(fonts1.getFont("notfound"), "attempt lookup of a font that should not be found");
+  //   assert.deepEqual(new FontMap(fonts1.toJSON()), fonts1, "toJSON on FontMap");
+  // });
 
   it("should load a known element by Id from an existing iModel", () => {
     assert.exists(imodel1.elements);
@@ -523,8 +537,8 @@ describe("iModel", () => {
     newExtents.high.x += 1087; newExtents.high.y += 19; newExtents.high.z += .001;
     imodel1.updateProjectExtents(newExtents);
 
-    assert.isDefined(imodel1.briefcaseEntry, "Briefcase info should be defined before getting iModel props");
-    const updatedProps = JSON.parse(imodel1.briefcaseEntry!.nativeDb.getIModelProps());
+    assert.isDefined(imodel1.briefcase, "Briefcase info should be defined before getting iModel props");
+    const updatedProps = JSON.parse(imodel1.briefcase!.nativeDb.getIModelProps());
     assert.isTrue(updatedProps.hasOwnProperty("projectExtents"), "Returned property JSON object has project extents");
     const updatedExtents = AxisAlignedBox3d.fromJSON(updatedProps.projectExtents);
     assert.isTrue(newExtents.isAlmostEqual(updatedExtents), "Project extents successfully updated in database");

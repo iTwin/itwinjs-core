@@ -31,7 +31,7 @@
   ],
   "eventHooks": {
     "postRushInstall": [
-      "echo postRushInstall"
+      "npm run clean"
     ]
   }
 }

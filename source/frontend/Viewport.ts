@@ -1,47 +1,40 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ } from "@bentley/geometry-core/lib/PointVector";
-import { Range3d } from "@bentley/geometry-core/lib/Range";
-import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
-import { Map4d, Point4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
-import { AxisOrder, Angle, AngleSweep } from "@bentley/geometry-core/lib/Geometry";
+import {
+  Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ, Arc3d, Range3d, AxisOrder, Angle, AngleSweep,
+  RotMatrix, Transform, Map4d, Point4d, Constant,
+} from "@bentley/geometry-core";
 import { ViewState, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
-import { Constant } from "@bentley/geometry-core/lib/Constant";
-import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core/lib/Time";
-import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
+import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@bentley/bentleyjs-core";
 import { BeButtonEvent, BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { DecorationList, Hilite, Camera } from "@bentley/imodeljs-common/lib/Render";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { HitDetail, SnapDetail, SnapMode } from "./HitDetail";
 import { DecorateContext } from "./ViewContext";
-import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
-import { Arc3d } from "@bentley/geometry-core/lib/curve/Arc3d";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
-import { Frustum, Npc, NpcCorners, NpcCenter } from "@bentley/imodeljs-common/lib/Frustum";
-import { Placement3dProps, Placement2dProps } from "@bentley/imodeljs-common/lib/ElementProps";
-import { iModelApp } from "./IModelApp";
-import { Placement2d, Placement3d } from "@bentley/imodeljs-common/lib/geometry/Primitives";
+import { DecorationList, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d } from "@bentley/imodeljs-common";
+import { IModelApp } from "./IModelApp";
 
 /** A rectangle in view coordinates. */
 export class ViewRect {
-  public constructor(public left: number = 0, public bottom: number = 0, public right: number = 0, public top: number = 0) { }
+  public constructor(public left = 0, public bottom = 0, public right = 0, public top = 0) { }
   public isNull(): boolean { return this.right < this.left || this.top < this.bottom; }
   public get width() { return this.right - this.left; }
   public get height() { return this.top - this.bottom; }
   public get aspect() { return this.isNull() ? 1.0 : this.width / this.height; }
   public get area() { return this.isNull() ? 0 : this.width * this.height; }
-  public init(left: number = 0, bottom: number = 0, right: number = 1, top: number = 1) { this.left = left, this.bottom = bottom, this.right = right, this.top = top; }
+  public init(left = 0, bottom = 0, right = 1, top = 1) { this.left = left, this.bottom = bottom, this.right = right, this.top = top; }
   public initFromPoint(low: XAndY, high: XAndY): void { this.init(low.x, low.y, high.x, high.y); }
   public initFromRange(input: LowAndHighXY): void { this.initFromPoint(input.low, input.high); }
 }
 
 /** the minimum and maximum values for the "depth" of a rectangle of screen space. Values are in "npc" so they will be between 0 and 1.0 */
 export class DepthRangeNpc {
-  constructor(public minimum: number = 0, public maximum: number = 1.0) { }
+  constructor(public minimum = 0, public maximum = 1.0) { }
   public middle(): number { return this.minimum + ((this.maximum - this.minimum) / 2.0); }
 }
 
@@ -217,8 +210,8 @@ export class Viewport {
   private static get2dFrustumDepth() { return Constant.oneMeter; }
 
   public isPointAdjustmentRequired(): boolean { return this.view.is3d(); }
-  public isSnapAdjustmentRequired(): boolean { return iModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
-  public isContextRotationRequired(): boolean { return iModelApp.toolAdmin.acsContextLock; }
+  public isSnapAdjustmentRequired(): boolean { return IModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
+  public isContextRotationRequired(): boolean { return IModelApp.toolAdmin.acsContextLock; }
 
   constructor(public canvas?: HTMLCanvasElement, private _view?: ViewState) { this.setCursor(); this.saveViewUndo(); }
 

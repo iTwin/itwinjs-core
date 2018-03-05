@@ -2,10 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { HitSource, HitDetail, HitList, SnapMode, SnapDetail, SubSelectionMode } from "./HitDetail";
-import { Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d } from "@bentley/geometry-core";
 import { Viewport } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
-import { iModelApp } from "./IModelApp";
+import { IModelApp } from "./IModelApp";
 
 // tslint:disable:variable-name
 
@@ -184,9 +184,9 @@ export class ElementLocateManager {
   /** return the current path from either the snapping logic or the pre-locating systems. */
   public getPreLocatedHit(): HitDetail | undefined {
     // NOTE: Check AccuSnap first as Tentative is used to build intersect snap. For normal snaps when a Tentative is active there should be no AccuSnap.
-    let preLocated = iModelApp.accuSnap.getHitAndList(this);
+    let preLocated = IModelApp.accuSnap.getHitAndList(this);
 
-    if (!preLocated && !!(preLocated = iModelApp.tentativePoint.getHitAndList(this))) {
+    if (!preLocated && !!(preLocated = IModelApp.tentativePoint.getHitAndList(this))) {
       const vp = preLocated.viewport!;
       this.picker.empty(); // Get new hit list at hit point; want reset to cycle hits using adjusted point location...
       this.picker.doPick(vp, preLocated.getHitPoint(), (vp.pixelsFromInches(this.getApertureInches()) / 2.0) + 1.5, this.options);
@@ -203,7 +203,7 @@ export class ElementLocateManager {
     const snaps: SnapMode[] = [];
 
     // The user's finger is likely to create unwanted AccuSnaps
-    if (HitSource.AccuSnap === source && !iModelApp.toolAdmin.isCurrentInputSourceMouse())
+    if (HitSource.AccuSnap === source && !IModelApp.toolAdmin.isCurrentInputSourceMouse())
       return snaps;
 
     // We need a snap mode UI!!! Removed center and intersection they were just obnoxious. -BB 06/2015
@@ -221,7 +221,7 @@ export class ElementLocateManager {
 
     hit.subSelectionMode = mode; // Set mode for flashing segments/entire element...
 
-    const tool = iModelApp.toolAdmin.activeTool;
+    const tool = IModelApp.toolAdmin.activeTool;
     if (!tool)
       return false;
 
@@ -237,7 +237,7 @@ export class ElementLocateManager {
     this.initLocateOptions();
     this.clear();
     this.getElementPicker().empty();
-    iModelApp.tentativePoint.clear(true);
+    IModelApp.tentativePoint.clear(true);
   }
 
   private _doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, vp: Viewport | undefined, mode: SubSelectionMode, filterHits: boolean): HitDetail | undefined {

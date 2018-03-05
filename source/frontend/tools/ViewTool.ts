@@ -3,16 +3,16 @@
  *--------------------------------------------------------------------------------------------*/
 import { BeButtonEvent, BeCursor, BeWheelEvent, CoordSource, BeGestureEvent, GestureInfo, InteractiveTool } from "./Tool";
 import { Viewport, CoordSystem, ViewRect } from "../Viewport";
-import { Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d } from "@bentley/geometry-core/lib/PointVector";
-import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
-import { Range3d } from "@bentley/geometry-core/lib/Range";
-import { Frustum, NpcCenter, Npc } from "@bentley/imodeljs-common/lib/Frustum";
+import { Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d } from "@bentley/geometry-core";
+import { RotMatrix, Transform } from "@bentley/geometry-core";
+import { Range3d } from "@bentley/geometry-core";
+import { Frustum, NpcCenter, Npc } from "@bentley/imodeljs-common";
 import { MarginPercent, ViewStatus, ViewState3d } from "../ViewState";
-import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
-import { Angle } from "@bentley/geometry-core/lib/Geometry";
+import { BeDuration } from "@bentley/bentleyjs-core";
+import { Angle } from "@bentley/geometry-core";
 import { AccuDrawFlags } from "../AccuDraw";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
-import { iModelApp } from "../IModelApp";
+import { IModelApp } from "../IModelApp";
 
 const scratchFrustum = new Frustum();
 const scratchTransform1 = Transform.createIdentity();
@@ -36,7 +36,7 @@ export const enum ViewHandleType {
   ViewLook = 1 << 9,
 }
 
-export const enum HitPriority {
+export const enum VieManipPriority {
   Low = 1,
   Normal = 10,
   Medium = 100,
@@ -73,7 +73,7 @@ export abstract class ViewTool extends InteractiveTool {
   public beginDynamicUpdate() { this.inDynamicUpdate = true; }
   public endDynamicUpdate() { this.inDynamicUpdate = false; }
   public run(): boolean {
-    const toolAdmin = iModelApp.toolAdmin;
+    const toolAdmin = IModelApp.toolAdmin;
     if (!toolAdmin.onInstallTool(this))
       return false;
 
@@ -87,7 +87,7 @@ export abstract class ViewTool extends InteractiveTool {
   public onResetButtonUp(_ev: BeButtonEvent) { this.exitTool(); return true; }
 
   /** Do not override. */
-  public exitTool(): void { iModelApp.toolAdmin.exitViewTool(); }
+  public exitTool(): void { IModelApp.toolAdmin.exitViewTool(); }
 }
 
 export abstract class ViewingToolHandle {
@@ -100,9 +100,9 @@ export abstract class ViewingToolHandle {
   public getHandleCursor(): BeCursor { return BeCursor.Default; }
   public abstract doManipulation(ev: BeButtonEvent, inDynamics: boolean): boolean;
   public abstract firstPoint(ev: BeButtonEvent): boolean;
-  public abstract testHandleForHit(ptScreen: Point3d): { distance: number, priority: HitPriority } | undefined;
+  public abstract testHandleForHit(ptScreen: Point3d): { distance: number, priority: VieManipPriority } | undefined;
   public abstract get handleType(): ViewHandleType;
-  public focusIn(): void { iModelApp.toolAdmin.viewCursor = this.getHandleCursor(); }
+  public focusIn(): void { IModelApp.toolAdmin.viewCursor = this.getHandleCursor(); }
 }
 
 export class ViewHandleArray {
@@ -130,7 +130,7 @@ export class ViewHandleArray {
     this.hitHandleIndex = -1;
     let minDistance = 0.0;
     let minDistValid = false;
-    let highestPriority = HitPriority.Low;
+    let highestPriority = VieManipPriority.Low;
     let nearestHitHandle: ViewingToolHandle | undefined;
 
     for (let i = 0; i < this.count; ++i) {
@@ -249,7 +249,7 @@ export abstract class ViewManip extends ViewTool {
   }
 
   public onReinitialize(): void {
-    iModelApp.toolAdmin.gesturePending = false;
+    IModelApp.toolAdmin.gesturePending = false;
     if (this.viewport) {
       this.viewport.synchWithView(true); // make sure we store any changes in view undo buffer.
       this.viewHandles.setFocus(-1);
@@ -311,7 +311,7 @@ export abstract class ViewManip extends ViewTool {
       ev.coordsFrom = CoordSource.Precision; // don't want raw point used...
     }
 
-    iModelApp.toolAdmin.processWheelEvent(ev, false);
+    IModelApp.toolAdmin.processWheelEvent(ev, false);
     this.doUpdate(true);
     return true;
   }
@@ -320,7 +320,7 @@ export abstract class ViewManip extends ViewTool {
     this.isDragOperation = true;
     this.stoppedOverHandle = false;
 
-    iModelApp.toolAdmin.gesturePending = false;
+    IModelApp.toolAdmin.gesturePending = false;
     if (0 === this.nPts)
       this.onDataButtonDown(ev);
 
@@ -575,7 +575,7 @@ export abstract class ViewManip extends ViewTool {
     const viewPt = vp.worldToView(this.targetCenterWorld, scratchPoint3d1);
     const ev = new BeButtonEvent();
     ev.initEvent(this.targetCenterWorld, this.targetCenterWorld, viewPt, vp, CoordSource.User, 0);
-    iModelApp.toolAdmin.setAdjustedDataPoint(ev);
+    IModelApp.toolAdmin.setAdjustedDataPoint(ev);
     ev.reset();
   }
 
@@ -753,10 +753,10 @@ class ViewPan extends ViewingToolHandle {
   public onReinitialize() {
     const vha = this.viewTool.viewHandles.hitHandle;
     if (vha === this)
-      iModelApp.toolAdmin.viewCursor = this.getHandleCursor();
+      IModelApp.toolAdmin.viewCursor = this.getHandleCursor();
   }
 
-  public testHandleForHit(_ptScreen: Point3d) { return { distance: 0.0, priority: HitPriority.Low }; }
+  public testHandleForHit(_ptScreen: Point3d) { return { distance: 0.0, priority: VieManipPriority.Low }; }
 
   public doPan(newPtWorld: Point3d) {
     const vp = this.viewTool.viewport!;
@@ -788,18 +788,18 @@ class ViewRotate extends ViewingToolHandle {
     const tool = this.viewTool;
     const targetPt = tool.viewport!.worldToView(tool.targetCenterWorld);
     const dist = targetPt.distanceXY(ptScreen);
-    return { distance: dist, priority: HitPriority.Normal };
+    return { distance: dist, priority: VieManipPriority.Normal };
   }
 
   public firstPoint(ev: BeButtonEvent) {
-    if (iModelApp.toolAdmin.gesturePending)
+    if (IModelApp.toolAdmin.gesturePending)
       return false;
 
     const tool = this.viewTool;
     const vp = tool.viewport!;
 
     let pickPt = ev.rawPoint; // Use raw point when AccuDraw is not active, don't want tentative location...
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     if (accudraw.isActive()) {
       const aDrawOrigin = accudraw.origin;
       const aDrawMatrix = accudraw.getRotation();
@@ -1120,7 +1120,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
 
   public getMaxLinearVelocity() { return ViewToolSettings.walkVelocity; }
   public getMaxAngularVelocity() { return Math.PI / 4; }
-  public testHandleForHit(_ptScreen: Point3d) { return { distance: 0.0, priority: HitPriority.Low }; }
+  public testHandleForHit(_ptScreen: Point3d) { return { distance: 0.0, priority: VieManipPriority.Low }; }
 
   public getInputVector(result?: Vector3d): Vector3d {
     const inputDeadZone = 5.0;
@@ -1160,7 +1160,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
   }
 
   public getNavigateMode(): NavigateMode {
-    const state = iModelApp.toolAdmin.currentInputState;
+    const state = IModelApp.toolAdmin.currentInputState;
     if (state.isShiftDown || !this.viewTool.viewport!.isCameraOn())
       return NavigateMode.Pan;
     return state.isControlDown ? NavigateMode.Look : NavigateMode.Travel;
@@ -1520,8 +1520,8 @@ export class WindowAreaTool extends ViewTool {
     // this.overlay.visible = false;
   }
 
-  public onSingleFingerMove(ev: BeGestureEvent): boolean { iModelApp.toolAdmin.convertGestureMoveToButtonDownAndMotion(ev); return true; }
-  public onEndGesture(ev: BeGestureEvent): boolean { iModelApp.toolAdmin.convertGestureEndToButtonUp(ev); return true; }
+  public onSingleFingerMove(ev: BeGestureEvent): boolean { IModelApp.toolAdmin.convertGestureMoveToButtonDownAndMotion(ev); return true; }
+  public onEndGesture(ev: BeGestureEvent): boolean { IModelApp.toolAdmin.convertGestureEndToButtonUp(ev); return true; }
 }
 
 /** tool that handles gestures */
@@ -1819,7 +1819,7 @@ export class ViewScrollTool extends ViewManip {
 
 export abstract class InputCollector extends InteractiveTool {
   public run(): boolean {
-    const toolAdmin = iModelApp.toolAdmin;
+    const toolAdmin = IModelApp.toolAdmin;
     // An input collector can only suspend a primitive tool, don't install if a viewing tool is active...
     if (!toolAdmin.activeViewTool || !toolAdmin.onInstallTool(this))
       return false;
@@ -1830,6 +1830,6 @@ export abstract class InputCollector extends InteractiveTool {
     return true;
   }
 
-  public exitTool() { iModelApp.toolAdmin.exitInputCollector(); }
+  public exitTool() { IModelApp.toolAdmin.exitInputCollector(); }
   public onResetButtonUp(_ev: BeButtonEvent) { this.exitTool(); return true; }
 }

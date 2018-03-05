@@ -2,25 +2,23 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
-import { ConnectClient, Project, IModelHubClient, Briefcase, DeploymentEnv } from "@bentley/imodeljs-clients";
-import { Code } from "@bentley/imodeljs-common/lib/Code";
-import { Gateway } from "@bentley/imodeljs-common/lib/Gateway";
+import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
+import {
+  AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient,
+  ConnectClient, Project, IModelHubClient, Briefcase, DeploymentEnv,
+} from "@bentley/imodeljs-clients";
 import { Element, InformationPartitionElement } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { AddonRegistry } from "../AddonRegistry";
 import { IModelGateway } from "@bentley/imodeljs-common/lib/gateway/IModelGateway";
-import { ElementProps, GeometricElementProps } from "@bentley/imodeljs-common/lib/ElementProps";
+import { Code, Gateway, ElementProps, GeometricElementProps, Appearance } from "@bentley/imodeljs-common";
 import { DefinitionModel, Model } from "../Model";
 import { SpatialCategory } from "../Category";
-import { Appearance } from "@bentley/imodeljs-common/lib/SubCategoryAppearance";
 import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelHostConfiguration, IModelHost, iModelHost } from "../IModelHost";
 import * as path from "path";
-// import { Logger, LogLevel } from "@bentley/bentleyjs-core/lib/Logger";
+// import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 
 // Logger.initializeToConsole();
 // Logger.setLevel("Performance", LogLevel.Info);
@@ -40,6 +38,52 @@ export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;
   enableTransactions?: boolean;
   openMode?: OpenMode;
+}
+
+/** Credentials for test users */
+export interface UserCredentials {
+  email: string;
+  password: string;
+}
+
+/** Test users with various permissions */
+export class TestUsers {
+  /** User with the typical permissions of the regular/average user - Co-Admin: No, Connect-Services-Admin: No */
+  public static readonly regular: UserCredentials = {
+    email: "Regular.IModelJsTestUser@mailinator.com",
+    password: "Regular@iMJs",
+  };
+
+  /** User with typical permissions of the project administrator - Co-Admin: Yes, Connect-Services-Admin: No */
+  public static readonly manager: UserCredentials = {
+    email: "Manager.IModelJsTestUser@mailinator.com",
+    password: "Manager@iMJs",
+  };
+
+  /** User with the typical permissions of the connected services administrator - Co-Admin: No, Connect-Services-Admin: Yes */
+  public static readonly super: UserCredentials = {
+    email: "Super.IModelJsTestUser@mailinator.com",
+    password: "Super@iMJs",
+  };
+
+  /** User with the typical permissions of the connected services administrator - Co-Admin: Yes, Connect-Services-Admin: Yes */
+  public static readonly superManager: UserCredentials = {
+    email: "SuperManager.IModelJsTestUser@mailinator.com",
+    password: "SuperManager@iMJs",
+  };
+
+  /** Just another user */
+  public static readonly user1: UserCredentials = {
+    email: "bistroDEV_pmadm1@mailinator.com",
+    password: "pmadm1",
+  };
+
+  /** Just another user */
+  public static readonly user2: UserCredentials = {
+    email: "bentleyvilnius@gmail.com",
+    password: "Q!w2e3r4t5",
+  };
+
 }
 
 export class IModelTestUtils {
@@ -86,11 +130,14 @@ export class IModelTestUtils {
     IModelTestUtils._hubClient = new IModelHubClient(deployConfig);
   }
 
-  public static async getTestUserAccessToken(): Promise<AccessToken> {
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient("QA")).getToken(IModelTestUtils.user.email, IModelTestUtils.user.password);
+  public static async getTestUserAccessToken(userCredentials?: any): Promise<AccessToken> {
+    if (userCredentials === undefined)
+      userCredentials = IModelTestUtils.user;
+    const env = IModelTestUtils._iModelHubDeployConfig;
+    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(env)).getToken(userCredentials.email, userCredentials.password);
     assert(authToken);
 
-    const accessToken = await (new ImsDelegationSecureTokenClient("QA")).getToken(authToken!);
+    const accessToken = await (new ImsDelegationSecureTokenClient(env)).getToken(authToken!);
     assert(accessToken);
 
     return accessToken;
@@ -277,7 +324,7 @@ export class IModelTestUtils {
   }
 
   public static startBackend() {
-    IModelTestUtils.iModelHubDeployConfig = "QA";
+    IModelTestUtils.iModelHubDeployConfig = IModelTestUtils._iModelHubDeployConfig;
     IModelHost.startup(new IModelHostConfiguration());
   }
 }

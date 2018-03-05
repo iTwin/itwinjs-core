@@ -1,9 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { LinePixels } from "@bentley/imodeljs-common/lib/Render";
-import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
-import { Id64, Id64Set } from "@bentley/bentleyjs-core/lib/Id";
+import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
+import { Id64, Id64Set } from "@bentley/bentleyjs-core";
 import { Cloneable } from "./Utility";
 
 export namespace FeatureSymbology {
@@ -27,7 +26,7 @@ export namespace FeatureSymbology {
     public set alpha(alpha: number) { this.flags.alpha = true; this._color.setAlpha(alpha); }
 
     public get transparency(): number { return (255 - this._color.getAlpha() / 255); }
-    public set transparency(t: number) { this._color.setAlpha(new Uint8Array([ (1 - t) * 255 ])[0]); }
+    public set transparency(t: number) { this._color.setAlpha(new Uint8Array([(1 - t) * 255])[0]); }
 
     public get weight(): number { return this._weight; }
     public set weight(w: number) { this.flags.weight = true; this._weight = w; }

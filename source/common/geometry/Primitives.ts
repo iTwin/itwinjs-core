@@ -1,17 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Point2d, Point3d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, LowAndHighXY } from "@bentley/geometry-core/lib/PointVector";
-import { Range2d, Range3d} from "@bentley/geometry-core/lib/Range";
-import { Transform, RotMatrix} from "@bentley/geometry-core/lib/Transform";
-import { CurveCollection } from "@bentley/geometry-core/lib/curve/CurveChain";
-import { BSplineSurface3d } from "@bentley/geometry-core/lib/bspline/BSplineSurface";
-import { GeometryQuery, CurvePrimitive } from "@bentley/geometry-core/lib/curve/CurvePrimitive";
-import { SolidPrimitive } from "@bentley/geometry-core/lib/solid/SolidPrimitive";
-import { IndexedPolyface } from "@bentley/geometry-core/lib/polyface/Polyface";
-import { PointString3d } from "@bentley/geometry-core/lib/curve/PointString3d";
-import { AxisOrder, Angle } from "@bentley/geometry-core/lib/Geometry";
-import { Constant } from "@bentley/geometry-core/lib/Constant";
+import {
+  Point2d, Point3d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, LowAndHighXY,
+  Range2d, Range3d, AxisOrder, Angle, Transform, RotMatrix, CurveCollection, Constant,
+  GeometryQuery, CurvePrimitive, SolidPrimitive, BSplineSurface3d, IndexedPolyface, PointString3d,
+} from "@bentley/geometry-core";
 import { Placement2dProps, Placement3dProps } from "../ElementProps";
 
 export enum GeometryType {

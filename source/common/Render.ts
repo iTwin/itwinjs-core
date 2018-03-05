@@ -1,18 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
+import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { ColorDef } from "./ColorDef";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { DgnFB } from "./geometry/ElementGraphicsSchema";
 import { IModel } from "./IModel";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { Point3d, XYAndZ } from "@bentley/geometry-core/lib/PointVector";
-import { Transform } from "@bentley/geometry-core/lib/Transform";
+import { Point3d, XYAndZ, Transform, Angle } from "@bentley/geometry-core";
 import { PatternParams } from "./geometry/AreaPattern";
 import { LineStyleInfo } from "./geometry/LineStyle";
 import { CameraProps } from "./ViewProps";
-import { Angle } from "@bentley/geometry-core/lib/Geometry";
 
 export const enum RenderMode {
   Wireframe = 0,
@@ -703,7 +699,7 @@ export const enum GeometryClass {
  * Describes a "feature" within a batched Graphic. A batched Graphic can
  * contain multiple features. Each feature is associated with a unique combination of
  * attributes (element ID, subcategory, geometry class). This allows geometry to be
- * more efficiently batched on the GPU, while enabling features to be resymbolized
+ * more efficiently batched on the GPU, while enabling features to be re-symbolized
  * individually.
  *
  * As a simple example, a single mesh primitive may contain geometry for 3 elements,
@@ -715,7 +711,7 @@ export const enum GeometryClass {
 export class Feature {
   public get isDefined(): boolean { return this.elementId.isValid() || this.subCategoryId.isValid() || this.geometryClass !== GeometryClass.Primary; }
   public get isUndefined(): boolean { return !this.isDefined; }
-  constructor(public readonly elementId: Id64, public readonly subCategoryId: Id64, public readonly geometryClass: GeometryClass = GeometryClass.Primary) {}
+  constructor(public readonly elementId: Id64, public readonly subCategoryId: Id64, public readonly geometryClass: GeometryClass = GeometryClass.Primary) { }
   public equals(other: Feature): boolean { return this.isUndefined && other.isUndefined ? true : this.elementId.equals(other.elementId) && this.subCategoryId.equals(other.subCategoryId) && this.geometryClass === other.geometryClass; }
 }
 
@@ -730,14 +726,14 @@ export class FeatureTable {
   public get size(): number { return this.map.size; }
   public get isFull(): boolean { assert(this.size <= this.maxFeatures); return this.size >= this.maxFeatures; }
   public get isUniform(): boolean { return this.size === 1; }
-  public get numIndices(): number { return new Uint32Array([ this.size ])[0]; }
+  public get numIndices(): number { return new Uint32Array([this.size])[0]; }
   public get anyDefined(): boolean { return this.size > 1 || (this.isUniform && Array.from(this.map.values())[0].isDefined); }
   constructor(public readonly maxFeatures: number,
-              public readonly modelId = new Id64(),
-              public readonly map: Map<number, Feature> = new Map<number, Feature>()) {}
-/**
- * returns index of feature, unless it doesn't exist, then the feature is added and its key, which is the current numIndices is returned
- */
+    public readonly modelId = new Id64(),
+    public readonly map: Map<number, Feature> = new Map<number, Feature>()) { }
+  /**
+   * returns index of feature, unless it doesn't exist, then the feature is added and its key, which is the current numIndices is returned
+   */
   public getIndex(feature: Feature): number {
     assert(!this.isFull);
     let key = this.findIndex(feature);
@@ -748,20 +744,20 @@ export class FeatureTable {
     }
     return key;
   }
-/**
- * Deviates from native source in the following ways: no index parameter since primitives are always pass by value in js,
- * consequently instead of returning a boolean and setting the index reference, the index value is returned, which will be -1 when
- * the feature isn't found, which is a common practice in js
- */
+  /**
+   * Deviates from native source in the following ways: no index parameter since primitives are always pass by value in js,
+   * consequently instead of returning a boolean and setting the index reference, the index value is returned, which will be -1 when
+   * the feature isn't found, which is a common practice in js
+   */
   public findIndex(feature: Feature): number {
     let index = -1;
     this.map.forEach((v, k) => { if (v.equals(feature)) index = k; });
     return index;
   }
-/**
- * Deviates from native source in the following ways: no feature parameter since the Feature's properties are readonly. Instead, the
- * feature corresponding to the index will be returned, which could be undefined if not found.
- */
+  /**
+   * Deviates from native source in the following ways: no feature parameter since the Feature's properties are readonly. Instead, the
+   * feature corresponding to the index will be returned, which could be undefined if not found.
+   */
   public findFeature(index: number): Feature | undefined { return this.map.get(index); }
   public clear(): void { this.map.clear(); }
   public static fromFeatureTable(table: FeatureTable): FeatureTable { return new FeatureTable(table.maxFeatures, table.modelId, table.map); }

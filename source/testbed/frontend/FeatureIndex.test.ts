@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ColorIndex } from "@bentley/imodeljs-frontend/lib/render/webgl/FeatureIndex";
-import { ColorDef } from "@bentley/imodeljs-common/lib/ColorDef";
+import { ColorIndex } from "@bentley/imodeljs-frontend/lib/rendering";
+import { ColorDef } from "@bentley/imodeljs-common";
 
 describe("ColorIndex", () => {
   it("should create, store and retrieve from ColorIndex", () => {
@@ -59,7 +59,7 @@ describe("ColorIndex", () => {
           "NonUniform ColorIndex has colors[" + i + "] of " + ci.nonUniform.colors[i].toString(16) + "but should be " + colors[i].toString(16));
         assert.isTrue(ci.nonUniform.indices[i] === indices[i],
           "NonUniform ColorIndex has indices[" + i + "] of " + ci.nonUniform.indices[i] + "but should be " + indices[i]);
-        }
+      }
     }
 
     ci.reset();
