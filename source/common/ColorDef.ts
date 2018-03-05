@@ -1,7 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
 // tslint:disable:variable-name
 // spell-checker: disable
 
@@ -162,9 +161,9 @@ const HSV_VALUE_WEIGHT = 2;
 
 /** a color defined by Hue, Saturation, and Lightness */
 export class HSLColor {
-  public h: number = 0; // hue
-  public s: number = 0; // saturation
-  public l: number = 0; // lightness
+  public h = 0; // hue
+  public s = 0; // saturation
+  public l = 0; // lightness
   public clone(): HSLColor { const out = new HSLColor(); out.h = this.h; out.s = this.s; out.l = this.l; return out; }
   public toColorDef(out?: ColorDef): ColorDef { return ColorDef.fromHSL(this.h, this.s, this.l, out); }
   public static fromColorDef(val: ColorDef, out?: HSLColor) { return val.toHSL(out); }
@@ -175,9 +174,9 @@ export class HSLColor {
  * @see https://en.wikipedia.org/wiki/HSL_and_HSV for difference between HSL and HSV
  */
 export class HSVColor {
-  public h: number = 0; // hue
-  public s: number = 0; // saturation
-  public v: number = 0; // Value
+  public h = 0; // hue
+  public s = 0; // saturation
+  public v = 0; // Value
   public clone(): HSVColor { const out = new HSVColor(); out.h = this.h; out.s = this.s; out.v = this.v; return out; }
   public toColorDef(out?: ColorDef): ColorDef { return ColorDef.fromHSV(this, out); }
   public static fromColorDef(val: ColorDef, out?: HSVColor) { return val.toHSV(out); }
@@ -274,6 +273,7 @@ export class ColorDef {
     out.fromString(json);
     return out;
   }
+
   /** initialize or create a ColorDef fromn R,G,B,T values. All values should be between 0-255 */
   public static from(red: number, green: number, blue: number, transparency?: number, result?: ColorDef): ColorDef {
     result = result ? result : new ColorDef();

@@ -4,7 +4,7 @@
 import { AccessToken, ChangeSet, UserInfo, IModelHubClient } from "@bentley/imodeljs-clients";
 import { ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { Id64, using, assert, PerfLogger, OpenMode, DbResult } from "@bentley/bentleyjs-core";
-import { iModelHost } from "./IModelHost";
+import { IModelHost } from "./IModelHost";
 import { IModelDb } from "./IModelDb";
 import { ECDb } from "./ECDb";
 import { IModelVersion, IModelError, IModelStatus } from "@bentley/imodeljs-common";
@@ -111,7 +111,7 @@ export class ChangeSummaryManager {
     perfLogger.dispose();
 
     perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos from Hub");
-    const hubClient = new IModelHubClient(iModelHost.configuration.iModelHubDeployConfig);
+    const hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig);
 
     const changeSetInfos: ChangeSet[] = await this.retrieveChangeSetInfos(hubClient, accessToken, iModelId, startChangeSetId, endChangeSetId);
     assert(startChangeSetId === undefined || startChangeSetId === changeSetInfos[0].wsgId);
