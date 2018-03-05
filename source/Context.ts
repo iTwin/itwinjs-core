@@ -4,7 +4,7 @@
 
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 import { SchemaKey, SchemaMatchType, SchemaChildKey } from "./ECObjects";
-import Schema from "./Metadata/Schema";
+import Schema, { MutableSchema } from "./Metadata/Schema";
 import SchemaChild from "./Metadata/SchemaChild";
 
 export class SchemaMap extends Array<Schema> { }
@@ -18,14 +18,6 @@ export interface ISchemaLocater {
 
 export interface ISchemaChildLocater {
   getSchemaChild<T extends SchemaChild>(schemaChildKey: SchemaChildKey): Promise<T | undefined>;
-}
-
-/**
- * Hackish approach that works like a "friend class" so we can access protected members without making them public.
- */
-abstract class MutableSchema extends Schema {
-  public abstract async addChild<T extends SchemaChild>(child: T): Promise<void>;
-  public abstract addChildSync<T extends SchemaChild>(child: T): void;
 }
 
 // export class SchemaChildReturn<T extends SchemaChild> {
