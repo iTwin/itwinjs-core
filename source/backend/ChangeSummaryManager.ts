@@ -186,7 +186,7 @@ export class ChangeSummaryManager {
     // getChangeSets does not retrieve the specified from-changeset itself, but only its direct child. So we must retrieve the from-changeset
     // ourselves first
     if (startChangeSetId !== undefined) {
-      const startChangeSetInfo: ChangeSet = await hubClient.getChangeSet(accessToken, iModelId, false, startChangeSetId);
+      const startChangeSetInfo: ChangeSet = await hubClient.getChangeSet(accessToken, iModelId, startChangeSetId, false);
       changeSetInfos.unshift(startChangeSetInfo);
     }
 
