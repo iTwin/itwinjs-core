@@ -373,7 +373,7 @@ export class BriefcaseManager {
     if (changeSetId === "")
       return 0; // the first version
     try {
-      const changeSet: ChangeSet = await BriefcaseManager.hubClient!.getChangeSet(accessToken, iModelId, false, changeSetId);
+      const changeSet: ChangeSet = await BriefcaseManager.hubClient!.getChangeSet(accessToken, iModelId, changeSetId, false);
       return +changeSet.index!;
     } catch (err) {
       assert(false, "Could not determine index of change set");
@@ -496,16 +496,13 @@ export class BriefcaseManager {
 
   /** Create a briefcase */
   private static async createBriefcase(accessToken: AccessToken, projectId: string, iModelId: string, openMode: OpenMode): Promise<BriefcaseEntry> {
-    const iModel: HubIModel = await BriefcaseManager.hubClient!.getIModel(accessToken, projectId, {
-      $select: "Name",
-      $filter: "$id+eq+'" + iModelId + "'",
-    });
+    const iModel: HubIModel = await BriefcaseManager.hubClient!.getIModel(accessToken, projectId, iModelId);
 
-    const seedFile: SeedFile = await BriefcaseManager.hubClient!.getSeedFile(accessToken, iModelId, true);
-    const downloadUrl = seedFile.downloadUrl!;
+    const seedFiles: SeedFile[] = (await BriefcaseManager.hubClient!.getSeedFiles(accessToken, iModelId, true, {$orderby: "Index+desc", $top: 1}));
+    const downloadUrl = seedFiles[0].downloadUrl!;
 
     const briefcase = new BriefcaseEntry();
-    briefcase.changeSetId = seedFile.mergedChangeSetId!;
+    briefcase.changeSetId = seedFiles[0].mergedChangeSetId!;
     briefcase.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, iModelId, briefcase.changeSetId);
     briefcase.iModelId = iModelId;
     briefcase.isOpen = false;

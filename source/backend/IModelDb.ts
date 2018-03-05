@@ -51,7 +51,14 @@ export class IModelDb extends IModel {
   public getFontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.briefcase!.nativeDb.readFontMap()) as FontMapProps)); }
 
   /** Event raised when a connected IModelDb is created or opened. This event is not raised for standalone IModelDbs. */
+  /** Event raised just before a connected IModelDb is opened. This event is raised only for iModel access initiated by this service only. This event is not raised for standalone IModelDbs. */
+  public static readonly onOpen = new BeEvent<(_accessToken: AccessToken, _contextId: string, _iModelId: string, _openMode: OpenMode, _version: IModelVersion) => void>();
+  /** Event raised just after a connected IModelDb is opened. This event is raised only for iModel access initiated by this service only. This event is not raised for standalone IModelDbs. */
   public static readonly onOpened = new BeEvent<(_imodelDb: IModelDb) => void>();
+  /** Event raised just before an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this service only. This event is not raised for standalone IModelDbs. */
+  public static readonly onCreate = new BeEvent<(_accessToken: AccessToken, _contextId: string, _hubName: string, _rootSubjectName: string, _hubDescription?: string, _rootSubjectDescription?: string) => void>();
+  /** Event raised just after an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this service only. This event is not raised for standalone IModelDbs. */
+  public static readonly onCreated = new BeEvent<(_imodelDb: IModelDb) => void>();
 
   /** @hidden */
   public briefcase?: BriefcaseEntry;
@@ -101,9 +108,10 @@ export class IModelDb extends IModel {
 
   /** Create an iModel on the Hub */
   public static async create(accessToken: AccessToken, contextId: string, hubName: string, rootSubjectName: string, hubDescription?: string, rootSubjectDescription?: string): Promise<IModelDb> {
+    IModelDb.onCreate.raiseEvent(accessToken, contextId, hubName, rootSubjectName, hubDescription, rootSubjectDescription);
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.create(accessToken, contextId, hubName, rootSubjectName, hubDescription, rootSubjectDescription);
     const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, contextId);
-    IModelDb.onOpened.raiseEvent(imodelDb);
+    IModelDb.onCreated.raiseEvent(imodelDb);
     return imodelDb;
   }
 
@@ -127,6 +135,7 @@ export class IModelDb extends IModel {
    * @param version Version of the iModel to open
    */
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.ReadWrite, version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
+    IModelDb.onOpen.raiseEvent(accessToken, contextId, iModelId, openMode, version);
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(accessToken, contextId, iModelId, openMode, version);
     Logger.logTrace(loggingCategory, "IModelDb.open", () => ({ iModelId, openMode }));
     const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, contextId);
