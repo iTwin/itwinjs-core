@@ -98,10 +98,9 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
    * @throws ECObjectsStatus DuplicateProperty: thrown if a property with the same name already exists in the class.
    */
-  public async createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
-  public async createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
-  public async createPrimitiveProperty(name: string, primitiveType?: string): Promise<Property>;
-  public async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property> {
+  protected async createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
+  protected async createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
+  protected async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
@@ -117,10 +116,9 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param name The name of property to create.
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
    */
-  public async createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveArrayProperty>;
-  public async createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
-  public async createPrimitiveArrayProperty(name: string, primitiveType?: string): Promise<Property>;
-  public async createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property> {
+  protected async createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveArrayProperty>;
+  protected async createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
+  protected async createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
@@ -136,7 +134,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param name The name of property to create.
    * @param structType The struct type of property to create.
    */
-  public async createStructProperty(name: string, structType: string | StructClass): Promise<StructProperty> {
+  protected async createStructProperty(name: string, structType: string | StructClass): Promise<StructProperty> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
@@ -149,7 +147,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
    * @param name
    * @param type
    */
-  public async createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty> {
+  protected async createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
@@ -226,4 +224,18 @@ export class StructClass extends ECClass {
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name, SchemaChildType.StructClass, modifier);
   }
+}
+
+/** @internal
+ * Hackish approach that works like a "friend class" so we can access protected members without making them public.
+ */
+export abstract class MutableClass extends ECClass {
+  public abstract async createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
+  public abstract async createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
+  public abstract async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property>;
+  public abstract async createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveArrayProperty>;
+  public abstract async createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
+  public abstract async createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property>;
+  public abstract async createStructProperty(name: string, structType: string | StructClass): Promise<StructProperty>;
+  public abstract async createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty>;
 }

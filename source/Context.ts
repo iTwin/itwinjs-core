@@ -20,6 +20,14 @@ export interface ISchemaChildLocater {
   getSchemaChild<T extends SchemaChild>(schemaChildKey: SchemaChildKey): Promise<T | undefined>;
 }
 
+/**
+ * Hackish approach that works like a "friend class" so we can access protected members without making them public.
+ */
+abstract class MutableSchema extends Schema {
+  public abstract async addChild<T extends SchemaChild>(child: T): Promise<void>;
+  public abstract addChildSync<T extends SchemaChild>(child: T): void;
+}
+
 // export class SchemaChildReturn<T extends SchemaChild> {
 //   private readonly _parent: SchemaChild;
 //   private _thisChild: T | undefined;
@@ -213,7 +221,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaChildLocater {
     if (!schema)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to add the schema child ${schemaChild.name} to the schema ${schemaChild.key.schemaKey.toString()} because the schema could not be located.`);
 
-    await schema.addChild(schemaChild);
+    await (schema as MutableSchema).addChild(schemaChild);
     return;
   }
 
