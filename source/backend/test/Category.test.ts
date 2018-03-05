@@ -3,8 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { ColorDef, ColorRgb } from "@bentley/imodeljs-common/lib/ColorDef";
-import { Appearance, AppearanceProps, SubCategoryOverride } from "@bentley/imodeljs-common/lib/SubCategoryAppearance";
+import { ColorDef, ColorRgb, Appearance, AppearanceProps, SubCategoryOverride } from "@bentley/imodeljs-common";
 
 describe("Category tests", () => {
 

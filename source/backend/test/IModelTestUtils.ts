@@ -2,20 +2,18 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { OpenMode } from "@bentley/bentleyjs-core";
-import { Id64 } from "@bentley/bentleyjs-core";
-import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
-import { ConnectClient, Project, IModelHubClient, Briefcase, DeploymentEnv } from "@bentley/imodeljs-clients";
-import { Code } from "@bentley/imodeljs-common/lib/Code";
-import { Gateway } from "@bentley/imodeljs-common/lib/Gateway";
+import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
+import {
+  AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient,
+  ConnectClient, Project, IModelHubClient, Briefcase, DeploymentEnv,
+} from "@bentley/imodeljs-clients";
 import { Element, InformationPartitionElement } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { AddonRegistry } from "../AddonRegistry";
 import { IModelGateway } from "@bentley/imodeljs-common/lib/gateway/IModelGateway";
-import { ElementProps, GeometricElementProps } from "@bentley/imodeljs-common/lib/ElementProps";
+import { Code, Gateway, ElementProps, GeometricElementProps, Appearance } from "@bentley/imodeljs-common";
 import { DefinitionModel, Model } from "../Model";
 import { SpatialCategory } from "../Category";
-import { Appearance } from "@bentley/imodeljs-common/lib/SubCategoryAppearance";
 import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelHostConfiguration, IModelHost, iModelHost } from "../IModelHost";

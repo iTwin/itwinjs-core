@@ -1,18 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { ColorDef } from "./ColorDef";
-import { Id64 } from "@bentley/bentleyjs-core";
 import { DgnFB } from "./geometry/ElementGraphicsSchema";
 import { IModel } from "./IModel";
-import { assert } from "@bentley/bentleyjs-core";
-import { Point3d, XYAndZ } from "@bentley/geometry-core/lib/PointVector";
-import { Transform } from "@bentley/geometry-core/lib/Transform";
+import { Point3d, XYAndZ, Transform, Angle } from "@bentley/geometry-core";
 import { PatternParams } from "./geometry/AreaPattern";
 import { LineStyleInfo } from "./geometry/LineStyle";
 import { CameraProps } from "./ViewProps";
-import { Angle } from "@bentley/geometry-core/lib/Geometry";
 
 export const enum RenderMode {
   Wireframe = 0,
@@ -703,7 +699,7 @@ export const enum GeometryClass {
  * Describes a "feature" within a batched Graphic. A batched Graphic can
  * contain multiple features. Each feature is associated with a unique combination of
  * attributes (element ID, subcategory, geometry class). This allows geometry to be
- * more efficiently batched on the GPU, while enabling features to be resymbolized
+ * more efficiently batched on the GPU, while enabling features to be re-symbolized
  * individually.
  *
  * As a simple example, a single mesh primitive may contain geometry for 3 elements,

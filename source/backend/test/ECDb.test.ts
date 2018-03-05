@@ -1,16 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
 import { assert } from "chai";
 import * as path from "path";
 import { ECDbTestHelper } from "./ECDbTestHelper";
-
-import { DbResult, OpenMode } from "@bentley/bentleyjs-core";
+import { DbResult, OpenMode, Id64, using } from "@bentley/bentleyjs-core";
 import { ECDb } from "../ECDb";
 import { ECSqlInsertResult } from "../ECSqlStatement";
-import { Id64 } from "@bentley/bentleyjs-core";
-import { using } from "@bentley/bentleyjs-core";
 import { KnownTestLocations } from "./KnownTestLocations";
 
 describe("ECDb", () => {

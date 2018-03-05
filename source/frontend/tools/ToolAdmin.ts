@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Point3d, Point2d, XAndY, Vector3d } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, Point2d, XAndY, Vector3d } from "@bentley/geometry-core";
 import { ViewStatus } from "../../frontend/ViewState";
 import { Viewport } from "../Viewport";
 import {
@@ -17,8 +17,8 @@ import { DecorateContext } from "../ViewContext";
 import { TentativeOrAccuSnap, AccuSnapToolState } from "../AccuSnap";
 import { HitDetail } from "../HitDetail";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
-import { NpcCenter } from "@bentley/imodeljs-common/lib/Frustum";
-import { iModelApp } from "../IModelApp";
+import { NpcCenter } from "@bentley/imodeljs-common";
+import { IModelApp } from "../IModelApp";
 
 export const enum CoordinateLockOverrides {
   None = 0,
@@ -42,12 +42,12 @@ export class SuspendedToolState {
   private shuttingDown = false;
 
   constructor() {
-    const toolAdmin = iModelApp.toolAdmin;
-    const viewManager = iModelApp.viewManager;
+    const toolAdmin = IModelApp.toolAdmin;
+    const viewManager = IModelApp.viewManager;
     toolAdmin.setIncompatibleViewportCursor(true); // Don't save this...
 
     this.toolState = toolAdmin.toolState.clone();
-    this.accuSnapState = iModelApp.accuSnap.toolState.clone();
+    this.accuSnapState = IModelApp.accuSnap.toolState.clone();
     this.viewCursor = viewManager.cursor;
     this.inDynamics = viewManager.inDynamicsMode;
     if (this.inDynamics)
@@ -58,12 +58,12 @@ export class SuspendedToolState {
     if (this.shuttingDown)
       return;
 
-    const toolAdmin = iModelApp.toolAdmin;
-    const viewManager = iModelApp.viewManager;
+    const toolAdmin = IModelApp.toolAdmin;
+    const viewManager = IModelApp.viewManager;
     toolAdmin.setIncompatibleViewportCursor(true); // Don't restore this...
 
     toolAdmin.toolState.setFrom(this.toolState);
-    iModelApp.accuSnap.toolState.setFrom(this.accuSnapState);
+    IModelApp.accuSnap.toolState.setFrom(this.accuSnapState);
     viewManager.cursor = this.viewCursor;
     if (this.inDynamics)
       viewManager.beginDynamicsMode();
@@ -187,10 +187,10 @@ export class CurrentInputState {
         from = snap.isHot() ? CoordSource.ElemSnap : CoordSource.User;
         uorPt = snap.getAdjustedPoint(); // NOTE: Updated by AdjustSnapPoint even when not hot...
         vp = snap.viewport;
-      } else if (iModelApp.tentativePoint.isActive) {
+      } else if (IModelApp.tentativePoint.isActive) {
         from = CoordSource.TentativePoint;
-        uorPt = iModelApp.tentativePoint.point;
-        vp = iModelApp.tentativePoint.viewport;
+        uorPt = IModelApp.tentativePoint.point;
+        vp = IModelApp.tentativePoint.viewport;
       }
     }
 
@@ -230,12 +230,12 @@ export class CurrentInputState {
     // NOTE: Using the hit point on the element is preferable to ignoring a snap that is not "hot" completely...
     if (TentativeOrAccuSnap.getCurrentSnap(false)) {
       if (applyLocks)
-        iModelApp.toolAdmin.adjustSnapPoint();
+        IModelApp.toolAdmin.adjustSnapPoint();
 
       return;
     }
 
-    iModelApp.toolAdmin.adjustPoint(this._uorPoint, vp, true, applyLocks);
+    IModelApp.toolAdmin.adjustPoint(this._uorPoint, vp, true, applyLocks);
   }
 
   public fromGesture(vp: Viewport, gestureInfo: GestureInfo, applyLocks: boolean) {
@@ -330,7 +330,7 @@ class WheelEventProcessor {
         vp.synchWithView(true);
 
       // AccuSnap hit won't be invalidated without cursor motion (closes info window, etc.).
-      iModelApp.accuSnap.clear();
+      IModelApp.accuSnap.clear();
     }
     return true;
   }
@@ -387,7 +387,7 @@ export class ToolAdmin {
   /** If ACS Plane Lock is on, standard view rotations are relative to the ACS instead of global. */
   public acsContextLock = false;
 
-  public onInitialized() { this._idleTool = iModelApp.tools.create("Idle") as IdleTool; }
+  public onInitialized() { this._idleTool = IModelApp.tools.create("Idle") as IdleTool; }
   public get idleTool(): IdleTool { return this._idleTool!; }
   protected filterViewport(_vp: Viewport) { return false; }
   public isCurrentInputSourceMouse() { return this.currentInputState.inputSource === InputSource.Mouse; }
@@ -422,7 +422,7 @@ export class ToolAdmin {
   /** called when a viewport is closed */
   public onViewportClosed(vp: Viewport): void {
     //  Closing the viewport may also delete the QueryModel so we have to prevent AccuSnap from trying to use it.
-    iModelApp.accuSnap.clear();
+    IModelApp.accuSnap.clear();
     this.currentInputState.clearViewport(vp);
   }
 
@@ -478,7 +478,7 @@ export class ToolAdmin {
         tool.onModelNoMotion(ev);
 
       if (InputSource.Mouse === current.inputSource) {
-        iModelApp.accuSnap.onNoMotion(ev);
+        IModelApp.accuSnap.onNoMotion(ev);
         // Application.accuDraw.onNoMotion(ev);
       }
     }
@@ -487,7 +487,7 @@ export class ToolAdmin {
       if (tool)
         tool.onModelMotionStopped(ev);
       if (InputSource.Mouse === current.inputSource) {
-        iModelApp.accuSnap.onMotionStopped(ev);
+        IModelApp.accuSnap.onMotionStopped(ev);
       }
     }
 
@@ -570,8 +570,8 @@ export class ToolAdmin {
 
     let handled = false;
 
-    if (applyLocks && !(iModelApp.tentativePoint.isActive || iModelApp.accuSnap.isHot()))
-      handled = iModelApp.accuDraw.adjustPoint(pointActive, vp, false);
+    if (applyLocks && !(IModelApp.tentativePoint.isActive || IModelApp.accuSnap.isHot()))
+      handled = IModelApp.accuDraw.adjustPoint(pointActive, vp, false);
 
     // NOTE: We don't need to support axis lock, it's worthless if you have AccuDraw...
     if (!handled && vp.isPointAdjustmentRequired()) {
@@ -587,7 +587,7 @@ export class ToolAdmin {
 
       // if grid lock changes point, resend point to accudraw
       if (handled && !pointActive.isExactEqual(savePoint))
-        iModelApp.accuDraw.adjustPoint(pointActive, vp, false);
+        IModelApp.accuDraw.adjustPoint(pointActive, vp, false);
     }
 
     if (Math.abs(pointActive.z) < 1.0e-7)
@@ -607,9 +607,9 @@ export class ToolAdmin {
     if (!isHot) // Want point adjusted to grid for a hit that isn't hot...
       this.adjustPointToGrid(point, vp);
 
-    if (!iModelApp.accuDraw.adjustPoint(point, vp, isHot)) {
+    if (!IModelApp.accuDraw.adjustPoint(point, vp, isHot)) {
       if (vp.isSnapAdjustmentRequired())
-        this.adjustPointToACS(point, vp, perpendicular || iModelApp.accuDraw.isActive());
+        this.adjustPointToACS(point, vp, perpendicular || IModelApp.accuDraw.isActive());
     }
 
     if (!point.isExactEqual(savePt))
@@ -630,13 +630,13 @@ export class ToolAdmin {
     }
 
     current.buttonDownTool = tool;
-    iModelApp.accuDraw.onPreDataButton(ev);
+    IModelApp.accuDraw.onPreDataButton(ev);
 
     if (tool)
       tool.onDataButtonDown(ev);
 
-    iModelApp.tentativePoint.onButtonEvent();
-    iModelApp.accuDraw.onPostDataButton(ev);
+    IModelApp.tentativePoint.onButtonEvent();
+    IModelApp.accuDraw.onPostDataButton(ev);
     if (!(tool instanceof PrimitiveTool))
       return;
 
@@ -838,7 +838,7 @@ export class ToolAdmin {
     if (tool)
       tool.onResetButtonUp(ev);
     ev.reset();
-    iModelApp.tentativePoint.onButtonEvent();
+    IModelApp.tentativePoint.onButtonEvent();
   }
 
   private scratchGestureEvent = new BeGestureEvent();
@@ -858,7 +858,7 @@ export class ToolAdmin {
       this.currentInputState.clearTouch();
     }
     ev.reset();
-    iModelApp.accuSnap.clear();
+    IModelApp.accuSnap.clear();
   }
 
   public onSingleFingerMove(vp: Viewport, gestureInfo: GestureInfo) {
@@ -969,7 +969,7 @@ export class ToolAdmin {
     const prevActiveTool = this.activeTool;
     if (this.primitiveTool) {
       this.primitiveTool.onCleanup();
-      iModelApp.viewManager.endDynamicsMode();
+      IModelApp.viewManager.endDynamicsMode();
     }
 
     this.primitiveTool = primitiveTool;
@@ -1025,7 +1025,7 @@ export class ToolAdmin {
     // this.suspendedCursor = undefined;
     this.setViewTool(undefined);
 
-    iModelApp.accuDraw.onViewToolExit();
+    IModelApp.accuDraw.onViewToolExit();
 
     const tool = this.activeTool;
     if (tool && tool instanceof PrimitiveTool) {
@@ -1041,7 +1041,7 @@ export class ToolAdmin {
     // else
     //   this.suspendedCursor = this.viewCursor;
 
-    iModelApp.accuSnap.onStartTool();
+    IModelApp.accuSnap.onStartTool();
 
     this.viewCursor = BeCursor.CrossHair;
     // we don't actually start the tool here...
@@ -1054,8 +1054,8 @@ export class ToolAdmin {
 
     // this.exitInputCollector();
     // this.setIncompatibleViewportCursor(true); // Don't restore this...
-    iModelApp.accuDraw.onPrimitiveToolInstall();
-    iModelApp.accuSnap.onStartTool();
+    IModelApp.accuDraw.onPrimitiveToolInstall();
+    IModelApp.accuSnap.onStartTool();
 
     this.viewCursor = newTool.getCursor();
 
@@ -1066,7 +1066,7 @@ export class ToolAdmin {
    * Starts the default tool, if any. Generally invoked automatically when other tools exit, so
    * shouldn't be called directly.
    */
-  public startDefaultTool() { iModelApp.tools.run(this.defaultTool); }
+  public startDefaultTool() { IModelApp.tools.run(this.defaultTool); }
 
   public get viewCursor() { return this._viewCursor; }
   public set viewCursor(cursor: BeCursor | undefined) {
@@ -1099,8 +1099,8 @@ export class ToolAdmin {
     if (ev.viewport !== viewport)
       return;
 
-    const hit = iModelApp.accuDraw.isActive ? undefined : iModelApp.accuSnap.currHit; // NOTE: Show surface normal until AccuDraw becomes active...
-    viewport.drawLocateCursor(context, ev.point, viewport.pixelsFromInches(iModelApp.locateManager.getApertureInches()), this.isLocateCircleOn(), hit);
+    const hit = IModelApp.accuDraw.isActive ? undefined : IModelApp.accuSnap.currHit; // NOTE: Show surface normal until AccuDraw becomes active...
+    viewport.drawLocateCursor(context, ev.point, viewport.pixelsFromInches(IModelApp.locateManager.getApertureInches()), this.isLocateCircleOn(), hit);
   }
 
   public isLocateCircleOn(): boolean {
@@ -1108,14 +1108,14 @@ export class ToolAdmin {
   }
 
   public beginDynamics(): void {
-    iModelApp.accuDraw.onBeginDynamics();
-    iModelApp.viewManager.beginDynamicsMode();
+    IModelApp.accuDraw.onBeginDynamics();
+    IModelApp.viewManager.beginDynamicsMode();
     // this.setLocateCursor(false);
   }
 
   public endDynamics(): void {
-    iModelApp.accuDraw.onEndDynamics();
-    iModelApp.viewManager.endDynamicsMode();
+    IModelApp.accuDraw.onEndDynamics();
+    IModelApp.viewManager.endDynamicsMode();
   }
 
   public fillEventFromCursorLocation(ev: BeButtonEvent) { this.currentInputState.toEvent(ev, true); }
@@ -1193,7 +1193,7 @@ export class ToolAdmin {
 
   public setLocateCircleOn(val: boolean) { if (!this.saveCursor) this.toolState.locateCircleOn = val; else this.saveLocateCircle = val; }
   public setLocateCursor(enableLocate: boolean): void {
-    const viewMan = iModelApp.viewManager;
+    const viewMan = IModelApp.viewManager;
     this.viewCursor = viewMan.inDynamicsMode ? BeCursor.Dynamics : BeCursor.CrossHair;
     this.setLocateCircleOn(enableLocate);
     viewMan.invalidateDecorationsAllViews();

@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Range1d, Range2d, Range3d } from "@bentley/geometry-core/lib/Range";
-import { XY, XYZ, XYAndZ, Point3d, Point2d } from "@bentley/geometry-core/lib/PointVector";
+import { Range1d, Range2d, Range3d } from "@bentley/geometry-core";
+import { XY, XYZ, XYAndZ, Point3d, Point2d } from "@bentley/geometry-core";
 import { Point, Range, PointUtil, RangeUtil } from "./Utility";
 import { Cloneable } from "./Utility";
 
@@ -12,7 +12,7 @@ const rangeScale = 0xffff;
 // encapsulates the pos, origin, and scale for each dimension of the Point, can apply a quantization routine
 export class QData {
   private _data: number[][];
-  constructor(pos: Point, origin: Point, scale: Point) { this.init.apply(this, [ pos, origin, scale ].map(PointUtil.toNumberArray)); }
+  constructor(pos: Point, origin: Point, scale: Point) { this.init.apply(this, [pos, origin, scale].map(PointUtil.toNumberArray)); }
   private init(pos: number[], origin: number[], scale: number[]) {
     this._data = pos.map((v, i) => [v, origin[i], scale[i]]);
   }
@@ -55,7 +55,7 @@ export class Quantizer {
     return new QData(pos, origin, scale).apply(ScalarQuantizer.unquantize);
   }
   public static unquantizeAboutCenter(pos: Point, origin: Point, scale: Point): Point {
-     return new QData(pos, origin, scale).apply(ScalarQuantizer.unquantizeAboutCenter);
+    return new QData(pos, origin, scale).apply(ScalarQuantizer.unquantizeAboutCenter);
   }
   public static applyFromRange(pt: Point, range: Range | QParamsBase, func: (pos: Point, origin: Point, scale: Point) => Point): Point {
     // if params are a range object, then convert them to a QParams object
@@ -71,7 +71,7 @@ export class Quantizer {
     return Quantizer.applyFromRange(pos, range, Quantizer.unquantize);
   }
   public static unquantizeAboutCenterFromRange(pos: Point, range: Range | QParamsBase): Point {
-     return Quantizer.applyFromRange(pos, range, Quantizer.unquantizeAboutCenter);
+    return Quantizer.applyFromRange(pos, range, Quantizer.unquantizeAboutCenter);
   }
   // take a number respresenting a position, origin, and scale, then return the quantized number
   public static computeScale(extents: Point): Point {
@@ -121,14 +121,14 @@ export class QParams2d extends QParams<XY, Range2d> {
   constructor(range: Range2d) { super(range); }
   public clone(): QParams2d { return new QParams2d(RangeUtil.clone(this.range) as Range2d); }
   public static fromDefaultRange(): QParams2d {
-    return new QParams2d(Range2d.createArray([ Point2d.create(0, 0), Point2d.create(1, 1) ]));
+    return new QParams2d(Range2d.createArray([Point2d.create(0, 0), Point2d.create(1, 1)]));
   }
 }
 export class QParams3d extends QParams<XYZ, Range3d> {
   constructor(range: Range3d) { super(range); }
   public clone(): QParams3d { return new QParams3d(RangeUtil.clone(this.range) as Range3d); }
   public static fromNormalizedRange(): QParams3d {
-    return new QParams3d(Range3d.createArray([ Point3d.create(-1, -1, -1), Point3d.create(1, 1, 1) ]));
+    return new QParams3d(Range3d.createArray([Point3d.create(-1, -1, -1), Point3d.create(1, 1, 1)]));
   }
 }
 
@@ -165,7 +165,7 @@ export abstract class QPoint<T extends Point, K extends Range> extends QPointBas
 export class QPoint1d extends QPoint<number, Range1d> implements Cloneable<QPoint1d> {
   public get x(): number { return this.data[0]; }
   public static fromPoint(pt: number): QPoint1d { return new QPoint1d(pt); }
-  public clone(): QPoint1d {  return new QPoint1d(PointUtil.clone(this.point) as number); }
+  public clone(): QPoint1d { return new QPoint1d(PointUtil.clone(this.point) as number); }
 }
 
 // Represents a DPoint2d quantized within some known range to a pair of 16-bit integers.
@@ -175,7 +175,7 @@ export class QPoint2d extends QPoint<XY, Range2d> implements Cloneable<QPoint2d>
   public get y(): number { return this.data[1]; }
   public static fromPoint(pt: XY): QPoint2d { return new QPoint2d(pt); }
   public static fromScalars(...scalars: number[]): QPoint2d { return new QPoint2d(PointUtil.toPoint(...scalars) as XY); }
-  public clone(): QPoint2d {  return new QPoint2d(PointUtil.clone(this.point) as XY); }
+  public clone(): QPoint2d { return new QPoint2d(PointUtil.clone(this.point) as XY); }
 }
 
 // Represents a DPoint3d quantized within some known range to a triplet of 16-bit
@@ -186,20 +186,20 @@ export class QPoint3d extends QPoint<XYZ, Range3d> implements XYAndZ, Cloneable<
   public get z(): number { return this.data[2]; }
   public static fromPoint(pt: XYZ): QPoint3d { return new QPoint3d(pt); }
   public static fromScalars(...scalars: number[]): QPoint3d { return new QPoint3d(PointUtil.toPoint(...scalars) as XYZ); }
-  public clone(): QPoint3d {  return new QPoint3d(PointUtil.clone(this.point) as XYZ); }
+  public clone(): QPoint3d { return new QPoint3d(PointUtil.clone(this.point) as XYZ); }
 }
 
 export class QPointFactory {
   public static createFromQRange(pt: Point, range: Range): QPointBase | undefined {
     if (PointUtil.isXYZ(pt) && RangeUtil.isRange3d(range)) return new QPoint3d(pt, range);
     if (PointUtil.isXY(pt) && RangeUtil.isRange2d(range)) return new QPoint2d(pt, range);
-    if (PointUtil.isNumber(pt)  && RangeUtil.isRange1d(range)) return new QPoint1d(pt, range);
+    if (PointUtil.isNumber(pt) && RangeUtil.isRange1d(range)) return new QPoint1d(pt, range);
     return undefined;
   }
   public static create(pt: Point, params: QParamsBase): QPointBase | undefined {
     if (PointUtil.isXYZ(pt) && params.is3d()) return new QPoint3d(pt, params);
     if (PointUtil.isXY(pt) && params.is2d()) return new QPoint2d(pt, params);
-    if (PointUtil.isNumber(pt)  && params.is1d()) return new QPoint1d(pt, params);
+    if (PointUtil.isNumber(pt) && params.is1d()) return new QPoint1d(pt, params);
     return undefined;
   }
 }
@@ -230,7 +230,7 @@ export class QPointList<Q extends QPointBase, P extends Point, R extends Range, 
     const qpt = QPointFactory.create(pt, this.params);
     if (!!qpt) this.pts.push(qpt as Q);
   }
-  public assign( pts: P[], params: R | K) {
+  public assign(pts: P[], params: R | K) {
     this.reset((RangeUtil.isRange(params) ? QParamsFactory.create(params)! : params) as K);
     pts.forEach((pt) => this.push(pt));
   }
@@ -254,7 +254,7 @@ export class QPointList<Q extends QPointBase, P extends Point, R extends Range, 
     const pt = this.pts[index];
     return !!pt ? pt.unquantize32(this.params) as P : undefined;
   }
-  public requantize( params: R | K) {
+  public requantize(params: R | K) {
     this.assign(this.unquantizeAll(), params);
   }
 }

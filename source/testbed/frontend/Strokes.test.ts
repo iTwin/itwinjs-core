@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { StrokesPointList, StrokesPointLists } from "@bentley/imodeljs-frontend/lib/render/primitives/Strokes";
+import { Point3d } from "@bentley/geometry-core";
+import { StrokesPointList, StrokesPointLists } from "@bentley/imodeljs-frontend/lib/rendering";
 
 describe("StrokesPointList", () => {
   it("StrokesPointList works as expected", () => {
@@ -18,7 +18,7 @@ describe("StrokesPointList", () => {
     assert.isTrue(b.rangeCenter.isExactEqual(center), "rangeCenter set correctly when constructor with just rangeCenter param used");
     assert.isTrue(b.points.length === 0, "points set correctly when constructor with just rangeCenter param used");
 
-    const points = [ new Point3d(1, 2, 3), new Point3d(2, 4, 5), new Point3d(6, 7, 8) ];
+    const points = [new Point3d(1, 2, 3), new Point3d(2, 4, 5), new Point3d(6, 7, 8)];
     const c = new StrokesPointList(undefined, center, points);
     assert.isTrue(c.startDistance === 0, "startDistance set correctly when constructor with just points param used");
     assert.isTrue(c.rangeCenter.isExactEqual(center), "rangeCenter set correctly when constructor with just points param used");
@@ -33,10 +33,10 @@ describe("StrokesPointLists", () => {
     const center = new Point3d(1, 2, 3);
     const b = new StrokesPointList(undefined, center);
 
-    const points = [ new Point3d(1, 2, 3), new Point3d(2, 4, 5), new Point3d(6, 7, 8) ];
+    const points = [new Point3d(1, 2, 3), new Point3d(2, 4, 5), new Point3d(6, 7, 8)];
     const c = new StrokesPointList(undefined, center, points);
 
-    const list = [ a, b, c ];
+    const list = [a, b, c];
     const strokesLists = new StrokesPointLists(a, b, c);
     expect(strokesLists).to.deep.equal(list);
   });

@@ -1,9 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Vector3d, Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { RotMatrix, Transform } from "@bentley/geometry-core/lib/Transform";
-import { Matrix4d } from "@bentley/geometry-core/lib/numerics/Geometry4d";
+import { Vector3d, Point3d, RotMatrix, Transform, Matrix4d } from "@bentley/geometry-core";
 import { assert } from "@bentley/bentleyjs-core";
 
 export class Matrix3 {

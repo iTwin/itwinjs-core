@@ -2,19 +2,13 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { SpatialViewState, ViewState, StandardViewId } from "@bentley/imodeljs-frontend/lib/ViewState";
-import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnection";
-import { Viewport, ViewRect } from "@bentley/imodeljs-frontend/lib/Viewport";
-import { IModelApp, iModelApp } from "@bentley/imodeljs-frontend/lib/IModelApp";
-import { Cartographic } from "@bentley/imodeljs-common/lib/geometry/Cartographic";
-import { Angle } from "@bentley/geometry-core/lib/Geometry";
+import { Point3d, Angle } from "@bentley/geometry-core";
+import { Cartographic } from "@bentley/imodeljs-common";
 import * as path from "path";
-import { PanTool } from "@bentley/imodeljs-frontend/lib/tools/ViewTool";
-import { CompassMode } from "@bentley/imodeljs-frontend/lib/AccuDraw";
-// import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
-// import { SpatialViewDefinitionProps } from "@bentley/imodeljs-common/lib/ElementProps";
-// import { DisplayStyle3dState } from "@bentley/imodeljs-frontend/lib/DisplayStyleState";
+import {
+  SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, ViewRect, IModelApp,
+  PanTool, CompassMode,
+} from "@bentley/imodeljs-frontend";
 
 const iModelLocation = path.join(__dirname, "../../../backend/lib/test/assets/test.bim");
 
@@ -26,7 +20,7 @@ class TestViewport extends Viewport {
 }
 
 class TestIModelApp extends IModelApp {
-  protected supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
+  protected static supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
 }
 
 // const compareView = (v1: SpatialViewState, v2: SpatialViewDefinitionProps, str: string) => {
@@ -89,7 +83,7 @@ describe("Viewport", () => {
     assert.isFalse(vp.isRedoPossible, "after redo, redo is not possible");
     assert.isTrue(vp.isUndoPossible, "after redo, undo is possible");
 
-    const pan = iModelApp.tools.create("View.Pan", vp) as PanTool;
+    const pan = IModelApp.tools.create("View.Pan", vp) as PanTool;
     assert.instanceOf(pan, PanTool);
     assert.equal(pan.viewport, vp);
   });
@@ -97,7 +91,7 @@ describe("Viewport", () => {
   it("AccuDraw", () => {
     const vpView = spatialView.clone<SpatialViewState>();
     const viewport = new TestViewport(vpView);
-    const accudraw = iModelApp.accuDraw;
+    const accudraw = IModelApp.accuDraw;
     assert.isTrue(accudraw.isEnabled(), "Accudraw should be enabled");
     const pt = new Point3d(1, 1, 1);
     accudraw.adjustPoint(pt, viewport, false);
