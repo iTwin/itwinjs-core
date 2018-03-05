@@ -20,7 +20,8 @@ import { IModelDb } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
 import {
   GeometricElementProps, Code, CodeSpec, CodeScopeSpec, EntityProps, IModelError, IModelStatus, ModelProps, ViewDefinitionProps,
-  AxisAlignedBox3d, Appearance, ColorDef, IModel, FontType, FontMap,
+  AxisAlignedBox3d, Appearance, ColorDef, IModel,
+  // FontType, FontMap,
 } from "@bentley/imodeljs-common";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { ElementGroupsMembers } from "../LinkTableRelationship";
