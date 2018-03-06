@@ -18,8 +18,8 @@ class TestImmediate extends Tool {
     return true;
   }
 }
-// spell-checker: disable
 
+// spell-checker: disable
 class TestCommandApp extends IModelApp {
   public static testNamespace?: I18NNamespace;
 
