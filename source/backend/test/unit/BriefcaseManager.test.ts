@@ -1,16 +1,16 @@
 import * as TypeMoq from "typemoq";
 import * as path from "path";
 import { expect, assert } from "chai";
-import { IModelJsFs } from "../IModelJsFs";
+import { IModelJsFs } from "../../IModelJsFs";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { SeedFile } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { IModelHost } from "../IModelHost";
+import { IModelHost } from "../../IModelHost";
+import { BriefcaseManager, BriefcaseEntry } from "../../BriefcaseManager";
 import {
   AccessToken, UserProfile, ConnectClient, Project, IModelHubClient, WsgInstance, ECJsonTypeMap,
   Response, ChangeSet, IModel as HubIModel, Briefcase,
 } from "@bentley/imodeljs-clients";
-import { BriefcaseManager, BriefcaseEntry } from "../BriefcaseManager";
 
 class Timer {
   private label: string;
@@ -48,7 +48,7 @@ const getTypedInstances = <T extends WsgInstance>(typedConstructor: new () => T,
   return instances;
 };
 
-describe("BriefcaseManagerUnitTests", () => {
+describe.only("BriefcaseManagerUnitTests", () => {
   const spoofAccessToken: MockAccessToken = new MockAccessToken();
   let testProjectId: string;
   let testIModelId: string;
@@ -108,7 +108,7 @@ describe("BriefcaseManagerUnitTests", () => {
     iModelLocalReadWritePath = path.join(cacheDir, testIModelId, "readWrite");
   });
 
-  it.skip("should be able to open a cached first version IModel in Readonly mode", async () => {
+  it("should be able to open a cached first version IModel in Readonly mode", async () => {
     // Arrange
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
@@ -126,7 +126,7 @@ describe("BriefcaseManagerUnitTests", () => {
     iModelVersionMock.verify((f: IModelVersion) => f.evaluateChangeSet(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
   });
 
-  it.skip("should be able to open a cached first version IModel in ReadWrite mode", async () => {
+  it.only("should be able to open a cached first version IModel in ReadWrite mode", async () => {
     // Arrange
     iModelHubClientMock.setup((f: IModelHubClient) => f.acquireBriefcase(TypeMoq.It.isAny(), TypeMoq.It.isAnyString()))
       .returns(() => Promise.resolve(1));
@@ -154,7 +154,7 @@ describe("BriefcaseManagerUnitTests", () => {
     // iModel.close(accessToken);
   });
 
-  it.skip("should reuse open briefcases in Readonly mode", async () => {
+  it("should reuse open briefcases in Readonly mode", async () => {
     // Arrange
     iModelVersionMock.setup((f: IModelVersion) => f.evaluateChangeSet(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
       .returns(() => Promise.resolve(""));
@@ -189,7 +189,7 @@ describe("BriefcaseManagerUnitTests", () => {
 
 export class MockAssetUtil {
   private static iModelNames = ["TestModel", "NoVersionsTest"];
-  private static iModelIds = ["b74b6451-cca3-40f1-9890-42c769a28f3e", ""]; // TODO: Grab second ID
+  private static iModelIds = ["b74b6451-cca3-40f1-9890-42c769a28f3e", "519baacf-5a34-459e-bf8c-31535e21777b"];
   private static assetDir: string = "./test/assets/_mocks_";
 
   // TODO: setup for multiple versions...
@@ -213,14 +213,18 @@ export class MockAssetUtil {
     const seedFileMock = TypeMoq.Mock.ofType(SeedFile);
     seedFileMock.object.downloadUrl = "www.bentley.com";
     seedFileMock.object.mergedChangeSetId = "";
-    iModelHubClientMock.setup((f: IModelHubClient) => f.getIModels(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
+    iModelHubClientMock.setup((f: IModelHubClient) => f.getIModels(TypeMoq.It.isAny(),
+                                                                   TypeMoq.It.isAnyString(),
+                                                                   TypeMoq.It.isAny()))
       .returns(() => {
         const sampleIModelPath = path.join(this.assetDir, "JSON", "SampleIModel.json");
         const buff = IModelJsFs.readFileSync(sampleIModelPath);
         const jsonObj = JSON.parse(buff.toString());
         return Promise.resolve(getTypedInstances<HubIModel>(HubIModel, jsonObj));
       }).verifiable();
-    iModelHubClientMock.setup((f: IModelHubClient) => f.getChangeSets(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
+    iModelHubClientMock.setup((f: IModelHubClient) => f.getChangeSets(TypeMoq.It.isAny(),
+                                                                      TypeMoq.It.isAnyString(),
+                                                                      TypeMoq.It.isAny()))
       .returns(() => {
         const sampleChangeSetPath = path.join(this.assetDir, "JSON", "SampleChangeSets.json");
         const buff = IModelJsFs.readFileSync(sampleChangeSetPath);

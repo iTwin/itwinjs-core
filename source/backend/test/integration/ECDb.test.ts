@@ -3,11 +3,11 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { ECDbTestHelper } from "./ECDbTestHelper";
+import { ECDbTestHelper } from "../ECDbTestHelper";
 import { DbResult, OpenMode, Id64, using } from "@bentley/bentleyjs-core";
-import { ECDb } from "../ECDb";
-import { ECSqlInsertResult } from "../ECSqlStatement";
-import { KnownTestLocations } from "./KnownTestLocations";
+import { ECDb } from "../../ECDb";
+import { ECSqlInsertResult } from "../../ECSqlStatement";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("ECDb", () => {
   const _outDir = KnownTestLocations.outputDir;

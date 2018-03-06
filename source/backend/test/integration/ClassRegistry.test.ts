@@ -5,10 +5,10 @@ import { assert } from "chai";
 import * as path from "path";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Code } from "@bentley/imodeljs-common";
-import { EntityMetaData } from "../Entity";
-import { IModelDb } from "../IModelDb";
-import { IModelTestUtils } from "./IModelTestUtils";
-import { KnownTestLocations } from "./KnownTestLocations";
+import { EntityMetaData } from "../../Entity";
+import { IModelDb } from "../../IModelDb";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("Class Registry", () => {
   let imodel: IModelDb;
