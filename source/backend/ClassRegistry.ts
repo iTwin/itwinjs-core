@@ -1,7 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core";
 import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -121,7 +120,7 @@ export class ClassRegistry {
     return this.generateClassForEntity(metadata);
   }
 
-  /** Get the class for the specified Entity.
+  /** Get the Entity class for the specified Entity.
    * @param fullName The name of the Entity
    * @param iModel The IModel that contains the class definitions
    * @returns A promise that resolves to an object containing a result property set to the Entity.
@@ -129,16 +128,14 @@ export class ClassRegistry {
    */
   public static getClass(fullName: string, iModel: IModelDb): typeof Entity {
     const key = fullName.toLowerCase();
-    if (!this.classMap.has(key)) {
+    if (!this.classMap.has(key))
       return this.generateClass(fullName, iModel);
-    }
-    const ctor = this.classMap.get(key);
-    assert(!!ctor);
 
+    const ctor = this.classMap.get(key);
     if (!ctor)
       throw this.makeClassNotFoundError(fullName);
 
-    return ctor!;
+    return ctor;
   }
 }
 

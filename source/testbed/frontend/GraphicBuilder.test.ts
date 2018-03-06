@@ -2,9 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d, Transform } from "@bentley/geometry-core";
 import { IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
-import { Transform } from "@bentley/geometry-core";
 import { GraphicBuilderCreateParams, GraphicType, GraphicBuilderTileCorners } from "@bentley/imodeljs-frontend/lib/rendering";
 import * as path from "path";
 
