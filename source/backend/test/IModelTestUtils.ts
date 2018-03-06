@@ -18,15 +18,15 @@ import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelHostConfiguration, IModelHost, iModelHost } from "../IModelHost";
 import * as path from "path";
-// import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 
-// Logger.initializeToConsole();
-// Logger.setLevel("Performance", LogLevel.Info);
-// Logger.setLevelDefault(LogLevel.Error);
-// Logger.setLevel("Diagnostics", LogLevel.None);
-// Logger.setLevel("ECObjectsNative", LogLevel.None);
-// Logger.setLevel("BeSQLite", LogLevel.None);
-// Logger.setLevel("ECPresentation", LogLevel.None);
+Logger.initializeToConsole();
+Logger.setLevelDefault(LogLevel.Info);
+Logger.setLevel("Performance", LogLevel.Info);
+Logger.setLevel("Diagnostics", LogLevel.None);
+Logger.setLevel("ECObjectsNative", LogLevel.None);
+Logger.setLevel("BeSQLite", LogLevel.Info);
+Logger.setLevel("ECPresentation", LogLevel.None);
 
 // Initialize the gateway classes used by tests
 Gateway.initialize(IModelGateway);
