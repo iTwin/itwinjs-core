@@ -14,7 +14,7 @@ import { Element } from "../Element";
 import { DictionaryModel } from "../Model";
 import { SpatialCategory } from "../Category";
 import { IModelJsFs } from "../IModelJsFs";
-import { iModelHost } from "../IModelHost";
+import { IModelHost } from "../IModelHost";
 import { AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../AutoPush";
 
 let lastPushTimeMillis = 0;
@@ -48,11 +48,11 @@ async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: Access
     await rwIModel.concurrencyControl.request(accessToken);
   } catch (err) {
     if (err instanceof ConcurrencyControl.RequestError) {
-        assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
+      assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
     }
   }
 
-  return {modelId, spatialCategoryId};
+  return { modelId, spatialCategoryId };
 }
 
 describe("BriefcaseManager", () => {
@@ -80,20 +80,20 @@ describe("BriefcaseManager", () => {
     console.log(`    ...getting user access token from IMS: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     startTime = new Date().getTime();
 
-    testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
-    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "TestModel");
+    testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "iModelJsTest");
+    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "ReadOnlyTest");
 
     testChangeSets = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
     expect(testChangeSets.length).greaterThan(2);
 
-    const cacheDir = iModelHost.configuration.briefcaseCacheDir;
+    const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
     iModelLocalReadonlyPath = path.join(cacheDir, testIModelId, "readOnly");
     iModelLocalReadWritePath = path.join(cacheDir, testIModelId, "readWrite");
 
     // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
     if (!IModelJsFs.existsSync(cacheDir)) {
-      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "TestModel");
-      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "NoVersionsTest");
+      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "iModelJsTest", "ReadOnlyTest");
+      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "iModelJsTest", "NoVersionsTest");
     }
 
     console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
@@ -115,7 +115,7 @@ describe("BriefcaseManager", () => {
     // Note: neutralObserver's IModel does not need to be configured for optimistic concurrency. He just pulls changes.
 
     // firstUser: create model, category, and element el1
-    const r: {modelId: Id64, spatialCategoryId: Id64} = await createNewModelAndCategory(firstIModel, firstUser);
+    const r: { modelId: Id64, spatialCategoryId: Id64 } = await createNewModelAndCategory(firstIModel, firstUser);
     const el1 = firstIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(firstIModel, r.modelId, r.spatialCategoryId));
     // const el2 = firstIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(firstIModel, r.modelId, r.spatialCategoryId));
     firstIModel.saveChanges("firstUser created model, category, and two elements");
@@ -340,9 +340,9 @@ describe("BriefcaseManager", () => {
     // Note: This test is commented out since it causes the entire cache to be discarded and is therefore expensive.
     IModelTestUtils.setIModelHubDeployConfig("DEV");
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Turn off SSL validation in DEV
-    const devProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
+    const devProjectId = await IModelTestUtils.getTestProjectId(accessToken, "iModelJsTest");
     assert(devProjectId);
-    const devIModelId = await IModelTestUtils.getTestIModelId(accessToken, devProjectId, "MyTestModel");
+    const devIModelId = await IModelTestUtils.getTestIModelId(accessToken, devProjectId, "ReadOnlyTest");
     assert(devIModelId);
     const devChangeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, devIModelId, false);
     expect(devChangeSets.length).equals(0); // needs change sets
@@ -350,9 +350,9 @@ describe("BriefcaseManager", () => {
     assert.exists(devIModel);
 
     IModelTestUtils.setIModelHubDeployConfig("QA");
-    const qaProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
+    const qaProjectId = await IModelTestUtils.getTestProjectId(accessToken, "iModelJsTest");
     assert(qaProjectId);
-    const qaIModelId = await IModelTestUtils.getTestIModelId(accessToken, qaProjectId, "MyTestModel");
+    const qaIModelId = await IModelTestUtils.getTestIModelId(accessToken, qaProjectId, "ReadOnlyTest");
     assert(qaIModelId);
     const qaChangeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, qaIModelId, false);
     expect(qaChangeSets.length).greaterThan(0);

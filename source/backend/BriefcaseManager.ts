@@ -7,7 +7,7 @@ import { BriefcaseStatus, IModelError, IModelVersion, IModelToken } from "@bentl
 import { AddonRegistry } from "./AddonRegistry";
 import { AddonDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 import { IModelDb } from "./IModelDb";
-import { iModelHost } from "./IModelHost";
+import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import * as path from "path";
 import * as fs from "fs";
@@ -109,7 +109,7 @@ export class BriefcaseEntry {
     if (this.isStandalone)
       return this.pathname;
 
-    const cacheDir = iModelHost.configuration.briefcaseCacheDir;
+    const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
     assert(this.pathname.startsWith(cacheDir));
     return this.pathname.substr(cacheDir.length);
   }
@@ -204,18 +204,12 @@ export class BriefcaseManager {
 
   /** Get the local path of the root folder storing the imodel seed file, change sets and briefcases */
   private static getIModelPath(iModelId: string): string {
-    assert(!!iModelHost);
-    const pathname = path.join(iModelHost.configuration.briefcaseCacheDir, iModelId, "/");
+    const pathname = path.join(IModelHost.configuration!.briefcaseCacheDir, iModelId, "/");
     return path.normalize(pathname);
   }
 
-  public static getChangeSetsPath(iModelId: string): string {
-    return path.join(BriefcaseManager.getIModelPath(iModelId), "csets");
-  }
-
-  public static getChangeSummaryPathname(iModelId: string): string {
-    return path.join(BriefcaseManager.getIModelPath(iModelId), iModelId.concat(".bim.ecchanges"));
-  }
+  public static getChangeSetsPath(iModelId: string): string { return path.join(BriefcaseManager.getIModelPath(iModelId), "csets"); }
+  public static getChangeSummaryPathname(iModelId: string): string { return path.join(BriefcaseManager.getIModelPath(iModelId), iModelId.concat(".bim.ecchanges")); }
 
   private static buildReadOnlyPath(iModelId: string, iModelName: string): string {
     const briefcases = BriefcaseManager.cache.getFilteredBriefcases((entry: BriefcaseEntry) => {
@@ -234,9 +228,7 @@ export class BriefcaseManager {
     return path.join(BriefcaseManager.getIModelPath(iModelId), "readWrite", briefcaseId.toString(), iModelName.concat(".bim"));
   }
 
-  private static buildScratchPath(): string {
-    return path.join(iModelHost.configuration.briefcaseCacheDir, "scratch");
-  }
+  private static buildScratchPath(): string { return path.join(IModelHost.configuration!.briefcaseCacheDir, "scratch"); }
 
   /** Get information on the briefcases that have been cached on disk
    * @description Format of returned JSON:
@@ -289,20 +281,20 @@ export class BriefcaseManager {
     if (!BriefcaseManager.cache.isEmpty())
       return;
 
-    if (!iModelHost)
+    if (!IModelHost.configuration)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "IModelHost.startup() should be called before any backend operations");
 
     // TODO: call BriefcaseManager.deleteAllBriefcasesIfNewInstance here?
 
-    iModelHost.onAfterStartup.addListener(BriefcaseManager.onIModelHostShutdown);
+    IModelHost.onAfterStartup.addListener(BriefcaseManager.onIModelHostShutdown);
 
     const startTime = new Date().getTime();
 
-    BriefcaseManager.hubClient = new IModelHubClient(iModelHost.configuration.iModelHubDeployConfig);
+    BriefcaseManager.hubClient = new IModelHubClient(IModelHost.configuration.iModelHubDeployConfig);
     if (!accessToken)
       return;
 
-    const cacheDir = iModelHost.configuration.briefcaseCacheDir;
+    const cacheDir = IModelHost.configuration.briefcaseCacheDir;
     if (!IModelJsFs.existsSync(cacheDir)) {
       BriefcaseManager.makeDirectoryRecursive(cacheDir);
       return;
@@ -498,7 +490,7 @@ export class BriefcaseManager {
   private static async createBriefcase(accessToken: AccessToken, projectId: string, iModelId: string, openMode: OpenMode): Promise<BriefcaseEntry> {
     const iModel: HubIModel = await BriefcaseManager.hubClient!.getIModel(accessToken, projectId, iModelId);
 
-    const seedFiles: SeedFile[] = (await BriefcaseManager.hubClient!.getSeedFiles(accessToken, iModelId, true, {$orderby: "Index+desc", $top: 1}));
+    const seedFiles: SeedFile[] = (await BriefcaseManager.hubClient!.getSeedFiles(accessToken, iModelId, true, { $orderby: "Index+desc", $top: 1 }));
     const downloadUrl = seedFiles[0].downloadUrl!;
 
     const briefcase = new BriefcaseEntry();
@@ -750,11 +742,8 @@ export class BriefcaseManager {
 
   /** Purge all briefcases and reset the briefcase manager */
   public static purgeAll() {
-    if (!iModelHost)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "IModelHost.startup() should be called before any backend operations");
-
-    if (IModelJsFs.existsSync(iModelHost.configuration.briefcaseCacheDir))
-      BriefcaseManager.deleteFolderRecursive(iModelHost.configuration.briefcaseCacheDir);
+    if (IModelJsFs.existsSync(IModelHost.configuration!.briefcaseCacheDir))
+      BriefcaseManager.deleteFolderRecursive(IModelHost.configuration!.briefcaseCacheDir);
 
     BriefcaseManager.clearCache();
   }
@@ -1033,7 +1022,7 @@ export class BriefcaseManager {
 
   /** @hidden */
   public static async deleteAllBriefcasesIfNewInstance(accessToken: AccessToken, iModelId: string) {
-    if (fs.existsSync(iModelHost.configuration.briefcaseCacheDir))
+    if (fs.existsSync(IModelHost.configuration!.briefcaseCacheDir))
       return;
     await BriefcaseManager.initCache(accessToken); // set up hubClient
     return BriefcaseManager.deleteAllBriefcases(accessToken, iModelId);

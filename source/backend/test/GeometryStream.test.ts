@@ -12,13 +12,14 @@ import { Id64, Guid } from "@bentley/bentleyjs-core";
 import { IModelDb } from "../IModelDb";
 import {
   OpCodeReader, OpCodeWriter, OpCodeIterator, GeometryStreamBuilder, GeometryStream, OpCode, GeometricPrimitive, GeometryType,
-  Code, Placement3d, ElementAlignedBox3d, GeometricElement3dProps, GeometryProps,
+  Code, Placement3d, ElementAlignedBox3d, GeometricElement3dProps, GeometryParams,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Element } from "../Element";
 
 import * as path from "path";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { PointString3d } from "@bentley/geometry-core/lib/curve/PointString3d";
 
 describe("GeometricPrimitive", () => {
   it("should be able to create GeometricPrimitives from various geometry", () => {
@@ -102,6 +103,22 @@ describe("GeometricPrimitive", () => {
     assert.isFalse(getAsPolyface === polyface, "Polyface stored as deep copy in GeometricPrimitive");
     assert.isTrue(elmGeom.type === elmGeomC.type, "GeometricPrimitive clone type matches");
     assert.isTrue(getAsPolyface!.isAlmostEqual(polyface!), "Polyface and its clone are equal");
+
+    // PointString
+    const localPoints3dBuf: Point3d[] = [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(0, 1, 0)];
+    const pointString = PointString3d.create(localPoints3dBuf);
+    elmGeom = GeometricPrimitive.createPointStringClone(pointString!);
+    assert.isTrue(GeometryType.PointString === elmGeom.type, "Correctly stored PointString3d in GeometricPrimitive");
+    assert.isFalse(elmGeom.isWire(), "PointString is not wire");
+    assert.isFalse(elmGeom.isSheet(), "PointString is not sheet");
+    assert.isFalse(elmGeom.isSolid(), "PointString is not solid");
+    // Clone PointString
+    elmGeomC = elmGeom.clone();
+    const getAsPointString = elmGeomC.asPointString;
+    assert.isTrue(getAsPointString instanceof PointString3d, "GeometricPrimitive correctly returned PointString data");
+    assert.isFalse(getAsPointString === pointString, "Pointstring stored as deep copy in GeometricPrimitive");
+    assert.isTrue(elmGeomC.type === elmGeom.type, "GeometricPrimitive clone type matches");
+    assert.isTrue(getAsPointString!.isAlmostEqual(pointString!), "PointString and its clone are equal");
 
     // BRepEntity...
 
@@ -312,7 +329,7 @@ describe("GeometryBuilder", () => {
     const collection = new OpCodeIterator(returned3d.geom.geomStream);
     const reader = new OpCodeReader();
     let item: any;
-    const elParams = new GeometryProps(new Id64());
+    const elParams = new GeometryParams(new Id64());
     while (collection.isValid) {
       if (collection.operation!.isGeometryOp()) {
         item = reader.getGeometricPrimitive(collection.operation!);

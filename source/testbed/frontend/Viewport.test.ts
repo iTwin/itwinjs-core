@@ -5,10 +5,7 @@ import { assert } from "chai";
 import { Point3d, Angle } from "@bentley/geometry-core";
 import { Cartographic } from "@bentley/imodeljs-common";
 import * as path from "path";
-import {
-  SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, ViewRect, IModelApp,
-  PanTool, CompassMode,
-} from "@bentley/imodeljs-frontend";
+import { SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, ViewRect, IModelApp, PanTool, CompassMode } from "@bentley/imodeljs-frontend";
 
 const iModelLocation = path.join(__dirname, "../../../backend/lib/test/assets/test.bim");
 
@@ -17,10 +14,6 @@ class TestViewport extends Viewport {
   public constructor(viewState: ViewState) { super(undefined, viewState); this.setupFromView(); }
   private clientRect = new ViewRect(0, 0, 1000, 1000);  // Needed since we don't have a canvas
   public getClientRect(): ClientRect { return this.clientRect; }
-}
-
-class TestIModelApp extends IModelApp {
-  protected static supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
 }
 
 // const compareView = (v1: SpatialViewState, v2: SpatialViewDefinitionProps, str: string) => {
@@ -35,7 +28,7 @@ describe("Viewport", () => {
   let spatialView: SpatialViewState;
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    TestIModelApp.startup();
+    IModelApp.startup();
     imodel = await IModelConnection.openStandalone(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);

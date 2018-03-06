@@ -5,19 +5,19 @@
 import {
   Point2d, Point3d, Vector3d, YawPitchRollAngles, Transform, RotMatrix, Range3d,
   CurveCollection, Loop, BSplineSurface3d, GeometryQuery, CurvePrimitive,
-  SolidPrimitive, IndexedPolyface, Angle, AngleSweep, Arc3d, LineSegment3d, LineString3d,
+  SolidPrimitive, IndexedPolyface, Angle, AngleSweep, Arc3d, LineSegment3d, LineString3d, PointString3d,
 } from "@bentley/geometry-core";
 import { BGFBBuilder, BGFBReader } from "@bentley/geometry-core/lib/serialization/BGFB";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { GeometricPrimitive, GeometryType, Placement2d, Placement3d, ElementAlignedBox2d, ElementAlignedBox3d } from "./Primitives";
-import { GeometryProps } from "./GeometryProps";
 import { LineStyleInfo, LineStyleParams } from "./LineStyle";
-import { GradientSymb } from "./GradientPattern";
 import { PatternParams, DwgHatchDefLine } from "./AreaPattern";
 import { ColorDef } from "../ColorDef";
 import { flatbuffers } from "flatbuffers";
 import { DgnFB } from "./ElementGraphicsSchema";
 import { Base64 } from "js-base64";
+import { IModelError, IModelStatus } from "../IModelError";
+import { GeometryParams, FillDisplay, Gradient, GeometryClass } from "../Render";
 
 /** GeometryStream wrapper class for the array buffer */
 export class GeometryStream {
@@ -154,21 +154,14 @@ class Header {
 /** Internal op code */
 export class Operation {
   public opCode: number;
-  // If signature is included, the signature will be held in data, and flatbuffer contents in data1, otherwise, all data lies in data
   public data: Uint8Array;
-  public data1: Uint8Array | undefined;
-  public data1Position = 0;
 
   /** Creates a new operation, typically then used to append to a writer. If using the geometry-core BGFB builder, the signature is placed
    *  in data, and then the Uint8Array of the geometry data is placed in data1, followed by the position returned by the BGFB builder
    */
-  public constructor(opCode: OpCode, data: Uint8Array, data1?: Uint8Array, data1Position?: number) {
+  public constructor(opCode: OpCode, data: Uint8Array) {
     this.opCode = opCode;
     this.data = data;
-    if (data1) {
-      this.data1 = data1;
-      this.data1Position = data1Position!;    // Should always come together
-    }
   }
 
   public isGeometryOp(): boolean {
@@ -256,7 +249,7 @@ export class OpCodeWriter {
   }
 
   private appendOperation(egOp: Operation) {
-    const totalegOpSize = 8 + egOp.data.length + (egOp.data1 ? egOp.data1.length - egOp.data1Position! : 0);   // Plus 8 for the data size and the opCode
+    const totalegOpSize = 8 + egOp.data.length;   // Plus 8 for the data size and the opCode
     let indexToAppendTo = Math.floor(this.buffer.byteLength / 4);
     this.resize(this.buffer.byteLength + totalegOpSize);
 
@@ -275,11 +268,6 @@ export class OpCodeWriter {
     for (const item of egOp.data) {
       currView[indexToAppendTo++] = item;
     }
-
-    // Add data1 if exists
-    if (egOp.data1)
-      for (let i = egOp.data1Position; i < egOp.data1.length; i++)
-        currView[indexToAppendTo++] = egOp.data1[i];
   }
 
   public appendHeader(flags: number = 0) {
@@ -287,101 +275,45 @@ export class OpCodeWriter {
     this.appendOperation(new Operation(OpCode.Header, new Uint8Array(header.buffer.buffer)));
   }
 
-  /** Append a single curve primitive, special case point primitives and arcs to store in a more compact form */
-  public appendSimplifiedCurvePrimitive(cPrimitive: CurvePrimitive, isClosed: boolean, is3d: boolean): boolean {
-    if (cPrimitive instanceof LineSegment3d) {
-      if (!is3d) {
-        const localPoints2dBuf: Point2d[] = [Point2d.create(cPrimitive.point0Ref.x, cPrimitive.point0Ref.y), Point2d.create(cPrimitive.point1Ref.x, cPrimitive.point1Ref.y)];
-        this.appendPoint2dArray(localPoints2dBuf, DgnFB.BoundaryType.Open);
-        return true;
-      }
-
-      const localPoints3dBuf: Point3d[] = [cPrimitive.point0Ref, cPrimitive.point1Ref];
-      this.appendPoint3dArray(localPoints3dBuf, DgnFB.BoundaryType.Open);
-      return true;
-    }
-
-    if (cPrimitive instanceof LineString3d) {
-      if (!is3d) {
-        const localPoints2dBuf: Point2d[] = [];
-        for (const point of cPrimitive.points)
-          localPoints2dBuf.push(Point2d.create(point.x, point.y));
-        this.appendPoint2dArray(localPoints2dBuf, isClosed ? DgnFB.BoundaryType.Closed : DgnFB.BoundaryType.Open);
-        return true;
-      }
-
-      const points: Point3d[] = cPrimitive.points;
-
-      this.appendPoint3dArray(points, isClosed ? DgnFB.BoundaryType.Closed : DgnFB.BoundaryType.Open);
-      return true;
-    }
-
-    // if (cPrimitive instanceof PointString)
-
-    if (cPrimitive instanceof Arc3d) {
-      this.dgnAppendArc3d(cPrimitive, isClosed ? DgnFB.BoundaryType.Closed : DgnFB.BoundaryType.Open);
-      return true;
-    }
-
-    // No specific case found.. use default options
-    if (!isClosed)
-      return false;
-
-    return this.appendCurvePrimitive(cPrimitive);
-  }
-
-  public appendSimplifiedCurveCollection(collection: CurveCollection, is3d: boolean): boolean {
-    if (!collection.children)
-      return false;
-
-    if (collection.children.length === 1 && collection.children[0] instanceof CurvePrimitive) {
-      const cPrimitive = collection.children[0];
-      if (cPrimitive instanceof LineSegment3d /* || cPrimitive instanceof PointString */)
-        return this.appendSimplifiedCurvePrimitive(cPrimitive, false, is3d);  // never closed...
-      if (cPrimitive instanceof LineString3d || cPrimitive instanceof Arc3d)
-        return this.appendSimplifiedCurvePrimitive(cPrimitive, collection.isClosedPath(), is3d);
-    }
-    // Not a simple case: may need to loop through array of children or navigate down curve tree
-    // Skip check for invalidCurveCollection... not dealing with pointer based arrays or disconnect points
-    return this.appendCurveCollection(collection);
-  }
-
-  public appendSimplifiedGeometricPrimitive(gPrimitive: GeometricPrimitive, is3d: boolean): boolean {
-    switch (gPrimitive.type) {
-      case GeometryType.CurvePrimitive:
-        return this.appendSimplifiedCurvePrimitive(gPrimitive.asCurvePrimitive!, false, is3d);
-      case GeometryType.CurveCollection:
-        return this.appendSimplifiedCurveCollection(gPrimitive.asCurveCollection!, is3d);
-      default:
-        return this.appendGeometricPrimitive(gPrimitive);
-    }
-  }
-
-  public appendGeometryParams(elParams: GeometryProps, ignoreSubCategory: boolean, is3d: boolean) {
+  public appendGeometryParams(elParams: GeometryParams, ignoreSubCategory: boolean, is3d: boolean) {
     const useColor = !elParams.isLineColorFromSubCategoryAppearance();
     const useWeight = !elParams.isWeightFromSubCategoryAppearance();
     const useStyle = !elParams.isLineStyleFromSubCategoryAppearance();
-    const priority = is3d ? 0 : elParams.displayPriority;
+    const priority = is3d ? 0 : elParams.getDisplayPriority();
 
     // Assume at this point, then, that all necessary parameters are defined in elParams as needed by the series of checks...
     // To ensure values are inserted, the params are treated as a native struct, where if undefined, takes the form of zeros
-
-    if (useColor || useWeight || useStyle || 0 !== elParams.transparency || 0 !== priority || DgnFB.GeometryClass.Primary !== elParams.geometryClass) {
-
+    if (useColor || useWeight || useStyle || 0 !== elParams.getTransparency() || 0 !== priority || GeometryClass.Primary !== elParams.getGeometryClass()) {
       const fbb = new flatbuffers.Builder();
       const basicSymbBuilder = DgnFB.BasicSymbology;
 
+      let geometryClass = DgnFB.GeometryClass.Primary;
+      switch (elParams.getGeometryClass()) {
+        case GeometryClass.Primary:
+          geometryClass = DgnFB.GeometryClass.Primary;
+          break;
+        case GeometryClass.Construction:
+          geometryClass = DgnFB.GeometryClass.Construction;
+          break;
+        case GeometryClass.Dimension:
+          geometryClass = DgnFB.GeometryClass.Dimension;
+          break;
+        case GeometryClass.Dimension:
+          geometryClass = DgnFB.GeometryClass.Dimension;
+          break;
+      }
+
       basicSymbBuilder.startBasicSymbology(fbb);
-      basicSymbBuilder.addTransparency(fbb, elParams.transparency ? elParams.transparency : 0);
-      basicSymbBuilder.addLineStyleId(fbb, (useStyle && elParams.lineStyle) ? flatbuffers.Long.create(elParams.lineStyle.styleId.getLow(), elParams.lineStyle.styleId.getHigh()) : flatbuffers.Long.create(0, 0));
+      basicSymbBuilder.addTransparency(fbb, elParams.getTransparency());
+      basicSymbBuilder.addLineStyleId(fbb, (useStyle && elParams.getLineStyle()) ? flatbuffers.Long.create(elParams.getLineStyle()!.styleId.getLow(), elParams.getLineStyle()!.styleId.getHigh()) : flatbuffers.Long.create(0, 0));
       basicSymbBuilder.addSubCategoryId(fbb, ignoreSubCategory ? flatbuffers.Long.create(0, 0) : flatbuffers.Long.create(elParams.categoryId.getLow(), elParams.categoryId.getHigh()));
       basicSymbBuilder.addDisplayPriority(fbb, priority ? priority : 0);
-      basicSymbBuilder.addWeight(fbb, useWeight ? elParams.weight! : 0);
-      basicSymbBuilder.addColor(fbb, useColor ? elParams.lineColor!.getRgb() : 0);
+      basicSymbBuilder.addWeight(fbb, useWeight ? elParams.getWeight() : 0);
+      basicSymbBuilder.addColor(fbb, useColor ? elParams.getLineColor().getRgb() : 0);
       basicSymbBuilder.addUseStyle(fbb, useStyle ? 1 : 0);
       basicSymbBuilder.addUseWeight(fbb, useWeight ? 1 : 0);
       basicSymbBuilder.addUseColor(fbb, useColor ? 1 : 0);
-      basicSymbBuilder.addGeomClass(fbb, elParams.geometryClass);
+      basicSymbBuilder.addGeomClass(fbb, geometryClass);
       const mLoc = basicSymbBuilder.endBasicSymbology(fbb);
 
       fbb.finish(mLoc);
@@ -407,9 +339,9 @@ export class OpCodeWriter {
       this.appendOperation(new Operation(OpCode.BasicSymbology, fbb.asUint8Array()));
     }
 
-    if (useStyle && elParams.lineStyle && elParams.lineStyle.styleParams) {
+    if (useStyle && elParams.getLineStyle() && elParams.getLineStyle()!.styleParams) {
       const fbb = new flatbuffers.Builder();
-      const lsParams = elParams.lineStyle.styleParams;
+      const lsParams = elParams.getLineStyle()!.styleParams;
       let angles = YawPitchRollAngles.createFromRotMatrix(lsParams.rMatrix);
       if (!angles)
         angles = YawPitchRollAngles.createDegrees(0, 0, 0);
@@ -435,59 +367,95 @@ export class OpCodeWriter {
       this.appendOperation(new Operation(OpCode.LineStyleModifiers, fbb.asUint8Array()));
     }
 
-    if (elParams.fillDisplay !== DgnFB.FillDisplay.None) {
+    if (elParams.getFillDisplay() !== FillDisplay.Never) {
       const fbb = new flatbuffers.Builder();
       const areaFillBuilder = DgnFB.AreaFill;
 
-      if (elParams.gradient) {
-        const gradient = elParams.gradient;
+      let fillDisplay = DgnFB.FillDisplay.None;
+      switch (elParams.getFillDisplay()) {
+        case FillDisplay.Never:
+          fillDisplay = DgnFB.FillDisplay.None;
+          break;
+        case FillDisplay.ByView:
+          fillDisplay = DgnFB.FillDisplay.ByView;
+          break;
+        case FillDisplay.Always:
+          fillDisplay = DgnFB.FillDisplay.Always;
+          break;
+        case FillDisplay.Blanking:
+          fillDisplay = DgnFB.FillDisplay.Blanking;
+          break;
+      }
+
+      if (elParams.getGradient()) {
+        const gradient = elParams.getGradient()!;
         const keyColors: number[] = [];
         const keyValues: number[] = [];
 
         for (let i = 0; i < gradient.nKeys; ++i) {
-          const keyColor = new ColorDef();
-          const keyValue = gradient.getKey(i, keyColor);
-
-          keyColors.push(keyColor.getRgb());
-          keyValues.push(keyValue);
+          keyColors.push(gradient.colors[i].getRgb());
+          keyValues.push(gradient.values[i]);
         }
 
         areaFillBuilder.startAreaFill(fbb);
-        areaFillBuilder.addShift(fbb, gradient.tint);
+        areaFillBuilder.addShift(fbb, gradient.shift);
         areaFillBuilder.addTint(fbb, gradient.tint);
         areaFillBuilder.addAngle(fbb, gradient.angle);
-        areaFillBuilder.addTransparency(fbb, elParams.fillTransparency ? elParams.fillTransparency : 0);
+        areaFillBuilder.addTransparency(fbb, elParams.getFillTransparency());
         const keyValuesOff = areaFillBuilder.createValuesVector(fbb, keyValues);
         areaFillBuilder.addValues(fbb, keyValuesOff);
         const keyColorsOff = areaFillBuilder.createColorsVector(fbb, keyColors);
         areaFillBuilder.addColors(fbb, keyColorsOff);
         areaFillBuilder.addColor(fbb, 0);
         areaFillBuilder.addFlags(fbb, gradient.flags);
-        areaFillBuilder.addMode(fbb, gradient.mode ? gradient.mode : DgnFB.GradientMode.None);
+
+        let mode = DgnFB.GradientMode.None;
+        switch (gradient.mode) {
+          case Gradient.Mode.None:
+            mode = DgnFB.GradientMode.None;
+            break;
+          case Gradient.Mode.Linear:
+            mode = DgnFB.GradientMode.Linear;
+            break;
+          case Gradient.Mode.Curved:
+            mode = DgnFB.GradientMode.Curved;
+            break;
+          case Gradient.Mode.Cylindrical:
+            mode = DgnFB.GradientMode.Cylindrical;
+            break;
+          case Gradient.Mode.Spherical:
+            mode = DgnFB.GradientMode.Spherical;
+            break;
+          case Gradient.Mode.Hemispherical:
+            mode = DgnFB.GradientMode.Hemispherical;
+            break;
+        }
+
+        areaFillBuilder.addMode(fbb, mode);
         areaFillBuilder.addBackgroundFill(fbb, 0);
         areaFillBuilder.addUseColor(fbb, 0);
-        areaFillBuilder.addFill(fbb, elParams.fillDisplay ? elParams.fillDisplay : 0);
+        areaFillBuilder.addFill(fbb, fillDisplay);
         const mLoc = areaFillBuilder.endAreaFill(fbb);
 
         fbb.finish(mLoc);
       } else {
-        const outline = elParams.isBackgroundFillOfTypeOutline();
         const isBgFill = elParams.isFillColorFromViewBackground();
+        const outline = elParams.isBackgroundFillOutlined();
         const useFillColor = !isBgFill && !elParams.isFillColorFromSubCategoryAppearance();
 
         areaFillBuilder.startAreaFill(fbb);
         areaFillBuilder.addShift(fbb, 0);
         areaFillBuilder.addTint(fbb, 0);
         areaFillBuilder.addAngle(fbb, 0);
-        areaFillBuilder.addTransparency(fbb, elParams.fillTransparency ? elParams.fillTransparency : 0);
+        areaFillBuilder.addTransparency(fbb, elParams.getFillTransparency());
         areaFillBuilder.addValues(fbb, 0);
         areaFillBuilder.addColors(fbb, 0);
-        areaFillBuilder.addColor(fbb, useFillColor ? elParams.fillColor!.getRgb() : 0);
+        areaFillBuilder.addColor(fbb, useFillColor ? elParams.getFillColor().getRgb() : 0);
         areaFillBuilder.addFlags(fbb, 0);
         areaFillBuilder.addMode(fbb, DgnFB.GradientMode.None);
         areaFillBuilder.addBackgroundFill(fbb, isBgFill ? (outline ? 2 : 1) : 0);
         areaFillBuilder.addUseColor(fbb, useFillColor ? 1 : 0);
-        areaFillBuilder.addFill(fbb, elParams.fillDisplay ? elParams.fillDisplay : DgnFB.FillDisplay.None);
+        areaFillBuilder.addFill(fbb, fillDisplay);
         const mLoc = areaFillBuilder.endAreaFill(fbb);
 
         fbb.finish(mLoc);
@@ -496,9 +464,8 @@ export class OpCodeWriter {
       this.appendOperation(new Operation(OpCode.AreaFill, fbb.asUint8Array()));
     }
 
-    const pattern = elParams.patternParams;
-
-    if (pattern !== undefined) {
+    if (elParams.getPatternParams()) {
+      const pattern = elParams.getPatternParams()!;
       const fbb = new flatbuffers.Builder();
       const dwgBuilder = DgnFB.DwgHatchDefLine;
       const defLineOffsets: number[] = [];
@@ -580,7 +547,7 @@ export class OpCodeWriter {
       materialBuilder.addRoll(fbb, 0.0);
       materialBuilder.addPitch(fbb, 0.0);
       materialBuilder.addYaw(fbb, 0.0);
-      materialBuilder.addMaterialId(fbb, (useMaterial && elParams.materialId!.isValid()) ? flatbuffers.Long.create(elParams.materialId!.getLow(), elParams.materialId!.getHigh()) : flatbuffers.Long.create(0, 0));
+      materialBuilder.addMaterialId(fbb, (useMaterial && elParams.getMaterialId()) ? flatbuffers.Long.create(elParams.getMaterialId()!.getLow(), elParams.getMaterialId()!.getHigh()) : flatbuffers.Long.create(0, 0));
       materialBuilder.addSize(fbb, 0);
       materialBuilder.addOrigin(fbb, 0);
       materialBuilder.addUseMaterial(fbb, useMaterial ? 1 : 0);
@@ -611,7 +578,7 @@ export class OpCodeWriter {
     const origin = geomToElem.getTranslation();
     const rMatrix = geomToElem.matrix;
     const scaleResult = rMatrix.factorRigidWithSignedScale();
-    let scale: number | undefined;
+    let scale: number;
 
     if (!scaleResult)
       scale = 1.0;
@@ -707,68 +674,139 @@ export class OpCodeWriter {
     this.appendOperation(new Operation(OpCode.ArcPrimitive, arr));
   }
 
+  /** Append a single curve primitive, special case point primitives and arcs to store in a more compact form */
+  public appendSimplifiedCurvePrimitive(cPrimitive: CurvePrimitive, isClosed: boolean, is3d: boolean): boolean {
+    if (cPrimitive instanceof LineSegment3d) {
+      if (!is3d) {
+        const localPoints2dBuf: Point2d[] = [Point2d.create(cPrimitive.point0Ref.x, cPrimitive.point0Ref.y), Point2d.create(cPrimitive.point1Ref.x, cPrimitive.point1Ref.y)];
+        this.appendPoint2dArray(localPoints2dBuf, DgnFB.BoundaryType.Open);
+        return true;
+      }
+
+      const localPoints3dBuf: Point3d[] = [cPrimitive.point0Ref, cPrimitive.point1Ref];
+      this.appendPoint3dArray(localPoints3dBuf, DgnFB.BoundaryType.Open);
+      return true;
+    }
+
+    if (cPrimitive instanceof LineString3d) {
+      if (!is3d) {
+        const localPoints2dBuf: Point2d[] = [];
+        for (const point of cPrimitive.points)
+          localPoints2dBuf.push(Point2d.create(point.x, point.y));
+        this.appendPoint2dArray(localPoints2dBuf, isClosed ? DgnFB.BoundaryType.Closed : DgnFB.BoundaryType.Open);
+        return true;
+      }
+
+      const points: Point3d[] = cPrimitive.points;
+
+      this.appendPoint3dArray(points, isClosed ? DgnFB.BoundaryType.Closed : DgnFB.BoundaryType.Open);
+      return true;
+    }
+
+    if (cPrimitive instanceof Arc3d) {
+      this.dgnAppendArc3d(cPrimitive, isClosed ? DgnFB.BoundaryType.Closed : DgnFB.BoundaryType.Open);
+      return true;
+    }
+
+    // No specific case found.. use default options
+    if (!isClosed)
+      return false;
+
+    return this.appendCurvePrimitive(cPrimitive);
+  }
+
+  public appendSimplifiedCurveCollection(collection: CurveCollection, is3d: boolean): boolean {
+    if (!collection.children)
+      return false;
+
+    if (collection.children.length === 1 && collection.children[0] instanceof CurvePrimitive) {
+      const cPrimitive = collection.children[0];
+      if (cPrimitive instanceof LineSegment3d)
+        return this.appendSimplifiedCurvePrimitive(cPrimitive, false, is3d);  // never closed...
+      if (cPrimitive instanceof LineString3d || cPrimitive instanceof Arc3d)
+        return this.appendSimplifiedCurvePrimitive(cPrimitive, collection.isClosedPath(), is3d);
+    }
+    // Not a simple case: may need to loop through array of children or navigate down curve tree
+    // Skip check for invalidCurveCollection... not dealing with pointer based arrays or disconnect points
+    return this.appendCurveCollection(collection);
+  }
+
+  public appendSimplifiedGeometricPrimitive(gPrimitive: GeometricPrimitive, is3d: boolean): boolean {
+    switch (gPrimitive.type) {
+      case GeometryType.PointString:
+        return this.appendPointString(gPrimitive.asPointString!, is3d);
+      case GeometryType.CurvePrimitive:
+        return this.appendSimplifiedCurvePrimitive(gPrimitive.asCurvePrimitive!, false, is3d);
+      case GeometryType.CurveCollection:
+        return this.appendSimplifiedCurveCollection(gPrimitive.asCurveCollection!, is3d);
+      default:
+        return this.appendGeometricPrimitive(gPrimitive);
+    }
+  }
+
   public appendCurvePrimitive(cPrimitive: CurvePrimitive): boolean {
-    const buffer = BGFBBuilder.createFB(cPrimitive);
-    if (!buffer)
+    const arr = BGFBBuilder.createBytesWithSignature(cPrimitive);
+    if (!arr || 0 === arr.length)
       return false;
 
-    if (0 === buffer.bytes().length)
-      return false;
-
-    this.appendOperation(new Operation(OpCode.CurvePrimitive, BGFBBuilder.versionSignature, buffer.bytes(), buffer.position()));
+    this.appendOperation(new Operation(OpCode.CurvePrimitive, arr));
     return true;
   }
 
   public appendCurveCollection(collection: CurveCollection, opCode: OpCode = OpCode.CurveCollection): boolean {
-    const buffer = BGFBBuilder.createFB(collection);
-    if (!buffer)
+    const arr = BGFBBuilder.createBytesWithSignature(collection);
+    if (!arr || 0 === arr.length)
       return false;
 
-    if (buffer.bytes().length === 0)
-      return false;
+    this.appendOperation(new Operation(opCode, arr));
+    return true;
+  }
 
-    this.appendOperation(new Operation(opCode, BGFBBuilder.versionSignature, buffer.bytes(), buffer.position()));
+  public appendPointString(pointString: PointString3d, is3d: boolean): boolean {
+    if (!is3d) {
+      const localPoints2dBuf: Point2d[] = [];
+      for (const point of pointString.points)
+        localPoints2dBuf.push(Point2d.create(point.x, point.y));
+      this.appendPoint2dArray(localPoints2dBuf, DgnFB.BoundaryType.None);
+      return true;
+    }
+
+    const points: Point3d[] = pointString.points;
+    this.appendPoint3dArray(points, DgnFB.BoundaryType.None);
     return true;
   }
 
   public appendPolyface(polyface: IndexedPolyface, opCode: OpCode = OpCode.Polyface): boolean {
-    const buffer = BGFBBuilder.createFB(polyface);
-    if (!buffer)
+    const arr = BGFBBuilder.createBytesWithSignature(polyface);
+    if (!arr || 0 === arr.length)
       return false;
 
-    if (0 === buffer.bytes().length)
-      return false;
-
-    this.appendOperation(new Operation(opCode, BGFBBuilder.versionSignature, buffer.bytes(), buffer.position()));
+    this.appendOperation(new Operation(opCode, arr));
     return true;
   }
 
   public appendSolidPrimitive(sPrimitive: SolidPrimitive): boolean {
-    const buffer = BGFBBuilder.createFB(sPrimitive);
-    if (!buffer)
+    const arr = BGFBBuilder.createBytesWithSignature(sPrimitive);
+    if (!arr || 0 === arr.length)
       return false;
 
-    if (0 === buffer.bytes().length)
-      return false;
-
-    this.appendOperation(new Operation(OpCode.SolidPrimitive, BGFBBuilder.versionSignature, buffer.bytes(), buffer.position()));
+    this.appendOperation(new Operation(OpCode.SolidPrimitive, arr));
     return true;
   }
 
   public appendBsplineSurface(bspline: BSplineSurface3d): boolean {
-    const buffer = BGFBBuilder.createFB(bspline);
-    if (!buffer)
+    const arr = BGFBBuilder.createBytesWithSignature(bspline);
+    if (!arr || 0 === arr.length)
       return false;
 
-    if (0 === buffer.bytes().length)
-      return false;
-
-    this.appendOperation(new Operation(OpCode.BsplineSurface, BGFBBuilder.versionSignature, buffer.bytes(), buffer.position()));
+    this.appendOperation(new Operation(OpCode.BsplineSurface, arr));
     return true;
   }
 
   public appendGeometricPrimitive(gPrimitive: GeometricPrimitive): boolean {
     switch (gPrimitive.type) {
+      case GeometryType.PointString:
+        return this.appendPointString(gPrimitive.asPointString!, true);
       case GeometryType.CurvePrimitive:
         return this.appendCurvePrimitive(gPrimitive.asCurvePrimitive!);
       case GeometryType.CurveCollection:
@@ -890,14 +928,7 @@ export class OpCodeReader {
     if (OpCode.CurvePrimitive !== egOp.opCode)
       return undefined;
 
-    // Check version signature
-    if (!egOp.data1 || egOp.data.length !== BGFBBuilder.versionSignature.length)
-      return undefined;
-    for (let i = 0; i < egOp.data.length; i++)
-      if (!(egOp.data[i] === BGFBBuilder.versionSignature[i]))
-        return undefined;
-
-    const curve = BGFBReader.readFB(egOp.data1);
+    const curve = BGFBReader.readFB(egOp.data, BGFBBuilder.versionSignatureByteCount);
     if (curve !== undefined && curve instanceof CurvePrimitive)
       return curve;
     return undefined;
@@ -908,14 +939,7 @@ export class OpCodeReader {
     if (OpCode.CurveCollection !== egOp.opCode)
       return undefined;
 
-    // Check version signature
-    if (!egOp.data1 || egOp.data.length !== BGFBBuilder.versionSignature.length)
-      return undefined;
-    for (let i = 0; i < egOp.data.length; i++)
-      if (!(egOp.data[i] === BGFBBuilder.versionSignature[i]))
-        return undefined;
-
-    const curves = BGFBReader.readFB(egOp.data1);
+    const curves = BGFBReader.readFB(egOp.data, BGFBBuilder.versionSignatureByteCount);
     if (curves !== undefined && curves instanceof CurveCollection)
       return curves;
     return undefined;
@@ -926,14 +950,7 @@ export class OpCodeReader {
     if (OpCode.Polyface !== egOp.opCode)
       return undefined;
 
-    // Check version signature
-    if (!egOp.data1 || egOp.data.length !== BGFBBuilder.versionSignature.length)
-      return undefined;
-    for (let i = 0; i < egOp.data.length; i++)
-      if (!(egOp.data[i] === BGFBBuilder.versionSignature[i]))
-        return undefined;
-
-    const polyface = BGFBReader.readFB(egOp.data1);
+    const polyface = BGFBReader.readFB(egOp.data, BGFBBuilder.versionSignatureByteCount);
     if (polyface !== undefined && polyface instanceof IndexedPolyface)
       return polyface;
     return undefined;
@@ -944,14 +961,7 @@ export class OpCodeReader {
     if (OpCode.SolidPrimitive !== egOp.opCode)
       return undefined;
 
-    // Check version signature
-    if (!egOp.data1 || egOp.data.length !== BGFBBuilder.versionSignature.length)
-      return undefined;
-    for (let i = 0; i < egOp.data.length; i++)
-      if (!(egOp.data[i] === BGFBBuilder.versionSignature[i]))
-        return undefined;
-
-    const solidPrimitive = BGFBReader.readFB(egOp.data1);
+    const solidPrimitive = BGFBReader.readFB(egOp.data, BGFBBuilder.versionSignatureByteCount);
     if (solidPrimitive !== undefined && solidPrimitive instanceof SolidPrimitive)
       return solidPrimitive;
     return undefined;
@@ -962,14 +972,7 @@ export class OpCodeReader {
     if (OpCode.BsplineSurface !== egOp.opCode)
       return undefined;
 
-    // Check version signature
-    if (!egOp.data1 || egOp.data.length !== BGFBBuilder.versionSignature.length)
-      return undefined;
-    for (let i = 0; i < egOp.data.length; i++)
-      if (!(egOp.data[i] === BGFBBuilder.versionSignature[i]))
-        return undefined;
-
-    const bspline = BGFBReader.readFB(egOp.data1);
+    const bspline = BGFBReader.readFB(egOp.data, BGFBBuilder.versionSignatureByteCount);
     if (bspline !== undefined && bspline instanceof BSplineSurface3d)
       return bspline;
     return undefined;
@@ -998,11 +1001,7 @@ export class OpCodeReader {
 
         switch (boundary) {
           case DgnFB.BoundaryType.None:
-            /* NOTE: HAVE TO IMPLEMENT
-            elemGeom = GeometricPrimitive.createCurvePrimitiveRef(CurvePrimitive.createPointString(localPoints3dBuf));
-            break;
-            */
-            return undefined;
+            return GeometricPrimitive.createPointStringRef(PointString3d.createPoints(localPoints3dBuf));
           case DgnFB.BoundaryType.Open:
             return GeometricPrimitive.createCurvePrimitiveRef(LineString3d.createPoints(localPoints3dBuf));
           case DgnFB.BoundaryType.Closed:
@@ -1019,11 +1018,7 @@ export class OpCodeReader {
 
         switch (boundary) {
           case DgnFB.BoundaryType.None:
-            /* NOTE: HAVE TO IMPLEMENT
-            elemGeom = GeometricPrimitive.createCurvePrimitiveRef(CurvePrimitive.createPointString(localPoints3dBuf));
-            break;
-            */
-            return undefined;
+            return GeometricPrimitive.createPointStringRef(PointString3d.createPoints(pts));
           case DgnFB.BoundaryType.Open:
             return GeometricPrimitive.createCurvePrimitiveRef(LineString3d.createPoints(pts));
           case DgnFB.BoundaryType.Closed:
@@ -1123,10 +1118,10 @@ export class OpCodeReader {
     return undefined;
   }
 
-  /** Stores the read GeometricParams into the GeometricParams object given. If certain members read are not valid, preserves the old values.
+  /** Stores the read GeometryParams into the GeometryParams object given. If certain members read are not valid, preserves the old values.
    *  Returns true if the original elParams argument is changed
    */
-  public getGeometryParams(egOp: Operation, elParams: GeometryProps): boolean {
+  public getGeometryParams(egOp: Operation, elParams: GeometryParams): boolean {
     let changed = false;
 
     switch (egOp.opCode) {
@@ -1143,7 +1138,7 @@ export class OpCodeReader {
         if (ppfb.useColor()) {
           const lineColor = new ColorDef(ppfb.color());
 
-          if (elParams.isLineColorFromSubCategoryAppearance() || (elParams.lineColor && !lineColor.equals(elParams.lineColor))) {
+          if (elParams.isLineColorFromSubCategoryAppearance() || !lineColor.equals(elParams.getLineColor())) {
             elParams.setLineColor(lineColor);
             changed = true;
           }
@@ -1152,7 +1147,7 @@ export class OpCodeReader {
         if (ppfb.useWeight()) {
           const weight = ppfb.weight();
 
-          if (elParams.isWeightFromSubCategoryAppearance() || weight !== elParams.weight) {
+          if (elParams.isWeightFromSubCategoryAppearance() || weight !== elParams.getWeight()) {
             elParams.setWeight(weight);
             changed = true;
           }
@@ -1161,7 +1156,7 @@ export class OpCodeReader {
         if (ppfb.useStyle()) {
           const styleId = new Id64([ppfb.lineStyleId().low, ppfb.lineStyleId().high]);
 
-          if (elParams.isLineStyleFromSubCategoryAppearance() || !styleId.equals(elParams.lineStyle ? elParams.lineStyle.styleId : new Id64())) {
+          if (elParams.isLineStyleFromSubCategoryAppearance() || !styleId.equals(elParams.getLineStyle() ? elParams.getLineStyle()!.styleId : new Id64())) {
             if (styleId.isValid()) {
               const lsInfo = LineStyleInfo.create(styleId, undefined);
               elParams.setLineStyle(lsInfo);
@@ -1173,18 +1168,33 @@ export class OpCodeReader {
         }
 
         const transparency = ppfb.transparency();
-        if (transparency !== elParams.transparency) {
+        if (transparency !== elParams.getTransparency()) {
           elParams.setTransparency(transparency);
           changed = true;
         }
         const displayPriority = ppfb.displayPriority();
-        if (displayPriority !== elParams.displayPriority) {
+        if (displayPriority !== elParams.getDisplayPriority()) {
           elParams.setDisplayPriority(displayPriority);
           changed = true;
         }
-        const geomClass = ppfb.geomClass();
-        if (geomClass !== elParams.geometryClass) {
-          elParams.setGeometryClass(geomClass);
+
+        let geometryClass = GeometryClass.Primary;
+        switch (ppfb.geomClass()) {
+          case DgnFB.GeometryClass.Primary:
+            geometryClass = GeometryClass.Primary;
+            break;
+          case DgnFB.GeometryClass.Construction:
+            geometryClass = GeometryClass.Construction;
+            break;
+          case DgnFB.GeometryClass.Dimension:
+            geometryClass = GeometryClass.Dimension;
+            break;
+          case DgnFB.GeometryClass.Dimension:
+            geometryClass = GeometryClass.Dimension;
+            break;
+        }
+        if (geometryClass !== elParams.getGeometryClass()) {
+          elParams.setGeometryClass(geometryClass);
           changed = true;
         }
 
@@ -1194,30 +1204,43 @@ export class OpCodeReader {
         const buffer = new flatbuffers.ByteBuffer(egOp.data);
         const ppfb = DgnFB.AreaFill.getRootAsAreaFill(buffer);
 
-        const fillDisplay = ppfb.fill();
-        if (fillDisplay !== elParams.fillDisplay) {
+        let fillDisplay = FillDisplay.Never;
+        switch (ppfb.fill()) {
+          case DgnFB.FillDisplay.None:
+            fillDisplay = FillDisplay.Never;
+            break;
+          case DgnFB.FillDisplay.ByView:
+            fillDisplay = FillDisplay.ByView;
+            break;
+          case DgnFB.FillDisplay.Always:
+            fillDisplay = FillDisplay.Always;
+            break;
+          case DgnFB.FillDisplay.Blanking:
+            fillDisplay = FillDisplay.Blanking;
+            break;
+        }
+        if (fillDisplay !== elParams.getFillDisplay()) {
           elParams.setFillDisplay(fillDisplay);
           changed = true;
         }
 
-        if (fillDisplay !== DgnFB.FillDisplay.None) {
+        if (fillDisplay !== FillDisplay.Never) {
           const transparency = ppfb.transparency();
-          const mode = ppfb.mode();
 
-          if (transparency !== elParams.fillTransparency) {
+          if (transparency !== elParams.getFillTransparency()) {
             elParams.setFillTransparency(transparency);
             changed = true;
           }
-          if (mode === DgnFB.GradientMode.None) {
+          if (ppfb.mode() === DgnFB.GradientMode.None) {
             if (ppfb.useColor()) {
               const fillColor = new ColorDef(ppfb.color());
-              if (elParams.isFillColorFromSubCategoryAppearance() || (elParams.fillColor && !fillColor.equals(elParams.fillColor))) {
+              if (elParams.isFillColorFromSubCategoryAppearance() || !fillColor.equals(elParams.getFillColor())) {
                 elParams.setFillColor(fillColor);
                 changed = true;
               }
             } else if (ppfb.backgroundFill() !== 0) {
               const currBgFill = elParams.isFillColorFromViewBackground();
-              const currOutline = elParams.isBackgroundFillOfTypeOutline();
+              const currOutline = elParams.isBackgroundFillOutlined();
               const useOutline = (2 === ppfb.backgroundFill());
 
               if (!currBgFill || useOutline !== currOutline) {
@@ -1226,26 +1249,47 @@ export class OpCodeReader {
               }
             }
           } else {
-            const gradient = GradientSymb.createDefaults();
-            gradient.setMode(mode);
-            gradient.setFlags(ppfb.flags());
-            gradient.setShift(ppfb.shift());
-            gradient.setTint(ppfb.tint());
-            gradient.setAngle(ppfb.angle());
+            const gradient = new Gradient.Symb();
+
+            let gradientMode = Gradient.Mode.None;
+            switch (ppfb.mode()) {
+              case DgnFB.GradientMode.None:
+                gradientMode = Gradient.Mode.None;
+                break;
+              case DgnFB.GradientMode.Linear:
+                gradientMode = Gradient.Mode.Linear;
+                break;
+              case DgnFB.GradientMode.Curved:
+                gradientMode = Gradient.Mode.Curved;
+                break;
+              case DgnFB.GradientMode.Cylindrical:
+                gradientMode = Gradient.Mode.Cylindrical;
+                break;
+              case DgnFB.GradientMode.Spherical:
+                gradientMode = Gradient.Mode.Spherical;
+                break;
+              case DgnFB.GradientMode.Hemispherical:
+                gradientMode = Gradient.Mode.Hemispherical;
+                break;
+            }
+
+            gradient.mode = gradientMode;
+            gradient.flags = ppfb.flags();
+            gradient.shift = ppfb.shift();
+            gradient.tint = ppfb.tint();
+            gradient.angle = ppfb.angle();
 
             const colors = ppfb.colorsArray();
-            const keyColors: ColorDef[] = [];
             const values = ppfb.valuesArray();
-            const keyValues: number[] = [];
 
             if (colors)
               for (const color of colors)
-                keyColors.push(new ColorDef(color));
+                gradient.colors.push(new ColorDef(color));
+
             if (values)
               for (const value of values)
-                keyValues.push(value);
+                gradient.values.push(value);
 
-            gradient.setKeys(keyColors.length, keyColors, keyValues);
             elParams.setGradient(gradient);
           }
         }
@@ -1311,7 +1355,7 @@ export class OpCodeReader {
         }
         pattern.setDwgHatchDef(defLines);
 
-        if (elParams.patternParams === undefined || !elParams.patternParams.isEqualTo(pattern)) {
+        if (elParams.getPatternParams() || !elParams.getPatternParams()!.isEqualTo(pattern)) {
           elParams.setPatternParams(pattern);
           changed = true;
         }
@@ -1324,7 +1368,7 @@ export class OpCodeReader {
         if (ppfb.useMaterial()) {
           const material = new Id64([ppfb.materialId().low, ppfb.materialId().high]);
 
-          if (elParams.isMaterialFromSubCategoryAppearance() || (elParams.materialId && !material.equals(elParams.materialId))) {
+          if (elParams.isMaterialFromSubCategoryAppearance() || (elParams.getMaterialId() && !material.equals(elParams.getMaterialId()!))) {
             elParams.setMaterialId(material);
             changed = true;
           }
@@ -1336,7 +1380,7 @@ export class OpCodeReader {
         const ppfb = DgnFB.LineStyleModifiers.getRootAsLineStyleModifiers(buffer);
 
         let styleId: Id64;
-        const currentLsInfo = elParams.lineStyle;
+        const currentLsInfo = elParams.getLineStyle();
         if (currentLsInfo)
           styleId = currentLsInfo.styleId;
         else
@@ -1399,21 +1443,8 @@ export class OpCodeIterator {
     const dataSize = data32[index0 + 1];
     const opSize = dataSize + 8;
 
-    // Assign to either data or.. data AND data1 in operation based on whether a signature is needed (Will be using geometry-core serializers)
-    switch (data32[index0]) {
-      case OpCode.CurvePrimitive:
-      case OpCode.CurveCollection:
-      case OpCode.Polyface:
-      case OpCode.SolidPrimitive:
-      case OpCode.BsplineSurface:
-      case OpCode.BRepPolyface:
-      case OpCode.BRepCurveVector:
-        this.egOp = new Operation(data32[index0], this.data!.slice(this.dataOffset + 8, this.dataOffset + 16), this.data!.slice(this.dataOffset + 16, this.dataOffset + opSize));
-        break;
-      default:
-        this.egOp = new Operation(data32[index0], this.data!.slice(this.dataOffset + 8, this.dataOffset + opSize));
-        break;
-    }
+    // Assign to data
+    this.egOp = new Operation(data32[index0], this.data!.slice(this.dataOffset + 8, this.dataOffset + opSize));
 
     // Move to the next block
     this.dataOffset += opSize;
@@ -1628,8 +1659,8 @@ export class GeometryStreamBuilder {
   /** Current Placement2d as of last call to Append when creating a 2d GeometryStream */
   public readonly placement2d = new Placement2d(Point2d.createZero(), Angle.createDegrees(0.0), new ElementAlignedBox2d());
   /** Current GeometryParams as of last call to Append */
-  public geometryParams = new GeometryProps(new Id64());
-  private geometryParamsModified: GeometryProps | undefined;
+  public geometryParams = new GeometryParams(new Id64());
+  private geometryParamsModified: GeometryParams | undefined;
   private writer = new OpCodeWriter();
 
   /** Current size (in bytes) of the GeometryStream being constructed */
@@ -1665,12 +1696,13 @@ export class GeometryStreamBuilder {
     return retVal;
   }
 
-  /** Create builder from model, categoryId, and placement as represented by a transform.
-   *  NOTE: Transform must satisfy requirements of YawPitchRollAngles.TryFromTransform; scale is not supported
+  /** Create builder from categoryId, and placement as represented by a transform.
+   * NOTE: Transform must satisfy requirements of YawPitchRollAngles.TryFromTransform; scale is not supported
+   * @throws [[IModelError]] if categoryId or transform is invalid.
    */
-  public static fromTransform(categoryId: Id64, transform: Transform, is3d: boolean): GeometryStreamBuilder | undefined {
+  public static fromTransform(categoryId: Id64, transform: Transform, is3d: boolean): GeometryStreamBuilder {
     if (!categoryId.isValid())
-      return undefined;
+      throw new IModelError(IModelStatus.InvalidCategory, "Invalid category");
 
     const origin = transform.getOrigin();
     const rMatrix = transform.matrix;
@@ -1683,37 +1715,41 @@ export class GeometryStreamBuilder {
       const resultMatrix = angles.toRotMatrix();
 
       if (rMatrix.maxDiff(resultMatrix) > 1.0e-5)
-        return undefined;
+        throw new IModelError(IModelStatus.BadArg, "Invalid transform");
     }
 
     if (is3d) {
       const placement3d = new Placement3d(origin, angles, new ElementAlignedBox3d());
-      return GeometryStreamBuilder.fromPlacement3d(/* model */ categoryId, placement3d);
+      return GeometryStreamBuilder.fromPlacement3d(categoryId, placement3d);
     }
 
     if (origin.z !== 0 || angles.pitch.degrees !== 0 || angles.roll.degrees !== 0)
-      return undefined;
+      throw new IModelError(IModelStatus.BadArg, "Invalid transform");
 
     const placement2d = new Placement2d(Point2d.create(origin.x, origin.y), angles.yaw, new ElementAlignedBox2d());
     return GeometryStreamBuilder.fromPlacement2d(categoryId, placement2d);
   }
 
-  /** Create 3d builder from model, categoryId, origin, and optional YawPitchRollAngles */
-  public static fromCategoryIdAndOrigin3d(categoryId: Id64, origin: Point3d, angles?: YawPitchRollAngles): GeometryStreamBuilder | undefined {
+  /** Create 3d builder from categoryId, origin, and optional YawPitchRollAngles.
+   * @throws [[IModelError]] if categoryId is invalid.
+   */
+  public static fromCategoryIdAndOrigin3d(categoryId: Id64, origin: Point3d, angles?: YawPitchRollAngles): GeometryStreamBuilder {
     if (!categoryId.isValid())
-      return undefined;
+      throw new IModelError(IModelStatus.InvalidCategory, "Invalid category");
 
     if (!angles)
       angles = YawPitchRollAngles.createDegrees(0, 0, 0);
 
     const placement = new Placement3d(origin, angles, new ElementAlignedBox3d());
-    return GeometryStreamBuilder.fromPlacement3d(/* imodel, */ categoryId, placement);
+    return GeometryStreamBuilder.fromPlacement3d(categoryId, placement);
   }
 
-  /** Create 3d builder from model, categoryId, origin, and optional rotation Angle */
-  public static fromCategoryIdAndOrigin2d(categoryId: Id64, origin: Point2d, angle?: Angle): GeometryStreamBuilder | undefined {
+  /** Create 2d builder from categoryId, origin, and optional rotation Angle.
+   * @throws [[IModelError]] if categoryId is invalid.
+   */
+  public static fromCategoryIdAndOrigin2d(categoryId: Id64, origin: Point2d, angle?: Angle): GeometryStreamBuilder {
     if (!categoryId.isValid())
-      return undefined;
+      throw new IModelError(IModelStatus.InvalidCategory, "Invalid category");
 
     if (!angle)
       angle = Angle.createDegrees(0);
@@ -1799,6 +1835,7 @@ export class GeometryStreamBuilder {
 
     switch (geom.type) {
       case GeometryType.CurvePrimitive:
+      case GeometryType.PointString:
         opCode = OpCode.CurvePrimitive;
         break;
       case GeometryType.CurveCollection:
@@ -1830,7 +1867,7 @@ export class GeometryStreamBuilder {
   private onNewGeom(localRange: Range3d, isSubGraphic: boolean, opCode: OpCode) {
     // NOTE: range to include line style width. Maybe this should be removed when/if we start doing locate from mesh tiles...
     if (this.geometryParams.categoryId.isValid()) {
-      const lsInfo = this.geometryParams.lineStyle;
+      const lsInfo = ((!this.geometryParams.isLineStyleFromSubCategoryAppearance() || this.geometryParams.isResolved()) ? this.geometryParams.getLineStyle() : undefined); // NEEDSWORK: geometryParams isn't resolved...
 
       if (lsInfo !== undefined) {
         const maxWidth = lsInfo.lStyleSymb.styleWidth;
@@ -1885,8 +1922,8 @@ export class GeometryStreamBuilder {
     let hasInvalidMaterial = false;
 
     if (!allowPatGradnt || !allowSolidFill || !allowLineStyle || !allowMaterial) {
-      if (DgnFB.FillDisplay.None !== this.geometryParams.fillDisplay) {
-        if (this.geometryParams.gradient !== undefined) {
+      if (FillDisplay.Never !== this.geometryParams.getFillDisplay()) {
+        if (this.geometryParams.getGradient() !== undefined) {
           if (!allowPatGradnt)
             hasInvalidPatGradnt = true;
         } else {
@@ -1895,11 +1932,11 @@ export class GeometryStreamBuilder {
         }
       }
 
-      if (!allowPatGradnt && this.geometryParams.patternParams !== undefined)
+      if (!allowPatGradnt && this.geometryParams.getPatternParams() !== undefined)
         hasInvalidPatGradnt = true;
       if (!allowLineStyle && !this.geometryParams.isLineStyleFromSubCategoryAppearance() && this.geometryParams.hasStrokedLineStyle())
         hasInvalidLineStyle = true;
-      if (!allowMaterial && !this.geometryParams.isMaterialFromSubCategoryAppearance() && this.geometryParams.materialId && this.geometryParams.materialId.isValid())
+      if (!allowMaterial && !this.geometryParams.isMaterialFromSubCategoryAppearance() && this.geometryParams.getMaterialId() && this.geometryParams.getMaterialId()!.isValid())
         hasInvalidMaterial = true;
     }
 
@@ -1914,12 +1951,12 @@ export class GeometryStreamBuilder {
         localParams.setPatternParams(undefined);
       }
       if (hasInvalidSolidFill || hasInvalidPatGradnt)
-        localParams.setFillDisplay(DgnFB.FillDisplay.None);
+        localParams.setFillDisplay(FillDisplay.Never);
       if (hasInvalidLineStyle)
         localParams.setLineStyle(undefined);
       if (hasInvalidMaterial)
         localParams.setMaterialId(new Id64());
-      if (!this.appearanceModified || (this.geometryParamsModified && !this.geometryParamsModified.isEqualTo(localParams))) {
+      if (!this.appearanceModified || (this.geometryParamsModified && !this.geometryParamsModified.isEquivalent(localParams))) {
         this.geometryParamsModified = localParams;
         this.writer.appendGeometryParams(this.geometryParamsModified, this.isPartCreate, this.is3d);
         this.appearanceChanged = this.appearanceModified = true;
@@ -1945,7 +1982,7 @@ export class GeometryStreamBuilder {
       this.placement3d.setFrom(new Placement3d(Point3d.createZero(), YawPitchRollAngles.createDegrees(0.0, 0.0, 0.0), new ElementAlignedBox3d()));
     else
       this.placement2d.setFrom(new Placement2d(Point2d.createZero(), Angle.createDegrees(0.0), new ElementAlignedBox2d()));
-    this.geometryParams = new GeometryProps(this.geometryParams.categoryId, this.geometryParams.subCategoryId);
+    this.geometryParams = new GeometryParams(this.geometryParams.categoryId, this.geometryParams.subCategoryId);
     this.geometryParamsModified = undefined;
     this.writer.reset();
   }
@@ -1954,7 +1991,7 @@ export class GeometryStreamBuilder {
    *  NOTE - If no symbology is specifically set in a GeometryStream, the GeometricPrimitive display uses the default SubCategoryId for the GeometricElement's CategoryId.
    */
   public appendSubCategoryId(subCategoryId: Id64): boolean {
-    const elParams = new GeometryProps(this.geometryParams.categoryId, subCategoryId); // Preserve current category...
+    const elParams = new GeometryParams(this.geometryParams.categoryId, subCategoryId); // Preserve current category...
     return this.appendGeometryParams(elParams);
   }
 
@@ -1962,7 +1999,7 @@ export class GeometryStreamBuilder {
    *  NOTE: If no symbology is specifically set in a GeometryStream, the GeometricPrimitive display uses the default SubCategoryId for the GeometricElement's
    *  CategoryId. World vs. local affects PatternParams and LineStyleInfo that need to store an orientation and other "placement" relative info.
    */
-  public appendGeometryParams(elParams: GeometryProps, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
+  public appendGeometryParams(elParams: GeometryParams, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
     // NOTE: Allow explicit symbology in GeometryPart's GeometryStream, sub-category won't be persisted
     if (!this.isPartCreate) {
       if (!this.geometryParams.categoryId.isValid())
@@ -1999,7 +2036,7 @@ export class GeometryStreamBuilder {
       }
     }
 
-    if (this.geometryParams.isEqualTo(elParams))
+    if (this.geometryParams.isEquivalent(elParams))
       return true;
 
     this.geometryParams = elParams.clone();
@@ -2097,6 +2134,23 @@ export class GeometryStreamBuilder {
     return this.appendWorld(wrappedGeom);
   }
 
+  /** Append a PointString3d to builder in either local or world coordinates. */
+  public appendPointString(geom: PointString3d, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
+    if (coord === GeomCoordSystem.Local) {
+      const localRange = Range3d.createNull();
+      geom.extendRange(localRange);
+
+      if (localRange.isNull())
+        return false;
+
+      this.onNewGeom(localRange, this.appendAsSubGraphics, OpCode.CurvePrimitive);
+      return this.writer.appendPointString(geom, this.is3d);
+    }
+
+    const wrappedGeom = GeometricPrimitive.createPointStringClone(geom);
+    return this.appendWorld(wrappedGeom);
+  }
+
   /** Append a SolidPrimitive to builder in either local or world coordinates.
    *  NOTE: Only valid with a 3d builder
    */
@@ -2171,6 +2225,8 @@ export class GeometryStreamBuilder {
       return this.appendCurvePrimitive(geometry, coord);
     if (geometry instanceof CurveCollection)
       return this.appendCurveCollection(geometry, coord);
+    if (geometry instanceof PointString3d)
+      return this.appendPointString(geometry, coord);
     if (geometry instanceof IndexedPolyface)
       return this.appendPolyface(geometry, coord);
     if (geometry instanceof SolidPrimitive)

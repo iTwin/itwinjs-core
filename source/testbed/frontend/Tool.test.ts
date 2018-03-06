@@ -8,22 +8,16 @@ import { Id64 } from "@bentley/bentleyjs-core";
 
 const iModelLocation = path.join(__dirname, "../../../backend/lib/test/assets/test.bim");
 
-class TestIModelApp extends IModelApp {
-  protected static supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
-}
-
-// tslint:disable:only-arrow-functions
-// tslint:disable-next-line:space-before-function-paren
-describe("Tools", function () {
+describe("Tools", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    TestIModelApp.startup();
+    IModelApp.startup();
     imodel = await IModelConnection.openStandalone(iModelLocation);
   });
   after(async () => {
     if (imodel) await imodel.closeStandalone();
-    TestIModelApp.shutdown();
+    IModelApp.shutdown();
   });
 
   it("ElementAgenda tests", () => {
