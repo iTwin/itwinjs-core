@@ -5,7 +5,7 @@
 import {
   Point2d, Point3d, Vector3d, YawPitchRollAngles, Transform, RotMatrix, Range3d,
   CurveCollection, Loop, BSplineSurface3d, GeometryQuery, CurvePrimitive,
-  SolidPrimitive, IndexedPolyface, Angle, AngleSweep, Arc3d, LineSegment3d, LineString3d,
+  SolidPrimitive, IndexedPolyface, Angle, AngleSweep, Arc3d, LineSegment3d, LineString3d, PointString3d,
 } from "@bentley/geometry-core";
 import { BGFBBuilder, BGFBReader } from "@bentley/geometry-core/lib/serialization/BGFB";
 import { Id64 } from "@bentley/bentleyjs-core";
@@ -18,6 +18,7 @@ import { ColorDef } from "../ColorDef";
 import { flatbuffers } from "flatbuffers";
 import { DgnFB } from "./ElementGraphicsSchema";
 import { Base64 } from "js-base64";
+import { IModelError, IModelStatus } from "../IModelError";
 
 /** GeometryStream wrapper class for the array buffer */
 export class GeometryStream {
@@ -154,21 +155,14 @@ class Header {
 /** Internal op code */
 export class Operation {
   public opCode: number;
-  // If signature is included, the signature will be held in data, and flatbuffer contents in data1, otherwise, all data lies in data
   public data: Uint8Array;
-  public data1: Uint8Array | undefined;
-  public data1Position = 0;
 
   /** Creates a new operation, typically then used to append to a writer. If using the geometry-core BGFB builder, the signature is placed
    *  in data, and then the Uint8Array of the geometry data is placed in data1, followed by the position returned by the BGFB builder
    */
-  public constructor(opCode: OpCode, data: Uint8Array, data1?: Uint8Array, data1Position?: number) {
+  public constructor(opCode: OpCode, data: Uint8Array) {
     this.opCode = opCode;
     this.data = data;
-    if (data1) {
-      this.data1 = data1;
-      this.data1Position = data1Position!;    // Should always come together
-    }
   }
 
   public isGeometryOp(): boolean {
@@ -256,7 +250,7 @@ export class OpCodeWriter {
   }
 
   private appendOperation(egOp: Operation) {
-    const totalegOpSize = 8 + egOp.data.length + (egOp.data1 ? egOp.data1.length - egOp.data1Position! : 0);   // Plus 8 for the data size and the opCode
+    const totalegOpSize = 8 + egOp.data.length;   // Plus 8 for the data size and the opCode
     let indexToAppendTo = Math.floor(this.buffer.byteLength / 4);
     this.resize(this.buffer.byteLength + totalegOpSize);
 
@@ -275,86 +269,11 @@ export class OpCodeWriter {
     for (const item of egOp.data) {
       currView[indexToAppendTo++] = item;
     }
-
-    // Add data1 if exists
-    if (egOp.data1)
-      for (let i = egOp.data1Position; i < egOp.data1.length; i++)
-        currView[indexToAppendTo++] = egOp.data1[i];
   }
 
   public appendHeader(flags: number = 0) {
     const header = new Header(1, flags);
     this.appendOperation(new Operation(OpCode.Header, new Uint8Array(header.buffer.buffer)));
-  }
-
-  /** Append a single curve primitive, special case point primitives and arcs to store in a more compact form */
-  public appendSimplifiedCurvePrimitive(cPrimitive: CurvePrimitive, isClosed: boolean, is3d: boolean): boolean {
-    if (cPrimitive instanceof LineSegment3d) {
-      if (!is3d) {
-        const localPoints2dBuf: Point2d[] = [Point2d.create(cPrimitive.point0Ref.x, cPrimitive.point0Ref.y), Point2d.create(cPrimitive.point1Ref.x, cPrimitive.point1Ref.y)];
-        this.appendPoint2dArray(localPoints2dBuf, DgnFB.BoundaryType.Open);
-        return true;
-      }
-
-      const localPoints3dBuf: Point3d[] = [cPrimitive.point0Ref, cPrimitive.point1Ref];
-      this.appendPoint3dArray(localPoints3dBuf, DgnFB.BoundaryType.Open);
-      return true;
-    }
-
-    if (cPrimitive instanceof LineString3d) {
-      if (!is3d) {
-        const localPoints2dBuf: Point2d[] = [];
-        for (const point of cPrimitive.points)
-          localPoints2dBuf.push(Point2d.create(point.x, point.y));
-        this.appendPoint2dArray(localPoints2dBuf, isClosed ? DgnFB.BoundaryType.Closed : DgnFB.BoundaryType.Open);
-        return true;
-      }
-
-      const points: Point3d[] = cPrimitive.points;
-
-      this.appendPoint3dArray(points, isClosed ? DgnFB.BoundaryType.Closed : DgnFB.BoundaryType.Open);
-      return true;
-    }
-
-    // if (cPrimitive instanceof PointString)
-
-    if (cPrimitive instanceof Arc3d) {
-      this.dgnAppendArc3d(cPrimitive, isClosed ? DgnFB.BoundaryType.Closed : DgnFB.BoundaryType.Open);
-      return true;
-    }
-
-    // No specific case found.. use default options
-    if (!isClosed)
-      return false;
-
-    return this.appendCurvePrimitive(cPrimitive);
-  }
-
-  public appendSimplifiedCurveCollection(collection: CurveCollection, is3d: boolean): boolean {
-    if (!collection.children)
-      return false;
-
-    if (collection.children.length === 1 && collection.children[0] instanceof CurvePrimitive) {
-      const cPrimitive = collection.children[0];
-      if (cPrimitive instanceof LineSegment3d /* || cPrimitive instanceof PointString */)
-        return this.appendSimplifiedCurvePrimitive(cPrimitive, false, is3d);  // never closed...
-      if (cPrimitive instanceof LineString3d || cPrimitive instanceof Arc3d)
-        return this.appendSimplifiedCurvePrimitive(cPrimitive, collection.isClosedPath(), is3d);
-    }
-    // Not a simple case: may need to loop through array of children or navigate down curve tree
-    // Skip check for invalidCurveCollection... not dealing with pointer based arrays or disconnect points
-    return this.appendCurveCollection(collection);
-  }
-
-  public appendSimplifiedGeometricPrimitive(gPrimitive: GeometricPrimitive, is3d: boolean): boolean {
-    switch (gPrimitive.type) {
-      case GeometryType.CurvePrimitive:
-        return this.appendSimplifiedCurvePrimitive(gPrimitive.asCurvePrimitive!, false, is3d);
-      case GeometryType.CurveCollection:
-        return this.appendSimplifiedCurveCollection(gPrimitive.asCurveCollection!, is3d);
-      default:
-        return this.appendGeometricPrimitive(gPrimitive);
-    }
   }
 
   public appendGeometryParams(elParams: GeometryProps, ignoreSubCategory: boolean, is3d: boolean) {
@@ -365,7 +284,6 @@ export class OpCodeWriter {
 
     // Assume at this point, then, that all necessary parameters are defined in elParams as needed by the series of checks...
     // To ensure values are inserted, the params are treated as a native struct, where if undefined, takes the form of zeros
-
     if (useColor || useWeight || useStyle || 0 !== elParams.transparency || 0 !== priority || DgnFB.GeometryClass.Primary !== elParams.geometryClass) {
 
       const fbb = new flatbuffers.Builder();
@@ -611,7 +529,7 @@ export class OpCodeWriter {
     const origin = geomToElem.getTranslation();
     const rMatrix = geomToElem.matrix;
     const scaleResult = rMatrix.factorRigidWithSignedScale();
-    let scale: number | undefined;
+    let scale: number;
 
     if (!scaleResult)
       scale = 1.0;
@@ -707,68 +625,139 @@ export class OpCodeWriter {
     this.appendOperation(new Operation(OpCode.ArcPrimitive, arr));
   }
 
+  /** Append a single curve primitive, special case point primitives and arcs to store in a more compact form */
+  public appendSimplifiedCurvePrimitive(cPrimitive: CurvePrimitive, isClosed: boolean, is3d: boolean): boolean {
+    if (cPrimitive instanceof LineSegment3d) {
+      if (!is3d) {
+        const localPoints2dBuf: Point2d[] = [Point2d.create(cPrimitive.point0Ref.x, cPrimitive.point0Ref.y), Point2d.create(cPrimitive.point1Ref.x, cPrimitive.point1Ref.y)];
+        this.appendPoint2dArray(localPoints2dBuf, DgnFB.BoundaryType.Open);
+        return true;
+      }
+
+      const localPoints3dBuf: Point3d[] = [cPrimitive.point0Ref, cPrimitive.point1Ref];
+      this.appendPoint3dArray(localPoints3dBuf, DgnFB.BoundaryType.Open);
+      return true;
+    }
+
+    if (cPrimitive instanceof LineString3d) {
+      if (!is3d) {
+        const localPoints2dBuf: Point2d[] = [];
+        for (const point of cPrimitive.points)
+          localPoints2dBuf.push(Point2d.create(point.x, point.y));
+        this.appendPoint2dArray(localPoints2dBuf, isClosed ? DgnFB.BoundaryType.Closed : DgnFB.BoundaryType.Open);
+        return true;
+      }
+
+      const points: Point3d[] = cPrimitive.points;
+
+      this.appendPoint3dArray(points, isClosed ? DgnFB.BoundaryType.Closed : DgnFB.BoundaryType.Open);
+      return true;
+    }
+
+    if (cPrimitive instanceof Arc3d) {
+      this.dgnAppendArc3d(cPrimitive, isClosed ? DgnFB.BoundaryType.Closed : DgnFB.BoundaryType.Open);
+      return true;
+    }
+
+    // No specific case found.. use default options
+    if (!isClosed)
+      return false;
+
+    return this.appendCurvePrimitive(cPrimitive);
+  }
+
+  public appendSimplifiedCurveCollection(collection: CurveCollection, is3d: boolean): boolean {
+    if (!collection.children)
+      return false;
+
+    if (collection.children.length === 1 && collection.children[0] instanceof CurvePrimitive) {
+      const cPrimitive = collection.children[0];
+      if (cPrimitive instanceof LineSegment3d)
+        return this.appendSimplifiedCurvePrimitive(cPrimitive, false, is3d);  // never closed...
+      if (cPrimitive instanceof LineString3d || cPrimitive instanceof Arc3d)
+        return this.appendSimplifiedCurvePrimitive(cPrimitive, collection.isClosedPath(), is3d);
+    }
+    // Not a simple case: may need to loop through array of children or navigate down curve tree
+    // Skip check for invalidCurveCollection... not dealing with pointer based arrays or disconnect points
+    return this.appendCurveCollection(collection);
+  }
+
+  public appendSimplifiedGeometricPrimitive(gPrimitive: GeometricPrimitive, is3d: boolean): boolean {
+    switch (gPrimitive.type) {
+      case GeometryType.PointString:
+        return this.appendPointString(gPrimitive.asPointString!, is3d);
+      case GeometryType.CurvePrimitive:
+        return this.appendSimplifiedCurvePrimitive(gPrimitive.asCurvePrimitive!, false, is3d);
+      case GeometryType.CurveCollection:
+        return this.appendSimplifiedCurveCollection(gPrimitive.asCurveCollection!, is3d);
+      default:
+        return this.appendGeometricPrimitive(gPrimitive);
+    }
+  }
+
   public appendCurvePrimitive(cPrimitive: CurvePrimitive): boolean {
-    const buffer = BGFBBuilder.createFB(cPrimitive);
-    if (!buffer)
+    const arr = BGFBBuilder.createBytesWithSignature(cPrimitive);
+    if (!arr || 0 === arr.length)
       return false;
 
-    if (0 === buffer.bytes().length)
-      return false;
-
-    this.appendOperation(new Operation(OpCode.CurvePrimitive, BGFBBuilder.versionSignature, buffer.bytes(), buffer.position()));
+    this.appendOperation(new Operation(OpCode.CurvePrimitive, arr));
     return true;
   }
 
   public appendCurveCollection(collection: CurveCollection, opCode: OpCode = OpCode.CurveCollection): boolean {
-    const buffer = BGFBBuilder.createFB(collection);
-    if (!buffer)
+    const arr = BGFBBuilder.createBytesWithSignature(collection);
+    if (!arr || 0 === arr.length)
       return false;
 
-    if (buffer.bytes().length === 0)
-      return false;
+    this.appendOperation(new Operation(opCode, arr));
+    return true;
+  }
 
-    this.appendOperation(new Operation(opCode, BGFBBuilder.versionSignature, buffer.bytes(), buffer.position()));
+  public appendPointString(pointString: PointString3d, is3d: boolean): boolean {
+    if (!is3d) {
+      const localPoints2dBuf: Point2d[] = [];
+      for (const point of pointString.points)
+        localPoints2dBuf.push(Point2d.create(point.x, point.y));
+      this.appendPoint2dArray(localPoints2dBuf, DgnFB.BoundaryType.None);
+      return true;
+    }
+
+    const points: Point3d[] = pointString.points;
+    this.appendPoint3dArray(points, DgnFB.BoundaryType.None);
     return true;
   }
 
   public appendPolyface(polyface: IndexedPolyface, opCode: OpCode = OpCode.Polyface): boolean {
-    const buffer = BGFBBuilder.createFB(polyface);
-    if (!buffer)
+    const arr = BGFBBuilder.createBytesWithSignature(polyface);
+    if (!arr || 0 === arr.length)
       return false;
 
-    if (0 === buffer.bytes().length)
-      return false;
-
-    this.appendOperation(new Operation(opCode, BGFBBuilder.versionSignature, buffer.bytes(), buffer.position()));
+    this.appendOperation(new Operation(opCode, arr));
     return true;
   }
 
   public appendSolidPrimitive(sPrimitive: SolidPrimitive): boolean {
-    const buffer = BGFBBuilder.createFB(sPrimitive);
-    if (!buffer)
+    const arr = BGFBBuilder.createBytesWithSignature(sPrimitive);
+    if (!arr || 0 === arr.length)
       return false;
 
-    if (0 === buffer.bytes().length)
-      return false;
-
-    this.appendOperation(new Operation(OpCode.SolidPrimitive, BGFBBuilder.versionSignature, buffer.bytes(), buffer.position()));
+    this.appendOperation(new Operation(OpCode.SolidPrimitive, arr));
     return true;
   }
 
   public appendBsplineSurface(bspline: BSplineSurface3d): boolean {
-    const buffer = BGFBBuilder.createFB(bspline);
-    if (!buffer)
+    const arr = BGFBBuilder.createBytesWithSignature(bspline);
+    if (!arr || 0 === arr.length)
       return false;
 
-    if (0 === buffer.bytes().length)
-      return false;
-
-    this.appendOperation(new Operation(OpCode.BsplineSurface, BGFBBuilder.versionSignature, buffer.bytes(), buffer.position()));
+    this.appendOperation(new Operation(OpCode.BsplineSurface, arr));
     return true;
   }
 
   public appendGeometricPrimitive(gPrimitive: GeometricPrimitive): boolean {
     switch (gPrimitive.type) {
+      case GeometryType.PointString:
+        return this.appendPointString(gPrimitive.asPointString!, true);
       case GeometryType.CurvePrimitive:
         return this.appendCurvePrimitive(gPrimitive.asCurvePrimitive!);
       case GeometryType.CurveCollection:
@@ -890,14 +879,7 @@ export class OpCodeReader {
     if (OpCode.CurvePrimitive !== egOp.opCode)
       return undefined;
 
-    // Check version signature
-    if (!egOp.data1 || egOp.data.length !== BGFBBuilder.versionSignature.length)
-      return undefined;
-    for (let i = 0; i < egOp.data.length; i++)
-      if (!(egOp.data[i] === BGFBBuilder.versionSignature[i]))
-        return undefined;
-
-    const curve = BGFBReader.readFB(egOp.data1);
+    const curve = BGFBReader.readFB(egOp.data, BGFBBuilder.versionSignatureByteCount);
     if (curve !== undefined && curve instanceof CurvePrimitive)
       return curve;
     return undefined;
@@ -908,14 +890,7 @@ export class OpCodeReader {
     if (OpCode.CurveCollection !== egOp.opCode)
       return undefined;
 
-    // Check version signature
-    if (!egOp.data1 || egOp.data.length !== BGFBBuilder.versionSignature.length)
-      return undefined;
-    for (let i = 0; i < egOp.data.length; i++)
-      if (!(egOp.data[i] === BGFBBuilder.versionSignature[i]))
-        return undefined;
-
-    const curves = BGFBReader.readFB(egOp.data1);
+    const curves = BGFBReader.readFB(egOp.data, BGFBBuilder.versionSignatureByteCount);
     if (curves !== undefined && curves instanceof CurveCollection)
       return curves;
     return undefined;
@@ -926,14 +901,7 @@ export class OpCodeReader {
     if (OpCode.Polyface !== egOp.opCode)
       return undefined;
 
-    // Check version signature
-    if (!egOp.data1 || egOp.data.length !== BGFBBuilder.versionSignature.length)
-      return undefined;
-    for (let i = 0; i < egOp.data.length; i++)
-      if (!(egOp.data[i] === BGFBBuilder.versionSignature[i]))
-        return undefined;
-
-    const polyface = BGFBReader.readFB(egOp.data1);
+    const polyface = BGFBReader.readFB(egOp.data, BGFBBuilder.versionSignatureByteCount);
     if (polyface !== undefined && polyface instanceof IndexedPolyface)
       return polyface;
     return undefined;
@@ -944,14 +912,7 @@ export class OpCodeReader {
     if (OpCode.SolidPrimitive !== egOp.opCode)
       return undefined;
 
-    // Check version signature
-    if (!egOp.data1 || egOp.data.length !== BGFBBuilder.versionSignature.length)
-      return undefined;
-    for (let i = 0; i < egOp.data.length; i++)
-      if (!(egOp.data[i] === BGFBBuilder.versionSignature[i]))
-        return undefined;
-
-    const solidPrimitive = BGFBReader.readFB(egOp.data1);
+    const solidPrimitive = BGFBReader.readFB(egOp.data, BGFBBuilder.versionSignatureByteCount);
     if (solidPrimitive !== undefined && solidPrimitive instanceof SolidPrimitive)
       return solidPrimitive;
     return undefined;
@@ -962,14 +923,7 @@ export class OpCodeReader {
     if (OpCode.BsplineSurface !== egOp.opCode)
       return undefined;
 
-    // Check version signature
-    if (!egOp.data1 || egOp.data.length !== BGFBBuilder.versionSignature.length)
-      return undefined;
-    for (let i = 0; i < egOp.data.length; i++)
-      if (!(egOp.data[i] === BGFBBuilder.versionSignature[i]))
-        return undefined;
-
-    const bspline = BGFBReader.readFB(egOp.data1);
+    const bspline = BGFBReader.readFB(egOp.data, BGFBBuilder.versionSignatureByteCount);
     if (bspline !== undefined && bspline instanceof BSplineSurface3d)
       return bspline;
     return undefined;
@@ -998,11 +952,7 @@ export class OpCodeReader {
 
         switch (boundary) {
           case DgnFB.BoundaryType.None:
-            /* NOTE: HAVE TO IMPLEMENT
-            elemGeom = GeometricPrimitive.createCurvePrimitiveRef(CurvePrimitive.createPointString(localPoints3dBuf));
-            break;
-            */
-            return undefined;
+            return GeometricPrimitive.createPointStringRef(PointString3d.createPoints(localPoints3dBuf));
           case DgnFB.BoundaryType.Open:
             return GeometricPrimitive.createCurvePrimitiveRef(LineString3d.createPoints(localPoints3dBuf));
           case DgnFB.BoundaryType.Closed:
@@ -1019,11 +969,7 @@ export class OpCodeReader {
 
         switch (boundary) {
           case DgnFB.BoundaryType.None:
-            /* NOTE: HAVE TO IMPLEMENT
-            elemGeom = GeometricPrimitive.createCurvePrimitiveRef(CurvePrimitive.createPointString(localPoints3dBuf));
-            break;
-            */
-            return undefined;
+            return GeometricPrimitive.createPointStringRef(PointString3d.createPoints(pts));
           case DgnFB.BoundaryType.Open:
             return GeometricPrimitive.createCurvePrimitiveRef(LineString3d.createPoints(pts));
           case DgnFB.BoundaryType.Closed:
@@ -1399,21 +1345,8 @@ export class OpCodeIterator {
     const dataSize = data32[index0 + 1];
     const opSize = dataSize + 8;
 
-    // Assign to either data or.. data AND data1 in operation based on whether a signature is needed (Will be using geometry-core serializers)
-    switch (data32[index0]) {
-      case OpCode.CurvePrimitive:
-      case OpCode.CurveCollection:
-      case OpCode.Polyface:
-      case OpCode.SolidPrimitive:
-      case OpCode.BsplineSurface:
-      case OpCode.BRepPolyface:
-      case OpCode.BRepCurveVector:
-        this.egOp = new Operation(data32[index0], this.data!.slice(this.dataOffset + 8, this.dataOffset + 16), this.data!.slice(this.dataOffset + 16, this.dataOffset + opSize));
-        break;
-      default:
-        this.egOp = new Operation(data32[index0], this.data!.slice(this.dataOffset + 8, this.dataOffset + opSize));
-        break;
-    }
+    // Assign to data
+    this.egOp = new Operation(data32[index0], this.data!.slice(this.dataOffset + 8, this.dataOffset + opSize));
 
     // Move to the next block
     this.dataOffset += opSize;
@@ -1665,12 +1598,13 @@ export class GeometryStreamBuilder {
     return retVal;
   }
 
-  /** Create builder from model, categoryId, and placement as represented by a transform.
-   *  NOTE: Transform must satisfy requirements of YawPitchRollAngles.TryFromTransform; scale is not supported
+  /** Create builder from categoryId, and placement as represented by a transform.
+   * NOTE: Transform must satisfy requirements of YawPitchRollAngles.TryFromTransform; scale is not supported
+   * @throws [[IModelError]] if categoryId or transform is invalid.
    */
-  public static fromTransform(categoryId: Id64, transform: Transform, is3d: boolean): GeometryStreamBuilder | undefined {
+  public static fromTransform(categoryId: Id64, transform: Transform, is3d: boolean): GeometryStreamBuilder {
     if (!categoryId.isValid())
-      return undefined;
+      throw new IModelError(IModelStatus.InvalidCategory, "Invalid category");
 
     const origin = transform.getOrigin();
     const rMatrix = transform.matrix;
@@ -1683,37 +1617,41 @@ export class GeometryStreamBuilder {
       const resultMatrix = angles.toRotMatrix();
 
       if (rMatrix.maxDiff(resultMatrix) > 1.0e-5)
-        return undefined;
+        throw new IModelError(IModelStatus.BadArg, "Invalid transform");
     }
 
     if (is3d) {
       const placement3d = new Placement3d(origin, angles, new ElementAlignedBox3d());
-      return GeometryStreamBuilder.fromPlacement3d(/* model */ categoryId, placement3d);
+      return GeometryStreamBuilder.fromPlacement3d(categoryId, placement3d);
     }
 
     if (origin.z !== 0 || angles.pitch.degrees !== 0 || angles.roll.degrees !== 0)
-      return undefined;
+      throw new IModelError(IModelStatus.BadArg, "Invalid transform");
 
     const placement2d = new Placement2d(Point2d.create(origin.x, origin.y), angles.yaw, new ElementAlignedBox2d());
     return GeometryStreamBuilder.fromPlacement2d(categoryId, placement2d);
   }
 
-  /** Create 3d builder from model, categoryId, origin, and optional YawPitchRollAngles */
-  public static fromCategoryIdAndOrigin3d(categoryId: Id64, origin: Point3d, angles?: YawPitchRollAngles): GeometryStreamBuilder | undefined {
+  /** Create 3d builder from categoryId, origin, and optional YawPitchRollAngles.
+   * @throws [[IModelError]] if categoryId is invalid.
+   */
+  public static fromCategoryIdAndOrigin3d(categoryId: Id64, origin: Point3d, angles?: YawPitchRollAngles): GeometryStreamBuilder {
     if (!categoryId.isValid())
-      return undefined;
+      throw new IModelError(IModelStatus.InvalidCategory, "Invalid category");
 
     if (!angles)
       angles = YawPitchRollAngles.createDegrees(0, 0, 0);
 
     const placement = new Placement3d(origin, angles, new ElementAlignedBox3d());
-    return GeometryStreamBuilder.fromPlacement3d(/* imodel, */ categoryId, placement);
+    return GeometryStreamBuilder.fromPlacement3d(categoryId, placement);
   }
 
-  /** Create 3d builder from model, categoryId, origin, and optional rotation Angle */
-  public static fromCategoryIdAndOrigin2d(categoryId: Id64, origin: Point2d, angle?: Angle): GeometryStreamBuilder | undefined {
+  /** Create 2d builder from categoryId, origin, and optional rotation Angle.
+   * @throws [[IModelError]] if categoryId is invalid.
+   */
+  public static fromCategoryIdAndOrigin2d(categoryId: Id64, origin: Point2d, angle?: Angle): GeometryStreamBuilder {
     if (!categoryId.isValid())
-      return undefined;
+      throw new IModelError(IModelStatus.InvalidCategory, "Invalid category");
 
     if (!angle)
       angle = Angle.createDegrees(0);
@@ -1799,6 +1737,7 @@ export class GeometryStreamBuilder {
 
     switch (geom.type) {
       case GeometryType.CurvePrimitive:
+      case GeometryType.PointString:
         opCode = OpCode.CurvePrimitive;
         break;
       case GeometryType.CurveCollection:
@@ -2097,6 +2036,23 @@ export class GeometryStreamBuilder {
     return this.appendWorld(wrappedGeom);
   }
 
+  /** Append a PointString3d to builder in either local or world coordinates. */
+  public appendPointString(geom: PointString3d, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
+    if (coord === GeomCoordSystem.Local) {
+      const localRange = Range3d.createNull();
+      geom.extendRange(localRange);
+
+      if (localRange.isNull())
+        return false;
+
+      this.onNewGeom(localRange, this.appendAsSubGraphics, OpCode.CurvePrimitive);
+      return this.writer.appendPointString(geom, this.is3d);
+    }
+
+    const wrappedGeom = GeometricPrimitive.createPointStringClone(geom);
+    return this.appendWorld(wrappedGeom);
+  }
+
   /** Append a SolidPrimitive to builder in either local or world coordinates.
    *  NOTE: Only valid with a 3d builder
    */
@@ -2171,6 +2127,8 @@ export class GeometryStreamBuilder {
       return this.appendCurvePrimitive(geometry, coord);
     if (geometry instanceof CurveCollection)
       return this.appendCurveCollection(geometry, coord);
+    if (geometry instanceof PointString3d)
+      return this.appendPointString(geometry, coord);
     if (geometry instanceof IndexedPolyface)
       return this.appendPolyface(geometry, coord);
     if (geometry instanceof SolidPrimitive)

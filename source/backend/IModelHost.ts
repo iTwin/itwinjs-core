@@ -6,9 +6,8 @@ import { BeEvent } from "@bentley/bentleyjs-core";
 import { BentleyStatus, IModelError } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { KnownLocations } from "./KnownLocations";
-
-/** Global access to the IModelHost. Initialized by calling IModelHost.startup(). */
-export let iModelHost: IModelHost;
+import { IModelGatewayImpl } from "./IModelGatewayImpl";
+import { BisCore } from "./BisCore";
 
 export class IModelHostConfiguration {
   /** Deployment configuration of Connect and IModelHub services - these are used to find Projects and iModels */
@@ -25,29 +24,32 @@ export class IModelHostConfiguration {
 }
 
 export class IModelHost {
-  private constructor(public readonly configuration: IModelHostConfiguration) { }
+  public static configuration?: IModelHostConfiguration;
+  /** Event raised just after the backend IModelHost was started up */
+  public static readonly onAfterStartup = new BeEvent<() => void>();
+
+  /** Event raised just before the backend IModelHost is to be shut down */
+  public static readonly onBeforeShutdown = new BeEvent<() => void>();
 
   /** This method must be called before any iModelJs services are used. */
   public static startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()) {
-    if (iModelHost !== undefined)
+    if (IModelHost.configuration)
       throw new IModelError(BentleyStatus.ERROR, "startup may only be called once");
 
-    iModelHost = new IModelHost(configuration);
-    iModelHost.onAfterStartup.raiseEvent();
+    // Register the backend implementation of IModelGateway
+    IModelGatewayImpl.register();
+
+    // Register the use of BisCore for the backend
+    BisCore.registerSchema();
+
+    IModelHost.configuration = configuration;
+    IModelHost.onAfterStartup.raiseEvent();
   }
 
   public static shutdown() {
-    if (!iModelHost)
-      throw new IModelError(BentleyStatus.ERROR, "startup needs to be called before shutdown");
-
-    iModelHost.onBeforeShutdown.raiseEvent();
-
-    (iModelHost as any) = undefined;
+    if (!IModelHost.configuration)
+      return;
+    IModelHost.onBeforeShutdown.raiseEvent();
+    IModelHost.configuration = undefined;
   }
-
-  /** Event raised just after the backend IModelHost was started up */
-  public readonly onAfterStartup = new BeEvent<() => void>();
-
-  /** Event raised just before the backend IModelHost is to be shut down */
-  public readonly onBeforeShutdown = new BeEvent<() => void>();
 }
