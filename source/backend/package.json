@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.62.0",
+  "version": "0.63.0",
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
@@ -46,7 +46,7 @@
   "dependencies": {
     "@bentley/geometry-core": "^5.0.6",
     "@bentley/imodeljs-clients": "^4.0.0",
-    "@bentley/imodeljs-common": "^0.61.0",
+    "@bentley/imodeljs-common": "^0.62.0",
     "@bentley/imodeljs-electronaddon": "~10.0.0",
     "@bentley/imodeljs-nodeaddon": "~10.0.0",
     "@bentley/imodeljs-nodeaddonapi": "~10.0.0",

@@ -40,6 +40,7 @@ export class IModelApp {
   public static readonly features = new FeatureGates();
   public static readonly tools = new ToolRegistry();
   protected static _iModelHubClient?: IModelHubClient;
+  public static get initialized() { return IModelApp._initialized; }
   public static get iModelHubClient(): IModelHubClient { return this._iModelHubClient ? this._iModelHubClient : (this._iModelHubClient = new IModelHubClient(this.deploymentEnv)); }
 
   /**

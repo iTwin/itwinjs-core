@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Point3d, Vector3d, YawPitchRollAngles, Range3d, Angle, RotMatrix } from "@bentley/geometry-core";
-import { SpatialViewDefinitionProps } from "@bentley/imodeljs-common";
+import { SpatialViewDefinitionProps, ViewDefinitionProps } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
 import {
@@ -19,7 +19,7 @@ describe("ViewState", () => {
 
   before(async () => {
     imodel = await IModelConnection.openStandalone(iModelLocation);
-    const viewRows = await imodel.views.queryProps({ from: SpatialViewState.sqlName });
+    const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.sqlName });
     assert.exists(viewRows, "Should find some views");
     viewState = await imodel.views.load(viewRows[0].id!) as SpatialViewState;
   });

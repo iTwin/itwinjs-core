@@ -10,7 +10,7 @@ import {
 import { Element, InformationPartitionElement } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { AddonRegistry } from "../AddonRegistry";
-import { IModelGateway } from "@bentley/imodeljs-common/lib/gateway/IModelGateway";
+import { IModelGateway } from "@bentley/imodeljs-common";
 import { Code, Gateway, ElementProps, GeometricElementProps, Appearance } from "@bentley/imodeljs-common";
 import { DefinitionModel, Model } from "../Model";
 import { SpatialCategory } from "../Category";
@@ -87,10 +87,6 @@ export class TestUsers {
 }
 
 export class IModelTestUtils {
-  public static user = {
-    email: "bistroDEV_pmadm1@mailinator.com",
-    password: "pmadm1",
-  };
 
   private static _connectClient: ConnectClient | undefined;
   public static get connectClient(): ConnectClient {
@@ -132,7 +128,7 @@ export class IModelTestUtils {
 
   public static async getTestUserAccessToken(userCredentials?: any): Promise<AccessToken> {
     if (userCredentials === undefined)
-      userCredentials = IModelTestUtils.user;
+      userCredentials = TestUsers.regular;
     const env = IModelTestUtils._iModelHubDeployConfig;
     const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(env)).getToken(userCredentials.email, userCredentials.password);
     assert(authToken);
