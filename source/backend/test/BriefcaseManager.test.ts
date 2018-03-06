@@ -4,7 +4,7 @@
 import * as path from "path";
 import { expect, assert } from "chai";
 import { OpenMode, DbOpcode, BeEvent } from "@bentley/bentleyjs-core";
-import { AccessToken, ChangeSet, IModel as HubIModel, SeedFile, MultiCode, CodeState } from "@bentley/imodeljs-clients";
+import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState, SeedFile } from "@bentley/imodeljs-clients";
 import { Code, IModelVersion, Appearance, ColorDef, IModel } from "@bentley/imodeljs-common";
 import { KeepBriefcase } from "../BriefcaseManager";
 import { IModelDb, ConcurrencyControl } from "../IModelDb";
@@ -61,12 +61,11 @@ describe("BriefcaseManager", () => {
   let testIModelId: string;
   let testChangeSets: ChangeSet[];
   const testVersionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
-  const iModelNames = ["TestModel", "NoVersionsTest"];
   const testElementCounts = [80, 81, 82];
-  // let iModelLocalReadonlyPath: string;
+
+  let iModelLocalReadonlyPath: string;
   let iModelLocalReadWritePath: string;
 
-  let shouldDeleteAllBriefcases: boolean = false;
   const getElementCount = (iModel: IModelDb): number => {
     const rows: any[] = iModel.executeQuery("SELECT COUNT(*) AS cnt FROM bis.Element");
     const count = +(rows[0].cnt);
@@ -101,29 +100,30 @@ describe("BriefcaseManager", () => {
   };
 
   before(async () => {
-    const startTime = new Date().getTime();
-
+    let startTime = new Date().getTime();
     console.log("    Started monitoring briefcase manager performance..."); // tslint:disable-line:no-console
 
     accessToken = await IModelTestUtils.getTestUserAccessToken();
+    console.log(`    ...getting user access token from IMS: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
+    startTime = new Date().getTime();
+
     testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
     testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "TestModel");
+
     testChangeSets = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
+    expect(testChangeSets.length).greaterThan(2);
 
     const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
-    console.log(`    ...getting information on Project+IModel+ChangeSets from the IModelHub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
-
-    // iModelLocalReadonlyPath = path.join(cacheDir, testIModelId, "readOnly");
+    iModelLocalReadonlyPath = path.join(cacheDir, testIModelId, "readOnly");
     iModelLocalReadWritePath = path.join(cacheDir, testIModelId, "readWrite");
 
-    // Recreate briefcases if the cache has been cleaned. todo: Figure a better way to prevent bleeding briefcase ids
-    // Mocking notes:
-    //              - Do we ever need to clear briefcases if they're never actually created from the mocks?
-    shouldDeleteAllBriefcases = !IModelJsFs.existsSync(cacheDir);
-    if (shouldDeleteAllBriefcases) {
-      await IModelTestUtils.deleteAllBriefcases(accessToken, testIModelId);
+    // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
+    if (!IModelJsFs.existsSync(cacheDir)) {
+      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "TestModel");
+      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "NoVersionsTest");
     }
 
+    console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
   });
 
   it("should download seed files and change sets for all test cases", async () => {
@@ -132,6 +132,7 @@ describe("BriefcaseManager", () => {
   });
 
   it("should open multiple versions of iModels", async () => {
+    const iModelNames = ["NoVersionsTest", "TestModel"];
     for (const name of iModelNames) {
        const iModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, name);
 
@@ -264,6 +265,48 @@ describe("BriefcaseManager", () => {
     assert.isTrue(onOpenCalled);
     IModelDb.onOpen.removeListener(onOpenListener);
     IModelDb.onOpened.removeListener(onOpenedListener);
+
+    expect(IModelJsFs.existsSync(iModelLocalReadonlyPath));
+    const files = IModelJsFs.readdirSync(iModelLocalReadonlyPath);
+    expect(files.length).greaterThan(0);
+
+    iModel.close(accessToken);
+  });
+
+  it("should be able to open an IModel from the Hub in ReadWrite mode", async () => {
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest()); // Note: No frontend support for ReadWrite open yet
+    assert.exists(iModel);
+    assert(iModel.iModelToken.openMode === OpenMode.ReadWrite);
+
+    expect(IModelJsFs.existsSync(iModelLocalReadWritePath));
+    const files = IModelJsFs.readdirSync(iModelLocalReadWritePath);
+    expect(files.length).greaterThan(0);
+
+    iModel.close(accessToken);
+  });
+
+  it("should reuse open briefcases in Readonly mode", async () => {
+    let timer = new Timer("open briefcase first time");
+    const iModel0: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId);
+    assert.exists(iModel0);
+    timer.end();
+
+    const briefcases = IModelJsFs.readdirSync(iModelLocalReadonlyPath);
+    expect(briefcases.length).greaterThan(0);
+
+    timer = new Timer("open briefcase 5 more times");
+    const iModels = new Array<IModelDb>();
+    for (let ii = 0; ii < 5; ii++) {
+      const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId);
+      assert.exists(iModel);
+      iModels.push(iModel);
+    }
+    timer.end();
+
+    const briefcases2 = IModelJsFs.readdirSync(iModelLocalReadonlyPath);
+    expect(briefcases2.length).equals(briefcases.length);
+    const diff = briefcases2.filter((item) => briefcases.indexOf(item) < 0);
+    expect(diff.length).equals(0);
   });
 
   it("should reuse closed briefcases in ReadWrite mode", async () => {
@@ -301,10 +344,6 @@ describe("BriefcaseManager", () => {
 
   it("should open a briefcase of an iModel with no versions", async () => {
     const iModelNoVerId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "NoVersionsTest");
-
-    if (shouldDeleteAllBriefcases)
-      await IModelTestUtils.deleteAllBriefcases(accessToken, iModelNoVerId);
-
     const iModelNoVer: IModelDb = await IModelDb.open(accessToken, testProjectId, iModelNoVerId, OpenMode.Readonly);
     assert.exists(iModelNoVer);
   });
@@ -401,6 +440,8 @@ describe("BriefcaseManager", () => {
 
     assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests());
 
+    rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "changed a userLabel" }));  // save it, to show that saveChanges will accumulate local txn descriptions
+
     // Create a new physical model.
     let newModelId: Id64;
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
@@ -426,7 +467,7 @@ describe("BriefcaseManager", () => {
       await rwIModel.concurrencyControl.request(accessToken);
     } catch (err) {
       if (err instanceof ConcurrencyControl.RequestError) {
-          assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
+        assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
       }
     }
 
@@ -440,13 +481,13 @@ describe("BriefcaseManager", () => {
     const foundCode: MultiCode[] = codeStates.filter((cs) => cs.values!.includes(category.code.value!) && (cs.state === CodeState.Reserved));
     assert.equal(foundCode.length, 1);
 
-      /* NEEDS WORK - query just this one code
-    assert.isTrue(category.code.value !== undefined);
-    const codeStates2 = await iModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope, category.code.value!);
-    assert.equal(codeStates2.length, 1);
-    assert.equal(codeStates2[0].values.length, 1);
-    assert.equal(codeStates2[0].values[0], category.code.value!);
-    */
+    /* NEEDS WORK - query just this one code
+  assert.isTrue(category.code.value !== undefined);
+  const codeStates2 = await iModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope, category.code.value!);
+  assert.equal(codeStates2.length, 1);
+  assert.equal(codeStates2[0].values.length, 1);
+  assert.equal(codeStates2[0].values[0], category.code.value!);
+  */
 
     timer.end();
 
@@ -458,7 +499,7 @@ describe("BriefcaseManager", () => {
 
     // Commit the local changes to a local transaction in the briefcase.
     // (Note that this ends the bulk operation automatically, so there's no need to call endBulkOperation.)
-    rwIModel.saveChanges("inserted generic objects");
+    rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "inserted generic objects" }));
 
     rwIModel.elements.getElement(elid1); // throws if elid1 is not found
     rwIModel.elements.getElement(spatialCategoryId); // throws if spatialCategoryId is not found
@@ -468,7 +509,11 @@ describe("BriefcaseManager", () => {
     timer = new Timer("pullmergepush");
 
     // Push the changes to the hub
+    const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
     await rwIModel.pushChanges(accessToken);
+    const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
+    assert(!!postPushChangeSetId);
+    expect(prePushChangeSetId !== postPushChangeSetId);
 
     timer.end();
 
