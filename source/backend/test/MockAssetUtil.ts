@@ -2,6 +2,7 @@ import * as TypeMoq from "typemoq";
 import * as path from "path";
 import { IModelJsFs } from "../IModelJsFs";
 import { SeedFile } from "@bentley/imodeljs-clients";
+import { IModelVersion } from "@bentley/imodeljs-common";
 import {
   ConnectClient, Project, IModelHubClient, WsgInstance, ECJsonTypeMap,
   Response, ChangeSet, IModel as HubIModel,
@@ -26,6 +27,12 @@ export class MockAssetUtil {
   private static iModelNames = ["TestModel", "NoVersionsTest"];
   private static iModelIds = ["b74b6451-cca3-40f1-9890-42c769a28f3e", ""];
   private static assetDir: string = "./test/assets/_mocks_";
+
+  // TODO: setup for multiple versions...
+  public static async setupIModelVersionMock(iModelVersionMock: TypeMoq.IMock<IModelVersion>) {
+    iModelVersionMock.setup((f: IModelVersion) => f.evaluateChangeSet(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
+      .returns(() => Promise.resolve(""));
+  }
 
   // TODO: figure out support for multiple projects (if we need it?)
   public static async setupConnectClientMock(connectClientMock: TypeMoq.IMock<ConnectClient>) {
@@ -108,6 +115,17 @@ export class MockAssetUtil {
           const seedFiles = new Array<SeedFile>();
           seedFiles.push(seedFileMock.object);
           return Promise.resolve(seedFiles);
+        }).verifiable();
+      iModelHubClientMock.setup((f: IModelHubClient) => f.getChangeSet(TypeMoq.It.isAny(),
+                                                                       TypeMoq.It.is<string>((x: string) => x === id),
+                                                                       TypeMoq.It.isAnyString()/*contained within an array of valid changesets*/,
+                                                                       TypeMoq.It.isValue(false)))
+        .returns(() => {
+          const sampleChangeSetsPath = path.join(this.assetDir, "JSON", "SampleChangeSets.json");
+          const buff = IModelJsFs.readFileSync(sampleChangeSetsPath);
+          const jsonObj = JSON.parse(buff.toString());
+          const sampleChangeSets = getTypedInstances<ChangeSet>(ChangeSet, jsonObj);
+          return Promise.resolve(sampleChangeSets[0]);
         }).verifiable();
     }
   }

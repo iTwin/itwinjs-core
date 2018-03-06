@@ -124,6 +124,7 @@ describe("BriefcaseManager", () => {
 
     MockAssetUtil.setupConnectClientMock(connectClientMock);
     MockAssetUtil.setupIModelHubClientMock(iModelHubClientMock);
+    MockAssetUtil.setupIModelVersionMock(iModelVersionMock);
 
     // accessToken = await IModelTestUtils.getTestUserAccessToken();
     // testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
@@ -190,15 +191,6 @@ describe("BriefcaseManager", () => {
 
   it.only("should be able to open a cached first version IModel in Readonly mode", async () => {
     // Arrange
-    iModelVersionMock.setup((f: IModelVersion) => f.evaluateChangeSet(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
-      .returns(() => Promise.resolve(""));
-    iModelHubClientMock.setup((f: IModelHubClient) => f.getIModel(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
-      .returns(() => {
-        const sampleIModelPath = path.join(assetDir, "JSON", "SampleIModel.json");
-        const buff = IModelJsFs.readFileSync(sampleIModelPath);
-        const jsonObj = JSON.parse(buff.toString())[0];
-        return Promise.resolve(getTypedInstance<HubIModel>(HubIModel, jsonObj));
-      }).verifiable();
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
     // Act
@@ -216,25 +208,6 @@ describe("BriefcaseManager", () => {
 
   it("should be able to open a cached first version IModel in ReadWrite mode", async () => {
     // Arrange
-    const seedFileMock = TypeMoq.Mock.ofType(SeedFile);
-    seedFileMock.object.downloadUrl = "www.bentley.com";
-    seedFileMock.object.mergedChangeSetId = "";
-
-    iModelVersionMock.setup((f: IModelVersion) => f.evaluateChangeSet(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
-      .returns(() => Promise.resolve(""));
-    iModelHubClientMock.setup((f: IModelHubClient) => f.getIModel(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
-      .returns(() => {
-        const sampleIModelPath = path.join(assetDir, "JSON", "SampleIModel.json");
-        const buff = IModelJsFs.readFileSync(sampleIModelPath);
-        const jsonObj = JSON.parse(buff.toString())[0];
-        return Promise.resolve(getTypedInstance<HubIModel>(HubIModel, jsonObj));
-      }).verifiable();
-    iModelHubClientMock.setup((f: IModelHubClient) => f.getSeedFiles(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isValue(true)))
-      .returns(() => {
-        const seedFiles = new Array<SeedFile>();
-        seedFiles.push(seedFileMock.object);
-        return Promise.resolve(seedFiles);
-      });
     iModelHubClientMock.setup((f: IModelHubClient) => f.acquireBriefcase(TypeMoq.It.isAny(), TypeMoq.It.isAnyString()))
       .returns(() => Promise.resolve(1));
     iModelHubClientMock.setup((f: IModelHubClient) => f.getBriefcase(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAnyNumber(), TypeMoq.It.isValue(true)))
