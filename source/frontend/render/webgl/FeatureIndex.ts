@@ -22,9 +22,7 @@ export class ColorIndex {
   public constructor() {
     this.reset();
   }
-  public isValid(): boolean {
-    return this.numColors > 0;
-  }
+  public isValid(): boolean { return this.numColors > 0; }
   public isUniform(): boolean {
     assert(this.numColors > 0);
     return this.numColors === 1;
@@ -46,12 +44,12 @@ export class ColorIndex {
     this.nonUniform = undefined;
   }
   public setUniform(color: number | ColorDef) {
-    if (color instanceof ColorDef)
-      this.setUniform(color.tbgr);
-    else {
+    if (typeof color === "number") {
       this.numColors = 1;
       this.uniform = color;
       this.nonUniform = undefined;
+    } else {
+      this.setUniform(color.tbgr);
     }
   }
   public setNonUniform(numColors: number, colors: Uint32Array, indices: Uint16Array, hasAlpha: boolean) {
