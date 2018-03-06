@@ -1,10 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { OpenMode } from "@bentley/bentleyjs-core";
+import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import { Point3d, XYZProps, TransformProps, Range3dProps, Transform } from "@bentley/geometry-core";
 import { AxisAlignedBox3d } from "./geometry/Primitives";
-import { Id64 } from "@bentley/bentleyjs-core";
 
 /** A token that identifies a specific instance of an iModel to be operated on */
 export class IModelToken {
@@ -25,7 +24,6 @@ export class IModelToken {
     /** Id of the user that's currently editing or viewing the iModel. May not be defined *only* if it's a standalone iModel */
     public readonly userId?: string,
   ) { }
-
 }
 
 /** The properties that define an iModel. */

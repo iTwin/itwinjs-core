@@ -4,7 +4,7 @@
 import {
   Point2d, Point3d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, LowAndHighXY,
   Range2d, Range3d, AxisOrder, Angle, Transform, RotMatrix, CurveCollection, Constant,
-  GeometryQuery, CurvePrimitive, SolidPrimitive, BSplineSurface3d, IndexedPolyface,
+  GeometryQuery, CurvePrimitive, SolidPrimitive, BSplineSurface3d, IndexedPolyface, PointString3d,
 } from "@bentley/geometry-core";
 import { Placement2dProps, Placement3dProps } from "../ElementProps";
 
@@ -18,6 +18,7 @@ export enum GeometryType {
   BRepEntity = 6,
   TextString = 7,
   Image = 8,
+  PointString = 9,
 }
 
 /**
@@ -173,7 +174,7 @@ export class Placement2d implements Placement2dProps {
 }
 
 /**
- * Class for multiple geometry types: CurvePrimitive, CurveVector, SolidPrimitive, BsplineSurface, PolyfaceHeader, BRepEntity
+ * Class for multiple geometry types: CurvePrimitive, CurveCollection, SolidPrimitive, BsplineSurface, IndexedPolyface, BRepEntity, PointString
  */
 export class GeometricPrimitive {
   protected _type: GeometryType;
@@ -186,6 +187,7 @@ export class GeometricPrimitive {
   public get asSolidPrimitive(): SolidPrimitive | undefined { return (this._type === GeometryType.SolidPrimitive) ? this._data as SolidPrimitive : undefined; }
   public get asBsplineSurface(): BSplineSurface3d | undefined { return (this._type === GeometryType.BsplineSurface) ? this._data as BSplineSurface3d : undefined; }
   public get asIndexedPolyface(): IndexedPolyface | undefined { return (this._type === GeometryType.IndexedPolyface) ? this._data as IndexedPolyface : undefined; }
+  public get asPointString(): PointString3d | undefined { return (this._type === GeometryType.PointString) ? this._data as PointString3d : undefined; }
 
   protected constructor(type: GeometryType, source: any) {
     this._type = type;
@@ -197,6 +199,7 @@ export class GeometricPrimitive {
   public static createSolidPrimitiveRef(source: SolidPrimitive): GeometricPrimitive { return new GeometricPrimitive(GeometryType.SolidPrimitive, source); }
   public static createBsplineSurfaceRef(source: BSplineSurface3d): GeometricPrimitive { return new GeometricPrimitive(GeometryType.BsplineSurface, source); }
   public static createIndexedPolyfaceRef(source: IndexedPolyface): GeometricPrimitive { return new GeometricPrimitive(GeometryType.IndexedPolyface, source); }
+  public static createPointStringRef(source: PointString3d): GeometricPrimitive { return new GeometricPrimitive(GeometryType.PointString, source); }
   // public static createIBRepEntityRef();
   // public static createTextStringRef();
   // public static createImageGraphicRef();
@@ -206,6 +209,7 @@ export class GeometricPrimitive {
   public static createSolidPrimitiveClone(source: SolidPrimitive): GeometricPrimitive { return new GeometricPrimitive(GeometryType.SolidPrimitive, source.clone()); }
   public static createBsplineSurfaceClone(source: BSplineSurface3d): GeometricPrimitive { return new GeometricPrimitive(GeometryType.BsplineSurface, source.clone()); }
   public static createIndexedPolyfaceClone(source: IndexedPolyface): GeometricPrimitive { return new GeometricPrimitive(GeometryType.IndexedPolyface, source.clone()); }
+  public static createPointStringClone(source: PointString3d): GeometricPrimitive { return new GeometricPrimitive(GeometryType.PointString, source.clone()); }
   // public static createIBRepEntityRef();
   // public static createTextStringRef();
   // public static createImageGraphicRef();
@@ -222,6 +226,8 @@ export class GeometricPrimitive {
       return useRef ? GeometricPrimitive.createBsplineSurfaceRef(source) : GeometricPrimitive.createBsplineSurfaceClone(source);
     if (source instanceof IndexedPolyface)
       return useRef ? GeometricPrimitive.createIndexedPolyfaceRef(source) : GeometricPrimitive.createIndexedPolyfaceClone(source);
+    if (source instanceof PointString3d)
+      return useRef ? GeometricPrimitive.createPointStringRef(source) : GeometricPrimitive.createPointStringClone(source);
     // elseif instanceof BRepEntity
     // elseif instanceof TextString
     // elseif instanceof ImageGraphic
@@ -277,7 +283,6 @@ export class GeometricPrimitive {
     switch (this._type) {
       case GeometryType.CurvePrimitive:
         return true;
-      //  return !(this._data instanceof PointString);
       case GeometryType.CurveCollection:
         return this.asCurveCollection!.isOpenPath();
       // case GeometryType.BRepEntity:
@@ -287,89 +292,83 @@ export class GeometricPrimitive {
     }
   }
 
-  /** Return the type of solid kernel entity that would be used to represent this geometry */
-  // public getBRepEntityType(): EntityType;
-
-  /** Convenience method - treats as 3d geometry */
-  // public addToGraphic();
-
   // TODO: Implement Geometry-Core functions that this method requires for specific cases
   public getLocalCoordinateFrame(localToWorld: Transform): boolean {
     switch (this._type) {
-      case GeometryType.CurvePrimitive:
-        {
-          const curve = this.asCurvePrimitive;
-          if (!curve!.fractionToFrenetFrame(0.0, localToWorld)) {
-            const point = curve!.startPoint();
-            Transform.createTranslation(point, localToWorld);
-            return true;
-          }
-          break;
-        }
-      case GeometryType.CurveCollection:
-        {
-          // Temporary fix...
-          localToWorld.setIdentity();
+      case GeometryType.CurvePrimitive: {
+        const curve = this.asCurvePrimitive;
+        if (!curve!.fractionToFrenetFrame(0.0, localToWorld)) {
+          const point = curve!.startPoint();
+          Transform.createTranslation(point, localToWorld);
           return true;
         }
-      case GeometryType.SolidPrimitive:
-        {
-          const solidPrim = this.asSolidPrimitive;
-          const tMap = solidPrim!.getConstructiveFrame();
-          if (!tMap) {
-            localToWorld.setIdentity();
-            return false;
-          }
-          const worldToLocal = tMap.transform1;
-          localToWorld.setFrom(tMap.transform0);
-          if (!worldToLocal) {
-            localToWorld.setIdentity();
-            return false;
-          }
-          break;
-        }
-      case GeometryType.IndexedPolyface:
-        {
-          /*
-          const polyface = this.asIndexedPolyface;
-          let area = 0;
-          const centroid = Point3d.create();
-          const axes = RotMatrix.createIdentity();
-          const momentXYZ = Vector3d.create();
-          */
-          if (/*!polyface.computePrincipalAreaMoments(area, centroid, axes, momentXYZ)*/ true) {
-            localToWorld.setIdentity();
-            return false;
-          }
-          // Transform.createRefs(centroid, axes);
-          // break;
-        }
-      case GeometryType.BsplineSurface:
-        {
-          const surface = this.asBsplineSurface;
-          /*
-          let area = 0;
-          const centroid = Vector3d.create();
-          const axes = RotMatrix.createIdentity();
-          const momentXYZ = Vector3d.create();
-          if (surface.computePrincipleAreaMoments(area, centroid, axes, momentXYZ)) {
-            Transform.createRefs(centroid, axes);
-            break;
-          } else if ... */
-          if (surface!.fractionToRigidFrame(0, 0, localToWorld)) {
-            break;
-          }
+        break;
+      }
+      case GeometryType.CurveCollection: {
+        // Temporary fix...
+        localToWorld.setIdentity();
+        return true;
+      }
+      case GeometryType.SolidPrimitive: {
+        const solidPrim = this.asSolidPrimitive;
+        const tMap = solidPrim!.getConstructiveFrame();
+        if (!tMap) {
           localToWorld.setIdentity();
           return false;
         }
+        const worldToLocal = tMap.transform1;
+        localToWorld.setFrom(tMap.transform0);
+        if (!worldToLocal) {
+          localToWorld.setIdentity();
+          return false;
+        }
+        break;
+      }
+      case GeometryType.IndexedPolyface: {
+        /*
+        const polyface = this.asIndexedPolyface;
+        let area = 0;
+        const centroid = Point3d.create();
+        const axes = RotMatrix.createIdentity();
+        const momentXYZ = Vector3d.create();
+        */
+        if (/*!polyface.computePrincipalAreaMoments(area, centroid, axes, momentXYZ)*/ true) {
+          localToWorld.setIdentity();
+          return false;
+        }
+        // Transform.createRefs(centroid, axes);
+        // break;
+      }
+      case GeometryType.BsplineSurface: {
+        const surface = this.asBsplineSurface;
+        /*
+        let area = 0;
+        const centroid = Vector3d.create();
+        const axes = RotMatrix.createIdentity();
+        const momentXYZ = Vector3d.create();
+        if (surface.computePrincipleAreaMoments(area, centroid, axes, momentXYZ)) {
+          Transform.createRefs(centroid, axes);
+          break;
+        } else if ... */
+        if (surface!.fractionToRigidFrame(0, 0, localToWorld)) {
+          break;
+        }
+        localToWorld.setIdentity();
+        return false;
+      }
       // case GeometryType.BRepEntity:
       // case GeometryType.TextString:
       // case GeometryType.Image:
-      default:
-        {
-          localToWorld.setIdentity();
-          return false;
-        }
+      case GeometryType.PointString: {
+        const curve = this.asPointString;
+        const point = curve!.points[0];
+        Transform.createTranslation(point, localToWorld);
+        break;
+      }
+      default: {
+        localToWorld.setIdentity();
+        return false;
+      }
     }
 
     // NOTE: Ensure rotation is squared up and normalized (ComputePrincipalAreaMoments/GetEntityTransform is scaled)...

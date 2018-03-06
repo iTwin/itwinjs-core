@@ -3,8 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { OpenMode, Logger, Id64Set } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { EntityQueryParams, Gateway, IModelToken, IModel, IModelError, IModelStatus, IModelVersion, AxisAlignedBox3d } from "@bentley/imodeljs-common";
-import { IModelGateway } from "@bentley/imodeljs-common/lib/gateway/IModelGateway";
+import { EntityQueryParams, Gateway, IModelToken, IModel, IModelError, IModelStatus, IModelVersion, AxisAlignedBox3d, IModelGateway } from "@bentley/imodeljs-common";
 import { EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
 
