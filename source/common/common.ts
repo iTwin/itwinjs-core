@@ -21,8 +21,6 @@ export * from "./Render";
 export * from "./geometry/AreaPattern";
 export * from "./geometry/Cartographic";
 export * from "./geometry/ElementGraphicsSchema";
-export * from "./geometry/GeometryProps";
 export * from "./geometry/GeometryStream";
-export * from "./geometry/GradientPattern";
 export * from "./geometry/LineStyle";
 export * from "./geometry/Primitives";
