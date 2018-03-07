@@ -12,7 +12,7 @@ import { Id64, Guid } from "@bentley/bentleyjs-core";
 import { IModelDb } from "../IModelDb";
 import {
   OpCodeReader, OpCodeWriter, OpCodeIterator, GeometryStreamBuilder, GeometryStream, OpCode, GeometricPrimitive, GeometryType,
-  Code, Placement3d, ElementAlignedBox3d, GeometricElement3dProps, GeometryProps,
+  Code, Placement3d, ElementAlignedBox3d, GeometricElement3dProps, GeometryParams,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Element } from "../Element";
@@ -329,7 +329,7 @@ describe("GeometryBuilder", () => {
     const collection = new OpCodeIterator(returned3d.geom.geomStream);
     const reader = new OpCodeReader();
     let item: any;
-    const elParams = new GeometryProps(new Id64());
+    const elParams = new GeometryParams(new Id64());
     while (collection.isValid) {
       if (collection.operation!.isGeometryOp()) {
         item = reader.getGeometricPrimitive(collection.operation!);

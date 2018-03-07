@@ -11,19 +11,14 @@ import {
   ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState, IModelApp,
 } from "@bentley/imodeljs-frontend";
 
-// spell-checker: disable
-class TestApp extends IModelApp {
-  protected static supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
-}
-
 describe("IModelConnection", () => {
   before(async () => {
-    TestApp.startup();
+    IModelApp.startup();
     await TestData.load();
   });
 
   after(() => {
-    TestApp.shutdown();
+    IModelApp.shutdown();
   });
 
   it("should be able to get elements and models from an IModelConnection", async () => {

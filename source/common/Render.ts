@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
+Gradient/*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { ColorDef } from "./ColorDef";
-import { DgnFB } from "./geometry/ElementGraphicsSchema";
 import { IModel } from "./IModel";
 import { Point3d, XYAndZ, Transform, Angle } from "@bentley/geometry-core";
 import { PatternParams } from "./geometry/AreaPattern";
@@ -391,11 +391,50 @@ export namespace Gradient {
     public mode = Mode.None;
     public flags = Flags.None;
     public nKeys = 0;
-    public _angle = 0.0;
+    public angle = 0.0;
     public tint = 0.0;
     public shift = 0.0;
     public readonly colors: ColorDef[] = [];
     public readonly values: number[] = [];
+
+    public clone(): Symb {
+      const retVal = new Symb();
+      retVal.mode = this.mode;
+      retVal.flags = this.flags;
+      retVal.nKeys = this.nKeys;
+      retVal.angle = this.angle;
+      retVal.tint = this.tint;
+      retVal.shift = this.shift;
+      for (let i = 0; i < this.nKeys; ++i) {
+        retVal.colors.push(this.colors[i]);
+        retVal.values.push(this.values[i]);
+      }
+      return retVal;
+    }
+
+    public isEqualTo(other: Symb): boolean {
+      if (this === other)
+        return true; // Same pointer
+      if (this.mode !== other.mode)
+        return false;
+      if (this.flags !== other.flags)
+        return false;
+      if (this.nKeys !== other.nKeys)
+        return false;
+      if (this.angle !== other.angle)
+        return false;
+      if (this.tint !== other.tint)
+        return false;
+      if (this.shift !== other.shift)
+        return false;
+      for (let i = 0; i < this.nKeys; ++i) {
+        if (other.values[i] !== this.values[i])
+          return false;
+        if (!other.colors[i].equals(this.colors[i]))
+          return false;
+      }
+      return true;
+    }
   }
 }
 
@@ -418,6 +457,13 @@ export const enum BackgroundFill {
   Solid = 1,
   /** single color fill uses the view's background color and line color to draw an outline fill */
   Outline = 2,
+}
+
+export const enum GeometryClass {
+  Primary = 0,
+  Construction = 1,
+  Dimension = 2,
+  Pattern = 3,
 }
 
 export class Texture {
@@ -453,16 +499,148 @@ export class GeometryParams {
   private netElmTransparency = 0; // net transparency for element/category.
   private fillTransparency = 0;  // fill transparency, 1.0 == completely transparent.
   private netFillTransparency = 0; // net transparency for fill/category.
-  private geometryClass = DgnFB.GeometryClass.Primary; // geometry class
+  private geometryClass = GeometryClass.Primary; // geometry class
   private styleInfo?: LineStyleInfo; // line style id plus modifiers.
   private gradient?: Gradient.Symb; // gradient fill settings.
   private pattern?: PatternParams; // area pattern settings.
 
   constructor(public categoryId: Id64, public subCategoryId = new Id64()) { if (!subCategoryId.isValid()) this.subCategoryId = IModel.getDefaultSubCategoryId(categoryId); }
 
-  // void ResetAppearance(); //!< Like Init, but saves and restores category and sub-category around the call to Init. This is particularly useful when a single element draws objects of different symbology, but its draw code does not have easy access to reset the category.
   // void Resolve(DgnDbR, DgnViewportP vp = nullptr); // Resolve effective values using the supplied DgnDb and optional DgnViewport (for view bg fill and view sub-category overrides)...
   // void Resolve(ViewContextR); // Resolve effective values using the supplied ViewContext.
+
+  public clone(): GeometryParams {
+    const retVal = new GeometryParams(this.categoryId, this.subCategoryId);
+    retVal.appearanceOverrides.color = this.appearanceOverrides.color;
+    retVal.appearanceOverrides.weight = this.appearanceOverrides.weight;
+    retVal.appearanceOverrides.style = this.appearanceOverrides.style;
+    retVal.appearanceOverrides.material = this.appearanceOverrides.material;
+    retVal.appearanceOverrides.fill = this.appearanceOverrides.fill;
+    retVal.resolved = this.resolved;
+    retVal.materialId = this.materialId;
+    retVal.elmPriority = this.elmPriority;
+    retVal.netPriority = this.netPriority;
+    retVal.weight = this.weight;
+    retVal.lineColor.setFrom(this.lineColor);
+    retVal.fillColor.setFrom(this.fillColor);
+    retVal.backgroundFill = this.backgroundFill;
+    retVal.fillDisplay = this.fillDisplay;
+    retVal.elmTransparency = this.elmTransparency;
+    retVal.netElmTransparency = this.netElmTransparency;
+    retVal.fillTransparency = this.fillTransparency;
+    retVal.netFillTransparency = this.netFillTransparency;
+    retVal.geometryClass = this.geometryClass;
+    retVal.styleInfo = this.styleInfo ? this.styleInfo.clone() : undefined;
+    retVal.gradient = this.gradient ? this.gradient.clone() : undefined;
+    retVal.pattern = this.pattern ? this.pattern.clone() : undefined;
+    return retVal;
+  }
+
+  /**
+   *  Clears appearance overrides while preserving category and sub-category.
+   */
+  public resetAppearance() {
+    this.appearanceOverrides.clear();
+    this.resolved = false;
+    this.materialId = undefined;
+    this.elmPriority = 0;
+    this.netPriority = 0;
+    this.weight = 0;
+    this.lineColor.setFrom(new ColorDef());
+    this.fillColor.setFrom(new ColorDef());
+    this.backgroundFill = BackgroundFill.None;
+    this.fillDisplay = FillDisplay.Never;
+    this.elmTransparency = 0;
+    this.netElmTransparency = 0;
+    this.fillTransparency = 0;
+    this.netFillTransparency = 0;
+    this.geometryClass = GeometryClass.Primary;
+    this.styleInfo = undefined;
+    this.gradient = undefined;
+    this.pattern = undefined;
+  }
+
+  /**
+   *  Compare two GeometryParams for equivalence, i.e. both values are from sub-category appearance or have the same override.
+   */
+ public isEquivalent(other: GeometryParams): boolean {
+   if (this === other)
+     return true; // Same pointer
+
+   if (!this.categoryId.equals(other.categoryId))
+     return false;
+   if (!this.subCategoryId.equals(other.subCategoryId))
+     return false;
+   if (this.geometryClass !== other.geometryClass)
+     return false;
+
+   // Don't compare netPriority, compare the inputs: elmPriority + subCateogoryId.
+   if (this.elmPriority !== other.elmPriority)
+     return false;
+   // Don't compare netElmTransparency, compare the inputs: elmTransparency + subCateogoryId.
+   if (this.elmTransparency !== other.elmTransparency)
+     return false;
+   // Don't compare netFillTransparency, compare the inputs: fillTransparency + subCateogoryId.
+   if (this.fillTransparency !== other.fillTransparency)
+     return false;
+
+   // Don't compare lineColor unless sub-category appearance override is set...
+   if (this.appearanceOverrides.color !== other.appearanceOverrides.color)
+     return false;
+   if (this.appearanceOverrides.color && (!this.lineColor.equals(other.lineColor)))
+     return false;
+
+   // Don't compare weight unless sub-category appearance override is set...
+   if (this.appearanceOverrides.weight !== other.appearanceOverrides.weight)
+     return false;
+   if (this.appearanceOverrides.weight && (this.weight !== other.weight))
+     return false;
+
+   // Don't compare m_materialId unless sub-category appearance override is set...
+   if (this.appearanceOverrides.material !== other.appearanceOverrides.material)
+     return false;
+   if (this.appearanceOverrides.material && (!this.materialId!.equals(other.materialId!)))
+     return false;
+
+   // Don't compare m_styleInfo unless sub-category appearance override is set...
+   if (this.appearanceOverrides.style !== other.appearanceOverrides.style)
+     return false;
+   if (this.appearanceOverrides.style) {
+     if ((this.styleInfo === undefined) !== (other.styleInfo === undefined))
+       return false;
+     if (this.styleInfo) {
+       if (!this.styleInfo.styleId.equals(other.styleInfo!.styleId))
+         return false;
+       if (!this.styleInfo.lStyleSymb.isEqualTo(other.styleInfo!.lStyleSymb))
+         return false;
+     }
+   }
+
+   if (this.fillDisplay !== other.fillDisplay)
+     return false;
+   if (this.fillDisplay !== FillDisplay.Never) {
+     // Don't compare fillColor/gradient unless sub-category appearance override is set...
+     if (this.appearanceOverrides.fill !== other.appearanceOverrides.fill)
+       return false;
+     if (this.appearanceOverrides.fill) {
+       if ((this.gradient === undefined) !== (other.gradient === undefined))
+         return false;
+       if (this.gradient && !this.gradient.isEqualTo(other.gradient!))
+         return false;
+       if (this.backgroundFill !== other.backgroundFill)
+         return false;
+       if (this.backgroundFill !== BackgroundFill.None && !this.fillColor.equals(other.fillColor))
+         return false;
+     }
+   }
+
+   if ((this.pattern === undefined) !== (other.pattern === undefined))
+     return false;
+   if (this.pattern && !this.pattern.isEqualTo(other.pattern!))
+     return false;
+
+   return true;
+  }
 
   /** Whether effective values have been resolved. */
   public isResolved() { return this.resolved; }
@@ -482,18 +660,18 @@ export class GeometryParams {
     this.resolved = false;
   }
   public setWeight(weight: number) { this.appearanceOverrides.weight = true; this.weight = weight; }
-  public setLineStyle(styleInfo: LineStyleInfo) { this.appearanceOverrides.style = true; this.styleInfo = styleInfo; if (styleInfo) this.resolved = false; }
+  public setLineStyle(styleInfo: LineStyleInfo | undefined) { this.appearanceOverrides.style = true; this.styleInfo = styleInfo; if (styleInfo) this.resolved = false; }
   public setLineColor(color: ColorDef) { this.appearanceOverrides.color = true; this.lineColor.setFrom(color); }
   public setFillDisplay(display: FillDisplay) { this.fillDisplay = display; }
   public setFillColor(color: ColorDef) { this.appearanceOverrides.fill = true; this.fillColor.setFrom(color); this.backgroundFill = BackgroundFill.None; }
   public setFillColorFromViewBackground(outline = false) { this.appearanceOverrides.fill = true; this.backgroundFill = outline ? BackgroundFill.Outline : BackgroundFill.Solid; this.resolved = false; }
-  public setGradient(gradient: Gradient.Symb) { this.gradient = gradient; }
-  public setGeometryClass(geomClass: DgnFB.GeometryClass) { this.geometryClass = geomClass; }
+  public setGradient(gradient: Gradient.Symb | undefined) { this.gradient = gradient; }
+  public setGeometryClass(geomClass: GeometryClass) { this.geometryClass = geomClass; }
   public setTransparency(transparency: number) { this.elmTransparency = this.netElmTransparency = this.fillTransparency = this.netFillTransparency = transparency; this.resolved = false; } // NOTE: Sets BOTH element and fill transparency...
   public setFillTransparency(transparency: number) { this.fillTransparency = this.netFillTransparency = transparency; this.resolved = false; }
   public setDisplayPriority(priority: number) { this.elmPriority = this.netPriority = priority; this.resolved = false; } // Set display priority (2d only).
-  public setMaterialId(materialId: Id64) { this.appearanceOverrides.material = true; this.materialId = materialId; }
-  public setPatternParams(patternParams: PatternParams) { this.pattern = patternParams; }
+  public setMaterialId(materialId: Id64 | undefined) { this.appearanceOverrides.material = true; this.materialId = materialId; }
+  public setPatternParams(patternParams: PatternParams | undefined) { this.pattern = patternParams; }
   public getNetTransparency() { return this.netElmTransparency; }
   public getNetFillTransparency() { return this.netFillTransparency; }
   /** Get net display priority (2d only). */
@@ -509,9 +687,6 @@ export class GeometryParams {
   public isLineStyleFromSubCategoryAppearance() { return !this.appearanceOverrides.style; }
   public isMaterialFromSubCategoryAppearance() { return !this.appearanceOverrides.material; }
   public isFillColorFromSubCategoryAppearance() { return !this.appearanceOverrides.fill; }
-
-  // //! Compare two GeometryParams for equivalence, i.e. both values are from sub-category appearance or have the same override.
-  // bool IsEquivalent(GeometryParamsCR) const;
 
   /** Get element category */
   public getCategoryId() { return this.categoryId; }
@@ -530,6 +705,9 @@ export class GeometryParams {
 
   /**  Get solid fill color type setting */
   public isFillColorFromViewBackground(): boolean { return BackgroundFill.None !== this.backgroundFill; }
+
+  /**  Get whether background color solid fill should display an outline using the line color or not */
+  public isBackgroundFillOutlined(): boolean { return BackgroundFill.Outline === this.backgroundFill; }
 
   /**  Get gradient fill information. Valid when FillDisplay::Never != GetFillDisplay() and not nullptr. */
   public getGradient() { return this.gradient; }
@@ -689,10 +867,6 @@ export class Decorations {
   public world?: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
   public worldOverlay?: DecorationList; // drawn in overlay mode, world units
   public viewOverlay?: DecorationList;  // drawn in overlay mode, view units
-}
-
-export const enum GeometryClass {
-  Primary, Construction, Dimension, Pattern,
 }
 
 /**
