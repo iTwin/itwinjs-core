@@ -192,7 +192,7 @@ export function parseCustomAttributeContainerType(type: string): CustomAttribute
       containerType = containerType | CustomAttributeContainerType.PrimitiveProperty;
     else if (/^StructProperty$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.StructProperty;
-    else if (/^PrimitiveArrayProperty$/i.test(typeToken))
+    else if (/^ArrayProperty$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.PrimitiveArrayProperty;
     else if (/^StructArrayProperty$/i.test(typeToken))
       containerType = containerType | CustomAttributeContainerType.StructArrayProperty;

@@ -58,7 +58,7 @@ describe("Parsing/ToString Functions", () => {
     expect(parseCustomAttributeContainerType("anYCLaSS")).to.equal(CustomAttributeContainerType.AnyClass);
     expect(parseCustomAttributeContainerType("pRImiTIVeProPErtY")).to.equal(CustomAttributeContainerType.PrimitiveProperty);
     expect(parseCustomAttributeContainerType("StRuCTProperty")).to.equal(CustomAttributeContainerType.StructProperty);
-    expect(parseCustomAttributeContainerType("priMitIveARRayPRoPertY")).to.equal(CustomAttributeContainerType.PrimitiveArrayProperty);
+    expect(parseCustomAttributeContainerType("ARRayPRoPertY")).to.equal(CustomAttributeContainerType.PrimitiveArrayProperty);
     expect(parseCustomAttributeContainerType("sTRUctArrayPrOPErTy")).to.equal(CustomAttributeContainerType.StructArrayProperty);
     expect(parseCustomAttributeContainerType("nAviGAtIoNProPerTY")).to.equal(CustomAttributeContainerType.NavigationProperty);
     expect(parseCustomAttributeContainerType("AnyProPErTy")).to.equal(CustomAttributeContainerType.AnyProperty);
@@ -84,7 +84,7 @@ describe("Parsing/ToString Functions", () => {
     expect(containerTypeToString(CustomAttributeContainerType.AnyClass)).to.equal("AnyClass");
     expect(containerTypeToString(CustomAttributeContainerType.PrimitiveProperty)).to.equal("PrimitiveProperty");
     expect(containerTypeToString(CustomAttributeContainerType.StructProperty)).to.equal("StructProperty");
-    expect(containerTypeToString(CustomAttributeContainerType.PrimitiveArrayProperty)).to.equal("PrimitiveArrayProperty");
+    expect(containerTypeToString(CustomAttributeContainerType.PrimitiveArrayProperty)).to.equal("ArrayProperty");
     expect(containerTypeToString(CustomAttributeContainerType.StructArrayProperty)).to.equal("StructArrayProperty");
     expect(containerTypeToString(CustomAttributeContainerType.NavigationProperty)).to.equal("NavigationProperty");
     expect(containerTypeToString(CustomAttributeContainerType.AnyProperty)).to.equal("AnyProperty");
