@@ -317,7 +317,7 @@ export default class Schema implements CustomAttributeContainerProps {
    */
   protected async addReference(refSchema: Schema): Promise<void> {
     // TODO validation of reference schema. For now just adding
-    return this.addReferenceSync(refSchema);
+    this.addReferenceSync(refSchema);
   }
 
   protected addReferenceSync(refSchema: Schema): void {
