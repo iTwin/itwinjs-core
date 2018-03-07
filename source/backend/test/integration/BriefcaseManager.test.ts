@@ -107,8 +107,8 @@ describe("BriefcaseManager", () => {
     console.log(`    ...getting user access token from IMS: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     startTime = new Date().getTime();
 
-    testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
-    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "TestModel");
+    testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "iModelJsTest");
+    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "ReadOnlyTest");
 
     testChangeSets = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
     expect(testChangeSets.length).greaterThan(2);
@@ -119,8 +119,8 @@ describe("BriefcaseManager", () => {
 
     // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
     if (!IModelJsFs.existsSync(cacheDir)) {
-      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "TestModel");
-      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "NoVersionsTest");
+      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "iModelJsTest", "ReadOnlyTest");
+      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "iModelJsTest", "NoVersionsTest");
     }
 
     console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
@@ -352,9 +352,9 @@ describe("BriefcaseManager", () => {
     // Note: This test is commented out since it causes the entire cache to be discarded and is therefore expensive.
     IModelTestUtils.setIModelHubDeployConfig("DEV");
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Turn off SSL validation in DEV
-    const devProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
+    const devProjectId = await IModelTestUtils.getTestProjectId(accessToken, "iModelJsTest");
     assert(devProjectId);
-    const devIModelId = await IModelTestUtils.getTestIModelId(accessToken, devProjectId, "MyTestModel");
+    const devIModelId = await IModelTestUtils.getTestIModelId(accessToken, devProjectId, "ReadOnlyTest");
     assert(devIModelId);
     const devChangeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, devIModelId, false);
     expect(devChangeSets.length).equals(0); // needs change sets
@@ -362,9 +362,9 @@ describe("BriefcaseManager", () => {
     assert.exists(devIModel);
 
     IModelTestUtils.setIModelHubDeployConfig("QA");
-    const qaProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
+    const qaProjectId = await IModelTestUtils.getTestProjectId(accessToken, "iModelJsTest");
     assert(qaProjectId);
-    const qaIModelId = await IModelTestUtils.getTestIModelId(accessToken, qaProjectId, "MyTestModel");
+    const qaIModelId = await IModelTestUtils.getTestIModelId(accessToken, qaProjectId, "ReadOnlyTest");
     assert(qaIModelId);
     const qaChangeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, qaIModelId, false);
     expect(qaChangeSets.length).greaterThan(0);

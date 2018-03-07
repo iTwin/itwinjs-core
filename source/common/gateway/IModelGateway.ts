@@ -51,6 +51,6 @@ export abstract class IModelGateway extends Gateway {
   public getAllCodeSpecs(_iModelToken: IModelToken): Promise<any[]> { return this.forward.apply(this, arguments); }
   public saveChanges(_iModelToken: IModelToken, _description?: string): Promise<void> { return this.forward.apply(this, arguments); }
   public updateProjectExtents(_iModelToken: IModelToken, _newExtents: AxisAlignedBox3d): Promise<void> { return this.forward.apply(this, arguments); }
-  public executeTest(_iModelToken: IModelToken, _testName: string, _params: any): Promise<any> { return this.forward.apply(this, arguments); }
   public getViewStateData(_iModelToken: IModelToken, _viewDefinitionId: string): Promise<any> { return this.forward.apply(this, arguments); }
+  public executeTest(_iModelToken: IModelToken, _testName: string, _params: any): Promise<any> { return this.forward.apply(this, arguments); }
 }

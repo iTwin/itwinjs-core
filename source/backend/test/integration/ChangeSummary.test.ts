@@ -22,14 +22,14 @@ describe("ChangeSummary", () => {
 
   before(async () => {
     accessToken = await IModelTestUtils.getTestUserAccessToken();
-    testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "NodeJsTestProject");
-    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "TestModel");
+    testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "iModelJsTest");
+    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "ReadOnlyTest");
 
     // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
     const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
     if (!IModelJsFs.existsSync(cacheDir)) {
-      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "TestModel");
-      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "NoVersionsTest");
+      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "iModelJsTest", "ReadOnlyTest");
+      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "iModelJsTest", "NoVersionsTest");
     }
 
     const changesPath: string = BriefcaseManager.getChangeSummaryPathname(testIModelId);
