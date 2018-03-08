@@ -9,7 +9,7 @@ import {
 } from "@bentley/imodeljs-clients";
 import { Element, InformationPartitionElement } from "../Element";
 import { IModelDb } from "../IModelDb";
-import { AddonRegistry } from "../AddonRegistry";
+import { NativePlatformRegistry } from "../NativePlatformRegistry";
 import { IModelGateway } from "@bentley/imodeljs-common";
 import { Code, Gateway, ElementProps, GeometricElementProps, Appearance } from "@bentley/imodeljs-common";
 import { DefinitionModel, Model } from "../Model";
@@ -32,7 +32,7 @@ Logger.setLevel("ECPresentation", LogLevel.None);
 Gateway.initialize(IModelGateway);
 
 // Initialize the Node addon used by tests
-AddonRegistry.loadAndRegisterStandardAddon();
+NativePlatformRegistry.loadAndRegisterStandardNativePlatform();
 
 export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;

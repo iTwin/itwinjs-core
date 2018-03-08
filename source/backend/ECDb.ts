@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { AddonECDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
-import { AddonRegistry } from "./AddonRegistry";
+import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { DbResult, OpenMode, IDisposable, Logger, assert } from "@bentley/bentleyjs-core";
 
@@ -15,7 +15,7 @@ export class ECDb implements IDisposable {
   private readonly _statementCache: ECSqlStatementCache;
 
   constructor() {
-    this._nativeDb = new (AddonRegistry.getAddon()).AddonECDb();
+    this._nativeDb = new (NativePlatformRegistry.getNativePlatform()).AddonECDb();
     this._statementCache = new ECSqlStatementCache();
   }
 

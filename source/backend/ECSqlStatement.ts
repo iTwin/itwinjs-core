@@ -5,7 +5,7 @@ import { assert, DbResult, BentleyStatus, Id64, Id64Props, Guid, GuidProps, usin
 import { IModelError, ECSqlValueType, ECSqlTypedString, ECSqlStringType, NavigationValue, NavigationBindingValue, ECSqlSystemProperty, ECJsNames } from "@bentley/imodeljs-common";
 import { XAndY, XYAndZ, XYZ } from "@bentley/geometry-core";
 import { ECDb } from "./ECDb";
-import { AddonRegistry } from "./AddonRegistry";
+import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { AddonECSqlStatement, AddonECSqlBinder, AddonECSqlValue, AddonECSqlValueIterator, AddonECDb, AddonDgnDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 
 /** The result of an **ECSQL INSERT** statement as returned from [[ECSqlStatement.stepForInsert]].
@@ -62,7 +62,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   public prepare(db: AddonDgnDb | AddonECDb, ecsql: string): void {
     if (this.isPrepared())
       throw new Error("ECSqlStatement is already prepared");
-    this._stmt = new (AddonRegistry.getAddon()).AddonECSqlStatement();
+    this._stmt = new (NativePlatformRegistry.getNativePlatform()).AddonECSqlStatement();
     const stat: StatusCodeWithMessage<DbResult> = this._stmt!.prepare(db, ecsql);
     if (stat.status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat.status, stat.message);

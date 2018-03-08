@@ -360,7 +360,6 @@ describe("GeometryBuilder", () => {
 
   // spell-checker: disable
 
-  // pending build of addon
   it("geometry stream built in JS should be deserialized properly in C++", () => {
     const builder = GeometryStreamBuilder.fromCategoryIdAndOrigin3d(seedElement.category, Point3d.create(0, 0, 0));
     assert.isDefined(builder, "Builder is successfully created");
@@ -388,7 +387,6 @@ describe("GeometryBuilder", () => {
     assert.isTrue(jsonCompare.compare({ returnValue: true }, cppResult));
   });
 
-  // pending build of addon
   it("geometry stream built in C++ should be deserialized properly in TS", () => {
     const pts = surface.copyPoints();
     const json: any = {

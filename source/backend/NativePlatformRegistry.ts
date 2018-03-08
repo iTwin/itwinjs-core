@@ -1,0 +1,120 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { Logger } from "@bentley/bentleyjs-core";
+import { KnownLocations } from "./KnownLocations";
+
+/** Class that holds the singleton platform instance that was loaded by the app for this iModelJs session. It is up to the app to load the platform. */
+export class NativePlatformRegistry {
+  private static _platform: any;
+
+  /** Return the singleton platform instance configured for this iModelJs session.
+   * See [[NativePlatformRegistry.register]]
+   * @throws [[IModelError]] if the platform was not loaded.
+   */
+  public static getNativePlatform(): any {
+    if (!NativePlatformRegistry._platform)
+      throw new IModelError(IModelStatus.FileNotLoaded, "Node platform not loaded");
+
+    return NativePlatformRegistry._platform;
+  }
+
+  /** Call this function to register the platform */
+  public static register(platform: any): void {
+    NativePlatformRegistry._platform = platform;
+
+    if (!NativePlatformRegistry._platform)
+      return;
+
+    NativePlatformRegistry.checkNativePlatformVersion();
+
+    NativePlatformRegistry._platform.logger = Logger;
+  }
+
+  private static parseSemVer(str: string): number[] {
+    const c = str.split(".");
+    return [parseInt(c[0], 10), parseInt(c[1], 10), parseInt(c[2], 10)];
+  }
+
+  private static checkNativePlatformVersion(): void {
+    const platformVer = NativePlatformRegistry._platform.version;
+    // tslint:disable-next-line:no-var-requires
+    const iWasBuiltWithVer = require("@bentley/imodeljs-nodeplatformapi/package.json").version;
+
+    const platformVerDigits = NativePlatformRegistry.parseSemVer(platformVer);
+    const iWasBuiltWithVerDigits = NativePlatformRegistry.parseSemVer(iWasBuiltWithVer);
+
+    if ((platformVerDigits[0] !== iWasBuiltWithVerDigits[0]) || (platformVerDigits[1] < iWasBuiltWithVerDigits[1])) {
+      NativePlatformRegistry._platform = undefined;
+      throw new IModelError(IModelStatus.BadRequest, "Native platform version is (" + platformVer + "). imodeljs-backend requires version (" + iWasBuiltWithVer + ")");
+    }
+  }
+
+  /** Get the module that can load the standard node addon. */
+  public static getStandardAddonLoaderModule(): any | undefined {
+    if (typeof (process) === "undefined")
+      return undefined;
+    if ("electron" in process.versions) {
+      return require("@bentley/imodeljs-electronplatform");
+    }
+    return require("@bentley/imodeljs-nodeplatform");
+  }
+
+  /** Load and register the standard platform. */
+  public static loadAndRegisterStandardNativePlatform() {
+
+    if (KnownLocations.imodeljsMobile !== undefined) {
+      // We are running in imodeljs (our mobile platform)
+      NativePlatformRegistry.register((self as any).imodeljsMobile.imodeljsNative);
+      return;
+    }
+
+    if (typeof (process) === "undefined") {
+      // We are running in an unknown platform.
+      throw new IModelError(IModelStatus.NotFound);
+    }
+
+    // We are running in node or electron.
+    const loaderModule = NativePlatformRegistry.getStandardAddonLoaderModule();
+    if (loaderModule === undefined) {
+      throw new IModelError(IModelStatus.NotFound);
+    }
+    NativePlatformRegistry.register(loaderModule.NodeAddonLoader.loadAddon());
+  }
+}
+
+/** Utility class to help apps compute the name of the default platform package that should be used in the current environment.
+ * Normally, only an Electron app should have to use this class.
+ * NB: This class is NOT to be used directly by the backend. This class is implemented in backed only because that is where it can most conveniently be found and used by both apps and by nodeplatform.
+ */
+export class NodeAddonPackageName {
+
+  /** Compute the name of default platform package that should be used for this environment. This method uses the same naming formula that is used by
+   * the bb part that generates and publishes the default platform packages (iModelJsNodeAddon:MakePackages).
+   */
+  public static computeDefaultImodelNodeAddonPackageName(): string {
+
+    // *** KEEP THIS CONSISTENT WITH iModelJsNodeAddon/MakePackages.py IN MERCURIAL ***
+
+    if (typeof (process) === "undefined" || process.version === "")
+      throw new IModelError(IModelStatus.BadRequest, "Could not determine process type");
+
+    let versionCode;
+    const electronVersion = (process.versions as any).electron;
+    if (typeof electronVersion !== "undefined") {
+      versionCode = "e_" + electronVersion.replace(/\./g, "_");
+    } else {
+      const nodeVersion = process.version.substring(1).split("."); // strip off the character 'v' from the start of the string
+      versionCode = "n_" + nodeVersion[0] + "_" + nodeVersion[1]; // use only major and minor version numbers
+    }
+    return "@bentley/imodeljs-" + versionCode + "-" + process.platform + "-" + process.arch;
+  }
+
+  /** Compute the name of default platformthat should be used for this environment. This method uses the same naming formula that is used by
+   * the bb part that generates and publishes the default platform packages (iModelJsNodeAddon:MakePackages).
+   */
+  public static computeDefaultImodelNodeAddonName(): string {
+    return NodeAddonPackageName.computeDefaultImodelNodeAddonPackageName() + "/platform/imodeljs.node";
+  }
+}

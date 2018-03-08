@@ -19,7 +19,7 @@ import { CodeSpecs } from "./CodeSpecs";
 import { Entity, EntityMetaData } from "./Entity";
 import * as path from "path";
 import { IModelDbLinkTableRelationships, LinkTableRelationship } from "./LinkTableRelationship";
-import { AddonRegistry } from "./AddonRegistry";
+import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { IModelHost } from "./IModelHost";
 
 const loggingCategory = "imodeljs-backend.IModelDb";
@@ -561,7 +561,7 @@ export class ConcurrencyControl {
   }
 
   /** Create an empty Request */
-  public static createRequest(): ConcurrencyControl.Request { return new (AddonRegistry.getAddon()).AddonBriefcaseManagerResourcesRequest(); }
+  public static createRequest(): ConcurrencyControl.Request { return new (NativePlatformRegistry.getNativePlatform()).AddonBriefcaseManagerResourcesRequest(); }
 
   /** Convert the request to any */
   public static convertRequestToAny(req: ConcurrencyControl.Request): any { return JSON.parse((req as AddonBriefcaseManagerResourcesRequest).toJSON()); }

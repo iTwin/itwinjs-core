@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { AddonRegistry } from "./AddonRegistry";
+import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { IModelError } from "@bentley/imodeljs-common";
 import { AddonECSchemaXmlContext } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
 
@@ -12,7 +12,7 @@ export class ECSchemaXmlContext {
   private _nativeContext: AddonECSchemaXmlContext | undefined;
 
   constructor() {
-    this._nativeContext = new (AddonRegistry.getAddon()).AddonECSchemaXmlContext();
+    this._nativeContext = new (NativePlatformRegistry.getNativePlatform()).AddonECSchemaXmlContext();
   }
 
   public addSchemaPath(searchPath: string): void {
