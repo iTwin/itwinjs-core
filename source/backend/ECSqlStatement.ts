@@ -6,7 +6,7 @@ import { IModelError, ECSqlValueType, ECSqlTypedString, ECSqlStringType, Navigat
 import { XAndY, XYAndZ, XYZ } from "@bentley/geometry-core";
 import { ECDb } from "./ECDb";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
-import { AddonECSqlStatement, AddonECSqlBinder, AddonECSqlValue, AddonECSqlValueIterator, AddonECDb, AddonDgnDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
+import { NativeECSqlStatement, NativeECSqlBinder, NativeECSqlValue, NativeECSqlValueIterator, NativeECDb, NativeDgnDb } from "@bentley/imodeljs-native-platform-api/imodeljs-native-platform-api";
 
 /** The result of an **ECSQL INSERT** statement as returned from [[ECSqlStatement.stepForInsert]].
  *
@@ -33,7 +33,7 @@ export class ECSqlInsertResult {
  * standard iteration syntax, such as "for of".
  */
 export class ECSqlStatement implements IterableIterator<any>, IDisposable {
-  private _stmt: AddonECSqlStatement | undefined;
+  private _stmt: NativeECSqlStatement | undefined;
   private _isShared: boolean = false;
 
   /** @hidden - used by statement cache */
@@ -59,10 +59,10 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @throws [[IModelError]] if the ECSQL statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or references to tables or properties that do not exist.
    * The error.message property will provide details.
    */
-  public prepare(db: AddonDgnDb | AddonECDb, ecsql: string): void {
+  public prepare(db: NativeDgnDb | NativeECDb, ecsql: string): void {
     if (this.isPrepared())
       throw new Error("ECSqlStatement is already prepared");
-    this._stmt = new (NativePlatformRegistry.getNativePlatform()).AddonECSqlStatement();
+    this._stmt = new (NativePlatformRegistry.getNativePlatform()).NativeECSqlStatement();
     const stat: StatusCodeWithMessage<DbResult> = this._stmt!.prepare(db, ecsql);
     if (stat.status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat.status, stat.message);
@@ -246,7 +246,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     }
   }
 
-  private getBinder(param: string | number): AddonECSqlBinder {
+  private getBinder(param: string | number): NativeECSqlBinder {
     return this._stmt!.getBinder(param);
   }
 
@@ -378,9 +378,9 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
  * See [[ECSqlStatement]], [[ECSqlStatement.getValue]]
  */
 export class ECSqlValue implements IDisposable {
-  private _val: AddonECSqlValue;
+  private _val: NativeECSqlValue;
 
-  public constructor(val: AddonECSqlValue) { this._val = val; }
+  public constructor(val: NativeECSqlValue) { this._val = val; }
   public dispose(): void { this._val.dispose(); }
 
   /** Get information about the ECSQL SELECT result's column this value refers to. */
@@ -463,9 +463,9 @@ export class ECSqlValue implements IDisposable {
  *  See [[ECSqlValue.getStructIterator]] or [[ECSqlValue.getArrayIterator]]
  */
 export class ECSqlValueIterator implements IterableIterator<ECSqlValue>, IDisposable {
-  private _it: AddonECSqlValueIterator;
+  private _it: NativeECSqlValueIterator;
 
-  public constructor(it: AddonECSqlValueIterator) { this._it = it; }
+  public constructor(it: NativeECSqlValueIterator) { this._it = it; }
   public dispose(): void { this._it.dispose(); }
 
   public next(): IteratorResult<ECSqlValue> {
@@ -542,7 +542,7 @@ class ECSqlBindingHelper {
    * Arrays of primitives or objects of any of the above when binding arrays
    * @throws IModelError in case of errors
    */
-  public static bindValue(binder: AddonECSqlBinder, val: any): void {
+  public static bindValue(binder: NativeECSqlBinder, val: any): void {
     // returns undefined if val is no primitive and returns DbResult if it is primitive and a binding call was done
     const primStat: DbResult | undefined = ECSqlBindingHelper.tryBindPrimitiveTypes(binder, val);
     if (primStat !== undefined) {
@@ -571,7 +571,7 @@ class ECSqlBindingHelper {
    *  null | undefined, boolean, number, string, DateTime, Blob, Id64, XY, XYZ, NavigationValue
    * @throws [[IModelError]] in case of errors
    */
-  public static bindPrimitive(binder: AddonECSqlBinder, val: any): void {
+  public static bindPrimitive(binder: NativeECSqlBinder, val: any): void {
     const stat: DbResult | undefined = ECSqlBindingHelper.tryBindPrimitiveTypes(binder, val);
     if (stat === undefined)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Binding value is of an unsupported primitive type: ${val}`);
@@ -585,7 +585,7 @@ class ECSqlBindingHelper {
    * @param val Value to be bound. Must be an Object with members of the supported types
    * @throws [[IModelError]] in case of errors
    */
-  public static bindStruct(binder: AddonECSqlBinder, val: object): void {
+  public static bindStruct(binder: NativeECSqlBinder, val: object): void {
     if (val === null || val === undefined) {
       const stat: DbResult = binder.bindNull();
       if (stat !== DbResult.BE_SQLITE_OK)
@@ -607,7 +607,7 @@ class ECSqlBindingHelper {
    * @param val Value to be bound. Must be an Array with elements of the supported types
    * @throws [[IModelError]] in case of errors
    */
-  public static bindArray(binder: AddonECSqlBinder, val: any[]): void {
+  public static bindArray(binder: NativeECSqlBinder, val: any[]): void {
     if (val === null || val === undefined) {
       const stat: DbResult = binder.bindNull();
       if (stat !== DbResult.BE_SQLITE_OK)
@@ -625,7 +625,7 @@ class ECSqlBindingHelper {
   /** tries to interpret the passed value as known leaf types (primitives and navigation values).
    *  @returns Returns undefined if the value wasn't a primitive. DbResult if it was a primitive and was bound to the binder
    */
-  private static tryBindPrimitiveTypes(binder: AddonECSqlBinder, val: any): DbResult | undefined {
+  private static tryBindPrimitiveTypes(binder: NativeECSqlBinder, val: any): DbResult | undefined {
     if (val === undefined || val === null)
       return binder.bindNull();
 

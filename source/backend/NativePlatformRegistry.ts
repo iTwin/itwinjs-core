@@ -40,7 +40,7 @@ export class NativePlatformRegistry {
   private static checkNativePlatformVersion(): void {
     const platformVer = NativePlatformRegistry._platform.version;
     // tslint:disable-next-line:no-var-requires
-    const iWasBuiltWithVer = require("@bentley/imodeljs-nodeplatformapi/package.json").version;
+    const iWasBuiltWithVer = require("@bentley/imodeljs-native-platform-api/package.json").version;
 
     const platformVerDigits = NativePlatformRegistry.parseSemVer(platformVer);
     const iWasBuiltWithVerDigits = NativePlatformRegistry.parseSemVer(iWasBuiltWithVer);
@@ -56,9 +56,9 @@ export class NativePlatformRegistry {
     if (typeof (process) === "undefined")
       return undefined;
     if ("electron" in process.versions) {
-      return require("@bentley/imodeljs-electronplatform");
+      return require("@bentley/imodeljs-electronaddon");
     }
-    return require("@bentley/imodeljs-nodeplatform");
+    return require("@bentley/imodeljs-nodeaddon");
   }
 
   /** Load and register the standard platform. */
@@ -86,7 +86,7 @@ export class NativePlatformRegistry {
 
 /** Utility class to help apps compute the name of the default platform package that should be used in the current environment.
  * Normally, only an Electron app should have to use this class.
- * NB: This class is NOT to be used directly by the backend. This class is implemented in backed only because that is where it can most conveniently be found and used by both apps and by nodeplatform.
+ * NB: This class is NOT to be used directly by the backend.
  */
 export class NodeAddonPackageName {
 

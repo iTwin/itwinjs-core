@@ -22,7 +22,7 @@ import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 
 Logger.initializeToConsole();
 Logger.setLevelDefault(LogLevel.Info);
-Logger.setLevel("Performance", LogLevel.Info);
+Logger.setLevel("Performance", LogLevel.None);
 Logger.setLevel("Diagnostics", LogLevel.None);
 Logger.setLevel("ECObjectsNative", LogLevel.None);
 Logger.setLevel("BeSQLite", LogLevel.Info);

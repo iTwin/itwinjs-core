@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
-import { AddonECDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
+import { NativeECDb } from "@bentley/imodeljs-native-platform-api/imodeljs-native-platform-api";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { DbResult, OpenMode, IDisposable, Logger, assert } from "@bentley/bentleyjs-core";
@@ -11,11 +11,11 @@ const loggingCategory = "imodeljs-backend.ECDb";
 
 /** An ECDb file */
 export class ECDb implements IDisposable {
-  private _nativeDb: AddonECDb | undefined;
+  private _nativeDb: NativeECDb | undefined;
   private readonly _statementCache: ECSqlStatementCache;
 
   constructor() {
-    this._nativeDb = new (NativePlatformRegistry.getNativePlatform()).AddonECDb();
+    this._nativeDb = new (NativePlatformRegistry.getNativePlatform()).NativeECDb();
     this._statementCache = new ECSqlStatementCache();
   }
 
@@ -144,7 +144,7 @@ export class ECDb implements IDisposable {
     return stmt;
   }
 
-  public get nativeDb(): AddonECDb {
+  public get nativeDb(): NativeECDb {
     if (this._nativeDb == null)
       throw new IModelError(IModelStatus.BadRequest, "ECDb object has already been disposed.");
 
