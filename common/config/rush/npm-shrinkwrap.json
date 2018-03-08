@@ -762,7 +762,7 @@
     },
     "@rush-temp/imodeljs-backend": {
       "version": "file:projects/imodeljs-backend.tgz",
-      "integrity": "sha1-PhhC+/YlOZVOdkC30bnB0wAdVQE=",
+      "integrity": "sha1-QBcnO/dOQPij5oUfLMOxLXc/8iM=",
       "requires": {
         "@bentley/geometry-core": "5.0.7",
         "@bentley/imodeljs-clients": "4.0.0",
@@ -785,7 +785,7 @@
     },
     "@rush-temp/imodeljs-common": {
       "version": "file:projects/imodeljs-common.tgz",
-      "integrity": "sha1-/xq0oxa9VT1iq9HQAlan/Vzx37s=",
+      "integrity": "sha1-MVfNJF57iUpl1y/STRSWT+Gtv/Q=",
       "requires": {
         "@bentley/bentleyjs-core": "7.3.2",
         "@bentley/geometry-core": "5.0.7",
@@ -796,7 +796,7 @@
     },
     "@rush-temp/imodeljs-core": {
       "version": "file:projects/imodeljs-core.tgz",
-      "integrity": "sha1-iwlI6TuTXh2jY+zh7ET9bg7JeAU=",
+      "integrity": "sha1-7CTCzAwFxgTVVRUF9noMF6TDuUU=",
       "requires": {
         "@bentley/bemetalsmith": "1.18.11",
         "@bentley/bentleyjs-tools": "2.2.2",
@@ -848,7 +848,7 @@
     },
     "@rush-temp/imodeljs-core-testbed": {
       "version": "file:projects/imodeljs-core-testbed.tgz",
-      "integrity": "sha1-+0LdbBNdhLbUkWHsZqYsUXoZCtg=",
+      "integrity": "sha1-tp2br3CWY87eZXaYF4ReKQyVqU4=",
       "requires": {
         "@bentley/bentleyjs-core": "7.3.2",
         "@bentley/geometry-core": "5.0.7",
@@ -877,7 +877,7 @@
     },
     "@rush-temp/imodeljs-frontend": {
       "version": "file:projects/imodeljs-frontend.tgz",
-      "integrity": "sha1-TGPbJvcPlcdCMe/WpqgLPYHcTbQ=",
+      "integrity": "sha1-zzRsrl9BXZtQzPojGrXsAkzPswI=",
       "requires": {
         "@bentley/geometry-core": "5.0.7",
         "@bentley/imodeljs-clients": "4.0.0",
@@ -10432,8 +10432,7 @@
       "requires": {
         "debug": "0.7.4",
         "moment": "2.21.0",
-        "slug-component": "1.1.0",
-        "substitute": "https://github.com/segmentio/substitute/archive/0.0.1.tar.gz"
+        "slug-component": "1.1.0"
       },
       "dependencies": {
         "debug": {
@@ -17717,10 +17716,6 @@
           "integrity": "sha1-o1AIsg9BOD7sH7kU9M1d95omQoQ="
         }
       }
-    },
-    "substitute": {
-      "version": "https://github.com/segmentio/substitute/archive/0.0.1.tar.gz",
-      "integrity": "sha1-QyhmmFsDw7DT9xrGPRrhoY369H0="
     },
     "success-symbol": {
       "version": "0.1.0",
