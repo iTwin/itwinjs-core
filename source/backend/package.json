@@ -29,37 +29,40 @@
     "url": "http://www.bentley.com"
   },
   "//peerDependencies": [
-    "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check"
+    "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check",
+    "NOTE: Keep the version of imodeljs-nodeaddonapi below consistent with imodeljs-nodeaddonapi in dependencies"
   ],
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^7.3.2",
-    "flatbuffers": "^1.8.0"
-  },
-  "//dependencies": [
-    "NOTE: these dependencies are specific to imodeljs-backend",
-    "NOTE: dependencies that are in common with imodeljs-frontend must have a consistent version",
-    "NOTE: backend really does depend on the addon API - that's what we compile against",
-    "NOTE: backend does not really depend on the addon itself -- the app is supposed to deliver the addon.",
-    "       Nevertheless, we make backend depend directly on the addon dependency as a convenience to apps, ",
-    "       so that they don't have to depend on it. We might revisit this policy in the future."
-  ],
-  "dependencies": {
     "@bentley/geometry-core": "^5.0.6",
     "@bentley/imodeljs-clients": "^4.0.0",
     "@bentley/imodeljs-common": "^0.62.0",
-    "@bentley/imodeljs-electronaddon": "~10.0.0",
-    "@bentley/imodeljs-nodeaddon": "~10.0.0",
     "@bentley/imodeljs-nodeaddonapi": "~10.0.0",
+    "flatbuffers": "^1.8.0"
+  },
+  "//dependencies": [
+    "NOTE: these dependencies are specific to imodeljs-backend"
+  ],
+  "dependencies": {
     "fs-extra": "^5.0.0",
     "js-base64": "^2.4.0"
   },
   "//devDependencies": [
     "NOTE: The backend tests use the standard Node addon, so that is recorded in devDependencies.",
-    "NOTE: The webpackformobile command needs webpack"
+    "NOTE: The webpackformobile command needs webpack",
+    "NOTE: The devDependencies on @bentley/imodeljs-nodeaddon/electronaddon and @bentley/imodeljs-n_8_9-win32-x64/e_1_6_11-win32-x64 are just for the tests (backend and frontend)"
   ],
   "devDependencies": {
+    "@bentley/bentleyjs-core": "^7.3.2",
+    "@bentley/geometry-core": "^5.0.6",
+    "@bentley/imodeljs-clients": "^4.0.0",
+    "@bentley/imodeljs-common": "^0.62.0",
+    "@bentley/imodeljs-nodeaddonapi": "~10.0.0",
     "cpx": "^1.5.0",
+    "@bentley/imodeljs-nodeaddon": "~10.0.0",
+    "@bentley/imodeljs-electronaddon": "~10.0.0",
     "@bentley/imodeljs-n_8_9-win32-x64": "~10.0.0",
+    "@bentley/imodeljs-e_1_6_11-win32-x64": "~10.0.0",
     "mocha": "^3.5.3",
     "nyc": "^11.4.1",
     "rimraf": "^2.6.2",
