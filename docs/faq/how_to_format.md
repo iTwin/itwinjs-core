@@ -1,5 +1,5 @@
 ## Q: How to add a question to FAQ?
-Create a markdown file and push it to imodeljs-core\docs. 
+Create a markdown file and push it to imodeljs-core\docs\faq. 
 
 The md file should be formatted like this:
 ```markdown
