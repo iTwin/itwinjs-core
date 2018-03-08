@@ -10432,7 +10432,8 @@
       "requires": {
         "debug": "0.7.4",
         "moment": "2.21.0",
-        "slug-component": "1.1.0"
+        "slug-component": "1.1.0",
+        "substitute": "0.0.1"
       },
       "dependencies": {
         "debug": {
@@ -17716,6 +17717,10 @@
           "integrity": "sha1-o1AIsg9BOD7sH7kU9M1d95omQoQ="
         }
       }
+    },
+    "substitute": {
+      "resolved":"https://github.com/segmentio/substitute/archive/0.0.1.tar.gz", 
+      "integrity": "sha1-QyhmmFsDw7DT9xrGPRrhoY369H0="
     },
     "success-symbol": {
       "version": "0.1.0",
