@@ -5,16 +5,17 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaContext } from "../Context";
 import { SchemaKey, relationshipEndToString, SchemaChildKey, SchemaChildType, tryParsePrimitiveType, tryParseSchemaChildType } from "../ECObjects";
 import SchemaChild from "../Metadata/SchemaChild";
-import Schema from "../Metadata/Schema";
-import EntityClass from "../Metadata/EntityClass";
+import Schema, { MutableSchema } from "../Metadata/Schema";
+import EntityClass, { MutableEntityClass } from "../Metadata/EntityClass";
 import Mixin from "../Metadata/Mixin";
 import RelationshipClass, { RelationshipConstraint } from "../Metadata/RelationshipClass";
 import { AnyClass, SchemaDeserializationVisitor, AnySchemaChild } from "../Interfaces";
 import { Property } from "../Metadata/Property";
+import { MutableClass } from "../Metadata/Class";
 
 /**
  * The purpose of this class is to properly order the deserialization of ECSchemas and SchemaChildren from the JSON formats.
- * For example, when deserializing an ECClass most times all base class should be deserialized before the given class.
+ * For example, when deserializing an ECClass most times all base class should be de-serialized before the given class.
  */
 export default class SchemaReadHelper {
   private _context: SchemaContext;
@@ -134,7 +135,7 @@ export default class SchemaReadHelper {
       if (!refSchema)
         throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema.schemaKey.name}`);
 
-      await this._schema.addReference(refSchema);
+      await (this._schema as MutableSchema).addReference(refSchema);
     });
 
     await Promise.all(promises);
@@ -161,35 +162,35 @@ export default class SchemaReadHelper {
 
     switch (tryParseSchemaChildType(schemaChildJson.schemaChildType)) {
        case SchemaChildType.EntityClass:
-        schemaChild = await schema.createEntityClass(childName);
+        schemaChild = await (schema as MutableSchema).createEntityClass(childName);
         await this.loadEntityClass(schemaChild, schemaChildJson);
         break;
        case SchemaChildType.StructClass:
-        schemaChild = await schema.createStructClass(childName);
+        schemaChild = await (schema as MutableSchema).createStructClass(childName);
         await this.loadClass(schemaChild, schemaChildJson);
         break;
        case SchemaChildType.Mixin:
-        schemaChild = await schema.createMixinClass(childName);
+        schemaChild = await (schema as MutableSchema).createMixinClass(childName);
         await this.loadMixin(schemaChild, schemaChildJson);
         break;
        case SchemaChildType.CustomAttributeClass:
-        schemaChild = await schema.createCustomAttributeClass(childName);
+        schemaChild = await (schema as MutableSchema).createCustomAttributeClass(childName);
         await this.loadClass(schemaChild, schemaChildJson);
         break;
        case SchemaChildType.RelationshipClass:
-        schemaChild = await schema.createRelationshipClass(childName);
+        schemaChild = await (schema as MutableSchema).createRelationshipClass(childName);
         await this.loadRelationshipClass(schemaChild, schemaChildJson);
         break;
        case SchemaChildType.KindOfQuantity:
-        schemaChild = await schema.createKindOfQuantity(childName);
+        schemaChild = await (schema as MutableSchema).createKindOfQuantity(childName);
         await schemaChild.fromJson(schemaChildJson);
         break;
        case SchemaChildType.PropertyCategory:
-        schemaChild = await schema.createPropertyCategory(childName);
+        schemaChild = await (schema as MutableSchema).createPropertyCategory(childName);
         await schemaChild.fromJson(schemaChildJson);
         break;
        case SchemaChildType.Enumeration:
-        schemaChild = await schema.createEnumeration(childName);
+        schemaChild = await (schema as MutableSchema).createEnumeration(childName);
         await schemaChild.fromJson(schemaChildJson);
         break;
       // NOTE: we are being permissive here and allowing unknown types to silently fail. Not sure if we want to hard fail or just do a basic deserialization
@@ -383,22 +384,22 @@ export default class SchemaReadHelper {
     switch (propertyJson.propertyType) {
       case "PrimitiveProperty":
         await loadTypeName();
-        const primProp = await classObj.createPrimitiveProperty(propName, propertyJson.typeName);
+        const primProp = await (classObj as MutableClass).createPrimitiveProperty(propName, propertyJson.typeName);
         return this.loadProperty(primProp, propertyJson);
 
       case "StructProperty":
         await loadTypeName();
-        const structProp = await classObj.createStructProperty(propName, propertyJson.typeName);
+        const structProp = await (classObj as MutableClass).createStructProperty(propName, propertyJson.typeName);
         return this.loadProperty(structProp, propertyJson);
 
       case "PrimitiveArrayProperty":
         await loadTypeName();
-        const primArrProp = await classObj.createPrimitiveArrayProperty(propName, propertyJson.typeName);
+        const primArrProp = await (classObj as MutableClass).createPrimitiveArrayProperty(propName, propertyJson.typeName);
         return this.loadProperty(primArrProp, propertyJson);
 
       case "StructArrayProperty":
         await loadTypeName();
-        const structArrProp = await classObj.createStructArrayProperty(propName, propertyJson.typeName);
+        const structArrProp = await (classObj as MutableClass).createStructArrayProperty(propName, propertyJson.typeName);
         return this.loadProperty(structArrProp, propertyJson);
 
       case "NavigationProperty":
@@ -413,7 +414,7 @@ export default class SchemaReadHelper {
 
         await this.findSchemaChild(propertyJson.relationshipName);
 
-        const navProp = await classObj.createNavigationProperty(propName, propertyJson.relationshipName);
+        const navProp = await (classObj as MutableEntityClass).createNavigationProperty(propName, propertyJson.relationshipName);
         return this.loadProperty(navProp, propertyJson);
     }
   }

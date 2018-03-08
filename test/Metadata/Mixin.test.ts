@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import Schema from "../../source/Metadata/Schema";
+import Schema, { MutableSchema } from "../../source/Metadata/Schema";
 import EntityClass from "../../source/Metadata/EntityClass";
 import Mixin from "../../source/Metadata/Mixin";
 import { ECObjectsError } from "../../source/Exception";
@@ -81,7 +81,7 @@ describe("Mixin", () => {
 
     beforeEach(async () => {
       const schema = new Schema("TestSchema", 1, 0, 0);
-      testEntity = await schema.createEntityClass("TestEntity");
+      testEntity = await (schema as MutableSchema).createEntityClass("TestEntity");
       testMixin = new Mixin(schema, "TestMixin");
     });
 

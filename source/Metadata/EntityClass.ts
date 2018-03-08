@@ -17,13 +17,12 @@ import Schema from "./Schema";
  */
 export default class EntityClass extends ECClass {
   public readonly type: SchemaChildType.EntityClass;
-  private _mixins?: LazyLoadedMixin[];
+  protected _mixins?: LazyLoadedMixin[];
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name, SchemaChildType.EntityClass, modifier);
   }
 
-  set mixins(mixins: LazyLoadedMixin[]) { this._mixins = mixins; }
   get mixins(): LazyLoadedMixin[] {
     if (!this._mixins)
       return [];
@@ -34,7 +33,7 @@ export default class EntityClass extends ECClass {
    *
    * @param mixin
    */
-  public addMixin(mixin: Mixin) {
+  protected addMixin(mixin: Mixin) {
     if (!this._mixins)
       this._mixins = [];
 
@@ -66,7 +65,7 @@ export default class EntityClass extends ECClass {
    * @param relationship
    * @param direction
    */
-  public async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction?: string | RelatedInstanceDirection): Promise<NavigationProperty> {
+  protected async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction?: string | RelatedInstanceDirection): Promise<NavigationProperty> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
@@ -111,4 +110,12 @@ export default class EntityClass extends ECClass {
       }
     }
   }
+}
+
+/** @internal
+ * Hackish approach that works like a "friend class" so we can access protected members without making them public.
+ */
+export abstract class MutableEntityClass extends EntityClass {
+  public abstract addMixin(mixin: Mixin): any;
+  public abstract async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction?: string | RelatedInstanceDirection): Promise<NavigationProperty>;
 }

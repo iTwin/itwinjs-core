@@ -4,7 +4,7 @@
 
 import { expect } from "chai";
 
-import Schema from "../../source/Metadata/Schema";
+import Schema, { MutableSchema } from "../../source/Metadata/Schema";
 import EntityClass from "../../source/Metadata/EntityClass";
 import { ECObjectsError } from "../../source/Exception";
 import { Property, PrimitiveProperty, PrimitiveArrayProperty, EnumerationProperty, StructProperty, StructArrayProperty, EnumerationArrayProperty, NavigationProperty  } from "../../source/Metadata/Property";
@@ -42,12 +42,13 @@ describe("Property", () => {
 
   beforeEach(async () => {
     const schema = new Schema("TestSchema", 1, 0, 0);
-    testClass = await schema.createEntityClass("TestClass");
-    testCategory = await schema.createPropertyCategory("TestCategory");
-    testKindOfQuantity = await schema.createKindOfQuantity("TestKoQ");
-    testEnumeration = await schema.createEnumeration("TestEnumeration");
-    testStruct = await schema.createStructClass("TestStruct");
-    testRelationship = await schema.createRelationshipClass("TestRelationship");
+    const mutable = schema as MutableSchema;
+    testClass = await mutable.createEntityClass("TestClass");
+    testCategory = await mutable.createPropertyCategory("TestCategory");
+    testKindOfQuantity = await mutable.createKindOfQuantity("TestKoQ");
+    testEnumeration = await mutable.createEnumeration("TestEnumeration");
+    testStruct = await mutable.createStructClass("TestStruct");
+    testRelationship = await mutable.createRelationshipClass("TestRelationship");
   });
 
   describe("type guards", () => {
@@ -229,8 +230,8 @@ describe("EnumerationProperty", () => {
 
     beforeEach(async () => {
       const schema = new Schema("TestSchema", 1, 0, 0);
-      const testClass = await schema.createEntityClass("TestClass");
-      testEnum = await schema.createEnumeration("TestEnum");
+      const testClass = await (schema as MutableSchema).createEntityClass("TestClass");
+      testEnum = await (schema as MutableSchema).createEnumeration("TestEnum");
       testProperty = new EnumerationProperty(testClass, "TestProperty", new DelayedPromiseWithProps(testEnum.key, async () => testEnum));
     });
 
@@ -263,8 +264,8 @@ describe("StructProperty", () => {
 
     beforeEach(async () => {
       const schema = new Schema("TestSchema", 1, 0, 0);
-      const testClass = await schema.createEntityClass("TestClass");
-      testStruct = await schema.createStructClass("TestStruct");
+      const testClass = await (schema as MutableSchema).createEntityClass("TestClass");
+      testStruct = await (schema as MutableSchema).createStructClass("TestStruct");
       testProperty = new StructProperty(testClass, "TestProperty", new DelayedPromiseWithProps(testStruct.key, async () => testStruct));
     });
 
