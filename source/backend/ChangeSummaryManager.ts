@@ -317,7 +317,7 @@ export class ChangeSummaryManager {
 
         const row = stmt.getRow();
         const changedInstanceId = new Id64(row.changedInstanceId);
-        const changedInstanceClassName: string = row.changedInstanceSchemaName + "." + row.changedInstanceClassName;
+        const changedInstanceClassName: string = "[" + row.changedInstanceSchemaName + "].[" + row.changedInstanceClassName + "]";
         const op: ChangeOpCode = row.opCode as ChangeOpCode;
 
         return {
@@ -354,8 +354,19 @@ export class ChangeSummaryManager {
         if (!isFirstRow)
           propValECSql += ",";
 
-        const propChangeRow = stmt.getRow();
-        propValECSql += propChangeRow.accessString;
+        // access string tokens need to be escaped as they might collide with reserved words in ECSQL or SQLite
+        const accessString: string = stmt.getValue(0).getString();
+        const accessStringTokens: string[] = accessString.split(".");
+        assert(accessStringTokens.length > 0);
+        let isFirstToken: boolean = true;
+        for (const token of accessStringTokens) {
+          if (!isFirstToken)
+            propValECSql += ".";
+
+          propValECSql += "[" + token + "]";
+          isFirstToken = false;
+        }
+
         isFirstRow = false;
       }
     });
