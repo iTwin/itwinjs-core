@@ -406,7 +406,7 @@ export class SchemaKey {
   // TODO: need to add a checksum
 
   constructor(name: string, version: ECVersion);
-  constructor(name: string, read?: number | ECVersion, writeVersion?: number, minorVersion?: number);
+  constructor(name: string, readVersion?: number, writeVersion?: number, minorVersion?: number);
   constructor(name: string, readOrVersion?: number | ECVersion, writeVersion?: number, minorVersion?: number) {
     this._name = new ECName(name);
     if (readOrVersion !== undefined && readOrVersion instanceof ECVersion)
