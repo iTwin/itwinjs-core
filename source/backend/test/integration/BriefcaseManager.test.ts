@@ -131,8 +131,8 @@ describe("BriefcaseManager", () => {
     await dumpTestCase("NodeJsTestProject", "NoVersionsTest");
   });
 
-  it("should open multiple versions of iModels", async () => {
-    const iModelNames = ["NoVersionsTest", "TestModel"];
+  it.only ("should open multiple versions of iModels", async () => {
+    const iModelNames = ["NoVersionsTest", "ReadOnlyTest"];
     for (const name of iModelNames) {
        const iModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, name);
 

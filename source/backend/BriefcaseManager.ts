@@ -290,7 +290,8 @@ export class BriefcaseManager {
 
     const startTime = new Date().getTime();
 
-    BriefcaseManager.hubClient = BriefcaseManager.hubClient || new IModelHubClient(IModelHost.configuration.iModelHubDeployConfig);
+    // BriefcaseManager.hubClient = BriefcaseManager.hubClient || new IModelHubClient(IModelHost.configuration.iModelHubDeployConfig);
+    if (!BriefcaseManager.hubClient) { BriefcaseManager.hubClient = new IModelHubClient(IModelHost.configuration.iModelHubDeployConfig); }
     if (!accessToken)
       return;
 
