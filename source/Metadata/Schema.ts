@@ -12,7 +12,7 @@ import Enumeration from "./Enumeration";
 import KindOfQuantity from "./KindOfQuantity";
 import PropertyCategory from "./PropertyCategory";
 import SchemaReadHelper from "../Deserialization/Helper";
-import { SchemaChildKey, SchemaKey, ECClassModifier, PrimitiveType } from "../ECObjects";
+import { SchemaChildKey, SchemaKey, ECClassModifier, PrimitiveType, ECVersion } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { SchemaContext } from "../Context";
@@ -53,7 +53,7 @@ export default class Schema implements CustomAttributeContainerProps {
    */
   constructor();
   constructor(nameOrKey?: SchemaKey | string, readVerOrCtx?: SchemaContext | number, writeVer?: number, minorVer?: number, otherCtx?: SchemaContext) {
-    this._schemaKey = (typeof(nameOrKey) === "string") ? new SchemaKey(nameOrKey, readVerOrCtx as number, writeVer, minorVer) : nameOrKey;
+    this._schemaKey = (typeof(nameOrKey) === "string") ? new SchemaKey(nameOrKey, new ECVersion(readVerOrCtx as number, writeVer, minorVer)) : nameOrKey;
     this._context = (typeof(readVerOrCtx) === "number") ? otherCtx : readVerOrCtx;
     this.references = [];
     this._children = [];
@@ -351,15 +351,16 @@ export default class Schema implements CustomAttributeContainerProps {
       if (typeof(jsonObj.name) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECSchema has an invalid 'name' attribute. It should be of type 'string'.`);
 
-      this._schemaKey = new SchemaKey(jsonObj.name);
+      const schemaName = jsonObj.name;
 
       if (undefined === jsonObj.version)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} is missing the required 'version' attribute.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${schemaName} is missing the required 'version' attribute.`);
 
       if (typeof(jsonObj.version) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'version' attribute. It should be of type 'string'.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${schemaName} has an invalid 'version' attribute. It should be of type 'string'.`);
 
-      this.schemaKey.version.fromString(jsonObj.version);
+      const version = ECVersion.fromString(jsonObj.version);
+      this._schemaKey = new SchemaKey(schemaName, version);
     } else {
       if (undefined !== jsonObj.name) {
         if (typeof(jsonObj.name) !== "string")

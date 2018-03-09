@@ -27,16 +27,6 @@ describe("Schema", () => {
       expect(() => {new Schema("NewSchemaWithInvalidWriteVersion", 12, 345, 6); }).to.throw(ECObjectsError);
       expect(() => {new Schema("NewSchemaWithInvalidMinorVersion", 12, 34, 567); }).to.throw(ECObjectsError);
     });
-
-    it("should throw when attempting to change the version to an invalid version", () => {
-      const testSchema = new Schema("TestSchema", 1, 1, 1);
-      expect(() => {testSchema.schemaKey.readVersion = 123; }).to.throw(ECObjectsError);
-      expect(testSchema.readVersion).equal(1);
-      expect(() => {testSchema.schemaKey.writeVersion = 123; }).to.throw(ECObjectsError);
-      expect(testSchema.writeVersion).equal(1);
-      expect(() => {testSchema.schemaKey.minorVersion = 123; }).to.throw(ECObjectsError);
-      expect(testSchema.minorVersion).equal(1);
-    });
   });
 
   describe("create schema children", () => {

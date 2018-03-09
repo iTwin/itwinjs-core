@@ -335,36 +335,24 @@ export function parseStrengthDirection(direction: string): RelatedInstanceDirect
  *
  */
 export class ECVersion {
-  private _read: number;
-  private _write: number;
-  private _minor: number;
+  private _read: number = 0;
+  private _write: number = 0;
+  private _minor: number = 0;
 
   constructor(read?: number, write?: number, minor?: number) {
-    if (undefined !== read) this.read = read;
-    if (undefined !== write) this.write = write;
-    if (undefined !== minor) this.minor = minor;
+    if (undefined !== read) this._read = read;
+    if (undefined !== write) this._write = write;
+    if (undefined !== minor) this._minor = minor;
+
+    if (this._read > 99 || this._read < 0 || this._write > 99 || this._write < 0 || this._minor > 99 || this._minor < 0)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion);
   }
 
-  get read() { return this._read || 0; }
-  set read(read: number) {
-    if (read > 99 || read < 0)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion);
-    this._read = read;
-  }
+  get read() { return this._read; }
 
-  get write() { return this._write || 0; }
-  set write(write: number) {
-    if (write > 99 || write < 0)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion);
-    this._write = write;
-  }
+  get write() { return this._write; }
 
-  get minor() { return this._minor || 0; }
-  set minor(minor: number) {
-    if (minor > 99 || minor < 0)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion);
-    this._minor = minor;
-  }
+  get minor() { return this._minor; }
 
   /**
    * Returns a string, in the format 'RR.ww.mm', of this ECVersion.
@@ -377,19 +365,18 @@ export class ECVersion {
    * Given a valid version string the
    * @param versionString A valid version string of the format, 'RR.ww.mm'.
    */
-  public fromString(versionString: string): void {
+  public static fromString(versionString: string): ECVersion {
     const [read, write, minor] = versionString.split(".");
     if (!read)
       throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The read version is missing from version string, ${versionString}`);
-    this.read = +read;
 
     if (!write)
       throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The write version is missing from version string, ${versionString}`);
-    this.write = +write;
 
     if (!minor)
       throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The minor version is missing from version string, ${versionString}`);
-    this.minor = +minor;
+
+    return new ECVersion(+read, +write, +minor);
   }
 }
 
@@ -400,16 +387,13 @@ export class ECName {
   private _name: string;
 
   constructor(name: string) {
-    this.name = name;
-  }
-
-  get name() { return this._name; }
-  set name(name: string) {
     const test: boolean = /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i.test(name);
     if (!test)
       throw new ECObjectsError(ECObjectsStatus.InvalidECName);
     this._name = name;
   }
+
+  get name() { return this._name; }
 }
 
 /**
@@ -417,34 +401,29 @@ export class ECName {
  */
 export class SchemaKey {
   private _name: ECName;
-  public version: ECVersion;
+  protected _version: ECVersion;
   // public checksum: number;
   // TODO: need to add a checksum
 
-  constructor(name: string, readVersion?: number, writeVersion?: number, minorVersion?: number) {
-    this.name = name;
-    this.version = new ECVersion(readVersion, writeVersion, minorVersion);
+  constructor(name: string, version: ECVersion);
+  constructor(name: string, readVersion?: number, writeVersion?: number, minorVersion?: number);
+  constructor(name: string, readOrVersion?: number | ECVersion, writeVersion?: number, minorVersion?: number) {
+    this._name = new ECName(name);
+    if (readOrVersion !== undefined && readOrVersion instanceof ECVersion)
+      this._version = readOrVersion;
+    else
+      this._version = new ECVersion(readOrVersion, writeVersion, minorVersion);
   }
+
+  get version() { return this._version; }
 
   get name() { return this._name.name; }
-  set name(name: string) {
-    this._name = new ECName(name);
-  }
 
   get readVersion() { return this.version.read; }
-  set readVersion(version: number) {
-    this.version.read = version;
-  }
 
   get writeVersion() { return this.version.write; }
-  set writeVersion(version: number) {
-    this.version.write = version;
-  }
 
   get minorVersion() { return this.version.minor; }
-  set minorVersion(version: number) {
-    this.version.minor = version;
-  }
 
   public toString() { return `${this.name}.${this.readVersion}.${this.writeVersion}.${this.minorVersion}`; }
 
@@ -458,7 +437,7 @@ export class SchemaKey {
     const readVer = Number (keyPieces[1]);
     const writeVer = Number (keyPieces[2]);
     const minorVer = Number (keyPieces[3]);
-    return new SchemaKey(schemaName, readVer, writeVer, minorVer);
+    return new SchemaKey(schemaName, new ECVersion(readVer, writeVer, minorVer));
   }
 
   /*
@@ -512,20 +491,20 @@ export class SchemaKey {
  */
 export class SchemaChildKey {
   private _name: ECName;
-  public type: SchemaChildType;
-  public schemaKey: SchemaKey;
+  protected _type: SchemaChildType;
+  protected _schemaKey: SchemaKey;
   // TODO: Need a checksum
 
   constructor(name: string, type: SchemaChildType | undefined, schema: SchemaKey) {
-    this.name = name;
-    this.schemaKey = schema;
+    this._name = new ECName(name);
+    this._schemaKey = schema;
     if (undefined !== type)
-      this.type = type;
+      this._type = type;
   }
 
+  get schemaKey() { return this._schemaKey; }
+  get type() { return this._type; }
   get name() { return this._name.name; }
-  set name(name: string) { this._name = new ECName(name); }
-
   get schemaName() { return this.schemaKey.name; }
 
   /**
@@ -564,8 +543,8 @@ export class RelationshipMultiplicity {
   public static readonly oneOne = new RelationshipMultiplicity(1, 1);
   public static readonly oneMany = new RelationshipMultiplicity(1, INT32_MAX);
 
-  public lowerLimit: number;
-  public upperLimit: number;
+  public readonly lowerLimit: number;
+  public readonly upperLimit: number;
 
   constructor(lowerLimit: number, upperLimit: number) {
     this.lowerLimit = lowerLimit;

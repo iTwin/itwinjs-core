@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaContext } from "../Context";
-import { SchemaKey, relationshipEndToString, SchemaChildKey, SchemaChildType, tryParsePrimitiveType, tryParseSchemaChildType } from "../ECObjects";
+import { SchemaKey, relationshipEndToString, SchemaChildKey, SchemaChildType, tryParsePrimitiveType, tryParseSchemaChildType, ECVersion } from "../ECObjects";
 import SchemaChild from "../Metadata/SchemaChild";
 import Schema, { MutableSchema } from "../Metadata/Schema";
 import EntityClass, { MutableEntityClass } from "../Metadata/EntityClass";
@@ -128,9 +128,7 @@ export default class SchemaReadHelper {
       if (typeof(ref.version) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema.schemaKey.name} has an invalid 'references' property. One of the references has an invalid 'version' property. It should be of type 'string'.`);
 
-      const schemaKey = new SchemaKey(ref.name);
-      schemaKey.version.fromString(ref.version);
-
+      const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
       const refSchema = await this._context.getSchema(schemaKey);
       if (!refSchema)
         throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema.schemaKey.name}`);
