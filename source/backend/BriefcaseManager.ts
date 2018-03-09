@@ -4,8 +4,8 @@
 import { AccessToken, Briefcase as HubBriefcase, IModelHubClient, ChangeSet, IModel as HubIModel, ContainsSchemaChanges, SeedFile, SeedFileInitState, Briefcase } from "@bentley/imodeljs-clients";
 import { ChangeSetProcessOption, BeEvent, DbResult, OpenMode, assert, Logger } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken } from "@bentley/imodeljs-common";
-import { AddonRegistry } from "./AddonRegistry";
-import { AddonDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
+import { NativePlatformRegistry } from "./NativePlatformRegistry";
+import { NativeDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -90,7 +90,7 @@ export class BriefcaseEntry {
   public userId?: string;
 
   /** In-memory handle of the native Db */
-  public nativeDb: AddonDgnDb;
+  public nativeDb: NativeDgnDb;
 
   /** In-memory handle fo the IModelDb that corresponds with this briefcase. This is only set if an IModelDb wrapper has been created for this briefcase */
   public iModelDb?: IModelDb;
@@ -251,7 +251,7 @@ export class BriefcaseManager {
    * }
    */
   private static getCachedBriefcaseInfos(cacheDir: string): any {
-    const nativeDb: AddonDgnDb = new (AddonRegistry.getAddon()).AddonDgnDb();
+    const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
     const res: ErrorStatusOrResult<DbResult, string> = nativeDb.getCachedBriefcaseInfos(cacheDir);
     if (res.error)
       Promise.reject(new IModelError(res.error.status));
@@ -517,7 +517,7 @@ export class BriefcaseManager {
 
     briefcase.openMode = OpenMode.ReadWrite; // Setup briefcase as ReadWrite to allow pull and merge of changes (irrespective of the real openMode)
 
-    const nativeDb: AddonDgnDb = new (AddonRegistry.getAddon()).AddonDgnDb();
+    const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
     const res: DbResult = nativeDb.setupBriefcase(JSON.stringify(briefcase));
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, briefcase.pathname);
@@ -645,7 +645,7 @@ export class BriefcaseManager {
     if (BriefcaseManager.standaloneCache.findBriefcaseByToken(new IModelToken(pathname)))
       throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open ${pathname} again - it's already been opened once`);
 
-    const nativeDb: AddonDgnDb = new (AddonRegistry.getAddon()).AddonDgnDb();
+    const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
 
     const res = nativeDb.openDgnDb(pathname, openMode);
     if (DbResult.BE_SQLITE_OK !== res)
@@ -679,7 +679,7 @@ export class BriefcaseManager {
     if (BriefcaseManager.standaloneCache.findBriefcaseByToken(new IModelToken(pathname)))
       throw new IModelError(DbResult.BE_SQLITE_ERROR_FileExists, `Cannot create file ${pathname} again - it already exists`);
 
-    const nativeDb: AddonDgnDb = new (AddonRegistry.getAddon()).AddonDgnDb();
+    const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
 
     const res: DbResult = nativeDb.createDgnDb(pathname, rootSubjectName, rootSubjectDescription);
     if (DbResult.BE_SQLITE_OK !== res)
@@ -766,7 +766,7 @@ export class BriefcaseManager {
 
   private static openBriefcase(briefcase: BriefcaseEntry) {
     if (!briefcase.nativeDb)
-      briefcase.nativeDb = new (AddonRegistry.getAddon()).AddonDgnDb();
+      briefcase.nativeDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
 
     // Note: Open briefcase as ReadWrite, even if briefcase.openMode is Readonly. This is to allow to pull and merge change sets.
     const res: DbResult = briefcase.nativeDb.openDgnDb(briefcase.pathname, OpenMode.ReadWrite);
@@ -937,7 +937,7 @@ export class BriefcaseManager {
     await BriefcaseManager.initCache(accessToken);
     assert(!!BriefcaseManager.hubClient);
 
-    const nativeDb: AddonDgnDb = new (AddonRegistry.getAddon()).AddonDgnDb();
+    const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
 
     const scratchDir = BriefcaseManager.buildScratchPath();
     if (!IModelJsFs.existsSync(scratchDir))

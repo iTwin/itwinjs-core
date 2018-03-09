@@ -9,7 +9,6 @@ import {
 } from "@bentley/imodeljs-clients";
 import { Element, InformationPartitionElement } from "../Element";
 import { IModelDb } from "../IModelDb";
-import { AddonRegistry } from "../AddonRegistry";
 import { IModelGateway } from "@bentley/imodeljs-common";
 import { Code, Gateway, ElementProps, GeometricElementProps, Appearance } from "@bentley/imodeljs-common";
 import { DefinitionModel, Model } from "../Model";
@@ -18,21 +17,18 @@ import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelHostConfiguration, IModelHost } from "../IModelHost";
 import * as path from "path";
-// import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 
-// Logger.initializeToConsole();
-// Logger.setLevel("Performance", LogLevel.Info);
-// Logger.setLevelDefault(LogLevel.Error);
-// Logger.setLevel("Diagnostics", LogLevel.None);
-// Logger.setLevel("ECObjectsNative", LogLevel.None);
-// Logger.setLevel("BeSQLite", LogLevel.None);
-// Logger.setLevel("ECPresentation", LogLevel.None);
+Logger.initializeToConsole();
+Logger.setLevelDefault(LogLevel.Info);
+Logger.setLevel("Performance", LogLevel.None);
+Logger.setLevel("Diagnostics", LogLevel.None);
+Logger.setLevel("ECObjectsNative", LogLevel.None);
+Logger.setLevel("BeSQLite", LogLevel.Info);
+Logger.setLevel("ECPresentation", LogLevel.None);
 
 // Initialize the gateway classes used by tests
 Gateway.initialize(IModelGateway);
-
-// Initialize the Node addon used by tests
-AddonRegistry.loadAndRegisterStandardAddon();
 
 export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;

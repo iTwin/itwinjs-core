@@ -145,7 +145,7 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
   }
 
   /**
-   * Perform a test in addon
+   * Perform a test in native platform
    * @hidden
    */
   public async executeTest(iModelToken: IModelToken, testName: string, params: any): Promise<any> {
