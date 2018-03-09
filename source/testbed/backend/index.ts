@@ -3,6 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 import * as express from "express";
 import * as bodyParser from "body-parser";
+// tslint:disable-next-line:no-var-requires
+const done = require("./augment_module_paths.js");
+if (done === undefined)
+  throw new Error("why not?");
 import { AddonRegistry, IModelHost } from "@bentley/imodeljs-backend";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
 import { TestGatewayImpl } from "./TestGatewayImpl";
