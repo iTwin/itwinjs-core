@@ -40,15 +40,15 @@ export class IModelHost {
     if (IModelHost.configuration)
       throw new IModelError(BentleyStatus.ERROR, "startup may only be called once");
 
-    if (configuration.nativePlatform !== undefined)
-      NativePlatformRegistry.register(NativePlatformRegistry.register(configuration.nativePlatform));
-    else
-      NativePlatformRegistry.loadAndRegisterStandardNativePlatform();
+    if (NativePlatformRegistry.getNativePlatform() === undefined) {
+      if (configuration.nativePlatform !== undefined)
+        NativePlatformRegistry.register(NativePlatformRegistry.register(configuration.nativePlatform));
+      else
+        NativePlatformRegistry.loadAndRegisterStandardNativePlatform();
+    }
 
-    // Register the backend implementation of IModelGateway
     IModelGatewayImpl.register();
 
-    // Register the use of BisCore for the backend
     BisCore.registerSchema();
 
     IModelHost.configuration = configuration;

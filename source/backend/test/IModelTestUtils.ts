@@ -18,14 +18,19 @@ import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelHostConfiguration, IModelHost } from "../IModelHost";
 import * as path from "path";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { NativePlatformRegistry } from "../NativePlatformRegistry";
 
 Logger.initializeToConsole();
 Logger.setLevelDefault(LogLevel.Info);
 Logger.setLevel("Performance", LogLevel.None);
 Logger.setLevel("Diagnostics", LogLevel.None);
-Logger.setLevel("ECObjectsNative", LogLevel.None);
+Logger.setLevel("ECObjectsNative", LogLevel.Error);
 Logger.setLevel("BeSQLite", LogLevel.Info);
-Logger.setLevel("ECPresentation", LogLevel.None);
+Logger.setLevel("ECPresentation", LogLevel.Error);
+Logger.setLevel("UnitsNative", LogLevel.Error);
+
+const nativePlatformDir = path.join(__dirname, "../../../../nativePlatformForTests/node_modules");
+NativePlatformRegistry.loadAndRegisterStandardNativePlatform(nativePlatformDir);
 
 // Initialize the gateway classes used by tests
 Gateway.initialize(IModelGateway);

@@ -4,6 +4,7 @@
 import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Logger } from "@bentley/bentleyjs-core";
 import { KnownLocations } from "./KnownLocations";
+import * as path from "path";
 
 /** Class that holds the singleton platform instance that was loaded by the app for this iModelJs session. It is up to the app to load the platform. */
 export class NativePlatformRegistry {
@@ -52,17 +53,21 @@ export class NativePlatformRegistry {
   }
 
   /** Get the module that can load the standard node addon. */
-  public static getStandardAddonLoaderModule(): any | undefined {
+  public static getStandardAddonLoaderModule(dir?: string): any | undefined {
     if (typeof (process) === "undefined")
       return undefined;
-    if ("electron" in process.versions) {
-      return require("@bentley/imodeljs-electronaddon");
-    }
-    return require("@bentley/imodeljs-nodeaddon");
+    let addonname: string;
+    if ("electron" in process.versions)
+      addonname = "@bentley/imodeljs-electronaddon";
+    else
+      addonname = "@bentley/imodeljs-nodeaddon";
+    if (dir !== undefined)
+      addonname = path.join(dir, addonname);
+    return require(addonname);
   }
 
   /** Load and register the standard platform. */
-  public static loadAndRegisterStandardNativePlatform() {
+  public static loadAndRegisterStandardNativePlatform(dir?: string) {
 
     if (KnownLocations.imodeljsMobile !== undefined) {
       // We are running in imodeljs (our mobile platform)
@@ -76,7 +81,7 @@ export class NativePlatformRegistry {
     }
 
     // We are running in node or electron.
-    const loaderModule = NativePlatformRegistry.getStandardAddonLoaderModule();
+    const loaderModule = NativePlatformRegistry.getStandardAddonLoaderModule(dir);
     if (loaderModule === undefined) {
       throw new IModelError(IModelStatus.NotFound);
     }
