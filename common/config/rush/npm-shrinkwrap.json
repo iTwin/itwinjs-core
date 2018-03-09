@@ -10,9 +10,9 @@
       "integrity": "sha1-L6+hX7pF886shjxt3OhUW0M9rQE="
     },
     "@bentley/bemetalsmith": {
-      "version": "1.18.12",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith/-/bemetalsmith-1.18.12.tgz",
-      "integrity": "sha1-mFtrwFZbBibq8ROosGTWmEgOuBo=",
+      "version": "1.18.13",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith/-/bemetalsmith-1.18.13.tgz",
+      "integrity": "sha1-Gipcs7V6yXEUtPoQ+XQqBO1T+pc=",
       "requires": {
         "@bentley/be-cases": "1.17.0",
         "@bentley/bemetalsmith-add-descriptions": "1.18.7",
@@ -23,7 +23,7 @@
         "@bentley/bemetalsmith-bjstools-extract": "1.18.7",
         "@bentley/bemetalsmith-bwc-markdown": "1.18.11",
         "@bentley/bemetalsmith-concat-single-pages": "1.18.6",
-        "@bentley/bemetalsmith-doc-sites": "1.18.12",
+        "@bentley/bemetalsmith-doc-sites": "1.18.13",
         "@bentley/bemetalsmith-generate-index": "1.18.10",
         "@bentley/bemetalsmith-handlebars-helpers": "1.17.5",
         "@bentley/bemetalsmith-headings": "1.18.7",
@@ -36,11 +36,11 @@
         "@bentley/bemetalsmith-markdown-backlinks": "1.18.7",
         "@bentley/bemetalsmith-nested-headings": "1.18.7",
         "@bentley/bemetalsmith-replace-links": "1.18.6",
-        "@bentley/bemetalsmith-split-files": "1.17.9",
+        "@bentley/bemetalsmith-split-files": "1.18.13",
         "@bentley/bemetalsmith-sync-images": "1.18.7",
         "@bentley/bemetalsmith-toc-metadata": "1.18.11",
-        "@bentley/bemetalsmith-typedoc-json-to-markdown": "1.18.11",
-        "@bentley/bemetalsmith-updated": "1.18.12",
+        "@bentley/bemetalsmith-typedoc-json-to-markdown": "1.18.13",
+        "@bentley/bemetalsmith-updated": "1.18.13",
         "@bentley/bwc": "5.1.1",
         "@bentley/icons-webfont": "6.5.0",
         "azure-search": "0.0.16",
@@ -240,14 +240,14 @@
       }
     },
     "@bentley/bemetalsmith-doc-sites": {
-      "version": "1.18.12",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-doc-sites/-/bemetalsmith-doc-sites-1.18.12.tgz",
-      "integrity": "sha1-WCL27BEvZthCV98mzB1TPegfw+0=",
+      "version": "1.18.13",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-doc-sites/-/bemetalsmith-doc-sites-1.18.13.tgz",
+      "integrity": "sha1-Iv81MIO9OJheP1E+wkgMhOZ8PdY=",
       "requires": {
         "@bentley/bemetalsmith-generate-index": "1.18.10",
-        "@bentley/bemetalsmith-split-files": "1.17.9",
+        "@bentley/bemetalsmith-split-files": "1.18.13",
         "@bentley/bemetalsmith-toc-metadata": "1.18.11",
-        "@bentley/bemetalsmith-typedoc-json-to-markdown": "1.18.11",
+        "@bentley/bemetalsmith-typedoc-json-to-markdown": "1.18.13",
         "change-case": "3.0.2",
         "lodash.omit": "4.5.0",
         "metalsmith-debug": "1.2.0"
@@ -438,9 +438,9 @@
       "integrity": "sha1-pESfsRqNJyrrdgkoq9+Kp/RLUsQ="
     },
     "@bentley/bemetalsmith-split-files": {
-      "version": "1.17.9",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-split-files/-/bemetalsmith-split-files-1.17.9.tgz",
-      "integrity": "sha1-ctM8eE/B12GrTWBvx+QYAP+h7gg=",
+      "version": "1.18.13",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-split-files/-/bemetalsmith-split-files-1.18.13.tgz",
+      "integrity": "sha1-ZINpa3n5+TSLvHsGyFcl7ACCu/E=",
       "requires": {
         "micromatch": "3.1.9",
         "pad-number": "0.0.4",
@@ -495,9 +495,9 @@
       }
     },
     "@bentley/bemetalsmith-typedoc-json-to-markdown": {
-      "version": "1.18.11",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-typedoc-json-to-markdown/-/bemetalsmith-typedoc-json-to-markdown-1.18.11.tgz",
-      "integrity": "sha1-WuIsK5OJ3PdETJE4EX8TNibY9ks=",
+      "version": "1.18.13",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-typedoc-json-to-markdown/-/bemetalsmith-typedoc-json-to-markdown-1.18.13.tgz",
+      "integrity": "sha1-TqRCVXajdYQOBs2uf++hPJMG9oo=",
       "requires": {
         "change-case": "3.0.2",
         "micromatch": "3.1.9",
@@ -507,9 +507,9 @@
       }
     },
     "@bentley/bemetalsmith-updated": {
-      "version": "1.18.12",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-updated/-/bemetalsmith-updated-1.18.12.tgz",
-      "integrity": "sha1-LIAdTKg8N9KSS8D/fOPEnzYy4z8=",
+      "version": "1.18.13",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-updated/-/bemetalsmith-updated-1.18.13.tgz",
+      "integrity": "sha1-YeiEWhUJjuy5SGoNhWTmGFdBN5M=",
       "requires": {
         "async": "2.6.0",
         "chai": "4.1.2",
@@ -729,15 +729,6 @@
         }
       }
     },
-    "@bentley/imodeljs-common": {
-      "version": "0.62.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-common/-/imodeljs-common-0.62.0.tgz",
-      "integrity": "sha1-r1YEXDS2WW/cjL61ziyV1yC125Y=",
-      "requires": {
-        "@bentley/geometry-core": "5.0.7",
-        "@bentley/imodeljs-clients": "4.0.0"
-      }
-    },
     "@bentley/imodeljs-e_1_6_11-win32-x64": {
       "version": "10.0.1",
       "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-e_1_6_11-win32-x64/-/imodeljs-e_1_6_11-win32-x64-10.0.1.tgz",
@@ -771,11 +762,10 @@
     },
     "@rush-temp/imodeljs-backend": {
       "version": "file:projects/imodeljs-backend.tgz",
-      "integrity": "sha1-sfjYuQXAvCZpFhzpPAgpfH5gag0=",
+      "integrity": "sha1-WkOYx9K5kTRuvCJfsfWuwt3ZtBU=",
       "requires": {
         "@bentley/geometry-core": "5.0.7",
         "@bentley/imodeljs-clients": "4.0.0",
-        "@bentley/imodeljs-common": "0.62.0",
         "@bentley/imodeljs-electronaddon": "10.0.1",
         "@bentley/imodeljs-n_8_9-win32-x64": "10.0.1",
         "@bentley/imodeljs-nodeaddon": "10.0.1",
@@ -795,7 +785,7 @@
     },
     "@rush-temp/imodeljs-common": {
       "version": "file:projects/imodeljs-common.tgz",
-      "integrity": "sha1-NkFaSRZJSVnaDX4AypMBliqhdFM=",
+      "integrity": "sha1-ecjIwcaFYv4M2U0sug/NSG5xeTU=",
       "requires": {
         "@bentley/bentleyjs-core": "7.3.2",
         "@bentley/geometry-core": "5.0.7",
@@ -806,9 +796,9 @@
     },
     "@rush-temp/imodeljs-core": {
       "version": "file:projects/imodeljs-core.tgz",
-      "integrity": "sha1-R6lw6qj9+b5GgY0A0M+U23W3EHM=",
+      "integrity": "sha1-oAOHPQEfHxv6ex7bOH0XIh63et0=",
       "requires": {
-        "@bentley/bemetalsmith": "1.18.12",
+        "@bentley/bemetalsmith": "1.18.13",
         "@bentley/bentleyjs-tools": "2.2.2",
         "@types/body-parser": "1.16.8",
         "@types/chai": "4.1.2",
@@ -858,12 +848,11 @@
     },
     "@rush-temp/imodeljs-core-testbed": {
       "version": "file:projects/imodeljs-core-testbed.tgz",
-      "integrity": "sha1-TAVEhKDdwURILadVle0RoinwqC0=",
+      "integrity": "sha1-DDNEsaq0uxlqF2SaLy4JyPXut3k=",
       "requires": {
         "@bentley/bentleyjs-core": "7.3.2",
         "@bentley/geometry-core": "5.0.7",
         "@bentley/imodeljs-clients": "4.0.0",
-        "@bentley/imodeljs-common": "0.62.0",
         "@bentley/imodeljs-e_1_6_11-win32-x64": "10.0.1",
         "@bentley/imodeljs-electronaddon": "10.0.1",
         "@bentley/imodeljs-nodeaddonapi": "10.0.1",
@@ -888,11 +877,10 @@
     },
     "@rush-temp/imodeljs-frontend": {
       "version": "file:projects/imodeljs-frontend.tgz",
-      "integrity": "sha1-kkoyxyDcHW5WTzuoe3s0d+U3SNE=",
+      "integrity": "sha1-X2aXycM+EUSqAn69kN4cZyNAeiw=",
       "requires": {
         "@bentley/geometry-core": "5.0.7",
         "@bentley/imodeljs-clients": "4.0.0",
-        "@bentley/imodeljs-common": "0.62.0",
         "fuse.js": "3.2.0",
         "i18next": "10.5.0",
         "i18next-browser-languagedetector": "2.1.0",

@@ -35,7 +35,7 @@
   "dependencies": {
     "@bentley/geometry-core": "^5.0.6",
     "@bentley/imodeljs-clients": "^4.0.0",
-    "@bentley/imodeljs-common": "^0.62.0",
+    "@bentley/imodeljs-common": "^0.63.0",
     "fuse.js": "^3.2.0",
     "i18next": "^10.2.2",
     "i18next-browser-languagedetector": "^2.1.0",
