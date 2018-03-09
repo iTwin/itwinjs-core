@@ -11,7 +11,7 @@
   },
   "repository": {},
   "//dependencies": [
-    "NOTE: The only reason to add a dependency to imodeljs-native-platform-api is because we do NOT consume the backend as a package (will change soon)"
+    "NOTE: Don't depend on the native platform here. That is done in the nativePlatform directory."
   ],
   "dependencies": {
     "@bentley/bentleyjs-core": "^7.3.2",

@@ -21,26 +21,14 @@
     "url": "http://www.bentley.com"
   },
   "//peerDependencies": [
-    "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check"
+    "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check",
   ],
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^7.3.2",
     "@bentley/geometry-core": "^5.0.6",
     "@bentley/imodeljs-clients": "^4.0.0",
-    "@bentley/imodeljs-common": "^0.62.0",
+    "@bentley/imodeljs-common": "^0.63.0",
     "flatbuffers": "^1.8.0"
-  },
-  "//dependencies": [
-    "NOTE: these dependencies are specific to imodeljs-frontend",
-    "NOTE: dependencies that are in common with imodeljs-backend must have a consistent version",
-    "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
-  ],
-  "dependencies": {
-    "fuse.js": "^3.2.0",
-    "i18next": "^10.2.2",
-    "i18next-browser-languagedetector": "^2.1.0",
-    "i18next-xhr-backend": "^1.5.1",
-    "js-base64": "^2.4.0"
   },
   "devDependencies": {
     "rimraf": "^2.6.2",
@@ -49,5 +37,17 @@
     "@bentley/geometry-core": "^5.0.6",
     "@bentley/imodeljs-clients": "^4.0.0",
     "@bentley/imodeljs-common": "^0.63.0"
+  },
+  "//dependencies": [
+    "NOTE: these dependencies are specific to imodeljs-frontend",
+    "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
+    "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
+  ],
+  "dependencies": {
+    "fuse.js": "^3.2.0",
+    "i18next": "^10.2.2",
+    "i18next-browser-languagedetector": "^2.1.0",
+    "i18next-xhr-backend": "^1.5.1",
+    "js-base64": "^2.4.0"
   }
 }

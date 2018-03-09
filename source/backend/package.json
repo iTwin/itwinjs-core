@@ -28,31 +28,14 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "//peerDependencies": [
-    "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check",
-    "NOTE: Keep the version of imodeljs-nodeaddonapi below consistent with imodeljs-nodeaddonapi in dependencies"
-  ],
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^7.3.2",
     "@bentley/geometry-core": "^5.0.6",
     "@bentley/imodeljs-clients": "^4.0.0",
-    "@bentley/imodeljs-common": "^0.62.0",
-    "@bentley/imodeljs-nodeaddonapi": "~10.0.0",
+    "@bentley/imodeljs-common": "^0.63.0",
+    "@bentley/imodeljs-nodeaddonapi": "~11.0.0",
     "flatbuffers": "^1.8.0"
   },
-  "//dependencies": [
-    "NOTE: these dependencies are specific to imodeljs-backend"
-  ],
-  "dependencies": {
-    "fs-extra": "^5.0.0",
-    "js-base64": "^2.4.0"
-  },
-  "//devDependencies": [
-    "NOTE: The backend tests use the standard Node addon, so that is recorded in devDependencies.",
-    "NOTE: The webpackformobile command needs webpack",
-    "NOTE: The devDependencies on @bentley/imodeljs-nodeaddon/electronaddon are just for the tests (backend and frontend)",
-    "NOTE: See the postInstall 'event' in rush.json for how these packages are used to install the actual addons farther up the tree."
-  ],
   "devDependencies": {
     "@bentley/bentleyjs-core": "^7.3.2",
     "@bentley/geometry-core": "^5.0.6",
@@ -68,6 +51,14 @@
     "tsconfig-paths": "^2.7.2",
     "typescript": "~2.6.2",
     "webpack": "^3.10.0"
+  },
+  "//dependencies": [
+    "NOTE: these dependencies are specific to imodeljs-backend",
+    "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API"
+  ],
+  "dependencies": {
+    "fs-extra": "^5.0.0",
+    "js-base64": "^2.4.0"
   },
   "//optionalDependencies": [
     "NOTE: Rush (as of 4.2.5) does not support optionalDependencies!"
