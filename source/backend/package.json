@@ -47,9 +47,9 @@
     "@bentley/geometry-core": "^5.0.6",
     "@bentley/imodeljs-clients": "^4.0.0",
     "@bentley/imodeljs-common": "^0.63.0",
-    "@bentley/imodeljs-electronaddon": "~10.0.0",
-    "@bentley/imodeljs-nodeaddon": "~10.0.0",
-    "@bentley/imodeljs-nodeaddonapi": "~10.0.0",
+    "@bentley/imodeljs-electronaddon": "~11.0.0",
+    "@bentley/imodeljs-nodeaddon": "~11.0.0",
+    "@bentley/imodeljs-native-platform-api": "~11.0.0",
     "fs-extra": "^5.0.0",
     "js-base64": "^2.4.0"
   },
@@ -59,7 +59,7 @@
   ],
   "devDependencies": {
     "cpx": "^1.5.0",
-    "@bentley/imodeljs-n_8_9-win32-x64": "~10.0.0",
+    "@bentley/imodeljs-n_8_9-win32-x64": "~11.0.0",
     "mocha": "^3.5.3",
     "nyc": "^11.4.1",
     "rimraf": "^2.6.2",

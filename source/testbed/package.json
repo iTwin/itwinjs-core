@@ -11,7 +11,7 @@
   },
   "repository": {},
   "//dependencies": [
-    "NOTE: The only reason to add a dependency to imodeljs-nodeaddonapi is because we do NOT consume the backend as a package (will change soon)"
+    "NOTE: The only reason to add a dependency to imodeljs-native-platform-api is because we do NOT consume the backend as a package (will change soon)"
   ],
   "dependencies": {
     "@bentley/bentleyjs-core": "^7.3.2",
@@ -19,9 +19,9 @@
     "@bentley/imodeljs-backend": "^0.64.0",
     "@bentley/imodeljs-clients": "^4.0.0",
     "@bentley/imodeljs-common": "^0.63.0",
-    "@bentley/imodeljs-electronaddon": "~10.0.0",
+    "@bentley/imodeljs-electronaddon": "~11.0.0",
     "@bentley/imodeljs-frontend": "^0.62.0",
-    "@bentley/imodeljs-nodeaddonapi": "~10.0.0",
+    "@bentley/imodeljs-native-platform-api": "~11.0.0",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
     "commander": "^2.14.1",
@@ -38,7 +38,7 @@
     "webpack": "^3.10.0"
   },
   "devDependencies": {
-    "@bentley/imodeljs-e_1_6_11-win32-x64": "~10.0.0",
+    "@bentley/imodeljs-e_1_6_11-win32-x64": "~11.0.0",
     "cpx": "^1.5.0",
     "rimraf": "^2.6.2",
     "typescript": "~2.6.2"
