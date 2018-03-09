@@ -68,7 +68,7 @@ export class ElementState extends EntityState implements ElementProps {
   constructor(props: ElementProps, iModel: IModelConnection) {
     super(props, iModel);
     this.code = Code.fromJSON(props.code);
-    this.model = RelatedElement.idFromJSON(props.model);
+    this.model = RelatedElement.idFromJson(props.model);
     this.parent = RelatedElement.fromJSON(props.parent);
     this.federationGuid = Guid.fromJSON(props.federationGuid);
     this.userLabel = props.userLabel;
