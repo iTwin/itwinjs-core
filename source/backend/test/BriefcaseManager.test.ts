@@ -99,6 +99,24 @@ describe("BriefcaseManager", () => {
     console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
   });
 
+  it("The same promise can have two subscribers, and it will notify both.", async () => {
+    const testPromise = new Promise((resolve, _reject) => {
+      setTimeout(() => resolve("Success!"), 250);
+    });
+
+    let callbackcount = 0;
+    testPromise.then(() => {
+      ++callbackcount;
+    });
+    testPromise.then(() => {
+      ++callbackcount;
+    });
+
+    await testPromise;
+
+    assert.equal(callbackcount, 2);
+  });
+
   it.skip("test change-merging scenarios in optimistic concurrency mode", async () => {
     const firstUser = accessToken;
     const secondUser = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
