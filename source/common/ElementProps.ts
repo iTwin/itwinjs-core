@@ -33,7 +33,9 @@ export class RelatedElement implements RelatedElementProps {
 
   /** accept the value of a navigation property that might be in the shortened format of just an id or might be in the full RelatedElement format. */
   public static idFromJson(json: any): Id64 {
-    if ("id" in json) {
+    if (typeof json === "object") {
+      if (!("id" in json))
+        throw new IModelError(IModelStatus.BadArg);
       const r = RelatedElement.fromJSON(json);
       if (r === undefined)
         throw new IModelError(IModelStatus.BadArg);
