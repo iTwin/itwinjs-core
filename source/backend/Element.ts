@@ -43,7 +43,7 @@ export abstract class Element extends Entity implements ElementProps {
   constructor(props: ElementProps, iModel: IModelDb) {
     super(props, iModel);
     this.code = Code.fromJSON(props.code);
-    this.model = Id64.fromJSON(props.model);
+    this.model = RelatedElement.idFromJson(props.model);
     this.parent = RelatedElement.fromJSON(props.parent);
     this.federationGuid = Guid.fromJSON(props.federationGuid);
     this.userLabel = props.userLabel;

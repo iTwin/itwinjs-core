@@ -6,6 +6,7 @@ import { CodeProps, Code } from "./Code";
 import { EntityProps } from "./EntityProps";
 import { GeometryStream } from "./geometry/GeometryStream";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps, LowAndHighXYZ, LowAndHighXY } from "@bentley/geometry-core";
+import { IModelError, IModelStatus } from "./IModelError";
 
 /** The shape of a Navigation property value. Note that the internal properties are defined by the iModelJs JSON wire format and must not be changed. */
 export interface RelatedElementProps {
@@ -15,7 +16,7 @@ export interface RelatedElementProps {
 
 /** The properties that define a BIS Element */
 export interface ElementProps extends EntityProps {
-  model?: Id64Props;
+  model?: Id64Props | RelatedElementProps;
   code?: CodeProps;
   parent?: RelatedElementProps;
   federationGuid?: GuidProps;
@@ -29,6 +30,18 @@ export class RelatedElement implements RelatedElementProps {
   public readonly relClassName?: string;
   constructor(props: RelatedElementProps) { this.id = Id64.fromJSON(props.id); this.relClassName = props.relClassName; }
   public static fromJSON(json?: RelatedElementProps): RelatedElement | undefined { return json ? new RelatedElement(json) : undefined; }
+
+  /** accept the value of a navigation property that might be in the shortened format of just an id or might be in the full RelatedElement format. */
+  public static idFromJson(json: any): Id64 {
+    if ((typeof json === "object") && ("id" in json)) {
+      const r = RelatedElement.fromJSON(json);
+      if (r === undefined)
+        throw new IModelError(IModelStatus.BadArg);
+      return r.id;
+    }
+    return Id64.fromJSON(json);
+  }
+
 }
 
 /** A RelatedElement that describes the type definition of an element. */

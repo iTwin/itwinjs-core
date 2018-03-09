@@ -18,7 +18,7 @@
     "@bentley/geometry-core": "^5.0.6",
     "@bentley/imodeljs-backend": "^0.64.0",
     "@bentley/imodeljs-clients": "^4.0.0",
-    "@bentley/imodeljs-common": "^0.62.0",
+    "@bentley/imodeljs-common": "^0.63.0",
     "@bentley/imodeljs-electronaddon": "~10.0.0",
     "@bentley/imodeljs-frontend": "^0.62.0",
     "@bentley/imodeljs-nodeaddonapi": "~10.0.0",

@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { XYAndZ } from "@bentley/geometry-core";
-import { CodeSpec, CodeSpecNames, ViewDefinitionProps, NavigationValue, ECSqlTypedString, ECSqlStringType } from "@bentley/imodeljs-common";
+import { CodeSpec, CodeSpecNames, ViewDefinitionProps, NavigationValue, ECSqlTypedString, ECSqlStringType, RelatedElement } from "@bentley/imodeljs-common";
 import { TestData } from "./TestData";
 import {
   DrawingViewState, OrthographicViewState, ViewState, IModelConnection, IModelConnectionElements, IModelConnectionModels,
@@ -33,7 +33,7 @@ describe("IModelConnection", () => {
     const elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
     assert.equal(elementProps.length, 1);
     assert.isTrue(iModel.elements.rootSubjectId.equals(new Id64(elementProps[0].id)));
-    assert.isTrue(iModel.models.repositoryModelId.equals(new Id64(elementProps[0].model)));
+    assert.isTrue(iModel.models.repositoryModelId.equals(RelatedElement.idFromJson(elementProps[0].model)));
 
     const queryElementIds = await iModel.elements.queryIds({ from: "BisCore.Category", limit: 20, offset: 0 });
     assert.isAtLeast(queryElementIds.size, 1);
