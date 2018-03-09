@@ -50,7 +50,8 @@
   "//devDependencies": [
     "NOTE: The backend tests use the standard Node addon, so that is recorded in devDependencies.",
     "NOTE: The webpackformobile command needs webpack",
-    "NOTE: The devDependencies on @bentley/imodeljs-nodeaddon/electronaddon and @bentley/imodeljs-n_8_9-win32-x64/e_1_6_11-win32-x64 are just for the tests (backend and frontend)"
+    "NOTE: The devDependencies on @bentley/imodeljs-nodeaddon/electronaddon are just for the tests (backend and frontend)",
+    "NOTE: See the postInstall 'event' in rush.json for how these packages are used to install the actual addons farther up the tree."
   ],
   "devDependencies": {
     "@bentley/bentleyjs-core": "^7.3.2",
@@ -59,10 +60,6 @@
     "@bentley/imodeljs-common": "^0.62.0",
     "@bentley/imodeljs-nodeaddonapi": "~10.0.0",
     "cpx": "^1.5.0",
-    "@bentley/imodeljs-nodeaddon": "~10.0.0",
-    "@bentley/imodeljs-electronaddon": "~10.0.0",
-    "@bentley/imodeljs-n_8_9-win32-x64": "~10.0.0",
-    "@bentley/imodeljs-e_1_6_11-win32-x64": "~10.0.0",
     "mocha": "^3.5.3",
     "nyc": "^11.4.1",
     "rimraf": "^2.6.2",

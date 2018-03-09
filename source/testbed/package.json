@@ -19,9 +19,7 @@
     "@bentley/imodeljs-backend": "^0.63.1",
     "@bentley/imodeljs-clients": "^4.0.0",
     "@bentley/imodeljs-common": "^0.62.0",
-    "@bentley/imodeljs-electronaddon": "~10.0.0",
     "@bentley/imodeljs-frontend": "^0.62.0",
-    "@bentley/imodeljs-nodeaddonapi": "~10.0.0",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
     "commander": "^2.14.1",
@@ -38,7 +36,6 @@
     "webpack": "^3.10.0"
   },
   "devDependencies": {
-    "@bentley/imodeljs-e_1_6_11-win32-x64": "~10.0.0",
     "cpx": "^1.5.0",
     "rimraf": "^2.6.2",
     "typescript": "~2.6.2"
