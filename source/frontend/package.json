@@ -20,9 +20,6 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "//peerDependencies": [
-    "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check",
-  ],
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^7.3.2",
     "@bentley/geometry-core": "^5.0.6",
