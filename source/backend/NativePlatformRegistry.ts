@@ -58,9 +58,9 @@ export class NativePlatformRegistry {
       return undefined;
     let addonname: string;
     if ("electron" in process.versions)
-      addonname = "@bentley/imodeljs-electronaddon";
+      addonname = "@bentley/imodeljs-native-platform-electron";
     else
-      addonname = "@bentley/imodeljs-nodeaddon";
+      addonname = "@bentley/imodeljs-native-platform-node";
     if (dir !== undefined)
       addonname = path.join(dir, addonname);
     return require(addonname);
