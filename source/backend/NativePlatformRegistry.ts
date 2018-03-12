@@ -56,14 +56,16 @@ export class NativePlatformRegistry {
   public static getStandardAddonLoaderModule(dir?: string): any | undefined {
     if (typeof (process) === "undefined")
       return undefined;
-    let addonname: string;
+    let packageDir: string;
     if ("electron" in process.versions)
-      addonname = "@bentley/imodeljs-electronaddon";
+      packageDir = "@bentley/imodeljs-native-platform-electron";
     else
-      addonname = "@bentley/imodeljs-nodeaddon";
+      packageDir = "@bentley/imodeljs-native-platform-node";
     if (dir !== undefined)
-      addonname = path.join(dir, addonname);
-    return require(addonname);
+      packageDir = path.join(dir, packageDir);
+    // *** TODO: Put the name of the js file back into the addon package's 'main' property, so that we don't have to hard-wire it here.
+    const addonLoaderPath = path.join(packageDir, "NodeAddonLoader.js");
+    return require(addonLoaderPath);
   }
 
   /** Load and register the standard platform. */
