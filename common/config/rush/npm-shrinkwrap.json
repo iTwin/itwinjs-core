@@ -746,11 +746,7 @@
     },
     "@rush-temp/imodeljs-backend": {
       "version": "file:projects/imodeljs-backend.tgz",
-<<<<<<< HEAD
-      "integrity": "sha1-76Eb7Q+65NQGIE8PmhH/8847Nj0=",
-=======
-      "integrity": "sha1-Qf/CxmgzigDIyx6/RqB2Arp4sls=",
->>>>>>> 1ae21ccc12e3f6186b194ee9e3aa4217e613348f
+      "integrity": "sha1-PmNxNgwHKmifNgGvCCqL4Xg/IeE=",
       "requires": {
         "@bentley/bentleyjs-core": "7.3.2",
         "@bentley/geometry-core": "5.0.7",
@@ -773,11 +769,7 @@
     },
     "@rush-temp/imodeljs-common": {
       "version": "file:projects/imodeljs-common.tgz",
-<<<<<<< HEAD
-      "integrity": "sha1-OjZdLAtoQxNEwoPvvQNhtvLuaHU=",
-=======
-      "integrity": "sha1-RjAqheoVsjgkzEAWD0vqkI4pT/o=",
->>>>>>> 1ae21ccc12e3f6186b194ee9e3aa4217e613348f
+      "integrity": "sha1-JncgfXslScExgObL6YFjMB9HOzE=",
       "requires": {
         "@bentley/bentleyjs-core": "7.3.2",
         "@bentley/geometry-core": "5.0.7",
@@ -788,11 +780,7 @@
     },
     "@rush-temp/imodeljs-core": {
       "version": "file:projects/imodeljs-core.tgz",
-<<<<<<< HEAD
-      "integrity": "sha1-/3YQnjo3Rmj+Oo6vMjH4gdn9SuA=",
-=======
-      "integrity": "sha1-8KQYufy5yJDeePvoIUADUUljwsE=",
->>>>>>> 1ae21ccc12e3f6186b194ee9e3aa4217e613348f
+      "integrity": "sha1-EyNjNCToOhcj5HZyTdSx7DU6N3M=",
       "requires": {
         "@bentley/bemetalsmith": "1.18.13",
         "@bentley/bentleyjs-tools": "2.2.2",
@@ -844,11 +832,7 @@
     },
     "@rush-temp/imodeljs-core-testbed": {
       "version": "file:projects/imodeljs-core-testbed.tgz",
-<<<<<<< HEAD
-      "integrity": "sha1-dYqaBzLuX1BN4LiTqFQ4ZqFiiBA=",
-=======
-      "integrity": "sha1-SmN4UOXRD0IkSLM27/wKe78sSqY=",
->>>>>>> 1ae21ccc12e3f6186b194ee9e3aa4217e613348f
+      "integrity": "sha1-sK4OoYj0EGsYKUHnpIDwy2nnbJ8=",
       "requires": {
         "@bentley/bentleyjs-core": "7.3.2",
         "@bentley/geometry-core": "5.0.7",
@@ -874,11 +858,7 @@
     },
     "@rush-temp/imodeljs-frontend": {
       "version": "file:projects/imodeljs-frontend.tgz",
-<<<<<<< HEAD
-      "integrity": "sha1-MEeQpjab4d7sRAV9sjBG7b1fyGA=",
-=======
-      "integrity": "sha1-/bw1Xbvhzm7QAdWcx/0JkGsOW5A=",
->>>>>>> 1ae21ccc12e3f6186b194ee9e3aa4217e613348f
+      "integrity": "sha1-XFkFdieRlgKwBNscalwgkY5qoN8=",
       "requires": {
         "@bentley/bentleyjs-core": "7.3.2",
         "@bentley/geometry-core": "5.0.7",
