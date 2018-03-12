@@ -21,9 +21,21 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { NativePlatformRegistry } from "../NativePlatformRegistry";
 
 Logger.initializeToConsole();
-// TODO: Read envvar to find logging config file
+if (process.env.imodeljs_test_logging_config === undefined) {
+  // tslint:disable-next-line:no-console
+  console.log("FYI You can set the environment variable imodeljs_test_logging_config to point to a logging configuration json file.");
+}
 
-const nativePlatformDir = path.join(__dirname, "../../../../nativePlatformForTests/node_modules");
+const loggingConfigFile: string = process.env.imodeljs_test_logging_config || path.join(__dirname, "logging.config.json");
+if (IModelJsFs.existsSync(loggingConfigFile)) {
+  // tslint:disable-next-line:no-var-requires
+  Logger.configureLevels(require(loggingConfigFile));
+}
+
+let nativePlatformForTestsDir = __dirname;
+while (!IModelJsFs.existsSync(path.join(nativePlatformForTestsDir, "nativePlatformForTests")))
+  nativePlatformForTestsDir = path.join(nativePlatformForTestsDir, "..");
+const nativePlatformDir = path.join(path.join(nativePlatformForTestsDir, "nativePlatformForTests"), "node_modules");
 NativePlatformRegistry.loadAndRegisterStandardNativePlatform(nativePlatformDir);
 
 // Initialize the gateway classes used by tests
