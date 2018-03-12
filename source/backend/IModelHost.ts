@@ -40,9 +40,9 @@ export class IModelHost {
     if (IModelHost.configuration)
       throw new IModelError(BentleyStatus.ERROR, "startup may only be called once");
 
-    if (NativePlatformRegistry.getNativePlatform() === undefined) {
+    if (!NativePlatformRegistry.isNativePlatformLoaded()) {
       if (configuration.nativePlatform !== undefined)
-        NativePlatformRegistry.register(NativePlatformRegistry.register(configuration.nativePlatform));
+        NativePlatformRegistry.register(configuration.nativePlatform);
       else
         NativePlatformRegistry.loadAndRegisterStandardNativePlatform();
     }
