@@ -138,8 +138,12 @@ describe("BriefcaseManager", () => {
 
        await IModelDb.open(accessToken, testProjectId, iModelId, OpenMode.Readonly, IModelVersion.first());
        await IModelDb.open(accessToken, testProjectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
-     }
-   });
+    }
+
+    const iD = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, iModelNames[1]);
+    const iModel = await IModelDb.open(accessToken, testProjectId, iD, OpenMode.ReadWrite, IModelVersion.first());
+    iModel.close(accessToken, KeepBriefcase.No);
+  });
 
   it.skip("test change-merging scenarios", async () => {
     const firstUser = accessToken;
