@@ -1,0 +1,9 @@
+{
+  "name": "native-platform-for-tests",
+  "description": "This package exists *only* so that we can npm install the platform-specific node addons that are needed by the unit tests. It must *not* be managed by rush! It must be installed by npm, as it relies on npm's support for optional dependencies.",
+  "private": true,
+  "dependencies": {
+    "@bentley/imodeljs-nodeaddon": "~11.0.0",
+    "@bentley/imodeljs-electronaddon": "~11.0.0"
+  }
+}

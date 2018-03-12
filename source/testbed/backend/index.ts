@@ -3,9 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 import * as express from "express";
 import * as bodyParser from "body-parser";
-import { AddonRegistry, IModelHost } from "@bentley/imodeljs-backend";
+import { IModelHost, NativePlatformRegistry } from "@bentley/imodeljs-backend";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
 import { TestGatewayImpl } from "./TestGatewayImpl";
+import * as path from "path";
 
 let pendingsSent = 0;
 let pendingResponseQuota = 0;
@@ -21,14 +22,14 @@ ipcMain.on("testbed", (event: any, arg: any) => {
   }
 });
 
+const nativePlatformDir = path.join(__dirname, "../../../../nativePlatformForTests/node_modules");
+NativePlatformRegistry.loadAndRegisterStandardNativePlatform(nativePlatformDir);
+
 // Start the backend
 IModelHost.startup();
 
 TestGatewayImpl.register();
 TestbedConfig.initializeGatewayConfig();
-
-// tslint:disable-next-line:no-var-requires
-AddonRegistry.loadAndRegisterStandardAddon();
 
 if (TestbedConfig.gatewayConfig) {
   const app = express();

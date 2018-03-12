@@ -9,7 +9,6 @@ import {
 } from "@bentley/imodeljs-clients";
 import { Element, InformationPartitionElement } from "../Element";
 import { IModelDb } from "../IModelDb";
-import { AddonRegistry } from "../AddonRegistry";
 import { IModelGateway } from "@bentley/imodeljs-common";
 import { Code, Gateway, ElementProps, GeometricElementProps, Appearance } from "@bentley/imodeljs-common";
 import { DefinitionModel, Model } from "../Model";
@@ -18,21 +17,23 @@ import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelHostConfiguration, IModelHost } from "../IModelHost";
 import * as path from "path";
-// import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { NativePlatformRegistry } from "../NativePlatformRegistry";
 
-// Logger.initializeToConsole();
-// Logger.setLevel("Performance", LogLevel.Info);
-// Logger.setLevelDefault(LogLevel.Error);
-// Logger.setLevel("Diagnostics", LogLevel.None);
-// Logger.setLevel("ECObjectsNative", LogLevel.None);
-// Logger.setLevel("BeSQLite", LogLevel.None);
-// Logger.setLevel("ECPresentation", LogLevel.None);
+Logger.initializeToConsole();
+Logger.setLevelDefault(LogLevel.Info);
+Logger.setLevel("Performance", LogLevel.None);
+Logger.setLevel("Diagnostics", LogLevel.None);
+Logger.setLevel("ECObjectsNative", LogLevel.Error);
+Logger.setLevel("BeSQLite", LogLevel.Info);
+Logger.setLevel("ECPresentation", LogLevel.Error);
+Logger.setLevel("UnitsNative", LogLevel.Error);
+
+const nativePlatformDir = path.join(__dirname, "../../../../nativePlatformForTests/node_modules");
+NativePlatformRegistry.loadAndRegisterStandardNativePlatform(nativePlatformDir);
 
 // Initialize the gateway classes used by tests
 Gateway.initialize(IModelGateway);
-
-// Initialize the Node addon used by tests
-AddonRegistry.loadAndRegisterStandardAddon();
 
 export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;
@@ -238,6 +239,27 @@ export class IModelTestUtils {
     return iModel!;
   }
 
+   public static openIModelFromOut(filename: string, opts?: IModelTestUtilsOpenOptions): IModelDb {
+    const destPath = KnownTestLocations.outputDir;
+    if (!IModelJsFs.existsSync(destPath))
+      IModelJsFs.mkdirSync(destPath);
+
+    if (opts === undefined)
+      opts = {};
+
+    const srcName = path.join(KnownTestLocations.outputDir, filename);
+    const dbName = path.join(destPath, (opts.copyFilename ? opts.copyFilename! : filename));
+    const srcStat = IModelTestUtils.getStat(srcName);
+    const destStat = IModelTestUtils.getStat(dbName);
+    if (!srcStat || !destStat || srcStat.mtimeMs !== destStat.mtimeMs) {
+      IModelJsFs.copySync(srcName, dbName, { preserveTimestamps: true });
+    }
+
+    const iModel: IModelDb = IModelDb.openStandalone(dbName, opts.openMode, opts.enableTransactions); // could throw Error
+    assert.exists(iModel);
+    return iModel!;
+  }
+ 
   public static closeIModel(iModel: IModelDb) {
     iModel.closeStandalone();
   }
