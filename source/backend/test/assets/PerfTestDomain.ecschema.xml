@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="PerfTestDomain" alias="perfTest" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+    <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+    <!--Class Hierarchy used by PerformanceElementsCRUDTests -->
+    <ECEntityClass typeName="PerfElement">
+        <BaseClass>bis:PhysicalElement</BaseClass>
+        <ECProperty propertyName="BaseStr" typeName="string"/>
+        <ECProperty propertyName="BaseLong" typeName="long"/>
+        <ECProperty propertyName="BaseDouble" typeName="double"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="PerfElementSub1">
+        <BaseClass>PerfElement</BaseClass>
+        <ECProperty propertyName="Sub1Str" typeName="string"/>
+        <ECProperty propertyName="Sub1Long" typeName="long"/>
+        <ECProperty propertyName="Sub1Double" typeName="double"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="PerfElementSub2">
+        <BaseClass>PerfElementSub1</BaseClass>
+        <ECProperty propertyName="Sub2Str" typeName="string"/>
+        <ECProperty propertyName="Sub2Long" typeName="long"/>
+        <ECProperty propertyName="Sub2Double" typeName="double"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="PerfElementSub3">
+        <BaseClass>PerfElementSub2</BaseClass>
+        <ECProperty propertyName="Sub3Str" typeName="string"/>
+        <ECProperty propertyName="Sub3Long" typeName="long"/>
+        <ECProperty propertyName="Sub3Double" typeName="double"/>
+    </ECEntityClass>
+</ECSchema>
