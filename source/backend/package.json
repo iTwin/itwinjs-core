@@ -33,8 +33,6 @@
     "@bentley/geometry-core": "^5.0.6",
     "@bentley/imodeljs-clients": "^4.0.0",
     "@bentley/imodeljs-common": "^0.63.0",
-    "@bentley/imodeljs-nodeaddon": "~11.0.0",
-    "@bentley/imodeljs-electronaddon": "~11.0.0",
     "flatbuffers": "^1.8.0"
   },
   "devDependencies": {
@@ -42,7 +40,7 @@
     "@bentley/geometry-core": "^5.0.6",
     "@bentley/imodeljs-clients": "^4.0.0",
     "@bentley/imodeljs-common": "^0.63.0",
-    "@bentley/imodeljs-native-platform-api": "~11.0.0",
+    "@bentley/imodeljs-native-platform-api": "~12.0.0",
     "cpx": "^1.5.0",
     "mocha": "^3.5.3",
     "nyc": "^11.4.1",
@@ -55,9 +53,17 @@
   },
   "//dependencies": [
     "NOTE: these dependencies are specific to imodeljs-backend",
-    "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API"
+    "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
+    "NOTE: backend directly depends on the node and electron addons as a help to apps. Most apps by far will use one",
+    "or the other of these addons. And, most apps will be installed by npm. So, by putting these dependencies here, we can ",
+    "relieve most apps of the burden of even thinking about 'the addon'. In fact, the addon is not really separate from",
+    "imodeljs-backend but is just part of its internal implementation. We want apps to think about backend, not the addon.",
+    "NOTE: These dependencies do not suffice to supply the imodeljs-backend or testbed unit tests with the addons that they need.",
+    "*** Keep this in synch with nativePlatformForTests ***"
   ],
   "dependencies": {
+    "@bentley/imodeljs-native-platform-node": "~12.0.0",
+    "@bentley/imodeljs-native-platform-electron": "~12.0.0",
     "fs-extra": "^5.0.0",
     "js-base64": "^2.4.0"
   },
