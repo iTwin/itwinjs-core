@@ -5,17 +5,15 @@ import { assert } from "chai";
 import * as path from "path";
 import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { Code} from "../../common/Code";
 import { DictionaryModel } from "../Model";
 import { SpatialCategory } from "../Category";
 import { ECSqlStatement } from "../ECSqlStatement";
-import { GeometricElementProps } from "../../common/ElementProps";
 import { Element } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { Appearance } from "../../common/SubCategoryAppearance";
-import { ColorDef } from "../../common/ColorDef";
-import { IModel } from "../../common/IModel";
+import {
+  GeometricElementProps, Code, Appearance, ColorDef, IModel
+} from "@bentley/imodeljs-common";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelJsFs } from "../IModelJsFs";
 
