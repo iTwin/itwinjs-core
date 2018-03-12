@@ -21,13 +21,8 @@ import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { NativePlatformRegistry } from "../NativePlatformRegistry";
 
 Logger.initializeToConsole();
-Logger.setLevelDefault(LogLevel.Info);
-Logger.setLevel("Performance", LogLevel.None);
-Logger.setLevel("Diagnostics", LogLevel.None);
-Logger.setLevel("ECObjectsNative", LogLevel.Error);
-Logger.setLevel("BeSQLite", LogLevel.Info);
-Logger.setLevel("ECPresentation", LogLevel.Error);
-Logger.setLevel("UnitsNative", LogLevel.Error);
+// TODO: Read envvar to find logging config file
+// Logger.setLevelDefault(LogLevel.Error);
 
 const nativePlatformDir = path.join(__dirname, "../../../../nativePlatformForTests/node_modules");
 NativePlatformRegistry.loadAndRegisterStandardNativePlatform(nativePlatformDir);
