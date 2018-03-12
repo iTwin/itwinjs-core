@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.63.1",
+  "version": "0.64.0",
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
@@ -28,38 +28,22 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "//peerDependencies": [
-    "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check"
-  ],
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^7.3.2",
-    "flatbuffers": "^1.8.0"
-  },
-  "//dependencies": [
-    "NOTE: these dependencies are specific to imodeljs-backend",
-    "NOTE: dependencies that are in common with imodeljs-frontend must have a consistent version",
-    "NOTE: backend really does depend on the addon API - that's what we compile against",
-    "NOTE: backend does not really depend on the addon itself -- the app is supposed to deliver the addon.",
-    "       Nevertheless, we make backend depend directly on the addon dependency as a convenience to apps, ",
-    "       so that they don't have to depend on it. We might revisit this policy in the future."
-  ],
-  "dependencies": {
     "@bentley/geometry-core": "^5.0.6",
     "@bentley/imodeljs-clients": "^4.0.0",
-    "@bentley/imodeljs-common": "^0.62.0",
-    "@bentley/imodeljs-electronaddon": "~10.0.0",
-    "@bentley/imodeljs-nodeaddon": "~10.0.0",
-    "@bentley/imodeljs-nodeaddonapi": "~10.0.0",
-    "fs-extra": "^5.0.0",
-    "js-base64": "^2.4.0"
+    "@bentley/imodeljs-common": "^0.63.0",
+    "@bentley/imodeljs-nodeaddon": "~11.0.0",
+    "@bentley/imodeljs-electronaddon": "~11.0.0",
+    "flatbuffers": "^1.8.0"
   },
-  "//devDependencies": [
-    "NOTE: The backend tests use the standard Node addon, so that is recorded in devDependencies.",
-    "NOTE: The webpackformobile command needs webpack"
-  ],
   "devDependencies": {
+    "@bentley/bentleyjs-core": "^7.3.2",
+    "@bentley/geometry-core": "^5.0.6",
+    "@bentley/imodeljs-clients": "^4.0.0",
+    "@bentley/imodeljs-common": "^0.63.0",
+    "@bentley/imodeljs-native-platform-api": "~11.0.0",
     "cpx": "^1.5.0",
-    "@bentley/imodeljs-n_8_9-win32-x64": "~10.0.0",
     "mocha": "^3.5.3",
     "nyc": "^11.4.1",
     "rimraf": "^2.6.2",
@@ -68,6 +52,14 @@
     "tsconfig-paths": "^2.7.2",
     "typescript": "~2.6.2",
     "webpack": "^3.10.0"
+  },
+  "//dependencies": [
+    "NOTE: these dependencies are specific to imodeljs-backend",
+    "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API"
+  ],
+  "dependencies": {
+    "fs-extra": "^5.0.0",
+    "js-base64": "^2.4.0"
   },
   "//optionalDependencies": [
     "NOTE: Rush (as of 4.2.5) does not support optionalDependencies!"
