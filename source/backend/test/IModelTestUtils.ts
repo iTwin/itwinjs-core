@@ -17,12 +17,11 @@ import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelHostConfiguration, IModelHost } from "../IModelHost";
 import * as path from "path";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger } from "@bentley/bentleyjs-core";
 import { NativePlatformRegistry } from "../NativePlatformRegistry";
 
 Logger.initializeToConsole();
 // TODO: Read envvar to find logging config file
-// Logger.setLevelDefault(LogLevel.Error);
 
 const nativePlatformDir = path.join(__dirname, "../../../../nativePlatformForTests/node_modules");
 NativePlatformRegistry.loadAndRegisterStandardNativePlatform(nativePlatformDir);
@@ -254,7 +253,7 @@ export class IModelTestUtils {
     assert.exists(iModel);
     return iModel!;
   }
- 
+
   public static closeIModel(iModel: IModelDb) {
     iModel.closeStandalone();
   }
