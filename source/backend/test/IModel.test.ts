@@ -5,26 +5,19 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import { DbResult, Guid, Id64 } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { Entity, EntityMetaData, PrimitiveTypeCode } from "../Entity";
-import { Model, DictionaryModel } from "../Model";
-import { Category, SubCategory, SpatialCategory } from "../Category";
-import { ClassRegistry } from "../ClassRegistry";
-import { BisCore } from "../BisCore";
-import { ECSqlStatement } from "../ECSqlStatement";
 import {
-  Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
-  LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject,
-} from "../Element";
-import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
-import { IModelDb } from "../IModelDb";
-import { IModelTestUtils } from "./IModelTestUtils";
+  ClassRegistry, BisCore, Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
+  LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject, ElementPropertyFormatter,
+  IModelDb, ECSqlStatement, Entity, EntityMetaData, PrimitiveTypeCode,
+  Model, DictionaryModel, Category, SubCategory, SpatialCategory, ElementGroupsMembers,
+} from "../backend";
 import {
   GeometricElementProps, Code, CodeSpec, CodeScopeSpec, EntityProps, IModelError, IModelStatus, ModelProps, ViewDefinitionProps,
   AxisAlignedBox3d, Appearance, ColorDef, IModel,
-  // FontType, FontMap,
+  FontType, FontMap,
 } from "@bentley/imodeljs-common";
+import { IModelTestUtils } from "./IModelTestUtils";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { ElementGroupsMembers } from "../LinkTableRelationship";
 
 // spell-checker: disable
 
@@ -81,25 +74,24 @@ describe("iModel", () => {
     assert.equal(categoryClass!.name, "Category");
   });
 
-  // disabled until build 10.1.0 of iModelJsNode module is available
-  // it.skip("FontMap", () => {
-  //   const fonts1 = imodel1.getFontMap();
-  //   assert.equal(fonts1.fonts.size, 4, "font map size should be 4");
-  //   assert.equal(FontType.TrueType, fonts1.getFont(1)!.type, "get font 1 type is TrueType");
-  //   assert.equal("Arial", fonts1.getFont(1)!.name, "get Font 1 name");
-  //   assert.equal(1, fonts1.getFont("Arial")!.id, "get Font 1, by name");
-  //   assert.equal(FontType.Rsc, fonts1.getFont(2)!.type, "get font 2 type is Rsc");
-  //   assert.equal("Font0", fonts1.getFont(2)!.name, "get Font 2 name");
-  //   assert.equal(2, fonts1.getFont("Font0")!.id, "get Font 2, by name");
-  //   assert.equal(FontType.Shx, fonts1.getFont(3)!.type, "get font 1 type is Shx");
-  //   assert.equal("ShxFont0", fonts1.getFont(3)!.name, "get Font 3 name");
-  //   assert.equal(3, fonts1.getFont("ShxFont0")!.id, "get Font 3, by name");
-  //   assert.equal(FontType.TrueType, fonts1.getFont(4)!.type, "get font 4 type is TrueType");
-  //   assert.equal("Calibri", fonts1.getFont(4)!.name, "get Font 4 name");
-  //   assert.equal(4, fonts1.getFont("Calibri")!.id, "get Font 3, by name");
-  //   assert.isUndefined(fonts1.getFont("notfound"), "attempt lookup of a font that should not be found");
-  //   assert.deepEqual(new FontMap(fonts1.toJSON()), fonts1, "toJSON on FontMap");
-  // });
+  it("FontMap", () => {
+    const fonts1 = imodel1.getFontMap();
+    assert.equal(fonts1.fonts.size, 4, "font map size should be 4");
+    assert.equal(FontType.TrueType, fonts1.getFont(1)!.type, "get font 1 type is TrueType");
+    assert.equal("Arial", fonts1.getFont(1)!.name, "get Font 1 name");
+    assert.equal(1, fonts1.getFont("Arial")!.id, "get Font 1, by name");
+    assert.equal(FontType.Rsc, fonts1.getFont(2)!.type, "get font 2 type is Rsc");
+    assert.equal("Font0", fonts1.getFont(2)!.name, "get Font 2 name");
+    assert.equal(2, fonts1.getFont("Font0")!.id, "get Font 2, by name");
+    assert.equal(FontType.Shx, fonts1.getFont(3)!.type, "get font 1 type is Shx");
+    assert.equal("ShxFont0", fonts1.getFont(3)!.name, "get Font 3 name");
+    assert.equal(3, fonts1.getFont("ShxFont0")!.id, "get Font 3, by name");
+    assert.equal(FontType.TrueType, fonts1.getFont(4)!.type, "get font 4 type is TrueType");
+    assert.equal("Calibri", fonts1.getFont(4)!.name, "get Font 4 name");
+    assert.equal(4, fonts1.getFont("Calibri")!.id, "get Font 3, by name");
+    assert.isUndefined(fonts1.getFont("notfound"), "attempt lookup of a font that should not be found");
+    assert.deepEqual(new FontMap(fonts1.toJSON()), fonts1, "toJSON on FontMap");
+  });
 
   it("should load a known element by Id from an existing iModel", () => {
     assert.exists(imodel1.elements);

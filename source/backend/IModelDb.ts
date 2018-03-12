@@ -7,7 +7,7 @@ import { NativeBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-native
 import {
   Code, CodeSpec, ElementProps, ElementAspectProps, ElementLoadParams, IModel, IModelProps, IModelVersion, ModelProps, IModelToken,
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
-  // FontMap, FontMapProps,
+  FontMap, FontMapProps,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element } from "./Element";
@@ -40,8 +40,8 @@ export class IModelDb extends IModel {
   private _classMetaDataRegistry?: MetaDataRegistry;
   private _concurrency?: ConcurrencyControl;
   private _txnManager?: TxnManager;
-  // protected _fontMap?: FontMap;
-  // public getFontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.briefcase!.nativeDb.readFontMap()) as FontMapProps)); }
+  protected _fontMap?: FontMap;
+  public getFontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.briefcase!.nativeDb.readFontMap()) as FontMapProps)); }
 
   /** Event raised when a connected IModelDb is created or opened. This event is not raised for standalone IModelDbs. */
   /** Event raised just before a connected IModelDb is opened. This event is raised only for iModel access initiated by this service only. This event is not raised for standalone IModelDbs. */

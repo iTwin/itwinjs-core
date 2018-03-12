@@ -5,4 +5,8 @@
 tsconfig.json
 tslint.json
 test
+scripts
 lib/backend/test
+*.log
+package-deps.json
+.vscode
