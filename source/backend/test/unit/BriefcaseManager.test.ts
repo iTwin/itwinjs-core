@@ -73,7 +73,7 @@ describe.only("BriefcaseManagerUnitTests", () => {
   let testProjectId: string;
   const testIModels: TestIModelInfo[] = [
     new TestIModelInfo("ReadOnlyTest"),
-    new TestIModelInfo("TestModel"),
+    // new TestIModelInfo("TestModel"),
     new TestIModelInfo("NoVersionsTest"),
   ];
   const assetDir = "./test/assets/_mocks_";
@@ -111,8 +111,8 @@ describe.only("BriefcaseManagerUnitTests", () => {
       assert(iModels.length > 0, `No IModels returned from iModelHubClient mock for ${iModelInfo.name} iModel`);
       assert(iModels[0].wsgId, `No IModelId returned for ${iModelInfo.name} iModel`);
       iModelInfo.id = iModels[0].wsgId;
-      iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.name, "readOnly");
-      iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.name, "readWrite");
+      iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
+      iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
       // // getChangeSets
       // testChangeSets = await iModelHubClientMock.object.getChangeSets(spoofAccessToken as any, pair[0], false);
@@ -130,19 +130,19 @@ describe.only("BriefcaseManagerUnitTests", () => {
 
   });
 
-  it.only("should be able to open a cached first version IModel in Readonly mode", async () => {
+  it.only("should be able to open a first version IModel in Readonly mode", async () => {
     // Arrange
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
     // Act
-    const iModel: BriefcaseEntry = await BriefcaseManager.open(spoofAccessToken as any, testProjectId, testIModels[1].id, OpenMode.Readonly, iModelVersionMock.object);
+    const iModel: BriefcaseEntry = await BriefcaseManager.open(spoofAccessToken as any, testProjectId, testIModels[0].id, OpenMode.Readonly, iModelVersionMock.object);
 
     // Assert
     assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
     assert(iModel.openMode === OpenMode.Readonly, "iModel not set to Readonly mode");
 
-    expect(IModelJsFs.existsSync(testIModels[1].localReadonlyPath), "Local path to iModel does not exist");
-    const files = IModelJsFs.readdirSync(testIModels[1].localReadonlyPath);
+    expect(IModelJsFs.existsSync(testIModels[0].localReadonlyPath), "Local path to iModel does not exist");
+    const files = IModelJsFs.readdirSync(path.join(testIModels[0].localReadonlyPath, "0"));
     expect(files.length).greaterThan(0, "iModel .bim file could not be read");
 
     iModelVersionMock.verify((f: IModelVersion) => f.evaluateChangeSet(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
@@ -214,7 +214,7 @@ describe.only("BriefcaseManagerUnitTests", () => {
 /** Provides utility functions for working with mock objects */
 class MockAssetUtil {
   private static iModelMap = new Map<string, string>([["c3e1146f-8c81-430d-a974-ac840657b7ac", "ReadOnlyTest"],
-                                                      ["b74b6451-cca3-40f1-9890-42c769a28f3e", "TestModel"],
+                                                      // ["b74b6451-cca3-40f1-9890-42c769a28f3e", "TestModel"],
                                                       ["0aea4c09-09f4-449d-bf47-045228d259ba", "NoVersionsTest"]]); // <IModelID, IModelName>
   private static assetDir: string = "./test/assets/_mocks_";
 

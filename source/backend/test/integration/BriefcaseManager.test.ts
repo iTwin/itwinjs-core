@@ -132,17 +132,30 @@ describe("BriefcaseManager", () => {
   });
 
   it.only ("should open multiple versions of iModels", async () => {
-    const iModelNames = ["NoVersionsTest", "ReadOnlyTest"];
+    const iModelNames = ["ReadOnlyTest"];
     for (const name of iModelNames) {
        const iModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, name);
 
        await IModelDb.open(accessToken, testProjectId, iModelId, OpenMode.Readonly, IModelVersion.first());
        await IModelDb.open(accessToken, testProjectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
+
+       // Get all change set information including the download link
+       const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, iModelId, true /*=includeDownloadLink*/);
+
+      // Download change sets
+       await IModelTestUtils.hubClient.downloadChangeSets(changeSets, "C:/Users/Charles.Goepfert/AppData/Local/Temp/Bentley/IModelJs/cache/iModels/c3e1146f-8c81-430d-a974-ac840657b7ac/readWrite/176/csets");
     }
 
-    const iD = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, iModelNames[1]);
-    const iModel = await IModelDb.open(accessToken, testProjectId, iD, OpenMode.ReadWrite, IModelVersion.first());
-    iModel.close(accessToken, KeepBriefcase.No);
+    // const iD = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, iModelNames[1]);
+    // const iModel = await IModelDb.open(accessToken, testProjectId, iD, OpenMode.ReadWrite, IModelVersion.first());
+
+    // // Get all change set information including the download link
+    // const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, iD, true /*=includeDownloadLink*/);
+
+    // // Download change sets
+    // await IModelTestUtils.hubClient.downloadChangeSets(changeSets, "C:/Users/Charles.Goepfert/AppData/Local/Temp/Bentley/IModelJs/cache/iModels/c3e1146f-8c81-430d-a974-ac840657b7ac/readWrite/176/csets");
+
+    // iModel.close(accessToken, KeepBriefcase.No);
   });
 
   it("The same promise can have two subscribers, and it will notify both.", async () => {
