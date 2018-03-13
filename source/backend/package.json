@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.67.0",
+  "version": "0.67.1",
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
@@ -32,14 +32,14 @@
     "@bentley/bentleyjs-core": "^7.3.2",
     "@bentley/geometry-core": "^5.0.6",
     "@bentley/imodeljs-clients": "^4.0.0",
-    "@bentley/imodeljs-common": "^0.64.0",
+    "@bentley/imodeljs-common": "^0.64.1",
     "flatbuffers": "^1.8.0"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "^7.3.2",
     "@bentley/geometry-core": "^5.0.6",
     "@bentley/imodeljs-clients": "^4.0.0",
-    "@bentley/imodeljs-common": "^0.64.0",
+    "@bentley/imodeljs-common": "^0.64.1",
     "cpx": "^1.5.0",
     "mocha": "^3.5.3",
     "nyc": "^11.4.1",
