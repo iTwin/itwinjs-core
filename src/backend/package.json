@@ -28,8 +28,7 @@
     "@bentley/geometry-core": "^5.0.6",
     "@bentley/imodeljs-backend": "~0.67.0",
     "@bentley/imodeljs-clients": "^4.0.0",
-    "@bentley/imodeljs-common": "~0.64.0",
-    "@bentley/imodeljs-native-platform-api": "^12.0.0"
+    "@bentley/imodeljs-common": "~0.64.0"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "^7.3.2",
