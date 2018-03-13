@@ -33,6 +33,10 @@ module.exports = (publicPath) => {
       "@bentley/imodeljs-nodeaddon": "@bentley/imodeljs-nodeaddon",
       "@bentley/imodeljs-nodeaddon/NodeAddonLoader": "@bentley/imodeljs-nodeaddon/NodeAddonLoader",
       "@bentley/imodeljs-nodeaddonapi/package.json": "@bentley/imodeljs-nodeaddonapi/package.json",
+      "@bentley/imodeljs-native-platform-electron": "@bentley/imodeljs-native-platform-electron",
+      "@bentley/imodeljs-native-platform-node": "@bentley/imodeljs-native-platform-node",
+      "@bentley/imodeljs-native-platform-node/NodeAddonLoader": "@bentley/imodeljs-native-platform-node/NodeAddonLoader",
+      "@bentley/imodeljs-native-platform-api/package.json": "@bentley/imodeljs-native-platform-api/package.json",
     },
     // These are the "entry points" to our application.
     // This means they will be the "root" imports that are included in JS bundle.
