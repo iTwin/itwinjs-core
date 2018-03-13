@@ -1241,8 +1241,8 @@ export class IModelDbElements {
    * @param elementId either the element's Id, Code, or FederationGuid
    * @throws [[IModelError]] if the element is not found.
    */
-  public getElement(elementId: Id64 | Guid | Code): Element {
-    if (elementId instanceof Id64) return this._doGetElement({ id: elementId.value });
+  public getElement(elementId: Id64 | Guid | Code | string): Element {
+    if (typeof elementId === "string" || elementId instanceof Id64) return this._doGetElement({ id: elementId.toString() });
     if (elementId instanceof Guid) return this._doGetElement({ federationGuid: elementId.value });
     if (elementId instanceof Code) return this._doGetElement({ code: elementId });
     throw new IModelError(IModelStatus.BadArg, "id=" + elementId);

@@ -98,8 +98,10 @@ describe("iModel", () => {
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
     const el = imodel1.elements.getElement(code1);
     assert.exists(el);
-    const el2 = imodel1.elements.getElement(new Id64("0x34"));
-    assert.exists(el2);
+    const el2ById = imodel1.elements.getElement(new Id64("0x34"));
+    assert.exists(el2ById);
+    const el2ByString = imodel1.elements.getElement("0x34");
+    assert.exists(el2ByString);
     const badCode = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
 
     try {
