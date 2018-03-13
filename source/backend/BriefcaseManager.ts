@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { AccessToken, Briefcase as HubBriefcase, IModelHubClient, ChangeSet, IModel as HubIModel, ContainsSchemaChanges, SeedFile, SeedFileInitState } from "@bentley/imodeljs-clients";
+import { AccessToken, Briefcase as HubBriefcase, IModelHubClient, ChangeSet, IModel as HubIModel, ContainsSchemaChanges, SeedFile, SeedFileInitState, IModelHubResponseError, IModelHubResponseErrorId } from "@bentley/imodeljs-clients";
 import { ChangeSetProcessOption, BeEvent, DbResult, OpenMode, assert, Logger } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
@@ -901,17 +901,13 @@ export class BriefcaseManager {
       throw new IModelError(result);
   }
 
-  /** Push local changes to the hub
-   * @param accessToken The access token of the account that has write access to the iModel. This may be a service account.
-   * @param briefcase Identifies the IModelDb that contains the pending changes.
-   * @param description a description of the changeset that is to be pushed.
-   */
-  public static async pushChanges(accessToken: AccessToken, briefcase: BriefcaseEntry, description: string): Promise<void> {
+  private static abandonCreateChangeSet(briefcase: BriefcaseEntry) {
+    briefcase.nativeDb!.abandonCreateChangeSet();
+  }
 
-    await BriefcaseManager.pullAndMergeChanges(accessToken, briefcase, IModelVersion.latest());
-
+  /** Attempt to push a ChangeSet to iModel Hub */
+  private static async pushChangeSet(accessToken: AccessToken, briefcase: BriefcaseEntry, description: string): Promise<void> {
     const changeSetToken: ChangeSetToken = BriefcaseManager.startCreateChangeSet(briefcase);
-
     const changeSet = new ChangeSet();
     changeSet.briefcaseId = briefcase.briefcaseId;
     changeSet.id = changeSetToken.id;
@@ -930,6 +926,54 @@ export class BriefcaseManager {
     BriefcaseManager.finishCreateChangeSet(briefcase);
     briefcase.changeSetId = postedChangeSet.wsgId;
     briefcase.changeSetIndex = +postedChangeSet.index!;
+  }
+
+  /** Attempt to pull merge and push once */
+  private static async pushChangesOnce(accessToken: AccessToken, briefcase: BriefcaseEntry, description: string): Promise<void> {
+    await BriefcaseManager.pullAndMergeChanges(accessToken, briefcase, IModelVersion.latest());
+    await BriefcaseManager.pushChangeSet(accessToken, briefcase, description).catch((err) => {
+      BriefcaseManager.abandonCreateChangeSet(briefcase);
+      return Promise.reject(err);
+    });
+  }
+
+  /** Return true if should attempt pushing again. */
+  private static shouldRetryPush(error: any): boolean {
+    if (error instanceof IModelHubResponseError && error.id) {
+      switch (error.id!) {
+        case IModelHubResponseErrorId.AnotherUserPushing:
+        case IModelHubResponseErrorId.PullIsRequired:
+        case IModelHubResponseErrorId.DatabaseTemporarilyLocked:
+        case IModelHubResponseErrorId.iModelHubOperationFailed:
+          return true;
+      }
+    }
+    return false;
+  }
+
+  /** Push local changes to the hub
+   * @param accessToken The access token of the account that has write access to the iModel. This may be a service account.
+   * @param briefcase Identifies the IModelDb that contains the pending changes.
+   * @param description a description of the changeset that is to be pushed.
+   */
+  public static async pushChanges(accessToken: AccessToken, briefcase: BriefcaseEntry, description: string): Promise<void> {
+    for (let i = 0; i < 5; ++i) {
+      let pushed: boolean = false;
+      let error: any;
+      await BriefcaseManager.pushChangesOnce(accessToken, briefcase, description).then(() => {
+        pushed = true;
+      }).catch((err) => {
+        error = err;
+      });
+      if (pushed) {
+        return Promise.resolve();
+      }
+      if (!BriefcaseManager.shouldRetryPush(error)) {
+        return Promise.reject(error);
+      }
+      const delay: number = Math.floor(Math.random() * 4800) + 200;
+      await new Promise((resolve: any) => setTimeout(resolve, delay));
+    }
   }
 
   /** Create an iModel on the iModelHub */

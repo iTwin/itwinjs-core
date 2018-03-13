@@ -17,19 +17,25 @@ import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelHostConfiguration, IModelHost } from "../IModelHost";
 import * as path from "path";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger } from "@bentley/bentleyjs-core";
 import { NativePlatformRegistry } from "../NativePlatformRegistry";
 
 Logger.initializeToConsole();
-Logger.setLevelDefault(LogLevel.Info);
-Logger.setLevel("Performance", LogLevel.None);
-Logger.setLevel("Diagnostics", LogLevel.None);
-Logger.setLevel("ECObjectsNative", LogLevel.Error);
-Logger.setLevel("BeSQLite", LogLevel.Info);
-Logger.setLevel("ECPresentation", LogLevel.Error);
-Logger.setLevel("UnitsNative", LogLevel.Error);
+if (process.env.imodeljs_test_logging_config === undefined) {
+  // tslint:disable-next-line:no-console
+  console.log("FYI You can set the environment variable imodeljs_test_logging_config to point to a logging configuration json file.");
+}
 
-const nativePlatformDir = path.join(__dirname, "../../../../nativePlatformForTests/node_modules");
+const loggingConfigFile: string = process.env.imodeljs_test_logging_config || path.join(__dirname, "logging.config.json");
+if (IModelJsFs.existsSync(loggingConfigFile)) {
+  // tslint:disable-next-line:no-var-requires
+  Logger.configureLevels(require(loggingConfigFile));
+}
+
+let nativePlatformForTestsDir = __dirname;
+while (!IModelJsFs.existsSync(path.join(nativePlatformForTestsDir, "nativePlatformForTests")))
+  nativePlatformForTestsDir = path.join(nativePlatformForTestsDir, "..");
+const nativePlatformDir = path.join(path.join(nativePlatformForTestsDir, "nativePlatformForTests"), "node_modules");
 NativePlatformRegistry.loadAndRegisterStandardNativePlatform(nativePlatformDir);
 
 // Initialize the gateway classes used by tests
@@ -259,7 +265,7 @@ export class IModelTestUtils {
     assert.exists(iModel);
     return iModel!;
   }
- 
+
   public static closeIModel(iModel: IModelDb) {
     iModel.closeStandalone();
   }

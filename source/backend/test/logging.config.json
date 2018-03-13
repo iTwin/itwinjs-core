@@ -1,0 +1,9 @@
+{
+    "defaultLevel": "None",
+    "categoryLevels": [
+        {
+            "category": "BeSQLite",
+            "logLevel": "None"
+        }
+    ]
+}
