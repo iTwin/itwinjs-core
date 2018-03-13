@@ -7,12 +7,13 @@ import {
   CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
   IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps, IModelGateway, FontMap,
 } from "@bentley/imodeljs-common";
-import {
-  ViewState, SpatialViewState, OrthographicViewState, ViewState2d, DrawingViewState, SheetViewState,
-  CategorySelectorState, DisplayStyle3dState, DisplayStyle2dState, ModelSelectorState,
-  ModelState, SpatialModelState, SectionDrawingModelState, DrawingModelState, SheetModelState, IModelApp,
-  HilitedSet, SelectionSet,
-} from "./frontend";
+import { HilitedSet, SelectionSet } from "./SelectionSet";
+import { ViewState, SpatialViewState, OrthographicViewState, ViewState2d, DrawingViewState, SheetViewState } from "./ViewState";
+import { CategorySelectorState } from "./CategorySelectorState";
+import { DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
+import { ModelSelectorState } from "./ModelSelectorState";
+import { ModelState, SpatialModelState, SectionDrawingModelState, DrawingModelState, SheetModelState } from "./ModelState";
+import { IModelApp } from "./IModelApp";
 
 const loggingCategory = "imodeljs-backend.IModelConnection";
 

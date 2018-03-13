@@ -1,12 +1,8 @@
-*.ts
-!*.d.ts
-*.map
-.npmignore
-tsconfig.json
-tslint.json
+# start off ignoring everything, and then add back only the files we want
+*
+!lib/**/*.d.ts
+!lib/**/*.js
 test
-scripts
-lib/backend/test
-*.log
-package-deps.json
-.vscode
+!public/**
+!assets/**
+!package.json
