@@ -257,20 +257,22 @@ export class NavigationProperty extends Property {
 
 export type Constructor<T> = new(...args: any[]) => T;
 
-export abstract class ArrayProperty {
+export abstract class ArrayProperty extends Property {
   protected _minOccurs: number;
   protected _maxOccurs?: number;
 
   get minOccurs() { return this._minOccurs; }
-
   get maxOccurs() { return this._maxOccurs; }
 }
 
 // tslint:disable-next-line:variable-name
 const ArrayPropertyMixin = <T extends Constructor<Property>>(Base: T) => {
   return class extends Base {
-    public minOccurs: number = 0;
-    public maxOccurs?: number;
+    protected _minOccurs: number = 0;
+    protected _maxOccurs?: number;
+
+    get minOccurs() { return this._minOccurs; }
+    get maxOccurs() { return this._maxOccurs; }
 
     constructor( ...args: any[]) {
       super(...args);
@@ -283,16 +285,16 @@ const ArrayPropertyMixin = <T extends Constructor<Property>>(Base: T) => {
       if (undefined !== jsonObj.minOccurs) {
         if (typeof(jsonObj.minOccurs) !== "number")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'minOccurs' attribute. It should be of type 'number'.`);
-        this.minOccurs = jsonObj.minOccurs;
+        this._minOccurs = jsonObj.minOccurs;
       }
 
       if (undefined !== jsonObj.maxOccurs) {
         if (typeof(jsonObj.maxOccurs) !== "number")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'maxOccurs' attribute. It should be of type 'number'.`);
-        this.maxOccurs = jsonObj.maxOccurs;
+        this._maxOccurs = jsonObj.maxOccurs;
       }
     }
-  } as typeof Base & Constructor<ArrayProperty>;
+  } as Constructor<Property> as typeof Base & Constructor<ArrayProperty>;
 };
 
 export class PrimitiveArrayProperty extends ArrayPropertyMixin(PrimitiveProperty) {
