@@ -71,7 +71,7 @@ export default class EntityClass extends ECClass {
 
     let resolvedRelationship: RelationshipClass | undefined;
     if (typeof(relationship) === "string")
-      resolvedRelationship = await this.schema.getChild<RelationshipClass>(relationship, false);
+      resolvedRelationship = await this.schema.getChild<RelationshipClass>(relationship, true);
     else
       resolvedRelationship = relationship;
 
@@ -102,7 +102,7 @@ export default class EntityClass extends ECClass {
         if (typeof(name) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
 
-        const tempMixin = await this.schema.getChild<Mixin>(name, false);
+        const tempMixin = await this.schema.getChild<Mixin>(name, true);
         if (!tempMixin)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
 

@@ -158,7 +158,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
   protected async loadStructType(structType: string | StructClass | undefined, schema: Schema): Promise<StructClass> {
     let correctType: StructClass | undefined;
     if (typeof(structType) === "string")
-      correctType = await schema.getChild<StructClass>(structType, false);
+      correctType = await schema.getChild<StructClass>(structType, true);
     else
       correctType = structType as StructClass | undefined;
 
@@ -173,7 +173,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
       return PrimitiveType.Integer;
 
     if (typeof(primitiveType) === "string") {
-      const resolvedType = tryParsePrimitiveType(primitiveType) || await schema.getChild<Enumeration>(primitiveType, false);
+      const resolvedType = tryParsePrimitiveType(primitiveType) || await schema.getChild<Enumeration>(primitiveType, true);
       if (resolvedType === undefined)
         throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
 

@@ -30,7 +30,7 @@ export default class Mixin extends ECClass {
     if (typeof(jsonObj.appliesTo) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Mixin ${this.name} has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
 
-    const tmpClass = await this.schema.getChild<EntityClass>(jsonObj.appliesTo, false);
+    const tmpClass = await this.schema.getChild<EntityClass>(jsonObj.appliesTo, true);
     if (!tmpClass)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
