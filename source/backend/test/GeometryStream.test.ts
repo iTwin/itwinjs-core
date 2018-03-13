@@ -7,18 +7,15 @@ import {
   PolyfaceBuilder, Arc3d, Cone, AngleSweep,
 } from "@bentley/geometry-core";
 import { Sample } from "@bentley/geometry-core/lib/serialization/GeometrySamples";
-import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
 import { Id64, Guid } from "@bentley/bentleyjs-core";
 import { IModelDb } from "../IModelDb";
 import {
-  OpCodeReader, OpCodeWriter, OpCodeIterator, GeometryStreamBuilder, GeometryStream, OpCode, GeometricPrimitive, GeometryType,
+  OpCodeReader, OpCodeWriter, OpCodeIterator, GeometryStreamBuilder, GeometricPrimitive, GeometryType,
   Code, Placement3d, ElementAlignedBox3d, GeometricElement3dProps, GeometryParams,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Element } from "../Element";
 
-import * as path from "path";
-import { KnownTestLocations } from "./KnownTestLocations";
 import { PointString3d } from "@bentley/geometry-core/lib/curve/PointString3d";
 
 describe("GeometricPrimitive", () => {
@@ -360,6 +357,7 @@ describe("GeometryBuilder", () => {
 
   // spell-checker: disable
 
+  /* WIP: waiting for geometry stream refactor
   it("geometry stream built in JS should be deserialized properly in C++", () => {
     const builder = GeometryStreamBuilder.fromCategoryIdAndOrigin3d(seedElement.category, Point3d.create(0, 0, 0));
     assert.isDefined(builder, "Builder is successfully created");
@@ -386,7 +384,9 @@ describe("GeometryBuilder", () => {
     const jsonCompare = new DeepCompare();
     assert.isTrue(jsonCompare.compare({ returnValue: true }, cppResult));
   });
+  */
 
+  /* WIP: waiting for geometry stream refactor
   it("geometry stream built in C++ should be deserialized properly in TS", () => {
     const pts = surface.copyPoints();
     const json: any = {
@@ -443,4 +443,5 @@ describe("GeometryBuilder", () => {
       collection.nextOp();
     }
   });
+  */
 });
