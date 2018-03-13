@@ -101,7 +101,6 @@ class Derived extends Base {
 }
 
 describe("Static Properties", () => {
-
   it("should be inherited, and the subclass should get its own copy", async () => {
     assert.equal(Base.staticProperty, "base");
     assert.equal(Derived.staticProperty, "base"); // Derived inherits Base's staticProperty (via its prototype)

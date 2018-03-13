@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Guid, Id64, Id64Set, LRUMap, OpenMode, DbResult, DbOpcode, Logger, RepositoryStatus, BeEvent, assert } from "@bentley/bentleyjs-core";
 import { RequestQueryOptions, AccessToken, DeploymentEnv, MultiCode, IModelHubClient, CodeState } from "@bentley/imodeljs-clients";
-import { NativeBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-native-platform-api/imodeljs-native-platform-api";
+import { NativeBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-native-platform-api";
 import {
   Code, CodeSpec, ElementProps, ElementAspectProps, ElementLoadParams, IModel, IModelProps, IModelVersion, ModelProps, IModelToken,
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
@@ -41,7 +41,8 @@ export class IModelDb extends IModel {
   private _concurrency?: ConcurrencyControl;
   private _txnManager?: TxnManager;
   protected _fontMap?: FontMap;
-  public getFontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.briefcase!.nativeDb.readFontMap()) as FontMapProps)); }
+  public readFontJson(): string { return this.briefcase!.nativeDb.readFontMap(); }
+  public getFontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
 
   /** Event raised when a connected IModelDb is created or opened. This event is not raised for standalone IModelDbs. */
   /** Event raised just before a connected IModelDb is opened. This event is raised only for iModel access initiated by this service only. This event is not raised for standalone IModelDbs. */

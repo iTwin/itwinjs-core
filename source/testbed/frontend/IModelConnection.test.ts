@@ -12,17 +12,20 @@ import {
 } from "@bentley/imodeljs-frontend";
 
 describe("IModelConnection", () => {
+  let iModel: IModelConnection;
+
   before(async () => {
     IModelApp.startup();
     await TestData.load();
+    iModel = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
   });
 
-  after(() => {
+  after(async () => {
+    await iModel.close(TestData.accessToken);
     IModelApp.shutdown();
   });
 
   it("should be able to get elements and models from an IModelConnection", async () => {
-    const iModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
     assert.exists(iModel);
     assert.isTrue(iModel instanceof IModelConnection);
     assert.exists(iModel.models);
@@ -83,13 +86,10 @@ describe("IModelConnection", () => {
     assert.instanceOf(viewState.displayStyle, DisplayStyle2dState);
     assert.exists(iModel.projectExtents);
 
-    await iModel.close(TestData.accessToken);
   });
 
   it("Parameterized ECSQL", async () => {
-    const iModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
     assert.exists(iModel);
-
     let rows = await iModel.executeQuery("SELECT ECInstanceId,Model,LastMod,CodeValue,FederationGuid,Origin FROM bis.GeometricElement3d LIMIT 1");
     assert.equal(rows.length, 1);
     let expectedRow = rows[0];
