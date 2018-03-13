@@ -1,9 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
-import { IDisposable, DisposableList } from "@bentley/bentleyjs-core/lib/Disposable";
+import { assert, BeEvent, IDisposable, DisposableList } from "@bentley/bentleyjs-core";
 import { Connection, ConnectionManager, ConnectionEventArgs } from "./Connections";
 
 export class SelectedItem {

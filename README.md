@@ -28,9 +28,8 @@ must do before ECPresentation library can be used.
 
 1. Register ECPresentation gateway in the frontend:
 ```typescript
-import { IModelGateway } from "@bentley/imodeljs-frontend/lib/gateway/IModelGateway";
+import { IModelGateway, BentleyCloudGatewayConfiguration } from "@bentley/imodeljs-frontend";
 import ECPresentationGateway from "@bentley/ecpresentation-frontend/lib/gateway/ECPresentationGateway";
-import { BentleyCloudGatewayConfiguration } from "@bentley/imodeljs-frontend/lib/gateway/BentleyCloudGatewayConfiguration";
 BentleyCloudGatewayConfiguration.initialize(
   {info: {title: "my-app", version: "v1.0"}},
   [IModelGateway, ECPresentationGateway]
@@ -39,9 +38,8 @@ BentleyCloudGatewayConfiguration.initialize(
 
 2. Register ECPresentation gateway in the backend:
 ```typescript
-import { IModelGateway } from "@bentley/imodeljs-backend/lib/gateway/IModelGateway";
+import { IModelGateway, BentleyCloudGatewayConfiguration } from "@bentley/imodeljs-backend";
 import ECPresentationGateway from "@bentley/ecpresentation-backend/lib/gateway/ECPresentationGateway";
-import { BentleyCloudGatewayConfiguration } from "@bentley/imodeljs-backend/lib/gateway/BentleyCloudGatewayConfiguration";
 BentleyCloudGatewayConfiguration.initialize(
   {info: {title: "my-app", version: "v1.0"}},
   [IModelGateway, ECPresentationGateway]

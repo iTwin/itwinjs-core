@@ -1,8 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
+import { assert, BeEvent } from "@bentley/bentleyjs-core";
 
 /** Data structure that stores information about a connection. */
 export interface Connection {

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { assert, Logger } from "@bentley/bentleyjs-core";
 import * as responseTypes from "./AddonResponses";
 import * as ec from "@bentley/ecpresentation-common/lib/EC";
 import { NavNode, NavNodeKey, ECInstanceNodeKey, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common/lib/Hierarchy";
@@ -10,11 +10,8 @@ import { createDescriptorOverrides } from "@bentley/ecpresentation-common/lib/co
 import { StructFieldMemberDescription, isStructDescription } from "@bentley/ecpresentation-common/lib/content/TypeDescription";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresentation-common/lib/Changes";
 import { PageOptions, ECPresentationManager as ECPInterface } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
-import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
-import { AddonRegistry } from "@bentley/imodeljs-backend/lib/AddonRegistry";
-import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
-import { IModelError, IModelStatus } from "@bentley/imodeljs-common/lib/IModelError";
-import { IModelDb } from "@bentley/imodeljs-backend/lib/IModelDb";
+import { IModelDb, NativePlatformRegistry } from "@bentley/imodeljs-backend";
+import { IModelToken, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import ECPresentationGateway from "./ECPresentationGateway";
 
 // make sure the gateway gets registered (hopefully this is temporary)
@@ -34,11 +31,11 @@ export default class ECPresentationManager implements ECPInterface {
     if (props && props.addon)
       this._addon = props.addon;
     if (props && props.rulesetDirectories)
-      this.getAddon().setupRulesetDirectories(props.rulesetDirectories);
+      this.getNativePlatform().setupRulesetDirectories(props.rulesetDirectories);
   }
 
   /** @hidden */
-  public getAddon(): NodeAddonDefinition {
+  public getNativePlatform(): NodeAddonDefinition {
     if (!this._addon) {
       const addonImpl = createAddonImpl();
       this._addon = new addonImpl();
@@ -125,8 +122,8 @@ export default class ECPresentationManager implements ECPInterface {
   }
 
   private request(token: IModelToken, params: string, responseHandler?: (response: any) => any) {
-    const imodelAddon = this.getAddon().getImodelAddon(token);
-    const serializedResponse = this.getAddon().handleRequest(imodelAddon, params);
+    const imodelAddon = this.getNativePlatform().getImodelAddon(token);
+    const serializedResponse = this.getNativePlatform().handleRequest(imodelAddon, params);
     if (!serializedResponse)
       throw new Error("Received invalid response from the addon: " + serializedResponse);
     const response = JSON.parse(serializedResponse);
@@ -152,7 +149,7 @@ export interface NodeAddonDefinition {
 }
 
 const createAddonImpl = () => {
-  const nativeAddon = (AddonRegistry.getAddon()).AddonECPresentationManager;
+  const nativeAddon = (NativePlatformRegistry.getNativePlatform()).NativeECPresentationManager;
   // note the implementation is constructed here to make ECPresentationManager
   // usable without loading the actual addon (if addon is set to something other)
   return class extends nativeAddon implements NodeAddonDefinition {

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecpresentation-common",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Common pieces for ecpresentation packages.",
   "keywords": [
     "Bentley",
@@ -22,12 +22,12 @@
   "dependencies": {},
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^7.0.0",
-    "@bentley/imodeljs-common": "^0.57.0"
+    "@bentley/imodeljs-common": "~0.57.0"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "^7.0.0",
     "@bentley/bentleyjs-tools": "^2.2.0",
-    "@bentley/imodeljs-common": "^0.57.0",
+    "@bentley/imodeljs-common": "~0.57.0",
     "rimraf": "^2.6.2",
     "typescript": "^2.6.2",
     "tslint": "^5.8.0"
