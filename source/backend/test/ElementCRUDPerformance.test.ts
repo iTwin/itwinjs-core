@@ -18,7 +18,7 @@ import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelJsFs } from "../IModelJsFs";
 import * as fs from "fs";
 
-describe.only("PerformanceElementsTests", () => {
+describe.skip("PerformanceElementsTests", () => {
   let seedIModel: IModelDb;
   let newModelId: Id64;
   let spatialCategoryId1: Id64;
