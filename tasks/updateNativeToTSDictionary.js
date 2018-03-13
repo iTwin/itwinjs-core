@@ -3,7 +3,7 @@ var fs = require('fs');
 const file = './source/frontend/render/C++VsTypeScript.md';
 const getData = function(line) { return line.includes("|") ? { key: line.split("|")[1].trim(), value: line.split("|")[2].trim() } : undefined };
 const mkText  = function(lineData) { return `| ${lineData.key.padEnd(30) }| ${lineData.value.padEnd(100)}|` };
-const mkDivider = "|".padEnd(134,"-") + "|";
+const mkDivider = "|".padEnd(32,"-") + "|" + "".padEnd(101,"-") + "|";
 
 // convert text file into array of data
 var array = fs.readFileSync(file)
@@ -14,7 +14,7 @@ var array = fs.readFileSync(file)
               .filter(Boolean);
 
 // define header text lines
-var header = [ mkDivider, mkText({ key: "C++", value: "Typescript" }), mkDivider ];
+var header = [ mkText({ key: "C++", value: "Typescript" }), mkDivider ];
 
 // add entry from command line if applicable
 // expected format:
@@ -26,7 +26,7 @@ if( args.length === 4 ) { const data = { key: args[2], value: args[3] }; array.p
 array.sort((a, b) => a.key.localeCompare(b.key));
 
 // convert data array back into a text
-const text = [ ...header.concat(array.map((v) => v.text)), mkDivider ].join("\n");
+const text = header.concat(array.map((v) => v.text)).join("\n");
 
 // write text to file
 fs.writeFileSync(file, text, 'utf8');
