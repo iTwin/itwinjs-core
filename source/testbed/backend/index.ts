@@ -7,6 +7,7 @@ import { IModelHost, NativePlatformRegistry } from "@bentley/imodeljs-backend";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
 import { TestGatewayImpl } from "./TestGatewayImpl";
 import * as path from "path";
+import { IModelJsFs } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 
 let pendingsSent = 0;
 let pendingResponseQuota = 0;
@@ -22,7 +23,10 @@ ipcMain.on("testbed", (event: any, arg: any) => {
   }
 });
 
-const nativePlatformDir = path.join(__dirname, "../../../../nativePlatformForTests/node_modules");
+let nativePlatformForTestsDir = __dirname;
+while (!IModelJsFs.existsSync(path.join(nativePlatformForTestsDir, "nativePlatformForTests")))
+  nativePlatformForTestsDir = path.join(nativePlatformForTestsDir, "..");
+const nativePlatformDir = path.join(path.join(nativePlatformForTestsDir, "nativePlatformForTests"), "node_modules");
 NativePlatformRegistry.loadAndRegisterStandardNativePlatform(nativePlatformDir);
 
 // Start the backend

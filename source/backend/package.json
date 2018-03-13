@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.65.1",
+  "version": "0.67.0",
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
@@ -32,15 +32,14 @@
     "@bentley/bentleyjs-core": "^7.3.2",
     "@bentley/geometry-core": "^5.0.6",
     "@bentley/imodeljs-clients": "^4.0.0",
-    "@bentley/imodeljs-common": "^0.63.0",
+    "@bentley/imodeljs-common": "^0.64.0",
     "flatbuffers": "^1.8.0"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "^7.3.2",
     "@bentley/geometry-core": "^5.0.6",
     "@bentley/imodeljs-clients": "^4.0.0",
-    "@bentley/imodeljs-common": "^0.63.0",
-    "@bentley/imodeljs-native-platform-api": "~12.0.0",
+    "@bentley/imodeljs-common": "^0.64.0",
     "cpx": "^1.5.0",
     "mocha": "^3.5.3",
     "nyc": "^11.4.1",
@@ -58,10 +57,14 @@
     "or the other of these addons. And, most apps will be installed by npm. So, by putting these dependencies here, we can ",
     "relieve most apps of the burden of even thinking about 'the addon'. In fact, the addon is not really separate from",
     "imodeljs-backend but is just part of its internal implementation. We want apps to think about backend, not the addon.",
+    "NOTE: While, imodeljs-native-platform-api seems like it should be a devDependency, it is actually required at run time.",
+    "The NativePlatformRegistry reads it in order to learn what API was used to compile backend. (Also, if we don't make it a real dependency here, then ",
+    "apps would have to depend on it, as imodeljs-native-platform-node has a peerDependency on it.",
     "NOTE: These dependencies do not suffice to supply the imodeljs-backend or testbed unit tests with the addons that they need.",
     "*** Keep this in synch with nativePlatformForTests ***"
   ],
   "dependencies": {
+    "@bentley/imodeljs-native-platform-api": "~12.0.0",
     "@bentley/imodeljs-native-platform-node": "~12.0.0",
     "@bentley/imodeljs-native-platform-electron": "~12.0.0",
     "fs-extra": "^5.0.0",

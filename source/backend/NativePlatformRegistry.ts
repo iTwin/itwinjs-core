@@ -21,6 +21,11 @@ export class NativePlatformRegistry {
     return NativePlatformRegistry._platform;
   }
 
+  /** @hiddend */
+  public static isNativePlatformLoaded(): boolean {
+    return NativePlatformRegistry._platform !== undefined;
+  }
+
   /** Call this function to register the platform */
   public static register(platform: any): void {
     NativePlatformRegistry._platform = platform;
