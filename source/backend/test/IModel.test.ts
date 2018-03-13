@@ -398,7 +398,7 @@ describe("iModel", () => {
     assert.notEqual(rows[0].id, "");
   });
 
-  it.only("should insert and update auto-handled properties", () => {
+  it("should insert and update auto-handled properties", () => {
     const testElem = imodel4.elements.getElement(new Id64("0x14"));
     assert.isDefined(testElem);
     assert.equal(testElem.classFullName, "DgnPlatformTest:TestElementWithNoHandler");
