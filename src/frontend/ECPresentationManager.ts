@@ -8,7 +8,7 @@ import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresen
 import { InstanceKeysList } from "@bentley/ecpresentation-common/lib/EC";
 import { PageOptions, ECPresentationManager as ECPInterface } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
 import ECPresentationGateway from "./ECPresentationGateway";
-import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
+import { IModelToken } from "@bentley/imodeljs-common";
 
 class ECPresentationManager implements ECPInterface {
   public async getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<Array<Readonly<NavNode>>> {

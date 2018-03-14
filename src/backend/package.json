@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecpresentation-backend",
-  "version": "0.0.28",
+  "version": "0.0.29",
   "description": "Backend of ECPresentation library",
   "keywords": [
     "Bentley",
@@ -21,19 +21,24 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@bentley/ecpresentation-common": "^0.0.1"
+    "@bentley/ecpresentation-common": "~0.0.1"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^7.0.0",
-    "@bentley/imodeljs-backend": "^0.57.0",
-    "@bentley/imodeljs-nodeaddonapi": "^10.0.0"
+    "@bentley/bentleyjs-core": "^7.3.2",
+    "@bentley/geometry-core": "^5.0.6",
+    "@bentley/imodeljs-backend": "~0.67.0",
+    "@bentley/imodeljs-clients": "^4.0.0",
+    "@bentley/imodeljs-common": "~0.64.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "^7.0.0",
-    "@bentley/bentleyjs-tools": "^2.2.0",
-    "@bentley/imodeljs-backend": "^0.57.0",
-    "@bentley/imodeljs-nodeaddonapi": "^10.0.0",
-    "node-replace": "^0.3.3",
+    "@bentley/bentleyjs-core": "^7.3.2",
+    "@bentley/bentleyjs-tools": "^2.2.0",    
+    "@bentley/geometry-core": "^5.0.6",
+    "@bentley/imodeljs-backend": "~0.67.0",
+    "@bentley/imodeljs-clients": "^4.0.0",
+    "@bentley/imodeljs-common": "~0.64.0",
+    "@bentley/imodeljs-native-platform-api": "^12.0.0",
+    "node-replace": "~0.3.3",
     "rimraf": "^2.6.2",
     "typescript": "^2.6.2",
     "tslint": "^5.8.0"

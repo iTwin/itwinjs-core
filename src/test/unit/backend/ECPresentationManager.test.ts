@@ -5,8 +5,8 @@ import { assert } from "chai";
 import * as moq from "typemoq";
 import ECPresentationManager, { NodeAddonDefinition, NodeAddonRequestTypes } from "@bentley/ecpresentation-backend/lib/ECPresentationManager";
 import * as addonTypes from "@bentley/ecpresentation-backend/lib/AddonResponses";
-import { AddonRegistry } from "@bentley/imodeljs-backend/lib/AddonRegistry";
-import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
+import { NativePlatformRegistry, IModelHost } from "@bentley/imodeljs-backend";
+import { IModelToken } from "@bentley/imodeljs-common";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { PageOptions } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
 import { NavNode, /*, NavNodeKeyPath, NavNodePathElement*/ NavNodeKey } from "@bentley/ecpresentation-common/lib/Hierarchy";
@@ -18,16 +18,16 @@ import { NavNode, /*, NavNodeKeyPath, NavNodePathElement*/ NavNodeKey } from "@b
 
 describe("ECPresentationManager", () => {
 
-  it("uses default addon implementation if not overridden", () => {
-    AddonRegistry.loadAndRegisterStandardAddon();
+  it("uses default native library implementation if not overridden", () => {
+    IModelHost.startup();
     const manager = new ECPresentationManager();
-    assert.instanceOf(manager.getAddon(), AddonRegistry.getAddon().AddonECPresentationManager);
+    assert.instanceOf(manager.getNativePlatform(), NativePlatformRegistry.getNativePlatform().NativeECPresentationManager);
   });
 
   it("uses addon implementation supplied through props", () => {
     const mock = moq.Mock.ofType<NodeAddonDefinition>();
     const manager = new ECPresentationManager({ addon: mock.object });
-    assert.equal(manager.getAddon(), mock.object);
+    assert.equal(manager.getNativePlatform(), mock.object);
   });
 
   describe("addon setup based on constructor props", () => {

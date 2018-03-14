@@ -13,8 +13,7 @@ import BackendGatewayConfiguration from "../helpers/TestGatewayConfiguration";
 import ECPresentationManagerBackend, { NodeAddonDefinition } from "@bentley/ecpresentation-backend/lib/ECPresentationManager";
 import ECPresentationGatewayBackend from "@bentley/ecpresentation-backend/lib/ECPresentationGateway";
 import ECPresentationGatewayDefinition from "@bentley/ecpresentation-common/lib/ECPresentationGatewayDefinition";
-import { Gateway } from "@bentley/imodeljs-common/lib/Gateway";
-import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
+import { Gateway, IModelToken } from "@bentley/imodeljs-common";
 
 describe.skip("ECPresentationManager", () => {
 

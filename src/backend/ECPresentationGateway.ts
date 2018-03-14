@@ -1,8 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Gateway } from "@bentley/imodeljs-common/lib/Gateway";
-import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
+import { IModelToken, Gateway } from "@bentley/imodeljs-common";
 import ECPresentationGatewayDefinition from "@bentley/ecpresentation-common/lib/ECPresentationGatewayDefinition";
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common/lib/Hierarchy";
 import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common/lib/content";
