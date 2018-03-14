@@ -259,9 +259,13 @@ export default class SchemaReadHelper {
     let baseClass: undefined | SchemaChild;
     if (undefined !== classJson.baseClass) {
       if (typeof(classJson.baseClass) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${classObj.name} has an invalid 'baseClass' attribute. It should be of type 'string'.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${classObj.name} has an invalid 'baseClass' attribute. It should be of type 'string'.`);
       baseClass = await this.findSchemaChild(classJson.baseClass, true);
     }
+
+    // Now deserialize the class itself, *before* any properties
+    // (We need to do this to break Entity -navProp-> Relationship -constraint-> Entity cycle.)
+    await classObj.fromJson(classJson);
 
     if (undefined !== classJson.properties) {
       if (!Array.isArray(classJson.properties))
@@ -275,7 +279,6 @@ export default class SchemaReadHelper {
       }
     }
 
-    await classObj.fromJson(classJson);
     if (baseClass && this._visitor)
       await baseClass.accept(this._visitor);
   }
@@ -311,6 +314,8 @@ export default class SchemaReadHelper {
   }
 
   private async loadRelationshipClass(rel: RelationshipClass, relJson: any): Promise<void> {
+    await this.loadClass(rel, relJson);
+
     if (undefined === relJson.source)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${rel.name} is missing the required source constraint.`);
 
@@ -326,8 +331,6 @@ export default class SchemaReadHelper {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${rel.name} has an invalid target constraint. It should be of type 'object'.`);
 
     await this.loadRelationshipConstraint(rel.target, relJson.target);
-
-    await this.loadClass(rel, relJson);
   }
 
   private async loadRelationshipConstraint(relConstraint: RelationshipConstraint, relConstraintJson: any): Promise<void> {
