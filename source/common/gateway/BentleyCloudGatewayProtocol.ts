@@ -71,7 +71,7 @@ export abstract class BentleyCloudGatewayProtocol extends GatewayHttpProtocol {
     const token = request ? request.findParameterOfType(IModelToken) : undefined;
     const contextId = (token && token.contextId) ? encodeURIComponent(token.contextId) : "{contextId}";
     const iModelId = (token && token.iModelId) ? encodeURIComponent(token.iModelId) : "{iModelId}";
-    const changeSetId = (token && token.changeSetId) ? encodeURIComponent(token.changeSetId) : "{changeSetId}";
+    const changeSetId = (token && token.changeSetId) ? encodeURIComponent(token.changeSetId) : "0"; // if changeSetId not provided, use 0 to indicate initial iModel state (before any changeSets)
 
     // WIP: if appMode === 2 (WorkGroupEdit) then changeset should not be included
     return `${prefix}/${appInfo.title}/${appInfo.version}/mode/${appMode}/context/${contextId}/imodel/${iModelId}/changeset/${changeSetId}/${operation.gateway}-${operation.version}-${operation.operation}`;

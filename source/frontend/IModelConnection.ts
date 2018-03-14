@@ -5,7 +5,7 @@ import { Id64, Id64Arg, Id64Props, Id64Set, Logger, OpenMode, BentleyStatus } fr
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
-  IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps, IModelGateway,
+  IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps, IModelGateway, FontMap,
 } from "@bentley/imodeljs-common";
 import { HilitedSet, SelectionSet } from "./SelectionSet";
 import { ViewState, SpatialViewState, OrthographicViewState, ViewState2d, DrawingViewState, SheetViewState } from "./ViewState";
@@ -26,6 +26,17 @@ export class IModelConnection extends IModel {
   public readonly views: IModelConnectionViews;
   public readonly hilited: HilitedSet;
   public readonly selectionSet: SelectionSet;
+
+  /** The font map for this IModelConnection. Only valid after calling #loadFontMap and waiting for the returned promise to be fulfilled. */
+  public fontMap?: FontMap;
+
+  /**
+   * Load the FontMap for this IModelConnection.
+   * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this object is valid.
+   */
+  public async loadFontMap(): Promise<FontMap> {
+    return this.fontMap || (this.fontMap = new FontMap(JSON.parse(await IModelGateway.getProxy().readFontJson(this.iModelToken))));
+  }
 
   private constructor(iModel: IModel) {
     super(iModel.iModelToken);

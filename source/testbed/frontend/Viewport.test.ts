@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Point3d, Angle } from "@bentley/geometry-core";
-import { Cartographic } from "@bentley/imodeljs-common";
+import { Cartographic, FontType, FontMap } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, ViewRect, IModelApp, PanTool, CompassMode } from "@bentley/imodeljs-frontend";
 
@@ -96,6 +96,26 @@ describe("Viewport", () => {
     accudraw.setCompassMode(CompassMode.Polar);
     assert.equal(accudraw.getCompassMode(), CompassMode.Polar, "polar mode");
   });
+
+  it("loadFontMap", async () => {
+    const fonts1 = await imodel.loadFontMap();
+    assert.equal(fonts1.fonts.size, 4, "font map size should be 4");
+    assert.equal(FontType.TrueType, fonts1.getFont(1)!.type, "get font 1 type is TrueType");
+    assert.equal("Arial", fonts1.getFont(1)!.name, "get Font 1 name");
+    assert.equal(1, fonts1.getFont("Arial")!.id, "get Font 1, by name");
+    assert.equal(FontType.Rsc, fonts1.getFont(2)!.type, "get font 2 type is Rsc");
+    assert.equal("Font0", fonts1.getFont(2)!.name, "get Font 2 name");
+    assert.equal(2, fonts1.getFont("Font0")!.id, "get Font 2, by name");
+    assert.equal(FontType.Shx, fonts1.getFont(3)!.type, "get font 1 type is Shx");
+    assert.equal("ShxFont0", fonts1.getFont(3)!.name, "get Font 3 name");
+    assert.equal(3, fonts1.getFont("ShxFont0")!.id, "get Font 3, by name");
+    assert.equal(FontType.TrueType, fonts1.getFont(4)!.type, "get font 4 type is TrueType");
+    assert.equal("Calibri", fonts1.getFont(4)!.name, "get Font 4 name");
+    assert.equal(4, fonts1.getFont("Calibri")!.id, "get Font 3, by name");
+    assert.isUndefined(fonts1.getFont("notfound"), "attempt lookup of a font that should not be found");
+    assert.deepEqual(new FontMap(fonts1.toJSON()), fonts1, "toJSON on FontMap");
+  });
+
 });
 
 describe("Cartographic tests", () => {

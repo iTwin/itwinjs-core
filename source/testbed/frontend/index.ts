@@ -41,38 +41,37 @@ describe("Testbed", function () {
   it("TestData should load", async () => {
     await TestData.load();
   });
+
+  it("frontend.js should be compatible with webpack", (done) => {
+    const frontendIndex = path.join(__dirname, "../../../frontend/lib/frontend.js");
+
+    const compiler = webpack({
+      entry: frontendIndex, node: {
+        fs: "empty",
+      },
+    });
+    compiler.plugin("should-emit", () => false);
+    compiler.run((err: Error, stats: webpack.Stats) => {
+      if (err)
+        console.error(err.stack || err);
+
+      if (stats.hasErrors() || stats.hasWarnings()) {
+        const info = stats.toJson();
+        console.error(...info.errors);
+        console.warn(...info.warnings);
+      }
+
+      assert.isNull(err);
+      assert.isFalse(stats.hasErrors());
+      assert.isFalse(stats.hasWarnings());
+      done();
+    });
+  });
 });
 
 for (const entry of IModelJsFs.readdirSync(__dirname)) {
   if (entry.indexOf(".test.js") !== -1 && entry.indexOf(".test.js.map") === -1) {
     const entryPath = `${__dirname}/${entry}`;
-
-    describe(entry, function () {
-      it("should be compatible with webpack", (done) => {
-        const compiler = webpack({
-          entry: entryPath, node: {
-            fs: "empty",
-          },
-        });
-        compiler.plugin("should-emit", () => false);
-        compiler.run((err: Error, stats: webpack.Stats) => {
-          if (err)
-            console.error(err.stack || err);
-
-          if (stats.hasErrors() || stats.hasWarnings()) {
-            const info = stats.toJson();
-            console.error(...info.errors);
-            console.warn(...info.warnings);
-          }
-
-          assert.isNull(err);
-          assert.isFalse(stats.hasErrors());
-          assert.isFalse(stats.hasWarnings());
-          done();
-        });
-      });
-    });
-
     require(entryPath);
   }
 }

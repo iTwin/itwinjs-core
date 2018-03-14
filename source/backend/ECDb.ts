@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
-import { NativeECDb } from "@bentley/imodeljs-native-platform-api/imodeljs-native-platform-api";
+import { NativeECDb } from "@bentley/imodeljs-native-platform-api";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { DbResult, OpenMode, IDisposable, Logger, assert } from "@bentley/bentleyjs-core";
