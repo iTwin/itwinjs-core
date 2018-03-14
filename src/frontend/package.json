@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecpresentation-frontend",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "description": "Frontend of ECPresentation library",
   "keywords": [
     "Bentley",
@@ -21,7 +21,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@bentley/ecpresentation-common": "~0.0.1"
+    "@bentley/ecpresentation-common": "~0.0.3"
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^7.3.2",

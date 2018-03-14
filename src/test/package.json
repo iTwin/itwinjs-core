@@ -21,7 +21,7 @@
   "dependencies": {},
   "devDependencies": {
     "@bentley/bentleyjs-tools": "^2.2.0",
-    "@bentley/ecpresentation-common": "~0.0.1",
+    "@bentley/ecpresentation-common": "~0.0.3",
     "@bentley/ecpresentation-backend": "~0.0.28",
     "@bentley/ecpresentation-frontend": "~0.0.17",
     "@bentley/bentleyjs-core": "^7.3.2",
