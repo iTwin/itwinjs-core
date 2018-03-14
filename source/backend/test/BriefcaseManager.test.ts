@@ -3,19 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { expect, assert } from "chai";
-import { OpenMode, DbOpcode, BeEvent } from "@bentley/bentleyjs-core";
+import { Id64, OpenMode, DbOpcode, BeEvent } from "@bentley/bentleyjs-core";
 import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState } from "@bentley/imodeljs-clients";
 import { Code, IModelVersion, Appearance, ColorDef, IModel } from "@bentley/imodeljs-common";
-import { KeepBriefcase } from "../BriefcaseManager";
-import { IModelDb, ConcurrencyControl } from "../IModelDb";
+import { KeepBriefcase, IModelDb, ConcurrencyControl, Element, DictionaryModel, SpatialCategory, IModelHost, AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../backend";
 import { IModelTestUtils, TestUsers } from "./IModelTestUtils";
-import { Id64 } from "@bentley/bentleyjs-core";
-import { Element } from "../Element";
-import { DictionaryModel } from "../Model";
-import { SpatialCategory } from "../Category";
 import { IModelJsFs } from "../IModelJsFs";
-import { IModelHost } from "../IModelHost";
-import { AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../AutoPush";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
@@ -212,7 +205,7 @@ describe("BriefcaseManager", () => {
     if (true) {
       const el1before = (secondIModel.elements.getElement(el1)).copyForEdit<Element>();
       assert.equal(el1before.userLabel, wasExpectedValueofEl1UserLabel);
-      el1before.setUserProperties(secondUserPropNs, {property: expectedValueOfSecondUserProp}); // secondUser changes userProperties
+      el1before.setUserProperties(secondUserPropNs, { property: expectedValueOfSecondUserProp }); // secondUser changes userProperties
       secondIModel.elements.updateElement(el1before);
       secondIModel.saveChanges("secondUser modified el1.userProperties");
       assert.equal(el1before.userLabel, wasExpectedValueofEl1UserLabel, "secondUser does not change userLabel");

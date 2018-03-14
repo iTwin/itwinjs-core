@@ -33,7 +33,8 @@
     "testbed": "cd source/testbed && node bin/testbed.js --debug",
     "cover:backend": "cd source/backend && npm run cover",
     "module:backend": "cd source/backend && node ../../node_modules/@bentley/bentleyjs-tools/scripts/mastermodule --includes=../common --recursively=true",
-    "module:frontend": "cd source/frontend && node ../../node_modules/@bentley/bentleyjs-tools/scripts/mastermodule --includes=../common --recursively=true"
+    "module:frontend": "cd source/frontend && node ../../node_modules/@bentley/bentleyjs-tools/scripts/mastermodule --includes=../common --recursively=true",
+    "updateNativeToTsDictionary": "node ./tasks/updateNativeToTsDictionary.js"
   },
   "keywords": [
     "Bentley",

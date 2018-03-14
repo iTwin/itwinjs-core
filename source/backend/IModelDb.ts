@@ -3,11 +3,11 @@
  *--------------------------------------------------------------------------------------------*/
 import { Guid, Id64, Id64Set, LRUMap, OpenMode, DbResult, DbOpcode, Logger, RepositoryStatus, BeEvent, assert } from "@bentley/bentleyjs-core";
 import { RequestQueryOptions, AccessToken, DeploymentEnv, MultiCode, IModelHubClient, CodeState } from "@bentley/imodeljs-clients";
-import { NativeBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-native-platform-api/imodeljs-native-platform-api";
+import { NativeBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-native-platform-api";
 import {
   Code, CodeSpec, ElementProps, ElementAspectProps, ElementLoadParams, IModel, IModelProps, IModelVersion, ModelProps, IModelToken,
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
-  // FontMap, FontMapProps,
+  FontMap, FontMapProps,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element } from "./Element";
@@ -40,8 +40,9 @@ export class IModelDb extends IModel {
   private _classMetaDataRegistry?: MetaDataRegistry;
   private _concurrency?: ConcurrencyControl;
   private _txnManager?: TxnManager;
-  // protected _fontMap?: FontMap;
-  // public getFontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.briefcase!.nativeDb.readFontMap()) as FontMapProps)); }
+  protected _fontMap?: FontMap;
+  public readFontJson(): string { return this.briefcase!.nativeDb.readFontMap(); }
+  public getFontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
 
   /** Event raised when a connected IModelDb is created or opened. This event is not raised for standalone IModelDbs. */
   /** Event raised just before a connected IModelDb is opened. This event is raised only for iModel access initiated by this service only. This event is not raised for standalone IModelDbs. */
@@ -1240,8 +1241,8 @@ export class IModelDbElements {
    * @param elementId either the element's Id, Code, or FederationGuid
    * @throws [[IModelError]] if the element is not found.
    */
-  public getElement(elementId: Id64 | Guid | Code): Element {
-    if (elementId instanceof Id64) return this._doGetElement({ id: elementId.value });
+  public getElement(elementId: Id64 | Guid | Code | string): Element {
+    if (typeof elementId === "string" || elementId instanceof Id64) return this._doGetElement({ id: elementId.toString() });
     if (elementId instanceof Guid) return this._doGetElement({ federationGuid: elementId.value });
     if (elementId instanceof Code) return this._doGetElement({ code: elementId });
     throw new IModelError(IModelStatus.BadArg, "id=" + elementId);

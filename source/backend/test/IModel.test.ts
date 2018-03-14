@@ -5,26 +5,19 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import { DbResult, Guid, Id64 } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { Entity, EntityMetaData, PrimitiveTypeCode } from "../Entity";
-import { Model, DictionaryModel } from "../Model";
-import { Category, SubCategory, SpatialCategory } from "../Category";
-import { ClassRegistry } from "../ClassRegistry";
-import { BisCore } from "../BisCore";
-import { ECSqlStatement } from "../ECSqlStatement";
 import {
-  Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
-  LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject,
-} from "../Element";
-import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
-import { IModelDb } from "../IModelDb";
-import { IModelTestUtils } from "./IModelTestUtils";
+  ClassRegistry, BisCore, Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
+  LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject, ElementPropertyFormatter,
+  IModelDb, ECSqlStatement, Entity, EntityMetaData, PrimitiveTypeCode,
+  Model, DictionaryModel, Category, SubCategory, SpatialCategory, ElementGroupsMembers,
+} from "../backend";
 import {
   GeometricElementProps, Code, CodeSpec, CodeScopeSpec, EntityProps, IModelError, IModelStatus, ModelProps, ViewDefinitionProps,
   AxisAlignedBox3d, Appearance, ColorDef, IModel,
-  // FontType, FontMap,
+  FontType, FontMap,
 } from "@bentley/imodeljs-common";
+import { IModelTestUtils } from "./IModelTestUtils";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { ElementGroupsMembers } from "../LinkTableRelationship";
 
 // spell-checker: disable
 
@@ -81,33 +74,34 @@ describe("iModel", () => {
     assert.equal(categoryClass!.name, "Category");
   });
 
-  // disabled until build 10.1.0 of iModelJsNode module is available
-  // it.skip("FontMap", () => {
-  //   const fonts1 = imodel1.getFontMap();
-  //   assert.equal(fonts1.fonts.size, 4, "font map size should be 4");
-  //   assert.equal(FontType.TrueType, fonts1.getFont(1)!.type, "get font 1 type is TrueType");
-  //   assert.equal("Arial", fonts1.getFont(1)!.name, "get Font 1 name");
-  //   assert.equal(1, fonts1.getFont("Arial")!.id, "get Font 1, by name");
-  //   assert.equal(FontType.Rsc, fonts1.getFont(2)!.type, "get font 2 type is Rsc");
-  //   assert.equal("Font0", fonts1.getFont(2)!.name, "get Font 2 name");
-  //   assert.equal(2, fonts1.getFont("Font0")!.id, "get Font 2, by name");
-  //   assert.equal(FontType.Shx, fonts1.getFont(3)!.type, "get font 1 type is Shx");
-  //   assert.equal("ShxFont0", fonts1.getFont(3)!.name, "get Font 3 name");
-  //   assert.equal(3, fonts1.getFont("ShxFont0")!.id, "get Font 3, by name");
-  //   assert.equal(FontType.TrueType, fonts1.getFont(4)!.type, "get font 4 type is TrueType");
-  //   assert.equal("Calibri", fonts1.getFont(4)!.name, "get Font 4 name");
-  //   assert.equal(4, fonts1.getFont("Calibri")!.id, "get Font 3, by name");
-  //   assert.isUndefined(fonts1.getFont("notfound"), "attempt lookup of a font that should not be found");
-  //   assert.deepEqual(new FontMap(fonts1.toJSON()), fonts1, "toJSON on FontMap");
-  // });
+  it("FontMap", () => {
+    const fonts1 = imodel1.getFontMap();
+    assert.equal(fonts1.fonts.size, 4, "font map size should be 4");
+    assert.equal(FontType.TrueType, fonts1.getFont(1)!.type, "get font 1 type is TrueType");
+    assert.equal("Arial", fonts1.getFont(1)!.name, "get Font 1 name");
+    assert.equal(1, fonts1.getFont("Arial")!.id, "get Font 1, by name");
+    assert.equal(FontType.Rsc, fonts1.getFont(2)!.type, "get font 2 type is Rsc");
+    assert.equal("Font0", fonts1.getFont(2)!.name, "get Font 2 name");
+    assert.equal(2, fonts1.getFont("Font0")!.id, "get Font 2, by name");
+    assert.equal(FontType.Shx, fonts1.getFont(3)!.type, "get font 1 type is Shx");
+    assert.equal("ShxFont0", fonts1.getFont(3)!.name, "get Font 3 name");
+    assert.equal(3, fonts1.getFont("ShxFont0")!.id, "get Font 3, by name");
+    assert.equal(FontType.TrueType, fonts1.getFont(4)!.type, "get font 4 type is TrueType");
+    assert.equal("Calibri", fonts1.getFont(4)!.name, "get Font 4 name");
+    assert.equal(4, fonts1.getFont("Calibri")!.id, "get Font 3, by name");
+    assert.isUndefined(fonts1.getFont("notfound"), "attempt lookup of a font that should not be found");
+    assert.deepEqual(new FontMap(fonts1.toJSON()), fonts1, "toJSON on FontMap");
+  });
 
   it("should load a known element by Id from an existing iModel", () => {
     assert.exists(imodel1.elements);
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
     const el = imodel1.elements.getElement(code1);
     assert.exists(el);
-    const el2 = imodel1.elements.getElement(new Id64("0x34"));
-    assert.exists(el2);
+    const el2ById = imodel1.elements.getElement(new Id64("0x34"));
+    assert.exists(el2ById);
+    const el2ByString = imodel1.elements.getElement("0x34");
+    assert.exists(el2ByString);
     const badCode = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
 
     try {
@@ -404,20 +398,6 @@ describe("iModel", () => {
     assert.notEqual(rows[0].id, "");
   });
 
-  /* TBD
-  it("should load struct properties", () => {
-    const el1 = imodel3.elements.getElement(new Id64("0x14"));
-    assert.isDefined(el1);
-    // *** TODO: Check that struct property was loaded
-  });
-
-  it("should load array properties", () => {
-    const el1 = imodel3.elements.getElement(new Id64("0x14"));
-    assert.isDefined(el1);
-    // *** TODO: Check that array property was loaded
-  });
-  */
-
   it("should insert and update auto-handled properties", () => {
     const testElem = imodel4.elements.getElement(new Id64("0x14"));
     assert.isDefined(testElem);
@@ -431,10 +411,10 @@ describe("iModel", () => {
 
     const loc1 = { street: "Elm Street", city: { name: "Downingtown", state: "PA" } };
     const loc2 = { street: "Oak Street", city: { name: "Downingtown", state: "PA" } };
-    // TODO: struct arrays   const loc3 = {street: "Chestnut Street", city: {name: "Philadelphia", state: "PA"}};
-    // TODO: struct arrays    const arrayOfStructs = [loc2, loc3];
+    const loc3 = {street: "Chestnut Street", city: {name: "Philadelphia", state: "PA"}};
+    const arrayOfStructs = [loc2, loc3];
     newTestElem.location = loc1;
-    // TODO: struct arrays    newTestElem.arrayOfStructs = arrayOfStructs;
+    newTestElem.arrayOfStructs = arrayOfStructs;
     newTestElem.dtUtc = new Date("2015-03-25");
     newTestElem.p3d = new Point3d(1, 2, 3);
 
@@ -450,8 +430,9 @@ describe("iModel", () => {
     assert.equal(newTestElemFetched.integerProperty1, newTestElem.integerProperty1);
     assert.isTrue(newTestElemFetched.arrayOfPoint3d[0].isAlmostEqual(newTestElem.arrayOfPoint3d[0]));
     assert.deepEqual(newTestElemFetched.location, loc1);
-    // TODO: struct arrays   assert.deepEqual(newTestElem.arrayOfStructs, arrayOfStructs);
+    assert.deepEqual(newTestElem.arrayOfStructs, arrayOfStructs);
     // TODO: getElement must convert date ISO string to Date object    assert.deepEqual(newTestElemFetched.dtUtc, newTestElem.dtUtc);
+    assert.deepEqual(newTestElemFetched.dtUtc, newTestElem.dtUtc.toJSON());
     assert.isTrue(newTestElemFetched.p3d.isAlmostEqual(newTestElem.p3d));
 
     // ----------- updates ----------------
