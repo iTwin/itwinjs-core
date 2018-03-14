@@ -132,7 +132,7 @@ describe("BriefcaseManager", () => {
   });
 
   it.only ("should open multiple versions of iModels", async () => {
-    const iModelNames = ["ReadOnlyTest"];
+    const iModelNames = ["NoVersionsTest"];
     for (const name of iModelNames) {
        const iModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, name);
 

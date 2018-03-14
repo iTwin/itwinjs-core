@@ -73,7 +73,7 @@ describe.only("BriefcaseManagerUnitTests", () => {
   let testProjectId: string;
   const testIModels: TestIModelInfo[] = [
     new TestIModelInfo("ReadOnlyTest"),
-    // new TestIModelInfo("TestModel"),
+    new TestIModelInfo("ReadWriteTest"),
     new TestIModelInfo("NoVersionsTest"),
   ];
   const assetDir = "./test/assets/_mocks_";
@@ -130,7 +130,7 @@ describe.only("BriefcaseManagerUnitTests", () => {
 
   });
 
-  it.only("should be able to open a first version IModel in Readonly mode", async () => {
+  it("should be able to open a first version IModel in Readonly mode", async () => {
     // Arrange
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
@@ -148,13 +148,13 @@ describe.only("BriefcaseManagerUnitTests", () => {
     iModelVersionMock.verify((f: IModelVersion) => f.evaluateChangeSet(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
   });
 
-  it("should be able to open a cached first version IModel in ReadWrite mode", async () => {
+  it.only("should be able to open a cached first version IModel in ReadWrite mode", async () => {
     // Arrange
     iModelHubClientMock.setup((f: IModelHubClient) => f.acquireBriefcase(TypeMoq.It.isAny(), TypeMoq.It.isValue("b74b6451-cca3-40f1-9890-42c769a28f3e")))
-      .returns(() => Promise.resolve(89));
+      .returns(() => Promise.resolve(174));
     iModelHubClientMock.setup((f: IModelHubClient) => f.getBriefcase(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAnyNumber(), TypeMoq.It.isValue(true)))
       .returns(() => {
-        const sampleIModelPath = path.join(assetDir, "JSON", "ReadWriteBriefcase.json");
+        const sampleIModelPath = path.join(assetDir, "JSON", "ReadWriteTestBriefcase.json");
         const buff = IModelJsFs.readFileSync(sampleIModelPath);
         const jsonObj = JSON.parse(buff.toString())[0];
         return Promise.resolve(getTypedInstance<Briefcase>(Briefcase, jsonObj));
@@ -178,10 +178,8 @@ describe.only("BriefcaseManagerUnitTests", () => {
     // iModel.close(accessToken);
   });
 
-  it("should reuse open briefcases in Readonly mode", async () => {
+  it.only("should reuse open briefcases in Readonly mode", async () => {
     // Arrange
-    iModelVersionMock.setup((f: IModelVersion) => f.evaluateChangeSet(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
-      .returns(() => Promise.resolve(""));
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
     // Act
@@ -214,7 +212,7 @@ describe.only("BriefcaseManagerUnitTests", () => {
 /** Provides utility functions for working with mock objects */
 class MockAssetUtil {
   private static iModelMap = new Map<string, string>([["c3e1146f-8c81-430d-a974-ac840657b7ac", "ReadOnlyTest"],
-                                                      // ["b74b6451-cca3-40f1-9890-42c769a28f3e", "TestModel"],
+                                                      ["b74b6451-cca3-40f1-9890-42c769a28f3e", "ReadWriteTest"],
                                                       ["0aea4c09-09f4-449d-bf47-045228d259ba", "NoVersionsTest"]]); // <IModelID, IModelName>
   private static assetDir: string = "./test/assets/_mocks_";
 
