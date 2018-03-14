@@ -10,7 +10,8 @@ import { SchemaDeserializationVisitor } from "../../source/Interfaces";
 import SchemaReadHelper from "../../source/Deserialization/Helper";
 import * as sinon from "sinon";
 import { AnyClass } from "../../source/Interfaces";
-import { SchemaChildType } from "../../source/index";
+import { SchemaChildType } from "../../source/ECObjects";
+import { NavigationProperty } from "../../source/Metadata/Property";
 
 describe("Full Schema Deserialization", () => {
   describe("basic (empty) schemas", () => {
@@ -355,6 +356,133 @@ describe("Full Schema Deserialization", () => {
       expect(mockVisitor.visitClass.secondCall.calledWithExactly(testEntity)).to.be.true;
       expect(descriptions[1]).to.equal("Description for BMixin",
         `SchemaDeserializationVisitor.visitClass was called for "AEntityClass" before its base class, "BMixin" was fully deserialized.`);
+    });
+
+    it("should safely handle EntityClass-navProp-RelationshipClass-constraint-EntityClass cycle", async () => {
+      const schemaJson = {
+        ...baseJson,
+        children: {
+          AEntityClass: {
+            schemaChildType: "EntityClass",
+            description: "Description for AEntityClass",
+            properties: [
+              {
+                propertyType: "NavigationProperty",
+                name: "testNavProp",
+                relationshipName: "TestSchema.BRelationshipClass",
+              },
+            ],
+          },
+          BRelationshipClass: {
+            schemaChildType: "RelationshipClass",
+            description: "Description for BRelationshipClass",
+            source: {
+              constraintClasses: [ "TestSchema.AEntityClass" ],
+            },
+            target: {
+              constraintClasses: [ "TestSchema.AEntityClass" ],
+            },
+          },
+        },
+      };
+
+      const descriptions: string[] = [];
+      mockVisitor = {
+        visitClass: sinon.spy(async (c: AnyClass) => {
+          if (c.type === SchemaChildType.RelationshipClass)
+            descriptions.push((await c.source.abstractConstraint!).description!);
+          else if (c.type === SchemaChildType.EntityClass) {
+            const prop = await c.properties![0] as NavigationProperty;
+            descriptions.push((await prop.relationshipClass).description!);
+          }
+        }),
+      };
+
+      let testSchema = new Schema();
+      const reader = new SchemaReadHelper(undefined, mockVisitor);
+
+      testSchema = await reader.readSchema(testSchema, schemaJson);
+      expect(testSchema).to.exist;
+      expect(mockVisitor.visitClass.calledTwice).to.be.true;
+      expect(descriptions).to.have.lengthOf(2);
+
+      const testEntity = await testSchema.getChild("AEntityClass");
+      expect(testEntity).to.exist;
+
+      const testRelationship = await testSchema.getChild("BRelationshipClass");
+      expect(testRelationship).to.exist;
+
+      expect(mockVisitor.visitClass.firstCall.calledWithExactly(testRelationship)).to.be.true;
+      expect(descriptions[0]).to.equal("Description for AEntityClass",
+        `SchemaDeserializationVisitor.visitClass was called for "BRelationshipClass" before the entity class its constraints use, "AEntityClass" was fully deserialized.`);
+
+      expect(mockVisitor.visitClass.secondCall.calledWithExactly(testEntity)).to.be.true;
+      expect(descriptions[1]).to.equal("Description for BRelationshipClass",
+        `SchemaDeserializationVisitor.visitClass was called for "AEntityClass" before the relationship its NavigationProperty uses, "BRelationshipClass" was fully deserialized.`);
+    });
+
+    it("should safely handle RelationshipClass-constraint-EntityClass-navProp-RelationshipClass cycle", async () => {
+      const schemaJson = {
+        ...baseJson,
+        children: {
+          ARelationshipClass: {
+            schemaChildType: "RelationshipClass",
+            description: "Description for ARelationshipClass",
+            source: {
+              constraintClasses: [ "TestSchema.BEntityClass" ],
+            },
+            target: {
+              constraintClasses: [ "TestSchema.BEntityClass" ],
+            },
+          },
+          BEntityClass: {
+            schemaChildType: "EntityClass",
+            description: "Description for BEntityClass",
+            properties: [
+              {
+                propertyType: "NavigationProperty",
+                name: "testNavProp",
+                relationshipName: "TestSchema.ARelationshipClass",
+              },
+            ],
+          },
+        },
+      };
+
+      const descriptions: string[] = [];
+      mockVisitor = {
+        visitClass: sinon.spy(async (c: AnyClass) => {
+          if (c.type === SchemaChildType.RelationshipClass)
+            descriptions.push((await c.source.abstractConstraint!).description!);
+          else if (c.type === SchemaChildType.EntityClass) {
+            const prop = await c.properties![0] as NavigationProperty;
+            descriptions.push((await prop.relationshipClass).description!);
+          }
+        }),
+      };
+
+      let testSchema = new Schema();
+      const reader = new SchemaReadHelper(undefined, mockVisitor);
+
+      testSchema = await reader.readSchema(testSchema, schemaJson);
+      expect(testSchema).to.exist;
+      expect(mockVisitor.visitClass.calledTwice).to.be.true;
+      expect(descriptions).to.have.lengthOf(2);
+
+      const testRelationship = await testSchema.getChild("ARelationshipClass");
+      expect(testRelationship).to.exist;
+
+      const testEntity = await testSchema.getChild("BEntityClass");
+      expect(testEntity).to.exist;
+
+      expect(mockVisitor.visitClass.firstCall.calledWithExactly(testEntity)).to.be.true;
+      expect(descriptions[0]).to.equal("Description for ARelationshipClass",
+      `SchemaDeserializationVisitor.visitClass was called for "BEntityClass" before the relationship its NavigationProperty uses, "ARelationshipClass" was fully deserialized.`);
+
+      expect(mockVisitor.visitClass.secondCall.calledWithExactly(testRelationship)).to.be.true;
+      expect(descriptions[1]).to.equal("Description for BEntityClass",
+        `SchemaDeserializationVisitor.visitClass was called for "ARelationshipClass" before the entity class its constraints use, "BEntityClass" was fully deserialized.`);
+
     });
   });
 });

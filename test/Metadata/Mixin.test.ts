@@ -26,6 +26,9 @@ describe("Mixin", () => {
           schemaChildType: "Mixin",
           ...mixinJson,
         },
+        TestEntity: {
+          schemaChildType: "EntityClass",
+        },
       });
     }
 
@@ -61,6 +64,7 @@ describe("Mixin", () => {
 
     it("should throw for NavigationProperty", async () => {
       const json = createSchemaJson({
+        appliesTo: "TestSchema.TestEntity",
         properties: [{ name: "navProp", propertyType: "NavigationProperty" }],
       });
       await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestMixin.navProp is invalid, because only EntityClasses and RelationshipClasses can have NavigationProperties.`);
