@@ -148,13 +148,13 @@ describe("BriefcaseManagerUnitTests", () => {
     iModelVersionMock.verify((f: IModelVersion) => f.evaluateChangeSet(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
   });
 
-  it.skip("should be able to open a cached first version IModel in ReadWrite mode", async () => {
+  it.only("should be able to open a cached first version IModel in ReadWrite mode", async () => {
     // Arrange
-    iModelHubClientMock.setup((f: IModelHubClient) => f.acquireBriefcase(TypeMoq.It.isAny(), TypeMoq.It.isValue("b74b6451-cca3-40f1-9890-42c769a28f3e")))
+    iModelHubClientMock.setup((f: IModelHubClient) => f.acquireBriefcase(TypeMoq.It.isAny(), TypeMoq.It.isValue(testIModels[1].id)))
       .returns(() => Promise.resolve(174));
     iModelHubClientMock.setup((f: IModelHubClient) => f.getBriefcase(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAnyNumber(), TypeMoq.It.isValue(true)))
       .returns(() => {
-        const sampleIModelPath = path.join(assetDir, "JSON", "ReadWriteTestBriefcase.json");
+        const sampleIModelPath = path.join(assetDir, testIModels[1].name, `${testIModels[1].name}Briefcase.json`);
         const buff = IModelJsFs.readFileSync(sampleIModelPath);
         const jsonObj = JSON.parse(buff.toString())[0];
         return Promise.resolve(getTypedInstance<Briefcase>(Briefcase, jsonObj));
@@ -166,19 +166,19 @@ describe("BriefcaseManagerUnitTests", () => {
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
     // Act
-    const iModel: BriefcaseEntry = await BriefcaseManager.open(spoofAccessToken as any, testProjectId, testIModels[0].id, OpenMode.ReadWrite, iModelVersionMock.object); // Note: No frontend support for ReadWrite open yet
+    const iModel: BriefcaseEntry = await BriefcaseManager.open(spoofAccessToken as any, testProjectId, testIModels[1].id, OpenMode.ReadWrite, iModelVersionMock.object); // Note: No frontend support for ReadWrite open yet
     // Assert
     assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
     assert(iModel.openMode === OpenMode.ReadWrite, "iModel not set to ReadWrite mode");
 
-    expect(IModelJsFs.existsSync(testIModels[0].localReadWritePath), "Local path to iModel does not exist");
-    const files = IModelJsFs.readdirSync(testIModels[0].localReadWritePath);
+    expect(IModelJsFs.existsSync(testIModels[1].localReadWritePath), "Local path to iModel does not exist");
+    const files = IModelJsFs.readdirSync(testIModels[1].localReadWritePath);
     expect(files.length).greaterThan(0, "iModel .bim file could not be read");
 
     // iModel.close(accessToken);
   });
 
-  it.only("should reuse open briefcases in Readonly mode", async () => {
+  it("should reuse open briefcases in Readonly mode", async () => {
     // Arrange
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
