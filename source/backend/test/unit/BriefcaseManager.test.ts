@@ -69,7 +69,7 @@ const getTypedInstances = <T extends WsgInstance>(typedConstructor: new () => T,
   return instances;
 };
 
-describe.only("BriefcaseManagerUnitTests", () => {
+describe("BriefcaseManagerUnitTests", () => {
   let testProjectId: string;
   const testIModels: TestIModelInfo[] = [
     new TestIModelInfo("ReadOnlyTest"),
@@ -148,7 +148,7 @@ describe.only("BriefcaseManagerUnitTests", () => {
     iModelVersionMock.verify((f: IModelVersion) => f.evaluateChangeSet(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
   });
 
-  it.only("should be able to open a cached first version IModel in ReadWrite mode", async () => {
+  it.skip("should be able to open a cached first version IModel in ReadWrite mode", async () => {
     // Arrange
     iModelHubClientMock.setup((f: IModelHubClient) => f.acquireBriefcase(TypeMoq.It.isAny(), TypeMoq.It.isValue("b74b6451-cca3-40f1-9890-42c769a28f3e")))
       .returns(() => Promise.resolve(174));
@@ -184,25 +184,25 @@ describe.only("BriefcaseManagerUnitTests", () => {
 
     // Act
     let timer = new Timer("open briefcase first time");
-    const iModel0: BriefcaseEntry = await BriefcaseManager.open(spoofAccessToken as any, testProjectId, testIModels[1].id, OpenMode.Readonly, iModelVersionMock.object);
+    const iModel0: BriefcaseEntry = await BriefcaseManager.open(spoofAccessToken as any, testProjectId, testIModels[0].id, OpenMode.Readonly, iModelVersionMock.object);
     assert.exists(iModel0, "No iModel returned from call to BriefcaseManager.open");
-    assert(iModel0.iModelId === testIModels[1].id, "Incorrect iModel ID");
+    assert(iModel0.iModelId === testIModels[0].id, "Incorrect iModel ID");
     timer.end();
 
-    const briefcases = IModelJsFs.readdirSync(testIModels[1].localReadonlyPath);
+    const briefcases = IModelJsFs.readdirSync(testIModels[0].localReadonlyPath);
     expect(briefcases.length).greaterThan(0, "iModel .bim file could not be read");
 
     timer = new Timer("open briefcase 5 more times");
     const iModels = new Array<BriefcaseEntry>();
     for (let ii = 0; ii < 5; ii++) {
-      const iModel: BriefcaseEntry = await BriefcaseManager.open(spoofAccessToken as any, testProjectId, testIModels[1].id, OpenMode.Readonly, iModelVersionMock.object);
+      const iModel: BriefcaseEntry = await BriefcaseManager.open(spoofAccessToken as any, testProjectId, testIModels[0].id, OpenMode.Readonly, iModelVersionMock.object);
       assert.exists(iModel, "No iModel returned from repeat call to BriefcaseManager.open");
       iModels.push(iModel);
     }
     timer.end();
 
     // Assert
-    const briefcases2 = IModelJsFs.readdirSync(testIModels[1].localReadonlyPath);
+    const briefcases2 = IModelJsFs.readdirSync(testIModels[0].localReadonlyPath);
     expect(briefcases2.length).equals(briefcases.length, "Extra or missing briefcases detected in the cache");
     const diff = briefcases2.filter((item) => briefcases.indexOf(item) < 0);
     expect(diff.length).equals(0, "Briefcase changed after repeat calls to BriefcaseManager.open");
