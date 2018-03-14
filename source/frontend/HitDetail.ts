@@ -157,6 +157,7 @@ export class GeomDetail {
     other.setFrom(this);
     return other;
   }
+
   public setFrom(other: GeomDetail): void {
     other.primitive = this.primitive;
     other.closePoint.setFrom(this.closePoint);
