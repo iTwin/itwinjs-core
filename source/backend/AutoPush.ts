@@ -58,7 +58,6 @@ export type AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush
 /** Automatically push local changes to a specified IModel. */
 export class AutoPush {
   private _iModel: IModelDb;
-  private _serviceAccountAccessToken: AccessToken;
   private _autoSchedule: boolean;
   private _pushIntervalMillisMin: number;
   private _pushIntervalMillisMax: number;
@@ -73,14 +72,12 @@ export class AutoPush {
 
   /** Construct an AutoPushManager.
    * @param params  Auto-push configuration parameters
-   * @param serviceAccountAccessToken The service account that should be used to push
    * @param activityMonitor The activity monitor that will tell me when the app is idle. Defaults to BackendActivityMonitor with a 1 second idle period.
    */
-  constructor(iModel: IModelDb, params: AutoPushParams, serviceAccountAccessToken: AccessToken, activityMonitor?: AppActivityMonitor) {
+  constructor(iModel: IModelDb, params: AutoPushParams, activityMonitor?: AppActivityMonitor) {
     AutoPush.validateAutoPushParams(params);
     iModel.onBeforeClose.addListener(() => this.cancel());
     this._iModel = iModel;
-    this._serviceAccountAccessToken = serviceAccountAccessToken;
     this._activityMonitor = activityMonitor || new BackendActivityMonitor();
     this._pushIntervalMillisMin = params.pushIntervalSecondsMin * 1000;
     this._pushIntervalMillisMax = params.pushIntervalSecondsMax * 1000;
@@ -144,6 +141,10 @@ export class AutoPush {
   /** The last push error, if any.  */
   public get lastError(): any | undefined { return this._lastPushError; }
 
+  private getAccessToken(): AccessToken {
+    return IModelDb.getAccessToken(this._iModel.iModelToken.iModelId!);
+  }
+
   // Schedules an auto-push, if none is already scheduled.
   public scheduleNextAutoPushIfNecessary() {
     if (this._state === AutoPushState.NotRunning)
@@ -159,7 +160,9 @@ export class AutoPush {
     Logger.logTrace(loggingCategory, "AutoPush - next push in " + (intervalMillis / 1000) + " seconds...");
   }
 
-  public reserveCodes(): Promise<void> { return this._iModel.concurrencyControl.request(this._serviceAccountAccessToken); }
+  public reserveCodes(): Promise<void> {
+    return this._iModel.concurrencyControl.request(this.getAccessToken());
+  }
 
   private onPushStart() {
     Logger.logTrace(loggingCategory, "AutoPush - pushing...");
@@ -235,8 +238,12 @@ export class AutoPush {
 
     // We are either in lull or we have put off this push long enough. Start to push accumulated changes now.
     this.onPushStart();
-    this.iModel.pushChanges(this._serviceAccountAccessToken, () => "no desc").then(() => this.onPushEnd()).catch((reason) => this.onPushEndWithError(reason));
-    // Note that pushChanges is async. Don't await it here. That would block node's timer queue.
+    this.iModel.pushChanges(this.getAccessToken()).then(() => this.onPushEnd()).catch((reason) => this.onPushEndWithError(reason));
+    // Note that pushChanges is async. We don't await it or even return it. That is because, doAutoPush is always called on a timer. That is,
+    // the caller is node, and so the caller won't await it or otherwise deal with the Promise. That's fine, we just want to kick
+    // off the push and let it run concurrently, as the service gets back to doing other things.
+    // Yes, you can interleave other service operations, even inserts and updates and saveChanges, with a push. That is because
+    // pushChanges keeps track of the last local Txn that should process. It's no problem to add more while push is in progress.
   }
 
 }
