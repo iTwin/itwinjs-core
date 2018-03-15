@@ -18,9 +18,9 @@
     "lint": "echo Linting is part of build, no need to lint separately"
   },
   "dependencies": {
-    "@bentley/ecpresentation-backend": "~0.0.28",
-    "@bentley/ecpresentation-common": "~0.0.3",
-    "@bentley/ecpresentation-frontend": "~0.0.17",
+    "@bentley/ecpresentation-backend": "~0.0.31",
+    "@bentley/ecpresentation-common": "~0.0.4",
+    "@bentley/ecpresentation-frontend": "~0.0.20",
     "@bentley/bentleyjs-core": "^7.3.2",
     "@bentley/geometry-core": "^6.0.10",
     "@bentley/imodeljs-clients": "^4.2.1",
