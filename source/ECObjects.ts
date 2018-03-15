@@ -176,6 +176,7 @@ export function parseCustomAttributeContainerType(type: string): CustomAttribute
   let containerType = 0;
 
   typeTokens.forEach((typeToken) => {
+    typeToken = typeToken.trim();
     if (typeToken.length === 0)
       return;
 
