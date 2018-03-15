@@ -1,13 +1,6 @@
 {
   "extends": "./node_modules/@bentley/bentleyjs-tools/tsconfig-base.json",
   "compilerOptions": {
-    "lib": [
-      "es2017",
-      "esnext.asynciterable",
-      "dom",
-      "dom.iterable",
-      "scripthost"
-    ],
     "outDir": "./lib"
   },
   "include": [
