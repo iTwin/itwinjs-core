@@ -226,4 +226,47 @@ describe("ECClass", () => {
       await testClass.accept({});
     });
   });
+
+  describe("getAllBaseClasses", () => {
+    it("should correctly traverse a complex inheritance hierarchy", async () => {
+      // This is the class hierarchy used in this test. The numbers indicate override priority,
+      // i.e., the order that they should be returned by testClass.getAllBaseClasses():
+      //
+      //  2[A]  3(B)  5(C)  7(D)          [] := EntityClass
+      //     \   /     /     /            () := Mixin
+      //    1[ G ]  4(E)  6(F)
+      //        \    /     /
+      //        [    H    ]
+      //
+      const testSchemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "TestSchema",
+        version: "01.00.00",
+        alias: "ts",
+        children: {
+          A: { schemaChildType: "EntityClass" },
+          B: { schemaChildType: "Mixin",         appliesTo: "TestSchema.A" },
+          C: { schemaChildType: "Mixin",         appliesTo: "TestSchema.A" },
+          D: { schemaChildType: "Mixin",         appliesTo: "TestSchema.A" },
+          E: { schemaChildType: "Mixin",         appliesTo: "TestSchema.A", baseClass: "TestSchema.C" },
+          F: { schemaChildType: "Mixin",         appliesTo: "TestSchema.A", baseClass: "TestSchema.D" },
+          G: { schemaChildType: "EntityClass",   baseClass: "TestSchema.A", mixins: [ "TestSchema.B" ] },
+          H: { schemaChildType: "EntityClass",   baseClass: "TestSchema.G", mixins: [ "TestSchema.E", "TestSchema.F" ] },
+        },
+      };
+      const expectedNames = ["G", "A", "B", "E", "C", "F", "D"];
+      const actualNames: string[] = [];
+
+      schema = await Schema.fromJson(testSchemaJson);
+      expect(schema).to.exist;
+
+      const testClass = await schema.getClass("H");
+      expect(testClass).to.exist;
+      for await (const baseClass of testClass!.getAllBaseClasses()) {
+        actualNames.push(baseClass.name);
+      }
+
+      expect(actualNames).to.eql(expectedNames);
+    });
+  });
 });

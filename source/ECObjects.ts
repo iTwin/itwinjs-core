@@ -6,6 +6,9 @@ import { ECObjectsError, ECObjectsStatus } from "./Exception";
 import ECStringConstants from "./Constants";
 export { PropertyType } from "./PropertyTypes";
 
+// NEEDSWORK: This shim is currently required to use async iterators.  See https://github.com/Microsoft/TypeScript/issues/14151
+(Symbol as any).asyncIterator = Symbol.asyncIterator || Symbol.for("Symbol.asyncIterator");
+
 export const enum ECClassModifier {
   None,
   Abstract,
@@ -173,6 +176,7 @@ export function parseCustomAttributeContainerType(type: string): CustomAttribute
   let containerType = 0;
 
   typeTokens.forEach((typeToken) => {
+    typeToken = typeToken.trim();
     if (typeToken.length === 0)
       return;
 
