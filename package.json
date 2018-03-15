@@ -30,7 +30,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "^1.0.58",
+    "@bentley/bentleyjs-tools": "^2.2.0",
     "tslint-consistent-codestyle": "^1.11.0",
     "typescript": "^2.6.2"
   }
