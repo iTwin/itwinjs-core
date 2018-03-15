@@ -19,15 +19,13 @@
     "lint": "tslint -p ./tsconfig.json",
     "prepublishOnly": "npm run build"
   },
-  "dependencies": {},
-  "peerDependencies": {
-    "@bentley/bentleyjs-core": "^7.0.0",
-    "@bentley/imodeljs-common": "~0.64.0"
-  },
+  "//peerDependencies": [
+    "No need to repeat all of the dependencies are already expressed by frontend and backend."
+  ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "^7.0.0",
+    "@bentley/bentleyjs-core": "^7.3.2",
     "@bentley/bentleyjs-tools": "^2.2.0",
-    "@bentley/imodeljs-common": "~0.64.0",
+    "@bentley/imodeljs-common": "~0.68.0",
     "rimraf": "^2.6.2",
     "typescript": "^2.6.2",
     "tslint": "^5.8.0"
