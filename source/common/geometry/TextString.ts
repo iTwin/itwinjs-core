@@ -7,7 +7,7 @@ import { XYZProps, Point3d, YawPitchRollAngles, YawPitchRollProps } from "@bentl
 export interface TextStringProps {
   /** text string */
   text: string;
-  /** font number. Font names are mapped to font numbers via the FontMap */
+  /** font number. Font numbers are mapped to font names and types via the FontMap */
   font: number;
   /* text height */
   height: number;
@@ -31,14 +31,23 @@ export interface TextStringProps {
  * A paragraph is composed of one or more instances of TextStrings.
  */
 export class TextString {
+  /** Text string */
   public text: string;
+  /** font number. Font numbers are mapped to font names and types via the FontMap */
   public font: number;
+  /* text height, in meters */
   public height: number;
+  /*  width / height ratio. Default is 1.0 */
   public widthFactor?: number;
+  /** bold text. Default is false */
   public bold?: boolean;
+  /** italic text. Default is false */
   public italic?: boolean;
+  /** underline text. Default is false */
   public underline?: boolean;
+  /** position relative to element's placement */
   public readonly origin: Point3d;
+  /** Rotation relative to element's placement */
   public readonly rotation: YawPitchRollAngles;
   public get width() { return this.height * (this.widthFactor ? this.widthFactor : 1.0); }
 

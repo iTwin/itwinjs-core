@@ -6,6 +6,9 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { KnownLocations } from "./KnownLocations";
 import * as path from "path";
 
+// tslint:disable-next-line:no-eval
+const realrequire = eval("require");
+
 /** Class that holds the singleton platform instance that was loaded by the app for this iModelJs session. It is up to the app to load the platform. */
 export class NativePlatformRegistry {
   private static _platform: any;
@@ -70,7 +73,7 @@ export class NativePlatformRegistry {
       packageDir = path.join(dir, packageDir);
     // *** TODO: Put the name of the js file back into the addon package's 'main' property, so that we don't have to hard-wire it here.
     const addonLoaderPath = path.join(packageDir, "NodeAddonLoader.js");
-    return require(addonLoaderPath);
+    return realrequire(addonLoaderPath);
   }
 
   /** Load and register the standard platform. */
