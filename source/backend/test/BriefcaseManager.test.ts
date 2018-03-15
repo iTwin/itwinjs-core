@@ -50,7 +50,6 @@ async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: Access
 
 describe("BriefcaseManager", () => {
   // tslint:disable-next-line:no-debugger
-  debugger;
   let accessToken: AccessToken;
   let testProjectId: string;
   let testIModelId: string;
