@@ -159,9 +159,14 @@ describe("BriefcaseManagerUnitTests", () => {
         const jsonObj = JSON.parse(buff.toString())[0];
         return Promise.resolve(getTypedInstance<Briefcase>(Briefcase, jsonObj));
       }).verifiable();
-    // iModelHubClientMock.setup((f: IModelHubClient) => f.getBriefcases(TypeMoq.It.isAny(), TypeMoq.It.isAnyString()))
-    //   .returns(() => {
-    //   }).verifiable();
+    iModelHubClientMock.setup((f: IModelHubClient) => f.getBriefcases(TypeMoq.It.isAny(), TypeMoq.It.isAnyString()))
+      .returns(() => {
+        const sampleIModelPath = path.join(assetDir, testIModels[1].name, `${testIModels[1].name}Briefcase.json`);
+        const buff = IModelJsFs.readFileSync(sampleIModelPath);
+        const jsonObj = JSON.parse(buff.toString())[0];
+        const briefcaseInstance = getTypedInstance<Briefcase>(Briefcase, jsonObj);
+        return Promise.resolve([briefcaseInstance]);
+      }).verifiable();
 
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
