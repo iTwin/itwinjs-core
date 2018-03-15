@@ -5,7 +5,7 @@ import * as path from "path";
 import { expect, assert } from "chai";
 import { Id64, OpenMode, DbOpcode, BeEvent } from "@bentley/bentleyjs-core";
 import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState } from "@bentley/imodeljs-clients";
-import { Code, IModelVersion, Appearance, ColorDef, IModel } from "@bentley/imodeljs-common";
+import { Code, IModelVersion, Appearance, ColorDef, IModel, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { KeepBriefcase, IModelDb, ConcurrencyControl, Element, DictionaryModel, SpatialCategory, IModelHost, AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../backend";
 import { IModelTestUtils, TestUsers } from "./IModelTestUtils";
 import { IModelJsFs } from "../IModelJsFs";
@@ -49,6 +49,8 @@ async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: Access
 }
 
 describe("BriefcaseManager", () => {
+  // tslint:disable-next-line:no-debugger
+  debugger;
   let accessToken: AccessToken;
   let testProjectId: string;
   let testIModelId: string;
@@ -369,6 +371,18 @@ describe("BriefcaseManager", () => {
     expect(qaChangeSets.length).greaterThan(0);
     const qaIModel: IModelDb = await IModelDb.open(accessToken, qaProjectId, qaIModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.exists(qaIModel);
+  });
+
+  it("Should track the AccessTokens that are used to open IModels", async () => {
+    await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
+    assert.deepEqual(IModelDb.getAccessToken(testIModelId), accessToken);
+
+    try {
+      IModelDb.getAccessToken("--invalidid--");
+      assert.fail("Asking for an AccessToken on an iModel that is not open should fail");
+    } catch (err) {
+      assert.equal((err as IModelError).errorNumber, IModelStatus.NotFound);
+    }
   });
 
   it("should be able to reverse and reinstate changes", async () => {
