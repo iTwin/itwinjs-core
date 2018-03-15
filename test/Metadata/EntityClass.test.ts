@@ -4,8 +4,8 @@
 
 import { assert, expect } from "chai";
 import Schema from "../../source/Metadata/Schema";
-import ECClass from "../../source/Metadata/Class";
-import EntityClass from "../../source/Metadata/EntityClass";
+import ECClass, { MutableClass } from "../../source/Metadata/Class";
+import EntityClass, { MutableEntityClass } from "../../source/Metadata/EntityClass";
 import Mixin from "../../source/Metadata/Mixin";
 import RelationshipClass from "../../source/Metadata/RelationshipClass";
 import { ECClassModifier } from "../../source/ECObjects";
@@ -22,15 +22,15 @@ describe("EntityClass", () => {
 
     it("from mixins", async () => {
       const baseClass = new EntityClass(schema, "TestBase");
-      const basePrimProp = await baseClass.createPrimitiveProperty("BasePrimProp");
+      const basePrimProp = await (baseClass as ECClass as MutableClass).createPrimitiveProperty("BasePrimProp");
 
       const mixin = new Mixin(schema, "TestMixin");
-      const mixinPrimProp = await mixin.createPrimitiveProperty("MixinPrimProp");
+      const mixinPrimProp = await (mixin as ECClass as MutableClass).createPrimitiveProperty("MixinPrimProp");
 
       const entityClass = new EntityClass(schema, "TestClass");
-      await entityClass.createPrimitiveProperty("PrimProp");
+      await (entityClass as ECClass as MutableClass).createPrimitiveProperty("PrimProp");
       entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
-      entityClass.mixins = [ new DelayedPromiseWithProps(mixin.key, async () => mixin) ];
+      (entityClass as MutableEntityClass).addMixin(mixin);
 
       expect(await entityClass.getProperty("MixinPrimProp")).to.be.undefined;
       expect(await entityClass.getProperty("MixinPrimProp", true)).equal(mixinPrimProp);

@@ -4,7 +4,7 @@
 
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 import { SchemaKey, SchemaMatchType, SchemaChildKey } from "./ECObjects";
-import Schema from "./Metadata/Schema";
+import Schema, { MutableSchema } from "./Metadata/Schema";
 import SchemaChild from "./Metadata/SchemaChild";
 
 export class SchemaMap extends Array<Schema> { }
@@ -213,7 +213,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaChildLocater {
     if (!schema)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to add the schema child ${schemaChild.name} to the schema ${schemaChild.key.schemaKey.toString()} because the schema could not be located.`);
 
-    await schema.addChild(schemaChild);
+    await (schema as MutableSchema).addChild(schemaChild);
     return;
   }
 

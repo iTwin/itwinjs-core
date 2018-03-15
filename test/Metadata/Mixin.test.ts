@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import Schema from "../../source/Metadata/Schema";
+import Schema, { MutableSchema } from "../../source/Metadata/Schema";
 import EntityClass from "../../source/Metadata/EntityClass";
 import Mixin from "../../source/Metadata/Mixin";
 import { ECObjectsError } from "../../source/Exception";
@@ -25,6 +25,9 @@ describe("Mixin", () => {
         TestMixin: {
           schemaChildType: "Mixin",
           ...mixinJson,
+        },
+        TestEntity: {
+          schemaChildType: "EntityClass",
         },
       });
     }
@@ -61,6 +64,7 @@ describe("Mixin", () => {
 
     it("should throw for NavigationProperty", async () => {
       const json = createSchemaJson({
+        appliesTo: "TestSchema.TestEntity",
         properties: [{ name: "navProp", propertyType: "NavigationProperty" }],
       });
       await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestMixin.navProp is invalid, because only EntityClasses and RelationshipClasses can have NavigationProperties.`);
@@ -81,7 +85,7 @@ describe("Mixin", () => {
 
     beforeEach(async () => {
       const schema = new Schema("TestSchema", 1, 0, 0);
-      testEntity = await schema.createEntityClass("TestEntity");
+      testEntity = await (schema as MutableSchema).createEntityClass("TestEntity");
       testMixin = new Mixin(schema, "TestMixin");
     });
 

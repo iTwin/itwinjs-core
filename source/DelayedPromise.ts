@@ -88,19 +88,17 @@ export interface DelayedPromiseWithPropsConstructor {
 // Because the property getters that wrap `props` are dynamically added, TypeScript isn't aware of them.
 // So by defining this as a class _expression_, we can cast the constructed type to Readonly<TProps> & DelayedPromise<TPayload>
 // tslint:disable-next-line:variable-name
-export const DelayedPromiseWithProps = (class <TProps, TPayload> extends DelayedPromise<TPayload> {
+export const DelayedPromiseWithProps = (class <TProps extends NoDelayedPromiseMethods, TPayload> extends DelayedPromise<TPayload> {
   constructor(props: TProps, cb: () => Promise<TPayload>) {
     super (cb);
 
-    for (const name in props) {
-      if (props.hasOwnProperty(name))
-        Object.defineProperty(this, name, { get: () => props[name] });
-    }
+    const handler = {
+      get: (target: TProps, name: string) => {
+        return (name in this) ? this[name as keyof this] : target[name as keyof TProps];
+      },
+    };
 
-    for (const name of Object.getOwnPropertyNames(Object.getPrototypeOf(props))) {
-      if ("constructor" !== name)
-        Object.defineProperty(this, name, { get: () => (props as any)[name] });
-    }
+    return new Proxy(props, handler) as Readonly<TProps> & DelayedPromise<TPayload>;
   }
 }) as DelayedPromiseWithPropsConstructor;
 

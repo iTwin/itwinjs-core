@@ -4,7 +4,7 @@
 
 import { assert, expect } from "chai";
 
-import Schema from "../../source/Metadata/Schema";
+import Schema, { MutableSchema } from "../../source/Metadata/Schema";
 import ECClass from "../../source/Metadata/Class";
 import EntityClass from "../../source/Metadata/EntityClass";
 import Mixin from "../../source/Metadata/Mixin";
@@ -27,22 +27,12 @@ describe("Schema", () => {
       expect(() => {new Schema("NewSchemaWithInvalidWriteVersion", 12, 345, 6); }).to.throw(ECObjectsError);
       expect(() => {new Schema("NewSchemaWithInvalidMinorVersion", 12, 34, 567); }).to.throw(ECObjectsError);
     });
-
-    it("should throw when attempting to change the version to an invalid version", () => {
-      const testSchema = new Schema("TestSchema", 1, 1, 1);
-      expect(() => {testSchema.schemaKey.readVersion = 123; }).to.throw(ECObjectsError);
-      expect(testSchema.readVersion).equal(1);
-      expect(() => {testSchema.schemaKey.writeVersion = 123; }).to.throw(ECObjectsError);
-      expect(testSchema.writeVersion).equal(1);
-      expect(() => {testSchema.schemaKey.minorVersion = 123; }).to.throw(ECObjectsError);
-      expect(testSchema.minorVersion).equal(1);
-    });
   });
 
   describe("create schema children", () => {
     it("should succeed for entity class", async () => {
       const testSchema = new Schema("TestSchema", 1, 1, 1);
-      await testSchema.createEntityClass("TestEntity");
+      await (testSchema as MutableSchema).createEntityClass("TestEntity");
 
       expect(await testSchema.getClass("TestEntity")).instanceof(ECClass);
       expect(await testSchema.getClass<EntityClass>("TestEntity")).instanceof(EntityClass);
@@ -50,7 +40,7 @@ describe("Schema", () => {
 
     it("should succeed for mixin class", async () => {
       const testSchema = new Schema("TestSchema", 1, 2, 3);
-      await testSchema.createMixinClass("TestMixin");
+      await (testSchema as MutableSchema).createMixinClass("TestMixin");
 
       expect(await testSchema.getClass("TestMixin")).instanceof(ECClass);
       expect(await testSchema.getClass<Mixin>("TestMixin")).instanceof(Mixin);
@@ -58,7 +48,7 @@ describe("Schema", () => {
 
     it("should succeed for struct class", async () => {
       const testSchema = new Schema("TestSchema", 1, 2, 3);
-      await testSchema.createStructClass("TestStruct");
+      await (testSchema as MutableSchema).createStructClass("TestStruct");
 
       expect(await testSchema.getClass("TestStruct")).instanceof(ECClass);
       expect(await testSchema.getClass<StructClass>("TestStruct")).instanceof(StructClass);
@@ -66,7 +56,7 @@ describe("Schema", () => {
 
     it("should succeed with case-insensitive search", async () => {
       const testSchema = new Schema("TestSchema", 1, 0, 0);
-      await testSchema.createEntityClass("testEntity");
+      await (testSchema as MutableSchema).createEntityClass("testEntity");
 
       expect(await testSchema.getClass("TESTENTITY")).not.undefined;
       expect(await testSchema.getClass("TestEntity")).not.undefined;

@@ -4,11 +4,11 @@
 
 import { assert, expect } from "chai";
 
-import Schema from "../../source/Metadata/Schema";
+import Schema, { MutableSchema } from "../../source/Metadata/Schema";
 import EntityClass from "../../source/Metadata/EntityClass";
 import { SchemaContext } from "../../source/Context";
 import { DelayedPromiseWithProps } from "../../source/DelayedPromise";
-import ECClass from "../../source/Metadata/Class";
+import ECClass, { MutableClass } from "../../source/Metadata/Class";
 import { ECObjectsError } from "../../source/Exception";
 import { SchemaChildType } from "../../source/ECObjects";
 import * as sinon from "sinon";
@@ -23,10 +23,10 @@ describe("ECClass", () => {
 
     it("inherited properties from base class", async () => {
       const baseClass = new EntityClass(schema, "TestBase");
-      const basePrimProp = await baseClass.createPrimitiveProperty("BasePrimProp");
+      const basePrimProp = await (baseClass as ECClass as MutableClass).createPrimitiveProperty("BasePrimProp");
 
       const entityClass = new EntityClass(schema, "TestClass");
-      await entityClass.createPrimitiveProperty("PrimProp");
+      await (entityClass as ECClass as MutableClass).createPrimitiveProperty("PrimProp");
       entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
 
       expect(await entityClass.getProperty("BasePrimProp")).to.be.undefined;
@@ -38,7 +38,7 @@ describe("ECClass", () => {
 
     it("case-insensitive search", async () => {
       const entityClass = new EntityClass(schema, "TestClass");
-      const primProp = await entityClass.createPrimitiveProperty("TestProp");
+      const primProp = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp");
 
       expect(await entityClass.getProperty("TESTPROP")).equal(primProp);
       expect(await entityClass.getProperty("testprop")).equal(primProp);
@@ -47,7 +47,7 @@ describe("ECClass", () => {
 
     it("case-insensitive inherited property search", async () => {
       const baseClass = new EntityClass(schema, "BaseClass");
-      const primProp = await baseClass.createPrimitiveProperty("TestProp");
+      const primProp = await (baseClass as ECClass as MutableClass).createPrimitiveProperty("TestProp");
 
       const entityClass = new EntityClass(schema, "TestClass");
       entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
@@ -111,7 +111,7 @@ describe("ECClass", () => {
       };
 
       const refSchema = new Schema("RefSchema", 1, 0, 5);
-      const refBaseClass = await refSchema.createEntityClass("BaseClassInRef");
+      const refBaseClass = await (refSchema as MutableSchema).createEntityClass("BaseClassInRef");
 
       const context = new SchemaContext();
       await context.addSchema(refSchema);

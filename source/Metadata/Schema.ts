@@ -12,7 +12,7 @@ import Enumeration from "./Enumeration";
 import KindOfQuantity from "./KindOfQuantity";
 import PropertyCategory from "./PropertyCategory";
 import SchemaReadHelper from "../Deserialization/Helper";
-import { SchemaChildKey, SchemaKey, ECClassModifier, PrimitiveType } from "../ECObjects";
+import { SchemaChildKey, SchemaKey, ECClassModifier, PrimitiveType, ECVersion } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { SchemaContext } from "../Context";
@@ -53,7 +53,7 @@ export default class Schema implements CustomAttributeContainerProps {
    */
   constructor();
   constructor(nameOrKey?: SchemaKey | string, readVerOrCtx?: SchemaContext | number, writeVer?: number, minorVer?: number, otherCtx?: SchemaContext) {
-    this._schemaKey = (typeof(nameOrKey) === "string") ? new SchemaKey(nameOrKey, readVerOrCtx as number, writeVer, minorVer) : nameOrKey;
+    this._schemaKey = (typeof(nameOrKey) === "string") ? new SchemaKey(nameOrKey, new ECVersion(readVerOrCtx as number, writeVer, minorVer)) : nameOrKey;
     this._context = (typeof(readVerOrCtx) === "number") ? otherCtx : readVerOrCtx;
     this.references = [];
     this._children = [];
@@ -84,11 +84,11 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param name
    * @param modifier
    */
-  public async createEntityClass(name: string, modifier?: ECClassModifier): Promise<EntityClass> {
+  protected async createEntityClass(name: string, modifier?: ECClassModifier): Promise<EntityClass> {
      return this.createClass<EntityClass>(EntityClass, name, modifier);
   }
 
-  public createEntityClassSync(name: string, modifier?: ECClassModifier): EntityClass {
+  protected createEntityClassSync(name: string, modifier?: ECClassModifier): EntityClass {
      return this.createClass<EntityClass>(EntityClass, name, modifier);
   }
 
@@ -96,19 +96,19 @@ export default class Schema implements CustomAttributeContainerProps {
    * Creates a Mixin with the provided name in this schema.
    * @param name
    */
-  public async createMixinClass(name: string): Promise<Mixin> { return this.createClass<Mixin>(Mixin, name); }
-  public createMixinClassSync(name: string): Mixin { return this.createClass<Mixin>(Mixin, name); }
+  protected async createMixinClass(name: string): Promise<Mixin> { return this.createClass<Mixin>(Mixin, name); }
+  protected createMixinClassSync(name: string): Mixin { return this.createClass<Mixin>(Mixin, name); }
 
   /**
    * Creates a StructClass with the provided name in this schema.
    * @param name
    * @param modifier
    */
-  public async createStructClass(name: string, modifier?: ECClassModifier): Promise<StructClass> {
+  protected async createStructClass(name: string, modifier?: ECClassModifier): Promise<StructClass> {
     return this.createClass<StructClass>(StructClass, name, modifier);
   }
 
-  public createStructClassSync(name: string, modifier?: ECClassModifier): StructClass {
+  protected createStructClassSync(name: string, modifier?: ECClassModifier): StructClass {
     return this.createClass<StructClass>(StructClass, name, modifier);
   }
 
@@ -117,11 +117,11 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param name
    * @param modifier
    */
-  public async createCustomAttributeClass(name: string, modifier?: ECClassModifier): Promise<CustomAttributeClass> {
+  protected async createCustomAttributeClass(name: string, modifier?: ECClassModifier): Promise<CustomAttributeClass> {
     return this.createClass<CustomAttributeClass>(CustomAttributeClass, name, modifier);
   }
 
-  public createCustomAttributeClassSync(name: string, modifier?: ECClassModifier): CustomAttributeClass {
+  protected createCustomAttributeClassSync(name: string, modifier?: ECClassModifier): CustomAttributeClass {
     return this.createClass<CustomAttributeClass>(CustomAttributeClass, name, modifier);
   }
 
@@ -130,11 +130,11 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param name
    * @param modifier
    */
-  public async createRelationshipClass(name: string, modifier?: ECClassModifier): Promise<RelationshipClass> {
+  protected async createRelationshipClass(name: string, modifier?: ECClassModifier): Promise<RelationshipClass> {
     return this.createRelationshipClassSync(name, modifier);
   }
 
-  public createRelationshipClassSync(name: string, modifier?: ECClassModifier): RelationshipClass {
+  protected createRelationshipClassSync(name: string, modifier?: ECClassModifier): RelationshipClass {
     return this.createClass<RelationshipClass>(RelationshipClass, name, modifier);
   }
 
@@ -142,11 +142,11 @@ export default class Schema implements CustomAttributeContainerProps {
    * Creates an Enumeration with the provided name in this schema.
    * @param name
    */
-  public async createEnumeration(name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String): Promise<Enumeration> {
+  protected async createEnumeration(name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String): Promise<Enumeration> {
     return this.createEnumerationSync(name, primitiveType);
   }
 
-  public createEnumerationSync(name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String): Enumeration {
+  protected createEnumerationSync(name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String): Enumeration {
     const child = new Enumeration(this, name, primitiveType);
     this.addChild(child);
     return child;
@@ -156,11 +156,11 @@ export default class Schema implements CustomAttributeContainerProps {
    * Creates an KindOfQuantity with the provided name in this schema.
    * @param name
    */
-  public async createKindOfQuantity(name: string): Promise<KindOfQuantity> {
+  protected async createKindOfQuantity(name: string): Promise<KindOfQuantity> {
     return this.createChild<KindOfQuantity>(KindOfQuantity, name);
   }
 
-  public createKindOfQuantitySync(name: string): KindOfQuantity {
+  protected createKindOfQuantitySync(name: string): KindOfQuantity {
     return this.createChild<KindOfQuantity>(KindOfQuantity, name);
   }
 
@@ -168,11 +168,11 @@ export default class Schema implements CustomAttributeContainerProps {
    * Creates an PropertyCategory with the provided name in this schema.
    * @param name
    */
-  public async createPropertyCategory(name: string): Promise<PropertyCategory> {
+  protected async createPropertyCategory(name: string): Promise<PropertyCategory> {
     return this.createChild<PropertyCategory>(PropertyCategory, name);
   }
 
-  public createPropertyCategorySync(name: string): PropertyCategory {
+  protected createPropertyCategorySync(name: string): PropertyCategory {
     return this.createChild<PropertyCategory>(PropertyCategory, name);
   }
 
@@ -263,7 +263,7 @@ export default class Schema implements CustomAttributeContainerProps {
    *
    * @param child
    */
-  public async addChild<T extends SchemaChild>(child: T): Promise<void> {
+  protected async addChild<T extends SchemaChild>(child: T): Promise<void> {
     if (undefined !== this.getLocalChild(child.name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateChild, `The SchemaChild ${child.name} cannot be added to the schema ${this.name} because it already exists`);
 
@@ -271,7 +271,7 @@ export default class Schema implements CustomAttributeContainerProps {
     return Promise.resolve();
   }
 
-  public addChildSync<T extends SchemaChild>(child: T): void {
+  protected addChildSync<T extends SchemaChild>(child: T): void {
     if (undefined !== this.getLocalChild(child.name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateChild, `The SchemaChild ${child.name} cannot be added to the schema ${this.name} because it already exists`);
 
@@ -315,15 +315,13 @@ export default class Schema implements CustomAttributeContainerProps {
    *
    * @param refSchema
    */
-  public async addReference(refSchema: Schema): Promise<void> {
+  protected async addReference(refSchema: Schema): Promise<void> {
     // TODO validation of reference schema. For now just adding
-    this.references.push(refSchema);
+    this.addReferenceSync(refSchema);
   }
 
-  public addReferenceSync(refSchema: Schema): void {
-    if (refSchema) { }
-
-    throw new Error("Not implemented");
+  protected addReferenceSync(refSchema: Schema): void {
+    this.references.push(refSchema);
   }
 
   public async getReference<T extends Schema>(refSchemaName: string): Promise<T | undefined> {
@@ -353,15 +351,16 @@ export default class Schema implements CustomAttributeContainerProps {
       if (typeof(jsonObj.name) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECSchema has an invalid 'name' attribute. It should be of type 'string'.`);
 
-      this._schemaKey = new SchemaKey(jsonObj.name);
+      const schemaName = jsonObj.name;
 
       if (undefined === jsonObj.version)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} is missing the required 'version' attribute.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${schemaName} is missing the required 'version' attribute.`);
 
       if (typeof(jsonObj.version) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'version' attribute. It should be of type 'string'.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${schemaName} has an invalid 'version' attribute. It should be of type 'string'.`);
 
-      this.schemaKey.version.fromString(jsonObj.version);
+      const version = ECVersion.fromString(jsonObj.version);
+      this._schemaKey = new SchemaKey(schemaName, version);
     } else {
       if (undefined !== jsonObj.name) {
         if (typeof(jsonObj.name) !== "string")
@@ -414,4 +413,32 @@ export default class Schema implements CustomAttributeContainerProps {
 
     return schema;
   }
+}
+
+/** @internal
+ * Hackish approach that works like a "friend class" so we can access protected members without making them public.
+ * We cannot put this into Helper.ts and make it non-export, because we are importing Helper.ts from this file, and the circular import
+ * would prevent this class from extending Schema.
+ */
+export abstract class MutableSchema extends Schema {
+  public abstract async createEntityClass(name: string, modifier?: ECClassModifier): Promise<EntityClass>;
+  public abstract createEntityClassSync(name: string, modifier?: ECClassModifier): EntityClass;
+  public abstract async createMixinClass(name: string): Promise<Mixin>;
+  public abstract createMixinClassSync(name: string): Mixin;
+  public abstract async createStructClass(name: string, modifier?: ECClassModifier): Promise<StructClass>;
+  public abstract createStructClassSync(name: string, modifier?: ECClassModifier): StructClass;
+  public abstract async createCustomAttributeClass(name: string, modifier?: ECClassModifier): Promise<CustomAttributeClass>;
+  public abstract createCustomAttributeClassSync(name: string, modifier?: ECClassModifier): CustomAttributeClass;
+  public abstract async createRelationshipClass(name: string, modifier?: ECClassModifier): Promise<RelationshipClass>;
+  public abstract createRelationshipClassSync(name: string, modifier?: ECClassModifier): RelationshipClass;
+  public abstract async createEnumeration(name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String): Promise<Enumeration>;
+  public abstract createEnumerationSync(name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String): Enumeration;
+  public abstract async createKindOfQuantity(name: string): Promise<KindOfQuantity>;
+  public abstract createKindOfQuantitySync(name: string): KindOfQuantity;
+  public abstract async createPropertyCategory(name: string): Promise<PropertyCategory>;
+  public abstract createPropertyCategorySync(name: string): PropertyCategory;
+  public abstract async addChild<T extends SchemaChild>(child: T): Promise<void>;
+  public abstract addChildSync<T extends SchemaChild>(child: T): void;
+  public abstract async addReference(refSchema: Schema): Promise<void>;
+  public abstract addReferenceSync(refSchema: Schema): void;
 }
