@@ -12,6 +12,8 @@ import {
   Response, ChangeSet, IModel as HubIModel, Briefcase,
 } from "@bentley/imodeljs-clients";
 
+// debugger; // tslint:disable-line:no-debugger
+
 class Timer {
   private label: string;
   constructor(label: string) {
@@ -47,7 +49,7 @@ class TestIModelInfo {
 class MockAccessToken extends AccessToken {
   public constructor() { super(""); }
   public getUserProfile(): UserProfile|undefined {
-    return new UserProfile ("test", "user", "testuser001@mailinator.com", "12345", "Bentley");
+    return new UserProfile ("test", "user", "testuser001@mailinator.com", "596c0d8b-eac2-46a0-aa4a-b590c3314e7c", "Bentley");
   }
   public toTokenString() { return ""; }
 }
@@ -76,7 +78,7 @@ describe("BriefcaseManagerUnitTests", () => {
     new TestIModelInfo("ReadWriteTest"),
     new TestIModelInfo("NoVersionsTest"),
   ];
-  const assetDir = "./test/assets/_mocks_";
+  // const assetDir = "./test/assets/_mocks_";
 
   const spoofAccessToken: MockAccessToken = new MockAccessToken();
   const iModelHubClientMock = TypeMoq.Mock.ofType(IModelHubClient);
@@ -130,8 +132,11 @@ describe("BriefcaseManagerUnitTests", () => {
 
   });
 
-  it("should be able to open a first version IModel in Readonly mode", async () => {
+  it.only("should be able to open a first version IModel in Readonly mode", async () => {
     // Arrange
+    iModelHubClientMock.setup((f: IModelHubClient) => f.acquireBriefcase(TypeMoq.It.isAny(), TypeMoq.It.isValue(testIModels[0].id)))
+    .returns(() => Promise.resolve(1));
+
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
     // Act
@@ -144,29 +149,12 @@ describe("BriefcaseManagerUnitTests", () => {
     expect(IModelJsFs.existsSync(testIModels[0].localReadonlyPath), "Local path to iModel does not exist");
     const files = IModelJsFs.readdirSync(path.join(testIModels[0].localReadonlyPath, "0"));
     expect(files.length).greaterThan(0, "iModel .bim file could not be read");
-
-    iModelVersionMock.verify((f: IModelVersion) => f.evaluateChangeSet(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
   });
 
   it.only("should be able to open a cached first version IModel in ReadWrite mode", async () => {
     // Arrange
     iModelHubClientMock.setup((f: IModelHubClient) => f.acquireBriefcase(TypeMoq.It.isAny(), TypeMoq.It.isValue(testIModels[1].id)))
-      .returns(() => Promise.resolve(174));
-    iModelHubClientMock.setup((f: IModelHubClient) => f.getBriefcase(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAnyNumber(), TypeMoq.It.isValue(true)))
-      .returns(() => {
-        const sampleIModelPath = path.join(assetDir, testIModels[1].name, `${testIModels[1].name}Briefcase.json`);
-        const buff = IModelJsFs.readFileSync(sampleIModelPath);
-        const jsonObj = JSON.parse(buff.toString())[0];
-        return Promise.resolve(getTypedInstance<Briefcase>(Briefcase, jsonObj));
-      }).verifiable();
-    iModelHubClientMock.setup((f: IModelHubClient) => f.getBriefcases(TypeMoq.It.isAny(), TypeMoq.It.isAnyString()))
-      .returns(() => {
-        const sampleIModelPath = path.join(assetDir, testIModels[1].name, `${testIModels[1].name}Briefcase.json`);
-        const buff = IModelJsFs.readFileSync(sampleIModelPath);
-        const jsonObj = JSON.parse(buff.toString())[0];
-        const briefcaseInstance = getTypedInstance<Briefcase>(Briefcase, jsonObj);
-        return Promise.resolve([briefcaseInstance]);
-      }).verifiable();
+      .returns(() => Promise.resolve(999));
 
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
@@ -183,7 +171,7 @@ describe("BriefcaseManagerUnitTests", () => {
     // iModel.close(accessToken);
   });
 
-  it("should reuse open briefcases in Readonly mode", async () => {
+  it.only("should reuse open briefcases in Readonly mode", async () => {
     // Arrange
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
@@ -208,6 +196,36 @@ describe("BriefcaseManagerUnitTests", () => {
 
     // Assert
     const briefcases2 = IModelJsFs.readdirSync(testIModels[0].localReadonlyPath);
+    expect(briefcases2.length).equals(briefcases.length, "Extra or missing briefcases detected in the cache");
+    const diff = briefcases2.filter((item) => briefcases.indexOf(item) < 0);
+    expect(diff.length).equals(0, "Briefcase changed after repeat calls to BriefcaseManager.open");
+  });
+
+  it.only("should reuse open briefcases in ReadWrite mode", async () => {
+    // Arrange
+    BriefcaseManager.hubClient = iModelHubClientMock.object;
+
+    // Act
+    let timer = new Timer("open briefcase first time");
+    const iModel0: BriefcaseEntry = await BriefcaseManager.open(spoofAccessToken as any, testProjectId, testIModels[1].id, OpenMode.Readonly, iModelVersionMock.object);
+    assert.exists(iModel0, "No iModel returned from call to BriefcaseManager.open");
+    assert(iModel0.iModelId === testIModels[1].id, "Incorrect iModel ID");
+    timer.end();
+
+    const briefcases = IModelJsFs.readdirSync(testIModels[1].localReadonlyPath);
+    expect(briefcases.length).greaterThan(0, "iModel .bim file could not be read");
+
+    timer = new Timer("open briefcase 5 more times");
+    const iModels = new Array<BriefcaseEntry>();
+    for (let ii = 0; ii < 5; ii++) {
+      const iModel: BriefcaseEntry = await BriefcaseManager.open(spoofAccessToken as any, testProjectId, testIModels[1].id, OpenMode.Readonly, iModelVersionMock.object);
+      assert.exists(iModel, "No iModel returned from repeat call to BriefcaseManager.open");
+      iModels.push(iModel);
+    }
+    timer.end();
+
+    // Assert
+    const briefcases2 = IModelJsFs.readdirSync(testIModels[1].localReadonlyPath);
     expect(briefcases2.length).equals(briefcases.length, "Extra or missing briefcases detected in the cache");
     const diff = briefcases2.filter((item) => briefcases.indexOf(item) < 0);
     expect(diff.length).equals(0, "Briefcase changed after repeat calls to BriefcaseManager.open");
@@ -298,6 +316,31 @@ class MockAssetUtil {
           .then(() => Promise.resolve());
         });
 
+      // For any call with the specified iModelId, grab the corresponding briefcase json file and parse it into
+      // an instance
+      iModelHubClientMock.setup((f: IModelHubClient) => f.getBriefcase(TypeMoq.It.isAny(),
+                                                                       TypeMoq.It.is<string>((x: string) => x === pair[0]),
+                                                                       TypeMoq.It.isAnyNumber(),
+                                                                       TypeMoq.It.isValue(true)))
+      .returns(() => {
+        const sampleIModelPath = path.join(this.assetDir, pair[1], `${pair[1]}Briefcase.json`);
+        const buff = IModelJsFs.readFileSync(sampleIModelPath);
+        const jsonObj = JSON.parse(buff.toString())[0];
+        return Promise.resolve(getTypedInstance<Briefcase>(Briefcase, jsonObj));
+      }).verifiable();
+
+      // For any call with the specified iModelId, grab the corresponding breifcase json file and parse it into
+      // an instance (we don't really care what else is in the cache, that's the point of mocking)
+      iModelHubClientMock.setup((f: IModelHubClient) => f.getBriefcases(TypeMoq.It.isAny(),
+                                                                        TypeMoq.It.is<string>((x: string) => x === pair[0])))
+        .returns(() => {
+          const sampleIModelPath = path.join(this.assetDir, pair[1], `${pair[1]}Briefcase.json`);
+          const buff = IModelJsFs.readFileSync(sampleIModelPath);
+          const jsonObj = JSON.parse(buff.toString())[0];
+          const briefcaseInstance = getTypedInstance<Briefcase>(Briefcase, jsonObj);
+          return Promise.resolve([briefcaseInstance]);
+        }).verifiable();
+
       // For any call with a specified iModelId, grab the asset file with the associated changeset json objs
       // and parse them into instances
       iModelHubClientMock.setup((f: IModelHubClient) => f.getChangeSets(TypeMoq.It.isAny(),
@@ -329,17 +372,16 @@ class MockAssetUtil {
           .then(() => Promise.resolve());
         }).verifiable();
 
-        // iModelHubClientMock.setup((f: IModelHubClient) => f.getChangeSet(TypeMoq.It.isAny(),
-        //                                                                  TypeMoq.It.is<string>((x: string) => x === pair[0]),
-        //                                                                  TypeMoq.It.isAnyString()/*contained within an array of valid changesets*/,
-        //                                                                  TypeMoq.It.isValue(false)))
-        //   .returns(() => {
-          //     const sampleChangeSetsPath = path.join(this.assetDir, "JSON", "SampleChangeSets.json");
-          //     const buff = IModelJsFs.readFileSync(sampleChangeSetsPath);
-          //     const jsonObj = JSON.parse(buff.toString());
-          //     const sampleChangeSets = getTypedInstances<ChangeSet>(ChangeSet, jsonObj);
-          //     return Promise.resolve(sampleChangeSets[0]);
-          //   }).verifiable();
+      iModelHubClientMock.setup((f: IModelHubClient) => f.getChangeSets(TypeMoq.It.isAny(),
+                                                                         TypeMoq.It.is<string>((x: string) => x === pair[0]),
+                                                                         TypeMoq.It.isValue(false)))
+        .returns(() => {
+            const sampleChangeSetsPath = path.join(this.assetDir, pair[1], `${pair[1]}ChangeSets.json`);
+            const buff = IModelJsFs.readFileSync(sampleChangeSetsPath);
+            const jsonObj = JSON.parse(buff.toString());
+            const sampleChangeSets = getTypedInstances<ChangeSet>(ChangeSet, jsonObj);
+            return Promise.resolve(sampleChangeSets);
+          }).verifiable();
       }
 
     // For any parameters passed, return a seedFile mock
