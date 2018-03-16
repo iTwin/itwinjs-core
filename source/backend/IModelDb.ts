@@ -31,10 +31,11 @@ export type ChangeSetDescriber = (endTxnId: TxnManager.TxnId) => string;
 export class IModelDb extends IModel {
   public static readonly defaultLimit = 1000;
   public static readonly maxLimit = 10000;
-  public models: IModelDbModels;
-  public elements: IModelDbElements;
-  public views: IModelDbViews;
-  public linkTableRelationships: IModelDbLinkTableRelationships;
+  private static _accessTokens?: Map<string, AccessToken>;
+  public models: IModelDbModels = new IModelDbModels(this);
+  public elements: IModelDbElements = new IModelDbElements(this);
+  public views: IModelDbViews  = new IModelDbViews(this);
+  private _linkTableRelationships?: IModelDbLinkTableRelationships;
   private readonly statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
@@ -74,11 +75,6 @@ export class IModelDb extends IModel {
 
     const name = props.rootSubject ? props.rootSubject.name : path.basename(this.briefcase!.pathname);
     super.initialize(name, props);
-
-    this.models = new IModelDbModels(this);
-    this.elements = new IModelDbElements(this);
-    this.views = new IModelDbViews(this);
-    this.linkTableRelationships = new IModelDbLinkTableRelationships(this);
   }
 
   private static constructIModelDb(briefcaseEntry: BriefcaseEntry, contextId?: string): IModelDb {
@@ -86,6 +82,39 @@ export class IModelDb extends IModel {
       return briefcaseEntry.iModelDb; // If there's an IModelDb already associated with the briefcase, that should be reused.
     const iModelToken = new IModelToken(briefcaseEntry.getPathKey(), briefcaseEntry.isStandalone, contextId, briefcaseEntry.iModelId, briefcaseEntry.changeSetId, briefcaseEntry.openMode, briefcaseEntry.userId);
     return new IModelDb(briefcaseEntry, iModelToken);
+  }
+
+  /**
+   * Get the AccessToken that is considered to be the owner of a local IModelDb.
+   * Note: Call this only for IModels that are known to have been opened during the current session using [[IModelDb.open]].
+   * @param iModelId The IModelID of an open IModelDb
+   * @throws [[IModelError]] with [[IModelStatus.NotFound]] if no AccessToken is registered for the specified IModel. That could happen if the IModel is not currently open.
+   */
+  public static getAccessToken(iModelId: string): AccessToken {
+    if (IModelDb._accessTokens === undefined)
+      throw new IModelError(IModelStatus.NotFound);
+    const token: AccessToken | undefined = IModelDb._accessTokens.get(iModelId);
+    if (token === undefined)
+      throw new IModelError(IModelStatus.NotFound);
+    return token;
+  }
+
+  private static setFirstAccessToken(iModelId: string, accessToken: AccessToken) {
+    if (IModelDb._accessTokens === undefined)
+      IModelDb._accessTokens = new Map<string, AccessToken>();
+    if (IModelDb._accessTokens.get(iModelId) === undefined)
+    IModelDb._accessTokens.set(iModelId, accessToken);
+  }
+
+  /**
+   * Change the AccessToken that should be considered the owner of the local IModelDb.
+   * @param iModelId iModelId The IModelID of an open IModelDb
+   * @param accessToken The AccessToken that should be considered the owner of the local IModelDb.
+   */
+  public static updateAccessToken(iModelId: string, accessToken: AccessToken) {
+    if (IModelDb._accessTokens !== undefined)
+      IModelDb._accessTokens.delete(iModelId);
+    IModelDb.setFirstAccessToken(iModelId, accessToken);
   }
 
   /**
@@ -105,6 +134,7 @@ export class IModelDb extends IModel {
     IModelDb.onCreate.raiseEvent(accessToken, contextId, hubName, rootSubjectName, hubDescription, rootSubjectDescription);
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.create(accessToken, contextId, hubName, rootSubjectName, hubDescription, rootSubjectDescription);
     const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, contextId);
+    IModelDb.setFirstAccessToken(imodelDb.briefcase!.iModelId, accessToken);
     IModelDb.onCreated.raiseEvent(imodelDb);
     return imodelDb;
   }
@@ -133,6 +163,7 @@ export class IModelDb extends IModel {
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(accessToken, contextId, iModelId, openMode, version);
     Logger.logTrace(loggingCategory, "IModelDb.open", () => ({ iModelId, openMode }));
     const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, contextId);
+    IModelDb.setFirstAccessToken(imodelDb.briefcase!.iModelId, accessToken);
     IModelDb.onOpened.raiseEvent(imodelDb);
     return imodelDb;
   }
@@ -351,7 +382,7 @@ export class IModelDb extends IModel {
    */
   public async pushChanges(accessToken: AccessToken, describer?: ChangeSetDescriber): Promise<void> {
     if (!this.briefcase) throw this._newNotOpenError();
-    const description = describer ? describer(this.Txns.getCurrentTxnId()) : this.Txns.describeChangeSet();
+    const description = describer ? describer(this.txns.getCurrentTxnId()) : this.txns.describeChangeSet();
     await BriefcaseManager.pushChanges(accessToken, this.briefcase, description);
     this.token.changeSetId = this.briefcase.changeSetId;
     this.initializeIModelDb();
@@ -415,11 +446,14 @@ export class IModelDb extends IModel {
     return this._classMetaDataRegistry;
   }
 
+  /** Get the linkTableRelationships for this IModel */
+  public get linkTableRelationships(): IModelDbLinkTableRelationships { return this._linkTableRelationships || (this._linkTableRelationships = new IModelDbLinkTableRelationships(this)); }
+
   /** Get the ConcurrencyControl for this IModel. */
   public get concurrencyControl(): ConcurrencyControl { return (this._concurrency !== undefined) ? this._concurrency : (this._concurrency = new ConcurrencyControl(this)); }
 
   /** Get the TxnManager for this IModelDb. */
-  public get Txns(): TxnManager { return (this._txnManager !== undefined) ? this._txnManager : (this._txnManager = new TxnManager(this)); }
+  public get txns(): TxnManager { return (this._txnManager !== undefined) ? this._txnManager : (this._txnManager = new TxnManager(this)); }
 
   /** Get the CodeSpecs in this IModel. */
   public get codeSpecs(): CodeSpecs { return (this._codeSpecs !== undefined) ? this._codeSpecs : (this._codeSpecs = new CodeSpecs(this)); }
