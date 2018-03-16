@@ -6,7 +6,8 @@ import { OpenMode } from "@bentley/bentleyjs-core";
 import { SeedFile, RequestQueryOptions } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { IModelHost } from "../../IModelHost";
-import { BriefcaseManager, BriefcaseEntry } from "../../BriefcaseManager";
+import { BriefcaseManager } from "../../BriefcaseManager";
+import { IModelDb } from "../../IModelDb";
 import {
   AccessToken, UserProfile, ConnectClient, Project, IModelHubClient, WsgInstance, ECJsonTypeMap,
   Response, ChangeSet, IModel as HubIModel, Briefcase,
@@ -140,7 +141,7 @@ describe("BriefcaseManagerUnitTests", () => {
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
     // Act
-    const iModel: BriefcaseEntry = await BriefcaseManager.open(spoofAccessToken as any, testProjectId, testIModels[0].id, OpenMode.Readonly, iModelVersionMock.object);
+    const iModel: IModelDb = await IModelDb.open(spoofAccessToken as any, testProjectId, testIModels[0].id, OpenMode.Readonly, iModelVersionMock.object);
 
     // Assert
     assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
@@ -159,7 +160,7 @@ describe("BriefcaseManagerUnitTests", () => {
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
     // Act
-    const iModel: BriefcaseEntry = await BriefcaseManager.open(spoofAccessToken as any, testProjectId, testIModels[1].id, OpenMode.ReadWrite, iModelVersionMock.object); // Note: No frontend support for ReadWrite open yet
+    const iModel: IModelDb = await IModelDb.open(spoofAccessToken as any, testProjectId, testIModels[1].id, OpenMode.ReadWrite, iModelVersionMock.object); // Note: No frontend support for ReadWrite open yet
     // Assert
     assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
     assert(iModel.openMode === OpenMode.ReadWrite, "iModel not set to ReadWrite mode");
@@ -177,18 +178,18 @@ describe("BriefcaseManagerUnitTests", () => {
 
     // Act
     let timer = new Timer("open briefcase first time");
-    const iModel0: BriefcaseEntry = await BriefcaseManager.open(spoofAccessToken as any, testProjectId, testIModels[0].id, OpenMode.Readonly, iModelVersionMock.object);
+    const iModel0: IModelDb = await IModelDb.open(spoofAccessToken as any, testProjectId, testIModels[0].id, OpenMode.Readonly, iModelVersionMock.object);
     assert.exists(iModel0, "No iModel returned from call to BriefcaseManager.open");
-    assert(iModel0.iModelId === testIModels[0].id, "Incorrect iModel ID");
+    assert(iModel0.iModelToken.iModelId === testIModels[0].id, "Incorrect iModel ID");
     timer.end();
 
     const briefcases = IModelJsFs.readdirSync(testIModels[0].localReadonlyPath);
     expect(briefcases.length).greaterThan(0, "iModel .bim file could not be read");
 
     timer = new Timer("open briefcase 5 more times");
-    const iModels = new Array<BriefcaseEntry>();
+    const iModels = new Array<IModelDb>();
     for (let ii = 0; ii < 5; ii++) {
-      const iModel: BriefcaseEntry = await BriefcaseManager.open(spoofAccessToken as any, testProjectId, testIModels[0].id, OpenMode.Readonly, iModelVersionMock.object);
+      const iModel: IModelDb = await IModelDb.open(spoofAccessToken as any, testProjectId, testIModels[0].id, OpenMode.Readonly, iModelVersionMock.object);
       assert.exists(iModel, "No iModel returned from repeat call to BriefcaseManager.open");
       iModels.push(iModel);
     }
@@ -201,24 +202,24 @@ describe("BriefcaseManagerUnitTests", () => {
     expect(diff.length).equals(0, "Briefcase changed after repeat calls to BriefcaseManager.open");
   });
 
-  it.only("should reuse open briefcases in ReadWrite mode", async () => {
+  it("should reuse open briefcases in ReadWrite mode", async () => {
     // Arrange
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
     // Act
     let timer = new Timer("open briefcase first time");
-    const iModel0: BriefcaseEntry = await BriefcaseManager.open(spoofAccessToken as any, testProjectId, testIModels[1].id, OpenMode.Readonly, iModelVersionMock.object);
+    const iModel0: IModelDb = await IModelDb.open(spoofAccessToken as any, testProjectId, testIModels[1].id, OpenMode.Readonly, iModelVersionMock.object);
     assert.exists(iModel0, "No iModel returned from call to BriefcaseManager.open");
-    assert(iModel0.iModelId === testIModels[1].id, "Incorrect iModel ID");
+    assert(iModel0.iModelToken.iModelId === testIModels[1].id, "Incorrect iModel ID");
     timer.end();
 
     const briefcases = IModelJsFs.readdirSync(testIModels[1].localReadonlyPath);
     expect(briefcases.length).greaterThan(0, "iModel .bim file could not be read");
 
     timer = new Timer("open briefcase 5 more times");
-    const iModels = new Array<BriefcaseEntry>();
+    const iModels = new Array<IModelDb>();
     for (let ii = 0; ii < 5; ii++) {
-      const iModel: BriefcaseEntry = await BriefcaseManager.open(spoofAccessToken as any, testProjectId, testIModels[1].id, OpenMode.Readonly, iModelVersionMock.object);
+      const iModel: IModelDb = await IModelDb.open(spoofAccessToken as any, testProjectId, testIModels[1].id, OpenMode.Readonly, iModelVersionMock.object);
       assert.exists(iModel, "No iModel returned from repeat call to BriefcaseManager.open");
       iModels.push(iModel);
     }
