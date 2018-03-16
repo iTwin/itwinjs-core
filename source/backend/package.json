@@ -11,6 +11,7 @@
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:assets",
     "clean": "rimraf lib package-deps.json",
+    "docs": "cd ../.. && npm run docs:backend",
     "copy:assets": "cpx ./assets/**/* ./lib/assets",
     "copy:test-assets": "cpx ./test/assets/**/* ./lib/test/assets",
     "cover": "nyc mocha --timeout 30000 --compilers ts-node/register --require tsconfig-paths/register --require source-map-support/register ./test/**/*.test.ts",
