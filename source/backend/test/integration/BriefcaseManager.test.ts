@@ -5,7 +5,7 @@ import * as path from "path";
 import { expect, assert } from "chai";
 import { Id64, OpenMode, DbOpcode, BeEvent } from "@bentley/bentleyjs-core";
 import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState, SeedFile } from "@bentley/imodeljs-clients";
-import { Code, IModelVersion, Appearance, ColorDef, IModel } from "@bentley/imodeljs-common";
+import { Code, IModelVersion, Appearance, ColorDef, IModel, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { KeepBriefcase, IModelDb, ConcurrencyControl, Element, DictionaryModel, SpatialCategory, IModelHost, AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../../backend";
 import { IModelTestUtils, TestUsers } from "../IModelTestUtils";
 import { IModelJsFs } from "../../IModelJsFs";
@@ -430,6 +430,18 @@ describe("BriefcaseManager", () => {
     assert.exists(qaIModel);
   });
 
+  it("Should track the AccessTokens that are used to open IModels", async () => {
+    await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
+    assert.deepEqual(IModelDb.getAccessToken(testIModelId), accessToken);
+
+    try {
+      IModelDb.getAccessToken("--invalidid--");
+      assert.fail("Asking for an AccessToken on an iModel that is not open should fail");
+    } catch (err) {
+      assert.equal((err as IModelError).errorNumber, IModelStatus.NotFound);
+    }
+  });
+
   it("should be able to reverse and reinstate changes", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
 
@@ -648,7 +660,7 @@ describe("BriefcaseManager", () => {
     lastAutoPushEventType = undefined;
 
     // Create an autopush in manual-schedule mode.
-    const autoPush = new AutoPush(iModel as any, { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false }, accessToken, activityMonitor);
+    const autoPush = new AutoPush(iModel as any, { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false }, activityMonitor);
     assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
     assert.isFalse(autoPush.autoSchedule);
 
