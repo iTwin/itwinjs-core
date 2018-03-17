@@ -27,7 +27,7 @@ export interface TextStringProps {
 
 /**
  * A single line of text, all with the same font, styles (underline, bold, italic), and size.
- * This class also holds the origin, and direction for the text.
+ * This class also holds the origin and direction for the text.
  * A paragraph is composed of one or more instances of TextStrings.
  */
 export class TextString {

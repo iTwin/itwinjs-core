@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64Props, GuidProps } from "@bentley/bentleyjs-core";
-import { CodeProps, Code } from "./Code";
+import { CodeProps } from "./Code";
 import { EntityProps } from "./EntityProps";
 import { GeometryStream } from "./geometry/GeometryStream";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps, LowAndHighXYZ, LowAndHighXY } from "@bentley/geometry-core";
@@ -117,12 +117,11 @@ export interface InformationPartitionElementProps extends DefinitionElementProps
 }
 
 /** Parameters to specify what element to load. */
-export interface ElementLoadParams {
+export interface ElementLoadProps {
   id?: Id64Props;
-  code?: Code;
+  code?: CodeProps;
   federationGuid?: GuidProps;
-  /** if true, do not load the geometry of the element */
-  noGeometry?: boolean;
+  wantGeometry?: boolean;
 }
 
 /** ElementAspectProps */
