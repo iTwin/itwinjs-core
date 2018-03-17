@@ -1507,16 +1507,9 @@ export class TxnManager {
     let txnId = this.queryFirstTxnId();
 
     while (this.isTxnIdValid(txnId)) {
-      const txnDescStr = this.getTxnDescription(txnId);
-      if ((txnDescStr.length === 0) || seen.has(txnDescStr))
+      const txnDesc = this.getTxnDescription(txnId);
+      if ((txnDesc.length === 0) || seen.has(txnDesc))
         continue;
-
-      let txnDesc: any;
-      try {
-        txnDesc = JSON.parse(txnDescStr);
-      } catch (err) {
-        txnDesc = { description: txnDescStr };
-      }
 
       changes.push(txnDesc);
       seen.add(txnDesc);
