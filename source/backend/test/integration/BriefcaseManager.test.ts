@@ -125,7 +125,7 @@ describe("BriefcaseManager", () => {
   });
 
   it.only ("should open multiple versions of iModels", async () => {
-    const iModelNames = ["NoVersionsTest", "ReadOnlyTest"];
+    // const iModelNames = ["NoVersionsTest", "ReadOnlyTest"];
     // for (const name of iModelNames) {
     //    const iModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, name);
 
@@ -138,9 +138,12 @@ describe("BriefcaseManager", () => {
     //   // Download change sets
     //    await IModelTestUtils.hubClient.downloadChangeSets(changeSets, "C:/Users/Charles.Goepfert/AppData/Local/Temp/Bentley/IModelJs/cache/iModels/c3e1146f-8c81-430d-a974-ac840657b7ac/readWrite/176/csets");
     // }
+    debugger; // tslint:disable-line:no-debugger
 
-    const iD = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, iModelNames[1]);
-    const iModel = await IModelDb.open(accessToken, testProjectId, iD, OpenMode.ReadWrite, IModelVersion.first());
+    const iModel = await IModelDb.open(accessToken, testProjectId, "000-00000-00000-0-000", OpenMode.ReadWrite, IModelVersion.first());
+
+    // const iD = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, iModelNames[1]);
+    // const iModel = await IModelDb.open(accessToken, testProjectId, iD, OpenMode.ReadWrite, IModelVersion.first());
 
     // // Get all change set information including the download link
     // const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, iD, true /*=includeDownloadLink*/);
@@ -551,13 +554,12 @@ describe("BriefcaseManager", () => {
     const foundCode: MultiCode[] = codeStates.filter((cs) => cs.values!.includes(category.code.value!) && (cs.state === CodeState.Reserved));
     assert.equal(foundCode.length, 1);
 
-    /* NEEDS WORK - query just this one code
-  assert.isTrue(category.code.value !== undefined);
-  const codeStates2 = await iModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope, category.code.value!);
-  assert.equal(codeStates2.length, 1);
-  assert.equal(codeStates2[0].values.length, 1);
-  assert.equal(codeStates2[0].values[0], category.code.value!);
-  */
+    // // NEEDS WORK - query just this one code
+    // assert.isTrue(category.code.value !== undefined);
+    // const codeStates2 = await iModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope, category.code.value!);
+    // assert.equal(codeStates2.length, 1);
+    // assert.equal(codeStates2[0].values.length, 1);
+    // assert.equal(codeStates2[0].values[0], category.code.value!);
 
     timer.end();
 

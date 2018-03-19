@@ -3,7 +3,7 @@ import * as path from "path";
 import { expect, assert } from "chai";
 import { IModelJsFs } from "../../IModelJsFs";
 import { OpenMode } from "@bentley/bentleyjs-core";
-import { SeedFile, RequestQueryOptions } from "@bentley/imodeljs-clients";
+import { SeedFile, SeedFileInitState, RequestQueryOptions } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { IModelHost } from "../../IModelHost";
 import { BriefcaseManager } from "../../BriefcaseManager";
@@ -133,7 +133,7 @@ describe("BriefcaseManagerUnitTests", () => {
 
   });
 
-  it.only("should be able to open a first version IModel in Readonly mode", async () => {
+  it("should be able to open a first version IModel in Readonly mode", async () => {
     // Arrange
     iModelHubClientMock.setup((f: IModelHubClient) => f.acquireBriefcase(TypeMoq.It.isAny(), TypeMoq.It.isValue(testIModels[0].id)))
     .returns(() => Promise.resolve(1));
@@ -152,7 +152,45 @@ describe("BriefcaseManagerUnitTests", () => {
     expect(files.length).greaterThan(0, "iModel .bim file could not be read");
   });
 
-  it.only("should be able to open a cached first version IModel in ReadWrite mode", async () => {
+  it.skip("should throw an error when opening a nonexistent IModel in ReadOnly mode", async () => {
+    // Arrange
+    const capturedError: Error = new Error("InstanceNotFound: Instance 'iModel' with specified ID was not found.");
+    iModelHubClientMock.setup((f: IModelHubClient) => f.getIModel(TypeMoq.It.isAny(),
+                                                                    TypeMoq.It.isAnyString(),
+                                                                    TypeMoq.It.is<string>((x: string) => x === "000")))
+      .callback((err: Error) => err = capturedError);
+
+    BriefcaseManager.hubClient = iModelHubClientMock.object;
+
+    debugger; // tslint:disable-line:no-debugger
+    // Act
+    const iModel: IModelDb = await IModelDb.open(spoofAccessToken as any, testProjectId, "000", OpenMode.Readonly, iModelVersionMock.object);
+
+    // Assert
+    assert.isUndefined(iModel, "An iModel was unexpectedly returned");
+    assert.instanceOf<Error>(capturedError, Error, "Error was not thrown" );
+  });
+
+  it.only("should create a new iModel", async () => {
+    // Delete the iModel if it currently exists in the cache. We're replacing it anyways
+    if (IModelJsFs.existsSync(testIModels[0].localReadonlyPath)) {
+      IModelJsFs.removeSync(testIModels[0].localReadonlyPath);
+    }
+
+    BriefcaseManager.hubClient = iModelHubClientMock.object;
+
+    debugger; // tslint:disable-line:no-debugger
+    const iModel: IModelDb = await IModelDb.create(spoofAccessToken as any, testProjectId, testIModels[0].name, testIModels[0].name);
+
+    assert.exists(iModel, "No iModel returned from call to IModelDb.create");
+    assert(iModel.iModelToken.iModelId === testIModels[0].id);
+
+    expect(IModelJsFs.existsSync(testIModels[0].localReadonlyPath), "Local path to iModel does not exist");
+    const files = IModelJsFs.readdirSync(path.join(testIModels[0].localReadonlyPath, "0"));
+    expect(files.length).greaterThan(0, "iModel .bim file could not be read");
+  });
+
+  it("should be able to open a cached first version IModel in ReadWrite mode", async () => {
     // Arrange
     iModelHubClientMock.setup((f: IModelHubClient) => f.acquireBriefcase(TypeMoq.It.isAny(), TypeMoq.It.isValue(testIModels[1].id)))
       .returns(() => Promise.resolve(999));
@@ -172,7 +210,7 @@ describe("BriefcaseManagerUnitTests", () => {
     // iModel.close(accessToken);
   });
 
-  it.only("should reuse open briefcases in Readonly mode", async () => {
+  it("should reuse open briefcases in Readonly mode", async () => {
     // Arrange
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
@@ -231,6 +269,126 @@ describe("BriefcaseManagerUnitTests", () => {
     const diff = briefcases2.filter((item) => briefcases.indexOf(item) < 0);
     expect(diff.length).equals(0, "Briefcase changed after repeat calls to BriefcaseManager.open");
   });
+
+  // it.skip("should write to briefcase with optimistic concurrency", async () => {
+  //   // NOTE: shouldn't need to delete anything from the hub since we're mocking...
+  //   // let timer = new Timer("delete iModels");
+  //   // // Delete any existing iModels with the same name as the read-write test iModel
+  //   // const iModelName = "ReadWriteTest";
+  //   // const iModels: HubIModel[] = await IModelTestUtils.hubClient.getIModels(accessToken, testProjectId, {
+  //   //   $select: "*",
+  //   //   $filter: "Name+eq+'" + iModelName + "'",
+  //   // });
+  //   // for (const iModelTemp of iModels) {
+  //   //   await IModelTestUtils.hubClient.deleteIModel(accessToken, testProjectId, iModelTemp.wsgId);
+  //   // }
+  //   // timer.end();
+
+  //   // Create a new iModel on the Hub (by uploading a seed file)
+  //   let timer = new Timer("create iModel");
+  //   const rwIModel: IModelDb = await IModelDb.create(spoofAccessToken as any, testProjectId, "ReadWriteTest", "TestSubject");
+  //   const rwIModelId = rwIModel.iModelToken.iModelId;
+  //   assert.isNotEmpty(rwIModelId);
+  //   timer.end();
+
+  //   timer = new Timer("make local changes");
+
+  //   // Turn on optimistic concurrency control. This allows the app to modify elements, models, etc. without first acquiring locks.
+  //   // Later, when the app downloads and merges changeSets from the Hub into the briefcase, BriefcaseManager will merge changes and handle conflicts.
+  //   // The app still has to reserve codes.
+  //   rwIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+
+  //   // Show that we can modify the properties of an element. In this case, we modify the root element itself.
+  //   const rootEl: Element = (rwIModel.elements.getRootSubject()).copyForEdit<Element>();
+  //   rootEl.userLabel = rootEl.userLabel + "changed";
+  //   rwIModel.elements.updateElement(rootEl);
+
+  //   assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests());
+
+  //   rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "changed a userLabel" }));  // save it, to show that saveChanges will accumulate local txn descriptions
+
+  //   // Create a new physical model.
+  //   let newModelId: Id64;
+  //   [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
+
+  //   // Find or create a SpatialCategory.
+  //   const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
+  //   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
+  //   const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+
+  //   timer.end();
+
+  //   timer = new Timer("query Codes I");
+
+  //   // iModel.concurrencyControl should have recorded the codes that are required by the new elements.
+  //   assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests());
+  //   assert.isTrue(await rwIModel.concurrencyControl.areAvailable(accessToken));
+
+  //   timer.end();
+  //   timer = new Timer("reserve Codes");
+
+  //   // Reserve all of the codes that are required by the new model and category.
+  //   try {
+  //     await rwIModel.concurrencyControl.request(accessToken);
+  //   } catch (err) {
+  //     if (err instanceof ConcurrencyControl.RequestError) {
+  //       assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
+  //     }
+  //   }
+
+  //   timer.end();
+  //   timer = new Timer("query Codes II");
+
+  //   // Verify that the codes are reserved.
+  //   const category = rwIModel.elements.getElement(spatialCategoryId);
+  //   assert.isTrue(category.code.value !== undefined);
+  //   const codeStates: MultiCode[] = await rwIModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope);
+  //   const foundCode: MultiCode[] = codeStates.filter((cs) => cs.values!.includes(category.code.value!) && (cs.state === CodeState.Reserved));
+  //   assert.equal(foundCode.length, 1);
+
+  //   // // NEEDS WORK - query just this one code
+  //   // assert.isTrue(category.code.value !== undefined);
+  //   // const codeStates2 = await iModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope, category.code.value!);
+  //   // assert.equal(codeStates2.length, 1);
+  //   // assert.equal(codeStates2[0].values.length, 1);
+  //   // assert.equal(codeStates2[0].values[0], category.code.value!);
+
+  //   timer.end();
+
+  //   timer = new Timer("make more local changes");
+
+  //   // Create a couple of physical elements.
+  //   const elid1 = rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
+  //   rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
+
+  //   // Commit the local changes to a local transaction in the briefcase.
+  //   // (Note that this ends the bulk operation automatically, so there's no need to call endBulkOperation.)
+  //   rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "inserted generic objects" }));
+
+  //   rwIModel.elements.getElement(elid1); // throws if elid1 is not found
+  //   rwIModel.elements.getElement(spatialCategoryId); // throws if spatialCategoryId is not found
+
+  //   timer.end();
+
+  //   timer = new Timer("pullmergepush");
+
+  //   // Push the changes to the hub
+  //   const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
+  //   await rwIModel.pushChanges(accessToken);
+  //   const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
+  //   assert(!!postPushChangeSetId);
+  //   expect(prePushChangeSetId !== postPushChangeSetId);
+
+  //   timer.end();
+
+  //   // Open a readonly copy of the iModel
+  //   const roIModel: IModelDb = await IModelDb.open(accessToken, testProjectId, rwIModelId!, OpenMode.Readonly, IModelVersion.latest());
+  //   assert.exists(roIModel);
+
+  //   rwIModel.close(accessToken, KeepBriefcase.No);
+  //   roIModel.close(accessToken);
+  // });
+
 });
 
 /** Provides utility functions for working with mock objects */
@@ -274,9 +432,34 @@ class MockAssetUtil {
     const seedFileMock = TypeMoq.Mock.ofType(SeedFile);
     seedFileMock.object.downloadUrl = "www.bentley.com";
     seedFileMock.object.mergedChangeSetId = "";
+    seedFileMock.object.initializationState = SeedFileInitState.Successful;
 
     // We need to set up unique return callbacks for all the iModels we have stored in the assets folder
     for (const pair of this.iModelMap) {
+      // For any call with the specified iModel name, grab that iModel's json file and parse it into an instance
+      iModelHubClientMock.setup((f: IModelHubClient) => f.createIModel(TypeMoq.It.isAny(),
+                                                                       TypeMoq.It.isAnyString(),
+                                                                       TypeMoq.It.is<string>((x: string) => x === pair[1]),
+                                                                       TypeMoq.It.isAny()))
+        .returns(() => {
+          setTimeout(() => {}, 100);
+          const sampleIModelPath = path.join(this.assetDir, pair[1], `${pair[1]}.json`);
+          const buff = IModelJsFs.readFileSync(sampleIModelPath);
+          const jsonObj = JSON.parse(buff.toString())[0];
+          return Promise.resolve(getTypedInstance<HubIModel>(HubIModel, jsonObj));
+        }).verifiable();
+
+      iModelHubClientMock.setup((f: IModelHubClient) => f.uploadSeedFile(TypeMoq.It.isAny(),
+                                                                         TypeMoq.It.is<string>((x: string) => x === pair[0]),
+                                                                         TypeMoq.It.is<string>((x: string) => x.includes(pair[1])),
+                                                                         TypeMoq.It.isAny()))
+        .returns(() => Promise.resolve(seedFileMock.object));
+
+      iModelHubClientMock.setup((f: IModelHubClient) => f.confirmUploadSeedFile(TypeMoq.It.isAny(),
+                                                                                TypeMoq.It.is<string>((x: string) => x === pair[0]),
+                                                                                TypeMoq.It.is<SeedFile>((x: SeedFile) => x.downloadUrl === seedFileMock.object.downloadUrl)))
+        .returns(() => Promise.resolve(seedFileMock.object));
+
       // For any call with request parameters contianing the iModel name, grab that iModel's json file
       // and parse it into an instance
       iModelHubClientMock.setup((f: IModelHubClient) => f.getIModels(TypeMoq.It.isAny(),
