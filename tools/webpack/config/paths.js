@@ -79,7 +79,6 @@ let baseConfig = {
   // Misc. Config
   publicUrl: getPublicUrl(resolveApp("package.json")),
   servedPath: getServedPath(resolveApp("package.json")),
-  imodeljsCommonRegex: /^\$\(iModelJs-Common\)/,
 
   ...getPackageJsonPathOverrides(resolveApp("package.json"))
 }

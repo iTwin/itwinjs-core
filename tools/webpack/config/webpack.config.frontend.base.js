@@ -129,10 +129,6 @@ module.exports = (publicPath) => {
               include: paths.appSrc,
               loader: require.resolve("ts-loader"),
               options: {
-                compilerOptions: {
-                  // Replace $(iModelJs-Common) with @bentley/imodeljs-frontend when compiling typescript
-                  paths: {"$(iModelJs-Common)/*": [ "../node_modules/@bentley/imodeljs-frontend/*"] } 
-                },
                 onlyCompileBundledFiles: true,
                 logLevel: "warn",
               }
@@ -210,10 +206,6 @@ module.exports = (publicPath) => {
       // Automatically make React available
       new webpack.ProvidePlugin({
         React: "react",
-      }),
-      // Replace $(iModelJs-Common) with @bentley/imodeljs-frontend when resolving modules
-      new webpack.NormalModuleReplacementPlugin(paths.imodeljsCommonRegex, (r) => {
-        r.request = r.request.replace(paths.imodeljsCommonRegex, "@bentley/imodeljs-frontend");
       }),
     ],
   };

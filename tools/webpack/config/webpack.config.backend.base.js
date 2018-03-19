@@ -107,10 +107,6 @@ module.exports = (publicPath) => {
               include: paths.appSrc,
               loader: require.resolve("ts-loader"),
               options: {
-                compilerOptions: { 
-                  // Replace $(iModelJs-Common) with @bentley/imodeljs-backend when compiling typescript
-                  paths: {"$(iModelJs-Common)/*": [ "../node_modules/@bentley/imodeljs-backend/*"] } 
-                },
                 onlyCompileBundledFiles: true,
                 logLevel: "warn",
               }
@@ -141,10 +137,6 @@ module.exports = (publicPath) => {
       // a plugin that prints an error when you attempt to do this.
       // See https://github.com/facebookincubator/create-react-app/issues/240
       new CaseSensitivePathsPlugin(),
-      // Replace $(iModelJs-Common) with @bentley/imodeljs-backend when resolving modules
-      new webpack.NormalModuleReplacementPlugin(paths.imodeljsCommonRegex, (r) => {
-        r.request = r.request.replace(paths.imodeljsCommonRegex, "@bentley/imodeljs-backend");
-      }),
     ]
   };
 };

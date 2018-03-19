@@ -19,8 +19,6 @@ const publicUrl = "PUBLIC_URL";
 // Get environment variables to inject into our app.
 const env = getClientEnvironment(publicUrl);
 
-const resolveIModeljsCommon = (str) => str.replace(paths.imodeljsCommonRegex, "@bentley/imodeljs-backend");
-
 // This is the test configuration.
 const config = {
   // Compile node compatible code
@@ -39,8 +37,6 @@ const config = {
       /\.svg$/,
       /\.d\.ts$/,
     ]}),
-    // We also need the following work around to keep $(iModelJs-Common) modules out of the bundle:
-    (ctx, req, cb) => (paths.imodeljsCommonRegex.test(req)) ? cb(null, "commonjs " + resolveIModeljsCommon(req)) : cb()
   ],
   
   // You may want "eval" instead if you prefer to see the compiled output in DevTools.
@@ -113,10 +109,6 @@ const config = {
             exclude: /(node_modules|bower_components)/,
             loader: require.resolve("ts-loader"),
             options: {
-              compilerOptions: { 
-                // Replace $(iModelJs-Common) with @bentley/imodeljs-backend when compiling typescript
-                paths: { "$(iModelJs-Common)/*": [ "../node_modules/@bentley/imodeljs-backend/*"] }
-              },
               onlyCompileBundledFiles: true,
               logLevel: "warn"
             },
@@ -161,8 +153,6 @@ const config = {
       shallow: ["enzyme", "shallow"],
       mount: ["enzyme", "mount"],
     }),
-    // Replace $(iModelJs-Common) with @bentley/imodeljs-backend when resolving modules
-    new webpack.NormalModuleReplacementPlugin(paths.imodeljsCommonRegex, (r) => r.request = resolveIModeljsCommon(r.request)),
   ],
   node: {
     __filename: true,
