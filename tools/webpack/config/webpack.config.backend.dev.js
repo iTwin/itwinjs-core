@@ -20,7 +20,7 @@ const baseConfiguration = require("./webpack.config.backend.base")(publicPath);
 // This is the DEVELOPMENT configuration.
 // It is focused on developer experience and fast rebuilds.
 //======================================================================================================================================
-module.exports = helpers.mergeWebpackConfigs(baseConfiguration, {
+const config = helpers.mergeWebpackConfigs(baseConfiguration, {
   // You may want "eval" instead if you prefer to see the compiled output in DevTools.
   // See the discussion in https://github.com/facebookincubator/create-react-app/issues/343.
   devtool: "cheap-module-source-map",
@@ -44,3 +44,5 @@ module.exports = helpers.mergeWebpackConfigs(baseConfiguration, {
     hints: false,
   },
 });
+
+module.exports = helpers.getCustomizedWebpackConfig(paths.appWebpackConfigBackend, config);

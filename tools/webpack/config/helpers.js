@@ -62,6 +62,18 @@ const mergeWebpackConfigs = merge({
   customizeObject: (a, b, key) => undefined,
 });
 
+function getCustomizedWebpackConfig(configPath, config) {
+  let actualConfig = config;
+
+  if (paths.appWebpackConfigBase && fs.existsSync(paths.appWebpackConfigBase))
+    actualConfig = mergeWebpackConfigs(actualConfig, require(paths.appWebpackConfigBase));
+
+  if (configPath && fs.existsSync(configPath))
+    actualConfig = mergeWebpackConfigs(actualConfig, require(configPath));
+
+  return actualConfig;
+}
+
 const modulesToExcludeFromTests = [
   paths.appMainJs,
   paths.appIndexJs,
@@ -72,6 +84,7 @@ const modulesToExcludeFromTests = [
 module.exports = {
   createDevToolModuleFilename,
   createBentleySourceMapsIncludePaths,
+  getCustomizedWebpackConfig,
   mergeWebpackConfigs,
   modulesToExcludeFromTests,
 };

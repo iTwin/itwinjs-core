@@ -22,7 +22,7 @@ const env = getClientEnvironment(publicUrl);
 const resolveIModeljsCommon = (str) => str.replace(paths.imodeljsCommonRegex, "@bentley/imodeljs-backend");
 
 // This is the test configuration.
-module.exports = {
+const config = {
   // Compile node compatible code
   target: "node",
   
@@ -168,3 +168,5 @@ module.exports = {
     __filename: true,
   }
 };
+
+module.exports = helpers.getCustomizedWebpackConfig(paths.appWebpackConfigTest, config);

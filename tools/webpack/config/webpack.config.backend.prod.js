@@ -20,7 +20,7 @@ const baseConfiguration = require("./webpack.config.backend.base")(publicPath);
 // This is the PRODUCTION configuration.
 // It compiles slowly and is focused on producing a fast and minimal bundle.
 //======================================================================================================================================
-module.exports = helpers.mergeWebpackConfigs(baseConfiguration, {
+const config = helpers.mergeWebpackConfigs(baseConfiguration, {
   // Don't attempt to continue if there are any errors.
   bail: true,
   // We generate sourcemaps in production. This is slow but gives good results.
@@ -70,3 +70,5 @@ module.exports = helpers.mergeWebpackConfigs(baseConfiguration, {
     }),
   ],
 });
+
+module.exports = helpers.getCustomizedWebpackConfig(paths.appWebpackConfigBackend, config);

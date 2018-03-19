@@ -74,7 +74,8 @@ let baseConfig = {
   appLib: resolveApp("lib"),
   appCoverage: resolveApp("coverage"),
   appSnapshots: resolveApp(".snapshots"),
-  
+  appWebpackConfigs: appDirectory,
+
   // Misc. Config
   publicUrl: getPublicUrl(resolveApp("package.json")),
   servedPath: getServedPath(resolveApp("package.json")),
@@ -109,6 +110,12 @@ module.exports = {
 
   // node_modules
   appBentleyNodeModules: path.resolve(baseConfig.appNodeModules, "@bentley"),
+
+  // webpack/
+  appWebpackConfigBase: path.resolve(baseConfig.appWebpackConfigs, "webpack.config.js"),
+  appWebpackConfigBackend: path.resolve(baseConfig.appWebpackConfigs, "webpack.config.backend.js"),
+  appWebpackConfigFrontend: path.resolve(baseConfig.appWebpackConfigs, "webpack.config.frontend.js"),
+  appWebpackConfigTest: path.resolve(baseConfig.appWebpackConfigs, "webpack.config.test.js"),
 
   // Note that this will *still*overwrite any of the above paths 
   ...baseConfig,
