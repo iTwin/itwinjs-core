@@ -313,8 +313,7 @@ describe("iModel", () => {
     const drawingGraphicRows: any[] = imodel2.executeQuery("SELECT ECInstanceId FROM BisCore.DrawingGraphic");
     assert.exists(drawingGraphicRows, "Should have some Drawing Graphics");
     for (const drawingGraphicRow of drawingGraphicRows!) {
-      const drawingGraphicId = new Id64(drawingGraphicRow.id);
-      const drawingGraphic = imodel2.elements.getElement(drawingGraphicId);
+      const drawingGraphic = imodel2.elements.getElement({ id: drawingGraphicRow.id, wantGeometry: true });
       assert.exists(drawingGraphic);
       assert.isTrue(drawingGraphic.constructor.name === "DrawingGraphic", "Should be instance of DrawingGraphic");
       assert.isTrue(drawingGraphic instanceof GeometricElement2d, "Is instance of GeometricElement2d");
@@ -411,7 +410,7 @@ describe("iModel", () => {
 
     const loc1 = { street: "Elm Street", city: { name: "Downingtown", state: "PA" } };
     const loc2 = { street: "Oak Street", city: { name: "Downingtown", state: "PA" } };
-    const loc3 = {street: "Chestnut Street", city: {name: "Philadelphia", state: "PA"}};
+    const loc3 = { street: "Chestnut Street", city: { name: "Philadelphia", state: "PA" } };
     const arrayOfStructs = [loc2, loc3];
     newTestElem.location = loc1;
     newTestElem.arrayOfStructs = arrayOfStructs;

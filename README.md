@@ -72,7 +72,8 @@ Now, [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush) takes over t
 
 ## Other NPM Scripts
 
-1. Build TypeDoc documentation: `npm run docs`
+1. Build TypeDoc documentation for all packages: `npm run docs`
+2. Build TypeDoc documentation for frontend, backend, or common only: `npm run docs:frontend`, `npm run docs:backend`, `npm run docs:common` from top-level directory or `npm run docs` from package directory
 2. Extract sample code from test directory (run automatically as a *pre* step by the TypeDoc build command above): `npm run extract`
 3. Run code coverage for the frontend, backend and common folders using the tests (coverage output to source/test/lib/coverage) : `npm run cover`
 
