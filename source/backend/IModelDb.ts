@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Guid, Id64, Id64Set, LRUMap, OpenMode, DbResult, DbOpcode, Logger, RepositoryStatus, BeEvent, assert } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64Set, LRUMap, OpenMode, DbResult, DbOpcode, Logger, RepositoryStatus, BeEvent, assert, Id64Props } from "@bentley/bentleyjs-core";
 import { RequestQueryOptions, AccessToken, DeploymentEnv, MultiCode, IModelHubClient, CodeState } from "@bentley/imodeljs-clients";
 import { NativeBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-native-platform-api";
 import {
-  Code, CodeSpec, ElementProps, ElementAspectProps, ElementLoadParams, IModel, IModelProps, IModelVersion, ModelProps, IModelToken,
+  Code, CodeSpec, ElementProps, ElementAspectProps, IModel, IModelProps, IModelVersion, ModelProps, IModelToken,
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
-  FontMap, FontMapProps,
+  FontMap, FontMapProps, ElementLoadProps,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element } from "./Element";
@@ -34,7 +34,7 @@ export class IModelDb extends IModel {
   private static _accessTokens?: Map<string, AccessToken>;
   public models: IModelDbModels = new IModelDbModels(this);
   public elements: IModelDbElements = new IModelDbElements(this);
-  public views: IModelDbViews  = new IModelDbViews(this);
+  public views: IModelDbViews = new IModelDbViews(this);
   private _linkTableRelationships?: IModelDbLinkTableRelationships;
   private readonly statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private _codeSpecs?: CodeSpecs;
@@ -103,7 +103,7 @@ export class IModelDb extends IModel {
     if (IModelDb._accessTokens === undefined)
       IModelDb._accessTokens = new Map<string, AccessToken>();
     if (IModelDb._accessTokens.get(iModelId) === undefined)
-    IModelDb._accessTokens.set(iModelId, accessToken);
+      IModelDb._accessTokens.set(iModelId, accessToken);
   }
 
   /**
@@ -1222,7 +1222,7 @@ export class IModelDbElements {
   public constructor(private _iModel: IModelDb, maxElements: number = 2000) { this._loaded = new LRUMap<string, Element>(maxElements); }
 
   /** Private implementation details of getElementProps */
-  private _getElementProps(opts: ElementLoadParams): ElementProps {
+  private _getElementProps(opts: ElementLoadProps): ElementProps {
     const json = this.getElementJson(JSON.stringify(opts));
     const props = JSON.parse(json) as ElementProps;
     props.iModel = this._iModel;
@@ -1235,24 +1235,21 @@ export class IModelDbElements {
    * @return a json string with the properties of the element.
    */
   public getElementJson(elementIdArg: string): string {
-    if (!this._iModel.briefcase) throw this._iModel._newNotOpenError();
-    const { error, result } = this._iModel.briefcase.nativeDb.getElement(elementIdArg);
+    const { error, result } = this._iModel.briefcase!.nativeDb.getElement(elementIdArg);
     if (error) throw new IModelError(error.status, "reading element=" + elementIdArg, Logger.logWarning, loggingCategory);
     return result!;
   }
 
   /** Private implementation details of getElement */
-  private _doGetElement(opts: ElementLoadParams): Element {
+  private _doGetElement(opts: ElementLoadProps): Element {
     // first see if the element is already in the local cache.
     if (opts.id) {
       const loaded = this._loaded.get(opts.id.toString());
       if (loaded)
         return loaded;
     }
-
     const props = this._getElementProps(opts);
     const el = this._iModel.constructEntity(props) as Element;
-
     // We have created the element. Cache it before we return it.
     el.setPersistent(); // elements in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
     this._loaded.set(el.id.value, el);
@@ -1263,11 +1260,11 @@ export class IModelDbElements {
    * Get properties of an Element by Id, FederationGuid, or Code
    * @throws [[IModelError]] if the element is not found.
    */
-  public getElementProps(elementId: Id64 | Guid | Code | string): ElementProps {
-    if (typeof elementId === "string" || elementId instanceof Id64) return this._getElementProps({ id: elementId.toString() });
-    if (elementId instanceof Guid) return this._getElementProps({ federationGuid: elementId.value });
-    if (elementId instanceof Code) return this._getElementProps({ code: elementId });
-    throw new IModelError(IModelStatus.BadArg, "id=" + elementId);
+  public getElementProps(elementId: Id64Props | Guid | Code | ElementLoadProps): ElementProps {
+    if (typeof elementId === "string" || elementId instanceof Id64) elementId = { id: elementId.toString() };
+    else if (elementId instanceof Guid) elementId = { federationGuid: elementId.value };
+    else if (elementId instanceof Code) elementId = { code: elementId };
+    return this._getElementProps(elementId);
   }
 
   /**
@@ -1275,11 +1272,11 @@ export class IModelDbElements {
    * @param elementId either the element's Id, Code, or FederationGuid
    * @throws [[IModelError]] if the element is not found.
    */
-  public getElement(elementId: Id64 | Guid | Code | string): Element {
-    if (typeof elementId === "string" || elementId instanceof Id64) return this._doGetElement({ id: elementId.toString() });
-    if (elementId instanceof Guid) return this._doGetElement({ federationGuid: elementId.value });
-    if (elementId instanceof Code) return this._doGetElement({ code: elementId });
-    throw new IModelError(IModelStatus.BadArg, "id=" + elementId);
+  public getElement(elementId: Id64Props | Guid | Code | ElementLoadProps): Element {
+    if (typeof elementId === "string" || elementId instanceof Id64) elementId = { id: elementId.toString() };
+    else if (elementId instanceof Guid) elementId = { federationGuid: elementId.value };
+    else if (elementId instanceof Code) elementId = { code: elementId };
+    return this._doGetElement(elementId);
   }
 
   /**
