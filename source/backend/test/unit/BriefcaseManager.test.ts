@@ -135,8 +135,6 @@ describe("BriefcaseManagerUnitTests", () => {
 
   it("should be able to open a first version IModel in Readonly mode", async () => {
     // Arrange
-    iModelHubClientMock.setup((f: IModelHubClient) => f.acquireBriefcase(TypeMoq.It.isAny(), TypeMoq.It.isValue(testIModels[0].id)))
-    .returns(() => Promise.resolve(1));
 
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
@@ -173,20 +171,19 @@ describe("BriefcaseManagerUnitTests", () => {
 
   it.only("should create a new iModel", async () => {
     // Delete the iModel if it currently exists in the cache. We're replacing it anyways
-    if (IModelJsFs.existsSync(testIModels[0].localReadonlyPath)) {
-      IModelJsFs.removeSync(testIModels[0].localReadonlyPath);
+    if (IModelJsFs.existsSync(testIModels[1].localReadWritePath)) {
+      IModelJsFs.removeSync(testIModels[1].localReadWritePath);
     }
 
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
-    debugger; // tslint:disable-line:no-debugger
-    const iModel: IModelDb = await IModelDb.create(spoofAccessToken as any, testProjectId, testIModels[0].name, testIModels[0].name);
+    const iModel: IModelDb = await IModelDb.create(spoofAccessToken as any, testProjectId, testIModels[1].name, testIModels[1].name);
 
     assert.exists(iModel, "No iModel returned from call to IModelDb.create");
-    assert(iModel.iModelToken.iModelId === testIModels[0].id);
+    assert(iModel.iModelToken.iModelId === testIModels[1].id);
 
-    expect(IModelJsFs.existsSync(testIModels[0].localReadonlyPath), "Local path to iModel does not exist");
-    const files = IModelJsFs.readdirSync(path.join(testIModels[0].localReadonlyPath, "0"));
+    expect(IModelJsFs.existsSync(testIModels[1].localReadWritePath), "Local path to iModel does not exist");
+    const files = IModelJsFs.readdirSync(path.join(testIModels[1].localReadWritePath, "376"));
     expect(files.length).greaterThan(0, "iModel .bim file could not be read");
   });
 
@@ -502,8 +499,15 @@ class MockAssetUtil {
           .then(() => Promise.resolve());
         });
 
+      // For any call with a specified iModelId, return a dummy briefcaseId. If future test cases demand so, we may
+      // need to change this to return specific briefcaseIds
+      iModelHubClientMock.setup((f: IModelHubClient) => f.acquireBriefcase(TypeMoq.It.isAny(),
+                                                                           TypeMoq.It.is<string>((x: string) => x === pair[0])))
+        .returns(() => Promise.resolve(999));
+
       // For any call with the specified iModelId, grab the corresponding briefcase json file and parse it into
-      // an instance
+      // an instance. For now, we grab the same briefcase for each IModel regardless of the briefcaseId passed.
+      // If future test cases demand so, we may need to support multiple briefcases per IModel.
       iModelHubClientMock.setup((f: IModelHubClient) => f.getBriefcase(TypeMoq.It.isAny(),
                                                                        TypeMoq.It.is<string>((x: string) => x === pair[0]),
                                                                        TypeMoq.It.isAnyNumber(),
@@ -539,10 +543,36 @@ class MockAssetUtil {
           return Promise.resolve(getTypedInstances<ChangeSet>(ChangeSet, jsonObj));
         }).verifiable();
 
+      // Same set up as before, but for calls with all optional parameters
+      iModelHubClientMock.setup((f: IModelHubClient) => f.getChangeSets(TypeMoq.It.isAny(),
+                                                                          TypeMoq.It.is<string>((x: string) => x === pair[0]),
+                                                                          TypeMoq.It.isAny(),
+                                                                          TypeMoq.It.isAny()))
+        .returns(() => {
+            const sampleChangeSetsPath = path.join(this.assetDir, pair[1], `${pair[1]}ChangeSets.json`);
+            const buff = IModelJsFs.readFileSync(sampleChangeSetsPath);
+            const jsonObj = JSON.parse(buff.toString());
+            const sampleChangeSets = getTypedInstances<ChangeSet>(ChangeSet, jsonObj);
+            return Promise.resolve(sampleChangeSets);
+          }).verifiable();
+
+      // For any call with a specified iModelId, grab the asset file with the associated changeset json objs
+      // and parse them into instances
+      iModelHubClientMock.setup((f: IModelHubClient) => f.getChangeSet(TypeMoq.It.isAny(),
+                                                                        TypeMoq.It.is<string>((x: string) => x.includes(pair[0])),
+                                                                        TypeMoq.It.isAnyString(),
+                                                                        TypeMoq.It.isValue(false)))
+        .returns(() => {
+          const sampleChangeSetPath = path.join(this.assetDir, pair[1], `${pair[1]}ChangeSets.json`);
+          const buff = IModelJsFs.readFileSync(sampleChangeSetPath);
+          const jsonObj = JSON.parse(buff.toString())[0];
+          return Promise.resolve(getTypedInstance<ChangeSet>(ChangeSet, jsonObj));
+        }).verifiable();
+
       // For any call with a path containing a specified iModel name, grab the associated change set files and copy them
       // into the provided cache location
       iModelHubClientMock.setup((f: IModelHubClient) => f.downloadChangeSets(TypeMoq.It.isAny(),
-                                                                             TypeMoq.It.is<string>((x: string) => x.includes(pair[1]))))
+                                                                             TypeMoq.It.is<string>((x: string) => x.includes(pair[0]))))
         .returns((boundCsets: ChangeSet[], outPath: string) => {
           for (const changeSet of boundCsets) {
             const filePath = path.join(this.assetDir, pair[1], "csets", changeSet.fileName!);
@@ -557,17 +587,6 @@ class MockAssetUtil {
           return Promise.resolve(retResponse)
           .then(() => Promise.resolve());
         }).verifiable();
-
-      iModelHubClientMock.setup((f: IModelHubClient) => f.getChangeSets(TypeMoq.It.isAny(),
-                                                                         TypeMoq.It.is<string>((x: string) => x === pair[0]),
-                                                                         TypeMoq.It.isValue(false)))
-        .returns(() => {
-            const sampleChangeSetsPath = path.join(this.assetDir, pair[1], `${pair[1]}ChangeSets.json`);
-            const buff = IModelJsFs.readFileSync(sampleChangeSetsPath);
-            const jsonObj = JSON.parse(buff.toString());
-            const sampleChangeSets = getTypedInstances<ChangeSet>(ChangeSet, jsonObj);
-            return Promise.resolve(sampleChangeSets);
-          }).verifiable();
       }
 
     // For any parameters passed, return a seedFile mock
