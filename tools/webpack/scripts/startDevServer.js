@@ -18,7 +18,6 @@ const {
   prepareProxy,
   prepareUrls,
 } = require("react-dev-utils/WebpackDevServerUtils");
-const openBrowser = require("react-dev-utils/openBrowser");
 const paths = require("../config/paths");
 const config = require("../config/webpack.config.frontend.dev");
 const createDevServerConfig = require("../config/webpackDevServer.config");
@@ -76,8 +75,7 @@ module.exports = async () => {
         clearConsole();
       }
       console.log(chalk.cyan("Starting the development server..."));
-      openBrowser(urls.localUrlForBrowser);
-      resolve();
+      resolve(urls.localUrlForBrowser);
     });
   });
 };

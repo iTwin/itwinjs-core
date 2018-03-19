@@ -31,6 +31,12 @@ exports.builder = (yargs) =>
       type: "boolean",
       describe: `Don't start the electron app.`
     },
+  })
+  .options({
+    "noWeb": {
+      type: "boolean",
+      describe: `Don't start a web browser.`
+    },
   });
 
 exports.handler = async (argv) => {
@@ -41,6 +47,7 @@ exports.handler = async (argv) => {
   const config = require("../config/webpack.config.backend.dev");
   const { buildBackend }= require("./utils/buildBackend");
   const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
+  const openBrowser = require("react-dev-utils/openBrowser");
 
   const electronDebugOptions = (argv.electronDebug) ? ["--debug=" + argv.electronDebug] : [];
   const electronRemoteDebugOptions = (argv.electronRemoteDebug) ? ["--remote-debugging-port=" + argv.electronRemoteDebug] : [];
@@ -59,7 +66,11 @@ exports.handler = async (argv) => {
   // Now start the devserver...
   console.log();
   console.log(`${chalk.inverse(" FRONTEND ")} Starting development build...`);
-  await require("../scripts/startDevServer.js")();
+  const webUrl = await require("../scripts/startDevServer.js")();
+
+  // ..and open the browser...
+  if (!argv.noWeb)
+    openBrowser(webUrl);
 
   // ..and open the electron app.
   if (!argv.noElectron)
