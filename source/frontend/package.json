@@ -8,7 +8,8 @@
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib package-deps.json",
-    "test": "echo \"Error: run tests from the '../test' directory.\" && exit 1"
+    "test": "echo \"Error: run tests from the '../test' directory.\" && exit 1",
+    "docs": "cd ../.. && npm run docs:frontend"
   },
   "repository": {},
   "keywords": [
@@ -24,7 +25,7 @@
     "@bentley/bentleyjs-core": "^7.3.2",
     "@bentley/geometry-core": "^6.0.10",
     "@bentley/imodeljs-clients": "^4.2.0",
-    "@bentley/imodeljs-common": "^0.68.0",
+    "@bentley/imodeljs-common": "^0.69.0",
     "flatbuffers": "^1.8.0"
   },
   "devDependencies": {
@@ -33,7 +34,7 @@
     "@bentley/bentleyjs-core": "^7.3.2",
     "@bentley/geometry-core": "^6.0.10",
     "@bentley/imodeljs-clients": "^4.2.0",
-    "@bentley/imodeljs-common": "^0.68.0"
+    "@bentley/imodeljs-common": "^0.69.0"
   },
   "//dependencies": [
     "NOTE: these dependencies are specific to imodeljs-frontend",
