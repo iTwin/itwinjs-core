@@ -329,8 +329,16 @@ export class Tool {
   public static hidden = false;
   public static toolId = "";
   public static namespace: I18NNamespace;
-  protected static _keyin?: string; // localized (fetched only once, first time needed).
+  protected static _keyin?: string; // localized (fetched only once, first time needed. If not found, toolId is returned).
+  protected static _flyover?: string; // localized (fetched first time needed. If not found, keyin is returned.)
+  protected static _description?: string; // localized (fetched first time needed. If not found, flyover is returned.)
   public constructor(..._args: any[]) { }
+
+  private static getKeyinKey() { return this.namespace.name + ":tools." + this.toolId + ".keyin"; }
+
+  private static getFlyoverKey() { return this.namespace.name + ":tools." + this.toolId + ".flyover"; }
+
+  private static getDescriptionKey() { return this.namespace.name + ":tools." + this.toolId + ".description"; }
 
   /**
    * Register this Tool class with the ToolRegistry.
@@ -340,9 +348,23 @@ export class Tool {
 
   /**
    * Get the localized keyin string for this Tool class. This returns the value of "tools." + this.toolId + ".keyin" from the
-   * .json file for the current locale of its registered NameSpace (e.g. "en/MyApp.json")
+   * .json file for the current locale of its registered Namespace (e.g. "en/MyApp.json")
    */
-  public static get keyin(): string { return this._keyin ? this._keyin : (this._keyin = IModelApp.i18n.translate(this.namespace.name + ":tools." + this.toolId + ".keyin")); }
+  public static get keyin(): string { return this._keyin ? this._keyin : (this._keyin = IModelApp.i18n.translate(this.getKeyinKey())); }
+
+  /**
+   * Get the localized flyover for this Tool class. This returns the value of "tools." + this.toolId + ".flyover" from the
+   * .json file for the current locale of its registered Namespace (e.g. "en/MyApp.json"). If that key is not in the localization namespace,
+   * the keyin property is returned.
+   */
+  public static get flyover(): string { return this._flyover ? this._flyover : (this._flyover = IModelApp.i18n.translate([this.getFlyoverKey(), this.getKeyinKey()])); }
+
+  /**
+   * Get the localized description for this Tool class. This returns the value of "tools." + this.toolId + ".description" from the
+   * .json file for the current locale of its registered Namespace (e.g. "en/MyApp.json"). If that key is not in the localization namespace,
+   * the flyover property is returned.
+   */
+  public static get description(): string { return this._description ? this._description : (this._description = IModelApp.i18n.translate([this.getDescriptionKey(), this.getFlyoverKey(), this.getKeyinKey()])); }
 
   /**
    * Get the toolId string for this Tool class. This string is used to identify the Tool in the ToolRegistry and is used to localize
@@ -352,6 +374,12 @@ export class Tool {
 
   /** Get the localized keyin string from this Tool's class */
   public get keyin(): string { return (this.constructor as ToolType).keyin; }
+
+  /** Get the localized flyover string from this Tool's class */
+  public get flyover(): string { return (this.constructor as ToolType).flyover; }
+
+  /** Get the localized description string from this Tool's class */
+  public get description(): string { return (this.constructor as ToolType).description; }
 
   /**
    * run this instance of a Tool. Subclasses should override to perform their action.
