@@ -8,7 +8,8 @@
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib package-deps.json",
-    "test": "echo \"Error: run tests from the '../test' directory.\" && exit 1"
+    "test": "echo \"Error: run tests from the '../test' directory.\" && exit 1",
+    "docs": "cd ../.. && npm run docs:frontend"
   },
   "repository": {},
   "keywords": [
