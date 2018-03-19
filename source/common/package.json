@@ -9,7 +9,8 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib package-deps.json"
+    "clean": "rimraf lib package-deps.json",
+    "docs": "cd ../.. && npm run docs:common"
   },
   "repository": {},
   "keywords": [

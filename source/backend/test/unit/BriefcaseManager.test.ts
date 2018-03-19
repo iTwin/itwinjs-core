@@ -413,6 +413,8 @@ class MockAssetUtil {
                                                                       TypeMoq.It.isAnyString(),
                                                                       TypeMoq.It.isAny()))
       .returns(() => Promise.resolve(""));
+
+    // iModelVersionMock.setup((f: IModelVersion) => f.latest())
   }
 
   /** Setup functions for the ConnectClient mock */
