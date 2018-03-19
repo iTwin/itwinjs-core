@@ -38,7 +38,7 @@ const HOST = process.env.HOST || "0.0.0.0";
 
 let devServer = null;
 
-(async () => {
+module.exports = async () => {
   // We attempt to use the default port but if it is busy, we offer the user to
   // run on a different port. `detect()` Promise resolves to the next free port.
   const port = await choosePort(HOST, DEFAULT_PORT);
@@ -66,18 +66,21 @@ let devServer = null;
   );
   devServer = new WebpackDevServer(compiler, serverConfig);
 
-  // Launch WebpackDevServer.
-  devServer.listen(port, HOST, err => {
-    if (err) {
-      return console.log(err);
-    }
-    if (isInteractive) {
-      clearConsole();
-    }
-    console.log(chalk.cyan("Starting the development server..."));
-    openBrowser(urls.localUrlForBrowser);
+  await new Promise((resolve) => {
+    // Launch WebpackDevServer.
+    devServer.listen(port, HOST, err => {
+      if (err) {
+        return console.log(err);
+      }
+      if (isInteractive) {
+        clearConsole();
+      }
+      console.log(chalk.cyan("Starting the development server..."));
+      openBrowser(urls.localUrlForBrowser);
+      resolve();
+    });
   });
-})();
+};
   
 // This is required to correctly handle SIGINT on windows.
 handleInterrupts(() => {

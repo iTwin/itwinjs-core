@@ -42,7 +42,6 @@ exports.handler = async (argv) => {
   const { buildBackend }= require("./utils/buildBackend");
   const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 
-  const debugOptions = (argv.debug) ? ["--inspect-brk=" + argv.debug] : [];
   const electronDebugOptions = (argv.electronDebug) ? ["--debug=" + argv.electronDebug] : [];
   const electronRemoteDebugOptions = (argv.electronRemoteDebug) ? ["--remote-debugging-port=" + argv.electronRemoteDebug] : [];
 
@@ -60,7 +59,7 @@ exports.handler = async (argv) => {
   // Now start the devserver...
   console.log();
   console.log(`${chalk.inverse(" FRONTEND ")} Starting development build...`);
-  spawn("node", [...debugOptions, require.resolve("../scripts/startDevServer.js")]);
+  await require("../scripts/startDevServer.js")();
 
   // ..and open the electron app.
   if (!argv.noElectron)
