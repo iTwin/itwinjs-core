@@ -2,15 +2,14 @@ import * as TypeMoq from "typemoq";
 import * as path from "path";
 import { expect, assert } from "chai";
 import { IModelJsFs } from "../../IModelJsFs";
-import { OpenMode } from "@bentley/bentleyjs-core";
+import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import { SeedFile, SeedFileInitState, RequestQueryOptions } from "@bentley/imodeljs-clients";
-import { IModelVersion } from "@bentley/imodeljs-common";
-import { IModelHost } from "../../IModelHost";
-import { BriefcaseManager } from "../../BriefcaseManager";
-import { IModelDb } from "../../IModelDb";
+import { Appearance, ColorDef, IModelVersion, IModel } from "@bentley/imodeljs-common";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { /*KeepBriefcase,*/ BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost } from "../../backend";
 import {
   AccessToken, UserProfile, ConnectClient, Project, IModelHubClient, WsgInstance, ECJsonTypeMap,
-  Response, ChangeSet, IModel as HubIModel, Briefcase,
+  Response, ChangeSet, IModel as HubIModel, Briefcase, /*MultiCode, CodeState,*/
 } from "@bentley/imodeljs-clients";
 
 // debugger; // tslint:disable-line:no-debugger
@@ -169,7 +168,7 @@ describe("BriefcaseManagerUnitTests", () => {
     assert.instanceOf<Error>(capturedError, Error, "Error was not thrown" );
   });
 
-  it.only("should create a new iModel", async () => {
+  it("should create a new iModel", async () => {
     // Delete the iModel if it currently exists in the cache. We're replacing it anyways
     if (IModelJsFs.existsSync(testIModels[1].localReadWritePath)) {
       IModelJsFs.removeSync(testIModels[1].localReadWritePath);
@@ -267,124 +266,135 @@ describe("BriefcaseManagerUnitTests", () => {
     expect(diff.length).equals(0, "Briefcase changed after repeat calls to BriefcaseManager.open");
   });
 
-  // it.skip("should write to briefcase with optimistic concurrency", async () => {
-  //   // NOTE: shouldn't need to delete anything from the hub since we're mocking...
-  //   // let timer = new Timer("delete iModels");
-  //   // // Delete any existing iModels with the same name as the read-write test iModel
-  //   // const iModelName = "ReadWriteTest";
-  //   // const iModels: HubIModel[] = await IModelTestUtils.hubClient.getIModels(accessToken, testProjectId, {
-  //   //   $select: "*",
-  //   //   $filter: "Name+eq+'" + iModelName + "'",
-  //   // });
-  //   // for (const iModelTemp of iModels) {
-  //   //   await IModelTestUtils.hubClient.deleteIModel(accessToken, testProjectId, iModelTemp.wsgId);
-  //   // }
-  //   // timer.end();
+  it.only("should write to briefcase with optimistic concurrency", async () => {
+    // NOTE: shouldn't need to delete anything from the hub since we're mocking...
+    // let timer = new Timer("delete iModels");
+    // // Delete any existing iModels with the same name as the read-write test iModel
+    // const iModelName = "ReadWriteTest";
+    // const iModels: HubIModel[] = await IModelTestUtils.hubClient.getIModels(accessToken, testProjectId, {
+    //   $select: "*",
+    //   $filter: "Name+eq+'" + iModelName + "'",
+    // });
+    // for (const iModelTemp of iModels) {
+    //   await IModelTestUtils.hubClient.deleteIModel(accessToken, testProjectId, iModelTemp.wsgId);
+    // }
+    // timer.end();
 
-  //   // Create a new iModel on the Hub (by uploading a seed file)
-  //   let timer = new Timer("create iModel");
-  //   const rwIModel: IModelDb = await IModelDb.create(spoofAccessToken as any, testProjectId, "ReadWriteTest", "TestSubject");
-  //   const rwIModelId = rwIModel.iModelToken.iModelId;
-  //   assert.isNotEmpty(rwIModelId);
-  //   timer.end();
+    // Inject hub client mock into the briefcase manager
+    BriefcaseManager.hubClient = iModelHubClientMock.object;
 
-  //   timer = new Timer("make local changes");
+    // Create a new iModel on the Hub (by uploading a seed file)
+    let timer = new Timer("create iModel");
+    const rwIModel: IModelDb = await IModelDb.create(spoofAccessToken as any, testProjectId, testIModels[1].name, "TestSubject");
+    const rwIModelId = rwIModel.iModelToken.iModelId;
+    assert.isNotEmpty(rwIModelId);
+    timer.end();
 
-  //   // Turn on optimistic concurrency control. This allows the app to modify elements, models, etc. without first acquiring locks.
-  //   // Later, when the app downloads and merges changeSets from the Hub into the briefcase, BriefcaseManager will merge changes and handle conflicts.
-  //   // The app still has to reserve codes.
-  //   rwIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    debugger; // tslint:disable-line
 
-  //   // Show that we can modify the properties of an element. In this case, we modify the root element itself.
-  //   const rootEl: Element = (rwIModel.elements.getRootSubject()).copyForEdit<Element>();
-  //   rootEl.userLabel = rootEl.userLabel + "changed";
-  //   rwIModel.elements.updateElement(rootEl);
+    timer = new Timer("make local changes");
 
-  //   assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests());
+    // Inject hub client mock into the new iModel's concurrency control
+    rwIModel.concurrencyControl.hubClient = iModelHubClientMock.object;
 
-  //   rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "changed a userLabel" }));  // save it, to show that saveChanges will accumulate local txn descriptions
+    // Turn on optimistic concurrency control. This allows the app to modify elements, models, etc. without first acquiring locks.
+    // Later, when the app downloads and merges changeSets from the Hub into the briefcase, BriefcaseManager will merge changes and handle conflicts.
+    // The app still has to reserve codes.
+    rwIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
-  //   // Create a new physical model.
-  //   let newModelId: Id64;
-  //   [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
+    // Show that we can modify the properties of an element. In this case, we modify the root element itself.
+    const rootEl: Element = (rwIModel.elements.getRootSubject()).copyForEdit<Element>();
+    rootEl.userLabel = rootEl.userLabel + "changed";
+    rwIModel.elements.updateElement(rootEl);
 
-  //   // Find or create a SpatialCategory.
-  //   const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
-  //   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-  //   const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+    assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests());
 
-  //   timer.end();
+    rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "changed a userLabel" }));  // save it, to show that saveChanges will accumulate local txn descriptions
 
-  //   timer = new Timer("query Codes I");
+    // Create a new physical model.
+    let newModelId: Id64;
+    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
 
-  //   // iModel.concurrencyControl should have recorded the codes that are required by the new elements.
-  //   assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests());
-  //   assert.isTrue(await rwIModel.concurrencyControl.areAvailable(accessToken));
+    // Find or create a SpatialCategory.
+    const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
+    const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
+    const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+    spatialCategoryId.toString();
 
-  //   timer.end();
-  //   timer = new Timer("reserve Codes");
+    timer.end();
 
-  //   // Reserve all of the codes that are required by the new model and category.
-  //   try {
-  //     await rwIModel.concurrencyControl.request(accessToken);
-  //   } catch (err) {
-  //     if (err instanceof ConcurrencyControl.RequestError) {
-  //       assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
-  //     }
-  //   }
+    timer = new Timer("query Codes I");
 
-  //   timer.end();
-  //   timer = new Timer("query Codes II");
+    debugger; // tslint:disable-line:no-debugger
 
-  //   // Verify that the codes are reserved.
-  //   const category = rwIModel.elements.getElement(spatialCategoryId);
-  //   assert.isTrue(category.code.value !== undefined);
-  //   const codeStates: MultiCode[] = await rwIModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope);
-  //   const foundCode: MultiCode[] = codeStates.filter((cs) => cs.values!.includes(category.code.value!) && (cs.state === CodeState.Reserved));
-  //   assert.equal(foundCode.length, 1);
+    // iModel.concurrencyControl should have recorded the codes that are required by the new elements.
+    assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests());
+    assert.isTrue(await rwIModel.concurrencyControl.areAvailable(spoofAccessToken as any));
 
-  //   // // NEEDS WORK - query just this one code
-  //   // assert.isTrue(category.code.value !== undefined);
-  //   // const codeStates2 = await iModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope, category.code.value!);
-  //   // assert.equal(codeStates2.length, 1);
-  //   // assert.equal(codeStates2[0].values.length, 1);
-  //   // assert.equal(codeStates2[0].values[0], category.code.value!);
+    timer.end();
+    timer = new Timer("reserve Codes");
 
-  //   timer.end();
+    // Reserve all of the codes that are required by the new model and category.
+    try {
+      await rwIModel.concurrencyControl.request(spoofAccessToken as any);
+    } catch (err) {
+      if (err instanceof ConcurrencyControl.RequestError) {
+        assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
+      }
+    }
 
-  //   timer = new Timer("make more local changes");
+    timer.end();
+    // timer = new Timer("query Codes II");
 
-  //   // Create a couple of physical elements.
-  //   const elid1 = rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
-  //   rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
+    // // Verify that the codes are reserved.
+    // const category = rwIModel.elements.getElement(spatialCategoryId);
+    // assert.isTrue(category.code.value !== undefined);
+    // const codeStates: MultiCode[] = await rwIModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope);
+    // const foundCode: MultiCode[] = codeStates.filter((cs) => cs.values!.includes(category.code.value!) && (cs.state === CodeState.Reserved));
+    // assert.equal(foundCode.length, 1);
 
-  //   // Commit the local changes to a local transaction in the briefcase.
-  //   // (Note that this ends the bulk operation automatically, so there's no need to call endBulkOperation.)
-  //   rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "inserted generic objects" }));
+    // // // NEEDS WORK - query just this one code
+    // // assert.isTrue(category.code.value !== undefined);
+    // // const codeStates2 = await iModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope, category.code.value!);
+    // // assert.equal(codeStates2.length, 1);
+    // // assert.equal(codeStates2[0].values.length, 1);
+    // // assert.equal(codeStates2[0].values[0], category.code.value!);
 
-  //   rwIModel.elements.getElement(elid1); // throws if elid1 is not found
-  //   rwIModel.elements.getElement(spatialCategoryId); // throws if spatialCategoryId is not found
+    // timer.end();
 
-  //   timer.end();
+    // timer = new Timer("make more local changes");
 
-  //   timer = new Timer("pullmergepush");
+    // // Create a couple of physical elements.
+    // const elid1 = rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
+    // rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
 
-  //   // Push the changes to the hub
-  //   const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
-  //   await rwIModel.pushChanges(accessToken);
-  //   const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
-  //   assert(!!postPushChangeSetId);
-  //   expect(prePushChangeSetId !== postPushChangeSetId);
+    // // Commit the local changes to a local transaction in the briefcase.
+    // // (Note that this ends the bulk operation automatically, so there's no need to call endBulkOperation.)
+    // rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "inserted generic objects" }));
 
-  //   timer.end();
+    // rwIModel.elements.getElement(elid1); // throws if elid1 is not found
+    // rwIModel.elements.getElement(spatialCategoryId); // throws if spatialCategoryId is not found
 
-  //   // Open a readonly copy of the iModel
-  //   const roIModel: IModelDb = await IModelDb.open(accessToken, testProjectId, rwIModelId!, OpenMode.Readonly, IModelVersion.latest());
-  //   assert.exists(roIModel);
+    // timer.end();
 
-  //   rwIModel.close(accessToken, KeepBriefcase.No);
-  //   roIModel.close(accessToken);
-  // });
+    // timer = new Timer("pullmergepush");
+
+    // // Push the changes to the hub
+    // const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
+    // await rwIModel.pushChanges(accessToken);
+    // const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
+    // assert(!!postPushChangeSetId);
+    // expect(prePushChangeSetId !== postPushChangeSetId);
+
+    // timer.end();
+
+    // // Open a readonly copy of the iModel
+    // const roIModel: IModelDb = await IModelDb.open(accessToken, testProjectId, rwIModelId!, OpenMode.Readonly, IModelVersion.latest());
+    // assert.exists(roIModel);
+
+    // rwIModel.close(accessToken, KeepBriefcase.No);
+    // roIModel.close(accessToken);
+  });
 
 });
 
@@ -587,6 +597,12 @@ class MockAssetUtil {
           return Promise.resolve(retResponse)
           .then(() => Promise.resolve());
         }).verifiable();
+
+      // iModelHubClientMock.setup((f: IModelHubClient) => f.getMultipleCodes(TypeMoq.It.isAny(),
+      //                                                                      TypeMoq.It.is<string>((x: string) => x === pair[0])))
+      //   .returns(() => {
+          
+      //   });
       }
 
     // For any parameters passed, return a seedFile mock
