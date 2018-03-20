@@ -1,8 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Range3d } from "@bentley/geometry-core";
-import { GeometryStream, GeometryStreamBuilder, ElementAlignedBox3d, ElementProps } from "@bentley/imodeljs-common";
+import { GeometryStreamProps, ElementAlignedBox3d, ElementProps } from "@bentley/imodeljs-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 
@@ -11,19 +10,18 @@ import { IModelDb } from "./IModelDb";
  * Element instances. Leveraging Geometry Parts can help reduce file size and improve display performance.
  */
 export class GeometryPart extends DefinitionElement {
-  public geometry: GeometryStream;
+  public geom?: GeometryStreamProps;
   public bbox: ElementAlignedBox3d;
-  public multiChunkGeomStream: boolean = false;
   public constructor(params: ElementProps, iModel: IModelDb) { super(params, iModel); }
 
   public toJSON(): any {
     const val = super.toJSON() as GeometryPart;
-    val.GeometryStream = this.geometry;
+    val.geom = this.geom;
     val.bbox = this.bbox;
   }
 
   /** Saves contents of builder to GeometryStream of this GeometryPart and updates the bounding box */
-  public updateFromGeometryStreamBuilder(builder: GeometryStreamBuilder): boolean {
+/*   public updateFromGeometryStreamBuilder(builder: GeometryStreamBuilder): boolean {
     if (!builder.isPartCreate)
       return false;   // Invalid builder for creating part geometry...
 
@@ -42,5 +40,5 @@ export class GeometryPart extends DefinitionElement {
 
     this.bbox.setFrom(localRange);
     return true;
-  }
+  } */
 }

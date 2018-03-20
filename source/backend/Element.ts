@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Guid, DbOpcode } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Transform } from "@bentley/geometry-core";
-import { Code, CodeSpecNames, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStream, GeometryStreamBuilder } from "@bentley/imodeljs-common";
+import { Code, CodeSpecNames, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStreamProps } from "@bentley/imodeljs-common";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import {
@@ -96,11 +96,11 @@ export abstract class Element extends Entity implements ElementProps {
  */
 export abstract class GeometricElement extends Element implements GeometricElementProps {
   public category: Id64;
-  public geom?: GeometryStream;
+  public geom?: GeometryStreamProps;
   public constructor(props: GeometricElementProps, iModel: IModelDb) {
     super(props, iModel);
     this.category = Id64.fromJSON(props.category);
-    this.geom = GeometryStream.fromJSON(props.geom);
+    this.geom = props.geom;
   }
 
   public is3d(): this is GeometricElement3d { return this instanceof GeometricElement3d; }
@@ -117,7 +117,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
     return val;
   }
 
-  public updateFromGeometryStreamBuilder(builder: GeometryStreamBuilder): boolean {
+/*   public updateFromGeometryStreamBuilder(builder: GeometryStreamBuilder): boolean {
     if (builder.isPartCreate)
       return false;   // Invalid builder for creating element geometry...
 
@@ -152,8 +152,9 @@ export abstract class GeometricElement extends Element implements GeometricEleme
       this.geom.setFrom(builder.getGeometryStreamClone());
     else
       this.geom = builder.getGeometryStreamClone();
+
     return true;
-  }
+  } */
 }
 
 /**
