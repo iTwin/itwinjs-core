@@ -84,6 +84,7 @@
         "tileset",
         "Topo",
         "Transp",
+        "transpiler",
         "Txns",
         "underbar",
         "undoable",

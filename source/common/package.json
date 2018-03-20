@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-common",
-  "version": "0.69.0",
+  "version": "0.69.1",
   "description": "iModelJs components common to frontend and backend",
   "main": "lib/common.js",
   "typings": "lib/common",
@@ -22,8 +22,7 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "//peerDependencies": [
     "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check"
   ],

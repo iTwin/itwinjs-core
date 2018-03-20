@@ -8,6 +8,7 @@ import {
   SolidPrimitive, IndexedPolyface, Angle, AngleSweep, Arc3d, LineSegment3d, LineString3d, PointString3d,
 } from "@bentley/geometry-core";
 import { BGFBBuilder, BGFBReader } from "@bentley/geometry-core/lib/serialization/BGFB";
+import { IModelJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { GeometricPrimitive, GeometryType, Placement2d, Placement3d, ElementAlignedBox2d, ElementAlignedBox3d } from "./Primitives";
 import { LineStyleInfo, LineStyleParams } from "./LineStyle";
@@ -18,6 +19,62 @@ import { DgnFB } from "./ElementGraphicsSchema";
 import { Base64 } from "js-base64";
 import { IModelError, IModelStatus } from "../IModelError";
 import { GeometryParams, FillDisplay, Gradient, GeometryClass } from "../Render";
+import { TextStringProps } from "./TextString";
+
+/** GeometryStream entry to establish a non-default subCategory or to override the subCategory appearance for the geometry that follows.
+ *  GeometryAppearanceProps always signifies a reset to the subCategory appearance for all values without an override.
+ */
+export interface GeometryAppearanceProps {
+  /** Optional subCategory id for subsequent geometry. Use to create a GeometryStream with geometry that is not on the default subCategory for the element's category or is on multiple subCategories */
+  subCategory?: Id64;
+  /** Optional color to override the subCategory appearance color for subsequent geometry */
+  color?: ColorDef;
+  /** Optional weight to override the subCategory appearance weight for subsequent geometry */
+  weight?: number;
+  /** Optional style to override the subCategory appearance style for subsequent geometry */
+  style?: Id64;
+  /** Optional transparency, default is 0. Effective transparency is a combination of this value and that from the subCategory appearance */
+  transparency?: number;
+  /** Optional display priority (2d only), default is 0. Effective display priority is a combination of this value and that from the subCategory appearance */
+  displayPriority?: number;
+  /** Optional GeometryClass (for DGN compatibility, subCategories preferred), default is Primary */
+  geometryClass?: GeometryClass;
+}
+
+// NEEDSWORK: StyleModifierProps/AreaFillProps/AreaPatternProps/MaterialProps...
+
+/** GeometryStream entry to a GeometryPart for a GeometricElement2d */
+export interface GeometryPart2dInstanceProps {
+  /** GeometryPart id */
+  geomPart: Id64;
+  /** Optional translation relative to element's placement, default translation is 0,0 */
+  origin?: Point2d;
+  /** Optional rotation relative to element's placement, default angle is 0 */
+  angle?: Angle;
+  /** Optional scale to apply to part, default scale is 1 */
+  scale?: number;
+}
+
+/** GeometryStream entry to a GeometryPart for a GeometricElement3d */
+export interface GeometryPart3dInstanceProps {
+  /** GeometryPart id */
+  part: Id64;
+  /** Optional translation relative to element's placement, default translation is 0,0,0 */
+  origin?: Point3d;
+  /** Optional rotation relative to element's placement, default angles are 0,0,0 */
+  angles?: YawPitchRollAngles;
+  /** Optional scale to apply to part, default scale is 1 */
+  scale?: number;
+}
+
+/** Allowed GeometryStream entries */
+export type GeometryStreamEntryProps =
+  { appearance: GeometryAppearanceProps } |
+  { geomPart: GeometryPart2dInstanceProps | GeometryPart3dInstanceProps } |
+  { textString: TextStringProps } |
+  IModelJson.GeometryProps;
+
+export type GeometryStreamProps = GeometryStreamEntryProps[];
 
 /** GeometryStream wrapper class for the array buffer */
 export class GeometryStream {
@@ -306,7 +363,7 @@ export class OpCodeWriter {
       basicSymbBuilder.startBasicSymbology(fbb);
       basicSymbBuilder.addTransparency(fbb, elParams.getTransparency());
       basicSymbBuilder.addLineStyleId(fbb, (useStyle && elParams.getLineStyle()) ? flatbuffers.Long.create(elParams.getLineStyle()!.styleId.getLow(), elParams.getLineStyle()!.styleId.getHigh()) : flatbuffers.Long.create(0, 0));
-      basicSymbBuilder.addSubCategoryId(fbb, ignoreSubCategory ? flatbuffers.Long.create(0, 0) : flatbuffers.Long.create(elParams.categoryId.getLow(), elParams.categoryId.getHigh()));
+      basicSymbBuilder.addSubCategoryId(fbb, ignoreSubCategory ? flatbuffers.Long.create(0, 0) : flatbuffers.Long.create(elParams.subCategoryId.getLow(), elParams.subCategoryId.getHigh()));
       basicSymbBuilder.addDisplayPriority(fbb, priority ? priority : 0);
       basicSymbBuilder.addWeight(fbb, useWeight ? elParams.getWeight() : 0);
       basicSymbBuilder.addColor(fbb, useColor ? elParams.getLineColor().getRgb() : 0);

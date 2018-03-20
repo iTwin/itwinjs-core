@@ -3,20 +3,18 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import {
-  SolidPrimitive, Path, ParityRegion, BSplineSurface3d, IndexedPolyface, Point2d, Point3d, Vector3d, YawPitchRollAngles,
+  Path, BSplineSurface3d, IndexedPolyface, Point3d, Vector3d, YawPitchRollAngles,
   PolyfaceBuilder, Arc3d, Cone, AngleSweep,
 } from "@bentley/geometry-core";
 import { Sample } from "@bentley/geometry-core/lib/serialization/GeometrySamples";
 import { Id64, Guid } from "@bentley/bentleyjs-core";
 import { IModelDb } from "../IModelDb";
 import {
-  OpCodeReader, OpCodeWriter, OpCodeIterator, GeometryStreamBuilder, GeometricPrimitive, GeometryType,
-  Code, Placement3d, ElementAlignedBox3d, GeometricElement3dProps, GeometryParams,
+  GeometricPrimitive, GeometryType, Code, Placement3d, ElementAlignedBox3d, GeometricElement3dProps, GeometryStreamProps,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { Element } from "../Element";
-
 import { PointString3d } from "@bentley/geometry-core/lib/curve/PointString3d";
+import { IModelJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 
 describe("GeometricPrimitive", () => {
   it("should be able to create GeometricPrimitives from various geometry", () => {
@@ -134,6 +132,7 @@ describe("GeometryStream", () => {
     IModelTestUtils.closeIModel(imodel);
   });
 
+  /*
   it("should be able to read in stream using byte buffer", () => {
     const arr32bit: number[] = [
       1, 8, 1, 0,
@@ -177,26 +176,26 @@ describe("GeometryStream", () => {
         geometry.push(geom.data);
     } while (iter.nextOp());
   });
+  */
 
-  it("base64 encoding and decoding should parallel that of native code", async () => {
+  it.skip("json encoding and decoding roundtrip of arcs", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement(new Id64("0x1d"));
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
     const geomArray: Arc3d[] = [
       Arc3d.createXY(Point3d.create(0, 0), 5),
       Arc3d.createXY(Point3d.create(5, 5), 2),
       Arc3d.createXY(Point3d.create(-5, -5), 20),
     ];
 
-    const gsWriter = new OpCodeWriter();
+    const geometryStream: GeometryStreamProps = [];
 
     for (const geom of geomArray) {
-      gsWriter.dgnAppendArc3d(geom, 2);
+      const arcData = IModelJson.Writer.toIModelJson(geom);
+      geometryStream.push(arcData);
     }
-
-    const geometryStream = gsWriter.getGeometryStreamRef();
-
-    // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement(new Id64("0x1d"));
-    assert.exists(seedElement);
-    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     const elementProps: GeometricElement3dProps = {
       classFullName: "Generic:PhysicalObject",
@@ -207,39 +206,37 @@ describe("GeometryStream", () => {
       federationGuid: new Guid(true),
       userLabel: "UserLabel-" + 1,
       geom: geometryStream,
-      placement: new Placement3d(Point3d.create(), YawPitchRollAngles.createDegrees(0, 0, 0), new ElementAlignedBox3d(0, 0, 0, 1, 1, 1)),
+      placement: new Placement3d(Point3d.create(), YawPitchRollAngles.createDegrees(0, 0, 0), new ElementAlignedBox3d(0, 0, 0, 0, 0, 0)),
     };
 
+    // tslint:disable-next-line:no-debugger
+    // debugger;
+
     const testElem = imodel.elements.createElement(elementProps);
-    const id = imodel.elements.insertElement(testElem);
+    const newId = imodel.elements.insertElement(testElem);
     imodel.saveChanges();
 
     // Extract and test value returned
-    const value = imodel.elements.getElement(id);
+    const value = imodel.elements.getElement({ id: newId, wantGeometry: true });
     assert.isDefined(value.geom);
 
-    if (value.geom) {
-      const gsReader = new OpCodeReader();
-      const iterator = new OpCodeIterator(value.geom.geomStream);
+    const geomArrayOut: Arc3d[] = [];
+    for (const entry of value.geom) {
+      assert.isDefined(entry.arc);
+      const geometryQuery = IModelJson.Reader.parse(entry);
+      assert.isTrue(geometryQuery instanceof Arc3d, "GeometricPrimitive correctly returned Arc3d data");
+      if (geometryQuery !== undefined)
+        geomArrayOut.push(geometryQuery);
+    }
 
-      const geomArrayOut: Arc3d[] = [];
-      do {
-        const geomOut = Arc3d.createXY(Point3d.create(0, 0, 0), 1);
-        const success = gsReader.getArc3d(iterator.operation!, geomOut);
-        assert.isTrue(success !== undefined, "Expect Arc3d out");
-        if (success) {
-          geomArrayOut.push(geomOut);
-        }
-      } while (iterator.nextOp());
-      assert.equal(geomArrayOut.length, geomArray.length, "All elements extracted from buffer");
-
-      for (let i = 0; i < geomArrayOut.length; i++) {
-        assert.isTrue(geomArrayOut[i].isAlmostEqual(geomArray[i]));
-      }
+    assert.equal(geomArrayOut.length, geomArray.length, "All elements extracted from buffer");
+    for (let i = 0; i < geomArrayOut.length; i++) {
+      assert.isTrue(geomArrayOut[i].isAlmostEqual(geomArray[i]));
     }
   });
 });
 
+/* WIP: waiting for geometry stream refactor
 describe("GeometryBuilder", () => {
   let imodel: IModelDb;
   let seedElement: Element;
@@ -357,7 +354,6 @@ describe("GeometryBuilder", () => {
 
   // spell-checker: disable
 
-  /* WIP: waiting for geometry stream refactor
   it("geometry stream built in JS should be deserialized properly in C++", () => {
     const builder = GeometryStreamBuilder.fromCategoryIdAndOrigin3d(seedElement.category, Point3d.create(0, 0, 0));
     assert.isDefined(builder, "Builder is successfully created");
@@ -443,5 +439,5 @@ describe("GeometryBuilder", () => {
       collection.nextOp();
     }
   });
-  */
 });
+*/
