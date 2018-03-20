@@ -53,7 +53,7 @@ export class ChangeSummaryManager {
    * @returns Returns true if the Changes cache file is attached to the iModel. false otherwise
    */
   public static isChangeCacheAttached(iModel: IModelDb): boolean {
-    if (iModel == null || iModel.nativeDb == null)
+    if (!iModel || !iModel.nativeDb)
       throw new IModelError(IModelStatus.BadRequest);
 
     return iModel.nativeDb.isChangeCacheAttached();
@@ -65,7 +65,7 @@ export class ChangeSummaryManager {
    * @throws [[IModelError]]
    */
   public static attachChangeCache(iModel: IModelDb): void {
-    if (iModel == null || iModel.briefcase == null || iModel.briefcase.nativeDb == null)
+    if (!iModel || !iModel.briefcase || !iModel.briefcase.nativeDb)
       throw new IModelError(IModelStatus.BadRequest);
 
     if (iModel.briefcase.nativeDb!.isChangeCacheAttached())
@@ -97,15 +97,15 @@ export class ChangeSummaryManager {
   public static async extractChangeSummaries(accessToken: AccessToken, contextId: string, iModelId: string,
     startChangeSetId?: string, endChangeSetId?: string): Promise<void> {
 
-    const startChangesetIdStr: string = startChangeSetId !== undefined ? startChangeSetId : "first";
-    const endChangesetIdStr: string = endChangeSetId !== undefined ? endChangeSetId : "latest";
+    const startChangesetIdStr: string = startChangeSetId !== undefined && startChangeSetId !== null ? startChangeSetId : "first";
+    const endChangesetIdStr: string = endChangeSetId !== undefined && endChangeSetId !== null ? endChangeSetId : "latest";
     const totalPerf = new PerfLogger(`ChangeSummaryManager.extractChangeSummaries [Changesets: ${startChangesetIdStr} through ${endChangesetIdStr}, iModel: ${iModelId}, contextid: ${contextId}]`);
 
     let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Open iModel");
 
     // TODO: open the imodel readonly and in exclusive ownership as we go back in history. Needs changes in BriefcaseManager.
     const iModel: IModelDb = await IModelDb.open(accessToken, contextId, iModelId, OpenMode.ReadWrite, IModelVersion.latest());
-    if (iModel === undefined || iModel.nativeDb === undefined)
+    if (!iModel || !iModel.nativeDb)
       throw new IModelError(IModelStatus.BadArg);
 
     perfLogger.dispose();
@@ -114,14 +114,14 @@ export class ChangeSummaryManager {
     const hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig);
 
     const changeSetInfos: ChangeSet[] = await this.retrieveChangeSetInfos(hubClient, accessToken, iModelId, startChangeSetId, endChangeSetId);
-    assert(startChangeSetId === undefined || startChangeSetId === changeSetInfos[0].wsgId);
-    assert(endChangeSetId === undefined || endChangeSetId === changeSetInfos[changeSetInfos.length - 1].wsgId);
+    assert(!startChangeSetId || startChangeSetId === changeSetInfos[0].wsgId);
+    assert(!endChangeSetId || endChangeSetId === changeSetInfos[changeSetInfos.length - 1].wsgId);
     perfLogger.dispose();
 
     perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Open or create local Changes file");
     const changesFile: ECDb = ChangeSummaryManager.openOrCreateChangesFile(iModel);
     perfLogger.dispose();
-    if (changesFile === undefined || changesFile.nativeDb === undefined)
+    if (!changesFile || !changesFile.nativeDb)
       throw new IModelError(IModelStatus.BadArg);
 
     try {
@@ -143,17 +143,17 @@ export class ChangeSummaryManager {
         perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Extract ChangeSummary");
         const stat: ErrorStatusOrResult<DbResult, string> = iModel.nativeDb.extractChangeSummary(changesFile.nativeDb, changeSetFilePath);
         perfLogger.dispose();
-        if (stat.error != null && stat.error!.status !== DbResult.BE_SQLITE_OK)
-          throw new IModelError(stat.error!.status);
+        if (stat.error && stat.error.status !== DbResult.BE_SQLITE_OK)
+          throw new IModelError(stat.error.status);
 
         perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Add ChangeSet info to ChangeSummary");
         const changeSummaryId = new Id64(stat.result!);
 
         let userEmail: string | undefined; // undefined means that no user information is stored along with changeset
-        if (changeSetInfo.userCreated !== undefined) {
-          const userId: string = changeSetInfo.userCreated!;
+        if (changeSetInfo.userCreated) {
+          const userId: string = changeSetInfo.userCreated;
           const foundUserEmail: string | undefined = userInfoCache.get(userId);
-          if (foundUserEmail === undefined) {
+          if (!foundUserEmail) {
             const userInfo: UserInfo = await hubClient.getUserInfo(accessToken, iModelId, userId);
             userEmail = userInfo.email;
             // in the cache, add empty e-mail to mark that this user has already been looked up
@@ -185,12 +185,12 @@ export class ChangeSummaryManager {
 
     // getChangeSets does not retrieve the specified from-changeset itself, but only its direct child. So we must retrieve the from-changeset
     // ourselves first
-    if (startChangeSetId !== undefined) {
+    if (startChangeSetId) {
       const startChangeSetInfo: ChangeSet = await hubClient.getChangeSet(accessToken, iModelId, startChangeSetId, false);
       changeSetInfos.unshift(startChangeSetInfo);
     }
 
-    if (endChangeSetId === undefined || changeSetInfos.length === 0)
+    if (!endChangeSetId || changeSetInfos.length === 0)
       return changeSetInfos;
 
     let endChangeSetIx: number = -1;
@@ -205,7 +205,7 @@ export class ChangeSummaryManager {
       return changeSetInfos;
 
     if (endChangeSetIx < 0) {
-      const errorMsg: string = startChangeSetId !== undefined ? `Invalid ChangeSet ${endChangeSetId} for iModel ${iModelId}. It does not exist.` :
+      const errorMsg: string = startChangeSetId !== undefined && startChangeSetId !== null ? `Invalid ChangeSet ${endChangeSetId} for iModel ${iModelId}. It does not exist.` :
         `Invalid ChangeSet ${endChangeSetId} for iModel ${iModelId}. It either does not exist or it is not a successor of the start changeset ${startChangeSetId}.`;
       throw new IModelError(IModelStatus.BadArg, errorMsg);
     }
@@ -216,7 +216,7 @@ export class ChangeSummaryManager {
   }
 
   private static openOrCreateChangesFile(iModel: IModelDb): ECDb {
-    if (iModel == null || iModel.briefcase == null || !iModel.briefcase.isOpen)
+    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen)
       throw new IModelError(IModelStatus.BadArg);
 
     const changesFile = new ECDb();
@@ -231,10 +231,10 @@ export class ChangeSummaryManager {
   }
 
   private static createChangesFile(iModel: IModelDb, changesFile: ECDb, changesFilePath: string): void {
-    if (iModel == null || iModel.briefcase == null || !iModel.briefcase.isOpen)
+    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen)
       throw new IModelError(IModelStatus.BadArg);
 
-    assert(iModel.nativeDb != null);
+    assert(iModel.nativeDb);
     const stat: DbResult = iModel.nativeDb.createChangeCache(changesFile.nativeDb, changesFilePath);
     if (stat !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat);
@@ -260,13 +260,13 @@ export class ChangeSummaryManager {
       (stmt) => {
         stmt.bindId(1, changeSummaryId);
         stmt.bindString(2, changesetWsgId);
-        if (changesetParentWsgId !== undefined)
+        if (changesetParentWsgId)
           stmt.bindString(3, changesetParentWsgId);
 
-        if (changesetPushDate !== undefined)
+        if (changesetPushDate)
           stmt.bindDateTime(4, changesetPushDate);
 
-        if (changeSetAuthor !== undefined)
+        if (changeSetAuthor)
           stmt.bindString(5, changeSetAuthor);
 
         const r: DbResult = stmt.step();
