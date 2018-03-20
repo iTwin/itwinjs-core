@@ -304,7 +304,7 @@ export class IModelTestUtils {
     assert.isTrue(modeledElementId.isValid());
 
     // The model
-    const newModel = testImodel.models.createModel({ modeledElement: modeledElementId, classFullName: "BisCore:PhysicalModel", isPrivate: privateModel });
+    const newModel = testImodel.models.createModel({ modeledElement: {id: modeledElementId, relClassName: "BisCore:PhysicalModelBreaksDownPhysicalPortion"}, classFullName: "BisCore:PhysicalModel", isPrivate: privateModel });
     newModelId = testImodel.models.insertModel(newModel);
 
     assert.isTrue(newModelId.isValid());

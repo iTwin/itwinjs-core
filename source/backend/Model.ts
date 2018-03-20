@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64, DbOpcode, JsonUtils } from "@bentley/bentleyjs-core";
-import { ModelProps, GeometricModel2dProps } from "@bentley/imodeljs-common";
+import { ModelProps, GeometricModel2dProps, RelatedElement } from "@bentley/imodeljs-common";
 import { Point2d } from "@bentley/geometry-core";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -22,8 +22,8 @@ export class Model extends Entity implements ModelProps {
     super(props, iModel);
     this.id = Id64.fromJSON(props.id);
     this.name = props.name ? props.name : "";
-    this.modeledElement = Id64.fromJSON(props.modeledElement)!;
-    this.parentModel = Id64.fromJSON(props.parentModel)!;
+    this.modeledElement = RelatedElement.idFromJson(props.modeledElement);
+    this.parentModel = Id64.fromJSON(props.parentModel)!; // NB! Must always match the model of the modeledElement!
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
