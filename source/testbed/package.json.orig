@@ -21,11 +21,19 @@
   "dependencies": {
     "@bentley/bentleyjs-core": "^7.3.2",
     "@bentley/geometry-core": "^6.0.10",
+<<<<<<< HEAD
     "@bentley/imodeljs-backend": "0",
     "@bentley/imodeljs-e_1_6_11-win32-x64": "^12.0.0",
     "@bentley/imodeljs-clients": "^4.2.0",
     "@bentley/imodeljs-common": "0",
     "@bentley/imodeljs-frontend": "0",
+=======
+    "@bentley/imodeljs-backend": "^0.70.0",
+    "@bentley/imodeljs-e_1_6_11-win32-x64": "^12.0.0",
+    "@bentley/imodeljs-clients": "^4.2.0",
+    "@bentley/imodeljs-common": "^0.69.0",
+    "@bentley/imodeljs-frontend": "^0.69.0",
+>>>>>>> 494b67da4df0bbd0b9a52d6c06ce2970cf95dc9d
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
     "commander": "^2.14.1",
