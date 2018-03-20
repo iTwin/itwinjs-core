@@ -194,7 +194,7 @@ export class IModelTestUtils {
       }
     } catch (error) {
       console.log(`Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Deleting all briefcases.`); // tslint:disable-line
-      IModelTestUtils.deleteAllBriefcases(accessToken, iModelId);
+      await IModelTestUtils.deleteAllBriefcases(accessToken, iModelId);
     }
   }
 
