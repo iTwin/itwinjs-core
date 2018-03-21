@@ -4,7 +4,7 @@
 import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
 import { EntityState } from "./EntityState";
 import { Point2d } from "@bentley/geometry-core";
-import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d } from "@bentley/imodeljs-common";
+import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 
 /** the state of a Model */
@@ -18,9 +18,9 @@ export class ModelState extends EntityState implements ModelProps {
 
   constructor(props: ModelProps, iModel: IModelConnection) {
     super(props, iModel);
-    this.modeledElement = Id64.fromJSON(props.modeledElement);
+    this.modeledElement = RelatedElement.idFromJson(props.modeledElement);
     this.name = props.name ? props.name : "";
-    this.parentModel = Id64.fromJSON(props.parentModel)!;
+    this.parentModel = Id64.fromJSON(props.parentModel)!; // NB! Must always match the model of the modeledElement!
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
   }
