@@ -205,7 +205,6 @@ describe("ChangeSummary", () => {
     try {
       assert.exists(iModel);
 
-      debugger; // tslint:disable-line:no-debugger
       // now extract change summary for that one changeset
       await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, {currentChangeSetOnly: true});
       assert.isTrue(IModelJsFs.existsSync(changesFilePath));
