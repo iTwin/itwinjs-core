@@ -46,6 +46,18 @@ export interface InstanceChange {
   changedProperties: { before: any, after: any };
 }
 
+/** Options for [[ChangeSummaryManager.extractChangeSummaries]]. */
+export interface ChangeSummaryExtractOptions {
+  /** If specified, change summaries are extracted from the start changeset to the current changeset as of which the iModel
+   *  was opened. If undefined, the extraction starts at the first changeset of the iModel.
+   */
+  startChangeSetId?: string;
+  /** If specified, the change summary will be extracted only for current changeset as of which the iModel
+   *  was opened.
+   */
+  currentChangeSetOnly?: boolean;
+}
+
 /** Class to extract change summaries for a briefcase. */
 export class ChangeSummaryManager {
   /** Determines whether the Changes cache file is attached to the specified iModel or not
@@ -65,10 +77,10 @@ export class ChangeSummaryManager {
    * @throws [[IModelError]]
    */
   public static attachChangeCache(iModel: IModelDb): void {
-    if (!iModel || !iModel.briefcase || !iModel.briefcase.nativeDb)
+    if (!iModel || !iModel.briefcase || !iModel.nativeDb)
       throw new IModelError(IModelStatus.BadRequest);
 
-    if (iModel.briefcase.nativeDb!.isChangeCacheAttached())
+    if (ChangeSummaryManager.isChangeCacheAttached(iModel))
       return;
 
     const changesCacheFilePath: string = BriefcaseManager.getChangeSummaryPathname(iModel.briefcase.iModelId);
@@ -79,43 +91,48 @@ export class ChangeSummaryManager {
     }
 
     assert(IModelJsFs.existsSync(changesCacheFilePath));
-    const res: DbResult = iModel.briefcase.nativeDb!.attachChangeCache(changesCacheFilePath);
+    const res: DbResult = iModel.nativeDb.attachChangeCache(changesCacheFilePath);
     if (res !== DbResult.BE_SQLITE_OK)
       throw new IModelError(res, `Failed to attach Changes cache file to ${iModel.briefcase.pathname}.`);
   }
 
-  /** Extracts change summaries from the specified range of changesets
+  /** Extracts change summaries from the specified iModel.
+   * Change summaries are extracted from the specified startChangeSetId up through the change set the iModel was opened with.
+   * If startChangeSetId is undefined, the first changeset will be used.
    * @param accessToken Delegation token of the authorized user.
-   * @param contextId Id of the Connect Project or Asset containing the iModel
-   * @param iModelId Id of the iModel
-   * @param startChangeSetId Changeset Id of the starting changeset to extract from (including this changeset).
-   * If undefined, the first changeset of the iModel is used.
-   * @param endChangeSetId Changeset Id of the end changeset to extract from (including this changeset).
-   * If undefined, the latest changeset of the iModel is used.
-   * @throws [[IModelError]]
+   * @param iModel iModel to extract change summaries for. The iModel must not be a standalone iModel, and it must be opened
+   * with [[OpenMode.ReadWrite]].
+   * Note: The method moves the history of the iModel back to the specified start changeset. After the extraction has completed,
+   * the iModel is moved back to the original changeset.
+   * @param options Extraction options
+   * @throws [[IModelError]] if the iModel is standalone,r was not opened in readwrite mode.
    */
-  public static async extractChangeSummaries(accessToken: AccessToken, contextId: string, iModelId: string,
-    startChangeSetId?: string, endChangeSetId?: string): Promise<void> {
+  public static async extractChangeSummaries(accessToken: AccessToken, iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<void> {
+    // TODO: iModel must be opened in exclusive mode (needs change in BriefcaseManager)
+    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.isReadonly() || iModel.briefcase.isStandalone)
+      throw new IModelError(IModelStatus.BadArg, "iModel to extract change summaries for must be open in readwrite mode and must not be a standalone iModel.");
 
-    const startChangesetIdStr: string = startChangeSetId !== undefined && startChangeSetId !== null ? startChangeSetId : "first";
-    const endChangesetIdStr: string = endChangeSetId !== undefined && endChangeSetId !== null ? endChangeSetId : "latest";
-    const totalPerf = new PerfLogger(`ChangeSummaryManager.extractChangeSummaries [Changesets: ${startChangesetIdStr} through ${endChangesetIdStr}, iModel: ${iModelId}, contextid: ${contextId}]`);
+    const iModelId: string = iModel.briefcase.iModelId;
+    const endChangeSetId: string = iModel.briefcase.changeSetId;
+    assert(endChangeSetId.length !== 0);
 
-    let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Open iModel");
+    let startChangeSetId: string | undefined;
+    if (options) {
+      if (options.startChangeSetId)
+        startChangeSetId = options.startChangeSetId;
+      else if (options.currentChangeSetOnly) {
+        startChangeSetId = endChangeSetId;
+      }
+    }
 
-    // TODO: open the imodel readonly and in exclusive ownership as we go back in history. Needs changes in BriefcaseManager.
-    const iModel: IModelDb = await IModelDb.open(accessToken, contextId, iModelId, OpenMode.ReadWrite, IModelVersion.latest());
-    if (!iModel || !iModel.nativeDb)
-      throw new IModelError(IModelStatus.BadArg);
+    const totalPerf = new PerfLogger(`ChangeSummaryManager.extractChangeSummaries [Changesets: ${startChangeSetId} through ${endChangeSetId}, iModel: ${iModelId}]`);
 
-    perfLogger.dispose();
-
-    perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos from Hub");
+    let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos from Hub");
     const hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig);
 
-    const changeSetInfos: ChangeSet[] = await this.retrieveChangeSetInfos(hubClient, accessToken, iModelId, startChangeSetId, endChangeSetId);
+    const changeSetInfos: ChangeSet[] = await this.retrieveChangeSetInfos(hubClient, accessToken, iModelId, endChangeSetId, startChangeSetId);
     assert(!startChangeSetId || startChangeSetId === changeSetInfos[0].wsgId);
-    assert(!endChangeSetId || endChangeSetId === changeSetInfos[changeSetInfos.length - 1].wsgId);
+    assert(endChangeSetId === changeSetInfos[changeSetInfos.length - 1].wsgId);
     perfLogger.dispose();
 
     perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Open or create local Changes file");
@@ -129,17 +146,23 @@ export class ChangeSummaryManager {
       const userInfoCache = new Map<string, string>();
 
       // extract summaries from end changeset through start changeset, so that we only have to go back in history
-      for (const changeSetInfo of changeSetInfos.reverse()) {
-        const currentChangeSetId: string = changeSetInfo.wsgId;
-
-        perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Roll iModel to previous changeset");
-        await iModel.reverseChanges(accessToken, IModelVersion.asOfChangeSet(currentChangeSetId));
-        perfLogger.dispose();
+      const changeSetCount: number = changeSetInfos.length;
+      const endChangeSetIx: number = changeSetCount - 1;
+      for (let i = endChangeSetIx; i >= 0; i--) {
+        const currentChangeSetInfo: ChangeSet = changeSetInfos[i];
+        const currentChangeSetId: string = currentChangeSetInfo.wsgId;
 
         if (ChangeSummaryManager.isSummaryAlreadyExtracted(changesFile, currentChangeSetId))
           continue;
 
-        const changeSetFilePath: string = path.join(changeSetsFolder, changeSetInfo.fileName!);
+        // iModel is at end changeset, so no need to reverse for it.
+        if (i !== endChangeSetIx) {
+          perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Roll iModel to previous changeset");
+          await iModel.reverseChanges(accessToken, IModelVersion.asOfChangeSet(currentChangeSetId));
+          perfLogger.dispose();
+        }
+
+        const changeSetFilePath: string = path.join(changeSetsFolder, currentChangeSetInfo.fileName!);
         perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Extract ChangeSummary");
         const stat: ErrorStatusOrResult<DbResult, string> = iModel.nativeDb.extractChangeSummary(changesFile.nativeDb, changeSetFilePath);
         perfLogger.dispose();
@@ -150,8 +173,8 @@ export class ChangeSummaryManager {
         const changeSummaryId = new Id64(stat.result!);
 
         let userEmail: string | undefined; // undefined means that no user information is stored along with changeset
-        if (changeSetInfo.userCreated) {
-          const userId: string = changeSetInfo.userCreated;
+        if (currentChangeSetInfo.userCreated) {
+          const userId: string = currentChangeSetInfo.userCreated;
           const foundUserEmail: string | undefined = userInfoCache.get(userId);
           if (!foundUserEmail) {
             const userInfo: UserInfo = await hubClient.getUserInfo(accessToken, iModelId, userId);
@@ -162,7 +185,7 @@ export class ChangeSummaryManager {
             userEmail = foundUserEmail.length !== 0 ? foundUserEmail : undefined;
         }
 
-        ChangeSummaryManager.addExtendedInfos(changesFile, changeSummaryId, currentChangeSetId, changeSetInfo.parentId, changeSetInfo.pushDate, userEmail);
+        ChangeSummaryManager.addExtendedInfos(changesFile, changeSummaryId, currentChangeSetId, currentChangeSetInfo.parentId, currentChangeSetInfo.pushDate, userEmail);
         perfLogger.dispose();
       }
 
@@ -170,17 +193,18 @@ export class ChangeSummaryManager {
     } finally {
       changesFile.dispose();
 
-      try {
-        perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Move iModel to original changeset");
-        await iModel.reinstateChanges(accessToken, IModelVersion.latest());
-        perfLogger.dispose();
-      } finally { await iModel.close(accessToken); }
+      perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Move iModel to original changeset");
+      await iModel.reinstateChanges(accessToken, IModelVersion.asOfChangeSet(endChangeSetId));
+      perfLogger.dispose();
 
       totalPerf.dispose();
     }
   }
 
-  private static async retrieveChangeSetInfos(hubClient: IModelHubClient, accessToken: AccessToken, iModelId: string, startChangeSetId?: string, endChangeSetId?: string): Promise<ChangeSet[]> {
+  private static async retrieveChangeSetInfos(hubClient: IModelHubClient, accessToken: AccessToken, iModelId: string, endChangeSetId: string, startChangeSetId?: string): Promise<ChangeSet[]> {
+    if (startChangeSetId === endChangeSetId)
+      return [await hubClient.getChangeSet(accessToken, iModelId, endChangeSetId, false)];
+
     const changeSetInfos: ChangeSet[] = await hubClient.getChangeSets(accessToken, iModelId, false, startChangeSetId);
 
     // getChangeSets does not retrieve the specified from-changeset itself, but only its direct child. So we must retrieve the from-changeset
@@ -190,7 +214,7 @@ export class ChangeSummaryManager {
       changeSetInfos.unshift(startChangeSetInfo);
     }
 
-    if (!endChangeSetId || changeSetInfos.length === 0)
+    if (changeSetInfos.length === 0)
       return changeSetInfos;
 
     let endChangeSetIx: number = -1;
