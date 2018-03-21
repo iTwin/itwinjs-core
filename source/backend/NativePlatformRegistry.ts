@@ -24,7 +24,7 @@ export class NativePlatformRegistry {
     return NativePlatformRegistry._platform;
   }
 
-  /** @hiddend */
+  /** @hidden */
   public static isNativePlatformLoaded(): boolean {
     return NativePlatformRegistry._platform !== undefined;
   }
@@ -126,7 +126,7 @@ export class NodeAddonPackageName {
     return "@bentley/imodeljs-" + versionCode + "-" + process.platform + "-" + process.arch;
   }
 
-  /** Compute the name of default platformthat should be used for this environment. This method uses the same naming formula that is used by
+  /** Compute the name of default platform that should be used for this environment. This method uses the same naming formula that is used by
    * the bb part that generates and publishes the default platform packages (iModelJsNodeAddon:MakePackages).
    */
   public static computeDefaultImodelNodeAddonName(): string {
