@@ -148,12 +148,12 @@ describe("ECPresentationManager", () => {
       }, {
         nodeId: addonResponse[1].NodeId,
         parentNodeId: addonResponse[1].ParentNodeId || undefined,
-          key: {
-            type: addonResponse[1].Key.Type,
-            pathFromRoot: addonResponse[1].Key.PathFromRoot,
-            classId: addonResponse[1].Key.ECClassId,
-            instanceId: (addonResponse[1].Key as addonTypes.ECInstanceNodeKey).ECInstanceId,
-          } as NavNodeKey,
+        key: {
+          type: addonResponse[1].Key.Type,
+          pathFromRoot: addonResponse[1].Key.PathFromRoot,
+          classId: addonResponse[1].Key.ECClassId,
+          instanceId: (addonResponse[1].Key as addonTypes.ECInstanceNodeKey).ECInstanceId,
+        } as NavNodeKey,
         label: addonResponse[1].Label,
         description: addonResponse[1].Description,
         imageId: addonResponse[1].ExpandedImageId || undefined,

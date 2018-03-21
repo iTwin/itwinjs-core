@@ -2,6 +2,11 @@
   "extends": "./node_modules/@bentley/bentleyjs-tools/tslint.json",
   "rulesDirectory": ["tslint-consistent-codestyle"],
   "rules": {
+    "align": [
+      true,
+      "statements",
+      "members"
+    ],
     "naming-convention": [
       true,
       // forbid leading and trailing underscores and enforce camelCase on EVERY name. will be overridden by subtypes if needed
