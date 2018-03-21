@@ -30,7 +30,8 @@
         "--debug"
       ],
       "port": 9229,
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "outputCapture": "std"
     },
     {
       "type": "node",
