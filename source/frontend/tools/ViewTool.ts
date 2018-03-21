@@ -1300,8 +1300,8 @@ class ViewWalk extends ViewNavigate {
 
 /** tool that performs a fit view */
 export class FitViewTool extends ViewTool {
+  public static toolId = "View.Fit";
   constructor(public viewport: Viewport, public oneShot: boolean) { super(); }
-  public get toolId() { return "View.Fit"; }
   public onDataButtonDown(_ev: BeButtonEvent): boolean { return this.doFit(); }
   public onPostInstall() { super.onPostInstall(); this.doFit(); }
   public doFit(): boolean {
@@ -1326,8 +1326,8 @@ export class RotateTool extends ViewManip {
 
 /** tool that performs the walk operation */
 export class ViewWalkTool extends ViewManip {
+  public static toolId = "View.Walk";
   constructor(vp: Viewport) { super(vp, ViewHandleType.ViewWalk, false, true, false); }
-  public get toolId() { return "View.Walk"; }
 }
 
 /** tool that performs a Window-area view operation */
@@ -1336,13 +1336,13 @@ export class WindowAreaTool extends ViewTool {
   private firstPtWorld: Point3d = new Point3d();
   private secondPtWorld: Point3d = new Point3d();
   private corners = [new Point3d(), new Point3d()];
+  public static toolId = "View.WindowArea";
 
   constructor(private viewport: Viewport) {
     super();
     // this.overlay = new WindowAreaDecoration(viewport.canvas.parentElement, viewport.getContrastToBackgroundColor());
     // this.overlay.visible = false;
   }
-  public get toolId() { return "View.WindowArea"; }
 
   public onCleanup() {
     //   if (Cesium.defined(this.overlay)) {

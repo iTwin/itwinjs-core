@@ -45,7 +45,6 @@ export class IModelDb extends IModel {
   public readFontJson(): string { return this.briefcase!.nativeDb.readFontMap(); }
   public getFontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
 
-  /** Event raised when a connected IModelDb is created or opened. This event is not raised for standalone IModelDbs. */
   /** Event raised just before a connected IModelDb is opened. This event is raised only for iModel access initiated by this service only. This event is not raised for standalone IModelDbs. */
   public static readonly onOpen = new BeEvent<(_accessToken: AccessToken, _contextId: string, _iModelId: string, _openMode: OpenMode, _version: IModelVersion) => void>();
   /** Event raised just after a connected IModelDb is opened. This event is raised only for iModel access initiated by this service only. This event is not raised for standalone IModelDbs. */
@@ -995,7 +994,6 @@ export class ConcurrencyControl {
 }
 
 export namespace ConcurrencyControl {
-
   /** A request for locks and/or code reservations. */
   export class Request {
     private constructor() { }
@@ -1269,7 +1267,7 @@ export class IModelDbElements {
 
   /**
    * Get an element by Id, FederationGuid, or Code
-   * @param elementId either the element's Id, Code, or FederationGuid
+   * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
    * @throws [[IModelError]] if the element is not found.
    */
   public getElement(elementId: Id64Props | Guid | Code | ElementLoadProps): Element {
@@ -1305,11 +1303,7 @@ export class IModelDbElements {
    * @param elProps The properties of the new element.
    * @throws [[IModelError]] if there is a problem creating the element.
    */
-  public createElement(elProps: ElementProps): Element {
-    const element: Element = this._iModel.constructEntity(elProps) as Element;
-    assert(element instanceof Element);
-    return element;
-  }
+  public createElement(elProps: ElementProps): Element { return this._iModel.constructEntity(elProps) as Element; }
 
   /**
    * Insert a new element into the iModel.
