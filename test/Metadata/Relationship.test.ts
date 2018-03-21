@@ -136,6 +136,7 @@ describe("RelationshipClass", () => {
             propertyType: "NavigationProperty",
             name: "testNavProp",
             relationshipName: "TestSchema.TestRelationship",
+            direction: "backward",
           },
         ],
       });

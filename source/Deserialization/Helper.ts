@@ -415,7 +415,13 @@ export default class SchemaReadHelper {
 
         await this.findSchemaChild(propertyJson.relationshipName);
 
-        const navProp = await (classObj as MutableEntityClass).createNavigationProperty(propName, propertyJson.relationshipName);
+        if (undefined === propertyJson.direction)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${classObj.name}.${propName} is missing the required 'direction' property.`);
+
+        if (typeof(propertyJson.direction) !== "string")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${classObj.name}.${propName} has an invalid 'direction' property. It should be of type 'string'.`);
+
+        const navProp = await (classObj as MutableEntityClass).createNavigationProperty(propName, propertyJson.relationshipName, propertyJson.direction);
         return this.loadProperty(navProp, propertyJson);
     }
   }

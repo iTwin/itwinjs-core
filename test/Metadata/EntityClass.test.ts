@@ -64,6 +64,40 @@ describe("EntityClass", () => {
       });
     }
 
+    function createNavPropSchemaJson(entityClassJson: any): any {
+      return createSchemaJsonWithChildren({
+        TestEntityClass: {
+          schemaChildType: "EntityClass",
+          ...entityClassJson,
+        },
+        NavPropRelationship: {
+          schemaChildType: "RelationshipClass",
+          strength: "Embedding",
+          strengthDirection: "Forward",
+          modifier: "Sealed",
+          source: {
+            polymorphic: true,
+            multiplicity: "(0..*)",
+            roleLabel: "Source RoleLabel",
+            constraintClasses: [
+              "TestSchema.TestEntityClass",
+            ],
+          },
+          target: {
+            polymorphic: true,
+            multiplicity: "(0..*)",
+            roleLabel: "Target RoleLabel",
+            constraintClasses: [
+              "TestSchema.TargetClass",
+            ],
+          },
+        },
+        TargetClass: {
+          schemaChildType: "EntityClass",
+        },
+      });
+    }
+
     it("should succeed with fully defined", async () => {
       const schemaJson = createSchemaJson({
         label: "Test Entity Class",
@@ -164,48 +198,21 @@ describe("EntityClass", () => {
     });
 
     it("with navigation property", async () => {
-      const schemaJson = createSchemaJsonWithChildren({
-        NavPropRelationship: {
-          schemaChildType: "RelationshipClass",
-          strength: "Embedding",
-          strengthDirection: "Forward",
-          modifier: "Sealed",
-          source: {
-            polymorphic: true,
-            multiplicity: "(0..*)",
-            roleLabel: "Source RoleLabel",
-            constraintClasses: [
-              "TestSchema.TestClass",
-            ],
+      const schemaJson = createNavPropSchemaJson({
+        properties: [
+          {
+            propertyType: "NavigationProperty",
+            name: "testNavProp",
+            relationshipName: "TestSchema.NavPropRelationship",
+            direction: "forward",
           },
-          target: {
-            polymorphic: true,
-            multiplicity: "(0..*)",
-            roleLabel: "Target RoleLabel",
-            constraintClasses: [
-              "TestSchema.TargetClass",
-            ],
-          },
-        },
-        TargetClass: {
-          schemaChildType: "EntityClass",
-        },
-        TestClass: {
-          schemaChildType: "EntityClass",
-          properties: [
-            {
-              propertyType: "NavigationProperty",
-              name: "testNavProp",
-              relationshipName: "TestSchema.NavPropRelationship",
-            },
-          ],
-        },
+        ],
       });
 
       const schema = await Schema.fromJson(schemaJson);
       assert.isDefined(schema);
 
-      const entityClass = await schema.getClass<EntityClass>("TestClass");
+      const entityClass = await schema.getClass<EntityClass>("TestEntityClass");
       assert.isDefined(entityClass);
 
       const navProp = await entityClass!.getProperty("testNavProp");
@@ -312,28 +319,71 @@ describe("EntityClass", () => {
     });
 
     it("should throw for navigation property with missing relationshipName", async () => {
-      const json = createSchemaJson({
+      const json = createNavPropSchemaJson({
         properties: [
           {
             propertyType: "NavigationProperty",
             name: "testNavProp",
+            direction: "forward",
           },
         ],
       });
       await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestEntityClass.testNavProp is missing the required 'relationshipName' property.`);
     });
 
-    it("should throw for navigation property with missing relationshipName", async () => {
-      const json = createSchemaJson({
+    it("should throw for navigation property with invalid relationshipName", async () => {
+      const json = createNavPropSchemaJson({
         properties: [
           {
             propertyType: "NavigationProperty",
             name: "testNavProp",
+            direction: "forward",
             relationshipName: 0,
           },
         ],
       });
       await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestEntityClass.testNavProp has an invalid 'relationshipName' property. It should be of type 'string'.`);
+    });
+
+    it("should throw for navigation property with nonexistent relationship", async () => {
+      const json = createNavPropSchemaJson({
+        properties: [
+          {
+            propertyType: "NavigationProperty",
+            name: "testNavProp",
+            direction: "forward",
+            relationshipName: "BadSchema.ThisDoesNotExist",
+          },
+        ],
+      });
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `Unable to locate SchemaChild BadSchema.ThisDoesNotExist.`);
+    });
+
+    it("should throw for navigation property with missing direction", async () => {
+      const json = createNavPropSchemaJson({
+        properties: [
+          {
+            propertyType: "NavigationProperty",
+            name: "testNavProp",
+            relationshipName: "TestSchema.NavPropRelationship",
+          },
+        ],
+      });
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestEntityClass.testNavProp is missing the required 'direction' property.`);
+    });
+
+    it("should throw for navigation property with invalid direction", async () => {
+      const json = createNavPropSchemaJson({
+        properties: [
+          {
+            propertyType: "NavigationProperty",
+            name: "testNavProp",
+            relationshipName: "TestSchema.NavPropRelationship",
+            direction: 0,
+          },
+        ],
+      });
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestEntityClass.testNavProp has an invalid 'direction' property. It should be of type 'string'.`);
     });
   });
 

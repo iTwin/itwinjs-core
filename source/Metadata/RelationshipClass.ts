@@ -47,7 +47,7 @@ export default class RelationshipClass extends ECClass {
    * @param relationship
    * @param direction
    */
-  public async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction?: string | RelatedInstanceDirection): Promise<NavigationProperty> {
+  public async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | RelatedInstanceDirection): Promise<NavigationProperty> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
@@ -60,9 +60,7 @@ export default class RelationshipClass extends ECClass {
     if (!resolvedRelationship)
       throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);
 
-    if (!direction)
-      direction = RelatedInstanceDirection.Forward;
-    else if (typeof(direction) === "string")
+    if (typeof(direction) === "string")
       direction = parseStrengthDirection(direction);
 
     const lazyRelationship = new DelayedPromiseWithProps(resolvedRelationship.key, async () => resolvedRelationship!);
