@@ -124,7 +124,7 @@ describe("BriefcaseManager", () => {
     await dumpTestCase("NodeJsTestProject", "NoVersionsTest");
   });
 
-  it.only ("should open multiple versions of iModels", async () => {
+  it("should open multiple versions of iModels", async () => {
     // const iModelNames = ["NoVersionsTest", "ReadOnlyTest"];
     // for (const name of iModelNames) {
     //    const iModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, name);
@@ -138,7 +138,6 @@ describe("BriefcaseManager", () => {
     //   // Download change sets
     //    await IModelTestUtils.hubClient.downloadChangeSets(changeSets, "C:/Users/Charles.Goepfert/AppData/Local/Temp/Bentley/IModelJs/cache/iModels/c3e1146f-8c81-430d-a974-ac840657b7ac/readWrite/176/csets");
     // }
-    debugger; // tslint:disable-line:no-debugger
 
     const iModel = await IModelDb.open(accessToken, testProjectId, "000-00000-00000-0-000", OpenMode.ReadWrite, IModelVersion.first());
 
@@ -479,7 +478,8 @@ describe("BriefcaseManager", () => {
     iModel.close(accessToken);
   });
 
-  it.skip("should write to briefcase with optimistic concurrency", async () => {
+  it.only("should write to briefcase with optimistic concurrency", async () => {
+    debugger; // tslint:disable-line:no-debugger
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "ReadWriteTest";

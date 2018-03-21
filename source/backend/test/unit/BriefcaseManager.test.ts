@@ -9,7 +9,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { /*KeepBriefcase,*/ BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost } from "../../backend";
 import {
   AccessToken, UserProfile, ConnectClient, Project, IModelHubClient, WsgInstance, ECJsonTypeMap,
-  Response, ChangeSet, IModel as HubIModel, Briefcase, /*MultiCode, CodeState,*/
+  Response, ChangeSet, IModel as HubIModel, Briefcase, MultiCode, CodeState,
 } from "@bentley/imodeljs-clients";
 
 // debugger; // tslint:disable-line:no-debugger
@@ -78,7 +78,7 @@ describe("BriefcaseManagerUnitTests", () => {
     new TestIModelInfo("ReadWriteTest"),
     new TestIModelInfo("NoVersionsTest"),
   ];
-  // const assetDir = "./test/assets/_mocks_";
+  const assetDir = "./test/assets/_mocks_";
 
   const spoofAccessToken: MockAccessToken = new MockAccessToken();
   const iModelHubClientMock = TypeMoq.Mock.ofType(IModelHubClient);
@@ -91,8 +91,8 @@ describe("BriefcaseManagerUnitTests", () => {
 
     console.log("    Setting up mock objects..."); // tslint:disable-line:no-console
 
-    MockAssetUtil.setupConnectClientMock(connectClientMock);
-    MockAssetUtil.setupIModelHubClientMock(iModelHubClientMock);
+    MockAssetUtil.setupConnectClientMock(connectClientMock, assetDir);
+    MockAssetUtil.setupIModelHubClientMock(iModelHubClientMock, assetDir);
     MockAssetUtil.setupIModelVersionMock(iModelVersionMock);
 
     // Get test projectId from the mocked connection client
@@ -281,16 +281,16 @@ describe("BriefcaseManagerUnitTests", () => {
     // timer.end();
 
     // Inject hub client mock into the briefcase manager
+    MockAssetUtil.setupHubMultiCodes(iModelHubClientMock, assetDir, testIModels[1].id, testIModels[1].name, false);
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
+    debugger; // tslint:disable-line:no-debugger
     // Create a new iModel on the Hub (by uploading a seed file)
     let timer = new Timer("create iModel");
     const rwIModel: IModelDb = await IModelDb.create(spoofAccessToken as any, testProjectId, testIModels[1].name, "TestSubject");
     const rwIModelId = rwIModel.iModelToken.iModelId;
     assert.isNotEmpty(rwIModelId);
     timer.end();
-
-    debugger; // tslint:disable-line
 
     timer = new Timer("make local changes");
 
@@ -325,8 +325,6 @@ describe("BriefcaseManagerUnitTests", () => {
 
     timer = new Timer("query Codes I");
 
-    debugger; // tslint:disable-line:no-debugger
-
     // iModel.concurrencyControl should have recorded the codes that are required by the new elements.
     assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests());
     assert.isTrue(await rwIModel.concurrencyControl.areAvailable(spoofAccessToken as any));
@@ -342,51 +340,53 @@ describe("BriefcaseManagerUnitTests", () => {
         assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
       }
     }
+    // Reconfigure the corresponding setup calls to now return reserved codes on .getMultipleCodes(...)
+    MockAssetUtil.setupHubMultiCodes(iModelHubClientMock, assetDir, testIModels[1].id, testIModels[1].name, true);
 
     timer.end();
-    // timer = new Timer("query Codes II");
+    timer = new Timer("query Codes II");
 
-    // // Verify that the codes are reserved.
-    // const category = rwIModel.elements.getElement(spatialCategoryId);
+    // Verify that the codes are reserved.
+    const category = rwIModel.elements.getElement(spatialCategoryId);
+    assert.isTrue(category.code.value !== undefined);
+    const codeStates: MultiCode[] = await rwIModel.concurrencyControl.codes.query(spoofAccessToken as any, category.code.spec, category.code.scope);
+    const foundCode: MultiCode[] = codeStates.filter((cs) => cs.values!.includes(category.code.value!) && (cs.state === CodeState.Reserved));
+    assert.equal(foundCode.length, 1);
+
+    // // NEEDS WORK - query just this one code
     // assert.isTrue(category.code.value !== undefined);
-    // const codeStates: MultiCode[] = await rwIModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope);
-    // const foundCode: MultiCode[] = codeStates.filter((cs) => cs.values!.includes(category.code.value!) && (cs.state === CodeState.Reserved));
-    // assert.equal(foundCode.length, 1);
+    // const codeStates2 = await iModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope, category.code.value!);
+    // assert.equal(codeStates2.length, 1);
+    // assert.equal(codeStates2[0].values.length, 1);
+    // assert.equal(codeStates2[0].values[0], category.code.value!);
 
-    // // // NEEDS WORK - query just this one code
-    // // assert.isTrue(category.code.value !== undefined);
-    // // const codeStates2 = await iModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope, category.code.value!);
-    // // assert.equal(codeStates2.length, 1);
-    // // assert.equal(codeStates2[0].values.length, 1);
-    // // assert.equal(codeStates2[0].values[0], category.code.value!);
+    timer.end();
 
-    // timer.end();
+    timer = new Timer("make more local changes");
 
-    // timer = new Timer("make more local changes");
+    // Create a couple of physical elements.
+    const elid1 = rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
+    rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
 
-    // // Create a couple of physical elements.
-    // const elid1 = rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
-    // rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
+    // Commit the local changes to a local transaction in the briefcase.
+    // (Note that this ends the bulk operation automatically, so there's no need to call endBulkOperation.)
+    rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "inserted generic objects" }));
 
-    // // Commit the local changes to a local transaction in the briefcase.
-    // // (Note that this ends the bulk operation automatically, so there's no need to call endBulkOperation.)
-    // rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "inserted generic objects" }));
+    rwIModel.elements.getElement(elid1); // throws if elid1 is not found
+    rwIModel.elements.getElement(spatialCategoryId); // throws if spatialCategoryId is not found
 
-    // rwIModel.elements.getElement(elid1); // throws if elid1 is not found
-    // rwIModel.elements.getElement(spatialCategoryId); // throws if spatialCategoryId is not found
+    timer.end();
 
-    // timer.end();
+    timer = new Timer("pullmergepush");
 
-    // timer = new Timer("pullmergepush");
+    // Push the changes to the hub
+    const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
+    await rwIModel.pushChanges(spoofAccessToken as any);
+    const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
+    assert(!!postPushChangeSetId);
+    expect(prePushChangeSetId !== postPushChangeSetId);
 
-    // // Push the changes to the hub
-    // const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
-    // await rwIModel.pushChanges(accessToken);
-    // const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
-    // assert(!!postPushChangeSetId);
-    // expect(prePushChangeSetId !== postPushChangeSetId);
-
-    // timer.end();
+    timer.end();
 
     // // Open a readonly copy of the iModel
     // const roIModel: IModelDb = await IModelDb.open(accessToken, testProjectId, rwIModelId!, OpenMode.Readonly, IModelVersion.latest());
@@ -403,7 +403,6 @@ class MockAssetUtil {
   private static iModelMap = new Map<string, string>([["c3e1146f-8c81-430d-a974-ac840657b7ac", "ReadOnlyTest"],
                                                       ["b74b6451-cca3-40f1-9890-42c769a28f3e", "ReadWriteTest"],
                                                       ["0aea4c09-09f4-449d-bf47-045228d259ba", "NoVersionsTest"]]); // <IModelID, IModelName>
-  private static assetDir: string = "./test/assets/_mocks_";
 
   public static verifyIModelInfo(testIModelInfos: TestIModelInfo[]) {
     assert(testIModelInfos.length === this.iModelMap.size, "IModelInfo array has the wrong number of entries");
@@ -425,11 +424,11 @@ class MockAssetUtil {
   }
 
   /** Setup functions for the ConnectClient mock */
-  public static async setupConnectClientMock(connectClientMock: TypeMoq.IMock<ConnectClient>) {
+  public static async setupConnectClientMock(connectClientMock: TypeMoq.IMock<ConnectClient>, assetDir: string) {
     // For any parameters passed, grab the Sample Project json file from the assets folder and parse it into an instance
     connectClientMock.setup((f: ConnectClient) => f.getProject(TypeMoq.It.isAny(), TypeMoq.It.isAny()))
     .returns(() => {
-      const assetPath = path.join(this.assetDir, "Project", "SampleProject.json");
+      const assetPath = path.join(assetDir, "Project", "SampleProject.json");
       const buff = IModelJsFs.readFileSync(assetPath);
       const jsonObj = JSON.parse(buff.toString())[0];
       return Promise.resolve(getTypedInstance<Project>(Project, jsonObj));
@@ -437,7 +436,7 @@ class MockAssetUtil {
   }
 
   /** Setup functions for the iModelHubClient mock */
-  public static async setupIModelHubClientMock(iModelHubClientMock: TypeMoq.IMock<IModelHubClient>) {
+  public static async setupIModelHubClientMock(iModelHubClientMock: TypeMoq.IMock<IModelHubClient>, assetDir: string) {
     const seedFileMock = TypeMoq.Mock.ofType(SeedFile);
     seedFileMock.object.downloadUrl = "www.bentley.com";
     seedFileMock.object.mergedChangeSetId = "";
@@ -452,7 +451,7 @@ class MockAssetUtil {
                                                                        TypeMoq.It.isAny()))
         .returns(() => {
           setTimeout(() => {}, 100);
-          const sampleIModelPath = path.join(this.assetDir, pair[1], `${pair[1]}.json`);
+          const sampleIModelPath = path.join(assetDir, pair[1], `${pair[1]}.json`);
           const buff = IModelJsFs.readFileSync(sampleIModelPath);
           const jsonObj = JSON.parse(buff.toString())[0];
           return Promise.resolve(getTypedInstance<HubIModel>(HubIModel, jsonObj));
@@ -475,7 +474,7 @@ class MockAssetUtil {
                                                                      TypeMoq.It.isAnyString(),
                                                                      TypeMoq.It.is<RequestQueryOptions>((x: RequestQueryOptions) => x.$filter!.includes(pair[1]))))
         .returns(() => {
-          const sampleIModelPath = path.join(this.assetDir, pair[1], `${pair[1]}.json`);
+          const sampleIModelPath = path.join(assetDir, pair[1], `${pair[1]}.json`);
           const buff = IModelJsFs.readFileSync(sampleIModelPath);
           const jsonObj = JSON.parse(buff.toString());
           return Promise.resolve(getTypedInstances<HubIModel>(HubIModel, jsonObj));
@@ -486,7 +485,7 @@ class MockAssetUtil {
                                                                     TypeMoq.It.isAnyString(),
                                                                     TypeMoq.It.is<string>((x: string) => x === pair[0])))
         .returns(() => {
-          const sampleIModelPath = path.join(this.assetDir, pair[1], `${pair[1]}.json`);
+          const sampleIModelPath = path.join(assetDir, pair[1], `${pair[1]}.json`);
           const buff = IModelJsFs.readFileSync(sampleIModelPath);
           const jsonObj = JSON.parse(buff.toString())[0];
           return Promise.resolve(getTypedInstance<HubIModel>(HubIModel, jsonObj));
@@ -498,7 +497,7 @@ class MockAssetUtil {
                                                                        TypeMoq.It.is<string>((x: string) => x.includes(pair[1]))))
         .returns((seedUrl: string, seedPathname: string) => {
           seedUrl.italics();
-          const testModelPath = path.join(this.assetDir, pair[1], `${pair[1]}.bim`);
+          const testModelPath = path.join(assetDir, pair[1], `${pair[1]}.bim`);
           IModelJsFs.copySync(testModelPath, seedPathname);
           const retResponse: Response = {
             status: 200,
@@ -523,7 +522,7 @@ class MockAssetUtil {
                                                                        TypeMoq.It.isAnyNumber(),
                                                                        TypeMoq.It.isValue(true)))
       .returns(() => {
-        const sampleIModelPath = path.join(this.assetDir, pair[1], `${pair[1]}Briefcase.json`);
+        const sampleIModelPath = path.join(assetDir, pair[1], `${pair[1]}Briefcase.json`);
         const buff = IModelJsFs.readFileSync(sampleIModelPath);
         const jsonObj = JSON.parse(buff.toString())[0];
         return Promise.resolve(getTypedInstance<Briefcase>(Briefcase, jsonObj));
@@ -534,7 +533,7 @@ class MockAssetUtil {
       iModelHubClientMock.setup((f: IModelHubClient) => f.getBriefcases(TypeMoq.It.isAny(),
                                                                         TypeMoq.It.is<string>((x: string) => x === pair[0])))
         .returns(() => {
-          const sampleIModelPath = path.join(this.assetDir, pair[1], `${pair[1]}Briefcase.json`);
+          const sampleIModelPath = path.join(assetDir, pair[1], `${pair[1]}Briefcase.json`);
           const buff = IModelJsFs.readFileSync(sampleIModelPath);
           const jsonObj = JSON.parse(buff.toString())[0];
           const briefcaseInstance = getTypedInstance<Briefcase>(Briefcase, jsonObj);
@@ -547,7 +546,7 @@ class MockAssetUtil {
                                                                         TypeMoq.It.is<string>((x: string) => x.includes(pair[0])),
                                                                         TypeMoq.It.isAny()))
         .returns(() => {
-          const sampleChangeSetPath = path.join(this.assetDir, pair[1], `${pair[1]}ChangeSets.json`);
+          const sampleChangeSetPath = path.join(assetDir, pair[1], `${pair[1]}ChangeSets.json`);
           const buff = IModelJsFs.readFileSync(sampleChangeSetPath);
           const jsonObj = JSON.parse(buff.toString());
           return Promise.resolve(getTypedInstances<ChangeSet>(ChangeSet, jsonObj));
@@ -559,7 +558,7 @@ class MockAssetUtil {
                                                                           TypeMoq.It.isAny(),
                                                                           TypeMoq.It.isAny()))
         .returns(() => {
-            const sampleChangeSetsPath = path.join(this.assetDir, pair[1], `${pair[1]}ChangeSets.json`);
+            const sampleChangeSetsPath = path.join(assetDir, pair[1], `${pair[1]}ChangeSets.json`);
             const buff = IModelJsFs.readFileSync(sampleChangeSetsPath);
             const jsonObj = JSON.parse(buff.toString());
             const sampleChangeSets = getTypedInstances<ChangeSet>(ChangeSet, jsonObj);
@@ -573,7 +572,7 @@ class MockAssetUtil {
                                                                         TypeMoq.It.isAnyString(),
                                                                         TypeMoq.It.isValue(false)))
         .returns(() => {
-          const sampleChangeSetPath = path.join(this.assetDir, pair[1], `${pair[1]}ChangeSets.json`);
+          const sampleChangeSetPath = path.join(assetDir, pair[1], `${pair[1]}ChangeSets.json`);
           const buff = IModelJsFs.readFileSync(sampleChangeSetPath);
           const jsonObj = JSON.parse(buff.toString())[0];
           return Promise.resolve(getTypedInstance<ChangeSet>(ChangeSet, jsonObj));
@@ -585,7 +584,7 @@ class MockAssetUtil {
                                                                              TypeMoq.It.is<string>((x: string) => x.includes(pair[0]))))
         .returns((boundCsets: ChangeSet[], outPath: string) => {
           for (const changeSet of boundCsets) {
-            const filePath = path.join(this.assetDir, pair[1], "csets", changeSet.fileName!);
+            const filePath = path.join(assetDir, pair[1], "csets", changeSet.fileName!);
             const outFilePath = path.join(outPath, changeSet.fileName!);
             IModelJsFs.copySync(filePath, outFilePath);
           }
@@ -597,12 +596,6 @@ class MockAssetUtil {
           return Promise.resolve(retResponse)
           .then(() => Promise.resolve());
         }).verifiable();
-
-      // iModelHubClientMock.setup((f: IModelHubClient) => f.getMultipleCodes(TypeMoq.It.isAny(),
-      //                                                                      TypeMoq.It.is<string>((x: string) => x === pair[0])))
-      //   .returns(() => {
-          
-      //   });
       }
 
     // For any parameters passed, return a seedFile mock
@@ -615,5 +608,34 @@ class MockAssetUtil {
         seedFiles.push(seedFileMock.object);
         return Promise.resolve(seedFiles);
       }).verifiable();
+  }
+
+  public static setupHubMultiCodes(iModelHubClientMock: TypeMoq.IMock<IModelHubClient>, assetDir: string, iModelId: string, iModelName: string, isReserved: boolean) {
+    const codeInfoMap: Map<string, string> = new Map<string, string>([["0x1d", "0x1"], ["0x16", "0x10"], ["0x1e", "0x1780000000002"]]);
+    for (const [codeSpecId, codeScope] of codeInfoMap) {
+      iModelHubClientMock.setup((f: IModelHubClient) => f.getMultipleCodes(TypeMoq.It.isAny(),
+                                                                           TypeMoq.It.is<string>((x: string) => x === iModelId),
+                                                                           TypeMoq.It.is<RequestQueryOptions>((x: RequestQueryOptions) => x.$filter!.includes(codeScope)
+                                                                                                                                       && x.$filter!.includes(codeSpecId))))
+        .returns(() => {
+          let codeType: string = "Used";
+          if (isReserved)
+            codeType = "Reserved";
+          const sampleIModelPath = path.join(assetDir, iModelName, "codes", `${iModelName}${codeType}${codeSpecId}.json`);
+          const buff = IModelJsFs.readFileSync(sampleIModelPath);
+          const jsonObj = JSON.parse(buff.toString());
+          return Promise.resolve(getTypedInstances<MultiCode>(MultiCode, jsonObj));
+        }).verifiable();
+
+      iModelHubClientMock.setup((f: IModelHubClient) => f.requestMultipleCodes(TypeMoq.It.isAny(),
+                                                                               TypeMoq.It.is<string>((x: string) => x === iModelId),
+                                                                               TypeMoq.It.is<MultiCode>((x: MultiCode) => x.codeScope === codeScope && x.codeSpecId === codeSpecId)))
+        .returns(() => {
+          const sampleIModelPath = path.join(assetDir, iModelName, "codes", `${iModelName}Reserved${codeSpecId}.json`);
+          const buff = IModelJsFs.readFileSync(sampleIModelPath);
+          const jsonObj = JSON.parse(buff.toString())[0];
+          return Promise.resolve(getTypedInstance<MultiCode>(MultiCode, jsonObj));
+        }).verifiable();
+    }
   }
 }
