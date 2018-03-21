@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-backend",
+      "comment": "Updated package dependencies",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-backend",
+  "email": "sam.wilson@bentley.com"
+}
