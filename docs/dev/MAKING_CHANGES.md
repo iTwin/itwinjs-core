@@ -3,6 +3,14 @@
 Below are instructions for library developers on how to commit, push and
 publish changes to the library.
 
+## Changing dependency package versions
+
+After changing dependency package versions make sure you
+call `rush check` to verify versions match all throughout the
+repository. Failure to do so might cause different packages in the
+repository to use different versions of the same packages, thus resulting
+in hard to diagnose issues.
+
 ## Committing changes
 
 It's important to generate change files when committing changes -
@@ -10,7 +18,7 @@ steps #4 - #7 do that.
 
 1. Make some changes that you want to commit.
 
-2. ```git add .```
+2. `git add .`
 
 3. `git commit`
 
@@ -59,8 +67,5 @@ new versions:
 
 5. `git push`
 
-6. Probably temporary until a CI job is set up:
-
-   `npm publish src/frontend`
-
-   `npm publish src/backend`
+6. Start the `ecpresentation` CI job with the `publish` flag set to `true`.
+The job builds the library, lints, tests and finally publishes it.
