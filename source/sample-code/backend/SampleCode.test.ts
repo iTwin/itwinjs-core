@@ -2,9 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BisCore } from "../BisCore";
-import { Element, InformationPartitionElement } from "../Element";
-import { IModelDb, ConcurrencyControl } from "../IModelDb";
+import { BisCore, Element, InformationPartitionElement, IModelDb, ConcurrencyControl } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ElementProps } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
@@ -21,7 +19,7 @@ describe("Sample Code", () => {
   });
 
   after(() => {
-    IModelTestUtils.closeIModel(iModel);
+    iModel.close(accessToken);
   });
 
   /** Gives sample code something to call. */
