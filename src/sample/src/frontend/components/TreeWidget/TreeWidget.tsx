@@ -1,8 +1,8 @@
 import * as React from "react";
-import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnection";
-import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
-import { TreeDataProvider, TreeNodeItem } from "@bentley/ecpresentation-frontend/lib/Controls/TreeDataProvider";
 import Tree, { TreeNode } from "rc-tree";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { ECPresentationManager } from "@bentley/ecpresentation-frontend";
+import { TreeDataProvider, TreeNodeItem } from "@bentley/ecpresentation-controls";
 import { SelectionManager, SelectedItem, SelectionHandler } from "@bentley/ecpresentation-frontend/lib/Selection";
 
 import "./TreeWidget.css";

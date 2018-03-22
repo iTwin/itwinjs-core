@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import ContentDataProvider from "./ContentDataProvider";
-import ContentBuilder, { PropertyRecord } from "./ContentBuilder";
+import { assert } from "@bentley/bentleyjs-core";
+import { IModelToken } from "@bentley/imodeljs-common";
+import ContentDataProvider from "../common/ContentDataProvider";
+import ContentBuilder, { PropertyRecord } from "../common/ContentBuilder";
 import * as content from "@bentley/ecpresentation-common/lib/content";
-import { InstanceKey } from "@bentley/ecpresentation-common/lib/EC";
-import { ECPresentationManager } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
-import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { InstanceKey } from "@bentley/ecpresentation-common";
+import { ECPresentationManager } from "@bentley/ecpresentation-common";
 
 let favoritesCategory: content.CategoryDescription | undefined;
 function getFavoritesCategory(): content.CategoryDescription {

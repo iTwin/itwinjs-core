@@ -3,8 +3,8 @@ import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { InstanceKey } from "@bentley/ecpresentation-common";
 import { ECPresentationManager } from "@bentley/ecpresentation-frontend";
-import { PropertyPaneDataProvider } from "@bentley/ecpresentation-controls";
-import { isPrimitiveValue, isStructValue, isArrayValue, PropertyRecord } from "@bentley/ecpresentation-controls/common/ContentBuilder";
+import { PropertyPaneDataProvider, PropertyRecord } from "@bentley/ecpresentation-controls";
+import { isPrimitiveValue, isStructValue, isArrayValue } from "@bentley/ecpresentation-controls";
 import { SelectionManager, SelectionChangeEventArgs, SelectedItem, SelectionProvider, SelectionHandler } from "@bentley/ecpresentation-frontend/lib/Selection";
 import "./PropertiesWidget.css";
 

@@ -1,0 +1,63 @@
+{
+  "name": "@bentley/ecpresentation-controls",
+  "version": "0.0.1",
+  "description": "Frontend controls based on ECPresentation library",
+  "keywords": [
+    "Bentley",
+    "EC",
+    "Presentation",
+    "iModelJS",
+    "Frontend",
+    "React",
+    "Controls"
+  ],
+  "license": "UNLICENSED",
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "main": "lib/index.js",
+  "typings": "lib/index",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf lib package-deps.json",
+    "cover": "nyc npm run test:cover",
+    "lint": "tslint -p ./tsconfig.json",
+    "prepublishOnly": "npm run build",
+    "require": "node ../../scripts/require-lib-modules.js --base ./",
+    "test": "mocha --opts ../../mocha.opts **/*.test.ts",
+    "test:cover": "npm run require && mocha --recursive **/*.test.ts"
+  },
+  "dependencies": {
+    "@bentley/ecpresentation-common": "~0.0.4",
+    "@bentley/ecpresentation-frontend": "~0.0.20"
+  },
+  "devDependencies": {
+    "@bentley/bentleyjs-core": "^7.3.2",
+    "@bentley/bentleyjs-tools": "^2.2.0",
+    "@bentley/geometry-core": "^6.0.10",
+    "@bentley/imodeljs-clients": "^4.2.1",
+    "@bentley/imodeljs-common": "~0.68.0",
+    "@bentley/imodeljs-frontend": "~0.69.0",
+    "@types/chai": "^4.0.10",
+    "@types/chai-spies": "0.0.0",
+    "@types/faker": "^4.1.0",
+    "@types/mocha": "^2.2.44",
+    "chai": "^4.1.2",
+    "chai-spies": "1.0.0",
+    "faker": "^4.1.0",
+    "nyc": "^11.6.0",
+    "rimraf": "^2.6.2",
+    "source-map-support": "^0.5.0",
+    "tslint": "^5.8.0",
+    "ts-node": "^3.3.0",
+    "tsconfig-paths": "^2.7.2",
+    "typemoq": "^2.1.0",
+    "typescript": "^2.6.2"
+  },
+  "nyc": {
+    "nycrc-path": "../../.nycrc",
+    "temp-directory": "../../coverage/controls/.nyc_output",
+    "report-dir": "../../coverage/controls"
+  }
+}

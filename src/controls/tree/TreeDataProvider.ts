@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ECPresentationManager, PageOptions } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
-import { NavNode } from "@bentley/ecpresentation-common/lib/Hierarchy";
-import StyleHelper from "./StyleHelper";
-import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
+import { IModelToken } from "@bentley/imodeljs-common";
+import { ECPresentationManager, PageOptions } from "@bentley/ecpresentation-common";
+import { NavNode } from "@bentley/ecpresentation-common";
+import StyleHelper from "../common/StyleHelper";
 
 /** State of a checkbox */
 export enum CheckBoxState {
@@ -32,7 +32,7 @@ export interface TreeNodeItem {
 }
 
 /** Tree data provider which uses @ref PresentationManager to query nodes. */
-export class TreeDataProvider {
+export default class TreeDataProvider {
   private _manager: ECPresentationManager;
   private _rulesetId: string;
   public imodelToken: IModelToken;

@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { assert } from "@bentley/bentleyjs-core";
 import * as content from "@bentley/ecpresentation-common/lib/content";
 import { NestedContent } from "@bentley/ecpresentation-common/lib/content/Content";
 import { isPropertiesField, isNestedContentField } from "@bentley/ecpresentation-common/lib/content/Fields";
 import { isFieldMerged, getFieldPropertyValueKeys } from "@bentley/ecpresentation-common/lib/content/Item";
 import { isPrimitiveDescription, isArrayDescription, isStructDescription } from "@bentley/ecpresentation-common/lib/content/TypeDescription";
 import * as ec from "@bentley/ecpresentation-common/lib/EC";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 export interface PropertyDescription {
   name: string;

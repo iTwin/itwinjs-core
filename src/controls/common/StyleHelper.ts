@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { NavNode } from "@bentley/ecpresentation-common/lib/Hierarchy";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { assert } from "@bentley/bentleyjs-core";
+import { NavNode } from "@bentley/ecpresentation-common";
 
 export default class StyleHelper {
   private static getColor(name: string): number {

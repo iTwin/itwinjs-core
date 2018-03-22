@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import ContentDataProvider from "./ContentDataProvider";
-import ContentBuilder, { PropertyDescription } from "./ContentBuilder";
+import { assert } from "@bentley/bentleyjs-core";
+import { IModelToken } from "@bentley/imodeljs-common";
+import ContentDataProvider from "../common/ContentDataProvider";
+import ContentBuilder, { PropertyDescription } from "../common/ContentBuilder";
 import * as content from "@bentley/ecpresentation-common/lib/content";
 import { isPrimitiveDescription } from "@bentley/ecpresentation-common/lib/content/TypeDescription";
-import { InstanceKey } from "@bentley/ecpresentation-common/lib/EC";
-import { ECPresentationManager, PageOptions } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
-import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { InstanceKey, PageOptions } from "@bentley/ecpresentation-common";
+import { ECPresentationManager } from "@bentley/ecpresentation-common";
 
 export enum SortDirection {
   Ascending,

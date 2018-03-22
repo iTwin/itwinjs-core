@@ -13,7 +13,7 @@
     "clean": "echo disabled",
     "cover": "nyc npm run test:cover",
     "lint": "tslint -p ./tsconfig.json",
-    "require": "node ../../scripts/require-dependency-modules.js --base ./ @bentley/ecpresentation-frontend @bentley/ecpresentation-common @bentley/ecpresentation-backend",
+    "require": "node ../../scripts/require-dependency-modules.js --base ./ @bentley/ecpresentation-common @bentley/ecpresentation-backend @bentley/ecpresentation-frontend @bentley/ecpresentation-controls",
     "test": "mocha --opts ../../mocha.opts  ./**.test.ts",
     "test:cover": "npm run require && mocha --recursive ./**.test.ts"
   },
@@ -23,6 +23,7 @@
     "@bentley/ecpresentation-common": "~0.0.4",
     "@bentley/ecpresentation-backend": "~0.0.31",
     "@bentley/ecpresentation-frontend": "~0.0.20",
+    "@bentley/ecpresentation-controls": "~0.0.1",
     "@bentley/bentleyjs-core": "^7.3.6",
     "@bentley/geometry-core": "^6.0.10",
     "@bentley/imodeljs-common": "~0.69.0",
@@ -51,9 +52,10 @@
     "temp-directory": "../coverage/integration/.nyc_output",
     "cwd": "../",
     "include": [
-      "frontend/lib/**/*.js",
       "common/lib/**/*.js",
-      "backend/lib/**/*.js"
+      "backend/lib/**/*.js",
+      "frontend/lib/**/*.js",
+      "controls/lib/**/*.js"
     ],
     "extension": [
       ".js"

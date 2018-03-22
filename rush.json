@@ -19,6 +19,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@bentley/ecpresentation-controls",
+      "projectFolder": "src/controls",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@bentley/ecpresentation-sample",
       "projectFolder": "src/sample"
     },
