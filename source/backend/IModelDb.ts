@@ -205,7 +205,7 @@ export class IModelDb extends IModel {
 
   private onBriefcaseCloseHandler() {
     this.onBeforeClose.raiseEvent();
-    this.clearStatementCacheOnClose();
+    this.clearStatementCache();
   }
 
   private onBriefcaseVersionUpdatedHandler() { this.iModelToken.changeSetId = this.briefcase!.changeSetId; }
@@ -313,7 +313,7 @@ export class IModelDb extends IModel {
     return ids;
   }
 
-  public clearStatementCacheOnClose(): void { this.statementCache.clearOnClose(); }
+  public clearStatementCache(): void { this.statementCache.clear(); }
 
   /** Get the GUID of this iModel. */
   public getGuid(): Guid {

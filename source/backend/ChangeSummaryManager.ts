@@ -96,6 +96,20 @@ export class ChangeSummaryManager {
       throw new IModelError(res, `Failed to attach Changes cache file to ${iModel.briefcase.pathname}.`);
   }
 
+  /** Detaches the ECChanges cache file from the specified iModel.
+   * @param iModel iModel to detach the ECChanges cache file to
+   * @throws [[IModelError]] in case of errors, e.g. if no ECChanges cache was attached before.
+   */
+  public static detachChangeCache(iModel: IModelDb): void {
+    if (!iModel || !iModel.briefcase || !iModel.nativeDb)
+      throw new IModelError(IModelStatus.BadRequest);
+
+    iModel.clearStatementCache();
+    const res: DbResult = iModel.nativeDb.detachChangeCache();
+    if (res !== DbResult.BE_SQLITE_OK)
+      throw new IModelError(res, `Failed to detach ECChanges cache file from ${iModel.briefcase.pathname}.`);
+  }
+
   /** Extracts change summaries from the specified iModel.
    * Change summaries are extracted from the specified startChangeSetId up through the change set the iModel was opened with.
    * If startChangeSetId is undefined, the first changeset will be used.

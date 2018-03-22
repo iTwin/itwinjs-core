@@ -897,8 +897,8 @@ export class CachedECSqlStatement {
 }
 
 export class ECSqlStatementCache {
-  private statements: Map<string, CachedECSqlStatement> = new Map<string, CachedECSqlStatement>();
-  public maxCount: number;
+  private readonly statements: Map<string, CachedECSqlStatement> = new Map<string, CachedECSqlStatement>();
+  public readonly maxCount: number;
 
   constructor(maxCount: number = 20) {
     this.maxCount = maxCount;
@@ -969,7 +969,7 @@ export class ECSqlStatementCache {
     }
   }
 
-  public clearOnClose() {
+  public clear() {
     for (const cs of this.statements) {
       assert(cs[1].useCount === 0, "statement was never released: " + cs[0]);
       assert(cs[1].statement.isShared());
