@@ -8,7 +8,7 @@ node_modules
 /source/backend/test/output
 /source/frontend/lib
 /source/testbed/lib
-/source/sample-code/backend/lib
+/source/sample-code/backendlib
 /generated-docs
 
 # rush-specific
