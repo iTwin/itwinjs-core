@@ -1063,7 +1063,8 @@ export namespace ConcurrencyControl {
     constructor(private _iModel: IModelDb) { }
 
     /**
-     * Reserve Codes. If no Codes are specified, then all of the Codes that are in currently pending requests are reserved.
+     * Reserve Codes.
+     * If no Codes are specified, then all of the Codes that are in currently pending requests are reserved.
      * This function may only be able to reserve some of the requested Codes. In that case, this function will return a rejection of type RequestError.
      * The error object will identify the codes that are unavailable.
      * ``` ts
@@ -1158,9 +1159,7 @@ export class IModelDbModels {
   public get repositoryModelId(): Id64 { return new Id64("0x1"); }
 
   /** Create a new model in memory.
-   * ``` ts
-   * [[include:BisCore1.sampleCreateModel]]
-   * ```
+   * See the example in [[InformationPartitionElement]].
    * @param modelProps The properties to use when creating the model.
    * @throws [[IModelError]] if there is a problem creating the model.
    */

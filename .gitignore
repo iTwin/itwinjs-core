@@ -8,6 +8,8 @@ node_modules
 /source/backend/test/output
 /source/frontend/lib
 /source/testbed/lib
+/source/sample-code/lib
+/generated-docs
 
 # rush-specific
 /common/temp

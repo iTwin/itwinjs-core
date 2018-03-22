@@ -111,9 +111,12 @@ describe("Sample Code", () => {
     }
     // Now we can commit the local changes to a local transaction in the
     // IModelDb.
+    // __PUBLISH_EXTRACT_END__
+
+    // Now we can commit the local changes to a local transaction in the
+    // IModelDb.
     iModel.saveChanges("inserted generic objects");
 
-    // __PUBLISH_EXTRACT_END__
     assert.isTrue(newModeledElementId !== undefined);
 
     // assertions to ensure sample code is working properly
