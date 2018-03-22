@@ -6,7 +6,7 @@
   "scripts": {
     "buildbackend": "cd ./backend && tsc --outDir ../backendlib",
     "cleanbackend": "rimraf lib backendlib",
-    "copybackendassets": "cpx ./backend/assets/**/* ./backendlib/assets",
+    "copybackendassets": "cpx ./backend_test_assets/**/* ./backendlib/assets",
     "pretestbackend": "npm run copybackendassets && rush build",
     "testbackend": "npm run pretestbackend && node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./backendlib\"",
     "build": "npm run buildbackend",
