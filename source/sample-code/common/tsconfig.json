@@ -10,7 +10,7 @@
         "*"
       ]
     },
-    "outDir": "../backendlib"
+    "outDir": "../commonlib"
   },
   "include": [
     "./**/*.ts"
