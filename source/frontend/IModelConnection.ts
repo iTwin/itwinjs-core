@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64Arg, Id64Props, Id64Set, Logger, OpenMode, BentleyStatus } from "@bentley/bentleyjs-core";
+import { Id64, Id64Arg, Id64Props, Id64Set, Logger, OpenMode, BentleyStatus, BeEvent } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
@@ -26,6 +26,12 @@ export class IModelConnection extends IModel {
   public readonly views: IModelConnectionViews;
   public readonly hilited: HilitedSet;
   public readonly selectionSet: SelectionSet;
+
+  /**
+   * Event called immediately before an IModelConnection is closed.
+   * @note Be careful not to perform any asynchronous operations on the IModelConnection because it will close before they are processed.
+   */
+  public static readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
 
   /** The font map for this IModelConnection. Only valid after calling #loadFontMap and waiting for the returned promise to be fulfilled. */
   public fontMap?: FontMap;
@@ -83,6 +89,7 @@ export class IModelConnection extends IModel {
     if (!this.iModelToken)
       return;
     try {
+      IModelConnection.onClose.raiseEvent(this);
       await IModelGateway.getProxy().close(accessToken, this.iModelToken);
     } finally {
       (this.token as any) = undefined; // prevent closed connection from being reused
@@ -104,6 +111,7 @@ export class IModelConnection extends IModel {
     if (!this.iModelToken)
       return;
     try {
+      IModelConnection.onClose.raiseEvent(this);
       await IModelGateway.getProxy().closeStandalone(this.iModelToken);
     } finally {
       (this.token as any) = undefined; // prevent closed connection from being reused

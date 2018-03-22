@@ -5,7 +5,7 @@ import * as path from "path";
 import { expect, assert } from "chai";
 import { OpenMode, DbResult, Id64 } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { IModelVersion } from "@bentley/imodeljs-common";
+import { IModelVersion, IModelStatus } from "@bentley/imodeljs-common";
 import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../ChangeSummaryManager";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { IModelDb } from "../IModelDb";
@@ -37,7 +37,7 @@ describe("ChangeSummary", () => {
       IModelJsFs.unlinkSync(changesPath);
   });
 
-  it("Attach ChangeCache file to readwrite briefcase", async () => {
+  it("Attach / Detach ChangeCache file to readwrite briefcase", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
     try {
       assert.exists(iModel);
@@ -65,12 +65,28 @@ describe("ChangeSummary", () => {
       const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
       const expectedCachePath: string = path.join(cacheDir, testIModelId, testIModelId.concat(".bim.ecchanges"));
       expect(IModelJsFs.existsSync(expectedCachePath));
+
+      ChangeSummaryManager.detachChangeCache(iModel);
+      assert.isFalse(ChangeSummaryManager.isChangeCacheAttached(iModel));
+      assert.throw(() => iModel.withPreparedStatement("SELECT count(*) as sumcount FROM change.ChangeSummary", () => { }));
+
+      // calling detach if nothing was attached should fail
+      assert.throw(() => ChangeSummaryManager.detachChangeCache(iModel));
+
+      ChangeSummaryManager.attachChangeCache(iModel);
+      assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
+      iModel.withPreparedStatement("SELECT count(*) as sumcount FROM change.ChangeSummary", (myStmt) => {
+        assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
+        const row: any = myStmt.getRow();
+        assert.equal(row.sumcount, 0);
+      });
+
     } finally {
       await iModel.close(accessToken);
     }
   });
 
-  it("Attach ChangeCache file to readonly briefcase", async () => {
+  it("Attach / Detach ChangeCache file to readonly briefcase", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.exists(iModel);
     assert(iModel.iModelToken.openMode === OpenMode.Readonly);
@@ -96,25 +112,66 @@ describe("ChangeSummary", () => {
       const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
       const expectedCachePath: string = path.join(cacheDir, testIModelId, testIModelId.concat(".bim.ecchanges"));
       expect(IModelJsFs.existsSync(expectedCachePath));
+
+      ChangeSummaryManager.detachChangeCache(iModel);
+      assert.isFalse(ChangeSummaryManager.isChangeCacheAttached(iModel));
+      assert.throw(() => iModel.withPreparedStatement("SELECT count(*) as sumcount FROM change.ChangeSummary", () => { }));
+
+      // calling detach if nothing was attached should fail
+      assert.throw(() => ChangeSummaryManager.detachChangeCache(iModel));
+
+      ChangeSummaryManager.attachChangeCache(iModel);
+      assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
+      iModel.withPreparedStatement("SELECT count(*) as sumcount FROM change.ChangeSummary", (myStmt) => {
+        assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
+        const row: any = myStmt.getRow();
+        assert.equal(row.sumcount, 0);
+      });
+
     } finally {
       await iModel.close(accessToken);
     }
   });
 
-  it("Attach ChangeCache file to closed imodel", async () => {
+  it("ECSqlStatementCache after detaching Change Cache", async () => {
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
+    assert.exists(iModel);
+    assert(iModel.iModelToken.openMode === OpenMode.Readonly);
+    try {
+      assert.isFalse(ChangeSummaryManager.isChangeCacheAttached(iModel));
+      assert.throw(() => iModel.withPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary", () => { }));
+
+      ChangeSummaryManager.attachChangeCache(iModel);
+      assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
+      iModel.withPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary", (myStmt) => {
+        assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
+        const row: any = myStmt.getRow();
+        assert.equal(row.csumcount, 0);
+      });
+
+      ChangeSummaryManager.detachChangeCache(iModel);
+      assert.isFalse(ChangeSummaryManager.isChangeCacheAttached(iModel));
+      assert.throw(() => iModel.withPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary", () => { }));
+
+    } finally {
+      await iModel.close(accessToken);
+    }
+  });
+
+  it("Attach / Detach ChangeCache file to closed imodel", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
     await iModel.close(accessToken);
     assert.exists(iModel);
     assert.throw(() => ChangeSummaryManager.isChangeCacheAttached(iModel));
     assert.throw(() => ChangeSummaryManager.attachChangeCache(iModel));
+    assert.throw(() => ChangeSummaryManager.detachChangeCache(iModel));
   });
 
   it("Extract ChangeSummaries", async () => {
-    await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, testIModelId);
-
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
     assert.exists(iModel);
     try {
+      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel);
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
@@ -158,12 +215,14 @@ describe("ChangeSummary", () => {
     if (IModelJsFs.existsSync(changesFilePath))
       IModelJsFs.removeSync(changesFilePath);
 
-    // now extract change summary for that one changeset
-    await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, testIModelId, changesetId, changesetId);
-    assert.isTrue(IModelJsFs.existsSync(changesFilePath));
-
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.asOfChangeSet(changesetId));
     try {
+      assert.exists(iModel);
+
+      // now extract change summary for that one changeset
+      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, {currentChangeSetOnly: true});
+      assert.isTrue(IModelJsFs.existsSync(changesFilePath));
+
       assert.exists(iModel);
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
@@ -200,12 +259,14 @@ describe("ChangeSummary", () => {
     // first extraction: just first changeset
     const firstChangesetId: string = changeSets[0].id!;
 
-    // now extract change summary for that one changeset
-    await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, testIModelId, firstChangesetId, firstChangesetId);
-    assert.isTrue(IModelJsFs.existsSync(changesFilePath));
-
-    let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
+    let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.asOfChangeSet(firstChangesetId));
     try {
+      assert.exists(iModel);
+
+      // now extract change summary for that one changeset
+      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, {currentChangeSetOnly: true});
+      assert.isTrue(IModelJsFs.existsSync(changesFilePath));
+
       assert.exists(iModel);
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
@@ -227,19 +288,17 @@ describe("ChangeSummary", () => {
         assert.equal(row.summary.id, changeSummaryId.value);
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
       });
-    } finally {
+
+      // now do second extraction for last changeset
+      const lastChangesetId: string = changeSets[changeSets.length - 1].id!;
       await iModel.close(accessToken);
-    }
+      iModel = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.asOfChangeSet(lastChangesetId));
+      // WIP not working yet until cache can be detached.
+      // await iModel.pullAndMergeChanges(accessToken, IModelVersion.asOfChangeSet(lastChangesetId));
 
-    // now do second extraction for last changeset
-    const lastChangesetId: string = changeSets[changeSets.length - 1].id!;
+      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, {currentChangeSetOnly: true});
 
-    await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, testIModelId, lastChangesetId, lastChangesetId);
-    assert.isTrue(IModelJsFs.existsSync(changesFilePath));
-
-    iModel = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
-    try {
-      assert.exists(iModel);
+      // WIP
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
@@ -261,53 +320,36 @@ describe("ChangeSummary", () => {
     }
   });
 
-  it("Extract ChangeSummaries for already downloaded changesets", async () => {
-    await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, testIModelId);
-    const changesFilePath: string = BriefcaseManager.getChangeSummaryPathname(testIModelId);
-    const csetPath: string = BriefcaseManager.getChangeSetsPath(testIModelId);
-    // delete changes file before extracting again with already downloaded changesets
-    if (IModelJsFs.existsSync(changesFilePath))
-      IModelJsFs.removeSync(changesFilePath);
-
-    const lastChangesetId: string = await IModelVersion.latest().evaluateChangeSet(accessToken, testIModelId, IModelTestUtils.hubClient);
-    assert.isTrue(IModelJsFs.existsSync(path.join(csetPath, lastChangesetId + ".cs")));
-
-    // now extract again where changesets were already downloaded
-    await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, testIModelId);
-
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
-    assert.exists(iModel);
+  it("Extract ChangeSummaries with invalid input", async () => {
+    let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
     try {
-      ChangeSummaryManager.attachChangeCache(iModel);
-      assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
-
-      const rows: any[] = iModel.executeQuery("SELECT count(*) csumcount FROM change.ChangeSummary csum JOIN imodelchange.ChangeSet cset ON csum.ECInstanceId=cset.Summary.Id");
-      assert.equal(rows.length, 1);
-      assert.isAtLeast(rows[0].csumcount, 3);
-
+      assert.exists(iModel);
+      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel);
+    } catch (e) {
+      assert.isDefined(e.errorNumber);
+      assert.equal(e.errorNumber, IModelStatus.BadArg);
     } finally {
       await iModel.close(accessToken);
     }
-  });
 
-  it("Extract ChangeSummaries with invalid input", async () => {
+    // open standalone iModel
+    iModel = IModelTestUtils.openIModel("test.bim");
+    assert.exists(iModel);
+    assert.exists(iModel.briefcase);
+    assert.isTrue(iModel.briefcase!.isStandalone);
     try {
-      await ChangeSummaryManager.extractChangeSummaries(accessToken, "123", testIModelId);
+      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel);
     } catch (e) {
-      assert.equal(e.message, "Not Found");
-    }
-
-    try {
-      await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, "123");
-      assert.fail(); // expect above line to throw an Error
-    } catch (e) {
-      assert.exists(e.message);
+      assert.isDefined(e.errorNumber);
+      assert.equal(e.errorNumber, IModelStatus.BadArg);
+    } finally {
+      iModel.closeStandalone();
     }
   });
 
   it("Query ChangeSummary content", async () => {
-    await ChangeSummaryManager.extractChangeSummaries(accessToken, testProjectId, testIModelId);
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
+    await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel);
     assert.exists(iModel);
     ChangeSummaryManager.attachChangeCache(iModel);
     assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
@@ -344,13 +386,4 @@ describe("ChangeSummary", () => {
       IModelJsFs.writeFileSync(filePath, JSON.stringify(content));
     }
   });
-
-  it.skip("Crash test", async () => {
-    const iModelId = "bd9b1b21-9485-445a-9cce-b084d1b654fa";
-    const projectId = "d46de192-6cad-4086-b968-71b517edc215";
-
-    const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, iModelId, false);
-    await ChangeSummaryManager.extractChangeSummaries(accessToken, projectId, iModelId, changeSets[0].wsgId, changeSets[0].wsgId);
-  });
-
 });

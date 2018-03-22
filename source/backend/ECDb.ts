@@ -56,11 +56,10 @@ export class ECDb implements IDisposable {
   public isOpen(): boolean { return this.nativeDb.isOpen(); }
 
   /** Close the Db after saving any uncommitted changes.
-   * @returns Promise that resolves to an object that contains an error property if the operation failed.
    * @throws [[IModelError]] if the database is not open.
    */
   public closeDb(): void {
-    this._statementCache.clearOnClose();
+    this._statementCache.clear();
     this.nativeDb.closeDb();
   }
 
