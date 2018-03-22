@@ -7,6 +7,7 @@ import { Id64, using, assert, PerfLogger, OpenMode, DbResult } from "@bentley/be
 import { IModelHost } from "./IModelHost";
 import { IModelDb } from "./IModelDb";
 import { ECDb } from "./ECDb";
+import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelVersion, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { BriefcaseManager } from "./BriefcaseManager";
 import * as path from "path";
@@ -85,7 +86,7 @@ export class ChangeSummaryManager {
 
     const changesCacheFilePath: string = BriefcaseManager.getChangeSummaryPathname(iModel.briefcase.iModelId);
     if (!IModelJsFs.existsSync(changesCacheFilePath)) {
-      using(new ECDb(), (changesFile) => {
+      using(new ECDb(), (changesFile: ECDb) => {
         ChangeSummaryManager.createChangesFile(iModel, changesFile, changesCacheFilePath);
       });
     }
@@ -287,7 +288,7 @@ export class ChangeSummaryManager {
 
   private static isSummaryAlreadyExtracted(changesFile: ECDb, changeSetId: string): boolean {
     return changesFile.withPreparedStatement("SELECT 1 FROM imodelchange.ChangeSet WHERE WsgId=?",
-      (stmt) => {
+      (stmt: ECSqlStatement) => {
         stmt.bindString(1, changeSetId);
         return DbResult.BE_SQLITE_ROW === stmt.step();
       });
@@ -295,7 +296,7 @@ export class ChangeSummaryManager {
 
   private static addExtendedInfos(changesFile: ECDb, changeSummaryId: Id64, changesetWsgId: string, changesetParentWsgId?: string, changesetPushDate?: string, changeSetAuthor?: string): void {
     changesFile.withPreparedStatement("INSERT INTO imodelchange.ChangeSet(Summary.Id,WsgId,ParentWsgId,PushDate,Author) VALUES(?,?,?,?,?)",
-      (stmt) => {
+      (stmt: ECSqlStatement) => {
         stmt.bindId(1, changeSummaryId);
         stmt.bindString(2, changesetWsgId);
         if (changesetParentWsgId)
@@ -324,7 +325,8 @@ export class ChangeSummaryManager {
     if (!ChangeSummaryManager.isChangeCacheAttached(iModel))
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Change cache must be attached to iModel.");
 
-    return iModel.withPreparedStatement("SELECT WsgId,ParentWsgId,PushDate,Author FROM ecchange.imodelchange.ChangeSet WHERE Summary.Id=?", (stmt) => {
+    return iModel.withPreparedStatement("SELECT WsgId,ParentWsgId,PushDate,Author FROM ecchange.imodelchange.ChangeSet WHERE Summary.Id=?",
+    (stmt: ECSqlStatement) => {
       stmt.bindId(1, changeSummaryId);
       if (stmt.step() !== DbResult.BE_SQLITE_ROW)
         throw new IModelError(DbResult.BE_SQLITE_ERROR, `No ChangeSet information found for ChangeSummary ${changeSummaryId.value}.`);
@@ -348,7 +350,7 @@ export class ChangeSummaryManager {
     // query instance changes
     const instanceChange: InstanceChange = iModel.withPreparedStatement(`SELECT ic.Summary.Id summaryId, s.Name changedInstanceSchemaName, c.Name changedInstanceClassName, ic.ChangedInstance.Id changedInstanceId,
           ic.OpCode, ic.IsIndirect FROM ecchange.change.InstanceChange ic JOIN main.meta.ECClassDef c ON c.ECInstanceId=ic.ChangedInstance.ClassId
-          JOIN main.meta.ECSchemaDef s ON c.Schema.Id=s.ECInstanceId WHERE ic.ECInstanceId=?`, (stmt) => {
+          JOIN main.meta.ECSchemaDef s ON c.Schema.Id=s.ECInstanceId WHERE ic.ECInstanceId=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, instanceChangeId);
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)
           throw new IModelError(DbResult.BE_SQLITE_ERROR, `No InstanceChange found for id ${instanceChangeId.value}.`);
@@ -385,7 +387,8 @@ export class ChangeSummaryManager {
   private static queryPropertyValueChanges(iModel: IModelDb, instanceChange: InstanceChange, changedValueState: ChangedValueState): object {
     // query property value changes just to build a SELECT statement against the class of the changed instance
     let propValECSql: string = "SELECT ";
-    iModel.withPreparedStatement("SELECT AccessString FROM ecchange.change.PropertyValueChange WHERE InstanceChange.Id=?", (stmt) => {
+    iModel.withPreparedStatement("SELECT AccessString FROM ecchange.change.PropertyValueChange WHERE InstanceChange.Id=?",
+    (stmt: ECSqlStatement) => {
       stmt.bindId(1, instanceChange.id);
       let isFirstRow: boolean = true;
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -410,7 +413,7 @@ export class ChangeSummaryManager {
     });
 
     propValECSql += " FROM main." + instanceChange.changedInstance.className + ".Changes(?," + changedValueState + ") WHERE ECInstanceId=?";
-    return iModel.withPreparedStatement(propValECSql, (stmt) => {
+    return iModel.withPreparedStatement(propValECSql, (stmt: ECSqlStatement) => {
       stmt.bindId(1, instanceChange.summaryId);
       stmt.bindId(2, instanceChange.changedInstance.id);
       if (stmt.step() !== DbResult.BE_SQLITE_ROW)

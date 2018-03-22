@@ -332,7 +332,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     const row: object = {};
     const duplicatePropNames = new Map<string, number>();
     for (let i = 0; i < colCount; i++) {
-      using(this.getValue(i), (ecsqlValue) => {
+      using(this.getValue(i), (ecsqlValue: ECSqlValue) => {
         if (ecsqlValue.isNull())
           return;
 
@@ -598,7 +598,7 @@ class ECSqlBindingHelper {
       const memberName: string = member[0];
       const memberVal: any = member[1];
       using(binder.bindMember(memberName),
-        (memberBinder) => ECSqlBindingHelper.bindValue(memberBinder, memberVal));
+        (memberBinder: NativeECSqlBinder) => ECSqlBindingHelper.bindValue(memberBinder, memberVal));
     }
   }
 
@@ -618,7 +618,7 @@ class ECSqlBindingHelper {
 
     for (const element of val) {
       using(binder.addArrayElement(),
-        (elementBinder) => ECSqlBindingHelper.bindValue(elementBinder, element));
+        (elementBinder: NativeECSqlBinder) => ECSqlBindingHelper.bindValue(elementBinder, element));
     }
   }
 
@@ -838,7 +838,8 @@ class ECSqlValueHelper {
       tableSpace = "main";
 
     return ecdb.withPreparedStatement("SELECT s.Name schemaName, c.Name className FROM [" + tableSpace
-      + "].meta.ECSchemaDef s, JOIN [" + tableSpace + "].meta.ECClassDef c ON s.ECInstanceId=c.SchemaId WHERE c.ECInstanceId=?", (stmt) => {
+      + "].meta.ECSchemaDef s, JOIN [" + tableSpace + "].meta.ECClassDef c ON s.ECInstanceId=c.SchemaId WHERE c.ECInstanceId=?",
+      (stmt: ECSqlStatement) => {
         stmt.bindId(1, classId);
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)
           throw new IModelError(DbResult.BE_SQLITE_ERROR, "No class found with ECClassId " + classId.value + " in table space " + tableSpace + ".");
