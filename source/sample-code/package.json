@@ -5,10 +5,10 @@
   "license": "UNLICENSED",
   "scripts": {
     "buildbackend": "cd ./backend && tsc",
-    "cleanbackend": "rimraf lib backend/lib",
-    "copybackendassets": "cpx ./backend/assets/**/* ./backend/lib/assets",
+    "cleanbackend": "rimraf lib backendlib",
+    "copybackendassets": "cpx ./backend/assets/**/* ./backendlib/assets",
     "pretestbackend": "npm run copybackendassets && rush build",
-    "testbackend": "npm run pretestbackend && node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./backend/lib\"",
+    "testbackend": "npm run pretestbackend && node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./backendlib\"",
     "build": "npm run buildbackend",
     "clean": "npm run cleanbackend",
     "test": "npm run testbackend"
