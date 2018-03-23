@@ -45,7 +45,6 @@ export class IModelDb extends IModel {
   public readFontJson(): string { return this.briefcase!.nativeDb.readFontMap(); }
   public getFontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
 
-  /** Event raised when a connected IModelDb is created or opened. This event is not raised for standalone IModelDbs. */
   /** Event raised just before a connected IModelDb is opened. This event is raised only for iModel access initiated by this service only. This event is not raised for standalone IModelDbs. */
   public static readonly onOpen = new BeEvent<(_accessToken: AccessToken, _contextId: string, _iModelId: string, _openMode: OpenMode, _version: IModelVersion) => void>();
   /** Event raised just after a connected IModelDb is opened. This event is raised only for iModel access initiated by this service only. This event is not raised for standalone IModelDbs. */
@@ -206,7 +205,7 @@ export class IModelDb extends IModel {
 
   private onBriefcaseCloseHandler() {
     this.onBeforeClose.raiseEvent();
-    this.clearStatementCacheOnClose();
+    this.clearStatementCache();
   }
 
   private onBriefcaseVersionUpdatedHandler() { this.iModelToken.changeSetId = this.briefcase!.changeSetId; }
@@ -314,7 +313,7 @@ export class IModelDb extends IModel {
     return ids;
   }
 
-  public clearStatementCacheOnClose(): void { this.statementCache.clearOnClose(); }
+  public clearStatementCache(): void { this.statementCache.clear(); }
 
   /** Get the GUID of this iModel. */
   public getGuid(): Guid {
@@ -1003,7 +1002,6 @@ export class ConcurrencyControl {
 }
 
 export namespace ConcurrencyControl {
-
   /** A request for locks and/or code reservations. */
   export class Request {
     private constructor() { }
@@ -1071,7 +1069,8 @@ export namespace ConcurrencyControl {
     constructor(private _iModel: IModelDb) { }
 
     /**
-     * Reserve Codes. If no Codes are specified, then all of the Codes that are in currently pending requests are reserved.
+     * Reserve Codes.
+     * If no Codes are specified, then all of the Codes that are in currently pending requests are reserved.
      * This function may only be able to reserve some of the requested Codes. In that case, this function will return a rejection of type RequestError.
      * The error object will identify the codes that are unavailable.
      * ``` ts
@@ -1166,9 +1165,7 @@ export class IModelDbModels {
   public get repositoryModelId(): Id64 { return new Id64("0x1"); }
 
   /** Create a new model in memory.
-   * ``` ts
-   * [[include:BisCore1.sampleCreateModel]]
-   * ```
+   * See the example in [[InformationPartitionElement]].
    * @param modelProps The properties to use when creating the model.
    * @throws [[IModelError]] if there is a problem creating the model.
    */
@@ -1277,7 +1274,7 @@ export class IModelDbElements {
 
   /**
    * Get an element by Id, FederationGuid, or Code
-   * @param elementId either the element's Id, Code, or FederationGuid
+   * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
    * @throws [[IModelError]] if the element is not found.
    */
   public getElement(elementId: Id64Props | Guid | Code | ElementLoadProps): Element {
@@ -1313,11 +1310,7 @@ export class IModelDbElements {
    * @param elProps The properties of the new element.
    * @throws [[IModelError]] if there is a problem creating the element.
    */
-  public createElement(elProps: ElementProps): Element {
-    const element: Element = this._iModel.constructEntity(elProps) as Element;
-    assert(element instanceof Element);
-    return element;
-  }
+  public createElement(elProps: ElementProps): Element { return this._iModel.constructEntity(elProps) as Element; }
 
   /**
    * Insert a new element into the iModel.

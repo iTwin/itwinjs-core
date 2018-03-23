@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import {
   Path, BSplineSurface3d, IndexedPolyface, Point3d, Vector3d, YawPitchRollAngles,
-  PolyfaceBuilder, Arc3d, Cone, AngleSweep,
+  PolyfaceBuilder, Arc3d, Cone, AngleSweep, PointString3d,
 } from "@bentley/geometry-core";
 import { Sample } from "@bentley/geometry-core/lib/serialization/GeometrySamples";
 import { Id64, Guid } from "@bentley/bentleyjs-core";
@@ -13,8 +13,7 @@ import {
   GeometricPrimitive, GeometryType, Code, Placement3d, ElementAlignedBox3d, GeometricElement3dProps, GeometryStreamProps,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { PointString3d } from "@bentley/geometry-core/lib/curve/PointString3d";
-import { IModelJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
+import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 
 describe("GeometricPrimitive", () => {
   it("should be able to create GeometricPrimitives from various geometry", () => {
@@ -193,7 +192,7 @@ describe("GeometryStream", () => {
     const geometryStream: GeometryStreamProps = [];
 
     for (const geom of geomArray) {
-      const arcData = IModelJson.Writer.toIModelJson(geom);
+      const arcData = GeomJson.Writer.toIModelJson(geom);
       geometryStream.push(arcData);
     }
 
@@ -223,7 +222,7 @@ describe("GeometryStream", () => {
     const geomArrayOut: Arc3d[] = [];
     for (const entry of value.geom) {
       assert.isDefined(entry.arc);
-      const geometryQuery = IModelJson.Reader.parse(entry);
+      const geometryQuery = GeomJson.Reader.parse(entry);
       assert.isTrue(geometryQuery instanceof Arc3d, "GeometricPrimitive correctly returned Arc3d data");
       if (geometryQuery !== undefined)
         geomArrayOut.push(geometryQuery);

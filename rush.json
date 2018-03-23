@@ -27,6 +27,11 @@
       "packageName": "imodeljs-core-testbed",
       "projectFolder": "source/testbed",
       "shouldPublish": false
+    },
+    {
+      "packageName": "imodeljs-core-sample-code",
+      "projectFolder": "source/sample-code",
+      "shouldPublish": false
     }
   ],
   "eventHooks": {

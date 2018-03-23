@@ -8,7 +8,7 @@ import {
   SolidPrimitive, IndexedPolyface, Angle, AngleSweep, Arc3d, LineSegment3d, LineString3d, PointString3d,
 } from "@bentley/geometry-core";
 import { BGFBBuilder, BGFBReader } from "@bentley/geometry-core/lib/serialization/BGFB";
-import { IModelJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
+import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { GeometricPrimitive, GeometryType, Placement2d, Placement3d, ElementAlignedBox2d, ElementAlignedBox3d } from "./Primitives";
 import { LineStyleInfo, LineStyleParams } from "./LineStyle";
@@ -72,7 +72,7 @@ export type GeometryStreamEntryProps =
   { appearance: GeometryAppearanceProps } |
   { geomPart: GeometryPart2dInstanceProps | GeometryPart3dInstanceProps } |
   { textString: TextStringProps } |
-  IModelJson.GeometryProps;
+  GeomJson.GeometryProps;
 
 export type GeometryStreamProps = GeometryStreamEntryProps[];
 
