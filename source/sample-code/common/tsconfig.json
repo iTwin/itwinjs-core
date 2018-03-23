@@ -10,7 +10,7 @@
         "*"
       ]
     },
-    "outDir": "../commonlib"
+    "outDir": "../out/common"
   },
   "include": [
     "./**/*.ts"

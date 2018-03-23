@@ -10,7 +10,7 @@
         "*"
       ]
     },
-    "outDir": "../backendlib"
+    "outDir": "../out/backend"
   },
   "include": [
     "./**/*.ts"
