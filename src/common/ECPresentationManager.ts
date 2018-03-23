@@ -4,8 +4,8 @@
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "./Hierarchy";
 import { SelectionInfo, Descriptor, Content } from "./content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "./Changes";
-import { InstanceKeysList } from "./EC";
 import { IModelToken } from "@bentley/imodeljs-common";
+import KeySet from "./KeySet";
 
 /** Paging options. */
 export interface PageOptions {
@@ -71,7 +71,7 @@ export interface ECPresentationManager {
    * @param[in] options  An options object that depends on the used presentation manager implementation.
    * @return A promise object that returns either a @ref Descriptor on success or an error string on error.
    */
-  getContentDescriptor(token: IModelToken, displayType: string, keys: InstanceKeysList, selection: SelectionInfo | undefined, options: object): Promise<Readonly<Descriptor>>;
+  getContentDescriptor(token: IModelToken, displayType: string, keys: KeySet, selection: SelectionInfo | undefined, options: object): Promise<Readonly<Descriptor>>;
 
   /** Retrieves the content set size based on the supplied content descriptor override.
    * @param[in] token Token of imodel to pull data from
@@ -82,7 +82,7 @@ export interface ECPresentationManager {
    * @note Even if concrete implementation returns content in pages, this function returns the total
    * number of records in the content set
    */
-  getContentSetSize(token: IModelToken, descriptor: Descriptor, keys: InstanceKeysList, options: object): Promise<number>;
+  getContentSetSize(token: IModelToken, descriptor: Descriptor, keys: KeySet, options: object): Promise<number>;
 
   /** Retrieves the content based on the supplied content descriptor override.
    * @param[in] token Token of imodel to pull data from
@@ -92,7 +92,7 @@ export interface ECPresentationManager {
    * @param[in] options              An options object that depends on the used presentation manager implementation.
    * @return A promise object that returns either @ref Content on success or an error string on error.
    */
-  getContent(token: IModelToken, descriptor: Descriptor, keys: InstanceKeysList, pageOptions: PageOptions, options: object): Promise<Readonly<Content>>;
+  getContent(token: IModelToken, descriptor: Descriptor, keys: KeySet, pageOptions: PageOptions, options: object): Promise<Readonly<Content>>;
 
   /** Send message to WorkThread to get specified column distinct values.
    * @param[in] token Token of imodel to pull data from

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert, Logger } from "@bentley/bentleyjs-core";
+import { assert, Logger, Id64 } from "@bentley/bentleyjs-core";
 import { IModelToken, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { IModelDb, NativePlatformRegistry } from "@bentley/imodeljs-backend";
 import { StructFieldMemberDescription, isStructDescription } from "@bentley/ecpresentation-common/lib/content/TypeDescription";
@@ -79,7 +79,7 @@ export default class ECPresentationManager implements types.ECPresentationManage
     throw new Error("Not implemented.");
   }
 
-  public async getContentDescriptor(token: IModelToken, displayType: string, keys: types.InstanceKeysList, selection: types.SelectionInfo | undefined, options: object): Promise<Readonly<types.Descriptor>> {
+  public async getContentDescriptor(token: IModelToken, displayType: string, keys: types.KeySet, selection: types.SelectionInfo | undefined, options: object): Promise<Readonly<types.Descriptor>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetContentDescriptor, {
       displayType,
       keys,
@@ -89,7 +89,7 @@ export default class ECPresentationManager implements types.ECPresentationManage
     return this.request(token, params, Conversion.createContentDescriptor);
   }
 
-  public async getContentSetSize(token: IModelToken, descriptor: types.Descriptor, keys: types.InstanceKeysList, options: object): Promise<number> {
+  public async getContentSetSize(token: IModelToken, descriptor: types.Descriptor, keys: types.KeySet, options: object): Promise<number> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetContentSetSize, {
       keys,
       descriptorOverrides: createDescriptorOverrides(descriptor),
@@ -98,7 +98,7 @@ export default class ECPresentationManager implements types.ECPresentationManage
     return this.request(token, params);
   }
 
-  public async getContent(token: IModelToken, descriptor: types.Descriptor, keys: types.InstanceKeysList, pageOptions: types.PageOptions, options: object): Promise<Readonly<types.Content>> {
+  public async getContent(token: IModelToken, descriptor: types.Descriptor, keys: types.KeySet, pageOptions: types.PageOptions, options: object): Promise<Readonly<types.Content>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetContent, {
       keys,
       descriptorOverrides: createDescriptorOverrides(descriptor),
@@ -185,22 +185,22 @@ namespace Conversion {
     const nodes = new Array<types.NavNode>();
     for (const rNode of r) {
       nodes.push({
-        nodeId: rNode.NodeId,
-        parentNodeId: rNode.ParentNodeId || undefined,
+        nodeId: new Id64(rNode.NodeId),
+        parentNodeId: rNode.ParentNodeId ? new Id64(rNode.ParentNodeId) : undefined,
         key: createNavNodeKey(rNode.Key),
         label: rNode.Label,
         description: rNode.Description,
-        imageId: rNode.ExpandedImageId || undefined,
-        foreColor: rNode.ForeColor || undefined,
-        backColor: rNode.BackColor || undefined,
-        fontStyle: rNode.FontStyle || undefined,
-        hasChildren: rNode.HasChildren,
-        isSelectable: rNode.IsSelectable,
-        isEditable: rNode.IsEditable,
-        isChecked: rNode.IsChecked,
-        isExpanded: rNode.IsExpanded,
-        isCheckboxVisible: rNode.IsCheckboxVisible,
-        isCheckboxEnabled: rNode.IsCheckboxEnabled,
+        imageId: rNode.ImageId,
+        foreColor: rNode.ForeColor,
+        backColor: rNode.BackColor,
+        fontStyle: rNode.FontStyle,
+        hasChildren: rNode.HasChildren || false,
+        isSelectable: rNode.IsSelectable || false,
+        isEditable: rNode.IsEditable || false,
+        isChecked: rNode.IsChecked || false,
+        isExpanded: rNode.IsExpanded || false,
+        isCheckboxVisible: rNode.IsCheckboxVisible || false,
+        isCheckboxEnabled: rNode.IsCheckboxEnabled || false,
       });
     }
     return nodes;
@@ -214,16 +214,20 @@ namespace Conversion {
     const key = {
       type: r.Type,
       pathFromRoot: r.PathFromRoot,
-      classId: r.ECClassId,
     } as types.NavNodeKey;
-    if (isECInstanceNodeKey(r))
-      return { ...key, instanceId: r.ECInstanceId } as types.ECInstanceNodeKey;
+    if (isECInstanceNodeKey(r)) {
+      return {
+        ...key,
+        instanceId: new Id64(r.ECInstanceId), // WIP: IDs
+        classId: new Id64(r.ECClassId), // WIP: IDs
+      } as types.ECInstanceNodeKey;
+    }
     return key;
   }
 
   function createClassInfo(r: responseTypes.ClassInfo): types.ClassInfo {
     return {
-      id: r.Id,
+      id: new Id64(r.Id), // WIP: IDs
       name: r.Name,
       label: r.Label,
     };
@@ -231,8 +235,8 @@ namespace Conversion {
 
   function createInstanceKey(r: responseTypes.ECInstanceKey): types.InstanceKey {
     return {
-      classId: r.ECClassId,
-      instanceId: r.ECInstanceId,
+      className: r.ECClassName,
+      id: new Id64(r.ECInstanceId), // WIP: IDs
     };
   }
 
@@ -375,55 +379,13 @@ namespace Conversion {
     return info;
   }
 
-  function createFieldEditor(_r: responseTypes.Editor): types.EditorDescription | undefined {
-    return undefined;
-    /* todo:
+  function createFieldEditor(r: responseTypes.Editor): types.EditorDescription | undefined {
     if (!r)
-      return null;
-    const editor = new types.EditorDescription(r.Name);
-    for (const paramsName in r.Params) {
-      let unknownParams: any = r.Params[paramsName];
-      switch (paramsName) {
-        case EditorParamsTypes.Json:
-          {
-            editor.Params.MiscJsonParams = unknownParams;
-            break;
-          }
-        case EditorParamsTypes.Multiline:
-          {
-            let params: IContentDescriptorFieldEditorMultilineParamsResponse = unknownParams;
-            editor.Params.SupportsMultilineTex = { HeightInRows: params.HeightInRows };
-            break;
-          }
-        case EditorParamsTypes.Range:
-          {
-            let params: IContentDescriptorFieldEditorRangeParamsResponse = unknownParams;
-            editor.Params.SupportsRange = {
-              Minimum: params.Minimum,
-              Maximum: params.Maximum
-            };
-            break;
-          }
-        case EditorParamsTypes.Slider:
-          {
-            let params: IContentDescriptorFieldEditorSliderParamsResponse = unknownParams;
-            editor.Params.SupportsSliderParams = {
-              Minimum: params.Minimum,
-              Maximum: params.Maximum,
-              Intervals: (1 != params.IntervalsCount),
-              NumButtons: params.IntervalsCount,
-              ValueFactor: params.ValueFactor,
-              Vertical: params.IsVertical
-            };
-            break;
-          }
-        default:
-          {
-            BeAssert(false, "Unrecognized field editor");
-          }
-      }
-    }
-    return editor;*/
+      return undefined;
+    return {
+      name: r.Name,
+      params: r.Params,
+    } as types.EditorDescription;
   }
 
   function createCategory(r: responseTypes.Category, categories: { [name: string]: types.CategoryDescription }): types.CategoryDescription {
@@ -459,9 +421,14 @@ namespace Conversion {
         isStrict: r.IsStrict ? true : false,
       };
     }
-    /* todo:
-    if (r.KindOfQuantity)
-      propertyInfo.KindOfQuantity = CreateECKindOfQuantityInfo(r.KindOfQuantity);*/
+    if (r.KindOfQuantity) {
+      propertyInfo.kindOfQuantity = {
+        name: r.KindOfQuantity.Name,
+        label: r.KindOfQuantity.DisplayLabel,
+        persistenceUnit: r.KindOfQuantity.PersistenceUnit,
+        currentFusId: r.KindOfQuantity.CurrentFusId,
+      };
+    }
 
     return propertyInfo;
   }

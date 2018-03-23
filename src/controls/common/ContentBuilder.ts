@@ -278,7 +278,7 @@ export default class ContentBuilder {
     const isValueReadOnly = field.isReadOnly || isFieldMerged(item, field.name) || getFieldPropertyValueKeys(item, field.name).every((keys: content.PropertyValueKeys): boolean => {
       // note: fields can have multiple properties and each field value can belong to zero or more ECInstances -
       // we consider field value read-only if there's at least one ECInstanceKey which doesn't have an ECInstanceId.
-      return keys.keys.every((key: ec.InstanceKey): boolean => (key.instanceId !== "0"));
+      return keys.keys.every((key: ec.InstanceKey): boolean => (key.id.isValid()));
     });
 
     return ContentBuilder.createRecord(ContentBuilder.createPropertyDescription(field), field.description,

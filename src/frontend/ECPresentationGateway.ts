@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelToken, Gateway } from "@bentley/imodeljs-common";
-import { InstanceKeysList, PageOptions } from "@bentley/ecpresentation-common";
+import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresentation-common";
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
@@ -38,15 +38,15 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return this.forward.apply(this, arguments);
   }
 
-  public async getContentDescriptor(_token: IModelToken, _displayType: string, _keys: InstanceKeysList, _selection: SelectionInfo | undefined, _options: object): Promise<Readonly<Descriptor>> {
+  public async getContentDescriptor(_token: IModelToken, _displayType: string, _keys: KeySet, _selection: SelectionInfo | undefined, _options: object): Promise<Readonly<Descriptor>> {
     return await this.forward.apply(this, arguments);
   }
 
-  public async getContentSetSize(_token: IModelToken, _descriptor: Descriptor, _keys: InstanceKeysList, _options: object): Promise<number> {
+  public async getContentSetSize(_token: IModelToken, _descriptor: Descriptor, _keys: KeySet, _options: object): Promise<number> {
     return this.forward.apply(this, arguments);
   }
 
-  public async getContent(_token: IModelToken, _descriptor: Descriptor, _keys: InstanceKeysList, _pageOptions: PageOptions, _options: object): Promise<Readonly<Content>> {
+  public async getContent(_token: IModelToken, _descriptor: Descriptor, _keys: KeySet, _pageOptions: PageOptions, _options: object): Promise<Readonly<Content>> {
     return await this.forward.apply(this, arguments);
   }
 

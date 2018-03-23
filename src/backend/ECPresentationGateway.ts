@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { IModelToken, Gateway } from "@bentley/imodeljs-common";
 import { ECPresentationGatewayDefinition, ECPresentationManager as ECPresentationManagerDefinition } from "@bentley/ecpresentation-common";
-import { InstanceKeysList, PageOptions } from "@bentley/ecpresentation-common";
+import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresentation-common";
@@ -51,18 +51,18 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return await this.getManager().getFilteredNodesPaths(token, filterText, options);
   }
 
-  public async getContentDescriptor(token: IModelToken, displayType: string, keys: InstanceKeysList, selection: SelectionInfo | undefined, options: object): Promise<Readonly<Descriptor>> {
+  public async getContentDescriptor(token: IModelToken, displayType: string, keys: KeySet, selection: SelectionInfo | undefined, options: object): Promise<Readonly<Descriptor>> {
     const descriptor = await this.getManager().getContentDescriptor(token, displayType, keys, selection, options);
     if (descriptor)
       resetParentship(descriptor);
     return descriptor;
   }
 
-  public async getContentSetSize(token: IModelToken, descriptor: Descriptor, keys: InstanceKeysList, options: object): Promise<number> {
+  public async getContentSetSize(token: IModelToken, descriptor: Descriptor, keys: KeySet, options: object): Promise<number> {
     return await this.getManager().getContentSetSize(token, descriptor, keys, options);
   }
 
-  public async getContent(token: IModelToken, descriptor: Descriptor, keys: InstanceKeysList, pageOptions: PageOptions, options: object): Promise<Readonly<Content>> {
+  public async getContent(token: IModelToken, descriptor: Descriptor, keys: KeySet, pageOptions: PageOptions, options: object): Promise<Readonly<Content>> {
     const content: Content = await this.getManager().getContent(token, descriptor, keys, pageOptions, options);
     resetParentship(content.descriptor);
     return content;

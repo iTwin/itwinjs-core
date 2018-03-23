@@ -3,18 +3,19 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect, spy, use } from "chai";
 import * as spies from "chai-spies";
-import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
+import { IModelToken } from "@bentley/imodeljs-common";
 import * as moq from "typemoq";
 import { SelectedItem } from "./SelectedItem";
 import { SelectionManagerImpl } from "./SelectionManagerImpl";
+import { createRandomECInstanceKey } from "../../test-helpers/random/EC";
 
 const source: string = "test";
 
 function generateSelection(): SelectedItem[] {
   return [
-    new SelectedItem({ instanceId: "1", classId: "1" }),
-    new SelectedItem({ instanceId: "2", classId: "2" }),
-    new SelectedItem({ instanceId: "3", classId: "3" }),
+    new SelectedItem(createRandomECInstanceKey()),
+    new SelectedItem(createRandomECInstanceKey()),
+    new SelectedItem(createRandomECInstanceKey()),
   ];
 }
 

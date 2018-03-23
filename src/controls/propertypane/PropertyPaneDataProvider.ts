@@ -6,7 +6,7 @@ import { IModelToken } from "@bentley/imodeljs-common";
 import ContentDataProvider from "../common/ContentDataProvider";
 import ContentBuilder, { PropertyRecord } from "../common/ContentBuilder";
 import * as content from "@bentley/ecpresentation-common/lib/content";
-import { InstanceKey } from "@bentley/ecpresentation-common";
+import { KeySet } from "@bentley/ecpresentation-common";
 import { ECPresentationManager } from "@bentley/ecpresentation-common";
 
 let favoritesCategory: content.CategoryDescription | undefined;
@@ -102,18 +102,18 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
   private _categorizedFields: CategoryFields | undefined;
   private _includeFieldsWithNoValues: boolean;
   private _favorites: { [name: string]: boolean };
-  private _keys: InstanceKey[];
+  private _keys: KeySet;
 
   /** Constructor. */
   constructor(manager: ECPresentationManager, imodelToken: IModelToken, rulesetId: string) {
     super(manager, imodelToken, rulesetId, content.DefaultContentDisplayTypes.PROPERTY_PANE);
     this._includeFieldsWithNoValues = true;
     this._favorites = {};
-    this._keys = [];
+    this._keys = new KeySet();
   }
 
   public get keys() { return this._keys; }
-  public set keys(keys: InstanceKey[]) {
+  public set keys(keys: KeySet) {
     this._keys = keys;
     this.invalidateCache();
   }
@@ -174,7 +174,7 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
 
   private async getCategoryFields(): Promise<CategoryFields> {
     if (!this._categorizedFields) {
-      const c = await this.getContent(this._keys, {}, { pageStart: 0, pageSize: 0 });
+      const c = await this.getContent(this._keys, undefined, { pageStart: 0, pageSize: 0 });
       this._categorizedFields = new CategoryFields(c, this.includeFieldsWithNoValues,
         (field) => this.isFieldFavorite(field), (field) => this.isFieldHidden(field),
         this.supplyCategoriesSortFunction(), (category: content.CategoryDescription) => this.supplyFieldsSortFunction(category));

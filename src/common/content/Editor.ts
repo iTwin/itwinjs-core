@@ -5,5 +5,5 @@
 /** A class which describes editor used for a content field. */
 export default interface EditorDescription {
   name: string;
-  // params: ui.IPropertyEditorParams; todo
+  params: any;
 }

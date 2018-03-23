@@ -1,15 +1,22 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { expect } from "chai";
 import * as moq from "typemoq";
-import { OpenMode } from "@bentley/bentleyjs-core";
+import * as faker from "faker";
+import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry, IModelHost } from "@bentley/imodeljs-backend";
-import { PageOptions } from "@bentley/ecpresentation-common";
-import { NavNode, /*, NavNodeKeyPath, NavNodePathElement*/ NavNodeKey } from "@bentley/ecpresentation-common";
+import { PageOptions, SelectionInfo, KeySet } from "@bentley/ecpresentation-common";
+import { createDescriptorOverrides } from "@bentley/ecpresentation-common/lib/content/Descriptor";
 import ECPresentationManager, { NodeAddonDefinition, NodeAddonRequestTypes } from "./ECPresentationManager";
 import * as addonTypes from "./AddonResponses";
+import { createRandomECInstanceNode, createRandomECInstanceNodeKey } from "../test-helpers/random/Hierarchy";
+import { createRandomECInstanceKey } from "../test-helpers/random/EC";
+import { createRandomDescriptor } from "../test-helpers/random/Content";
+import { createRandomId } from "../test-helpers/random/Misc";
+
+require("../test-helpers/Snapshots"); // tslint:disable-line:no-var-requires
 
 describe("ECPresentationManager", () => {
 
@@ -20,13 +27,13 @@ describe("ECPresentationManager", () => {
   it("uses default native library implementation if not overridden", () => {
     IModelHost.startup();
     const manager = new ECPresentationManager();
-    assert.instanceOf(manager.getNativePlatform(), NativePlatformRegistry.getNativePlatform().NativeECPresentationManager);
+    expect(manager.getNativePlatform()).instanceOf(NativePlatformRegistry.getNativePlatform().NativeECPresentationManager);
   });
 
   it("uses addon implementation supplied through props", () => {
     const mock = moq.Mock.ofType<NodeAddonDefinition>();
     const manager = new ECPresentationManager({ addon: mock.object });
-    assert.equal(manager.getNativePlatform(), mock.object);
+    expect(manager.getNativePlatform()).eq(mock.object);
   });
 
   describe("addon setup based on constructor props", () => {
@@ -50,9 +57,15 @@ describe("ECPresentationManager", () => {
     const testData = {
       imodelToken: new IModelToken("key path", false, "context id", "imodel id", "changeset id", OpenMode.Readonly, "user id"),
       pageOptions: { pageStart: 123, pageSize: 456 } as PageOptions,
+      displayType: faker.random.word(),
+      keys: (new KeySet([createRandomECInstanceNodeKey()])).add(createRandomECInstanceKey()),
+      selectionInfo: {
+        providerName: faker.random.word(),
+        level: faker.random.number(),
+      } as SelectionInfo,
       extendedOptions: {
-        rulesetId: "aaa",
-        someOtherOption: 789,
+        rulesetId: faker.random.word(),
+        someOtherOption: faker.random.number(),
       },
     };
 
@@ -66,7 +79,18 @@ describe("ECPresentationManager", () => {
       mock.verifyAll();
     });
 
-    it("returns rootNodes", async () => {
+    const setup = (addonResponse: any) => {
+      // mock the handleRequest function
+      mock.setup((x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString())).returns(() => JSON.stringify(addonResponse));
+    };
+    const verify = (result: any, expectedParams: any) => {
+      // verify the addon was called with correct params
+      mock.verify((x) => x.handleRequest(moq.It.isAny(), JSON.stringify(expectedParams)), moq.Times.once());
+      // verify the manager correctly used addonResponse to create its result
+      expect(result).to.matchSnapshot();
+    };
+
+    it("returns root nodes", async () => {
       // what the addon receives
       const expectedParams = {
         requestId: NodeAddonRequestTypes.GetRootNodes,
@@ -77,17 +101,15 @@ describe("ECPresentationManager", () => {
       };
       // what the addon returns
       const addonResponse: addonTypes.Node[] = [{
-        NodeId: 123,
-        ParentNodeId: 456,
+        NodeId: createRandomId().toString(),
+        ParentNodeId: createRandomId().toString(),
         Key: {
           Type: "type1",
           PathFromRoot: ["p1", "p2", "p3"],
-          ECClassId: "some_class_id_1",
         } as addonTypes.NodeKey,
         Label: "test1",
         Description: "description1",
-        ExpandedImageId: "img_expanded_1",
-        CollapsedImageId: "img_collapsed_1",
+        ImageId: "img_1",
         ForeColor: "foreColor1",
         BackColor: "backColor1",
         FontStyle: "fontStyle1",
@@ -99,21 +121,20 @@ describe("ECPresentationManager", () => {
         IsCheckboxEnabled: true,
         IsExpanded: true,
       }, {
-        NodeId: 789,
-        ParentNodeId: null,
+        NodeId: createRandomId().toString(),
+        ParentNodeId: createRandomId().toString(),
         Key: {
           Type: "ECInstanceNode",
           PathFromRoot: ["p1"],
-          ECClassId: "some_class_id_2",
-          ECInstanceId: "some_instance_id_2",
+          ECClassId: createRandomId().toString(),
+          ECInstanceId: createRandomId().toString(),
         } as addonTypes.ECInstanceNodeKey,
         Label: "test2",
         Description: "description2",
-        ExpandedImageId: null,
-        CollapsedImageId: null,
-        ForeColor: null,
-        BackColor: null,
-        FontStyle: null,
+        ImageId: "",
+        ForeColor: "",
+        BackColor: "",
+        FontStyle: "",
         HasChildren: false,
         IsSelectable: false,
         IsEditable: false,
@@ -121,63 +142,21 @@ describe("ECPresentationManager", () => {
         IsCheckboxVisible: false,
         IsCheckboxEnabled: false,
         IsExpanded: false,
-      }];
-      // what the manager returns using addonResponse
-      const expectedResult: NavNode[] = [{
-        nodeId: addonResponse[0].NodeId,
-        parentNodeId: addonResponse[0].ParentNodeId || undefined,
-        key: {
-          type: addonResponse[0].Key.Type,
-          pathFromRoot: addonResponse[0].Key.PathFromRoot,
-          classId: addonResponse[0].Key.ECClassId,
-        } as NavNodeKey,
-        label: addonResponse[0].Label,
-        description: addonResponse[0].Description,
-        imageId: addonResponse[0].ExpandedImageId || undefined,
-        foreColor: addonResponse[0].ForeColor || undefined,
-        backColor: addonResponse[0].BackColor || undefined,
-        fontStyle: addonResponse[0].FontStyle || undefined,
-        hasChildren: addonResponse[0].HasChildren,
-        isSelectable: addonResponse[0].IsSelectable,
-        isEditable: addonResponse[0].IsEditable,
-        isChecked: addonResponse[0].IsChecked,
-        isExpanded: addonResponse[0].IsExpanded,
-        isCheckboxVisible: addonResponse[0].IsCheckboxVisible,
-        isCheckboxEnabled: addonResponse[0].IsCheckboxEnabled,
       }, {
-        nodeId: addonResponse[1].NodeId,
-        parentNodeId: addonResponse[1].ParentNodeId || undefined,
-        key: {
-          type: addonResponse[1].Key.Type,
-          pathFromRoot: addonResponse[1].Key.PathFromRoot,
-          classId: addonResponse[1].Key.ECClassId,
-          instanceId: (addonResponse[1].Key as addonTypes.ECInstanceNodeKey).ECInstanceId,
-        } as NavNodeKey,
-        label: addonResponse[1].Label,
-        description: addonResponse[1].Description,
-        imageId: addonResponse[1].ExpandedImageId || undefined,
-        foreColor: addonResponse[1].ForeColor || undefined,
-        backColor: addonResponse[1].BackColor || undefined,
-        fontStyle: addonResponse[1].FontStyle || undefined,
-        hasChildren: addonResponse[1].HasChildren,
-        isSelectable: addonResponse[1].IsSelectable,
-        isEditable: addonResponse[1].IsEditable,
-        isChecked: addonResponse[1].IsChecked,
-        isExpanded: addonResponse[1].IsExpanded,
-        isCheckboxVisible: addonResponse[1].IsCheckboxVisible,
-        isCheckboxEnabled: addonResponse[1].IsCheckboxEnabled,
+        NodeId: createRandomId().toString(),
+        Key: {
+          Type: "some node",
+          PathFromRoot: ["p1", "p3"],
+        } as addonTypes.NodeKey,
+        Label: "test2",
       }];
-      // mock
-      mock.setup((x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString())).returns(() => JSON.stringify(addonResponse));
-      // call
-      const actualResult = await manager.getRootNodes(testData.imodelToken, testData.pageOptions, testData.extendedOptions);
-      // verify the addon was called with correct params
-      mock.verify((x) => x.handleRequest(moq.It.isAny(), JSON.stringify(expectedParams)), moq.Times.once());
-      // verify the manager correctly used addonResponse to create its result
-      assert.deepEqual(actualResult, expectedResult);
+      // test
+      setup(addonResponse);
+      const result = await manager.getRootNodes(testData.imodelToken, testData.pageOptions, testData.extendedOptions);
+      verify(result, expectedParams);
     });
 
-    it("returns rootNodesCount", async () => {
+    it("returns root nodes count", async () => {
       // what the addon receives
       const expectedParams = {
         requestId: NodeAddonRequestTypes.GetRootNodesCount,
@@ -187,16 +166,347 @@ describe("ECPresentationManager", () => {
       };
       // what the addon returns
       const addonResponse = 456;
-      // what the manager returns using addonResponse
-      const expectedResult = addonResponse;
-      // mock
-      mock.setup((x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString())).returns(() => JSON.stringify(addonResponse));
-      // call
-      const actualResult = await manager.getRootNodesCount(testData.imodelToken, testData.extendedOptions);
-      // verify the addon was called with correct params
-      mock.verify((x) => x.handleRequest(moq.It.isAny(), JSON.stringify(expectedParams)), moq.Times.once());
-      // verify the manager correctly used addonResponse to create its result
-      assert.deepEqual(actualResult, expectedResult);
+      // test
+      setup(addonResponse);
+      const result = await manager.getRootNodesCount(testData.imodelToken, testData.extendedOptions);
+      verify(result, expectedParams);
+    });
+
+    it("returns child nodes", async () => {
+      // what the addon receives
+      const parentNode = createRandomECInstanceNode();
+      const expectedParams = {
+        requestId: NodeAddonRequestTypes.GetChildren,
+        params: {
+          nodeKey: parentNode.key,
+          pageOptions: testData.pageOptions,
+          options: testData.extendedOptions,
+        },
+      };
+      // what the addon returns
+      const addonResponse: addonTypes.Node[] = [{
+        NodeId: createRandomId().toString(),
+        ParentNodeId: createRandomId().toString(),
+        Key: {
+          Type: "type 1",
+          PathFromRoot: ["p1"],
+        } as addonTypes.ECInstanceNodeKey,
+        Label: "test2",
+      }, {
+        NodeId: createRandomId().toString(),
+        Key: {
+          Type: "type 2",
+          PathFromRoot: ["p1", "p3"],
+        } as addonTypes.NodeKey,
+        Label: "test3",
+      }];
+      // test
+      setup(addonResponse);
+      const result = await manager.getChildren(testData.imodelToken, parentNode, testData.pageOptions, testData.extendedOptions);
+      verify(result, expectedParams);
+    });
+
+    it("returns child nodes count", async () => {
+      // what the addon receives
+      const parentNode = createRandomECInstanceNode();
+      const expectedParams = {
+        requestId: NodeAddonRequestTypes.GetChildrenCount,
+        params: {
+          nodeKey: parentNode.key,
+          options: testData.extendedOptions,
+        },
+      };
+      // what the addon returns
+      const addonResponse = 789;
+      // test
+      setup(addonResponse);
+      const result = await manager.getChildrenCount(testData.imodelToken, parentNode, testData.extendedOptions);
+      verify(result, expectedParams);
+    });
+
+    it("returns content descriptor", async () => {
+      // what the addon receives
+      const expectedParams = {
+        requestId: NodeAddonRequestTypes.GetContentDescriptor,
+        params: {
+          displayType: testData.displayType,
+          keys: testData.keys,
+          selection: testData.selectionInfo,
+          options: testData.extendedOptions,
+        },
+      };
+      // what the addon returns
+      const createRandomClassInfo = (): addonTypes.ClassInfo => {
+        return {
+          Id: (new Id64([faker.random.number(), faker.random.number()])).toString(),
+          Name: faker.random.word(),
+          Label: faker.random.words(),
+        };
+      };
+      const createRandomCategory = (): addonTypes.Category => {
+        return {
+          Name: faker.random.word(),
+          DisplayLabel: faker.random.words(),
+          Description: faker.random.words(),
+          Expand: faker.random.boolean(),
+          Priority: faker.random.number(),
+        };
+      };
+      const addonResponse: addonTypes.Descriptor = {
+        PreferredDisplayType: testData.displayType,
+        SelectClasses: [{
+          SelectClassInfo: createRandomClassInfo(),
+          IsPolymorphic: true,
+          PathToPrimaryClass: [{
+            SourceClassInfo: createRandomClassInfo(),
+            TargetClassInfo: createRandomClassInfo(),
+            RelationshipInfo: createRandomClassInfo(),
+            IsForwardRelationship: false,
+            IsPolymorphicRelationship: true,
+          }],
+          RelatedPropertyPaths: [[{
+            SourceClassInfo: createRandomClassInfo(),
+            TargetClassInfo: createRandomClassInfo(),
+            RelationshipInfo: createRandomClassInfo(),
+            IsForwardRelationship: true,
+            IsPolymorphicRelationship: false,
+          }]],
+        }],
+        Fields: [{
+          Name: "Primitive property field with editor",
+          Category: createRandomCategory(),
+          DisplayLabel: faker.random.words(),
+          Type: {
+            TypeName: "string",
+            ValueFormat: "Primitive",
+          },
+          IsReadOnly: faker.random.boolean(),
+          Priority: faker.random.number(),
+          Editor: {
+            Name: faker.random.word(),
+            Params: {
+              some_param: faker.random.number(),
+            },
+          },
+          Properties: [{
+            Property: {
+              BaseClassInfo: createRandomClassInfo(),
+              ActualClassInfo: createRandomClassInfo(),
+              Name: faker.random.word(),
+              Type: "string",
+              Choices: [{
+                Label: faker.random.words(),
+                Value: faker.random.uuid(),
+              }, {
+                Label: faker.random.words(),
+                Value: faker.random.uuid(),
+              }],
+              IsStrict: faker.random.boolean(),
+            },
+            RelatedClassPath: [],
+          }],
+        } as addonTypes.ECPropertiesField, {
+          Name: "Complex array of structs property field",
+          Category: createRandomCategory(),
+          DisplayLabel: faker.random.words(),
+          Type: {
+            TypeName: "string[]",
+            ValueFormat: "Array",
+            MemberType: {
+              TypeName: "SomeClass",
+              ValueFormat: "Struct",
+              Members: [{
+                Name: faker.random.word(),
+                Label: faker.random.words(),
+                Type: {
+                  TypeName: "string",
+                  ValueFormat: "Primitive",
+                },
+              }, {
+                Name: faker.random.word(),
+                Label: faker.random.words(),
+                Type: {
+                  TypeName: "string[]",
+                  ValueFormat: "Array",
+                  MemberType: {
+                    TypeName: "string",
+                    ValueFormat: "Primitive",
+                  },
+                } as addonTypes.FieldArrayTypeDescription,
+              }],
+            } as addonTypes.FieldStructTypeDescription,
+          } as addonTypes.FieldArrayTypeDescription,
+          IsReadOnly: faker.random.boolean(),
+          Priority: faker.random.number(),
+          Properties: [{
+            Property: {
+              BaseClassInfo: createRandomClassInfo(),
+              ActualClassInfo: createRandomClassInfo(),
+              Name: faker.random.word(),
+              Type: "double",
+              KindOfQuantity: {
+                Name: faker.random.word(),
+                DisplayLabel: faker.random.words(),
+                PersistenceUnit: faker.random.word(),
+                CurrentFusId: faker.random.uuid(),
+              },
+            },
+            RelatedClassPath: [],
+          }],
+        } as addonTypes.ECPropertiesField, {
+          Name: "Nested content field",
+          Category: createRandomCategory(),
+          DisplayLabel: faker.random.words(),
+          Type: {
+            TypeName: faker.random.word(),
+            ValueFormat: "Struct",
+            Members: [{
+              Name: faker.random.word(),
+              Label: faker.random.words(),
+              Type: {
+                TypeName: "string",
+                ValueFormat: "Primitive",
+              },
+            }],
+          } as addonTypes.FieldStructTypeDescription,
+          ContentClassInfo: createRandomClassInfo(),
+          PathToPrimary: [{
+            SourceClassInfo: createRandomClassInfo(),
+            TargetClassInfo: createRandomClassInfo(),
+            RelationshipInfo: createRandomClassInfo(),
+            IsForwardRelationship: false,
+            IsPolymorphicRelationship: true,
+          }],
+          NestedFields: [{
+            Name: "Simple property field",
+            Category: createRandomCategory(),
+            DisplayLabel: faker.random.words(),
+            Type: {
+              TypeName: "string",
+              ValueFormat: "Primitive",
+            },
+            IsReadOnly: faker.random.boolean(),
+            Priority: faker.random.number(),
+          }],
+          IsReadOnly: faker.random.boolean(),
+          Priority: faker.random.number(),
+        } as addonTypes.NestedContentField],
+        SortingFieldIndex: -1,
+        SortDirection: 0,
+        ContentFlags: 0,
+        FilterExpression: "",
+      };
+      // test
+      setup(addonResponse);
+      const result = await manager.getContentDescriptor(testData.imodelToken, testData.displayType,
+        testData.keys, testData.selectionInfo, testData.extendedOptions);
+      verify(result, expectedParams);
+    });
+
+    it("returns content set size", async () => {
+      // what the addon receives
+      const descriptor = createRandomDescriptor();
+      const expectedParams = {
+        requestId: NodeAddonRequestTypes.GetContentSetSize,
+        params: {
+          keys: testData.keys,
+          descriptorOverrides: createDescriptorOverrides(descriptor),
+          options: testData.extendedOptions,
+        },
+      };
+      // what the addon returns
+      const addonResponse = faker.random.number();
+      // test
+      setup(addonResponse);
+      const result = await manager.getContentSetSize(testData.imodelToken, descriptor,
+        testData.keys, testData.extendedOptions);
+      verify(result, expectedParams);
+    });
+
+    it("returns content", async () => {
+    // what the addon receives
+      const descriptor = createRandomDescriptor();
+      const expectedParams = {
+        requestId: NodeAddonRequestTypes.GetContent,
+        params: {
+          keys: testData.keys,
+          descriptorOverrides: createDescriptorOverrides(descriptor),
+          pageOptions: testData.pageOptions,
+          options: testData.extendedOptions,
+        },
+      };
+      // what the addon returns
+      const createRandomClassInfo = (): addonTypes.ClassInfo => {
+        return {
+          Id: (new Id64([faker.random.number(), faker.random.number()])).toString(),
+          Name: faker.random.word(),
+          Label: faker.random.words(),
+        };
+      };
+      const createRandomCategory = (): addonTypes.Category => {
+        return {
+          Name: faker.random.word(),
+          DisplayLabel: faker.random.words(),
+          Description: faker.random.words(),
+          Expand: faker.random.boolean(),
+          Priority: faker.random.number(),
+        };
+      };
+      const fieldName = faker.random.word();
+      const addonResponse = {
+        Descriptor: {
+          PreferredDisplayType: descriptor.displayType,
+          SelectClasses: [{
+            SelectClassInfo: createRandomClassInfo(),
+            IsPolymorphic: true,
+            PathToPrimaryClass: [],
+            RelatedPropertyPaths: [],
+          }],
+          Fields: [{
+            Name: fieldName,
+            Category: createRandomCategory(),
+            DisplayLabel: faker.random.words(),
+            Type: {
+              TypeName: "string",
+              ValueFormat: "Primitive",
+            },
+            IsReadOnly: faker.random.boolean(),
+            Priority: faker.random.number(),
+            Properties: [{
+              Property: {
+                BaseClassInfo: createRandomClassInfo(),
+                ActualClassInfo: createRandomClassInfo(),
+                Name: faker.random.word(),
+                Type: "string",
+              },
+              RelatedClassPath: [],
+            }],
+          } as addonTypes.ECPropertiesField],
+          SortingFieldIndex: -1,
+          SortDirection: 0,
+          ContentFlags: 0,
+          FilterExpression: "",
+        },
+        ContentSet: [{
+          PrimaryKeys: [{ ECClassName: faker.random.word(), ECInstanceId: createRandomId().toString() }],
+          ClassInfo: createRandomClassInfo(),
+          DisplayLabel: faker.random.words(),
+          ImageId: faker.random.uuid(),
+          Values: {
+            [fieldName]: faker.random.words(),
+          },
+          DisplayValues: {
+            [fieldName]: faker.random.words(),
+          },
+          MergedFieldNames: [],
+          FieldValueKeys: {},
+        }],
+      } as addonTypes.Content;
+      // test
+      setup(addonResponse);
+      const result = await manager.getContent(testData.imodelToken, descriptor,
+        testData.keys, testData.pageOptions, testData.extendedOptions);
+      verify(result, expectedParams);
     });
 
   });

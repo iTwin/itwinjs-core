@@ -1,12 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { Id64 } from "@bentley/bentleyjs-core";
 
-export type ClassId = string;
-export type InstanceId = string;
+export type ClassId = Id64;
+export type InstanceId = Id64;
 export interface InstanceKey {
-  classId: ClassId;
-  instanceId: InstanceId;
+  className: string;
+  id: InstanceId;
 }
 export type InstanceKeysList = InstanceKey[];
 
@@ -27,12 +28,19 @@ export interface EnumerationInfo {
   isStrict: boolean;
 }
 
+export interface KindOfQuantityInfo {
+  name: string;
+  label: string;
+  persistenceUnit: string;
+  currentFusId: string;
+}
+
 export interface PropertyInfo {
   classInfo: ClassInfo;
   name: string;
   type: string;
   enumerationInfo?: EnumerationInfo;
-  // KindOfQuantity?: ui.IECKindOfQuantityInfo;
+  kindOfQuantity?: KindOfQuantityInfo;
 }
 
 /** A structure that describes a related class and the properties of that relationship. */

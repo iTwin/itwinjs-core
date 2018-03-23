@@ -42,7 +42,8 @@ export enum SortDirection {
 }
 
 export interface SelectionInfo {
-  wip?: string;
+  providerName: string;
+  level?: number;
 }
 
 /** Describes the content: fields, sorting, filtering, format. Users may change

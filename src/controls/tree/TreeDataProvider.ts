@@ -99,7 +99,7 @@ export default class TreeDataProvider {
     const item: TreeNodeItem = {
       id: node.nodeId.toString(),
       label: node.label,
-      description: node.description,
+      description: node.description || "",
       hasChildren: node.hasChildren,
       labelForeColor: StyleHelper.getForeColor(node),
       labelBackColor: StyleHelper.getBackColor(node),

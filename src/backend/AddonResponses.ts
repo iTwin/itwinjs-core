@@ -13,23 +13,22 @@ export interface ECInstanceNodeKey extends NodeKey {
 }
 /** @hidden */
 export interface Node {
-  NodeId: number; // TODO: should be hex-string
-  ParentNodeId: number | null; // TODO: should be hex-string
+  NodeId: string; // TODO: should be hex-string
+  ParentNodeId?: string; // TODO: should be hex-string
   Key: NodeKey;
   Label: string;
-  Description: string;
-  ExpandedImageId: string | null;
-  CollapsedImageId: string | null;
-  ForeColor: string | null;
-  BackColor: string | null;
-  FontStyle: string | null;
-  HasChildren: boolean;
-  IsSelectable: boolean;
-  IsEditable: boolean;
-  IsChecked: boolean;
-  IsCheckboxVisible: boolean;
-  IsCheckboxEnabled: boolean;
-  IsExpanded: boolean;
+  Description?: string;
+  ImageId?: string;
+  ForeColor?: string;
+  BackColor?: string;
+  FontStyle?: string;
+  HasChildren?: boolean;
+  IsSelectable?: boolean;
+  IsEditable?: boolean;
+  IsChecked?: boolean;
+  IsCheckboxVisible?: boolean;
+  IsCheckboxEnabled?: boolean;
+  IsExpanded?: boolean;
 }
 /** @hidden */
 export interface NodesPathElement {
@@ -41,7 +40,7 @@ export interface NodesPathElement {
 
 /** @hidden */
 export interface ECInstanceKey {
-  ECClassId: string;
+  ECClassName: string; // WIP: IDs
   ECInstanceId: string;
 }
 /** @hidden */

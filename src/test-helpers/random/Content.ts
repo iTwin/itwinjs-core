@@ -50,11 +50,11 @@ export const createRandomField = (): c.Field => {
   } as c.Field;
 };
 
-export const createRandomDescriptor = (): c.Descriptor => {
+export const createRandomDescriptor = (displayType?: string): c.Descriptor => {
   const selectClasses = [createRandomSelectClassInfo(), createRandomSelectClassInfo()];
   const fields = [createRandomField(), createRandomField(), createRandomField()];
   return {
-    displayType: faker.lorem.words(),
+    displayType: displayType || faker.lorem.words(),
     selectClasses,
     fields,
     contentFlags: 0,

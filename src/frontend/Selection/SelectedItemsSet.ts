@@ -14,25 +14,7 @@ export class SelectedItemsSet {
   }
 
   private static toString(item: SelectedItem): string {
-    //  // @todo:
-    // switch (item.Type) {
-    //   case NavNodeType.ECInstanceNode:
-    //     {
-    //       const key = <IECInstanceNodeKey>keyBase;
-    //       return "eci_" + key.ECClassId + ":" + key.ECInstanceId;
-    //     }
-    //   default:
-    //     {
-    //       const key = <IGroupingNodeKey>keyBase;
-    //       return key.NodeId;
-    //     }
-    // }
-    if (item.key.classId && item.key.instanceId)
-      return item.key.classId.toString() + " " + item.key.instanceId.toString();
-    else if (item.key.classId)
-      return item.key.classId.toString();
-    else
-      return "";
+    return JSON.stringify(item);
   }
 
   /** Initializes this set from the supplied array of SelectedItems. */

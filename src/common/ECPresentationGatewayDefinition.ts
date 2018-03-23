@@ -7,7 +7,7 @@ import { NavNode, NavNodeKeyPath, NavNodePathElement } from "./Hierarchy";
 import * as content from "./content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "./Changes";
 import { PageOptions } from "./ECPresentationManager";
-import * as ec from "./EC";
+import KeySet from "./KeySet";
 
 /** Gateway definition for ECPresentation services.
  * WIP: would like to name it ECPresentationGatewayDefinition, but can't because
@@ -28,9 +28,9 @@ export default abstract class ECPresentationGateway extends Gateway {
   public abstract getChildrenCount(token: IModelToken, parent: NavNode, options: object): Promise<number>;
   public abstract getNodePaths(token: IModelToken, paths: NavNodeKeyPath[], markedIndex: number, options: object): Promise<Array<Readonly<NavNodePathElement>>>;
   public abstract getFilteredNodesPaths(token: IModelToken, filterText: string, options: object): Promise<Array<Readonly<NavNodePathElement>>>;
-  public abstract getContentDescriptor(token: IModelToken, displayType: string, keys: ec.InstanceKeysList, selection: content.SelectionInfo | undefined, options: object): Promise<Readonly<content.Descriptor>>;
-  public abstract getContentSetSize(token: IModelToken, descriptor: content.Descriptor, keys: ec.InstanceKeysList, options: object): Promise<number>;
-  public abstract getContent(token: IModelToken, descriptor: content.Descriptor, keys: ec.InstanceKeysList, pageOptions: PageOptions, options: object): Promise<Readonly<content.Content>>;
+  public abstract getContentDescriptor(token: IModelToken, displayType: string, keys: KeySet, selection: content.SelectionInfo | undefined, options: object): Promise<Readonly<content.Descriptor>>;
+  public abstract getContentSetSize(token: IModelToken, descriptor: content.Descriptor, keys: KeySet, options: object): Promise<number>;
+  public abstract getContent(token: IModelToken, descriptor: content.Descriptor, keys: KeySet, pageOptions: PageOptions, options: object): Promise<Readonly<content.Content>>;
   public abstract getDistinctValues(token: IModelToken, displayType: string, fieldName: string, maximumValueCount: number, options: object): Promise<string[]>;
   public abstract saveValueChange(token: IModelToken, instancesInfo: ChangedECInstanceInfo[], propertyAccessor: string, value: any, options: object): Promise<Array<Readonly<ECInstanceChangeResult>>>;
 }

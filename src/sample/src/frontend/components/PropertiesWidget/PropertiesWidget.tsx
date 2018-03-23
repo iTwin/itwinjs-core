@@ -1,7 +1,7 @@
 import * as React from "react";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { InstanceKey } from "@bentley/ecpresentation-common";
+import { NavNodeKey, KeySet } from "@bentley/ecpresentation-common";
 import { ECPresentationManager } from "@bentley/ecpresentation-frontend";
 import { PropertyPaneDataProvider, PropertyRecord } from "@bentley/ecpresentation-controls";
 import { isPrimitiveValue, isStructValue, isArrayValue } from "@bentley/ecpresentation-controls";
@@ -129,12 +129,12 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
     if (0 === selectedNodes.length || !this._dataProvider)
       return;
 
-    const keys: InstanceKey[] = selectedNodes.map((item: SelectedItem) => {
-      return item.key;
+    const keys: NavNodeKey[] = selectedNodes.map((item: TreeNodeItem) => {
+      return item.extendedData.node.key;
     });
 
     try {
-      this._dataProvider.keys = keys;
+      this._dataProvider.keys = new KeySet(keys);
       const groups: GroupDisplayInfo[] = [];
       const categoryCount = await this._dataProvider.getCategoryCount();
       for (let i = 0; i < categoryCount; ++i) {

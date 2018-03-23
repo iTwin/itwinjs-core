@@ -8,7 +8,7 @@ import { Gateway, IModelToken } from "@bentley/imodeljs-common";
 import { ECPresentationGatewayDefinition } from "@bentley/ecpresentation-common";
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Content } from "@bentley/ecpresentation-common";
-import { PageOptions } from "@bentley/ecpresentation-common";
+import { PageOptions, KeySet } from "@bentley/ecpresentation-common";
 import { createRandomECInstanceKey } from "../test-helpers/random/EC";
 import { createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement } from "../test-helpers/random/Hierarchy";
 import { createRandomDescriptor } from "../test-helpers/random/Content";
@@ -36,7 +36,7 @@ describe("ECPresentationGatewayImpl", () => {
       pageOptions: { pageStart: 123, pageSize: 456 } as PageOptions,
       nodePathElements: [createRandomNodePathElement(3), createRandomNodePathElement(1)] as NavNodePathElement[],
       displayType: "sample display type",
-      inputKeys: [createRandomECInstanceKey(), createRandomECInstanceKey(), createRandomECInstanceKey()],
+      inputKeys: new KeySet([createRandomECInstanceKey(), createRandomECInstanceKey(), createRandomECInstanceKey()]),
       selectionInfo: {} as SelectionInfo,
       descriptor: createRandomDescriptor(),
       extendedOptions: { rulesetId: "aaa", someOtherOption: 789 },

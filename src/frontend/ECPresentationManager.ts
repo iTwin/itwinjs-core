@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelToken } from "@bentley/imodeljs-common";
-import { InstanceKeysList, PageOptions } from "@bentley/ecpresentation-common";
+import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresentation-common";
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
@@ -35,7 +35,7 @@ export default class ECPresentationManager implements ECPInterface {
     return await ECPresentationGateway.getProxy().getFilteredNodesPaths(token, filterText, options);
   }
 
-  public async getContentDescriptor(token: IModelToken, displayType: string, keys: InstanceKeysList, selection: SelectionInfo | undefined, options: object): Promise<Readonly<Descriptor>> {
+  public async getContentDescriptor(token: IModelToken, displayType: string, keys: KeySet, selection: SelectionInfo | undefined, options: object): Promise<Readonly<Descriptor>> {
     const descriptor = await ECPresentationGateway.getProxy().getContentDescriptor(token, displayType, keys, selection, options);
     if (descriptor)
       rebuildParentship(descriptor);
@@ -48,11 +48,11 @@ export default class ECPresentationManager implements ECPInterface {
     return { ...descriptor, fields: [], selectClasses: [] };
   }
 
-  public async getContentSetSize(token: IModelToken, descriptor: Descriptor, keys: InstanceKeysList, options: object): Promise<number> {
+  public async getContentSetSize(token: IModelToken, descriptor: Descriptor, keys: KeySet, options: object): Promise<number> {
     return await ECPresentationGateway.getProxy().getContentSetSize(token, this.getStrippedDescriptor(descriptor), keys, options);
   }
 
-  public async getContent(token: IModelToken, descriptor: Descriptor, keys: InstanceKeysList, pageOptions: PageOptions, options: object): Promise<Readonly<Content>> {
+  public async getContent(token: IModelToken, descriptor: Descriptor, keys: KeySet, pageOptions: PageOptions, options: object): Promise<Readonly<Content>> {
     const content = await ECPresentationGateway.getProxy().getContent(token, this.getStrippedDescriptor(descriptor), keys, pageOptions, options);
     rebuildParentship(content.descriptor);
     return content;

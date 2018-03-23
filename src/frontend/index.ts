@@ -4,3 +4,4 @@
 export { default as ECPresentationManager } from "./ECPresentationManager";
 export { default as ECPresentationGateway } from "./ECPresentationGateway";
 export * from "./Selection";
+export { default as PersistenceHelper } from "./PersistenceHelper";

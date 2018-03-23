@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelToken } from "@bentley/imodeljs-common";
-import { InstanceKeysList, PageOptions } from "@bentley/ecpresentation-common";
+import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
 import { ECPresentationManager } from "@bentley/ecpresentation-common";
 import * as content from "@bentley/ecpresentation-common/lib/content";
 
@@ -76,7 +76,7 @@ export default abstract class ContentDataProvider {
    * @param keys Keys of ECInstances to get content for.
    * @param selectionInfo Info about selection in case the content is requested due to selection change.
    */
-  public async getContentDescriptor(keys: InstanceKeysList, selectionInfo?: content.SelectionInfo): Promise<Readonly<content.Descriptor>> {
+  public async getContentDescriptor(keys: KeySet, selectionInfo?: content.SelectionInfo): Promise<Readonly<content.Descriptor>> {
     if (!this._configuredDescriptor) {
       if (!this._descriptor) {
         this._descriptor = await this._manager.getContentDescriptor(this.imodelToken, this._displayType, keys,
@@ -115,7 +115,7 @@ export default abstract class ContentDataProvider {
    * @param pageStart Start index of the page to load.
    * @param pageSize The number of requested items in the page (0 means all items).
    */
-  protected async getContent(keys: InstanceKeysList, selectionInfo: content.SelectionInfo | undefined, { pageStart = 0, pageSize = 0 }: PageOptions): Promise<Readonly<content.Content>> {
+  protected async getContent(keys: KeySet, selectionInfo: content.SelectionInfo | undefined, { pageStart = 0, pageSize = 0 }: PageOptions): Promise<Readonly<content.Content>> {
     if (!this._content) {
       const descriptor = await this.getContentDescriptor(keys, selectionInfo);
       this._content = await this._manager.getContent(this.imodelToken, descriptor, keys,
@@ -129,7 +129,7 @@ export default abstract class ContentDataProvider {
    * @param selectionInfo Info about selection in case the content is requested due to selection change.
    * @note The method returns the total number of records (without paging).
    */
-  protected async getContentSetSize(keys: InstanceKeysList, selectionInfo?: content.SelectionInfo): Promise<number> {
+  protected async getContentSetSize(keys: KeySet, selectionInfo?: content.SelectionInfo): Promise<number> {
     if (undefined === this._contentSetSize) {
       const descriptor = await this.getContentDescriptor(keys, selectionInfo);
       this._contentSetSize = await this._manager.getContentSetSize(this.imodelToken, descriptor,

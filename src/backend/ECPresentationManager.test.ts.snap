@@ -1,0 +1,477 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ECPresentationManager addon results conversion to ECPresentation objects returns child nodes 1`] = `
+Array [
+  Object {
+    "backColor": undefined,
+    "description": undefined,
+    "fontStyle": undefined,
+    "foreColor": undefined,
+    "hasChildren": false,
+    "imageId": undefined,
+    "isCheckboxEnabled": false,
+    "isCheckboxVisible": false,
+    "isChecked": false,
+    "isEditable": false,
+    "isExpanded": false,
+    "isSelectable": false,
+    "key": Object {
+      "pathFromRoot": Array [
+        "p1",
+      ],
+      "type": "type 1",
+    },
+    "label": "test2",
+    "nodeId": "0x179a3000000c819",
+    "parentNodeId": "0x7190000016199",
+  },
+  Object {
+    "backColor": undefined,
+    "description": undefined,
+    "fontStyle": undefined,
+    "foreColor": undefined,
+    "hasChildren": false,
+    "imageId": undefined,
+    "isCheckboxEnabled": false,
+    "isCheckboxVisible": false,
+    "isChecked": false,
+    "isEditable": false,
+    "isExpanded": false,
+    "isSelectable": false,
+    "key": Object {
+      "pathFromRoot": Array [
+        "p1",
+        "p3",
+      ],
+      "type": "type 2",
+    },
+    "label": "test3",
+    "nodeId": "0xf5a8000001338a",
+    "parentNodeId": undefined,
+  },
+]
+`;
+
+exports[`ECPresentationManager addon results conversion to ECPresentation objects returns child nodes count 1`] = `789`;
+
+exports[`ECPresentationManager addon results conversion to ECPresentation objects returns content 1`] = `
+Object {
+  "contentSet": Array [
+    Object {
+      "classInfo": Object {
+        "id": "0xcb0400000118bc",
+        "label": "solutions Algeria Fantastic Plastic Salad",
+        "name": "India",
+      },
+      "displayValues": Object {
+        "Czech Koruna": "Metal supply-chains Nevada",
+      },
+      "fieldPropertyValueKeys": Object {},
+      "imageId": "5f0cd4fb-3da2-469d-ab90-087ead2e55cd",
+      "label": "Refined compress Gloves",
+      "mergedFieldNames": Array [],
+      "primaryKeys": Array [
+        Object {
+          "className": "monetize",
+          "id": "0xbce0000001154b",
+        },
+      ],
+      "values": Object {
+        "Czech Koruna": "CSS Generic Investment Account",
+      },
+    },
+  ],
+  "descriptor": Object {
+    "contentFlags": 0,
+    "displayType": "ut voluptatem dicta",
+    "fields": Array [
+      Object {
+        "category": Object {
+          "description": "recontextualize Ohio Integration",
+          "expand": true,
+          "label": "Kwacha Berkshire Cloned",
+          "name": "Home",
+          "priority": 23131,
+        },
+        "description": Object {
+          "typeName": "string",
+          "valueFormat": 0,
+        },
+        "editor": undefined,
+        "isReadOnly": true,
+        "label": "Mobility Comoro Franc",
+        "name": "Czech Koruna",
+        "parent": undefined,
+        "priority": 9307,
+        "properties": Array [
+          Object {
+            "property": Object {
+              "classInfo": Object {
+                "id": "0x181ce000000755e",
+                "label": "Buckinghamshire collaborative technologies",
+                "name": "International",
+              },
+              "name": "XSS",
+              "type": "string",
+            },
+            "relatedClassPath": Array [],
+          },
+        ],
+      },
+    ],
+    "filterExpression": "",
+    "selectClasses": Array [
+      Object {
+        "isSelectPolymorphic": true,
+        "pathToPrimaryClass": Array [],
+        "relatedPropertyPaths": Array [],
+        "selectClassInfo": Object {
+          "id": "0x91d00000013ef",
+          "label": "auxiliary",
+          "name": "Cotton",
+        },
+      },
+    ],
+    "sortDirection": 0,
+    "sortingField": undefined,
+  },
+}
+`;
+
+exports[`ECPresentationManager addon results conversion to ECPresentation objects returns content descriptor 1`] = `
+Object {
+  "contentFlags": 0,
+  "displayType": "methodologies",
+  "fields": Array [
+    Object {
+      "category": Object {
+        "description": "Shirt Louisiana Monitored",
+        "expand": true,
+        "label": "data-warehouse haptic Realigned",
+        "name": "UIC-Franc",
+        "priority": 82046,
+      },
+      "description": Object {
+        "typeName": "string",
+        "valueFormat": 0,
+      },
+      "editor": Object {
+        "name": "Wyoming",
+        "params": Object {
+          "some_param": 23207,
+        },
+      },
+      "isReadOnly": true,
+      "label": "Villages Marketing",
+      "name": "Primitive property field with editor",
+      "parent": undefined,
+      "priority": 5141,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": Object {
+              "id": "0x6be30000000b6a",
+              "label": "system engine Sleek Web",
+              "name": "help-desk",
+            },
+            "enumerationInfo": Object {
+              "choices": Array [
+                Object {
+                  "label": "Guarani",
+                  "value": "6d478792-1998-4566-ae7b-f11d320f5432",
+                },
+                Object {
+                  "label": "Burg Gloves Money Market Account",
+                  "value": "e209a15f-0571-4ba1-956d-4fb4125b6098",
+                },
+              ],
+              "isStrict": false,
+            },
+            "name": "Electronics",
+            "type": "string",
+          },
+          "relatedClassPath": Array [],
+        },
+      ],
+    },
+    Object {
+      "category": Object {
+        "description": "index hardware Nevada",
+        "expand": false,
+        "label": "Hollow",
+        "name": "Intelligent",
+        "priority": 85932,
+      },
+      "description": Object {
+        "memberType": Object {
+          "members": Array [
+            Object {
+              "label": "Outdoors Ohio",
+              "name": "bandwidth-monitored",
+              "type": Object {
+                "typeName": "string",
+                "valueFormat": 0,
+              },
+            },
+            Object {
+              "label": "Japan Directives",
+              "name": "moderator",
+              "type": Object {
+                "memberType": Object {
+                  "typeName": "string",
+                  "valueFormat": 0,
+                },
+                "typeName": "string[]",
+                "valueFormat": 1,
+              },
+            },
+          ],
+          "typeName": "SomeClass",
+          "valueFormat": 2,
+        },
+        "typeName": "string[]",
+        "valueFormat": 1,
+      },
+      "editor": undefined,
+      "isReadOnly": true,
+      "label": "invoice",
+      "name": "Complex array of structs property field",
+      "parent": undefined,
+      "priority": 84,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": Object {
+              "id": "0x19500000008ba5",
+              "label": "Gorgeous Cheese",
+              "name": "transmitting",
+            },
+            "kindOfQuantity": Object {
+              "currentFusId": "52fefc71-70ce-4eef-8afb-47728bb37d1b",
+              "label": "Consultant",
+              "name": "neural",
+              "persistenceUnit": "Diverse",
+            },
+            "name": "Global",
+            "type": "double",
+          },
+          "relatedClassPath": Array [],
+        },
+      ],
+    },
+    Object {
+      "category": Object {
+        "description": "redundant Wallis and Futuna SSL",
+        "expand": false,
+        "label": "Buckinghamshire",
+        "name": "Specialist",
+        "priority": 44918,
+      },
+      "contentClassInfo": Object {
+        "id": "0x17e61000000a737",
+        "label": "Inlet",
+        "name": "Savings Account",
+      },
+      "description": Object {
+        "members": Array [
+          Object {
+            "label": "mission-critical Right-sized Analyst",
+            "name": "calculating",
+            "type": Object {
+              "typeName": "string",
+              "valueFormat": 0,
+            },
+          },
+        ],
+        "typeName": "expedite",
+        "valueFormat": 2,
+      },
+      "editor": undefined,
+      "isReadOnly": true,
+      "label": "knowledge user Persevering Ghana",
+      "name": "Nested content field",
+      "nestedFields": Array [
+        Object {
+          "category": Object {
+            "description": "Extended",
+            "expand": false,
+            "label": "pricing structure Gorgeous",
+            "name": "withdrawal",
+            "priority": 21238,
+          },
+          "description": Object {
+            "typeName": "string",
+            "valueFormat": 0,
+          },
+          "editor": undefined,
+          "isReadOnly": false,
+          "label": "Centralized",
+          "name": "Simple property field",
+          "parent": [Circular],
+          "priority": 60139,
+        },
+      ],
+      "parent": undefined,
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": false,
+          "relationshipInfo": Object {
+            "id": "0x2ad70000012a9a",
+            "label": "deposit Diverse",
+            "name": "Alabama",
+          },
+          "sourceClassInfo": Object {
+            "id": "0xa7b400000134d4",
+            "label": "SCSI",
+            "name": "protocol",
+          },
+          "targetClassInfo": Object {
+            "id": "0x9a000000016cc5",
+            "label": "Ethiopia niches",
+            "name": "circuit",
+          },
+        },
+      ],
+      "priority": 92314,
+    },
+  ],
+  "filterExpression": "",
+  "selectClasses": Array [
+    Object {
+      "isSelectPolymorphic": true,
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": false,
+          "relationshipInfo": Object {
+            "id": "0x8687000000dae6",
+            "label": "tangible",
+            "name": "hardware",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x6aee0000004fbb",
+            "label": "Computer",
+            "name": "Consultant",
+          },
+          "targetClassInfo": Object {
+            "id": "0xec83000000d236",
+            "label": "Chips Arizona Advanced",
+            "name": "user-centric",
+          },
+        },
+      ],
+      "relatedPropertyPaths": Array [
+        Array [
+          Object {
+            "isForwardRelationship": true,
+            "relationshipInfo": Object {
+              "id": "0x543c00000172d2",
+              "label": "program Reactive",
+              "name": "empower",
+            },
+            "sourceClassInfo": Object {
+              "id": "0x72e10000003141",
+              "label": "Colorado",
+              "name": "Heights",
+            },
+            "targetClassInfo": Object {
+              "id": "0x794b000000d6a2",
+              "label": "quantify",
+              "name": "deposit",
+            },
+          },
+        ],
+      ],
+      "selectClassInfo": Object {
+        "id": "0x3c6e0000009abd",
+        "label": "Berkshire streamline",
+        "name": "Planner",
+      },
+    },
+  ],
+  "sortDirection": 0,
+  "sortingField": undefined,
+}
+`;
+
+exports[`ECPresentationManager addon results conversion to ECPresentation objects returns content set size 1`] = `69320`;
+
+exports[`ECPresentationManager addon results conversion to ECPresentation objects returns root nodes 1`] = `
+Array [
+  Object {
+    "backColor": "backColor1",
+    "description": "description1",
+    "fontStyle": "fontStyle1",
+    "foreColor": "foreColor1",
+    "hasChildren": true,
+    "imageId": "img_1",
+    "isCheckboxEnabled": true,
+    "isCheckboxVisible": true,
+    "isChecked": true,
+    "isEditable": true,
+    "isExpanded": true,
+    "isSelectable": true,
+    "key": Object {
+      "pathFromRoot": Array [
+        "p1",
+        "p2",
+        "p3",
+      ],
+      "type": "type1",
+    },
+    "label": "test1",
+    "nodeId": "0x5390000000c63d",
+    "parentNodeId": "0x5b510000000e73",
+  },
+  Object {
+    "backColor": "",
+    "description": "description2",
+    "fontStyle": "",
+    "foreColor": "",
+    "hasChildren": false,
+    "imageId": "",
+    "isCheckboxEnabled": false,
+    "isCheckboxVisible": false,
+    "isChecked": false,
+    "isEditable": false,
+    "isExpanded": false,
+    "isSelectable": false,
+    "key": Object {
+      "classId": "0x7760000000b7e3",
+      "instanceId": "0x6cf7000000848b",
+      "pathFromRoot": Array [
+        "p1",
+      ],
+      "type": "ECInstanceNode",
+    },
+    "label": "test2",
+    "nodeId": "0x1a4000001108d",
+    "parentNodeId": "0x12658000000bde0",
+  },
+  Object {
+    "backColor": undefined,
+    "description": undefined,
+    "fontStyle": undefined,
+    "foreColor": undefined,
+    "hasChildren": false,
+    "imageId": undefined,
+    "isCheckboxEnabled": false,
+    "isCheckboxVisible": false,
+    "isChecked": false,
+    "isEditable": false,
+    "isExpanded": false,
+    "isSelectable": false,
+    "key": Object {
+      "pathFromRoot": Array [
+        "p1",
+        "p3",
+      ],
+      "type": "some node",
+    },
+    "label": "test2",
+    "nodeId": "0x16bd10000013c40",
+    "parentNodeId": undefined,
+  },
+]
+`;
+
+exports[`ECPresentationManager addon results conversion to ECPresentation objects returns root nodes count 1`] = `456`;

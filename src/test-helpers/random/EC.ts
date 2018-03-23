@@ -2,18 +2,24 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
+import { Id64 } from "@bentley/bentleyjs-core";
 import * as ec from "../../common/EC";
+import { createRandomId } from "./Misc";
+
+export const createRandomECInstanceId = (): ec.InstanceId => {
+  return createRandomId() as Id64;
+};
 
 export const createRandomECInstanceKey = (): ec.InstanceKey => {
   return {
-    classId: faker.random.number().toString(),
-    instanceId: faker.random.number().toString(),
+    className: faker.random.word(),
+    id: createRandomECInstanceId(),
   };
 };
 
 export const createRandomECClassInfo = (): ec.ClassInfo => {
   return {
-    id: faker.random.number().toString(),
+    id: createRandomECInstanceId(),
     name: faker.random.word(),
     label: faker.random.words(),
   };

@@ -7,7 +7,7 @@ import ContentDataProvider from "../common/ContentDataProvider";
 import ContentBuilder, { PropertyDescription } from "../common/ContentBuilder";
 import * as content from "@bentley/ecpresentation-common/lib/content";
 import { isPrimitiveDescription } from "@bentley/ecpresentation-common/lib/content/TypeDescription";
-import { InstanceKey, PageOptions } from "@bentley/ecpresentation-common";
+import { InstanceKey, KeySet, PageOptions } from "@bentley/ecpresentation-common";
 import { ECPresentationManager } from "@bentley/ecpresentation-common";
 
 export enum SortDirection {
@@ -76,10 +76,7 @@ class Page {
     assert(1 === record.primaryKeys.length);
 
     const row: RowItem = {
-      key: {
-        classId: record.primaryKeys[0].classId.toString(),
-        instanceId: record.primaryKeys[0].instanceId.toString(),
-      },
+      key: record.primaryKeys[0],
       cells: new Array<CellItem>(),
     };
 
@@ -223,13 +220,13 @@ export default class TableViewDataProvider extends ContentDataProvider {
   private _sortDirection: SortDirection = SortDirection.Ascending;
   private _filterExpression: string | undefined;
   private _pages: PageContainer;
-  private _keys: InstanceKey[];
+  private _keys: KeySet;
 
   /** Constructor. */
   constructor(manager: ECPresentationManager, imodelToken: IModelToken, rulesetId: string, pageSize: number = 20, cachedPagesCount: number = 5) {
     super(manager, imodelToken, rulesetId, content.DefaultContentDisplayTypes.GRID);
     this._pages = new PageContainer(pageSize, cachedPagesCount);
-    this._keys = [];
+    this._keys = new KeySet();
   }
 
   protected invalidateCache(): void {
@@ -265,7 +262,7 @@ export default class TableViewDataProvider extends ContentDataProvider {
   }
 
   public get keys() { return this._keys; }
-  public set keys(keys: InstanceKey[]) {
+  public set keys(keys: KeySet) {
     this._keys = keys;
     this.invalidateCache();
   }

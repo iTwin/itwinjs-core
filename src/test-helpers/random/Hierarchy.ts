@@ -3,20 +3,20 @@
  *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
 import * as h from "../../common/Hierarchy";
-import { nullable } from "./Misc";
+import { nullable, createRandomId } from "./Misc";
 
 export const createRandomECInstanceNodeKey = (): h.NavNodeKey => {
   return {
     type: "ECInstanceNode",
     pathFromRoot: [faker.random.uuid(), faker.random.uuid()],
-    classId: faker.random.number().toString(),
-    instanceId: faker.random.number().toString(),
+    classId: createRandomId(),
+    instanceId: createRandomId(),
   } as h.NavNodeKey;
 };
 
 export const createRandomECInstanceNode = (): h.NavNode => {
   return {
-    nodeId: Math.floor(faker.random.number(Number.MAX_VALUE)),
+    nodeId: createRandomId(),
     key: createRandomECInstanceNodeKey(),
     label: faker.random.words(),
     description: faker.lorem.sentence(),

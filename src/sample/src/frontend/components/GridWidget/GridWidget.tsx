@@ -1,7 +1,7 @@
 import * as React from "react";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { InstanceKey } from "@bentley/ecpresentation-common";
+import { NavNodeKey, KeySet } from "@bentley/ecpresentation-common";
 import { ECPresentationManager } from "@bentley/ecpresentation-frontend";
 import { GridDataProvider } from "@bentley/ecpresentation-controls";
 import { SelectionManager, SelectedItem, SelectionChangeEventArgs, SelectionProvider, SelectionHandler } from "@bentley/ecpresentation-frontend/lib/Selection";
@@ -109,12 +109,12 @@ class Grid extends React.Component<GridProps, GridState> {
     if (0 === selectedNodes.length || !this._dataProvider)
       return;
 
-    const keys: InstanceKey[] = selectedNodes.map((item: SelectedItem) => {
-      return item.key;
+    const keys: NavNodeKey[] = selectedNodes.map((item: TreeNodeItem) => {
+      return item.extendedData.node.key;
     });
 
     try {
-      this._dataProvider.keys = keys;
+      this._dataProvider.keys = new KeySet(keys);
       const columns = new Array<ColumnDefinition>();
       const columnDescriptions = await this._dataProvider.getColumns();
       for (const columnDescription of columnDescriptions)
