@@ -19,26 +19,4 @@ export class GeometryPart extends DefinitionElement {
     val.geom = this.geom;
     val.bbox = this.bbox;
   }
-
-  /** Saves contents of builder to GeometryStream of this GeometryPart and updates the bounding box */
-/*   public updateFromGeometryStreamBuilder(builder: GeometryStreamBuilder): boolean {
-    if (!builder.isPartCreate)
-      return false;   // Invalid builder for creating part geometry...
-
-    if (0 === builder.currentSize)
-      return false;
-
-    this.geometry = builder.getGeometryStreamClone();
-
-    let localRange: ElementAlignedBox3d;
-    if (builder.is3d) {
-      localRange = builder.placement3d.bbox;
-    } else {
-      const convertedRange = Range3d.createRange2d(builder.placement2d.bbox, 0);
-      localRange = ElementAlignedBox3d.createFromPoints(convertedRange.low, convertedRange.high);
-    }
-
-    this.bbox.setFrom(localRange);
-    return true;
-  } */
 }
