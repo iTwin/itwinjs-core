@@ -2,9 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BisCore } from "../BisCore";
-import { Element, InformationPartitionElement } from "../Element";
-import { IModelDb, ConcurrencyControl } from "../IModelDb";
+import { BisCore, Element, InformationPartitionElement, IModelDb, ConcurrencyControl } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ElementProps } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
@@ -21,7 +19,7 @@ describe("Sample Code", () => {
   });
 
   after(() => {
-    IModelTestUtils.closeIModel(iModel);
+    iModel.close(accessToken);
   });
 
   /** Gives sample code something to call. */
@@ -111,9 +109,12 @@ describe("Sample Code", () => {
     }
     // Now we can commit the local changes to a local transaction in the
     // IModelDb.
+    // __PUBLISH_EXTRACT_END__
+
+    // Now we can commit the local changes to a local transaction in the
+    // IModelDb.
     iModel.saveChanges("inserted generic objects");
 
-    // __PUBLISH_EXTRACT_END__
     assert.isTrue(newModeledElementId !== undefined);
 
     // assertions to ensure sample code is working properly

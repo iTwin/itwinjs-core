@@ -454,12 +454,19 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
  * Information Partition is an abstract base class for elements that indicate that there is a new modeling
  * perspective within the overall iModel information hierarchy. An Information Partition is always parented
  * to a Subject and broken down by a Model.
+ *
+ * ``` ts
+ * [[include:BisCore1.sampleCreateModel]]
+ * ```
+ *
  */
 export abstract class InformationPartitionElement extends InformationContentElement implements InformationPartitionElementProps {
   public description?: string;
   public constructor(props: InformationPartitionElementProps, iModel: IModelDb) { super(props, iModel); }
 
-  /** Create a code that can be used for any kind of InformationPartitionElement. */
+  /** Create a code that can be used for any kind of InformationPartitionElement.
+   * See the example in [[InformationPartitionElement]].
+   */
   public static createCode(scopeElement: Element, codeValue: string): Code {
     const codeSpec = scopeElement.iModel.codeSpecs.getByName(CodeSpecNames.InformationPartitionElement());
     return new Code({ spec: codeSpec.id, scope: scopeElement.id.toString(), value: codeValue });
