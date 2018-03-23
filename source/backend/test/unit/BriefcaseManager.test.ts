@@ -76,6 +76,7 @@ describe("BriefcaseManagerUnitTests", () => {
   const testIModels: TestIModelInfo[] = [
     new TestIModelInfo("ReadOnlyTest"),
     new TestIModelInfo("ReadWriteTest"),
+    new TestIModelInfo("OpConTest"),
     new TestIModelInfo("NoVersionsTest"),
   ];
   const assetDir = "./test/assets/_mocks_";
@@ -281,13 +282,13 @@ describe("BriefcaseManagerUnitTests", () => {
     // timer.end();
 
     // Inject hub client mock into the briefcase manager
-    MockAssetUtil.setupHubMultiCodes(iModelHubClientMock, assetDir, testIModels[1].id, testIModels[1].name, false);
+    MockAssetUtil.setupHubMultiCodes(iModelHubClientMock, assetDir, testIModels[2].id, testIModels[2].name, false);
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
     debugger; // tslint:disable-line:no-debugger
     // Create a new iModel on the Hub (by uploading a seed file)
     let timer = new Timer("create iModel");
-    const rwIModel: IModelDb = await IModelDb.create(spoofAccessToken as any, testProjectId, testIModels[1].name, "TestSubject");
+    const rwIModel: IModelDb = await IModelDb.create(spoofAccessToken as any, testProjectId, testIModels[2].name, "TestSubject");
     const rwIModelId = rwIModel.iModelToken.iModelId;
     assert.isNotEmpty(rwIModelId);
     timer.end();
@@ -320,6 +321,7 @@ describe("BriefcaseManagerUnitTests", () => {
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
     const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
     spatialCategoryId.toString();
+    newCategoryCode.getValue();
 
     timer.end();
 
@@ -341,7 +343,7 @@ describe("BriefcaseManagerUnitTests", () => {
       }
     }
     // Reconfigure the corresponding setup calls to now return reserved codes on .getMultipleCodes(...)
-    MockAssetUtil.setupHubMultiCodes(iModelHubClientMock, assetDir, testIModels[1].id, testIModels[1].name, true);
+    MockAssetUtil.setupHubMultiCodes(iModelHubClientMock, assetDir, testIModels[2].id, testIModels[2].name, true);
 
     timer.end();
     timer = new Timer("query Codes II");
@@ -402,6 +404,7 @@ describe("BriefcaseManagerUnitTests", () => {
 class MockAssetUtil {
   private static iModelMap = new Map<string, string>([["c3e1146f-8c81-430d-a974-ac840657b7ac", "ReadOnlyTest"],
                                                       ["b74b6451-cca3-40f1-9890-42c769a28f3e", "ReadWriteTest"],
+                                                      ["077e23a9-d974-408c-aeb8-79b01d37d289", "OpConTest"],
                                                       ["0aea4c09-09f4-449d-bf47-045228d259ba", "NoVersionsTest"]]); // <IModelID, IModelName>
 
   public static verifyIModelInfo(testIModelInfos: TestIModelInfo[]) {
