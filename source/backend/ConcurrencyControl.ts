@@ -17,15 +17,16 @@ import { IModelDb } from "./IModelDb";
  * ConcurrencyControl enables an app to coordinate local changes with changes that are being made by others to an iModel.
  *
  * An app makes changes to an iModel using a local [[IModelDb]]. Each IModelDb has a [[IModelDb.concurrencyControl]] that
- * enforces its concurrency control policy.
- *
- * The two available concurrency control policies are [[ConcurrencyControl.PessimisticPolicy]] and [[ConcurrencyControl.OptimisticPolicy]].
+ * enforces its concurrency control policy. When making changes, an app must follow the rules of the concurrency control policy that is set for the IModelDb.
+ * The two available concurrency control policies are:
+ * * [[ConcurrencyControl.PessimisticPolicy]]
+ * * [[ConcurrencyControl.OptimisticPolicy]].
  * Use [[setPolicy]] to set a policy.
- * When making changes, an app must follow the rules of the concurrency control policy that is set for the IModelDb.
  *
  * There are two ways of acquiring locks and/or codes: before making local changes or after. Either approach can be used with either concurrency policy.
  *
- * Acquiring locks and/or codes before making local changes:
+ * <em>Acquiring locks and/or codes before making local changes:</em>
+ *
  * Call [[Model.buildConcurrencyControlRequest]] and [[Element.buildConcurrencyControlRequest]] to discover what locks and codes are needed before making local changes.
  * Call these methods for all of the changes that you plan to make. It is important for performance reasons to batch up requests to iModelHub.
  * Then call [[ConcurrencyControl.request]] to request the locks and codes that the planned local operations will require.
@@ -33,7 +34,8 @@ import { IModelDb } from "./IModelDb";
  * If the request succeeds, go ahead and make the planned local changes and then call [[IModelDb.saveChanges]].
  * This approach is the safest way to avoid conflicting with changes made by other users. It requires that the app must plan ahead before making local changes.
  *
- * Acquiring locks and/or codes after making local changes:
+ * <em>Acquiring locks and/or codes after making local changes:</em>
+ *
  * Insert or update models and elements.
  * Then call [[ConcurrencyControl.request]] to request the locks and codes that those local operations require.
  * Call [[IModelDb.saveChanges]] if the request suceeds. Call [[IModelDb.cancelChanges]] if the request fails.

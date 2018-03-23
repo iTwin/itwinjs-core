@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import { BisCore, Element, InformationPartitionElement, IModelDb, ConcurrencyControl } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { ElementProps, AxisAlignedBox3d } from "@bentley/imodeljs-common";
+import { ElementProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
 
@@ -131,6 +131,33 @@ describe("Sample Code", () => {
     // assertions to ensure sample code is working properly
     assert.equal(BisCore.name, elementClass.schema.name);
     assert.equal(Element.name, elementClass.name);
+  });
+
+  it("should create and insert CodeSpecs", () => {
+    const testImodel = iModel;
+
+    // __PUBLISH_EXTRACT_START__ CodeSpecs.insert
+    // Create and insert a new CodeSpec with the name "CodeSpec1". In this example, we choose to make a model-scoped CodeSpec.
+    const codeSpec: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec1", CodeScopeSpec.Type.Model);
+    const codeSpecId: Id64 = testImodel.codeSpecs.insert(codeSpec);
+    assert.deepEqual(codeSpecId, codeSpec.id);
+
+    // Should not be able to insert a duplicate.
+    try {
+      const codeSpecDup: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec1", CodeScopeSpec.Type.Model);
+      testImodel.codeSpecs.insert(codeSpecDup); // throws in case of error
+      assert.fail();
+    } catch (err) {
+      // We expect this to fail.
+    }
+
+    // We should be able to insert another CodeSpec with a different name.
+    const codeSpec2: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec2", CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
+    const codeSpec2Id: Id64 = testImodel.codeSpecs.insert(codeSpec2);
+    assert.deepEqual(codeSpec2Id, codeSpec2.id);
+    assert.notDeepEqual(codeSpec2Id, codeSpecId);
+    // __PUBLISH_EXTRACT_END__
+
   });
 
 });
