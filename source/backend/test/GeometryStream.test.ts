@@ -131,52 +131,6 @@ describe("GeometryStream", () => {
     IModelTestUtils.closeIModel(imodel);
   });
 
-  /*
-  it("should be able to read in stream using byte buffer", () => {
-    const arr32bit: number[] = [
-      1, 8, 1, 0,
-      4, 48, 28, 1310744,
-      12, 8, 0, 0,
-      7, 24, 16777216, 2,
-      8, 256, 5, 320,
-      12, 786440, 458760, 8,
-      16777216, 4, 12, 0,
-      0, 0, 0, 0,
-      0, 2099539146, 1076071199, 0,
-      -1125122048, 0, 0, 2099539146,
-      1076071199, -837249175, 1074924715, 0,
-      0, -526004288, -1076210538, -837249173,
-      1074924715, 0, 0, -526004096,
-      -1076210538, 1712228141, 1075597413, 0,
-      0, -1492607736, 1076709760, 1712228129,
-      1075597413, 0, 0, -1492607734,
-      1076709760, 1211391374, 1076291115, 0,
-      0, -382107631, 1075996128, 1211391376,
-      1076291115, 0, 0, -382107630,
-      1075996128, 109798378, 1076801367, 0,
-      0, 1931761296, 1075349626, 109798384,
-      1076801367, 0, 0, 1931761284,
-      1075349626, -761229254, 1076255798, 0,
-      0, -1577083760, 1074188002, -761229250,
-      1076255798, 0, 0, 0,
-    ];
-
-    const buff = new ArrayBuffer(arr32bit.length * 4);
-    const view = new Uint32Array(buff);
-    for (let i = 0; i < arr32bit.length; i++)
-      view[i] = arr32bit[i];
-
-    const iter = new OpCodeIterator(buff);
-    const geometry: any[] = [];
-    const gsReader = new OpCodeReader();
-    do {
-      const geom = gsReader.getGeometricPrimitive(iter.operation!);
-      if (geom)
-        geometry.push(geom.data);
-    } while (iter.nextOp());
-  });
-  */
-
   it.skip("json encoding and decoding roundtrip of arcs", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement(new Id64("0x1d"));

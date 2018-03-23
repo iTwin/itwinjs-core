@@ -25,8 +25,7 @@
     "@bentley/bentleyjs-core": "^7.3.2",
     "@bentley/geometry-core": "^6.0.10",
     "@bentley/imodeljs-clients": "^4.2.0",
-    "@bentley/imodeljs-common": "0",
-    "flatbuffers": "^1.8.0"
+    "@bentley/imodeljs-common": "0"
   },
   "devDependencies": {
     "rimraf": "^2.6.2",
