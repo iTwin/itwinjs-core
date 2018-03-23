@@ -3,13 +3,16 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { expect, assert } from "chai";
-import { Id64, OpenMode, DbOpcode, BeEvent } from "@bentley/bentleyjs-core";
-import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState } from "@bentley/imodeljs-clients";
+import { Id64, OpenMode, DbOpcode, BeEvent, DbResult, ChangeSetProcessOption } from "@bentley/bentleyjs-core";
+import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState, ContainsSchemaChanges } from "@bentley/imodeljs-clients";
 import { Code, IModelVersion, Appearance, ColorDef, IModel, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { KeepBriefcase, IModelDb, Element, DictionaryModel, SpatialCategory, IModelHost, AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../backend";
 import { ConcurrencyControl } from "../ConcurrencyControl";
 import { IModelTestUtils, TestUsers } from "./IModelTestUtils";
 import { IModelJsFs } from "../IModelJsFs";
+import { ChangeSetToken } from "../BriefcaseManager";
+import { ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
+import { KnownTestLocations } from "./KnownTestLocations";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
@@ -25,6 +28,32 @@ class Timer {
     // tslint:disable-next-line:no-console
     console.timeEnd(this.label);
   }
+}
+
+// Combine all local Txns and generate a changeset file. Then delete all local Txns.
+function createChangeSet(imodel: IModelDb): ChangeSetToken {
+  const res: ErrorStatusOrResult<DbResult, string> = imodel.briefcase!.nativeDb!.startCreateChangeSet();
+  if (res.error)
+    throw new IModelError(res.error.status);
+
+  const token: ChangeSetToken = JSON.parse(res.result!);
+
+  // finishCreateChangeSet deletes the file that startCreateChangeSet created. 
+  // We make a copy of it now, before he does that.
+  const csfilename = path.join(KnownTestLocations.outputDir, token.id + ".cs");
+  IModelJsFs.copySync(token.pathname, csfilename);
+  token.pathname = csfilename;
+
+  const result = imodel.briefcase!.nativeDb!.finishCreateChangeSet();
+  if (DbResult.BE_SQLITE_OK !== result)
+    throw new IModelError(result);
+
+  return token;
+}
+
+function applyChangeSet(imodel: IModelDb, cstoken: ChangeSetToken) {
+  const result: DbResult = imodel.briefcase!.nativeDb!.processChangeSets(JSON.stringify([cstoken]), ChangeSetProcessOption.Merge, cstoken.containsSchemaChanges === ContainsSchemaChanges.Yes);
+  assert.equal(result, DbResult.BE_SQLITE_OK);
 }
 
 async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: AccessToken) {
@@ -239,6 +268,48 @@ describe("BriefcaseManager", () => {
     // --- Test 1: Non-overlapping changes ---
 
   });
+
+  it.only("should merge changes so that two branches of an iModel converge", () => {
+    // tslint:disable-next-line:no-debugger
+    debugger;
+
+    // Make sure that the seed imodel has had all schema/profile upgrades applied, before we make copies of it.
+    // (Otherwise, the upgrade Txn will appear to be in the changesets of the copies.)
+    const upgraded: IModelDb = IModelTestUtils.openIModel("testImodel.bim", {copyFilename: "upgraded.bim", openMode: OpenMode.ReadWrite, enableTransactions: true});
+    upgraded.saveChanges();
+    createChangeSet(upgraded);
+
+    // Open two copies of the seed file.
+    const b1: IModelDb = IModelTestUtils.openIModelFromOut("upgraded.bim", {copyFilename: "b1.bim", openMode: OpenMode.ReadWrite, enableTransactions: true});
+    const b2: IModelDb = IModelTestUtils.openIModelFromOut("upgraded.bim", {copyFilename: "b2.bim", openMode: OpenMode.ReadWrite, enableTransactions: true});
+
+    assert.isTrue(b2 !== undefined);
+
+    let modelId: Id64;
+    let spatialCategoryId: Id64;
+    if (true) {
+      // b1. Create a new physical model.
+      [, modelId] = IModelTestUtils.createAndInsertPhysicalModel(b1, IModelTestUtils.getUniqueModelCode(b1, "newPhysicalModel"), true);
+
+      // Find or create a SpatialCategory.
+      const dictionary: DictionaryModel = b1.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
+      const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
+      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+      b1.saveChanges();
+    }
+
+    if (true) {
+      // b1 -> b2
+      const cstoken: ChangeSetToken = createChangeSet(b1);
+      assert.isTrue(IModelJsFs.existsSync(cstoken.pathname));
+
+      applyChangeSet(b2, cstoken);
+
+      // verify that b2 got all of the changes.
+      assert.isTrue(b2.models.getModel(modelId) !== undefined);
+      assert.isTrue(b2.elements.getElement(spatialCategoryId) !== undefined);
+    }
+});
 
   it("should be able to open an IModel from the Hub in Readonly mode", async () => {
     let onOpenCalled: boolean = false;

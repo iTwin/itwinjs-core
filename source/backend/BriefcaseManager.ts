@@ -39,7 +39,7 @@ export const enum KeepBriefcase {
 }
 
 /** A token that represents a ChangeSet */
-class ChangeSetToken {
+export class ChangeSetToken {
   constructor(public id: string, public parentId: string, public index: number, public pathname: string, public containsSchemaChanges: ContainsSchemaChanges) { }
 }
 
