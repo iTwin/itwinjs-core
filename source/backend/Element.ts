@@ -455,8 +455,9 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
  * perspective within the overall iModel information hierarchy. An Information Partition is always parented
  * to a Subject and broken down by a Model.
  *
+ * <p><em>Example:</em>
  * ``` ts
- * [[include:BisCore1.sampleCreateModel]]
+ * [[include:IModelDbModels.createModel]]
  * ```
  *
  */

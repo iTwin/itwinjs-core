@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import { BisCore, Element, InformationPartitionElement, IModelDb, ConcurrencyControl } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { ElementProps } from "@bentley/imodeljs-common";
+import { ElementProps, AxisAlignedBox3d } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
 
@@ -27,7 +27,7 @@ describe("Sample Code", () => {
     assert.exists(s);
   };
 
-  // __PUBLISH_EXTRACT_START__ BisCore1.sampleCreateModel
+  // __PUBLISH_EXTRACT_START__ IModelDbModels.createModel
   function createNewModel(parentElement: Element, modelName: string, isModelPrivate: boolean): Id64 {
 
     const outputImodel = parentElement.iModel;
@@ -54,6 +54,17 @@ describe("Sample Code", () => {
   }
   // __PUBLISH_EXTRACT_END__
 
+  it("should update the imodel project extents", async () => {
+    // __PUBLISH_EXTRACT_START__ IModelDb.updateProjectExtents
+    // This is an example of how to expand an iModel's project extents.
+    const originalExtents = iModel.projectExtents;
+    const newExtents = new AxisAlignedBox3d(originalExtents.low, originalExtents.high);
+    newExtents.low.x -= 50; newExtents.low.y -= 25; newExtents.low.z -= 189;
+    newExtents.high.x += 1087; newExtents.high.y += 19; newExtents.high.z += .001;
+    iModel.updateProjectExtents(newExtents);
+    // __PUBLISH_EXTRACT_END__
+  });
+
   it("should extract working sample code", async () => {
     // __PUBLISH_EXTRACT_START__ BisCore1.sampleCode
     // Register any schemas that will be used directly
@@ -71,7 +82,7 @@ describe("Sample Code", () => {
     doSomethingWithString(elementClass.name);
     // __PUBLISH_EXTRACT_END__
 
-    // __PUBLISH_EXTRACT_START__ BisCore1.sampleSetPolicy
+    // __PUBLISH_EXTRACT_START__ ConcurrencyControl.setPolicy
     // Turn on optimistic concurrency control.
     // This allows the app to modify elements, models, etc. without first acquiring locks.
     // Later, when the app downloads and merges changeSets from iModelHub,
@@ -80,7 +91,7 @@ describe("Sample Code", () => {
     iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     // __PUBLISH_EXTRACT_END__
 
-    // __PUBLISH_EXTRACT_START__ BisCore1.sampleReserveCodesWithErrorHandling
+    // __PUBLISH_EXTRACT_START__ ConcurrencyControl_Codes.reserve
     try {
       await iModel.concurrencyControl.codes.reserve(accessToken);
     } catch (err) {
@@ -93,7 +104,7 @@ describe("Sample Code", () => {
     // Create a modeled element and a model.
     const newModeledElementId = createNewModel(iModel.elements.getRootSubject(), "newModelCode", false);
 
-    // __PUBLISH_EXTRACT_START__ BisCore1.sampleConcurrencyControlRequest
+    // __PUBLISH_EXTRACT_START__ ConcurrencyControl.request
     // Now acquire all locks and reserve all codes needed.
     // This is a *prequisite* to saving local changes.
     try {

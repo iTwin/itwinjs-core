@@ -8,6 +8,7 @@ export * from "./Category";
 export * from "./ChangeSummaryManager";
 export * from "./ClassRegistry";
 export * from "./CodeSpecs";
+export * from "./ConcurrencyControl";
 export * from "./ECDb";
 export * from "./ECSchemaXmlContext";
 export * from "./ECSqlStatement";
