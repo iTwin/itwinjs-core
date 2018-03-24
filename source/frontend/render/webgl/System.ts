@@ -1,7 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { QPoint3dList, QPoint2dList, QParams3d, QParams2d } from "../QPoint";
 import { XY, XYZ } from "@bentley/geometry-core";
 import { PointUtil } from "../Utility";
@@ -26,7 +25,6 @@ export class Capabilities {
     let canvas = document.getElementById("canvas") as HTMLCanvasElement;
     if (null === canvas)
       canvas = document.createElement("canvas") as HTMLCanvasElement;
-    assert.isNotNull(canvas);
     if (null === canvas) return false;
     document.body.appendChild(canvas);
     const gl = canvas.getContext("webgl");
