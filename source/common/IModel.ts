@@ -28,22 +28,25 @@ export class IModelToken {
 
 /** The properties that define an iModel. */
 export interface IModelProps {
+  /** the name and description of the root subject of this iModel */
   rootSubject?: { name: string, description?: string };
-  /** the volume of the entire project */
+  /** The volume of the entire project */
   projectExtents?: Range3dProps;
+  /** An offset to be applied to all spatial coordinates. This is normally used to transform spatial coordinates into the Cartesian coordinate system of a Geographic Coordinate System. */
   globalOrigin?: XYZProps;
   /** The transform from project coordinates to Earth Centered Earth Fixed coordinates. */
   ecefTrans?: TransformProps;
 }
 
-/** An instance of an iModel. */
+/** Represents an iModel. */
 export abstract class IModel implements IModelProps {
   /** Name of the iModel */
   public name: string;
-  /** the name and description of the root subject of this iModel */
+  /** The name and description of the root subject of this iModel */
   public rootSubject?: { name: string, description?: string };
   /** The volume inside which the entire project is contained. */
   public projectExtents: AxisAlignedBox3d;
+  /** An offset to be applied to all spatial coordinates. This is normally used to transform spatial coordinates into the Cartesian coordinate system of a Geographic Coordinate System. */
   public globalOrigin: Point3d;
   /** The transform from project coordinates to Earth Centered Earth Fixed coordinates. */
   public ecefTrans?: Transform;
@@ -78,7 +81,9 @@ export abstract class IModel implements IModelProps {
       this.ecefTrans = Transform.fromJSON(props.ecefTrans);
   }
 
+  /** Check if this iModel has been opened read-only or not. */
   public isReadonly() { return this.token.openMode === OpenMode.Readonly; }
+
   public static getDefaultSubCategoryId(id: Id64): Id64 { return id.isValid() ? new Id64([id.getLow() + 1, id.getHigh()]) : new Id64(); }
 
   /** Get the Id of the special dictionary model */

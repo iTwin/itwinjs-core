@@ -116,45 +116,6 @@ export abstract class GeometricElement extends Element implements GeometricEleme
       val.geom = this.geom;
     return val;
   }
-
-/*   public updateFromGeometryStreamBuilder(builder: GeometryStreamBuilder): boolean {
-    if (builder.isPartCreate)
-      return false;   // Invalid builder for creating element geometry...
-
-    if (builder.currentSize === 0)
-      return false;
-
-    if (!builder.havePlacement)
-      return false;
-
-    if (!this.category.equals(builder.geometryParams.categoryId))
-      return false;
-
-    if (builder.is3d) {
-      if (!builder.placement3d.isValid())
-        return false;
-
-      if (!this.is3d())
-        return false;
-
-      this.placement.setFrom(builder.placement3d);
-    } else {
-      if (!builder.placement2d.isValid())
-        return false;
-
-      if (!this.is2d())
-        return false;
-
-      this.placement.setFrom(builder.placement2d);
-    }
-
-    if (this.geom)
-      this.geom.setFrom(builder.getGeometryStreamClone());
-    else
-      this.geom = builder.getGeometryStreamClone();
-
-    return true;
-  } */
 }
 
 /**
@@ -455,8 +416,9 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
  * perspective within the overall iModel information hierarchy. An Information Partition is always parented
  * to a Subject and broken down by a Model.
  *
+ * <p><em>Example:</em>
  * ``` ts
- * [[include:BisCore1.sampleCreateModel]]
+ * [[include:IModelDbModels.createModel]]
  * ```
  *
  */

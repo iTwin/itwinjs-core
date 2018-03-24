@@ -66,6 +66,7 @@ export class CodeSpecNames {
   public static ViewDefinition() { return CodeSpecNames.BIS_CODESPEC("ViewDefinition"); }
 }
 
+/** The scope of the Code. */
 export namespace CodeScopeSpec {
   export const enum Type {
     Repository = 1,     /** The Code value must be unique within (at least) the iModel repository */
@@ -74,6 +75,7 @@ export namespace CodeScopeSpec {
     RelatedElement = 4, /** The Code value must be unique among other elements also scoped by the same element */
   }
 
+  /** Requirements for using a Code. */
   export const enum ScopeRequirement {
     ElementId = 1,      /** The Code is required to have a valid ElementId as its scope */
     FederationGuid = 2, /** The Code is required to have a valid FederationGuid as its scope */
