@@ -104,7 +104,7 @@
     },
     "@rush-temp/imodeljs-backend": {
       "version": "file:projects/imodeljs-backend.tgz",
-      "integrity": "sha1-+ULh5eEpNRt3FTZTX07mJmAMWN8=",
+      "integrity": "sha1-gMqGTgaAMhqqWAhgTbii4Cm6+t4=",
       "requires": {
         "@bentley/bentleyjs-core": "7.3.9",
         "@bentley/geometry-core": "6.0.15",
@@ -127,7 +127,7 @@
     },
     "@rush-temp/imodeljs-common": {
       "version": "file:projects/imodeljs-common.tgz",
-      "integrity": "sha1-eLiK+5icOvuZ31/mWL/6BaPfKuc=",
+      "integrity": "sha1-6HJPYlTEumN+FY7h9+DEn0qedEI=",
       "requires": {
         "@bentley/bentleyjs-core": "7.3.9",
         "@bentley/geometry-core": "6.0.15",
@@ -138,7 +138,7 @@
     },
     "@rush-temp/imodeljs-core": {
       "version": "file:projects/imodeljs-core.tgz",
-      "integrity": "sha1-GhSjZ3zmuZtj9DPmheU7lKW+PkU=",
+      "integrity": "sha1-Botr572jzBcL3urFWJ2nOOHSDkI=",
       "requires": {
         "@bentley/bentleyjs-tools": "3.2.0",
         "@types/body-parser": "1.16.8",
@@ -190,7 +190,7 @@
     },
     "@rush-temp/imodeljs-core-sample-code": {
       "version": "file:projects/imodeljs-core-sample-code.tgz",
-      "integrity": "sha1-tuv9n32k+cob2VTX61J9YOBY8Z0=",
+      "integrity": "sha1-0OEtnkoJ7ESggbZM4u9AAgcIhOI=",
       "requires": {
         "@bentley/bentleyjs-core": "7.3.9",
         "@bentley/geometry-core": "6.0.15",
@@ -202,7 +202,6 @@
         "cpx": "1.5.0",
         "electron": "1.6.11",
         "express": "4.16.3",
-        "flatbuffers": "1.8.0",
         "fs-extra": "5.0.0",
         "fuse.js": "3.2.0",
         "i18next": "10.6.0",
@@ -217,7 +216,7 @@
     },
     "@rush-temp/imodeljs-core-testbed": {
       "version": "file:projects/imodeljs-core-testbed.tgz",
-      "integrity": "sha1-wViOuxGYCDvVZaeBXf37WaEUBik=",
+      "integrity": "sha1-Z+47Nvj4G8oyvAjjhAN8kbjUSbc=",
       "requires": {
         "@bentley/bentleyjs-core": "7.3.9",
         "@bentley/geometry-core": "6.0.15",
@@ -229,7 +228,6 @@
         "cpx": "1.5.0",
         "electron": "1.6.11",
         "express": "4.16.3",
-        "flatbuffers": "1.8.0",
         "fs-extra": "5.0.0",
         "fuse.js": "3.2.0",
         "i18next": "10.6.0",
@@ -244,7 +242,7 @@
     },
     "@rush-temp/imodeljs-frontend": {
       "version": "file:projects/imodeljs-frontend.tgz",
-      "integrity": "sha1-uo1ZD9Xdmpq001xXEGCkQ+2ARss=",
+      "integrity": "sha1-CMOPKMeMVdAlZ8oy+oSAHKEntsY=",
       "requires": {
         "@bentley/bentleyjs-core": "7.3.9",
         "@bentley/geometry-core": "6.0.15",
