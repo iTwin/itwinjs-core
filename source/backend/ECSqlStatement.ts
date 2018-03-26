@@ -37,9 +37,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   private _isShared: boolean = false;
 
   /** @hidden - used by statement cache */
-  public setIsShared(b: boolean) {
-    this._isShared = b;
-  }
+  public setIsShared(b: boolean) { this._isShared = b; }
 
   /** @hidden - used by statement cache */
   public isShared(): boolean {
@@ -102,8 +100,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param parameter Index (1-based) or name of the parameter
    * @param base64Blob BLOB value as Base64 string
    */
-  public bindBlob(parameter: number | string, base64Blob: string): void {
-    using(this.getBinder(parameter), (binder) => binder.bindBlob(base64Blob));
+  public bindBlob(parameter: number | string, blob: string | ArrayBuffer | SharedArrayBuffer): void {
+    using(this.getBinder(parameter), (binder) => binder.bindBlob(blob));
   }
 
   /** Binds a boolean value to the specified ECSQL parameter.
@@ -303,7 +301,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * | ECSQL type | Extended Type | JavaScript Type |
    * | ---------- | ------------- | --------------- |
    * | Boolean    | -             | boolean         |
-   * | Blob       | -             | Base64 string   |
+   * | Blob       | -             | ArrayBuffer     |
    * | Blob       | BeGuid        | GUID string (see [[Guid]]) |
    * | ClassId system properties | - | Fully qualified class name |
    * | Double     | -             | number          |
@@ -361,16 +359,12 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   }
 
   /** The iterator that will step through the results of this statement. */
-  public [Symbol.iterator](): IterableIterator<any> {
-    return this;
-  }
+  public [Symbol.iterator](): IterableIterator<any> { return this; }
 
   /** Get the value for the column at the given index in the query result.
    * @param columnIx Index of ECSQL column in query result (0-based)
    */
-  public getValue(columnIx: number): ECSqlValue {
-    return new ECSqlValue(this._stmt!.getValue(columnIx));
-  }
+  public getValue(columnIx: number): ECSqlValue { return new ECSqlValue(this._stmt!.getValue(columnIx)); }
 }
 
 /** Represents the value of a specific ECSQL column in the current
@@ -394,7 +388,7 @@ export class ECSqlValue implements IDisposable {
    * | ECSQL type | Extended Type | JavaScript Type |
    * | ---------- | ------------- | --------------- |
    * | Boolean    | -             | boolean         |
-   * | Blob       | -             | Base64 string   |
+   * | Blob       | -             | ArrayBuffer     |
    * | Blob       | BeGuid        | GUID string (see [[Guid]]) |
    * | ClassId system properties | - | Fully qualified class name |
    * | Double     | -             | number          |
@@ -417,7 +411,7 @@ export class ECSqlValue implements IDisposable {
   /** Indicates whether the value is NULL or not. */
   public isNull(): boolean { return this._val.isNull(); }
   /** Get the value as BLOB (formatted as Base64 string) */
-  public getBlob(): string { return this._val.getBlob(); }
+  public getBlob(): ArrayBuffer { return this._val.getBlob(); }
   /** Get the value as a boolean value */
   public getBoolean(): boolean { return this._val.getBoolean(); }
   /** Get the value as a DateTime value (formatted as ISO8601 string) */
@@ -642,10 +636,8 @@ class ECSqlBindingHelper {
     if (typeof (val) === "string")
       return binder.bindString(val);
 
-    assert(typeof (val) === "object");
-
     if (ECSqlTypeHelper.isBlob(val))
-      return binder.bindBlob(val.value);
+      return binder.bindBlob(val);
 
     if (ECSqlTypeHelper.isDateTime(val))
       return binder.bindDateTime(val.value);
@@ -848,11 +840,10 @@ class ECSqlValueHelper {
         return row.schemaName + "." + row.className;
       });
   }
-
 }
 
 class ECSqlTypeHelper {
-  public static isBlob(val: any): val is ECSqlTypedString { return val.type !== undefined && val.type === ECSqlStringType.Blob && typeof (val.value) === "string"; }
+  public static isBlob(val: any): val is ArrayBuffer { return val instanceof ArrayBuffer; }
   public static isDateTime(val: any): val is ECSqlTypedString { return val.type !== undefined && val.type === ECSqlStringType.DateTime && typeof (val.value) === "string"; }
   public static isGuidString(val: any): val is ECSqlTypedString {
     return (val.type !== undefined && val.type === ECSqlStringType.Guid && val.value !== undefined && typeof (val.value) === "string");

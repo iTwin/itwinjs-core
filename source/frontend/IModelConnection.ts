@@ -38,7 +38,7 @@ export class IModelConnection extends IModel {
 
   /**
    * Load the FontMap for this IModelConnection.
-   * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this object is valid.
+   * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this IModelConnection is valid.
    */
   public async loadFontMap(): Promise<FontMap> {
     return this.fontMap || (this.fontMap = new FontMap(JSON.parse(await IModelGateway.getProxy().readFontJson(this.iModelToken))));
@@ -88,8 +88,8 @@ export class IModelConnection extends IModel {
   public async close(accessToken: AccessToken): Promise<void> {
     if (!this.iModelToken)
       return;
+    IModelConnection.onClose.raiseEvent(this);
     try {
-      IModelConnection.onClose.raiseEvent(this);
       await IModelGateway.getProxy().close(accessToken, this.iModelToken);
     } finally {
       (this.token as any) = undefined; // prevent closed connection from being reused
@@ -110,8 +110,8 @@ export class IModelConnection extends IModel {
   public async closeStandalone(): Promise<void> {
     if (!this.iModelToken)
       return;
+    IModelConnection.onClose.raiseEvent(this);
     try {
-      IModelConnection.onClose.raiseEvent(this);
       await IModelGateway.getProxy().closeStandalone(this.iModelToken);
     } finally {
       (this.token as any) = undefined; // prevent closed connection from being reused
