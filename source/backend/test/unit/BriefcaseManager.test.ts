@@ -6,7 +6,8 @@ import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import { SeedFile, SeedFileInitState, RequestQueryOptions } from "@bentley/imodeljs-clients";
 import { Appearance, ColorDef, IModelVersion, IModel } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { /*KeepBriefcase,*/ BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost } from "../../backend";
+import { /*KeepBriefcase,*/ BriefcaseManager, DictionaryModel, Element, IModelDb, IModelHost } from "../../backend";
+import { ConcurrencyControl } from "../../ConcurrencyControl";
 import {
   AccessToken, UserProfile, ConnectClient, Project, IModelHubClient, WsgInstance, ECJsonTypeMap,
   Response, ChangeSet, IModel as HubIModel, Briefcase, MultiCode, CodeState,
@@ -149,6 +150,32 @@ describe("BriefcaseManagerUnitTests", () => {
     expect(files.length).greaterThan(0, "iModel .bim file could not be read");
   });
 
+  it.only("should create a new iModel", async () => {
+    // debugger;
+    // Arrange
+    // Delete the iModel if it currently exists in the cache. We're replacing it anyways
+    BriefcaseManager.hubClient = iModelHubClientMock.object;
+
+    // try {
+    //   const existingIModel: IModelDb = await IModelDb.open(spoofAccessToken as any, testProjectId, testIModels[1].id, OpenMode.ReadWrite, iModelVersionMock.object);
+    //   if (existingIModel)
+    //     existingIModel.close(spoofAccessToken as any, KeepBriefcase.No);
+    // } catch (e) {
+    //   assert(true, "iModel not found in cache");
+    // }
+
+    // Act
+    const iModel: IModelDb = await IModelDb.create(spoofAccessToken as any, testProjectId, testIModels[1].name, testIModels[1].name);
+
+    // Assert
+    assert.exists(iModel, "No iModel returned from call to IModelDb.create");
+    assert(iModel.iModelToken.iModelId === testIModels[1].id);
+
+    expect(IModelJsFs.existsSync(testIModels[1].localReadWritePath), "Local path to iModel does not exist");
+    const files = IModelJsFs.readdirSync(path.join(testIModels[1].localReadWritePath, "376"));
+    expect(files.length).greaterThan(0, "iModel .bim file could not be read");
+  });
+
   it("should throw an error when opening a nonexistent IModel in ReadOnly mode", async () => {
     // Arrange
     const capturedError: Error = new Error("InstanceNotFound: Instance 'iModel' with specified ID was not found.");
@@ -168,31 +195,7 @@ describe("BriefcaseManagerUnitTests", () => {
     assert.instanceOf<Error>(capturedError, Error, "Error was not thrown" );
   });
 
-  it.only("should create a new iModel", async () => {
-    debugger;
-    // Arrange
-    // Delete the iModel if it currently exists in the cache. We're replacing it anyways
-    await iModelHubClientMock.object.deleteIModel(spoofAccessToken, testProjectId, testIModels[1].id);
-    BriefcaseManager.hubClient = iModelHubClientMock.object;
-
-    // Also clear the scratch directory if it exists
-    const scratchDir = path.join(cacheDir, "scratch");
-    if (IModelJsFs.existsSync(scratchDir))
-      IModelJsFs.removeSync(scratchDir);
-
-    // Act
-    const iModel: IModelDb = await IModelDb.create(spoofAccessToken as any, testProjectId, testIModels[1].name, testIModels[1].name);
-
-    // Assert
-    assert.exists(iModel, "No iModel returned from call to IModelDb.create");
-    assert(iModel.iModelToken.iModelId === testIModels[1].id);
-
-    expect(IModelJsFs.existsSync(testIModels[1].localReadWritePath), "Local path to iModel does not exist");
-    const files = IModelJsFs.readdirSync(path.join(testIModels[1].localReadWritePath, "376"));
-    expect(files.length).greaterThan(0, "iModel .bim file could not be read");
-  });
-
-  it("should be able to open a cached first version IModel in ReadWrite mode", async () => {
+  it.only("should be able to open a cached first version IModel in ReadWrite mode", async () => {
     // Arrange
     iModelHubClientMock.setup((f: IModelHubClient) => f.acquireBriefcase(TypeMoq.It.isAny(), TypeMoq.It.isValue(testIModels[1].id)))
       .returns(() => Promise.resolve(999));
@@ -300,7 +303,7 @@ describe("BriefcaseManagerUnitTests", () => {
     timer = new Timer("make local changes");
 
     // Inject hub client mock into the new iModel's concurrency control
-    rwIModel.concurrencyControl.hubClient = iModelHubClientMock.object;
+    rwIModel.concurrencyControl.setIModelHubClient(iModelHubClientMock.object);
 
     // Turn on optimistic concurrency control. This allows the app to modify elements, models, etc. without first acquiring locks.
     // Later, when the app downloads and merges changeSets from the Hub into the briefcase, BriefcaseManager will merge changes and handle conflicts.

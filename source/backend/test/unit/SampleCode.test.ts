@@ -4,7 +4,8 @@
 import { assert } from "chai";
 import { BisCore } from "../../BisCore";
 import { Element, InformationPartitionElement } from "../../Element";
-import { IModelDb, ConcurrencyControl } from "../../IModelDb";
+import { IModelDb } from "../../IModelDb";
+import { ConcurrencyControl } from "../../ConcurrencyControl";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { ElementProps } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";

@@ -46,6 +46,7 @@ export class ConcurrencyControl {
   private _pendingRequest: ConcurrencyControl.Request;
   private _codes?: ConcurrencyControl.Codes;
   private _policy?: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy;
+  private _hubClient?: IModelHubClient;
   constructor(private _iModel: IModelDb) { this._pendingRequest = ConcurrencyControl.createRequest(); }
 
   /** @hidden */
@@ -254,7 +255,8 @@ export class ConcurrencyControl {
   }
 
   private getDeploymentEnv(): DeploymentEnv { return IModelHost.configuration!.iModelHubDeployConfig; }
-  private getIModelHubClient(): IModelHubClient { return new IModelHubClient(this.getDeploymentEnv()); }
+  public getIModelHubClient(): IModelHubClient { return this._hubClient || new IModelHubClient(this.getDeploymentEnv()); }
+  public setIModelHubClient(client: IModelHubClient) { this._hubClient = client; }
 
   /** process the Lock-specific part of the request. */
   private async acquireLocksFromRequest(req: ConcurrencyControl.Request, briefcaseEntry: BriefcaseEntry, _accessToken: AccessToken): Promise<void> {
