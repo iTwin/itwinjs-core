@@ -1,34 +1,33 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64 } from "@bentley/bentleyjs-core";
-import { JsonUtils } from "@bentley/bentleyjs-core";
-import { ColorDef } from "./ColorDef";
+import { Id64, Id64Props, JsonUtils } from "@bentley/bentleyjs-core";
+import { ColorDef, ColorDefProps } from "./ColorDef";
 
 /** Properties to create a SubCategory Appearance */
 export interface AppearanceProps {
-  color: ColorDef;
+  color?: ColorDefProps;
   invisible?: boolean;
   dontPlot?: boolean;
   dontSnap?: boolean;
   dontLocate?: boolean;
   weight?: number;
-  style?: Id64;
+  style?: Id64Props;
   priority?: number;
-  material?: Id64;
+  material?: Id64Props;
   transp?: number;
 }
 
 /** Parameters that define the way geometry on a SubCategory appears. */
 export class Appearance {
   public color: ColorDef = ColorDef.black;
-  public weight: number = 0;
-  public priority: number = 0;
-  public transparency: number = 0;
-  public invisible: boolean = false;
-  public dontPlot: boolean = false;
-  public dontSnap: boolean = false;
-  public dontLocate: boolean = false;
+  public weight = 0;
+  public priority = 0;
+  public transparency = 0;
+  public invisible = false;
+  public dontPlot = false;
+  public dontSnap = false;
+  public dontLocate = false;
   public styleId: Id64;
   public materialId: Id64;
 
@@ -65,12 +64,11 @@ export class Appearance {
   }
 
   public toJSON(): AppearanceProps {
-    const val = {} as AppearanceProps;
+    const val = { color: this.color.toJSON() } as AppearanceProps;
     if (this.invisible) val.invisible = true;
     if (this.dontPlot) val.dontPlot = true;
     if (this.dontSnap) val.dontSnap = true;
     if (this.dontLocate) val.dontLocate = true;
-    if (!ColorDef.black.equals(this.color)) val.color = this.color;
     if (0 !== this.weight) val.weight = this.weight;
     if (this.styleId.isValid()) val.style = this.styleId;
     if (0 !== this.priority) val.priority = this.priority;

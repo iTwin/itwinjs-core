@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert, DbResult, BentleyStatus, Id64, Id64Props, Guid, GuidProps, using, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
 import { IModelError, ECSqlValueType, ECSqlTypedString, ECSqlStringType, NavigationValue, NavigationBindingValue, ECSqlSystemProperty, ECJsNames } from "@bentley/imodeljs-common";
-import { XAndY, XYAndZ, XYZ } from "@bentley/geometry-core";
+import { XAndY, XYAndZ, XYZ, LowAndHighXYZ, Range3d } from "@bentley/geometry-core";
 import { ECDb } from "./ECDb";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { NativeECSqlStatement, NativeECSqlBinder, NativeECSqlValue, NativeECSqlValueIterator, NativeECDb, NativeDgnDb } from "@bentley/imodeljs-native-platform-api";
@@ -96,9 +96,15 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     using(this.getBinder(parameter), (binder) => binder.bindNull());
   }
 
+  /** bind a Range3d as a blob to the specified ECSQL parameter
+   * @param parameter Index(1-based) or name of the parameter
+   * @param range
+   */
+  public bindRange3d(parameter: number | string, range: LowAndHighXYZ): void { this.bindBlob(parameter, Range3d.toFloat64Array(range).buffer); }
+
   /** Binds a BLOB value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
-   * @param base64Blob BLOB value as Base64 string
+   * @param BLOB value as either an ArrayBuffer or a Base64 string
    */
   public bindBlob(parameter: number | string, blob: string | ArrayBuffer | SharedArrayBuffer): void {
     using(this.getBinder(parameter), (binder) => binder.bindBlob(blob));
@@ -244,9 +250,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     }
   }
 
-  private getBinder(param: string | number): NativeECSqlBinder {
-    return this._stmt!.getBinder(param);
-  }
+  private getBinder(param: string | number): NativeECSqlBinder { return this._stmt!.getBinder(param); }
 
   /** Clear any bindings that were previously set on this statement.
    * @throws [[IModelError]] in case of errors
@@ -623,12 +627,8 @@ class ECSqlBindingHelper {
     if (val === undefined || val === null)
       return binder.bindNull();
 
-    if (typeof (val) === "number") {
-      if (Number.isInteger(val))
-        return binder.bindInteger(val);
-
-      return binder.bindDouble(val);
-    }
+    if (typeof (val) === "number")
+      return Number.isInteger(val) ? binder.bindInteger(val) : binder.bindDouble(val);
 
     if (typeof (val) === "boolean")
       return binder.bindBoolean(val);

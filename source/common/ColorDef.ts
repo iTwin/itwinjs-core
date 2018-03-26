@@ -210,6 +210,9 @@ export class HSVColor {
 const scratchBytes = new Uint8Array(4);
 const scratchUInt32 = new Uint32Array(scratchBytes.buffer);
 
+/** a number in TGBR format */
+export type ColorDefProps = number;
+
 /** a TBGR value for a color */
 export class ColorDef {
   private _tbgr: number;
@@ -217,18 +220,17 @@ export class ColorDef {
   /**
    * Create a new ColorDef.
    * @param val value to use.
-   * if val is a number, it is interpreted as an RGB value.
-   * if val is an ColorDef, copy value from it.
-   * if val is a string, must be in one of the following forms:
-   * "rgb(255,0,0)"
-   * "rgba(255,0,0,255)"
-   * "rgb(100%,0%,0%)"
-   * "hsl(120,50%,50%)"
-   * "#ff0000"
-   * "red" (see values from ColorRgb)
+   * if a number, it is interpreted as a TRGB value.
+   * if a string, must be in one of the following forms:
+   * * "rgb(255,0,0)"
+   * * "rgba(255,0,0,255)"
+   * * "rgb(100%,0%,0%)"
+   * * "hsl(120,50%,50%)"
+   * * "#ff0000"
+   * * "red"(see values from ColorRgb)
    * @return this
    */
-  public constructor(val?: number | ColorDef | string) {
+  public constructor(val?: ColorDef | string | ColorDefProps) {
     this._tbgr = 0;
     if (!val)
       return;
@@ -252,7 +254,7 @@ export class ColorDef {
   public setFrom(other: ColorDef) { this._tbgr = other._tbgr; }
 
   /** convert this ColorDef to a 32 bit number representing the tbgr value */
-  public toJSON(): any { return this._tbgr; }
+  public toJSON(): ColorDefProps { return this._tbgr; }
 
   /** set the value of this ColorDef from a 24 bit RGB value. */
   public fromRgb(rgb: number) {
