@@ -28,9 +28,8 @@
   ],
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^7.3.2",
-    "@bentley/geometry-core": "^6.0.10",
-    "@bentley/imodeljs-clients": "^4.2.0",
-    "flatbuffers": "^1.8.0"
+    "@bentley/geometry-core": "^7.1.0",
+    "@bentley/imodeljs-clients": "^4.2.0"
   },
   "//devDependencies": [
     "NOTE: Must include modules mentioned in peerDependencies since those are not auto-installed",
@@ -38,7 +37,7 @@
   ],
   "devDependencies": {
     "@bentley/bentleyjs-core": "^7.3.2",
-    "@bentley/geometry-core": "^6.0.10",
+    "@bentley/geometry-core": "^7.1.0",
     "@bentley/imodeljs-clients": "^4.2.0",
     "rimraf": "^2.6.2",
     "typescript": "~2.6.2"

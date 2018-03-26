@@ -10,7 +10,7 @@
         "*"
       ]
     },
-    "outDir": "../frontendlib"
+    "outDir": "../out/frontend"
   },
   "include": [
     "./**/*.ts"

@@ -150,12 +150,12 @@
         {
           "name":"EntityClassIntEnumerationPrimitive",
           "propertyType":"PrimitiveProperty",
-          "typeName":"IntEnumeration"
+          "typeName":"TestSchema.IntEnumeration"
         },
         {
           "name":"EntityClassStringEnumerationPrimitive",
           "propertyType":"PrimitiveProperty",
-          "typeName":"StringEnumeration"
+          "typeName":"TestSchema.StringEnumeration"
         },
         {
           "name":"CAStructProperty",
@@ -532,12 +532,12 @@
         {
           "name":"MixinIntEnumerationPrimitive",
           "propertyType":"PrimitiveProperty",
-          "typeName":"IntEnumeration"
+          "typeName":"TestSchema.IntEnumeration"
         },
         {
           "name":"MixinStringEnumerationPrimitive",
           "propertyType":"PrimitiveProperty",
-          "typeName":"StringEnumeration"
+          "typeName":"TestSchema.StringEnumeration"
         }
       ],
       "schemaChildType":"Mixin"
@@ -717,12 +717,12 @@
         {
           "name":"IntEnumerationPrimitive",
           "propertyType":"PrimitiveProperty",
-          "typeName":"IntEnumeration"
+          "typeName":"TestSchema.IntEnumeration"
         },
         {
           "name":"StringEnumerationPrimitive",
           "propertyType":"PrimitiveProperty",
-          "typeName":"StringEnumeration"
+          "typeName":"TestSchema.StringEnumeration"
         },
         {
           "customAttributes":[
@@ -1064,12 +1064,12 @@
         {
           "name":"StructIntEnumerationPrimitive",
           "propertyType":"PrimitiveProperty",
-          "typeName":"IntEnumeration"
+          "typeName":"TestSchema.IntEnumeration"
         },
         {
           "name":"StructStringEnumerationPrimitive",
           "propertyType":"PrimitiveProperty",
-          "typeName":"StringEnumeration"
+          "typeName":"TestSchema.StringEnumeration"
         }
       ],
       "schemaChildType":"StructClass"
