@@ -11,7 +11,10 @@ export class CodeSpecs {
   private _imodel: IModelDb;
   private _loadedCodeSpecs: CodeSpec[] = [];
 
-  constructor(imodel: IModelDb) { this._imodel = imodel; }
+  constructor(imodel: IModelDb) {
+    this._imodel = imodel;
+    imodel.onChangesetApplied.addListener(() => this._loadedCodeSpecs.length = 0);
+  }
 
   /** Look up the Id of the CodeSpec with the specified name. */
   public queryId(name: string): Id64 {
