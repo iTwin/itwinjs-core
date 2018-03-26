@@ -7,19 +7,13 @@ import { ECSqlInsertResult } from "../ECSqlStatement";
 import { ECSqlStringType, ECSqlTypedString, NavigationValue } from "@bentley/imodeljs-common";
 import { ECDb } from "../ECDb";
 import { DbResult, Id64, using } from "@bentley/bentleyjs-core";
-import { XAndY, XYAndZ, Point2d, Point3d } from "@bentley/geometry-core";
+import { XAndY, XYAndZ, Point2d, Point3d, Range3d } from "@bentley/geometry-core";
 import { KnownTestLocations } from "./KnownTestLocations";
 
 describe("ECSqlStatement", () => {
   const _outDir = KnownTestLocations.outputDir;
-  const byteArray = new Uint8Array(10);
-  byteArray.set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-  const blobVal = byteArray.buffer as ArrayBuffer;
-
-  const compareBlobs = (b1: ArrayBuffer) => {
-    const bytes1 = new Uint8Array(b1);
-    assert.deepEqual(bytes1, byteArray);
-  };
+  const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
+  const blobVal = testRange.toFloat64Array().buffer;
 
   it("Bind Ids", () => {
     using(ECDbTestHelper.createECDb(_outDir, "bindids.ecdb"), (ecdb) => {
@@ -484,7 +478,10 @@ describe("ECSqlStatement", () => {
             stmt.bindId(1, expectedId);
             assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
             const row = stmt.getRow();
-            compareBlobs(row.bl);
+            assert.deepEqual(row.bl, blobVal);
+            const f64 = new Float64Array(row.bl);
+            const r2 = new Range3d(...f64);
+            assert.deepEqual(r2, testRange);
             assert.equal(row.bo, boolVal);
             assert.equal(row.d, doubleVal);
             assert.equal(row.dt, dtVal.value);
@@ -496,7 +493,7 @@ describe("ECSqlStatement", () => {
             assert.equal(row.p3d.z, p3dVal.z);
             assert.equal(row.s, strVal);
 
-            compareBlobs(row.s_bl);
+            assert.deepEqual(row.s_bl, blobVal);
             assert.equal(row.s_bo, boolVal);
             assert.equal(row.s_d, doubleVal);
             assert.equal(row.s_dt, dtVal.value);
@@ -941,7 +938,7 @@ describe("ECSqlStatement", () => {
           const row = stmt.getRow();
           assert.equal(row.id, id.value);
           assert.equal(row.className, "Test.Foo");
-          compareBlobs(row.bl);
+          assert.deepEqual(row.bl, blobVal);
           assert.equal(row.bo, boolVal);
           assert.equal(row.d, doubleVal);
           assert.equal(row.dt, dtVal);
@@ -958,7 +955,7 @@ describe("ECSqlStatement", () => {
           stmt.bindId(1, id);
           assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
           const row = stmt.getRow();
-          compareBlobs(row.blobby);
+          assert.deepEqual(row.blobby, blobVal);
           assert.equal(row["[I] + 10"], intVal + 10);
           assert.equal(row["lower([S])"], strVal.toLowerCase());
           assert.equal(row.capitalS, strVal.toUpperCase());
