@@ -6,7 +6,8 @@ import { expect, assert } from "chai";
 import { Id64, OpenMode, DbOpcode, BeEvent } from "@bentley/bentleyjs-core";
 import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState } from "@bentley/imodeljs-clients";
 import { Code, IModelVersion, Appearance, ColorDef, IModel, IModelError, IModelStatus } from "@bentley/imodeljs-common";
-import { KeepBriefcase, IModelDb, ConcurrencyControl, Element, DictionaryModel, SpatialCategory, IModelHost, AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../backend";
+import { KeepBriefcase, IModelDb, Element, DictionaryModel, SpatialCategory, IModelHost, AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../backend";
+import { ConcurrencyControl } from "../ConcurrencyControl";
 import { IModelTestUtils, TestUsers } from "./IModelTestUtils";
 import { IModelJsFs } from "../IModelJsFs";
 

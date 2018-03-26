@@ -7,11 +7,13 @@ import { ECSqlInsertResult } from "../ECSqlStatement";
 import { ECSqlStringType, ECSqlTypedString, NavigationValue } from "@bentley/imodeljs-common";
 import { ECDb } from "../ECDb";
 import { DbResult, Id64, using } from "@bentley/bentleyjs-core";
-import { XAndY, XYAndZ, Point2d, Point3d } from "@bentley/geometry-core";
+import { XAndY, XYAndZ, Point2d, Point3d, Range3d } from "@bentley/geometry-core";
 import { KnownTestLocations } from "./KnownTestLocations";
 
 describe("ECSqlStatement", () => {
   const _outDir = KnownTestLocations.outputDir;
+  const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
+  const blobVal = testRange.toFloat64Array().buffer;
 
   it("Bind Ids", () => {
     using(ECDbTestHelper.createECDb(_outDir, "bindids.ecdb"), (ecdb) => {
@@ -463,11 +465,10 @@ describe("ECSqlStatement", () => {
     </ECSchema>`), (ecdb) => {
         assert.isTrue(ecdb.isOpen());
 
-        const blobVal: ECSqlTypedString = { type: ECSqlStringType.Blob, value: "SGVsbG8gd29ybGQNCg==" };
-        const boolVal: boolean = true;
-        const doubleVal: number = 3.5;
+        const boolVal = true;
+        const doubleVal = 3.5;
         const dtVal: ECSqlTypedString = { type: ECSqlStringType.DateTime, value: "2018-01-23T12:24:00.000" };
-        const intVal: number = 3;
+        const intVal = 3;
         const p2dVal = new Point2d(1, 2);
         const p3dVal = new Point3d(1, 2, 3);
         const strVal: string = "Hello world";
@@ -477,7 +478,10 @@ describe("ECSqlStatement", () => {
             stmt.bindId(1, expectedId);
             assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
             const row = stmt.getRow();
-            assert.equal(row.bl, blobVal.value);
+            assert.deepEqual(row.bl, blobVal);
+            const f64 = new Float64Array(row.bl);
+            const r2 = new Range3d(...f64);
+            assert.deepEqual(r2, testRange);
             assert.equal(row.bo, boolVal);
             assert.equal(row.d, doubleVal);
             assert.equal(row.dt, dtVal.value);
@@ -489,7 +493,7 @@ describe("ECSqlStatement", () => {
             assert.equal(row.p3d.z, p3dVal.z);
             assert.equal(row.s, strVal);
 
-            assert.equal(row.s_bl, blobVal.value);
+            assert.deepEqual(row.s_bl, blobVal);
             assert.equal(row.s_bo, boolVal);
             assert.equal(row.s_d, doubleVal);
             assert.equal(row.s_dt, dtVal.value);
@@ -505,7 +509,7 @@ describe("ECSqlStatement", () => {
 
         const ids = new Array<Id64>();
         ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl,Bo,D,Dt,I,P2d,P3d,S,Struct.Bl,Struct.Bo,Struct.D,Struct.Dt,Struct.I,Struct.P2d,Struct.P3d,Struct.S) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (stmt) => {
-          stmt.bindBlob(1, blobVal.value);
+          stmt.bindBlob(1, blobVal);
           stmt.bindBoolean(2, boolVal);
           stmt.bindDouble(3, doubleVal);
           stmt.bindDateTime(4, dtVal.value);
@@ -513,7 +517,7 @@ describe("ECSqlStatement", () => {
           stmt.bindPoint2d(6, p2dVal);
           stmt.bindPoint3d(7, p3dVal);
           stmt.bindString(8, strVal);
-          stmt.bindBlob(9, blobVal.value);
+          stmt.bindBlob(9, blobVal);
           stmt.bindBoolean(10, boolVal);
           stmt.bindDouble(11, doubleVal);
           stmt.bindDateTime(12, dtVal.value);
@@ -535,7 +539,7 @@ describe("ECSqlStatement", () => {
         });
 
         ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl,Bo,D,Dt,I,P2d,P3d,S,Struct.Bl,Struct.Bo,Struct.D,Struct.Dt,Struct.I,Struct.P2d,Struct.P3d,Struct.S) VALUES(:bl,:bo,:d,:dt,:i,:p2d,:p3d,:s,:s_bl,:s_bo,:s_d,:s_dt,:s_i,:s_p2d,:s_p3d,:s_s)", (stmt) => {
-          stmt.bindBlob("bl", blobVal.value);
+          stmt.bindBlob("bl", blobVal);
           stmt.bindBoolean("bo", boolVal);
           stmt.bindDouble("d", doubleVal);
           stmt.bindDateTime("dt", dtVal.value);
@@ -544,7 +548,7 @@ describe("ECSqlStatement", () => {
           stmt.bindPoint3d("p3d", p3dVal);
           stmt.bindString("s", strVal);
 
-          stmt.bindBlob("s_bl", blobVal.value);
+          stmt.bindBlob("s_bl", blobVal);
           stmt.bindBoolean("s_bo", boolVal);
           stmt.bindDouble("s_d", doubleVal);
           stmt.bindDateTime("s_dt", dtVal.value);
@@ -598,7 +602,7 @@ describe("ECSqlStatement", () => {
         assert.isTrue(ecdb.isOpen());
 
         const structVal = {
-          bl: { type: ECSqlStringType.Blob, value: "SGVsbG8gd29ybGQNCg==" }, bo: true, d: 3.5,
+          bl: { blobVal }, bo: true, d: 3.5,
           dt: { type: ECSqlStringType.DateTime, value: "2018-01-23T12:24:00.000" },
           i: 3, p2d: new Point2d(1, 2), p3d: new Point3d(1, 2, 3), s: "Hello World",
         };
@@ -608,7 +612,7 @@ describe("ECSqlStatement", () => {
             stmt.bindId(1, expectedId);
             assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
             const row = stmt.getRow();
-            assert.equal(row.struct.bl, structVal.bl.value);
+            assert.equal(row.struct.bl, structVal.bl);
             assert.equal(row.struct.bo, structVal.bo);
             assert.equal(row.struct.d, structVal.d);
             assert.equal(row.struct.dt, structVal.dt.value);
@@ -906,7 +910,6 @@ describe("ECSqlStatement", () => {
       </ECSchema>`), (ecdb) => {
         assert.isTrue(ecdb.isOpen());
 
-        const blobVal: string = "SGVsbG8gd29ybGQNCg==";
         const boolVal: boolean = true;
         const doubleVal: number = 3.5;
         const dtVal: string = "2018-01-23T12:24:00.000";
@@ -935,7 +938,7 @@ describe("ECSqlStatement", () => {
           const row = stmt.getRow();
           assert.equal(row.id, id.value);
           assert.equal(row.className, "Test.Foo");
-          assert.equal(row.bl, blobVal);
+          assert.deepEqual(row.bl, blobVal);
           assert.equal(row.bo, boolVal);
           assert.equal(row.d, doubleVal);
           assert.equal(row.dt, dtVal);
@@ -952,7 +955,7 @@ describe("ECSqlStatement", () => {
           stmt.bindId(1, id);
           assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
           const row = stmt.getRow();
-          assert.equal(row.blobby, blobVal);
+          assert.deepEqual(row.blobby, blobVal);
           assert.equal(row["[I] + 10"], intVal + 10);
           assert.equal(row["lower([S])"], strVal.toLowerCase());
           assert.equal(row.capitalS, strVal.toUpperCase());
@@ -1127,7 +1130,6 @@ describe("ECSqlStatement", () => {
         assert.isTrue(ecdb.isOpen());
 
         const boolVal: boolean = true;
-        const blobVal: string = "SGVsbG8gd29ybGQNCg==";
         const doubleVal: number = 3.5;
         const dtVal: string = "2018-01-23T12:24:00.000";
         const intVal: number = 3;
@@ -1136,7 +1138,7 @@ describe("ECSqlStatement", () => {
         const stringVal: string = "Hello World";
 
         const id: Id64 = ecdb.withPreparedStatement("INSERT INTO test.Foo(Struct) VALUES(?)", (stmt) => {
-          stmt.bindStruct(1, { bl: { type: ECSqlStringType.Blob, value: blobVal }, bo: boolVal, d: doubleVal, dt: { type: ECSqlStringType.DateTime, value: dtVal }, i: intVal, p2d: p2dVal, p3d: p3dVal, s: stringVal });
+          stmt.bindStruct(1, { bl: blobVal, bo: boolVal, d: doubleVal, dt: { type: ECSqlStringType.DateTime, value: dtVal }, i: intVal, p2d: p2dVal, p3d: p3dVal, s: stringVal });
           const res: ECSqlInsertResult = stmt.stepForInsert();
           assert.equal(res.status, DbResult.BE_SQLITE_DONE);
           assert.isDefined(res.id);
@@ -1148,7 +1150,7 @@ describe("ECSqlStatement", () => {
           stmt.bindId(1, id);
           assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
           const row: any = stmt.getRow();
-          assert.equal(row.struct.bl, expectedStruct.bl);
+          assert.deepEqual(row.struct.bl, expectedStruct.bl);
           assert.equal(row.struct.bo, expectedStruct.bo);
           assert.equal(row.struct.d, expectedStruct.d);
           assert.equal(row.struct.dt, expectedStruct.dt);
@@ -1165,7 +1167,7 @@ describe("ECSqlStatement", () => {
           stmt.bindId(1, id);
           assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
           const actualStruct: any = stmt.getValue(0).getStruct();
-          assert.equal(actualStruct.bl, expectedStruct.bl);
+          assert.deepEqual(actualStruct.bl, expectedStruct.bl);
           assert.equal(actualStruct.bo, expectedStruct.bo);
           assert.equal(actualStruct.d, expectedStruct.d);
           assert.equal(actualStruct.dt, expectedStruct.dt);
@@ -1182,7 +1184,7 @@ describe("ECSqlStatement", () => {
           stmt.bindId(1, id);
           assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
           const row: any = stmt.getRow();
-          assert.equal(row["struct.Bl"], expectedStruct.bl);
+          assert.deepEqual(row["struct.Bl"], expectedStruct.bl);
           assert.equal(row["struct.Bo"], expectedStruct.bo);
           assert.equal(row["struct.D"], expectedStruct.d);
           assert.equal(row["struct.Dt"], expectedStruct.dt);
@@ -1217,13 +1219,13 @@ describe("ECSqlStatement", () => {
         assert.isTrue(ecdb.isOpen());
 
         const expectedRow = {
-          bl: "SGVsbG8gd29ybGQNCg==", bo: true, d: 3.5, dt: "2018-01-23T12:24:00.000",
+          bl: blobVal, bo: true, d: 3.5, dt: "2018-01-23T12:24:00.000",
           i: 3, l: 12312312312312, p2d: { x: 1, y: 2 }, p3d: { x: 1, y: 2, z: 3 }, s: "Hello World",
         };
 
         const id: Id64 = ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl,Bo,D,Dt,I,L,P2d,P3d,S) VALUES(:bl,:bo,:d,:dt,:i,:l,:p2d,:p3d,:s)", (stmt) => {
           stmt.bindValues({
-            bl: { type: ECSqlStringType.Blob, value: expectedRow.bl }, bo: expectedRow.bo, d: expectedRow.d,
+            bl: blobVal, bo: expectedRow.bo, d: expectedRow.d,
             dt: { type: ECSqlStringType.DateTime, value: expectedRow.dt }, i: expectedRow.i, l: expectedRow.l, p2d: expectedRow.p2d, p3d: expectedRow.p3d, s: expectedRow.s,
           });
           const res: ECSqlInsertResult = stmt.stepForInsert();

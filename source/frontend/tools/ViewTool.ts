@@ -1468,8 +1468,8 @@ export class WindowAreaTool extends ViewTool {
       delta = viewRange.high.vectorTo(viewRange.low);
 
       let focusDist = Math.max(delta.x, delta.y) / (2.0 * Math.tan(lensAngle.radians / 2.0));
-      if (focusDist < 2 * view.minimumFrontDistance())
-        focusDist = 2 * view.minimumFrontDistance();
+      if (focusDist < view.minimumFrontDistance())
+        focusDist = view.minimumFrontDistance();
 
       vp.viewToWorldArray(corners);
       const newTarget = corners[0].interpolate(.5, corners[1]);

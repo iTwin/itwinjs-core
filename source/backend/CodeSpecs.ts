@@ -63,7 +63,11 @@ export class CodeSpecs {
     return this.getById(codeSpecId);
   }
 
-  /** Add a new CodeSpec to the table.
+  /** Add a new CodeSpec to the IModelDb.
+   * <p><em>Example:</em>
+   * ``` ts
+   * [[include:CodeSpecs.insert]]
+   * ```
    * @param  codeSpec The new entry to add.
    * @return The id of the persistent CodeSpec.
    * @remarks If successful, this method will assign a valid CodeSpecId to the supplied CodeSpec

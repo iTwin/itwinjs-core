@@ -1,13 +1,13 @@
 ﻿Copyright © Bentley Systems, Inc. 2018
 # imodeljs-core
 
-iModelJs extends the iModel technology stack to provide a JavaScript library (built using TypeScript) for querying, displaying, and modifying iModels.
+iModelJs extends the iModel technology stack to provide a JavaScript library (built using [TypeScript](https://www.typescriptlang.org/)) for querying, displaying, and modifying iModels.
 It can be used to build:
 
 * Backend agents and other web services
 * Web applications with browser frontends
-* (Future) Desktop applications that use web UI frameworks
-* (Future) Mobile applications that use web UI frameworks
+* Desktop applications that use web UI frameworks
+* Mobile applications that use web UI frameworks
 
 imodeljs-core is the name of the overall git repository.
 The source code is organized according to where it can run:
