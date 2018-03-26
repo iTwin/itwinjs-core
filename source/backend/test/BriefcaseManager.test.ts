@@ -38,7 +38,7 @@ function createChangeSet(imodel: IModelDb): ChangeSetToken {
 
   const token: ChangeSetToken = JSON.parse(res.result!);
 
-  // finishCreateChangeSet deletes the file that startCreateChangeSet created. 
+  // finishCreateChangeSet deletes the file that startCreateChangeSet created.
   // We make a copy of it now, before he does that.
   const csfilename = path.join(KnownTestLocations.outputDir, token.id + ".cs");
   IModelJsFs.copySync(token.pathname, csfilename);
@@ -53,6 +53,7 @@ function createChangeSet(imodel: IModelDb): ChangeSetToken {
 
 function applyChangeSet(imodel: IModelDb, cstoken: ChangeSetToken) {
   const result: DbResult = imodel.briefcase!.nativeDb!.processChangeSets(JSON.stringify([cstoken]), ChangeSetProcessOption.Merge, cstoken.containsSchemaChanges === ContainsSchemaChanges.Yes);
+  imodel.onChangesetApplied.raiseEvent();
   assert.equal(result, DbResult.BE_SQLITE_OK);
 }
 
@@ -170,7 +171,7 @@ describe("BriefcaseManager", () => {
     // firstUser: modify el1.userLabel
     if (true) {
       const el1cc = (firstIModel.elements.getElement(el1)).copyForEdit<Element>();
-      el1cc.userLabel = el1cc.userLabel + " - changed by firstUser";
+      el1cc.userLabel = el1cc.userLabel + " -> changed by firstUser";
       firstIModel.elements.updateElement(el1cc);
       firstIModel.saveChanges("firstUser modified el1.userLabel");
       await firstIModel.pushChanges(firstUser);
@@ -180,7 +181,7 @@ describe("BriefcaseManager", () => {
     let expectedValueofEl1UserLabel: string;
     if (true) {
       const el1before = (secondIModel.elements.getElement(el1)).copyForEdit<Element>();
-      expectedValueofEl1UserLabel = el1before.userLabel + " - changed by secondUser";
+      expectedValueofEl1UserLabel = el1before.userLabel + " -> changed by secondUser";
       el1before.userLabel = expectedValueofEl1UserLabel;
       secondIModel.elements.updateElement(el1before);
       secondIModel.saveChanges("secondUser modified el1.userLabel");
@@ -214,7 +215,7 @@ describe("BriefcaseManager", () => {
     if (true) {
       const el1cc = (firstIModel.elements.getElement(el1)).copyForEdit<Element>();
       assert.equal(el1cc.userLabel, wasExpectedValueofEl1UserLabel);
-      expectedValueofEl1UserLabel = el1cc.userLabel + " - changed again by firstUser";
+      expectedValueofEl1UserLabel = el1cc.userLabel + " -> changed again by firstUser";
       el1cc.userLabel = expectedValueofEl1UserLabel;
       firstIModel.elements.updateElement(el1cc);
       firstIModel.saveChanges("firstUser modified el1.userLabel");
@@ -249,7 +250,7 @@ describe("BriefcaseManager", () => {
       await secondIModel.pushChanges(secondUser);
     }
 
-    // firstUser: pull and see that both changes
+    // firstUser: pull and see both changes
     if (true) {
       await firstIModel.pullAndMergeChanges(firstUser);
       const elobj = firstIModel.elements.getElement(el1);
@@ -265,11 +266,11 @@ describe("BriefcaseManager", () => {
       assert.equal(elobj.getUserProperties(secondUserPropNs)[secondUserPropName], expectedValueOfSecondUserProp);
     }
 
-    // --- Test 1: Non-overlapping changes ---
+    // --- Test 3: Non-overlapping changes ---
 
   });
 
-  it.only("should merge changes so that two branches of an iModel converge", () => {
+  it.skip("should merge changes so that two branches of an iModel converge", () => {
     // tslint:disable-next-line:no-debugger
     debugger;
 
@@ -280,34 +281,91 @@ describe("BriefcaseManager", () => {
     createChangeSet(upgraded);
 
     // Open two copies of the seed file.
-    const b1: IModelDb = IModelTestUtils.openIModelFromOut("upgraded.bim", {copyFilename: "b1.bim", openMode: OpenMode.ReadWrite, enableTransactions: true});
-    const b2: IModelDb = IModelTestUtils.openIModelFromOut("upgraded.bim", {copyFilename: "b2.bim", openMode: OpenMode.ReadWrite, enableTransactions: true});
+    const first: IModelDb = IModelTestUtils.openIModelFromOut("upgraded.bim", {copyFilename: "first.bim", openMode: OpenMode.ReadWrite, enableTransactions: true});
+    const second: IModelDb = IModelTestUtils.openIModelFromOut("upgraded.bim", {copyFilename: "second.bim", openMode: OpenMode.ReadWrite, enableTransactions: true});
+    const neutral: IModelDb = IModelTestUtils.openIModelFromOut("upgraded.bim", {copyFilename: "neutral.bim", openMode: OpenMode.ReadWrite, enableTransactions: true});
+    assert.isTrue(first !== second);
 
-    assert.isTrue(b2 !== undefined);
+    first.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    second.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    // Note: neutral observer's IModel does not need to be configured for optimistic concurrency. He just pulls changes.
+
+    const cshistory: ChangeSetToken[] = [];
+
+    let firstparent: number = -1;
+    let secondparent: number = -1;
+    let neutralparent: number = -1;
 
     let modelId: Id64;
     let spatialCategoryId: Id64;
+    let el1: Id64;
+    // first. Create a new model, category, and element.  =>  #0
     if (true) {
-      // b1. Create a new physical model.
-      [, modelId] = IModelTestUtils.createAndInsertPhysicalModel(b1, IModelTestUtils.getUniqueModelCode(b1, "newPhysicalModel"), true);
-
-      // Find or create a SpatialCategory.
-      const dictionary: DictionaryModel = b1.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
+      [, modelId] = IModelTestUtils.createAndInsertPhysicalModel(first, IModelTestUtils.getUniqueModelCode(first, "newPhysicalModel"), true);
+      const dictionary: DictionaryModel = first.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
       const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
       spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
-      b1.saveChanges();
+      el1 = first.elements.insertElement(IModelTestUtils.createPhysicalObject(first, modelId, spatialCategoryId));
+      first.saveChanges();
+      cshistory.push(createChangeSet(first));
+      ++firstparent; // (This automatically becomes my parent)
+      assert.isTrue((cshistory.length - 1) === firstparent);
     }
 
     if (true) {
-      // b1 -> b2
-      const cstoken: ChangeSetToken = createChangeSet(b1);
-      assert.isTrue(IModelJsFs.existsSync(cstoken.pathname));
+      // first -> second, neutral
+      applyChangeSet(second, cshistory[++secondparent]);
+      assert.isTrue(second.models.getModel(modelId) !== undefined);
+      assert.isTrue(second.elements.getElement(spatialCategoryId) !== undefined);
+      assert.isTrue(second.elements.getElement(el1) !== undefined);
 
-      applyChangeSet(b2, cstoken);
+      applyChangeSet(neutral, cshistory[++neutralparent]);
+      assert.isTrue(neutral.models.getModel(modelId) !== undefined);
+      assert.isTrue(neutral.elements.getElement(spatialCategoryId) !== undefined);
+      assert.isTrue(neutral.elements.getElement(el1) !== undefined);
+    }
 
-      // verify that b2 got all of the changes.
-      assert.isTrue(b2.models.getModel(modelId) !== undefined);
-      assert.isTrue(b2.elements.getElement(spatialCategoryId) !== undefined);
+    // --- Test 1: Overlapping changes that really are conflicts => conflict-resolution policy is applied ---
+
+    // first: modify el1.userLabel
+    if (true) {
+      const el1cc = (first.elements.getElement(el1)).copyForEdit<Element>();
+      el1cc.userLabel = el1cc.userLabel + " -> changed by first";
+      first.elements.updateElement(el1cc);
+      first.saveChanges("first modified el1.userLabel");
+      cshistory.push(createChangeSet(first));
+      ++firstparent; // (This automatically becomes my parent)
+    }
+
+    // second: modify el1.userLabel
+    let expectedValueofEl1UserLabel: string;
+    if (true) {
+      const el1before = (second.elements.getElement(el1)).copyForEdit<Element>();
+      expectedValueofEl1UserLabel = el1before.userLabel + " -> changed by second";
+      el1before.userLabel = expectedValueofEl1UserLabel;
+      second.elements.updateElement(el1before);
+      second.saveChanges("second modified el1.userLabel");
+
+      // merge => take second's change (RejectIncomingChange). That's because the default updateVsUpdate settting is RejectIncomingChange
+      applyChangeSet(second, cshistory[++secondparent]);
+      const el1after = second.elements.getElement(el1);
+      assert.equal(el1after.userLabel, expectedValueofEl1UserLabel);
+      cshistory.push(createChangeSet(second));
+      ++secondparent; // (This automatically becomes my parent)
+    }
+
+    // Make sure a neutral observer sees secondUser's change.
+    if (true) {
+      applyChangeSet(neutral, cshistory[++neutralparent]);
+      const elobj = neutral.elements.getElement(el1);
+      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
+    }
+
+    // firstUser: pull and see that secondUser has overridden my change
+    if (true) {
+      applyChangeSet(first, cshistory[++firstparent]);
+      const elobj = first.elements.getElement(el1);
+      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
     }
 });
 
