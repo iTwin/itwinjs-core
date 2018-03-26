@@ -360,9 +360,18 @@ export class ECVersion {
 
   /**
    * Returns a string, in the format 'RR.ww.mm', of this ECVersion.
+   * @ note The default is to not pad with zeroes.
+   * @param padZeroes If true, the returned string will strictly follow `RR.ww.mm` and add leading zeroes if necessary.
    */
-  public toString(): string {
-    return `${this.read}.${this.write}.${this.minor}`;
+  public toString(padZeroes: boolean = false): string {
+    if (!padZeroes)
+      return `${this.read}.${this.write}.${this.minor}`;
+
+    const padWithZeroes = (num: number) => {
+      return (num < 10 ? "0" : "") + num;
+    }
+
+    return `${padWithZeroes(this.read)}.${padWithZeroes(this.write)}.${padWithZeroes(this.minor)}`;
   }
 
   /**
