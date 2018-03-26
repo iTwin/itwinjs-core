@@ -80,15 +80,14 @@ describe("BriefcaseManagerUnitTests", () => {
     new TestIModelInfo("NoVersionsTest"),
   ];
   const assetDir = "./test/assets/_mocks_";
-
   const spoofAccessToken: MockAccessToken = new MockAccessToken();
   const iModelHubClientMock = TypeMoq.Mock.ofType(IModelHubClient);
   const iModelVersionMock = TypeMoq.Mock.ofType(IModelVersion);
   const connectClientMock = TypeMoq.Mock.ofType(ConnectClient);
+  const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
 
   before(async () => {
     const startTime = new Date().getTime();
-    const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
 
     console.log("    Setting up mock objects..."); // tslint:disable-line:no-console
 
@@ -126,14 +125,14 @@ describe("BriefcaseManagerUnitTests", () => {
       // await iModelHubClientMock.object.downloadChangeSets(testChangeSets, csetDir);
     }
     MockAssetUtil.verifyIModelInfo(testIModels);
-    iModelHubClientMock.verify((f: IModelHubClient) => f.getIModels(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
+    // iModelHubClientMock.verify((f: IModelHubClient) => f.getIModels(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
     // iModelHubClientMock.verify((f: IModelHubClient) => f.getChangeSets(TypeMoq.It.isAny(), TypeMoq.It.isAnyString(), TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
 
     console.log(`    ...getting information on Project+IModel+ChangeSets for test case from mock data: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
 
   });
 
-  it("should be able to open a first version IModel in Readonly mode", async () => {
+  it.only("should be able to open a first version IModel in Readonly mode", async () => {
     // Arrange
 
     BriefcaseManager.hubClient = iModelHubClientMock.object;
@@ -150,7 +149,7 @@ describe("BriefcaseManagerUnitTests", () => {
     expect(files.length).greaterThan(0, "iModel .bim file could not be read");
   });
 
-  it.skip("should throw an error when opening a nonexistent IModel in ReadOnly mode", async () => {
+  it("should throw an error when opening a nonexistent IModel in ReadOnly mode", async () => {
     // Arrange
     const capturedError: Error = new Error("InstanceNotFound: Instance 'iModel' with specified ID was not found.");
     iModelHubClientMock.setup((f: IModelHubClient) => f.getIModel(TypeMoq.It.isAny(),
@@ -169,16 +168,22 @@ describe("BriefcaseManagerUnitTests", () => {
     assert.instanceOf<Error>(capturedError, Error, "Error was not thrown" );
   });
 
-  it("should create a new iModel", async () => {
+  it.only("should create a new iModel", async () => {
+    debugger;
+    // Arrange
     // Delete the iModel if it currently exists in the cache. We're replacing it anyways
-    if (IModelJsFs.existsSync(testIModels[1].localReadWritePath)) {
-      IModelJsFs.removeSync(testIModels[1].localReadWritePath);
-    }
-
+    await iModelHubClientMock.object.deleteIModel(spoofAccessToken, testProjectId, testIModels[1].id);
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
+    // Also clear the scratch directory if it exists
+    const scratchDir = path.join(cacheDir, "scratch");
+    if (IModelJsFs.existsSync(scratchDir))
+      IModelJsFs.removeSync(scratchDir);
+
+    // Act
     const iModel: IModelDb = await IModelDb.create(spoofAccessToken as any, testProjectId, testIModels[1].name, testIModels[1].name);
 
+    // Assert
     assert.exists(iModel, "No iModel returned from call to IModelDb.create");
     assert(iModel.iModelToken.iModelId === testIModels[1].id);
 
@@ -267,27 +272,26 @@ describe("BriefcaseManagerUnitTests", () => {
     expect(diff.length).equals(0, "Briefcase changed after repeat calls to BriefcaseManager.open");
   });
 
-  it.only("should write to briefcase with optimistic concurrency", async () => {
-    // NOTE: shouldn't need to delete anything from the hub since we're mocking...
-    // let timer = new Timer("delete iModels");
-    // // Delete any existing iModels with the same name as the read-write test iModel
-    // const iModelName = "ReadWriteTest";
-    // const iModels: HubIModel[] = await IModelTestUtils.hubClient.getIModels(accessToken, testProjectId, {
-    //   $select: "*",
-    //   $filter: "Name+eq+'" + iModelName + "'",
-    // });
-    // for (const iModelTemp of iModels) {
-    //   await IModelTestUtils.hubClient.deleteIModel(accessToken, testProjectId, iModelTemp.wsgId);
-    // }
-    // timer.end();
-
+  it.skip("should write to briefcase with optimistic concurrency", async () => {
+    debugger; // tslint:disable-line:no-debugger
     // Inject hub client mock into the briefcase manager
     MockAssetUtil.setupHubMultiCodes(iModelHubClientMock, assetDir, testIModels[2].id, testIModels[2].name, false);
     BriefcaseManager.hubClient = iModelHubClientMock.object;
 
-    debugger; // tslint:disable-line:no-debugger
+    let timer = new Timer("delete iModels");
+
+    // Delete any existing iModels with the same name as the OpConTest iModel
+    const iModels: HubIModel[] = await iModelHubClientMock.object.getIModels(spoofAccessToken as any, testProjectId, {
+      $select: "*",
+      $filter: "Name+eq+'" + testIModels[2].name + "'",
+    });
+    for (const iModel of iModels) {
+      await iModelHubClientMock.object.deleteIModel(spoofAccessToken, testProjectId, iModel.wsgId);
+    }
+    timer.end();
+
     // Create a new iModel on the Hub (by uploading a seed file)
-    let timer = new Timer("create iModel");
+    timer = new Timer("create iModel");
     const rwIModel: IModelDb = await IModelDb.create(spoofAccessToken as any, testProjectId, testIModels[2].name, "TestSubject");
     const rwIModelId = rwIModel.iModelToken.iModelId;
     assert.isNotEmpty(rwIModelId);
@@ -494,6 +498,18 @@ class MockAssetUtil {
           return Promise.resolve(getTypedInstance<HubIModel>(HubIModel, jsonObj));
         }).verifiable();
 
+      // For any call with a specified iModelId, remove the specified iModel from the cache if it currently
+      // resides there
+      iModelHubClientMock.setup((f: IModelHubClient) => f.deleteIModel(TypeMoq.It.isAny(),
+                                                                    TypeMoq.It.isAnyString(),
+                                                                    TypeMoq.It.is<string>((x: string) => x === pair[0])))
+        .returns(() => {
+          const iModelCacheDir = path.join(IModelHost.configuration!.briefcaseCacheDir, pair[0]);
+          if (IModelJsFs.existsSync(iModelCacheDir))
+            IModelJsFs.removeSync(iModelCacheDir);
+          return Promise.resolve();
+        }).verifiable();
+
       // For any call with a path containing a specified iModel name, grab the correct .bim asset and copy it
       // into the provided cache location
       iModelHubClientMock.setup((f: IModelHubClient) => f.downloadFile(TypeMoq.It.isAnyString(),
@@ -614,7 +630,7 @@ class MockAssetUtil {
   }
 
   public static setupHubMultiCodes(iModelHubClientMock: TypeMoq.IMock<IModelHubClient>, assetDir: string, iModelId: string, iModelName: string, isReserved: boolean) {
-    const codeInfoMap: Map<string, string> = new Map<string, string>([["0x1d", "0x1"], ["0x16", "0x10"], ["0x1e", "0x1780000000002"]]);
+    const codeInfoMap: Map<string, string> = new Map<string, string>([["0x1d", "0x1"], ["0x16", "0x10"], ["0x1e", "0x20000000002"]]);
     for (const [codeSpecId, codeScope] of codeInfoMap) {
       iModelHubClientMock.setup((f: IModelHubClient) => f.getMultipleCodes(TypeMoq.It.isAny(),
                                                                            TypeMoq.It.is<string>((x: string) => x === iModelId),
