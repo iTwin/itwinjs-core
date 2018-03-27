@@ -61,7 +61,7 @@ export class Category extends DefinitionElement implements CategoryProps {
   public myDefaultSubCategoryId(): Id64 { return IModelDb.getDefaultSubCategoryId(this.id); }
 
   /** Set the default appearance of this category */
-  public setDefaultAppearance(app: Appearance) {
+  public setDefaultAppearance(app: Appearance): void {
     const subCat: SubCategory = this.iModel.elements.getElement(this.myDefaultSubCategoryId()).copyForEdit();
     subCat.appearance = app;
     this.iModel.elements.updateElement(subCat);
